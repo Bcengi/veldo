@@ -4,7 +4,9 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -16,6 +18,86 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+# VELDO-0274: the factory owns the slice it names. Entering it stops every veldo0127-<pid>.slice whose pid is
+# not a live process (a run killed outright), starts its own and handles SIGTERM, SIGINT and SIGHUP by stopping
+# it; leaving it stops the slice and confirms it is no longer loaded, whatever the body did.
+SLICE = re.compile(r'veldo0127-([0-9]+)\.slice')
+SIGNALS = (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)
+
+
+class SliceLeft(RuntimeError):
+    """A factory slice still loaded in the user manager after the factory stopped it."""
+
+
+def loaded_slices(environment):
+    """The veldo0127-<pid>.slice units the user manager has loaded, or None when no manager answers."""
+    try:
+        result = subprocess.run(['systemctl', '--user', 'list-units', '--all', '--plain', '--no-legend',
+                                 'veldo0127-*.slice'], env=environment, capture_output=True, text=True, timeout=20,
+                                stdin=subprocess.DEVNULL)
+    except OSError:  # no systemctl here (a confined leg): no manager, so nothing of ours can be loaded
+        return None
+    if result.returncode != 0:
+        return None
+    return [line.split()[0] for line in result.stdout.splitlines() if line.split() and SLICE.fullmatch(line.split()[0])]
+
+
+def unit(action, name, environment):
+    try:
+        subprocess.run(['systemctl', '--user', action, name], env=environment, capture_output=True, timeout=20,
+                       stdin=subprocess.DEVNULL)
+    except OSError:
+        pass
+
+
+def live(pid):
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+class Factory(SimpleNamespace):
+    """The factory's names, and the context manager that owns its slice."""
+
+    def __enter__(self):
+        for name in loaded_slices(self.inherited) or ():
+            pid = int(SLICE.fullmatch(name).group(1))
+            if pid != os.getpid() and not live(pid):
+                unit('stop', name, self.inherited)
+                print('factory: stopped %s, left by an earlier run whose process %d is gone' % (name, pid), flush=True)
+        self.previous_handlers = {}
+        for number in SIGNALS:
+            try:
+                self.previous_handlers[number] = signal.signal(number, self._interrupted)
+            except ValueError:  # not the main thread: no handler can be installed there
+                break
+        unit('start', self.slice_name, self.inherited)
+        return self
+
+    def _interrupted(self, number, frame):
+        unit('stop', self.slice_name, self.inherited)
+        signal.signal(number, signal.SIG_DFL)
+        os.kill(os.getpid(), number)
+
+    def __exit__(self, kind, error, trace):
+        for number, handler in self.previous_handlers.items():
+            signal.signal(number, handler)
+        self.previous_handlers = {}
+        unit('stop', self.slice_name, self.inherited)
+        deadline = time.monotonic() + 10
+        while True:
+            remaining = loaded_slices(self.inherited)
+            if remaining is None or self.slice_name not in remaining:
+                return False
+            if time.monotonic() > deadline:
+                raise SliceLeft('factory teardown: %s is still loaded in the user manager' % self.slice_name)
+            time.sleep(0.1)
 
 
 def factory(ROOT, base, PRODUCTION, fake_engine=None, live=None, deadline_seconds=90):
@@ -292,4 +374,4 @@ for raw in sys.stdin:
         return work
     def finish(engine, work):
         return runners[engine].wait(work, timeout=100)
-    return SimpleNamespace(**locals())
+    return Factory(**locals())

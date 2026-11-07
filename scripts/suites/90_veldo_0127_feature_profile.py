@@ -57,76 +57,76 @@ def _v127_feature_profile():
         listing_path = base / 'features-fixture.json'
         listing_path.write_text(json.dumps(recorded))
         try:
-            f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
-            L, X, C = f.L, f.X, f.config_api
-            rich = ['shell', 'clock', 'view_image', 'sub_agents', 'apply_patch']
-            # VELDO-0230: the qualified catalog's models, never typed names: its first Code Mode model, its first
-            # Code Mode model supporting the clock (for the rich grant), and its first direct model.
-            models = json.loads(catalog.read_text())['models']
-            code_model = next(m['slug'] for m in models if m.get('tool_mode') == 'code_mode_only')
-            clock_model = next((m['slug'] for m in models if m.get('tool_mode') == 'code_mode_only'
-                                and 'clock' in (m.get('experimental_supported_tools') or ())), code_model)
-            direct_model = next(m['slug'] for m in models if m.get('tool_mode') is None)
-            cases = [(recorded['stdout'], [], code_model),
-                     (recorded['stdout'], ['shell'], code_model),
-                     (recorded['stdout'], rich, clock_model),
-                     (recorded['stdout'], ['shell', 'view_image', 'sub_agents', 'apply_patch'], direct_model)]
-            for number, (listing, grants, model) in enumerate(cases):
-                listing_path.write_text(json.dumps(dict(recorded, stdout=listing)))
-                # Records, revisions and generated files all come from real writers.
-                f.codex_qualification.write_text(json.dumps(X.qualification(str(f.vendored), catalog=True)))
-                bound = X.bind({'executable': str(f.vendored), 'qualification': str(f.codex_qualification)})
-                d = f.role('codex', 'profile-' + str(number))
-                d.update(skills=[], instructions=[], mcp=[])
-                d['settings']['model'] = model
-                d['native_tools'] = [{'name': n, 'load': 'always'} for n in grants]
-                f.save(d)
-                binding = C.bind(f.writer, f.DOMAIN, f.REPOSITORY, {'role': d['role']})
-                revision = binding['role_revision']
-                capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, revision,
-                                                  {'project': f.src, 'factory': base})
-                receiver = object.__new__(L.Receiver)
-                receiver.config = {'runs': str(base / 'runs')}
-                receiver.binding = dict(bound, revision=revision, capability=capability,
-                                        configured_environment={}, environment={})
-                receiver.login = {'engine': X, 'record': f.accounts.get('acct-x1')}
-                receiver.host, receiver.token, receiver.metering = f.HOST, None, None
-                receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, binding, keystore=f.keystore)
-                events = []
-                receiver.emit = events.append
-                refusal = None
-                try:
-                    argv, _ = receiver._baseline('profile-' + str(number),
-                                                [str(f.vendored)] + list(X.FLAGS), dict(f.inherited), False)
-                except L.DL.Undeliverable as problem:
-                    refusal = problem.code
-                config = Path(receiver.run) / L.RUN_CONFIG
-                text = (config / 'config.toml').read_text()
-                parsed, error = {}, ''
-                try:
-                    parsed = tomllib.loads(text)
-                except tomllib.TOMLDecodeError as problem:
-                    error = str(problem)
-                want = expected(listing, grants)
-                check('profile/parse-values', not error and parsed.get('features') == want,
-                      str((number, error, parsed.get('features'), want)))
-                check('profile/pinned-tools', refusal is None, str((number, refusal)))
-                if refusal is not None:
-                    continue
-                overrides = [argv[i + 1] for i, arg in enumerate(argv) if arg == '-c'
-                             and argv[i + 1].split('=', 1)[0].startswith('features')]
-                check('profile/pinned-tools', len(overrides) == 1 and overrides[0].startswith('features='),
-                      str((number, 'feature override count', len(overrides))))
-                if len(overrides) == 1:
-                    check('profile/pinned-tools', tomllib.loads(overrides[0]).get('features') == want,
-                          'CLI feature values differ from the accepted grants')
-                for read_profile in (False, True):
-                    observation = fixture.capture(wire.BINARY, argv, config, read_profile=read_profile)
-                    bodies = observation['requests']
-                    difference = (L.HANDOFF.codex_run_tool_difference(bodies, receiver.binding['expected']) if bodies
-                                  else 'no request')
-                    check('profile/pinned-tools', observation['exact_profile'] and bool(bodies) and difference is None,
-                          str((number, read_profile, difference, observation['stderr'] if not bodies else '')))
+            with factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault)) as f:
+                L, X, C = f.L, f.X, f.config_api
+                rich = ['shell', 'clock', 'view_image', 'sub_agents', 'apply_patch']
+                # VELDO-0230: the qualified catalog's models, never typed names: its first Code Mode model, its first
+                # Code Mode model supporting the clock (for the rich grant), and its first direct model.
+                models = json.loads(catalog.read_text())['models']
+                code_model = next(m['slug'] for m in models if m.get('tool_mode') == 'code_mode_only')
+                clock_model = next((m['slug'] for m in models if m.get('tool_mode') == 'code_mode_only'
+                                    and 'clock' in (m.get('experimental_supported_tools') or ())), code_model)
+                direct_model = next(m['slug'] for m in models if m.get('tool_mode') is None)
+                cases = [(recorded['stdout'], [], code_model),
+                         (recorded['stdout'], ['shell'], code_model),
+                         (recorded['stdout'], rich, clock_model),
+                         (recorded['stdout'], ['shell', 'view_image', 'sub_agents', 'apply_patch'], direct_model)]
+                for number, (listing, grants, model) in enumerate(cases):
+                    listing_path.write_text(json.dumps(dict(recorded, stdout=listing)))
+                    # Records, revisions and generated files all come from real writers.
+                    f.codex_qualification.write_text(json.dumps(X.qualification(str(f.vendored), catalog=True)))
+                    bound = X.bind({'executable': str(f.vendored), 'qualification': str(f.codex_qualification)})
+                    d = f.role('codex', 'profile-' + str(number))
+                    d.update(skills=[], instructions=[], mcp=[])
+                    d['settings']['model'] = model
+                    d['native_tools'] = [{'name': n, 'load': 'always'} for n in grants]
+                    f.save(d)
+                    binding = C.bind(f.writer, f.DOMAIN, f.REPOSITORY, {'role': d['role']})
+                    revision = binding['role_revision']
+                    capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, revision,
+                                                      {'project': f.src, 'factory': base})
+                    receiver = object.__new__(L.Receiver)
+                    receiver.config = {'runs': str(base / 'runs')}
+                    receiver.binding = dict(bound, revision=revision, capability=capability,
+                                            configured_environment={}, environment={})
+                    receiver.login = {'engine': X, 'record': f.accounts.get('acct-x1')}
+                    receiver.host, receiver.token, receiver.metering = f.HOST, None, None
+                    receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, binding, keystore=f.keystore)
+                    events = []
+                    receiver.emit = events.append
+                    refusal = None
+                    try:
+                        argv, _ = receiver._baseline('profile-' + str(number),
+                                                    [str(f.vendored)] + list(X.FLAGS), dict(f.inherited), False)
+                    except L.DL.Undeliverable as problem:
+                        refusal = problem.code
+                    config = Path(receiver.run) / L.RUN_CONFIG
+                    text = (config / 'config.toml').read_text()
+                    parsed, error = {}, ''
+                    try:
+                        parsed = tomllib.loads(text)
+                    except tomllib.TOMLDecodeError as problem:
+                        error = str(problem)
+                    want = expected(listing, grants)
+                    check('profile/parse-values', not error and parsed.get('features') == want,
+                          str((number, error, parsed.get('features'), want)))
+                    check('profile/pinned-tools', refusal is None, str((number, refusal)))
+                    if refusal is not None:
+                        continue
+                    overrides = [argv[i + 1] for i, arg in enumerate(argv) if arg == '-c'
+                                 and argv[i + 1].split('=', 1)[0].startswith('features')]
+                    check('profile/pinned-tools', len(overrides) == 1 and overrides[0].startswith('features='),
+                          str((number, 'feature override count', len(overrides))))
+                    if len(overrides) == 1:
+                        check('profile/pinned-tools', tomllib.loads(overrides[0]).get('features') == want,
+                              'CLI feature values differ from the accepted grants')
+                    for read_profile in (False, True):
+                        observation = fixture.capture(wire.BINARY, argv, config, read_profile=read_profile)
+                        bodies = observation['requests']
+                        difference = (L.HANDOFF.codex_run_tool_difference(bodies, receiver.binding['expected']) if bodies
+                                      else 'no request')
+                        check('profile/pinned-tools', observation['exact_profile'] and bool(bodies) and difference is None,
+                              str((number, read_profile, difference, observation['stderr'] if not bodies else '')))
         except Exception as error:
             for row in rows:
                 check(row, False, 'raised ' + type(error).__name__ + ': ' + str(error)[:200])

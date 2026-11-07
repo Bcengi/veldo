@@ -54,89 +54,89 @@ def _v127_feature_defaults():
         # VELDO-0230: the qualified catalog's first Code Mode model, never a typed name.
         code_model = next(m['slug'] for m in json.loads(catalog.read_text())['models'] if m.get('tool_mode') == 'code_mode_only')
         try:
-            f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
-            L, X, C = f.L, f.X, f.config_api
-            serial = [0]
-            def launch(grants):
-                serial[0] += 1
-                d = f.role('codex', 'features-' + str(serial[0]))
-                d.update(skills=[], instructions=[], mcp=[])
-                d['settings']['model'] = code_model
-                d['native_tools'] = [{'name': n, 'load': 'always'} for n in grants]
-                f.save(d)
-                binding = C.bind(f.writer, f.DOMAIN, f.REPOSITORY, {'role': d['role']})
-                revision = binding['role_revision']
-                capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, revision,
-                                                  {'project': f.src, 'factory': base})
-                bound = X.bind({'executable': str(f.vendored), 'qualification': str(f.codex_qualification)})
-                receiver = object.__new__(L.Receiver)
-                receiver.config = {'runs': str(base / 'runs')}
-                receiver.binding = dict(bound, revision=revision, capability=capability,
-                                        configured_environment={}, environment={})
-                receiver.login = {'engine': X, 'record': f.accounts.get('acct-x1')}
-                receiver.host, receiver.token, receiver.metering = f.HOST, None, None
-                receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, binding, keystore=f.keystore)
-                events = []
-                receiver.emit = events.append
-                # Absence of argv in the stop case proves no preflight worker ran.
-                args_path = fault.with_suffix('.args.json')
-                args_path.write_text('[]')
-                _, error = attempt(lambda: receiver._baseline('features-' + str(serial[0]),
-                                   [str(f.vendored)] + list(X.FLAGS), dict(f.inherited), False))
-                args = json.loads(args_path.read_text())
-                config = {}
-                def merge(a, b):
-                    for key, value in b.items():
-                        if isinstance(value, dict):
-                            merge(a.setdefault(key, {}), value)
-                        else:
-                            a[key] = value
-                for i, arg in enumerate(args):
-                    if arg == '-c':
-                        merge(config, tomllib.loads(args[i + 1]))
-                tools = next((e['tools'] for e in events if e.get('event') == 'capability_tools'), None)
-                return config.get('features', {}), error, tools, args
+            with factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault)) as f:
+                L, X, C = f.L, f.X, f.config_api
+                serial = [0]
+                def launch(grants):
+                    serial[0] += 1
+                    d = f.role('codex', 'features-' + str(serial[0]))
+                    d.update(skills=[], instructions=[], mcp=[])
+                    d['settings']['model'] = code_model
+                    d['native_tools'] = [{'name': n, 'load': 'always'} for n in grants]
+                    f.save(d)
+                    binding = C.bind(f.writer, f.DOMAIN, f.REPOSITORY, {'role': d['role']})
+                    revision = binding['role_revision']
+                    capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, revision,
+                                                      {'project': f.src, 'factory': base})
+                    bound = X.bind({'executable': str(f.vendored), 'qualification': str(f.codex_qualification)})
+                    receiver = object.__new__(L.Receiver)
+                    receiver.config = {'runs': str(base / 'runs')}
+                    receiver.binding = dict(bound, revision=revision, capability=capability,
+                                            configured_environment={}, environment={})
+                    receiver.login = {'engine': X, 'record': f.accounts.get('acct-x1')}
+                    receiver.host, receiver.token, receiver.metering = f.HOST, None, None
+                    receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, binding, keystore=f.keystore)
+                    events = []
+                    receiver.emit = events.append
+                    # Absence of argv in the stop case proves no preflight worker ran.
+                    args_path = fault.with_suffix('.args.json')
+                    args_path.write_text('[]')
+                    _, error = attempt(lambda: receiver._baseline('features-' + str(serial[0]),
+                                       [str(f.vendored)] + list(X.FLAGS), dict(f.inherited), False))
+                    args = json.loads(args_path.read_text())
+                    config = {}
+                    def merge(a, b):
+                        for key, value in b.items():
+                            if isinstance(value, dict):
+                                merge(a.setdefault(key, {}), value)
+                            else:
+                                a[key] = value
+                    for i, arg in enumerate(args):
+                        if arg == '-c':
+                            merge(config, tomllib.loads(args[i + 1]))
+                    tools = next((e['tools'] for e in events if e.get('event') == 'capability_tools'), None)
+                    return config.get('features', {}), error, tools, args
 
-            flags, error, tools, _ = launch([])
-            for feature in added:
-                check('defaults/' + feature, feature in defaults and error is None
-                      and flags.get(feature) is False, str((error, flags.get(feature))))
-            for grant, features in mapped.items():
-                flags, error, tools, _ = launch([grant])
-                enabled = set(features)
-                controlled = set(added) | {'shell_tool', 'view_image', 'multi_agent', 'goals'}
-                exact = all(flags.get(n) is (n in enabled) for n in controlled)
-                delivered = set(X.NATIVE_TOOL_MAPPING.get(grant, [grant])) <= set(tools or [])
-                check('mapped/' + grant, error is None and exact and delivered,
-                      str((error, exact, delivered)))
-            # The real qualification writer reads an installed binary's feature
-            # output; only that external output gains the future feature here.
-            # VELDO-0230 AC3: a newer binary never blocks. The feature the classification does not know is
-            # named in the qualification record and is off at launch, which proceeds with the tools it had.
-            _, _, before, _ = launch([])
-            already = L.HANDOFF.codex_unclassified(fixture['stdout'])
-            fixture['stdout'] += 'future_role_tool stable true\n'
-            listing.write_text(json.dumps(fixture))
-            requalified = X.qualification(str(f.vendored), catalog=True)
-            f.codex_qualification.write_text(json.dumps(requalified))
-            flags, error, tools, args = launch([])
-            check('defaults/unknown', error is None and flags.get('future_role_tool') is False
-                  and requalified.get('unclassified_default_on') == sorted(set(already) | {'future_role_tool'})
-                  and tools is not None and set(tools) == set(before or []) and bool(args),
-                  str((error, flags.get('future_role_tool'), requalified.get('unclassified_default_on'), tools)))
-            # VELDO-0230 AC3 (Telegram 38878): a new feature the record's evaluation grants stays at its default at
-            # launch (not written off), and the launch still proceeds with the tools it had.
-            installed = f.mods / 'runtime' / 'codex-qualification.json'
-            original = installed.read_bytes()
-            try:
-                installed.write_text(json.dumps(dict(json.loads(original), new_capabilities=[
-                    {'kind': 'features', 'name': 'future_role_tool', 'decision': 'granted', 'reason': 'fixture'}])))
+                flags, error, tools, _ = launch([])
+                for feature in added:
+                    check('defaults/' + feature, feature in defaults and error is None
+                          and flags.get(feature) is False, str((error, flags.get(feature))))
+                for grant, features in mapped.items():
+                    flags, error, tools, _ = launch([grant])
+                    enabled = set(features)
+                    controlled = set(added) | {'shell_tool', 'view_image', 'multi_agent', 'goals'}
+                    exact = all(flags.get(n) is (n in enabled) for n in controlled)
+                    delivered = set(X.NATIVE_TOOL_MAPPING.get(grant, [grant])) <= set(tools or [])
+                    check('mapped/' + grant, error is None and exact and delivered,
+                          str((error, exact, delivered)))
+                # The real qualification writer reads an installed binary's feature
+                # output; only that external output gains the future feature here.
+                # VELDO-0230 AC3: a newer binary never blocks. The feature the classification does not know is
+                # named in the qualification record and is off at launch, which proceeds with the tools it had.
+                _, _, before, _ = launch([])
+                already = L.HANDOFF.codex_unclassified(fixture['stdout'])
+                fixture['stdout'] += 'future_role_tool stable true\n'
+                listing.write_text(json.dumps(fixture))
+                requalified = X.qualification(str(f.vendored), catalog=True)
+                f.codex_qualification.write_text(json.dumps(requalified))
                 flags, error, tools, args = launch([])
-            finally:
-                installed.write_bytes(original)
-            check('defaults/unknown', error is None and 'future_role_tool' not in flags
-                  and tools is not None and set(tools) == set(before or []) and bool(args),
-                  str(('granted', error, flags.get('future_role_tool'), tools)))
+                check('defaults/unknown', error is None and flags.get('future_role_tool') is False
+                      and requalified.get('unclassified_default_on') == sorted(set(already) | {'future_role_tool'})
+                      and tools is not None and set(tools) == set(before or []) and bool(args),
+                      str((error, flags.get('future_role_tool'), requalified.get('unclassified_default_on'), tools)))
+                # VELDO-0230 AC3 (Telegram 38878): a new feature the record's evaluation grants stays at its default at
+                # launch (not written off), and the launch still proceeds with the tools it had.
+                installed = f.mods / 'runtime' / 'codex-qualification.json'
+                original = installed.read_bytes()
+                try:
+                    installed.write_text(json.dumps(dict(json.loads(original), new_capabilities=[
+                        {'kind': 'features', 'name': 'future_role_tool', 'decision': 'granted', 'reason': 'fixture'}])))
+                    flags, error, tools, args = launch([])
+                finally:
+                    installed.write_bytes(original)
+                check('defaults/unknown', error is None and 'future_role_tool' not in flags
+                      and tools is not None and set(tools) == set(before or []) and bool(args),
+                      str(('granted', error, flags.get('future_role_tool'), tools)))
         except Exception as error:
             for row in rows:
                 check(row, False, 'raised ' + type(error).__name__ + ': ' + str(error)[:160])

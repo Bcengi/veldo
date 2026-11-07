@@ -59,6 +59,8 @@ def _v127_suite():
     markers = base / 'markers'
     markers.mkdir()
     f = None
+    # VELDO-0274: the factory owns its slice; leaving this stack stops it, whatever the run did.
+    owned = __import__('contextlib').ExitStack()
     fake_capture = ([], [])
     fake = '''#!PYTHON -B
 import json, os, sys, subprocess, tomllib
@@ -274,7 +276,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
             fixture = load('v127_factory', TREE / 'proof/VELDO-0127/factory.py')
             # A fake run ends in a second; a run held past this deadline (a prompt never released) is stopped
             # by it and reds its row.
-            f = fixture.factory(ROOT, base, PRODUCTION, fake_engine, deadline_seconds=30)
+            f = owned.enter_context(fixture.factory(ROOT, base, PRODUCTION, fake_engine, deadline_seconds=30))
             L = f.L
             C = f.config_api
             def payload(engine):
@@ -817,8 +819,11 @@ for step in (packet.get('payload') or {}).get('script',[]):
         if f is not None:
             fake_capture = conform_formats.conform_fake(locals(), '0127_agent_configuration')
             for connection in f.connections: connection.close()
-            __import__('subprocess').run(['systemctl', '-'*2+'user', 'stop', f.slice_name],
-                                        env=f.inherited, capture_output=True, timeout=20)
+        try:
+            owned.close()
+        except Exception as error:
+            for row in ROWS:
+                check(row, str(error), False)
         shutil.rmtree(base)
     for row, observed in rows.items():
         for label, ok in observed:
