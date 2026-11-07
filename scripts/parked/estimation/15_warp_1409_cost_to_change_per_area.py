@@ -1257,8 +1257,8 @@ expect("WARP-1409 AC6: NO GATE STAGE CONSUMES THIS MODULE'S OUTPUT. The string c
        "implementation acquiring it, reds this",
        "cost_to_change" not in "".join(_W1409_GATE_TEXTS.values())
        and "scripts/selftest.py" in _W1409_STAGES
-       and sorted(p.name for p in (ROOT / "scripts/suites").glob("*.py")
-                  if "cost_to_change" in p.read_text())
+       and sorted(p.name for d in ("scripts/suites", "scripts/parked/estimation")  # parked, VELDO-0278
+                  for p in (ROOT / d).glob("*.py") if "cost_to_change" in p.read_text())
        == ["15_warp_1409_cost_to_change_per_area.py"])
 
 # -----------------------------------------------------------------------------------

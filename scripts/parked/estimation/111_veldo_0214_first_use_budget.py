@@ -1,6 +1,6 @@
 """VELDO-0214: the first-use check's budget per nested run is measured from the unit stage's leg.
 
-Run: python3 scripts/selftest.py --suite 111_veldo_0214_first_use_budget
+Run: python3 scripts/selftest.py --parked estimation (parked by VELDO-0278)
 
 Only shared ROOT and expect are consumed. The authority's scripts/gate_legs.py runs a fixture list's
 unit and integration stages over a scratch root with fake stage commands; its confined runner is
@@ -37,7 +37,7 @@ def _v214_suite():
             sys.path[:] = saved
 
     GL = load('gate_legs_0214', ROOT / "scripts" / "gate_legs.py")
-    CF = load('check_first_use_0214', ROOT / "scripts" / "check_first_use.py")
+    CF = load('check_first_use_0214', ROOT / "scripts" / "parked" / "estimation" / "check_first_use.py")
 
     with tempfile.TemporaryDirectory(prefix='veldo-0214-') as top:
         top = Path(top)

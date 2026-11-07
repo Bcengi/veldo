@@ -147,7 +147,7 @@ CHECK_format="na:no formatter adopted yet"
 CHECK_lint="required:bash scripts/check_lint.sh"
 CHECK_types="na:untyped codebase or no checker adopted"
 CHECK_unit="required:python3 scripts/selftest.py"
-CHECK_integration="required:python3 scripts/check_first_use.py"
+CHECK_integration="na:estimation layer parked until a spend source exists, VELDO-0278"
 CHECK_contract="na:no external API contracts"
 CHECK_journeys="na:no user interface in this repository"
 CHECK_ui_states="na:no user interface in this repository"
@@ -180,18 +180,10 @@ CHECK_mutation="required:authority mutation stage"
 # negative self-test, docs enforces the standing hygiene rules, generated
 # keeps the index derived, extra keeps instances synced to the template canon.
 #
-# INTEGRATION is the one stage that drives this repository's own writers end to
-# end instead of reading artifacts: in a THROWAWAY COPY it uses a sanctioned
-# writer the way the layer it belongs to exists to be used, runs the whole unit
-# suite over the result, and requires that nothing which passed before now
-# fails. It exists because five assertions independently wrote today's EMPTINESS
-# down as a required invariant, so the suite was green only while nobody used
-# the feature and reddened for the first person who did. It does NOT make
-# recording anything a condition of the gate; it makes a suite that BREAKS on
-# first real use a condition. Its limits are declared in the script's docstring,
-# it fails LOUD rather than by default when it cannot answer, and it costs one
-# nested suite run on the green path (the second run is paid only when there is
-# a failure to attribute).
+# INTEGRATION is na (VELDO-0278). It drove a throwaway copy through .veldo/spend.py, the
+# estimation layer's recorder, and ran the whole suite again; with nothing recording spend it
+# guarded a first use that cannot happen. Its script is parked with the estimation suites in
+# scripts/parked/estimation/ (`python3 scripts/selftest.py --parked estimation` runs them).
 # -----------------------------------------------------------------------------
 
 ORDER="format lint types unit integration contract journeys ui_states accessibility \
@@ -261,6 +253,7 @@ for name in $ORDER; do
       fi
       ;;
     na:*)
+      echo "== ${name}: na (${decl#na:})"
       NA=$((NA+1))
       ;;
     waived:*)

@@ -40,32 +40,6 @@
         "peak_cgroup_memory_bytes": 2011017216
       }
     },
-    "integration.confined": {
-      "depends_on": [],
-      "writes_candidate": false,
-      "manager": "none",
-      "ports": [],
-      "host_lock": "shared",
-      "estimate": {
-        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
-        "wall_seconds": 1795.0,
-        "cpu_seconds": 1799.225,
-        "peak_cgroup_memory_bytes": 3101982720
-      }
-    },
-    "integration.unconfined": {
-      "depends_on": [],
-      "writes_candidate": false,
-      "manager": "exclusive",
-      "ports": [],
-      "host_lock": "shared",
-      "estimate": {
-        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
-        "wall_seconds": 833.8,
-        "cpu_seconds": 634.106,
-        "peak_cgroup_memory_bytes": 2433224704
-      }
-    },
     "security": {
       "depends_on": [],
       "writes_candidate": false,

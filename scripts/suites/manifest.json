@@ -80,78 +80,6 @@
    "requires_note": "A fragment written after the cut has NO region range in proof/WARP-0712/order-dependence.json, so its prerequisite closure cannot be derived and it must DECLARE one here; a fragment with neither is refused as CLOSURE_UNAVAILABLE rather than handed an empty closure. This one declares ITSELF ALONE, and that is MEASURED, not assumed: every name it uses (expect, ROOT, V, tmpfile, GOOD_SPEC, json, os, re, subprocess, sys, tempfile, importlib, Path) is bound by shared.py, which always runs, and `python3 scripts/selftest.py --suite 14_warp_0717_subset_runner` reproduces its full-run labels exactly."
   },
   {
-   "name": "15_warp_1402_estimate_record",
-   "file": "15_warp_1402_estimate_record.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "15_warp_1402_estimate_record"
-   ],
-   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived. It declares ITSELF ALONE, and that is MEASURED, not assumed: every name it uses beyond its own (expect, ROOT, V, tmpfile, subprocess, sys, tempfile, importlib, Path) is bound by shared.py, which always runs, and it imports re and shutil under its own prefixed names because shared.py binds neither; `python3 scripts/selftest.py --suite 15_warp_1402_estimate_record` reproduces its full-run labels exactly."
-  },
-  {
-   "name": "15_warp_1404_historical_analogy",
-   "file": "15_warp_1404_historical_analogy.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "15_warp_1404_historical_analogy"
-   ],
-   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, subprocess, sys, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs, so the set difference against shared.py's bindings is empty; its one extra import (shutil) is local and prefixed. Driven: `python3 scripts/selftest.py --suite 15_warp_1404_historical_analogy` runs this fragment standalone, and its pass count is exactly the contribution it makes to a full run, measured as the delta of the aggregate line with and without it. THE FIGURES ARE DELIBERATELY NOT REPEATED HERE. They were, and every one had gone stale: this note claimed a count while the fragment's own docstring claimed another, which is one fact recorded twice and diverging. A count in prose has no reader that can refresh it, so the command is the record and the number is whatever the command says today."
-  },
-  {
-   "name": "15_warp_1405_reconciliation",
-   "file": "15_warp_1405_reconciliation.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "15_warp_1405_reconciliation"
-   ],
-   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, subprocess, sys, tempfile, tmpfile - and every one is bound by shared.py, which always runs; it imports re and shutil under its own prefixed names because shared.py binds neither. It costs about 2.8s, of which 2.7s is one subprocess rendering the report over this repository's real corpus. Driven: `python3 scripts/selftest.py --suite 15_warp_1405_reconciliation` runs this fragment standalone, and its pass count is exactly the contribution it makes to a full run, measured as the delta of the aggregate line with and without it. THE FIGURES ARE DELIBERATELY NOT REPEATED HERE. They were, and every one had gone stale: this note claimed a count while the fragment's own docstring claimed another, which is one fact recorded twice and diverging. A count in prose has no reader that can refresh it, so the command is the record and the number is whatever the command says today."
-  },
-  {
-   "name": "15_warp_1406_normalization",
-   "file": "15_warp_1406_normalization.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "15_warp_1406_normalization"
-   ],
-   "requires_note": "Declares ITSELF ALONE, and that is MEASURED rather than assumed. Its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs; the set difference against shared.py's own bindings is empty. Driven: `python3 scripts/selftest.py --suite 15_warp_1406_normalization` runs this fragment standalone, and its pass count is exactly the contribution it makes to a full run, measured as the delta of the aggregate line with and without it. THE FIGURES ARE DELIBERATELY NOT REPEATED HERE. They were, and every one had gone stale: this note claimed a count while the fragment's own docstring claimed another, which is one fact recorded twice and diverging. A count in prose has no reader that can refresh it, so the command is the record and the number is whatever the command says today."
-  },
-  {
-   "name": "15_warp_1407_judgment_load",
-   "file": "15_warp_1407_judgment_load.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "15_warp_1407_judgment_load"
-   ],
-   "requires_note": "Written after the cut, so it has no region range to derive a closure from and DECLARES one here rather than being handed an empty one. It declares ITSELF ALONE, and that is MEASURED: every name it uses from the shared namespace (expect, ROOT, V, importlib, json, tempfile, Path) is bound by shared.py, which always runs, its own two imports are local and prefixed, and `python3 scripts/selftest.py --suite 15_warp_1407_judgment_load` reproduces its full-run labels exactly."
-  },
-  {
-   "name": "15_warp_1408_budget_rollup",
-   "file": "15_warp_1408_budget_rollup.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "15_warp_1408_budget_rollup"
-   ],
-   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, subprocess, sys, tempfile - and every one is bound by shared.py, which always runs, so the set difference against shared.py's bindings is empty; its own two imports (re, shutil) are prefixed and deleted at the end because shared.py binds neither. Driven: `python3 scripts/selftest.py --suite 15_warp_1408_budget_rollup` runs this fragment standalone, and its pass count is exactly the contribution it makes to a full run, measured as the delta of the aggregate line with and without it. THE FIGURES ARE DELIBERATELY NOT REPEATED HERE. They were, and every one had gone stale: this note claimed a count while the fragment's own docstring claimed another, which is one fact recorded twice and diverging. A count in prose has no reader that can refresh it, so the command is the record and the number is whatever the command says today."
-  },
-  {
-   "name": "15_warp_1409_cost_to_change_per_area",
-   "file": "15_warp_1409_cost_to_change_per_area.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "15_warp_1409_cost_to_change_per_area"
-   ],
-   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than inheriting a measured one, and the declaration is ITSELF ALONE. MEASURED, not assumed: every name it uses (expect, ROOT, V, tmpfile, json, tempfile, importlib, Path) is bound by shared.py, which always runs, and `python3 scripts/selftest.py --suite 15_warp_1409_cost_to_change_per_area` reproduces its full-run labels exactly."
-  },
-  {
-   "name": "16_warp_1403_sizing_pass",
-   "file": "16_warp_1403_sizing_pass.py",
-   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
-   "requires": [
-    "16_warp_1403_sizing_pass"
-   ],
-   "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, subprocess, sys, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs, while its own three imports (hashlib, re, shutil) are local, prefixed and deleted at the end. Driven: `python3 scripts/selftest.py --suite 16_warp_1403_sizing_pass` runs this fragment standalone, and its pass count is exactly the contribution it makes to a full run, measured as the delta of the aggregate line with and without it. THE FIGURES ARE DELIBERATELY NOT REPEATED HERE. They were, and every one had gone stale: this note claimed a count while the fragment's own docstring claimed another, which is one fact recorded twice and diverging. A count in prose has no reader that can refresh it, so the command is the record and the number is whatever the command says today."
-  },
-  {
    "name": "17_veldo_0001_falsification_declared",
    "file": "17_veldo_0001_falsification_declared.py",
    "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
@@ -1508,15 +1436,6 @@
    }
   },
   {
-   "name": "111_veldo_0214_first_use_budget",
-   "file": "111_veldo_0214_first_use_budget.py",
-   "requires": [
-    "111_veldo_0214_first_use_budget"
-   ],
-   "regions": "The first-use check budget per nested run, measured from the unit stage leg the authority timed.",
-   "requires_note": "Only ROOT and expect. A fixture list and fake stage commands through the real gate_legs.py with its confined runner replaced by the plain one; scratch leg-time stores."
-  },
-  {
    "name": "112_veldo_0215_case_deadlines",
    "file": "112_veldo_0215_case_deadlines.py",
    "requires": [
@@ -1765,6 +1684,15 @@
    ],
    "regions": "A project's landing destination (VELDO-0235): a record without the field reading as land_and_push and landing to the remote, never rewritten; the owner's signed set_landing_destination accepted and recorded with the old and new value and his command id, any other value, another key's signature, another principal and an unsigned command refused writing nothing; land_locally through the land station moving the caller's local main to the candidate by compare-and-swap with the receipt and spec.shipped, the bare origin byte for byte unchanged and no push, fetch or ls-remote logged; a local main moved after the watermark refused as trunk_moved, kept, and re-landed; the owner's grant brief naming the destination in words; a destination changed after the grant refused as stale_subject:landing/destination, asked again and landed after the fresh grant bound to it; land_and_push, set or absent, with today's effect contract, executor push, remote re-read and receipt.",
    "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
+  },
+  {
+   "name": "129_veldo_0278_parked_estimation",
+   "file": "129_veldo_0278_parked_estimation.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "129_veldo_0278_parked_estimation"
+   ],
+   "requires_note": "Only ROOT, expect and launcher_fds from shared.py, which always runs; every other name is imported inside its one function. It runs the parked estimation set as a subprocess and a fixture gate over a stub authority."
   }
  ],
  "resource_capacities": {

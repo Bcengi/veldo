@@ -4240,10 +4240,8 @@ def cases():
         'SCHEMA_EVENT_TYPE = "spec.shipped"  # defect: a spend record is written as completion\n', spend_rows)
     add(51, 'vocabulary-forgets-spend-recorded', '66_veldo_0051_events.py', vocabulary,
         '    "spend.recorded": SPEND_RECORDER,\n', '', spend_rows)
-    events51('judgment-spend-recorded-unkinded', '    "spend.recorded": "ship_bulk",\n', '', 'spend-recorded',
-             module='judgment_load.py')
-    events51('judgment-historical-spend-unkinded', '    "spec.shipped": "ship_bulk",\n', '', 'spend-recorded',
-             module='judgment_load.py')
+    # VELDO-0278: the two judgment_load.py cases left with the estimation layer; the spend.py and
+    # vocabulary cases above stay.
     # VELDO-0136: each criterion's declared falsifier, and at least one different defect per named row.
     def hints(name, module, old, new, row, also=()):
         add(136, name, '68_veldo_0136_hints.py', module, old, new, [row], also=also)
@@ -11536,53 +11534,7 @@ def cases():
         "{'text': 'Plan the socket phase.'}", ['service/socket-path'])
     result[-1]['dir'] = 'scripts/suites'
 
-    # VELDO-0214: the first-use check's budget per nested run is measured, never a fixed constant.
-    suite214 = '111_veldo_0214_first_use_budget.py'
-    add(214, 'budget214-fixed-1800-restored', suite214, 'check_first_use.py',
-        '    budget = min(max(RUN_TIMEOUT_S, derived), BUDGET_CEILING_S)\n',
-        '    budget = RUN_TIMEOUT_S\n',
-        ['first-use-budget/measured-budget-used', 'first-use-budget/ceiling-caps-the-budget'])
-    result[-1]['dir'] = 'scripts'
-    add(214, 'budget214-caller-value-kept', suite214, 'gate_legs.py',
-        '    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}\n',
-        '    env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST)}\n',
-        ['first-use-budget/candidate-set-value-ignored'])
-    result[-1]['dir'] = 'scripts'
-    add(214, 'budget214-failed-leg-recorded', suite214, 'gate_legs.py',
-        '        if stage == MEASURED_STAGE and code == 0:\n',
-        '        if stage == MEASURED_STAGE:\n', ['first-use-budget/reused-stage-uses-last-fresh'])
-    result[-1]['dir'] = 'scripts'
-    add(214, 'budget214-stale-docstring', suite214, 'check_first_use.py',
-        'One nested full selftest of the leg it runs in,\n',
-        'One nested full selftest, measured at about\n90 seconds, of the leg it runs in,\n',
-        ['first-use-budget/by-hand-uses-1800-and-says-so'])
-    result[-1]['dir'] = 'scripts'
-    # Round 2 (review F1): main() drops the budget at both nested call sites, so every nested run
-    # is back on the 1800s default while the budget line still prints the measured number.
-    add(214, 'budget214-main-drops-the-budget', suite214, 'check_first_use.py',
-        '            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], budget)\n',
-        '            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"])\n',
-        ['first-use-budget/measured-budget-used', 'first-use-budget/ceiling-caps-the-budget'],
-        also=[('                baseline = _run_suite(pristine, "baseline", budget)[2]\n',
-               '                baseline = _run_suite(pristine, "baseline")[2]\n')])
-    result[-1]['dir'] = 'scripts'
-    # Round 3 (review F6): the owner's store refuses an authority under the system temporary
-    # directory again, so the lander's installation, laid down there, never hands its unit leg on.
-    add(214, 'budget214-temporary-authority-refused', suite214, 'gate_legs.py',
-        "        return 'the list %s is not this authority\\'s own' % path\n    return None\n",
-        "        return 'the list %s is not this authority\\'s own' % path\n"
-        "    temporary = Path(tempfile.gettempdir()).resolve()\n"
-        "    if authority == temporary or temporary in authority.parents:\n"
-        "        return 'this authority %s is a temporary tree under %s' % (authority, temporary)\n"
-        "    return None\n",
-        ['first-use-budget/installed-authority-under-temp-is-measured'])
-    result[-1]['dir'] = 'scripts'
-    # Round 3 (review F7): prune_times no longer spares the file it is told to keep.
-    add(214, 'budget214-keep-not-spared', suite214, 'gate_legs.py',
-        "        if entry.name == Path(keep).name or not (TIMES_NAME.match(entry.name)\n",
-        "        if not (TIMES_NAME.match(entry.name)\n",
-        ['first-use-budget/leg-time-store-pruned'])
-    result[-1]['dir'] = 'scripts'
+    # VELDO-0278: the seven VELDO-0214 cases left with suite 111, parked with the estimation set.
 
     # VELDO-0215: measured per-case deadlines, authoritative timing and honest expiry.
     add(215, 'deadline215-fixed-worker', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
