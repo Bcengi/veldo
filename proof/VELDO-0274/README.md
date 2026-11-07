@@ -1,12 +1,10 @@
 # VELDO-0274 proof: the 0127 factory removes every slice it creates
 
-Status: run by the lead under the gate lock on 2026-11-07 at 00c77d58
-(proof/VELDO-0274/lead-run-2026-11-07.md). All suites were green, and five of the six falsifier cases
-behaved as expected. exit-skips-stop also turned slices/sweep-dead red, so its targets now include that row
-(see Falsifiers). Two runs are still owed: that case again with the corrected targets, and
-`selftest.py --suite 129_veldo_0274_factory_slices` now that requires.json has a closure for 129. The second
-session waited 20 minutes for the lock (09:52 to 10:12Z) and never got it. Both runs are in
-proof/VELDO-0274/pending_runs.sh and neither has been observed.
+Status: runs at the current head are recorded in lead-run-2026-11-07.md: the lead's run at 00c77d58 (suites
+86, 88, 89, 90 and 129 green, five of six falsifier cases as expected), then the lead's job 12 at a44aaf1a
+(suite 129 via --suite 32 passed, 0 failed; exit-skips-stop with its three targets as_expected true). The
+independent check at a44aaf1a reran baseline, baseline-88, no-signal-handler, sweep-ignores-liveness and
+defaults-without-context-manager, all as expected. Fix round 3 (this round) is under "Fix round 3" below.
 
 ## What was built, per AC
 
@@ -26,8 +24,13 @@ only). A handler stops the slice, resets the signal to SIG_DFL and re-sends it t
 (os.kill(pid, 0) raising ProcessLookupError) and prints one line naming it. The slice of a live process,
 or of the current one, is never touched.
 
-AC3. New suite scripts/suites/129_veldo_0274_factory_slices.py. It is the last suite in the manifest. Its
-`slices/end-of-run` row requires that no veldo0127-<this process's pid>.slice is listed.
+AC3. New suite scripts/suites/129_veldo_0274_factory_slices.py. It is the last suite in the manifest and
+is listed whole in scripts/gate_unconfined.json, so in the gate it runs in the unconfined leg (the leg with a
+user manager), in the same selftest process as suite 86 and after it (selftest runs a leg's suites in
+manifest order in one process). Its `slices/end-of-run` row requires that no veldo0127-<pid>.slice whose pid
+belongs to this run is loaded: this process, a live descendant of it, or a gone process whose slice became
+active (ActiveEnterTimestampMonotonic) after this process started. A slice of a live process outside this
+process's tree is another run's and is never judged.
 
 Unit rows (suite 129):
 - `slices/return`: a child process starts the factory and launches a fake engine as a transient service
@@ -41,7 +44,8 @@ Unit rows (suite 129):
 Each child row also requires that the slice was loaded and the engine was active during the body, so a
 row cannot pass vacuously. When no manager answers, the five child rows stand down with a printed line.
 
-Manifest: entry for 129 (resources systemd_user_manager 1). Suites 88, 89 and 90 also declare
+Manifest: entry for 129 (resources systemd_user_manager exclusive: the entry sweep, and its mutation that
+ignores liveness, read every veldo0127 slice loaded there). Suites 88, 89 and 90 also declare
 systemd_user_manager 1, because entering the factory now starts a slice.
 
 ## Falsifiers (driver: proof/VELDO-0274/falsify.py)
@@ -63,19 +67,28 @@ each one occurs exactly once.
   then 129. Expected red: slices/end-of-run.
 - baseline and baseline-88: no mutation. Expected all green.
 
-Red then green: observed by the lead (lead-run-2026-11-07.md). exit-skips-stop with the three targets is
-not yet observed; see pending_runs.sh.
+Red then green: observed by the lead (lead-run-2026-11-07.md), including exit-skips-stop with the three
+targets at a44aaf1a.
 
-## Open: needs a change outside the footprint (not made)
+Registered in scripts/check_teeth_mutations.py (finding 274), so the mutation stage runs them against suite
+129, which loads the factory by `ROOT / "proof/VELDO-0127" / "factory.py"`, the anchor the stage's worker
+replaces with the mutant copy, and passes that path to its children: slices274-exit-skips-stop (AC1,
+targets slices/return, slices/raise, slices/sweep-dead), slices274-no-signal-handler (AC2.1, slices/sigterm),
+slices274-sweep-ignores-liveness (AC2.2, slices/sweep-live). Each anchor occurs exactly once in factory.py.
+AC3's mutation is not registered there: it mutates suite 88 and is observed by suite 129, and the stage's
+worker (scripts/mutation_observer.py, protected and outside this footprint) runs one suite per case. It
+stays in falsify.py.
+
+## Open items
 
 1. Resolved: requires.json joined the footprint at 0dfa2188. It was regenerated with
    `python3 scripts/run_scope.py --emit-requires`, and the only change is the new entry for 129 (its closure
    is itself, from manifest.json). No other entry changed.
-2. "Registered mutation" means cases in scripts/check_teeth_mutations.py, which is outside the footprint.
-   The four cases exist only in falsify.py.
-3. scripts/gate_unconfined.json (protected) does not list 129. In the gate's confined leg there is no
-   user manager, so the slice rows stand down. They only assert if 129 is listed whole for the unconfined
-   leg, where it runs after 86.
+2. Resolved: scripts/check_teeth_mutations.py is in the footprint since 0dfa2188; the AC1 and AC2 cases
+   are registered there. AC3's case needs scripts/mutation_observer.py (protected) to run suite 88 before
+   129 in one worker; not changed.
+3. Resolved: scripts/gate_unconfined.json joined the footprint and protected_paths at a8040f9b and lists
+   129 whole (a607b443).
 4. The spec's premise does not hold. Suites 88, 89 and 90 never launched into the slice: they call
    Receiver._baseline with no containment profile. Only suite 86 created the slice. The AC3 mutation
    therefore holds because entering the factory now starts the slice.
@@ -85,4 +98,22 @@ not yet observed; see pending_runs.sh.
 
 ## Inherited reds
 
-None recorded: no suite was run.
+None: every recorded run of suites 86, 88, 89, 90 and 129 was green.
+
+## Fix round 3 (2026-11-07)
+
+Commits: a607b443 (end-of-run row judges every slice of this run; 129 joins the unconfined leg), 7d2fbcd0
+(AC1 and AC2 mutations registered; 129 loads the factory by the worker's anchor), f4f281f6 (AC3 mutation's
+comment; pending_runs.sh flock -w).
+
+Runs of this round: pending. The gate lock was not free from 11:56Z to 12:16Z (flock -w 1200), so no suite,
+falsifier or mutation case ran in this round. Every remaining run is in proof/VELDO-0274/pending_runs.sh
+(no flock and no systemd-run inside; the lead runs it inside the lock; one line per step to
+proof/VELDO-0274/pending-summary.txt, logs under /tmp/v274-pending). `bash -n` on it passed. Owed:
+1. `python3 scripts/selftest.py --suite 129_veldo_0274_factory_slices` (the new end-of-run row and the
+   factory loaded by the worker's anchor).
+2. `python3 proof/VELDO-0274/falsify.py baseline exit-skips-stop defaults-without-context-manager`
+   (AC3's falsifier against the new end-of-run row).
+3. `python3 scripts/check_teeth_mutations.py --finding 274` (the three registered cases: baseline green,
+   mutant red on its targets).
+Not runnable outside the gate: the unconfined leg itself (its variables are set only by scripts/gate_legs.py).
