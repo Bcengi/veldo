@@ -658,6 +658,79 @@ def _v268_suite():
         return ok, 'alias p in the repository, cwd outside it: %r; cd then git status exit %d' % (
             seen, builtin.returncode)
 
+    # ------------------------- fix round 5: pushes that set an upstream; alias lookups that fail
+    def row_set_upstream(under):
+        """A working-branch push that sets an upstream (-u, the long option, -u origin HEAD, a plain
+        push with push.autoSetupRemote configured or given with -c) passes on a red stamp and lands; the
+        same -u to main still meets the gate."""
+        work, bare, head = fixture(under)
+        gcfg = work.parent / 'global.cfg'
+        gcfg.write_text('[push]\n\tautoSetupRemote = true\n')
+        seen = []
+        for command, branch, target, extra in (
+                ('git push -u origin agent/claude/x', None, 'x', {}),
+                ('git push --set-upstream origin agent/claude/x:refs/heads/agent/claude/s', None, 's', {}),
+                ('git push -u origin HEAD', 'agent/claude/h', 'h', {}),
+                ('git push', 'agent/claude/p', 'p', {'GIT_CONFIG_GLOBAL': str(gcfg)}),
+                ('git -c push.autoSetupRemote=true push', 'agent/claude/c', 'c', {})):
+            if branch:
+                git(work, 'checkout', '-q', '-b', branch)
+            g, ran = through_tool(work, command, **extra)
+            landed = ran is not None and ran.returncode == 0 and has(bare, 'refs/heads/agent/claude/' + target)
+            seen.append((command, g.returncode, landed, 'unresolved' in g.stderr))
+        git(work, 'checkout', '-q', 'main')
+        main = guard(work, 'git push -u origin main')
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        ok = (all(rc == 0 and landed and not unres for _, rc, landed, unres in seen)
+              and main.returncode == 2 and checks_text(main.stderr) == gate_text(head)
+              and 'protected by' in main.stderr and not moved)
+        return ok, 'pushes setting an upstream: %r; -u to main exit %d; main moved %s' % (
+            seen, main.returncode, moved)
+
+    def row_alias_unreadable(under):
+        """An alias lookup that cannot run or read the configuration, or a -C value the shell expands,
+        makes the subcommand unresolved, never "no alias": each refuses on the gate text; builtins with
+        the same -C value pass."""
+        work, bare, head = fixture(under)
+        git(work, 'config', 'alias.pm', 'push origin main')
+        git(work, 'config', 'alias.p', 'push')
+        gcfg = work.parent / 'global.cfg'
+        gcfg.write_text('[alias]\n\tgp = push origin main\n')
+        other = work.parent / 'elsewhere'
+        other.mkdir()
+        (other / '$D').mkdir()  # the literal -C value exists where the guard runs, and has no alias
+        missing = work.parent / 'missing'
+        seen = []
+        for command, cwd, extra in (
+                ('git -C "$PWD" pm', work, {}),
+                ('D=%s; git -C $D p origin main' % work, other, {}),
+                ('for d in %s; do git -C $d p origin main; done' % work, other, {}),
+                ('git -C "$PWD" gp', work, {'GIT_CONFIG_GLOBAL': str(gcfg)}),
+                ('git -C %s pm' % missing, work, {}),
+                ('true; git -C %s pm' % missing, work, {})):
+            g = guard(work, command, VELDO_0268_CWD=str(cwd), **extra)
+            seen.append((command[-36:], g.returncode, checks_text(g.stderr) == gate_text(head)))
+        builtins = [guard(work, c).returncode for c in ('git -C "$PWD" status', 'git -C "$PWD" log -1')]
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        ok = all(rc == 2 and text for _, rc, text in seen) and builtins == [0, 0] and not moved
+        return ok, 'alias lookups that fail or are expanded: %r; builtins %r; main moved %s' % (
+            seen, builtins, moved)
+
+    def row_alias_shell_c(under):
+        """A simple command whose first word is not git has its text judged for aliases: sh -c and
+        bash -c running an alias that pushes main refuse on the gate text; sh -c 'git status' passes."""
+        work, bare, head = fixture(under)
+        git(work, 'config', 'alias.pm', 'push origin main')
+        git(work, 'config', 'alias.p', 'push')
+        seen = []
+        for command in ("sh -c 'git pm'", 'bash -c "git p origin main"'):
+            g = guard(work, command)
+            seen.append((command, g.returncode, checks_text(g.stderr) == gate_text(head)))
+        plain = guard(work, "sh -c 'git status'")
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        ok = all(rc == 2 and text for _, rc, text in seen) and plain.returncode == 0 and not moved
+        return ok, 'aliases under sh -c and bash -c: %r; sh -c git status exit %d' % (seen, plain.returncode)
+
     # ---------------------------------------------------------------- merges
     def row_merge(under):
         work, _, head = fixture(under)
@@ -772,6 +845,8 @@ def _v268_suite():
         'push/credential-url-scoped': row_credential_url_scoped, 'push/credential-command': row_credential_command,
         'push/credential-included': row_credential_included, 'push/credential-global': row_credential_global,
         'push/vcs': row_vcs, 'push/alias-elsewhere': row_alias_elsewhere,
+        'push/set-upstream': row_set_upstream, 'push/alias-unreadable': row_alias_unreadable,
+        'push/alias-shell-c': row_alias_shell_c,
         'merge/checked-out': row_merge, 'merge/gh-base': row_gh_base,
         'refuse/gate': row_refuse_gate, 'refuse/manifest': row_refuse_manifest, 'refuse/path': row_refuse_path,
         'refuse/debt': row_refuse_debt, 'refuse/objection': row_refuse_objection, 'refuse/tag': row_refuse_tag,
@@ -827,6 +902,18 @@ def _v268_suite():
     ALIAS_TEXT = ('        return unresolved("a git alias that may push or merge, in a command the guard cannot '
                   'reproduce")\n')
     ALIAS_TEXT_DEFECT = '        pass  # defect: an alias in a compound command is not judged\n'
+    # Fix round 5 anchors, shared with scripts/check_teeth_mutations.py's registration of the same defects.
+    UPSTREAM_LINE = ('        elif not (line.startswith("To ") or line == "Done" or not line.strip() '
+                     'or UPSTREAM.fullmatch(line)):\n')
+    UPSTREAM_LINE_DEFECT = ('        elif not (line.startswith("To ") or line == "Done" or not line.strip()):'
+                            '  # defect: the upstream line is unread\n')
+    LOOKUP_FAILS = '        raise AliasUnreadable(sub)\n'
+    LOOKUP_FAILS_DEFECT = '        return None  # defect: a lookup that cannot run reads as no alias\n'
+    EXPANDED_C = '            split = None  # a -C or -c value the shell expands: where git runs is not known\n'
+    EXPANDED_C_DEFECT = '            pass  # defect: an expanded -C value is looked up as written\n'
+    SHELL_C = ('            return unresolved("a git alias that may push or merge, in a command whose first word '
+               'is not git")\n')
+    SHELL_C_DEFECT = '            pass  # defect: a command whose first word is not git is not alias-checked\n'
 
     # The spec's registered mutations: (name, file, old, new, the row that must go red[, further
     # (old, new) replacements in the same file]).
@@ -890,6 +977,12 @@ def _v268_suite():
         ('fix4-alias-ignores-dash-c', 'veldo-guard.sh', ALIAS_C, ALIAS_C_DEFECT, 'push/alias-elsewhere'),
         ('fix4-alias-ignores-cd', 'veldo-guard.sh', ALIAS_CD, ALIAS_CD_DEFECT, 'push/alias-elsewhere'),
         ('fix4-alias-ignores-prefix', 'veldo-guard.sh', ALIAS_PREFIX, ALIAS_PREFIX_DEFECT, 'push/alias-elsewhere'),
+        # Fix round 5: the upstream line is read; a failed or expanded alias lookup is unresolved; sh -c.
+        ('fix5-upstream-line-unread', 'veldo-guard.sh', UPSTREAM_LINE, UPSTREAM_LINE_DEFECT, 'push/set-upstream'),
+        ('fix5-lookup-failure-is-no-alias', 'veldo-guard.sh', LOOKUP_FAILS, LOOKUP_FAILS_DEFECT,
+         'push/alias-unreadable'),
+        ('fix5-expanded-dash-c-looked-up', 'veldo-guard.sh', EXPANDED_C, EXPANDED_C_DEFECT, 'push/alias-unreadable'),
+        ('fix5-shell-c-not-alias-checked', 'veldo-guard.sh', SHELL_C, SHELL_C_DEFECT, 'push/alias-shell-c'),
     )
 
     results = {}

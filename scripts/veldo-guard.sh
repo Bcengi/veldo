@@ -33,7 +33,11 @@
 # way is unresolved. An alias that expands to push or merge is judged as that command, looked up in
 # the repository the command runs in; where that cannot be determined (a cd before it, an
 # environment assignment, a global option other than -C and -c), a subcommand that is neither a
-# builtin nor a git-<name> program is unresolved.
+# builtin nor a git-<name> program is unresolved. A lookup that cannot run or read the configuration
+# (a -C directory that does not exist), and a -C or -c value the shell expands, make such a subcommand
+# unresolved, never "no alias" (fix round 5). A simple command whose first word is not git (sh -c,
+# bash -c) has its text judged for aliases as a compound command is. The dry run's one line beside
+# the ref lines that names no destination, "Would set upstream of ...", is read; any other is not.
 set -u
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
@@ -163,7 +167,7 @@ PUSH_SHORT = "nvqfud46"  # and -o, which takes a value
 # porcelain ref lines (never quiet) and runs no hook.
 FORCED = ["--no-quiet", "--dry-run", "--porcelain", "--no-verify"]
 # The only -c keys a reproduced push may carry; any other may name a program the dry run would run.
-SAFE_KEYS = ("push.default", "core.hookspath")
+SAFE_KEYS = ("push.default", "core.hookspath", "push.autosetupremote")
 # Pinned for the dry run after the user's options: every program git may run on the way to the
 # remote gets a fixed value (ssh without a proxy or local command, no askpass). The credential helper
 # is the user's own from the global or system configuration, or the push is unresolved
@@ -185,6 +189,12 @@ ALIAS_DEPTH = 10
 SHELL_ALIAS = re.compile(r"\b(git|push|merge)\b")
 GITSUB = re.compile(r"\bgit(?:\s+(?:(?:%s)\s+%s|-\S*))*\s+(%s)" % ("|".join(GIT_VALUE), WORD, WORD))
 BUILTINS = []
+# The line a dry run with -u, --set-upstream or push.autoSetupRemote prints beside its ref lines.
+UPSTREAM = re.compile(r"Would set upstream of '[^']*' to '[^']*' of '[^']*'")
+
+
+class AliasUnreadable(Exception):
+    """An alias lookup that could not run or read the configuration: the subcommand may be an alias."""
 
 
 def dry_env():
@@ -236,7 +246,11 @@ def alias_of(kept, sub, cwd):
         return None
     r = subprocess.run(["git"] + pairs_of(kept) + ["config", "--get", "alias." + sub], cwd=cwd, env=dry_env(),
                        capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
-    return r.stdout.rstrip("\n") if r.returncode == 0 else None
+    if r.returncode == 1 and not r.stdout:
+        return None
+    if r.returncode != 0:
+        raise AliasUnreadable(sub)
+    return r.stdout.rstrip("\n")
 
 
 # Text before a git command that changes the repository or configuration it reads (VELDO-0268 fix
@@ -256,6 +270,8 @@ def alias_in_text(command, cwd):
             split = git_globals(shlex.split(match.group(0)))
         except ValueError:
             split = None
+        if split is not None and any(c in w for w in split[0] for c in ("$", "\x60")):
+            split = None  # a -C or -c value the shell expands: where git runs is not known
         if split is None or ELSEWHERE.search(command[:match.start()]):
             if sub not in ("push", "merge") and maybe_alias(sub, cwd):
                 return True
@@ -385,7 +401,7 @@ def dry_run(kept, rest, cwd):
             if not ref.startswith("refs/"):
                 return unresolved("the dry run named a destination that is not a full ref name")
             found.append((ref, None))
-        elif not (line.startswith("To ") or line == "Done" or not line.strip()):
+        elif not (line.startswith("To ") or line == "Done" or not line.strip() or UPSTREAM.fullmatch(line)):
             return unresolved("the dry run printed a line the guard cannot read")
     if not found:
         return unresolved("the dry run named no destination")
@@ -472,6 +488,8 @@ def destinations():
     if at is None:
         if names_push_or_merge(command, words):
             return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
+        if alias_in_text(command, cwd):
+            return unresolved("a git alias that may push or merge, in a command whose first word is not git")
         return []
     return judge_git(command, words[at:], cwd, at == 0 and words[0] == "git", words[:at])
 
@@ -518,7 +536,11 @@ def judge_git(command, words, cwd, reproduce, prefix=()):
 
 
 def main():
-    found = destinations()
+    try:
+        found = destinations()
+    except AliasUnreadable as error:
+        found = unresolved("git %s may be an alias, and the configuration where git runs could not be read"
+                           % str(error)[:80])
     if not found:
         return 0
     path = Path(".veldo/policy_check.py")

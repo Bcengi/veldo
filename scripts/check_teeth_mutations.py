@@ -12354,6 +12354,24 @@ def cases():
              '    elsewhere = git_globals(words) is None or any("=" in w or w == "env" for w in prefix)\n',
              '    elsewhere = False  # defect: an assignment or option before the subcommand is ignored\n',
              ['push/alias-elsewhere'])
+    # Fix round 5: the dry run's upstream line is read; an alias lookup that fails or reads an expanded -C
+    # value is unresolved; a command whose first word is not git (sh -c) is alias-checked.
+    guard268('guard268-upstream-line-unread',
+             '        elif not (line.startswith("To ") or line == "Done" or not line.strip() '
+             'or UPSTREAM.fullmatch(line)):\n',
+             '        elif not (line.startswith("To ") or line == "Done" or not line.strip()):'
+             '  # defect: the upstream line is unread\n',
+             ['push/set-upstream'])
+    guard268('guard268-lookup-failure-is-no-alias', '        raise AliasUnreadable(sub)\n',
+             '        return None  # defect: a lookup that cannot run reads as no alias\n', ['push/alias-unreadable'])
+    guard268('guard268-expanded-dash-c-looked-up',
+             '            split = None  # a -C or -c value the shell expands: where git runs is not known\n',
+             '            pass  # defect: an expanded -C value is looked up as written\n', ['push/alias-unreadable'])
+    guard268('guard268-shell-c-not-alias-checked',
+             '            return unresolved("a git alias that may push or merge, in a command whose first word '
+             'is not git")\n',
+             '            pass  # defect: a command whose first word is not git is not alias-checked\n',
+             ['push/alias-shell-c'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
