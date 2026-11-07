@@ -64,3 +64,24 @@ unknown (the suite is green outside the sandbox); `pending_runs.sh` reruns with 
 - Outside the footprint, not changed: AC4's falsifier names `scripts/check_docs.sh`; the paragraph
   check lives in suite 129 instead. Drivers `proof/*/drive.py` outside the footprint bundles are
   unchanged. Recorded approvals were not re-verified here.
+
+## Fix round 1 (a2f920d0)
+
+The lead ran the first `pending_runs.sh` at 91523cc9 (summary in `pending-summary.txt`). Reds:
+
+1. Teeth 270, executed 0: every noop control raised "suite production-copy anchor moved". Suite 129
+   spelled paths as `ROOT / '.veldo/validate.py'`; the mutation observer substitutes only
+   `ROOT / ".veldo" / "validate.py"` (and the same form for `scripts` and `engine`). Caused by this
+   diff. Fixed: suite 129 spells the three anchors, every scratch repository copies the .veldo that
+   holds the validate.py under test, and the three validate.py cases set `siblings` (it loads
+   yamlish.py and git_process.py beside itself).
+2. Suite 86_veldo_0189_engine_upgrade, row `VELDO-0189 upgrade/census`: the fixture reader required a
+   summary for `census.json.gz`, which stays in the tree. Caused by this diff. Fixed: a fixture in
+   the tree is read and matched against digests.json; only a removed archive goes through its summary.
+3. The 4 suite run, row `WARP-1309 AC6: validate.py stays at or under its file_lines budget after
+   the wiring` (suite 01_warp_0101_reviewer_notes, limit 1000 lines): validate.py is 1224 lines here,
+   828 on main afa292f0. Caused by this diff. NOT fixed: keeping the budget means moving the proof
+   checks into a new `.veldo` module (and its engine copy), outside the footprint; reported to the lead.
+
+Reruns not done: the gate lock was not free within 20 minutes of waiting. They are in
+`pending_runs.sh` (bash -n: exit 0), lines prefixed `round1` in `pending-summary.txt`.
