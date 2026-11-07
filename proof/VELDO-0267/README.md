@@ -66,21 +66,21 @@ Telegram 39710. Summaries only; no raw logs.
   finished by 07:00 local (notifier argv from `<state>/nightly.json`).
 - `.veldo/policy_check.py` (engine copy synced): `nightly_refusal` reads the sweep records through the
   installation's own `scripts/mutation_selection.py`; the latest finished sweep red and not explained
-  by an approval (`scope.nightly_run` = run id, `scope.cases` giving each failing case a reason)
+  by an approval valid under valid_approval_for (`scope.nightly_run` = run id, `scope.cases` giving each failing case a reason)
   refuses as `nightly_red`. Applied when `BASE` is set (the lander's installed policy run), when
   `LANDING` is set, or with `--protected-ref`.
 - `.veldo/policy.yaml`: the new rule, reader and runner (and engine copies) are protected paths.
 
 ## Rows and outcomes
 
-Suite `scripts/suites/140_veldo_0267_mutation_selection.py`, 43 rows (RESULT below).
+Suite `scripts/suites/140_veldo_0267_mutation_selection.py`, 48 rows (results below).
 
 | AC | rows |
 |----|------|
-| AC1 | select/m1-selects-a-and-canaries, select/shared-selects-c, select/docs-selects-only-canaries, select/new-case-always-selected, select/recompute-agrees, select/engine-copy-and-suite-file, select/changed-definition-selected, select/declared-inputs-are-the-covered-set, changed/rename-both-sides-and-dirty, record/written-with-line, record/stamp-names-digest |
+| AC1 | select/m1-selects-a-and-canaries, select/shared-selects-c, select/docs-selects-only-canaries, select/new-case-always-selected, select/recompute-agrees, select/engine-copy-and-suite-file, select/changed-definition-selected, select/declared-inputs-are-the-covered-set, changed/rename-both-sides-and-dirty, record/written-with-line, record/stamp-names-digest, landing/gate-selects-against-the-watermark |
 | AC2 | canary/empty-selection-runs-canaries, canary/broken-worker-reds-stage, canary/declaration-valid, canary/emptied-names-the-bound-of-six, canary/declaration-covers-drivers-legs-fixture |
 | AC3 | trigger/every-group-forces-full (28 paths), trigger/coverage-missing, trigger/coverage-unreadable, trigger/nightly-stale, trigger/toolchain-changed, trigger/unavailable-runs-full |
-| AC4 | nightly/waits-for-lock-then-sweeps, nightly/green-publishes-coverage, nightly/red-record-names-case, nightly/one-notifier-call-naming-case, landing/red-blocks, landing/other-run-id-does-not-clear, landing/latest-is-red, landing/approval-clears, landing/red-again-without-approval, landing/later-green-clears |
+| AC4 | nightly/waits-for-lock-then-sweeps, nightly/green-publishes-coverage, nightly/red-record-names-case, nightly/one-notifier-call-naming-case, landing/red-blocks, landing/other-run-id-does-not-clear, landing/latest-is-red, landing/unbound-approval-does-not-clear, landing/self-approval-does-not-clear, landing/approval-clears, landing/red-again-without-approval, landing/later-green-clears |
 
 ## Falsifiers: red then green
 
@@ -101,11 +101,58 @@ module and RED on the mutated copy. One run therefore shows both outcomes.
 | ac4-1 | runner skips the lock | nightly/waits-for-lock-then-sweeps | green | red |
 | ac4-2 | landing check reads only green records | landing/red-blocks | green | red |
 | ac4-3 | red sweep publishes its coverage map | publish row | green | red |
+| ac1-4 | the lander drops the base hand-off (`base=c["watermark"]`) | landing/gate-selects-against-the-watermark | green | red |
+| ac4-4 | self-approval accepted (valid_approval_for's producer check passes) | landing/self-approval-does-not-clear | green | red |
+
+Every falsifier above is also registered in `scripts/check_teeth_mutations.py` (finding 267, 13
+cases `selection267-*`, each anchor occurring once in its module), so the mutation stage runs it:
+baseline green, no-op equal, mutant red on the targeted row. The suite names each production module
+by its literal anchor (`ROOT / "scripts" / "mutation_selection.py"` and so on) for the driver to
+substitute; a .veldo mutant is loaded beside a scratch copy of the real .veldo siblings. ac3-1 drops
+both `scripts/mutation_selection.py` and the `scripts/mutation_*` glob from the declaration and targets
+trigger/every-group-forces-full; ac2-3 empties the declared canary list and targets canary/declaration-valid.
+
+## Fix round 1 (check of 2026-11-07, NOT SOUND)
+
+- F1 (AC1), fixed. `control_verification.gate_env(base)` drops any inherited `VELDO_GATE_BASE_COMMIT`
+  and sets it to the base its caller passes; `observe_gate(..., base=)` hands it on; `GitLandOps.gate`
+  passes `base=c["watermark"]`, the trunk commit it synced and the same base its installed policy run
+  takes. verify.sh already prefers the caller's value. Row landing/gate-selects-against-the-watermark
+  builds a landing-shaped workspace (fresh repository, trunk only as the watermark and
+  refs/remotes/origin/main, HEAD detached on the candidate, no refs/heads/main), gates it through the
+  real lander and control_verification with an installed verifier that runs the real verify.sh base
+  block and the real `gate_selection`, and requires mode selected, base equal to the watermark and no
+  selection_unavailable. Falsifier ac1-4 drops the hand-off and turns it red.
+- F3 (AC4), fixed. `valid_approval_for` gains `accept`, a caller's scope test that only narrows it;
+  `policy_check.approval_rule()` is valid_approval_for over the push range with the work's producer.
+  `mutation_selection.explaining_approval(record, approval_rule)` explains a red sweep only through
+  that rule (scope test: `explains`, the run id and every failing case with a reason), so an approval
+  must be approved, unexpired, bound to a commit of the push and not approved by the producer. The
+  landing check uses the policy module's own rule; the gate's nightly_stale reading loads the
+  installation's policy_check pointed at the candidate (`policy_approval_rule`, lazily, only when a
+  red sweep is read), and anything it cannot load explains nothing. The private approval glob
+  (`read_approvals`) is gone. The landing rows now run over a subject repository with a push range,
+  a verdict and a producer: an unbound approval and the producer's own bound approval do not clear;
+  an owner's bound approval does. Falsifier ac4-4 accepts self-approval and turns the self row red.
+- Side observation: `.veldo/mutation-selection.json` is now in `.gitignore`.
+- F2 (the guard's policy_check leg needs VELDO-0268's protected-ref flag) is left to VELDO-0268 and
+  nothing changed for it here: it is resolved when both land, once the guard passes the flag.
+- scripts/suites/requires.json: `run_scope.py --emit-requires` reproduces it unchanged.
 
 ## Suites run
 
-RESULT
+- Suite 140 at 3d886d3f, inside `flock -w 1200 /home/dmitry/.local/state/core-gates/.gate.lock`
+  (lock taken after 375 s on the second attempt): `140_veldo_0267_mutation_selection 48 passed`,
+  `74 passed, 0 failed` with its closure. Every in-suite falsifier row green (targeted row green on the
+  real module, red on the mutated copy).
+- The registered falsifiers through the mutation stage (`check_teeth_mutations.py --finding 267`):
+  PENDING. The lock was not free within the 20 minute budget (420 s, then 375 s to take it for suite
+  140, then 300 s, 1,095 s in all). The exact command is in `proof/VELDO-0267/pending_runs.sh`
+  (`bash -n` clean; no flock inside, the lead runs it inside the lock; one line per step to
+  `proof/VELDO-0267/pending-summary.txt`, logs under /tmp).
 
 ## Still open
 
-OPEN
+- `check_teeth_mutations.py --finding 267` (pending_runs.sh).
+- F2, with VELDO-0268.
+- The gate-time estimates in the spec's Context are re-measured on the first gates after landing.
