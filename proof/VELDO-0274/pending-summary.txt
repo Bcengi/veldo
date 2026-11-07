@@ -7,3 +7,7 @@ head 8ee0e2e2 2026-11-07T15:07:11Z
 check_gate_mutations.py --finding 274: exit=0 mutations: passed registered=3 executed=3 reused=0 rejected=3 workers=5 elapsed=79.387s    mutation: unconfined leg ran 3 cases, 3 rejected: 129_veldo_0274_factory_slices (3)
 suite 129 --suite: exit=2 selftest (PARTIAL, 1 of 192 suites): 32 passed, 0 failed in 1.49s
 veldo0127/veldo0274 units loaded after: 0
+head f19fbeb0 2026-11-07T17:17:47Z (fix round 5, in the lock)
+check_gate_mutations.py --finding 274: exit=0 mutations: passed registered=4 executed=4 reused=0 rejected=4 workers=8 elapsed=182.881s    mutation: unconfined leg ran 4 cases, 4 rejected: 129_veldo_0274_factory_slices (4)
+suite 129 --suite: exit=2 selftest (PARTIAL, 1 of 192 suites): 32 passed, 0 failed in 1.50s
+veldo0127/veldo0274 units loaded after: 0

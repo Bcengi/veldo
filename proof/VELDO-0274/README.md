@@ -157,3 +157,11 @@ after.
 The spec now names suite 86 in AC3's falsifier (lead, 4228b098). Commit b54d5520 registers that mutation
 (slices274-factory-user-without-exit-stack, described under Falsifiers) and removes the claim that the
 protected worker blocks it.
+
+Runs of this round, at f19fbeb0 (code as at b54d5520), inside the gate lock (pending-summary.txt):
+`check_gate_mutations.py --finding 274` passed, 4 of 4 cases in the unconfined leg, 4 rejected, including
+slices274-factory-user-without-exit-stack (its no-op control, suite 86's unmutated copy run inside 129,
+equal to the baseline; the mutant red on slices/end-of-run). `selftest.py --suite
+129_veldo_0274_factory_slices` 32 passed, 0 failed (exit 2 is the partial-run code). No veldo0127 or
+veldo0274 unit loaded after. pending_runs.sh is updated for these two runs (failing row names added to its
+summary lines, `bash -n` passed) but nothing is owed.
