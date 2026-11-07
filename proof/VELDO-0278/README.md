@@ -95,6 +95,30 @@ proof/VELDO-0278/pending_runs.sh: the suites edited here, every suite that loads
 gate_schedule.py, and every suite that reads or copies verify.sh. Third start: the lock
 was not free in 1200 s of waiting (flock -w 420, 440, 340 on it), so none of these ran here.
 
+## Fix round 1 (check of 2026-11-07, NOT SOUND: F1 to F4)
+
+- F1: suite 101's row 'VELDO-0208 unconfined-leg/declared-list' read CHECK_integration as
+  required: and crashed (re.search returned None). It now reads unit and mutation as required:,
+  requires CHECK_integration to be na:, and compares gate_unconfined.json's stages with those two;
+  what it proves is unchanged (the list's stages are the required catalog items it covers).
+- F2: verify.sh's INTEGRATION comment no longer names the spend recorder's file, so suite 01's row
+  'WARP-0733 AC4: no gate stage consults the spend recorder' holds again (row unchanged).
+- F3: suite 08's row 'WARP-1203 AC2: governing_spec resolves a behavior by declared footprint match'
+  runs on a fixed fixture corpus of two specs (WARP-9011 footprint fixture/governed/*.py, WARP-9012
+  footprint fixture/other/*.sh); fixture/governed/evidence.py must resolve governed, to WARP-9011,
+  matched_by footprint, candidates exactly [WARP-9011]. Falsifier, in the suite's own TEETH form:
+  row 'WARP-1203 AC2 TEETH' replaces the corpus module's fnmatch with one that never matches and
+  requires the same check to be false. Both evaluated by hand outside a suite run (the row's code
+  over the fixture): row true, TEETH true (the broken matcher makes the check false).
+- F4: the parked run's per-suite lines were not kept by the lead's run. It is rerun as the last
+  step of pending_runs.sh, which writes each of the eight suites' lines (suite, passed, failed,
+  seconds) to pending-summary.txt. AC1 evidence, per suite: PENDING (one line per suite to be
+  copied here from pending-summary.txt).
+- Runs: the gate lock was not free in 1190 s of waiting (flock -w 540, 420, 230), so suites 01,
+  08, 14 and 101 and the parked run did not run here. They are in pending_runs.sh (no lock inside;
+  each step appends one line to pending-summary.txt, logs under /tmp/veldo-0278-fix1-pending);
+  bash -n pending_runs.sh: clean.
+
 ## Inherited, not fixed
 
 - specs/index.md is stale at HEAD before this build (lead commit b40b3123 set 0273, 0274, 0278,
