@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0269
 title: Veldo keeps one copy of its engine in engine/, and the repository's own instance at the root is laid down from it by the installer every adopter runs, so no engine file is ever edited twice
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -192,3 +192,5 @@ bundle path that names a root copy: old bundles stay as recorded.
 
 2026-11-07: drafted on the owner's agreement, Telegram 39685 and 39686, to the weight audit's item 3
 (~/projects/myday/research/veldo-core-weight-audit-2026-11-07.md): keep one copy of the engine.
+
+2026-11-07: ready on the owner's approval, Telegram 39696 ("Ok") to the summary in 39695.
