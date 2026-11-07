@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0282
 title: The policy check, the push guard and the landing read proof, approvals and verdicts from the records repository's latest pushed state, and refuse by name when it cannot be fetched
-status: draft
+status: ready
 risk: high
 risk_areas: [auth_security]
 owner: dmitry
@@ -154,3 +154,5 @@ It changes how approvals are authenticated and touches protected policy paths, s
 approval-required.
 
 2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
+
+2026-11-07: ready. Owner approved, Telegram 39787 ("Approve all five" to 39779, which named VELDO-0281 to 0284 and VELDO-3600).

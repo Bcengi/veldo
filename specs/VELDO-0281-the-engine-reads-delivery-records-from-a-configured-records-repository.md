@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0281
 title: The engine reads specs, plans, proof, verdicts and approvals from a configured records repository, one file per record, approvals, verdicts and proof added and never edited, specs and plans edited in place, with the index generated on demand
-status: draft
+status: ready
 risk: high
 risk_areas: [auth_security]
 owner: dmitry
@@ -163,3 +163,5 @@ It changes the policy file and how approvals are found, so it is approval-requir
 2026-11-07: lead correction of the drafted rule: append-only covers approvals, verdicts and proof; specs and plans are edited in place (one file per ticket). The draft's revision-file scheme was the writer's literal reading of the lead's 39771 wording.
 
 2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
+
+2026-11-07: ready. Owner approved, Telegram 39787 ("Approve all five" to 39779, which named VELDO-0281 to 0284 and VELDO-3600).
