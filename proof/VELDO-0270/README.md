@@ -105,3 +105,26 @@ Runs at 4f4d04c4, command `flock -w 1200 <gate lock> python3 scripts/selftest.py
 Suite 01_warp_0101_reviewer_notes and teeth 270 not run: the lock was not free within the
 remaining wait (20 minutes total). They are in `pending_runs.sh` (bash -n: exit 0), lines prefixed
 `round2` in `pending-summary.txt`.
+
+## Fix round 3 (d9f69562)
+
+The lead's run of the round 2 `pending_runs.sh` at 9c4cd91e (summary lines `round2` in
+`pending-summary.txt`, logs under /tmp/veldo-0270-pending-lrFEJQ): suite 129 59 passed 0 failed,
+suite 86_veldo_0189_engine_upgrade 60/0, suite 01_warp_0101_reviewer_notes 637/0, the four suite
+06 run 1414/0 (each exit 2, the PARTIAL convention), contracts, docs hygiene, template sync and the
+Git subprocess boundary pass. Red: `check_teeth_mutations.py --finding 270` failed with
+driver_error, 0 of 5 executed. Cause: the noop control of case
+`129_veldo_0270_small_proof.py:proof_size.py` gets a whole .veldo copy in the worker's directory
+under the name `veldo`, and the validate.py there loads `tracker.py` from `<its parent's
+parent>/.veldo/`, which does not exist (FileNotFoundError).
+
+Fix, in suite 129 only: the rows run validate.py and proof_size.py from a temporary .veldo tree, a
+copy of this tree's .veldo (every sibling module, policy.yaml and the data beside them) with the
+file at the anchor `ROOT / ".veldo" / "proof_size.py"` laid over proof_size.py, as VELDO-0272's
+suite 129 does. A mutant the driver supplies is then the module the rows load, beside every
+sibling validate.py and proof_size.py load. Scratch repositories copy that tree; it is removed at
+the end of the suite.
+
+Runs not done: the gate lock was not free within 20 minutes of waiting (`flock -w 1200`). Suite
+129 and teeth 270 are in `pending_runs.sh` (bash -n: exit 0), lines prefixed `round3` in
+`pending-summary.txt`; the teeth line also names the first failing case details.
