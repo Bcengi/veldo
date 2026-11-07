@@ -53,7 +53,8 @@ Suite 129 before the change (`before-change.txt`, the suite committed first, 14b
   no renumber commit. No reviewed unit: `empty`, no clone, no gate, nobody asked. `/batch <project>` (and
   `/batch@bot <project>`) is the command; intake hands it to the starter and writes no proposal. UI:
   `ui-vitest-before.txt` (3 of 3 red), `ui-vitest-after.txt` (3 of 3 green, ProjectsView.spec.ts 2 of 2 and
-  projects.spec.ts 5 of 5 unchanged, vue-tsc clean); run from the locked dependencies in a scratch copy.
+  projects.spec.ts 5 of 5 unchanged, vue-tsc clean); run from the locked dependencies in a scratch copy. The before log escapes vitest's
+  non-ASCII marks as `\uXXXX` (the docs check allows only ASCII).
 - AC2: a logging `bash` first on PATH counts each start of a verifier in candidate mode: exactly one per batch. A
   batch with one unit red in the unit stage and another red in the integration stage inventories both stages, each
   check and its unit; the owner is told once, UNIT-4 and UNIT-5 return to their fix rounds, nobody is asked, and

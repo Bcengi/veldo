@@ -32,25 +32,25 @@ stderr | src/features/projects/ProjectsBatch.spec.ts > ProjectsView batch (VELDO
   at <ProjectsView ref="VTU_COMPONENT" > 
   at <VTUROOT>
 
- ❯ src/features/projects/ProjectsBatch.spec.ts (3 tests | 3 failed) 43ms
-   ❯ ProjectsView batch (VELDO-0239 AC1) (3)
-     × words the batch command as the Telegram command 2ms
-     × starts the selected project's batch through the intake and shows its outcome 34ms
-     × shows the refusal when the batch is not started 7ms
+ \u276F src/features/projects/ProjectsBatch.spec.ts (3 tests | 3 failed) 43ms
+   \u276F ProjectsView batch (VELDO-0239 AC1) (3)
+     \u00D7 words the batch command as the Telegram command 2ms
+     \u00D7 starts the selected project's batch through the intake and shows its outcome 34ms
+     \u00D7 shows the refusal when the batch is not started 7ms
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF Failed Tests 3 \u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF
 
  FAIL  src/features/projects/ProjectsBatch.spec.ts > ProjectsView batch (VELDO-0239 AC1) > words the batch command as the Telegram command
 TypeError: batchCommand is not a function
- ❯ src/features/projects/ProjectsBatch.spec.ts:52:12
+ \u276F src/features/projects/ProjectsBatch.spec.ts:52:12
      50| describe('ProjectsView batch (VELDO-0239 AC1)', () => {
      51|   it('words the batch command as the Telegram command', () => {
      52|     expect(batchCommand('core')).toBe('/batch core')
        |            ^
      53|   })
-     54|   it('starts the selected project\'s batch through the intake and show…
+     54|   it('starts the selected project\'s batch through the intake and show\u2026
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF[1/3]\u23AF
 
  FAIL  src/features/projects/ProjectsBatch.spec.ts > ProjectsView batch (VELDO-0239 AC1) > starts the selected project's batch through the intake and shows its outcome
 Error: Unable to get [data-testid="project-batch"] within: <section class="panel" aria-labelledby="project-detail" data-testid="project-detail" data-project="core">
@@ -67,8 +67,8 @@ Error: Unable to get [data-testid="project-batch"] within: <section class="panel
     </ul>
   </div>
 </section>
- ❯ DOMWrapper.get node_modules/@vue/test-utils/dist/vue-test-utils.cjs.js:7333:15
- ❯ src/features/projects/ProjectsBatch.spec.ts:59:18
+ \u276F DOMWrapper.get node_modules/@vue/test-utils/dist/vue-test-utils.cjs.js:7333:15
+ \u276F src/features/projects/ProjectsBatch.spec.ts:59:18
      57|     const wrapper = await screen('/projects/core')
      58|     const detail = wrapper.get('[data-testid="project-detail"]')
      59|     await detail.get('[data-testid="project-batch"]').trigger('click')
@@ -76,7 +76,7 @@ Error: Unable to get [data-testid="project-batch"] within: <section class="panel
      60|     await flushPromises()
      61|     expect(sent).toEqual([['/batch core', 'core']])
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF[2/3]\u23AF
 
  FAIL  src/features/projects/ProjectsBatch.spec.ts > ProjectsView batch (VELDO-0239 AC1) > shows the refusal when the batch is not started
 Error: Unable to get [data-testid="project-batch"] within: <section class="screen screen-wide">
@@ -134,8 +134,8 @@ Error: Unable to get [data-testid="project-batch"] within: <section class="scree
   <!--v-if-->
   <!--v-if-->
 </section>
- ❯ VueWrapper.get node_modules/@vue/test-utils/dist/vue-test-utils.cjs.js:7333:15
- ❯ src/features/projects/ProjectsBatch.spec.ts:70:19
+ \u276F VueWrapper.get node_modules/@vue/test-utils/dist/vue-test-utils.cjs.js:7333:15
+ \u276F src/features/projects/ProjectsBatch.spec.ts:70:19
      68|     refuse = true
      69|     const wrapper = await screen('/projects/core')
      70|     await wrapper.get('[data-testid="project-batch"]').trigger('click')
@@ -143,7 +143,7 @@ Error: Unable to get [data-testid="project-batch"] within: <section class="scree
      71|     await flushPromises()
      72|     expect(sent).toEqual([['/batch core', 'core']])
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF\u23AF[3/3]\u23AF
 
 
  Test Files  1 failed (1)
