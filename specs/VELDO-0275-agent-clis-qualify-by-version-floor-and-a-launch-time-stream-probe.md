@@ -1,8 +1,8 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0275
-title: Claude Code and Codex qualify by a minimum version and a launch-time stream probe instead of a binary digest, with environment and new capabilities decided by named patterns
-status: draft
+title: Claude Code and Codex upgrades are qualified automatically by a full qualification suite and pinned by digest only when every check passes, every launch runs a stream probe, and environment and new capabilities are decided by named patterns
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -49,32 +49,54 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      An engine is accepted by version, not digest. runtime/engines.json holds, per engine, a minimum
-      version and the binary resolution rule (the versioned copy the installer keeps, as today); any
-      installed version at or above the floor is accepted without a new record, a commit or a ticket.
-      control_engine_codex.py no longer refuses on the binary's sha256, control_launch.py's wrapper no
-      longer binds the digest, and control_engine_claude.py no longer needs a per-version entry. The
-      per-binary qualification records (codex-qualification.json, 793 KB; claude-qualification.json,
-      96 KB) are deleted with the extractors that only fed them; tables the stream reader still needs
-      stay as a small reviewed file in .veldo/runtime.
+      Runs use only an approved engine version, pinned by digest. runtime/engines.json holds, per engine,
+      the approved version, the sha256 of its versioned binary (the copy the installer keeps, as today) and
+      the path of its qualification summary. Every launch resolves exactly that binary and refuses with
+      engine_not_approved if its digest differs; a newer installed version is never used because it is
+      installed, and runs stay on the approved one until AC2 approves the new one. The per-binary
+      qualification records (codex-qualification.json, 793 KB; claude-qualification.json, 96 KB) and the
+      extractors that only fed them are replaced by AC2's small summaries; tables the stream reader still
+      needs stay as a small reviewed file in .veldo/runtime.
     falsified_by: >
-      A new suite launches a fake engine reporting a version above the floor whose bytes differ from any
-      recorded binary: accepted. One reporting a version below the floor: refused below_version_floor.
-      Registered mutations from a green baseline: (1) the floor comparison is lexical: the row with
-      2.1.99 against a floor of 2.1.317 goes red; (2) the digest check is restored: the different-bytes
-      row goes red.
+      A new suite installs a fake engine version above the approved one: launches keep using the approved
+      binary. A fake approved binary whose bytes are changed after approval: refused engine_not_approved.
+      Registered mutations from a green baseline: (1) the launch picks the newest installed version: the
+      stays-on-approved row goes red; (2) the digest check is skipped: the changed-bytes row goes red.
   - id: AC2
     text: >
-      Every launch starts with a stream probe: before the prompt is sent the engine runs the zero-turn
-      probe the adapters already run (assistants_before_prompt, num_turns 0), and every frame it prints is
-      parsed by the same stream reader the run uses. A frame the reader cannot classify, or a missing
-      result frame, refuses the launch as stream_probe_failed with the frame, so a CLI that changed its
-      stream format never starts a run.
+      A new version is qualified automatically, with the same rigor as today and no ticket. Owner,
+      Telegram 39751 to 39753 (2026-11-07): "Upgrades for harnesses are very important to do right. I
+      don't want to wing it", and yes to automated qualification. When the installer or the service
+      loop finds a version that is not approved, Veldo runs the qualification suite on it by itself,
+      outside every work run and with no work credentials: the stream probe of AC3; a fixed set of
+      sample tasks through the real adapter end to end in a scratch repository (read a file, edit and
+      commit, run a command, refuse a tool the role does not list, the permission mode the role sets);
+      a credential-shaped variable in the caller environment withheld (AC4); and result, usage and limit
+      frames parsed by the run's own stream reader. Only when every check passes does Veldo commit the
+      new version, its digest and a qualification summary (per check: name, outcome, duration; under
+      1 MB, no raw transcript) to runtime/engines.json and proof, and report it in the owner's daily
+      summary. Any failure leaves the approved version in place, keeps the failed summary, and sends the
+      owner one line naming the version and the failed check. A version is qualified at most once per
+      digest; a failed digest is not retried until the owner asks.
     falsified_by: >
-      The suite drives a fake engine that prints one frame of an unknown type in the probe: refused with
-      that frame; a fake whose probe matches today's format: accepted. Registered mutation: the launch
-      skips the probe when the version is above the floor: the unknown-frame row goes red.
+      The suite drives fake engines: one that passes every check is approved with a summary naming every
+      check; one that mishandles one check (prints an unknown frame, uses an unlisted tool, or receives the
+      credential-shaped variable) is not approved, the approved version is unchanged, and the notice names
+      that check. Registered mutations: (1) approval written before the last check finishes: the
+      unlisted-tool row goes red; (2) a failed check counted as passed: the unknown-frame row goes red;
+      (3) a failed digest re-qualified on every loop: the at-most-once row goes red.
   - id: AC3
+    text: >
+      Every launch also starts with a stream probe: before the prompt is sent the engine runs the
+      zero-turn probe the adapters already run (assistants_before_prompt, num_turns 0), and every frame it
+      prints is parsed by the same stream reader the run uses. A frame the reader cannot classify, or a
+      missing result frame, refuses the launch as stream_probe_failed with the frame, so even an approved
+      version that starts misbehaving never starts a run.
+    falsified_by: >
+      The suite drives an approved fake engine that prints one frame of an unknown type in the probe:
+      refused with that frame; one whose probe matches today's format: accepted. Registered mutation: the
+      launch skips the probe for an approved version: the unknown-frame row goes red.
+  - id: AC4
     text: >
       Environment and new capabilities are decided by rules, not one decision per item. The variables
       handed to an engine are those matching named allow patterns in the reviewed decisions file; every
@@ -128,3 +150,5 @@ Credential delivery (VELDO-0158), the role capability lists (VELDO-0127), accoun
 
 2026-11-07: drafted by the lead from the weight audit's item 6 (Telegram 39708, 39710). A draft; needs
 the owner.
+
+2026-11-07: rewritten by the lead on the owner's word (Telegram 39751 to 39753): no version floor; runs stay on the approved, digest-pinned version, and a new version is approved only by an automatic full qualification run that passes every check (AC1, AC2); the launch probe stays (AC3); environment rules unchanged (AC4). Ready on his yes, 39753.
