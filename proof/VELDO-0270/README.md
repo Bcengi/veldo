@@ -85,3 +85,23 @@ The lead ran the first `pending_runs.sh` at 91523cc9 (summary in `pending-summar
 
 Reruns not done: the gate lock was not free within 20 minutes of waiting. They are in
 `pending_runs.sh` (bash -n: exit 0), lines prefixed `round1` in `pending-summary.txt`.
+
+## Fix round 2 (4f4d04c4)
+
+Red 3 fixed under the footprint the lead widened in 3b0b7468. The proof size rules moved unchanged
+from validate.py into `.veldo/proof_size.py` (engine copy byte-identical). validate.py loads it by
+path from beside itself on first use, the way it loads request.py, binds its parser and reporter,
+and delegates the same public names, so callers (V.check_proof_files, V.write_proof_summary, ...)
+are unchanged. Lazy, not eager: scripts/suites/shared.py loads validate.py, and 28 declared cases in
+scripts/mutation_case_inputs.json (outside the footprint) freeze inputs without proof_size.py.
+validate.py: 1224 lines before, 871 after (budget 1000); proof_size.py 399 lines. init_scaffold.py
+lists proof_size.py after validate_checks.py in both _FILES and REQUIRED_SUBSTRATE (engine copy
+identical). Falsifier anchors followed the code: the three validate.py teeth cases of finding 270
+now mutate proof_size.py, and suite 129 spells `ROOT / ".veldo" / "proof_size.py"` and drives the
+validate.py beside it. Local checks: `validate.py proof-files` exit 0, template sync pass.
+
+Runs at 4f4d04c4, command `flock -w 1200 <gate lock> python3 scripts/selftest.py --suite
+129_veldo_0270_small_proof`: 59 passed, 0 failed, exit 2 (PARTIAL convention), host lock wait 8.6 min.
+Suite 01_warp_0101_reviewer_notes and teeth 270 not run: the lock was not free within the
+remaining wait (20 minutes total). They are in `pending_runs.sh` (bash -n: exit 0), lines prefixed
+`round2` in `pending-summary.txt`.
