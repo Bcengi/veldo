@@ -2,7 +2,7 @@
 # landing-b gate fix round 5: mutation case qualify230-claude-record-unwritten now targets suite 125's row
 # qualify/claude-record-written (qualify.py's main on recorded readings, no binary runs; target baseline under 40 s).
 # Run from the landing-b worktree root, under the host gate lock held by the caller (no flock here).
-cd /home/dmitry/projects/veldo-worktrees/landing-b || exit 1
+cd "$(dirname "$0")/../.." || exit 1
 
 s=$(date +%s)
 python3 scripts/selftest.py --suite 125_veldo_0230_engine_census > /tmp/lb5-suite125.log 2>&1
