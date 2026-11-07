@@ -43,20 +43,27 @@ def audit(root=ROOT):
             'failures': len(failures), 'corpus': rows}
 
 
+def write_summary(report, path, root=ROOT):
+    """VELDO-0270: the summary (counts and the differing entries), never the corpus itself."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('writer_audit_validate', Path(root) / '.veldo/validate.py')
+    V = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(V)
+    failing = [r for r in report['corpus'] if r.get('refusal') or r['differences'] or r.get('oracle_differences')]
+    deciding = {k: report[k] for k in ('baseline_documents', 'documents', 're_emitted', 'oracle', 'failures')}
+    deciding['differing'] = failing
+    return V.write_proof_summary(path, 'python3 scripts/writer_corpus_audit.py ' + str(path), deciding,
+                                 discarded=[('writer corpus raw report', raw_report(report))], root=root)
+
+
+def raw_report(report):
+    return json.dumps(report, indent=2, ensure_ascii=True) + '\n'
+
+
 if __name__ == '__main__':
     report = audit()
     if len(sys.argv) == 2:
-        # VELDO-0270: the summary (counts and the differing entries), never the corpus itself.
-        import importlib.util
-        spec = importlib.util.spec_from_file_location('writer_audit_validate', ROOT / '.veldo/validate.py')
-        V = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(V)
-        failing = [r for r in report['corpus'] if r.get('refusal') or r['differences'] or r.get('oracle_differences')]
-        deciding = {k: report[k] for k in ('baseline_documents', 'documents', 're_emitted', 'oracle', 'failures')}
-        deciding['differing'] = failing
-        V.write_proof_summary(sys.argv[1], 'python3 scripts/writer_corpus_audit.py ' + sys.argv[1], deciding,
-                              discarded=[('writer corpus raw report', json.dumps(report, indent=2, ensure_ascii=True) + '\n')],
-                              root=ROOT)
+        write_summary(report, sys.argv[1])
     print(f"Writer corpus: {report['documents']} documents, {report['re_emitted']} re-emitted, {report['failures']} failures; {report['oracle']}")
     for row in report['corpus']:
         if row.get('refusal') or row['differences'] or row.get('oracle_differences'):

@@ -1765,6 +1765,15 @@
    ],
    "regions": "A project's landing destination (VELDO-0235): a record without the field reading as land_and_push and landing to the remote, never rewritten; the owner's signed set_landing_destination accepted and recorded with the old and new value and his command id, any other value, another key's signature, another principal and an unsigned command refused writing nothing; land_locally through the land station moving the caller's local main to the candidate by compare-and-swap with the receipt and spec.shipped, the bare origin byte for byte unchanged and no push, fetch or ls-remote logged; a local main moved after the watermark refused as trunk_moved, kept, and re-landed; the owner's grant brief naming the destination in words; a destination changed after the grant refused as stale_subject:landing/destination, asked again and landed after the fresh grant bound to it; land_and_push, set or absent, with today's effect contract, executor push, remote re-read and receipt.",
    "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
+  },
+  {
+   "name": "129_veldo_0270_small_proof",
+   "file": "129_veldo_0270_small_proof.py",
+   "requires": [
+    "129_veldo_0270_small_proof"
+   ],
+   "regions": "Proof is small summaries, never raw bulk (VELDO-0270): the contract check refusing a proof file over proof.max_file_bytes (limit read from policy, default 1,048,576 bytes, an invalid key a refusal) and a base64 encoded archive at any size; the push guard, through a pack's pre-push hook, refusing a push to main whose first commit adds a 2 MB proof file the second deletes, naming that commit, and passing the same commits to an unprotected branch; each proof writer (gate transcript, mutation writers and the engine copy, corpus audits) writing a summary under the limit with command, environment and the discarded bytes' sha256; incomplete summaries and dangling references refused; the eight removed files' summaries matching their bytes at the commit that keeps them; the rule paragraph verbatim in CLAUDE.md, VELDO.md, engine/VELDO.md and every reviewer brief.",
+   "requires_note": "Only ROOT and expect. Scratch Git repositories through git_process holding a copy of this tree's .veldo, the guard and the claude pack's pre-push hook, each with its own policy; the eight removed files read back from Git history. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {

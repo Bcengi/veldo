@@ -12252,6 +12252,32 @@ def cases():
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
+    # VELDO-0270: proof is small summaries, never raw bulk.
+    p270 = '129_veldo_0270_small_proof.py'
+    add(270, 'proof270-guard-judges-only-the-tip', p270, 'validate.py',
+        '        commits = _git(base, "rev-list", "--reverse", lsha, *excl).decode().split()\n',
+        '        commits = _git(base, "rev-list", "--reverse", lsha, *excl).decode().split()[-1:]  # defect: only the tip\n',
+        ['p270/guard/push-to-main-refused-naming-first-commit'])
+    add(270, 'proof270-limit-hard-coded-default', p270, 'validate.py',
+        '            limit, source = v, ".veldo/policy.yaml key proof.max_file_bytes"\n',
+        '            limit, source = PROOF_LIMIT_DEFAULT, ".veldo/policy.yaml key proof.max_file_bytes"  # defect\n',
+        ['p270/contract/policy-limit-is-read'])
+    add(270, 'proof270-references-unchecked', p270, 'validate.py',
+        '    out = [(None, orig)]\n    if rel:\n',
+        '    return []  # defect: no reference to a removed file is checked\n    out = [(None, orig)]\n    if rel:\n',
+        ['p270/dangling/manifest-naming-removed-file-refused'])
+    add(270, 'proof270-mutation-writer-copies-raw', p270, 'check_gate_mutations.py',
+        "    return V.write_proof_summary(path, ' '.join(['python3', *sys.argv]), V.summarize_mutation_receipt(receipt),\n",
+        "    Path(path).write_text(json.dumps(receipt, indent=1))  # defect: the raw receipt lands in the bundle\n"
+        "    return {}\n"
+        "    return V.write_proof_summary(path, ' '.join(['python3', *sys.argv]), V.summarize_mutation_receipt(receipt),\n",
+        ['p270/writers/mutation-writer-writes-summary/scripts'])
+    result[-1]['dir'] = 'scripts'
+    add(270, 'proof270-rule-deleted-from-engine-veldo', p270, 'VELDO.md',
+        '## Proof\n\nProof is small summaries, never raw bulk. ',
+        '## Proof\n\n',
+        ['p270/rule/paragraph-verbatim/engine/VELDO.md'])
+    result[-1]['dir'] = 'engine'
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
     return result

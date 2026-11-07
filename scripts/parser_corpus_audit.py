@@ -87,6 +87,17 @@ def summarize(report):
             'corpus': rows}
 
 
+def write_summary(report, target, root=ROOT):
+    """Write the summary of `report` to target, keeping the removal record already there."""
+    V = load('audit_validate', Path(root) / '.veldo/validate.py')
+    raw = json.dumps(report, indent=2, ensure_ascii=True) + '\n'
+    keep = ('original_path', 'bytes', 'sha256', 'readable_at', 'read_back', 'removed_by')
+    prior = json.loads(Path(target).read_text()) if Path(target).is_file() else {}
+    return V.write_proof_summary(target, 'python3 scripts/parser_corpus_audit.py', summarize(report),
+                                 discarded=[('parser corpus raw report', raw)], root=root,
+                                 extra={k: prior[k] for k in keep if k in prior})
+
+
 def main():
     old = archive('.veldo/validate.py', {'front_matter', 'parse_yamlish', '_split_top', '_scalar',
                                        '_parse_block', '_parse_map', '_parse_list'})
@@ -133,13 +144,7 @@ def main():
     # never the raw report; the raw report's sha256 stands in for it. The removal record of the
     # report this replaced (original path, digest, the commit it stays readable at) is kept.
     target = ROOT / 'proof/VELDO-0110/corpus-before.json.summary.json'
-    V = load('audit_validate', ROOT / '.veldo/validate.py')
-    raw = json.dumps(report, indent=2, ensure_ascii=True) + '\n'
-    keep = ('original_path', 'bytes', 'sha256', 'readable_at', 'read_back', 'removed_by')
-    prior = json.loads(target.read_text()) if target.is_file() else {}
-    V.write_proof_summary(target, 'python3 scripts/parser_corpus_audit.py', summarize(report),
-                          discarded=[('parser corpus raw report', raw)], root=ROOT,
-                          extra={k: prior[k] for k in keep if k in prior})
+    write_summary(report, target)
     refused = [r for r in rows if any(any(d['field'].startswith('$.refusal') for d in ds)
                                     for ds in r['comparisons'].values())]
     lines = ['# Parser corpus comparison before migration', '',
