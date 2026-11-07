@@ -840,6 +840,11 @@ def main():
             fm = _spec_file_fm(sid)
         except ValueError:
             fm = {}
+        if fm.get("status") == "draft":
+            # A draft lands no work: it cannot carry proof (the ready boundary below refuses one), so
+            # no verdict can bind to it. Skipping it opens nothing a push that changes no spec file
+            # does not already reach; an unreadable spec is not a draft and is judged.
+            continue
         if not reviewed_landing(sid, rng):
             print("VELDO policy: blocked. landing_without_review: %s" % sid)
             producer = producer_for(sid)
