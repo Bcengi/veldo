@@ -21,6 +21,8 @@ footprint:
   - "engine/AGENTS.md"
   - "scripts/suites/141_veldo_0268_protected_refs.py"
   - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0268-the-push-guard-protects-main-and-releases-only.md"
   - "specs/index.md"
   - "proof/VELDO-0268/**"
@@ -167,3 +169,5 @@ never a working branch, with a nightly push of all working branches, which now r
 myday/scripts/push_work_branches.sh). A draft: only the owner marks it ready.
 
 2026-11-07: ready on the owner's approval, Telegram 39694 ("Ok") to the summary in 39693.
+
+2026-11-07: footprint gains scripts/suites/requires.json and scripts/check_teeth_mutations.py, by the lead under Telegram 39708 (mechanical, ACs unchanged): the suite's registration and its falsifiers in the mutation stage (check of 2026-11-07, research/claude-runs/veldo-0268-check-2026-11-07.md).
