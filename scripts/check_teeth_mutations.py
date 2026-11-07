@@ -12389,6 +12389,7 @@ def main():
     parser.add_argument('--case', action='append', dest='names', help='select an exact case name; repeatable')
     parser.add_argument('--worker-log-dir', type=Path)
     parser.add_argument('--diff-dir', type=Path, help='retain exact applied mutation diffs')
+    parser.add_argument('--summary', type=Path, help='write the proof summary (VELDO-0270), never the raw receipt')
     parser.add_argument('--worker')
     parser.add_argument('--mutant')
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
@@ -12407,6 +12408,8 @@ def main():
                         findings=[args.finding] if args.finding is not None else None,
                         names=args.names, log_dir=args.worker_log_dir, jobs=max(1, args.jobs),
                         diff_dir=args.diff_dir)
+    if args.summary:
+        coordinator.write_summary(args.summary, receipt, ROOT)
     print(json.dumps(receipt, sort_keys=True), flush=True)
     print('mutations: {status} registered={registered} executed={executed} '
           'reused={reused} rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)

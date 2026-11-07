@@ -72,6 +72,21 @@ def differences(a, b, path='$'):
     return [] if type(a) is type(b) and a == b else [{'field': path, 'old': a, 'new': b}]
 
 
+def summarize(report):
+    """Counts, every input with its digest, and which readers differ for it; not the values."""
+    def refused(row):
+        return any(any(d['field'].startswith('$.refusal') for d in ds) for ds in row['comparisons'].values())
+    rows = [{'path': r['path'], 'sha256': r['sha256'], 'has_front_matter': r['has_front_matter'],
+             'differing_readers': sorted(k for k, v in r['comparisons'].items() if v), 'refused': refused(r)}
+            for r in report['corpus']]
+    return {'baseline': report['baseline'], 'parser_commit': report['parser_commit'],
+            'documents': report['documents'], 'with_front_matter': report['with_front_matter'],
+            'different': report['different'], 'refused': sum(r['refused'] for r in rows),
+            'additional_yaml': len(report['additional_yaml']),
+            'additional_yaml_different': sum(bool(r['comparisons']) for r in report['additional_yaml']),
+            'corpus': rows}
+
+
 def main():
     old = archive('.veldo/validate.py', {'front_matter', 'parse_yamlish', '_split_top', '_scalar',
                                        '_parse_block', '_parse_map', '_parse_list'})
@@ -114,8 +129,17 @@ def main():
               'documents': len(rows), 'with_front_matter': sum(r['has_front_matter'] for r in rows),
               'different': sum(bool(r['comparisons']) for r in rows), 'corpus': rows,
               'additional_yaml': additional}
-    target = ROOT / 'proof/VELDO-0110/corpus-before.json'
-    target.write_text(json.dumps(report, indent=2, ensure_ascii=True) + '\n')
+    # VELDO-0270: proof keeps the summary (counts, the inventory and which documents differ),
+    # never the raw report; the raw report's sha256 stands in for it. The removal record of the
+    # report this replaced (original path, digest, the commit it stays readable at) is kept.
+    target = ROOT / 'proof/VELDO-0110/corpus-before.json.summary.json'
+    V = load('audit_validate', ROOT / '.veldo/validate.py')
+    raw = json.dumps(report, indent=2, ensure_ascii=True) + '\n'
+    keep = ('original_path', 'bytes', 'sha256', 'readable_at', 'read_back', 'removed_by')
+    prior = json.loads(target.read_text()) if target.is_file() else {}
+    V.write_proof_summary(target, 'python3 scripts/parser_corpus_audit.py', summarize(report),
+                          discarded=[('parser corpus raw report', raw)], root=ROOT,
+                          extra={k: prior[k] for k in keep if k in prior})
     refused = [r for r in rows if any(any(d['field'].startswith('$.refusal') for d in ds)
                                     for ds in r['comparisons'].values())]
     lines = ['# Parser corpus comparison before migration', '',

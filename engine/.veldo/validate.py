@@ -9,6 +9,7 @@ Usage:
   python3 .veldo/validate.py proof <manifest.json>
   python3 .veldo/validate.py proof-files [<root>]     # proof size, encoded archives, summaries
   python3 .veldo/validate.py push-proof [<remote>]    # pre-push ref lines on stdin
+  python3 .veldo/validate.py gate-summary <transcript> <out.summary.json> [<command>]
   python3 .veldo/validate.py verdict <verdict.json>
   python3 .veldo/validate.py approval <approval.json>
   python3 .veldo/validate.py arch [<architecture.yaml>]
@@ -930,7 +931,7 @@ def check_push_proof(lines, remote="", root=None):
     return errs
 
 
-def proof_summary(command, deciding, discarded=(), root=None, timing=False):
+def proof_summary(command, deciding, discarded=(), root=None, timing=False, extra=None):
     """A veldo.proof-summary/v1 record: what a proof writer keeps instead of its raw output.
     discarded is [(name, raw_bytes)]; each is recorded by name, size and sha256 and then dropped.
     timing adds the host load, for results that are timing sensitive."""
@@ -958,20 +959,82 @@ def proof_summary(command, deciding, discarded=(), root=None, timing=False):
     for name, raw in discarded:
         raw = raw.encode() if isinstance(raw, str) else bytes(raw)
         disc.append({"name": name, "bytes": len(raw), "sha256": _hl.sha256(raw).hexdigest()})
-    return {"schema": SUMMARY_SCHEMA, "command": command, "environment": env,
-            "discarded": disc, "deciding": deciding}
+    rec = dict(extra or {})
+    rec.update({"schema": SUMMARY_SCHEMA, "command": command, "environment": env,
+                "discarded": disc, "deciding": deciding})
+    return rec
 
 
-def write_proof_summary(path, command, deciding, discarded=(), root=None, timing=False):
+def write_proof_summary(path, command, deciding, discarded=(), root=None, timing=False, extra=None):
     """Write proof_summary(...) to path and return it. The summary itself must be under the
     policy limit; one that is not is a writer bug and raises rather than landing raw bulk."""
-    rec = proof_summary(command, deciding, discarded, root, timing)
+    rec = proof_summary(command, deciding, discarded, root, timing, extra)
     text = json.dumps(rec, indent=1, sort_keys=True, ensure_ascii=True) + "\n"
     limit = proof_policy(root)[0]
     if len(text.encode()) > limit:
         raise ValueError(f"proof summary {path} is {len(text.encode())} bytes, over the limit {limit}")
     Path(path).write_text(text)
     return rec
+
+
+def _short(value, n=400):
+    text = value if isinstance(value, str) else json.dumps(value, sort_keys=True, default=str)
+    return text if len(text) <= n else text[:n] + "..."
+
+
+def summarize_mutation_receipt(receipt):
+    """The deciding part of a mutation stage receipt (veldo.mutation-stage/v1): its counts, per case
+    the expected and observed verdict, the detail of each case that did not go as expected, and
+    the sha256 of the full result array, which is discarded."""
+    import hashlib as _hl
+    results = receipt.get("results") or []
+    rows = []
+    for r in results:
+        case = r.get("case") or {}
+        rows.append({"case": case.get("name") or case.get("identity"), "expected": "killed",
+                     "observed": "killed", "source": r.get("source")})
+    for r in receipt.get("invalid_results") or []:
+        case = r.get("case") or {}
+        rows.append({"case": case.get("name") or case.get("identity"), "expected": "killed",
+                     "observed": r.get("error") or "invalid", "red": _short(r.get("detail"))})
+    body = json.dumps(results, sort_keys=True, separators=(",", ":")).encode()
+    counts = {k: receipt.get(k) for k in ("status", "registered", "executed", "reused", "rejected",
+                                         "worker_invocations", "elapsed", "error") if k in receipt}
+    return {"counts": counts, "rows": rows, "results_count": len(results),
+            "results_sha256": _hl.sha256(body).hexdigest()}
+
+
+_STAGE_LINE = re.compile(r"^   ([a-z][a-z _.-]*(?:: [a-z]+ leg)?): (pass|PASS|FAIL|fail|skip|SKIP|not-applicable)\b"
+                         r"(?: \(([\d.]+)s\))?\s*$")
+_NODE_LINE = re.compile(r"^node (\S+) end [\d.]+ (\S+) ([\d.]+)s")
+
+
+def summarize_gate_transcript(text):
+    """The stage table of a scripts/verify.sh transcript: each stage's verdict and seconds, the
+    final GATE line, and the first failing row's detail. The transcript itself is discarded."""
+    stages, nodes, first_fail = [], [], None
+    for line in text.splitlines():
+        m = _STAGE_LINE.match(line)
+        if m:
+            stages.append({"stage": m.group(1), "verdict": m.group(2),
+                           "seconds": float(m.group(3)) if m.group(3) else None})
+            continue
+        m = _NODE_LINE.match(line)
+        if m:
+            nodes.append({"node": m.group(1), "verdict": m.group(2), "seconds": float(m.group(3))})
+            continue
+        if first_fail is None and re.search(r"\bFAIL\b", line):
+            first_fail = line.strip()[:400]
+    gate = [l.strip() for l in text.splitlines() if l.startswith("GATE:")]
+    return {"gate": gate[-1] if gate else None, "stages": stages, "nodes": nodes,
+            "first_failing_row": first_fail}
+
+
+def write_gate_summary(transcript, out, command="bash scripts/verify.sh", root=None):
+    """The gate transcript capture for proof: the stage table, never the transcript."""
+    raw = Path(transcript).read_bytes()
+    return write_proof_summary(out, command, summarize_gate_transcript(raw.decode("utf-8", "replace")),
+                               discarded=[(Path(transcript).name, raw)], root=root, timing=True)
 
 
 def run_all():
@@ -1058,6 +1121,10 @@ def main():
         errs = check_events(sys.argv[2] if len(sys.argv) > 2 else ROOT / ".veldo" / "events.jsonl")
     elif mode == "proof-files":
         errs = check_proof_files(sys.argv[2] if len(sys.argv) > 2 else None)
+    elif mode == "gate-summary":
+        # gate-summary <transcript> <out.summary.json> [command] (VELDO-0270: the stage table, not the log).
+        write_gate_summary(sys.argv[2], sys.argv[3], *(sys.argv[4:5]))
+        errs = 0
     elif mode == "push-proof":
         # push-proof [remote]: git's pre-push ref lines on stdin (VELDO-0270, the push guard).
         errs = check_push_proof(sys.stdin.read().splitlines(), sys.argv[2] if len(sys.argv) > 2 else "")
