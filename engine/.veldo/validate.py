@@ -855,10 +855,12 @@ def check_proof_files(root=None, quiet=False):
                 if probs:
                     errs += fail("proof_summary_incomplete", f"{r}: " + "; ".join(probs))
             continue
+        named = set()
         for scope, orig, rx in pats:
-            if scope and not r.startswith(scope):
+            if orig in named or (scope and not r.startswith(scope)):
                 continue
             if rx.search(data):
+                named.add(orig)
                 errs += fail("proof_reference_dangling",
                              f"{r} names {orig}, which is absent; name {removed[orig]} instead")
     if not quiet:
