@@ -132,6 +132,30 @@ fi
 VELDO_HOST_FIELD=""
 if [ -e "$VELDO_AUTHORITY/scripts/gate_host.json" ]; then
   if _veldo_host=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_host.py" --inside); then
+    # The stamp and the event are records the gate commits beside the candidate, so the host lock's
+    # path names the home directory as ~ (VELDO-0259): the personal-setup stage judges every added
+    # line, and the gate's own writer must not hand it the host owner's home.
+    _veldo_host=$(printf '%s' "$_veldo_host" | python3 -I -S -c '
+import json, os, re, sys
+homes = {os.path.expanduser("~")}
+try:
+    import pwd
+    homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+except (ImportError, KeyError):
+    pass
+homes = sorted({h.rstrip("/") for h in homes if h and h.rstrip("/")}, key=len, reverse=True)
+def tilde(value):
+    if isinstance(value, str):
+        for home in homes:
+            value = re.sub(re.escape(home) + r"(?![A-Za-z0-9_.\-])", lambda _: "~", value)
+        return value
+    if isinstance(value, dict):
+        return {k: tilde(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [tilde(v) for v in value]
+    return value
+print(json.dumps(tilde(json.load(sys.stdin)), sort_keys=True, separators=(",", ":")))
+') || _veldo_host=null
     VELDO_HOST_FIELD=",\"host\":$_veldo_host"
   else
     _veldo_root=$(pwd -P)

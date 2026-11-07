@@ -218,9 +218,11 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
         until(lambda: not held(lock), 30)
         code, out = finish(start(second, top / 'probe-second'))
         stamp, events = records(second)
+        # The stamp names the home directory as ~ (VELDO-0259); under the confined gate HOME is the
+        # scratch directory the fixture lock lives in.
         cases['free'] = (code == 0 and out.rstrip().endswith('GATE: GREEN (no-git)')
                          and 'took lock %s after' % lock in out and (top / 'probe-second').is_file()
-                         and stamp is not None and stamp['host']['lock'] == str(lock)
+                         and stamp is not None and os.path.expanduser(stamp['host']['lock']) == str(lock)
                          and stamp['host']['held'] == 'taken' and stamp['host']['scope'] is None
                          and events and events[-1]['host'] == stamp['host'])
         cases['free-released'] = until(lambda: not held(lock), 10) and not Path(str(lock) + '.holder').exists()
