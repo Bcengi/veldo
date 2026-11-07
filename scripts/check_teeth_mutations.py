@@ -12250,6 +12250,37 @@ def cases():
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
 
+    # VELDO-0272: owner approval narrows to money, authentication and security, schema and irreversible
+    # infrastructure; routine work lands on a green gate and a recorded review; a daily landed summary.
+    # The suite runs its modules from a temporary .veldo tree laid over by the file the driver hands it.
+    scope272 = '129_veldo_0272_approval_scope.py'
+    # AC1 (declared falsifier): test machinery protected again, or the approval rule's own module unprotected.
+    add(272, 'scope272-gate-legs-added-back', scope272, 'policy.yaml',
+        '  - {path: "engine/.veldo/policy_check.py", floor: high}\n',
+        '  - {path: "engine/.veldo/policy_check.py", floor: high}\n'
+        '  - {path: "scripts/gate_legs.py", floor: high}\n',
+        ['policy/lists-match'])
+    add(272, 'scope272-policy-check-unprotected', scope272, 'policy.yaml',
+        '  - {path: ".veldo/policy_check.py", floor: high}\n', '', ['policy/lists-match'])
+    # AC2 (declared falsifier): the footprint match runs one way only, so scripts/** no longer meets the
+    # protected paths beneath it.
+    add(272, 'scope272-reverse-direction-dropped', scope272, 'policy_check.py',
+        'return glob_covers(a, b) or glob_covers(b, a)',
+        'return glob_covers(a, b)  # defect: a footprint glob wider than a protected path is not matched',
+        ['flag/fixtures'])
+    # AC3 (declared falsifier): the reviewer is not compared with the producer, so a self-review lands.
+    add(272, 'scope272-reviewer-comparison-skipped', scope272, 'policy_check.py',
+        'if producer is not None and (not v.get("reviewer") or v.get("reviewer") == producer):',
+        'if False:  # defect: the reviewer is not compared with the producer',
+        ['review/landing'])
+    # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
+    add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',
+        '"- %s %s | gate %s | reviewer %s | approval %s"\n'
+        '                     % (item["ticket"], item["title"], item["gate"], item["reviewer"], approval)',
+        '"- %s %s | gate %s | approval %s"  # defect: the reviewer is not reported\n'
+        '                     % (item["ticket"], item["title"], item["gate"], approval)',
+        ['summary/file', 'summary/registry-identical'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
