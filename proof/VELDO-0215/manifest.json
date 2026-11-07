@@ -97,13 +97,13 @@
   "artifacts": [
     "proof/VELDO-0215/VALIDATION.md",
     "proof/VELDO-0215/validation.json",
-    "proof/VELDO-0215/full-gate.log.gz",
+    "proof/VELDO-0215/full-gate.log.gz.summary.json",
     "proof/VELDO-0215/affected-cases.json.gz"
   ],
   "artifact_digests": {
     "proof/VELDO-0215/VALIDATION.md": "sha256:54064b159d2432d06c2a6cc58325201a0a5dfb4e0932afe0a6c476e930209012",
     "proof/VELDO-0215/validation.json": "sha256:2b72330159f366e99a9c7603bf7f79f05cee6a86636b7efe1de500f9f0be7d56",
-    "proof/VELDO-0215/full-gate.log.gz": "sha256:5b92730a947756dc4bb1a08a1e3e69b406809d43c194db3dfc9551bdfe3d04fa",
+    "proof/VELDO-0215/full-gate.log.gz.summary.json": "sha256:5b92730a947756dc4bb1a08a1e3e69b406809d43c194db3dfc9551bdfe3d04fa",
     "proof/VELDO-0215/affected-cases.json.gz": "sha256:9e30d6d9b25c338d7a119aebbad1683b0402770a51259834ac6a6f6a31c2d15b"
   },
   "rollback": "Revert both coordinator copies, suite and mutation registry changes.",

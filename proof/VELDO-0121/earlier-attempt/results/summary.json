@@ -503,7 +503,7 @@
       "row": "relay/failure-does-not-replay",
       "observed": false,
       "expected": false,
-      "receipt": "AC4-red.json.gz",
+      "receipt": "AC4-red.json.gz.summary.json",
       "falsifier_witness_records": [
         11,
         12,

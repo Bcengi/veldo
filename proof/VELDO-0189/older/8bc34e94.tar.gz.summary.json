@@ -1,0 +1,28 @@
+{
+ "schema": "veldo.proof-summary/v1",
+ "original_path": "proof/VELDO-0189/older/8bc34e94.tar.gz",
+ "bytes": 1693606,
+ "sha256": "1b745f12e40fc7919696cd8ed9c7336fdc7d47359f65d190aadb160754c207d2",
+ "readable_at": "afa292f0087ebea55b3a8adbe4b16b68c26ed4b9",
+ "read_back": "git show afa292f0087ebea55b3a8adbe4b16b68c26ed4b9:proof/VELDO-0189/older/8bc34e94.tar.gz",
+ "removed_by": "VELDO-0270 AC3: proof is small summaries, never raw bulk",
+ "command": "git archive --format=tar.gz 8bc34e9464fac97e9911093cecc58f8bfe129d9c .veldo",
+ "environment": {
+  "commit": "a1b5dcff81a2afdb1467a78421801c32799b9c55",
+  "tree": "f0d3dba6c94c46a2eb493b5cf6aba33712d695bc",
+  "note": "the commit that added the file; host and tool versions were not recorded in it"
+ },
+ "discarded": [
+  {
+   "name": "proof/VELDO-0189/older/8bc34e94.tar.gz",
+   "bytes": 1693606,
+   "sha256": "1b745f12e40fc7919696cd8ed9c7336fdc7d47359f65d190aadb160754c207d2"
+  }
+ ],
+ "deciding": {
+  "members": 243,
+  "files": 236,
+  "content": "the whole .veldo of the named commit, exported with git archive",
+  "not_extractable": "per file digests are recorded in proof/VELDO-0189/older/digests.json"
+ }
+}

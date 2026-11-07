@@ -9,7 +9,7 @@ from test_document_writer import ROOT, Y, differences, yaml
 
 
 def audit(root=ROOT):
-    baseline = json.loads((root / 'proof/VELDO-0110/corpus-before.json').read_text())
+    baseline = json.loads((root / 'proof/VELDO-0110/corpus-before.json.summary.json').read_text())['deciding']
     paths = sorted({row['path'] for row in baseline['corpus']} |
                    {p.relative_to(root).as_posix() for folder in ('specs', 'plans')
                     for p in (root / folder).glob('*.md')})

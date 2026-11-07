@@ -1,0 +1,353 @@
+{
+ "schema": "veldo.proof-summary/v1",
+ "original_path": "proof/VELDO-0123/removed-teeth.json",
+ "bytes": 1278660,
+ "sha256": "b09e498e79a677764c42ed36614a95e5d1d13c0ed95deb15c241ee357cdc02fd",
+ "readable_at": "afa292f0087ebea55b3a8adbe4b16b68c26ed4b9",
+ "read_back": "git show afa292f0087ebea55b3a8adbe4b16b68c26ed4b9:proof/VELDO-0123/removed-teeth.json",
+ "removed_by": "VELDO-0270 AC3: proof is small summaries, never raw bulk",
+ "command": "python3 -B proof/VELDO-0123/drive.py removed-teeth --output /tmp/veldo-0123-assertions",
+ "environment": {
+  "commit": "99aa6139cf2a1716ec929d950f36f37be00a82d6",
+  "tree": "a435c9af2bfb23e7318cbfc81c84d18ad70bd52a",
+  "note": "the commit that added the file; host and tool versions were not recorded in it"
+ },
+ "discarded": [
+  {
+   "name": "proof/VELDO-0123/removed-teeth.json",
+   "bytes": 1278660,
+   "sha256": "b09e498e79a677764c42ed36614a95e5d1d13c0ed95deb15c241ee357cdc02fd"
+  }
+ ],
+ "deciding": {
+  "cases": 25,
+  "cases_with_failure": 25,
+  "rows": [
+   {
+    "driver": "check_review_mutations.py",
+    "target": "proofcheck/unanswerable-ancestry-fails-closed",
+    "elapsed_seconds": 11.1,
+    "workers": 48,
+    "diff_sha256": "fba51d4fe06f109fe8791ff47f2080a91197846febf9c8b4d26b7e15a0e5d92b",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_review_mutations.py",
+    "target": "ipc/transport-and-command-are-checked-separately",
+    "elapsed_seconds": 11.1,
+    "workers": 48,
+    "diff_sha256": "bccf0eddc91eed7354966c264d64062a51319a6563eed7677935ecc711f5660a",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_review_mutations.py",
+    "target": "relay/an-unreachable-authority-is-reported-not-answered",
+    "elapsed_seconds": 11.1,
+    "workers": 48,
+    "diff_sha256": "f50c2be84d535420bcd7fe34776393eacc9e3ac86d318df94590fba0e85d6880",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_review_mutations.py",
+    "target": "relay/the-authority-judges-not-the-relay",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "5d8414ee55f901f4c787e960d6ebbdb7de8999cf64eb4e46e4b0a213d2f18d2a",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_review_mutations.py",
+    "target": "unavailable/no-local-authority-appears",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "b227dc36748aceb13b49e006d0ab826ebff81118d428bad0026dc03937a587c9",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "proofcheck/start-line-not-author-writable",
+    "elapsed_seconds": 11.1,
+    "workers": 48,
+    "diff_sha256": "9e1e0ea7c85463d0c6e2ecec12a83da06ef294444781b074b7265cea06b0d058",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "enrollment/independent-clones-share-bound-store",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "14f4966044a56d8e88e128aac762716bd8238faa969b85f75715e5224a3d0836",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/authority_generation",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "ab78adaaaf5b0283f1889f41fc5926d25d4e25ed08c8200c738376f403f57026",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/binding_digest",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "14fb61785068862e8160b01afdc18ebf7b0dbe4ec08d7722851e4f89779097e2",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/clone_uuid",
+    "elapsed_seconds": 11.1,
+    "workers": 48,
+    "diff_sha256": "9572c272669ac782f08d0c9051a0ab542d6f7f98382af0cd92014711fc19e08e",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/command",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "c14e33226d07c876d45a0762e1e68ba568c75ea65eac7befcfb3ec4ce666c0f9",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/domain_uuid",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "db24e79fb644e091876c402cb93ade31fb1adeb0d384d83ed1cdfa728a6ed741",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/repository_root_commit",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "76e219625729ebcfa9fccaabb530c49fb711ea8bdf94ce8e5e4beeedf7fa8a94",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/repository_uuid",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "134c0ed972cdf7342fb4700df5882eb7972f20ed8e90f1cbced746f75de2cdda",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/schema",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "5b501a6902da881302cf7dfaab238a92c996d11283e36c33be2231fe0e5d147c",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/store_uuid",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "4750a3c1b4ac89e43013ba949aa79afaabdb462ed123673eb1544b7e94423260",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-covers/workspace",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "fd1211cf4efd26f2717ce2d9b672fa240b58b599acdeb9457ec700d6821457bf",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "ipc/signature-fields-match-request",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "dddd0aef5868f3ec1740a06698821ebd1fa81078025c62f58abe4c77476ba7a8",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "relay/an-unreachable-authority-is-reported-not-answered",
+    "elapsed_seconds": 11.1,
+    "workers": 48,
+    "diff_sha256": "f50c2be84d535420bcd7fe34776393eacc9e3ac86d318df94590fba0e85d6880",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "relay/exact-limit-request-is-carried",
+    "elapsed_seconds": 10.7,
+    "workers": 48,
+    "diff_sha256": "ba9ccc06050ae67ab997a4ba87f5fa97eadaf846c9ac5d659c753eaf171ed88b",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "relay/exact-limit-response-is-carried",
+    "elapsed_seconds": 10.7,
+    "workers": 48,
+    "diff_sha256": "e9a2e0dd8ca32bfe47aa618c641e6f3f7649400bab0b4ee56c4a0cb06d5402a7",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "relay/oversized-request-has-zero-stdout",
+    "elapsed_seconds": 11.1,
+    "workers": 48,
+    "diff_sha256": "ee0c8985694d70259cc2fafd56da7797b5c21c338916670f2c62160ca23bf5bc",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "relay/oversized-response-has-zero-stdout",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "c8ef434e063855b9fc74c477c8e9c9af7484c169d94196d8fba2dd592494653a",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "relay/usage-has-zero-stdout",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "1440bf1120ea0948627e99f032f2cdeece8e7c12137d1e46a41adecefbd33b87",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   },
+   {
+    "driver": "check_teeth_mutations.py",
+    "target": "unavailable/sigkill-refuses-generic-client",
+    "elapsed_seconds": 11.2,
+    "workers": 48,
+    "diff_sha256": "abae2a9df90d2719750b71515d5f83ef3cba4faf17182693550e7485b10a3aab",
+    "failure_verdict": {
+     "registered": 38,
+     "executed": 0,
+     "rejected": 0,
+     "status": "failed"
+    }
+   }
+  ]
+ }
+}

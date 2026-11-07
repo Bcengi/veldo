@@ -1,0 +1,97 @@
+{
+ "schema": "veldo.proof-summary/v1",
+ "original_path": "proof/VELDO-0121/results/AC4-red.json.gz",
+ "bytes": 4708116,
+ "sha256": "cb55b81a786266f066e84b7ddfd6de19da14c39f2f61dbb10dee6e29323e4078",
+ "readable_at": "afa292f0087ebea55b3a8adbe4b16b68c26ed4b9",
+ "read_back": "git show afa292f0087ebea55b3a8adbe4b16b68c26ed4b9:proof/VELDO-0121/results/AC4-red.json.gz",
+ "removed_by": "VELDO-0270 AC3: proof is small summaries, never raw bulk",
+ "command": "see proof/VELDO-0121/results/summary.json, criterion AC4 red, row relay/failure-does-not-replay",
+ "environment": {
+  "commit": "cf3766a037a89ca34f24ec46b7dd027534fd03bc",
+  "tree": "a348034b6154a61a27122424a44376d2709ac706",
+  "note": "the commit that added the file; host and tool versions were not recorded in it"
+ },
+ "discarded": [
+  {
+   "name": "proof/VELDO-0121/results/AC4-red.json.gz",
+   "bytes": 4708116,
+   "sha256": "cb55b81a786266f066e84b7ddfd6de19da14c39f2f61dbb10dee6e29323e4078"
+  }
+ ],
+ "deciding": {
+  "fixture_version": "relay-exchange-v2",
+  "fixture_sha256": "72046e9207b7152bf584e63bfa05690c21f065661ae38f113e00826acba24561",
+  "implementation_sha256": "a59df669d1859f5668dfc0ee7d8a1c3786a95540774d135d954a6a82d403d76e",
+  "reconciliation": {
+   "calls": [
+    "settimeout",
+    "connect",
+    "settimeout",
+    "shutdown",
+    "close",
+    "settimeout",
+    "sendall",
+    "settimeout",
+    "recv",
+    "close",
+    "settimeout",
+    "connect",
+    "shutdown",
+    "recv",
+    "send"
+   ],
+   "expected": [
+    "close",
+    "connect",
+    "recv",
+    "sendall",
+    "settimeout",
+    "shutdown"
+   ],
+   "matches": false
+  },
+  "expected": {
+   "fault": 3180,
+   "native": 11
+  },
+  "executed": {
+   "fault": 3180,
+   "native": 11
+  },
+  "incomplete": 0,
+  "valid": true,
+  "coverage": {
+   "phase_outcomes": [
+    "connect/EACCES",
+    "connect/ECONNREFUSED",
+    "connect/ECONNRESET",
+    "connect/ENOENT",
+    "connect/ETIMEDOUT",
+    "connect/timeout",
+    "recv/ECONNRESET",
+    "recv/ENOTCONN",
+    "recv/ETIMEDOUT",
+    "recv/timeout",
+    "send/ECONNRESET",
+    "send/ENOTCONN",
+    "send/EPIPE",
+    "send/ETIMEDOUT",
+    "send/timeout",
+    "send/zero",
+    "shutdown/ECONNRESET",
+    "shutdown/ENOTCONN",
+    "shutdown/EPIPE",
+    "shutdown/ETIMEDOUT",
+    "shutdown/timeout"
+   ]
+  },
+  "rows": {
+   "relay/failure-does-not-replay": false
+  },
+  "inputs_unchanged": true,
+  "input_commit": "aca6afd40f672e409694109725de61f81aca5a5e",
+  "records": 3191,
+  "records_sha256": "38d04143155a0e01b716493a49762bcde2689a17c64ee043ffc75b162e560e6c"
+ }
+}

@@ -1,0 +1,3611 @@
+{
+ "schema": "veldo.proof-summary/v1",
+ "original_path": "proof/VELDO-0110/corpus-before.json",
+ "bytes": 7454256,
+ "sha256": "46d5387de9ef2063a01421eead1f94cf164e6cdb44af9bdf5dc053ada6bc31cc",
+ "readable_at": "afa292f0087ebea55b3a8adbe4b16b68c26ed4b9",
+ "read_back": "git show afa292f0087ebea55b3a8adbe4b16b68c26ed4b9:proof/VELDO-0110/corpus-before.json",
+ "removed_by": "VELDO-0270 AC3: proof is small summaries, never raw bulk",
+ "command": "python3 scripts/parser_corpus_audit.py",
+ "environment": {
+  "commit": "142086ec021d18f4e535fb113928b7c863e4b3db",
+  "tree": "3dc0852f9a7fd386941d44cd5632c36a8d7f9148",
+  "note": "the commit that added the file; host and tool versions were not recorded in it"
+ },
+ "discarded": [
+  {
+   "name": "proof/VELDO-0110/corpus-before.json",
+   "bytes": 7454256,
+   "sha256": "46d5387de9ef2063a01421eead1f94cf164e6cdb44af9bdf5dc053ada6bc31cc"
+  }
+ ],
+ "deciding": {
+  "baseline": "34342c3",
+  "parser_commit": "6b2135a",
+  "documents": 331,
+  "with_front_matter": 330,
+  "different": 331,
+  "refused": 88,
+  "additional_yaml": 26,
+  "additional_yaml_different": 16,
+  "corpus": [
+   {
+    "path": "plans/PLAN-0001-veldo-one-point-zero.md",
+    "sha256": "326c97a4aae01f60a1f5451dd2a0e98460a83991dfd0fea1c4a96b109c088e55",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0002-companion-home.md",
+    "sha256": "f0d9ef76d991e653088f81eb8171e97c5a770eb820a47c1bc439c081a64411fd",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0003-batteries-runner-suite.md",
+    "sha256": "8806479d5dcbe4805a5bef1700a27149c32cb7d613a9a4998e780c5bee6e22e0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0004-veldo-two-point-zero.md",
+    "sha256": "6e77134f9d664d0262333daf8b8d9b9068b9350d8caa25858708e8f15f9f27af",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0005-run-lens.md",
+    "sha256": "846a0f7aec8e6e9e74cba4cfa5348bc8beaed23305af364dc9dc444d600ff50e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0006-tracker-integration.md",
+    "sha256": "0cb22fa8aa1b6b866f0cbea00a534ee1dab53ba076ac5f80ad7574c61059a54c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0007-veldo-fleet.md",
+    "sha256": "02c86a7d84b5de8fa6c3a1358fa8a7abd8aebce8307634dc43aa1d48b7c2fbe4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0008-multitool-packs.md",
+    "sha256": "3353bef590356cdc193837cd27aad962fe46e378687941619f88aa0eb140bc9f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0009-fleet-distribution.md",
+    "sha256": "d763a9d4dd4fe6e046824497c56f4c5bcc24a70f3c854f9e8779ae8ad43e7450",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "plans/PLAN-0010-tracker-driven-autonomous-fleet.md",
+    "sha256": "66823feb432f9770953b2ddd9c346baa83a3a8af677038095f439809c41ba7b4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0011-architecture-and-maintainability.md",
+    "sha256": "68e786c9a82f1691d713317c82c334cb7104e9b2385ac76e03cddd893688e583",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0012-production-support-responder.md",
+    "sha256": "a53dcf608d6a2eba49e69474426880f4c1f606a7a4bdc86b27940bfbd7f1d51e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0013-security-by-design.md",
+    "sha256": "f07081dd72fe2f5e5c0673713136bef50e8b198a92f114fb0d7639f78f29a181",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0014-tokens-of-effort.md",
+    "sha256": "43c09046e31b2a4c3c2cc5749b1243e25cf8ec7600508e98de7d458ce14a2f40",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0015-substrate-and-release.md",
+    "sha256": "ba962d85c9278638c723799e816ada81c76a9bdac32682d3ef69fd04ce8aa317",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0016-human-decisions-through-jira.md",
+    "sha256": "8317e853468ef5583e91d106fe5c102c1c16f720adb9678f4134579e383487b4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0017-the-veldo-launch.md",
+    "sha256": "e4ab548dc237088bdd1fceb86e54e64f5982c439171e9a3b038c6015dd92d165",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0018-what-a-complex-project-needs.md",
+    "sha256": "ffd4e8151d1cfd5083976eae1c8d7ce7c516dc2f692627a19d998dfc0e44f9d5",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0019-dark-factory.md",
+    "sha256": "6474d5088a204b525424d7d6bc3c95381aed8de95146daac5011b211db0f8a98",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/PLAN-0020-independent-validation.md",
+    "sha256": "f3bf5cb75a495f68d3b2a99e9a76e291e87956bd8a5ad7254aa0d48c39705b98",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "plans/TEMPLATE.md",
+    "sha256": "08e6aebc567aad3b9145fe2f173a035d1cb8d4e75cfeda38595a3aca41e1376e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/TEMPLATE.md",
+    "sha256": "031de169122ddba6299428bbf4c41c6afb72181587e083d91c9ecf603b70ffe0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0001-every-criterion-declares-its-own-falsification.md",
+    "sha256": "96686237ac062712b86b8988a760f6fb90a610a15b78199c882775bd903d2f84",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/VELDO-0002-recorded-work-state-surviving-a-dead-session.md",
+    "sha256": "8ca86c3c912f058a657de1ef3147e27d99750b437d037e441dce37a3a3cf24b5",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/VELDO-0003-a-work-source-for-work-that-is-not-construction.md",
+    "sha256": "2166ae21541d81dfd6f57fe14ed388eb8bfb9025877fdca906bbed25b5397f4f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/VELDO-0004-the-promise-corpus.md",
+    "sha256": "dda98041e02ed3c55c83acbbfcb986853b9583e286f445882b88ff156946b165",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0005-declared-and-shipped-disagree.md",
+    "sha256": "d9df456a8d1007a77b7df22445515c4b643a174c8ca0aec5574b8c8d40a33aed",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0006-budget-continuity-on-the-operators-path.md",
+    "sha256": "359917f55bbf38797c4592b0d071b66c11c81e2e49d4a6b9960d70e8d2e24476",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/VELDO-0007-install-and-run-from-the-artifact-an-adopter-receives.md",
+    "sha256": "ab94b0c0a9879af66cc89e871e4e3d1d3ce1b806c05f63696d0c5d1c0425dead",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0008-veldo-version-from-one-declaration.md",
+    "sha256": "aaa92b175f17f942b246758c33d816bfb21b4073e389f3b29e050d5613cd9447",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0009-init-stamps-the-version-it-laid-down.md",
+    "sha256": "9f0d8d6d6c31a40232914e977795b07d985e2db17a550f0843769336638e2ea7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0010-evidence-names-the-version-that-produced-it.md",
+    "sha256": "441daf2ebb770a10301ebc6227d684d0dfa9ced014e4c2c5bf1c6408da144c75",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0011-release-contract-and-registry.md",
+    "sha256": "c6d12c25f77252dac53ce7584654a920c23eaa5cafeeaac92717278470c9a767",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/VELDO-0012-behaviour-floor-contract.md",
+    "sha256": "2f7b72c8848d16b7d9eaee332b5a44d6e73c28fc8a0430aa55a3f79307843f40",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/VELDO-0013-a-declared-falsification-is-driven-and-recorded.md",
+    "sha256": "365a23a32372616d3575bf06a32782042e28decef5013472f047edf77fa2e9ed",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0014-what-a-criterion-may-assert-about-the-live-tree.md",
+    "sha256": "a871918927a281fcd023c4bc27054744c8a4455fbc639f9a0df56fe44d185901",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0015-liveness-stands-down-on-clock-disagreement.md",
+    "sha256": "1169f0ca1d8767e7ebf09abffa92b9b0b7d7fec1a2e1a857dde9f120cad88ab9",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/VELDO-0016-policy-boundaries.md",
+    "sha256": "0b9c42ffdad58566e4a9f5900dc2943df73b869fb8b1aabb5f14bbb3d11f2a22",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0017-entity-lifecycle-contracts.md",
+    "sha256": "e141214a2d305d968054dcf63d953fd11b0d3793262c4affd9b0c5302be33170",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0018-release-floor-contracts.md",
+    "sha256": "3d5a038e805faf67545a7ddbc39b1f224634615596ceae0039041b189a4eb907",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0019-combined-graph-contracts.md",
+    "sha256": "4270e10e931a87a85038f7231897a7b9e85d9f2cba99dbd1ca48038735cc4f3a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0020-signing-authority-contracts.md",
+    "sha256": "2d3ef14bda32414f27d4fa41ffdbe60b236255d0aa238d085eb7471125835d6e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0021-completion-eligibility-contracts.md",
+    "sha256": "f6363996cfbf2c53d647dc94babb46dbc41b9d9e0dcd19c0ac4c8d38004609be",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0022-section-2-admission-contracts.md",
+    "sha256": "fa6ff217a228581793207f9872fb5d4ea5af9027a9e8887bbb6802e7867c3a8e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0023-journaled-commands.md",
+    "sha256": "3adf53f58c5478a229764c73191f7ee71ca56d48869fb21074be0d5ca0091be2",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0024-signed-git-replication.md",
+    "sha256": "51154b7ec9723f47b8dc65b1aa57b6bd0e8a61e5b004807393b9539f26d49e21",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0025-membership-and-delegation.md",
+    "sha256": "700aef4f6e818a06936a1ec92b344fbf3c14e60e72b1af822d631a3c5df9163c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0026-authorization-rechecks.md",
+    "sha256": "d13da5674676a7245bd34f09ac8cbe7b6feeb55f56e73622c34f9c3b2fb5f3b5",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0027-protected-signing.md",
+    "sha256": "7413116ac8673aa048266cd175c5cf0fc8741464b5b4d193fae869097f64a2de",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0028-protected-effects.md",
+    "sha256": "579728e9b073b972253741311f89a4289366c2ff2b7bf995c0f58eded11edc55",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0029-repository-enrollment.md",
+    "sha256": "c581ea8d3725e5c9b132eb3dacafa7fcbc8e1751151cfbb917b75a2f034f862d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0030-authority-generation-fencing.md",
+    "sha256": "e9d7377c27e5add8e1d0746389e5e3cb1c82ed13dc724627aaa29b6865569894",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0031-authority-backed-claims.md",
+    "sha256": "b8c2c2a66c19d95bf1256fc80cfaaca4e02b2e30e66bfb5c0e0710ae7939debe",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0032-clock-task-reporting.md",
+    "sha256": "57a16b544f4ea98a4ae8c8561fff014d6ef90ce7e70690234f73a1ebd6719bbd",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0033-clock-refusal-propagation.md",
+    "sha256": "ad8dccb0996600a08fc5a3b3d0c467aaf3991751611d2af325f7f31d45edc095",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0034-clock-status-display.md",
+    "sha256": "41f51c85973459ab69e456153256ee63ca4afed5260d2602bac363ce177f1717",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0035-authoritative-snapshots.md",
+    "sha256": "242b8a26bfb9b9185e919449a8eaf79b7f25426e6400e1720af3ee6cbb90e209",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0036-capacity-and-spend-reservations.md",
+    "sha256": "5f39475de4d88284562085541badcb8b3279e110b04b19c851c5dbdf9a166911",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0037-specification-alias-publication.md",
+    "sha256": "8c554c0ce1f135f40e1d16b243bce8294390b8531b0632eb74e82427fe372a2f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0038-effect-recovery-commands.md",
+    "sha256": "39e8ea67c0fe5f7664faa8a83d1a785d7bc0ecf500cdcf6acee45230f142dcff",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0039-durable-dispatch-acceptance.md",
+    "sha256": "f58d27eba74f74efd731f6d1456c40b805cbbd990f75c7d8e89fbdd406584d48",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0040-process-containment.md",
+    "sha256": "635c8ef8199e791abd0064b0103ffbd17de3f3e3428eba89fc92ebe9408b28c1",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0041-heartbeat-and-retirement.md",
+    "sha256": "419023d709a19577f6c4ce155ea91ecdb0e8dc25b41ece45abde8e96f76cac9c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0042-isolated-worker-clones.md",
+    "sha256": "0652530616ec073f8df13a7e6bb6d0c87cad392186a78b0f591021f5e6afc76e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0043-replaceable-langgraph-adapter.md",
+    "sha256": "e4cc684f56ccab384ad4183fb236d3ff2a5ddd76ec0c2f588d43f9e1fc81ffa0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0044-checkpoint-isolation.md",
+    "sha256": "ba76a8dd05bb7c1a2dfbbb8168a05f4cd18c29e6b2f44886d97234bfff6623c9",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0045-isolated-runtime-distribution.md",
+    "sha256": "8969986fa8b45981798d1713db7cd8232f49cae86c1be881df4841fb50d2d590",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0046-durable-notification-delivery.md",
+    "sha256": "d69a2b7532188595eeb95a89c4ec13f669ac28fdf1a708e67e4af1549f2747bf",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0047-authority-service-lifecycle.md",
+    "sha256": "1bd229ab174ba98c852ec9f2b4ad91396f6e4302768fa5ca35e8e5e4dc600d21",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0048-integrity-and-replica-restoration.md",
+    "sha256": "5c83263addbfb00d2d79ac34d0b4aa6ee529ee35847c5cd6497fbcadf6763091",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0049-authoritative-floor-transitions.md",
+    "sha256": "a880589072ea9079b9fde503399a8fe0337bcb9ede14c2e3d2804196a6a30855",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0050-durable-contextual-proof.md",
+    "sha256": "4da8a030fe035c8a0e1432627e4cdc1088f76dd7157b70c123bf073fb421ecb5",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0051-journal-event-publication.md",
+    "sha256": "284edc6daebd6e3002d7ee158c7af44196656f21763e159f100add64954bec4e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0052-shared-floor-eligibility.md",
+    "sha256": "0a09a28289f67e7ee0fc40d616f7c70c1d50106d9b8397ecd2ca46f0c6d09965",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0053-architecture-entry-refusals.md",
+    "sha256": "ddf509d225473d0be2d4d29c38c6f05766a7275973ac44c03010a9bff82cd651",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0054-floor-decision-dependencies.md",
+    "sha256": "b46d144fbd6cd78cad86bf4c973ed96737734b09b4b3af18f291a4a9bc6ccee6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0055-release-regression-receipts.md",
+    "sha256": "751693e378b0b8135845b1162eb4edccfad43fb1726255223919c585a3cbf9a2",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0056-disposable-landing-candidates.md",
+    "sha256": "13c1a74945a83e59cd275e5f1c2209a0b2e0b8ae31372444033ea556e6a26c3e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0057-exact-tip-completion.md",
+    "sha256": "b79676cec88c6327a9ec0085ad679baff972ead25b1bfdc5ff15e50a5fcba151",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0058-isolated-gate-observations.md",
+    "sha256": "32063b316b88b229fd2d17a339340b6a5eca9aee4681a9a8525038dfc2eb3c46",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0059-installed-floor-slice.md",
+    "sha256": "77af17c19467c2d4acfca9ecc73419e512df9c5e4ad8ea87d92fe0b35c02775a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0060-claude-code-adapter-qualification.md",
+    "sha256": "970dcde7b422eabc0fb16cea6528af0572be569e50db7123ca7d53d829efd256",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0061-codex-adapter-qualification.md",
+    "sha256": "72e113bc0f02933e620d557f7a13dadb68e9a13ec48f8b5a652c66016a9353b6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0062-provider-credentials-and-usage.md",
+    "sha256": "ed18170b7910da4323403960e1aa7bbdb7643918b9fea614d2e5cd34dfe7953c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0063-production-governor-lifecycle.md",
+    "sha256": "ae5185513a2da732c9f829e3f1c46293448dfc84903949d022cda82941bddaf7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0064-assignment-inbox-projections.md",
+    "sha256": "f77353bdc33bd1c29a12ec7f3865e6b9701f734e6b4511eab5342653e3c0e6b6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0065-versioned-channel-presentations.md",
+    "sha256": "87c6054ef26052236474a9ef0a81f1a19a0c6c1a6307e993ff222c1ad674d4b4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0066-canonical-channel-attribution.md",
+    "sha256": "f64ada9d0a578b65d9d216a4d90ba22fd4a93315909293435fb4c6f2342d64ff",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0067-restricted-channel-edges.md",
+    "sha256": "730f50d29e2332fad2aa34b461c6ddf12d75fac2469c734dcebcdbfdc7596607",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0068-atomic-cross-channel-settlement.md",
+    "sha256": "700a8172eac6d92dde904aa30f6b9f5648c21f9329da0e84a31ab97961037eb0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0069-governing-decision-bindings.md",
+    "sha256": "54ff3e85266347c3e1de7add499c52fa05d916db4c1458cd6a5cf78fdd80131a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0070-independent-decision-review.md",
+    "sha256": "62f3d16efc1a6377043db0bdf9000a47ef22af345554e4ce7c027c8504cab265",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0071-governing-assumptions-tripwires.md",
+    "sha256": "53b7a25e7359b9afe67b1f393ec8f594da3690b7b725656a46436463a65ec75b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0072-tracker-projection-history-repair.md",
+    "sha256": "7d9d5280d9bbfc756659c16bcff57d100403181de59d25f8ded79753446e7391",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0073-channel-ingress-activation.md",
+    "sha256": "589c2a106d3eb535496bafbfc62bfb24874363c7283ed56c6043d7ddff97702d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0074-interrupted-channel-decisions.md",
+    "sha256": "0c1644b47243967b60fc52aab022296431d05d2530502a801454098757364d06",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0075-andon-delivery-resumption.md",
+    "sha256": "cefee4af9fd467c06f405f1893948a081f96c82c5f979f01313d06114091ca0b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0076-project-ownership-charter-lifecycle.md",
+    "sha256": "c84c2bd530cdac307569c9bbfc7f59b7ee9d13ff0f77f29127bb7d2560064a0b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0077-objective-acceptance-outcome-assessment.md",
+    "sha256": "86a3e39844d53a450217012b6c8b5c7cad3171da8b9d2f19a3a1d654e2afd698",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0078-backlog-lifecycle-priority-execution.md",
+    "sha256": "f7bcb1ddd8c22603c0ddb0f61476f62d7c652755f3df2630e2d0f0ae5ec7e976",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0079-grooming-enrolled-decision-surfaces.md",
+    "sha256": "010e6f8e88033ecf8310b14683d6c7e001506903e39a909588c510dfdb97b9e4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0080-work-class-dispatch-defect-reproduction.md",
+    "sha256": "aa54c1a28914abecef784d7df88a1b53e3f7d38ee822fa909da929e580800845",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0081-quarantine-inspection-taint-execution.md",
+    "sha256": "ba4dfb853d222ba47553bc8217e5fd8e3a439d01fd7a402d0bf56b8749012616",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0082-standing-maintenance-compliance-occurrences.md",
+    "sha256": "a7b94b3c7b4291b803f57f614fd571d912387157dbc0de403146a0e62ced8d31",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0083-security-emergency-incident-containment.md",
+    "sha256": "c9dd3d6b7ead033729f80d686e02c180d0511567722c2733602090bac5a8ba51",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0084-readmission-scope-admission-debt.md",
+    "sha256": "0e77277530cafeb43f146b8d0982276c9f953db02932285b715109e0a67ea925",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0085-decomposition-concurrent-publication.md",
+    "sha256": "a88854009b57f5fd0ba88150e7cc3b058f8f3c71d0938c59a30de643ce3b60ef",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0086-release-execution-ownership-contributions.md",
+    "sha256": "8369fddad872035a68e82a53d8f72f64f76ce2a8fb93e3ef2bdd91cfd1dc1055",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0087-project-dependency-invalidation-traceability.md",
+    "sha256": "ee082006f738e480cd8800cdd586c7a62fade76ecc2b5ca6218539e63392b369",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0088-project-manager-execution-graphs.md",
+    "sha256": "22d48c0caff3742ec1d9a98333b3d78c33bbe580a74cc3dcce2ed6b4ddbab488",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0089-versioned-team-configuration.md",
+    "sha256": "ede346438a6df7e55fd7e1a9eaeba622d17686655632558b30ff637a7ae0a052",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0090-capability-bound-specialist-selection.md",
+    "sha256": "5298c85d3e648badb724c74d6e9c7452d26cb6fc151a5645c5cdc7ad91a6fa3f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0091-budgeted-requirements-elaboration.md",
+    "sha256": "b10396062879e016523c6581641acc831cb4bf92036b09a001fa3c08d890e2ee",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0092-typed-proposals-authorization-validation.md",
+    "sha256": "6f19d89fdcae9e053e7dcc65e09e4d6b1d64d6d1d1754364a2f222a18449a63d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0093-project-cycle-serialization-checkpoint-recovery.md",
+    "sha256": "eb8848bc2b4ffb140474df718ce0700e4e9b2938b66b68fdabe9fcc417c9aac0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0094-every-pack-installation-floor-slice.md",
+    "sha256": "fb4f0d5bed416d4c6360a9df3bb1a1362128ee379257eee276f1fddd4f56bf70",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0095-historical-migration-atomic-cutover.md",
+    "sha256": "196c286b0ec5dafcececdf2caf5e3feec283c8467ec5767c7fa29c43f255b26d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0096-clone-principal-adoption-qualification.md",
+    "sha256": "7650ac7935166d8b11ce4e8721adbabf7fd9158f4a453701dab6521bdb9cdc32",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0097-operational-recovery-scope-revocation-lost-ack.md",
+    "sha256": "682341bcc066fc9afb3a9e9ed65731e214197c7ec1dd61088633c16418e50fd0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0098-rollback-coordinated-release-qualification.md",
+    "sha256": "40d34a7ed677b1fc6b77b63f26c8c16f4df7248d708839bc01fa87a04a9b1643",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0099-worktree-git-shape.md",
+    "sha256": "38aad8483d40137f202fd113152ae8e13210b4a6a7966dd567f99e85061721e6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0100-landlock-write-confinement.md",
+    "sha256": "fa9289923c2021b475c1cc3c06aa360ceaec7fba5ddb5d2482f05bc938bc846f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0101-review-saves-reproductions.md",
+    "sha256": "9b6a89a758767401cad1bed365a902caa21f981c2b8781912fb46e10351097f7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0102-capsule-runner.md",
+    "sha256": "14cb92bde5b25f3b92b6754b76d3ea9bf1db13399c675356ff95e3351bd992af",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0103-fresh-assessor-run.md",
+    "sha256": "efc29a99d685d7ad08dbbe142b973ad046b2b2cf7811fd0b8595cc58835c20ab",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0104-proof-check-refuses-unvalidated-fixes.md",
+    "sha256": "d09902f3a9f9b0a432532110f0ae7b0902090d9a67b3036f63d4bad986fc95e6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0105-fix-validation-start-line.md",
+    "sha256": "24077b4fe119ce7f0de10c0499da6c6f2fa6266a81f4b745bffd5b68c8790301",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0106-policy-read-exactly-as-written.md",
+    "sha256": "06d5df6749d0b5df66fcce36ae58656c91dd89b9aca32b161f5dac2dda385770",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0107-local-authenticated-ipc-routing.md",
+    "sha256": "2900e37c942dce546f1dcf8b706659cfe16ce23c3f2b1794e60048185ac000e7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0108-ssh-command-relay.md",
+    "sha256": "f08d91ed21dd7cd15545f11dd9e58f5037244138f387d66f353d4609f1ef5b09",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/VELDO-0109-authority-unavailable.md",
+    "sha256": "55be7ceb619c402319ba22d35e139ff987e6240595d6f06f8186cd02a6f1fd0a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0100-adopt-veldo.md",
+    "sha256": "079fa62de635e07cbaf14469230848c9ce58f07a12c6973d182f0fbd5f36b89f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0101-plan-contract.md",
+    "sha256": "ba82343a899365ab02e9c4c960dfe0a8267d3ccd144de4176f9c4f51e2810f23",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0102-plan-skill-and-lanes.md",
+    "sha256": "7732fe86d2dda4fe9db2cfa0e5ed77ede7145b7e63e8fc416e62862077d9e7cf",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0103-run-plan-integration.md",
+    "sha256": "3f44d19c8000c147b501a9cffd3a8725ae7d5d67d78fed386080f271e6f715d1",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0104-regression-mechanics.md",
+    "sha256": "14850365511bd2d41f9eb2c78732526f1ca61c5623035caa6f53ed5a9c37bf5e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0105-web-journey-runner.md",
+    "sha256": "c4cf2121af4c1eb50d1015354202cf1714f4276dae3017b8ccf13f079fa786c0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0106-design-token-lint-and-baselines.md",
+    "sha256": "d9cb4907079641c85c23ad2218d46e2bc4382df0faedc2b2192d8c1a43179069",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0107-android-runner.md",
+    "sha256": "8aa48011df9da8b9bdaf429e7773f6a36b913ebeb8242cb8fbf22922a62512ff",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0108-event-envelope-and-metrics.md",
+    "sha256": "b5fc55bf74c370791b74ca820df6653909f1d20e1ee6b9d4d40c49a50fa82fe0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0109-core-loop-closure.md",
+    "sha256": "0b3327c490f48b90920b0314ea2c6cb4057818b97cbbfc0458b25d03e4a8ebae",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0110-server-side-gate-wiring.md",
+    "sha256": "edf0aadd6c932097788162d0b4fb4cc368749bfb94022bd4433ada85ca030080",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0111-planning-layer-docs.md",
+    "sha256": "ab590a0e1d40f1bd7c49d7da14ff8233bc6978bb227184ac63411982fc963b65",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0112-dogfood-companion-home.md",
+    "sha256": "cd9c448af1079981b2645aa4c49a872d0302fc6bb0d49382a4434d984f517e00",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0113-review-findings-hardening.md",
+    "sha256": "d54f9eaa4fe58ae0b20ddbeeb323029d7eedd9e02b9e2d284434c4754576817e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0114-approval-range-binding.md",
+    "sha256": "395a4470adac8f78ccc1a07e529ba930a2f9b157dadefccd9331db5b577053e5",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0201-home-aggregation.md",
+    "sha256": "34c2c94c1d5b5199e8ab23a8757f1f3ba918c9cbd6537942f50b54c7c4a8ac45",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0202-active-trip-selection.md",
+    "sha256": "9f3158b73288e9c9ccc9ace997b99fc7b2e04bb5ae9af4fece173301edb36ca4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0203-owner-scope-empty-grace.md",
+    "sha256": "a87f49d6f0f9728847a4feb7831e6596bc1182b9ca4c1a8ab06e5170f1860a63",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0204-derived-content.md",
+    "sha256": "3db7b15bde35f86f9df98dc1b13ba81d9b66d5a5b481ca0b684437c2b0c07a7d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0301-http-api-runner.md",
+    "sha256": "332a18459b6c51db233c3b7a4491e55ea7d4ed880a87fc11f386742814549eca",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0302-auth-authorization-runner.md",
+    "sha256": "565d2c28d373f2fb86f5f720992af4635a4c2ed2a246cf86cf68b90f4b34fecf",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0303-db-migration-runner.md",
+    "sha256": "be8e95cf3b90aaa9740120c2e816e50a8e2ccb4a459b10bb0978bb1b2bbd4dbf",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0304-performance-load-runner.md",
+    "sha256": "494dad6e8c9824a75365a6e733a2b6de02fd73868a48244ebf9c085e8d13b76b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0305-llm-eval-runner.md",
+    "sha256": "5bf5bdf37a039e35173a848a19c2e2b47b90caf202c842b3b54decabbe0f8063",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0306-cli-process-runner.md",
+    "sha256": "e7b328070b66cd4ba1a38c09e82b3b3ce114db948f480c6f786281a65a2db753",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0307-integration-contract-runner.md",
+    "sha256": "dc9c2045b0f121b7bcd1ce199c0e0b590c189d92b338da876fbcbf0f9f77c469",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0308-ios-mobile-runner.md",
+    "sha256": "8321c5177c30461669db1e67366608c31383984e5cf1fb296fa9aa5fce9f8312",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0309-suite-catalog.md",
+    "sha256": "404a9166fa77739f707c8ba2eb8b3f77572c4b8ba9a41ebb6dc694d422ac7482",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0310-agent-loop-runner.md",
+    "sha256": "0630e5ac3a7875cfe6527dfc7b738677fb2ca314e256921a0f25068cadb6a8d2",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0311-contract-schema-runner.md",
+    "sha256": "b10e94a215d2ab8b0aa125ea22de552ab4390919831558b5e0a13a793c1f5503",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0312-streaming-runner.md",
+    "sha256": "5f93dbd9185fed77dd820d55b9232e067d694b98ccf2d4de04f25592e273af47",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0313-process-lifecycle-runner.md",
+    "sha256": "1295abbce813b204f09f9c19bfe55a4d3c0e8eede3a6af2b93e1cb0fc385ea46",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0314-config-schema-runner.md",
+    "sha256": "dc84afc1dd918997e581e8c0d6bfe4f37c3b12cc4886a4dc2a7071ce207168a9",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0315-security-guard-runner.md",
+    "sha256": "85ee8913b0bb1c91d97274acb7a01d19d04f35a4780e45af3a36610c07b51001",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0316-plugin-load-runner.md",
+    "sha256": "57cba9078294d91ba4d06a88e54285a583f3e9d42ca81019b203223f8f8b01f0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0317-sandbox-isolation-runner.md",
+    "sha256": "6a50d1a29b45435a5c24f1e53df9c9ab4a29958b1ede05047e8822d00e0b4d9c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0318-mcp-server-client-runner.md",
+    "sha256": "6bafbc8db672ebc9b3cfa613b709684a29f6b3defddc9a96319fbc529daaae63",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0319-terminal-tui-runner.md",
+    "sha256": "0d212b9a147a0857e8781be0427ecd46946db50f288c0d6a6d0ba3cf05767a87",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0320-static-guardrail-runner.md",
+    "sha256": "d40b44cdc59ec5e5b36657fe38e1c6e9091a8871daa4fda750a728353456c5ff",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0401-executor.md",
+    "sha256": "c125432c20a1f24c9c40df934129fb70d8d4f7b8e0c08859b67b567dedf8e750",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0402-veldo-init-scaffold.md",
+    "sha256": "390601e2c4e41d43c20c4fe68da77e2b35de3d7707d623ec162d9d23555fd229",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0403-lessons-store.md",
+    "sha256": "11a3ecd3fc0db31c0347519d71793fad22513d0632804c7628dc4d19e088d17b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0404-metrics-dashboard.md",
+    "sha256": "d9d0f29385a6204feff18d46ad727ba00f754f8043ed6f749c932f512acd3bc7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0405-cost-token-budget-governance.md",
+    "sha256": "bf10d13f259854a613f3a7a99d094f3d3d3aa365e7772072a16063530b9ea20a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0406-ephemeral-env-provisioning.md",
+    "sha256": "d5e25418b97b33cd177667f4635de6a9402e90c0382a3b3b08ed8e42c66da6c6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0407-release-rollback-automation.md",
+    "sha256": "2c1bc8d57396176fab1ec079fe315f75562bcbeef6c9029cfc119ec04d31dfd4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0410-release-veldo-two-point-zero.md",
+    "sha256": "2bcf81d79de90c30bb6e8a98603255ea16af3794bae5dfeee7ae801c139e2b8c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0411-runner-anti-vacuity-hardening.md",
+    "sha256": "35443582550291216241e5daa738e7e5494219cba77114b0ce069a8a53de5ff6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0501-run-registry.md",
+    "sha256": "2be0755be1c06899f8a63a78e63ca768551769cfe81701fa5acb2e2f394e4aec",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0502-run-wrapper.md",
+    "sha256": "784c6f2a45257742a519f977cdeba8fc73c2fa7e448f152b4c612a2fe1de5e20",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0503-status-reader.md",
+    "sha256": "8447c492eaadf97800fe243eafb7bff374885867651685772d5277bcc2c79c03",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0504-status-server.md",
+    "sha256": "3d14b5a180ffb9700f93e1f04c3c02e2166fef984efdfe168e266fe419f2a04e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0505-run-interaction.md",
+    "sha256": "90b0acde025bb895e281ce3bd98a9a10b013609dffe02774c92ce966ac3db092",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0506-chat-surface.md",
+    "sha256": "776c93eeb8c3ebdd4e93e4bf5a9733da5c0fbe0c6994aacb4b5536929f883947",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0507-release-run-lens.md",
+    "sha256": "e105b03182e975783489e00c2ac25800e2994f9f80bea728f52b247298d74d84",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0601-tracker-routing.md",
+    "sha256": "a64603f99c4df89f207455f501cbadb9ee7285bc96f811d37633a5254ef1a126",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0602-routing-enforcement.md",
+    "sha256": "b8349953ed453dc8455aaf2179e60a7b20a82ad9b9c38d174171627f96106892",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0603-tracker-seam.md",
+    "sha256": "172a884b70ed0bc5b243727af0fe11ce53fac62c2723961f1388168b84939bf5",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0604-jira-intake.md",
+    "sha256": "1a894a4761e22f65e7aca834d2eaff75d48147d03555437a532396090e1bb4e8",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0605-spec-mirror.md",
+    "sha256": "590e6d5ef21dd046a5d8e8fbea9e562ab938e98b35663901ccc72635fa1833bd",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0606-epic-mirror.md",
+    "sha256": "969de8a8cc68e1d5eeceeb30b836f615a18f13c6f5cc1a7af757b3dbe7892350",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0607-confluence-intake.md",
+    "sha256": "1982749f929bc10048e01521c4805a44100cd3612234978cd3db9b2a93899eb1",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0608-tracker-conformance.md",
+    "sha256": "a9bc8a40ae48188d06c34960683a19c0f35e06b9a9e45a2fc77a11fd712ae767",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0609-release-tracker.md",
+    "sha256": "9a8e3ee3e44cd27eb912f52f2e890011f65779f01809bbaffa21d72304dcc9a6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0610-tracker-docs-made-true.md",
+    "sha256": "118c9594273c77ff2d26ca05a26c7172180855d37d26fbe35ee57a32b2b2281b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0611-tracker-operator-guide.md",
+    "sha256": "5d46bad2f04b2549220685763e2893f0e73745aa5f01d221192685dcfdf85b84",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0612-jira-init-board-bootstrap.md",
+    "sha256": "37dad41ba3494c0659f54de300dd4b063a0c383e2c9453562a81bf2519d01127",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0613-jira-snapshot-current-state-reconcile.md",
+    "sha256": "7f2abb22dc9fb835ed71b82e308b64f5814a23953b9d4b0ad6b6d30150a1fc6b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0614-fenced-agent-identity.md",
+    "sha256": "83943bf0f52094653386c5fd6703c20306d60939ceb7f95b2dc902db74f73743",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0615-human-touchpoint-request-record.md",
+    "sha256": "362348794a250a3739d35ee175587f73c1c1bd5ccf4737740b673550675a0b32",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0616-authorization-module.md",
+    "sha256": "cee3daa42acf561c879e1a6b737c16f2c14ad71b397b36c7b8c31877d0b3230a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0617-outbound-decision-projection.md",
+    "sha256": "26be2250add4eaee8ca489ed8727aca5ef1e1a0b7d61362a3da32c5f1cb44cd6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0618-request-telegram-doorbell.md",
+    "sha256": "c1bc71a1218ec608a253ffbdfaaa59a1d760ba93aac22774697960484b8fbdc4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0619-request-inbound-reconcile.md",
+    "sha256": "ce82b9fb513ab3b8176d1907b76bd00a9827ba0106e138963b01cff0c2667cdb",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0620-live-sandbox-proof.md",
+    "sha256": "de9b0f4e74c339c98138be3218b556024e65f0a8a0399e98945666e82cb204bc",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0621-risky-action-execution-binding.md",
+    "sha256": "710a34b7edcb2109270bab4a01180a8b94aac4c639f6bfd64fca191a6ad5e6c7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0622-conformance-no-bypass-release.md",
+    "sha256": "e3c9c8b0b9a474bdde0cdb5e3339f8494d7763a00e8d5ea53573f72a183a6226",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0623-live-provisioner-name-collision.md",
+    "sha256": "b8a7e691f100ab81f8cd5e9f240a10b3e47fe617cb91debe03b0eab6ba34dc40",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0624-machine-actor-structural.md",
+    "sha256": "3b9cafa09f3ea1a5adb88af2c6121032a5499b0d527a5947114eebfafc75265b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0625-live-changelog-reader.md",
+    "sha256": "90f43808ab14ea64ed87d5153a05b685953c185b1b7da2fdeff92802955835e6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0626-shadow-check-covers-the-class.md",
+    "sha256": "e50ee87c148e6ae8735b12c9a8005e3e0fc85f6b6d768153e23e20c1affee26d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0701-claim-ledger.md",
+    "sha256": "b7802292844ca20f2dc376681c1f4046d1c681a6647d8857552fde45ebc4f330",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0702-claimable-frontier.md",
+    "sha256": "c6aad312a61b0120da29ec5ea5c1fe101b687bab3bf7e4452c7f55022b889754",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0703-work-loop.md",
+    "sha256": "0d69c7561d8909e00a8b79759b967316329885d7874d6ee1f81ac3f674ffedc2",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0704-serialized-lander.md",
+    "sha256": "e843a951cc024e5cefa42deb7918ac75616baa4f68acd9c6996bcd5c1da4de04",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0705-env-provisioning.md",
+    "sha256": "29d635bc14a5ad0300bf0ac8291f12927838d40bf321b978a30a27802bb9b4fc",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0706-token-governor.md",
+    "sha256": "57d197b27ff925c7e3e935c835f7b66df0cd7ae9882e40055122e0b06bd54a63",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0707-fleet-launcher.md",
+    "sha256": "1b976f6ac17f372c2f220752d6a46bebd4a7e4af2900346594f68c4fa987e532",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0708-release-veldo-fleet.md",
+    "sha256": "c7377f88163cb641c04fd5cafc45f3de681b0c14e9d2a365fc13232ac00b7fb4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0709-readme-comprehensive.md",
+    "sha256": "8fcd92e8d33598f885962e58a9f4603bb10361eaaeb21d5eb6859b59246e5f63",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0710-claim-race-hardening.md",
+    "sha256": "0e811aa8f20c6b1991d20cdf16ad5e57c2ee2cc29f17dcc04550655c1ea93ca7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0711-lint-one-interpreter.md",
+    "sha256": "2fdf6cfb6e901b0c8113b244159d6836accd3be5e98a896c01553e9cadad024b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0712-suite-decomposition.md",
+    "sha256": "d117eec2197ae47774d0f0d7db3a17987f2c9df2d6bd7bcca36991075f5c5539",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0713-mobile-runner-injected-clock.md",
+    "sha256": "190bbfc4da2a23e5d53ffb617c3d13a6d99792f71e7e8344ae0981fb6f4b6b96",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0714-compute-once.md",
+    "sha256": "b910c4d6d4dddc4808bcb5ed645342d9b617eca88c02b2e4a6b32107942f1191",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0715-process-fixture-windows.md",
+    "sha256": "8693a5c425bc7d90fc43a8ec36a8e887c75ee5cd7a7b571ad7b23063a2a97a32",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0716-enumerate-suite-crossing-state.md",
+    "sha256": "03cec03e4eb587545203c305d210375a1660fab68fc45d96f9eedbe58d94bc95",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0717-subset-runner.md",
+    "sha256": "0331cf47c89fc74aba830df228ad1b64f9d89da651a3ec81482071d7d4bb2320",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0718-credential-supply-codified.md",
+    "sha256": "68cfcc66e46b57151d41b5abf471057e55c3a1df5ee8dbaee641aa7cbb6853b6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0719-quorum-degrades-loudly.md",
+    "sha256": "f0e9356d8d1ef6fff518e72ad9f4031528020a7dc341d42ba5f4aa9f28398bef",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0720-approver-registry-declared.md",
+    "sha256": "47f3b0e6ef2a71475023d0d4d0e1c9559b8866fd1d9fa2866995363302f42fe7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0722-review-events-derived-not-appended.md",
+    "sha256": "5f9d3692036f67373530174093705415e483546a896155a284e8f2b6d5a0a860",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0723-reserved-envelope-keys-refused.md",
+    "sha256": "9b17f029e96654ee60e4fdbed346f6bb9fbf2b3fc389691ae857041a0581d3f4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0724-frontier-honours-declared-dependencies.md",
+    "sha256": "3281a6eecff3be5caa3645c71bfd2ce4f2c279ee2f81892ad4aa4fcf07f7c962",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0725-entitlement-is-the-projections-domain.md",
+    "sha256": "70af8dd15f57164a9a9c2bf31832819ce310875ffca6f74a84bac2ce0a81cccf",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0726-withheld-reports-every-refusal.md",
+    "sha256": "e9a9642e83e30d079c389b7a03939784cabb08e08326a1b663d310140db0ab55",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0727-one-enumeration-for-the-domain-and-the-validated-set.md",
+    "sha256": "5da7c9ddb4a76906475af9a05d9e90c997c45bbed7c056113adcd965afd7d3e6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0728-keyed-bytes-are-the-validated-bytes.md",
+    "sha256": "a0ebe29083af41b6006cd1e10f933260987032278d24cb10aef68dac0415413e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0729-footprint-globs-must-match-a-path.md",
+    "sha256": "fc1726cfef8b6a7da909791ac0ec574190c5f06d18ba53b9d6ca5d83ba2310bc",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0730-verdict-authority-leaves-the-agent.md",
+    "sha256": "dd4882fdc5b6c1844836125fe3628b089a6c9fa4c4750f8540847619de57e6ad",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0731-delete-the-forgery-guard-machinery.md",
+    "sha256": "a46b42d621e4b4c3dbd06ed0173e36dc31485a350524c4e6c811f3934f708cd1",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0732-blocking-findings-stop-the-merge.md",
+    "sha256": "c03bfe77278329a30f21aa346d8d4443dc16f878ba027221d0af4b303aa82c93",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0733-spend-recording.md",
+    "sha256": "e96c8a691085cb5bdb647013bf4dcf58d5d27818680452f10e58534003a61df3",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0734-no-undeclared-orphan-specs.md",
+    "sha256": "ef98fe34e7fbaa6d1d8dcd723a59d3cf7bf841f27d302c71ce002869709f6afc",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0735-docs-area-in-the-architecture-contract.md",
+    "sha256": "99221363ed74b8cc601143a6e606fc79e2cac01087f106df2225eaf563b229c8",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0801-pack-engine.md",
+    "sha256": "ea32200ec8ec97566d58e313239e025e802f2d5baa1c754e92a015c01192225e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0802-claude-pack.md",
+    "sha256": "697e7bf9d92c80127e9c41f3edbc3e5767011c1a9a86a6e196d0c6aeb5a26286",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0803-cursor-pack.md",
+    "sha256": "c95fa6d749f56bd1591225dc5278b4b29465d85e6f9f4fa05092fafa9dfd4deb",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0804-codex-pack.md",
+    "sha256": "ad6ed3d42e29b35597eb5d9197649eab4d474dbd35eaa71e3d2ab802dd72f387",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0805-copilot-pack.md",
+    "sha256": "62048cb0efdd74e31b39597485afaa96d7e59035b9b317ffe86eb65fa0cd85f0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0806-antigravity-pack.md",
+    "sha256": "69f893b039ee219ac6ce60900c6555dc73c414359d5d4385888cc2d83e830500",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0807-opencode-pack.md",
+    "sha256": "2f63239d4a1a0dd8b14e59f3e3b920afa2cb68dc6a5575ad325064a84ea14704",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0808-aider-pack.md",
+    "sha256": "a90a88ffb6decd8046b24a0c08a4ba1f9449a1cbfbeef257ebc682c7c846dd80",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0809-cross-pack-conformance.md",
+    "sha256": "db136e60e6a2967e5c51f8e423d837539295294166413d61573512e2f6a1f329",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0810-release-multitool-packs.md",
+    "sha256": "81b10cd80e0a6792c267088f34af7f8925b9d682e16ff684376bd470919f5a5d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0901-real-dispatcher.md",
+    "sha256": "33cc69ba761ffebdcf24098d57a05fadb0c7243b6afb2a82e8edd43e636e5ad9",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0902-worker-spawner-accounts.md",
+    "sha256": "3fa903e5a9426e07306936c1c9c157cc6928fce0d8e78bc75b09561152731914",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0903-per-account-governor-resume.md",
+    "sha256": "83c3184122a26c035538f1fbc8a4a3ed909b0c169ad9b059970a5a5b0f720bed",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0904-veldo-cli.md",
+    "sha256": "d770f8a0eb9924be022229d9e946dc13d636a0f7f617e5c158e5191cb665004d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0905-ship-fleet-in-engine.md",
+    "sha256": "4ce6ffeb09fcd8f661c2add38f43ed7cf31c6a32cb3c54b45dc034c514bdae47",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0906-docs-made-true.md",
+    "sha256": "350fc893205fdf218c7a9da4af8a10603bd53bc6b4ffc22bcb8b9b5440dd2bce",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0907-fleet-supervisor.md",
+    "sha256": "388a2baeef7e53e173dc4bc8eee56337705f4e6a2b25d1f66ac7aee5ca8ec65f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-0908-release-fleet-distribution.md",
+    "sha256": "278e9520a2d9e4eb75089cc3310fdf6ac018a1b161f693ed2f05381963e359af",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-0909-clean-context-dispatch-loop.md",
+    "sha256": "28894325afe8563d9113cc4adb8ac0a8081edb2fa2d83f6e6b49d8717ba8da0e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1001-eligibility-model-and-agent-user.md",
+    "sha256": "914db9097104c6c3d0dc6017e865a032eca13e96a9b3fce4142fd22794de89c0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1002-inbound-bridge-draft-stage.md",
+    "sha256": "2ee85f7c5473c802b9f9ce66c9015ba10fd5fae1e4514aadc88c232a5a3b4aa3",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1003-promote-gate.md",
+    "sha256": "2c7a5e1fbbb4b71d84ac652f3997cb1246cb8823b5b56cf8ece76e3896390a64",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1004-reassign-and-artifact-links.md",
+    "sha256": "ae29b1d52041c217c43079c2cf44ea93b5cf03486ed13c3cf6f2e95892077441",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1005-live-mirror-runner.md",
+    "sha256": "3471fd8a7de0237bbb427902fec03cfcb1c631a72baf7aa5cbab029821a02769",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1006-live-epic-child-creation.md",
+    "sha256": "131cded24b23bea969720b1365e8f6a0817651a307e8397c0d810af293fc6f4a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1007-doc-to-plan-generator.md",
+    "sha256": "10b353ee8a823ed3cd356bbf25e305e5e34d9278bba37c5586731f9afac483d7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1008-release-tracker-driven-fleet.md",
+    "sha256": "9f33d20b0d4ad1739c45a81a190f393b88d6a743f2e6a83af8a1884caaf4c17e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1009-docs-and-state-made-true.md",
+    "sha256": "d3af701537023d0d2885119b5f5a2d34eca7e23e77337643de4ef4350ca77303",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1010-real-in-session-worker-spawner.md",
+    "sha256": "60263acd7a462556ed0e335f4914a40bc37ac6f7944ba96f9c6440b800102343",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1011-refine-footprint-tier-boundary-crossing.md",
+    "sha256": "c57e9b2a60df0e136dd8adaf39f43ef65dcec5940629a88e9dec5556963e0041",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1012-restore-validate-under-budget.md",
+    "sha256": "19e13ed79d2047d4d85fac54a35126e2eb2c70589442e0af42df7db1473e7c73",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1101-architecture-contract-and-validator.md",
+    "sha256": "cc3fd717c6063ca920c70dea9811e798a8c75c7d5a0a11577db982a1786a9ef0",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1102-gate-shape-enforcement.md",
+    "sha256": "4926d0b2b37e9914a2e694d453d43cb539ea73b9a3251167ca1c9b97806be159",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1103-placement-and-footprint.md",
+    "sha256": "4bd9520abe36e9040cd2bb5363f5a4113c087e1de576b4e338dfe7f35ed1272a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1104-shape-fit-review-dimension.md",
+    "sha256": "44ceb55385d0b0f168b7a173e167dedeac2af9f047c0a5be11250938518bf996",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1105-foundational-decision-record.md",
+    "sha256": "034ed4c151a62aaf15b0fe7fb7b27cdd591a5eecaa1bd52b412768a2ded16d7e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1106-adversarial-decision-review.md",
+    "sha256": "f882f499e5226d8ca8bd5ae4f99320430800cb4b88352f990193701b0da5caa6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1107-decision-tripwires.md",
+    "sha256": "8f1dd4abf762514345bd5ae7db2622b28a94d5d9774d9d80f1605ccf18e1e9f4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1108-entropy-metrics.md",
+    "sha256": "5d6095a75713b6ab4e5d321f9b01324b5bd1e7234a92fe4caddb58c43becc996",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1109-restoration-spec-generation.md",
+    "sha256": "5053fb21a2e187e4cc24dee4b1b35286d19f1c982c5d314a8816b63ba799556d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1110-release-architecture-maintainability.md",
+    "sha256": "c68e9f9e16423bfc17abbab8b2ebdd646742d7bd56d359bae2d70d4afa91811a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1201-incident-and-remedy-contracts.md",
+    "sha256": "e86397635dd7f6de1666612456234f92e649e22e4f2268509d49e2790cf84c5b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1202-the-evidence-plane-access-physics.md",
+    "sha256": "5280c4616ead7b1b85e2ddeaad81db974e891155c6887afb4d36f285f6539216",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1203-the-intent-corpus-at-runtime.md",
+    "sha256": "984f77ec0f42fc10b21969273a71eb77bbe377eb1652a357752aac77cba5e03e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1204-the-responder-investigation-loop.md",
+    "sha256": "f7778b993463f031b702f2dec8b9c9fc2752f24eea52d18d9ae29ab52cafe596",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1205-the-action-whitelist.md",
+    "sha256": "5d5438c41a6fa11c4806072321bf6236839d89b997fa89f5483e40b8eb477d8b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1206-the-execution-organ.md",
+    "sha256": "f64ba4c34fa515216061214c387e8d6c5aeb5e4848e559d9e6985a8130fcb1bd",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1207-the-two-key-rule.md",
+    "sha256": "fe66481a43914929648f9adb25c50dd942143319984991d5190c7441c359e5e3",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1208-incident-as-intent-and-reconciliation.md",
+    "sha256": "89a6abe3762f7e3736c6b3cd6e4d7143a3ab4aa1b7dc9f5c882be6a1f2ecf25b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1209-diagnosability-gated.md",
+    "sha256": "c9dec39cd61f33a7dc55c561ec6d51bf96806e4f07205450b3c33b4a292b3382",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1210-the-support-numbers.md",
+    "sha256": "cfe574edad9f40fb4608d9b5675e2e1a2ea758ec5aba982190e246d6663728eb",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1211-production-support-release.md",
+    "sha256": "8c9d9b2aa742d3162fc3342b2990dfd9a875f6ad934cf987c7cc7495a414b42f",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1212-two-key-freshness-fail-closed.md",
+    "sha256": "4f6e7123b21af934330a04d60a77a2a439d1e9cc9e3f7bad90e0f530ed623928",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1301-secret-reference-seam.md",
+    "sha256": "f4928c1a20b442186a61b9da6b51c137d521d6fba04d0594b5319e4c760032a6",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1302-absolute-secret-scan.md",
+    "sha256": "9761e5b682e8a2ef559069dad87b96f7958c776ed7707c7100a2dc30e04bc79c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1303-context-secret-free.md",
+    "sha256": "c67b2c433eac0f21a38739de0c1fe73b7aa75b6d314b2d3cfa64523d1ef8e7a7",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1304-per-task-credentials.md",
+    "sha256": "3ed9c1726ca4523314727127d10cd340b75e84fcf5e9353ced288d487c53b40c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1305-untrusted-input-isolation.md",
+    "sha256": "dc496d2ecdeb84164788a798137ad9a3990db6ac7ad366229e074a9affc16371",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1306-supply-chain-policy.md",
+    "sha256": "049b495b8fe8f6268b913ec3d1afc1bdf2246a681fd27e2661235c0f10655c68",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1307-generated-infrastructure-least-privilege.md",
+    "sha256": "ce4f5be55ed4fa7d0cd778966fb9c0d41c12e383ec3603b344c55a33efff86af",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1308-signed-attributable-commits.md",
+    "sha256": "da1c32c9dee47e1163e3b3b55e2f2e32e79c453f5246bd87ce5e8ea93113451c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1309-security-review-dimension.md",
+    "sha256": "72fcb1ade8f80f33a0dc53ffdc8d53733b124e95ef2f3f0d170d3cbba1ff025a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1310-honest-migration.md",
+    "sha256": "f73663647a09518e10117e9ce1302ebe8f5b0d65ad8983ae39e4e7b280e141ad",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1311-security-by-design-release.md",
+    "sha256": "876d3e891318d9380109119eabec13007367de37e09b5b29574b52b81d48e852",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1401-toe-ground-truth-corpus.md",
+    "sha256": "974717ec44290ec94c7f02f990ed2a8850d034a94fec434e287973ae5681face",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1402-estimate-record-and-structural-proxy.md",
+    "sha256": "665f58ee048cdb04b5ab0b0e127e065c8235e4b51c2b71ed95c1439d4de4af7a",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1403-sizing-pass.md",
+    "sha256": "bd468118d59dcb3c1f25a9f91454689fc3398a4d7593a723ffac92a34ee87326",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1404-historical-analogy.md",
+    "sha256": "cbe7980840b996dd2613b3f05b3408c3000cd6a198f5061440399ece510b316c",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1405-reconciliation-and-estimator-accuracy.md",
+    "sha256": "dce2b4032dbea8b9e7c7339fca957ccb652383f28a842f63d953b8d4d2271bd8",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1406-normalization-stable-planning-unit.md",
+    "sha256": "8e2acf2a77f595e9f586a2f869c31b91ccc5c85521dc79187609d05472fca2f5",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1407-judgment-load-second-axis.md",
+    "sha256": "e9d8f9050d1bca65a4355e30a8aec7813089fadc8b52a53fd2ce8d94c6a55873",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1408-budget-rollup-dollars-and-pacing.md",
+    "sha256": "5781a9f1b7c88eb7346e1acb34321342fff9cc989dc2b570d76381abeb0b79df",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1409-cost-to-change-per-area.md",
+    "sha256": "704e2230c765d396f339895cc3257794548d62b40b16402e07025965d7cc11bc",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1501-substrate-declarations.md",
+    "sha256": "c7c81bf0dabc587fabc91090bb5275aa57b338a67204b6d62f27dbbea5506d48",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1502-infrastructure-change-type.md",
+    "sha256": "97c71cd732fa6edd50f58b9add5afe20c2eb69db522aaf31e63362fd2972770b",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1503-cost-in-the-proof.md",
+    "sha256": "83b60374fc2abeca232132142f527efc8e1bec5727a84ef95d74c64e8507b22e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1504-destructive-action-floor.md",
+    "sha256": "339bc5019e9ec66718138e8098c08016ff9017b5e441b9b47c987e57ef5ba1e4",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1505-promotion-pipeline.md",
+    "sha256": "6e0b07312b0c89818167d0ac614840bc44d2a958d6847b549148c4735fb686bd",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1506-drift-tripwires.md",
+    "sha256": "05333335fe5354dac54060ad1efdef0b638c6e0b5c97565861ad9cb28e091586",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1507-ephemeral-environments.md",
+    "sha256": "6eea16a673728e29784df6c1a1f778d8302927c5de5ad3f48d5fb7f5fd9f64de",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1508-substrate-release.md",
+    "sha256": "e76676d2a689e6bfab4839dd55668c08094d12df6b35ef3492b0e7d578420635",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1701-naming-contract-and-residual-check.md",
+    "sha256": "d0757eafc8798da640c493c7e7c33cbcb1ec7c8be4da40f1d07fa79bf5b1a6c9",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": false
+   },
+   {
+    "path": "specs/WARP-1704-publication-pipeline.md",
+    "sha256": "3f258855fef201c00e68dd54be3829c933ee66e94f4c4a3fb6879d5f1e2c3f7e",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/WARP-1711-history-dependent-proofs-in-a-flattened-repository.md",
+    "sha256": "2c863152dcb3e0cd15d6fda93deec6ea99e8539b164547a64fab681d3ff4a90d",
+    "has_front_matter": true,
+    "differing_readers": [
+     "update_index.front_matter",
+     "validate.front_matter",
+     "validate.parse_yamlish (also release/cost readers)"
+    ],
+    "refused": true
+   },
+   {
+    "path": "specs/index.md",
+    "sha256": "05bfb1812f9a40ec8026be0e99b7a8c465836ca361414b7f23cc6c01b3f4c54c",
+    "has_front_matter": false,
+    "differing_readers": [
+     "update_index.front_matter"
+    ],
+    "refused": false
+   }
+  ],
+  "not_kept": "the old and new value at each differing field per reader; read them at readable_at"
+ }
+}
