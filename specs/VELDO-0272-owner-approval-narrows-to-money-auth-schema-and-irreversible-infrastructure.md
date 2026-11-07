@@ -31,6 +31,9 @@ footprint:
   - "specs/VELDO-0272-owner-approval-narrows-to-money-auth-schema-and-irreversible-infrastructure.md"
   - "specs/index.md"
   - "proof/VELDO-0272/**"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -227,3 +230,5 @@ repository changes.
 protected policy files, so it is approval-required itself.
 
 2026-11-07: ready. Owner approved, Telegram 39747 ("Yes" to 39746, which listed its four points).
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
