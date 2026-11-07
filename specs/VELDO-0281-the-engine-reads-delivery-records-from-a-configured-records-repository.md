@@ -26,6 +26,9 @@ footprint:
   - "scripts/suites/*veldo_0281*.py"
   - "specs/VELDO-0281-the-engine-reads-delivery-records-from-a-configured-records-repository.md"
   - "proof/VELDO-0281/**"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -158,3 +161,5 @@ repository is configured with a records repository instead of being refused.
 It changes the policy file and how approvals are found, so it is approval-required.
 
 2026-11-07: lead correction of the drafted rule: append-only covers approvals, verdicts and proof; specs and plans are edited in place (one file per ticket). The draft's revision-file scheme was the writer's literal reading of the lead's 39771 wording.
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).

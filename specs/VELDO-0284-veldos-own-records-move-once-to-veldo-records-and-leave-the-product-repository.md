@@ -31,6 +31,9 @@ footprint:
   - "engine/VELDO.md"
   - "engine/CLAUDE.md"
   - ".gitignore"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -145,3 +148,5 @@ are engine contract records, not delivery records. Core (VELDO-3600 in the core 
 It changes the policy file and moves every approval, so it is approval-required.
 
 2026-11-07: lead amendment: the emergency.push and emergency.closed lines that VELDO-0280 keeps in the tracked .veldo/events.jsonl move with the other governance records into veldo-records in this migration (owner principle, Telegram 39764: "Software should not have its sdlc bits in git"); the builder adds them to the migrated set and the guard reads them from the records repository like approvals.
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).

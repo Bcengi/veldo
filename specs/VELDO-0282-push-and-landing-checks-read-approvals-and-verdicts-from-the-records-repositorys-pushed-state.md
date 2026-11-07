@@ -31,6 +31,9 @@ footprint:
   - "scripts/suites/*veldo_0282*.py"
   - "specs/VELDO-0282-push-and-landing-checks-read-approvals-and-verdicts-from-the-records-repositorys-pushed-state.md"
   - "proof/VELDO-0282/**"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -149,3 +152,5 @@ creation.
 2026-11-07: written as a draft from the owner's decision, Telegram 39764 to 39774, approved design 39774.
 It changes how approvals are authenticated and touches protected policy paths, so it is
 approval-required.
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
