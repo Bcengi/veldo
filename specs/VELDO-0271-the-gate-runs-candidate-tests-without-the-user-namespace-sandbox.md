@@ -7,7 +7,7 @@ risk: high
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0208, VELDO-0216, VELDO-0220, VELDO-0222, VELDO-0267]
+depends_on: [VELDO-0208, VELDO-0216, VELDO-0220, VELDO-0267]
 placement: [enforcement]
 protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", ".veldo/policy.yaml", "scripts/gate_candidate.py", "engine/scripts/gate_candidate.py", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/gate_unconfined.json", "scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "engine/scripts/agent_sandbox.json", "scripts/mutation_sandbox.py", "engine/scripts/mutation_sandbox.py", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/reuse_worker.py", "engine/scripts/reuse_worker.py", "scripts/case_inputs.py", "engine/scripts/case_inputs.py", "scripts/propose_case_inputs.py", "scripts/mutation_case_inputs.json", "scripts/mutation_selection.json", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/selftest.py", "scripts/check_first_use.py", "scripts/run_scope.py", "scripts/suites/shared.py"]
 footprint:
@@ -121,25 +121,23 @@ acceptance_criteria:
       resolves gate_schedule.py from the candidate root: the authority row goes red.
   - id: AC3
     text: >
-      The mutation stage runs without the sandbox and keeps honest reuse. check_gate_mutations.py and
+      The mutation stage runs without the sandbox and every case runs fresh. check_gate_mutations.py and
       reuse_worker.py start every case's worker as a plain child in its own scope, without
       mutation_sandbox.py or agent_sandbox.py, so a case runs the same way whether the gate or a driver
-      started it directly. Reuse (VELDO-0205 to VELDO-0226) stays, with one change: every case is held to
-      the rules VELDO-0222 applies to an unconfined case today (a per-case snapshot of its declared inputs,
-      reads taken from the trace, reuse only when every read was traced and declared), since no namespace
-      enforces a declaration any more. The reuse store's records stay digest bound; the spec states plainly
-      that they protect against stale and mistaken results, not against hostile candidate code, which the
-      single-user model already does not claim. VELDO-0267's declaration adapts here: its canary set covers
-      the one leg instead of the confined and the unconfined leg, and its full-sweep trigger list drops
-      gate_legs.py and gate_unconfined.json and keeps gate_candidate.py.
+      started it directly. No case result is reused: with no namespace enforcing a case's declared inputs,
+      a stored result cannot be trusted, and the reuse count was 0 in every recorded gate (audit
+      2026-11-07, item 11), so running fresh costs nothing measured. The reuse machinery itself is
+      deleted by VELDO-0279, which lands after this spec; this spec only turns reuse off. VELDO-0267's
+      declaration adapts here: its canary set covers the one leg instead of the confined and the
+      unconfined leg, and its full-sweep trigger list drops gate_legs.py and gate_unconfined.json and
+      keeps gate_candidate.py.
     falsified_by: >
       The three suite 62 cases of VELDO-0261 run through scripts/check_teeth_mutations.py directly, the entry
-      whose confined run gave invalid baselines, and each shows a green baseline and a killed mutant. A
-      fixture case that reads one file it does not declare runs fresh and is never reused. Registered
-      mutations: (1) reuse admits a case with an untraced read: the undeclared-read row goes red; (2) the
-      worker skips the trace for cases that were confined before: the same row goes red; (3) the canary set
-      in scripts/mutation_selection.json is cut below VELDO-0267's bound of six: its declaration row goes
-      red.
+      whose confined run gave invalid baselines, and each shows a green baseline and a killed mutant.
+      Registered mutations: (1) the worker returns a stored result for a case whose inputs are unchanged:
+      the fresh-run row, which runs one case twice and checks both runs executed, goes red; (2) the canary
+      set in scripts/mutation_selection.json is cut below VELDO-0267's bound of six: its declaration row
+      goes red.
   - id: AC4
     text: >
       Every removal is mapped and nothing needs root. Deleted, with their engine copies: agent_sandbox.py,
@@ -238,7 +236,7 @@ Order: VELDO-0267 first, then this spec, then VELDO-0269.
 
 Landlock or any other confinement of builders or gates. Removing the installed helper or AppArmor profile
 from a host: that is the owner's act, prompted by the report line. Any change to the reuse rules beyond
-holding every case to VELDO-0222's rules. Renaming or rewriting historical proof bundles that name the
+running every case fresh (reuse off; VELDO-0279 deletes the machinery). Renaming or rewriting historical proof bundles that name the
 deleted files.
 
 ## What the reviewer judges
@@ -260,3 +258,5 @@ separate OS user, a root-installed helper or a system service; if protection is 
 processes).
 
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708); the decision to remove the gate sandbox was his, 39706. Landing order 0267, 0271, 0269. Before it lands, myday's claude_work.sh and codex_work.sh move to the unrestricted runners (lead task).
+
+2026-11-07: AC3 amended by the lead (Telegram 39708 scope, test machinery): reuse is turned off instead of kept under VELDO-0222's rules, and the dependency on the unbuilt VELDO-0222 is dropped, because VELDO-0279 (agent/claude/veldo-cleanups) deletes the reuse machinery and supersedes 0222; landing order 0267, 0271, 0279.
