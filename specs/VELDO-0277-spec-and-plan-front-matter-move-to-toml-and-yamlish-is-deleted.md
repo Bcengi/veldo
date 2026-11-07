@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0277
 title: Spec, plan and doc front matter move to TOML read by tomllib, every generated document is written as TOML or JSON, and yamlish.py with its grammar, agreement and boundary suites is deleted
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -128,3 +128,5 @@ Core's specs and engine; render_pdfs.py and site/book.yaml; the meaning of any f
 
 2026-11-07: drafted by the lead from the weight audit's item 9 (Telegram 39708, 39710), split from
 VELDO-0276. A draft; needs the owner.
+
+2026-11-07: ready. Owner approved, Telegram 39756 ("Yes" to 39755, which described both halves).

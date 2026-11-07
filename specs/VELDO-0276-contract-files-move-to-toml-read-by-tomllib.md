@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0276
 title: The human-edited contract files (policy, architecture, capabilities, decisions, decision reviews, examples) move from the YAML subset to TOML read by the standard library's tomllib, through one loader, with an exact converter for adopters
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -119,3 +119,5 @@ and its files; render_pdfs.py.
 
 2026-11-07: drafted by the lead from the weight audit's item 9 (Telegram 39708, 39710); split from
 VELDO-0277 because the front matter migration touches every spec. A draft; needs the owner.
+
+2026-11-07: ready. Owner approved, Telegram 39756 ("Yes" to 39755, which described both halves).
