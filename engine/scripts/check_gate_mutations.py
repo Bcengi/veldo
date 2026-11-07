@@ -86,7 +86,9 @@ def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self
 
 
 PARALLEL = 1 if '--worker' in sys.argv else min(16, worker_count())
-OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl', '.veldo/gate-schedule.json'}
+# The selection record (VELDO-0267) is the gate's evidence beside the stamp, never a candidate input.
+OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl', '.veldo/gate-schedule.json',
+           '.veldo/mutation-selection.json'}
 
 
 def budget_for(count, workers=REFERENCE_WORKERS, phases=(), resources=None, floor=None):
@@ -762,6 +764,10 @@ class Workers:
         self.leg = None
         self.legs = {}
         self.budgets = {}
+        # VELDO-0267: the nightly sweep traces every control baseline it runs, so the coverage map
+        # records the repository files each case's baseline read. None: no tracing (every gate).
+        self.coverage = None
+        self.coverage_traces = {}
 
     boundary = None
 
@@ -812,6 +818,9 @@ class Workers:
         if measurement is not None:
             record['measurement'] = measurement
         result = None
+        if name in self.coverage_traces:
+            trace, worker_root, confined = self.coverage_traces.pop(name)
+            self.coverage[name] = covered_reads(trace, worker_root, confined)
         if error is None and 'snapshot_root' in job:
             # Trace is outside the worker's writable home. Check before trusting output.
             try:
@@ -959,6 +968,12 @@ class Workers:
                         if 'snapshot_root' in job:
                             tracer = load(ROOT / 'scripts/case_trace.py')
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
+                        elif (self.coverage is not None and job['mode'] == 'baseline'
+                              and traceable(worker_root, job['case'], leg)):
+                            tracer = load(ROOT / 'scripts/case_trace.py')
+                            trace = directory / ('cover-' + str(self.invocations))
+                            argv = tracer.command(trace, argv)
+                            self.coverage_traces[name] = (trace, worker_root, leg == 'confined')
                         # A worker reads its job from its file, never from the coordinator's
                         # stdin, which may be a socket the worker's boundary would refuse.
                         # Inside a tree the agent launcher made, a worker is handed its marker, so a
@@ -1029,6 +1044,39 @@ class Workers:
                         self.admission.release(name)
 
 
+def traceable(worker_root, case, leg):
+    """A confined baseline is always traced. An unconfined one is traced unless its suite traces
+    workers itself (nested strace cannot attach under the coverage tracer); such a case keeps no
+    traced coverage and every gate selects it."""
+    if leg == 'confined':
+        return True
+    try:
+        return b'strace' not in (Path(worker_root) / 'scripts/suites' / case['suite']).read_bytes()
+    except OSError:
+        return False
+
+
+def covered_reads(trace, worker_root, confined):
+    """VELDO-0267: the repository files a traced baseline read (successful content reads under the
+    worker's root, after the confinement when the worker is confined), sorted; None when the trace
+    cannot be read, which the coverage map records as a case it does not know."""
+    tracer = load(ROOT / 'scripts/case_trace.py')
+    top = Path(worker_root).absolute()
+    found = set()
+    try:
+        for path, kind, success in tracer.accesses(trace, cwd=top, after_confinement=confined):
+            if success and kind == 'content' and top in path.parents:
+                found.add(str(path.relative_to(top)))
+    except (OSError, ValueError):
+        return None
+    finally:
+        try:
+            Path(trace).unlink()
+        except OSError:
+            pass
+    return sorted(found)
+
+
 def worker(job, keep=()):
     # The same confinement as a coordinator's worker (reuse_worker.py): the gate profile's domain
     # and network rule. Only the confined child returns; the parent exits with its status. The
@@ -1095,17 +1143,55 @@ def snapshot(root, expected_common, destination, files, head):
 
 
 
+CANARY = 'canary_not_killed'
+
+
+def stage_cases(full_inventory, record):
+    """VELDO-0267: the cases a selected stage runs, (cases, canaries): every case the record
+    selected, and every registered canary whatever the selection, so a selection of nothing still
+    runs the canaries."""
+    registered = {c['identity'] for c in full_inventory}
+    canaries = set(record['canaries']) & registered
+    chosen = {i for i, e in record['cases'].items() if e['selected']} | canaries
+    return [c for c in full_inventory if c['identity'] in chosen], canaries
+
+
+def judge_canary(case, record):
+    """A canary must show a green baseline, an equal no-op and a killed mutant: validate_result's
+    own judgment, renamed canary_not_killed with the case and what it saw."""
+    try:
+        return validate_result(record, case)
+    except Refused as error:
+        raise Refused(CANARY, '%s: %s: %s' % (case['identity'], error.code, error.detail)) from error
+
+
+def verdict_line(receipt):
+    line = ('mutations: {status} registered={registered} executed={executed} '
+            'reused={reused} rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s').format(**receipt)
+    block = receipt.get('selection')
+    if block:
+        line += ' mode=%s selected=%d canaries=%d' % (block['mode'], block['selected'], block['canaries'])
+    return line
+
+
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
               drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None, measure=False,
-              admission=None, admit=False):
+              admission=None, admit=False, selection=None, trace_coverage=False):
     """expected_common is the trusted Git common directory of root, named by the caller that owns
     root: the authority's own for the gate, a fixture's own for the fixture's creator. leg is the
     authority's unconfined leg (gate_legs.mutation_leg), None for every case confined. Only
-    the authority CLI sets measure=True; library/fixture drives do not write owner timings."""
+    the authority CLI sets measure=True; library/fixture drives do not write owner timings.
+    selection (VELDO-0267) is a callable taking the registered inventory and returning the sealed
+    veldo.mutation-selection/v1 record, already written to the gate's evidence; the stage then runs
+    the selected cases plus the canaries, and the canaries always fresh. trace_coverage (the nightly
+    sweep) traces every control baseline and reports the files each case's baseline read."""
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline, parallel=parallel, admission=admission)
     workers.leg = leg
+    if trace_coverage:
+        workers.coverage = {}
+    canaries, canary_names = set(), {}
     receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
                'registered': 0, 'executed': 0, 'reused': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
@@ -1124,12 +1210,24 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             if parallel is None:
                 workers.parallel = worker_count()
         full_inventory = inventory(root, expected_common)
-        cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
-                 and (not drivers or c['driver'] in drivers)
-                 and (not names or c['name'] in names)]
-        if not cases or (names and set(names) - {c['name'] for c in cases}):
-            raise Refused('incomplete_inventory', 'empty or unknown subset')
-        receipt['scope'] = 'selected' if findings or names or drivers else 'full'
+        if selection is not None:
+            chosen = selection(full_inventory)
+            cases, canaries = stage_cases(full_inventory, chosen)
+            receipt['selection'] = {
+                'mode': chosen['mode'], 'digest': chosen['digest'], 'trigger': chosen['trigger'],
+                'record_sha256': hashlib.sha256(canonical(chosen)).hexdigest(),
+                'selected': sum(c['identity'] not in canaries for c in cases), 'canaries': len(canaries),
+                'run': len(cases), 'inventory': len(full_inventory), 'nightly': None}
+            if not cases:
+                raise Refused('incomplete_inventory', 'empty selection and no registered canary')
+            receipt['scope'] = chosen['mode']
+        else:
+            cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
+                     and (not drivers or c['driver'] in drivers)
+                     and (not names or c['name'] in names)]
+            if not cases or (names and set(names) - {c['name'] for c in cases}):
+                raise Refused('incomplete_inventory', 'empty or unknown subset')
+            receipt['scope'] = 'selected' if findings or names or drivers else 'full'
         receipt['registered'] = len(cases)
         budget = budget_for(len(full_inventory), workers.parallel)
         receipt['budget_seconds'] = budget
@@ -1173,7 +1271,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         results = {}
         fresh = []
         for case in cases:
-            record = reuse.lookup(case, validate_result)
+            # A canary proves the driver, worker and coordinator work today: never a reused result.
+            record = None if case['identity'] in canaries else reuse.lookup(case, validate_result)
+            if case['identity'] in canaries:
+                reuse.reasons[case['identity']] = 'canary_fresh'
             if record is None:
                 fresh.append(case)
             else:
@@ -1211,6 +1312,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                               if c['identity'] in getattr(reuse, 'snapshots', {})}
             def group_for(case):
                 return case['identity'] if prepared_cases.get(case['identity']) else control_group(case)
+            for case in fresh:
+                if case['identity'] in canaries:
+                    for name in (case['identity'], group_for(case) + ':baseline', group_for(case) + ':noop'):
+                        canary_names.setdefault(name, case['identity'])
             controls = control_jobs(fresh, group_for, prepared_cases, deadlines, claims)
             mutant_jobs = {c['identity']: {'case': c, 'mode': 'mutant',
                            'budget_seconds': deadlines[c['identity']],
@@ -1248,7 +1353,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                               'baseline': control_results[group + ':baseline']['result']['observation'],
                               'noop': control_results[group + ':noop']['result']['observation'],
                               'mutant': prepared['observation']}
-                    validate_result(record, case)
+                    if identity in canaries:
+                        judge_canary(case, record)
+                    else:
+                        validate_result(record, case)
                 except (Refused, KeyError, TypeError) as error:
                     receipt['invalid_results'].append(dict(case=case, error=getattr(error, 'code', 'driver_error'),
                                                            detail=str(error)))
@@ -1259,8 +1367,12 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
 
             workers.run(mutant_jobs, directory, frozen, on_result=collect)
             if receipt['invalid_results']:
-                first = receipt['invalid_results'][0]
+                first = next((r for r in receipt['invalid_results'] if r['error'] == CANARY),
+                             receipt['invalid_results'][0])
                 raise Refused(first['error'], first['detail'])
+            for identity in sorted(canaries):
+                if identity not in results:
+                    raise Refused(CANARY, identity + ': no validated result')
             # Reject changes to the checked inputs during execution.
             if not inputs_unchanged(root, expected_common, files, head):
                 raise Refused('driver_error', 'inputs changed during stage')
@@ -1294,6 +1406,12 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                                    'mutation_budget_exceeded' if isinstance(error, subprocess.TimeoutExpired)
                                    else 'driver_error')
         receipt['detail'] = str(error)
+        # A canary's worker that failed (its baseline, no-op or mutant) is the canary not killed.
+        failed_canary = next((o for o in workers.outcomes if 'error' in o and o['name'] in canary_names), None)
+        if failed_canary is not None and receipt['error'] != CANARY:
+            receipt['error'] = CANARY
+            receipt['detail'] = '%s: %s: %s: %s' % (canary_names[failed_canary['name']], failed_canary['name'],
+                                                    failed_canary['error'], failed_canary.get('detail', ''))
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         try:
@@ -1350,6 +1468,12 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         receipt['parallel_workers'] = workers.parallel
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started
+        if 'selection' in receipt:
+            receipt['selection']['wall_seconds'] = round(receipt['elapsed'], 3)
+        if workers.coverage is not None and cases and reuse is not None:
+            names = {c['identity']: (c['identity'] if c['identity'] in getattr(reuse, 'snapshots', {})
+                                     else control_group(c)) + ':baseline' for c in cases}
+            receipt['coverage_traces'] = {i: workers.coverage.get(n) for i, n in names.items()}
     return receipt
 
 
@@ -1381,6 +1505,8 @@ def main():
     parser.add_argument('--case', action='append', dest='names')
     parser.add_argument('--worker-log-dir', type=Path)
     parser.add_argument('--legs-record', type=Path, help="verify.sh's record of the gate's unconfined legs")
+    parser.add_argument('--full', action='store_true',
+                        help='the nightly sweep (VELDO-0267): every registered case, fresh, baselines traced')
     args = parser.parse_args()
     if args.worker:
         # Developer entry only: no coordinator launches it, so it keeps no ownership ledger.
@@ -1401,10 +1527,22 @@ def main():
         return 1
     # The gate names the authority checkout's own common directory; a candidate root is a linked
     # worktree of it, and its marker is checked against that directory before any Git runs.
-    receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
+    common = common_directory(ROOT)
+    chooser = load(ROOT / 'scripts/mutation_selection.py')
+    selection = None
+    if not (args.full or args.finding or args.names):
+        selection = gate_selection(chooser, args.root, common, leg)
+    receipt = run_stage(args.root, common, capacities=resource_capacities(args.resource_capacity),
                         findings=args.finding, names=args.names,
                         admit=load(ROOT / 'scripts/gate_schedule.py').CHANNEL in os.environ,
-                        log_dir=args.worker_log_dir, leg=leg, measure=True)
+                        log_dir=args.worker_log_dir, leg=leg, measure=True, selection=selection,
+                        trace_coverage=args.full, force_fresh=args.full)
+    if 'selection' in receipt:
+        try:
+            receipt['selection']['nightly'] = chooser.nightly_summary(
+                chooser.state_directory(chooser.load_rule()))
+        except chooser.Invalid:
+            receipt['selection']['nightly'] = None
     if os.environ.get('VELDO_GATE_GRAPH_DIGEST'):
         receipt['graph'] = os.environ['VELDO_GATE_GRAPH_DIGEST']
     if args.receipt:
@@ -1414,9 +1552,54 @@ def main():
         print_leg(leg, receipt, legs.DECLARATION)
         if args.legs_record:
             legs.write_record(args.legs_record, 'mutation', leg['declaration'], leg['entries'])
-    print('mutations: {status} registered={registered} executed={executed} '
-          'reused={reused} rejected={rejected} workers={worker_invocations} elapsed={elapsed:.3f}s'.format(**receipt), flush=True)
+    print(verdict_line(receipt), flush=True)
     return 0 if receipt['status'] == 'passed' else 1
+
+
+# THE GATE'S SELECTION (VELDO-0267). The base is the commit the gate was told to compare against
+# (VELDO_GATE_BASE_COMMIT, which verify.sh resolves before any candidate command runs), else the merge
+# base with the rule's trunk. The record is written to VELDO_MUTATION_SELECTION, the gate's evidence
+# beside its stamp, before the first case runs. Anything the rule cannot read is the full sweep.
+def gate_selection(chooser, root, common, leg):
+    def git(*arguments):
+        try:
+            return git_bytes(root, common, *arguments)
+        except Exception as error:  # A refusal, a timeout or an exit status: never fewer cases.
+            raise chooser.Invalid('git %s: %s' % (arguments[0], error)) from error
+
+    def unconfined(case):
+        try:
+            return in_leg(leg, case)
+        except Refused:
+            return True
+
+    try:
+        manifest = json.loads((Path(root) / 'scripts/suites/manifest.json').read_text())
+        demands = {s['file']: s.get('resources') or {} for s in manifest['suites']}
+    except (OSError, ValueError, KeyError, TypeError):
+        demands = {}
+
+    def choose(full_inventory):
+        try:
+            candidate = git('rev-parse', 'HEAD').decode().strip()
+        except chooser.Invalid:
+            candidate = None
+        if candidate is None:
+            record = chooser.select(full_inventory, None, base=None, candidate=None,
+                                    error='the candidate commit cannot be read')
+        else:
+            record = chooser.plan(full_inventory, git=git, candidate=candidate,
+                                  base=os.environ.get('VELDO_GATE_BASE_COMMIT') or None,
+                                  case_inputs_path=Path(root) / 'scripts/mutation_case_inputs.json',
+                                  approvals=chooser.read_approvals(ROOT), unconfined=unconfined,
+                                  resources=lambda case: demands.get(case['suite']))
+        print(chooser.line(record), flush=True)
+        destination = os.environ.get('VELDO_MUTATION_SELECTION')
+        if destination:
+            chooser.write_record(destination, record)
+        return record
+
+    return choose
 
 
 if __name__ == '__main__':
