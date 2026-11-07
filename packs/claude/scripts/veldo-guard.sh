@@ -33,10 +33,13 @@ except Exception:
     print("")
 ' 2>/dev/null || true)
 
-# Only guard merge-ish and push-ish commands; everything else passes through. Without a tool
-# payload, a git pre-push hook's call names its one destination in VELDO_GUARD_REF.
+# Only guard merge-ish and push-ish commands; everything else passes through. Any command naming
+# git goes on to the destination step below, which decides with the guard's own git global option
+# parsing whether it is a push or merge (git -C dir push and git -c k=v push included); only those
+# are judged. Without a tool payload, a git pre-push hook's call names its one destination in
+# VELDO_GUARD_REF.
 if [ -n "$CMD" ]; then
-  if ! printf '%s' "$CMD" | grep -qE '(git (push|merge)|gh pr (merge|create))'; then
+  if ! printf '%s' "$CMD" | grep -qE '(git|gh pr (merge|create))'; then
     exit 0
   fi
   GUARD_PATH=tool
@@ -89,26 +92,80 @@ def words_of(command):
     return words
 
 
+# Git's global options that take their value as the next word.
+GIT_VALUE = ("-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env", "--super-prefix",
+             "--attr-source")
+# The same options in the raw text, for a command that is not one simple command: git, any global
+# options, then push or merge.
+WORD = r"""(?:"[^"]*"|'[^']*'|\\.|[^\s"'\\])+"""
+PUSHISH = re.compile(r"git (push|merge)|gh pr merge|git(?:\s+(?:(?:%s)\s+%s|-\S*))*\s+(?:push|merge)\b"
+                     % ("|".join(GIT_VALUE), WORD))
+
+
+def git_split(words):
+    """(every global option before the subcommand, the subcommand or None, its arguments)."""
+    at, opts = 1, []
+    while at < len(words) and words[at].startswith("-"):
+        step = 2 if words[at] in GIT_VALUE else 1
+        opts += words[at:at + step]
+        at += step
+    if at >= len(words):
+        return opts, None, []
+    return opts, words[at], words[at + 1:]
+
+
 def git_globals(words):
-    """(the global options before the subcommand, the subcommand, its arguments), or None."""
-    at, kept = 1, []
-    while at < len(words) and words[at] in ("-C", "-c"):
-        if at + 1 >= len(words):
-            return None
-        kept += words[at:at + 2]
-        at += 2
-    if at >= len(words) or words[at].startswith("-"):
+    """(the global options before the subcommand, the subcommand, its arguments), or None when an
+    option other than -C and -c, each with its value, precedes the subcommand."""
+    kept, sub, rest = git_split(words)
+    if sub is None or len(kept) % 2 or any(o not in ("-C", "-c") for o in kept[0::2]):
         return None
-    return kept, words[at], words[at + 1:]
+    return kept, sub, rest
+
+
+def names_push_or_merge(command, words):
+    """Whether the command is, or may be, a git push, git merge or gh pr merge."""
+    if PUSHISH.search(command):
+        return True
+    if words and (words[0] == "git" or words[0].endswith("/git")):
+        return git_split(words)[1] in ("push", "merge")
+    return False
+
+
+# git push's options that take their value as the next word (prefixes count, as git accepts them).
+PUSH_VALUE = ("push-option", "repo", "receive-pack", "exec")
+# Placed after the user's options, so they win whatever the user wrote: a dry run that prints its
+# porcelain ref lines (never quiet) and runs no hook.
+FORCED = ["--no-quiet", "--dry-run", "--porcelain", "--no-verify"]
+
+
+def options_end(rest):
+    """Where git push's options end: the "--" that is not an option's value, or the end."""
+    at = 0
+    while at < len(rest):
+        word = rest[at]
+        if word == "--":
+            return at
+        if word.startswith("--") and "=" not in word and any(v.startswith(word[2:]) for v in PUSH_VALUE):
+            at += 2
+            continue
+        if word.startswith("-") and not word.startswith("--") and word.endswith("o"):
+            at += 2
+            continue
+        at += 1
+    return len(rest)
 
 
 def dry_run(kept, rest, cwd):
-    """Git's own answer for where this push goes: the same push, dry run, porcelain, no hooks."""
+    """Git's own answer for where this push goes: the same push, dry run, porcelain, no hooks. The
+    user's quiet, verbosity and verify options are overridden by options placed after theirs, and the
+    hooks path is set after their global options, so neither can silence the answer or run a hook."""
     if any(w.startswith(("--no-dry", "--no-porc")) for w in rest):
         return unresolved("the command turns the dry run off, so it cannot be reproduced")
+    end = options_end(rest)
     try:
-        r = subprocess.run(["git", "-c", "core.hooksPath=/dev/null"] + kept
-                           + ["push", "--dry-run", "--porcelain", "--no-verify"] + rest,
+        r = subprocess.run(["git"] + kept + ["-c", "core.hooksPath=/dev/null", "push"]
+                           + rest[:end] + FORCED + rest[end:],
                            cwd=cwd, capture_output=True, text=True, timeout=300, stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError) as error:
         return unresolved("the dry run did not run (%s)" % type(error).__name__)
@@ -119,7 +176,14 @@ def dry_run(kept, rest, cwd):
     for line in r.stdout.splitlines():
         parts = line.split("\t")
         if len(parts) == 3 and len(parts[0]) == 1 and ":" in parts[1]:
-            found.append((parts[1].rsplit(":", 1)[1], None))
+            ref = parts[1].rsplit(":", 1)[1]
+            if not ref.startswith("refs/"):
+                return unresolved("the dry run named a destination that is not a full ref name")
+            found.append((ref, None))
+        elif not (line.startswith("To ") or line == "Done" or not line.strip()):
+            return unresolved("the dry run printed a line the guard cannot read")
+    if not found:
+        return unresolved("the dry run named no destination")
     return found
 
 
@@ -185,9 +249,9 @@ def destinations():
     if not os.path.isdir(cwd):
         cwd = "."
     words = words_of(command)
+    if not names_push_or_merge(command, words):
+        return []  # not a push or merge; gh pr create moves no ref
     if words is None:
-        if not re.search(r"(git (push|merge)|gh pr merge)", command):
-            return []  # gh pr create only: it moves no ref
         return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
     if words[0] == "gh" and words[1:3] == ["pr", "create"]:
         return []
@@ -207,6 +271,9 @@ def destinations():
 
 
 def main():
+    found = destinations()
+    if not found:
+        return 0
     path = Path(".veldo/policy_check.py")
     check = None
     if path.is_file():
@@ -214,7 +281,7 @@ def main():
         check = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(check)
     protected = []
-    for ref, reason in destinations():
+    for ref, reason in found:
         if ref is None:
             log("unresolved", "%s; treated as protected; %s" % (reason, CHECKS))
             protected.append("unresolved")
