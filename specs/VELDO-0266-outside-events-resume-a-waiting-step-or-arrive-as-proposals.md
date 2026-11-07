@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0266
-title: A step waits for an outside callback through a signed, single-use, expiring resume link with a required timeout, and outside events from configured sources arrive as proposals in the owner's inbox, every one authenticated behind the outside gate, rate-limited, deduplicated and journaled, and nothing starts without the normal approvals
+title: A step waits for an outside callback through a signed, single-use, expiring resume link with a required timeout, and outside events from configured sources either arrive as proposals in the owner's inbox or, where the owner has approved that source for direct admission, start one named workflow, every one authenticated behind the outside gate, rate-limited, deduplicated and journaled
 status: draft
 risk: critical
 owner: dmitry
@@ -134,8 +134,8 @@ acceptance_criteria:
       undeclared-field row goes red.
   - id: AC3
     text: >
-      Outside events from configured sources arrive as proposals in the owner's inbox and never as work.
-      A source is declared in the installation folder (VELDO-0259) under sources/<name>.yaml: a
+      Outside events from configured sources arrive as proposals in the owner's inbox, or start work
+      directly where the owner has approved that source for it (AC5). A source is declared in the installation folder (VELDO-0259) under sources/<name>.yaml: a
       verification scheme from a closed set (HMAC-SHA256 over the timestamp, the event id and the body in
       the form of the Standard Webhooks specification; the same with an Ed25519 public key; and GitHub's
       X-Hub-Signature-256 HMAC form), a keystore reference for its secret resolved gate side (VELDO-0254,
@@ -149,14 +149,15 @@ acceptance_criteria:
       source request identity (the source name and event id), so the same event twice gives the same
       proposal and a changed body under the same id is refused as an identity conflict. A verified event
       enters the one normalized intake path of VELDO-0126 as a submission from that source and produces
-      only an inbox proposal marked with its source and the inbound call's journal position; intake never
-      admits or prioritizes it, and the owner admits it like any proposal. Its text is outside content:
+      an inbox proposal marked with its source and the inbound call's journal position when the source's
+      admission is proposal (the default); intake never admits or prioritizes it, and the owner admits it
+      like any proposal. A source whose admission is direct is handled by AC5. Its text is outside content:
       shown to the owner and to any later worker as data from that source, never as an instruction
       (VELDO-0181). Rows: a correctly signed event produces one proposal; a wrong signature, a timestamp
       outside the tolerance, an unknown source, an event type the source does not accept and a body over
       the bound are each refused by name and produce nothing; the same event resent gives the same
       proposal; a burst over the source's limit is refused rate_limited past the limit and journaled; no
-      proposal is ever admitted without the owner's decision.
+      event from a proposal source is ever admitted without the owner's decision.
     falsified_by: >
       Three registered mutations, each with a green baseline: (1) signature verification accepts a
       timestamp outside the tolerance: the stale-timestamp row goes red; (2) the intake admits a verified
@@ -183,6 +184,33 @@ acceptance_criteria:
       Two registered mutations, each with a green baseline: (1) the authority verifies source signatures
       itself with the secret passed to it: the closure row goes red naming the module; (2) the execution
       record keeps the link in clear: the record-redaction row goes red.
+  - id: AC5
+    text: >
+      The owner chooses per source whether its events need his approval. Owner, Telegram 39731
+      (2026-11-07): "I need to be able to configure either I approve before it continues or it just
+      enters - we need a way to secure it but I can't just approve all - some don't need approvals."
+      sources/<name>.yaml carries admission: proposal or direct; a source that omits it is proposal. A
+      direct source also names exactly one workflow and the digest of one bound revision of it (starts),
+      a cap on its units running at once (max_running) and a daily cap on units it may start
+      (max_per_day); a direct source missing any of them is refused as invalid_input:source:direct_limits.
+      Setting or widening direct admission, its starts target or its caps is a configuration change that
+      goes live only after the owner approves that exact commit (VELDO-0253), and the inbox shows which
+      sources are direct. A verified event from a direct source passes the same checks as AC3 (signature,
+      timestamp, both deduplication layers, rate limit, body bound, accepted event types) and is then
+      admitted through VELDO-0126's intake as one unit of exactly the named revision, recorded as admitted
+      by that source's policy at the approved commit; the event chooses nothing else: its declared fields
+      enter as the unit's inputs as data (VELDO-0181), and it cannot pick another workflow, revision,
+      project or priority. Approval steps inside the started workflow still apply as that workflow
+      declares them. An event past max_running or max_per_day is not dropped: it becomes an inbox proposal
+      marked over_cap. Rows: a direct source's event starts one unit of the named revision with no owner
+      decision; the same event resent starts nothing new; a payload naming another workflow or revision
+      changes nothing; a source without admission produces a proposal; a direct source without caps is
+      refused at load; with max_running reached the next event becomes an over_cap proposal; a direct
+      source whose starts digest is not a bound revision is refused at load.
+    falsified_by: >
+      Two registered mutations, each with a green baseline: (1) a source that omits admission is treated
+      as direct: the default-is-proposal row goes red; (2) the max_running check is skipped: the over_cap
+      row goes red with a second running unit.
 required_evidence: [unit, integration]
 rollback: >
   Revert the commits. wait_for_event is unregistered, so a stored revision that uses it no longer
@@ -274,6 +302,8 @@ sources, which belong to VELDO-0246 and read this spec's named problems.
 - Out of review scope (filed, not blocking): unlikely edge cases (owner, Telegram 28962).
 
 ## History
+
+2026-11-07: AC5 added by the lead on the owner's word (Telegram 39731): per-source choice between owner approval and direct admission, with caps; AC3 and the title amended to match.
 
 2026-11-07: drafted under owner Telegram 39631 to 39633 (the n8n comparison and its recommendation, and
 "It's OK for work to coming in other ways", which relaxes his ruling of 2026-09-22, Telegram 28857, that
