@@ -186,6 +186,43 @@ mutation row green):
   268`, 21 cases), passes `bash -n`, appends one line per step with the red row names to
   proof/VELDO-0268/pending-summary.txt, logs /tmp/v268-fix3-suite.log and /tmp/v268-fix3-teeth.log.
 
+## Fix round 4 (second fix check, research/claude-runs/veldo-0268-fixcheck2-2026-11-07.md)
+
+- F3 (owner decision Telegram 39895): the credential helper pin is gone. Before the dry run the
+  guard reads every credential.helper and credential.<url>.helper (any URL) with `git config
+  --show-scope --show-origin`; a non-empty helper whose scope is not global or system, whose origin
+  is not an absolute file path, or whose file lies under the repository (work tree, git dir or
+  common dir; an include from the global file reports global scope, so the path decides) makes the
+  push unresolved without running anything. A command-line helper is refused earlier by the -c key
+  allowlist. Askpass stays pinned empty and GIT_ASKPASS dropped, prompts off. This is stricter than
+  "for that URL": a repository helper for any URL keeps every push from that repository unresolved.
+  The superseded consequence above (an https remote needing a helper is unresolved) now holds only
+  for a helper outside the global and system configuration.
+- F4: in a command the guard cannot reproduce, the alias is looked up with the git command's own -C
+  and -c pairs. When text before it may run it elsewhere (cd, pushd, popd, or an assignment of a GIT_
+  variable, HOME or XDG_CONFIG_HOME) or it carries another global option, a subcommand that is
+  neither a builtin nor a git-<name> program on the exec path or PATH counts as an alias that may
+  push. The simple-command path applies the same rule to an assignment or env before git and to
+  global options other than -C and -c (`--git-dir`, `--config-env`).
+- Rows: push/credential (now: a repository helper is unresolved, its marker and both askpass markers
+  unrun), push/credential-url-scoped, push/credential-command, push/credential-included (global
+  include of a file under .git, and a global file under .git), push/credential-global (a gh-style
+  global helper on a self-signed https fixture remote: working branch exit 0 on a red stamp, main
+  exit 2 as refs/heads/main protected, a remote it does not cover unresolved, repository and
+  environment askpass unrun), push/vcs (remote.<name>.vcs helper unrun), push/alias-elsewhere (tool
+  cwd outside the repository: cd, -C in a list, -C simple, GIT_DIR=, --git-dir all exit 2; cd then
+  git status exit 0).
+- Falsifiers (suite and teeth driver): repository helper runs, URL-scoped helper missed, command-line
+  helper runs, included helper under the repository runs, global helper pinned off, global helper
+  refused, vcs helper runs, alias ignores -C, alias ignores cd, alias ignores a prefix. Removed:
+  credential helper not pinned (no pin now); askpass not pinned now targets push/credential-global.
+- Commit 97433ff5 (three guard copies byte-identical, suite, teeth driver).
+- Runs at 97433ff5 under the gate lock: suite 141 75 passed, 0 failed (45 behaviour, 30 mutation
+  rows; exit 2 is the partial-run marker); `check_teeth_mutations.py --finding 268` exit 0,
+  registered=30 rejected=30.
+- Not reproduced outside the suite: the repository guard blocks a compound Bash command naming a
+  push on a red stamp, so every behaviour above was driven only through suite 141 fixtures.
+
 ## Open
 
 - scripts/suites/requires.json is outside the footprint. It is derived (`python3 scripts/run_scope.py
