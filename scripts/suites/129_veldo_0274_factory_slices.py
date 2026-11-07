@@ -163,6 +163,19 @@ with factory.factory(root, base / 'factory', {}, lambda _: wire.engine_source(ca
         for sleeper in sleepers:
             sleeper.kill()
             sleeper.wait()
+    # AC3's registered mutation (check_teeth_mutations.py, slices274-factory-user-without-exit-stack): the mutation
+    # stage's worker replaces this path with a copy of suite 86, the factory user that runs before this suite in the
+    # gate's unconfined leg, in this process. Only then does this suite run that copy here, before the end-of-run
+    # row, as the gate runs 86 before 129; the no-op copy is the control. Unreplaced, suite 86 runs on its own in
+    # the manifest and is not run again here. Its rows stay its own: they are counted here but never reported as
+    # this suite's rows, so the control's rows equal the baseline's.
+    FACTORY_USER = ROOT / "scripts/suites" / "86_veldo_0127_agent_configuration.py"
+    if Path(FACTORY_USER).resolve() != (ROOT / 'scripts/suites/86_veldo_0127_agent_configuration.py').resolve():
+        user_rows = []
+        exec(compile(Path(FACTORY_USER).read_text(), str(FACTORY_USER), 'exec'),
+             dict(globals(), expect=lambda name, condition: user_rows.append((name, bool(condition)))))
+        print('  VELDO-0274 suite 86 copy: %d rows, false: %s' % (
+            len(user_rows), ', '.join(name for name, ok in user_rows if not ok) or 'none'))
     # AC3: after the unit stage's last suite, no veldo0127 slice whose pid belongs to this run remains loaded. In
     # the gate this suite runs in the unconfined leg (scripts/gate_unconfined.json), the leg with a user manager,
     # in the same selftest process as the factory users listed there and after them (it is the manifest's last
@@ -202,6 +215,9 @@ with factory.factory(root, base / 'factory', {}, lambda _: wire.engine_source(ca
 
     leaked = [name for name in (factory.loaded_slices(environment) or []) if ours(name)]
     check('slices/end-of-run', not leaked, 'leaked: ' + ', '.join(leaked))
+    # Judged first, then stopped, so a leak reds this row once and does not outlive the run.
+    for name in leaked:
+        factory.unit('stop', name, environment)
     for row, observed in rows.items():
         if manager is None and row != 'slices/end-of-run':
             continue

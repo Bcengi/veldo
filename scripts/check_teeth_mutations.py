@@ -12251,9 +12251,6 @@ def cases():
     result[-1]['siblings'] = True
 
     # VELDO-0274: the VELDO-0127 factory owns its slice (suite 129 loads the factory by the path the worker replaces).
-    # AC3's mutation (suite 88 without the context manager, red on slices/end-of-run) mutates suite 88 and is observed
-    # by suite 129, so it needs 88 run before 129 in one worker. The stage's worker (scripts/mutation_observer.py,
-    # protected, outside this footprint) runs one suite per case, so it stays in proof/VELDO-0274/falsify.py.
     # Suite 129 is listed whole in scripts/gate_unconfined.json, so these cases run in the unconfined leg
     # (check_gate_mutations.in_leg), where the user manager their rows need answers. Only the coordinator's own
     # CLI passes that leg: run them with `check_gate_mutations.py --finding 274`; this driver's main runs every
@@ -12278,6 +12275,15 @@ def cases():
         'if pid != os.getpid():  # defect: the sweep ignores liveness',
         ['slices/sweep-live'])
     result[-1]['dir'] = 'proof/VELDO-0127'
+    # AC3: suite 86, the factory user in suite 129's leg, starts the factory without its ExitStack, so the slice
+    # outlives it. Suite 129 names suite 86 by the path the worker replaces and runs the replaced copy (the no-op
+    # copy as control) in its own process before slices/end-of-run, which goes red naming the leaked slice.
+    add(274, 'slices274-factory-user-without-exit-stack', slices274, '86_veldo_0127_agent_configuration.py',
+        'f = owned.enter_context(fixture.factory(ROOT, base, PRODUCTION, fake_engine, deadline_seconds=30))',
+        'f = fixture.factory(ROOT, base, PRODUCTION, fake_engine, deadline_seconds=30).__enter__()'
+        '  # defect: no ExitStack',
+        ['slices/end-of-run'])
+    result[-1]['dir'] = 'scripts/suites'
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
