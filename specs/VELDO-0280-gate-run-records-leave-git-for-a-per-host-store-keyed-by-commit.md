@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0280
 title: Gate run records (the verify stamp, gate events and reconciled verdict events) leave git for a per-host store keyed by commit, while proof bundles and emergency records stay committed
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: not_required
@@ -115,3 +115,5 @@ Core's records (the audit's core half); proof bundle format; emergency lane sema
 ## History
 
 2026-11-07: drafted by the lead from the weight audit's decision H (Telegram 39708, 39710). A draft.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.

@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0273
 title: Each gate runs the test suites that cover the code its candidate changed plus a fixed canary set, and the full suite set runs nightly on the trunk through VELDO-0267's runner
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: not_required
@@ -156,3 +156,5 @@ machinery (VELDO-0279 deletes it); core's gate.
 
 2026-11-07: drafted by the lead under the owner's narrowed approval scope (Telegram 39708, 39710) from
 the agreed item (Telegram 39690 to 39692). A draft.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.

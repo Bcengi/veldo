@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0278
 title: Tokens of Effort leaves the gate and the mutation sets until a spend source exists, and the integration stage that only guards its first use leaves with it
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -112,3 +112,5 @@ core half).
 ## History
 
 2026-11-07: drafted by the lead from the weight audit's item 10 (Telegram 39708, 39710). A draft.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.

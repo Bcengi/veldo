@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0274
 title: The VELDO-0127 factory fixture removes every systemd slice it creates, on success, failure and interruption, for every suite that starts it
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -99,3 +99,5 @@ Other fixtures' slices; the containment profile in .veldo/control_containment.py
 
 2026-11-07: drafted by the lead under the owner's narrowed approval scope (Telegram 39708, 39710). A
 draft.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.

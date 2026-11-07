@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0279
 title: The gate reuse machinery, which has never reused a result, and the finished suite-split and rename migration tools are deleted, keeping the worker bootstrap, the landing check and the case tracer
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: not_required
@@ -123,3 +123,5 @@ The mutation selection (VELDO-0267), the sandbox (VELDO-0271), the resource ledg
 ## History
 
 2026-11-07: drafted by the lead from the weight audit's item 11 (Telegram 39708, 39710). A draft.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.
