@@ -1,0 +1,101 @@
+# VELDO-0272 evidence
+
+Owner approval narrows to money, authentication and security, schema and irreversible infrastructure;
+routine and test machinery work lands on a green gate and a recorded independent review; the owner gets a
+daily summary of what landed. The full gate is not run here; the lead runs it under the gate lock.
+
+## BLOCKER: the footprint cannot hold the falsifier suite
+
+The spec's footprint allows `scripts/suites/*veldo_0272*.py` but not `scripts/suites/manifest.json`,
+`scripts/suites/requires.json` or `scripts/check_teeth_mutations.py`. selftest refuses any suite file on disk
+that the manifest does not enumerate (`SUITE_NOT_ENUMERATED`, exit 2, for every run including the full
+gate), so a suite file under scripts/suites/ would break the gate. The precedent (VELDO-0235) listed all
+three in its footprint. Per the build instructions these were not changed. So:
+
+- The suite is written and staged at `proof/VELDO-0272/suite_129_veldo_0272_approval_scope.py`. To register
+  it: move it to `scripts/suites/129_veldo_0272_approval_scope.py` and add a manifest.json entry and a
+  requires.json entry (requires only itself; it consumes only ROOT and expect).
+- `scripts/selftest.py --suite 129_veldo_0272_approval_scope` could not be run. The suite was run in the
+  shared namespace exactly as selftest runs a fragment (a five-line runner that loads
+  `scripts/suites/shared.py` and execs the fragment in its namespace, kept outside the repository).
+- The falsifiers are not registered with the gate's mutation driver (`check_teeth_mutations.py` is outside
+  the footprint). Each falsifier is instead a row of the suite that checks the unmutated baseline green and
+  the mutant red on a temporary copy (the policy rows, or a copy of `.veldo/` with one module changed).
+
+## What was built, per AC
+
+- AC1, `.veldo/policy.yaml`: protected_paths is exactly the Design section's kept list (11) and added list
+  (17, each with its engine/.veldo copy), every floor high, none of the 29 removed paths or their engine
+  copies. `risk_tiers.high.human_approval: false`, critical keeps true. New `approval_scope.from_commit`,
+  read like `fix_validation.from_commit` (absent, not 40 hex, or not a commit here: every spec in scope).
+  The merge_rule's WARP-0730 no verdict clause is replaced by the review clause with its forgery limit.
+  `engine/.veldo/policy_check.py` is byte-identical.
+- AC2, `.veldo/policy_check.py` (`glob_covers`, `globs_meet`, `declared_flag`, `approval_bases`,
+  `effective_flag`, `APPROVAL_AREAS`) and `.veldo/validate.py` (`check_approval_scope`, called from
+  `check_spec`; `approval_scope`, `approval_in_scope`): the rule lives once, beside the protected list, and
+  the validator and executor load it. Refusals `approval_flag_below_rule` (names the file, both flags and
+  every basis), `critical_without_area`, and an unknown `risk_areas` value. Scope: a spec is judged unless
+  the start line resolves and the file was first added at or before it (one `git rev-list` and one
+  `git log --diff-filter=A` per repository). A spec file outside the repository is not judged (shared.py's
+  "good spec accepted" validates a temporary spec outside the repository).
+- AC3, `.veldo/policy_check.py` main: (a) `approval_flag_lowered` for a commit in the range changing a
+  spec's human_approval from required to not_required with no owner approval scoping that spec file (not
+  self approved); (b) `landing_without_review` for a push whose specs (spec files and proof bundles it
+  changes) are all effectively not_required and that touches no protected path, unless each has a pass or
+  pass_with_notes verdict, no blocking findings, bound to a commit in the range and to the current proof
+  digest, from a reviewer who is not the producer (`valid_verdict_for` gained `spec_id`, `bound`,
+  `producer`; its default behaviour is unchanged). (c) `executor.merge_ready` refuses when
+  `approval_bases` is not empty. The protected path check and the objection check are unchanged.
+- AC4, new `.veldo/landed_summary.py`: `python3 .veldo/landed_summary.py day YYYY-MM-DD [--ref REF]` reads
+  the first-parent commits of main whose committer date is that day, one landing per ticket named in the
+  subject (its newest commit that day), and writes `.veldo/runtime/landed/YYYY-MM-DD.md`: ticket, title cut
+  to one line, gate result (newest gate event at the landed commit for a commit of that ticket), reviewer of
+  the passing verdict, approval required and approvers; a count line split required / not required; an
+  empty day is one line. `.veldo/control_telegram_report.py`: `DAILY_EVENT = 'daily_landed'`,
+  `daily_landed_text`, `daily_due`, `Reporter.daily_source`, `Reporter.report_daily` (the day's spec.shipped
+  from VELDO-0051's reader, once per day by its record id, only at or after the configured hour), and
+  `render` returns the formatter's text unchanged for that event. Engine copies of all five changed modules
+  are byte-identical.
+- `docs/method.md` 2.8 states the computed flag, the review a not-required landing needs and the daily
+  summary (docs hygiene: pass). PDFs not re-rendered (manual release act).
+- `specs/index.md` regenerated: the ready commit had left VELDO-0272 in the draft group.
+
+## Rows and outcomes
+
+RUNS_PLACEHOLDER
+
+## Falsifiers, red then green
+
+Red: the staged suite run against the base tree (`git archive ed0c995f`, the ready commit) fails 16 of its
+17 rows (every AC; the engine-identical row was already true). Green: the same suite at HEAD passes all 17.
+In-suite mutations, each with its baseline green and the mutant red in the same run:
+
+- AC1 (1) scripts/gate_legs.py added back to protected_paths: lists-match red.
+- AC1 (2) .veldo/policy_check.py removed from protected_paths: lists-match red.
+- AC2 reverse match direction dropped (`globs_meet` returns `glob_covers(a, b)` only, on a copy of
+  policy_check.py loaded by a copy of validate.py): fixture (2) `scripts/**` no longer refused.
+- AC3 reviewer comparison skipped (the producer test in `valid_verdict_for` replaced by `if False:`): the
+  self-reviewed landing exits 0 instead of 1.
+- AC4 reviewer field dropped from `format_day`: the file row and the registry row both red.
+
+## Still open
+
+- The footprint blocker above (manifest.json, requires.json, check_teeth_mutations.py).
+- The daily_landed send is not wired to the channel tick: `control_service_channel.py` (outside the
+  footprint) must call `Reporter.report_daily(day, root, hour)` with the owner's configured hour, and the hour
+  needs a configuration home. Until then the file path is the summary, as the spec allows.
+- `landed_summary.py` is not in `init_scaffold.py`'s asset list (outside the footprint), so an installed
+  repository has the reporter but not the summary module; `daily_landed_text` would fail there at call time.
+- `approval_scope.from_commit` names the branch base ed0c995f. The spec says it records the commit that
+  lands VELDO-0272; the landing should re-point it (policy.yaml is protected, so with the owner's approval).
+  A spec added on main after ed0c995f and before the landing is in scope until then.
+- Behaviour other suites may observe (not run here; the lead's gate decides): (1) `landing_without_review`
+  refuses any push carrying a not-required spec or proof bundle with no bound, digest-matching review; the
+  landing and candidate suites (e.g. 67_veldo_0056_candidates, 69_veldo_0058_gate_output,
+  70_veldo_0057_landing, 86_veldo_0148_re_land) may push such fixtures. (2) In a repository whose policy has
+  no `approval_scope` (every scaffolded one), every spec is in scope, so a fixture spec that declares
+  not_required with no footprint is refused; 16 suites write `human_approval: not_required` fixtures. Fixing
+  either is outside the footprint.
+- Proof bundles here mostly carry no manifest.json (VELDO-0261 has none), so under AC3 (b) a not-required
+  landing needs a manifest for its verdict to bind a digest.
+- A push that changes no spec file and no proof bundle has no spec to review, so (b) asks nothing of it.
