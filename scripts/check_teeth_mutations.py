@@ -12311,10 +12311,9 @@ def cases():
              also=[(ssh_pin268, ssh_pin268_defect)])
     guard268('guard268-every-transport-allowed', '    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"\n',
              '    pass  # defect: every transport is allowed\n', ['push/ext-transport'])
-    guard268('guard268-credential-helper-runs', '          "credential.helper=",\n',
-             '          # defect: the credential helper is not pinned\n', ['push/credential'])
-    guard268('guard268-askpass-runs', '          "core.askPass=",\n',
-             '          # defect: askpass is not pinned\n', ['push/credential'])
+    askpass268 = '          "core.askPass=",\n'
+    guard268('guard268-askpass-runs', askpass268, '          # defect: askpass is not pinned\n',
+             ['push/credential-global'])
     guard268('guard268-alias-not-expanded',
              '        value = None if sub in (None, "push", "merge") else alias_of(kept, sub, cwd)\n',
              '        value = None  # defect: aliases are not expanded\n', ['push/alias'])
@@ -12322,6 +12321,39 @@ def cases():
              '        return unresolved("a git alias that may push or merge, in a command the guard cannot '
              'reproduce")\n',
              '        pass  # defect: an alias in a compound command is not judged\n', ['push/alias'])
+    # Fix round 4: a credential helper runs only from the global or system configuration (owner decision
+    # Telegram 39895), a vcs remote helper never runs, an alias is looked up where the command runs.
+    cred268 = '    problem = credential_program(kept, cwd, env)\n'
+    cred268_defect = '    problem = None  # defect: any credential helper runs\n'
+    guard268('guard268-repository-helper-runs', cred268, cred268_defect, ['push/credential'])
+    guard268('guard268-url-scoped-helper-missed', '                                         r"^credential\\..*helper$"],\n',
+             '                                         r"^credential\\.helper$"],  # defect: URL-scoped missed\n',
+             ['push/credential-url-scoped'])
+    guard268('guard268-command-line-helper-runs', '    if unsafe:\n',
+             '    if False:  # defect: every -c key is reproduced\n', ['push/credential-command'],
+             also=[(cred268, cred268_defect)])
+    guard268('guard268-included-helper-under-repository-runs',
+             '                or any(real == d or real.startswith(d.rstrip("/") + "/") for d in repo)):\n',
+             '                or False):  # defect: a file under the repository counts as global\n',
+             ['push/credential-included'])
+    guard268('guard268-global-helper-pinned-off', askpass268,
+             '          "credential.helper=",  # defect: the global helper is pinned off\n' + askpass268,
+             ['push/credential-global'])
+    guard268('guard268-global-helper-refused', '        if (scope not in ("global", "system") or not real\n',
+             '        if (scope not in ("system",) or not real  # defect: global is refused\n',
+             ['push/credential-global'])
+    guard268('guard268-vcs-helper-runs', '    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"\n',
+             '    pass  # defect: every transport is allowed\n', ['push/vcs'])
+    guard268('guard268-alias-ignores-dash-c',
+             '            value = None if sub in ("push", "merge") else alias_of(kept, sub, cwd)\n',
+             '            value = None if sub in ("push", "merge") else alias_of([], sub, cwd)  # defect: cwd only\n',
+             ['push/alias-elsewhere'])
+    guard268('guard268-alias-ignores-cd', '        if split is None or ELSEWHERE.search(command[:match.start()]):\n',
+             '        if split is None:  # defect: a cd before git is ignored\n', ['push/alias-elsewhere'])
+    guard268('guard268-alias-ignores-prefix',
+             '    elsewhere = git_globals(words) is None or any("=" in w or w == "env" for w in prefix)\n',
+             '    elsewhere = False  # defect: an assignment or option before the subcommand is ignored\n',
+             ['push/alias-elsewhere'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

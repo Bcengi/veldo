@@ -129,8 +129,9 @@ def _v268_suite():
         (d / 'manifest.json').write_text(json.dumps({'spec_id': 'VELDO-9000', 'commit': head}))
 
     def guard(work, command, **extra):
+        cwd = extra.pop('VELDO_0268_CWD', str(work))  # the tool's cwd in the payload (default: the repository)
         env = dict(ENV, CLAUDE_PROJECT_DIR=str(work), **extra)
-        payload = json.dumps({'tool_name': 'Bash', 'tool_input': {'command': command}, 'cwd': str(work)})
+        payload = json.dumps({'tool_name': 'Bash', 'tool_input': {'command': command}, 'cwd': cwd})
         return subprocess.run(['bash', str(work / 'scripts' / 'veldo-guard.sh')], cwd=str(work), env=env,
                               input=payload, capture_output=True, text=True)
 
@@ -444,37 +445,182 @@ def _v268_suite():
         return refused_unrun(work, bare, head, calls, [ext_mark, rem_mark, rew_mark, helper_mark],
                              'the dry run failed')
 
-    def row_credential(under):
+    def serve(bare=None, tls=False):
+        """A fixture smart-http remote that answers 401 without the credential fixture:token and, with
+        it, the receive-pack ref advertisement of `bare` (no bare: 401 always). Returns (server, base
+        URL). The guard's dry run only reads the advertisement."""
+        import base64
         import http.server
+        import ssl
         import threading
+        token = 'Basic ' + base64.b64encode(b'fixture:token').decode()
 
-        class Unauthorized(http.server.BaseHTTPRequestHandler):
+        class Remote(http.server.BaseHTTPRequestHandler):
             def do_GET(self):
-                self.send_response(401)
-                self.send_header('WWW-Authenticate', 'Basic realm="fixture"')
+                if bare is None or self.headers.get('Authorization') != token:
+                    self.send_response(401)
+                    self.send_header('WWW-Authenticate', 'Basic realm="fixture"')
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return
+                if 'service=git-receive-pack' not in self.path:
+                    self.send_response(404)
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return
+                adv = subprocess.run(['git', 'receive-pack', '--stateless-rpc', '--advertise-refs', str(bare)],
+                                     env=ENV, capture_output=True).stdout
+                head_line = b'# service=git-receive-pack\n'
+                body = b'%04x' % (len(head_line) + 4) + head_line + b'0000' + adv
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/x-git-receive-pack-advertisement')
+                self.send_header('Cache-Control', 'no-cache')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_POST(self):
+                self.send_response(500)
                 self.send_header('Content-Length', '0')
                 self.end_headers()
 
             def log_message(self, *args):
                 pass
 
+        server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Remote)
+        scheme = 'http'
+        if tls:
+            keydir = Path(tempfile.mkdtemp(dir=str(base)))
+            subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
+                            '-subj', '/CN=127.0.0.1', '-keyout', str(keydir / 'k.pem'), '-out', str(keydir / 'c.pem')],
+                           env=ENV, capture_output=True, check=True)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.load_cert_chain(str(keydir / 'c.pem'), str(keydir / 'k.pem'))
+            server.socket = context.wrap_socket(server.socket, server_side=True)
+            scheme = 'https'
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        return server, '%s://127.0.0.1:%d' % (scheme, server.server_port)
+
+    def stop(server):
+        server.shutdown()
+        server.server_close()
+
+    def row_credential(under):
+        """A credential helper in the repository's own configuration is not run (owner decision
+        Telegram 39895): unresolved, with askpass from the repository and the environment unrun."""
         work, bare, head = fixture(under)
         helper, helper_mark = program(work, 'ch')
         ask, ask_mark = program(work, 'ca')
         env_ask, env_ask_mark = program(work, 'ga')
         git(work, 'config', 'credential.helper', '!%s' % helper)
         git(work, 'config', 'core.askPass', str(ask))
-        server = http.server.HTTPServer(('127.0.0.1', 0), Unauthorized)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
+        server, root = serve()
         try:
-            url = 'http://127.0.0.1:%d/r.git' % server.server_port
+            url = root + '/r.git'
             calls = [('git push %s agent/claude/x' % url, {}),
-                     ('git push %s agent/claude/x' % url, {'GIT_ASKPASS': str(env_ask)})]
+                     ('git push %s agent/claude/x' % url, {'GIT_ASKPASS': str(env_ask)}),
+                     ('git push %s main' % url, {})]
             return refused_unrun(work, bare, head, calls, [helper_mark, ask_mark, env_ask_mark],
-                                 'the dry run failed')
+                                 'names a credential helper outside the global and system configuration')
         finally:
-            server.shutdown()
-            server.server_close()
+            stop(server)
+
+    def row_credential_url_scoped(under):
+        """A URL-scoped credential.<url>.helper in the repository's configuration is not run."""
+        work, bare, head = fixture(under)
+        helper, helper_mark = program(work, 'cu')
+        server, root = serve()
+        try:
+            git(work, 'config', 'credential.%s.helper' % root, '!%s' % helper)
+            calls = [('git push %s/r.git agent/claude/x' % root, {})]
+            return refused_unrun(work, bare, head, calls, [helper_mark],
+                                 'names a credential helper outside the global and system configuration')
+        finally:
+            stop(server)
+
+    def row_credential_command(under):
+        """A credential helper on the command line is not run."""
+        work, bare, head = fixture(under)
+        helper, helper_mark = program(work, 'cc')
+        server, root = serve()
+        try:
+            calls = [('git -c credential.helper=!%s push %s/r.git agent/claude/x' % (helper, root), {}),
+                     ('git -c credential.%s.helper=!%s push %s/r.git agent/claude/x' % (root, helper, root), {})]
+            return refused_unrun(work, bare, head, calls, [helper_mark], 'may name a program')
+        finally:
+            stop(server)
+
+    def row_credential_included(under):
+        """A helper in a file under the repository is not run, though the global configuration
+        includes it (git reports the includer's scope), nor a global configuration file that itself
+        lies under the repository."""
+        work, bare, head = fixture(under)
+        helper, helper_mark = program(work, 'ci')
+        inside = work / '.git' / 'cred.cfg'
+        inside.write_text('[credential]\n\thelper = !%s\n' % helper)
+        outer = work.parent / 'global-inc.cfg'
+        outer.write_text('[include]\n\tpath = %s\n' % inside)
+        server, root = serve()
+        try:
+            calls = [('git push %s/r.git agent/claude/x' % root, {'GIT_CONFIG_GLOBAL': str(outer)}),
+                     ('git push %s/r.git agent/claude/x' % root, {'GIT_CONFIG_GLOBAL': str(inside)})]
+            return refused_unrun(work, bare, head, calls, [helper_mark],
+                                 'names a credential helper outside the global and system configuration')
+        finally:
+            stop(server)
+
+    def row_credential_global(under):
+        """A gh-style helper in the global configuration (outside the repository) answers the https
+        remote's credential request, so a working-branch push resolves and passes on a red stamp, and
+        main to the same remote resolves as protected; askpass from the repository and the environment
+        never runs."""
+        work, bare, head = fixture(under)
+        ask, ask_mark = program(work, 'ra')
+        env_ask, env_ask_mark = program(work, 'ea')
+        git(work, 'config', 'core.askPass', str(ask))
+        gh_mark = work.parent / 'gh-helper-ran'
+        gh_helper = work.parent / 'gh-helper'
+        gh_helper.write_text('#!/bin/sh\ntouch "%s"\n'
+                             'if [ "$1" = get ]; then echo username=fixture; echo password=token; fi\n' % gh_mark)
+        gh_helper.chmod(0o755)
+        server, root = serve(bare=bare, tls=True)
+        try:
+            glob = work.parent / 'global.cfg'
+            glob.write_text('[credential "%s"]\n\thelper =\n\thelper = !%s\n[http]\n\tsslVerify = false\n'
+                            % (root, gh_helper))
+            extra = {'GIT_CONFIG_GLOBAL': str(glob), 'GIT_ASKPASS': str(env_ask)}
+            g = guard(work, 'git push %s/r.git agent/claude/x' % root, **extra)
+            branch = (g.returncode == 0 and 'destination refs/heads/agent/claude/x: not protected' in g.stderr
+                      and 'destination unresolved' not in g.stderr)
+            m = guard(work, 'git push %s/r.git main' % root, **extra)
+            prot = protected_lines(m.stderr)
+            main = (m.returncode == 2 and len(prot) == 1 and 'destination refs/heads/main:' in prot[0]
+                    and checks_text(m.stderr) == gate_text(head))
+            # A remote the global helper does not cover: git would fall back to askpass, which never runs.
+            other, other_root = serve()
+            try:
+                n = guard(work, 'git push %s/r.git agent/claude/x' % other_root, **extra)
+            finally:
+                stop(other)
+            uncovered = n.returncode == 2 and 'destination unresolved: the dry run failed' in n.stderr
+            unrun = not ask_mark.exists() and not env_ask_mark.exists()
+            moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+            ok = branch and main and uncovered and gh_mark.exists() and unrun and not moved
+            return ok, ('global helper over https: branch exit %d %r; main exit %d %r; uncovered remote exit %d; '
+                        'helper ran %s; askpass unrun %s' % (g.returncode, g.stderr[-300:], m.returncode, prot,
+                                                             n.returncode, gh_mark.exists(), unrun))
+        finally:
+            stop(server)
+
+    def row_vcs(under):
+        """remote.<name>.vcs names a remote helper program; it never runs."""
+        work, bare, head = fixture(under)
+        helper, helper_mark = program(work, 'git-remote-vv')
+        git(work, 'config', 'remote.v.vcs', 'vv')
+        git(work, 'config', 'remote.v.url', 'somewhere')
+        path = {'PATH': str(work.parent) + os.pathsep + ENV['PATH']}
+        calls = [('git push v agent/claude/x', path), ('git push v main', path)]
+        return refused_unrun(work, bare, head, calls, [helper_mark], 'the dry run failed')
 
     def row_alias(under):
         work, bare, head = fixture(under)
@@ -491,6 +637,26 @@ def _v268_suite():
         moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
         ok = all(rc == 2 and text for _, rc, text in seen) and branch and not moved
         return ok, 'aliases to push: %r; working-branch alias lands %s; main moved %s' % (seen, branch, moved)
+
+    def row_alias_elsewhere(under):
+        """The alias is looked up in the repository the command runs in, not the tool's cwd: from a cwd
+        outside the repository (whose configuration has no alias p), each command naming the
+        repository's alias p = push refuses on the gate text; a builtin after a cd still passes."""
+        work, bare, head = fixture(under)
+        git(work, 'config', 'alias.p', 'push')
+        other = work.parent / 'elsewhere'
+        other.mkdir()
+        seen = []
+        for command in ('cd %s && git p origin main' % work, 'true; git -C %s p origin main' % work,
+                        'git -C %s p origin main' % work, 'GIT_DIR=%s/.git git p origin main' % work,
+                        'git --git-dir=%s/.git p origin main' % work):
+            g = guard(work, command, VELDO_0268_CWD=str(other))
+            seen.append((command[-40:], g.returncode, checks_text(g.stderr) == gate_text(head)))
+        builtin = guard(work, 'cd %s && git status' % work, VELDO_0268_CWD=str(other))
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        ok = all(rc == 2 and text for _, rc, text in seen) and builtin.returncode == 0 and not moved
+        return ok, 'alias p in the repository, cwd outside it: %r; cd then git status exit %d' % (
+            seen, builtin.returncode)
 
     # ---------------------------------------------------------------- merges
     def row_merge(under):
@@ -603,6 +769,9 @@ def _v268_suite():
         'push/program-repo-config': row_program_repo_config, 'push/ssh-config': row_ssh_config,
         'push/ssh-env': row_ssh_env, 'push/ssh-env-git-ssh': row_ssh_env_git_ssh,
         'push/ext-transport': row_ext_transport, 'push/credential': row_credential, 'push/alias': row_alias,
+        'push/credential-url-scoped': row_credential_url_scoped, 'push/credential-command': row_credential_command,
+        'push/credential-included': row_credential_included, 'push/credential-global': row_credential_global,
+        'push/vcs': row_vcs, 'push/alias-elsewhere': row_alias_elsewhere,
         'merge/checked-out': row_merge, 'merge/gh-base': row_gh_base,
         'refuse/gate': row_refuse_gate, 'refuse/manifest': row_refuse_manifest, 'refuse/path': row_refuse_path,
         'refuse/debt': row_refuse_debt, 'refuse/objection': row_refuse_objection, 'refuse/tag': row_refuse_tag,
@@ -635,10 +804,24 @@ def _v268_suite():
     ENV_FILTER_DEFECT = '           if True}  # defect: the environment chooses programs\n'
     PROTOCOLS = '    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"\n'
     PROTOCOLS_DEFECT = '    pass  # defect: every transport is allowed\n'
-    CREDENTIAL_PIN = '          "credential.helper=",\n'
-    CREDENTIAL_PIN_DEFECT = '          # defect: the credential helper is not pinned\n'
     ASKPASS_PIN = '          "core.askPass=",\n'
     ASKPASS_PIN_DEFECT = '          # defect: askpass is not pinned\n'
+    # Fix round 4 anchors, shared with scripts/check_teeth_mutations.py's registration of the same defects.
+    CREDENTIAL_CHECK = '    problem = credential_program(kept, cwd, env)\n'
+    CREDENTIAL_CHECK_DEFECT = '    problem = None  # defect: any credential helper runs\n'
+    CREDENTIAL_KEYS = '                                         r"^credential\\..*helper$"],\n'
+    CREDENTIAL_KEYS_DEFECT = '                                         r"^credential\\.helper$"],  # defect: URL-scoped missed\n'
+    CREDENTIAL_PATH = '                or any(real == d or real.startswith(d.rstrip("/") + "/") for d in repo)):\n'
+    CREDENTIAL_PATH_DEFECT = '                or False):  # defect: a file under the repository counts as global\n'
+    CREDENTIAL_GLOBAL_PIN_DEFECT = '          "credential.helper=",  # defect: the global helper is pinned off\n' + ASKPASS_PIN
+    CREDENTIAL_SCOPE = '        if (scope not in ("global", "system") or not real\n'
+    CREDENTIAL_SCOPE_DEFECT = '        if (scope not in ("system",) or not real  # defect: global is refused\n'
+    ALIAS_C = '            value = None if sub in ("push", "merge") else alias_of(kept, sub, cwd)\n'
+    ALIAS_C_DEFECT = '            value = None if sub in ("push", "merge") else alias_of([], sub, cwd)  # defect: cwd only\n'
+    ALIAS_CD = '        if split is None or ELSEWHERE.search(command[:match.start()]):\n'
+    ALIAS_CD_DEFECT = '        if split is None:  # defect: a cd before git is ignored\n'
+    ALIAS_PREFIX = '    elsewhere = git_globals(words) is None or any("=" in w or w == "env" for w in prefix)\n'
+    ALIAS_PREFIX_DEFECT = '    elsewhere = False  # defect: an assignment or option before the subcommand is ignored\n'
     ALIAS_EXPAND = '        value = None if sub in (None, "push", "merge") else alias_of(kept, sub, cwd)\n'
     ALIAS_EXPAND_DEFECT = '        value = None  # defect: aliases are not expanded\n'
     ALIAS_TEXT = ('        return unresolved("a git alias that may push or merge, in a command the guard cannot '
@@ -687,10 +870,26 @@ def _v268_suite():
         ('fix3-git-ssh-reaches-dry-run', 'veldo-guard.sh', ENV_FILTER, ENV_FILTER_DEFECT, 'push/ssh-env-git-ssh',
          ((SSH_PIN, SSH_PIN_DEFECT),)),
         ('fix3-every-transport-allowed', 'veldo-guard.sh', PROTOCOLS, PROTOCOLS_DEFECT, 'push/ext-transport'),
-        ('fix3-credential-helper-runs', 'veldo-guard.sh', CREDENTIAL_PIN, CREDENTIAL_PIN_DEFECT, 'push/credential'),
-        ('fix3-askpass-runs', 'veldo-guard.sh', ASKPASS_PIN, ASKPASS_PIN_DEFECT, 'push/credential'),
+        ('fix3-askpass-runs', 'veldo-guard.sh', ASKPASS_PIN, ASKPASS_PIN_DEFECT, 'push/credential-global'),
         ('fix3-alias-not-expanded', 'veldo-guard.sh', ALIAS_EXPAND, ALIAS_EXPAND_DEFECT, 'push/alias'),
         ('fix3-alias-in-text-ignored', 'veldo-guard.sh', ALIAS_TEXT, ALIAS_TEXT_DEFECT, 'push/alias'),
+        # Fix round 4: credential helpers only from the global or system configuration; vcs helpers;
+        # aliases looked up where the command runs.
+        ('fix4-repository-helper-runs', 'veldo-guard.sh', CREDENTIAL_CHECK, CREDENTIAL_CHECK_DEFECT, 'push/credential'),
+        ('fix4-url-scoped-helper-missed', 'veldo-guard.sh', CREDENTIAL_KEYS, CREDENTIAL_KEYS_DEFECT,
+         'push/credential-url-scoped'),
+        ('fix4-command-line-helper-runs', 'veldo-guard.sh', KEY_CHECK, KEY_CHECK_DEFECT, 'push/credential-command',
+         ((CREDENTIAL_CHECK, CREDENTIAL_CHECK_DEFECT),)),
+        ('fix4-included-helper-under-repository-runs', 'veldo-guard.sh', CREDENTIAL_PATH, CREDENTIAL_PATH_DEFECT,
+         'push/credential-included'),
+        ('fix4-global-helper-pinned-off', 'veldo-guard.sh', ASKPASS_PIN, CREDENTIAL_GLOBAL_PIN_DEFECT,
+         'push/credential-global'),
+        ('fix4-global-helper-refused', 'veldo-guard.sh', CREDENTIAL_SCOPE, CREDENTIAL_SCOPE_DEFECT,
+         'push/credential-global'),
+        ('fix4-vcs-helper-runs', 'veldo-guard.sh', PROTOCOLS, PROTOCOLS_DEFECT, 'push/vcs'),
+        ('fix4-alias-ignores-dash-c', 'veldo-guard.sh', ALIAS_C, ALIAS_C_DEFECT, 'push/alias-elsewhere'),
+        ('fix4-alias-ignores-cd', 'veldo-guard.sh', ALIAS_CD, ALIAS_CD_DEFECT, 'push/alias-elsewhere'),
+        ('fix4-alias-ignores-prefix', 'veldo-guard.sh', ALIAS_PREFIX, ALIAS_PREFIX_DEFECT, 'push/alias-elsewhere'),
     )
 
     results = {}

@@ -25,9 +25,15 @@
 # receive-pack is unresolved without running anything. For the dry run itself every other such
 # program is pinned to a fixed value placed after the user's options, the environment's GIT_
 # variables that choose programs are dropped, and only the file, ssh, http and https transports are
-# allowed (GIT_ALLOW_PROTOCOL, which overrides any configuration). A push that cannot be resolved
-# that way (an https remote needing a credential helper, for one) is unresolved. An alias that
-# expands to push or merge is judged as that command.
+# allowed (GIT_ALLOW_PROTOCOL, which overrides any configuration). A credential helper runs only
+# when every one configured comes from the global or system configuration, in a file outside the
+# repository (owner decision Telegram 39895: the user's own login, trusted as ~/.ssh/config is); a
+# helper from the repository's configuration, a file it includes under the repository, or the
+# command line makes the push unresolved without running it. A push that cannot be resolved that
+# way is unresolved. An alias that expands to push or merge is judged as that command, looked up in
+# the repository the command runs in; where that cannot be determined (a cd before it, an
+# environment assignment, a global option other than -C and -c), a subcommand that is neither a
+# builtin nor a git-<name> program is unresolved.
 set -u
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
@@ -71,7 +77,7 @@ except Exception:
 # output the protected ones, each as its full ref name or "unresolved". Nothing printed means no
 # protected ref moves, and the push or merge passes without the checks below.
 JUDGED=$(VELDO_GUARD_PATH="$GUARD_PATH" VELDO_GUARD_CMD="$CMD" VELDO_GUARD_CWD="$TOOL_CWD" python3 - <<'PY'
-import importlib.util, os, re, shlex, subprocess, sys
+import importlib.util, os, re, shlex, shutil, subprocess, sys
 from pathlib import Path
 
 CHECKS = "runs the gate stamp, reuse evidence, proof manifest and policy_check checks"
@@ -159,11 +165,12 @@ FORCED = ["--no-quiet", "--dry-run", "--porcelain", "--no-verify"]
 # The only -c keys a reproduced push may carry; any other may name a program the dry run would run.
 SAFE_KEYS = ("push.default", "core.hookspath")
 # Pinned for the dry run after the user's options: every program git may run on the way to the
-# remote gets a fixed value (ssh without a proxy or local command, no credential helper, no askpass).
+# remote gets a fixed value (ssh without a proxy or local command, no askpass). The credential helper
+# is the user's own from the global or system configuration, or the push is unresolved
+# (credential_program, owner decision Telegram 39895).
 SSH = "ssh -o ProxyCommand=none -o PermitLocalCommand=no -o KnownHostsCommand=none -o BatchMode=yes"
 PINNED = ["core.sshCommand=" + SSH,
           "ssh.variant=ssh",
-          "credential.helper=",
           "core.askPass=",
           "core.fsmonitor=false",
           "core.alternateRefsCommand=true",
@@ -202,28 +209,60 @@ def pairs_of(kept):
     return out
 
 
-def alias_of(kept, sub, cwd):
-    """What git expands the subcommand to when it is an alias (git ignores an alias named after a
-    builtin), or None. Reading the configuration runs no program."""
+def builtin(sub, cwd):
+    """Whether git runs the subcommand as a builtin (git ignores an alias named after one)."""
     if not BUILTINS:
         r = subprocess.run(["git", "--list-cmds=builtins"], cwd=cwd, env=dry_env(), capture_output=True,
                            text=True, timeout=60, stdin=subprocess.DEVNULL)
         BUILTINS.extend(r.stdout.split() or ["push"])
-    if sub in BUILTINS:
+    return sub in BUILTINS
+
+
+def maybe_alias(sub, cwd):
+    """Whether the subcommand may be an alias: git runs a builtin, then a git-<name> program, and only
+    then an alias, so a subcommand that is neither may be one."""
+    if builtin(sub, cwd):
+        return False
+    r = subprocess.run(["git", "--exec-path"], cwd=cwd, env=dry_env(), capture_output=True, text=True,
+                       timeout=60, stdin=subprocess.DEVNULL)
+    path = os.pathsep.join([r.stdout.strip(), os.environ.get("PATH", "")])
+    return shutil.which("git-" + sub, path=path) is None
+
+
+def alias_of(kept, sub, cwd):
+    """What git expands the subcommand to when it is an alias, or None. Reading the configuration
+    runs no program."""
+    if builtin(sub, cwd):
         return None
     r = subprocess.run(["git"] + pairs_of(kept) + ["config", "--get", "alias." + sub], cwd=cwd, env=dry_env(),
                        capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
     return r.stdout.rstrip("\n") if r.returncode == 0 else None
 
 
+# Text before a git command that changes the repository or configuration it reads (VELDO-0268 fix
+# round 4): a directory change, or an assignment of a GIT_ variable, HOME or XDG_CONFIG_HOME.
+ELSEWHERE = re.compile(r"(?:^|[\s;&|()])(?:cd|pushd|popd)(?:$|[\s;&|()])|\b(?:GIT_\w*|HOME|XDG_CONFIG_HOME)=")
+
+
 def alias_in_text(command, cwd):
-    """Whether a command the guard cannot reproduce sets an alias or runs one that may push or merge."""
+    """Whether a command the guard cannot reproduce sets an alias or runs one that may push or merge.
+    The alias is looked up where the git command runs (its -C and -c pairs); when the text before it
+    may run it in another repository or configuration, a subcommand that may be an alias counts."""
     if re.search(r"alias\.\S*=", command, re.I):
         return True
     for match in GITSUB.finditer(command):
         sub = match.group(1).strip("\"'")
+        try:
+            split = git_globals(shlex.split(match.group(0)))
+        except ValueError:
+            split = None
+        if split is None or ELSEWHERE.search(command[:match.start()]):
+            if sub not in ("push", "merge") and maybe_alias(sub, cwd):
+                return True
+            continue
+        kept = split[0]
         for _ in range(ALIAS_DEPTH):
-            value = None if sub in ("push", "merge") else alias_of([], sub, cwd)
+            value = None if sub in ("push", "merge") else alias_of(kept, sub, cwd)
             if value is None:
                 break
             if value.startswith("!") or re.search(r"\b(push|merge)\b", value):
@@ -275,6 +314,38 @@ def configured_program(kept, cwd, env):
         ", ".join(n for n in r.stdout.split("\0") if n)[:200])
 
 
+def credential_program(kept, cwd, env):
+    """The reason a credential helper makes this push unreproducible, or None (owner decision
+    Telegram 39895). Every helper configured (credential.helper and every URL-scoped
+    credential.<url>.helper, for any URL) must come from the global or system configuration, in a file
+    outside the repository; a helper from the repository's configuration, a file under the repository
+    that any configuration includes, or the command line is not run. An empty value runs nothing."""
+    r = subprocess.run(["git"] + kept + ["config", "--show-scope", "--show-origin", "-z", "--get-regexp",
+                                         r"^credential\..*helper$"],
+                       cwd=cwd, env=env, capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+    if r.returncode == 1 and not r.stdout:
+        return None
+    if r.returncode != 0:
+        return "the configuration could not be read"
+    where = subprocess.run(["git"] + kept + ["rev-parse", "--path-format=absolute", "--git-dir", "--git-common-dir",
+                                             "--show-toplevel"],
+                           cwd=cwd, env=env, capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+    repo = [os.path.realpath(p) for p in where.stdout.splitlines() if p.startswith("/")]
+    fields = r.stdout.split("\0")
+    for at in range(0, len(fields) - 2, 3):
+        scope, origin, entry = fields[at:at + 3]
+        name, _, value = entry.partition("\n")
+        if not value:
+            continue
+        path = origin[5:] if origin.startswith("file:") else ""
+        real = os.path.realpath(path) if path.startswith("/") else ""
+        if (scope not in ("global", "system") or not real
+                or any(real == d or real.startswith(d.rstrip("/") + "/") for d in repo)):
+            return ("the configuration names a credential helper outside the global and system "
+                    "configuration (%s from %s %s), which the guard does not run" % (name, scope, origin[:120]))
+    return None
+
+
 def dry_run(kept, rest, cwd):
     """Git's own answer for where this push goes: the same push, dry run, porcelain, no hooks. The
     user's quiet, verbosity and verify options are overridden by options placed after theirs, and the
@@ -291,6 +362,9 @@ def dry_run(kept, rest, cwd):
         return unresolved(problem)
     env = dry_env()
     problem = configured_program(kept, cwd, env)
+    if problem:
+        return unresolved(problem)
+    problem = credential_program(kept, cwd, env)
     if problem:
         return unresolved(problem)
     kept = kept + [w for pin in PINNED for w in ("-c", pin)]
@@ -399,15 +473,22 @@ def destinations():
         if names_push_or_merge(command, words):
             return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
         return []
-    return judge_git(command, words[at:], cwd, at == 0 and words[0] == "git")
+    return judge_git(command, words[at:], cwd, at == 0 and words[0] == "git", words[:at])
 
 
-def judge_git(command, words, cwd, reproduce):
+def judge_git(command, words, cwd, reproduce, prefix=()):
     """The destinations of a git command, its aliases expanded as git expands them: an alias that
     expands to push or merge is judged as that command. Only a simple command starting with git is
-    reproduced; any other that pushes or merges is unresolved."""
+    reproduced; any other that pushes or merges is unresolved. The alias is looked up where git runs
+    (its -C and -c pairs); when an environment assignment before git or another global option may
+    change where that is, a subcommand that may be an alias is unresolved."""
+    elsewhere = git_globals(words) is None or any("=" in w or w == "env" for w in prefix)
     for _ in range(ALIAS_DEPTH):
         kept, sub, rest = git_split(words)
+        if elsewhere and sub not in (None, "push", "merge") and maybe_alias(sub, cwd):
+            return unresolved("git %s may be an alias in a repository or configuration the guard cannot "
+                              "determine" % sub)
+        elsewhere = False
         value = None if sub in (None, "push", "merge") else alias_of(kept, sub, cwd)
         if value is None:
             break
