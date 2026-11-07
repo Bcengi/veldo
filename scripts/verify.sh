@@ -142,6 +142,23 @@ if [ -e "$VELDO_AUTHORITY/scripts/gate_host.json" ]; then
   fi
 fi
 
+# THE MUTATION SELECTION (VELDO-0267). The mutation stage runs the cases this candidate's changes
+# select plus a fixed canary set (scripts/mutation_selection.py), or the full sweep when a trigger
+# says so. Its base is the trunk commit the gate is told to compare against: VELDO_GATE_BASE_COMMIT
+# from the caller (a landing's synced trunk commit), else the trunk branch's commit read HERE, before
+# any candidate command runs and could move it. The stage writes its selection record beside the
+# stamp before the first case runs; the stamp's mutation block names its digest.
+if [ -z "${VELDO_GATE_BASE_COMMIT:-}" ]; then
+  VELDO_GATE_BASE_COMMIT=$(git rev-parse --verify --quiet 'refs/heads/main^{commit}' 2>/dev/null || true)
+fi
+export VELDO_GATE_BASE_COMMIT
+VELDO_MUTATION_SELECTION=""
+if _veldo_o=$(cd "$VELDO_OUT" 2>/dev/null && pwd -P); then
+  VELDO_MUTATION_SELECTION="$_veldo_o/mutation-selection.json"
+  rm -f "$VELDO_MUTATION_SELECTION"
+fi
+export VELDO_MUTATION_SELECTION
+
 # ---- the validation catalog: declare EVERY item (see header) ---------------
 CHECK_format="na:no formatter adopted yet"
 CHECK_lint="required:bash scripts/check_lint.sh"
@@ -401,6 +418,15 @@ REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$REUSE_SOU
     REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
   fi
 }
+# The mutation block (VELDO-0267): the stage's mode, cases selected and run, wall seconds, the
+# selection record's digest and the nightly sweep the landing relies on. Null when the stage left
+# no selection to report; a failed stage is already red through the reuse fields above.
+MUTATION_FIELD=""
+if [ "$MUTATION_RAN" = 1 ]; then
+  MUTATION_FIELD=$(python3 -I -S "$VELDO_AUTHORITY/scripts/mutation_selection.py" --stamp-field \
+    "$VELDO_REUSE_RECEIPT" "$VELDO_MUTATION_SELECTION" 2>/dev/null) || MUTATION_FIELD='"mutation":null'
+  MUTATION_FIELD=",$MUTATION_FIELD"
+fi
 # Which suites ran outside the confinement, by stage, and under which declaration. The field is
 # present exactly when an unconfined leg was expected, as reuse_evidence is present only when reuse
 # needed it. When one was expected, a leg record that is missing, empty, unreadable or short of an
@@ -419,9 +445,9 @@ VELDO_HOST_FIELD="$VELDO_HOST_FIELD$VELDO_GRAPH_FIELD"
 EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s%s}' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD" "$VELDO_HOST_FIELD")
 veldo_write_stamp() {
-  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s%s%s}\n' \
-    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" "$UNCONFINED_FIELD" \
-    "$VELDO_HOST_FIELD" > "$1"
+  printf '{"commit":"%s","status":"%s","at":"%s","checks_run":%d,"checks_na":%d,"veldo_version":%s,"tree":%s,%s%s%s%s}\n' \
+    "$COMMIT" "$STATUS" "$TS" "$RAN" "$NA" "$VERSION_JSON" "$TREE_JSON" "$REUSE_JSON" "$MUTATION_FIELD" \
+    "$UNCONFINED_FIELD" "$VELDO_HOST_FIELD" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
   veldo_write_stamp .veldo/last_verify
