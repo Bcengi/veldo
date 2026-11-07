@@ -316,6 +316,8 @@ expect("VELDO-0103 AC1 assessor/the-flag-is-admitted: the brief admits the runne
 
 
 # --- the command line itself, driven through main -------------------------------------------------
+# The assessment is evidence written into proof/, so it names the checkout with the home directory as ~
+# (VELDO-0259); under the confined gate HOME is the scratch directory the temporary checkout lives in.
 _v103_cli_inputs = _v103_tmp / "cli_inputs.json"
 _v103_cli_inputs.write_text(_v103_json.dumps(_v103_inputs))
 _v103_cli_ck = _v103_tmp / "cli_checkout"
@@ -352,7 +354,7 @@ expect("VELDO-0103 AC3 assessor/the-command-line-refuses: the command line is dr
        "with the flag put before the two positional arguments it REFUSES with the usage, rather than reading a flag as a file; "
        "and a trailing --checkout with nothing after it refuses too; DRIVEN: a copy without the positional check gets as far as "
        "trying to READ the flag as the inputs file, and says so",
-       _v103_rc_ok == 0 and _v103_cli_ok is not None and _v103_cli_ok["checkout"] == str(_v103_cli_ck)
+       _v103_rc_ok == 0 and _v103_cli_ok is not None and _v103_cli_ok["checkout"] == FA103.home_as_tilde(str(_v103_cli_ck))
        and _v103_rc_flagfirst == 2 and _v103_rc_dangling == 2
        and _v103_rc_flagfirst2 == 2 and "usage:" in _v103_said and "--checkout" not in _v103_said.split("usage:")[0]
        and _v103_rc_m == 2 and "cannot be read as the inputs JSON" in _v103_m_said and "--checkout" in _v103_m_said)
