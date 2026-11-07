@@ -12293,6 +12293,35 @@ def cases():
              '                           + ["push", "--dry-run", "--porcelain", "--no-verify"] + rest,\n',
              ['push/hooks-not-run'])
     guard268('guard268-quiet-not-overridden', forced268, forced268_defect, ['push/branch-variants'])
+    # Fix round 3: the guard's dry run runs no program the command, configuration or environment
+    # chooses, and an alias that expands to push is judged as a push.
+    ssh_pin268 = 'PINNED = ["core.sshCommand=" + SSH,\n'
+    ssh_pin268_defect = 'PINNED = [  # defect: the ssh command is not pinned\n'
+    env268 = '           if not (k.startswith("GIT_") and k not in GIT_ENV_KEPT) and k != "SSH_ASKPASS"}\n'
+    env268_defect = '           if True}  # defect: the environment chooses programs\n'
+    guard268('guard268-push-option-allowlist-off', '            if name not in PUSH_LONG:\n',
+             '            if False:  # defect: every push option is reproduced\n', ['push/program-options'])
+    guard268('guard268-config-key-allowlist-off', '    if unsafe:\n',
+             '    if False:  # defect: every -c key is reproduced\n', ['push/program-config-option'])
+    guard268('guard268-configured-receivepack-runs', '    problem = configured_program(kept, cwd, env)\n',
+             "    problem = None  # defect: the configuration's receive-pack runs\n", ['push/program-repo-config'])
+    guard268('guard268-ssh-command-not-pinned', ssh_pin268, ssh_pin268_defect, ['push/ssh-config'])
+    guard268('guard268-environment-chooses-programs', env268, env268_defect, ['push/ssh-env'])
+    guard268('guard268-git-ssh-reaches-dry-run', env268, env268_defect, ['push/ssh-env-git-ssh'],
+             also=[(ssh_pin268, ssh_pin268_defect)])
+    guard268('guard268-every-transport-allowed', '    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"\n',
+             '    pass  # defect: every transport is allowed\n', ['push/ext-transport'])
+    guard268('guard268-credential-helper-runs', '          "credential.helper=",\n',
+             '          # defect: the credential helper is not pinned\n', ['push/credential'])
+    guard268('guard268-askpass-runs', '          "core.askPass=",\n',
+             '          # defect: askpass is not pinned\n', ['push/credential'])
+    guard268('guard268-alias-not-expanded',
+             '        value = None if sub in (None, "push", "merge") else alias_of(kept, sub, cwd)\n',
+             '        value = None  # defect: aliases are not expanded\n', ['push/alias'])
+    guard268('guard268-alias-in-text-ignored',
+             '        return unresolved("a git alias that may push or merge, in a command the guard cannot '
+             'reproduce")\n',
+             '        pass  # defect: an alias in a compound command is not judged\n', ['push/alias'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

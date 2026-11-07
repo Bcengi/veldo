@@ -358,6 +358,140 @@ def _v268_suite():
         ok = all(rc == 0 and pushed for _, rc, pushed in seen)
         return ok, 'working branch pushes with quiet and global options: %r' % (seen,)
 
+    # ------------------------- fix round 3: the guard runs no program the push chooses; aliases
+    def program(work, name):
+        """A program that must never run while the guard decides: it records that it ran, and fails."""
+        path, mark = work.parent / name, work.parent / (name + '-ran')
+        path.write_text('#!/bin/sh\ntouch "%s"\nexit 1\n' % mark)
+        path.chmod(0o755)
+        return path, mark
+
+    def refused_unrun(work, bare, head, calls, marks, want):
+        """Each (command, extra environment) exits 2 on the gate text with exactly one unresolved
+        line containing `want`, no marker program ran, and the remote's main did not move."""
+        seen, ok = [], True
+        for command, extra in calls:
+            g = guard(work, command, **extra)
+            why = [l for l in g.stderr.splitlines() if l.startswith('VELDO guard: destination unresolved:')]
+            ran = [m.name for m in marks if m.exists()]
+            one = (g.returncode == 2 and not ran and len(why) == 1 and want in why[0]
+                   and checks_text(g.stderr) == gate_text(head))
+            ok = ok and one
+            seen.append((command[:60], g.returncode, ran, why[0][36:120] if why else None))
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        return ok and not moved, 'main moved %s; %r' % (moved, seen)
+
+    def row_program_options(under):
+        work, bare, head = fixture(under)
+        prog, mark = program(work, 'rp')
+        calls = [('git push --receive-pack=%s origin main' % prog, {}),
+                 ('git push --exec=%s origin agent/claude/x' % prog, {}),
+                 ('git push --rec %s origin agent/claude/x' % prog, {})]
+        return refused_unrun(work, bare, head, calls, [mark], 'an option the guard does not reproduce')
+
+    def row_program_config_option(under):
+        work, bare, head = fixture(under)
+        prog, mark = program(work, 'cp')
+        inc = work.parent / 'inc.cfg'
+        inc.write_text('[remote "origin"]\n\treceivepack = %s\n' % prog)
+        calls = [('git -c remote.origin.receivepack=%s push origin agent/claude/x' % prog, {}),
+                 ('git -c core.sshCommand=%s push ssh://127.0.0.1:1/x main' % prog, {}),
+                 ('git -c protocol.ext.allow=always push ext::%s agent/claude/x' % prog, {}),
+                 ('git -c include.path=%s push origin agent/claude/x' % inc, {})]
+        return refused_unrun(work, bare, head, calls, [mark], 'may name a program')
+
+    def row_program_repo_config(under):
+        work, bare, head = fixture(under)
+        prog, mark = program(work, 'rc')
+        git(work, 'config', 'remote.origin.receivepack', str(prog))
+        calls = [('git push origin agent/claude/x', {}), ('git push origin main', {})]
+        return refused_unrun(work, bare, head, calls, [mark], 'names a receive-pack program')
+
+    def row_ssh_config(under):
+        work, bare, head = fixture(under)
+        prog, mark = program(work, 'sc')
+        git(work, 'config', 'core.sshCommand', str(prog))
+        git(work, 'remote', 'add', 's', 'ssh://127.0.0.1:1/x')
+        calls = [('git push s agent/claude/x', {}), ('git push s main', {})]
+        return refused_unrun(work, bare, head, calls, [mark], 'the dry run failed')
+
+    def row_ssh_env(under):
+        work, bare, head = fixture(under)
+        prog, mark = program(work, 'se')
+        git(work, 'remote', 'add', 's', 'ssh://127.0.0.1:1/x')
+        calls = [('git push s agent/claude/x', {'GIT_SSH_COMMAND': str(prog)})]
+        return refused_unrun(work, bare, head, calls, [mark], 'the dry run failed')
+
+    def row_ssh_env_git_ssh(under):
+        work, bare, head = fixture(under)
+        prog, mark = program(work, 'gs')
+        git(work, 'remote', 'add', 's', 'ssh://127.0.0.1:1/x')
+        calls = [('git push s agent/claude/x', {'GIT_SSH': str(prog)})]
+        return refused_unrun(work, bare, head, calls, [mark], 'the dry run failed')
+
+    def row_ext_transport(under):
+        work, bare, head = fixture(under)
+        ext, ext_mark = program(work, 'ex')
+        rem, rem_mark = program(work, 'er')
+        rew, rew_mark = program(work, 'ew')
+        helper, helper_mark = program(work, 'git-remote-foo')
+        git(work, 'config', 'protocol.ext.allow', 'always')
+        git(work, 'remote', 'add', 'e', 'ext::%s' % rem)
+        git(work, 'config', 'url.ext::%s .pushInsteadOf' % rew, 'zz:')
+        path = {'PATH': str(work.parent) + os.pathsep + ENV['PATH']}
+        calls = [('git push ext::%s main' % ext, {}), ('git push e agent/claude/x', {}),
+                 ('git push zz:q agent/claude/x', {}), ('git push foo::bar agent/claude/x', path)]
+        return refused_unrun(work, bare, head, calls, [ext_mark, rem_mark, rew_mark, helper_mark],
+                             'the dry run failed')
+
+    def row_credential(under):
+        import http.server
+        import threading
+
+        class Unauthorized(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(401)
+                self.send_header('WWW-Authenticate', 'Basic realm="fixture"')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+
+            def log_message(self, *args):
+                pass
+
+        work, bare, head = fixture(under)
+        helper, helper_mark = program(work, 'ch')
+        ask, ask_mark = program(work, 'ca')
+        env_ask, env_ask_mark = program(work, 'ga')
+        git(work, 'config', 'credential.helper', '!%s' % helper)
+        git(work, 'config', 'core.askPass', str(ask))
+        server = http.server.HTTPServer(('127.0.0.1', 0), Unauthorized)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        try:
+            url = 'http://127.0.0.1:%d/r.git' % server.server_port
+            calls = [('git push %s agent/claude/x' % url, {}),
+                     ('git push %s agent/claude/x' % url, {'GIT_ASKPASS': str(env_ask)})]
+            return refused_unrun(work, bare, head, calls, [helper_mark, ask_mark, env_ask_mark],
+                                 'the dry run failed')
+        finally:
+            server.shutdown()
+            server.server_close()
+
+    def row_alias(under):
+        work, bare, head = fixture(under)
+        git(work, 'config', 'alias.pm', 'push origin main')
+        git(work, 'config', 'alias.q', 'pm')
+        git(work, 'config', 'alias.sp', '!git push origin main')
+        git(work, 'config', 'alias.pb', 'push origin agent/claude/x:refs/heads/agent/claude/a')
+        seen = []
+        for command in ('git -c alias.p=push p origin main', 'git pm', 'git q', 'git sp', 'cd . && git pm'):
+            g = guard(work, command)
+            seen.append((command, g.returncode, checks_text(g.stderr) == gate_text(head)))
+        g, ran = through_tool(work, 'git pb')
+        branch = g.returncode == 0 and ran is not None and has(bare, 'refs/heads/agent/claude/a')
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        ok = all(rc == 2 and text for _, rc, text in seen) and branch and not moved
+        return ok, 'aliases to push: %r; working-branch alias lands %s; main moved %s' % (seen, branch, moved)
+
     # ---------------------------------------------------------------- merges
     def row_merge(under):
         work, _, head = fixture(under)
@@ -465,6 +599,10 @@ def _v268_suite():
         'push/quiet-main': row_quiet_main, 'push/empty-answer': row_empty_answer,
         'push/global-options-main': row_global_main, 'push/hooks-not-run': row_hooks_not_run,
         'push/branch-variants': row_branch_variants,
+        'push/program-options': row_program_options, 'push/program-config-option': row_program_config_option,
+        'push/program-repo-config': row_program_repo_config, 'push/ssh-config': row_ssh_config,
+        'push/ssh-env': row_ssh_env, 'push/ssh-env-git-ssh': row_ssh_env_git_ssh,
+        'push/ext-transport': row_ext_transport, 'push/credential': row_credential, 'push/alias': row_alias,
         'merge/checked-out': row_merge, 'merge/gh-base': row_gh_base,
         'refuse/gate': row_refuse_gate, 'refuse/manifest': row_refuse_manifest, 'refuse/path': row_refuse_path,
         'refuse/debt': row_refuse_debt, 'refuse/objection': row_refuse_objection, 'refuse/tag': row_refuse_tag,
@@ -484,6 +622,28 @@ def _v268_suite():
                     '                           + rest[:end] + FORCED + rest[end:],\n')
     DRY_RUN_CALL_DEFECT = ('        r = subprocess.run(["git", "-c", "core.hooksPath=/dev/null"] + kept\n'
                            '                           + ["push", "--dry-run", "--porcelain", "--no-verify"] + rest,\n')
+    # Fix round 3 anchors, shared with scripts/check_teeth_mutations.py's registration of the same defects.
+    PUSH_OPTION_CHECK = '            if name not in PUSH_LONG:\n'
+    PUSH_OPTION_CHECK_DEFECT = '            if False:  # defect: every push option is reproduced\n'
+    KEY_CHECK = '    if unsafe:\n'
+    KEY_CHECK_DEFECT = '    if False:  # defect: every -c key is reproduced\n'
+    RECEIVEPACK_CHECK = '    problem = configured_program(kept, cwd, env)\n'
+    RECEIVEPACK_CHECK_DEFECT = "    problem = None  # defect: the configuration's receive-pack runs\n"
+    SSH_PIN = 'PINNED = ["core.sshCommand=" + SSH,\n'
+    SSH_PIN_DEFECT = 'PINNED = [  # defect: the ssh command is not pinned\n'
+    ENV_FILTER = '           if not (k.startswith("GIT_") and k not in GIT_ENV_KEPT) and k != "SSH_ASKPASS"}\n'
+    ENV_FILTER_DEFECT = '           if True}  # defect: the environment chooses programs\n'
+    PROTOCOLS = '    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"\n'
+    PROTOCOLS_DEFECT = '    pass  # defect: every transport is allowed\n'
+    CREDENTIAL_PIN = '          "credential.helper=",\n'
+    CREDENTIAL_PIN_DEFECT = '          # defect: the credential helper is not pinned\n'
+    ASKPASS_PIN = '          "core.askPass=",\n'
+    ASKPASS_PIN_DEFECT = '          # defect: askpass is not pinned\n'
+    ALIAS_EXPAND = '        value = None if sub in (None, "push", "merge") else alias_of(kept, sub, cwd)\n'
+    ALIAS_EXPAND_DEFECT = '        value = None  # defect: aliases are not expanded\n'
+    ALIAS_TEXT = ('        return unresolved("a git alias that may push or merge, in a command the guard cannot '
+                  'reproduce")\n')
+    ALIAS_TEXT_DEFECT = '        pass  # defect: an alias in a compound command is not judged\n'
 
     # The spec's registered mutations: (name, file, old, new, the row that must go red[, further
     # (old, new) replacements in the same file]).
@@ -516,6 +676,21 @@ def _v268_suite():
         ('fix1-hooks-path-before-globals', 'veldo-guard.sh', DRY_RUN_CALL, DRY_RUN_CALL_DEFECT,
          'push/hooks-not-run'),
         ('fix1-quiet-not-overridden', 'veldo-guard.sh', FORCED_LINE, FORCED_LINE_DEFECT, 'push/branch-variants'),
+        # Fix round 3: the guard's dry run runs no program the command, configuration or environment chooses.
+        ('fix3-push-option-allowlist-off', 'veldo-guard.sh', PUSH_OPTION_CHECK, PUSH_OPTION_CHECK_DEFECT,
+         'push/program-options'),
+        ('fix3-config-key-allowlist-off', 'veldo-guard.sh', KEY_CHECK, KEY_CHECK_DEFECT, 'push/program-config-option'),
+        ('fix3-configured-receivepack-runs', 'veldo-guard.sh', RECEIVEPACK_CHECK, RECEIVEPACK_CHECK_DEFECT,
+         'push/program-repo-config'),
+        ('fix3-ssh-command-not-pinned', 'veldo-guard.sh', SSH_PIN, SSH_PIN_DEFECT, 'push/ssh-config'),
+        ('fix3-environment-chooses-programs', 'veldo-guard.sh', ENV_FILTER, ENV_FILTER_DEFECT, 'push/ssh-env'),
+        ('fix3-git-ssh-reaches-dry-run', 'veldo-guard.sh', ENV_FILTER, ENV_FILTER_DEFECT, 'push/ssh-env-git-ssh',
+         ((SSH_PIN, SSH_PIN_DEFECT),)),
+        ('fix3-every-transport-allowed', 'veldo-guard.sh', PROTOCOLS, PROTOCOLS_DEFECT, 'push/ext-transport'),
+        ('fix3-credential-helper-runs', 'veldo-guard.sh', CREDENTIAL_PIN, CREDENTIAL_PIN_DEFECT, 'push/credential'),
+        ('fix3-askpass-runs', 'veldo-guard.sh', ASKPASS_PIN, ASKPASS_PIN_DEFECT, 'push/credential'),
+        ('fix3-alias-not-expanded', 'veldo-guard.sh', ALIAS_EXPAND, ALIAS_EXPAND_DEFECT, 'push/alias'),
+        ('fix3-alias-in-text-ignored', 'veldo-guard.sh', ALIAS_TEXT, ALIAS_TEXT_DEFECT, 'push/alias'),
     )
 
     results = {}
