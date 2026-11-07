@@ -112,13 +112,6 @@ def acyclic(depends):
         done.update(ready)
 
 
-def write_prior(path, prior):
-    # Replaced whole: an integration node already running has read its own leg's value.
-    pending = path.with_name(path.name + '.pending')
-    pending.write_text(json.dumps(prior))
-    os.replace(pending, path)
-
-
 def validate_claim(claim):
     fields = {'cpu', 'memory', 'manager', 'ports'}
     if not isinstance(claim, dict) or not fields <= set(claim) or set(claim) - fields - {'host_lock'} \
@@ -449,7 +442,7 @@ def stage_error(receipt):
     return ' '.join(text.split())[:400]
 
 
-def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None):
+def command_for(root, stage, leg, command, record, receipt, listing):
     if stage == 'mutation':
         return [sys.executable, '-I', '-S', str(HERE / 'check_gate_mutations.py'), '--root', str(root),
                 '--receipt', str(receipt), '--legs-record', str(record)]
@@ -458,8 +451,6 @@ def command_for(root, stage, leg, command, record, receipt, listing, prior_times
                 '--stage', stage, '--record', str(record)]
         if leg:
             argv += ['--leg', leg]
-        if stage == 'integration' and prior_times:
-            argv += ['--prior-times', str(prior_times)]
         return argv + ['--', command]
     return [sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root', str(root), '--', 'bash', '-c', command]
 
@@ -486,26 +477,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     key = hashlib.sha256((digest + json.dumps(catalog, sort_keys=True) +
                          (listing.read_text() if declaration else '') +
                          Path(__file__).read_text() + (HERE / 'gate_legs.py').read_text()).encode()).hexdigest()
-    prior_times = directory / 'prior-unit-times.json'
-    prior = {}
     depends = {name: set(node['depends_on']) for name, node in graph['nodes'].items()}
-    awaits_unit = {}
-    if declaration:
-        declaration_digest = legs.load(listing)[1]
-        for leg in ('confined', 'unconfined'):
-            value = legs.measurement(store, declaration_digest, leg, str(record))
-            if value:
-                prior[leg] = dict(value, fresh='an earlier gate run')
-            elif {'unit.' + leg, 'integration.' + leg} <= required.keys():
-                # No unit time under this declaration (a changed list is a new one): the integration
-                # leg waits for this gate's unit leg and is handed its fresh time, never another
-                # declaration's (VELDO-0214). A unit leg that records none leaves the floor.
-                depends['integration.' + leg].add('unit.' + leg)
-                awaits_unit['integration.' + leg] = leg
-                print('node integration.%s: no unit %s leg measurement under this declaration; it waits '
-                      'for unit.%s and takes its time' % (leg, leg, leg), flush=True)
     acyclic(depends)
-    write_prior(prior_times, prior)
     claims, claim_sources, coordinator_claims = {}, {}, {}
     for name, node in graph['nodes'].items():
         measured = legs.read_resources(store, key, name)
@@ -554,18 +527,13 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 meter = None
                 inputs = None
                 try:
-                    if name in awaits_unit:
-                        value = legs.measurement(store, declaration_digest, awaits_unit[name], str(record))
-                        if value:
-                            prior[awaits_unit[name]] = value
-                        write_prior(prior_times, prior)
                     if leg == 'unconfined':
                         inputs = node_inputs_factory(root, directory / (name + '.inputs'))
                     node_root = inputs.root if inputs else root
                     meter = meter_factory(name) if meter_factory else Meter(scope, name)
-                    argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times)
+                    argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration)
                     env = {k: v for k, v in os.environ.items() if k not in
-                           (legs.LEG, legs.ENTRIES, legs.DIGEST, legs.UNIT_SECONDS, CHANNEL)}
+                           (legs.LEG, legs.ENTRIES, legs.DIGEST, CHANNEL)}
                     if inputs:
                         env['VELDO_EXPECTED_GIT_COMMON'] = str(inputs.common)
                     env[CHANNEL] = str(child.fileno())
