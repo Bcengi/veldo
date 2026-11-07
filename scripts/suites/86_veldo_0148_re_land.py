@@ -285,7 +285,7 @@ Group.members = _v148_sample_members
             (seed / 'specs' / ('%s-re-land-fixture.md' % sid)).write_text('\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Re-land fixture unit', 'status: ready',
                 'risk: standard', 'owner: dmitry', 'human_approval: not_required', 'lane: standalone',
-                'protected_paths: []', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
+                'protected_paths: []', 'footprint: ["src/**"]', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
                 'required_evidence: [unit]', 'rollback: git revert', '---', '', '## Intent', '', 'Fixture.', '']))
         subprocess.run([sys.executable, '-B', 'scripts/update_index.py'], cwd=str(seed), check=True,
                        capture_output=True, timeout=CHILD_WAIT, env=clean)
@@ -477,6 +477,14 @@ manifest = {'schema': 'veldo.proof/v1', 'spec_id': unit, 'producer': producer, '
             'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [{'type': 'unit', 'path': source, 'digest': sha(source)}]}],
             'checks': [{'name': 'unit', 'status': 'passed'}], 'rollback': 'git revert'}
 (work / 'proof' / unit).mkdir(parents=True, exist_ok=True)
+# VELDO-0272 AC3 (b): a pass verdict bound to the implementation and to this manifest's proof digest
+# (policy_check.proof_digest), from a reviewer who is not the producer.
+bound = json.dumps({k: manifest.get(k) for k in ('spec_id', 'commit', 'criteria', 'checks')}, sort_keys=True, default=str)
+verdict = {'schema': 'veldo.verdict/v1', 'spec_id': unit, 'commit': implementation, 'reviewer': 'fixture-reviewer-148',
+           'verdict': 'pass', 'criteria': [{'id': 'AC1', 'assessment': 'satisfied'}],
+           'findings': {'blocking': [], 'non_blocking': []},
+           'proof_digest': 'sha256:' + hashlib.sha256(bound.encode()).hexdigest()[:16]}
+(work / 'proof' / unit / 'verdict-r1.json').write_text(json.dumps(verdict, indent=1) + chr(10))
 (work / 'proof' / unit / 'manifest.json').write_text(json.dumps(manifest, indent=1, sort_keys=True) + chr(10))
 git('add', '--', 'proof/' + unit)
 git('commit', '-q', '-m', 'Proof for ' + unit)

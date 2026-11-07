@@ -1298,16 +1298,17 @@ def _v208_unconfined_leg():
 
     # ---- the list is protected, read from the authority, and recorded in the stamp --------------
     front = V.front_matter((ROOT / 'specs/VELDO-0208-single-user-landing-reuse.md').read_text(), 'VELDO-0208')
+    # VELDO-0272 AC1 removes these paths from the installed protected list by design (test machinery
+    # lands on a green gate and a recorded review), so only VELDO-0208's own declaration is read here.
     expect('VELDO-0208 unconfined-leg/list-is-protected',
-           {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(P.protected_patterns())
-           and {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(front['protected_paths']))
+           {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(front['protected_paths']))
     # The candidate's dispatcher applies the list, so it is protected with it; the listed suites are
     # not, because review of the candidate, not a protected path, is the safeguard for their code.
     dispatcher_files = {'scripts/selftest.py', 'scripts/run_scope.py', 'scripts/suites/shared.py',
                         'scripts/check_first_use.py'}
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
-           dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
+           dispatcher_files <= set(front['protected_paths'])  # VELDO-0272 AC1: off the installed list
            and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 46
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])

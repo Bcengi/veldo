@@ -87,6 +87,7 @@ def _v58_suite():
         IS = load('v58_scaffold', mods / 'init_scaffold.py')
         LD = load('v58_lander', mods / 'lander.py')
         EX = load('v58_executor', mods / 'executor.py')
+        P272 = load('v58_policy_check', mods / 'policy_check.py')  # proof_digest, for the fixture verdicts
         OWNER = ('Owner', 'owner@example.invalid')
         BUILDER = ('Builder A', 'builder-a@example.invalid')
         LANDER = ('Lander', 'lander@example.invalid')
@@ -243,7 +244,7 @@ def _v58_suite():
             (seed / 'specs' / ('%s-gate-output-fixture.md' % sid)).write_text('\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Gate output fixture unit', 'status: ready',
                 'risk: standard', 'owner: dmitry', 'human_approval: not_required', 'lane: standalone',
-                'protected_paths: []', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
+                'protected_paths: []', 'footprint: ["src/**"]', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
                 'required_evidence: [unit]', 'rollback: git revert', '---', '', '## Intent', '', 'Fixture.', '']))
         subprocess.run([sys.executable, '-B', 'scripts/update_index.py'], cwd=str(seed), check=True,
                        capture_output=True, timeout=60, env=clean)
@@ -293,12 +294,15 @@ def _v58_suite():
                         'checks': [{'name': 'unit', 'status': 'passed'}], 'rollback': 'git revert'}
             proof = repo / 'proof' / unit
             proof.mkdir(parents=True, exist_ok=True)
-            if verdict:
-                (proof / 'verdict-r1.json').write_text(json.dumps({
-                    'schema': 'veldo.verdict/v1', 'spec_id': unit, 'commit': implementation,
-                    'reviewer': {'model': 'fixture-reviewer', 'context': 'fresh'}, 'verdict': 'pass',
-                    'reviewed_at': '2026-09-24T12:00:00Z', 'criteria': [{'id': 'AC1', 'assessment': 'satisfied'}],
-                    'findings': {'blocking': [], 'non_blocking': []}}, indent=1) + '\n')
+            # VELDO-0272 AC3 (b): every not-required landing needs a pass verdict bound to the
+            # implementation commit and to this manifest's proof digest, from a reviewer who is not the
+            # producer, so each build commits one (`verdict` is kept for the rows that name it).
+            (proof / 'verdict-r1.json').write_text(json.dumps({
+                'schema': 'veldo.verdict/v1', 'spec_id': unit, 'commit': implementation,
+                'reviewer': 'fixture-reviewer', 'verdict': 'pass',
+                'reviewed_at': '2026-09-24T12:00:00Z', 'criteria': [{'id': 'AC1', 'assessment': 'satisfied'}],
+                'findings': {'blocking': [], 'non_blocking': []}, 'proof_digest': P272.proof_digest(manifest)},
+                indent=1) + '\n')
             (proof / 'manifest.json').write_text(json.dumps(manifest, indent=1, sort_keys=True) + '\n')
             git(repo, 'add', '--', 'proof/' + unit)
             git(repo, 'commit', '-q', '-m', 'Proof for ' + unit, who=LANDER)
