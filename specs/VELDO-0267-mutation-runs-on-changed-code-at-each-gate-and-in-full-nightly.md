@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0123, VELDO-0207, VELDO-0216, VELDO-0219, VELDO-0220]
 placement: [enforcement]
-protected_paths: ["scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/verify.sh", "engine/scripts/verify.sh", ".veldo/policy_check.py", "engine/.veldo/policy_check.py", ".veldo/policy.yaml", "scripts/gate_graph.json"]
+protected_paths: ["scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/verify.sh", "engine/scripts/verify.sh", ".veldo/policy_check.py", "engine/.veldo/policy_check.py", ".veldo/policy.yaml", "scripts/gate_graph.json", "scripts/mutation_selection.json", "scripts/mutation_selection.py", "engine/scripts/mutation_selection.py", "scripts/mutation_nightly.py", "engine/scripts/mutation_nightly.py", ".veldo/control_verification.py", "engine/.veldo/control_verification.py"]
 footprint:
   - "scripts/check_gate_mutations.py"
   - "engine/scripts/check_gate_mutations.py"
@@ -29,6 +29,13 @@ footprint:
   - "specs/VELDO-0267-mutation-runs-on-changed-code-at-each-gate-and-in-full-nightly.md"
   - "specs/index.md"
   - "proof/VELDO-0267/**"
+  - ".veldo/lander.py"
+  - "engine/.veldo/lander.py"
+  - ".veldo/control_verification.py"
+  - "engine/.veldo/control_verification.py"
+  - ".gitignore"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -218,3 +225,5 @@ recommendation (veldo-core-weight-audit-2026-11-07.md). Mutation time measured f
 gate log. A draft: only the owner marks it ready.
 
 2026-11-07: ready on the owner's approval, Telegram 39692 ("Ok.") to the summary in 39689 and 39691.
+
+2026-11-07: footprint gains .veldo/lander.py and .veldo/control_verification.py with their engine copies, .gitignore, scripts/suites/requires.json and scripts/check_teeth_mutations.py; protected_paths names the five files policy.yaml newly protects and control_verification.py with its engine copy. By the lead under Telegram 39708, ACs unchanged: AC1 says a landing compares against the trunk commit the lander synced, and the lander and the gate environment are where that base is handed to verify.sh (check of 2026-11-07, research/claude-runs/veldo-0267-check-2026-11-07.md F1).
