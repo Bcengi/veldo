@@ -12258,14 +12258,17 @@ def cases():
         '        commits = _git(base, "rev-list", "--reverse", lsha, *excl).decode().split()\n',
         '        commits = _git(base, "rev-list", "--reverse", lsha, *excl).decode().split()[-1:]  # defect: only the tip\n',
         ['p270/guard/push-to-main-refused-naming-first-commit'])
+    result[-1]['siblings'] = True  # validate.py loads yamlish.py and git_process.py beside itself
     add(270, 'proof270-limit-hard-coded-default', p270, 'validate.py',
         '            limit, source = v, ".veldo/policy.yaml key proof.max_file_bytes"\n',
         '            limit, source = PROOF_LIMIT_DEFAULT, ".veldo/policy.yaml key proof.max_file_bytes"  # defect\n',
         ['p270/contract/policy-limit-is-read'])
+    result[-1]['siblings'] = True  # validate.py loads yamlish.py and git_process.py beside itself
     add(270, 'proof270-references-unchecked', p270, 'validate.py',
         '    out = [(None, orig)]\n    if rel:\n',
         '    return []  # defect: no reference to a removed file is checked\n    out = [(None, orig)]\n    if rel:\n',
         ['p270/dangling/manifest-naming-removed-file-refused'])
+    result[-1]['siblings'] = True  # validate.py loads yamlish.py and git_process.py beside itself
     add(270, 'proof270-mutation-writer-copies-raw', p270, 'check_gate_mutations.py',
         "    return V.write_proof_summary(path, ' '.join(['python3', *sys.argv]), V.summarize_mutation_receipt(receipt),\n",
         "    Path(path).write_text(json.dumps(receipt, indent=1))  # defect: the raw receipt lands in the bundle\n"

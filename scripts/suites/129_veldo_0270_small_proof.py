@@ -38,11 +38,17 @@ def _p270_run(repo, *args):
                          identity=_P270_ID).stdout.decode().strip()
 
 
+# The validate.py under test, spelled as the mutation observer's production-copy anchor so a
+# teeth run substitutes its mutant here; its directory is the .veldo every scratch repository gets.
+_P270_VALIDATE = ROOT / ".veldo" / "validate.py"
+
+
 def _p270_scratch(base, name, policy_proof=None):
-    """A scratch repository with this tree's .veldo and guard, a policy holding policy_proof
-    (a list of YAML lines under proof:, or None for no proof key), and one root commit."""
+    """A scratch repository with this tree's .veldo (the one holding the validate.py under test)
+    and guard, a policy holding policy_proof (a list of YAML lines under proof:, or None for no
+    proof key), and one root commit."""
     repo = base / name
-    _p270_shutil.copytree(ROOT / '.veldo', repo / '.veldo',
+    _p270_shutil.copytree(_P270_VALIDATE.parent, repo / '.veldo',
                           ignore=_p270_shutil.ignore_patterns('__pycache__', 'events.jsonl', 'last_verify'))
     (repo / 'scripts').mkdir()
     _p270_shutil.copy(ROOT / 'scripts/veldo-guard.sh', repo / 'scripts/veldo-guard.sh')
@@ -92,7 +98,7 @@ def _p270_gzip_b64(n):
     return (_p270_b64.encodebytes(raw).decode()[:n]).encode()
 
 
-_p270_V = _p270_load('p270_validate', ROOT / '.veldo/validate.py')
+_p270_V = _p270_load('p270_validate', _P270_VALIDATE)
 with _p270_tmp.TemporaryDirectory(prefix='veldo-0270-') as _p270_d:
     _p270_base = _p270_Path(_p270_d)
 
@@ -212,7 +218,7 @@ with _p270_tmp.TemporaryDirectory(prefix='veldo-0270-') as _p270_d:
                      'invalid_results': [{'case': {'name': 'case-20'}, 'error': 'mutation_survived',
                                           'detail': 'no row went red'}]}
     _p270_raw_results = _p270_json.dumps(_p270_receipt['results'], sort_keys=True, separators=(',', ':')).encode()
-    for _p270_label, _p270_path in (('scripts', ROOT / 'scripts/check_gate_mutations.py'),
+    for _p270_label, _p270_path in (('scripts', ROOT / "scripts" / "check_gate_mutations.py"),
                                     ('engine', ROOT / 'engine/scripts/check_gate_mutations.py')):
         _p270_out_path = _p270_r4 / ('proof/W/mutations-%s.summary.json' % _p270_label)
         try:
@@ -338,9 +344,10 @@ _P270_RULE = (
     "produced them, the environment (commit, tree, host, tool versions, and host load when the result is timing "
     "sensitive) and, for every raw file the run produced, its name, size in bytes and sha256. Raw data is "
     "discarded, not stored elsewhere.")
-for _p270_doc in ('CLAUDE.md', 'VELDO.md', 'engine/VELDO.md'):
+for _p270_doc, _p270_docpath in (('CLAUDE.md', ROOT / 'CLAUDE.md'), ('VELDO.md', ROOT / 'VELDO.md'),
+                                  ('engine/VELDO.md', ROOT / "engine" / "VELDO.md")):
     expect('p270/rule/paragraph-verbatim/' + _p270_doc,
-           _P270_RULE in (ROOT / _p270_doc).read_text().splitlines())
+           _P270_RULE in _p270_docpath.read_text().splitlines())
 _p270_briefs = sorted(ROOT.glob('packs/*/agents/veldo-reviewer.md')) + sorted(ROOT.glob('packs/*/.*/agents/veldo-reviewer.md')) \
     + sorted(ROOT.glob('packs/*/.*/agent/veldo-reviewer.md'))
 expect('p270/rule/reviewer-briefs-carry-paragraph-and-question',
