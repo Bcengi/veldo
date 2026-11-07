@@ -24,7 +24,7 @@ VELDO-0214 handoff could be removed. Both are built in this start (commit 046872
   aggregate line, the parked summary line. The real-eight row (parked/command-runs-the-eight-green)
   is gone from the suite, so suite 129 runs in seconds: third start, without the lock,
   `python3 scripts/selftest.py --suite 129_veldo_0278_parked_estimation`: 6 passed, 0 failed in 0.39s.
-- Proof evidence, run once (PENDING, in pending_runs.sh): `python3 scripts/selftest.py --parked
+- Proof evidence, run once by the lead inside the gate lock at 4c38dd1a (lock job 31, 2026-11-07): `python3 scripts/selftest.py --parked
   estimation`, each of the eight 0 failed. Expected exit 1, not 2: parked suite 111 tests only the
   VELDO-0214 handoff, which AC3 removed, so it now reports one red row
   ("VELDO-0214 first-use-budget/handoff-present ... removed by VELDO-0278") instead of raising and
@@ -33,7 +33,7 @@ VELDO-0214 handoff could be removed. Both are built in this start (commit 046872
   The fixture tree copies the scripts/selftest.py under test, so the mutant reddens
   parked/no-gate-pass through the fixture alone. Driven by hand in the second start on a fixture
   tree: baseline exit 2 and "verify stamp: refused"; mutant exit 0 and "verify stamp: ALLOWED".
-  Registered drive PENDING.
+  Registered drive: check_teeth_mutations.py --finding 278 passed 3/3 (lead, lock job 17 at 13b405ab).
 - Earlier evidence (second start): an overlapped by-hand parked run finished at 513 passed, 2 failed
   in 595 s, both reds caused by edits landing mid-run; 15_warp_1404 alone took 539 s. Not evidence
   of green; the clean run above is.
@@ -51,7 +51,7 @@ eight moved suite files as inputs, which would no longer exist, so they were dro
 - Row: mutation/no-estimation-case. Pre-check: green.
 - Falsifier: case parked278-judgment-case-restored (restores judgment-spend-recorded-unkinded);
   materialized by hand, its cases() lists the restored case on judgment_load.py, which the row names.
-  Registered drive PENDING.
+  Registered drive: check_teeth_mutations.py --finding 278 passed 3/3 (lead, lock job 17 at 13b405ab).
 
 ## AC3: the integration stage leaves the gate (built)
 
@@ -86,7 +86,7 @@ eight moved suite files as inputs, which would no longer exist, so they were dro
   the fixture's record_time seeding and run()'s store parameter. No registered case targets them.
 - Parked suite 111: one guard row (above) when gate_legs.py carries no handoff.
 - Falsifier: case parked278-integration-node-left (gate_graph.json regains integration.confined):
-  read_graph refuses it as unknown and the graph row goes red. Registered drive PENDING.
+  read_graph refuses it as unknown and the graph row goes red. Registered drive: check_teeth_mutations.py --finding 278 passed 3/3 (lead, lock job 17 at 13b405ab).
 
 ## Pending (gate lock ~/.local/state/core-gates/.gate.lock held by another gate)
 
@@ -119,7 +119,7 @@ was not free in 1200 s of waiting (flock -w 420, 440, 340 on it), so none of the
   15_warp_1406_normalization 45 0 12.62; 15_warp_1407_judgment_load 84 0 6.86;
   15_warp_1408_budget_rollup 45 0 0.28; 15_warp_1409_cost_to_change_per_area 54 1 17.39;
   16_warp_1403_sizing_pass 49 0 1.77; 111_veldo_0214_first_use_budget 0 1 0.00. The 1409 red is
-  fixed in round 2 (below); the rerun is pending.
+  fixed in round 2 (below). Rerun at 4c38dd1a (lock job 31): 15_warp_1402 58/0, 1404 83/0, 1405 60/0, 1406 45/0, 1407 84/0, 1408 45/0, 1409 55/0, 16_warp_1403 49/0 (all eight green), 111 0/1 by design; suites 01 637/0, 08 1966/0, 14 53/0, 129 33/0, 101 214/2 (only the two inherited VELDO-0208 sandbox rows). Fix check of 2026-11-07: SOUND (research/claude-runs/veldo-0278-fixcheck-2026-11-07.md).
 - Runs: the gate lock was not free in 1190 s of waiting (flock -w 540, 420, 230), so suites 01,
   08, 14 and 101 and the parked run did not run here. They are in pending_runs.sh (no lock inside;
   each step appends one line to pending-summary.txt, logs under /tmp/veldo-0278-fix1-pending);
