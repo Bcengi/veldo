@@ -50,8 +50,10 @@ acceptance_criteria:
     text: >
       One copy at a named state. scripts/records_migrate.py reads specs/, plans/ and proof/ from one named
       Veldo commit (the commit before this spec's removal commit) and writes them into the records
-      repository in VELDO-0281's layout: each spec as its first revision file carrying the Veldo commit
-      that first added it, each plan likewise, each proof bundle with a manifest under
+      repository in VELDO-0281's layout: each spec as its one file carrying the Veldo commit that first
+      added it, each plan likewise, the emergency.push and emergency.closed lines of the tracked
+      .veldo/events.jsonl as one governance record each (read by the guard from the records repository
+      afterwards, like approvals), each proof bundle with a manifest under
       proof/<id>/<manifest commit>/ with its cited artifacts, each bundle with no manifest (119 today)
       under proof/<id>/unbound/, and each approval and verdict as its own record. Record content is
       byte-identical to the source; only the location changes. It runs once; a second run against a
@@ -59,7 +61,7 @@ acceptance_criteria:
       nothing. History is not copied: it stays in Veldo's git history.
     falsified_by: >
       An integration row runs the tool against a fixture Veldo commit with specs, a plan, a bundle with a
-      manifest, a bundle without one, a verdict, an approval and the prose-scope approval shape of
+      manifest, a bundle without one, a verdict, an approval, an emergency.push line and the prose-scope approval shape of
       proof/WARP-0620/approval-dmitry.json: every source file appears once at its mapped path with the
       same sha256, the count per kind matches, and a second run exits record_exists with the remote
       unchanged.
