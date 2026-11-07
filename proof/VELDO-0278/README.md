@@ -112,12 +112,53 @@ was not free in 1200 s of waiting (flock -w 420, 440, 340 on it), so none of the
   over the fixture): row true, TEETH true (the broken matcher makes the check false).
 - F4: the parked run's per-suite lines were not kept by the lead's run. It is rerun as the last
   step of pending_runs.sh, which writes each of the eight suites' lines (suite, passed, failed,
-  seconds) to pending-summary.txt. AC1 evidence, per suite: PENDING (one line per suite to be
-  copied here from pending-summary.txt).
+  seconds) to pending-summary.txt. The lead's run of it (fix round 1 pending_runs.sh, logs
+  /tmp/veldo-0278-fix1-pending): 504 passed, 2 failed in 595.95s, exit 1, verify stamp refused.
+  Per suite (passed, failed, seconds): 15_warp_1402_estimate_record 58 0 0.08;
+  15_warp_1404_historical_analogy 83 0 539.68; 15_warp_1405_reconciliation 60 0 17.27;
+  15_warp_1406_normalization 45 0 12.62; 15_warp_1407_judgment_load 84 0 6.86;
+  15_warp_1408_budget_rollup 45 0 0.28; 15_warp_1409_cost_to_change_per_area 54 1 17.39;
+  16_warp_1403_sizing_pass 49 0 1.77; 111_veldo_0214_first_use_budget 0 1 0.00. The 1409 red is
+  fixed in round 2 (below); the rerun is pending.
 - Runs: the gate lock was not free in 1190 s of waiting (flock -w 540, 420, 230), so suites 01,
   08, 14 and 101 and the parked run did not run here. They are in pending_runs.sh (no lock inside;
   each step appends one line to pending-summary.txt, logs under /tmp/veldo-0278-fix1-pending);
   bash -n pending_runs.sh: clean.
+
+## Fix round 2 (lead's run of the round 1 pending_runs.sh)
+
+Lead's results: suites 01 637/0, 08 1966/0, 14 53/0 green (F1 to F3 confirmed); 101 213/3; the
+parked run 504/2.
+- Suite 101, VELDO-0208 sandbox/unavailable-refuses-before-exec and sandbox/old-abi-refuses-before-exec:
+  inherited (red on main afa292f0, on the lead's known list). Recorded, not fixed.
+- Suite 101, VELDO-0208 unconfined-leg/authority-copy-records-under-its-scratch-home: CAUSED by this
+  diff. It required the authority copy's gate_legs.py to record a passing unit leg's time in the
+  scratch HOME's leg-time store (VELDO-0214 AC6); AC3 removes that recording with the handoff, so the
+  store stayed empty ([], []). Fixed by stating the new behavior, not by dropping the row: renamed
+  'VELDO-0208 unconfined-leg/authority-copy-records-no-leg-time', it requires the scratch store to
+  hold no file after both drivers and that both drivers ran a passing unit leg (kept: code 0, stamp
+  green; list-read: exit 0, "unit: unconfined leg: pass"), so an empty store from a driver that ran
+  nothing cannot pass it. The scratch HOME stays, so a suite run never reaches the owner's store.
+- Parked WARP-1409 AC6 ("no gate stage consumes this module's output"): CAUSED by this diff. Its
+  bound requires its own fragment to be the only suite fragment naming cost_to_change; suite 129
+  (new here) typed the module and 15_warp_1409's full name into its lists. The row is unchanged.
+  Suite 129 now reads the eight fragments from AC1's text (by the spec's own prefixes, resolved to
+  names in the parked manifest) and the nine modules from AC2's text, and a new row
+  parked/spec-names-eight-fragments-and-nine-modules requires exactly 8 distinct prefixes, 9
+  distinct modules and one parked fragment per prefix, so a parse that finds nothing is red.
+  parked/unit-list-excludes-estimation also refuses any unit-manifest name, requires.json key or
+  scripts/suites file starting with one of the eight prefixes. By hand: the 1409 glob now finds only
+  15_warp_1409_cost_to_change_per_area.py; gate closure texts name it nowhere.
+- Parked VELDO-0214 first-use-budget/handoff-present: red by design, not fixed. AC1 requires the
+  eight named estimation fragments green; suite 111 is not one of the eight. AC3 parks 111 because it
+  tests only the VELDO-0214 handoff, which AC3 removes. Its one row says that behavior is absent;
+  making it green would need either the handoff back (against AC3) or a row that passes over
+  removed behavior (a loosened check). So the parked run exits 1 by design and AC1 is judged on the
+  eight's per-suite lines.
+- Runs: suite 129 ran once without the lock by mistake (3 s): 7 passed, 0 failed. The lock was not
+  free in 910 s (flock -w 300, 330, 280), so suites 101 and 129 and the parked all-eight run are in
+  pending_runs.sh (fix round 2; no lock inside; logs /tmp/veldo-0278-fix2-pending; one line per
+  step in pending-summary.txt); bash -n clean.
 
 ## Inherited, not fixed
 
