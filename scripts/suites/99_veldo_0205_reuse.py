@@ -301,10 +301,15 @@ def _v205_reuse():
                 self.active = {}
                 self.outcomes = []
                 self.peak = 0
+                self.retargeted = {}
             def check(self):
                 pass
             def cleanup(self, on_result=None):
                 return []
+            def retarget(self, name, seconds):
+                # VELDO-0285: the coordinator holds an unmeasured case's noop to its baseline as
+                # measured in this stage; reuse never depends on the deadline it is handed.
+                self.retargeted[name] = seconds
             def run(self, jobs, directory, frozen, on_result=None):
                 results = {}
                 for name, job in jobs.items():
