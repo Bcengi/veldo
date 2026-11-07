@@ -33,6 +33,7 @@ footprint:
   - "scripts/suites/111_veldo_0214_first_use_budget.py"
   - "scripts/suites/113_veldo_0220_gate_host.py"
   - "scripts/suites/114_veldo_0220_gate_scope.py"
+  - "scripts/suites/114_veldo_0216_concurrent_stages.py"
   - "scripts/suites/*_veldo_0278_*.py"
   - "specs/VELDO-0278-tokens-of-effort-leaves-the-gate-and-mutation-sets.md"
   - "specs/index.md"
@@ -57,9 +58,11 @@ acceptance_criteria:
       command (python3 scripts/selftest.py --parked estimation) that can never produce a gate pass.
       No remaining fragment depends on them, which the regenerated requires.json shows.
     falsified_by: >
-      A row requires the unit stage's suite list to contain none of the eight names and the parked command
-      to run all eight green. Registered mutation from a green baseline: the parked run is allowed to write
-      a verify stamp: the no-gate-pass row goes red.
+      A row requires the unit stage's suite list to contain none of the eight names, and that the parked
+      command run on a one-fragment fixture parked set cannot write a verify stamp. The gate never runs the
+      real eight: the parked command running all eight green is proof evidence, run once by the build and
+      recorded, so parking takes their time off the gate. Registered mutation from a green baseline: the
+      parked run is allowed to write a verify stamp: the no-gate-pass row goes red.
   - id: AC2
     text: >
       No mutation case mutates an estimation module or runs a parked suite: every case in
@@ -131,3 +134,5 @@ core half).
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.
 
 2026-11-07: footprint and protected_paths widened by the lead (Telegram 39708 scope; ACs keep their meaning, AC3 names where the handoff and the stage are removed): the build stopped correctly because AC1 needs the --parked flag in scripts/selftest.py and AC3 touches gate_legs.py, gate_schedule.py and their engine copies, gate_unconfined.json, .veldo/policy.yaml and suites 101, 111, 113 and 114 (proof/VELDO-0278/README.md, 052a20a1). The policy change moves a protection to the file's new path at the same floor and removes none. depends_on stays as the landing order: 0267 and 0271 land first and 0278 merges onto them at landing.
+
+2026-11-07: by the lead (Telegram 39708 scope, ACs keep their meaning): the AC1 falsifier row no longer runs the real eight parked suites at the gate (the build measured 15_warp_1404 alone at 539 s, about 10 minutes added to the unit stage, which defeats the parking); the gate row uses a one-fragment fixture and the all-eight green run is proof evidence run once. Footprint gains scripts/suites/114_veldo_0216_concurrent_stages.py, whose four handoff rows drop with the VELDO-0214 handoff (proof/VELDO-0278/README.md).
