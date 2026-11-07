@@ -272,7 +272,10 @@ def sweeps(state):
                 found.append(record)
         except (OSError, ValueError, AttributeError, TypeError):
             continue
-    return sorted(found, key=lambda r: (r['finished_at'], r['run_id']))
+    def order(record):
+        epoch = record.get('finished_epoch')
+        return (epoch if type(epoch) in (int, float) else parse_utc(record['finished_at']), record['run_id'])
+    return sorted(found, key=order)
 
 
 def failing_cases(record):

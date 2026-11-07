@@ -1156,6 +1156,14 @@ def stage_cases(full_inventory, record):
     return [c for c in full_inventory if c['identity'] in chosen], canaries
 
 
+def selection_block(record, full_inventory, cases, canaries):
+    """The receipt's selection block: the selected cases and the canaries counted apart."""
+    return {'mode': record['mode'], 'digest': record['digest'], 'trigger': record['trigger'],
+            'record_sha256': hashlib.sha256(canonical(record)).hexdigest(),
+            'selected': sum(c['identity'] not in canaries for c in cases), 'canaries': len(canaries),
+            'run': len(cases), 'inventory': len(full_inventory), 'nightly': None}
+
+
 def judge_canary(case, record):
     """A canary must show a green baseline, an equal no-op and a killed mutant: validate_result's
     own judgment, renamed canary_not_killed with the case and what it saw."""
@@ -1213,11 +1221,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         if selection is not None:
             chosen = selection(full_inventory)
             cases, canaries = stage_cases(full_inventory, chosen)
-            receipt['selection'] = {
-                'mode': chosen['mode'], 'digest': chosen['digest'], 'trigger': chosen['trigger'],
-                'record_sha256': hashlib.sha256(canonical(chosen)).hexdigest(),
-                'selected': sum(c['identity'] not in canaries for c in cases), 'canaries': len(canaries),
-                'run': len(cases), 'inventory': len(full_inventory), 'nightly': None}
+            receipt['selection'] = selection_block(chosen, full_inventory, cases, canaries)
             if not cases:
                 raise Refused('incomplete_inventory', 'empty selection and no registered canary')
             receipt['scope'] = chosen['mode']

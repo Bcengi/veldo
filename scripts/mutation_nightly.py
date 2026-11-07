@@ -237,6 +237,7 @@ class Runner:
             record = {'schema': selection.SWEEP_SCHEMA, 'run_id': run_id, 'trunk_commit': commit,
                       'started_at': selection.utc(started), 'locked_at': selection.utc(locked_at),
                       'lock_wait_seconds': round(waited, 3), 'finished_at': selection.utc(finished),
+                      'finished_epoch': finished,
                       'verdict': 'green' if green else 'red',
                       'failures': [] if green else failures_of(receipt),
                       'host': {'wall_seconds': round(finished - started, 3), 'cpu_seconds': cpu,
