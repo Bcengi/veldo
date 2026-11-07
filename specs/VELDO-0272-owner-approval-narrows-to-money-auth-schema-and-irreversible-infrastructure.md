@@ -1,6 +1,6 @@
 ---
 schema: veldo.spec/v1
-id: VELDO-0271
+id: VELDO-0272
 title: Owner approval narrows to money, authentication and security, schema and irreversible infrastructure, routine and test machinery work lands on a green gate and a recorded independent review, and the owner gets a daily summary of what landed
 status: draft
 risk: high
@@ -26,11 +26,11 @@ footprint:
   - ".veldo/landed_summary.py"
   - "engine/.veldo/landed_summary.py"
   - "scripts/update_index.py"
-  - "scripts/suites/*veldo_0271*.py"
+  - "scripts/suites/*veldo_0272*.py"
   - "docs/method.md"
-  - "specs/VELDO-0271-owner-approval-narrows-to-money-auth-schema-and-irreversible-infrastructure.md"
+  - "specs/VELDO-0272-owner-approval-narrows-to-money-auth-schema-and-irreversible-infrastructure.md"
   - "specs/index.md"
-  - "proof/VELDO-0271/**"
+  - "proof/VELDO-0272/**"
 behavior_bearing: true
 observability:
   logs: >
