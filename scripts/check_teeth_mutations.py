@@ -12366,6 +12366,11 @@ def cases():
         '        if date != day or continues or any(i[0] == ticket for i in items if ticket):'
         '  # defect: one line per ticket',
         ['summary/separate-runs'])
+    # Fix round 3, N3: a push changing code lands with no reviewed spec covering it.
+    add(272, 'scope272-uncovered-code-lands', scope272, 'policy_check.py',
+        '    if work and not landing_specs(pushed):',
+        '    if False:  # defect: code with no reviewed spec lands',
+        ['review/covered'])
     # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
     add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',
         '"- %s %s | gate %s | reviewer %s | approval %s"\n'

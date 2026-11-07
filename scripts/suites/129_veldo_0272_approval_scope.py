@@ -34,7 +34,7 @@ def _v272_suite():
             'AC3 executor/computed-flag',
             'AC3 lowered/rename', 'AC3 lowered/two-step', 'AC3 lowered/delete-re-add', 'AC3 lowered/merge',
             'AC3 review/producer-identity', 'AC3 review/per-spec',
-            'AC3 lowered/old-base-merge', 'AC3 approval/identity',
+            'AC3 lowered/old-base-merge', 'AC3 approval/identity', 'AC3 review/covered',
             'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped',
             'AC4 summary/every-landing', 'AC4 summary/judged-fields',
             'AC4 summary/approvers-judged', 'AC4 summary/separate-runs')
@@ -198,13 +198,25 @@ def _v272_suite():
         V = load('v272_validate', pc_tree / 'validate.py')
 
         with section('AC1 push'):
-            # AC1 push rows: a test machinery path needs nothing; an authentication path needs the owner.
+            # AC1 push rows: a test machinery path needs no owner approval; an authentication path needs the
+            # owner. N3: each push carries a not-required spec reviewed by someone other than the producer,
+            # so the only difference between the two is the path, and no owner approval is in either.
             for name, rel, want in (('legs', 'scripts/gate_legs.py', 0), ('auth', '.veldo/authorization.py', 1)):
                 repo = new_repo(base, 'push-' + name)
                 commit(repo, 'base')
                 git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                sid = 'VELDO-9101'
+                pm = {'schema': 'veldo.proof/v1', 'spec_id': sid, 'commit': 'f' * 40, 'producer': 'builder',
+                      'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [{'type': 'unit'}]}],
+                      'checks': [{'name': 'unit'}], 'rollback': 'revert'}
                 write(repo, rel, '# changed\n')
-                commit(repo, 'change ' + rel)
+                write(repo, 'specs/%s-push.md' % sid, spec_text(sid, 'not_required', [rel]))
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(pm))
+                c = commit(repo, 'change ' + rel)
+                write(repo, 'proof/%s/verdict.json' % sid, json.dumps({
+                    'schema': 'veldo.verdict/v1', 'spec_id': sid, 'commit': c, 'reviewer': 'reviewer', 'verdict': 'pass',
+                    'criteria': [], 'findings': {'blocking': [], 'non_blocking': []}, 'proof_digest': P.proof_digest(pm)}))
+                commit(repo, 'review')
                 code, out = run_main(P, repo)
                 row = 'AC1 push/test-machinery-no-approval' if want == 0 else 'AC1 push/authorization-needs-approval'
                 check(row, 'a commit touching only %s with no approval exits %d [%d: %s]' % (rel, want, code, out.strip()[:160]),
@@ -548,6 +560,41 @@ def _v272_suite():
                   ps['required-both'][0] == 0)
             check('AC3 review/per-spec', 'both specs complete in one push: exit 0 [%s]' % ps['all-complete'][1].strip()[:160],
                   ps['all-complete'][0] == 0)
+
+            # N3: a push changing anything outside specs/ and proof/ must be covered by a spec, not a draft at
+            # HEAD, whose landing is reviewed. A draft covers nothing.
+            def covered_case(where, Pmod, name):
+                repo = new_repo(where, 'cov-' + name)
+                sid, rel = 'VELDO-9341', 'specs/VELDO-9341-cov.md'
+                if name == 'switched':
+                    write(repo, rel, spec_text(sid, 'not_required', ['src/**']))
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                write(repo, 'src/app.py', 'code\n')
+                if name in ('draft', 'switched'):
+                    write(repo, rel, spec_text(sid, 'not_required', ['src/**']).replace('status: ready', 'status: draft'))
+                if name == 'reviewed':
+                    write(repo, rel, spec_text(sid, 'not_required', ['src/**']))
+                    write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                c = commit(repo, 'code change')
+                if name == 'reviewed':
+                    write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                    commit(repo, 'review')
+                return run_main(Pmod, repo)
+
+            def uncovered(code, out):
+                return code == 1 and 'landing_without_review: no spec covers src/app.py' in out
+
+            cv = {name: covered_case(Path(base) / ('cv-' + name), P, name)
+                  for name in ('code-only', 'draft', 'switched', 'reviewed')}
+            check('AC3 review/covered', 'code with no spec at all: exit 1 no spec covers [%s]' % cv['code-only'][1].strip()[:160],
+                  uncovered(*cv['code-only']))
+            check('AC3 review/covered', 'code plus a new draft spec: exit 1 no spec covers [%s]' % cv['draft'][1].strip()[:160],
+                  uncovered(*cv['draft']))
+            check('AC3 review/covered', 'a ready spec switched back to draft in the same push as code: exit 1 [%s]'
+                  % cv['switched'][1].strip()[:160], uncovered(*cv['switched']))
+            check('AC3 review/covered', 'an ordinary reviewed landing of code: exit 0 [%s]' % cv['reviewed'][1].strip()[:160],
+                  cv['reviewed'][0] == 0)
 
             # N1: a branch made before the raise and merged after it; the lowering is judged against the push
             # base (the protected ref's current tip), never against an old trunk commit among the parents.

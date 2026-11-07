@@ -15,7 +15,9 @@ prints the reason and exits 1 (block). Checks, for the current HEAD:
    needs an owner approval scoping that spec's files (approval_flag_lowered);
    every spec a push carries needs a passing verdict from a reviewer who is
    not the producer (landing_without_review), and a spec the rule computes
-   as required needs the owner's approval as well.
+   as required needs the owner's approval as well; a push changing anything
+   outside specs/ and proof/ needs at least one such spec that is not a draft
+   (N3: a draft covers nothing).
 
 Proportionate by design: stdlib only, no yaml dependency (reads the simple
 policy.yaml shape the template ships).
@@ -902,8 +904,9 @@ def main():
             fm = {}
         if fm.get("status") == "draft":
             # A draft lands no work: it cannot carry proof (the ready boundary below refuses one), so
-            # no verdict can bind to it. Skipping it opens nothing a push that changes no spec file
-            # does not already reach; an unreadable spec is not a draft and is judged.
+            # no verdict can bind to it. It covers no work either: the N3 check below refuses a push
+            # changing anything outside specs/ and proof/ with only drafts; an unreadable spec is not a
+            # draft and is judged.
             continue
         if not reviewed_landing(sid, rng):
             print("VELDO policy: blocked. landing_without_review: %s" % sid)
@@ -919,6 +922,21 @@ def main():
             print("  whose scope names this spec (scope.spec_id, or scope.paths covering its spec file)")
             print("  and whose approver is not the proof producer.")
             return 1
+
+    # VELDO-0272 N3: a push that changes anything outside specs/ and proof/ must be covered by a spec
+    # whose landing the loop above judged (reviewed, and owner approved when required). A draft spec
+    # covers nothing, and neither does a ready spec switched back to draft in the same push: it is a
+    # draft at HEAD. Without this, code with no spec, or with only a draft beside it, landed unreviewed.
+    pushed = changed_files()
+    work = [f for f in pushed if not (f.startswith("specs/") or f.startswith("proof/"))]
+    if work and not landing_specs(pushed):
+        print("VELDO policy: blocked. landing_without_review: no spec covers %s" % ", ".join(sorted(work)[:5])
+              + (" (and %d more)" % (len(work) - 5) if len(work) > 5 else ""))
+        print("  A push that changes anything outside specs/ and proof/ must carry a spec that is not a")
+        print("  draft at HEAD, with a pass or pass_with_notes verdict bound to a commit in this push and")
+        print("  to its current proof digest, from a reviewer who is not the proof producer (and the")
+        print("  owner's approval when the spec is approval required). A draft spec covers nothing.")
+        return 1
 
     # ready-spec boundary: no draft spec may carry a proof
     drafts = ready_boundary_violations()
