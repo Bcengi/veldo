@@ -21,6 +21,8 @@ footprint:
   - "specs/VELDO-0274-suites-that-start-the-0127-factory-remove-every-systemd-slice-they-create.md"
   - "specs/index.md"
   - "proof/VELDO-0274/**"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -101,3 +103,5 @@ Other fixtures' slices; the containment profile in .veldo/control_containment.py
 draft.
 
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
