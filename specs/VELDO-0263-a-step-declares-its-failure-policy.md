@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0263
 title: A workflow step declares its failure policy, bounded retry with backoff, a timeout and a failure path, every attempt and timeout is journaled against the unit's revision, and no outward or outside-writing step is ever retried automatically
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -248,3 +248,5 @@ checkpoints of a cycle beyond what the unit record already holds (Release 2).
 tickets for step failure policy, sub-workflows and fan-out, and run insights first), from main at
 afa292f0, VELDO-0241 and VELDO-0247 as written in the landing-b batch, and VELDO-0262 as ready. Built
 after landing-b lands and after VELDO-0262. Standalone; no plan work item.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): routine workflow capability, no money, security, schema or infrastructure decision; owner told in 39724.

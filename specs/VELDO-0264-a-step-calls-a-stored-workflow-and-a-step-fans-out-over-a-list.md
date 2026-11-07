@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0264
 title: A call step runs another stored workflow revision as a unit of reuse, an each step fans out one bounded branch per item of a list and a Join waits for all of them, and no call, item or branch can go around the owner's approval
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -243,3 +243,5 @@ caused by a child's own failure take the child's class.
 tickets for step failure policy, sub-workflows and fan-out, and run insights first), from main at
 afa292f0, VELDO-0241 and VELDO-0247 as written in the landing-b batch, and VELDO-0262 as ready. Built
 after landing-b lands, after VELDO-0262 and after VELDO-0263. Standalone; no plan work item.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): routine workflow capability, no money, security, schema or infrastructure decision; owner told in 39724.

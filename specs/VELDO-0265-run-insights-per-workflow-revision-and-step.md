@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0265
 title: Run insights show per workflow, revision and step where time, failures, retries and model-account usage go, in the web UI and as an OpenTelemetry export of the journal, derived read-only from the journal with no new store of record
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -252,3 +252,5 @@ tickets for step failure policy, sub-workflows and fan-out, and run insights fir
 afa292f0, VELDO-0241, VELDO-0247 and VELDO-0254 to VELDO-0259 as written in the landing-b batch, and
 VELDO-0262 as ready. Built after landing-b lands, after VELDO-0262, VELDO-0263 and VELDO-0264.
 Standalone; no plan work item.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): routine workflow capability, no money, security, schema or infrastructure decision; owner told in 39724.
