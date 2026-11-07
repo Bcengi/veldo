@@ -85,6 +85,7 @@ protected_paths:
   - {path: ".veldo/policy.yaml",                  floor: high}
   - {path: "engine/scripts/verify.sh", floor: high}
   - {path: "engine/scripts/veldo-guard.sh", floor: high}
+  - {path: "packs/claude/scripts/veldo-guard.sh", floor: high}
   - {path: ".veldo/policy_check.py",                  floor: high}
   - {path: "engine/.veldo/policy_check.py", floor: high}
   # CEO-113-era decision, 2026-08-03: the secret inventory record carries the DISPOSITIONS,

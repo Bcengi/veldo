@@ -17,6 +17,17 @@
 # disabled, the checked-out branch for git merge, the base gh reports for gh pr merge. A git
 # pre-push hook calls this script once per ref with VELDO_GUARD_REF (and VELDO_GUARD_COMMIT) set
 # and no tool payload on stdin. A destination that cannot be resolved is protected.
+#
+# THE GUARD RUNS NOTHING THE COMMAND, THE CONFIGURATION OR THE ENVIRONMENT CHOOSES (VELDO-0268 fix
+# round 3). Its dry run contacts the remote, and git runs programs on the way: a receive-pack, an
+# ssh command, a transport helper, a credential helper, an askpass. A push naming such a program
+# (an option outside the guard's allowlist, a -c key outside it) or a configuration naming a
+# receive-pack is unresolved without running anything. For the dry run itself every other such
+# program is pinned to a fixed value placed after the user's options, the environment's GIT_
+# variables that choose programs are dropped, and only the file, ssh, http and https transports are
+# allowed (GIT_ALLOW_PROTOCOL, which overrides any configuration). A push that cannot be resolved
+# that way (an https remote needing a credential helper, for one) is unresolved. An alias that
+# expands to push or merge is judged as that command.
 set -u
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
@@ -132,41 +143,161 @@ def names_push_or_merge(command, words):
     return False
 
 
-# git push's options that take their value as the next word (prefixes count, as git accepts them).
-PUSH_VALUE = ("push-option", "repo", "receive-pack", "exec")
+# The git push options the guard reproduces, by their full names (an abbreviation is unresolved).
+# None of them names a program; --receive-pack, --exec, --signed and --recurse-submodules are absent.
+PUSH_LONG = ("--all", "--branches", "--mirror", "--delete", "--tags", "--follow-tags", "--no-follow-tags",
+             "--force", "--no-force", "--force-with-lease", "--no-force-with-lease", "--force-if-includes",
+             "--no-force-if-includes", "--atomic", "--no-atomic", "--prune", "--no-prune", "--set-upstream",
+             "--no-set-upstream", "--thin", "--no-thin", "--quiet", "--no-quiet", "--verbose", "--no-verbose",
+             "--progress", "--no-progress", "--verify", "--no-verify", "--dry-run", "--porcelain", "--ipv4",
+             "--ipv6", "--no-signed", "--no-recurse-submodules", "--push-option", "--no-push-option", "--repo")
+PUSH_LONG_VALUE = ("--push-option", "--repo")  # their value is the next word unless written with =
+PUSH_SHORT = "nvqfud46"  # and -o, which takes a value
 # Placed after the user's options, so they win whatever the user wrote: a dry run that prints its
 # porcelain ref lines (never quiet) and runs no hook.
 FORCED = ["--no-quiet", "--dry-run", "--porcelain", "--no-verify"]
+# The only -c keys a reproduced push may carry; any other may name a program the dry run would run.
+SAFE_KEYS = ("push.default", "core.hookspath")
+# Pinned for the dry run after the user's options: every program git may run on the way to the
+# remote gets a fixed value (ssh without a proxy or local command, no credential helper, no askpass).
+SSH = "ssh -o ProxyCommand=none -o PermitLocalCommand=no -o KnownHostsCommand=none -o BatchMode=yes"
+PINNED = ["core.sshCommand=" + SSH,
+          "ssh.variant=ssh",
+          "credential.helper=",
+          "core.askPass=",
+          "core.fsmonitor=false",
+          "core.alternateRefsCommand=true",
+          "push.negotiate=false",
+          "push.gpgSign=false",
+          "push.recurseSubmodules=no"]
+# The environment's GIT_ variables the dry run keeps: they say which repository, never which program.
+GIT_ENV_KEPT = ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY",
+                "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE", "GIT_CEILING_DIRECTORIES",
+                "GIT_DISCOVERY_ACROSS_FILESYSTEM", "GIT_CONFIG_NOSYSTEM", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM")
+ALIAS_DEPTH = 10
+SHELL_ALIAS = re.compile(r"\b(git|push|merge)\b")
+GITSUB = re.compile(r"\bgit(?:\s+(?:(?:%s)\s+%s|-\S*))*\s+(%s)" % ("|".join(GIT_VALUE), WORD, WORD))
+BUILTINS = []
 
 
-def options_end(rest):
-    """Where git push's options end: the "--" that is not an option's value, or the end."""
+def dry_env():
+    """The guard's environment without the GIT_ variables that choose a program (GIT_SSH_COMMAND,
+    GIT_SSH, GIT_ASKPASS, GIT_EXEC_PATH, GIT_CONFIG_PARAMETERS and the rest), with only the file, ssh,
+    http and https transports allowed and no prompt."""
+    env = {k: v for k, v in os.environ.items()
+           if not (k.startswith("GIT_") and k not in GIT_ENV_KEPT) and k != "SSH_ASKPASS"}
+    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["SSH_ASKPASS_REQUIRE"] = "never"
+    return env
+
+
+def pairs_of(kept):
+    """The -C and -c pairs among git global options."""
+    out, at = [], 0
+    while at < len(kept):
+        if kept[at] in ("-C", "-c") and at + 1 < len(kept):
+            out += kept[at:at + 2]
+        at += 2 if kept[at] in GIT_VALUE else 1
+    return out
+
+
+def alias_of(kept, sub, cwd):
+    """What git expands the subcommand to when it is an alias (git ignores an alias named after a
+    builtin), or None. Reading the configuration runs no program."""
+    if not BUILTINS:
+        r = subprocess.run(["git", "--list-cmds=builtins"], cwd=cwd, env=dry_env(), capture_output=True,
+                           text=True, timeout=60, stdin=subprocess.DEVNULL)
+        BUILTINS.extend(r.stdout.split() or ["push"])
+    if sub in BUILTINS:
+        return None
+    r = subprocess.run(["git"] + pairs_of(kept) + ["config", "--get", "alias." + sub], cwd=cwd, env=dry_env(),
+                       capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+    return r.stdout.rstrip("\n") if r.returncode == 0 else None
+
+
+def alias_in_text(command, cwd):
+    """Whether a command the guard cannot reproduce sets an alias or runs one that may push or merge."""
+    if re.search(r"alias\.\S*=", command, re.I):
+        return True
+    for match in GITSUB.finditer(command):
+        sub = match.group(1).strip("\"'")
+        for _ in range(ALIAS_DEPTH):
+            value = None if sub in ("push", "merge") else alias_of([], sub, cwd)
+            if value is None:
+                break
+            if value.startswith("!") or re.search(r"\b(push|merge)\b", value):
+                return True
+            first = [w for w in value.split() if not w.startswith("-")]
+            if not first:
+                break
+            sub = first[0]
+        else:
+            return True
+    return False
+
+
+def push_options(rest):
+    """(where git push's options end: the "--" that is not an option's value, or the end; the reason
+    an option is not reproduced, or None)."""
     at = 0
     while at < len(rest):
         word = rest[at]
         if word == "--":
-            return at
-        if word.startswith("--") and "=" not in word and any(v.startswith(word[2:]) for v in PUSH_VALUE):
-            at += 2
+            return at, None
+        if word.startswith("--"):
+            name = word.split("=", 1)[0]
+            if name not in PUSH_LONG:
+                return at, "git push with an option the guard does not reproduce: %s" % name
+            at += 2 if name in PUSH_LONG_VALUE and "=" not in word else 1
             continue
-        if word.startswith("-") and not word.startswith("--") and word.endswith("o"):
-            at += 2
-            continue
+        if word.startswith("-") and len(word) > 1:
+            for i, c in enumerate(word[1:]):
+                if c == "o":
+                    at += 1 if i == len(word) - 2 else 0  # -o with its value in the next word
+                    break
+                if c not in PUSH_SHORT:
+                    return at, "git push with an option the guard does not reproduce: -%s" % c
         at += 1
-    return len(rest)
+    return len(rest), None
+
+
+def configured_program(kept, cwd, env):
+    """The reason the configuration makes this push unreproducible, or None: a remote's receivepack
+    names the program a push runs, so the guard neither runs it nor judges a push it would run."""
+    r = subprocess.run(["git"] + kept + ["config", "--name-only", "-z", "--get-regexp", r"^remote\..*\.receivepack$"],
+                       cwd=cwd, env=env, capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+    if r.returncode == 1 and not r.stdout:
+        return None
+    if r.returncode != 0:
+        return "the configuration could not be read"
+    return "the configuration names a receive-pack program (%s), which the guard does not run" % (
+        ", ".join(n for n in r.stdout.split("\0") if n)[:200])
 
 
 def dry_run(kept, rest, cwd):
     """Git's own answer for where this push goes: the same push, dry run, porcelain, no hooks. The
     user's quiet, verbosity and verify options are overridden by options placed after theirs, and the
-    hooks path is set after their global options, so neither can silence the answer or run a hook."""
+    hooks path is set after their global options, so neither can silence the answer or run a hook.
+    It never runs a program the command, the configuration or the environment chooses."""
     if any(w.startswith(("--no-dry", "--no-porc")) for w in rest):
         return unresolved("the command turns the dry run off, so it cannot be reproduced")
-    end = options_end(rest)
+    unsafe = [v.split("=", 1)[0] for o, v in zip(kept[0::2], kept[1::2])
+              if o == "-c" and not (v.split("=", 1)[0].lower() in SAFE_KEYS or v.lower().startswith("alias."))]
+    if unsafe:
+        return unresolved("git -c %s may name a program, so the guard does not reproduce it" % unsafe[0])
+    end, problem = push_options(rest)
+    if problem:
+        return unresolved(problem)
+    env = dry_env()
+    problem = configured_program(kept, cwd, env)
+    if problem:
+        return unresolved(problem)
+    kept = kept + [w for pin in PINNED for w in ("-c", pin)]
     try:
         r = subprocess.run(["git"] + kept + ["-c", "core.hooksPath=/dev/null", "push"]
                            + rest[:end] + FORCED + rest[end:],
-                           cwd=cwd, capture_output=True, text=True, timeout=300, stdin=subprocess.DEVNULL)
+                           cwd=cwd, env=env, capture_output=True, text=True, timeout=300, stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError) as error:
         return unresolved("the dry run did not run (%s)" % type(error).__name__)
     if r.returncode != 0:
@@ -189,7 +320,7 @@ def dry_run(kept, rest, cwd):
 
 def merge_target(kept, cwd):
     """The branch git merge moves: the one checked out where it runs."""
-    r = subprocess.run(["git"] + kept + ["symbolic-ref", "-q", "HEAD"], cwd=cwd,
+    r = subprocess.run(["git"] + kept + ["symbolic-ref", "-q", "HEAD"], cwd=cwd, env=dry_env(),
                        capture_output=True, text=True, stdin=subprocess.DEVNULL)
     ref = r.stdout.strip()
     if r.returncode != 0 or not ref.startswith("refs/"):
@@ -249,15 +380,52 @@ def destinations():
     if not os.path.isdir(cwd):
         cwd = "."
     words = words_of(command)
-    if not names_push_or_merge(command, words):
-        return []  # not a push or merge; gh pr create moves no ref
     if words is None:
-        return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
-    if words[0] == "gh" and words[1:3] == ["pr", "create"]:
+        if names_push_or_merge(command, words):
+            return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
+        if alias_in_text(command, cwd):
+            return unresolved("a git alias that may push or merge, in a command the guard cannot reproduce")
         return []
-    if words[0] == "gh" and words[1:3] == ["pr", "merge"]:
-        return gh_base(words[3:], cwd)
-    if words[0] != "git":
+    if words[0] == "gh":
+        if words[1:3] == ["pr", "create"]:
+            return []  # gh pr create moves no ref
+        if words[1:3] == ["pr", "merge"]:
+            return gh_base(words[3:], cwd)
+        if names_push_or_merge(command, words):
+            return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
+        return []
+    at = next((i for i, w in enumerate(words) if w == "git" or w.endswith("/git")), None)
+    if at is None:
+        if names_push_or_merge(command, words):
+            return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
+        return []
+    return judge_git(command, words[at:], cwd, at == 0 and words[0] == "git")
+
+
+def judge_git(command, words, cwd, reproduce):
+    """The destinations of a git command, its aliases expanded as git expands them: an alias that
+    expands to push or merge is judged as that command. Only a simple command starting with git is
+    reproduced; any other that pushes or merges is unresolved."""
+    for _ in range(ALIAS_DEPTH):
+        kept, sub, rest = git_split(words)
+        value = None if sub in (None, "push", "merge") else alias_of(kept, sub, cwd)
+        if value is None:
+            break
+        if value.startswith("!"):
+            if SHELL_ALIAS.search(value):
+                return unresolved("git %s is a shell alias that may push or merge" % sub)
+            break
+        try:
+            words = words[:1] + kept + shlex.split(value) + rest
+        except ValueError:
+            return unresolved("git %s is an alias the guard cannot read" % sub)
+    else:
+        return unresolved("git aliases nested deeper than the guard follows")
+    if sub not in ("push", "merge"):
+        if PUSHISH.search(command):
+            return unresolved("git %s is not a push or merge the guard can reproduce" % sub)
+        return []
+    if not reproduce:
         return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
     split = git_globals(words)
     if split is None:
@@ -265,9 +433,7 @@ def destinations():
     kept, sub, rest = split
     if sub == "push":
         return dry_run(kept, rest, cwd)
-    if sub == "merge":
-        return merge_target(kept, cwd)
-    return unresolved("git %s is not a push or merge the guard can reproduce" % sub)
+    return merge_target(kept, cwd)
 
 
 def main():
