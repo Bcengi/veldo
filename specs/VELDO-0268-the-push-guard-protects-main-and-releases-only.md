@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0268
 title: The push guard checks only pushes to protected refs, main, master, release branches and tags as the policy declares them, and never blocks a working branch, while landing keeps the green gate and every approval
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -165,3 +165,5 @@ through the core specification described above.
 This is a serious problem") and 39647 (agreement that the gate check guards only main and releases,
 never a working branch, with a nightly push of all working branches, which now runs from
 myday/scripts/push_work_branches.sh). A draft: only the owner marks it ready.
+
+2026-11-07: ready on the owner's approval, Telegram 39694 ("Ok") to the summary in 39693.
