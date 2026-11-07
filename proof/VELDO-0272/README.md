@@ -179,6 +179,32 @@ Runs (2026-11-07, at 4c2d6ee2, under `flock -w` on the gate lock, logs under /tm
 - 67_0056 37/0, 69_0058 42/0, 86_0148 52/0, 70_0057 57/0, 01_0101 637/0 (the last two added as checks);
   101_0208 214 passed, 2 failed: only the two inherited sandbox rows.
 
+## Fix round 3 (N3)
+
+- N3 (`.veldo/policy_check.py` main, after the per-spec loop): a push that changes any file outside
+  `specs/` and `proof/` is refused `landing_without_review: no spec covers <files>` unless it carries at least
+  one spec that is not a draft at HEAD (`landing_specs`); every such spec is already judged by the loop
+  (reviewed, and owner approved when required). A draft covers nothing, so code beside a new draft, and code
+  beside a ready spec switched back to draft in the same push, are refused. The engine copy is byte-identical.
+- Suite 129: new row `AC3 review/covered` (code with no spec: 1; code plus a new draft spec: 1; a ready spec
+  switched to draft with code: 1; an ordinary reviewed landing of code: 0). The `AC1 push` rows now carry a
+  not-required spec reviewed by someone other than the producer, with no owner approval, so the test
+  machinery path still lands without the owner and the authentication path still needs him.
+- Suite 01 (`_v32_main`, new `reviewed` fixture): "main() does not block when nothing objects" and "a
+  recorded owner approval overrides the objection" push `ordinary.txt` with a ready, not-required spec and a
+  bound, digest-matching pass verdict from a reviewer who is not the producer; the objection row they control
+  ("main() BLOCKS on an unresolved objection") carries the same spec, so the pair differs only in the
+  objection. The protected-path control is unchanged.
+- Falsifier `scope272-uncovered-code-lands` (finding 272, target `review/covered`): the N3 test replaced by
+  `if False:`, under which the code-only push lands.
+
+Runs: PENDING. The gate lock was held by another job (a full gate in another worktree) from 12:21:43 to
+12:41:43 and the 20 minute allowance ran out; nothing was run. `proof/VELDO-0272/pending_runs.sh` (no lock
+inside; the lead runs it inside the lock; `bash -n`: clean) runs 129_veldo_0272, 01_warp_0101,
+`check_teeth_mutations.py --finding 272`, 67_0056, 69_0058, 86_0148 and 101_0208, each logging under /tmp
+and appending one line (exit code and failing row names, or the mutation receipt line) to
+`proof/VELDO-0272/pending-summary.txt`. Expected in 101: only the two inherited sandbox rows red.
+
 ## Falsifiers, red then green
 
 Red (first start, the staged suite before its move and the module-tree change; not re-run since): the staged suite run against the base tree (`git archive ed0c995f`, the ready commit) fails 16 of its
@@ -195,7 +221,10 @@ In-suite mutations, each with its baseline green and the mutant red in the same 
 
 ## Still open
 
-- N3 (above): needs `scripts/suites/01_warp_0101_reviewer_notes.py` added to the footprint.
+- N3: fixed in fix round 3, runs pending (above). Other suites outside the footprint that drive
+  `policy_check.main()` over a push changing files outside specs/ and proof/ with no non-draft spec would now
+  be refused. Suites that drive it: 01, 67, 69, 70, 86_0148, 101, 129 (not every row of 67, 69, 70, 86 and 101
+  was checked for a code-only push; the pending runs and the lead's gate decide).
 - The daily_landed send is not wired to the channel tick: `control_service_channel.py` (outside the
   footprint) must call `Reporter.report_daily(day, root, hour)` with the owner's configured hour, and the hour
   needs a configuration home. Until then the file path is the summary, as the spec allows.
@@ -209,4 +238,5 @@ In-suite mutations, each with its baseline green and the mutant red in the same 
   (every scaffolded one), every spec is in scope; 16 suites write `human_approval: not_required` fixtures.
 - Proof bundles here mostly carry no manifest.json (VELDO-0261 has none), so under AC3 (b) a not-required
   landing needs a manifest for its verdict to bind a digest.
-- A push that changes no spec file and no proof bundle has no spec to review, so (b) asks nothing of it.
+- A push that changes only spec files and proof bundles of draft specs asks nothing of (b); any other file
+  in the push needs a non-draft, reviewed spec (N3).
