@@ -12270,9 +12270,63 @@ def cases():
         ['flag/fixtures'])
     # AC3 (declared falsifier): the reviewer is not compared with the producer, so a self-review lands.
     add(272, 'scope272-reviewer-comparison-skipped', scope272, 'policy_check.py',
-        'if producer is not None and (not v.get("reviewer") or v.get("reviewer") == producer):',
+        'if producer is not None and _self_review(v.get("reviewer"), producer):',
         'if False:  # defect: the reviewer is not compared with the producer',
         ['review/landing'])
+    # Fix round 1, F1: one falsifier per evasion of the flag-lowering check.
+    add(272, 'scope272-lowering-keyed-by-path', scope272, 'policy_check.py',
+        '            if _lowers(now, [s for s, _ in states]):',
+        '            if _lowers(now, [s for s, n in states if n == names]):  # defect: a renamed file is another spec',
+        ['lowered/rename'])
+    add(272, 'scope272-unreadable-base-not-required', scope272, 'policy_check.py',
+        '    return any(b in ("required", "unreadable") for b in before)',
+        '    return any(b == "required" for b in before)  # defect: a base that cannot be read lowers nothing',
+        ['lowered/two-step'])
+    add(272, 'scope272-unreadable-head-not-lowered', scope272, 'policy_check.py',
+        '    if now == "required" or now in before:',
+        '    if now in ("required", "unreadable") or now in before:  # defect: breaking a spec is not a lowering',
+        ['lowered/two-step'])
+    add(272, 'scope272-deleted-not-lowered', scope272, 'policy_check.py',
+        '    if now == "required" or now in before:',
+        '    if now in ("required", "absent") or now in before:  # defect: deleting a spec is not a lowering',
+        ['lowered/delete-re-add'])
+    add(272, 'scope272-merges-skipped', scope272, 'policy_check.py',
+        '        if ps:\n            judge(c, ps)',
+        '        if len(ps) == 1:  # defect: a merge commit is not judged\n            judge(c, ps)',
+        ['lowered/merge'])
+    # Fix round 1, F2: no producer recorded, or identities compared raw.
+    add(272, 'scope272-missing-producer-passes', scope272, 'policy_check.py',
+        '    if not _identities(producer):\n        return True',
+        '    if False:  # defect: no producer recorded lets any reviewer pass\n        return True',
+        ['review/producer-identity'])
+    add(272, 'scope272-identity-compared-raw', scope272, 'policy_check.py',
+        '    return bool(_identities(reviewer) & _identities(producer))',
+        '    return reviewer == producer  # defect: identities compared raw',
+        ['review/producer-identity'])
+    # Fix round 1, F5: the review skipped for the whole push, or for a required spec.
+    add(272, 'scope272-review-skipped-when-protected', scope272, 'policy_check.py',
+        '    for sid in push_specs(changed_files()):',
+        '    for sid in ([] if touched else push_specs(changed_files())):  # defect: a protected path skips review',
+        ['review/per-spec'])
+    add(272, 'scope272-review-skipped-when-required', scope272, 'policy_check.py',
+        '        if not reviewed_landing(sid, rng):',
+        '        if effective_flag(fm, pats) == "not_required" and not reviewed_landing(sid, rng):'
+        '  # defect: approval instead of review',
+        ['review/per-spec'])
+    # Fix round 1, F3 and F4: the daily summary leaves out a landing, or shows the declared flag or any reviewer.
+    add(272, 'scope272-unnamed-landings-dropped', scope272, 'landed_summary.py',
+        '        if len(parents.split()) > 1 or ticket is None:\n            items.append((None, sha, subject))',
+        '        if len(parents.split()) > 1 or ticket is None:\n            continue  # defect: unnamed landings dropped',
+        ['summary/every-landing'])
+    add(272, 'scope272-declared-flag-shown', scope272, 'landed_summary.py',
+        '        if pats is not None and P.effective_flag(fm, pats) == "required":',
+        '        if pats is not None and P.declared_flag(fm) == "required":  # defect: the declared flag',
+        ['summary/judged-fields'])
+    add(272, 'scope272-any-reviewer-shown', scope272, 'landed_summary.py',
+        '        if v.get("proof_digest") != P.proof_digest(manifest) or P._self_review(v.get("reviewer"), producer):\n'
+        '            continue',
+        '        if False:  # defect: any passing verdict names the reviewer\n            continue',
+        ['summary/judged-fields'])
     # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
     add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',
         '"- %s %s | gate %s | reviewer %s | approval %s"\n'

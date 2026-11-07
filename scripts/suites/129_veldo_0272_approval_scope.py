@@ -32,7 +32,10 @@ def _v272_suite():
             'AC2 flag/fixtures', 'AC2 flag/before-start-valid', 'AC2 mutation/reverse-direction-dropped',
             'AC3 lowered/flip', 'AC3 review/landing', 'AC3 mutation/reviewer-comparison-skipped',
             'AC3 executor/computed-flag',
-            'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped')
+            'AC3 lowered/rename', 'AC3 lowered/two-step', 'AC3 lowered/delete-re-add', 'AC3 lowered/merge',
+            'AC3 review/producer-identity', 'AC3 review/per-spec',
+            'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped',
+            'AC4 summary/every-landing', 'AC4 summary/judged-fields')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -272,9 +275,12 @@ def _v272_suite():
         with section('AC3'):
             # AC3: lowered flags and the review a not-required landing needs.
             def manifest(sid, producer='builder', checks=('unit',)):
-                return {'schema': 'veldo.proof/v1', 'spec_id': sid, 'commit': 'f' * 40, 'producer': producer,
-                        'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [{'type': 'unit'}]}],
-                        'checks': [{'name': c} for c in checks], 'rollback': 'revert'}
+                m = {'schema': 'veldo.proof/v1', 'spec_id': sid, 'commit': 'f' * 40, 'producer': producer,
+                     'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [{'type': 'unit'}]}],
+                     'checks': [{'name': c} for c in checks], 'rollback': 'revert'}
+                if producer is None:
+                    del m['producer']
+                return m
 
             def verdict(sid, at, reviewer, digest):
                 return {'schema': 'veldo.verdict/v1', 'spec_id': sid, 'commit': at, 'reviewer': reviewer,
@@ -309,18 +315,18 @@ def _v272_suite():
             check('AC3 lowered/flip', 'an approval whose approver is the producer: exit 1 [%s]' % out.strip()[:160],
                   code == 1 and 'approval_flag_lowered' in out)
 
-            def landing_case(where, Pmod, reviewer, stale=False):
-                repo = new_repo(where, 'land-%s-%s' % (reviewer or 'none', stale))
+            def landing_case(where, Pmod, reviewer, stale=False, producer='builder'):
+                repo = new_repo(where, 'land-%s-%s' % ('x' if reviewer else 'none', stale))
                 commit(repo, 'base')
                 git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
                 sid = 'VELDO-9302'
-                m = manifest(sid)
+                m = manifest(sid, producer=producer)
                 write(repo, 'docs/guide.md', 'routine\n')
                 write(repo, 'specs/VELDO-9302-docs.md', spec_text(sid, 'not_required', ['docs/**']))
                 write(repo, 'proof/%s/manifest.json' % sid, json.dumps(m))
                 change = commit(repo, 'docs change')
                 if reviewer:
-                    digest = Pmod.proof_digest(manifest(sid, checks=('unit', 'older')) if stale else m)
+                    digest = Pmod.proof_digest(manifest(sid, producer=producer, checks=('unit', 'older')) if stale else m)
                     write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, change, reviewer, digest)))
                     commit(repo, 'review')
                 return run_main(Pmod, repo)
@@ -341,7 +347,7 @@ def _v272_suite():
             check('AC3 review/landing', 'the same verdict with a stale proof digest: exit 1', r['stale'][0] == 1)
             with tempfile.TemporaryDirectory(prefix='v272-mut-', dir=base) as mut:
                 tree = mutant_tree(mut, 'm', 'policy_check.py',
-                                   'if producer is not None and (not v.get("reviewer") or v.get("reviewer") == producer):',
+                                   'if producer is not None and _self_review(v.get("reviewer"), producer):',
                                    'if False:')
                 check('AC3 mutation/reviewer-comparison-skipped', 'baseline green: the self-reviewed landing is refused',
                       r['self'][0] == 1)
@@ -351,6 +357,193 @@ def _v272_suite():
                     PM = load('v272_policy_check_mut', tree / 'policy_check.py')
                     code, out = landing_case(Path(mut) / 'x', PM, 'builder')
                     check('AC3 mutation/reviewer-comparison-skipped', 'mutant red: the self-reviewed landing exits %d' % code, code != 1)
+
+            # F1: a lowering is judged by spec id, between the push base and HEAD and per commit against
+            # every parent; an unreadable value counts as required. One row per evasion.
+            def owner_approval(repo, sid, bound, paths=None, spec_id=None, name='approval-owner.json', approver='owner'):
+                scope = {'commit': bound}
+                if paths is not None:
+                    scope['paths'] = paths
+                if spec_id is not None:
+                    scope['spec_id'] = spec_id
+                write(repo, 'proof/%s/%s' % (sid, name), json.dumps({
+                    'schema': 'veldo.approval/v1', 'id': 'A-%s' % sid, 'decision': 'approved', 'approver': approver,
+                    'scope': scope, 'recorded_at': '2026-11-07T00:00:00Z', 'expires_at': '2099-01-01T00:00:00Z'}))
+
+            def lowered(code, out):
+                return code == 1 and 'approval_flag_lowered' in out
+
+            def lower_base(where, name, sid, rel, base_text=None):
+                repo = new_repo(where, name)
+                write(repo, rel, base_text if base_text is not None else spec_text(sid, 'required', ['docs/**']))
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                return repo
+
+            BROKEN = 'no front matter here\n'
+
+            def rename_case(where, Pmod, approved):
+                sid, old, new = 'VELDO-9311', 'specs/VELDO-9311-before.md', 'specs/VELDO-9311-after.md'
+                repo = lower_base(where, 'rename-%s' % approved, sid, old)
+                git(repo, 'mv', old, new)
+                write(repo, new, spec_text(sid, 'not_required', ['docs/**']))
+                c = commit(repo, 'rename and lower')
+                if approved:
+                    owner_approval(repo, sid, c, paths=[old, new])
+                    write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                    commit(repo, 'evidence')
+                return run_main(Pmod, repo)
+
+            def break_only_case(where, Pmod):
+                sid, rel = 'VELDO-9312', 'specs/VELDO-9312-two.md'
+                repo = lower_base(where, 'break', sid, rel)
+                write(repo, rel, BROKEN)
+                commit(repo, 'step one: the front matter breaks')
+                return run_main(Pmod, repo)
+
+            def base_unreadable_case(where, Pmod):
+                sid, rel = 'VELDO-9313', 'specs/VELDO-9313-two.md'
+                repo = lower_base(where, 'base-unreadable', sid, rel, base_text=BROKEN)
+                write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                commit(repo, 'step two: not_required over a base that cannot be read')
+                return run_main(Pmod, repo)
+
+            def two_step_case(where, Pmod):
+                sid, rel = 'VELDO-9314', 'specs/VELDO-9314-two.md'
+                repo = lower_base(where, 'two-step', sid, rel)
+                write(repo, rel, BROKEN)
+                commit(repo, 'step one')
+                write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                commit(repo, 'step two')
+                return run_main(Pmod, repo)
+
+            def delete_case(where, Pmod, readd):
+                sid, rel = 'VELDO-9315', 'specs/VELDO-9315-gone.md'
+                repo = lower_base(where, 'delete-%s' % readd, sid, rel)
+                git(repo, 'rm', '-q', rel)
+                commit(repo, 'delete the spec')
+                if readd:
+                    write(repo, 'specs/VELDO-9315-back.md', spec_text(sid, 'not_required', ['docs/**']))
+                    commit(repo, 're-add it not required')
+                return run_main(Pmod, repo)
+
+            def merge_case(where, Pmod, preexisting):
+                sid, rel = 'VELDO-9316', 'specs/VELDO-9316-merge.md'
+                if preexisting:
+                    repo = lower_base(where, 'merge-pre', sid, rel)
+                else:
+                    repo = new_repo(where, 'merge-new')
+                    commit(repo, 'base')
+                    git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                    write(repo, rel, spec_text(sid, 'required', ['docs/**']))
+                    write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                    commit(repo, 'add the spec, required')
+                git(repo, 'checkout', '-q', '-b', 'side')
+                write(repo, 'docs/side.md', 'side\n')
+                commit(repo, 'side work')
+                git(repo, 'checkout', '-q', 'main')
+                write(repo, 'docs/main.md', 'main\n')
+                commit(repo, 'main work')
+                git(repo, 'merge', '-q', '--no-ff', '--no-commit', 'side')
+                write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                commit(repo, 'merge side, lowering the flag in the merge itself')
+                return run_main(Pmod, repo)
+
+            def lowering_rows(where, Pmod):
+                return {'rename': rename_case(where / 'r1', Pmod, False),
+                        'rename-approved': rename_case(where / 'r2', Pmod, True),
+                        'break': break_only_case(where / 't1', Pmod),
+                        'base-unreadable': base_unreadable_case(where / 't2', Pmod),
+                        'two-step': two_step_case(where / 't3', Pmod),
+                        'delete': delete_case(where / 'd1', Pmod, False),
+                        'delete-re-add': delete_case(where / 'd2', Pmod, True),
+                        'merge-new': merge_case(where / 'm1', Pmod, False),
+                        'merge-pre': merge_case(where / 'm2', Pmod, True)}
+
+            lw = lowering_rows(Path(base) / 'lw', P)
+            check('AC3 lowered/rename', 'rename and lower in one commit, no approval: exit 1 naming both files [%s]' % lw['rename'][1].strip()[:200],
+                  lowered(*lw['rename']) and 'VELDO-9311-before.md' in lw['rename'][1] and 'VELDO-9311-after.md' in lw['rename'][1])
+            check('AC3 lowered/rename', 'the same with an owner approval scoping both names and a review: exit 0 [%s]'
+                  % lw['rename-approved'][1].strip()[:200], lw['rename-approved'][0] == 0)
+            check('AC3 lowered/two-step', 'a push that only breaks a required spec\'s front matter: exit 1 [%s]' % lw['break'][1].strip()[:160],
+                  lowered(*lw['break']))
+            check('AC3 lowered/two-step', 'not_required over a push base whose value cannot be read: exit 1 [%s]'
+                  % lw['base-unreadable'][1].strip()[:160], lowered(*lw['base-unreadable']))
+            check('AC3 lowered/two-step', 'both steps in one push: exit 1', lowered(*lw['two-step']))
+            check('AC3 lowered/delete-re-add', 'a push that deletes a required spec: exit 1 [%s]' % lw['delete'][1].strip()[:160],
+                  lowered(*lw['delete']))
+            check('AC3 lowered/delete-re-add', 'delete then re-add not_required under another name: exit 1',
+                  lowered(*lw['delete-re-add']))
+            check('AC3 lowered/merge', 'a merge commit lowering a spec added required in the range: exit 1 [%s]'
+                  % lw['merge-new'][1].strip()[:160], lowered(*lw['merge-new']))
+            check('AC3 lowered/merge', 'a merge commit lowering a spec required at the push base: exit 1',
+                  lowered(*lw['merge-pre']))
+
+            # F2: no producer recorded refuses every review; identities are compared normalized.
+            ident = {'no-producer': landing_case(Path(base) / 'i1', P, 'reviewer', producer=None),
+                     'dict-self': landing_case(Path(base) / 'i2', P, {'model': 'builder', 'context': 'fresh'}),
+                     'case-self': landing_case(Path(base) / 'i3', P, '  BUILDER '),
+                     'dict-other': landing_case(Path(base) / 'i4', P, {'model': 'other-model', 'context': 'fresh'})}
+            check('AC3 review/producer-identity', 'a manifest with no producer: exit 1 landing_without_review [%s]'
+                  % ident['no-producer'][1].strip()[:160], ident['no-producer'][0] == 1 and 'landing_without_review' in ident['no-producer'][1])
+            check('AC3 review/producer-identity', 'a reviewer stored as a mapping naming the producer: exit 1',
+                  ident['dict-self'][0] == 1 and 'landing_without_review' in ident['dict-self'][1])
+            check('AC3 review/producer-identity', 'the producer in other case and spacing: exit 1',
+                  ident['case-self'][0] == 1 and 'landing_without_review' in ident['case-self'][1])
+            check('AC3 review/producer-identity', 'a mapping reviewer naming someone else: exit 0 [%s]' % ident['dict-other'][1].strip()[:160],
+                  ident['dict-other'][0] == 0)
+
+            # F5: the review is judged per spec, whatever else the push carries; a required spec needs the
+            # owner approval and the review.
+            def per_spec_case(where, Pmod, name, specs, protected=False):
+                """specs: {sid: (flag, with_verdict, with_approval)} carried in one push."""
+                repo = new_repo(where, 'per-' + name)
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                write(repo, 'docs/guide.md', 'routine\n')
+                for sid, (flag, _v, _a) in specs.items():
+                    write(repo, 'specs/%s-per.md' % sid, spec_text(sid, flag, ['docs/**']))
+                    write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                if protected:
+                    write(repo, '.veldo/authorization.py', '# changed\n')
+                c = commit(repo, 'change')
+                for sid, (_f, with_verdict, with_approval) in specs.items():
+                    if with_verdict:
+                        write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                    if with_approval:
+                        owner_approval(repo, sid, c, spec_id=sid)
+                if protected:
+                    owner_approval(repo, 'VELDO-9399', c, paths=['.veldo/authorization.py'])
+                commit(repo, 'evidence')
+                return run_main(Pmod, repo)
+
+            def per_spec_rows(where, Pmod):
+                A, B = 'VELDO-9321', 'VELDO-9322'
+                return {'with-required': per_spec_case(where, Pmod, 'a', {A: ('not_required', False, False), B: ('required', True, True)}),
+                        'with-protected': per_spec_case(where, Pmod, 'b', {A: ('not_required', False, False)}, protected=True),
+                        'required-no-review': per_spec_case(where, Pmod, 'c', {B: ('required', False, True)}),
+                        'required-no-approval': per_spec_case(where, Pmod, 'd', {B: ('required', True, False)}),
+                        'required-both': per_spec_case(where, Pmod, 'e', {B: ('required', True, True)}),
+                        'all-complete': per_spec_case(where, Pmod, 'f', {A: ('not_required', True, False), B: ('required', True, True)})}
+
+            ps = per_spec_rows(Path(base) / 'ps', P)
+            check('AC3 review/per-spec', 'a not-required spec with no verdict beside a required spec: exit 1 naming it [%s]'
+                  % ps['with-required'][1].strip()[:160],
+                  ps['with-required'][0] == 1 and 'landing_without_review: VELDO-9321' in ps['with-required'][1])
+            check('AC3 review/per-spec', 'a not-required spec with no verdict beside an approved protected path: exit 1 [%s]'
+                  % ps['with-protected'][1].strip()[:160],
+                  ps['with-protected'][0] == 1 and 'landing_without_review: VELDO-9321' in ps['with-protected'][1])
+            check('AC3 review/per-spec', 'a required spec with the owner approval and no review: exit 1 [%s]'
+                  % ps['required-no-review'][1].strip()[:160],
+                  ps['required-no-review'][0] == 1 and 'landing_without_review: VELDO-9322' in ps['required-no-review'][1])
+            check('AC3 review/per-spec', 'a required spec with a review and no owner approval: exit 1 [%s]'
+                  % ps['required-no-approval'][1].strip()[:160],
+                  ps['required-no-approval'][0] == 1 and 'owner approval missing: VELDO-9322' in ps['required-no-approval'][1])
+            check('AC3 review/per-spec', 'a required spec with both: exit 0 [%s]' % ps['required-both'][1].strip()[:160],
+                  ps['required-both'][0] == 0)
+            check('AC3 review/per-spec', 'both specs complete in one push: exit 0 [%s]' % ps['all-complete'][1].strip()[:160],
+                  ps['all-complete'][0] == 0)
 
             EX = load('v272_executor', ROOT / '.veldo' / 'executor.py')
             hooks = EX.LiveLoop.__new__(EX.LiveLoop)
@@ -376,7 +569,9 @@ def _v272_suite():
                     c = commit(repo, '%s: build' % sid, date=date)
                     events.append({'type': 'gate.passed', 'commit': c})
                     write(repo, '.veldo/events.jsonl', ''.join(json.dumps(ev) + '\n' for ev in events))
-                    write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, reviewer, 'sha256:0')))
+                    m = manifest(sid)
+                    write(repo, 'proof/%s/manifest.json' % sid, json.dumps(m))
+                    write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, reviewer, PD(m))))
                     if approver:
                         write(repo, 'proof/%s/approval-owner.json' % sid, json.dumps({'decision': 'approved', 'approver': approver,
                                                                                     'scope': {'commit': c}}))
@@ -407,6 +602,7 @@ def _v272_suite():
             def registry_ok(t1, message):
                 return message == t1 and 'reviewer rev-a' in message
 
+            PD = P.proof_digest
             ls_tree = module_tree(base, 'ls', {'landed_summary.py': LS_FILE})
             LS = load('v272_landed', ls_tree / 'landed_summary.py')
             TR = load('v272_report', ls_tree / 'control_telegram_report.py')
@@ -429,6 +625,64 @@ def _v272_suite():
                                                     load('v272_report_mut', tree / 'control_telegram_report.py'))
                     check('AC4 mutation/reviewer-dropped', 'mutant red: the file row and the registry row both fail',
                           not file_ok(m1, m2, m0) and not registry_ok(m1, mmsg))
+
+            # F3, F4: every first-parent landing of the day, credited only by a named id; the computed flag
+            # and the reviewer of the verdict the push check accepts.
+            def busy_repo(where):
+                repo = new_repo(where, 'busy')
+                commit(repo, 'base', date='2026-11-05T09:00:00+00:00')
+                day = '2026-11-06T%02d:00:00+00:00'
+                sid = 'VELDO-9411'
+                m = manifest(sid)
+                write(repo, 'specs/%s-x.md' % sid, spec_text(sid, 'not_required', ['docs/**'], title='Busy ticket'))
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(m))
+                c = commit(repo, '%s: build' % sid, date=day % 9)
+                write(repo, 'proof/%s/verdict-r1.json' % sid, json.dumps(verdict(sid, c, 'rev-x', PD(m))))
+                write(repo, 'proof/%s/verdict-r2.json' % sid, json.dumps(verdict(sid, c, 'builder', PD(m))))
+                commit(repo, '%s landing: evidence' % sid, date=day % 10)
+                write(repo, '.veldo/secret_inventory.json', '{}\n')
+                inventory = commit(repo, 'Secret inventory: distinct pattern lines', date=day % 11)
+                git(repo, 'checkout', '-q', '-b', 'side')
+                write(repo, 'src/side.txt', 'side\n')
+                commit(repo, 'side work', date=day % 12)
+                git(repo, 'checkout', '-q', 'main')
+                git(repo, 'merge', '-q', '--no-ff', '-m', 'Merge agent/claude/veldo-0241 into landing-a', 'side', date=day % 13)
+                merge = git(repo, 'rev-parse', 'HEAD')
+                sid2 = 'VELDO-9412'
+                m2 = manifest(sid2)
+                write(repo, 'specs/%s-x.md' % sid2, spec_text(sid2, 'not_required', ['.veldo/authorization.py'], title='Footprint on auth'))
+                write(repo, 'proof/%s/manifest.json' % sid2, json.dumps(m2))
+                c2 = commit(repo, '%s: build' % sid2, date=day % 14)
+                write(repo, 'proof/%s/verdict.json' % sid2, json.dumps(verdict(sid2, c2, 'rev-y', PD(m2))))
+                commit(repo, '%s landing: evidence' % sid2, date=day % 15)
+                return repo, inventory, merge
+
+            def busy_text(where, LSmod):
+                repo, inventory, merge = busy_repo(where)
+                return LSmod.write_day(repo, '2026-11-06')[0].read_text(), inventory, merge
+
+            def every_ok(text, inventory, merge):
+                lines = text.splitlines()
+                return (len(lines) == 5 and lines[0].startswith('Veldo landed on 2026-11-06: 4 ')
+                        and lines[1].startswith('- VELDO-9411 ')
+                        and lines[2].startswith('- %s Secret inventory: distinct pattern lines ' % inventory[:12])
+                        and lines[3].startswith('- %s Merge agent/claude/veldo-0241 into landing-a ' % merge[:12])
+                        and lines[4].startswith('- VELDO-9412 '))
+
+            def judged_ok(text):
+                lines = text.splitlines()
+                return (len(lines) == 5 and lines[0].endswith('(approval required 2, not required 2)')
+                        and 'reviewer rev-x |' in lines[1] and 'approval not required' in lines[1]
+                        and 'reviewer none' in lines[2] and 'approval required' in lines[2]
+                        and 'approval not required' in lines[3]
+                        and 'reviewer rev-y |' in lines[4] and 'approval required' in lines[4])
+
+            bt, inv, mg = busy_text(Path(base) / 'b', LS)
+            check('AC4 summary/every-landing', 'a ticket, a commit naming no ticket, a merge and a ticket: four lines, the two '
+                  'without a credited id under their subject [%r]' % bt[:400], every_ok(bt, inv, mg))
+            check('AC4 summary/judged-fields', 'the computed flag (a not_required spec whose footprint meets a protected path '
+                  'reads required, a protected path change reads required) and the reviewer of the accepted verdict, not '
+                  'the self-review that sorts after it [%r]' % bt[:400], judged_ok(bt))
 
     try:
         with tempfile.TemporaryDirectory(prefix='v272-') as directory:
