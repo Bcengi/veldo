@@ -1260,8 +1260,11 @@ def _v208_unconfined_leg():
     document, digest = L.load()
     listed = {e['suite']: e.get('rows') for e in document['suites']}
     gate_text = (ROOT / 'scripts/verify.sh').read_text()
+    # The stages the list declares are exactly the required catalog items it covers: unit and
+    # mutation. Integration is na since VELDO-0278 and has no entry.
     declared_commands = {name: re.search(r'^CHECK_%s="required:(.*)"$' % name, gate_text, re.M).group(1)
-                         for name in ('unit', 'integration', 'mutation')}
+                         for name in ('unit', 'mutation')}
+    declared_commands_na = re.search(r'^CHECK_integration="na:', gate_text, re.M) is not None
     control_plane = ['62_0039', '63_0040', '63_0049', '64_0050', '66_0042', '66_0047', '67_0041', '67_0135', '71_0076',
                      '71_0130', '71_0138', '73_0139', '78_0060', '79_0061', '80_0155', '81_0156', '82_0129',
                      '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
@@ -1274,7 +1277,7 @@ def _v208_unconfined_leg():
     expected_whole = sorted([n for n in manifest for short in control_plane + browser + ['65_0067']
                              if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 44 and whole == expected_whole
+           document['stages'] == declared_commands and declared_commands_na and len(expected_whole) == 44 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
                                                          '101_veldo_0208_landing_reuse': 'strace'}
            and all(n in manifest for n in listed)

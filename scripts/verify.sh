@@ -179,8 +179,8 @@ CHECK_mutation="required:authority mutation stage"
 # negative self-test, docs enforces the standing hygiene rules, generated
 # keeps the index derived, extra keeps instances synced to the template canon.
 #
-# INTEGRATION is na (VELDO-0278). It drove a throwaway copy through .veldo/spend.py, the
-# estimation layer's recorder, and ran the whole suite again; with nothing recording spend it
+# INTEGRATION is na (VELDO-0278). It drove a throwaway copy through the estimation layer's
+# spend recorder and ran the whole suite again; with nothing recording spend it
 # guarded a first use that cannot happen. Its script is parked with the estimation suites in
 # scripts/parked/estimation/ (`python3 scripts/selftest.py --parked estimation` runs them).
 # -----------------------------------------------------------------------------
