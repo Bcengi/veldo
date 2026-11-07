@@ -38,9 +38,12 @@ def _p270_run(repo, *args):
                          identity=_P270_ID).stdout.decode().strip()
 
 
-# The validate.py under test, spelled as the mutation observer's production-copy anchor so a
-# teeth run substitutes its mutant here; its directory is the .veldo every scratch repository gets.
-_P270_VALIDATE = ROOT / ".veldo" / "validate.py"
+# The proof size rules under test (.veldo/proof_size.py, which validate.py loads from beside itself),
+# spelled as the mutation observer's production-copy anchor so a teeth run substitutes its mutant
+# here; the validate.py beside it is the one every row drives, and that directory is the .veldo
+# every scratch repository gets.
+_P270_PROOF_SIZE = ROOT / ".veldo" / "proof_size.py"
+_P270_VALIDATE = _P270_PROOF_SIZE.with_name("validate.py")
 
 
 def _p270_scratch(base, name, policy_proof=None):

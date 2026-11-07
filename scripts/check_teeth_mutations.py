@@ -12254,21 +12254,21 @@ def cases():
     # overlap other suites throughout the existing combined budget.
     # VELDO-0270: proof is small summaries, never raw bulk.
     p270 = '129_veldo_0270_small_proof.py'
-    add(270, 'proof270-guard-judges-only-the-tip', p270, 'validate.py',
+    add(270, 'proof270-guard-judges-only-the-tip', p270, 'proof_size.py',
         '        commits = _git(base, "rev-list", "--reverse", lsha, *excl).decode().split()\n',
         '        commits = _git(base, "rev-list", "--reverse", lsha, *excl).decode().split()[-1:]  # defect: only the tip\n',
         ['p270/guard/push-to-main-refused-naming-first-commit'])
-    result[-1]['siblings'] = True  # validate.py loads yamlish.py and git_process.py beside itself
-    add(270, 'proof270-limit-hard-coded-default', p270, 'validate.py',
+    result[-1]['siblings'] = True  # proof_size.py runs under the validate.py beside it
+    add(270, 'proof270-limit-hard-coded-default', p270, 'proof_size.py',
         '            limit, source = v, ".veldo/policy.yaml key proof.max_file_bytes"\n',
         '            limit, source = PROOF_LIMIT_DEFAULT, ".veldo/policy.yaml key proof.max_file_bytes"  # defect\n',
         ['p270/contract/policy-limit-is-read'])
-    result[-1]['siblings'] = True  # validate.py loads yamlish.py and git_process.py beside itself
-    add(270, 'proof270-references-unchecked', p270, 'validate.py',
+    result[-1]['siblings'] = True  # proof_size.py runs under the validate.py beside it
+    add(270, 'proof270-references-unchecked', p270, 'proof_size.py',
         '    out = [(None, orig)]\n    if rel:\n',
         '    return []  # defect: no reference to a removed file is checked\n    out = [(None, orig)]\n    if rel:\n',
         ['p270/dangling/manifest-naming-removed-file-refused'])
-    result[-1]['siblings'] = True  # validate.py loads yamlish.py and git_process.py beside itself
+    result[-1]['siblings'] = True  # proof_size.py runs under the validate.py beside it
     add(270, 'proof270-mutation-writer-copies-raw', p270, 'check_gate_mutations.py',
         "    return V.write_proof_summary(path, ' '.join(['python3', *sys.argv]), V.summarize_mutation_receipt(receipt),\n",
         "    Path(path).write_text(json.dumps(receipt, indent=1))  # defect: the raw receipt lands in the bundle\n"
