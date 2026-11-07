@@ -14,7 +14,10 @@ def _v274_factory_slices():
     import time
 
     TREE = Path(globals().get('__suite_file__', str(ROOT / 'scripts/suites/x.py'))).resolve().parents[2]
-    spec = importlib.util.spec_from_file_location('v274_factory', TREE / 'proof/VELDO-0127/factory.py')
+    # The factory under test, by the path the mutation stage's worker replaces with a mutant copy; the children
+    # load the same file.
+    FACTORY_FILE = ROOT / "proof/VELDO-0127" / "factory.py"
+    spec = importlib.util.spec_from_file_location('v274_factory', FACTORY_FILE)
     factory = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(factory)
     ROWS = ('slices/return', 'slices/raise', 'slices/sigterm', 'slices/sweep-dead', 'slices/sweep-live',
@@ -38,7 +41,7 @@ def load(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-factory = load('v274_child_factory', tree / 'proof/VELDO-0127/factory.py')
+factory = load('v274_child_factory', Path(sys.argv[5]))
 wire = load('v274_child_wire', tree / 'proof/VELDO-0127/wire_fixture.py')
 fault = base / 'fault'
 fault.write_text('')
@@ -65,7 +68,8 @@ with factory.factory(root, base / 'factory', {}, lambda _: wire.engine_source(ca
     def run_child(mode, scratch, wait=True):
         work = scratch / mode
         (work / 'factory').mkdir(parents=True)
-        command = [sys.executable, '-I', str(scratch / 'child.py'), str(TREE), str(ROOT), mode, str(work)]
+        command = [sys.executable, '-I', str(scratch / 'child.py'), str(TREE), str(ROOT), mode, str(work),
+                   str(FACTORY_FILE)]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                                    stdin=subprocess.DEVNULL, env=environment)
         children.append(process.pid)

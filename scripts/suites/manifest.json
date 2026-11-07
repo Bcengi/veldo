@@ -1782,9 +1782,9 @@
     "129_veldo_0274_factory_slices"
    ],
    "regions": "Six rows (VELDO-0274), the last suite of the unit stage: slices/return and slices/raise, a child that starts the VELDO-0127 factory and launches one fake engine into its slice leaves neither loaded after its body returns or raises; slices/sigterm, SIGTERM to a child inside the factory stops its slice and ends the child by the signal's default action; slices/sweep-dead and slices/sweep-live, entering the factory stops a planted veldo0127 slice named for a dead pid, printing one line naming it, and leaves one named for a live process loaded; slices/end-of-run, no veldo0127 slice whose pid belongs to this run (this process, a live descendant, or a gone process whose slice became active after this process started) remains loaded in the user manager; in the gate it runs in the unconfined leg after suite 86.",
-   "requires_note": "Only ROOT and expect. Runs the factory in child processes over the user manager's real systemctl and systemd-run, plants and stops its own slices, and stops any slice its children left. Without a user manager the five slice rows stand down by name and only slices/end-of-run runs.",
+   "requires_note": "Only ROOT and expect. Runs the factory in child processes over the user manager's real systemctl and systemd-run, plants and stops its own slices, and stops any slice its children left. Without a user manager the five slice rows stand down by name and only slices/end-of-run runs. Exclusive on the user manager: the factory's entry sweep, and its mutation that ignores liveness, read every veldo0127 slice loaded there.",
    "resources": {
-    "systemd_user_manager": 1
+    "systemd_user_manager": "exclusive"
    }
   }
  ],

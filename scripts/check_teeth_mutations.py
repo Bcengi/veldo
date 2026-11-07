@@ -12250,6 +12250,30 @@ def cases():
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
 
+    # VELDO-0274: the VELDO-0127 factory owns its slice (suite 129 loads the factory by the path the worker replaces).
+    # AC3's mutation (suite 88 without the context manager, red on slices/end-of-run) needs suite 88 run before 129
+    # in one worker, which the mutation stage's worker does not do; it stays in proof/VELDO-0274/falsify.py.
+    slices274 = '129_veldo_0274_factory_slices.py'
+    # AC1: the context manager's exit skips the stop. sweep-dead goes red too: its 'enter' child leaves the factory,
+    # whose exit then raises SliceLeft, so that child exits nonzero.
+    add(274, 'slices274-exit-skips-stop', slices274, 'factory.py',
+        "        self.previous_handlers = {}\n        unit('stop', self.slice_name, self.inherited)\n",
+        "        self.previous_handlers = {}  # defect: the exit skips the stop\n",
+        ['slices/return', 'slices/raise', 'slices/sweep-dead'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    # AC2 (1): the signal handler is not installed.
+    add(274, 'slices274-no-signal-handler', slices274, 'factory.py',
+        'self.previous_handlers[number] = signal.signal(number, self._interrupted)',
+        'self.previous_handlers[number] = signal.getsignal(number)  # defect: no handler installed',
+        ['slices/sigterm'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    # AC2 (2): the entry sweep ignores pid liveness.
+    add(274, 'slices274-sweep-ignores-liveness', slices274, 'factory.py',
+        'if pid != os.getpid() and not live(pid):',
+        'if pid != os.getpid():  # defect: the sweep ignores liveness',
+        ['slices/sweep-live'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
