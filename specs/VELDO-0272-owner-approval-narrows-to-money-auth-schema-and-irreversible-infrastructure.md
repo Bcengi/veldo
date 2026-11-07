@@ -34,6 +34,8 @@ footprint:
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -232,3 +234,5 @@ protected policy files, so it is approval-required itself.
 2026-11-07: ready. Owner approved, Telegram 39747 ("Yes" to 39746, which listed its four points).
 
 2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
+
+2026-11-07: footprint gains .veldo/init_scaffold.py and its engine copy, by the lead (mechanical, ACs unchanged): AC4's landed_summary.py must be in the scaffold's asset list, or an installed repository has the reporter but not the summary module and the daily summary fails at call time (proof/VELDO-0272/README.md, Still open).
