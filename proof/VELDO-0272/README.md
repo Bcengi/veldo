@@ -131,6 +131,54 @@ Twelve falsifiers added to finding 272 (each anchor occurs once): `scope272-lowe
 `scope272-declared-flag-shown`, `scope272-any-reviewer-shown` (F3, F4). The anchor of
 `scope272-reviewer-comparison-skipped` follows the new call.
 
+Lead run after fix round 1 (job 23 at aa8eb6e2, `pending_runs.sh` inside the gate lock): 67_0056, 69_0058,
+86_0148 and 70_0057 green; 101 red only on the two inherited sandbox rows.
+
+## Fix round 2 (fix check of 2026-11-07, NOT SOUND)
+
+- N1 (`push_range`, `lowered_flags`): the push base is ONE commit, the protected ref's current tip (BASE, or
+  the left side of the range `_range_specs` resolved; a tip that cannot be resolved is an error), never
+  every boundary commit. Per commit, a parent outside the range is judged as that tip, so an old trunk
+  commit from before a raise is never a before value. Row `AC3 lowered/old-base-merge`: a branch made before
+  the raise, merged after it carrying not_required, reviewed: exit 1; the same with an owner approval
+  scoping the spec file: exit 0.
+- N2 (`approval_refusal`, the one approval predicate; `valid_approval_for`, `push_producer`,
+  `landing_specs`): an approval naming no approver is refused; with a producer given (every call in main
+  gives one) a producer that names nobody refuses every approval, and approver and producer are compared
+  as normalized identities (`_identities`). The protected-path check and the objection override take the
+  producer from the specs the push lands (non-draft carried specs; none, or one with no producer, is
+  undetermined and refuses), not from the verdict at HEAD or its parent. `producer=None` keeps its old
+  meaning (no self-separation asked) for the direct callers in suites 01 and 10. Row
+  `AC3 approval/identity`: protected path (owner: 0; owner with a trailing commit: 0; no approver, " Builder",
+  the producer after a trailing commit, no landing spec: each 1 at the protected-path check), required spec
+  (owner: 0; no approver, " Builder": owner approval missing; judged with no producer: refused), lowering
+  approval with no approver: approval_flag_lowered. The per-spec fixture's protected-path approval moved
+  into the landing spec's bundle (a bundle with no spec is a landing spec with no producer).
+- N3: NOT FIXED, stopped at the footprint. Refusing a push that changes anything outside specs/ and proof/
+  without a non-draft, reviewed spec reds two rows of `scripts/suites/01_warp_0101_reviewer_notes.py`
+  (outside the footprint): "WARP-0732 AC1 control: main() does not block when nothing objects" and "WARP-0732
+  AC4: a recorded owner approval overrides the objection" both push `ordinary.txt` with no spec and expect
+  exit 0. The fix needs that suite (and possibly other policy_check fixtures) in the footprint first. The
+  draft skip and the code-only push stay as fix round 1 left them.
+- N4 (`landed_summary._approvers`): an approver is listed only when `approval_refusal` accepts the record
+  against the named tickets' producers (none or one missing: nothing listed), expiry judged at the landed
+  commit's time, and its scope names a ticket (spec_id, or a path covering its spec file) or covers a
+  protected path the landing touched. Row `AC4 summary/approvers-judged` (of five bound approvals only the
+  owner's is listed). The AC4 fixture's approval now has the full shape.
+- N5 (`landings_on`): one line per contiguous first-parent run of a ticket. Row `AC4 summary/separate-runs`.
+
+Seven falsifiers added to finding 272: `scope272-lowering-any-ancestor` (N1), `scope272-approver-missing-accepted`,
+`scope272-approval-producer-unknown-skipped`, `scope272-approval-identity-raw`,
+`scope272-protected-producer-from-head` (N2), `scope272-approvers-unjudged` (N4), `scope272-same-day-runs-merged`
+(N5). The anchors of `scope272-merges-skipped` and `scope272-unnamed-landings-dropped` follow the moved code.
+
+Runs (2026-11-07, at 4c2d6ee2, under `flock -w` on the gate lock, logs under /tmp):
+
+- 129_veldo_0272_approval_scope: 29 rows, 55 passed, 0 failed (exit 2 is the partial-run exit).
+- `check_teeth_mutations.py --finding 272`: registered 24, executed 24, rejected 24, exit 0.
+- 67_0056 37/0, 69_0058 42/0, 86_0148 52/0, 70_0057 57/0, 01_0101 637/0 (the last two added as checks);
+  101_0208 214 passed, 2 failed: only the two inherited sandbox rows.
+
 ## Falsifiers, red then green
 
 Red (first start, the staged suite before its move and the module-tree change; not re-run since): the staged suite run against the base tree (`git archive ed0c995f`, the ready commit) fails 16 of its
@@ -147,7 +195,7 @@ In-suite mutations, each with its baseline green and the mutant red in the same 
 
 ## Still open
 
-- The runs in `pending_runs.sh` (gate lock not free), then `pending-summary.txt`.
+- N3 (above): needs `scripts/suites/01_warp_0101_reviewer_notes.py` added to the footprint.
 - The daily_landed send is not wired to the channel tick: `control_service_channel.py` (outside the
   footprint) must call `Reporter.report_daily(day, root, hour)` with the owner's configured hour, and the hour
   needs a configuration home. Until then the file path is the summary, as the spec allows.
