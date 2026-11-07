@@ -1,5 +1,6 @@
 """VELDO-0215: coordinator deadlines and authority measurements, with scratch stores only.
-VELDO-0285: a case without its own sample reads the same inputs from another checkout."""
+VELDO-0285: an unmeasured case's baseline is bounded by the ceiling, and its noop and mutant by
+WORKER_MULTIPLIER times that baseline as measured in the same stage."""
 
 
 def _v215_case_deadlines():
@@ -68,59 +69,6 @@ def _v215_case_deadlines():
         row('key-binding', all(k != key and gate.case_deadline(k, store) == 120 for k in keys)
             and gate.case_time_key(case, dict(files, **{'proof/note': (0o644, b'new')}), None) == key)
 
-        # VELDO-0285: a case with no sample of its own reads the same inputs' samples recorded by
-        # another checkout of this repository. Git common directories are mapped, never resolved.
-        peer_root, foreign_root, third_root = (str(scratch / n) for n in ('peer', 'foreign', 'third'))
-        gone_root = str(scratch / 'gone')
-        for name in (peer_root, foreign_root, third_root):
-            Path(name).mkdir()
-        commons = {str(gate.ROOT): 'this', peer_root: 'this', third_root: 'this', foreign_root: 'other'}
-        def common(path):
-            if str(path) not in commons:
-                raise ValueError('expected shared gitdir is unavailable from authority')
-            return commons[str(path)]
-        def peer_store(name, records):
-            directory = scratch / name
-            directory.mkdir()
-            for authority, record_key, seconds, at in records:
-                (directory / (record_key + '.json')).write_text(json.dumps(dict(
-                    authority=authority, key=record_key, seconds=seconds, samples=[[at, seconds]])))
-            return directory
-        def deadline(directory, which=case):
-            with patch.object(gate, 'common_directory', common):
-                return gate.case_deadlines([which], files, None,
-                                           {which['identity']: gate.case_time_key(which, files, None)},
-                                           directory)[which['identity']]
-        now = time.time()
-        peer_key = gate.case_time_key(case, files, None, peer_root)
-        def peer_row(name, records, wanted, which=case):
-            return deadline(peer_store('peer-' + name, records), which) == wanted
-        lone = peer_store('peer-lone', [(peer_root, peer_key, 130, now)])
-        row('peer-sample', peer_key != key and deadline(lone) == 390
-            and gate.case_deadline(key, lone) == 120)
-        row('peer-bounds', all([
-            peer_row('own', [(str(gate.ROOT), key, 50, now), (peer_root, peer_key, 130, now)], 150),
-            peer_row('unrecorded', [(peer_root, peer_key, 130, now)], 120, dict(case, new='other')),
-            peer_row('foreign', [(foreign_root, gate.case_time_key(case, files, None, foreign_root),
-                                  130, now)], 120),
-            peer_row('gone', [(gone_root, gate.case_time_key(case, files, None, gone_root), 130, now)], 120),
-            peer_row('expired', [(peer_root, peer_key, 130, now - 31 * 86400)], 120),
-            peer_row('ceiling', [(peer_root, peer_key, 10000, now)], 1800),
-            peer_row('small', [(peer_root, peer_key, 30, now)], 120),
-            peer_row('misnamed', [(third_root, peer_key, 130, now)], 120)]))
-        watched = peer_store('peer-watched', [(peer_root, peer_key, 130, now)])
-        def snapshot():
-            return sorted((p.name, p.read_bytes(), p.stat().st_mtime_ns) for p in watched.iterdir())
-        before = snapshot()
-        read = deadline(watched)
-        unchanged = snapshot() == before
-        gate.record_case_times(ROOT, {key: 40.0}, watched)
-        written = json.loads((watched / (key + '.json')).read_text())
-        row('peer-read-only', read == 390 and unchanged
-            and written['authority'] == str(gate.ROOT) and written['key'] == key
-            and [e for e in snapshot() if e[0] == peer_key + '.json'] == [e for e in before if e[0] == peer_key + '.json']
-            and deadline(watched) == 120)
-
         other = dict(case, identity='second', name='second')
         controls = gate.control_jobs([case, other], gate.control_group, {},
                                      {case['identity']: 120, 'second': 480})
@@ -186,12 +134,14 @@ def _v215_case_deadlines():
         maximums.extend([record_at(1, 80) == 900, record_at(31, 90) == 270])
         row('rolling-maximum', all(maximums))
 
-        def exercise(duration=150, fault=None, reuse_hit=False, measure=True):
+        def exercise(duration=150, fault=None, reuse_hit=False, measure=True, measured=True, parallel=1):
             runroot = scratch / ('run-' + str(len(list(scratch.glob('run-*')))))
             runroot.mkdir()
             times = runroot / 'times'
             # This is the authority's own root for this in-process fixture; its cache is scratch.
             sample(80)
+            if not measured:
+                (store / (key + '.json')).unlink()
             clock, kills, cleaned, children, alarms = [1.0], [], [], [], []
             pool = gate.SuiteResources({'suites': [{'file': 'sample.py'}], 'resource_capacities': {}})
             class Session:
@@ -240,7 +190,7 @@ def _v215_case_deadlines():
             with contextlib.ExitStack() as stack:
                 overrides = dict(inventory=lambda *a: [case], read_inputs=lambda *a: files,
                     git=lambda *a: 'head', snapshot=lambda *a: None, inputs_unchanged=lambda *a: True,
-                    load=loader, case_deadlines=lambda *a: real_deadlines(*a, store),
+                    load=loader, case_deadlines=lambda keys: real_deadlines(keys, store),
                     record_case_times=lambda root, samples, authority=False: real_record(
                         root, samples, times, authority=authority), CASE_TIMES=times)
                 for name, value in overrides.items():
@@ -252,7 +202,7 @@ def _v215_case_deadlines():
                 stack.enter_context(patch.object(gate.time, 'monotonic', lambda: clock[0]))
                 stack.enter_context(patch.object(gate.time, 'sleep', lambda _: None))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: alarms.append(a)))
-                receipt = gate.run_stage(runroot, runroot / '.git', parallel=1, measure=measure)
+                receipt = gate.run_stage(runroot, runroot / '.git', parallel=parallel, measure=measure)
             return receipt, children, kills, cleaned, times, alarms
 
         with patch.object(gate, 'inventory', side_effect=subprocess.TimeoutExpired('inventory', 120)):
@@ -278,6 +228,46 @@ def _v215_case_deadlines():
             and len(ch) == count and len(k) == len(cl) == count
             and r['surviving_workers'] == 0 and not list(t.glob('*.json'))
             for count, (r, ch, k, cl, t, _) in enumerate(hang_results, 1)))
+
+        # VELDO-0285: a case with no live sample. Its baseline measures (bounded only by the
+        # ceiling against a hang); its noop and mutant are held to 3 x that baseline's time.
+        def outcome(receipt, mode):
+            return [o for o in receipt['worker_outcomes'] if o['mode'] == mode][0]
+        slow, _, _, _, slow_times, slow_alarms = exercise(measured=False)
+        base = outcome(slow, 'baseline')
+        derived = gate.WORKER_MULTIPLIER * base['elapsed']
+        slow_record = json.loads((slow_times / (key + '.json')).read_text())
+        row('unmeasured-slow-baseline', slow['status'] == 'passed' and slow['unmeasured_cases'] == [case['identity']]
+            and base['budget_seconds'] == gate.WORKER_CEILING and base['elapsed'] > gate.WORKER_BUDGET
+            and derived == 450 and slow['case_deadlines'] == {case['identity']: derived}
+            and outcome(slow, 'noop')['budget_seconds'] == outcome(slow, 'mutant')['budget_seconds'] == derived
+            and slow_record['seconds'] == 150
+            # The plan bounds the whole stage at the ceiling; once measured, the rest is bounded
+            # by the derived deadlines, never above the plan.
+            and max(a[1] for a in slow_alarms) >= gate.BUDGET + 3 * gate.WORKER_CEILING
+            and slow['elapsed'] <= slow['budget_seconds'] < max(a[1] for a in slow_alarms))
+        late = [exercise(measured=False, fault='hang-mutant'),
+                exercise(measured=False, fault='hang-noop', parallel=2)]
+        settled = gate.Workers(0)
+        settled.jobs['g:noop'] = {'budget_seconds': gate.WORKER_CEILING}
+        settled.outcomes.append(dict(name='g:noop', elapsed=500.0, budget_seconds=gate.WORKER_CEILING))
+        try:
+            settled.retarget('g:noop', 450)
+            judged = None
+        except gate.Refused as exc:
+            judged = exc.code
+        row('unmeasured-mutant-deadline', all(
+            r['error'] == 'mutation_budget_exceeded' and r['surviving_workers'] == 0
+            and outcome(r, mode).get('error') == 'mutation_budget_exceeded'
+            and outcome(r, mode)['budget_seconds'] == 450 and 450 <= outcome(r, mode)['elapsed'] <= 480
+            and not list(t.glob('*.json'))
+            for mode, (r, _, _, _, t, _) in zip(('mutant', 'noop'), late))
+            and judged == 'mutation_budget_exceeded' and settled.outcomes[0]['budget_seconds'] == 450)
+        hung, hung_children, hung_kills, _, hung_times, _ = exercise(measured=False, fault='hang-baseline')
+        row('unmeasured-hang', hung['error'] == 'mutation_budget_exceeded' and len(hung_children) == 1
+            and outcome(hung, 'baseline').get('error') == 'mutation_budget_exceeded'
+            and gate.WORKER_CEILING <= outcome(hung, 'baseline')['elapsed'] <= gate.WORKER_CEILING + 30
+            and hung_kills and hung['surviving_workers'] == 0 and not list(hung_times.glob('*.json')))
         bad, _, _, _, bad_times, _ = exercise(fault='false-baseline')
         row('baseline-details', bad['error'] == 'invalid_baseline'
             and 'inner operation expired' in bad['detail'] and 'TEST target' in bad['detail'])

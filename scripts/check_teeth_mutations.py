@@ -11719,22 +11719,17 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
-    # VELDO-0285: a case without its own sample reads another checkout's samples for the same inputs.
-    add(285, 'deadline285-own-authority-only', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        '            peers = peer_authorities(times)\n',
-        '            peers = []\n',
-        ['case-deadlines/peer-sample'])
+    # VELDO-0285: an unmeasured case's baseline is bounded by the ceiling, not the floor, and its
+    # noop and mutant by 3 x that baseline as measured in the same stage.
+    add(285, 'deadline285-unmeasured-floor', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        planned = {identity: WORKER_CEILING if seconds is None else seconds\n',
+        '        planned = {identity: WORKER_BUDGET if seconds is None else seconds\n',
+        ['case-deadlines/unmeasured-slow-baseline'])
     result[-1]['dir'] = 'scripts'
-    add(285, 'deadline285-any-repository', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        '            if common_directory(Path(name)) == own:\n',
-        '            if True:\n',
-        ['case-deadlines/peer-bounds'])
-    result[-1]['dir'] = 'scripts'
-    add(285, 'deadline285-peer-adopted', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        "            key, times, [(name, case_time_key(case, files, leg, name)) for name in peers])\n",
-        "            key, times, [(name, case_time_key(case, files, leg, name)) for name in peers])\n"
-        "        record_case_times(ROOT, {key: deadlines[case['identity']] / WORKER_MULTIPLIER}, times, authority=True)\n",
-        ['case-deadlines/peer-read-only'])
+    add(285, 'deadline285-no-same-stage-derivation', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '            control_results = workers.run(controls, directory, frozen, on_result=measured_baseline)\n',
+        '            control_results = workers.run(controls, directory, frozen)\n',
+        ['case-deadlines/unmeasured-mutant-deadline'])
     result[-1]['dir'] = 'scripts'
 
     # VELDO-0219: measured admission and conservative guaranteed parallelism.
