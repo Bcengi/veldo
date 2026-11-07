@@ -124,6 +124,28 @@ mutation row green):
 - Not in scope and unchanged: the side observations other than the trigger (empty protected_refs list,
   local trunk ref only, HEAD versus the pushed commit, packs/*/AGENTS.md).
 
+## Fix round 2 (the lead's run of round 1's pending runs at 52daa4bc)
+
+- Result named: suite 141 had one red row, mutation/fix1-empty-answer-allowed. Under that mutant the
+  row push/empty-answer stayed green, refused for another unresolved reason. `git push empty :` to an
+  empty remote never reached the empty-answer check, so the row was green for the wrong reason in
+  production too. With that row red, `check_teeth_mutations.py --finding 268` judged all ten cases
+  invalid_baseline.
+- Fix (commit 95347f2a, suite file only): the row pushes a pattern refspec matching no branch
+  (`'refs/heads/nomatch/*:refs/heads/nomatch/*'` to origin), a dry run that succeeds and names no
+  destination. It holds only when the guard prints exactly one unresolved line, "the dry run named no
+  destination; treated as protected", refuses with the gate text and main does not move. A green
+  stamp would not isolate it: an unresolved destination with a green stamp and a manifest passes, so
+  the red stamp's refusal stays and the reason line decides. Under the mutant the answer is empty,
+  nothing is protected and the guard exits 0, so the row turns red.
+- Runs: pending. The gate lock was not free in 20 minutes (one wait, no run started).
+  proof/VELDO-0268/pending_runs.sh holds the two runs (suite 141 with details on, then
+  `check_teeth_mutations.py --finding 268`), passes `bash -n`, appends one line per step with the red
+  row names to proof/VELDO-0268/pending-summary.txt, logs /tmp/v268-fix2-suite.log and
+  /tmp/v268-fix2-teeth.log. Git's exit and output for this pattern push were not observed here (a
+  debugging push command was refused by the repository guard and not retried), so the baseline row
+  is unproven until that run.
+
 ## Open
 
 - scripts/suites/requires.json is outside the footprint. It is derived (`python3 scripts/run_scope.py
