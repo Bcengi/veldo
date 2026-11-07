@@ -12254,6 +12254,10 @@ def cases():
     # AC3's mutation (suite 88 without the context manager, red on slices/end-of-run) mutates suite 88 and is observed
     # by suite 129, so it needs 88 run before 129 in one worker. The stage's worker (scripts/mutation_observer.py,
     # protected, outside this footprint) runs one suite per case, so it stays in proof/VELDO-0274/falsify.py.
+    # Suite 129 is listed whole in scripts/gate_unconfined.json, so these cases run in the unconfined leg
+    # (check_gate_mutations.in_leg), where the user manager their rows need answers. Only the coordinator's own
+    # CLI passes that leg: run them with `check_gate_mutations.py --finding 274`; this driver's main runs every
+    # case confined, where the slice rows stand down. An unconfined case is never declared or reuse-keyed.
     slices274 = '129_veldo_0274_factory_slices.py'
     # AC1: the context manager's exit skips the stop. sweep-dead goes red too: its 'enter' child leaves the factory,
     # whose exit then raises SliceLeft, so that child exits nonzero.
