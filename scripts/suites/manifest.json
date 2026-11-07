@@ -1246,7 +1246,10 @@
     "88_veldo_0127_feature_defaults"
    ],
    "regions": "Default-on Codex tool features explicitly disabled; mapped grants delivered with exact feature controls; unknown enabled features stop before launch.",
-   "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; actual pinned binary arguments and tool definitions on loopback with empty generated profiles."
+   "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; actual pinned binary arguments and tool definitions on loopback with empty generated profiles.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "89_veldo_0127_feature_listing",
@@ -1255,7 +1258,10 @@
     "89_veldo_0127_feature_listing"
    ],
    "regions": "Default-off feature overrides, dotted feature names, mapped grants independent of defaults, and missing, empty or malformed qualification listing stops.",
-   "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; pinned binary on guarded loopback with empty generated profiles. Invalid records derive from the production writer."
+   "requires_note": "Only ROOT and expect. Signed role writer, qualification writer, binding and Receiver._baseline; pinned binary on guarded loopback with empty generated profiles. Invalid records derive from the production writer.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "90_veldo_0127_feature_profile",
@@ -1264,7 +1270,10 @@
     "90_veldo_0127_feature_profile"
    ],
    "regions": "Generated Codex profile parses with exact feature values; one CLI feature table preserves grants on the pinned loopback first request, with the exact profile in CODEX_HOME.",
-   "requires_note": "Only ROOT and expect. Signed role and qualification writers, binding and Receiver._baseline. Exact generated profile and receiver argv on guarded loopback with empty homes, no login or model."
+   "requires_note": "Only ROOT and expect. Signed role and qualification writers, binding and Receiver._baseline. Exact generated profile and receiver argv on guarded loopback with empty homes, no login or model.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "85_veldo_0171_setup_api",
@@ -1765,6 +1774,18 @@
    ],
    "regions": "A project's landing destination (VELDO-0235): a record without the field reading as land_and_push and landing to the remote, never rewritten; the owner's signed set_landing_destination accepted and recorded with the old and new value and his command id, any other value, another key's signature, another principal and an unsigned command refused writing nothing; land_locally through the land station moving the caller's local main to the candidate by compare-and-swap with the receipt and spec.shipped, the bare origin byte for byte unchanged and no push, fetch or ls-remote logged; a local main moved after the watermark refused as trunk_moved, kept, and re-landed; the owner's grant brief naming the destination in words; a destination changed after the grant refused as stale_subject:landing/destination, asked again and landed after the fresh grant bound to it; land_and_push, set or absent, with today's effect contract, executor push, remote re-read and receipt.",
    "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
+  },
+  {
+   "name": "129_veldo_0274_factory_slices",
+   "file": "129_veldo_0274_factory_slices.py",
+   "requires": [
+    "129_veldo_0274_factory_slices"
+   ],
+   "regions": "Six rows (VELDO-0274), the last suite of the unit stage: slices/return and slices/raise, a child that starts the VELDO-0127 factory and launches one fake engine into its slice leaves neither loaded after its body returns or raises; slices/sigterm, SIGTERM to a child inside the factory stops its slice and ends the child by the signal's default action; slices/sweep-dead and slices/sweep-live, entering the factory stops a planted veldo0127 slice named for a dead pid, printing one line naming it, and leaves one named for a live process loaded; slices/end-of-run, no veldo0127 slice named for this run's process remains loaded in the user manager.",
+   "requires_note": "Only ROOT and expect. Runs the factory in child processes over the user manager's real systemctl and systemd-run, plants and stops its own slices, and stops any slice its children left. Without a user manager the five slice rows stand down by name and only slices/end-of-run runs.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   }
  ],
  "resource_capacities": {
