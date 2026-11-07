@@ -37,6 +37,8 @@ footprint:
   - "proof/VELDO-0270/**"
   - "specs/VELDO-0270-proof-is-small-summaries-never-raw-bulk.md"
   - "specs/index.md"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -189,3 +191,5 @@ would change every commit id and break the approvals bound to them, to keep only
 and to refuse big files from now on. Evidence: the weight audit item 2. Nothing has been deleted yet.
 
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708: routine and test-machinery work no longer needs his sign-off; listed in his daily summary). The rule itself was his decision in 39704.
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
