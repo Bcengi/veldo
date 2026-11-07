@@ -37,6 +37,7 @@ footprint:
   - "scripts/suites/67_veldo_0056_candidates.py"
   - "scripts/suites/69_veldo_0058_gate_output.py"
   - "scripts/suites/86_veldo_0148_re_land.py"
+  - "scripts/suites/01_warp_0101_reviewer_notes.py"
   - "scripts/check_teeth_mutations.py"
   - ".veldo/init_scaffold.py"
   - "engine/.veldo/init_scaffold.py"
@@ -242,3 +243,5 @@ protected policy files, so it is approval-required itself.
 2026-11-07: footprint gains .veldo/init_scaffold.py and its engine copy, by the lead (mechanical, ACs unchanged): AC4's landed_summary.py must be in the scaffold's asset list, or an installed repository has the reporter but not the summary module and the daily summary fails at call time (proof/VELDO-0272/README.md, Still open).
 
 2026-11-07: by the lead under Telegram 39708. Footprint gains suites 101_veldo_0208, 67_veldo_0056, 69_veldo_0058 and 86_veldo_0148, whose fixtures push not-required specs with no footprint and no bound review, which this ticket's rules correctly refuse (check of 2026-11-07, research/claude-runs/veldo-0272-check-2026-11-07.md F7). Reading of AC3, stricter, recorded: its first sentence governs, so the review check is judged per spec, never skipped for a whole push because another spec in it is required or a protected path is touched; a required spec needs the owner approval AND the review, never one instead of the other (check F5). ACs otherwise unchanged.
+
+2026-11-07: footprint gains scripts/suites/01_warp_0101_reviewer_notes.py, by the lead under Telegram 39708 (ACs unchanged): two of its rows push ordinary.txt with no spec and expect the push to pass, which the recorded AC3 reading refuses (fix check N3: code lands with no review); those fixture pushes must carry a reviewed spec (fix round 2, proof/VELDO-0272/README.md).
