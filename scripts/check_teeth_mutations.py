@@ -11536,6 +11536,26 @@ def cases():
 
     # VELDO-0278: the seven VELDO-0214 cases left with suite 111, parked with the estimation set.
 
+    # VELDO-0278: each criterion's registered falsifier.
+    suite278 = '129_veldo_0278_parked_estimation.py'
+    add(278, 'parked278-stamp-allowed', suite278, 'selftest.py',
+        '    scope = RS.RunScope("--parked %s" % name, names, names)\n',
+        '    scope = RS.RunScope(None, names, names)  # defect: the parked run may write a verify stamp\n',
+        ['parked/no-gate-pass'])
+    result[-1]['dir'] = 'scripts'
+    add(278, 'parked278-judgment-case-restored', suite278, 'check_teeth_mutations.py',
+        '    # VELDO-0278: the two judgment_load.py cases left with the estimation layer; the spend.py and\n',
+        "    events51('judgment-spend-recorded-unkinded', '    \"spend.recorded\": \"ship_bulk\",\\n', '', "
+        "'spend-recorded', module='judgment_load.py')  # defect: a removed case is restored\n",
+        ['mutation/no-estimation-case'])
+    result[-1]['dir'] = 'scripts'
+    add(278, 'parked278-integration-node-left', suite278, 'gate_graph.json',
+        '    "security": {\n',
+        '    "integration.confined": {\n      "depends_on": [],\n      "writes_candidate": false,\n'
+        '      "manager": "none",\n      "ports": []\n    },\n    "security": {\n',
+        ['integration/graph-nodes-are-required-catalog-items'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0215: measured per-case deadlines, authoritative timing and honest expiry.
     add(215, 'deadline215-fixed-worker', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
         '        if time.monotonic() - started >= self.budgets.get(name, WORKER_BUDGET):\n',

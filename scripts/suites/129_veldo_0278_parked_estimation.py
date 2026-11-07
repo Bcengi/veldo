@@ -75,17 +75,41 @@ def _v278_checks():
         repr((run.returncode, {n: per_suite.get(n) for n in EIGHT},
               [l for l in out.splitlines() if 'SELFTEST FAIL' in l][:5], out[-600:])))
     # A parked run is never a gate pass: it never exits 0, never prints the aggregate line the gate
-    # parses, and its scope refuses the verify stamp.
+    # parses, and its scope refuses the verify stamp. Asked of the real run and of this dispatcher
+    # over a one-row fixture set whose row passes, so a pass is exactly where it must still refuse.
+    def no_gate_pass(code, text):
+        return (code in (1, 2) and not re.search(r'^selftest: \d+ passed, \d+ failed$', text, re.M)
+                and 'selftest parked estimation: verify stamp: refused (PARTIAL_RUN_CANNOT_VERIFY)' in text
+                and 'verify stamp: ALLOWED' not in text
+                and re.search(r'^selftest parked estimation: \d+ passed, \d+ failed in [0-9.]+s '
+                              r'\(not a gate result\)$', text, re.M) is not None)
+
+    with tempfile.TemporaryDirectory(prefix='v278-parked-') as temporary:
+        tree = Path(temporary) / 'scripts'
+        (tree / 'suites').mkdir(parents=True)
+        (tree / 'parked' / 'estimation').mkdir(parents=True)
+        (tree / 'selftest.py').write_bytes((ROOT / "scripts" / "selftest.py").read_bytes())
+        (tree / 'run_scope.py').write_bytes((ROOT / 'scripts' / 'run_scope.py').read_bytes())
+        (tree / 'suites' / 'shared.py').write_text(
+            'PASS = 0\nFAIL = 0\n\n\ndef expect(name, condition):\n    global PASS, FAIL\n'
+            '    if condition:\n        PASS += 1\n    else:\n        FAIL += 1\n'
+            '        print("  SELFTEST FAIL: " + name)\n')
+        (tree / 'suites' / 'manifest.json').write_text(json.dumps({'shared': 'shared.py', 'suites': []}))
+        (tree / 'parked' / 'estimation' / 'fixture.py').write_text('expect("V278 fixture/parked-row", True)\n')
+        (tree / 'parked' / 'estimation' / 'manifest.json').write_text(json.dumps(
+            {'suites': [{'name': 'fixture', 'file': 'fixture.py', 'requires': ['fixture']}]}))
+        fixture = subprocess.run([sys.executable, str(tree / 'selftest.py'), '--parked', 'estimation'],
+                                 cwd=str(tree.parent), env=env, capture_output=True, text=True, timeout=120,
+                                 stdin=subprocess.DEVNULL)
+    fixture_out = fixture.stdout + fixture.stderr
     row('parked/no-gate-pass',
-        run.returncode in (1, 2) and not re.search(r'^selftest: \d+ passed, \d+ failed$', out, re.M)
-        and 'selftest parked estimation: verify stamp: refused (PARTIAL_RUN_CANNOT_VERIFY)' in out
-        and 'verify stamp: ALLOWED' not in out
-        and re.search(r'^selftest parked estimation: \d+ passed, \d+ failed in [0-9.]+s \(not a gate result\)$',
-                      out, re.M) is not None,
-        repr((run.returncode, out[-600:])))
+        no_gate_pass(run.returncode, out) and no_gate_pass(fixture.returncode, fixture_out)
+        and fixture.returncode == 2 and 'selftest parked estimation: 1 passed, 0 failed' in fixture_out,
+        repr((run.returncode, out[-400:], fixture.returncode, fixture_out[-400:])))
 
     # ---- AC2: no registered case names an estimation module or a parked suite ----------------------
-    teeth = load('v278_teeth', ROOT / 'scripts' / 'check_teeth_mutations.py')
+    teeth = load('v278_teeth', ROOT / "scripts" / "check_teeth_mutations.py")
+    teeth.ROOT = ROOT  # a mutated copy lives in a temporary directory; its inputs are this repository's
     registered = teeth.cases()
     inputs = json.loads((ROOT / 'scripts' / 'mutation_case_inputs.json').read_text())
 
@@ -110,7 +134,7 @@ def _v278_checks():
     declaration = json.loads((ROOT / 'scripts' / 'gate_unconfined.json').read_text())
     schedule = load('v278_schedule', ROOT / 'scripts' / 'gate_schedule.py')
     try:
-        graph = schedule.read_graph(catalog, declaration, ROOT / 'scripts' / 'gate_graph.json')[0]
+        graph = schedule.read_graph(catalog, declaration, ROOT / "scripts" / "gate_graph.json")[0]
         nodes, refused = set(graph['nodes']), None
     except schedule.Refused as error:
         nodes, refused = set(), str(error)
