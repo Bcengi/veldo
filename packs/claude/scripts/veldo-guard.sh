@@ -8,6 +8,15 @@
 # Reads the hook JSON payload on stdin; inspects Bash commands for merge and
 # push attempts and blocks them unless the gate is green for HEAD and a proof
 # manifest exists for HEAD.
+#
+# ONLY A PROTECTED DESTINATION IS JUDGED (VELDO-0268). The checks below run for a push or merge
+# that moves a ref .veldo/policy.yaml names in protected_refs (main, master, release branches and
+# tags as the engine ships it), read through policy_check.protected_ref. A working branch pushes
+# freely: the gate and the approvals bind where the trunk moves. The destination is git's own
+# answer, never read from the command text: a porcelain dry run of the same push with hooks
+# disabled, the checked-out branch for git merge, the base gh reports for gh pr merge. A git
+# pre-push hook calls this script once per ref with VELDO_GUARD_REF (and VELDO_GUARD_COMMIT) set
+# and no tool payload on stdin. A destination that cannot be resolved is protected.
 set -u
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
@@ -24,8 +33,223 @@ except Exception:
     print("")
 ' 2>/dev/null || true)
 
-# Only guard merge-ish and push-ish commands; everything else passes through.
-if ! printf '%s' "$CMD" | grep -qE '(git (push|merge)|gh pr (merge|create))'; then
+# Only guard merge-ish and push-ish commands; everything else passes through. Without a tool
+# payload, a git pre-push hook's call names its one destination in VELDO_GUARD_REF.
+if [ -n "$CMD" ]; then
+  if ! printf '%s' "$CMD" | grep -qE '(git (push|merge)|gh pr (merge|create))'; then
+    exit 0
+  fi
+  GUARD_PATH=tool
+elif [ -n "${VELDO_GUARD_REF+set}" ]; then
+  GUARD_PATH=pre-push
+else
+  exit 0
+fi
+TOOL_CWD=$(printf '%s' "$PAYLOAD" | python3 -c '
+import json,sys
+try:
+    print(json.load(sys.stdin).get("cwd") or "")
+except Exception:
+    print("")
+' 2>/dev/null || true)
+
+# The destinations (VELDO-0268): one line per destination on standard error, and on standard
+# output the protected ones, each as its full ref name or "unresolved". Nothing printed means no
+# protected ref moves, and the push or merge passes without the checks below.
+JUDGED=$(VELDO_GUARD_PATH="$GUARD_PATH" VELDO_GUARD_CMD="$CMD" VELDO_GUARD_CWD="$TOOL_CWD" python3 - <<'PY'
+import importlib.util, os, re, shlex, subprocess, sys
+from pathlib import Path
+
+CHECKS = "runs the gate stamp, reuse evidence, proof manifest and policy_check checks"
+OPERATOR = set("();<>|&")
+EXPANSION = ("$", "\x60", "\n")
+
+
+def log(ref, text):
+    print("VELDO guard: destination %s: %s" % (ref, text), file=sys.stderr)
+
+
+def unresolved(reason):
+    return [(None, reason)]
+
+
+def words_of(command):
+    """The words of one simple command, or None when the text is anything else (a list, a pipe,
+    a redirection, an expansion, a substitution or more than one line)."""
+    if any(c in command for c in EXPANSION):
+        return None
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+        lexer.whitespace_split = True
+        words = list(lexer)
+    except ValueError:
+        return None
+    if not words or any(w and set(w) <= OPERATOR for w in words):
+        return None
+    return words
+
+
+def git_globals(words):
+    """(the global options before the subcommand, the subcommand, its arguments), or None."""
+    at, kept = 1, []
+    while at < len(words) and words[at] in ("-C", "-c"):
+        if at + 1 >= len(words):
+            return None
+        kept += words[at:at + 2]
+        at += 2
+    if at >= len(words) or words[at].startswith("-"):
+        return None
+    return kept, words[at], words[at + 1:]
+
+
+def dry_run(kept, rest, cwd):
+    """Git's own answer for where this push goes: the same push, dry run, porcelain, no hooks."""
+    if any(w.startswith(("--no-dry", "--no-porc")) for w in rest):
+        return unresolved("the command turns the dry run off, so it cannot be reproduced")
+    try:
+        r = subprocess.run(["git", "-c", "core.hooksPath=/dev/null"] + kept
+                           + ["push", "--dry-run", "--porcelain", "--no-verify"] + rest,
+                           cwd=cwd, capture_output=True, text=True, timeout=300, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError) as error:
+        return unresolved("the dry run did not run (%s)" % type(error).__name__)
+    if r.returncode != 0:
+        tail = (r.stderr.strip().splitlines() or ["exit %d" % r.returncode])[-1]
+        return unresolved("the dry run failed: %s" % tail[:200])
+    found = []
+    for line in r.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) == 3 and len(parts[0]) == 1 and ":" in parts[1]:
+            found.append((parts[1].rsplit(":", 1)[1], None))
+    return found
+
+
+def merge_target(kept, cwd):
+    """The branch git merge moves: the one checked out where it runs."""
+    r = subprocess.run(["git"] + kept + ["symbolic-ref", "-q", "HEAD"], cwd=cwd,
+                       capture_output=True, text=True, stdin=subprocess.DEVNULL)
+    ref = r.stdout.strip()
+    if r.returncode != 0 or not ref.startswith("refs/"):
+        return unresolved("git merge with no branch checked out")
+    return [(ref, None)]
+
+
+GH_VALUE = {"-t", "--subject", "-b", "--body", "-F", "--body-file", "-A", "--author-email",
+            "--match-head-commit", "-R", "--repo"}
+GH_BOOL = {"--admin", "--auto", "-d", "--delete-branch", "--disable-auto", "-m", "--merge",
+           "-r", "--rebase", "-s", "--squash"}
+
+
+def gh_base(rest, cwd):
+    """The base branch of the pull request gh pr merge would merge, as gh reports it."""
+    selector, repo, at = [], [], 0
+    while at < len(rest):
+        word = rest[at]
+        flag = word.split("=", 1)[0]
+        if word.startswith("-") and flag in GH_VALUE:
+            if "=" in word:
+                value, step = word.split("=", 1)[1], 1
+            elif at + 1 < len(rest):
+                value, step = rest[at + 1], 2
+            else:
+                return unresolved("gh pr merge with a flag missing its value")
+            if flag in ("-R", "--repo"):
+                repo = ["--repo", value]
+            at += step
+            continue
+        if word.startswith("-"):
+            if word not in GH_BOOL:
+                return unresolved("gh pr merge with a flag the guard does not know: %s" % word)
+        elif not selector:
+            selector = [word]
+        else:
+            return unresolved("gh pr merge with more than one pull request named")
+        at += 1
+    try:
+        r = subprocess.run(["gh", "pr", "view"] + selector + repo + ["--json", "baseRefName", "-q", ".baseRefName"],
+                           cwd=cwd, capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError) as error:
+        return unresolved("gh did not report the base (%s)" % type(error).__name__)
+    base = r.stdout.strip()
+    if r.returncode != 0 or not base or "\n" in base:
+        return unresolved("gh did not report the base")
+    return [("refs/heads/" + base, None)]
+
+
+def destinations():
+    """[(full ref name, None)] for each destination, or (None, reason) for one not resolved."""
+    if os.environ.get("VELDO_GUARD_PATH") == "pre-push":
+        ref = os.environ.get("VELDO_GUARD_REF", "")
+        return [(ref, None)] if ref.startswith("refs/") else unresolved("VELDO_GUARD_REF is not a full ref name")
+    command = os.environ.get("VELDO_GUARD_CMD", "")
+    cwd = os.environ.get("VELDO_GUARD_CWD") or "."
+    if not os.path.isdir(cwd):
+        cwd = "."
+    words = words_of(command)
+    if words is None:
+        if not re.search(r"(git (push|merge)|gh pr merge)", command):
+            return []  # gh pr create only: it moves no ref
+        return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
+    if words[0] == "gh" and words[1:3] == ["pr", "create"]:
+        return []
+    if words[0] == "gh" and words[1:3] == ["pr", "merge"]:
+        return gh_base(words[3:], cwd)
+    if words[0] != "git":
+        return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
+    split = git_globals(words)
+    if split is None:
+        return unresolved("git with options the guard does not reproduce")
+    kept, sub, rest = split
+    if sub == "push":
+        return dry_run(kept, rest, cwd)
+    if sub == "merge":
+        return merge_target(kept, cwd)
+    return unresolved("git %s is not a push or merge the guard can reproduce" % sub)
+
+
+def main():
+    path = Path(".veldo/policy_check.py")
+    check = None
+    if path.is_file():
+        spec = importlib.util.spec_from_file_location("veldo_policy_check_refs", path)
+        check = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(check)
+    protected = []
+    for ref, reason in destinations():
+        if ref is None:
+            log("unresolved", "%s; treated as protected; %s" % (reason, CHECKS))
+            protected.append("unresolved")
+            continue
+        if check is None:
+            log(ref, "protected by * (no .veldo/policy_check.py to read protected_refs); %s" % CHECKS)
+            protected.append(ref)
+            continue
+        try:
+            hit = check.protected_ref(ref)
+        except check.ProtectedRefsUnreadable as error:
+            print("VELDO guard: blocked. %s" % error, file=sys.stderr)
+            return 3
+        if hit:
+            log(ref, "protected by %s from %s; %s" % (hit[0], hit[1], CHECKS))
+            protected.append(ref)
+        else:
+            log(ref, "not protected: the gate check applies when this lands")
+    for ref in protected:
+        print(ref)
+    return 0
+
+
+sys.exit(main())
+PY
+)
+JUDGED_RC=$?
+if [ "$JUDGED_RC" = "3" ]; then
+  exit 2
+fi
+if [ "$JUDGED_RC" != "0" ]; then
+  echo "VELDO guard: destination unresolved: the destination check failed (exit ${JUDGED_RC}); treated as protected" >&2
+  JUDGED=unresolved
+fi
+if [ -z "$JUDGED" ]; then
   exit 0
 fi
 

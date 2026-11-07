@@ -71,6 +71,11 @@ enforced by `.veldo/policy_check.py` at push, by a local pre-commit or pre-push 
 tool supports one, and always by a git pre-push hook plus the CI required status check as the
 universal backstop. A tool with no local hook is still fully enforced by git and CI.
 
+Protected refs: the push guard protects the refs the policy names in `protected_refs` of
+`.veldo/policy.yaml` (main, master, release branches and tags as shipped); a push or merge that
+moves one of them is judged in full. Landing is where the gate and approvals bind. Working
+branches push freely, so work in progress can leave the machine as a backup and a review surface.
+
 ## The board
 
 `specs/index.md`, generated from the specs, is the plan, backlog, and status - a navigation
