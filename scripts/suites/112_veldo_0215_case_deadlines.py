@@ -1,4 +1,5 @@
-"""VELDO-0215: coordinator deadlines and authority measurements, with scratch stores only."""
+"""VELDO-0215: coordinator deadlines and authority measurements, with scratch stores only.
+VELDO-0285: a case without its own sample reads the same inputs from another checkout."""
 
 
 def _v215_case_deadlines():
@@ -66,6 +67,59 @@ def _v215_case_deadlines():
         sample(80)
         row('key-binding', all(k != key and gate.case_deadline(k, store) == 120 for k in keys)
             and gate.case_time_key(case, dict(files, **{'proof/note': (0o644, b'new')}), None) == key)
+
+        # VELDO-0285: a case with no sample of its own reads the same inputs' samples recorded by
+        # another checkout of this repository. Git common directories are mapped, never resolved.
+        peer_root, foreign_root, third_root = (str(scratch / n) for n in ('peer', 'foreign', 'third'))
+        gone_root = str(scratch / 'gone')
+        for name in (peer_root, foreign_root, third_root):
+            Path(name).mkdir()
+        commons = {str(gate.ROOT): 'this', peer_root: 'this', third_root: 'this', foreign_root: 'other'}
+        def common(path):
+            if str(path) not in commons:
+                raise ValueError('expected shared gitdir is unavailable from authority')
+            return commons[str(path)]
+        def peer_store(name, records):
+            directory = scratch / name
+            directory.mkdir()
+            for authority, record_key, seconds, at in records:
+                (directory / (record_key + '.json')).write_text(json.dumps(dict(
+                    authority=authority, key=record_key, seconds=seconds, samples=[[at, seconds]])))
+            return directory
+        def deadline(directory, which=case):
+            with patch.object(gate, 'common_directory', common):
+                return gate.case_deadlines([which], files, None,
+                                           {which['identity']: gate.case_time_key(which, files, None)},
+                                           directory)[which['identity']]
+        now = time.time()
+        peer_key = gate.case_time_key(case, files, None, peer_root)
+        def peer_row(name, records, wanted, which=case):
+            return deadline(peer_store('peer-' + name, records), which) == wanted
+        lone = peer_store('peer-lone', [(peer_root, peer_key, 130, now)])
+        row('peer-sample', peer_key != key and deadline(lone) == 390
+            and gate.case_deadline(key, lone) == 120)
+        row('peer-bounds', all([
+            peer_row('own', [(str(gate.ROOT), key, 50, now), (peer_root, peer_key, 130, now)], 150),
+            peer_row('unrecorded', [(peer_root, peer_key, 130, now)], 120, dict(case, new='other')),
+            peer_row('foreign', [(foreign_root, gate.case_time_key(case, files, None, foreign_root),
+                                  130, now)], 120),
+            peer_row('gone', [(gone_root, gate.case_time_key(case, files, None, gone_root), 130, now)], 120),
+            peer_row('expired', [(peer_root, peer_key, 130, now - 31 * 86400)], 120),
+            peer_row('ceiling', [(peer_root, peer_key, 10000, now)], 1800),
+            peer_row('small', [(peer_root, peer_key, 30, now)], 120),
+            peer_row('misnamed', [(third_root, peer_key, 130, now)], 120)]))
+        watched = peer_store('peer-watched', [(peer_root, peer_key, 130, now)])
+        def snapshot():
+            return sorted((p.name, p.read_bytes(), p.stat().st_mtime_ns) for p in watched.iterdir())
+        before = snapshot()
+        read = deadline(watched)
+        unchanged = snapshot() == before
+        gate.record_case_times(ROOT, {key: 40.0}, watched)
+        written = json.loads((watched / (key + '.json')).read_text())
+        row('peer-read-only', read == 390 and unchanged
+            and written['authority'] == str(gate.ROOT) and written['key'] == key
+            and [e for e in snapshot() if e[0] == peer_key + '.json'] == [e for e in before if e[0] == peer_key + '.json']
+            and deadline(watched) == 120)
 
         other = dict(case, identity='second', name='second')
         controls = gate.control_jobs([case, other], gate.control_group, {},

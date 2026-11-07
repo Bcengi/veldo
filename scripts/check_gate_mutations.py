@@ -137,11 +137,13 @@ def digest(value):
     return hashlib.sha256(canonical(value)).hexdigest()
 
 
-def case_time_key(case, files, leg):
+def case_time_key(case, files, leg, authority=None):
     """Duration identity, independent of HEAD, proofs and unrelated registry cases.
 
     This is not an input-closure proof for result reuse. Bind the case's own executable
     definition and its direct sources, plus the authority execution machinery and leg.
+    authority names the checkout the key belongs to: this one by default, another checkout of
+    this repository when its record is read for the same inputs (VELDO-0285).
     """
     target = str(Path('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo'))
                  / case['module'])
@@ -151,17 +153,18 @@ def case_time_key(case, files, leg):
              'scripts/mutation_ownership.py'}
     sources = {path: file_identity({path: files[path]})[path] if path in files else None
                for path in sorted(paths)}
-    return digest({'authority': str(ROOT), 'case': case, 'sources': sources,
+    return digest({'authority': str(ROOT) if authority is None else authority, 'case': case, 'sources': sources,
                    'leg': 'unconfined' if in_leg(leg, case) else 'confined',
                    'declaration': leg})[:32]
 
 
-def case_samples(key, times, now):
-    """Live candidate peaks; legacy single samples retain their original file age."""
+def case_samples(key, times, now, authority=None):
+    """Live candidate peaks; legacy single samples retain their original file age. A record counts
+    only under the authority its key was computed for: this checkout's unless one is named."""
     try:
         path = Path(times) / (key + '.json')
         item = json.loads(path.read_text())
-        if item['authority'] != str(ROOT) or item['key'] != key:
+        if item['authority'] != (str(ROOT) if authority is None else authority) or item['key'] != key:
             return []
         samples = item.get('samples', [[path.stat().st_mtime, item['seconds']]])
         return [(at, seconds) for at, seconds in samples
@@ -172,14 +175,66 @@ def case_samples(key, times, now):
         return []
 
 
-def case_deadline(key, times=CASE_TIMES):
-    """A missing, expired or malformed sample is the floor, never an unbounded wait."""
-    seconds = max((seconds for _, seconds in case_samples(key, times, time.time())), default=0)
+def case_deadline(key, times=CASE_TIMES, peers=()):
+    """A missing, expired or malformed sample is the floor, never an unbounded wait.
+
+    peers: (authority, key) pairs, the same case inputs keyed for other checkouts of this
+    repository. They are read only when this checkout has no live sample of its own (VELDO-0285)."""
+    now = time.time()
+    seconds = max((seconds for _, seconds in case_samples(key, times, now)), default=0)
+    if not seconds:
+        seconds = max((seconds for authority, peer in peers
+                       for _, seconds in case_samples(peer, times, now, authority)), default=0)
     if not seconds:
         return WORKER_BUDGET
     # Clamp before multiplying, including finite floats near overflow.
     return min(WORKER_CEILING, max(WORKER_BUDGET,
                WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))
+
+
+def peer_authorities(times=CASE_TIMES):
+    """The other checkouts of this repository on this host that hold records in the store: an
+    authority other than ROOT whose Git common directory is this checkout's. A gone checkout, or
+    one of another repository, is not a peer. Reading only; nothing here writes (VELDO-0285)."""
+    names = set()
+    for path in Path(times).glob('*.json'):
+        try:
+            name = json.loads(path.read_text()).get('authority')
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(name, str) and name and name != str(ROOT):
+            names.add(name)
+    try:
+        own = common_directory(ROOT)
+    except (OSError, ValueError):
+        return []
+    peers = []
+    for name in sorted(names):
+        try:
+            if common_directory(Path(name)) == own:
+                peers.append(name)
+        except (OSError, ValueError):
+            continue
+    return peers
+
+
+def case_deadlines(cases, files, leg, keys, times=CASE_TIMES):
+    """Each case's worker deadline: its own samples, else the same inputs' samples recorded by
+    another checkout of this repository, else the floor. Peer keys are computed only for a case
+    without a live sample of its own."""
+    now = time.time()
+    peers = None
+    deadlines = {}
+    for case in cases:
+        key = keys[case['identity']]
+        if case_samples(key, times, now):
+            deadlines[case['identity']] = case_deadline(key, times)
+            continue
+        if peers is None:
+            peers = peer_authorities(times)
+        deadlines[case['identity']] = case_deadline(
+            key, times, [(name, case_time_key(case, files, leg, name)) for name in peers])
+    return deadlines
 
 
 def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
@@ -1141,7 +1196,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                                            'worker_seconds': 0.0, 'executed': 0, 'reused': 0}
         files = read_inputs(root, expected_common)
         time_keys = {c['identity']: case_time_key(c, files, leg) for c in cases}
-        deadlines = {identity: case_deadline(key) for identity, key in time_keys.items()}
+        deadlines = case_deadlines(cases, files, leg, time_keys)
         receipt['case_deadlines'] = deadlines
         claims = None
         if admission:

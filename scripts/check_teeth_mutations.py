@@ -11719,6 +11719,24 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0285: a case without its own sample reads another checkout's samples for the same inputs.
+    add(285, 'deadline285-own-authority-only', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '            peers = peer_authorities(times)\n',
+        '            peers = []\n',
+        ['case-deadlines/peer-sample'])
+    result[-1]['dir'] = 'scripts'
+    add(285, 'deadline285-any-repository', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '            if common_directory(Path(name)) == own:\n',
+        '            if True:\n',
+        ['case-deadlines/peer-bounds'])
+    result[-1]['dir'] = 'scripts'
+    add(285, 'deadline285-peer-adopted', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "            key, times, [(name, case_time_key(case, files, leg, name)) for name in peers])\n",
+        "            key, times, [(name, case_time_key(case, files, leg, name)) for name in peers])\n"
+        "        record_case_times(ROOT, {key: deadlines[case['identity']] / WORKER_MULTIPLIER}, times, authority=True)\n",
+        ['case-deadlines/peer-read-only'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0219: measured admission and conservative guaranteed parallelism.
     suite219 = '115_veldo_0219_measured_admission.py'
     add(219, 'admission219-slowest-rate', suite219, 'check_gate_mutations.py',
