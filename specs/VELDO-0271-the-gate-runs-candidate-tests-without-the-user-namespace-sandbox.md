@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0271
 title: The gate runs candidate tests in one leg per stage without the user-namespace sandbox, keeps its authority scripts, scope, memory limit, host lock and credential-free candidate runs, and no longer needs a root-installed helper
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -258,3 +258,5 @@ confinement. Consistent with the owner's earlier decision that builders run unre
 the mandatory sandbox "proved to be highly problematic") and with the single-user rule (never require a
 separate OS user, a root-installed helper or a system service; if protection is wanted, Landlock on agent
 processes).
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708); the decision to remove the gate sandbox was his, 39706. Landing order 0267, 0271, 0269. Before it lands, myday's claude_work.sh and codex_work.sh move to the unrestricted runners (lead task).
