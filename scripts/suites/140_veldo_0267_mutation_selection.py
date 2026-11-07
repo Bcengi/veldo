@@ -16,6 +16,7 @@ def _v267_checks():
     import json
     import os
     from pathlib import Path
+    import shutil
     import subprocess
     import sys
     import tempfile
@@ -23,14 +24,25 @@ def _v267_checks():
     import types
 
     scripts = ROOT / 'scripts'
+    # Literal anchors: the registered mutation driver (scripts/check_teeth_mutations.py) substitutes
+    # the production copy here, so each registered falsifier also runs against its mutant.
+    SELECTION = ROOT / "scripts" / "mutation_selection.py"
+    SELECTION_RULE = ROOT / "scripts" / "mutation_selection.json"
+    COORDINATOR = ROOT / "scripts" / "check_gate_mutations.py"
+    NIGHTLY = ROOT / "scripts" / "mutation_nightly.py"
+    POLICY = ROOT / ".veldo" / "policy_check.py"
+    LANDER = ROOT / ".veldo" / "lander.py"
 
     def load(path, replace=()):
-        """The module at path, or a copy with each (old, new) applied exactly once."""
+        """The module at path, or a copy with each (old, new) applied exactly once. An anchor that is
+        not there exactly once leaves the module unchanged, named: its falsifier row then sees no
+        difference and is red (the anchor moved, or the registered mutant already removed it)."""
         path = Path(path)
         source = path.read_text()
         for old, new in replace:
             if source.count(old) != 1:
-                raise AssertionError('mutation anchor not unique in %s: %r' % (path.name, old[:80]))
+                print('  VELDO-0267 mutation anchor not unique in %s: %r' % (path.name, old[:80]))
+                continue
             source = source.replace(old, new)
         module = types.ModuleType('v267_' + path.stem)
         module.__file__ = str(path)
@@ -45,8 +57,8 @@ def _v267_checks():
         """A registered mutation: its row green on the real module, red on the mutated copy."""
         row('falsifier/' + name, green is True and red is False)
 
-    selection = load(scripts / 'mutation_selection.py')
-    gate = load(scripts / 'check_gate_mutations.py')
+    selection = load(SELECTION)
+    gate = load(COORDINATOR)
     gate.ROOT = ROOT
 
     def git(cwd, *arguments):
@@ -70,7 +82,7 @@ def _v267_checks():
     with tempfile.TemporaryDirectory(prefix='v267-') as temporary:
         top = Path(temporary)
         state = top / 'state'
-        rule = json.loads((scripts / 'mutation_selection.json').read_text())
+        rule = json.loads((SELECTION_RULE).read_text())
         rule['canaries'] = sorted(canaries)
         rule['nightly']['state_directory'] = str(state)
         rule_path = top / 'rule.json'
@@ -80,6 +92,18 @@ def _v267_checks():
                        'toolchains': {'check_teeth_mutations.py': {'paths': ['/usr/bin/python3']},
                                       'check_review_mutations.py': {'paths': ['/usr/bin/python3']}}}
         now = time.time()
+
+        def production(path):
+            """The .veldo module the suite exercises: the real one, or (a registered mutant, loaded
+            from a scratch path) the mutant beside a copy of the real siblings it loads by its own path."""
+            path = Path(path)
+            if path.parent == ROOT / '.veldo':
+                return path
+            tree = top / ('production-' + path.name) / '.veldo'
+            if not tree.exists():
+                shutil.copytree(ROOT / '.veldo', tree, ignore=shutil.ignore_patterns('__pycache__'))
+                shutil.copyfile(path, tree / path.name)
+            return tree / path.name
 
         def coverage_for(cases, finished=None, toolchains=None):
             files = {C['identity']: ['lib/shared.py', '.veldo/mc.py']}
@@ -140,16 +164,16 @@ def _v267_checks():
             record['cases'][A['identity']]['reasons'] == ['covered_file'])
 
         falsifier('ac1-1-rule-ignores-covered-files', shared_row(selection), shared_row(load(
-            scripts / 'mutation_selection.py',
+            SELECTION,
             [("    if changed & covered:\n        reasons.append('covered_file')",
               "    if False:\n        reasons.append('covered_file')")])))
         falsifier('ac1-2-rule-ignores-unknown-case', new_case_row(selection), new_case_row(load(
-            scripts / 'mutation_selection.py',
+            SELECTION,
             [("    if known is None or known.get('definition') != definition_digest(case) or (\n"
               "            declared is None and known.get('files') is None):",
               "    if known is not None and (known.get('definition') != definition_digest(case) or (\n"
               "            declared is None and known.get('files') is None)):")])))
-        omitted = load(scripts / 'mutation_selection.py',
+        omitted = load(SELECTION,
                        [("entries[case['identity']] = {'selected': bool(reasons), 'reasons': reasons}",
                          "entries[case['identity']] = {'selected': bool(reasons), 'reasons': reasons[:1]}")])
         falsifier('ac1-3-record-omits-a-reason', recompute_row(selection), recompute_row(omitted))
@@ -204,6 +228,92 @@ def _v267_checks():
         row('record/stamp-names-digest', field and field['digest'] == written['digest'] and field['mode'] == 'full'
             and field['run'] == len(base_cases) and tampered is None)
 
+        # AC1: a landing's gate compares the candidate with the watermark the lander synced. A
+        # landing-shaped workspace (a fresh repository: the trunk only as the watermark and the remote
+        # ref, HEAD detached on the candidate, no refs/heads/main) is gated through the real lander and
+        # control_verification by an installed verifier that runs the real verify.sh base block and the
+        # real gate selection; the selection must be made against the watermark, not fall to the sweep.
+        landing_ws = top / 'landing-workspace'
+        landing_ws.mkdir()
+        git(landing_ws, 'init', '-q', '-b', 'scratch')
+        (landing_ws / 'scripts/suites').mkdir(parents=True)
+        (landing_ws / 'scripts/mutation_case_inputs.json').write_text(json.dumps(case_inputs))
+        (landing_ws / 'scripts/suites/manifest.json').write_text(json.dumps(
+            {'suites': [{'file': 'k3.py', 'resources': {'systemd_user': 1}}]}))
+        (landing_ws / 'docs').mkdir()
+        (landing_ws / 'docs/readme.md').write_text('read me\n')
+        git(landing_ws, 'add', '-A')
+        git(landing_ws, 'commit', '-q', '-m', 'trunk')
+        watermark = git(landing_ws, 'rev-parse', 'HEAD')
+        git(landing_ws, 'update-ref', 'refs/veldo/candidate/watermark', watermark)
+        git(landing_ws, 'update-ref', 'refs/remotes/origin/main', watermark)
+        git(landing_ws, 'checkout', '-q', '--detach', watermark)
+        git(landing_ws, 'branch', '-q', '-D', 'scratch')
+        (landing_ws / 'docs/readme.md').write_text('the candidate\n')
+        git(landing_ws, 'commit', '-q', '-am', 'candidate')
+        landing_head = git(landing_ws, 'rev-parse', 'HEAD')
+        land_state = top / 'land-state'
+        land_state.mkdir()
+        (land_state / 'coverage.json').write_text(json.dumps(coverage))
+        land_rule_path = top / 'land-rule.json'
+        land_rule_path.write_text(json.dumps(dict(rule, nightly=dict(rule['nightly'], state_directory=str(land_state)))))
+        install = top / 'land-installation'
+        (install / 'scripts').mkdir(parents=True)
+        config = install / 'config.json'
+        config.write_text(json.dumps({'root': str(ROOT), 'selection': str(SELECTION), 'rule': str(land_rule_path),
+                                      'cases': base_cases,
+                                      'leg': {'suites': ['k2'], 'entries': ['k2']}}))
+        driver = install / 'driver.py'
+        driver.write_text(
+            'import importlib.util, json, os, sys\n'
+            'from pathlib import Path\n'
+            'config = json.loads(Path(sys.argv[1]).read_text())\n'
+            'os.environ.pop("VELDO_MUTATION_SELECTION", None)\n'
+            'def load(path, name):\n'
+            '    spec = importlib.util.spec_from_file_location(name, path)\n'
+            '    module = importlib.util.module_from_spec(spec)\n'
+            '    spec.loader.exec_module(module)\n'
+            '    return module\n'
+            'root = Path(config["root"])\n'
+            'selection = load(Path(config["selection"]), "v267_land_selection")\n'
+            'plan = selection.plan\n'
+            'selection.plan = lambda *a, **k: plan(*a, rule_path=Path(config["rule"]), **k)\n'
+            'gate = load(root / "scripts/check_gate_mutations.py", "v267_land_gate")\n'
+            'here = Path.cwd()\n'
+            'record = gate.gate_selection(selection, here, gate.common_directory(here), config["leg"])(config["cases"])\n'
+            'print("v267 landing record " + json.dumps({"mode": record["mode"], "base": record["base"],\n'
+            '      "candidate": record["candidate"], "trigger": record["trigger"]}), flush=True)\n')
+        verifier = (scripts / 'verify.sh').read_text()
+        block_start = verifier.index('if [ -z "${VELDO_GATE_BASE_COMMIT:-}" ]; then')
+        block_end = verifier.index('export VELDO_GATE_BASE_COMMIT\n') + len('export VELDO_GATE_BASE_COMMIT\n')
+        (install / 'scripts/verify.sh').write_text(
+            '#!/usr/bin/env bash\n# veldo-gate-interface: candidate-sink/v1\n'
+            + verifier[block_start:block_end]
+            + 'exec %s -I -S %s %s\n' % (sys.executable, driver, config))
+
+        def landing_row(module):
+            observations = Path(tempfile.mkdtemp(prefix='observations-', dir=top))
+            try:
+                ops = module.GitLandOps(landing_ws, 'unused', push=False, installation=install,
+                                        observations=observations)
+                ops.candidate = {'schema': module.CANDIDATE_SCHEMA, 'id': 'candidate-v267', 'state': 'built',
+                                 'workspace': str(landing_ws), 'watermark': watermark, 'commit': landing_head}
+                ops.gate()
+                stdout = json.loads(Path(ops.candidate['gate']['observation']['path']).read_text())['stdout']
+            except Exception as error:  # Any failure to drive it is a red row, named.
+                print('  VELDO-0267 landing row could not run: %s: %s' % (type(error).__name__, error))
+                return False
+            found = [json.loads(text.split('v267 landing record ', 1)[1]) for text in stdout.splitlines()
+                     if 'v267 landing record ' in text]
+            return (len(found) == 1 and found[0]['mode'] == 'selected' and found[0]['trigger'] is None
+                    and found[0]['base'] == watermark and found[0]['candidate'] == landing_head
+                    and 'mutation selection: mode=selected' in stdout and 'selection_unavailable' not in stdout)
+
+        lander = load(production(LANDER))
+        row('landing/gate-selects-against-the-watermark', landing_row(lander))
+        falsifier('ac1-4-lander-drops-the-base-hand-off', landing_row(lander), landing_row(load(
+            production(LANDER), [('bind_refs=True, base=c["watermark"])', 'bind_refs=True)')])))
+
         # AC2: the canaries.
         def canary_line(module):
             record = choose(selection, ['docs/readme.md'])
@@ -215,7 +325,7 @@ def _v267_checks():
             return line.endswith('mode=selected selected=0 canaries=6') and len(cases) == 6
 
         row('canary/empty-selection-runs-canaries', canary_line(gate))
-        skipping = load(scripts / 'check_gate_mutations.py', [(
+        skipping = load(COORDINATOR, [(
             "    chosen = {i for i, e in record['cases'].items() if e['selected']} | canaries\n",
             "    chosen = {i for i, e in record['cases'].items() if e['selected'] and e['reasons'] != ['canary']}\n"
             "    chosen |= canaries if chosen else set()\n"
@@ -251,7 +361,7 @@ def _v267_checks():
 
         row('canary/broken-worker-reds-stage', canary_judged(gate))
         falsifier('ac2-1-worker-reports-every-mutant-killed', canary_judged(gate), canary_judged(load(
-            scripts / 'check_gate_mutations.py',
+            COORDINATOR,
             [('        return validate_result(record, case)\n    except Refused as error:\n        raise Refused(CANARY',
               '        return record\n    except Refused as error:\n        raise Refused(CANARY')])))
 
@@ -263,9 +373,9 @@ def _v267_checks():
                 return False, str(error)
 
         emptied = top / 'emptied.json'
-        emptied.write_text(json.dumps(dict(json.loads((scripts / 'mutation_selection.json').read_text()), canaries=[])))
-        real_rule = selection.load_rule(scripts / 'mutation_selection.json')
-        valid, _ = declaration(scripts / 'mutation_selection.json')
+        emptied.write_text(json.dumps(dict(json.loads((SELECTION_RULE).read_text()), canaries=[])))
+        valid, _ = declaration(SELECTION_RULE)
+        real_rule = selection.load_rule(SELECTION_RULE) if valid else None
         emptied_valid, why = declaration(emptied)
         row('canary/declaration-valid', valid and 6 <= len(real_rule['canaries']) <= 12)
         falsifier('ac2-3-canary-list-emptied', valid, emptied_valid)
@@ -280,6 +390,8 @@ def _v267_checks():
         manifest = json.loads((scripts / 'suites/manifest.json').read_text())
         demands = {s['file']: s.get('resources') or {} for s in manifest['suites']}
         try:
+            if real_rule is None:
+                raise selection.Invalid('the declaration does not load')
             selection.check_canaries(real_rule, inventory, lambda c: gate.in_leg(leg, c),
                                      lambda c: demands.get(c['suite']))
             covered = True
@@ -342,7 +454,7 @@ def _v267_checks():
 
         row('trigger/nightly-stale', stale_row(selection))
         falsifier('ac3-2-age-bound-skipped', stale_row(selection), stale_row(load(
-            scripts / 'mutation_selection.py', [('        if started - finished > limit:', '        if False:')])))
+            SELECTION, [('        if started - finished > limit:', '        if False:')])))
         altered = dict(selection.toolchain_digests(case_inputs))
         altered['check_review_mutations.py'] = '0' * 64
         toolchain = selection.select(base_cases, rule, base='b' * 40, candidate='c' * 40, changed=['docs/readme.md'],
@@ -411,7 +523,7 @@ def _v267_checks():
                 holder.wait(timeout=60)
             return record, seen, released, output.getvalue()
 
-        nightly_module = load(scripts / 'mutation_nightly.py')
+        nightly_module = load(NIGHTLY)
 
         def lock_row(module):
             record, seen, released, text = nightly(module, True, holder_seconds=1.5)
@@ -420,7 +532,7 @@ def _v267_checks():
 
         row('nightly/waits-for-lock-then-sweeps', lock_row(nightly_module))
         falsifier('ac4-1-runner-skips-lock', lock_row(nightly_module), lock_row(load(
-            scripts / 'mutation_nightly.py', [('    fcntl.flock(fd, fcntl.LOCK_EX)\n', '    pass\n')])))
+            NIGHTLY, [('    fcntl.flock(fd, fcntl.LOCK_EX)\n', '    pass\n')])))
         published = json.loads((state / 'coverage.json').read_text())
         row('nightly/green-publishes-coverage', published['trunk_commit'] == trunk_commit
             and selection.load_coverage(state / 'coverage.json')['cases'][A['identity']]['files'] == ['.veldo/m1.py'])
@@ -438,25 +550,49 @@ def _v267_checks():
             and red['trunk_commit'] == trunk_commit and 'mutations: failed registered=2' in red_text)
         row('nightly/one-notifier-call-naming-case', len(notes) == 1 and survivor['identity'] in notes[0]
             and trunk_commit[:12] in notes[0])
-        publishing = load(scripts / 'mutation_nightly.py', [
+        publishing = load(NIGHTLY, [
             ('            if green:\n                try:\n                    published = coverage_map(',
              '            if True:\n                try:\n                    published = coverage_map(')])
         mutated_publish = publish_row(publishing)[0]
         falsifier('ac4-3-red-sweep-publishes-coverage', red_ok, mutated_publish)
 
-        # The landing check, through the installed policy module's own reader.
+        # The landing check, through the installed policy module's own reader and its own approval
+        # rule (valid_approval_for): the subject is a repository whose push is base..work, its proof
+        # names the producer, and an approval counts only bound to a commit of the push and approved
+        # by someone who is not the producer.
         subject = top / 'subject'
         (subject / 'proof/VELDO-9999').mkdir(parents=True)
-        policy = load(ROOT / '.veldo/policy_check.py')
-        policy.ROOT = subject
-        reader = load(scripts / 'mutation_selection.py')
+        git(subject, 'init', '-q', '-b', 'main')
+        (subject / 'base.txt').write_text('base\n')
+        git(subject, 'add', 'base.txt')
+        git(subject, 'commit', '-q', '-m', 'base')
+        subject_base = git(subject, 'rev-parse', 'HEAD')
+        (subject / 'work.txt').write_text('work\n')
+        git(subject, 'add', 'work.txt')
+        git(subject, 'commit', '-q', '-m', 'work')
+        subject_work = git(subject, 'rev-parse', 'HEAD')
+        (subject / 'proof/VELDO-9999/manifest.json').write_text(json.dumps({'producer': 'agent-builder'}))
+        (subject / 'proof/VELDO-9999/verdict.json').write_text(json.dumps(
+            {'spec_id': 'VELDO-9999', 'commit': subject_work}))
+        reader = load(SELECTION)
         reader.RULE = rule_path
-        policy._nightly_reader = lambda: reader
 
-        def approve(run_id, cases, name):
+        def policy_module(replace=()):
+            module = load(production(POLICY), replace)
+            module.ROOT = subject
+            module.BASE = subject_base
+            module._nightly_reader = lambda: reader
+            return module
+
+        policy = policy_module()
+
+        def approve(run_id, cases, name, approver='owner', commit=None):
+            scope = {'nightly_run': run_id, 'cases': cases}
+            if commit is not None:
+                scope['commit'] = commit
             (subject / 'proof/VELDO-9999' / name).write_text(json.dumps({
-                'schema': 'veldo.approval/v1', 'decision': 'approved', 'approver': 'owner',
-                'scope': {'nightly_run': run_id, 'cases': cases}, 'expires_at': '2999-01-01T00:00:00Z'}))
+                'schema': 'veldo.approval/v1', 'decision': 'approved', 'approver': approver,
+                'scope': scope, 'expires_at': '2999-01-01T00:00:00Z'}))
 
         def blocks_row(module):
             reader.landing_refusal = module.landing_refusal
@@ -465,16 +601,35 @@ def _v267_checks():
 
         real_landing = reader.landing_refusal
         row('landing/red-blocks', blocks_row(reader))
-        greens_only = load(scripts / 'mutation_selection.py', [
-            ('.timestamp()\n    records = sweeps(state)\n',
-             ".timestamp()\n    records = [r for r in sweeps(state) if r['verdict'] == 'green']\n")])
+        greens_only = load(SELECTION, [
+            ('without approval."""\n    records = sweeps(state)\n',
+             "without approval.\"\"\"\n    records = [r for r in sweeps(state) if r['verdict'] == 'green']\n")])
         falsifier('ac4-2-landing-reads-only-green', blocks_row(reader), blocks_row(greens_only))
         reader.landing_refusal = real_landing
-        approve('nightly-some-other-run', {survivor['identity']: 'known flake'}, 'approval-other.json')
+        approve('nightly-some-other-run', {survivor['identity']: 'known flake'}, 'approval-other.json',
+                commit=subject_work)
         row('landing/other-run-id-does-not-clear', bool(policy.nightly_refusal()))
         latest = reader.sweeps(state)[-1]
         row('landing/latest-is-red', latest['verdict'] == 'red')
-        approve(latest['run_id'], {survivor['identity']: 'accepted until the fix lands'}, 'approval-owner.json')
+        reason_given = {survivor['identity']: 'accepted until the fix lands'}
+        approve(latest['run_id'], reason_given, 'approval-unbound.json')
+        row('landing/unbound-approval-does-not-clear', bool(policy.nightly_refusal()))
+        (subject / 'proof/VELDO-9999/approval-unbound.json').unlink()
+
+        def self_approval_row(module):
+            """The producer's own approval, bound and naming the run and case, does not clear."""
+            approve(latest['run_id'], reason_given, 'approval-self.json', approver='agent-builder',
+                    commit=subject_work)
+            try:
+                return bool(module.nightly_refusal())
+            finally:
+                (subject / 'proof/VELDO-9999/approval-self.json').unlink()
+
+        row('landing/self-approval-does-not-clear', self_approval_row(policy))
+        falsifier('ac4-4-self-approval-accepted', self_approval_row(policy), self_approval_row(policy_module([
+            ('            continue  # self-approval: the approver produced the work',
+             '            pass  # self-approval: the approver produced the work')])))
+        approve(latest['run_id'], reason_given, 'approval-owner.json', commit=subject_work)
         row('landing/approval-clears', policy.nightly_refusal() is None)
         (subject / 'proof/VELDO-9999/approval-owner.json').unlink()
         row('landing/red-again-without-approval', bool(policy.nightly_refusal()))

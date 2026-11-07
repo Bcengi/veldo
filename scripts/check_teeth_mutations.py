@@ -12250,6 +12250,68 @@ def cases():
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
 
+    # VELDO-0267: the gate's mutation selection, its canaries and triggers, the nightly sweep and the
+    # landing check. Each is the falsifier the suite also applies to an in-memory copy.
+    suite267 = '140_veldo_0267_mutation_selection.py'
+
+    def selection267(name, module, old, new, rows, **extra):
+        add(267, name, suite267, module, old, new, rows)
+        result[-1].update(extra)
+
+    selection267('selection267-rule-ignores-covered-files', 'mutation_selection.py',
+                 "    if changed & covered:\n        reasons.append('covered_file')",
+                 "    if False:\n        reasons.append('covered_file')",
+                 ['select/shared-selects-c'], dir='scripts')
+    selection267('selection267-rule-ignores-unknown-case', 'mutation_selection.py',
+                 "    if known is None or known.get('definition') != definition_digest(case) or (\n"
+                 "            declared is None and known.get('files') is None):",
+                 "    if known is not None and (known.get('definition') != definition_digest(case) or (\n"
+                 "            declared is None and known.get('files') is None)):",
+                 ['select/new-case-always-selected'], dir='scripts')
+    selection267('selection267-record-omits-a-reason', 'mutation_selection.py',
+                 "entries[case['identity']] = {'selected': bool(reasons), 'reasons': reasons}",
+                 "entries[case['identity']] = {'selected': bool(reasons), 'reasons': reasons[:1]}",
+                 ['select/recompute-agrees'], dir='scripts')
+    selection267('selection267-lander-drops-the-base-hand-off', 'lander.py',
+                 'bind_refs=True, base=c["watermark"])', 'bind_refs=True)',
+                 ['landing/gate-selects-against-the-watermark'])
+    selection267('selection267-worker-reports-every-mutant-killed', 'check_gate_mutations.py',
+                 '        return validate_result(record, case)\n    except Refused as error:\n        raise Refused(CANARY',
+                 '        return record\n    except Refused as error:\n        raise Refused(CANARY',
+                 ['canary/broken-worker-reds-stage'], dir='scripts')
+    selection267('selection267-coordinator-skips-canaries-on-empty', 'check_gate_mutations.py',
+                 "    chosen = {i for i, e in record['cases'].items() if e['selected']} | canaries\n",
+                 "    chosen = {i for i, e in record['cases'].items() if e['selected'] and e['reasons'] != ['canary']}\n"
+                 "    chosen |= canaries if chosen else set()\n"
+                 "    canaries = canaries & chosen\n",
+                 ['canary/empty-selection-runs-canaries'], dir='scripts')
+    selection267('selection267-canary-list-emptied', 'mutation_selection.json',
+                 '  "canaries": [\n    "check_review_mutations.py:17",',
+                 '  "canaries": [],\n  "canaries_removed": [\n    "check_review_mutations.py:17",',
+                 ['canary/declaration-valid'], dir='scripts')
+    selection267('selection267-trigger-list-drops-mutation-selection', 'mutation_selection.json',
+                 '    "scripts/mutation_selection.py",\n', '',
+                 ['trigger/every-group-forces-full'], dir='scripts',
+                 also=[['    "scripts/mutation_*",\n', '']])
+    selection267('selection267-age-bound-skipped', 'mutation_selection.py',
+                 '        if started - finished > limit:', '        if False:',
+                 ['trigger/nightly-stale'], dir='scripts')
+    selection267('selection267-runner-skips-lock', 'mutation_nightly.py',
+                 '    fcntl.flock(fd, fcntl.LOCK_EX)\n', '    pass\n',
+                 ['nightly/waits-for-lock-then-sweeps'], dir='scripts', companions=['mutation_selection.py'])
+    selection267('selection267-red-sweep-publishes-coverage', 'mutation_nightly.py',
+                 '            if green:\n                try:\n                    published = coverage_map(',
+                 '            if True:\n                try:\n                    published = coverage_map(',
+                 ['nightly/red-record-names-case'], dir='scripts', companions=['mutation_selection.py'])
+    selection267('selection267-landing-reads-only-green', 'mutation_selection.py',
+                 'without approval."""\n    records = sweeps(state)\n',
+                 "without approval.\"\"\"\n    records = [r for r in sweeps(state) if r['verdict'] == 'green']\n",
+                 ['landing/red-blocks'], dir='scripts')
+    selection267('selection267-self-approval-accepted', 'policy_check.py',
+                 '            continue  # self-approval: the approver produced the work',
+                 '            pass  # self-approval: the approver produced the work',
+                 ['landing/self-approval-does-not-clear'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
