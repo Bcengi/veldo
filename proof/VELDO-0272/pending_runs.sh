@@ -1,34 +1,30 @@
 #!/usr/bin/env bash
-# VELDO-0272 runs, each under the shared gate lock (scripts/gate_host.json). Run from the worktree root.
-# Logs go to proof/VELDO-0272/runs/<name>.log; the last line of each log is the command's exit code.
+# VELDO-0272 fix round 1: the runs the gate lock did not allow (2026-11-07). The lead runs this script
+# already inside the shared gate lock, so it takes no lock itself. Run from the worktree root.
+# Each step logs to /tmp (never into the repository) and appends one line to
+# proof/VELDO-0272/pending-summary.txt: name, exit code, and the failing row names (or "none").
 set -u
 cd "$(git rev-parse --show-toplevel)"
-LOCK="$HOME/.local/state/core-gates/.gate.lock"
-OUT=proof/VELDO-0272/runs
-mkdir -p "$OUT"
+SUMMARY=proof/VELDO-0272/pending-summary.txt
 
-run() {
+step() {
   local name="$1"; shift
-  echo "== $name: $*"
-  flock -x "$LOCK" "$@" > "$OUT/$name.log" 2>&1
+  local log="/tmp/v272-pending-$name.log"
+  "$@" > "$log" 2>&1
   local code=$?
-  echo "exit $code" >> "$OUT/$name.log"
-  echo "   exit $code"
+  local failing
+  failing=$(grep -E '^ *SELFTEST FAIL: ' "$log" | sed -E 's/^ *SELFTEST FAIL: //' | paste -sd ';' -)
+  echo "$name exit $code failing: ${failing:-none} (log $log)" >> "$SUMMARY"
 }
 
-# The new suite and its falsifiers with the gate's mutation driver.
-run suite-129 python3 scripts/selftest.py --suite 129_veldo_0272_approval_scope
-run teeth-272 python3 scripts/check_teeth_mutations.py --finding 272
+# The four landing suites whose fixtures fix round 1 changed (F7). In 101 the two sandbox rows
+# (sandbox/unavailable-refuses-before-exec, sandbox/old-abi-refuses-before-exec) are inherited reds on
+# main and are expected to fail; every other row is expected to pass.
+step suite-67_veldo_0056_candidates python3 scripts/selftest.py --suite 67_veldo_0056_candidates
+step suite-69_veldo_0058_gate_output python3 scripts/selftest.py --suite 69_veldo_0058_gate_output
+step suite-86_veldo_0148_re_land python3 scripts/selftest.py --suite 86_veldo_0148_re_land
+step suite-101_veldo_0208_landing_reuse python3 scripts/selftest.py --suite 101_veldo_0208_landing_reuse
 
-# Suites that read init_scaffold's asset list as a whole (not only "rel in scaffold._FILES") or load the
-# reporter that now loads landed_summary.py beside it.
-for s in 01_warp_0101_reviewer_notes 26_veldo_0009_install_stamp 66_veldo_0047_authority \
-         72_veldo_0128_reports 86_veldo_0168_text 86_veldo_0189_engine_upgrade 101_veldo_0208_landing_reuse \
-         110_veldo_0143_new_project; do
-  run "suite-$s" python3 scripts/selftest.py --suite "$s"
-done
-
-# Landing and candidate suites named in the README as possibly affected by landing_without_review.
-for s in 67_veldo_0056_candidates 69_veldo_0058_gate_output 70_veldo_0057_landing 86_veldo_0148_re_land; do
-  run "suite-$s" python3 scripts/selftest.py --suite "$s"
-done
+# Not asked for, added as a check: the landing suite that pushes through the policy check and passed
+# before fix round 1, whose rule changed (review judged per spec, F5).
+step suite-70_veldo_0057_landing python3 scripts/selftest.py --suite 70_veldo_0057_landing

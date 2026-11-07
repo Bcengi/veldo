@@ -66,15 +66,70 @@ The lead added `scripts/suites/manifest.json`, `scripts/suites/requires.json`, `
 
 ## Rows and outcomes
 
-PENDING. The shared gate lock (`~/.local/state/core-gates/.gate.lock`) was held for the whole 20 minute
-allowance on 2026-11-07, so nothing was run after the move; only a parse of the suite and the driver and a
-baseline materialization of the five cases (anchors found once each). `proof/VELDO-0272/pending_runs.sh`
-holds the runs, each under `flock` on that lock, logging to `proof/VELDO-0272/runs/`:
-`selftest.py --suite 129_veldo_0272_approval_scope`, `check_teeth_mutations.py --finding 272`, the suites
-that read the scaffold's asset list as a whole or load the reporter (01, 26, 66_0047, 72_0128, 86_0168,
-86_0189, 101, 110) and the landing and candidate suites 67_0056, 69_0058, 70_0057, 86_0148. The other
-suites that read `scaffold._FILES` only test membership of their own modules, which an added entry
-cannot change.
+First start (the lead's run before fix round 1, logs not committed): 129 43/0, teeth 272 5/5, 01, 26,
+66_0047, 70_0057, 72_0128, 86_0168, 86_0189, 110 all 0 failed; 67_0056 7, 69_0058 10, 86_0148 25 and 101 4
+failed (check of 2026-11-07, F7).
+
+Fix round 1 (2026-11-07, under `flock -w` on the shared gate lock, logs under /tmp):
+
+- `selftest.py --suite 129_veldo_0272_approval_scope`: 51 passed, 0 failed (exit 2 is the partial-run
+  exit); a second run with `VELDO_0272_DETAILS=1` showed every new row observed green.
+- `check_teeth_mutations.py --finding 272`: registered 17, executed 17, rejected 17, exit 0.
+- 67_0056, 69_0058, 86_0148, 101: PENDING. The lock was taken by another job at 08:20 and not released
+  within the 20 minute allowance. `proof/VELDO-0272/pending_runs.sh` holds them as exact commands with no
+  lock (the lead runs it inside the lock); each step logs to /tmp and appends one line with its failing
+  row names to `proof/VELDO-0272/pending-summary.txt`. It also runs 70_0057 as an added check, since the
+  review rule it pushes through changed. `bash -n` on it: clean. Expected in 101: the two sandbox rows
+  (sandbox/unavailable-refuses-before-exec, sandbox/old-abi-refuses-before-exec) fail as they do on main
+  (646b2d68, d49581b4; check F7); they are inherited and not fixed here.
+
+## Fix round 1 (check of 2026-11-07, NOT SOUND)
+
+- F1 (`.veldo/policy_check.py` `push_range`, `_flag_state`, `_lowers`, `lowered_flags`): a lowering is
+  judged by spec id, never by path, (1) between the push base (rev-list --boundary over the same range
+  specs) and HEAD and (2) per commit against every parent, merges included. States are required,
+  not_required, absent, unreadable; a lowering is a now-state that is not required where a before-state is
+  required or unreadable (a base value that cannot be read counts as required) and no before-state already
+  is that state (a merge taking a landed state from one side lowers nothing itself). The approval must
+  scope every file the spec had on both sides. Rows `AC3 lowered/rename`, `two-step` (break only; a base
+  that cannot be read; both steps in one push), `delete-re-add` (delete only; delete then re-add under
+  another name), `merge` (spec added in the range; spec at the base).
+- F2 (`_identities`, `_self_review`): no producer recorded refuses every review; reviewer and producer are
+  compared as normalized identities (whitespace collapsed, case folded; a mapping or list by every string
+  it holds). Row `AC3 review/producer-identity`.
+- F5 (main): every spec the push carries needs the review, whatever else the push carries; a spec the rule
+  computes as required also needs an owner approval (`owner_approved`: bound to a commit in the push, not
+  self approved, naming the spec by scope.spec_id or covering its spec file), never one instead of the
+  other. Row `AC3 review/per-spec`. Decision for the reviewer: a spec whose status at HEAD is draft is not
+  judged by this loop. A draft lands no work and cannot carry proof (the ready boundary refuses one), so no
+  verdict can bind to it; suite 67's factory commits a draft follow-up spec with each build. Skipping it
+  opens nothing that a push changing no spec file does not already reach; an unreadable spec is not a
+  draft and is judged.
+- F3, F4 (`.veldo/landed_summary.py`): every first-parent commit of the day is listed: one landing per
+  ticket its subject names (uppercase id, the first one), and each merge or commit naming no ticket under
+  its subject and short commit. A commit is credited to a ticket only by an id its subject names. The
+  approval flag is `policy_check.effective_flag` with the policy at the landed commit, or required when the
+  landing touched a protected path or either cannot be read; approvers are listed whenever an approved
+  record binds to the landing; the reviewer is the one of the verdict the push check accepts (spec, bound
+  commit, digest, no blocking findings, not self). Rows `AC4 summary/every-landing`, `judged-fields`; the
+  AC4 fixture now commits manifests and digest-bound verdicts.
+- F7: suites 67_0056, 69_0058, 86_0148: fixture specs get `footprint: ["src/**"]`, and every build commits
+  `proof/<id>/verdict-r1.json`, verdict pass, bound to the implementation commit and the manifest digest,
+  reviewer a string that is not the producer (69's old mapping reviewer without a digest is replaced). Suite
+  101: the `protected_patterns()` half of `unconfined-leg/list-is-protected` and
+  `dispatcher-is-protected` is dropped (AC1 removes those paths by design); the VELDO-0208 front matter half
+  and the listed-suites half stay.
+- F6 (landing step, not done here): at landing, `approval_scope.from_commit` in `.veldo/policy.yaml` is
+  re-pointed to the landing commit of VELDO-0272 (AC1: "records the commit that lands this spec"), with the
+  owner's approval since policy.yaml is protected. Until then it names ed0c995f.
+
+Twelve falsifiers added to finding 272 (each anchor occurs once): `scope272-lowering-keyed-by-path`,
+`scope272-unreadable-base-not-required`, `scope272-unreadable-head-not-lowered`,
+`scope272-deleted-not-lowered`, `scope272-merges-skipped` (F1); `scope272-missing-producer-passes`,
+`scope272-identity-compared-raw` (F2); `scope272-review-skipped-when-protected`,
+`scope272-review-skipped-when-required` (F5); `scope272-unnamed-landings-dropped`,
+`scope272-declared-flag-shown`, `scope272-any-reviewer-shown` (F3, F4). The anchor of
+`scope272-reviewer-comparison-skipped` follows the new call.
 
 ## Falsifiers, red then green
 
@@ -92,20 +147,18 @@ In-suite mutations, each with its baseline green and the mutant red in the same 
 
 ## Still open
 
-- The runs in `pending_runs.sh` (gate lock not free).
+- The runs in `pending_runs.sh` (gate lock not free), then `pending-summary.txt`.
 - The daily_landed send is not wired to the channel tick: `control_service_channel.py` (outside the
   footprint) must call `Reporter.report_daily(day, root, hour)` with the owner's configured hour, and the hour
   needs a configuration home. Until then the file path is the summary, as the spec allows.
-- `approval_scope.from_commit` names the branch base ed0c995f. The spec says it records the commit that
-  lands VELDO-0272; the landing should re-point it (policy.yaml is protected, so with the owner's approval).
-  A spec added on main after ed0c995f and before the landing is in scope until then.
-- Behaviour other suites may observe (not run here; the lead's gate decides): (1) `landing_without_review`
-  refuses any push carrying a not-required spec or proof bundle with no bound, digest-matching review; the
-  landing and candidate suites (e.g. 67_veldo_0056_candidates, 69_veldo_0058_gate_output,
-  70_veldo_0057_landing, 86_veldo_0148_re_land) may push such fixtures. (2) In a repository whose policy has
-  no `approval_scope` (every scaffolded one), every spec is in scope, so a fixture spec that declares
-  not_required with no footprint is refused; 16 suites write `human_approval: not_required` fixtures. Fixing
-  either is outside the footprint.
+- Landing step F6: re-point `approval_scope.from_commit` to the landing commit (above). The landing's
+  owner approval must also name VELDO-0272 itself (scope.spec_id, or its spec file in scope.paths): it is a
+  required spec, and a required spec now needs the owner approval and the review (F5).
+- Behaviour other suites may observe beyond the four landing suites (the lead's gate decides): every push
+  carrying a spec file or proof bundle now needs a bound, digest-matching review per spec, and an owner
+  approval naming each spec the rule computes as required; a push deleting, breaking or renaming a required
+  spec needs an owner approval scoping its files. In a repository whose policy has no `approval_scope`
+  (every scaffolded one), every spec is in scope; 16 suites write `human_approval: not_required` fixtures.
 - Proof bundles here mostly carry no manifest.json (VELDO-0261 has none), so under AC3 (b) a not-required
   landing needs a manifest for its verdict to bind a digest.
 - A push that changes no spec file and no proof bundle has no spec to review, so (b) asks nothing of it.
