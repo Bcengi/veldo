@@ -192,15 +192,16 @@ def approval_scope(repo_root=None):
 
 
 def approval_in_scope(path, repo_root=None):
-    """Is this spec judged by the computed flag? Out of scope only when the start line resolves and
-    the file was first committed at or before it; uncommitted, unreadable or later is in scope."""
+    """Is this spec judged by the computed flag? A file outside the repository is not one of its specs
+    and is not judged. Inside it, out of scope only when the start line resolves and the file was first
+    committed at or before it; uncommitted, unreadable or later is in scope."""
     root = Path(repo_root or ROOT).resolve()
-    _pats, _start, before, added = approval_scope(root)
-    if before is None:
-        return True
     try:
         rel = Path(path).resolve().relative_to(root).as_posix()
     except ValueError:
+        return False
+    _pats, _start, before, added = approval_scope(root)
+    if before is None:
         return True
     commits = added.get(rel)
     if commits is None:
