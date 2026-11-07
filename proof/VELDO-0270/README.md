@@ -26,7 +26,7 @@ waits, so the remaining runs are in `pending_runs.sh` (bash -n: exit 0). The ful
 timing sensitive, discarded name/bytes/sha256, deciding), `summarize_mutation_receipt`,
 `summarize_gate_transcript` and mode `gate-summary <transcript> <out>` (the gate transcript
 capture). `check_gate_mutations.py` (and engine copy) and `check_teeth_mutations.py` gain
-`--summary`; `parser_corpus_audit.py` and `writer_corpus_audit.py` write counts and differing
+a summary option; `parser_corpus_audit.py` and `writer_corpus_audit.py` write counts and differing
 entries through `write_summary`; `proof/VELDO-0123/drive.py` writes a per case summary.
 
 ## AC3: files over the limit replaced (built)
