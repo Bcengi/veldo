@@ -205,6 +205,34 @@ inside; the lead runs it inside the lock; `bash -n`: clean) runs 129_veldo_0272,
 and appending one line (exit code and failing row names, or the mutation receipt line) to
 `proof/VELDO-0272/pending-summary.txt`. Expected in 101: only the two inherited sandbox rows red.
 
+## Fix round 4 (fix check 2 of 2026-11-07, NOT SOUND: M1 and the loose-file leftover)
+
+- M1 (`.veldo/policy_check.py` `lowered_flags` and `_lowers`): the N1 fix judged every commit whose parent
+  lay outside the range against the trunk tip, so a branch cut before trunk added or raised a required spec
+  was refused as a lowering after an honest merge of main. Now each commit is judged only for the spec ids
+  it changed against its REAL parents, and against those parents; a lowering is a value lower than the value
+  on every parent that has the spec (a parent where it is absent is no value; required or unreadable counts
+  as required). The push base judgment (HEAD against the protected ref's tip) is unchanged and is what
+  refuses a merge from a pre-raise branch that keeps the old value.
+- Leftover: only a spec file or a file of a spec's proof bundle is exempt from N3; `specs/tool.sh` or
+  `proof/tool.py` is work and needs a reviewed spec. Consequence for the lead: a push carrying only a loose
+  proof file (for example `proof/batch-*/approval-*.json`) or only `specs/index.md` now needs a covering spec.
+- Suite 129: new row `AC3 lowered/honest-trunk-merge` (trunk adds a required spec after the fork, the
+  branch merges main and lands reviewed work: 0; the same when trunk raised a spec: 0; rename, two-step,
+  delete and re-add, both merge cases and both pre-raise merges still refused). `AC3 lowered/old-base-merge`
+  gains the merge made on a feature branch cut from the tip (1). `AC3 review/covered` gains the loose files
+  (1). The engine copy is byte-identical.
+- Falsifiers (finding 272, now 27): `scope272-lowering-judged-against-tip` (an outside parent judged as the
+  tip; reds `lowered/honest-trunk-merge`), `scope272-loose-file-exempt` (any file under specs/ or proof/
+  exempt; reds `review/covered`). `scope272-unreadable-base-not-required` moved with the code;
+  `scope272-lowering-any-ancestor` keeps only its push_range mutation (the per-commit anchor is gone).
+
+Runs (inside the gate lock): 129_veldo_0272 green (31 rows, 0 failed); 01_warp_0101 green (611 rows, 0
+failed). PENDING: the lock was held by another job from about 14:25 to 14:43 and the 20 minute waiting
+allowance ran out. `proof/VELDO-0272/pending_runs.sh` (no lock inside; `bash -n`: clean) runs
+`check_teeth_mutations.py --finding 272`, 67_0056, 69_0058, 70_0057, 86_0148 and 101_0208, logging under
+/tmp and appending one line each to `proof/VELDO-0272/pending-summary.txt`.
+
 ## Falsifiers, red then green
 
 Red (first start, the staged suite before its move and the module-tree change; not re-run since): the staged suite run against the base tree (`git archive ed0c995f`, the ready commit) fails 16 of its
