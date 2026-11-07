@@ -26,6 +26,9 @@ footprint:
   - "specs/VELDO-0276-contract-files-move-to-toml-read-by-tomllib.md"
   - "specs/index.md"
   - "proof/VELDO-0276/**"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -121,3 +124,5 @@ and its files; render_pdfs.py.
 VELDO-0277 because the front matter migration touches every spec. A draft; needs the owner.
 
 2026-11-07: ready. Owner approved, Telegram 39756 ("Yes" to 39755, which described both halves).
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).

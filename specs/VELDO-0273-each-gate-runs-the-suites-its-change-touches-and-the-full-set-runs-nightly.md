@@ -28,6 +28,8 @@ footprint:
   - "specs/VELDO-0273-each-gate-runs-the-suites-its-change-touches-and-the-full-set-runs-nightly.md"
   - "specs/index.md"
   - "proof/VELDO-0273/**"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -158,3 +160,5 @@ machinery (VELDO-0279 deletes it); core's gate.
 the agreed item (Telegram 39690 to 39692). A draft.
 
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).

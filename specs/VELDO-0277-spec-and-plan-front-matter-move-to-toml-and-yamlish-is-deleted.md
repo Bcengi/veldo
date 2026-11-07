@@ -23,6 +23,9 @@ footprint:
   - "packs/**"
   - "scripts/suites/**"
   - "proof/VELDO-0277/**"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -130,3 +133,5 @@ Core's specs and engine; render_pdfs.py and site/book.yaml; the meaning of any f
 VELDO-0276. A draft; needs the owner.
 
 2026-11-07: ready. Owner approved, Telegram 39756 ("Yes" to 39755, which described both halves).
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
