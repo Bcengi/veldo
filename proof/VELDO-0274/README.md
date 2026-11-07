@@ -1,9 +1,12 @@
 # VELDO-0274 proof: the 0127 factory removes every slice it creates
 
-Status: built, NOT yet run. The one batch that would run every suite and falsifier waited about 2 hours
-for the core-gates lock (/home/dmitry/.local/state/core-gates/.gate.lock) and was stopped by the session's
-time limit before it got the lock. No row outcome and no falsifier result has been observed. Nothing below
-claims a red or a green.
+Status: run by the lead under the gate lock on 2026-11-07 at 00c77d58
+(proof/VELDO-0274/lead-run-2026-11-07.md). All suites were green, and five of the six falsifier cases
+behaved as expected. exit-skips-stop also turned slices/sweep-dead red, so its targets now include that row
+(see Falsifiers). Two runs are still owed: that case again with the corrected targets, and
+`selftest.py --suite 129_veldo_0274_factory_slices` now that requires.json has a closure for 129. The second
+session waited 20 minutes for the lock (09:52 to 10:12Z) and never got it. Both runs are in
+proof/VELDO-0274/pending_runs.sh and neither has been observed.
 
 ## What was built, per AC
 
@@ -47,7 +50,10 @@ Each case copies the checkout without .git, applies one exact replacement, runs 
 through selftest (VELDO_SUITE_ORDER plus --upto), and prints one JSON line. The anchors were checked:
 each one occurs exactly once.
 
-- exit-skips-stop (AC1): `__exit__` drops its stop call. Expected red: slices/return, slices/raise.
+- exit-skips-stop (AC1): `__exit__` drops its stop call. Expected red: slices/return, slices/raise,
+  slices/sweep-dead. The sweep-dead row's 'enter' child also leaves the factory, whose exit now raises
+  SliceLeft, so that child exits nonzero and the row's `code == 0` check is red. sweep-live has no
+  exit-code check and stays green. The lead's run showed exactly these three rows red.
 - no-signal-handler (AC2.1): `signal.signal(n, self._interrupted)` becomes `signal.getsignal(n)`.
   Expected red: slices/sigterm.
 - sweep-ignores-liveness (AC2.2): the sweep condition drops `not live(pid)`. Expected red:
@@ -57,15 +63,14 @@ each one occurs exactly once.
   then 129. Expected red: slices/end-of-run.
 - baseline and baseline-88: no mutation. Expected all green.
 
-Red then green: NOT OBSERVED (the run never got the lock). The commands to run are in
-/tmp/v274-runs/batch.sh: suites 86, 88, 89 and 90 each with --suite, then 129, then falsify.py with all
-cases. Run them under the gate lock.
+Red then green: observed by the lead (lead-run-2026-11-07.md). exit-skips-stop with the three targets is
+not yet observed; see pending_runs.sh.
 
 ## Open: needs a change outside the footprint (not made)
 
-1. scripts/suites/requires.json (derived, held fresh by check_generated.sh) has no closure for 129. As a
-   result, `selftest.py --suite 129_veldo_0274_factory_slices` refuses, and check_generated goes red until
-   someone runs `python3 scripts/run_scope.py --emit-requires`.
+1. Resolved: requires.json joined the footprint at 0dfa2188. It was regenerated with
+   `python3 scripts/run_scope.py --emit-requires`, and the only change is the new entry for 129 (its closure
+   is itself, from manifest.json). No other entry changed.
 2. "Registered mutation" means cases in scripts/check_teeth_mutations.py, which is outside the footprint.
    The four cases exist only in falsify.py.
 3. scripts/gate_unconfined.json (protected) does not list 129. In the gate's confined leg there is no
