@@ -1765,6 +1765,15 @@
    ],
    "regions": "A project's landing destination (VELDO-0235): a record without the field reading as land_and_push and landing to the remote, never rewritten; the owner's signed set_landing_destination accepted and recorded with the old and new value and his command id, any other value, another key's signature, another principal and an unsigned command refused writing nothing; land_locally through the land station moving the caller's local main to the candidate by compare-and-swap with the receipt and spec.shipped, the bare origin byte for byte unchanged and no push, fetch or ls-remote logged; a local main moved after the watermark refused as trunk_moved, kept, and re-landed; the owner's grant brief naming the destination in words; a destination changed after the grant refused as stale_subject:landing/destination, asked again and landed after the fresh grant bound to it; land_and_push, set or absent, with today's effect contract, executor push, remote re-read and receipt.",
    "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
+  },
+  {
+   "name": "129_veldo_0272_approval_scope",
+   "file": "129_veldo_0272_approval_scope.py",
+   "requires": [
+    "129_veldo_0272_approval_scope"
+   ],
+   "regions": "Owner approval narrowed to money, authentication and security, schema and irreversible infrastructure (VELDO-0272): protected_paths exactly the Design section's kept and added lists with high floors, high no longer needing the owner and critical still needing it, approval_scope.from_commit a commit here; a push touching only test machinery needing no approval and one touching authorization needing it; the computed approval flag refusing a spec declared below its footprint or risk areas after the start commit and accepting one committed before it; a lowered flag with no owner approval refused, a not-required landing refused without a bound, digest-matching review by someone other than the producer, and merge_ready refusing a declared flag below the rule; the daily landed summary file and the report's daily_landed text byte-identical, with an empty day as one line.",
+   "requires_note": "Only ROOT and expect. Real Git scratch repositories with the real .veldo/policy.yaml, the real policy_check.main(), validate.check_approval_scope, executor.merge_ready, landed_summary.write_day and the reporter's render; the modules under test run from a temporary copy of .veldo/ so the mutation driver's copy is the one loaded. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {

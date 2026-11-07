@@ -2,13 +2,12 @@
 infrastructure; routine work lands on a green gate and a recorded independent review; the owner gets a daily
 summary of what landed.
 
-STAGED, NOT REGISTERED. This file belongs at scripts/suites/129_veldo_0272_approval_scope.py, but a suite file
-there must also be enumerated in scripts/suites/manifest.json and requires.json (selftest refuses an
-unenumerated file with SUITE_NOT_ENUMERATED), and both are outside VELDO-0272's footprint. It runs in the
-shared namespace exactly as selftest runs a fragment (only ROOT and expect are consumed).
-
-Each declared falsifier is a row that applies the mutation to a temporary copy (the policy rows, or a copy of
-.veldo/ with one module changed), checks the unmutated baseline is green and the mutant red. Real Git
+Only ROOT and expect are consumed. Each declared falsifier is registered twice: with the gate's mutation
+driver (scripts/check_teeth_mutations.py, finding 272), which hands this suite a mutated copy of
+.veldo/policy.yaml, policy_check.py or landed_summary.py through the three file names below, and as an in-suite
+row that applies the mutation to a temporary copy and checks the baseline green and the mutant red. The
+modules under test always run from a temporary .veldo tree (every .veldo/*.py and policy.yaml copied, the one
+named file taken from its path below), so a mutant the driver supplies is the module the rows load. Real Git
 throughout: scratch repositories with the real .veldo/policy.yaml, real commits, real policy_check.main().
 """
 
@@ -55,9 +54,13 @@ def _v272_suite():
                 if row.startswith(prefix):
                     check(row, 'ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
 
+    # The files the gate's mutation driver may replace (its anchors; written once each, in this form only).
+    POLICY_FILE = ROOT / ".veldo" / "policy.yaml"
+    PC_FILE = ROOT / ".veldo" / "policy_check.py"
+    LS_FILE = ROOT / ".veldo" / "landed_summary.py"
     GP = load('v272_git_process', ROOT / '.veldo' / 'git_process.py')
     Y = load('v272_yamlish', ROOT / '.veldo' / 'yamlish.py')
-    POLICY_TEXT = (ROOT / '.veldo' / 'policy.yaml').read_text()
+    POLICY_TEXT = Path(POLICY_FILE).read_text()
 
     def git(root, *args, date=None):
         if date:
@@ -95,14 +98,23 @@ def _v272_suite():
         write(root, 'README.md', 'fixture\n')
         return root
 
-    def mutant_tree(base, name, module, old, new):
-        """A copy of .veldo/*.py with one module changed; returns its .veldo directory, or None when the
-        anchor is absent (a mutation that cannot apply is a red row, never a silent pass)."""
+    def module_tree(base, name, overlay):
+        """A copy of .veldo/*.py and policy.yaml with `overlay` (file name: source path) laid over it; returns
+        its .veldo directory. The modules under test load their siblings beside themselves and from their
+        ROOT's .veldo, so they run from such a tree."""
         tree = Path(base) / name / '.veldo'
         tree.mkdir(parents=True)
         for source in (ROOT / '.veldo').glob('*.py'):
             shutil.copyfile(source, tree / source.name)
         shutil.copyfile(ROOT / '.veldo' / 'policy.yaml', tree / 'policy.yaml')
+        for file_name, source in overlay.items():
+            shutil.copyfile(source, tree / file_name)
+        return tree
+
+    def mutant_tree(base, name, module, old, new):
+        """A copy of .veldo/*.py with one module changed; returns its .veldo directory, or None when the
+        anchor is absent (a mutation that cannot apply is a red row, never a silent pass)."""
+        tree = module_tree(base, name, {})
         text = (tree / module).read_text()
         if old not in text:
             return None
@@ -145,7 +157,7 @@ def _v272_suite():
     added = set(PATH.findall(block('Protected paths added', 'Schema and irreversible')))
     expected = kept | added | {'engine/' + p for p in added}
     forbidden = removed | {'engine/' + p for p in removed}
-    policy = Y.read(ROOT / '.veldo' / 'policy.yaml')
+    policy = Y.read(Path(POLICY_FILE))
 
     def lists_match(rows_):
         paths = [r.get('path') for r in rows_]
@@ -176,8 +188,9 @@ def _v272_suite():
           not lists_match([r for r in prot if r.get('path') != '.veldo/policy_check.py']))
 
     def exercise(base):
-        P = load('v272_policy_check', ROOT / '.veldo' / 'policy_check.py')
-        V = load('v272_validate', ROOT / '.veldo' / 'validate.py')
+        pc_tree = module_tree(base, 'pc', {'policy_check.py': PC_FILE})
+        P = load('v272_policy_check', pc_tree / 'policy_check.py')
+        V = load('v272_validate', pc_tree / 'validate.py')
 
         with section('AC1 push'):
             # AC1 push rows: a test machinery path needs nothing; an authentication path needs the owner.
@@ -225,8 +238,6 @@ def _v272_suite():
                 return results
 
             under_scripts = [p for p in P.protected_patterns() if p.startswith('scripts/')]
-            P2 = load('v272_policy_check_roots', ROOT / '.veldo' / 'policy_check.py')
-            P2.ROOT = ROOT
 
             def fixture2_ok(res):
                 errs, out = res[2]
@@ -396,8 +407,9 @@ def _v272_suite():
             def registry_ok(t1, message):
                 return message == t1 and 'reviewer rev-a' in message
 
-            LS = load('v272_landed', ROOT / '.veldo' / 'landed_summary.py')
-            TR = load('v272_report', ROOT / '.veldo' / 'control_telegram_report.py')
+            ls_tree = module_tree(base, 'ls', {'landed_summary.py': LS_FILE})
+            LS = load('v272_landed', ls_tree / 'landed_summary.py')
+            TR = load('v272_report', ls_tree / 'control_telegram_report.py')
             t1, t2, t0, message = summary_rows(Path(base) / 's', LS, TR)
             check('AC4 summary/file', 'day one lists exactly the three with their fields, day two one, an empty day one line '
                   '[%r]' % t1[:300], file_ok(t1, t2, t0))
