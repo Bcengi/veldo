@@ -1,20 +1,9 @@
-# VELDO-0278 build, second start: AC1 and AC2 built, AC3 built except the handoff removal (blocked)
+# VELDO-0278 build, third start: AC1, AC2 and AC3 built
 
-Branch agent/claude/veldo-0278, built on be8a44ad without VELDO-0267 and VELDO-0271. The first start's
-footprint report is superseded by this file (it is at 052a20a1).
-
-## Blocker: AC3's handoff removal needs a suite outside the footprint
-
-AC3 says gate_legs.py, gate_schedule.py and their engine copies drop the unit stage's measured-seconds
-handoff (VELDO-0214). scripts/suites/114_veldo_0216_concurrent_stages.py tests that handoff and is NOT
-in the footprint (the footprint names 114_veldo_0220_gate_scope.py, a different file). Its rows
-integration-waits-for-unit-without-measurement and integration-beside-measured-unit assert the
-"integration: <leg> leg budget input" lines and the wait on the unit leg; measurement-record-race and
-timing-store-refusal call gate_legs.record_time and read_times (the handoff's store). Dropping the
-handoff reddens them, so per the build instruction that part was stopped and NOT built:
-gate_legs.py, gate_schedule.py and both engine copies are unchanged, and verify.sh still unsets
-VELDO_GATE_UNIT_SECONDS. Needed: add scripts/suites/114_veldo_0216_concurrent_stages.py to the
-footprint (its four rows above drop with the handoff). The rest of AC3 is built and does not depend on it.
+Branch agent/claude/veldo-0278. The second start stopped on two points; the lead answered both in
+8ce24d17 (spec History, 2026-11-07): AC1's gate row runs only a one-fragment fixture parked set and
+the real eight run once as proof evidence, and suite 114_veldo_0216 joined the footprint so the
+VELDO-0214 handoff could be removed. Both are built in this start (commit 046872cd).
 
 ## AC1: the estimation suites leave the gate (built)
 
@@ -29,20 +18,25 @@ footprint (its four rows above drop with the handoff). The rest of AC3 is built 
   in Xs (not a gate result)", and "verify stamp: refused (PARTIAL_RUN_CANNOT_VERIFY)".
 - In the parked copies: 1409's "only fragment naming cost_to_change" row now globs scripts/suites and
   scripts/parked/estimation; 111 loads check_first_use.py from its parked path.
-- Rows (suite 129): parked/unit-list-excludes-estimation, parked/command-runs-the-eight-green,
-  parked/no-gate-pass. Off-suite pre-check (shared namespace, parked run stubbed): the first green;
-  the other two need the real parked run, PENDING.
+- Rows (suite 129): parked/unit-list-excludes-estimation and parked/no-gate-pass. The gate row runs
+  `--parked estimation` only over a one-fragment fixture tree (a copy of selftest.py and run_scope.py
+  with a fixture parked manifest): exit 2, "verify stamp: refused (PARTIAL_RUN_CANNOT_VERIFY)", no
+  aggregate line, the parked summary line. The real-eight row (parked/command-runs-the-eight-green)
+  is gone from the suite, so suite 129 runs in seconds: third start, without the lock,
+  `python3 scripts/selftest.py --suite 129_veldo_0278_parked_estimation`: 6 passed, 0 failed in 0.39s.
+- Proof evidence, run once (PENDING, in pending_runs.sh): `python3 scripts/selftest.py --parked
+  estimation`, each of the eight 0 failed. Expected exit 1, not 2: parked suite 111 tests only the
+  VELDO-0214 handoff, which AC3 removed, so it now reports one red row
+  ("VELDO-0214 first-use-budget/handoff-present ... removed by VELDO-0278") instead of raising and
+  cutting off the summary. The eight are judged on their own per-suite lines.
 - Falsifier: case parked278-stamp-allowed (selftest.py, the parked scope built with selector None).
-  Driven by hand on a fixture tree: baseline exit 2 and "verify stamp: refused"; mutant exit 0 and
-  "verify stamp: ALLOWED", which the no-gate-pass row rejects. Registered drive PENDING.
-- Note: a full by-hand parked run started before the edits finished and overlapped them, so its one
-  red row (1402 AC5, verify.sh still named the moved file at that instant) is not evidence; the
-  condition re-evaluated on the committed tree is true. That overlapped run finished at 513 passed,
-  2 failed in 595 s: the 1402 row above and 1409 AC6 (the same derived-domain row family, plus the
-  1409 glob fixed mid-run). Every other suite of the nine was 0 failed. A clean parked run is PENDING.
-- Cost: 15_warp_1404 alone took 539 s of those 595 s. Because AC1's row runs the parked command,
-  suite 129 adds about 10 minutes to the unit stage. That is what the spec's falsifier asks for,
-  but the lead should weigh it against the time the parking saves.
+  The fixture tree copies the scripts/selftest.py under test, so the mutant reddens
+  parked/no-gate-pass through the fixture alone. Driven by hand in the second start on a fixture
+  tree: baseline exit 2 and "verify stamp: refused"; mutant exit 0 and "verify stamp: ALLOWED".
+  Registered drive PENDING.
+- Earlier evidence (second start): an overlapped by-hand parked run finished at 513 passed, 2 failed
+  in 595 s, both reds caused by edits landing mid-run; 15_warp_1404 alone took 539 s. Not evidence
+  of green; the clean run above is.
 
 ## AC2: no mutation case on an estimation module or a parked suite (built)
 
@@ -59,7 +53,7 @@ eight moved suite files as inputs, which would no longer exist, so they were dro
   materialized by hand, its cases() lists the restored case on judgment_load.py, which the row names.
   Registered drive PENDING.
 
-## AC3: the integration stage leaves the gate (built except the handoff, see blocker)
+## AC3: the integration stage leaves the gate (built)
 
 - verify.sh: CHECK_integration="na:estimation layer parked until a spend source exists, VELDO-0278";
   the catalog now prints every na item as "== <name>: na (<reason>)"; the INTEGRATION comment
@@ -75,14 +69,31 @@ eight moved suite files as inputs, which would no longer exist, so they were dro
   integration/fixture-gate-green-with-na-line (this repository's verify.sh over a stub authority:
   exit 0, GATE: GREEN, the na line with the reason, no integration stage line, stamp green with
   checks_na equal to the na items). Pre-check: all three green.
+- The VELDO-0214 handoff (third start): gate_legs.py and engine/scripts/gate_legs.py drop
+  UNIT_SECONDS, MEASURED_STAGE/BUDGETED_STAGE, read_times, record_time, _record_time_locked,
+  _times_file, measurement, owner_store_refusal, the integration "leg budget input" line, run_stage's
+  times and prior parameters and the --prior-times flag; the docstring's measured-budget sections
+  become one paragraph on the measurement store, which still holds the scheduler's resource
+  measurements (record_resources, read_resources, prune_times, LEG_TIMES unchanged).
+  gate_schedule.py and its engine copy drop write_prior, prior-unit-times.json, the integration
+  wait on the unit leg (awaits_unit), command_for's prior_times and UNIT_SECONDS from the node
+  environment filter. scripts/verify.sh and engine/scripts/verify.sh no longer name
+  VELDO_GATE_UNIT_SECONDS (the env -u list and its comment). Copies identical; check_template_sync
+  pass, check_lint pass. Every registered mutation case on gate_legs.py, gate_schedule.py or
+  verify.sh still finds its text exactly once.
+- Suite 114_veldo_0216: rows integration-waits-for-unit-without-measurement,
+  integration-beside-measured-unit, measurement-record-race and timing-store-refusal removed, with
+  the fixture's record_time seeding and run()'s store parameter. No registered case targets them.
+- Parked suite 111: one guard row (above) when gate_legs.py carries no handoff.
 - Falsifier: case parked278-integration-node-left (gate_graph.json regains integration.confined):
   read_graph refuses it as unknown and the graph row goes red. Registered drive PENDING.
 
-## Pending (gate lock held by a core gate for the full 20 minutes)
+## Pending (gate lock ~/.local/state/core-gates/.gate.lock held by another gate)
 
-Every suite run and the falsifier drive are in proof/VELDO-0278/pending_runs.sh. New suite
-129_veldo_0278_parked_estimation is registered in scripts/suites/manifest.json and requires.json in
-the committed tree.
+Every suite run, the parked all-eight run and `check_teeth_mutations.py --finding 278` are in
+proof/VELDO-0278/pending_runs.sh: the suites edited here, every suite that loads gate_legs.py or
+gate_schedule.py, and every suite that reads or copies verify.sh. Third start: the lock
+was not free in 1200 s of waiting (flock -w 420, 440, 340 on it), so none of these ran here.
 
 ## Inherited, not fixed
 
