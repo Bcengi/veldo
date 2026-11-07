@@ -12291,8 +12291,8 @@ def cases():
         '    if now in ("required", "absent") or now in before:  # defect: deleting a spec is not a lowering',
         ['lowered/delete-re-add'])
     add(272, 'scope272-merges-skipped', scope272, 'policy_check.py',
-        '        if ps:\n            judge(c, ps)',
-        '        if len(ps) == 1:  # defect: a merge commit is not judged\n            judge(c, ps)',
+        '        if befores:\n            judge(c, befores)',
+        '        if befores and len(_parents(c)) == 1:  # defect: a merge commit is not judged\n            judge(c, befores)',
         ['lowered/merge'])
     # Fix round 1, F2: no producer recorded, or identities compared raw.
     add(272, 'scope272-missing-producer-passes', scope272, 'policy_check.py',
@@ -12315,8 +12315,8 @@ def cases():
         ['review/per-spec'])
     # Fix round 1, F3 and F4: the daily summary leaves out a landing, or shows the declared flag or any reviewer.
     add(272, 'scope272-unnamed-landings-dropped', scope272, 'landed_summary.py',
-        '        if len(parents.split()) > 1 or ticket is None:\n            items.append((None, sha, subject))',
-        '        if len(parents.split()) > 1 or ticket is None:\n            continue  # defect: unnamed landings dropped',
+        '        if ticket is None:\n            items.append((None, sha, subject))',
+        '        if ticket is None:\n            continue  # defect: unnamed landings dropped',
         ['summary/every-landing'])
     add(272, 'scope272-declared-flag-shown', scope272, 'landed_summary.py',
         '        if pats is not None and P.effective_flag(fm, pats) == "required":',
@@ -12327,6 +12327,45 @@ def cases():
         '            continue',
         '        if False:  # defect: any passing verdict names the reviewer\n            continue',
         ['summary/judged-fields'])
+    # Fix round 2, N1: the lowering judged against every boundary commit and every parent, not the push base.
+    add(272, 'scope272-lowering-any-ancestor', scope272, 'policy_check.py',
+        '            return commits, [tip]',
+        '            return commits, [tip] + [q for c in commits for q in _parents(c) if q not in commits]'
+        '  # defect: every boundary is a base',
+        ['lowered/old-base-merge'],
+        also=[('            for b in ([p] if p in inside or p in bases else bases):',
+               '            for b in [p]:  # defect: an old trunk parent is a before value')])
+    # Fix round 2, N2: the one approval predicate accepts a missing approver, skips the self-approval test
+    # when the producer cannot be determined, compares identities raw, or the protected-path check takes the
+    # producer from the verdict at HEAD or its parent.
+    add(272, 'scope272-approver-missing-accepted', scope272, 'policy_check.py',
+        '    if not _identities(a.get("approver")):\n        return "names no approver"',
+        '    if False:  # defect: an approval naming no approver counts\n        return "names no approver"',
+        ['approval/identity'])
+    add(272, 'scope272-approval-producer-unknown-skipped', scope272, 'policy_check.py',
+        '        if not _identities(producer):\n            return "the producer cannot be determined"',
+        '        if False:  # defect: no producer skips the self-approval test\n'
+        '            return "the producer cannot be determined"',
+        ['approval/identity'])
+    add(272, 'scope272-approval-identity-raw', scope272, 'policy_check.py',
+        '        if _identities(a.get("approver")) & _identities(producer):',
+        '        if a.get("approver") == producer:  # defect: identities compared raw',
+        ['approval/identity'])
+    add(272, 'scope272-protected-producer-from-head', scope272, 'policy_check.py',
+        '        producer = push_producer(landing_specs(changed_files()))\n        for tf, p in touched:',
+        '        producer = producer_for(_head_spec_id())  # defect: the producer of the verdict at HEAD\n'
+        '        for tf, p in touched:',
+        ['approval/identity'])
+    # Fix round 2, N4 and N5: the summary lists any approver, or merges two same-day runs of one ticket.
+    add(272, 'scope272-approvers-unjudged', scope272, 'landed_summary.py',
+        '        if accepted:',
+        '        if data.get("decision") == "approved" and data.get("approver"):  # defect: any approver listed',
+        ['summary/approvers-judged'])
+    add(272, 'scope272-same-day-runs-merged', scope272, 'landed_summary.py',
+        '        if date != day or continues:',
+        '        if date != day or continues or any(i[0] == ticket for i in items if ticket):'
+        '  # defect: one line per ticket',
+        ['summary/separate-runs'])
     # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
     add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',
         '"- %s %s | gate %s | reviewer %s | approval %s"\n'

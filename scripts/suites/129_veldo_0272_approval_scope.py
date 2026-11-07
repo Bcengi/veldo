@@ -34,8 +34,10 @@ def _v272_suite():
             'AC3 executor/computed-flag',
             'AC3 lowered/rename', 'AC3 lowered/two-step', 'AC3 lowered/delete-re-add', 'AC3 lowered/merge',
             'AC3 review/producer-identity', 'AC3 review/per-spec',
+            'AC3 lowered/old-base-merge', 'AC3 approval/identity',
             'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped',
-            'AC4 summary/every-landing', 'AC4 summary/judged-fields')
+            'AC4 summary/every-landing', 'AC4 summary/judged-fields',
+            'AC4 summary/approvers-judged', 'AC4 summary/separate-runs')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -366,9 +368,11 @@ def _v272_suite():
                     scope['paths'] = paths
                 if spec_id is not None:
                     scope['spec_id'] = spec_id
-                write(repo, 'proof/%s/%s' % (sid, name), json.dumps({
-                    'schema': 'veldo.approval/v1', 'id': 'A-%s' % sid, 'decision': 'approved', 'approver': approver,
-                    'scope': scope, 'recorded_at': '2026-11-07T00:00:00Z', 'expires_at': '2099-01-01T00:00:00Z'}))
+                record = {'schema': 'veldo.approval/v1', 'id': 'A-%s' % sid, 'decision': 'approved', 'approver': approver,
+                          'scope': scope, 'recorded_at': '2026-11-07T00:00:00Z', 'expires_at': '2099-01-01T00:00:00Z'}
+                if approver is None:
+                    del record['approver']
+                write(repo, 'proof/%s/%s' % (sid, name), json.dumps(record))
 
             def lowered(code, out):
                 return code == 1 and 'approval_flag_lowered' in out
@@ -514,7 +518,7 @@ def _v272_suite():
                     if with_approval:
                         owner_approval(repo, sid, c, spec_id=sid)
                 if protected:
-                    owner_approval(repo, 'VELDO-9399', c, paths=['.veldo/authorization.py'])
+                    owner_approval(repo, next(iter(specs)), c, paths=['.veldo/authorization.py'], name='approval-protected.json')
                 commit(repo, 'evidence')
                 return run_main(Pmod, repo)
 
@@ -545,6 +549,128 @@ def _v272_suite():
             check('AC3 review/per-spec', 'both specs complete in one push: exit 0 [%s]' % ps['all-complete'][1].strip()[:160],
                   ps['all-complete'][0] == 0)
 
+            # N1: a branch made before the raise and merged after it; the lowering is judged against the push
+            # base (the protected ref's current tip), never against an old trunk commit among the parents.
+            def old_base_merge_case(where, Pmod, approved):
+                sid, rel = 'VELDO-9317', 'specs/VELDO-9317-raised.md'
+                repo = new_repo(where, 'old-base-%s' % approved)
+                write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                old = commit(repo, 'the spec, not required')
+                write(repo, rel, spec_text(sid, 'required', ['docs/**']))
+                commit(repo, 'the owner raises it to required')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                git(repo, 'checkout', '-q', '-b', 'side', old)
+                write(repo, 'docs/side.md', 'side\n')
+                commit(repo, 'side work from before the raise')
+                git(repo, 'checkout', '-q', 'main')
+                git(repo, 'merge', '-q', '--no-ff', '--no-commit', 'side')
+                write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                m = commit(repo, 'merge side, taking the old value')
+                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, m, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                if approved:
+                    owner_approval(repo, sid, m, paths=[rel])
+                commit(repo, 'evidence')
+                return run_main(Pmod, repo)
+
+            ob = {'bare': old_base_merge_case(Path(base) / 'ob1', P, False),
+                  'approved': old_base_merge_case(Path(base) / 'ob2', P, True)}
+            check('AC3 lowered/old-base-merge', 'a merge of a branch made before the raise, carrying the old not_required, '
+                  'reviewed, no approval: exit 1 [%s]' % ob['bare'][1].strip()[:200], lowered(*ob['bare']))
+            check('AC3 lowered/old-base-merge', 'the same with an owner approval scoping the spec file: exit 0 [%s]'
+                  % ob['approved'][1].strip()[:200], ob['approved'][0] == 0)
+
+            # N2: the one approval predicate refuses a missing approver, a producer that cannot be determined
+            # and a normalized self-approval, for the protected-path check, the required-spec approval and
+            # the lowering approval alike.
+            def protected_case(where, Pmod, name, approver, trailing=False, with_spec=True):
+                repo = new_repo(where, 'prot-' + name)
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                sid = 'VELDO-9331' if with_spec else 'VELDO-9399'
+                write(repo, '.veldo/authorization.py', '# changed\n')
+                if with_spec:
+                    write(repo, 'specs/%s-auth.md' % sid, spec_text(sid, 'required', ['.veldo/authorization.py']))
+                    write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                c = commit(repo, 'change the authorization module')
+                if with_spec:
+                    write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                    owner_approval(repo, sid, c, spec_id=sid, name='approval-spec.json')
+                owner_approval(repo, sid, c, paths=['.veldo/authorization.py'], approver=approver)
+                commit(repo, 'evidence')
+                if trailing:
+                    write(repo, 'docs/after.md', 'one more\n')
+                    commit(repo, 'one ordinary commit after the evidence')
+                return run_main(Pmod, repo)
+
+            def required_case(where, Pmod, name, approver):
+                repo = new_repo(where, 'req-' + name)
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                sid = 'VELDO-9332'
+                write(repo, 'docs/guide.md', 'routine\n')
+                write(repo, 'specs/%s-req.md' % sid, spec_text(sid, 'required', ['docs/**']))
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                c = commit(repo, 'change')
+                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                owner_approval(repo, sid, c, spec_id=sid, approver=approver)
+                commit(repo, 'evidence')
+                code, out = run_main(Pmod, repo)
+                real = Pmod.ROOT
+                try:
+                    Pmod.ROOT = repo
+                    unknown = Pmod.valid_approval_for([c], spec_id=sid, producer='')
+                finally:
+                    Pmod.ROOT = real
+                return code, out, unknown
+
+            def lowered_no_approver(where, Pmod):
+                sid, rel = 'VELDO-9333', 'specs/VELDO-9333-flip.md'
+                repo = lower_base(where, 'flip-no-approver', sid, rel)
+                write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                c = commit(repo, 'lower the flag')
+                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                owner_approval(repo, sid, c, paths=[rel], approver=None)
+                commit(repo, 'evidence')
+                return run_main(Pmod, repo)
+
+            def missing_approval(code, out):
+                return code == 1 and 'Protected path touched' in out
+
+            ap = {'p-owner': protected_case(Path(base) / 'ap1', P, 'owner', 'owner'),
+                  'p-owner-trailing': protected_case(Path(base) / 'ap2', P, 'owner-trailing', 'owner', trailing=True),
+                  'p-none': protected_case(Path(base) / 'ap3', P, 'none', None),
+                  'p-case': protected_case(Path(base) / 'ap4', P, 'case', ' Builder'),
+                  'p-self-trailing': protected_case(Path(base) / 'ap5', P, 'self-trailing', 'builder', trailing=True),
+                  'p-no-spec': protected_case(Path(base) / 'ap6', P, 'no-spec', 'owner', with_spec=False),
+                  'r-owner': required_case(Path(base) / 'ap7', P, 'owner', 'owner'),
+                  'r-none': required_case(Path(base) / 'ap8', P, 'none', None),
+                  'r-case': required_case(Path(base) / 'ap9', P, 'case', ' Builder'),
+                  'l-none': lowered_no_approver(Path(base) / 'ap10', P)}
+            check('AC3 approval/identity', 'protected path, owner approval and a review: exit 0 [%s]' % ap['p-owner'][1].strip()[:200],
+                  ap['p-owner'][0] == 0)
+            check('AC3 approval/identity', 'the same with one ordinary commit after the evidence: exit 0 [%s]'
+                  % ap['p-owner-trailing'][1].strip()[:200], ap['p-owner-trailing'][0] == 0)
+            check('AC3 approval/identity', 'protected path, approval with no approver field: exit 1 [%s]' % ap['p-none'][1].strip()[:160],
+                  missing_approval(*ap['p-none']))
+            check('AC3 approval/identity', 'protected path, approver " Builder" against producer builder: exit 1',
+                  missing_approval(*ap['p-case']))
+            check('AC3 approval/identity', 'protected path, approver the producer with a trailing commit (no verdict binds HEAD '
+                  'or its parent): exit 1 [%s]' % ap['p-self-trailing'][1].strip()[:160], missing_approval(*ap['p-self-trailing']))
+            check('AC3 approval/identity', 'protected path, no landing spec so no producer can be determined: exit 1 at the '
+                  'protected-path check [%s]' % ap['p-no-spec'][1].strip()[:160],
+                  missing_approval(*ap['p-no-spec']) and 'cannot be determined' in ap['p-no-spec'][1])
+            check('AC3 approval/identity', 'required spec, owner approval by spec_id and a review: exit 0 [%s]'
+                  % ap['r-owner'][1].strip()[:160], ap['r-owner'][0] == 0)
+            check('AC3 approval/identity', 'required spec, approval with no approver field: exit 1 owner approval missing',
+                  ap['r-none'][0] == 1 and 'owner approval missing: VELDO-9332' in ap['r-none'][1])
+            check('AC3 approval/identity', 'required spec, approver " Builder": exit 1 owner approval missing',
+                  ap['r-case'][0] == 1 and 'owner approval missing: VELDO-9332' in ap['r-case'][1])
+            check('AC3 approval/identity', 'required spec, the owner approval judged with no producer: refused',
+                  ap['r-owner'][2] is None)
+            check('AC3 approval/identity', 'a lowering whose approval has no approver field: exit 1 [%s]' % ap['l-none'][1].strip()[:160],
+                  lowered(*ap['l-none'][:2]))
+
             EX = load('v272_executor', ROOT / '.veldo' / 'executor.py')
             hooks = EX.LiveLoop.__new__(EX.LiveLoop)
             ok_docs = hooks.merge_ready({'human_approval': 'not_required', 'footprint': ['docs/**']}, None, None)
@@ -573,8 +699,9 @@ def _v272_suite():
                     write(repo, 'proof/%s/manifest.json' % sid, json.dumps(m))
                     write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, reviewer, PD(m))))
                     if approver:
-                        write(repo, 'proof/%s/approval-owner.json' % sid, json.dumps({'decision': 'approved', 'approver': approver,
-                                                                                    'scope': {'commit': c}}))
+                        write(repo, 'proof/%s/approval-owner.json' % sid, json.dumps({
+                            'schema': 'veldo.approval/v1', 'decision': 'approved', 'approver': approver,
+                            'scope': {'commit': c, 'spec_id': sid}, 'expires_at': '2099-01-01T00:00:00Z'}))
                     landed[sid] = commit(repo, '%s landing: evidence' % sid, date=date)
                 return repo, landed
 
@@ -684,6 +811,70 @@ def _v272_suite():
                   'reads required, a protected path change reads required) and the reviewer of the accepted verdict, not '
                   'the self-review that sorts after it [%r]' % bt[:400], judged_ok(bt))
 
+    def summary_n4_n5(base, LSmod, PD):
+        # N4: only approvers the push check accepts; N5: two same-day landings of one ticket separated by
+        # another commit stay two lines.
+        def manifest(sid):
+            return {'schema': 'veldo.proof/v1', 'spec_id': sid, 'commit': 'f' * 40, 'producer': 'builder',
+                    'criteria': [], 'checks': [{'name': 'unit'}], 'rollback': 'revert'}
+        repo = new_repo(base, 'n4n5')
+        commit(repo, 'base', date='2026-11-05T09:00:00+00:00')
+        day = '2026-11-06T%02d:00:00+00:00'
+        sid = 'VELDO-9421'
+        m = manifest(sid)
+        write(repo, 'specs/%s-x.md' % sid, spec_text(sid, 'required', ['docs/**'], title='Judged approvers'))
+        write(repo, 'proof/%s/manifest.json' % sid, json.dumps(m))
+        c = commit(repo, '%s: build' % sid, date=day % 9)
+        write(repo, 'proof/%s/verdict.json' % sid, json.dumps({
+            'schema': 'veldo.verdict/v1', 'spec_id': sid, 'commit': c, 'reviewer': 'rev-n', 'verdict': 'pass',
+            'findings': {'blocking': [], 'non_blocking': []}, 'proof_digest': PD(m)}))
+
+        def approval(leaf, approver, scope, expires='2099-01-01T00:00:00Z'):
+            write(repo, 'proof/%s/%s' % (sid, leaf), json.dumps({
+                'schema': 'veldo.approval/v1', 'decision': 'approved', 'approver': approver,
+                'scope': dict(scope, commit=c), 'expires_at': expires}))
+        approval('approval-owner.json', 'owner', {'spec_id': sid})
+        approval('approval-self.json', ' BUILDER', {'spec_id': sid})
+        approval('approval-stale.json', 'lapsed', {'spec_id': sid}, expires='2020-01-01T00:00:00Z')
+        approval('approval-unscoped.json', 'drifter', {})
+        approval('approval-other.json', 'elsewhere', {'paths': ['docs/unrelated.md']})
+        commit(repo, '%s landing: evidence' % sid, date=day % 10)
+        write(repo, 'docs/between.md', 'x\n')
+        between = commit(repo, 'An unrelated commit between the two', date=day % 11)
+        write(repo, 'docs/again.md', 'x\n')
+        commit(repo, '%s: follow-up' % sid, date=day % 12)
+        text = LSmod.write_day(repo, '2026-11-06')[0].read_text()
+        return text, between
+
+    def approvers_ok(text):
+        lines = text.splitlines()
+        first = lines[1] if len(lines) > 1 else ''
+        return (first.startswith('- VELDO-9421 ') and first.endswith('approval required, approved by owner')
+                and not any(w in first for w in ('BUILDER', 'lapsed', 'drifter', 'elsewhere')))
+
+    def runs_ok(text, between):
+        lines = text.splitlines()
+        return (len(lines) == 4 and lines[0].startswith('Veldo landed on 2026-11-06: 3 ')
+                and lines[1].startswith('- VELDO-9421 ') and lines[2].startswith('- %s ' % between[:12])
+                and lines[3].startswith('- VELDO-9421 '))
+
+    def exercise_n4_n5(base):
+        P = load('v272_pc_n4', ROOT / '.veldo' / 'policy_check.py')
+        ls_tree = module_tree(base, 'ls45', {'landed_summary.py': LS_FILE})
+        LS = load('v272_landed_n4', ls_tree / 'landed_summary.py')
+        text, between = summary_n4_n5(Path(base) / 'n', LS, P.proof_digest)
+        check('AC4 summary/approvers-judged', 'of five approvals bound to the landing only the owner\'s is listed (a '
+              'self-approval in other case, an expired one, one naming neither the spec nor a touched protected path, '
+              'one scoping an unrelated path) [%r]' % text[:400], approvers_ok(text))
+        check('AC4 summary/separate-runs', 'a ticket, another commit, the same ticket again: three lines [%r]' % text[:400],
+              runs_ok(text, between))
+
+    try:
+        with tempfile.TemporaryDirectory(prefix='v272-n45-') as directory:
+            exercise_n4_n5(Path(directory))
+    except Exception as error:  # noqa: BLE001
+        for row in ('AC4 summary/approvers-judged', 'AC4 summary/separate-runs'):
+            check(row, 'ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
     try:
         with tempfile.TemporaryDirectory(prefix='v272-') as directory:
             exercise(Path(directory))
