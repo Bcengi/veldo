@@ -790,9 +790,11 @@ class GitLandOps(LandOps):
             c["observation_dir"] = tempfile.mkdtemp(prefix="veldo-observation-", dir=self.observations)
             installed = self._installed(c)
             # The refs are bound: the workspace is this land's own repository, sharing no refs with
-            # anyone, so a ref that moves during the gate was moved by the candidate's code.
+            # anyone, so a ref that moves during the gate was moved by the candidate's code. The gate's
+            # mutation selection compares the candidate with the watermark this land synced, the same
+            # base the installed policy run takes (VELDO-0267): the workspace has no trunk branch.
             observed, reference = CV.observe_gate(c["workspace"], installed, Path(c["observation_dir"]) / "gate",
-                                                  bind_refs=True)
+                                                  bind_refs=True, base=c["watermark"])
         except CV.Refused as error:
             c["gate"] = {"exit": None, "terminal": None, "green": False, "refusals": [error.code]}
             return self._refuse("gate", CandidateRefused(error.code, str(error.detail)))
