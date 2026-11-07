@@ -668,7 +668,11 @@ def check_requests(requests_dir=None, root=None):
 # ---------------------------------------------------------------------------------------------
 import base64 as _b64
 import fnmatch as _fnmatch
-import subprocess as _subprocess
+import os as _os
+
+_gp_spec = importlib.util.spec_from_file_location("validate_git_process", Path(__file__).with_name("git_process.py"))
+_git_process = importlib.util.module_from_spec(_gp_spec)
+_gp_spec.loader.exec_module(_git_process)
 
 PROOF_LIMIT_DEFAULT = 1048576
 PROOF_PROTECTED_REFS_DEFAULT = ["refs/heads/main", "refs/tags/*"]
@@ -743,7 +747,7 @@ def encoded_archives(name, data):
 
 def _tracked_proof_files(base):
     try:
-        out = _subprocess.run(["git", "-C", str(base), "ls-files", "-z", "--", "proof"],
+        out = _git_process.run(["git", "-C", str(base), "ls-files", "-z", "--", "proof"],
                               capture_output=True, check=True).stdout
         rels = [r for r in out.decode("utf-8", "surrogateescape").split("\0") if r]
     except Exception:
@@ -800,14 +804,17 @@ def _removed_by_summary(base, rels):
 
 
 def _ref_patterns(orig):
-    """The ways a proof file names a removed file: its repository path, or its path relative to
-    its bundle directory (proof/<ID>/) for files inside that bundle."""
+    """The ways a proof file names a removed file: its repository path, its path relative to its
+    bundle directory (proof/<ID>/) for files inside that bundle, or its bare name for files in
+    its own directory."""
     parts = orig.split("/")
     bundle = "/".join(parts[:2]) + "/"
     rel = "/".join(parts[2:])
     out = [(None, orig)]
     if rel:
         out.append((bundle, rel))
+    if len(parts) > 3:
+        out.append(("/".join(parts[:-1]) + "/", parts[-1]))
     return out
 
 
@@ -860,7 +867,7 @@ def check_proof_files(root=None, quiet=False):
 
 
 def _git(base, *args):
-    return _subprocess.run(["git", "-C", str(base), *args], capture_output=True, check=True).stdout
+    return _git_process.run(["git", "-C", str(base), *args], capture_output=True, check=True).stdout
 
 
 def check_push_proof(lines, remote="", root=None):
@@ -921,6 +928,50 @@ def check_push_proof(lines, remote="", root=None):
                     errs += fail("proof_encoded_archive",
                                  f"{where}: base64 run at byte offset {off} decodes to {kind}")
     return errs
+
+
+def proof_summary(command, deciding, discarded=(), root=None, timing=False):
+    """A veldo.proof-summary/v1 record: what a proof writer keeps instead of its raw output.
+    discarded is [(name, raw_bytes)]; each is recorded by name, size and sha256 and then dropped.
+    timing adds the host load, for results that are timing sensitive."""
+    import hashlib as _hl
+    import platform as _pf
+    base = Path(root) if root else ROOT
+
+    def _rev(spec):
+        try:
+            return _git(base, "rev-parse", spec).decode().strip()
+        except Exception:
+            return "unknown"
+    try:
+        gitv = _git_process.run(["git", "--version"], capture_output=True, text=True).stdout.strip()
+    except Exception:
+        gitv = "unknown"
+    env = {"commit": _rev("HEAD"), "tree": _rev("HEAD^{tree}"), "host": _pf.node(),
+           "python": _pf.python_version(), "git": gitv}
+    if timing:
+        try:
+            env["load"] = list(_os.getloadavg())
+        except (OSError, AttributeError):
+            env["load"] = "unavailable"
+    disc = []
+    for name, raw in discarded:
+        raw = raw.encode() if isinstance(raw, str) else bytes(raw)
+        disc.append({"name": name, "bytes": len(raw), "sha256": _hl.sha256(raw).hexdigest()})
+    return {"schema": SUMMARY_SCHEMA, "command": command, "environment": env,
+            "discarded": disc, "deciding": deciding}
+
+
+def write_proof_summary(path, command, deciding, discarded=(), root=None, timing=False):
+    """Write proof_summary(...) to path and return it. The summary itself must be under the
+    policy limit; one that is not is a writer bug and raises rather than landing raw bulk."""
+    rec = proof_summary(command, deciding, discarded, root, timing)
+    text = json.dumps(rec, indent=1, sort_keys=True, ensure_ascii=True) + "\n"
+    limit = proof_policy(root)[0]
+    if len(text.encode()) > limit:
+        raise ValueError(f"proof summary {path} is {len(text.encode())} bytes, over the limit {limit}")
+    Path(path).write_text(text)
+    return rec
 
 
 def run_all():
