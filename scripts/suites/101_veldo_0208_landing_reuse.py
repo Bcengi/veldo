@@ -1639,9 +1639,9 @@ def _v208_unconfined_leg():
         shutil.copyfile(ROOT / 'scripts/gate_legs.py', authority / 'scripts/gate_legs.py')
         shutil.copyfile(authority_list, authority / 'scripts/gate_unconfined.json')
         (authority / 'scripts/gate_candidate.py').symlink_to(ROOT / 'scripts/gate_candidate.py')
-        # This authority copy runs its own list, so its gate_legs.py records a passing unit leg's
-        # time in the leg-time store under HOME (VELDO-0214). Its drivers get a scratch HOME, set in
-        # their subprocess environment only, so a suite run never writes the owner's store.
+        # This authority copy runs its own list. Its drivers get a scratch HOME, set in their
+        # subprocess environment only, so a suite run never writes the owner's store. Since
+        # VELDO-0278 removed VELDO-0214's unit-leg handoff, gate_legs.py records no leg time there.
         authority_home = top / 'authority-home'
         authority_home.mkdir()
         def through_stage(stage, command, delete):
@@ -1701,15 +1701,15 @@ def _v208_unconfined_leg():
                and '02_asks' not in own.stdout.split('UNCONFINED LEG', 1)[-1].split('\n', 1)[0]
                and L.stamp(own_record) == {'declaration': 'sha256:' + __import__('hashlib').sha256(
                    authority_list.read_bytes()).hexdigest(), 'legs': {'unit': ['01_listed', '03_rows:strace']}})
-        # The authority copy's unit leg times land in the scratch HOME given to each driver, one
-        # file naming the copy as its authority (VELDO-0214 AC6). A driver without the scratch HOME
-        # writes the owner's store instead, and the scratch store stays empty.
+        # The unit leg's time is no longer recorded (VELDO-0214's handoff left with the integration
+        # stage, VELDO-0278): after the kept driver and again after the list-read driver, the scratch
+        # HOME's leg-time store holds no file, though both drivers ran a passing unit leg there.
         own_store = scratch_store()
-        copy_authority = str(authority.resolve())
-        expect('VELDO-0208 unconfined-leg/authority-copy-records-under-its-scratch-home: '
-               + repr((kept_store, own_store, copy_authority)),
-               len(kept_store) == 1 and kept_store[0][1] == copy_authority
-               and len(own_store) == 1 and own_store[0][1] == copy_authority)
+        expect('VELDO-0208 unconfined-leg/authority-copy-records-no-leg-time: '
+               + repr((kept_store, own_store, kept[0], own.returncode)),
+               kept_store == [] and own_store == []
+               and kept[0] == 0 and kept[1][0]['status'] == 'green'
+               and own.returncode == 0 and 'unit: unconfined leg: pass' in own.stdout)
 
         # No file in scripts/ or scripts/suites/ shadows a standard-library module the dispatcher
         # imports, nor one of the protected modules it imports by name. A candidate scripts/json.py

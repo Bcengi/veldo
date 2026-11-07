@@ -39,15 +39,28 @@ def _v278_checks():
         finally:
             sys.path[:] = saved
 
-    EIGHT = ['15_warp_1402_estimate_record', '15_warp_1404_historical_analogy',
-             '15_warp_1405_reconciliation', '15_warp_1406_normalization', '15_warp_1407_judgment_load',
-             '15_warp_1408_budget_rollup', '15_warp_1409_cost_to_change_per_area', '16_warp_1403_sizing_pass']
-    PARKED_TOO = EIGHT + ['111_veldo_0214_first_use_budget']
-    MODULES = ['toe_analogy', 'toe_budget', 'toe_corpus', 'toe_normalize', 'toe_reconcile', 'estimate',
-               'sizing_pass', 'judgment_load', 'cost_to_change']
+    # The eight fragments and the nine modules are read from this spec's AC1 and AC2, which name
+    # them, rather than typed again here: WARP-1409 AC6 requires its own fragment to be the only one
+    # that names its module, and this fragment does not read that module at all.
     REASON = 'estimation layer parked until a spend source exists, VELDO-0278'
     suites = ROOT / 'scripts' / 'suites'
     parked = ROOT / 'scripts' / 'parked' / 'estimation'
+    spec_text = ' '.join(next((ROOT / 'specs').glob('VELDO-0278-*.md')).read_text().split())
+    eight_text = re.search(r'The eight fragments (.*?) move to scripts/parked/estimation/', spec_text)
+    modules_text = re.search(r'whose module is one of (.*?), or whose suite is parked', spec_text)
+    PREFIXES = re.split(r',\s*(?:and\s+)?|\s+and\s+', eight_text.group(1)) if eight_text else []
+    MODULES = re.split(r',\s*|\s+or\s+', modules_text.group(1)) if modules_text else []
+    parked_manifest = json.loads((parked / 'manifest.json').read_text())
+    parked_names = [s['name'] for s in parked_manifest['suites']]
+    EIGHT = [n for n in parked_names if any(n.startswith(p + '_') for p in PREFIXES)]
+    PARKED_TOO = EIGHT + ['111_veldo_0214_first_use_budget']
+    row('parked/spec-names-eight-fragments-and-nine-modules',
+        len(PREFIXES) == len(set(PREFIXES)) == 8 and len(MODULES) == len(set(MODULES)) == 9
+        and all(re.fullmatch(r'1[56]_warp_14\d\d', p) for p in PREFIXES)
+        and all(re.fullmatch(r'[a-z_]+', m) for m in MODULES)
+        and sorted(n.split('_', 3)[0] + '_' + n.split('_', 3)[1] + '_' + n.split('_', 3)[2] for n in EIGHT)
+        == sorted(PREFIXES),
+        repr((PREFIXES, MODULES, EIGHT)))
     env = {k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')}
 
     # ---- AC1: the unit stage's suite list holds none of them; the parked set holds them all -------
@@ -55,10 +68,9 @@ def _v278_checks():
     unit_names = [s['name'] for s in manifest['suites']]
     requires = json.loads((suites / 'requires.json').read_text())['requires']
     named_in_closures = sorted({n for closure in requires.values() for n in closure} & set(PARKED_TOO))
-    parked_manifest = json.loads((parked / 'manifest.json').read_text())
-    parked_names = [s['name'] for s in parked_manifest['suites']]
     row('parked/unit-list-excludes-estimation',
-        not set(PARKED_TOO) & set(unit_names) and not set(PARKED_TOO) & set(requires)
+        not [n for n in unit_names + list(requires) + [f.stem for f in suites.glob('*.py')] if any(n.startswith(p + '_') for p in PREFIXES)]
+        and not set(PARKED_TOO) & set(unit_names) and not set(PARKED_TOO) & set(requires)
         and not named_in_closures
         and not [n for n in PARKED_TOO if (suites / (n + '.py')).exists()]
         and set(PARKED_TOO) <= set(parked_names)
