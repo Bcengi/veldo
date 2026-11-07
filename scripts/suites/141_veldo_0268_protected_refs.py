@@ -718,18 +718,35 @@ def _v268_suite():
 
     def row_alias_shell_c(under):
         """A simple command whose first word is not git has its text judged for aliases: sh -c and
-        bash -c running an alias that pushes main refuse on the gate text; sh -c 'git status' passes."""
+        bash -c running an alias that pushes main refuse on the gate text; sh -c 'git status' passes.
+        Fix round 6 (F7): the same holds when another word of the command is git or a path ending in
+        /git (sh's $0), and for a git command whose editor or pager value runs the alias; the whole
+        text is judged, every git in it, so each refuses on the gate text, from a cwd outside the
+        repository too, while git status, an ordinary commit and a non-pushing alias pass."""
         work, bare, head = fixture(under)
         git(work, 'config', 'alias.pm', 'push origin main')
         git(work, 'config', 'alias.p', 'push')
+        git(work, 'config', 'alias.sp', '!git push origin main')
+        git(work, 'config', 'alias.lg', 'log --oneline')
+        other = work.parent / 'elsewhere'
+        other.mkdir()
         seen = []
-        for command in ("sh -c 'git pm'", 'bash -c "git p origin main"'):
-            g = guard(work, command)
-            seen.append((command, g.returncode, checks_text(g.stderr) == gate_text(head)))
-        plain = guard(work, "sh -c 'git status'")
+        for command, cwd in (("sh -c 'git pm'", work), ('bash -c "git p origin main"', work),
+                             ("sh -c 'git pm' git", work), ("bash -c 'git p origin main' /usr/bin/git", work),
+                             ("bash -c 'git sp' git", work), ("timeout 60 sh -c 'git pm' git", work),
+                             ("sh -c 'git -C %s pm' git" % work, other),
+                             ("sh -c 'git p origin main' x /usr/bin/git", work),
+                             ("git -c core.editor='git pm #' commit --allow-empty", work),
+                             ("git -c core.pager='git pm #' log -1", work),
+                             ("cd . && git -c core.editor='git pm #' commit --allow-empty", work)):
+            g = guard(work, command, VELDO_0268_CWD=str(cwd))
+            seen.append((command[-44:], g.returncode, checks_text(g.stderr) == gate_text(head)))
+        plain = [guard(work, c).returncode for c in ("sh -c 'git status'", "sh -c 'git status' git",
+                                                     'git commit --allow-empty -m note', 'git lg -1')]
         moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
-        ok = all(rc == 2 and text for _, rc, text in seen) and plain.returncode == 0 and not moved
-        return ok, 'aliases under sh -c and bash -c: %r; sh -c git status exit %d' % (seen, plain.returncode)
+        ok = all(rc == 2 and text for _, rc, text in seen) and plain == [0, 0, 0, 0] and not moved
+        return ok, 'aliases under wrappers, editors and pagers: %r; harmless commands %r; main moved %s' % (
+            seen, plain, moved)
 
     # ---------------------------------------------------------------- merges
     def row_merge(under):
@@ -914,6 +931,17 @@ def _v268_suite():
     SHELL_C = ('            return unresolved("a git alias that may push or merge, in a command whose first word '
                'is not git")\n')
     SHELL_C_DEFECT = '            pass  # defect: a command whose first word is not git is not alias-checked\n'
+    # Fix round 6 anchor, shared with scripts/check_teeth_mutations.py's registration of the same defect.
+    TEXT_BESIDE_GIT = ('        if alias_in_text(command, cwd):\n'
+                       '            return unresolved("a git alias that may push or merge, in the text of a command '
+                       'that runs "\n')
+    TEXT_BESIDE_GIT_DEFECT = ('        if False:  # defect: a wrapper or editor beside a git word is not alias-checked\n'
+                              '            return unresolved("a git alias that may push or merge, in the text of a '
+                              'command that runs "\n')
+    EVERY_GIT = ('    for start in (m.start() for m in re.finditer(r"\\bgit", command)):\n'
+                 '        match = GITSUB.match(command, start)\n')
+    EVERY_GIT_DEFECT = ('    for match in GITSUB.finditer(command):  # defect: a git inside another git\'s text is skipped\n'
+                        '        start = match.start()\n')
 
     # The spec's registered mutations: (name, file, old, new, the row that must go red[, further
     # (old, new) replacements in the same file]).
@@ -983,6 +1011,10 @@ def _v268_suite():
          'push/alias-unreadable'),
         ('fix5-expanded-dash-c-looked-up', 'veldo-guard.sh', EXPANDED_C, EXPANDED_C_DEFECT, 'push/alias-unreadable'),
         ('fix5-shell-c-not-alias-checked', 'veldo-guard.sh', SHELL_C, SHELL_C_DEFECT, 'push/alias-shell-c'),
+        # Fix round 6: a wrapper or an editor or pager value beside a git word is alias-checked.
+        ('fix6-text-beside-git-not-alias-checked', 'veldo-guard.sh', TEXT_BESIDE_GIT, TEXT_BESIDE_GIT_DEFECT,
+         'push/alias-shell-c'),
+        ('fix6-git-inside-git-skipped', 'veldo-guard.sh', EVERY_GIT, EVERY_GIT_DEFECT, 'push/alias-shell-c'),
     )
 
     results = {}

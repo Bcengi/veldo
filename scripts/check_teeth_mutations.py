@@ -12372,6 +12372,19 @@ def cases():
              'is not git")\n',
              '            pass  # defect: a command whose first word is not git is not alias-checked\n',
              ['push/alias-shell-c'])
+    # Fix round 6: a wrapper (sh -c '...' git) or an editor or pager value beside a git word is alias-checked.
+    guard268('guard268-text-beside-git-not-alias-checked',
+             '        if alias_in_text(command, cwd):\n'
+             '            return unresolved("a git alias that may push or merge, in the text of a command that runs "\n',
+             '        if False:  # defect: a wrapper or editor beside a git word is not alias-checked\n'
+             '            return unresolved("a git alias that may push or merge, in the text of a command that runs "\n',
+             ['push/alias-shell-c'])
+    guard268('guard268-git-inside-git-skipped',
+             '    for start in (m.start() for m in re.finditer(r"\\bgit", command)):\n'
+             '        match = GITSUB.match(command, start)\n',
+             '    for match in GITSUB.finditer(command):  # defect: a git inside another git\'s text is skipped\n'
+             '        start = match.start()\n',
+             ['push/alias-shell-c'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

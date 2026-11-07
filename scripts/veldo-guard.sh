@@ -264,7 +264,12 @@ def alias_in_text(command, cwd):
     may run it in another repository or configuration, a subcommand that may be an alias counts."""
     if re.search(r"alias\.\S*=", command, re.I):
         return True
-    for match in GITSUB.finditer(command):
+    # Every git in the text, overlapping ones too: a git inside another's -c value (an editor or a
+    # pager) or inside a wrapper's argument is judged on its own (VELDO-0268 fix round 6).
+    for start in (m.start() for m in re.finditer(r"\bgit", command)):
+        match = GITSUB.match(command, start)
+        if match is None:
+            continue
         sub = match.group(1).strip("\"'")
         try:
             split = git_globals(shlex.split(match.group(0)))
@@ -523,6 +528,9 @@ def judge_git(command, words, cwd, reproduce, prefix=()):
     if sub not in ("push", "merge"):
         if PUSHISH.search(command):
             return unresolved("git %s is not a push or merge the guard can reproduce" % sub)
+        if alias_in_text(command, cwd):
+            return unresolved("a git alias that may push or merge, in the text of a command that runs "
+                              "another program (a wrapper's argument, an editor or a pager)")
         return []
     if not reproduce:
         return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
