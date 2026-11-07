@@ -95,6 +95,9 @@ falsify.py's defaults-without-context-manager case (suite 88) stays as a develop
 4. The spec's premise does not hold. Suites 88, 89 and 90 never launched into the slice: they call
    Receiver._baseline with no containment profile. Only suite 86 created the slice. The AC3 mutation
    therefore holds because entering the factory now starts the slice.
+   Since 4228b098 AC3's registered mutation targets suite 86 (the only factory user the gate runs
+   unconfined); see round 5. Cost: the mutation stage runs suite 86's body twice per gate (control and
+   mutant, unconfined cases are never reused), about 100 s holding the user manager.
 5. Two other users of the factory still call factory() without the context manager:
    proof/VELDO-0127/delivery_fixture.py (suites 87 and 103) and proof/VELDO-0127/live.py. Both are outside
    the footprint. Construction alone creates no slice, so this change does not make them leak.
@@ -165,3 +168,5 @@ equal to the baseline; the mutant red on slices/end-of-run). `selftest.py --suit
 129_veldo_0274_factory_slices` 32 passed, 0 failed (exit 2 is the partial-run code). No veldo0127 or
 veldo0274 unit loaded after. pending_runs.sh is updated for these two runs (failing row names added to its
 summary lines, `bash -n` passed) but nothing is owed.
+
+Second fix check of 2026-11-07: SOUND (research/claude-runs/veldo-0274-fixcheck2-2026-11-07.md).
