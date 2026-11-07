@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0267
 title: Each gate runs the mutation cases for the code its candidate changed plus a fixed canary set, the full sweep runs nightly on the trunk, and a red nightly sweep blocks the next landing until it is green or explained
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -216,3 +216,5 @@ nightly jobs.
 2026-11-07: drafted on the owner's agreement, Telegram 39676, 39683 and 39684, to the audit's item 1
 recommendation (veldo-core-weight-audit-2026-11-07.md). Mutation time measured from the 0261 landing
 gate log. A draft: only the owner marks it ready.
+
+2026-11-07: ready on the owner's approval, Telegram 39692 ("Ok.") to the summary in 39689 and 39691.
