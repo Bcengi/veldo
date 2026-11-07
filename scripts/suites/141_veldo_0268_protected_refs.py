@@ -296,6 +296,61 @@ def _v268_suite():
         g = guard(work, 'gh pr create --title t --body b')
         return g.returncode == 0, 'gh pr create: exit %d, %r' % (g.returncode, g.stderr[-300:])
 
+    # ------------------------------------------------ fix round 1: quiet, global options, hooks
+    def row_quiet_main(under):
+        work, bare, head = fixture(under)
+        seen = []
+        for command in ('git push -q origin main', 'git push --quiet origin main', 'git push -fq origin main'):
+            g = guard(work, command)
+            seen.append((command, g.returncode, checks_text(g.stderr) == gate_text(head)))
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        ok = all(rc == 2 and text for _, rc, text in seen) and not moved
+        return ok, 'quiet pushes of main: %r' % (seen,)
+
+    def row_empty_answer(under):
+        work, _, _ = fixture(under)
+        git(work.parent, 'init', '-q', '--bare', '-b', 'main', str(work.parent / 'empty.git'))
+        git(work, 'remote', 'add', 'empty', str(work.parent / 'empty.git'))
+        g = guard(work, 'git push empty :')
+        return g.returncode == 2, 'a dry run naming no destination: exit %d, %r' % (g.returncode, g.stderr[-300:])
+
+    def row_global_main(under):
+        work, bare, head = fixture(under)
+        seen = []
+        for command in ('git -C %s push origin main' % work, 'git -c push.default=simple push origin main'):
+            g = guard(work, command)
+            seen.append((command, g.returncode, checks_text(g.stderr) == gate_text(head)))
+        moved = git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() == head
+        ok = all(rc == 2 and text for _, rc, text in seen) and not moved
+        return ok, 'global options before the subcommand, main: %r' % (seen,)
+
+    def row_hooks_not_run(under):
+        work, bare, _ = fixture(under)
+        hooks = work.parent / 'hooks'
+        hooks.mkdir()
+        marker = work.parent / 'hook-ran'
+        (hooks / 'pre-push').write_text('#!/usr/bin/env bash\ntouch "%s"\n' % marker)
+        (hooks / 'pre-push').chmod(0o755)
+        command = 'git -c core.hooksPath=%s push --verify origin agent/claude/x' % hooks
+        g = guard(work, command)
+        during = marker.exists()
+        ran = subprocess.run(['bash', '-c', command], cwd=str(work), env=ENV, capture_output=True, text=True)
+        ok = g.returncode == 0 and not during and ran.returncode == 0 and marker.exists()
+        return ok, ('hooks re-enabled by the command: guard exit %d, hook ran in the dry run %s, '
+                    'the real push ran it %s' % (g.returncode, during, marker.exists()))
+
+    def row_branch_variants(under):
+        work, bare, _ = fixture(under)
+        seen = []
+        for at, command in enumerate(('git push -q origin agent/claude/x:refs/heads/agent/claude/q',
+                                      'git -C %s push origin agent/claude/x:refs/heads/agent/claude/c' % work,
+                                      'git -c push.default=simple push origin agent/claude/x:refs/heads/agent/claude/k')):
+            g, ran = through_tool(work, command)
+            target = 'refs/heads/agent/claude/' + 'qck'[at]
+            seen.append((command, g.returncode, ran is not None and ran.returncode == 0 and has(bare, target)))
+        ok = all(rc == 0 and pushed for _, rc, pushed in seen)
+        return ok, 'working branch pushes with quiet and global options: %r' % (seen,)
+
     # ---------------------------------------------------------------- merges
     def row_merge(under):
         work, _, head = fixture(under)
@@ -400,6 +455,9 @@ def _v268_suite():
         'push/main-tool': row_main_tool, 'push/main-prepush': row_main_prepush, 'push/both': row_both,
         'push/head-colon-main': row_head_colon_main, 'push/unreproducible': row_unreproducible,
         'push/dry-run-fails': row_dry_run_fails, 'push/pr-create': row_pr_create,
+        'push/quiet-main': row_quiet_main, 'push/empty-answer': row_empty_answer,
+        'push/global-options-main': row_global_main, 'push/hooks-not-run': row_hooks_not_run,
+        'push/branch-variants': row_branch_variants,
         'merge/checked-out': row_merge, 'merge/gh-base': row_gh_base,
         'refuse/gate': row_refuse_gate, 'refuse/manifest': row_refuse_manifest, 'refuse/path': row_refuse_path,
         'refuse/debt': row_refuse_debt, 'refuse/objection': row_refuse_objection, 'refuse/tag': row_refuse_tag,
@@ -407,7 +465,21 @@ def _v268_suite():
         'sync/copies': row_copies, 'doc/agents': row_doc,
     }
 
-    # The spec's registered mutations: (name, file, old, new, the row that must go red).
+    # Fix round 1 anchors, shared with scripts/check_teeth_mutations.py's registration of the same defects.
+    FORCED_LINE = 'FORCED = ["--no-quiet", "--dry-run", "--porcelain", "--no-verify"]\n'
+    FORCED_LINE_DEFECT = 'FORCED = ["--dry-run", "--porcelain", "--no-verify"]  # defect: quiet is not overridden\n'
+    EMPTY_CHECK = '    if not found:\n        return unresolved("the dry run named no destination")\n'
+    EMPTY_CHECK_DEFECT = ('    if False:  # defect: a dry run naming no destination is allowed\n'
+                          '        return unresolved("the dry run named no destination")\n')
+    TRIGGER = "grep -qE '(git|gh pr (merge|create))'"
+    TRIGGER_DEFECT = "grep -qE '(git (push|merge)|gh pr (merge|create))'"
+    DRY_RUN_CALL = ('        r = subprocess.run(["git"] + kept + ["-c", "core.hooksPath=/dev/null", "push"]\n'
+                    '                           + rest[:end] + FORCED + rest[end:],\n')
+    DRY_RUN_CALL_DEFECT = ('        r = subprocess.run(["git", "-c", "core.hooksPath=/dev/null"] + kept\n'
+                           '                           + ["push", "--dry-run", "--porcelain", "--no-verify"] + rest,\n')
+
+    # The spec's registered mutations: (name, file, old, new, the row that must go red[, further
+    # (old, new) replacements in the same file]).
     MUTATIONS = (
         ('ac1-union-reads-only-tree', 'policy_check.py',
          '    if trunk.returncode == 0 and trunk.stdout.strip():\n',
@@ -428,6 +500,15 @@ def _v268_suite():
          'if [ -f .veldo/policy_check.py ]; then\n',
          'if [ -f .veldo/policy_check.py ] && ! printf \'%s\\n\' "$JUDGED" | grep -q \'^refs/tags/\'; then\n',
          'refuse/tag'),
+        # Fix round 1: a quiet push, global options before the subcommand, hooks re-enabled by the command.
+        ('fix1-quiet-silences-answer', 'veldo-guard.sh', FORCED_LINE, FORCED_LINE_DEFECT, 'push/quiet-main',
+         ((EMPTY_CHECK, EMPTY_CHECK_DEFECT),)),
+        ('fix1-empty-answer-allowed', 'veldo-guard.sh', EMPTY_CHECK, EMPTY_CHECK_DEFECT, 'push/empty-answer'),
+        ('fix1-trigger-misses-global-options', 'veldo-guard.sh', TRIGGER, TRIGGER_DEFECT,
+         'push/global-options-main'),
+        ('fix1-hooks-path-before-globals', 'veldo-guard.sh', DRY_RUN_CALL, DRY_RUN_CALL_DEFECT,
+         'push/hooks-not-run'),
+        ('fix1-quiet-not-overridden', 'veldo-guard.sh', FORCED_LINE, FORCED_LINE_DEFECT, 'push/branch-variants'),
     )
 
     results = {}
@@ -436,17 +517,20 @@ def _v268_suite():
             results[name] = fn(PRODUCTION)
         except Exception as error:  # noqa: BLE001
             results[name] = (False, 'raised %s: %s' % (type(error).__name__, str(error)[:300]))
-    for name, module, old, new, row in MUTATIONS:
+    for name, module, old, new, row, *also in MUTATIONS:
         label = 'mutation/' + name
         try:
             text = Path(PRODUCTION[module]).read_text()
-            if text.count(old) != 1:
+            pairs = ((old, new),) + (also[0] if also else ())
+            if any(text.count(o) != 1 for o, _ in pairs):
                 results[label] = (False, 'anchor not found exactly once in %s' % module)
                 continue
+            for o, n in pairs:
+                text = text.replace(o, n)
             mdir = base / ('mut-' + name)
             mdir.mkdir()
             mutated = {k: Path(v) for k, v in PRODUCTION.items()}
-            (mdir / module).write_text(text.replace(old, new))
+            (mdir / module).write_text(text)
             mutated[module] = mdir / module
             red, detail = ROWS[row](mutated)
             results[label] = (not red, 'row %s under the mutation: %s (%s)' % (row, 'red' if not red else 'green', detail))

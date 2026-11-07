@@ -12250,6 +12250,50 @@ def cases():
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
 
+    # VELDO-0268: the push guard judges only protected destinations. The spec's registered falsifiers and
+    # fix round 1's (a quiet push, git global options before the subcommand, hooks re-enabled by the command).
+    refs268 = '141_veldo_0268_protected_refs.py'
+    add(268, 'refs268-union-reads-only-tree', refs268, 'policy_check.py',
+        '    if trunk.returncode == 0 and trunk.stdout.strip():\n',
+        '    if False:  # defect: the union reads only the working tree\n', ['refs/union-shrink'])
+    add(268, 'refs268-missing-key-protects-nothing', refs268, 'policy_check.py',
+        '        return (EVERY_REF, "no policy declares protected_refs")\n',
+        '        return None  # defect: no protected_refs key means nothing is protected\n', ['refs/no-key'])
+
+    def guard268(name, old, new, rows, also=()):
+        add(268, name, refs268, 'veldo-guard.sh', old, new, rows, also=also)
+        result[-1]['dir'] = 'scripts'
+
+    guard268('guard268-destination-from-text',
+             '    if sub == "push":\n        return dry_run(kept, rest, cwd)\n',
+             '    if sub == "push":\n        return [("refs/heads/" + rest[-1].split(":")[0], None)]  # defect: read the text\n',
+             ['push/head-colon-main'])
+    guard268('guard268-unresolved-unprotected',
+             '            log("unresolved", "%s; treated as protected; %s" % (reason, CHECKS))\n'
+             '            protected.append("unresolved")\n',
+             '            log("unresolved", reason)  # defect: an unresolved destination is unprotected\n',
+             ['push/unreproducible'])
+    guard268('guard268-tags-skip-approval', 'if [ -f .veldo/policy_check.py ]; then\n',
+             'if [ -f .veldo/policy_check.py ] && ! printf \'%s\\n\' "$JUDGED" | grep -q \'^refs/tags/\'; then\n',
+             ['refuse/tag'])
+    forced268 = 'FORCED = ["--no-quiet", "--dry-run", "--porcelain", "--no-verify"]\n'
+    forced268_defect = 'FORCED = ["--dry-run", "--porcelain", "--no-verify"]  # defect: quiet is not overridden\n'
+    empty268 = '    if not found:\n        return unresolved("the dry run named no destination")\n'
+    empty268_defect = ('    if False:  # defect: a dry run naming no destination is allowed\n'
+                       '        return unresolved("the dry run named no destination")\n')
+    guard268('guard268-quiet-silences-answer', forced268, forced268_defect, ['push/quiet-main'],
+             also=[(empty268, empty268_defect)])
+    guard268('guard268-empty-answer-allowed', empty268, empty268_defect, ['push/empty-answer'])
+    guard268('guard268-trigger-misses-global-options', "grep -qE '(git|gh pr (merge|create))'",
+             "grep -qE '(git (push|merge)|gh pr (merge|create))'", ['push/global-options-main'])
+    guard268('guard268-hooks-path-before-globals',
+             '        r = subprocess.run(["git"] + kept + ["-c", "core.hooksPath=/dev/null", "push"]\n'
+             '                           + rest[:end] + FORCED + rest[end:],\n',
+             '        r = subprocess.run(["git", "-c", "core.hooksPath=/dev/null"] + kept\n'
+             '                           + ["push", "--dry-run", "--porcelain", "--no-verify"] + rest,\n',
+             ['push/hooks-not-run'])
+    guard268('guard268-quiet-not-overridden', forced268, forced268_defect, ['push/branch-variants'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
