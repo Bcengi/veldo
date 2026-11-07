@@ -12251,8 +12251,9 @@ def cases():
     result[-1]['siblings'] = True
 
     # VELDO-0274: the VELDO-0127 factory owns its slice (suite 129 loads the factory by the path the worker replaces).
-    # AC3's mutation (suite 88 without the context manager, red on slices/end-of-run) needs suite 88 run before 129
-    # in one worker, which the mutation stage's worker does not do; it stays in proof/VELDO-0274/falsify.py.
+    # AC3's mutation (suite 88 without the context manager, red on slices/end-of-run) mutates suite 88 and is observed
+    # by suite 129, so it needs 88 run before 129 in one worker. The stage's worker (scripts/mutation_observer.py,
+    # protected, outside this footprint) runs one suite per case, so it stays in proof/VELDO-0274/falsify.py.
     slices274 = '129_veldo_0274_factory_slices.py'
     # AC1: the context manager's exit skips the stop. sweep-dead goes red too: its 'enter' child leaves the factory,
     # whose exit then raises SliceLeft, so that child exits nonzero.
