@@ -145,14 +145,12 @@ trigger/every-group-forces-full; ac2-3 empties the declared canary list and targ
   (lock taken after 375 s on the second attempt): `140_veldo_0267_mutation_selection 48 passed`,
   `74 passed, 0 failed` with its closure. Every in-suite falsifier row green (targeted row green on the
   real module, red on the mutated copy).
-- The registered falsifiers through the mutation stage (`check_teeth_mutations.py --finding 267`):
-  PENDING. The lock was not free within the 20 minute budget (420 s, then 375 s to take it for suite
-  140, then 300 s, 1,095 s in all). The exact command is in `proof/VELDO-0267/pending_runs.sh`
-  (`bash -n` clean; no flock inside, the lead runs it inside the lock; one line per step to
-  `proof/VELDO-0267/pending-summary.txt`, logs under /tmp).
+- The registered falsifiers through the mutation stage (`check_teeth_mutations.py --finding 267`),
+  run by the lead inside the gate lock at 26dc9b04 (2026-11-07T13:18Z): `mutations: passed registered=13
+  executed=13 reused=0 rejected=13`, 27 s.
+- Fix check of 2026-11-07 (research/claude-runs/veldo-0267-fixcheck-2026-11-07.md): SOUND.
 
 ## Still open
 
-- `check_teeth_mutations.py --finding 267` (pending_runs.sh).
 - F2, with VELDO-0268.
 - The gate-time estimates in the spec's Context are re-measured on the first gates after landing.
