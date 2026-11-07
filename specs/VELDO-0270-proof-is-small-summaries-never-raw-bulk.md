@@ -14,6 +14,10 @@ footprint:
   - ".veldo/policy.yaml"
   - ".veldo/validate.py"
   - "engine/.veldo/validate.py"
+  - ".veldo/proof_size.py"
+  - "engine/.veldo/proof_size.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/init_scaffold.py"
   - "scripts/veldo-guard.sh"
   - "engine/scripts/veldo-guard.sh"
   - "packs/*/hooks/pre-push"
@@ -193,3 +197,5 @@ and to refuse big files from now on. Evidence: the weight audit item 2. Nothing 
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708: routine and test-machinery work no longer needs his sign-off; listed in his daily summary). The rule itself was his decision in 39704.
 
 2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
+
+2026-11-07: footprint gains .veldo/proof_size.py and .veldo/init_scaffold.py with their engine copies, by the lead under Telegram 39708 (ACs unchanged): the proof size check grew .veldo/validate.py to 1224 lines against the 1000-line budget WARP-1309 AC6 enforces, so the check moves into its own module that validate.py loads, registered in the scaffold asset list (fix round 1, proof/VELDO-0270/README.md).
