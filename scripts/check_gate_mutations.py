@@ -1592,10 +1592,10 @@ def gate_selection(chooser, root, common, leg):
             record = chooser.select(full_inventory, None, base=None, candidate=None,
                                     error='the candidate commit cannot be read')
         else:
-            record = chooser.plan(full_inventory, git=git, candidate=candidate,
-                                  base=os.environ.get('VELDO_GATE_BASE_COMMIT') or None,
+            base = os.environ.get('VELDO_GATE_BASE_COMMIT') or None
+            record = chooser.plan(full_inventory, git=git, candidate=candidate, base=base,
                                   case_inputs_path=Path(root) / 'scripts/mutation_case_inputs.json',
-                                  approvals=chooser.read_approvals(ROOT), unconfined=unconfined,
+                                  approval_rule=chooser.policy_approval_rule(root, base), unconfined=unconfined,
                                   resources=lambda case: demands.get(case['suite']))
         print(chooser.line(record), flush=True)
         destination = os.environ.get('VELDO_MUTATION_SELECTION')

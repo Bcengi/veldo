@@ -25,7 +25,9 @@ THE NIGHTLY STATE lives in the authority's state directory, outside every candid
   <state>/sweeps/<run id>.json   veldo.mutation-sweep/v1, one per sweep
   <state>/coverage.json          veldo.mutation-coverage/v1, published by a green sweep only
 landing_refusal() is the landing check: the latest finished sweep red and not explained by an owner
-approval naming its run id and every failing case with a reason refuses as nightly_red.
+approval naming its run id and every failing case with a reason refuses as nightly_red. An approval
+counts only through the protected-path approval rule (policy_check.approval_rule): approved, unexpired,
+bound to a commit of the push, and not approved by the work's producer.
 
 Standard library only.
 """
@@ -282,55 +284,72 @@ def failing_cases(record):
     return sorted({f['case'] for f in record.get('failures', []) if isinstance(f, dict) and isinstance(f.get('case'), str)})
 
 
-def explaining_approval(record, approvals, now):
-    """The first approval that names this red sweep's run id and gives a reason for each failing
-    case: veldo.approval/v1, decision approved, unexpired, an approver, scope.nightly_run equal to the
-    run id and scope.cases mapping every failing case to a non-empty reason. A red record that names
-    no failing case cannot be explained by name and stays red."""
+def explains(approval, record):
+    """Whether an approval's scope explains this red sweep: veldo.approval/v1, scope.nightly_run equal
+    to the run id and scope.cases mapping every failing case to a non-empty reason. A red record that
+    names no failing case cannot be explained by name and stays red."""
     failing = failing_cases(record)
-    if not failing:
+    if not failing or not isinstance(approval, dict) or approval.get('schema') != 'veldo.approval/v1':
+        return False
+    scope = approval.get('scope')
+    if not isinstance(scope, dict) or scope.get('nightly_run') != record['run_id']:
+        return False
+    cases = scope.get('cases')
+    return isinstance(cases, dict) and all(isinstance(cases.get(c), str) and cases[c].strip() for c in failing)
+
+
+def explaining_approval(record, approval_rule):
+    """The approval that explains this red sweep, or None. approval_rule is the protected-path
+    approval rule (policy_check.approval_rule: valid_approval_for over the push range, so approved,
+    unexpired, bound to a commit of the push and approved by someone who is not the work's producer),
+    asked with this sweep's scope test. Nothing else makes an approval count; with no rule, or a rule
+    that fails, nothing explains the sweep."""
+    if approval_rule is None or not failing_cases(record):
         return None
-    for name, approval in approvals:
-        if not isinstance(approval, dict) or approval.get('schema') != 'veldo.approval/v1':
-            continue
-        if approval.get('decision') != 'approved' or not approval.get('approver'):
-            continue
-        scope = approval.get('scope')
-        if not isinstance(scope, dict) or scope.get('nightly_run') != record['run_id']:
-            continue
-        cases = scope.get('cases')
-        if not isinstance(cases, dict) or any(not isinstance(cases.get(c), str) or not cases[c].strip()
-                                              for c in failing):
-            continue
-        try:
-            expires = datetime.datetime.fromisoformat(approval['expires_at'].replace('Z', '+00:00')).timestamp()
-        except (KeyError, AttributeError, ValueError):
-            continue
-        if expires <= now:
-            continue
-        return name
-    return None
+    try:
+        return approval_rule(lambda approval: explains(approval, record))
+    except Exception:
+        return None
 
 
-def landing_refusal(state, approvals, now=None):
+def policy_approval_rule(root, base):
+    """The installation's own approval rule (its .veldo/policy_check.py approval_rule) pointed at the
+    subject `root` over base..HEAD, loaded on first use; when it cannot be loaded or read, no
+    approval explains anything."""
+    loaded = []
+
+    def rule(accept):
+        if not loaded:
+            import importlib.util
+            path = HERE.parent / '.veldo' / 'policy_check.py'
+            spec = importlib.util.spec_from_file_location('veldo_selection_policy', path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            module.ROOT = Path(root)
+            module.BASE = base
+            loaded.append(module.approval_rule())
+        return loaded[0](accept)
+    return rule
+
+
+def landing_refusal(state, approval_rule):
     """None when landing may proceed, else ('nightly_red', detail). Only the LATEST finished sweep
     decides: a later green sweep clears an earlier red one without approval."""
-    now = now if now is not None else datetime.datetime.now(datetime.timezone.utc).timestamp()
     records = sweeps(state)
     if not records:
         return None
     latest = records[-1]
     if latest['verdict'] == 'green':
         return None
-    if explaining_approval(latest, approvals, now):
+    if explaining_approval(latest, approval_rule):
         return None
     return ('nightly_red', 'the nightly sweep %s on %s is red: %s' % (
         latest['run_id'], str(latest.get('trunk_commit'))[:12], ', '.join(failing_cases(latest)) or 'no case named'))
 
 
-def last_trusted(state, approvals, now):
+def last_trusted(state, approval_rule):
     """The finish time of the last green or explained sweep, or None."""
-    trusted = [r for r in sweeps(state) if r['verdict'] == 'green' or explaining_approval(r, approvals, now)]
+    trusted = [r for r in sweeps(state) if r['verdict'] == 'green' or explaining_approval(r, approval_rule)]
     return parse_utc(trusted[-1]['finished_at']) if trusted else None
 
 
@@ -342,20 +361,10 @@ def nightly_summary(state):
     return {k: latest.get(k) for k in ('run_id', 'trunk_commit', 'verdict', 'finished_at')}
 
 
-def read_approvals(root):
-    found = []
-    for path in sorted(Path(root).glob('proof/*/approval*.json')):
-        try:
-            found.append((str(path), json.loads(path.read_text())))
-        except (OSError, ValueError):
-            continue
-    return found
-
-
 # The selection.
 
 def select(cases, rule, *, base, candidate, changed=None, coverage=None, case_inputs=None,
-           approvals=(), state=None, started=None, error=None):
+           approval_rule=None, state=None, started=None, error=None):
     """The selection record. Any input that is None (or an error) makes the full sweep, named."""
     started = started if started is not None else datetime.datetime.now(datetime.timezone.utc).timestamp()
     canaries = set(rule['canaries']) if rule else set()
@@ -393,7 +402,7 @@ def select(cases, rule, *, base, candidate, changed=None, coverage=None, case_in
         limit = rule['nightly']['max_age_hours'] * 3600
         finished = parse_utc(coverage['finished_at'])
         if state is not None:
-            trusted = last_trusted(state, approvals, started)
+            trusted = last_trusted(state, approval_rule)
             finished = max(finished, trusted) if trusted is not None else finished
         record['nightly'] = {'last_trusted_at': utc(finished), 'max_age_hours': rule['nightly']['max_age_hours']}
         if started - finished > limit:
@@ -459,7 +468,7 @@ def line(record):
 
 
 def plan(cases, *, git, candidate, base=None, trunk=None, rule_path=RULE, case_inputs_path=None,
-         approvals=(), started=None, unconfined=lambda c: False, resources=lambda c: {}):
+         approval_rule=None, started=None, unconfined=lambda c: False, resources=lambda c: {}):
     """The gate's selection: never raises. Anything that cannot be read is the full sweep, named."""
     try:
         rule = load_rule(rule_path)
@@ -480,7 +489,7 @@ def plan(cases, *, git, candidate, base=None, trunk=None, rule_path=RULE, case_i
     except Invalid as error:
         coverage = error
     return select(cases, rule, base=base, candidate=candidate, changed=changed, coverage=coverage,
-                  case_inputs=case_inputs, approvals=approvals, state=state, started=started)
+                  case_inputs=case_inputs, approval_rule=approval_rule, state=state, started=started)
 
 
 def write_record(path, record):

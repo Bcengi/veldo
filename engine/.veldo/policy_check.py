@@ -159,13 +159,15 @@ def _approval_covers(approval, path):
     return False
 
 
-def valid_approval_for(commits, path=None, producer=None):
+def valid_approval_for(commits, path=None, producer=None, accept=None):
     """An approval is valid if it is approved, unexpired, commit-bound to a
     commit in the push range, and - when a path is given - scopes that path.
     Commit binding to HEAD alone is unsatisfiable (the approval lands in an
     evidence commit that cannot name its own hash), so range binding is used.
     Self-separation: an approver who is also the proof producer cannot approve
-    their own work."""
+    their own work. `accept`, when given, is a caller's own scope test on the
+    approval object (the nightly sweep's run id and cases, VELDO-0267): it
+    narrows which approvals count and never replaces a check above."""
     if isinstance(commits, str):
         commits = [commits]
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -205,6 +207,8 @@ def valid_approval_for(commits, path=None, producer=None):
         if exp <= now:
             continue
         if path is not None and not _approval_covers(a, path):
+            continue
+        if accept is not None and not accept(a):
             continue
         if producer and a.get("approver") and a["approver"] == producer:
             continue  # self-approval: the approver produced the work
@@ -490,7 +494,17 @@ def _nightly_reader():
     return module
 
 
-def nightly_refusal(now=None):
+def approval_rule():
+    """The protected-path approval rule over this push, for a caller that adds its own scope test:
+    accept -> the approval file valid_approval_for finds (approved, unexpired, bound to a commit of
+    the push range, approver not the work's producer, and accepted by `accept`), or None. The
+    nightly check (VELDO-0267) explains a red sweep only through it, never through a second copy."""
+    commits = push_range_commits() or [head()]
+    producer = producer_for(_head_spec_id())
+    return lambda accept: valid_approval_for(commits, producer=producer, accept=accept)
+
+
+def nightly_refusal():
     """None, or the line that refuses landing as nightly_red."""
     reader = _nightly_reader()
     if reader is None:
@@ -499,13 +513,11 @@ def nightly_refusal(now=None):
         state = reader.state_directory(reader.load_rule(reader.RULE))
     except reader.Invalid as error:
         return "nightly_red: the nightly sweep state cannot be located (%s)" % error
-    approvals = []
-    for f in _corpus_files(_VC.APPROVAL_PATTERN):
-        try:
-            approvals.append((str(f), json.loads(f.read_text())))
-        except Exception:
-            continue
-    refused = reader.landing_refusal(state, approvals, now)
+    try:
+        rule = approval_rule()
+    except Exception:  # The push range cannot be read: no approval explains anything.
+        rule = None
+    refused = reader.landing_refusal(state, rule)
     return None if refused is None else "%s: %s" % refused
 
 
