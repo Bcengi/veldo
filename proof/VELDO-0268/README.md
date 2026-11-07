@@ -254,6 +254,52 @@ mutation row green):
   --finding 268`, 34 cases), passes `bash -n`, appends one line per step to
   proof/VELDO-0268/pending-summary.txt, logs /tmp/v268-fix5-suite.log and /tmp/v268-fix5-teeth.log.
 
+## Fix round 6 (fourth fix check, research/claude-runs/veldo-0268-fixcheck4-2026-11-07.md)
+
+- F7: the F6 (b) check above ran only when no word of the command was git. When a wrapper's other
+  words included git or a path ending in /git (sh's $0), the guard judged that bare word instead and
+  never looked for an alias. Now, when a git command's subcommand is not a push or merge, the guard
+  judges the whole command text for aliases as it does a compound command (alias_in_text), and that
+  scan reads every git in the text, overlapping ones too, so a git inside another git's -c value is
+  seen. Each of these is judged as the push it expands to, unresolved and so treated as protected:
+  sh -c 'git pm' git; bash -c 'git p origin main' /usr/bin/git; bash -c 'git sp' git; timeout 60
+  sh -c 'git pm' git; sh -c 'git -C <repo> pm' git from a cwd outside the repository; sh -c 'git p
+  origin main' x /usr/bin/git; git -c core.editor='git pm #' commit with the allow-empty option;
+  the same value as core.pager for git log; and the editor case after cd . in a list.
+- Consequence, fails closed: a simple git command whose text sets an alias with -c alias.<name>=,
+  runs any shell alias (a value starting with !), or names an alias that may push anywhere in its
+  text (a commit message saying git pm, for example) is now unresolved, as the same text already
+  was in a compound command. git status, an ordinary commit and a non-pushing alias (lg = log
+  oneline) still pass.
+- Rows: push/alias-shell-c now holds the two fix round 5 commands, the nine above (each exit 2 on
+  the gate text, main unmoved) and four that pass (sh -c 'git status', the same with a trailing git
+  word, an ordinary commit, git lg -1).
+- Falsifiers (suite and teeth driver, both on push/alias-shell-c): the new alias_in_text call
+  dropped from judge_git; the scan back to non-overlapping matches (misses the editor and pager
+  values).
+- Stated residuals, no change (the class the fourth check named): a subcommand that only appears
+  at run time. git $(echo push) origin main, echo push origin main | xargs git, and g''it all reach
+  git with a subcommand or a program name that is not in the text the guard reads; a text guard
+  cannot see what a shell expansion, a pipe or quote removal produces, and guessing at every
+  expansion would refuse ordinary commands. The real line of defence for these is a pre-push hook
+  that judges the actual refs git is about to send (the lead is raising that with the owner
+  separately). Also unchanged: shell aliases whose text never contains the words git, push or merge.
+- Development driver /tmp/v268f6/driver.py (written with the editor tool, run as one plain command
+  with python3 -I against /tmp fixture repositories and bare remotes): the nine commands above exit
+  2 on the gate text with main unmoved; sh -c 'git status' git, git status, git lg -1, an ordinary
+  commit and a working-branch push exit 0 and run (the push lands).
+- Guard block while building: the repository's own PreToolUse guard blocked one Bash command (a
+  python heredoc editing the guard, whose text named an alias; it was not a push or merge) as an
+  unresolved destination on a red stamp. That is this round's check doing its job on our own text.
+  The edit was made with the editor tool instead; nothing was pushed or merged.
+- Commit 30ad2b0c (three guard copies byte-identical, md5 82392168e8205704e75290d1c7f3684a; suite;
+  teeth driver).
+- Runs: pending. The gate lock was not free in 20 minutes (one wait, 17:36 to 17:56, flock timed
+  out, no run started). proof/VELDO-0268/pending_runs.sh holds the two runs (suite 141 with details
+  on, 48 behaviour and 36 mutation rows expected green; then `check_teeth_mutations.py --finding
+  268`, 36 cases), passes `bash -n`, appends one line per step to
+  proof/VELDO-0268/pending-summary.txt, logs /tmp/v268-fix6-suite.log and /tmp/v268-fix6-teeth.log.
+
 ## Open
 
 - scripts/suites/requires.json is outside the footprint. It is derived (`python3 scripts/run_scope.py
