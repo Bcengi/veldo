@@ -12279,8 +12279,8 @@ def cases():
         '            if _lowers(now, [s for s, n in states if n == names]):  # defect: a renamed file is another spec',
         ['lowered/rename'])
     add(272, 'scope272-unreadable-base-not-required', scope272, 'policy_check.py',
-        '    return any(b in ("required", "unreadable") for b in before)',
-        '    return any(b == "required" for b in before)  # defect: a base that cannot be read lowers nothing',
+        '    return bool(before) and all(b in ("required", "unreadable") for b in before)',
+        '    return bool(before) and all(b == "required" for b in before)  # defect: a base that cannot be read lowers nothing',
         ['lowered/two-step'])
     add(272, 'scope272-unreadable-head-not-lowered', scope272, 'policy_check.py',
         '    if now == "required" or now in before:',
@@ -12332,9 +12332,7 @@ def cases():
         '            return commits, [tip]',
         '            return commits, [tip] + [q for c in commits for q in _parents(c) if q not in commits]'
         '  # defect: every boundary is a base',
-        ['lowered/old-base-merge'],
-        also=[('            for b in ([p] if p in inside or p in bases else bases):',
-               '            for b in [p]:  # defect: an old trunk parent is a before value')])
+        ['lowered/old-base-merge'])
     # Fix round 2, N2: the one approval predicate accepts a missing approver, skips the self-approval test
     # when the producer cannot be determined, compares identities raw, or the protected-path check takes the
     # producer from the verdict at HEAD or its parent.
@@ -12370,6 +12368,19 @@ def cases():
     add(272, 'scope272-uncovered-code-lands', scope272, 'policy_check.py',
         '    if work and not landing_specs(pushed):',
         '    if False:  # defect: code with no reviewed spec lands',
+        ['review/covered'])
+    # Fix round 4, M1: a commit is judged against the tip instead of its real parents, so an honest merge of
+    # trunk after trunk added or raised a required spec is refused as a lowering.
+    add(272, 'scope272-lowering-judged-against-tip', scope272, 'policy_check.py',
+        '        befores = _parents(c)\n        if befores:',
+        '        befores = [p if p in commits else bases[0] for p in _parents(c)]'
+        '  # defect: an outside parent is judged as the tip\n        if befores:',
+        ['lowered/honest-trunk-merge'])
+    # Fix round 4: any file under specs/ or proof/ is exempt, so a script there lands with no spec.
+    add(272, 'scope272-loose-file-exempt', scope272, 'policy_check.py',
+        '    work = [f for f in pushed if not (_SPEC_FILE.match(f) or _PROOF_FILE.match(f))]',
+        '    work = [f for f in pushed if not (f.startswith("specs/") or f.startswith("proof/"))]'
+        '  # defect: every file under specs/ or proof/ is exempt',
         ['review/covered'])
     # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
     add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',

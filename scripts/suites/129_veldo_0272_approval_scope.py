@@ -35,6 +35,7 @@ def _v272_suite():
             'AC3 lowered/rename', 'AC3 lowered/two-step', 'AC3 lowered/delete-re-add', 'AC3 lowered/merge',
             'AC3 review/producer-identity', 'AC3 review/per-spec',
             'AC3 lowered/old-base-merge', 'AC3 approval/identity', 'AC3 review/covered',
+            'AC3 lowered/honest-trunk-merge',
             'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped',
             'AC4 summary/every-landing', 'AC4 summary/judged-fields',
             'AC4 summary/approvers-judged', 'AC4 summary/separate-runs')
@@ -596,11 +597,26 @@ def _v272_suite():
             check('AC3 review/covered', 'an ordinary reviewed landing of code: exit 0 [%s]' % cv['reviewed'][1].strip()[:160],
                   cv['reviewed'][0] == 0)
 
+            # Fix round 4: only a spec file or a proof bundle is exempt; a script under specs/ or proof/ is work.
+            def loose_case(where, Pmod):
+                repo = new_repo(where, 'cov-loose')
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                write(repo, 'specs/tool.sh', 'echo tool\n')
+                write(repo, 'proof/tool.py', 'print(1)\n')
+                commit(repo, 'a script under specs/ and proof/')
+                return run_main(Pmod, repo)
+
+            lc = loose_case(Path(base) / 'cv-loose', P)
+            check('AC3 review/covered', 'specs/tool.sh and proof/tool.py with no spec: exit 1 no spec covers [%s]'
+                  % lc[1].strip()[:160], lc[0] == 1 and 'landing_without_review: no spec covers' in lc[1]
+                  and 'specs/tool.sh' in lc[1] and 'proof/tool.py' in lc[1])
+
             # N1: a branch made before the raise and merged after it; the lowering is judged against the push
             # base (the protected ref's current tip), never against an old trunk commit among the parents.
-            def old_base_merge_case(where, Pmod, approved):
+            def old_base_merge_case(where, Pmod, approved, on_feature=False):
                 sid, rel = 'VELDO-9317', 'specs/VELDO-9317-raised.md'
-                repo = new_repo(where, 'old-base-%s' % approved)
+                repo = new_repo(where, 'old-base-%s-%s' % (approved, on_feature))
                 write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
                 write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
                 old = commit(repo, 'the spec, not required')
@@ -611,6 +627,11 @@ def _v272_suite():
                 write(repo, 'docs/side.md', 'side\n')
                 commit(repo, 'side work from before the raise')
                 git(repo, 'checkout', '-q', 'main')
+                if on_feature:
+                    # The merge is made on a feature branch cut from the tip, after a commit of its own.
+                    git(repo, 'checkout', '-q', '-b', 'feat')
+                    write(repo, 'docs/feat.md', 'feat\n')
+                    commit(repo, 'feature work from the tip')
                 git(repo, 'merge', '-q', '--no-ff', '--no-commit', 'side')
                 write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
                 m = commit(repo, 'merge side, taking the old value')
@@ -626,6 +647,45 @@ def _v272_suite():
                   'reviewed, no approval: exit 1 [%s]' % ob['bare'][1].strip()[:200], lowered(*ob['bare']))
             check('AC3 lowered/old-base-merge', 'the same with an owner approval scoping the spec file: exit 0 [%s]'
                   % ob['approved'][1].strip()[:200], ob['approved'][0] == 0)
+            obf = old_base_merge_case(Path(base) / 'ob3', P, False, on_feature=True)
+            check('AC3 lowered/old-base-merge', 'the same merge made on a feature branch cut from the tip, no approval: '
+                  'exit 1 [%s]' % obf[1].strip()[:200], lowered(*obf))
+
+            # M1 (fix round 4): a branch cut before trunk added or raised a required spec, then an honest merge
+            # of trunk that keeps trunk's value. Its commits are judged against their real parents and only for
+            # the spec ids they changed, so the branch's pre-merge work lowers nothing and the push lands.
+            def honest_merge_case(where, Pmod, kind):
+                repo = new_repo(where, 'honest-' + kind)
+                tsid, trel = 'VELDO-9351', 'specs/VELDO-9351-trunk.md'
+                if kind == 'raised':
+                    write(repo, trel, spec_text(tsid, 'not_required', ['docs/**']))
+                    write(repo, 'proof/%s/manifest.json' % tsid, json.dumps(manifest(tsid)))
+                fork = commit(repo, 'base')
+                write(repo, trel, spec_text(tsid, 'required', ['docs/**']))
+                write(repo, 'proof/%s/manifest.json' % tsid, json.dumps(manifest(tsid)))
+                commit(repo, 'trunk adds the spec required' if kind == 'new' else 'the owner raises it to required')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                git(repo, 'checkout', '-q', '-b', 'feat', fork)
+                sid, rel = 'VELDO-9352', 'specs/VELDO-9352-feat.md'
+                write(repo, 'docs/feat.md', 'feat\n')
+                write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                commit(repo, 'branch work from before the trunk change')
+                git(repo, 'merge', '-q', '--no-ff', '-m', 'merge main into feat', 'main')
+                m = git(repo, 'rev-parse', 'HEAD')
+                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, m, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                commit(repo, 'review')
+                return run_main(Pmod, repo)
+
+            hm = {kind: honest_merge_case(Path(base) / ('hm-' + kind), P, kind) for kind in ('new', 'raised')}
+            check('AC3 lowered/honest-trunk-merge', 'trunk added a required spec after the fork; the branch merges '
+                  'main and lands its reviewed work: exit 0 [%s]' % hm['new'][1].strip()[:200], hm['new'][0] == 0)
+            check('AC3 lowered/honest-trunk-merge', 'trunk raised a spec to required after the fork; the branch merges '
+                  'main and lands its reviewed work: exit 0 [%s]' % hm['raised'][1].strip()[:200], hm['raised'][0] == 0)
+            check('AC3 lowered/honest-trunk-merge', 'the N1 evasions still refuse: rename, two-step, delete and re-add, '
+                  'merge, and the pre-raise merge on trunk and on a feature branch',
+                  lowered(*lw['rename']) and lowered(*lw['two-step']) and lowered(*lw['delete-re-add'])
+                  and lowered(*lw['merge-pre']) and lowered(*lw['merge-new']) and lowered(*ob['bare']) and lowered(*obf))
 
             # N2: the one approval predicate refuses a missing approver, a producer that cannot be determined
             # and a normalized self-approval, for the protected-path check, the required-spec approval and

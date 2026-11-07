@@ -16,7 +16,7 @@ prints the reason and exits 1 (block). Checks, for the current HEAD:
    every spec a push carries needs a passing verdict from a reviewer who is
    not the producer (landing_without_review), and a spec the rule computes
    as required needs the owner's approval as well; a push changing anything
-   outside specs/ and proof/ needs at least one such spec that is not a draft
+   but spec files and proof bundles needs at least one such spec that is not a draft
    (N3: a draft covers nothing).
 
 Proportionate by design: stdlib only, no yaml dependency (reads the simple
@@ -262,14 +262,16 @@ def _flag_state(rev, sid, cache):
 
 
 def _lowers(now, before):
-    """A change from the `before` states (one per parent, or one per push base) to `now` lowers the flag
-    when `now` is not required, a before state is required or unreadable (FAIL CLOSED: a value that
-    cannot be read counts as required, so a lowering through a broken or deleted spec is still a
-    lowering), and no before state already is `now` (a merge that takes an already landed state from one
-    side lowers nothing itself)."""
+    """A change from the `before` states (one per real parent, or the push base) to `now` lowers the
+    flag when `now` is lower than the value on EVERY before that has the spec: `now` is not required,
+    at least one before has the spec (a before where it is absent is no value to lower), and every
+    before that has it is required or unreadable (FAIL CLOSED: a value that cannot be read counts as
+    required, so a lowering through a broken or deleted spec is still a lowering). A merge that takes
+    a value one side already has lowers nothing itself (VELDO-0272 M1)."""
+    before = [b for b in before if b != "absent"]
     if now == "required" or now in before:
         return False
-    return any(b in ("required", "unreadable") for b in before)
+    return bool(before) and all(b in ("required", "unreadable") for b in before)
 
 
 def _parents(c):
@@ -322,15 +324,16 @@ def lowered_flags(commits, bases):
     """[(spec id, commit, spec file names)]: every lowering of a spec's human_approval from required
     (approval_flag_lowered unless the owner scoped its files). VELDO-0272 F1: judged by spec ID, so a
     rename, a delete and re-add, or a two-step lowering through an unreadable state is seen, (1) between
-    the push base and HEAD, which is what lands, and (2) per commit in the range against every parent,
-    merges included, which is the AC's per-commit reading. A base value that cannot be read counts as
-    required (fail closed). VELDO-0272 N1: the push base is the protected ref's current tip, and a parent
-    outside the range is judged as that tip, so an old trunk commit (a state from before a raise) is
-    never a value a lowering can hide behind."""
+    the push base and HEAD, which is what lands, and (2) per commit in the range, merges included, which
+    is the AC's per-commit reading. A base value that cannot be read counts as required (fail closed).
+    VELDO-0272 N1: the push base is the protected ref's current tip, so an old trunk commit (a state from
+    before a raise) is never a value the landed state is measured against. VELDO-0272 M1: a commit is
+    judged only for the spec ids it changed against its REAL parents, and against those parents (a merge
+    against every parent), never against the tip: a branch commit made before trunk added or raised a
+    spec did not lower it, and an honest merge of trunk keeps trunk's value."""
     cache = {}
     out = []
     seen = set()
-    inside = set(commits)
 
     def judge(target, befores):
         ids = set()
@@ -349,11 +352,7 @@ def lowered_flags(commits, bases):
     if commits and bases:
         judge(head(), bases)
     for c in commits:
-        befores = []
-        for p in _parents(c):
-            for b in ([p] if p in inside or p in bases else bases):
-                if b not in befores:
-                    befores.append(b)
+        befores = _parents(c)
         if befores:
             judge(c, befores)
     return out
@@ -905,7 +904,7 @@ def main():
         if fm.get("status") == "draft":
             # A draft lands no work: it cannot carry proof (the ready boundary below refuses one), so
             # no verdict can bind to it. It covers no work either: the N3 check below refuses a push
-            # changing anything outside specs/ and proof/ with only drafts; an unreadable spec is not a
+            # changing anything but spec files and proof bundles with only drafts; an unreadable spec is not a
             # draft and is judged.
             continue
         if not reviewed_landing(sid, rng):
@@ -923,16 +922,18 @@ def main():
             print("  and whose approver is not the proof producer.")
             return 1
 
-    # VELDO-0272 N3: a push that changes anything outside specs/ and proof/ must be covered by a spec
+    # VELDO-0272 N3: a push that changes anything but spec files and proof bundles must be covered by a spec
     # whose landing the loop above judged (reviewed, and owner approved when required). A draft spec
     # covers nothing, and neither does a ready spec switched back to draft in the same push: it is a
     # draft at HEAD. Without this, code with no spec, or with only a draft beside it, landed unreviewed.
     pushed = changed_files()
-    work = [f for f in pushed if not (f.startswith("specs/") or f.startswith("proof/"))]
+    # Only a spec file or a file of a spec's proof bundle is exempt; any other file under specs/ or
+    # proof/ (a script, a loose note) is work like any other (VELDO-0272 fix round 4).
+    work = [f for f in pushed if not (_SPEC_FILE.match(f) or _PROOF_FILE.match(f))]
     if work and not landing_specs(pushed):
         print("VELDO policy: blocked. landing_without_review: no spec covers %s" % ", ".join(sorted(work)[:5])
               + (" (and %d more)" % (len(work) - 5) if len(work) > 5 else ""))
-        print("  A push that changes anything outside specs/ and proof/ must carry a spec that is not a")
+        print("  A push that changes anything but spec files and proof bundles must carry a spec that is not a")
         print("  draft at HEAD, with a pass or pass_with_notes verdict bound to a commit in this push and")
         print("  to its current proof digest, from a reviewer who is not the proof producer (and the")
         print("  owner's approval when the spec is approval required). A draft spec covers nothing.")
