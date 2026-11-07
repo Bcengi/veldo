@@ -292,15 +292,24 @@ def _changed_ids(a, b, cache):
 
 
 def push_range():
-    """(commits, bases): every commit being pushed, HEAD first, and the push base, the commits just
-    outside the range that it was built on (rev-list --boundary over the same `_range_specs`, so it
-    cannot disagree with push_range_commits). With no readable range and no BASE, the range is HEAD and
-    the bases are its parents."""
+    """(commits, bases): every commit being pushed, HEAD first (rev-list over the same `_range_specs`, so
+    it cannot disagree with push_range_commits), and the push base: the ONE commit the range is measured
+    from, the protected ref's current tip (BASE, or the ref `_range_specs` resolved). VELDO-0272 N1: never
+    every boundary commit, because a merge whose second parent is an old trunk commit puts a pre-raise
+    state among the boundaries, and a lowering judged against any ancestor is no lowering at all. A tip
+    that cannot be resolved for a range that can be read is an error (FAIL CLOSED). With no readable
+    range and no BASE, the range is HEAD and the bases are its parents."""
     for spec in _range_specs():
-        r = _git_process.run(["git", "rev-list", "--boundary", spec], capture_output=True, text=True, cwd=ROOT)
+        r = _git_process.run(["git", "rev-list", spec], capture_output=True, text=True, cwd=ROOT)
         if r.returncode == 0:
-            lines = [l for l in r.stdout.splitlines() if l]
-            return [l for l in lines if not l.startswith("-")], [l[1:] for l in lines if l.startswith("-")]
+            commits = [l for l in r.stdout.splitlines() if l]
+            left = spec[:-len("..HEAD")]
+            t = _git_process.run(["git", "rev-parse", "--verify", "--quiet", left + "^{commit}"],
+                                 capture_output=True, text=True, cwd=ROOT)
+            tip = t.stdout.strip() if t.returncode == 0 else ""
+            if not tip:
+                raise RuntimeError("the push base %s cannot be resolved" % left)
+            return commits, [tip]
     if BASE is not None:
         raise RuntimeError("the push range %s..HEAD cannot be read" % BASE)
     h = head()
@@ -313,10 +322,13 @@ def lowered_flags(commits, bases):
     rename, a delete and re-add, or a two-step lowering through an unreadable state is seen, (1) between
     the push base and HEAD, which is what lands, and (2) per commit in the range against every parent,
     merges included, which is the AC's per-commit reading. A base value that cannot be read counts as
-    required (fail closed)."""
+    required (fail closed). VELDO-0272 N1: the push base is the protected ref's current tip, and a parent
+    outside the range is judged as that tip, so an old trunk commit (a state from before a raise) is
+    never a value a lowering can hide behind."""
     cache = {}
     out = []
     seen = set()
+    inside = set(commits)
 
     def judge(target, befores):
         ids = set()
@@ -333,11 +345,15 @@ def lowered_flags(commits, bases):
                     out.append((sid, target, files))
 
     if commits and bases:
-        judge(commits[0], bases)
+        judge(head(), bases)
     for c in commits:
-        ps = _parents(c)
-        if ps:
-            judge(c, ps)
+        befores = []
+        for p in _parents(c):
+            for b in ([p] if p in inside or p in bases else bases):
+                if b not in befores:
+                    befores.append(b)
+        if befores:
+            judge(c, befores)
     return out
 
 
@@ -416,13 +432,65 @@ def owner_approved(spec_id, commits):
     return bool(names) and all(valid_approval_for(commits, path=n, producer=producer) for n in names)
 
 
+def approval_refusal(a, commits, now, path=None, producer=None, spec_id=None):
+    """Why one parsed approval record cannot count, or None when it does. THE ONE approval predicate:
+    the push check (valid_approval_for) and the daily summary (landed_summary) both judge through it.
+    Valid: approved, scope an object bound to a commit of `commits`, unexpired at `now`, scoping `path`
+    and naming `spec_id` when given, and (VELDO-0272 N2, FAIL CLOSED) an approver who names somebody.
+    With `producer` not None the self-approval test always runs: a producer that names nobody (it cannot
+    be determined) refuses every approval, and an approver sharing a normalized identity with the
+    producer (case, spacing, a mapping or a list) is a self-approval. None means the caller asks no
+    self-separation; every call in main() passes one."""
+    if not isinstance(a, dict):
+        # A payload that PARSES but is not an object is skipped like one that does not parse at all:
+        # `"text"` and `[1,2]` are both valid JSON and neither is an approval.
+        return "not an object"
+    if a.get("decision") != "approved":
+        return "not approved"
+    # SCOPE MAY NOT BE AN OBJECT, and this is not hypothetical. `proof/WARP-0620/
+    # approval-dmitry.json` predates the current shape: it declares the same
+    # `veldo.approval/v1` schema but carries PROSE in `scope` and its `spec_id` at the top
+    # level. Two incompatible shapes under one schema string is the actual defect; the record
+    # itself is a faithful account of a decision Dmitry made and is not going to be rewritten
+    # to suit a parser.
+    #
+    # An approval whose scope is not an object cannot be commit-bound, and validity REQUIRES
+    # commit binding, so skipping is the same answer the next line gives when `bound` is missing.
+    scope = a.get("scope")
+    if not isinstance(scope, dict):
+        return "scope is not an object"
+    bound = scope.get("commit")
+    if not isinstance(bound, str) or not bound or not any(c.startswith(bound) for c in commits):
+        return "not bound to a commit of the push"
+    try:
+        exp = datetime.datetime.fromisoformat(a["expires_at"].replace("Z", "+00:00"))
+        if exp <= now:
+            return "expired"
+    except Exception:
+        return "no readable expiry"
+    if path is not None and not _approval_covers(a, path):
+        return "scope does not cover %s" % path
+    if spec_id is not None and scope.get("spec_id") != spec_id:
+        return "scope does not name %s" % spec_id
+    if not _identities(a.get("approver")):
+        return "names no approver"
+    if producer is not None:
+        if not _identities(producer):
+            return "the producer cannot be determined"
+        if _identities(a.get("approver")) & _identities(producer):
+            return "self-approval"
+    return None
+
+
 def valid_approval_for(commits, path=None, producer=None, spec_id=None):
     """An approval is valid if it is approved, unexpired, commit-bound to a
     commit in the push range, and - when a path is given - scopes that path.
     Commit binding to HEAD alone is unsatisfiable (the approval lands in an
     evidence commit that cannot name its own hash), so range binding is used.
     Self-separation: an approver who is also the proof producer cannot approve
-    their own work."""
+    their own work, and (VELDO-0272 N2) an approval naming no approver, or one
+    judged against a producer that cannot be determined, is refused (see
+    approval_refusal, the one predicate)."""
     if isinstance(commits, str):
         commits = [commits]
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -431,44 +499,34 @@ def valid_approval_for(commits, path=None, producer=None, spec_id=None):
             a = json.loads(f.read_text())
         except Exception:
             continue
-        # A payload that PARSES but is not an object is skipped like one that does not parse at all:
-        # `"text"` and `[1,2]` are both valid JSON and neither is an approval. The reader already
-        # tolerates a file that does not parse, so tolerating one that parses to the wrong type is
-        # the consistent behaviour, not an extra kindness.
-        if not isinstance(a, dict):
-            continue
-        if a.get("decision") != "approved":
-            continue
-        # SCOPE MAY NOT BE AN OBJECT, and this is not hypothetical. `proof/WARP-0620/
-        # approval-dmitry.json` predates the current shape: it declares the same
-        # `veldo.approval/v1` schema but carries PROSE in `scope` and its `spec_id` at the top
-        # level. Two incompatible shapes under one schema string is the actual defect; the record
-        # itself is a faithful account of a decision Dmitry made and is not going to be rewritten
-        # to suit a parser.
-        #
-        # An approval whose scope is not an object cannot be commit-bound, and this function's own
-        # contract is that validity REQUIRES commit binding, so skipping is the same answer the
-        # next line already gives when `bound` is missing.
-        scope = a.get("scope")
-        if not isinstance(scope, dict):
-            continue
-        bound = scope.get("commit")
-        if not bound or not any(c.startswith(bound) for c in commits):
-            continue
-        try:
-            exp = datetime.datetime.fromisoformat(a["expires_at"].replace("Z", "+00:00"))
-        except Exception:
-            continue
-        if exp <= now:
-            continue
-        if path is not None and not _approval_covers(a, path):
-            continue
-        if spec_id is not None and scope.get("spec_id") != spec_id:
-            continue
-        if producer and a.get("approver") and a["approver"] == producer:
-            continue  # self-approval: the approver produced the work
-        return str(f)
+        if approval_refusal(a, commits, now, path=path, producer=producer, spec_id=spec_id) is None:
+            return str(f)
     return None
+
+
+def push_producer(spec_ids):
+    """The producers of the specs a push lands, as one list for the self-approval test, or "" when it
+    cannot be determined (VELDO-0272 N2): no landing spec, or one whose proof records no producer. Never
+    the producer of whatever verdict happens to bind HEAD or its parent, which is "" after one trailing
+    commit and switched the test off."""
+    producers = [producer_for(sid) for sid in spec_ids]
+    if not producers or any(not _identities(p) for p in producers):
+        return ""
+    return producers
+
+
+def landing_specs(files):
+    """The specs a push lands: each spec it carries (push_specs) that is not a draft at HEAD. A draft
+    lands no work; an unreadable spec is not a draft."""
+    out = []
+    for sid in push_specs(files):
+        try:
+            fm = _spec_file_fm(sid)
+        except ValueError:
+            fm = {}
+        if fm.get("status") != "draft":
+            out.append(sid)
+    return out
 
 
 def open_emergency_debt():
@@ -772,7 +830,7 @@ def main():
         # THE OWNER'S OVERRIDE IS THE APPROVAL BLOCK THAT ALREADY EXISTS, not a new artifact and
         # not a new field: it is the one thing at this gate an agent cannot produce, and an
         # override belongs on that footing. Self-approval is refused by valid_approval_for.
-        override = valid_approval_for(rng_f, producer=producer_for(_head_spec_id()))
+        override = valid_approval_for(rng_f, producer=push_producer(landing_specs(changed_files())))
         if not override:
             print("VELDO policy: blocked. A review objected and the objection is unresolved.")
             for sid, path, finding in objections:
@@ -803,14 +861,16 @@ def main():
         rng = push_range_commits() or [h]
         # each touched protected path needs an approval that names it, whose
         # approver is not the work's producer (self-separation).
+        producer = push_producer(landing_specs(changed_files()))
         for tf, p in touched:
-            producer = producer_for(_head_spec_id())
             if not valid_approval_for(rng, path=tf, producer=producer):
                 print("VELDO policy: blocked. Protected path touched with no valid path-scoped approval.")
                 print(f"  {tf}  (protected by {p})")
                 print("  Required: an approved, unexpired veldo.approval/v1 whose scope.commit is a")
                 print(f"  commit in this push, whose scope.paths covers {tf}, and whose approver")
-                print("  is not the proof producer (no self-approval).")
+                print("  is not the proof producer (no self-approval)%s." % (
+                    "" if producer else "; the producer cannot be determined (no landing spec, or one whose"
+                    " proof records no producer), so every approval is refused"))
                 return 1
 
     # VELDO-0272 AC3 (a): nothing lowers a flag silently. A lowering of a spec's human_approval from

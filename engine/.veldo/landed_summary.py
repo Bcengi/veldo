@@ -172,22 +172,49 @@ def _judged_reviewer(P, ticket, bundle, commits):
     return NONE
 
 
-def _approvers(root, commit, tickets, commits):
-    """Every approver of an approved record bound to a commit of the landing: in the named tickets'
-    bundles, or, when the landing names none, in every bundle at the landed commit."""
+def _landed_at(root, commit):
+    """The landed commit's committer time (the moment the push check judged the approval's expiry)."""
+    import datetime
+    try:
+        return datetime.datetime.fromtimestamp(int((_git(root, "log", "-1", "--format=%ct", commit) or "").strip()),
+                                               datetime.timezone.utc)
+    except ValueError:
+        return None
+
+
+def _approvers(P, root, commit, tickets, commits, touched, pats):
+    """The approvers the push check would accept for this landing (VELDO-0272 N4): every approval record
+    in the named tickets' bundles (or, when the landing names none, every bundle at the landed commit)
+    that passes policy_check.approval_refusal, the push check's own predicate, against the producers of
+    the named tickets (none named or one with no producer: every approval refused, fail closed), expiry
+    judged at the landed commit, and whose scope names a ticket (scope.spec_id or a path covering its
+    spec file) or covers a protected path the landing touched."""
     if tickets:
         names = [n for t in tickets for n in _names(root, commit, "proof/%s" % t)]
     else:
         names = (_git(root, "ls-tree", "-r", "--name-only", commit, "proof/") or "").splitlines()
+    producers = []
+    for t in tickets:
+        manifest = _json(root, commit, "proof/%s/manifest.json" % t) or {}
+        producers.append(manifest.get("producer", ""))
+    producer = producers if producers and all(P._identities(x) for x in producers) else ""
+    now = _landed_at(root, commit)
+    if now is None:
+        return []
+    spec_files = [n for t in tickets for n in _names(root, commit, "specs") if n.startswith("specs/%s-" % t)]
+    protected = [f for f in (touched or []) if pats is not None and any(P.glob_covers(f, pat) for pat in pats)]
     out = set()
     for name in names:
         if not name.rsplit("/", 1)[-1].startswith("approval") or not name.endswith(".json"):
             continue
         data = _json(root, commit, name)
-        scope = data.get("scope") if data else None
-        if data and data.get("decision") == "approved" and data.get("approver") and isinstance(scope, dict) \
-                and _bound(scope.get("commit"), commits):
-            out.add(str(data["approver"]))
+        if data is None:
+            continue
+        accepted = any(P.approval_refusal(data, commits, now, producer=producer, spec_id=t) is None for t in tickets) \
+            or any(P.approval_refusal(data, commits, now, path=f, producer=producer) is None for f in spec_files + protected)
+        if accepted:
+            out.add(str(data["approver"]) if isinstance(data.get("approver"), str)
+                    else json.dumps(data.get("approver"), sort_keys=True))
     return sorted(out)
 
 
@@ -210,8 +237,8 @@ def landing_at(root, ticket, commit, label=None):
     commit's subject names, or None for a commit that names none or a merge (listed under `label`, its
     subject). VELDO-0272 F4: the approval flag is the COMPUTED one (policy_check.effective_flag with the
     policy at that commit, or required when the landing touched a protected path or either cannot be
-    read: fail closed), approvers are listed whenever an approved record binds to the landing, and the
-    reviewer is the one of the verdict the push check would accept."""
+    read: fail closed), approvers are listed only when the push check's own approval predicate accepts
+    them (N4), and the reviewer is the one of the verdict the push check would accept."""
     P = _policy_check()
     commits, base = landing_range(root, ticket, commit)
     pats = _patterns_at(root, commit)
@@ -244,7 +271,7 @@ def landing_at(root, ticket, commit, label=None):
         gate = _gate_at(root, commit, commits)
     return {"ticket": ticket if ticket and label is None else commit[:12], "title": title, "commit": commit,
             "gate": gate, "reviewer": ", ".join(reviewers) or NONE,
-            "approval_required": required, "approvers": _approvers(root, commit, tickets, commits)}
+            "approval_required": required, "approvers": _approvers(P, root, commit, tickets, commits, touched, pats)}
 
 
 def format_day(day, landings):
@@ -267,21 +294,23 @@ def format_day(day, landings):
 
 
 def landings_on(root, day, ref="main"):
-    """EVERY landing of the day on the first-parent line of `ref` (VELDO-0272 F3), oldest first: the
-    commits whose subject names a ticket id, one landing per ticket (its newest commit that day is the
-    landed commit), and each other first-parent commit, a merge or a commit naming no ticket, listed
-    under its own subject."""
-    seen = set()
+    """EVERY landing of the day on the first-parent line of `ref` (VELDO-0272 F3), oldest first: each
+    contiguous first-parent run of commits whose subject names one ticket id first is one landing (its
+    newest commit is the landed commit, the run is what landing_range reads), so two same-day landings of
+    one ticket separated by another commit stay two lines (N5); and each other first-parent commit, a
+    merge or a commit naming no ticket, is listed under its own subject."""
     items = []
+    newer = None
     for line in (_git(root, "log", "--first-parent", "--format=%H%x00%cs%x00%P%x00%s", ref) or "").splitlines():
         sha, date, parents, subject = (line.split("\0") + ["", "", ""])[:4]
-        if date != day:
+        ticket = None if len(parents.split()) > 1 else _first_id(subject)
+        continues = ticket is not None and newer == (ticket, date)
+        newer = (ticket, date) if ticket is not None else None
+        if date != day or continues:
             continue
-        ticket = _first_id(subject)
-        if len(parents.split()) > 1 or ticket is None:
+        if ticket is None:
             items.append((None, sha, subject))
-        elif ticket not in seen:
-            seen.add(ticket)
+        else:
             items.append((ticket, sha, None))
     return [landing_at(root, ticket, sha, label) for ticket, sha, label in reversed(items)]
 
