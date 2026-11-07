@@ -223,6 +223,37 @@ mutation row green):
 - Not reproduced outside the suite: the repository guard blocks a compound Bash command naming a
   push on a red stamp, so every behaviour above was driven only through suite 141 fixtures.
 
+## Fix round 5 (third fix check, research/claude-runs/veldo-0268-fixcheck3-2026-11-07.md)
+
+- F5: the dry run's porcelain parser reads exactly one more line, `Would set upstream of '<b>' to
+  '<b>' of '<remote>'` (a full match; it names no destination, the ref lines still do), so a
+  working-branch push with -u, the set-upstream long option, -u origin HEAD, or a plain push with
+  push.autoSetupRemote configured passes on a red stamp. push.autoSetupRemote joins the -c key
+  allowlist (a boolean, it names no program). Any other unknown line stays unresolved.
+- F6 (a): an alias lookup that exits other than 1 with no output (a -C directory that does not
+  exist, an unreadable configuration) raises, and the subcommand is unresolved, never "no alias". In
+  a command the guard cannot reproduce, a -C or -c value containing $ or a backtick is treated as
+  running elsewhere (a subcommand that may be an alias is unresolved).
+- F6 (b): a simple command whose first word is not git (sh -c, bash -c) has its text judged for
+  aliases as a compound command is.
+- Rows: push/set-upstream (the four F5 pushes and git -c push.autoSetupRemote=true push each pass and
+  land; -u origin main exits 2 on the gate text, protected), push/alias-unreadable (git -C "$PWD" pm;
+  D=<repo>; git -C $D p origin main with a literal `$D` directory in the cwd; the for loop; a global
+  alias with -C "$PWD"; -C of a missing directory, simple and in a list: each exits 2 on the gate
+  text; git -C "$PWD" status and log pass), push/alias-shell-c (sh -c 'git pm' and bash -c "git p
+  origin main" exit 2; sh -c 'git status' passes).
+- Falsifiers (suite and teeth driver): upstream line unread, lookup failure read as no alias,
+  expanded -C value looked up as written, sh -c not alias-checked.
+- Stated residuals, no change: quoting tricks such as g''it (the trigger needs the literal word
+  git), and shell aliases whose text never contains the words git, push or merge.
+- Commit ac251e5d (three guard copies byte-identical, suite, teeth driver). A development driver
+  under /tmp reproduced every case above against the new guard (exits as stated, main unmoved).
+- Runs: pending. The gate lock was not free in 20 minutes (three waits, 15:06 to 15:26, each flock
+  timed out, no run started). proof/VELDO-0268/pending_runs.sh holds the two runs (suite 141 with
+  details on, 48 behaviour and 34 mutation rows expected green; then `check_teeth_mutations.py
+  --finding 268`, 34 cases), passes `bash -n`, appends one line per step to
+  proof/VELDO-0268/pending-summary.txt, logs /tmp/v268-fix5-suite.log and /tmp/v268-fix5-teeth.log.
+
 ## Open
 
 - scripts/suites/requires.json is outside the footprint. It is derived (`python3 scripts/run_scope.py
