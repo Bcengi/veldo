@@ -233,6 +233,40 @@ allowance ran out. `proof/VELDO-0272/pending_runs.sh` (no lock inside; `bash -n`
 `check_teeth_mutations.py --finding 272`, 67_0056, 69_0058, 70_0057, 86_0148 and 101_0208, logging under
 /tmp and appending one line each to `proof/VELDO-0272/pending-summary.txt`.
 
+## Fix round 5 (fix check 3 of 2026-11-07, NOT SOUND: F1, F2, observations O1 and O2)
+
+- F1 (`_lowers`): the `now in before` test now reads the raw parent states, and only then are absent states
+  set aside. A merge of main that takes trunk's retirement or renumbering of a required spec (the shapes of
+  d4dd1eca and 24f31ce6) takes a state trunk already has and lowers nothing; the push base judgment and the
+  side commit's own judgment still catch a branch that deletes a required spec.
+- F2 (`_not_work`): a derived projection (lander.PROJECTIONS, loaded from the lander beside the module; when
+  it cannot be loaded, none, so the index counts as work) and an approval record (an approval corpus member,
+  proof/<one directory>/approval*.json) are not work for N3. Approval records stay judged by
+  valid_approval_for wherever they authorize something. `specs/tool.sh` and `proof/tool.py` stay work.
+- O1 and O2 (`spec_only`, `approval_producer`): a push changing only spec files, projections and approval
+  records lands no work, so it needs no review; it is judged only for the specs whose files it changes, and
+  only for the owner approval their computed flag requires. When such a spec has no proof producer, the
+  self-approval test compares the approver with the push's committer names and emails (nothing readable:
+  refused). A push with any other file keeps a missing producer missing, so every approval is refused (N2).
+- Suite 129: `AC3 lowered/honest-trunk-merge` gains retired and renumbered (0). `AC3 review/covered` gains
+  an index-only push, a batch approval-only push and the draft-spec commit with a proof note and its index
+  line (0 each). New row `AC3 review/spec-only`: draft to ready not required (0), required with the owner
+  approval (0), required with none (1), required approved by the committer (1); a re-mark of two unlanded
+  specs with one batch approval (0), with none (1), approved by the committer (1); the committer stand-in
+  only for a spec-only push; and every N1, N2 and N3 refusal of the earlier rows still holding.
+- Falsifiers (finding 272, now 33): `scope272-absent-filtered-first` (reds `lowered/honest-trunk-merge`),
+  `scope272-projection-is-work` (`review/covered`), `scope272-spec-only-review-required`,
+  `scope272-spec-only-producer-missing`, `scope272-spec-only-committer-unchecked` (`review/spec-only`),
+  `scope272-committer-replaces-code-producer` (`approval/identity`). The anchors of
+  `scope272-review-skipped-when-protected`, `scope272-protected-producer-from-head` and
+  `scope272-loose-file-exempt` moved with the code. The engine copy is byte-identical.
+
+Runs: PENDING. The gate lock was held by a full gate in another worktree (landing-b) from 15:05 to past
+15:25 and the 20 minute waiting allowance ran out; nothing ran in this round. `proof/VELDO-0272/pending_runs.sh`
+(no lock inside; `bash -n`: clean) runs 129_veldo_0272, 01_warp_0101, `check_teeth_mutations.py --finding
+272`, 67_0056, 69_0058, 70_0057, 86_0148 and 101_0208, logging under /tmp and appending one line each to
+`proof/VELDO-0272/pending-summary.txt`. Expected in 101: only the two inherited sandbox rows red.
+
 ## Falsifiers, red then green
 
 Red (first start, the staged suite before its move and the module-tree change; not re-run since): the staged suite run against the base tree (`git archive ed0c995f`, the ready commit) fails 16 of its
