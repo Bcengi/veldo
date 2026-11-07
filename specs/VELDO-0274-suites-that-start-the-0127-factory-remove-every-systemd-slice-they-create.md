@@ -9,7 +9,8 @@ human_approval: not_required
 lane: standalone
 depends_on: [VELDO-0127]
 placement: [enforcement]
-protected_paths: []
+protected_paths:
+  - "scripts/gate_unconfined.json"
 footprint:
   - "proof/VELDO-0127/factory.py"
   - "scripts/suites/86_veldo_0127_agent_configuration.py"
@@ -23,6 +24,7 @@ footprint:
   - "proof/VELDO-0274/**"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
+  - "scripts/gate_unconfined.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -105,3 +107,5 @@ draft.
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.
 
 2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
+
+2026-11-07: footprint and protected_paths gain scripts/gate_unconfined.json, by the lead under Telegram 39708 (ACs unchanged): AC3 says the gate catches a leak, and the unit stage gives a user manager only to suites listed there (scripts/gate_graph.json node unit.unconfined), so the end-of-run row must run in that leg (check of 2026-11-07, research/claude-runs/veldo-0274-check-2026-11-07.md finding 1). The landing lists this protected path.
