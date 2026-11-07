@@ -464,8 +464,9 @@ def plan(cases, *, git, candidate, base=None, trunk=None, rule_path=RULE, case_i
         return select(cases, None, base=base, candidate=candidate, error=error, started=started)
     try:
         check_canaries(rule, cases, unconfined, resources)
-        if base is None:
-            base = merge_base(git, trunk or rule['nightly']['trunk'], candidate)
+        # The merge base with the trunk commit the gate was told to compare against (a landing's
+        # synced trunk commit), else with the rule's trunk branch.
+        base = merge_base(git, base or trunk or rule['nightly']['trunk'], candidate)
         changed = changed_paths(git, base, candidate)
         case_inputs = json.loads(Path(case_inputs_path).read_text())
     except (Invalid, OSError, ValueError, subprocess.SubprocessError) as error:
