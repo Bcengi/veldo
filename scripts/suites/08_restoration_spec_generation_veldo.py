@@ -873,12 +873,48 @@ expect("WARP-1203 AC2: trace of a known spec cites its criteria (what it promise
        and any(str(c).endswith("proof/WARP-1202/manifest.json") for c in _ic_t.citations)
        and any(str(c).endswith("proof/WARP-1202/verdict.json") for c in _ic_t.citations))
 _ic_by_id = _ic_real.governing_spec("WARP-1202")
-_ic_by_fp = _ic_real.governing_spec(".veldo/evidence.py")
 expect("WARP-1203 AC2: governing_spec resolves a behavior by recorded spec id",
        _ic_by_id.governed is True and _ic_by_id.spec_id == "WARP-1202" and _ic_by_id.matched_by == "spec_id")
+
+
+# Footprint resolution is proven on a fixed fixture corpus, not the live specs/ (VELDO-0278): which
+# spec governs a live file changes whenever a later spec declares a broader footprint. Two specs with
+# known footprints; the queried file is matched by the first only.
+def _ic_fp_fixture_spec(spec_id, footprint):
+    return _IC_FP_SPEC.replace("id: WARP-9002", "id: " + spec_id).replace(
+        "footprint: [.veldo/intent_corpus.py]", "footprint: [" + footprint + "]")
+
+
+def _ic_footprint_resolves():
+    with tempfile.TemporaryDirectory() as _icd_fp:
+        _icp_fp = Path(_icd_fp)
+        (_icp_fp / "specs").mkdir()
+        (_icp_fp / "specs" / "WARP-9011.md").write_text(_ic_fp_fixture_spec("WARP-9011", "fixture/governed/*.py"))
+        (_icp_fp / "specs" / "WARP-9012.md").write_text(_ic_fp_fixture_spec("WARP-9012", "fixture/other/*.sh"))
+        _fp = _ic_build(_icp_fp).governing_spec("fixture/governed/evidence.py")
+        return (_fp.governed is True and _fp.spec_id == "WARP-9011"
+                and _fp.matched_by == "footprint" and _fp.candidates == ["WARP-9011"])
+
+
 expect("WARP-1203 AC2: governing_spec resolves a behavior by declared footprint match",
-       _ic_by_fp.governed is True and _ic_by_fp.spec_id == "WARP-1202"
-       and _ic_by_fp.matched_by == "footprint" and "WARP-1202" in _ic_by_fp.candidates)
+       _ic_footprint_resolves())
+
+
+class _ICNoFootprintMatch:
+    """The defect: footprint matching broken (no declared footprint ever matches a path)."""
+    @staticmethod
+    def fnmatch(name, pattern):
+        return False
+
+
+_ic_fnmatch_real = IC.fnmatch
+IC.fnmatch = _ICNoFootprintMatch
+try:
+    _ic_fp_broken = _ic_footprint_resolves()
+finally:
+    IC.fnmatch = _ic_fnmatch_real
+expect("WARP-1203 AC2 TEETH: footprint matching broken turns the declared-footprint-match row RED",
+       _ic_fp_broken is False)
 _ic_pc = _ic_real.proof_for_commit("96fb65f3726578e179b4cfb9c57621c041c5c9e4")
 expect("WARP-1203 AC2: proof_for_commit traces a change to the proof and verdict whose recorded commit it matches",
        any(x["spec_id"] == "WARP-1202" and x["verdicts"] for x in _ic_pc))
