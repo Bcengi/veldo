@@ -1,10 +1,9 @@
 # VELDO-0274 proof: the 0127 factory removes every slice it creates
 
-Status: runs at the current head are recorded in lead-run-2026-11-07.md: the lead's run at 00c77d58 (suites
-86, 88, 89, 90 and 129 green, five of six falsifier cases as expected), then the lead's job 12 at a44aaf1a
-(suite 129 via --suite 32 passed, 0 failed; exit-skips-stop with its three targets as_expected true). The
-independent check at a44aaf1a reran baseline, baseline-88, no-signal-handler, sweep-ignores-liveness and
-defaults-without-context-manager, all as expected. Fix round 3 (this round) is under "Fix round 3" below.
+Status: earlier runs are in lead-run-2026-11-07.md (the lead's run at 00c77d58 and job 12 at a44aaf1a). The
+lead's runs at 05c05b62 and job 28 at 8ee0e2e2 are under "Fix round 4" and "Fix round 5" below, with their raw
+summary lines in pending-summary.txt. Fix round 5 (this round) registers AC3's mutation; its runs are under
+"Fix round 5".
 
 ## What was built, per AC
 
@@ -75,9 +74,13 @@ Registered in scripts/check_teeth_mutations.py (finding 274), so the mutation st
 replaces with the mutant copy, and passes that path to its children: slices274-exit-skips-stop (AC1,
 targets slices/return, slices/raise, slices/sweep-dead), slices274-no-signal-handler (AC2.1, slices/sigterm),
 slices274-sweep-ignores-liveness (AC2.2, slices/sweep-live). Each anchor occurs exactly once in factory.py.
-AC3's mutation is not registered there: it mutates suite 88 and is observed by suite 129, and the stage's
-worker (scripts/mutation_observer.py, protected and outside this footprint) runs one suite per case. It
-stays in falsify.py.
+AC3's mutation is registered there too: slices274-factory-user-without-exit-stack makes suite 86 enter the
+factory without its ExitStack (target slices/end-of-run). Suite 129 names suite 86 by
+`ROOT / "scripts/suites" / "86_veldo_0127_agent_configuration.py"`, the anchor the worker replaces, and runs
+the replaced copy in its own process before the end-of-run row, as the gate's unconfined leg runs 86 before
+129; the no-op copy is the control. Unreplaced, 129 does not run 86. Suite 86's rows are counted but never
+reported as 129's, so the control's rows equal the baseline's. A leaked slice is stopped after it is judged.
+falsify.py's defaults-without-context-manager case (suite 88) stays as a developer falsifier.
 
 ## Open items
 
@@ -85,8 +88,8 @@ stays in falsify.py.
    `python3 scripts/run_scope.py --emit-requires`, and the only change is the new entry for 129 (its closure
    is itself, from manifest.json). No other entry changed.
 2. Resolved: scripts/check_teeth_mutations.py is in the footprint since 0dfa2188; the AC1 and AC2 cases
-   are registered there. AC3's case needs scripts/mutation_observer.py (protected) to run suite 88 before
-   129 in one worker; not changed.
+   are registered there, and since fix round 5 the AC3 case too, through suite 129's anchor for suite 86
+   (no change to scripts/mutation_observer.py).
 3. Resolved: scripts/gate_unconfined.json joined the footprint and protected_paths at a8040f9b and lists
    129 whole (a607b443).
 4. The spec's premise does not hold. Suites 88, 89 and 90 never launched into the slice: they call
@@ -116,7 +119,9 @@ proof/VELDO-0274/pending-summary.txt, logs under /tmp/v274-pending). `bash -n` o
    (AC3's falsifier against the new end-of-run row).
 3. `python3 scripts/check_teeth_mutations.py --finding 274` (the three registered cases: baseline green,
    mutant red on its targets).
-Not runnable outside the gate: the unconfined leg itself (its variables are set only by scripts/gate_legs.py).
+Not runnable outside the gate: the unit stage's unconfined leg (its variables are set only by
+scripts/gate_legs.py). The mutation stage's unconfined leg is runnable through
+`check_gate_mutations.py --finding 274` (found in fix round 4).
 
 ## Fix round 4 (2026-11-07)
 
@@ -141,3 +146,14 @@ Runs of this round: pending. The gate lock was not free from 13:34Z to 13:54Z (f
 are in proof/VELDO-0274/pending_runs.sh (rewritten for this round, `bash -n` passed; logs under
 /tmp/v274-pending): `check_gate_mutations.py --finding 274` (expected: three cases unconfined, baseline green,
 mutant red on its targets) and `selftest.py --suite 129_veldo_0274_factory_slices`.
+
+## Fix round 5 (2026-11-07)
+
+The lead's job 28 at 8ee0e2e2 (pending-summary.txt): suite 129 via --suite 32 passed, 0 failed; falsify.py as
+expected; `check_gate_mutations.py --finding 274` passed, 3 of 3 cases in the unconfined leg, 3 rejected;
+`check_teeth_mutations.py --finding 274` fails confined, as expected (fix round 4); no veldo0127 unit loaded
+after.
+
+The spec now names suite 86 in AC3's falsifier (lead, 4228b098). Commit b54d5520 registers that mutation
+(slices274-factory-user-without-exit-stack, described under Falsifiers) and removes the claim that the
+protected worker blocks it.

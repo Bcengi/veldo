@@ -1,0 +1,9 @@
+head 05c05b62 2026-11-07T13:18:39Z
+suite 129 --suite: exit=2 selftest (PARTIAL, 1 of 192 suites): 32 passed, 0 failed in 1.50s
+falsify.py baseline exit-skips-stop defaults-without-context-manager: exit=0 as_expected=true true true 
+check_teeth_mutations.py --finding 274: exit=1 mutations: failed registered=3 executed=3 reused=0 rejected=0 workers=5 elapsed=4.213s
+veldo0127/veldo0274 units loaded after: 0
+head 8ee0e2e2 2026-11-07T15:07:11Z
+check_gate_mutations.py --finding 274: exit=0 mutations: passed registered=3 executed=3 reused=0 rejected=3 workers=5 elapsed=79.387s    mutation: unconfined leg ran 3 cases, 3 rejected: 129_veldo_0274_factory_slices (3)
+suite 129 --suite: exit=2 selftest (PARTIAL, 1 of 192 suites): 32 passed, 0 failed in 1.49s
+veldo0127/veldo0274 units loaded after: 0
