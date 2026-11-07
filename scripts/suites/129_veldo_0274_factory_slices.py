@@ -1,6 +1,7 @@
 """VELDO-0274: the VELDO-0127 factory removes every systemd slice it creates, on success, failure and interruption.
 
-The last suite of the unit stage, so its end-of-run row sees every factory user of this run before it."""
+The last suite of the unit stage, so its end-of-run row sees every factory user of this run before it. In the
+gate it runs in the unconfined leg (scripts/gate_unconfined.json), after suite 86 and in the same process."""
 def _v274_factory_slices():
     import importlib.util
     import json
@@ -158,9 +159,44 @@ with factory.factory(root, base / 'factory', {}, lambda _: wire.engine_source(ca
         for sleeper in sleepers:
             sleeper.kill()
             sleeper.wait()
-    # AC3: after the unit stage's last suite, no slice of this run's process remains loaded.
-    mine = 'veldo0127-%d.slice' % os.getpid()
-    leaked = [name for name in (factory.loaded_slices(environment) or []) if name == mine]
+    # AC3: after the unit stage's last suite, no veldo0127 slice whose pid belongs to this run remains loaded. In
+    # the gate this suite runs in the unconfined leg (scripts/gate_unconfined.json), the leg with a user manager,
+    # in the same selftest process as the factory users listed there and after them (it is the manifest's last
+    # suite). A pid belongs to this run when it is this process, a live descendant of it, or a process that is
+    # gone and whose slice became active after this process started. A live process outside this process's tree
+    # is another run's, and its slice is never judged.
+    def parent(pid):
+        try:
+            return int(Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[1])
+        except (OSError, IndexError, ValueError):
+            return 0
+
+    def descendant(pid):
+        seen = set()
+        while pid > 1 and pid not in seen:
+            if pid == os.getpid():
+                return True
+            seen.add(pid)
+            pid = parent(pid)
+        return False
+
+    def activated_us(name):
+        result = subprocess.run(['systemctl', '--user', 'show', '-p', 'ActiveEnterTimestampMonotonic', '--value',
+                                 name], env=environment, capture_output=True, text=True, timeout=20)
+        return int(result.stdout.strip() or 0) if result.stdout.strip().isdigit() else 0
+
+    # This process's start on CLOCK_MONOTONIC's scale, the scale of ActiveEnterTimestampMonotonic.
+    ticks = int(Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()[19])
+    age = float(Path('/proc/uptime').read_text().split()[0]) - ticks / os.sysconf('SC_CLK_TCK')
+    started_us = (time.clock_gettime(time.CLOCK_MONOTONIC) - age) * 1e6
+
+    def ours(name):
+        pid = int(factory.SLICE.fullmatch(name).group(1))
+        if factory.live(pid):
+            return descendant(pid)
+        return activated_us(name) >= started_us
+
+    leaked = [name for name in (factory.loaded_slices(environment) or []) if ours(name)]
     check('slices/end-of-run', not leaked, 'leaked: ' + ', '.join(leaked))
     for row, observed in rows.items():
         if manager is None and row != 'slices/end-of-run':
