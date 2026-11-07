@@ -22,9 +22,11 @@ WITH88 = ("            with factory.factory(ROOT, base, PRODUCTION, lambda _: wi
 CASES = {
     'baseline': (None, None, None, [SUITE], []),
     'baseline-88': (None, None, None, ['88_veldo_0127_feature_defaults', SUITE], []),
-    # AC1: the context manager's exit skips the stop.
+    # AC1: the context manager's exit skips the stop. sweep-dead is red too by the same mutation: its 'enter'
+    # child also leaves the factory, whose exit now raises SliceLeft, so that child's exit code is nonzero.
     'exit-skips-stop': (FACTORY, "        self.previous_handlers = {}\n        unit('stop', self.slice_name, self.inherited)\n",
-                        "        self.previous_handlers = {}\n", [SUITE], ['slices/return', 'slices/raise']),
+                        "        self.previous_handlers = {}\n", [SUITE],
+                        ['slices/return', 'slices/raise', 'slices/sweep-dead']),
     # AC2 (1): the signal handler is not installed.
     'no-signal-handler': (FACTORY, 'self.previous_handlers[number] = signal.signal(number, self._interrupted)',
                           'self.previous_handlers[number] = signal.getsignal(number)', [SUITE], ['slices/sigterm']),
