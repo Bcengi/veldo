@@ -12305,8 +12305,8 @@ def cases():
         ['review/producer-identity'])
     # Fix round 1, F5: the review skipped for the whole push, or for a required spec.
     add(272, 'scope272-review-skipped-when-protected', scope272, 'policy_check.py',
-        '    for sid in push_specs(changed_files()):',
-        '    for sid in ([] if touched else push_specs(changed_files())):  # defect: a protected path skips review',
+        '    for sid in carried:',
+        '    for sid in ([] if touched else carried):  # defect: a protected path skips review',
         ['review/per-spec'])
     add(272, 'scope272-review-skipped-when-required', scope272, 'policy_check.py',
         '        if not reviewed_landing(sid, rng):',
@@ -12350,7 +12350,7 @@ def cases():
         '        if a.get("approver") == producer:  # defect: identities compared raw',
         ['approval/identity'])
     add(272, 'scope272-protected-producer-from-head', scope272, 'policy_check.py',
-        '        producer = push_producer(landing_specs(changed_files()))\n        for tf, p in touched:',
+        '        producer = approval_producer(push_producer(landing_specs(files_p)), files_p, rng)\n        for tf, p in touched:',
         '        producer = producer_for(_head_spec_id())  # defect: the producer of the verdict at HEAD\n'
         '        for tf, p in touched:',
         ['approval/identity'])
@@ -12378,10 +12378,43 @@ def cases():
         ['lowered/honest-trunk-merge'])
     # Fix round 4: any file under specs/ or proof/ is exempt, so a script there lands with no spec.
     add(272, 'scope272-loose-file-exempt', scope272, 'policy_check.py',
-        '    work = [f for f in pushed if not (_SPEC_FILE.match(f) or _PROOF_FILE.match(f))]',
-        '    work = [f for f in pushed if not (f.startswith("specs/") or f.startswith("proof/"))]'
-        '  # defect: every file under specs/ or proof/ is exempt',
+        '    return bool(_SPEC_FILE.match(f) or _PROOF_FILE.match(f) or f in _projection_paths() or _approval_record(f))',
+        '    return f.startswith("specs/") or f.startswith("proof/")  # defect: every file under specs/ or proof/ is exempt',
         ['review/covered'])
+    # Fix round 5, F1: absent parent states are set aside before the `now in before` test, so an honest merge
+    # of trunk after trunk retired or renumbered a required spec is refused as a lowering.
+    add(272, 'scope272-absent-filtered-first', scope272, 'policy_check.py',
+        '    if now == "required" or now in before:\n        return False\n'
+        '    before = [b for b in before if b != "absent"]\n',
+        '    before = [b for b in before if b != "absent"]  # defect: absent is dropped first\n'
+        '    if now == "required" or now in before:\n        return False\n',
+        ['lowered/honest-trunk-merge'])
+    # Fix round 5, F2: a derived projection or an approval record counts as work, so an index-only push, an
+    # approval-only push and the draft-spec commit with its index line are refused.
+    add(272, 'scope272-projection-is-work', scope272, 'policy_check.py',
+        ' or f in _projection_paths() or _approval_record(f))\n',
+        '))  # defect: a projection or an approval record is work\n',
+        ['review/covered'])
+    # Fix round 5: a spec-only push is required to carry a review that cannot exist yet.
+    add(272, 'scope272-spec-only-review-required', scope272, 'policy_check.py',
+        '    only_specs = spec_only(pushed)',
+        '    only_specs = False  # defect: a spec-only push needs a review',
+        ['review/spec-only'])
+    # Fix round 5: a spec-only push keeps its missing producer, so every owner approval of it is refused.
+    add(272, 'scope272-spec-only-producer-missing', scope272, 'policy_check.py',
+        '    if _identities(producer) or not spec_only(files):\n        return producer',
+        '    if True:  # defect: the missing producer stays missing\n        return producer',
+        ['review/spec-only'])
+    # Fix round 5: the committers of a spec-only push are not compared, so a committer approves their own push.
+    add(272, 'scope272-spec-only-committer-unchecked', scope272, 'policy_check.py',
+        '    return committer_identities(commits)\n',
+        '    return ["nobody"]  # defect: the committers are not compared\n',
+        ['review/spec-only'])
+    # Fix round 5: the committer replacement applies to a push with code, so a missing producer stops refusing.
+    add(272, 'scope272-committer-replaces-code-producer', scope272, 'policy_check.py',
+        '    if _identities(producer) or not spec_only(files):',
+        '    if _identities(producer):  # defect: any push takes its committers as producer',
+        ['approval/identity'])
     # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
     add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',
         '"- %s %s | gate %s | reviewer %s | approval %s"\n'

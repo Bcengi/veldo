@@ -267,10 +267,13 @@ def _lowers(now, before):
     at least one before has the spec (a before where it is absent is no value to lower), and every
     before that has it is required or unreadable (FAIL CLOSED: a value that cannot be read counts as
     required, so a lowering through a broken or deleted spec is still a lowering). A merge that takes
-    a value one side already has lowers nothing itself (VELDO-0272 M1)."""
-    before = [b for b in before if b != "absent"]
+    a value one side already has lowers nothing itself (VELDO-0272 M1), and that includes a side where the
+    spec is absent: a merge taking trunk's retirement or renumbering of a spec takes a state trunk already
+    has, so the `now in before` test reads the raw parent states BEFORE the absent ones are set aside
+    (fix round 5, F1)."""
     if now == "required" or now in before:
         return False
+    before = [b for b in before if b != "absent"]
     return bool(before) and all(b in ("required", "unreadable") for b in before)
 
 
@@ -358,6 +361,69 @@ def lowered_flags(commits, bases):
     return out
 
 
+_PROJECTIONS = []
+
+
+def _projection_paths():
+    """The derived files the lander regenerates (lander.PROJECTIONS, today specs/index.md), read from the
+    lander beside this file so the set is spelled once. When the lander cannot be loaded, none: a derived
+    file then counts as work (fail closed)."""
+    if not _PROJECTIONS:
+        try:
+            spec = importlib.util.spec_from_file_location("veldo_lander_pc", Path(__file__).resolve().with_name("lander.py"))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            _PROJECTIONS.append(frozenset(path for path, _generator in module.PROJECTIONS))
+        except Exception:
+            _PROJECTIONS.append(frozenset())
+    return _PROJECTIONS[0]
+
+
+def _approval_record(f):
+    """A file of the approval corpus (proof/<one directory>/approval*.json), the set valid_approval_for
+    reads: an owner's decision, judged by approval_refusal wherever it authorizes something."""
+    return _VC.corpus_member(f, _VC.APPROVAL_PATTERN)
+
+
+def _not_work(f):
+    """VELDO-0272 fix round 5 (F2): a spec file, a file of a spec's proof bundle, a derived projection or an
+    approval record is not work for the reviewed-spec coverage rule (N3). Any other file under specs/ or
+    proof/ (a script, a loose note) is work like any other (fix round 4)."""
+    return bool(_SPEC_FILE.match(f) or _PROOF_FILE.match(f) or f in _projection_paths() or _approval_record(f))
+
+
+def spec_only(files):
+    """True when a push changes only spec files, derived projections and approval records: no proof
+    manifest, verdict or other bundle file, and no work. Such a push lands no work, so no review of it can
+    exist yet (fix round 5)."""
+    return bool(files) and all(_SPEC_FILE.match(f) or f in _projection_paths() or _approval_record(f) for f in files)
+
+
+def committer_identities(commits):
+    """The committer names and emails of `commits`, as one list for the self-approval test, or "" when
+    none can be read (fail closed)."""
+    out = []
+    for i in range(0, len(commits), 200):
+        r = _git_process.run(["git", "show", "-s", "--format=%cn%x00%ce"] + list(commits[i:i + 200]),
+                             capture_output=True, text=True, cwd=ROOT)
+        if r.returncode != 0:
+            return ""
+        for line in r.stdout.splitlines():
+            out += [w for w in line.split("\0") if w.strip()]
+    return out if _identities(out) else ""
+
+
+def approval_producer(producer, files, commits):
+    """The identity an approval in this push must not share (fix round 5). A determined producer is kept.
+    A producer that cannot be determined, in a push that changes only spec files (spec_only), is replaced by
+    the push's committer identities: an owner approval of a spec-only change (a spec moved to ready, a
+    re-mark) has no producer, because nothing it covers has proof. In any other push a missing producer
+    stays missing, and every approval is refused (N2)."""
+    if _identities(producer) or not spec_only(files):
+        return producer
+    return committer_identities(commits)
+
+
 def push_specs(files):
     """The spec ids a push carries: each spec file and each proof bundle it changes."""
     ids = set()
@@ -422,12 +488,13 @@ def _approval_covers(approval, path):
     return False
 
 
-def owner_approved(spec_id, commits):
+def owner_approved(spec_id, commits, producer=None):
     """An owner approval of an approval-required spec (VELDO-0272 AC3, judged per spec): bound to a
     commit in the push, not self approved, naming the spec by scope.spec_id or covering its spec file.
-    With no spec file at HEAD, only scope.spec_id can name it."""
+    With no spec file at HEAD, only scope.spec_id can name it. `producer` None reads the spec's own."""
     names = sorted(str(p.relative_to(ROOT)) for p in (ROOT / "specs").glob(f"{spec_id}-*.md"))
-    producer = producer_for(spec_id)
+    if producer is None:
+        producer = producer_for(spec_id)
     if valid_approval_for(commits, producer=producer, spec_id=spec_id):
         return True
     return bool(names) and all(valid_approval_for(commits, path=n, producer=producer) for n in names)
@@ -831,7 +898,8 @@ def main():
         # THE OWNER'S OVERRIDE IS THE APPROVAL BLOCK THAT ALREADY EXISTS, not a new artifact and
         # not a new field: it is the one thing at this gate an agent cannot produce, and an
         # override belongs on that footing. Self-approval is refused by valid_approval_for.
-        override = valid_approval_for(rng_f, producer=push_producer(landing_specs(changed_files())))
+        files_f = changed_files()
+        override = valid_approval_for(rng_f, producer=approval_producer(push_producer(landing_specs(files_f)), files_f, rng_f))
         if not override:
             print("VELDO policy: blocked. A review objected and the objection is unresolved.")
             for sid, path, finding in objections:
@@ -862,7 +930,8 @@ def main():
         rng = push_range_commits() or [h]
         # each touched protected path needs an approval that names it, whose
         # approver is not the work's producer (self-separation).
-        producer = push_producer(landing_specs(changed_files()))
+        files_p = changed_files()
+        producer = approval_producer(push_producer(landing_specs(files_p)), files_p, rng)
         for tf, p in touched:
             if not valid_approval_for(rng, path=tf, producer=producer):
                 print("VELDO policy: blocked. Protected path touched with no valid path-scoped approval.")
@@ -881,8 +950,9 @@ def main():
     rng, bases = push_range()
     if not rng:
         rng, bases = [h], _parents(h)
+    pushed = changed_files()
     for sid, c, files in lowered_flags(rng, bases):
-        producer = producer_for(sid)
+        producer = approval_producer(producer_for(sid), pushed, rng)
         missing = [f for f in files if not valid_approval_for(rng, path=f, producer=producer)] if files else ["specs/%s-*.md" % sid]
         if missing:
             print("VELDO policy: blocked. approval_flag_lowered: %s" % ", ".join(files or missing))
@@ -896,7 +966,12 @@ def main():
     # spec this push carries needs a passing verdict bound to a commit in the push and to the spec's
     # current proof digest, from a reviewer who is not the producer, whatever else the push carries; a
     # spec the rule computes as required needs the owner's approval as well, never instead.
-    for sid in push_specs(changed_files()):
+    # Fix round 5: a push that changes only spec files, derived projections and approval records lands no
+    # work, so no review of it can exist yet (a spec moved from draft to ready, a re-mark). It is judged
+    # only for the specs whose files it changes, and only for the owner's approval their flag requires.
+    only_specs = spec_only(pushed)
+    carried = sorted({m.group(1) for m in (_SPEC_FILE.match(f) for f in pushed) if m}) if only_specs else push_specs(pushed)
+    for sid in carried:
         try:
             fm = _spec_file_fm(sid)
         except ValueError:
@@ -906,6 +981,16 @@ def main():
             # no verdict can bind to it. It covers no work either: the N3 check below refuses a push
             # changing anything but spec files and proof bundles with only drafts; an unreadable spec is not a
             # draft and is judged.
+            continue
+        if only_specs:
+            if effective_flag(fm, pats) == "required" and not owner_approved(
+                    sid, rng, producer=approval_producer(producer_for(sid), pushed, rng)):
+                bases_ = approval_bases(fm, pats) or ["declared required"]
+                print("VELDO policy: blocked. owner approval missing: %s is approval required (%s)" % (sid, "; ".join(bases_)))
+                print("  Required (a push changing only spec files): an approved, unexpired veldo.approval/v1 bound to")
+                print("  a commit in this push, whose scope names this spec, and whose approver is not a committer of")
+                print("  the push when the spec has no proof producer.")
+                return 1
             continue
         if not reviewed_landing(sid, rng):
             print("VELDO policy: blocked. landing_without_review: %s" % sid)
@@ -926,10 +1011,10 @@ def main():
     # whose landing the loop above judged (reviewed, and owner approved when required). A draft spec
     # covers nothing, and neither does a ready spec switched back to draft in the same push: it is a
     # draft at HEAD. Without this, code with no spec, or with only a draft beside it, landed unreviewed.
-    pushed = changed_files()
-    # Only a spec file or a file of a spec's proof bundle is exempt; any other file under specs/ or
-    # proof/ (a script, a loose note) is work like any other (VELDO-0272 fix round 4).
-    work = [f for f in pushed if not (_SPEC_FILE.match(f) or _PROOF_FILE.match(f))]
+    # A spec file, a file of a spec's proof bundle, a derived projection or an approval record is exempt;
+    # any other file under specs/ or proof/ (a script, a loose note) is work like any other (VELDO-0272 fix
+    # rounds 4 and 5).
+    work = [f for f in pushed if not _not_work(f)]
     if work and not landing_specs(pushed):
         print("VELDO policy: blocked. landing_without_review: no spec covers %s" % ", ".join(sorted(work)[:5])
               + (" (and %d more)" % (len(work) - 5) if len(work) > 5 else ""))

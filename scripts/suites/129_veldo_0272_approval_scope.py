@@ -35,7 +35,7 @@ def _v272_suite():
             'AC3 lowered/rename', 'AC3 lowered/two-step', 'AC3 lowered/delete-re-add', 'AC3 lowered/merge',
             'AC3 review/producer-identity', 'AC3 review/per-spec',
             'AC3 lowered/old-base-merge', 'AC3 approval/identity', 'AC3 review/covered',
-            'AC3 lowered/honest-trunk-merge',
+            'AC3 lowered/honest-trunk-merge', 'AC3 review/spec-only',
             'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped',
             'AC4 summary/every-landing', 'AC4 summary/judged-fields',
             'AC4 summary/approvers-judged', 'AC4 summary/separate-runs')
@@ -612,6 +612,34 @@ def _v272_suite():
                   % lc[1].strip()[:160], lc[0] == 1 and 'landing_without_review: no spec covers' in lc[1]
                   and 'specs/tool.sh' in lc[1] and 'proof/tool.py' in lc[1])
 
+            # Fix round 5, F2: a derived projection and an approval record are not work, so a push carrying only
+            # the index, only a batch approval record, or the lead's draft-spec commit with its index line lands.
+            def not_work_case(where, Pmod, name):
+                repo = new_repo(where, 'nw-' + name)
+                write(repo, 'specs/index.md', '# index\n')
+                base_c = commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                write(repo, 'specs/index.md', '# index\n\n- regenerated\n')
+                if name == 'approval':
+                    (repo / 'specs' / 'index.md').write_text('# index\n')
+                    owner_approval(repo, 'batch-veldo-2026-11-07', base_c, paths=['docs/**'],
+                                   name='approval-dmitry-landing.json')
+                if name == 'draft':
+                    sid = 'VELDO-9342'
+                    write(repo, 'specs/%s-draft.md' % sid,
+                          spec_text(sid, 'not_required', ['src/**']).replace('status: ready', 'status: draft'))
+                    write(repo, 'proof/%s/diagnosis.md' % sid, 'diagnosis\n')
+                commit(repo, 'a %s push' % name)
+                return run_main(Pmod, repo)
+
+            nw = {name: not_work_case(Path(base) / ('nw-' + name), P, name) for name in ('index', 'approval', 'draft')}
+            check('AC3 review/covered', 'a push of only specs/index.md: exit 0 [%s]' % nw['index'][1].strip()[:160],
+                  nw['index'][0] == 0)
+            check('AC3 review/covered', 'a push of only a batch approval record: exit 0 [%s]' % nw['approval'][1].strip()[:160],
+                  nw['approval'][0] == 0)
+            check('AC3 review/covered', 'the lead\'s draft-spec commit (draft spec, proof note, index line): exit 0 [%s]'
+                  % nw['draft'][1].strip()[:160], nw['draft'][0] == 0)
+
             # N1: a branch made before the raise and merged after it; the lowering is judged against the push
             # base (the protected ref's current tip), never against an old trunk commit among the parents.
             def old_base_merge_case(where, Pmod, approved, on_feature=False):
@@ -657,13 +685,24 @@ def _v272_suite():
             def honest_merge_case(where, Pmod, kind):
                 repo = new_repo(where, 'honest-' + kind)
                 tsid, trel = 'VELDO-9351', 'specs/VELDO-9351-trunk.md'
-                if kind == 'raised':
-                    write(repo, trel, spec_text(tsid, 'not_required', ['docs/**']))
+                if kind in ('raised', 'retired', 'renumbered'):
+                    write(repo, trel, spec_text(tsid, 'not_required' if kind == 'raised' else 'required', ['docs/**']))
                     write(repo, 'proof/%s/manifest.json' % tsid, json.dumps(manifest(tsid)))
                 fork = commit(repo, 'base')
-                write(repo, trel, spec_text(tsid, 'required', ['docs/**']))
-                write(repo, 'proof/%s/manifest.json' % tsid, json.dumps(manifest(tsid)))
-                commit(repo, 'trunk adds the spec required' if kind == 'new' else 'the owner raises it to required')
+                if kind in ('retired', 'renumbered'):
+                    # Fix round 5, F1: trunk retires the required spec, or renumbers it (the shapes of
+                    # d4dd1eca and 24f31ce6); the old id is absent at the tip.
+                    (repo / trel).unlink()
+                    shutil.rmtree(repo / 'proof' / tsid)
+                    if kind == 'renumbered':
+                        nsid = 'VELDO-9353'
+                        write(repo, 'specs/%s-trunk.md' % nsid, spec_text(nsid, 'required', ['docs/**']))
+                        write(repo, 'proof/%s/manifest.json' % nsid, json.dumps(manifest(nsid)))
+                    commit(repo, 'trunk %s the required spec' % kind)
+                else:
+                    write(repo, trel, spec_text(tsid, 'required', ['docs/**']))
+                    write(repo, 'proof/%s/manifest.json' % tsid, json.dumps(manifest(tsid)))
+                    commit(repo, 'trunk adds the spec required' if kind == 'new' else 'the owner raises it to required')
                 git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
                 git(repo, 'checkout', '-q', '-b', 'feat', fork)
                 sid, rel = 'VELDO-9352', 'specs/VELDO-9352-feat.md'
@@ -677,7 +716,12 @@ def _v272_suite():
                 commit(repo, 'review')
                 return run_main(Pmod, repo)
 
-            hm = {kind: honest_merge_case(Path(base) / ('hm-' + kind), P, kind) for kind in ('new', 'raised')}
+            hm = {kind: honest_merge_case(Path(base) / ('hm-' + kind), P, kind)
+                  for kind in ('new', 'raised', 'retired', 'renumbered')}
+            check('AC3 lowered/honest-trunk-merge', 'trunk retired a required spec after the fork; the branch merges '
+                  'main and lands its reviewed work: exit 0 [%s]' % hm['retired'][1].strip()[:200], hm['retired'][0] == 0)
+            check('AC3 lowered/honest-trunk-merge', 'trunk renumbered a required spec after the fork; the branch merges '
+                  'main and lands its reviewed work: exit 0 [%s]' % hm['renumbered'][1].strip()[:200], hm['renumbered'][0] == 0)
             check('AC3 lowered/honest-trunk-merge', 'trunk added a required spec after the fork; the branch merges '
                   'main and lands its reviewed work: exit 0 [%s]' % hm['new'][1].strip()[:200], hm['new'][0] == 0)
             check('AC3 lowered/honest-trunk-merge', 'trunk raised a spec to required after the fork; the branch merges '
@@ -777,6 +821,86 @@ def _v272_suite():
                   ap['r-owner'][2] is None)
             check('AC3 approval/identity', 'a lowering whose approval has no approver field: exit 1 [%s]' % ap['l-none'][1].strip()[:160],
                   lowered(*ap['l-none'][:2]))
+
+            # Fix round 5: the spec workflow's own pushes. A push changing only spec files (and the index and
+            # approval records) lands no work, so it needs no review; it needs the owner approval its spec's flag
+            # requires, and with no proof producer the self-approval test compares the approver with the push's
+            # committers (the fixture commits as "fixture <fixture@example.invalid>").
+            def ready_case(where, Pmod, name, flag, approver):
+                repo = new_repo(where, 'ready-' + name)
+                sid, rel = 'VELDO-9361', 'specs/VELDO-9361-ready.md'
+                write(repo, rel, spec_text(sid, flag, ['docs/**']).replace('status: ready', 'status: draft'))
+                write(repo, 'specs/index.md', '# index\n\n- VELDO-9361 draft\n')
+                commit(repo, 'the spec, draft')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                write(repo, rel, spec_text(sid, flag, ['docs/**']))
+                write(repo, 'specs/index.md', '# index\n\n- VELDO-9361 ready\n')
+                c = commit(repo, 'the spec moves to ready')
+                if approver:
+                    owner_approval(repo, sid, c, spec_id=sid, approver=approver)
+                    commit(repo, 'the owner approves it')
+                return run_main(Pmod, repo)
+
+            def remark_case(where, Pmod, name, approver):
+                """The spec's re-mark design: one commit lowers a batch of unlanded specs (no proof, so no
+                producer), and one batch approval record scopes exactly those spec files."""
+                repo = new_repo(where, 'remark-' + name)
+                rels = {'VELDO-9362': 'specs/VELDO-9362-remark.md', 'VELDO-9363': 'specs/VELDO-9363-remark.md'}
+                for sid, rel in rels.items():
+                    write(repo, rel, spec_text(sid, 'required', ['docs/**']))
+                commit(repo, 'two unlanded specs, required')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                for sid, rel in rels.items():
+                    write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                c = commit(repo, 're-mark the batch not required')
+                if approver:
+                    owner_approval(repo, 'batch-remark', c, paths=sorted(rels.values()), approver=approver)
+                    commit(repo, 'the owner approves the re-mark')
+                code, out = run_main(Pmod, repo)
+                real = Pmod.ROOT
+                try:
+                    Pmod.ROOT = repo
+                    spec_only = Pmod.approval_producer('', ['specs/VELDO-9362-remark.md'], [c])
+                    with_code = Pmod.approval_producer('', ['specs/VELDO-9362-remark.md', 'src/app.py'], [c])
+                finally:
+                    Pmod.ROOT = real
+                return code, out, spec_only, with_code
+
+            so = {'ready-free': ready_case(Path(base) / 'so1', P, 'free', 'not_required', None),
+                  'ready-owner': ready_case(Path(base) / 'so2', P, 'owner', 'required', 'owner'),
+                  'ready-none': ready_case(Path(base) / 'so3', P, 'none', 'required', None),
+                  'ready-committer': ready_case(Path(base) / 'so4', P, 'committer', 'required', ' Fixture'),
+                  'remark-owner': remark_case(Path(base) / 'so5', P, 'owner', 'owner'),
+                  'remark-none': remark_case(Path(base) / 'so6', P, 'none', None),
+                  'remark-committer': remark_case(Path(base) / 'so7', P, 'committer', 'fixture@example.invalid')}
+            check('AC3 review/spec-only', 'draft to ready, not required, nothing else: exit 0 [%s]'
+                  % so['ready-free'][1].strip()[:160], so['ready-free'][0] == 0)
+            check('AC3 review/spec-only', 'draft to ready, required, with the owner approval: exit 0 [%s]'
+                  % so['ready-owner'][1].strip()[:160], so['ready-owner'][0] == 0)
+            check('AC3 review/spec-only', 'draft to ready, required, no approval: exit 1 owner approval missing [%s]'
+                  % so['ready-none'][1].strip()[:160],
+                  so['ready-none'][0] == 1 and 'owner approval missing: VELDO-9361' in so['ready-none'][1])
+            check('AC3 review/spec-only', 'draft to ready, required, approved by the push\'s committer: exit 1 [%s]'
+                  % so['ready-committer'][1].strip()[:160],
+                  so['ready-committer'][0] == 1 and 'owner approval missing: VELDO-9361' in so['ready-committer'][1])
+            check('AC3 review/spec-only', 'a re-mark of two unlanded specs with one owner batch approval: exit 0 [%s]'
+                  % so['remark-owner'][1].strip()[:200], so['remark-owner'][0] == 0)
+            check('AC3 review/spec-only', 'the re-mark with no approval: exit 1 approval_flag_lowered [%s]'
+                  % so['remark-none'][1].strip()[:160], lowered(*so['remark-none'][:2]))
+            check('AC3 review/spec-only', 'the re-mark approved by the push\'s committer: exit 1 approval_flag_lowered [%s]'
+                  % so['remark-committer'][1].strip()[:160], lowered(*so['remark-committer'][:2]))
+            check('AC3 review/spec-only', 'the committers stand in for a missing producer only in a spec-only push; '
+                  'a push with code keeps it missing [%r, %r]' % (so['remark-owner'][2], so['remark-owner'][3]),
+                  'fixture' in (so['remark-owner'][2] or []) and so['remark-owner'][3] == '')
+            check('AC3 review/spec-only', 'every N1, N2 and N3 refusal still holds',
+                  lowered(*lw['rename']) and lowered(*lw['two-step']) and lowered(*lw['delete'])
+                  and lowered(*lw['delete-re-add']) and lowered(*lw['merge-new']) and lowered(*lw['merge-pre'])
+                  and lowered(*ob['bare']) and lowered(*obf)
+                  and missing_approval(*ap['p-none']) and missing_approval(*ap['p-case'])
+                  and missing_approval(*ap['p-self-trailing']) and missing_approval(*ap['p-no-spec'])
+                  and ap['r-none'][0] == 1 and ap['r-case'][0] == 1 and lowered(*ap['l-none'][:2])
+                  and uncovered(*cv['code-only']) and uncovered(*cv['draft']) and uncovered(*cv['switched'])
+                  and lc[0] == 1)
 
             EX = load('v272_executor', ROOT / '.veldo' / 'executor.py')
             hooks = EX.LiveLoop.__new__(EX.LiveLoop)
