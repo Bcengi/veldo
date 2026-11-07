@@ -9640,7 +9640,7 @@ def cases():
               '                        group.retain()\n', '', ['receiver/settled-scope'])
     # AC1: a stale-subject refusal leaves the land failed, so nothing re-lands it.
     reland148('reland148-stale-left-failed', 'control_landing_station.py',
-              "                and (landing.get('observed') or {}).get('classification') in LG.TRUNK_MOVED):\n",
+              "                and (landing.get('observed') or {}).get('classification') in LG.RELAND):\n",
               "                and (landing.get('observed') or {}).get('classification') == 'trunk-moved'):"
               "  # defect: a stale-subject refusal leaves the land failed\n", ['reland/stale-subject'])
     # AC2: a lease lost between the listing and the push is recorded unknown, whatever the new tip holds.
@@ -12187,8 +12187,8 @@ def cases():
         ['destination/default-push'])
     # AC2 (declared falsifier): land locally also pushes the candidate to the project's remote.
     add(235, 'dest235-local-also-pushes', dest235, 'control_landing.py',
-        "            if swapped.returncode == 0 and after == payload['commit']:\n",
-        "            if swapped.returncode == 0 and after == payload['commit']:\n"
+        "            if stuck is None and swapped.returncode == 0 and after == payload['commit']:\n",
+        "            if stuck is None and swapped.returncode == 0 and after == payload['commit']:\n"
         "                # defect: the local landing pushes too\n"
         "                origin = self._git(self.clone, 'config', '--get', 'remote.origin.url').stdout.strip()\n"
         "                identity = _organ('control_git_identity').resolve(self.conn, self.domain, self.repository)\n"
