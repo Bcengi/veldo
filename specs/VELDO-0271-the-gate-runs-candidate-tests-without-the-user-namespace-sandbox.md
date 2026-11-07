@@ -57,6 +57,8 @@ footprint:
   - "specs/VELDO-0271-the-gate-runs-candidate-tests-without-the-user-namespace-sandbox.md"
   - "specs/index.md"
   - "proof/VELDO-0271/**"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -260,3 +262,5 @@ processes).
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708); the decision to remove the gate sandbox was his, 39706. Landing order 0267, 0271, 0269. Before it lands, myday's claude_work.sh and codex_work.sh move to the unrestricted runners (lead task).
 
 2026-11-07: AC3 amended by the lead (Telegram 39708 scope, test machinery): reuse is turned off instead of kept under VELDO-0222's rules, and the dependency on the unbuilt VELDO-0222 is dropped, because VELDO-0279 (agent/claude/veldo-cleanups) deletes the reuse machinery and supersedes 0222; landing order 0267, 0271, 0279.
+
+2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
