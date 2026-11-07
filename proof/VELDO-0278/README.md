@@ -37,7 +37,12 @@ footprint (its four rows above drop with the handoff). The rest of AC3 is built 
   "verify stamp: ALLOWED", which the no-gate-pass row rejects. Registered drive PENDING.
 - Note: a full by-hand parked run started before the edits finished and overlapped them, so its one
   red row (1402 AC5, verify.sh still named the moved file at that instant) is not evidence; the
-  condition re-evaluated on the committed tree is true. A clean parked run is PENDING.
+  condition re-evaluated on the committed tree is true. That overlapped run finished at 513 passed,
+  2 failed in 595 s: the 1402 row above and 1409 AC6 (the same derived-domain row family, plus the
+  1409 glob fixed mid-run). Every other suite of the nine was 0 failed. A clean parked run is PENDING.
+- Cost: 15_warp_1404 alone took 539 s of those 595 s. Because AC1's row runs the parked command,
+  suite 129 adds about 10 minutes to the unit stage. That is what the spec's falsifier asks for,
+  but the lead should weigh it against the time the parking saves.
 
 ## AC2: no mutation case on an estimation module or a parked suite (built)
 
