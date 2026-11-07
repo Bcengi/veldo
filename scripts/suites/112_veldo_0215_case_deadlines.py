@@ -236,12 +236,13 @@ def _v215_case_deadlines():
         slow, _, _, _, slow_times, slow_alarms = exercise(measured=False)
         base = outcome(slow, 'baseline')
         derived = gate.WORKER_MULTIPLIER * base['elapsed']
-        slow_record = json.loads((slow_times / (key + '.json')).read_text())
+        slow_file = slow_times / (key + '.json')
+        slow_record = json.loads(slow_file.read_text()) if slow_file.exists() else {}
         row('unmeasured-slow-baseline', slow['status'] == 'passed' and slow['unmeasured_cases'] == [case['identity']]
             and base['budget_seconds'] == gate.WORKER_CEILING and base['elapsed'] > gate.WORKER_BUDGET
             and derived == 450 and slow['case_deadlines'] == {case['identity']: derived}
             and outcome(slow, 'noop')['budget_seconds'] == outcome(slow, 'mutant')['budget_seconds'] == derived
-            and slow_record['seconds'] == 150
+            and slow_record.get('seconds') == 150
             # The plan bounds the whole stage at the ceiling; once measured, the rest is bounded
             # by the derived deadlines, never above the plan.
             and max(a[1] for a in slow_alarms) >= gate.BUDGET + 3 * gate.WORKER_CEILING
