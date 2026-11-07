@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0272
 title: Owner approval narrows to money, authentication and security, schema and irreversible infrastructure, routine and test machinery work lands on a green gate and a recorded independent review, and the owner gets a daily summary of what landed
-status: draft
+status: ready
 risk: high
 risk_areas: [auth_security]
 owner: dmitry
@@ -225,3 +225,5 @@ repository changes.
 2026-11-07: written as a draft from the owner's decision, Telegram 39707 and 39708, and the weight audit
 /home/dmitry/projects/myday/research/veldo-core-weight-audit-2026-11-07.md decision I. It changes
 protected policy files, so it is approval-required itself.
+
+2026-11-07: ready. Owner approved, Telegram 39747 ("Yes" to 39746, which listed its four points).
