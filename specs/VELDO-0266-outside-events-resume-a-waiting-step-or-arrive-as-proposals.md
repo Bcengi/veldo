@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0266
 title: A step waits for an outside callback through a signed, single-use, expiring resume link with a required timeout, and outside events from configured sources either arrive as proposals in the owner's inbox or, where the owner has approved that source for direct admission, start one named workflow, every one authenticated behind the outside gate, rate-limited, deduplicated and journaled
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -304,6 +304,8 @@ sources, which belong to VELDO-0246 and read this spec's named problems.
 ## History
 
 2026-11-07: AC5 added by the lead on the owner's word (Telegram 39731): per-source choice between owner approval and direct admission, with caps; AC3 and the title amended to match.
+
+2026-11-07: ready. Owner approved the amended spec, Telegram 39733 ("Yes" to 39732, which described AC5).
 
 2026-11-07: drafted under owner Telegram 39631 to 39633 (the n8n comparison and its recommendation, and
 "It's OK for work to coming in other ways", which relaxes his ruling of 2026-09-22, Telegram 28857, that
