@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0270
 title: Proof is small summaries, never raw bulk; a proof file over the policy limit or a base64 archive is refused by the gate and the push guard, and the files over the limit today are replaced by summaries without rewriting history
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: required
@@ -187,3 +187,5 @@ evidence anywhere ("Why would anything be larger than 1mb?", "Why do we need to 
 to delete the existing big files from the current tree without rewriting history, since a rewrite
 would change every commit id and break the approvals bound to them, to keep only summaries in proof,
 and to refuse big files from now on. Evidence: the weight audit item 2. Nothing has been deleted yet.
+
+2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708: routine and test-machinery work no longer needs his sign-off; listed in his daily summary). The rule itself was his decision in 39704.
