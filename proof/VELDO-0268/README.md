@@ -146,6 +146,46 @@ mutation row green):
   debugging push command was refused by the repository guard and not retried), so the baseline row
   is unproven until that run.
 
+## Fix round 3 (fix check of 2026-11-07, NOT SOUND: F2, aliases; F1 decided)
+
+- F2: the guard's dry run no longer runs a program the command, the configuration or the
+  environment chooses. A push option outside an allowlist of full names (so `--receive-pack`,
+  `--exec`, `--signed`, `--recurse-submodules` and any abbreviation), a `-c` key other than
+  push.default, core.hooksPath and alias.*, or a configured remote.*.receivepack (read with `git
+  config`, includes and command-line values included) makes the push unresolved before anything
+  runs. For the dry run itself the ssh command (no proxy or local command, batch mode), ssh variant,
+  credential helper, askpass, fsmonitor, alternate refs command, push negotiation, signing and
+  submodule recursion are pinned after the user's options; the GIT_ variables that choose a program
+  (GIT_SSH_COMMAND, GIT_SSH, GIT_ASKPASS, GIT_EXEC_PATH, GIT_CONFIG_PARAMETERS and every other not
+  naming the repository) and SSH_ASKPASS are dropped; GIT_ALLOW_PROTOCOL=file:ssh:http:https
+  overrides any protocol configuration, so ext::, insteadOf rewrites to ext:: and transport helpers
+  (foo::, remote.*.vcs) fail. A dry run failing that way is unresolved.
+- Consequence, stated: an https remote that needs a credential helper (this repository's own origin
+  among them) cannot be resolved without running the helper, so its pushes are unresolved and meet
+  the checks of a protected push. Residual, not closed: commands the user's ~/.ssh/config runs at
+  parse time (Match exec), and a local bare remote's own configuration (its receive-pack runs there).
+- Aliases: an alias (command line or configuration, chained, or a shell alias naming git, push or
+  merge) that expands to push or merge is judged as that command; in a command the guard cannot
+  reproduce, an alias setting or an alias that may push or merge is unresolved.
+- F1: no change, by the lead's decision: an unresolved push meets the checks of a push to main
+  (AC2, AC3).
+- Side: packs/claude/scripts/veldo-guard.sh added to protected_paths in .veldo/policy.yaml, floor high.
+- Rows (red stamp, each command's marker program must not run, exit 2 on the gate text with the
+  expected unresolved reason, main unmoved): push/program-options, push/program-config-option,
+  push/program-repo-config, push/ssh-config, push/ssh-env, push/ssh-env-git-ssh, push/ext-transport,
+  push/credential (a local 401 http server), push/alias. Eleven falsifiers, in the suite and in the
+  teeth driver: push option allowlist off, -c key allowlist off, configured receive-pack runs, ssh
+  command not pinned, environment kept, GIT_SSH reaches the dry run (environment kept and ssh not
+  pinned), every transport allowed, credential helper not pinned, askpass not pinned, alias not
+  expanded, alias in a compound command ignored.
+- Commits: 82dbd78f (three guard copies, byte-identical, and policy.yaml), 4f12c035 (suite and
+  teeth driver). A development run of the suite fragment (outside selftest) had 0 red of 60.
+- Runs: pending. The gate lock was not free in 20 minutes (one wait, 13:06 to 13:26, flock timed
+  out, no run started). proof/VELDO-0268/pending_runs.sh holds the two runs (suite 141 with details
+  on, 39 behaviour and 21 mutation rows expected green; then `check_teeth_mutations.py --finding
+  268`, 21 cases), passes `bash -n`, appends one line per step with the red row names to
+  proof/VELDO-0268/pending-summary.txt, logs /tmp/v268-fix3-suite.log and /tmp/v268-fix3-teeth.log.
+
 ## Open
 
 - scripts/suites/requires.json is outside the footprint. It is derived (`python3 scripts/run_scope.py
