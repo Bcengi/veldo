@@ -2260,6 +2260,12 @@ def _v208_case_input_proposal():
     proposer.T.accesses = accesses
     try:
         result, _ = proposer.trace_case(gate, case)
+    except (OSError, ValueError) as error:
+        # A deadline or an incomplete trace is this row's red, with its reason, never a crash of
+        # the suite (landing-b gate e6aed167).
+        expect('VELDO-0208 profiles/case-input-proposal-tcp-suite-confined: %s: %s'
+               % (type(error).__name__, error), False)
+        return
     finally:
         proposer.T.accesses = traced
     modes = {m['mode']: m for m in result['modes']}
