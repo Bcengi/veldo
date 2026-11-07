@@ -308,11 +308,18 @@ def _v268_suite():
         return ok, 'quiet pushes of main: %r' % (seen,)
 
     def row_empty_answer(under):
-        work, _, _ = fixture(under)
-        git(work.parent, 'init', '-q', '--bare', '-b', 'main', str(work.parent / 'empty.git'))
-        git(work, 'remote', 'add', 'empty', str(work.parent / 'empty.git'))
-        g = guard(work, 'git push empty :')
-        return g.returncode == 2, 'a dry run naming no destination: exit %d, %r' % (g.returncode, g.stderr[-300:])
+        """A dry run that succeeds and names no destination: a pattern refspec matching no branch.
+        The row holds only when the guard reports that exact reason and refuses on it, so a fixture
+        that fails earlier (a dry run that errors or prints a line the guard cannot read) is red
+        here rather than green for the wrong reason."""
+        work, bare, head = fixture(under)
+        g = guard(work, "git push origin 'refs/heads/nomatch/*:refs/heads/nomatch/*'")
+        reason = [l for l in g.stderr.splitlines() if l.startswith('VELDO guard: destination unresolved:')]
+        want = 'VELDO guard: destination unresolved: the dry run named no destination; treated as protected'
+        ok = (g.returncode == 2 and len(reason) == 1 and reason[0].startswith(want)
+              and checks_text(g.stderr) == gate_text(head)
+              and git(bare, 'rev-parse', 'refs/heads/main').stdout.strip() != head)
+        return ok, 'a dry run naming no destination: exit %d, reason %r' % (g.returncode, reason)
 
     def row_global_main(under):
         work, bare, head = fixture(under)
