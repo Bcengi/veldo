@@ -236,11 +236,11 @@ def _v215_case_deadlines():
                 if Path(p).name == 'mutation_ownership.py':
                     return types.SimpleNamespace(cleanup=lambda home, ledger: cleaned.append(str(home)))
                 return real_load(p)
-            real_deadline, real_record = gate.case_deadline, gate.record_case_times
+            real_deadlines, real_record = gate.case_deadlines, gate.record_case_times
             with contextlib.ExitStack() as stack:
                 overrides = dict(inventory=lambda *a: [case], read_inputs=lambda *a: files,
                     git=lambda *a: 'head', snapshot=lambda *a: None, inputs_unchanged=lambda *a: True,
-                    load=loader, case_deadline=lambda k: real_deadline(k, store),
+                    load=loader, case_deadlines=lambda *a: real_deadlines(*a, store),
                     record_case_times=lambda root, samples, authority=False: real_record(
                         root, samples, times, authority=authority), CASE_TIMES=times)
                 for name, value in overrides.items():
