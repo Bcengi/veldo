@@ -3,7 +3,7 @@ version: 1
 risk_tiers:
   low:      {gate: standard, reviews: 1, min_independence: L1, human_approval: false}
   standard: {gate: full,     reviews: 1, min_independence: L2, human_approval: false}
-  high:     {gate: expanded, reviews: 1, min_independence: L2, human_approval: true}
+  high:     {gate: expanded, reviews: 1, min_independence: L2, human_approval: false}
   critical: {gate: expanded, reviews: 2, min_independence: L2, human_approval: true,
              prepare_and_execute: true}
 # Independence rule for this repository (founder instruction, 2026-07-16,
@@ -14,96 +14,70 @@ risk_tiers:
 # per-case instruction; no agent may invoke another vendor's model on its own
 # initiative.
 protected_paths:
-  - {path: "scripts/gate_candidate.py", floor: high}
-  - {path: "scripts/reuse_worker.py", floor: high}
-  - {path: "scripts/mutation_observer.py", floor: high}
+  # VELDO-0272, owner decision 2026-11-07 (Telegram 39707, 39708; ready 39747): the owner's approval
+  # is kept for money, authentication and security, schema and irreversible infrastructure, and this
+  # list holds only paths in those categories. Test machinery (the gate, its reuse, mutation,
+  # sandbox, leg, schedule and host machinery, the suite dispatcher and .veldo/floors/*) left the
+  # list: a change to it lands on a green gate and a recorded independent review, and the daily
+  # summary (.veldo/landed_summary.py) names it. A schema change is caught by risk_areas: [schema]
+  # in the spec, because the store schema is written inline in files routine work also touches.
+  #
+  # Security: the approval rule itself, and the push guard that runs it.
+  - {path: ".veldo/policy.yaml", floor: high}
+  - {path: ".veldo/policy_check.py", floor: high}
+  - {path: "engine/.veldo/policy_check.py", floor: high}
+  - {path: "scripts/veldo-guard.sh", floor: high}
+  - {path: "engine/scripts/veldo-guard.sh", floor: high}
+  # Security: the runner that judges a candidate by the installed policy and trunk base (VELDO-0058),
+  # so a candidate cannot empty this list, and the authority owned Git boundary that keeps a
+  # candidate from moving the refs the push range is read from.
+  - {path: ".veldo/control_verification.py", floor: high}
+  - {path: "engine/.veldo/control_verification.py", floor: high}
   - {path: ".veldo/candidate_git.py", floor: high}
   - {path: "engine/.veldo/candidate_git.py", floor: high}
-  - {path: "engine/scripts/agent_sandbox.py", floor: high}
-  - {path: "engine/scripts/agent_sandbox.json", floor: high}
-  - {path: "engine/scripts/mutation_sandbox.py", floor: high}
-  - {path: "engine/scripts/gate_candidate.py", floor: high}
-  - {path: "engine/scripts/reuse_worker.py", floor: high}
-  - {path: "engine/scripts/mutation_observer.py", floor: high}
-  - {path: "engine/scripts/check_gate_mutations.py", floor: high}
-  - {path: "engine/scripts/case_reuse.py", floor: high}
-  - {path: "engine/scripts/case_inputs.py", floor: high}
-  - {path: "engine/scripts/case_trace.py", floor: high}
-  - {path: "engine/scripts/mutation_reuse.py", floor: high}
-  - {path: "engine/scripts/gate_reuse.py", floor: high}
-  - {path: "engine/scripts/reuse_stamp.py", floor: high}
-  - {path: "scripts/agent_sandbox.py", floor: high}
-  - {path: "scripts/agent_sandbox.json", floor: high}
-  - {path: "engine/.veldo/reuse_evidence.py", floor: high}
-  - {path: ".veldo/reuse_evidence.py", floor: high}
-  - {path: "scripts/check_gate_mutations.py", floor: high}
-  - {path: "scripts/case_inputs.py", floor: high}
-  - {path: "scripts/case_trace.py", floor: high}
-  - {path: "scripts/case_reuse.py", floor: high}
-  - {path: "scripts/propose_case_inputs.py", floor: high}
-  - {path: "scripts/mutation_case_inputs.json", floor: high}
-  - {path: "scripts/mutation_reuse_profiles.json", floor: high}
-  - {path: "scripts/mutation_reuse.py", floor: high}
-  - {path: "scripts/gate_reuse.py", floor: high}
-  - {path: "scripts/mutation_sandbox.py", floor: high}
-  - {path: "scripts/reuse_stamp.py", floor: high}
-  # VELDO-0208, owner decision Telegram 32403-32407 (2026-10-07): the suites the gate runs OUTSIDE
-  # its confinement, and the runner that reads that list. Adding a suite to it is this protected
-  # change, never a step an agent takes on its own behalf.
-  - {path: "scripts/gate_unconfined.json", floor: high}
-  - {path: "scripts/gate_legs.py", floor: high}
-  - {path: "engine/scripts/gate_legs.py", floor: high}
-  # VELDO-0220 (owner approval 2026-10-25, Telegram 36467): the host configuration (the lock every
-  # heavy run serializes on, the scope's memory limit and out-of-memory score) and the holder
-  # that takes the lock and makes the scope before the gate's first check.
-  - {path: "scripts/gate_graph.json", floor: high}
-  - {path: "scripts/gate_schedule.py", floor: high}
-  - {path: "engine/scripts/gate_schedule.py", floor: high}
-  - {path: "scripts/gate_host.json", floor: high}
-  - {path: "scripts/gate_host.py", floor: high}
-  - {path: "engine/scripts/gate_host.py", floor: high}
-  # The candidate's dispatcher applies that list: selftest.py picks each leg's suites, run_scope.py
-  # and suites/shared.py (leg_runs) pick the rows. check_first_use.py is the integration stage's
-  # command: in the unconfined leg it runs whole outside the confinement and hands its environment,
-  # the leg included, to a nested selftest.py, so it could drop the leg and send every suite out.
-  # Unprotected, a candidate could make them ignore the leg and send any suite out, so the list
-  # would bound nothing. The listed suite files are deliberately NOT protected: their code runs
-  # with the owner's permissions, as every suite did before VELDO-0208, and review of the
-  # candidate is the safeguard for it.
-  - {path: "scripts/selftest.py", floor: high}
-  - {path: "scripts/check_first_use.py", floor: high}
-  - {path: "scripts/run_scope.py", floor: high}
-  - {path: "scripts/suites/shared.py", floor: high}
-  - {path: "engine/.veldo/control_verification.py", floor: high}
-  - {path: ".veldo/control_verification.py", floor: high}
-  # The enforcement core: this repository ships the templates every adopting
-  # repository trusts. Weakening the gate, the guard, or the policy here
-  # propagates everywhere, so those exact files are the protected surface.
-  # Deliberately narrow: validators and skills change with ordinary specs.
-  - {path: "scripts/verify.sh",                  floor: high}
-  - {path: "scripts/veldo-guard.sh",              floor: high}
-  - {path: ".veldo/policy.yaml",                  floor: high}
-  - {path: "engine/scripts/verify.sh", floor: high}
-  - {path: "engine/scripts/veldo-guard.sh", floor: high}
-  - {path: ".veldo/policy_check.py",                  floor: high}
-  - {path: "engine/.veldo/policy_check.py", floor: high}
-  # CEO-113-era decision, 2026-08-03: the secret inventory record carries the DISPOSITIONS,
-  # and a disposition is a security exemption. Protecting it means adding one is a reviewed
-  # change rather than a step an agent can take on its own behalf, which is the only thing
-  # that makes the per-digest design trustworthy. Dmitry approved this the same hour he
-  # approved the flip to enforcing.
-  - {path: ".veldo/secret_inventory.json",        floor: high}
-  # VELDO-0012, the behaviour floor: the SAME registration and the SAME argument the
-  # secret inventory records two lines above. A floor pins an existing codebase's current
-  # behaviour, and a settlement is the record of what a named human SAID about one of
-  # those pins, so a settlement is an exemption in exactly the way a secret disposition
-  # is. The validator is not the integrity: the integrity of a disposition record is the
-  # integrity of a reviewed change plus the protected-path rules it sits under, never its
-  # own validation. With these two registered, adding a floor, re-pointing an observation
-  # or writing a settlement is a change that needs a commit-bound, path-scoped approval,
-  # so the agent being gated cannot author the record that exempts it.
-  - {path: ".veldo/floors/*",                     floor: high}
-  - {path: ".veldo/settlements/*",                floor: high}
+  # Security: a secret inventory disposition is an exemption from the secret scanner (CEO-113-era
+  # decision, 2026-08-03), so adding one is a reviewed change no agent takes on its own behalf.
+  - {path: ".veldo/secret_inventory.json", floor: high}
+  # Authentication: a settlement records what a named human said (VELDO-0012), so no agent may
+  # author one in his name.
+  - {path: ".veldo/settlements/*", floor: high}
+  # Authentication and security (VELDO-0272, added): authorization, authority, two-key, membership,
+  # WebAuthn, credentials, signers, keys and secret references, each with its engine copy.
+  - {path: ".veldo/authorization.py", floor: high}
+  - {path: "engine/.veldo/authorization.py", floor: high}
+  - {path: ".veldo/authority_contract.py", floor: high}
+  - {path: "engine/.veldo/authority_contract.py", floor: high}
+  - {path: ".veldo/two_key.py", floor: high}
+  - {path: "engine/.veldo/two_key.py", floor: high}
+  - {path: ".veldo/control_membership.py", floor: high}
+  - {path: "engine/.veldo/control_membership.py", floor: high}
+  - {path: ".veldo/control_api_webauthn.py", floor: high}
+  - {path: "engine/.veldo/control_api_webauthn.py", floor: high}
+  - {path: ".veldo/control_api_credentials.py", floor: high}
+  - {path: "engine/.veldo/control_api_credentials.py", floor: high}
+  - {path: ".veldo/control_api_signer.py", floor: high}
+  - {path: "engine/.veldo/control_api_signer.py", floor: high}
+  - {path: ".veldo/control_signer.py", floor: high}
+  - {path: "engine/.veldo/control_signer.py", floor: high}
+  - {path: ".veldo/control_signer_answers.py", floor: high}
+  - {path: "engine/.veldo/control_signer_answers.py", floor: high}
+  - {path: ".veldo/control_keys.py", floor: high}
+  - {path: "engine/.veldo/control_keys.py", floor: high}
+  - {path: ".veldo/control_keys_custody.py", floor: high}
+  - {path: "engine/.veldo/control_keys_custody.py", floor: high}
+  - {path: ".veldo/control_credential.py", floor: high}
+  - {path: "engine/.veldo/control_credential.py", floor: high}
+  - {path: ".veldo/control_credential_keystore.py", floor: high}
+  - {path: "engine/.veldo/control_credential_keystore.py", floor: high}
+  - {path: ".veldo/control_credential_delivery.py", floor: high}
+  - {path: "engine/.veldo/control_credential_delivery.py", floor: high}
+  - {path: ".veldo/credential_issue.py", floor: high}
+  - {path: "engine/.veldo/credential_issue.py", floor: high}
+  - {path: ".veldo/secretref.py", floor: high}
+  - {path: "engine/.veldo/secretref.py", floor: high}
+  # Money (VELDO-0272, added): the module that enforces spend on paid model accounts.
+  - {path: ".veldo/budget.py", floor: high}
+  - {path: "engine/.veldo/budget.py", floor: high}
 # VELDO-0016 (PLAN-0019 W1), 2026-09-17: this repository's architecture contract is REQUIRED.
 # The loader (validate_checks.load_contract_state) reads this one line; with it, an absent
 # .veldo/architecture.yaml refuses the ready transition, the frontier, run-check and the shape
@@ -128,6 +102,15 @@ architecture_contract: required
 fix_validation:
   required: true
   from_commit: 5c6473325b19604b9b1d28b8af8eb488a4a64e8c
+# VELDO-0272, set by Dmitry on 2026-11-07 (Telegram 39707, 39708; ready 39747): where the computed
+# approval flag STARTS. The validator judges every spec first committed after this commit by the rule
+# (approval_flag_below_rule, critical_without_area); a spec first committed at or before it keeps its
+# declared flag. Read exactly as fix_validation.from_commit is read: absent, not a forty character
+# commit id, or not a commit in this repository, and EVERY spec is in scope (fail closed). It records
+# the commit that lands VELDO-0272; at build time it names the branch's base, and the landing points
+# it at the landing commit.
+approval_scope:
+  from_commit: ed0c995f446f9bfd6050bfb0f5434adee1a91a6f
 merge_rule: >
   Auto-merge if and only if: the specification is ready and valid; every
   acceptance criterion is passed in a valid proof manifest for this exact
@@ -138,12 +121,19 @@ merge_rule: >
   completes. Reuse-aware stamps and events must declare honest counts. Positive mutation reuse
   requires authenticated non-agent provenance and per-case declared input keys bound
   to the gated commit under VELDO-0208. Force-fresh requires zero reused results.
-  NO VERDICT CLAUSE (WARP-0730). The rule used to also require a pass verdict
-  with zero blocking findings. A verdict is an artifact the agent can write,
-  so that clause asked an agent to certify itself and cost nine build rounds
-  of forgery guards. The gate is the authority for ordinary work and the owner
-  is the authority for anything touching a protected path; reviews still run
-  and report, they no longer certify.
+  REVIEW CLAUSE (VELDO-0272, in place of the WARP-0730 no verdict clause).
+  Owner approval is required for a change touching a protected path, and a
+  spec whose approval flag is required (declared, or computed from its
+  footprint and risk areas) is not merge ready without him. A push whose specifications are all
+  not_required and that touches no protected path lands on a green gate and,
+  per specification, a pass or pass_with_notes verdict with no blocking
+  findings, bound to a commit in the push and to the specification's current
+  proof digest, from a reviewer who is not the proof producer; without one
+  the push is refused landing_without_review. The limit is stated, not
+  hidden: a verdict is a file an agent can write. The reviewer identity check
+  and the owner's daily summary of what landed make a forged review visible,
+  not impossible. A recorded objection still blocks, and the owner is still
+  the authority for anything touching a protected path.
 emergency:
   lane: fix forward with a human engaged
   backfill_hours: 24
