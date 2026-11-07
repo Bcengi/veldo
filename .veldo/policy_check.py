@@ -10,6 +10,11 @@ prints the reason and exits 1 (block). Checks, for the current HEAD:
 2. Emergency debt: an emergency.push event without a later backfill-closing
    event (spec.shipped for its backfill, or an explicit emergency.closed)
    blocks ordinary pushes, as the setup promises.
+3. VELDO-0272: a commit lowering a spec's human_approval from required to
+   not_required needs an owner approval scoping that spec file
+   (approval_flag_lowered), and a push whose specs are all not_required and
+   that touches no protected path needs, per spec, a passing verdict from a
+   reviewer who is not the producer (landing_without_review).
 
 Proportionate by design: stdlib only, no yaml dependency (reads the simple
 policy.yaml shape the template ships).
@@ -149,12 +154,130 @@ def push_range_commits():
     return []
 
 
+def glob_covers(path, pat):
+    """THE ONE fnmatch reading of a protected pattern: the pattern as written, or with its trailing
+    stars widened to one, so "dir/*" also covers a file deeper under dir/. The push check, the
+    approval scope and the computed approval flag (VELDO-0272) all read a pattern this way."""
+    return fnmatch.fnmatch(path, pat) or fnmatch.fnmatch(path, pat.rstrip("*") + "*")
+
+
+# --- VELDO-0272: the approval flag a spec's placement computes ------------------------------------
+# The owner's approval follows a spec's footprint and risk areas, not its author's word. The rule is
+# here, beside the protected list it reads, and the validator and executor.merge_ready load it from
+# here, so the three cannot disagree about what "required" means.
+APPROVAL_AREAS = ("money", "auth_security", "schema", "irreversible_infra")
+
+
+def globs_meet(a, b):
+    """A footprint entry and a protected path match each other: either glob matches the other."""
+    return glob_covers(a, b) or glob_covers(b, a)
+
+
+def declared_flag(fm):
+    """The human_approval a spec declares: required unless it says not_required (absent reads as
+    not_required, as the index and the executor have always read it)."""
+    words = str((fm or {}).get("human_approval", "not_required")).split()
+    return "not_required" if words and words[0] == "not_required" else "required"
+
+
+def approval_bases(fm, patterns=None):
+    """Every basis on which the rule computes approval REQUIRED for this front matter; an empty list
+    is not_required. Bases: each protected path a footprint entry meets, a non-empty protected_paths,
+    each risk area naming money, auth_security, schema or irreversible_infra, and an absent footprint
+    (a spec that declares no footprint has not said it stays off the protected list)."""
+    fm = fm or {}
+    pats = protected_patterns() if patterns is None else patterns
+    bases = []
+    footprint = fm.get("footprint")
+    if isinstance(footprint, str):
+        footprint = [footprint]
+    if not isinstance(footprint, list) or not footprint:
+        bases.append("footprint absent")
+    else:
+        for entry in footprint:
+            for pat in pats:
+                if isinstance(entry, str) and globs_meet(entry, pat):
+                    bases.append("protected path %s (footprint %s)" % (pat, entry))
+    if fm.get("protected_paths"):
+        bases.append("protected_paths declared %s" % (fm.get("protected_paths"),))
+    areas = fm.get("risk_areas")
+    for area in areas if isinstance(areas, list) else []:
+        if area in APPROVAL_AREAS:
+            bases.append("risk area %s" % area)
+    return bases
+
+
+def effective_flag(fm, patterns=None):
+    """required when the spec declares it or the rule computes it; a declaration can raise the flag,
+    never lower it."""
+    if declared_flag(fm) == "required" or approval_bases(fm, patterns):
+        return "required"
+    return "not_required"
+
+
+_SPEC_FILE = re.compile(r"specs/([A-Z]+-\d+)-[^/]*\.md$")
+_PROOF_FILE = re.compile(r"proof/([A-Z]+-\d+)/")
+
+
+def _declared_at(rev, name):
+    """The declared flag of spec file `name` at `rev`, or None when it has no readable front matter there."""
+    r = _git_process.run(["git", "show", "%s:%s" % (rev, name)], capture_output=True, cwd=ROOT)
+    if r.returncode != 0:
+        return None
+    try:
+        fm = _Y.front_matter(r.stdout.decode("utf-8"), name)
+    except Exception:
+        return None
+    return declared_flag(fm) if isinstance(fm, dict) else None
+
+
+def lowered_flags(commits):
+    """[(spec file, commit)]: every commit in the push range that changes a spec's human_approval
+    from required to not_required (approval_flag_lowered unless the owner scoped that file)."""
+    out = []
+    for c in commits:
+        r = _git_process.run(["git", "diff-tree", "--no-commit-id", "-r", "--name-only", "--no-renames",
+                              c, "--", "specs/"], capture_output=True, text=True, cwd=ROOT)
+        if r.returncode != 0:
+            continue
+        for name in r.stdout.splitlines():
+            if not _SPEC_FILE.match(name):
+                continue
+            if _declared_at(c + "^", name) == "required" and _declared_at(c, name) == "not_required":
+                out.append((name, c))
+    return out
+
+
+def push_specs(files):
+    """The spec ids a push carries: each spec file and each proof bundle it changes."""
+    ids = set()
+    for f in files:
+        m = _SPEC_FILE.match(f) or _PROOF_FILE.match(f)
+        if m:
+            ids.add(m.group(1))
+    return sorted(ids)
+
+
+def reviewed_landing(spec_id, commits):
+    """The verdict a not-required spec lands on (VELDO-0272 AC3 b), or None: pass or pass_with_notes,
+    no blocking findings, bound to a commit in the push range and to the spec's CURRENT proof digest
+    (valid_verdict_for), from a reviewer who is not the proof producer. The limit is the merge rule's:
+    a verdict is a file an agent can write, so the reviewer identity check and the daily summary make
+    a forged review visible, not impossible."""
+    producer = producer_for(spec_id)
+    for c in commits:
+        found = valid_verdict_for(c, spec_id=spec_id, bound=True, producer=producer)
+        if found:
+            return found
+    return None
+
+
 def _approval_covers(approval, path):
     """Path-scoped authorization: an approval only authorizes the paths its
     scope names. Empty scope.paths authorizes nothing (fail closed) - name the
     paths."""
     for pat in approval.get("scope", {}).get("paths", []) or []:
-        if fnmatch.fnmatch(path, pat) or fnmatch.fnmatch(path, pat.rstrip("*") + "*"):
+        if glob_covers(path, pat):
             return True
     return False
 
@@ -429,19 +552,30 @@ def spec_revision_stale():
     return stale
 
 
-def valid_verdict_for(commit):
+def valid_verdict_for(commit, spec_id=None, bound=False, producer=None):
+    """A passing verdict bound to `commit`. VELDO-0272: `spec_id` narrows it to one spec, `bound`
+    requires a proof digest (an unbound verdict reviewed no particular proof), and a `producer`
+    refuses a verdict with no reviewer or whose reviewer is that producer (no self-review)."""
     for f in _verdict_files():
         try:
             v = json.loads(f.read_text())
         except Exception:
             continue
-        if v.get("verdict") in ("pass", "pass_with_notes") and commit.startswith(v.get("commit", "\0")):
+        if not isinstance(v, dict) or not isinstance(v.get("commit", "\0"), str):
+            continue
+        if v.get("verdict") in ("pass", "pass_with_notes") and commit.startswith(v.get("commit", "\0") or "\0"):
             if blocking_findings(v):
+                continue
+            if spec_id is not None and v.get("spec_id") != spec_id:
+                continue
+            if producer is not None and (not v.get("reviewer") or v.get("reviewer") == producer):
                 continue
             # if the verdict binds to a proof digest, it must match the current
             # proof manifest for that spec - a verdict cannot be reused for a
             # proof it did not review.
             pd = v.get("proof_digest")
+            if bound and not pd:
+                continue
             if pd:
                 sid = v.get("spec_id")
                 _, m = _proof_for_spec(sid) if sid else (None, None)
@@ -484,6 +618,11 @@ def main():
     # reviews still run and still report findings for a human to read, they just no longer
     # certify. Deleting the machinery is a separate item, so that a regression in either change
     # can be attributed to the change that caused it.
+    # VELDO-0272 (owner, 2026-11-07, Telegram 39707 and 39708) consults it again, for one case only:
+    # the owner left the approval of routine work, so a push whose specs are all not_required and
+    # that touches no protected path lands on a recorded review by someone who is not the producer.
+    # The forgery limit above still holds and the merge rule states it: the reviewer identity check
+    # and the daily summary make a forged review visible, not impossible.
     #
     # BUT AN OBJECTION STILL STOPS THE PUSH (WARP-0732), and leaving that out was a real gap
     # rather than a consequence of the above. Dmitry, 2026-08-02: "Not good if werdict is rework
@@ -520,7 +659,7 @@ def main():
     touched = []
     for f in changed_files():
         for p in pats:
-            if fnmatch.fnmatch(f, p) or fnmatch.fnmatch(f, p.rstrip("*") + "*"):
+            if glob_covers(f, p):
                 touched.append((f, p))
                 break
     if touched:
@@ -536,6 +675,41 @@ def main():
                 print(f"  commit in this push, whose scope.paths covers {tf}, and whose approver")
                 print("  is not the proof producer (no self-approval).")
                 return 1
+
+    # VELDO-0272 AC3 (a): nothing lowers a flag silently. A commit in this push that changes a spec's
+    # human_approval from required to not_required needs an owner approval scoping that spec file.
+    rng = push_range_commits() or [h]
+    for spec_file, c in lowered_flags(rng):
+        m = _SPEC_FILE.match(spec_file)
+        if not valid_approval_for(rng, path=spec_file, producer=producer_for(m.group(1))):
+            print("VELDO policy: blocked. approval_flag_lowered: %s" % spec_file)
+            print(f"  commit {c[:12]} changes human_approval from required to not_required, and no")
+            print("  approved, unexpired veldo.approval/v1 bound to a commit in this push, whose")
+            print(f"  scope.paths covers {spec_file} and whose approver is not the proof producer,")
+            print("  records the owner's decision to lower it.")
+            return 1
+
+    # VELDO-0272 AC3 (b): nothing not-required lands without review. A push whose specs are all
+    # not_required and that touches no protected path needs, per spec, a passing verdict bound to a
+    # commit in the push and to the spec's current proof digest, from a reviewer who is not the
+    # producer. A required spec or a protected path is the owner's, above.
+    sids = push_specs(changed_files())
+    if sids and not touched:
+        fms = {}
+        for sid in sids:
+            try:
+                fms[sid] = _spec_file_fm(sid)
+            except ValueError:
+                fms[sid] = {}
+        if all(effective_flag(fms[sid], pats) == "not_required" for sid in sids):
+            for sid in sids:
+                if not reviewed_landing(sid, rng):
+                    print("VELDO policy: blocked. landing_without_review: %s" % sid)
+                    producer = producer_for(sid)
+                    print("  Required: a pass or pass_with_notes verdict with no blocking findings, bound")
+                    print("  to a commit in this push and to the spec's current proof digest, whose")
+                    print("  reviewer is not the proof producer (%s)." % (producer or "no producer recorded"))
+                    return 1
 
     # ready-spec boundary: no draft spec may carry a proof
     drafts = ready_boundary_violations()
