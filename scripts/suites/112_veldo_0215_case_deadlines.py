@@ -232,21 +232,22 @@ def _v215_case_deadlines():
         # VELDO-0285: a case with no live sample. Its baseline measures (bounded only by the
         # ceiling against a hang); its noop and mutant are held to 3 x that baseline's time.
         def outcome(receipt, mode):
-            return [o for o in receipt['worker_outcomes'] if o['mode'] == mode][0]
+            # A mode that never launched (its stage stopped first) is an empty outcome, a red row.
+            return next((o for o in receipt['worker_outcomes'] if o['mode'] == mode), {'elapsed': 0})
         slow, _, _, _, slow_times, slow_alarms = exercise(measured=False)
         base = outcome(slow, 'baseline')
         derived = gate.WORKER_MULTIPLIER * base['elapsed']
         slow_file = slow_times / (key + '.json')
         slow_record = json.loads(slow_file.read_text()) if slow_file.exists() else {}
-        row('unmeasured-slow-baseline', slow['status'] == 'passed' and slow['unmeasured_cases'] == [case['identity']]
-            and base['budget_seconds'] == gate.WORKER_CEILING and base['elapsed'] > gate.WORKER_BUDGET
-            and derived == 450 and slow['case_deadlines'] == {case['identity']: derived}
-            and outcome(slow, 'noop')['budget_seconds'] == outcome(slow, 'mutant')['budget_seconds'] == derived
+        row('unmeasured-slow-baseline', slow['status'] == 'passed' and slow.get('unmeasured_cases') == [case['identity']]
+            and base.get('budget_seconds') == gate.WORKER_CEILING and base['elapsed'] > gate.WORKER_BUDGET
+            and derived == 450 and slow.get('case_deadlines') == {case['identity']: derived}
+            and outcome(slow, 'noop').get('budget_seconds') == outcome(slow, 'mutant').get('budget_seconds') == derived
             and slow_record.get('seconds') == 150
             # The plan bounds the whole stage at the ceiling; once measured, the rest is bounded
             # by the derived deadlines, never above the plan.
             and max(a[1] for a in slow_alarms) >= gate.BUDGET + 3 * gate.WORKER_CEILING
-            and slow['elapsed'] <= slow['budget_seconds'] < max(a[1] for a in slow_alarms))
+            and slow['elapsed'] <= slow.get('budget_seconds') < max(a[1] for a in slow_alarms))
         late = [exercise(measured=False, fault='hang-mutant'),
                 exercise(measured=False, fault='hang-noop', parallel=2)]
         settled = gate.Workers(0)
@@ -258,14 +259,14 @@ def _v215_case_deadlines():
         except gate.Refused as exc:
             judged = exc.code
         row('unmeasured-mutant-deadline', all(
-            r['error'] == 'mutation_budget_exceeded' and r['surviving_workers'] == 0
+            r.get('error') == 'mutation_budget_exceeded' and r['surviving_workers'] == 0
             and outcome(r, mode).get('error') == 'mutation_budget_exceeded'
-            and outcome(r, mode)['budget_seconds'] == 450 and 450 <= outcome(r, mode)['elapsed'] <= 480
+            and outcome(r, mode).get('budget_seconds') == 450 and 450 <= outcome(r, mode)['elapsed'] <= 480
             and not list(t.glob('*.json'))
             for mode, (r, _, _, _, t, _) in zip(('mutant', 'noop'), late))
-            and judged == 'mutation_budget_exceeded' and settled.outcomes[0]['budget_seconds'] == 450)
+            and judged == 'mutation_budget_exceeded' and settled.outcomes[0].get('budget_seconds') == 450)
         hung, hung_children, hung_kills, _, hung_times, _ = exercise(measured=False, fault='hang-baseline')
-        row('unmeasured-hang', hung['error'] == 'mutation_budget_exceeded' and len(hung_children) == 1
+        row('unmeasured-hang', hung.get('error') == 'mutation_budget_exceeded' and len(hung_children) == 1
             and outcome(hung, 'baseline').get('error') == 'mutation_budget_exceeded'
             and gate.WORKER_CEILING <= outcome(hung, 'baseline')['elapsed'] <= gate.WORKER_CEILING + 30
             and hung_kills and hung['surviving_workers'] == 0 and not list(hung_times.glob('*.json')))
