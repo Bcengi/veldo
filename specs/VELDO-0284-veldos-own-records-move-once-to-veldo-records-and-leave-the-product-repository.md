@@ -128,9 +128,7 @@ proves the tool and the removal against a local bare repository.
 
 ## Out of scope
 
-The emergency.push and emergency.closed lines that VELDO-0280 keeps in the tracked .veldo/events.jsonl:
-they are governance records too, and whether they move to veldo-records is an owner decision not taken
-in Telegram 39774. Gate run results (VELDO-0280). .veldo/decisions and .veldo/decision_reviews, which
+Gate run results (VELDO-0280). .veldo/decisions and .veldo/decision_reviews, which
 are engine contract records, not delivery records. Core (VELDO-3600 in the core repository).
 
 ## What the reviewer judges
@@ -143,3 +141,5 @@ are engine contract records, not delivery records. Core (VELDO-3600 in the core 
 
 2026-11-07: written as a draft from the owner's decision, Telegram 39764 to 39774, approved design 39774.
 It changes the policy file and moves every approval, so it is approval-required.
+
+2026-11-07: lead amendment: the emergency.push and emergency.closed lines that VELDO-0280 keeps in the tracked .veldo/events.jsonl move with the other governance records into veldo-records in this migration (owner principle, Telegram 39764: "Software should not have its sdlc bits in git"); the builder adds them to the migrated set and the guard reads them from the records repository like approvals.

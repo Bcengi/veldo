@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0281
-title: The engine reads specs, plans, proof, verdicts and approvals from a configured records repository, one file per record, added and never edited, with the index generated on demand
+title: The engine reads specs, plans, proof, verdicts and approvals from a configured records repository, one file per record, approvals, verdicts and proof added and never edited, specs and plans edited in place, with the index generated on demand
 status: draft
 risk: high
 risk_areas: [auth_security]
@@ -72,14 +72,18 @@ acceptance_criteria:
       naming the field.
   - id: AC3
     text: >
-      Records are only ever added. The validator reads the records repository history and refuses
-      record_modified for any record path whose blob changed, or which was deleted, after the commit
-      that first added it, naming the path and both commits. The verdict corpus enumeration
+      Evidence records are only ever added; tickets are edited in place. Approvals, verdicts and proof
+      files are append-only: the validator reads the records repository history and refuses
+      record_modified for any of those paths whose blob changed, or which was deleted, after the commit
+      that first added it, naming the path and both commits. A spec or plan is one file per ticket,
+      edited in place like a document; its git history in the records repository is its audit trail,
+      and an approval binds the spec's digest at approval time, so an edit after approval is visible. The verdict corpus enumeration
       (verdict_corpus.py) and every corpus pattern it owns resolve under records.root(), so there stays
       one spelling of each corpus set.
     falsified_by: >
       Fixture records repository rows: an approval file edited in a later commit is refused
-      record_modified; the same file deleted is refused; a new file beside it is valid. A registered
+      record_modified; the same file deleted is refused; a new file beside it is valid; a spec file
+      edited in place (status change, History line) is valid. A registered
       mutation that skips the history read reds the edit row.
   - id: AC4
     text: >
@@ -126,11 +130,10 @@ The remote and branch are in .veldo/policy.yaml, a protected path, because point
 repository would let an agent supply its own approvals. The clone's host path is per host configuration,
 because checkout locations differ by machine.
 
-Append-only is the rule that removes merge conflicts between machines and makes every approval and
-verdict auditable: a spec is a sequence of revision files, not a file edited in place. The revision field
-the spec contract already carries (raised on a criteria change) is the file name; a status change or a
-History line adds the next file with a suffix (for example 3.1) and does not raise the contract revision,
-so no proof goes stale.
+Append-only applies to evidence: approvals, verdicts and proof are what a check trusts, so they are never
+rewritten. Tickets are documents people keep editing (status, History, amended criteria); one file per
+ticket keeps two people's tickets apart, and editing in place keeps the record readable. The owner's
+team concern (Telegram 39772) is met by one file per record and generated indexes, not by revision files.
 
 Not a step for a builder: creating the GitHub repository Bcengi/veldo-records (private) is done by the
 lead at landing. A builder works against a fixture records repository and a local bare remote.
@@ -153,3 +156,5 @@ repository is configured with a records repository instead of being refused.
 
 2026-11-07: written as a draft from the owner's decision, Telegram 39764 to 39774, approved design 39774.
 It changes the policy file and how approvals are found, so it is approval-required.
+
+2026-11-07: lead correction of the drafted rule: append-only covers approvals, verdicts and proof; specs and plans are edited in place (one file per ticket). The draft's revision-file scheme was the writer's literal reading of the lead's 39771 wording.
