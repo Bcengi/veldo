@@ -40,10 +40,17 @@ def _p270_run(repo, *args):
 
 # The proof size rules under test (.veldo/proof_size.py, which validate.py loads from beside itself),
 # spelled as the mutation observer's production-copy anchor so a teeth run substitutes its mutant
-# here; the validate.py beside it is the one every row drives, and that directory is the .veldo
-# every scratch repository gets.
+# here. The rows run the modules from a temporary .veldo tree: a copy of this tree's .veldo (every
+# sibling module validate.py and proof_size.py load, policy.yaml and the data beside them) with the
+# file at that path laid over proof_size.py, so a mutant the driver supplies is the module the rows
+# load. The validate.py in that tree is the one every row drives, and that tree is the .veldo every
+# scratch repository gets.
 _P270_PROOF_SIZE = ROOT / ".veldo" / "proof_size.py"
-_P270_VALIDATE = _P270_PROOF_SIZE.with_name("validate.py")
+_P270_IGNORE = _p270_shutil.ignore_patterns('__pycache__', 'events.jsonl', 'last_verify')
+_p270_modules = _p270_tmp.TemporaryDirectory(prefix='veldo-0270-modules-')
+_p270_shutil.copytree(ROOT / '.veldo', _p270_Path(_p270_modules.name) / '.veldo', ignore=_P270_IGNORE)
+_p270_shutil.copyfile(_P270_PROOF_SIZE, _p270_Path(_p270_modules.name) / '.veldo' / 'proof_size.py')
+_P270_VALIDATE = _p270_Path(_p270_modules.name) / '.veldo' / 'validate.py'
 
 
 def _p270_scratch(base, name, policy_proof=None):
@@ -51,8 +58,7 @@ def _p270_scratch(base, name, policy_proof=None):
     and guard, a policy holding policy_proof (a list of YAML lines under proof:, or None for no
     proof key), and one root commit."""
     repo = base / name
-    _p270_shutil.copytree(_P270_VALIDATE.parent, repo / '.veldo',
-                          ignore=_p270_shutil.ignore_patterns('__pycache__', 'events.jsonl', 'last_verify'))
+    _p270_shutil.copytree(_P270_VALIDATE.parent, repo / '.veldo', ignore=_P270_IGNORE)
     (repo / 'scripts').mkdir()
     _p270_shutil.copy(ROOT / 'scripts/veldo-guard.sh', repo / 'scripts/veldo-guard.sh')
     (repo / 'hooks').mkdir()
@@ -357,3 +363,6 @@ expect('p270/rule/reviewer-briefs-carry-paragraph-and-question',
        len(_p270_briefs) == len(list(ROOT.glob('packs/*/hooks/pre-push')))
        and all(_P270_RULE in b.read_text().splitlines()
                and 'does it hold anything a reviewer does not need?' in b.read_text() for b in _p270_briefs))
+
+# The temporary .veldo tree the rows ran from is removed.
+_p270_modules.cleanup()
