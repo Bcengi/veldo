@@ -7,6 +7,8 @@ Usage:
   python3 .veldo/validate.py spec <file.md>
   python3 .veldo/validate.py plan <file.md>
   python3 .veldo/validate.py proof <manifest.json>
+  python3 .veldo/validate.py proof-files [<root>]     # proof size, encoded archives, summaries
+  python3 .veldo/validate.py push-proof [<remote>]    # pre-push ref lines on stdin
   python3 .veldo/validate.py verdict <verdict.json>
   python3 .veldo/validate.py approval <approval.json>
   python3 .veldo/validate.py arch [<architecture.yaml>]
@@ -653,6 +655,274 @@ def check_requests(requests_dir=None, root=None):
     return _request_module().check_requests_dir(rdir, base, parse_yamlish, fail)
 
 
+# ---------------------------------------------------------------------------------------------
+# VELDO-0270: PROOF IS SMALL SUMMARIES, NEVER RAW BULK. One implementation of the rules, used by
+# the contracts stage (run_all, mode proof-files) and by the push guard (mode push-proof), so the
+# gate and the guard cannot disagree about the limit or about what an encoded archive is.
+#   proof_file_over_limit    a tracked proof file larger than proof.max_file_bytes
+#   proof_encoded_archive    base64 text decoding to an archive or compressed stream, any size
+#   proof_reference_dangling a proof file still naming a removed file instead of its summary
+#   proof_summary_incomplete a *.summary.json without its command, environment or discarded digests
+# The limit is .veldo/policy.yaml key proof.max_file_bytes, default 1,048,576 bytes when the key
+# is absent. A key that is present but not a positive integer is a refusal, never the default.
+# ---------------------------------------------------------------------------------------------
+import base64 as _b64
+import fnmatch as _fnmatch
+import subprocess as _subprocess
+
+PROOF_LIMIT_DEFAULT = 1048576
+PROOF_PROTECTED_REFS_DEFAULT = ["refs/heads/main", "refs/tags/*"]
+SUMMARY_SCHEMA = "veldo.proof-summary/v1"
+_B64_RUN = re.compile(rb"[A-Za-z0-9+/]{64,}(?:(?:\r?\n|\\n)[A-Za-z0-9+/]+)*={0,2}")
+_B64_SEP = re.compile(rb"\r?\n|\\n")
+_ARCHIVE_MAGIC = (
+    (b"\x1f\x8b", "gzip"),
+    (b"PK\x03\x04", "zip"),
+    (b"PK\x05\x06", "zip"),
+    (b"BZh", "bzip2"),
+    (b"\xfd7zXZ\x00", "xz"),
+    (b"\x28\xb5\x2f\xfd", "zstd"),
+)
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def proof_policy(root=None):
+    """(limit, source, protected_refs, problems) read from <root>/.veldo/policy.yaml."""
+    base = Path(root) if root else ROOT
+    pfile = base / ".veldo" / "policy.yaml"
+    problems = []
+    limit, source = PROOF_LIMIT_DEFAULT, "the default; .veldo/policy.yaml key proof.max_file_bytes is absent"
+    refs = list(PROOF_PROTECTED_REFS_DEFAULT)
+    data = {}
+    if pfile.is_file():
+        try:
+            data = parse_yamlish(pfile.read_text()) or {}
+        except Exception as e:  # an unreadable policy is a refusal, never the default
+            problems.append(f"{pfile}: unreadable ({e})")
+            data = {}
+    section = data.get("proof") if isinstance(data, dict) else None
+    if section is not None and not isinstance(section, dict):
+        problems.append(f".veldo/policy.yaml key proof is not a mapping: {section!r}")
+        section = None
+    section = section or {}
+    if "max_file_bytes" in section:
+        v = section["max_file_bytes"]
+        if isinstance(v, bool) or not isinstance(v, int) or v <= 0:
+            problems.append(f".veldo/policy.yaml key proof.max_file_bytes is not a positive integer: {v!r}")
+        else:
+            limit, source = v, ".veldo/policy.yaml key proof.max_file_bytes"
+    if "protected_refs" in section:
+        v = section["protected_refs"]
+        if not isinstance(v, list) or not v or not all(isinstance(x, str) and x for x in v):
+            problems.append(f".veldo/policy.yaml key proof.protected_refs is not a list of refs: {v!r}")
+        else:
+            refs = list(v)
+    return limit, source, refs, problems
+
+
+def encoded_archives(name, data):
+    """[(offset, kind)] for base64 text in data that decodes to an archive or compressed stream.
+    A name ending .b64 or .base64 is one at offset 0 whatever it holds."""
+    found = []
+    if name.endswith(".b64") or name.endswith(".base64"):
+        found.append((0, "base64 file name"))
+    for m in _B64_RUN.finditer(data):
+        text = _B64_SEP.sub(b"", m.group(0)[:1200]).rstrip(b"=")
+        text = text[: (min(len(text), 360) // 4) * 4]
+        try:
+            raw = _b64.b64decode(text)
+        except Exception:
+            continue
+        kind = next((k for magic, k in _ARCHIVE_MAGIC if raw.startswith(magic)), None)
+        if kind is None and raw[257:262] == b"ustar":
+            kind = "tar"
+        if kind:
+            found.append((m.start(), kind))
+    return found
+
+
+def _tracked_proof_files(base):
+    try:
+        out = _subprocess.run(["git", "-C", str(base), "ls-files", "-z", "--", "proof"],
+                              capture_output=True, check=True).stdout
+        rels = [r for r in out.decode("utf-8", "surrogateescape").split("\0") if r]
+    except Exception:
+        rels = None
+    if rels is None:
+        pdir = base / "proof"
+        rels = sorted(str(p.relative_to(base)) for p in pdir.rglob("*") if p.is_file()) if pdir.is_dir() else []
+    return [r for r in rels if (base / r).is_file()]
+
+
+def summary_problems(data):
+    """What a proof summary (veldo.proof-summary/v1) lacks: the exact command, the environment,
+    and for every discarded raw file its name, size in bytes and sha256."""
+    probs = []
+    if not isinstance(data, dict):
+        return ["not a JSON object"]
+    if data.get("schema") != SUMMARY_SCHEMA:
+        probs.append(f"schema is not {SUMMARY_SCHEMA}")
+    if not isinstance(data.get("command"), str) or not data.get("command").strip():
+        probs.append("no command")
+    env = data.get("environment")
+    if not isinstance(env, dict) or not env:
+        probs.append("no environment")
+    disc = data.get("discarded")
+    if not isinstance(disc, list):
+        probs.append("no discarded list (an empty list when nothing was discarded)")
+        disc = []
+    for i, d in enumerate(disc):
+        if not isinstance(d, dict) or not isinstance(d.get("name"), str) or not d.get("name"):
+            probs.append(f"discarded[{i}] has no name")
+            continue
+        if not isinstance(d.get("bytes"), int) or isinstance(d.get("bytes"), bool) or d["bytes"] < 0:
+            probs.append(f"discarded {d['name']} has no size in bytes")
+        if not isinstance(d.get("sha256"), str) or not _HEX64.match(d["sha256"]):
+            probs.append(f"discarded {d['name']} has no sha256")
+    return probs
+
+
+def _removed_by_summary(base, rels):
+    """{original_path: summary_rel} for every summary whose original file is absent."""
+    removed = {}
+    present = set(rels)
+    for r in rels:
+        if not r.endswith(".summary.json"):
+            continue
+        try:
+            data = json.loads((base / r).read_text())
+        except Exception:
+            continue
+        orig = data.get("original_path") if isinstance(data, dict) else None
+        if isinstance(orig, str) and orig.startswith("proof/") and orig not in present:
+            removed[orig] = r
+    return removed
+
+
+def _ref_patterns(orig):
+    """The ways a proof file names a removed file: its repository path, or its path relative to
+    its bundle directory (proof/<ID>/) for files inside that bundle."""
+    parts = orig.split("/")
+    bundle = "/".join(parts[:2]) + "/"
+    rel = "/".join(parts[2:])
+    out = [(None, orig)]
+    if rel:
+        out.append((bundle, rel))
+    return out
+
+
+def check_proof_files(root=None, quiet=False):
+    """The four VELDO-0270 refusals over every file tracked under proof/ in the tree at root."""
+    base = Path(root) if root else ROOT
+    limit, source, _refs, pol = proof_policy(base)
+    errs = 0
+    for p in pol:
+        errs += fail("proof_policy_invalid", p)
+    rels = _tracked_proof_files(base)
+    largest = (0, None)
+    removed = _removed_by_summary(base, rels)
+    pats = []
+    for orig in removed:
+        for scope, text in _ref_patterns(orig):
+            rx = re.compile(rb"(?<![A-Za-z0-9_.-])" + re.escape(text.encode()) + rb"(?![A-Za-z0-9_-])(?!\.summary\.json)(?!\.[A-Za-z0-9])")
+            pats.append((scope, orig, rx))
+    for r in rels:
+        fp = base / r
+        size = fp.stat().st_size
+        if size > largest[0]:
+            largest = (size, r)
+        if not pol and size > limit:
+            errs += fail("proof_file_over_limit", f"{r}: {size} bytes, limit {limit} bytes ({source})")
+        data = fp.read_bytes()
+        for off, kind in encoded_archives(r, data):
+            errs += fail("proof_encoded_archive", f"{r}: base64 run at byte offset {off} decodes to {kind}")
+        if r.endswith(".summary.json"):
+            try:
+                sdata = json.loads(data.decode("utf-8"))
+            except Exception as e:
+                sdata = None
+                errs += fail("proof_summary_incomplete", f"{r}: not JSON ({e})")
+            if sdata is not None:
+                probs = summary_problems(sdata)
+                if probs:
+                    errs += fail("proof_summary_incomplete", f"{r}: " + "; ".join(probs))
+            continue
+        for scope, orig, rx in pats:
+            if scope and not r.startswith(scope):
+                continue
+            if rx.search(data):
+                errs += fail("proof_reference_dangling",
+                             f"{r} names {orig}, which is absent; name {removed[orig]} instead")
+    if not quiet:
+        big = f"{largest[1]} {largest[0]} bytes" if largest[1] else "none"
+        print(f"  proof files checked: {len(rels)}; largest: {big}; limit {limit} bytes ({source})")
+    return errs
+
+
+def _git(base, *args):
+    return _subprocess.run(["git", "-C", str(base), *args], capture_output=True, check=True).stdout
+
+
+def check_push_proof(lines, remote="", root=None):
+    """The push guard's half: every commit a push to a protected ref sends that the remote does
+    not already have, judged by the same two rules with the same limit. lines are git's pre-push
+    stdin: '<local ref> <local sha> <remote ref> <remote sha>'."""
+    base = Path(root) if root else Path.cwd()
+    limit, source, refs, pol = proof_policy(base)
+    errs = 0
+    for p in pol:
+        errs += fail("proof_policy_invalid", p)
+    if pol:
+        return errs
+    zero = "0" * 40
+    for line in lines:
+        f = line.split()
+        if len(f) != 4:
+            continue
+        _lref, lsha, rref, rsha = f
+        if set(lsha) == {"0"} or not any(_fnmatch.fnmatchcase(rref, pat) for pat in refs):
+            continue
+        excl = ["--not"]
+        if rsha != zero and set(rsha) != {"0"}:
+            try:
+                _git(base, "cat-file", "-e", rsha + "^{commit}")
+                excl.append(rsha)
+            except Exception:
+                pass
+        excl.append(f"--remotes={remote}" if remote else "--remotes")
+        commits = _git(base, "rev-list", "--reverse", lsha, *excl).decode().split()
+        for c in commits:
+            parents = _git(base, "rev-list", "--parents", "-n", "1", c).decode().split()[1:]
+            if parents:
+                diff = _git(base, "diff-tree", "-r", "-z", "--no-commit-id", "--diff-filter=ACMR",
+                            parents[0], c)
+            else:
+                diff = _git(base, "diff-tree", "-r", "-z", "--root", "--no-commit-id",
+                            "--diff-filter=ACMR", c)
+            toks = diff.decode("utf-8", "surrogateescape").split("\0")
+            i = 0
+            while i < len(toks) - 1:
+                meta = toks[i].split()
+                if not meta:
+                    i += 1
+                    continue
+                n = 3 if meta[-1][:1] in ("R", "C") else 2
+                path = toks[i + n - 1]
+                blob = meta[3] if len(meta) > 3 else ""
+                i += n
+                if not path.startswith("proof/") or not blob:
+                    continue
+                size = int(_git(base, "cat-file", "-s", blob).decode().strip())
+                where = f"push to {rref}: commit {c} adds {path}"
+                if size > limit:
+                    errs += fail("proof_file_over_limit",
+                                 f"{where}: {size} bytes, limit {limit} bytes ({source})")
+                for off, kind in encoded_archives(path, _git(base, "cat-file", "blob", blob)):
+                    errs += fail("proof_encoded_archive",
+                                 f"{where}: base64 run at byte offset {off} decodes to {kind}")
+    return errs
+
+
 def run_all():
     errs = 0
     errs += check_events(ROOT / ".veldo" / "events.jsonl")
@@ -698,6 +968,7 @@ def run_all():
     for p in _corpus(_CORPUS.APPROVAL_PATTERN):
         errs += check_json(p, APPROVAL_REQ, "approval")
     errs += check_verdict_domain_is_the_validated_set()
+    errs += check_proof_files()  # VELDO-0270: proof is small summaries, never raw bulk
     ex = ROOT / ".veldo" / "examples"
     if ex.exists():
         errs += check_spec(ex / "spec-example.md")
@@ -734,6 +1005,11 @@ def main():
         errs = check_plan(sys.argv[2], specs_dir=ROOT / "specs")
     elif mode == "events":
         errs = check_events(sys.argv[2] if len(sys.argv) > 2 else ROOT / ".veldo" / "events.jsonl")
+    elif mode == "proof-files":
+        errs = check_proof_files(sys.argv[2] if len(sys.argv) > 2 else None)
+    elif mode == "push-proof":
+        # push-proof [remote]: git's pre-push ref lines on stdin (VELDO-0270, the push guard).
+        errs = check_push_proof(sys.stdin.read().splitlines(), sys.argv[2] if len(sys.argv) > 2 else "")
     elif mode == "proof":
         errs = check_json(sys.argv[2], PROOF_REQ, "proof")
     elif mode == "verdict":
