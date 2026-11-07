@@ -930,7 +930,23 @@ def _v189_suite():
         return 'sha256:' + hashlib.sha256(json.dumps({'closure': closure, 'template': template},
                                                      sort_keys=True).encode()).hexdigest()
 
-    class Witness(io.StringIO):
+    class Resolved(io.StringIO):
+        """setup's standard error less the installation reader's resolution line, kept apart in `resolution`.
+        VELDO-0259: setup reads the installation through the one reader, which prints that line on every run, so it
+        is neither the upgrade's announcement nor something a refused re-run printed."""
+        PREFIX = 'veldo installation: '
+
+        def __init__(self):
+            super().__init__()
+            self.resolution = []
+
+        def write(self, text):
+            if text.startswith(self.PREFIX):
+                self.resolution.append(text)
+                return len(text)
+            return super().write(text)
+
+    class Witness(Resolved):
         """setup's standard error, noting at its first line what had been written by then."""
 
         def __init__(self, observe):
@@ -938,7 +954,7 @@ def _v189_suite():
             self.observe, self.first = observe, None
 
         def write(self, text):
-            if self.first is None and text.strip():
+            if self.first is None and text.strip() and not text.startswith(self.PREFIX):
                 self.first = self.observe()
             return super().write(text)
 
@@ -1231,9 +1247,10 @@ def _v189_suite():
                 kept_after(KD, host, before_kept, chosen, commit)
             with section(AN):
                 ran = host.manager.calls[calls:]
-                check(AN, '%s: setup printed one plain line to its standard error before its first write [%r %s]'
+                check(AN, '%s: setup printed one plain line to its standard error before its first write, besides the installation resolution line (VELDO-0259) [%r %s]'
                       % (commit, witness.getvalue()[:160], witness.first),
-                      len(witness.getvalue().strip().splitlines()) == 1 and witness.first is not None
+                      len(witness.getvalue().strip().splitlines()) == 1 and len(witness.resolution) == 1
+                      and witness.first is not None
                       and not witness.first['written'] and witness.first['record_same'])
                 changed_names = sorted(n for n in recorded if n in current and recorded[n] != current[n])
                 added_names = sorted(n for n in current if n not in recorded)
@@ -1924,18 +1941,18 @@ def _v189_suite():
                 def trees():
                     return {k: v for k, v in snapshot(*kill.trees()).items() if not k.startswith(store_dir)}
                 before, rows_before = trees(), (journal(kill.store), entity_rows(kill.store))
-                witness = io.StringIO()
+                witness = Resolved()
                 try:
                     code, report = kill.setup(stderr=witness)
                 finally:
                     if undo:
                         undo()
                 changed, added, removed = changes(before, trees())
-                check(RF, '%s is refused as %s, writing nothing and printing nothing [%s %s %s]'
+                check(RF, '%s is refused as %s, writing nothing and printing nothing but the installation resolution line (VELDO-0259) [%s %s %s]'
                       % (label, expected(path), code, report.get('reason'), (changed + added + removed)[:3]),
                       code == 1 and report.get('reason') == expected(path) and not (changed or added or removed)
                       and (journal(kill.store), entity_rows(kill.store)) == rows_before
-                      and not witness.getvalue().strip())
+                      and not witness.getvalue().strip() and len(witness.resolution) == 1)
 
             def edit():
                 path = kill.home / 'bin' / 'control_store.py'
