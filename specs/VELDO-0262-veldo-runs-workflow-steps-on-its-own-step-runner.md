@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0262
 title: Veldo runs workflow steps on its own step runner behind the existing graph adapter, with today's observable behavior and VELDO-0247's parallel branches, and the LangGraph runtime is removed
-status: draft
+status: ready
 risk: critical
 owner: dmitry
 human_approval: required
@@ -296,3 +296,5 @@ updated. Proof bundles, specs and design provenance that mention LangGraph stay 
 
 2026-11-07: drafted under owner Telegram 39621 to 39623 ("Yes", write the ticket), from main at afa292f0
 and VELDO-0247 as written in the landing-b batch. Built after landing-b lands.
+
+2026-11-07: ready on the owner's approval, Telegram 39630 ("Ok") to the summary in 39629. Built after landing-b lands.
