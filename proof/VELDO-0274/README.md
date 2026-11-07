@@ -117,3 +117,27 @@ proof/VELDO-0274/pending-summary.txt, logs under /tmp/v274-pending). `bash -n` o
 3. `python3 scripts/check_teeth_mutations.py --finding 274` (the three registered cases: baseline green,
    mutant red on its targets).
 Not runnable outside the gate: the unconfined leg itself (its variables are set only by scripts/gate_legs.py).
+
+## Fix round 4 (2026-11-07)
+
+The lead's run of round 3's pending_runs.sh at 05c05b62: suite 129 32 passed, 0 failed; falsify.py baseline,
+exit-skips-stop and defaults-without-context-manager as expected; no veldo0127 unit loaded after.
+`check_teeth_mutations.py --finding 274` failed with missing_target (slices/return and the others): every
+worker ran in leg "confined", where no user manager answers, so the slice rows stood down.
+
+Cause: the case's leg is chosen by in_leg in scripts/check_gate_mutations.py from scripts/gate_unconfined.json
+(129 is listed whole), but only the coordinator's own CLI (check_gate_mutations.py main, legs.mutation_leg)
+passes that leg to run_stage. check_teeth_mutations.py's main passes none, so it runs every case confined.
+In the gate the 274 cases already run unconfined; no registration change is needed. The entry that runs them
+as the gate does is `python3 scripts/check_gate_mutations.py --finding 274`.
+
+unknown_closure: the reuse reason of a case with no closure profile, not an error. An unconfined case is never
+declared (the coordinator refuses a declared unconfined case as driver_error) and its reason becomes
+unconfined_leg, so no requires.json or mutation_case_inputs.json entry is added.
+
+Commit: 58c578bc (the 274 cases' comment names the unconfined leg and the coordinator entry).
+
+Runs of this round: pending. The gate lock was not free from 13:34Z to 13:54Z (flock -w 1200). The owed runs
+are in proof/VELDO-0274/pending_runs.sh (rewritten for this round, `bash -n` passed; logs under
+/tmp/v274-pending): `check_gate_mutations.py --finding 274` (expected: three cases unconfined, baseline green,
+mutant red on its targets) and `selftest.py --suite 129_veldo_0274_factory_slices`.
