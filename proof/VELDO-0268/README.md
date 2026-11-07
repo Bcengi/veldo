@@ -94,6 +94,36 @@ mutation row green):
 - `python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs` under
   `flock -w 21600 /home/dmitry/.local/state/core-gates/.gate.lock`: SUITE_RESULT_PLACEHOLDER
 
+## Fix round 1 (check of 2026-11-07, NOT SOUND, finding F1 and the trigger side note)
+
+- F1: the dry run now places `--no-quiet --dry-run --porcelain --no-verify` after the user's own push
+  options (before a separating `--`), so a later quiet, verbosity or verify option cannot silence the
+  ref lines or run a hook, and sets `-c core.hooksPath=/dev/null` after the user's global options, so
+  a `-c core.hooksPath=...` of theirs cannot win. A dry run that names no destination, names one that
+  is not a full ref name, or prints a line the guard cannot read is unresolved, hence protected.
+- Trigger: any command naming git reaches the destination step, which decides through `git_split`
+  (the guard's global option parsing, which `git_globals` now builds on) and a text pattern allowing
+  global options, whether it is a push or merge. `git -C dir push` and `git -c k=v push` are judged.
+  Non-push git commands still pass, and `policy_check.py` is loaded only when a destination exists.
+- Commits: e4f5ba61 (the three guard copies, byte-identical), d68595af (suite rows and falsifiers).
+- New suite 141 rows: push/quiet-main (`-q`, `--quiet`, `-fq` to main exit 2, unchanged gate text),
+  push/empty-answer (a dry run naming no destination exits 2), push/global-options-main (`git -C dir`
+  and `git -c k=v` pushes of main exit 2), push/hooks-not-run (a `-c core.hooksPath=H ... --verify`
+  push: the hook does not run in the guard's dry run, does run in the real push), push/branch-variants
+  (quiet, `-C` and `-c` pushes of working branches exit 0 and land on the remote).
+- Falsifiers, each driven by an in-suite mutation row and registered in scripts/check_teeth_mutations.py
+  as finding 268 together with the spec's five (ten cases, each anchor found once):
+  quiet-silences-answer (push/quiet-main), empty-answer-allowed (push/empty-answer),
+  trigger-misses-global-options (push/global-options-main), hooks-path-before-globals
+  (push/hooks-not-run), quiet-not-overridden (push/branch-variants).
+- Runs: pending. The gate lock was not free in two attempts (500 s and 470 s, about 16 minutes of the
+  20 minute budget). proof/VELDO-0268/pending_runs.sh holds the two runs (suite 141, then
+  `check_teeth_mutations.py --finding 268`), passes `bash -n`, writes one line per step to
+  proof/VELDO-0268/pending-summary.txt and logs under /tmp. No suite or falsifier result of this round
+  exists yet; the embedded Python compiles and the helpers were checked offline on 20 inputs.
+- Not in scope and unchanged: the side observations other than the trigger (empty protected_refs list,
+  local trunk ref only, HEAD versus the pushed commit, packs/*/AGENTS.md).
+
 ## Open
 
 - scripts/suites/requires.json is outside the footprint. It is derived (`python3 scripts/run_scope.py
