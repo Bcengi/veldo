@@ -68,6 +68,8 @@ for case in claude-pin-digest-unchecked claude-unknown-version-accepted upgrade1
     setup186-codex-digest-unchecked; do
   step "mutation-${case}" python3 scripts/check_teeth_mutations.py --case "$case"
 done
+# Fix round 1b: re-anchored after AC3 added a condition to the prompt-write check (suite 86 review/probe-terminal).
+step mutation-role127-prompt-write-failure-swallowed python3 scripts/check_teeth_mutations.py --case role127-prompt-write-failure-swallowed
 
 step clean-after bash -c "test -z \"\$(git status --porcelain | grep -v -e 'proof/VELDO-0275/pending-summary.txt')\""
 exit 0

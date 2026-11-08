@@ -9903,8 +9903,8 @@ def cases():
         "            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):",
         "            if False:", ['review/probe-terminal'])
     add(127, 'role127-prompt-write-failure-swallowed', suite127, 'control_launch.py',
-        "                and (input_failed.is_set() or not metering.terminal.prompt_written)):",
-        "                and False):", ['review/probe-terminal'])
+        "                and (input_failed.is_set() or not metering.terminal.prompt_written)\n",
+        "                and False\n", ['review/probe-terminal'])
     add(127, 'role127-init-unbounded', suite127, 'control_engine_claude.py',
         "                self.init_deadline = time.monotonic() + 5",
         "                self.init_deadline = time.monotonic() + 90", ['review/init-bound'])

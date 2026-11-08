@@ -198,6 +198,7 @@ No lock taken (the shared gate lock was busy). Every result here is a local, par
 - Found, not fixed (outside this round's findings): the registered mutation role127-prompt-write-failure-swallowed
   anchors a control_launch.py line this ticket changed before fix round 1 (its anchor already occurs 0 times at
   e52f26a0); it needs re-anchoring before the gate's mutation stage.
+- Fix round 1b: role127-prompt-write-failure-swallowed re-anchored to the prompt-write condition line (one occurrence); in-place swap turns suite 86 0127 review/probe-terminal red, restore green; in pending_runs.sh.
 - Suite 86 0127 live/claude and live/codex: the lead recaptures them after this round (not attempted here).
 - Pending, inside the lock: `bash proof/VELDO-0275/pending_runs.sh` (summary lines in
   proof/VELDO-0275/pending-summary.txt: step, exit code, /tmp log path; the tree is checked clean before and after,
