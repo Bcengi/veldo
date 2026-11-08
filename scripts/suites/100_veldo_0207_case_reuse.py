@@ -311,6 +311,9 @@ print(json.dumps(results))
                     self.invocations = 0; self.driver_spans = {}; self.resources = None
                     self.parallel = 1; self.active = {}; self.outcomes = []; self.peak = 0
                     self.retargeted = {}
+                    # VELDO-0267: the coordinator reads the worker's coverage map after every stage
+                    # (None unless the nightly sweep traces baselines, which this one does not).
+                    self.coverage = None
                 def check(self): pass
                 def cleanup(self, on_result=None): return []
                 # VELDO-0285: the coordinator retargets an unmeasured case's noop once its

@@ -123,9 +123,25 @@ def check_canaries(rule, cases, unconfined, resources):
 
 # What changed.
 
+_GIT_BOUNDARY = []
+
+
+def git_boundary():
+    """The installation's one Git boundary (.veldo/git_process.py beside scripts/), loaded on first
+    use so a tree that only reads selection records never needs it."""
+    if not _GIT_BOUNDARY:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('veldo_selection_git', HERE.parent / '.veldo' / 'git_process.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _GIT_BOUNDARY.append(module)
+    return _GIT_BOUNDARY[0]
+
+
 def git_command(root):
     def run(*args):
-        result = subprocess.run(['git', '-C', str(root), *args], capture_output=True, timeout=120)
+        _git_process = git_boundary()
+        result = _git_process.run(['git', '-C', str(root), *args], capture_output=True, timeout=120)
         if result.returncode:
             raise Invalid('git %s: %s' % (' '.join(args), result.stderr.decode(errors='replace').strip()[:300]))
         return result.stdout

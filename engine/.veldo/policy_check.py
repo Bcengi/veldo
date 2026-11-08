@@ -466,14 +466,17 @@ _PROJECTIONS = []
 
 def _projection_paths():
     """The derived files the lander regenerates (lander.PROJECTIONS, today specs/index.md), read from the
-    lander beside this file so the set is spelled once. When the lander cannot be loaded, none: a derived
-    file then counts as work (fail closed)."""
+    lander beside this file so the set is spelled once. When the lander cannot be read, none: a derived
+    file then counts as work (fail closed). The assignment is read as a literal from the lander's source,
+    never by executing the lander, whose module load pulls its siblings and the uuid and platform chain
+    into every policy run (the isolated-enforcement entry, VELDO-0043, refuses platform's _wmi probe)."""
     if not _PROJECTIONS:
         try:
-            spec = importlib.util.spec_from_file_location("veldo_lander_pc", Path(__file__).resolve().with_name("lander.py"))
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            _PROJECTIONS.append(frozenset(path for path, _generator in module.PROJECTIONS))
+            import ast
+            tree = ast.parse(Path(__file__).resolve().with_name("lander.py").read_text())
+            value = next(node.value for node in tree.body if isinstance(node, ast.Assign)
+                         and any(isinstance(t, ast.Name) and t.id == "PROJECTIONS" for t in node.targets))
+            _PROJECTIONS.append(frozenset(path for path, _generator in ast.literal_eval(value)))
         except Exception:
             _PROJECTIONS.append(frozenset())
     return _PROJECTIONS[0]

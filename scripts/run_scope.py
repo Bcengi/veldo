@@ -408,7 +408,7 @@ class RunScope:
 
     def verify_stamp_payload(self, commit, status, at, checks_run, checks_na,
                              veldo_version=None, tree=None, force_fresh=False, reused=None,
-                             reuse_evidence=None, unconfined=None):
+                             reuse_evidence=None, unconfined=None, mutation_ran=False, mutation=None):
         """The record .veldo/last_verify carries. See the module docstring: verify.sh writes
         that file in shell and this has no production caller yet, deliberately.
 
@@ -435,12 +435,19 @@ class RunScope:
         unconfined is what scripts/gate_legs.py --stamp returns (VELDO-0208, owner decision
         2026-10-07): the declaration's digest and the entries each stage ran outside the
         confinement, or None when a leg was expected and its record could not be read (the gate is
-        then RED). Like reuse_evidence it is present only when an unconfined leg was expected."""
+        then RED). Like reuse_evidence it is present only when an unconfined leg was expected.
+
+        mutation is the block this repository's gate stamps when its mutation stage ran (VELDO-0267:
+        scripts/mutation_selection.py --stamp-field), or None when the stage left no selection to
+        report; present exactly when mutation_ran, as verify.sh writes it only then. The engine
+        template's gate stamps no such block, so a caller judging it passes mutation_ran False."""
         self._refuse("write the verify stamp (.veldo/last_verify)")
         payload = {"commit": commit, "status": status, "at": at,
                    "checks_run": checks_run, "checks_na": checks_na,
                    "veldo_version": veldo_version, "tree": tree, "force_fresh": force_fresh,
                    "reused": reused if reused is not None else {"mutation": None, "unit": 0}}
+        if mutation_ran:
+            payload["mutation"] = mutation
         if reuse_evidence is not None:
             payload["reuse_evidence"] = reuse_evidence
         if unconfined is not None:

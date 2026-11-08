@@ -38,11 +38,11 @@ def _sibling(name):
 
 
 _Y = _sibling("yamlish")
-_G = _sibling("git_process")
+_git_process = _sibling("git_process")
 
 
 def _git(root, *args):
-    r = _G.run(["git", "-C", str(root), *args], capture_output=True, text=True, timeout=300)
+    r = _git_process.run(["git", "-C", str(root), *args], capture_output=True, text=True, timeout=300)
     return r.stdout if r.returncode == 0 else None
 
 

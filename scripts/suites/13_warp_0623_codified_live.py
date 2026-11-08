@@ -4945,9 +4945,10 @@ def _d724_gatelegal(sid, status, deps, lane="standalone", extra=""):
     """A fixture spec the CONTRACT accepts, not only one the reader can parse: risk, acceptance
     criteria and (for the planned lane) the plan binding are present, so check_spec can be asserted
     at 0 on it. The routes below are only worth closing in the dispatcher because they are
-    gate-legal, and a fixture the gate would reject could not show that."""
+    gate-legal, and a fixture the gate would reject could not show that. VELDO-0272: it declares a
+    footprint off the protected list, since a spec with none computes human_approval required."""
     return ("---\nschema: veldo.spec/v1\nid: %s\ntitle: t\nstatus: %s\nrisk: low - fixture\n"
-            "owner: dmitry\nlane: %s\n%sdepends_on: [%s]\n"
+            "owner: dmitry\nlane: %s\n%sfootprint: [src/fixture.py]\ndepends_on: [%s]\n"
             "acceptance_criteria:\n  - id: AC1\n    text: t\n---\nbody\n"
             % (sid, status, lane, extra, ", ".join(deps)))
 
@@ -5404,8 +5405,10 @@ _D724_GOOD_SHAPES = (
     ("two ids", "depends_on: [VELDO-D0, VELDO-D9]\n"),
     ("an id naming no spec", "depends_on: [VELDO-NOPE]\n"),
 )
+# VELDO-0272: the footprint keeps the approval rule out of the verdict, so a bad shape is refused
+# for its shape alone and a good shape is not refused for a missing footprint.
 _D724_SHAPE_HEAD = ("---\nschema: veldo.spec/v1\nid: VELDO-D1\ntitle: t\nstatus: ready\n"
-                    "risk: low - fixture\nowner: dmitry\nlane: standalone\n")
+                    "risk: low - fixture\nowner: dmitry\nlane: standalone\nfootprint: [src/fixture.py]\n")
 _D724_SHAPE_TAIL = "acceptance_criteria:\n  - id: AC1\n    text: t\n---\nbody\n"
 _d724_shape_verdict = {}
 with tempfile.TemporaryDirectory() as _d724srepo, tempfile.TemporaryDirectory() as _d724sclaims:

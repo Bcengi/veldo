@@ -7,6 +7,7 @@ from pathlib import Path
 import signal
 import shutil
 import socket
+import subprocess
 import tarfile
 from types import SimpleNamespace
 
@@ -23,9 +24,20 @@ def older_engine(h, check):
     row = 'older-engine-host'
     fixtures = h['ROOT'] / 'proof/VELDO-0189/older'
     name = '8bc34e94.tar.gz'
-    data = (fixtures / name).read_bytes()
-    manifest = json.loads((fixtures / 'digests.json').read_text())
-    valid = hashlib.sha256(data).hexdigest() == manifest['files'][name]['sha256']
+    # VELDO-0270: the archive left the tree; its summary names the commit where the bytes stay
+    # readable, and they must match both the summary's sha256 and the digest digests.json recorded
+    # (the same reading suite 86's fixture() makes).
+    # A read that fails reddens this row only, as suite 86's fixture() does.
+    try:
+        summary = json.loads((fixtures / (name + '.summary.json')).read_text())
+        data = h['_git_process'].run(['git', '-C', str(h['ROOT']), 'show',
+                                      summary['readable_at'] + ':' + summary['original_path']],
+                                     capture_output=True, check=True).stdout
+        manifest = json.loads((fixtures / 'digests.json').read_text())
+        valid = (hashlib.sha256(data).hexdigest() == summary['sha256']
+                 == manifest['files'][name + '.summary.json']['sha256'])
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError):
+        valid = False
     check(row, 'historical engine digest matches', valid)
     if not valid:
         return

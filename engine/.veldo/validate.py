@@ -156,7 +156,8 @@ def _policy_check_module():
 
 
 def _git_lines(root, *args):
-    r = _git_process_module().run(["git", "-C", str(root), *args], capture_output=True, text=True, timeout=300)
+    _git_process = _git_process_module()
+    r = _git_process.run(["git", "-C", str(root), *args], capture_output=True, text=True, timeout=300)
     return r.stdout.splitlines() if r.returncode == 0 else None
 
 

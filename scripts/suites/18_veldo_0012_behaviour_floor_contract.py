@@ -37,6 +37,10 @@ THREE THINGS ABOUT WHAT THIS FRAGMENT DOES AND DOES NOT CLAIM, stated rather tha
   Registering a protected path is itself a .veldo/policy.yaml edit; Dmitry approved these two on
   2026-08-12 and the approval is recorded, commit-bound and path-scoped at
   proof/VELDO-0012/approval-dmitry.json. Nothing here grants it and nothing here infers it.
+  VELDO-0272 (owner decision 2026-11-07, Telegram 39707 and 39708) narrowed this repository's list
+  to money, authentication and security, schema and irreversible infrastructure, and .veldo/floors/*
+  left it as test machinery; the settlements entry and the engine template's two entries stand.
+  AC6's floor rows now read that decision through the same live mechanism.
 """
 import ast as _bf_ast
 import contextlib as _bf_ctx
@@ -953,6 +957,11 @@ with tempfile.TemporaryDirectory() as _bf_yd2:
 # red; removing the .veldo/settlements/* entry reds the sibling assertion for a settlement path.
 # Both are asserted THROUGH protected_patterns() rather than by reading the file, so the test pins
 # the mechanism the gate uses and not a string in a document.
+#
+# VELDO-0272 (owner decision 2026-11-07, Telegram 39707 and 39708) removed .veldo/floors/* from this
+# repository's protected list: a floor change lands on a green gate and a recorded independent
+# review, and the daily summary names it. So the floor row now asserts the pattern is ABSENT here
+# (re-adding the entry reds it), and the settlement row and the engine template rows are unchanged.
 # ---------------------------------------------------------------------------------------
 _BF_PATS = P.protected_patterns()
 
@@ -964,11 +973,12 @@ def _bf_protected(rel):
             if _bf_fn.fnmatch(rel, p) or _bf_fn.fnmatch(rel, p.rstrip("*") + "*")]
 
 
-expect("VELDO-0012 AC6: policy_check.protected_patterns() returns a pattern matching "
-       ".veldo/floors/example.yaml, so COMMITTING a floor or a RE-POINTED OBSERVATION is a change "
-       "that needs a commit-bound, path-scoped approval and the agent being gated cannot LAND the "
-       "record that exempts it. The verb is committing because the boundary row below measures why",
-       _bf_protected(".veldo/floors/example.yaml"))
+expect("VELDO-0012 AC6 as narrowed by VELDO-0272: policy_check.protected_patterns() returns NO "
+       "pattern matching .veldo/floors/example.yaml in this repository. The owner removed "
+       ".veldo/floors/* from the protected list (Telegram 39707, 39708): committing a floor or a "
+       "re-pointed observation is test machinery that lands on a green gate and a recorded "
+       "independent review, and the daily summary names it. Re-adding the entry reds this row",
+       not _bf_protected(".veldo/floors/example.yaml"))
 expect("VELDO-0012 AC6: and the sibling - protected_patterns() returns a pattern matching a "
        "settlement path, so COMMITTING A SETTLEMENT is a reviewed change too. The integrity of a "
        "disposition record is the integrity of a reviewed change plus the protected-path rules it "
@@ -996,6 +1006,8 @@ with tempfile.TemporaryDirectory() as _bf_gd:
     (_bf_gr / ".veldo" / "floors").mkdir(parents=True)
     (_bf_gr / ".veldo" / "settlements").mkdir(parents=True)
     (_bf_gr / ".veldo/floors/committed.yaml").write_text(_bf_floor([_bf_pin()]))
+    # VELDO-0272: a TRACKED settlement is the additive control now, since floors left the list.
+    (_bf_gr / ".veldo/settlements/committed.json").write_text(json.dumps(_bf_settlement(), indent=2))
     subprocess.run(["git", "add", "-A"], cwd=_bf_gd, capture_output=True, text=True, check=True)
     subprocess.run(["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "-m",
                     "the floor a human reviewed"], cwd=_bf_gd, capture_output=True, text=True,
@@ -1005,21 +1017,25 @@ with tempfile.TemporaryDirectory() as _bf_gd:
         _bf_floor([_bf_pin(recorded=_BF_REC1 + ", and it also trims tabs")]))
     (_bf_gr / ".veldo/floors/smuggled.yaml").write_text(_bf_floor([_bf_pin(pid="PIN-S")]))
     (_bf_gr / ".veldo/settlements/forged.json").write_text(json.dumps(_bf_settlement(), indent=2))
+    (_bf_gr / ".veldo/settlements/committed.json").write_text(
+        json.dumps(_bf_settlement(), indent=2) + "\n")
     _BF_ENUM = [f for f in subprocess.run(["git", "diff", "--name-only", "HEAD"], cwd=_bf_gd,
                                           capture_output=True, text=True).stdout.splitlines() if f]
     expect("VELDO-0012 AC6: THE CONTROL IS OVER A COMMITTED CHANGE, AND THE BOUNDARY IS MEASURED "
-           "RATHER THAN ASSUMED. All three of a modified TRACKED floor, an untracked floor and an "
-           "untracked settlement match a live protected pattern, and the enumeration the enforcement "
-           "iterates - `git diff --name-only HEAD`, which is what changed_files() runs - contains "
-           "ONLY the tracked one. So the pattern is not what fails: an untracked record never reaches "
-           "the check, which is why AC6 says committing and why a consumer of a disposition must "
-           "require a TRACKED record. ADDITIVE CONTROL in the same fixture: the tracked floor's edit "
-           "IS enumerated and IS matched, so protection over a committed change is proven working by "
-           "the same measurement",
-           _bf_protected(".veldo/floors/committed.yaml")
-           and _bf_protected(".veldo/floors/smuggled.yaml")
+           "RATHER THAN ASSUMED. A modified TRACKED settlement and an untracked settlement both match "
+           "a live protected pattern, and the enumeration the enforcement iterates - `git diff "
+           "--name-only HEAD`, which is what changed_files() runs - contains only the TRACKED records. "
+           "So the pattern is not what fails: an untracked record never reaches the check, which is "
+           "why AC6 says committing and why a consumer of a disposition must require a TRACKED "
+           "record. ADDITIVE CONTROL in the same fixture: the tracked settlement's edit IS enumerated "
+           "and IS matched. VELDO-0272: the tracked and the untracked floor match NO protected "
+           "pattern here (the owner removed .veldo/floors/*), while the tracked floor's edit is still "
+           "enumerated",
+           _bf_protected(".veldo/settlements/committed.json")
            and _bf_protected(".veldo/settlements/forged.json")
-           and _BF_ENUM == [".veldo/floors/committed.yaml"])
+           and not _bf_protected(".veldo/floors/committed.yaml")
+           and not _bf_protected(".veldo/floors/smuggled.yaml")
+           and _BF_ENUM == [".veldo/floors/committed.yaml", ".veldo/settlements/committed.json"])
 expect("VELDO-0012 AC6 NEGATIVE CONTROL: the two rows above are the registration and not "
        "everything being protected - an ordinary module and an ordinary spec match NO protected "
        "pattern, while the policy file itself does, which is why this spec declares "

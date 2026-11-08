@@ -348,8 +348,14 @@ def _vp_ac5():
     # every row below reads the same measured records.
     read = dict((g, _vp_run_gate(g, _VP_STUB_VERSION)[0]) for g in _VP_GATES)
     unread = dict((g, _vp_run_gate(g, None)[0]) for g in _VP_GATES)
-    payload = _VP_RS.full_scope(_VP_RS.load_manifest()).verify_stamp_payload(
-        "deadbeef", "green", "2026-01-01T00:00:00Z", 4, 18, _VP_STUB_VERSION)
+    # VELDO-0267: this repository's gate stamps a mutation block when its mutation stage ran (null
+    # here, the throwaway tree carries no scripts/mutation_selection.py); the engine template's gate
+    # stamps none. Declared per gate, so a template that gains the block reds the row until declared.
+    _vp_stamps_mutation = {"scripts/verify.sh": True, "engine/scripts/verify.sh": False}
+    _vp_scope = _VP_RS.full_scope(_VP_RS.load_manifest())
+    payloads = dict((g, _vp_scope.verify_stamp_payload(
+        "deadbeef", "green", "2026-01-01T00:00:00Z", 4, 18, _VP_STUB_VERSION,
+        mutation_ran=_vp_stamps_mutation[g])) for g in _VP_GATES)
 
     expect("VELDO-0010 AC5: the gate WRITES the producing version into the record it stamps, and this "
            "is MEASURED BY RUNNING IT - each gate executed in a throwaway tree and the "
@@ -401,9 +407,9 @@ def _vp_ac5():
            "and its key set EQUALS the payload scripts/run_scope.py declares for a Python-side stamp "
            "writer. An equality between the record produced and the payload declared, rather than two "
            "hand-typed key lists, because two enumerations of one set diverge",
-           all(rec is not None and sorted(rec) == sorted(payload)
+           all(rec is not None and sorted(rec) == sorted(payloads[g])
                and isinstance(rec.get("commit"), str) and rec.get("status") in ("green", "red")
-               for rec in list(read.values()) + list(unread.values())))
+               for records in (read, unread) for g, rec in records.items()))
 
 
 _vp_block("AC5", _vp_ac5)

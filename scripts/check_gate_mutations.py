@@ -1606,9 +1606,15 @@ def main():
     # The gate names the authority checkout's own common directory; a candidate root is a linked
     # worktree of it, and its marker is checked against that directory before any Git runs.
     common = common_directory(ROOT)
-    chooser = load(ROOT / 'scripts/mutation_selection.py')
+    # An authority without the selection module (an installation the scaffold laid down, or a
+    # fixture authority) runs the full sweep: a selection it cannot read never runs fewer cases.
+    chooser_path = ROOT / 'scripts/mutation_selection.py'
+    chooser = load(chooser_path) if chooser_path.is_file() else None
     selection = None
-    if not (args.full or args.finding or args.names):
+    if chooser is None:
+        print('   mutation selection: this authority has no scripts/mutation_selection.py; the full sweep runs',
+              flush=True)
+    elif not (args.full or args.finding or args.names):
         selection = gate_selection(chooser, args.root, common, leg)
     receipt = run_stage(args.root, common, capacities=resource_capacities(args.resource_capacity),
                         findings=args.finding, names=args.names, selection=selection,

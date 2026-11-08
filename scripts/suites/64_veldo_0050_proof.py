@@ -144,7 +144,7 @@ def _v50_suite():
             return '\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: Proof fixture unit', 'status: ready',
                 'risk: standard', 'owner: dmitry', 'human_approval: not_required', 'lane: standalone',
-                'protected_paths: []', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
+                'protected_paths: []', 'footprint: ["src/**"]', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
                 '  - id: AC2', '    text: ' + second, 'required_evidence: [%s]' % ', '.join(required),
                 'rollback: git revert', '---', '', '## Intent', '', 'Proof fixture.', ''])
 

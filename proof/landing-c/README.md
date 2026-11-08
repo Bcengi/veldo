@@ -229,3 +229,99 @@ unit, generated, personal_setup, mutation and contracts.
 
 Pending (gate lock busy, in pending_runs.sh): suites 58_veldo_0028_effects and
 71_veldo_0138_channel_service.
+
+## Fix round 3
+
+Source: the full gate at 9ea10fdf (lock job 54aa, log landing-c-9ea10fdf-verify.log, 6023 lines), RED on
+unit (both legs) and mutation; every other stage passed. The confined leg printed no count: it stopped at
+suite 99's traceback (log 2045-2058), so no suite after 99 ran in that leg. The unconfined leg reported
+`selftest: 1088 passed, 15 failed` (log 2422). The mutation stage stopped on one driver_error (log 5736).
+
+### Failing rows
+
+| Leg | Suite | Row(s) | Log | First failure line | Cause |
+|---|---|---|---|---|---|
+| confined | 05_tracker_routing_resolver_veldo | intake renders a VALID draft; injection-attempt draft still valid; requirement intake renders a VALID draft; bridge writes a VALID status:draft spec | 1168, 1171, 1174, 1177 | 1167: `WARP-9601-x.md: approval_flag_below_rule: ... basis: footprint absent` | E |
+| confined | 07_warp_1103_completion_mandatory | AC6 no-corpus-sweep (ready and shipped placeless spec) | 1226, 1228 | 1225: `specs/S.md: approval_flag_below_rule: ... footprint absent` | D |
+| confined | 13_warp_0623_codified_live | WARP-0724 AC1 plan lane; WARP-0724 AC5 depends_on typed | 1479, 1500 | 1478: `WARP-9729.md: approval_flag_below_rule: ... footprint absent` | D |
+| confined | 14_warp_0717_subset_runner | AC1 `--suite NAME` runs exactly the closure | 1506 | the row runs suite 05 alone and expects exit 2 (partial, passed); 05 is red | E |
+| confined | 18_veldo_0012_behaviour_floor_contract | AC6 floor pattern; AC6 committed-change boundary | 1515, 1516 | the rows assert .veldo/floors/* is protected | C |
+| confined | 27_veldo_0010_evidence_provenance | AC5 stamp key set equals run_scope's payload | 1747 | the stamp carries `mutation`, the payload does not | F |
+| confined | 50_git_environment | git-boundary/no-private-git-invocations | 1753 | check_git_boundary: 8 call sites (below) | G |
+| confined | 53_veldo_0123_mutations | gate/both-mutation-drivers-are-required; gate/removed-teeth-redden-the-gate | 1754, 1755 | the fixture gate's mutation stage cannot load scripts/mutation_selection.py | H |
+| confined | 59_veldo_0043_graph | graph/isolated-enforcement | 1765 | policy_check entry: refused_imports `['_wmi']` (reproduced here) | I |
+| confined | 62_veldo_0045_runtime | enforcement/no-runtime | 1804 | same refused import in the policy_check entry (reproduced here) | I |
+| confined | 99_veldo_0205_reuse | crash, whole suite | 2045-2058 | check_gate_mutations.py:1550 run_stage: `'ControlledWorkers' object has no attribute 'coverage'` | A |
+| unconfined | 64_veldo_0050_proof | accepted-before-offer, actual-checks, build-only-no-landing, fresh-reviewer-resolves, contextual-refusals, owning-services, observations | 2106-2112 | executor.merge_ready computes required for the fixture units (no footprint) | D |
+| unconfined | 91_veldo_0167_setup_records | installed-record, late-subscriber, older-host, older-engine-host, interrupted-record-write, hints-without-api, record-hint-counts, upgrade-restart-answer | 2289-2303 | 2288: `FileNotFoundError: .../proof/VELDO-0189/older/8bc34e94.tar.gz` | B |
+| mutation | 113_veldo_0220_gate_host | baseline of case gate_host.py | 5736 | worker stderr: lander.py:797 gate `base=c["watermark"]`: `KeyError: 'watermark'` | J |
+
+Suite 100_veldo_0207_case_reuse has the same fake worker as 99 (cause A) and is fixed with it.
+
+### Causes
+
+None is a red main 918e7c0e also has: every cause is code that exists only on landing-c (VELDO-0267,
+0270 and 0272 came in through its merges). All are landing-c defects except E, which is a rule question.
+
+- A (VELDO-0267 vs the fake workers): run_stage reads `workers.coverage` after every stage; the real
+  Workers sets it to None, the hand-written ControlledWorkers of suites 99 and 100 did not. Fixed: both
+  fakes set `self.coverage = None`, the real class's default.
+- B (VELDO-0270 vs VELDO-0167): 0270 removed proof/VELDO-0189/older/8bc34e94.tar.gz; 0167's review rows
+  still read it from the tree. Fixed: proof/VELDO-0167/review_rows.py reads it as suite 86's fixture()
+  does, through its summary from the commit that keeps it (`git show readable_at:original_path`), matched
+  against the summary's sha256 and digests.json; a failed read reddens that row only.
+- C (VELDO-0272, lead decision): 0272 removed .veldo/floors/* from the protected list under the owner's
+  narrowed approval scope (Telegram 39707, 39708). Suite 18's floor row now asserts the floor pattern is
+  ABSENT here (re-adding it reds the row); the boundary row keeps its measurement with a tracked
+  settlement as the additive control (tracked settlement enumerated and matched, untracked settlement
+  matched and not enumerated, both floors matched by no pattern). The settlement row and the engine
+  template's two entries are unchanged.
+- D (VELDO-0272 footprint-absent rule vs fixtures): fixtures that must be gate-legal declared no
+  footprint and not_required. Fixed per suite, the rule untouched: 13's `_d724_gatelegal` and the AC5
+  shape head carry `footprint: [src/fixture.py]` (no protected list in that fixture; without it the bad
+  shapes in AC5 were refused for the footprint, not their shape); 64's units carry `footprint: ["src/**"]`
+  (the lead's fix for 67, 69 and 86, 7dc0055b); 07's two placeless specs declare `human_approval:
+  required`, the computed flag, since with a contract present a footprint without a placement is
+  refused. Checked: each fixture spec validates and the same spec without the change is refused
+  `footprint absent`.
+- E (VELDO-0272 rule vs a PRODUCTION writer): NOT FIXED, reported. Suite 05's drafts are written by
+  .veldo/tracker_intake.py (:107 and :232), which renders `human_approval: not_required` with no
+  footprint; an intake draft is a new file, so it is in scope and the rule refuses it. This is not a
+  fixture: every intake and bridge draft in any repository fails check_spec. The choice is the owner's:
+  the writer renders the computed flag (required) until a footprint is declared, or the rule exempts
+  drafts. Suite 14 stays red with it (it runs 05 alone).
+- F (VELDO-0267): this repository's gate stamps a `mutation` block when its mutation stage ran;
+  run_scope.verify_stamp_payload, which suite 27 holds equal to the stamp, did not know it. Fixed:
+  the payload takes `mutation_ran` and `mutation`, present exactly when the stage ran, as verify.sh
+  writes it; suite 27 declares per gate that scripts/verify.sh stamps it and engine/scripts/verify.sh
+  does not (a template that gains it reds the row until declared).
+- G (VELDO-0267 and 0272 vs the Git boundary): eight call sites ran Git outside the form
+  check_git_boundary accepts: scripts/mutation_selection.py:128 and mutation_nightly.py:158 (plain
+  subprocess), .veldo/landed_summary.py:45 (`_G.run`), .veldo/validate.py:159 (`_git_process_module().run`),
+  each with its engine copy. Fixed: all go through `_git_process.run`; the two scripts load
+  .veldo/git_process.py beside them on first use. Checked: the boundary check passes; both scripts'
+  Git calls return the expected commit.
+- H (VELDO-0267): check_gate_mutations.py main loads the authority's scripts/mutation_selection.py
+  unconditionally, but that file is neither in the authority identity nor in the scaffold, so a fixture
+  authority (suite 53) or an installed repository crashes the stage. Fixed: without the module the stage
+  runs the full sweep and says so (never fewer cases); with it, unchanged.
+- I (VELDO-0272 fix 5, f4901ce3): policy_check's `_projection_paths` executed lander.py to read
+  PROJECTIONS; lander loads claim.py, both import uuid, which imports platform, whose `_wmi` probe the
+  isolated-enforcement finder refuses (not in this CPython 3.12.3's stdlib_module_names). Fixed:
+  PROJECTIONS is read as a literal from lander.py's source (ast), never executed; the finder is
+  unchanged. Checked: control_graph_isolation.py over this tree passes every entry; the runtime
+  enforcement run passes the policy_check entry; `_projection_paths()` returns `{specs/index.md}`.
+- J (VELDO-0267 vs suite 113): Lander.gate passes `c["watermark"]` as the gate's selection base; 113
+  hand-builds a candidate without the watermark sync_main always sets. Fixed: the fixture candidate
+  carries `watermark` (its one commit). The other hand-built candidate (suite 140) already does.
+
+The 113 baseline is confirmed as this KeyError (the mutation receipt's stderr_tail for case
+113_veldo_0220_gate_host.py:gate_host.py:False:baseline); that suite never ran in the unit legs.
+
+Checks run here: py_compile on every changed file; `cmp` clean for every mirrored pair
+(check_gate_mutations.py, mutation_selection.py, mutation_nightly.py, validate.py, landed_summary.py,
+policy_check.py); no teeth mutation anchors on a changed line.
+
+Pending (gate lock held by another repository's gate, in pending_runs.sh): every suite in the table,
+129_veldo_0272_approval_scope, 140_veldo_0267_mutation_selection, teeth findings 267 and 272, and a full
+gate (the confined leg never reached the suites after 99).

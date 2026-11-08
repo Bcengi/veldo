@@ -70,3 +70,20 @@ step round1-teeth-272 python3 scripts/check_teeth_mutations.py --finding 272
 # policy_check.py again (suite 58 is the mutation stage's baseline, suite 71 an unconfined-leg traceback).
 step round2-58_veldo_0028_effects python3 scripts/selftest.py --suite 58_veldo_0028_effects
 step round2-71_veldo_0138_channel_service python3 scripts/selftest.py --suite 71_veldo_0138_channel_service
+
+# Fix round 3 (gate 54aa at 9ea10fdf, README "Fix round 3"). Every suite with a failing row, the two
+# whose crash or baseline failure hid others (99, 113), and the owners of the changed modules (129_0272
+# for policy_check.py, 140 for mutation_selection.py and check_gate_mutations.py). 05 and 14 are
+# EXPECTED RED until the owner decides the intake draft question (README, cause E).
+for suite in 05_tracker_routing_resolver_veldo 07_warp_1103_completion_mandatory 13_warp_0623_codified_live \
+        14_warp_0717_subset_runner 18_veldo_0012_behaviour_floor_contract 27_veldo_0010_evidence_provenance \
+        50_git_environment 53_veldo_0123_mutations 59_veldo_0043_graph 62_veldo_0045_runtime \
+        64_veldo_0050_proof 91_veldo_0167_setup_records 99_veldo_0205_reuse 100_veldo_0207_case_reuse \
+        113_veldo_0220_gate_host 129_veldo_0272_approval_scope 140_veldo_0267_mutation_selection; do
+    step "round3-$suite" python3 scripts/selftest.py --suite "$suite"
+done
+step round3-teeth-267 python3 scripts/check_teeth_mutations.py --finding 267
+step round3-teeth-272 python3 scripts/check_teeth_mutations.py --finding 272
+# The confined unit leg stopped at suite 99's crash, so no suite after it ran there at 9ea10fdf:
+# only a full gate shows them.
+step round3-full-gate bash scripts/verify.sh

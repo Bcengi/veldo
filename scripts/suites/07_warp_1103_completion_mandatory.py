@@ -82,13 +82,16 @@ expect("WARP-1103 AC7 tier GREEN: a connected-pair footprint at risk standard pa
 # placed one. THE NO-CORPUS-SWEEP GUARD: a SHIPPED placeless spec (and even a ready placeless
 # spec) still validates through check_spec - the corpus path - proving the mandatory rule lives
 # at the ready transition, not in a check_spec sweep of every spec.
+# VELDO-0272: the two placeless specs declare human_approval required, the flag the rule computes for
+# a spec with no footprint. They cannot carry a footprint instead: with a contract present a footprint
+# without a placement is refused, which would turn these rows into placement checks.
 with tempfile.TemporaryDirectory() as _rgd:
     _rgp = Path(_rgd)
     (_rgp / ".veldo").mkdir()
     (_rgp / "specs").mkdir()
     _placeless = _rgp / "specs" / "S.md"
     _placeless.write_text("---\nschema: veldo.spec/v1\nid: S\ntitle: t\nstatus: ready\n"
-                          "risk: standard\nowner: d\nacceptance_criteria: [x]\n---\nbody\n")
+                          "risk: standard\nowner: d\nhuman_approval: required\nacceptance_criteria: [x]\n---\nbody\n")
     expect("WARP-1103 AC6: no contract stands the ready gate down (adoption safe)",
            V.check_ready(_placeless, repo_root=_rgp) == 0)
     (_rgp / ".veldo" / "architecture.yaml").write_text(GOOD_ARCH)  # areas core, edge
@@ -98,7 +101,7 @@ with tempfile.TemporaryDirectory() as _rgd:
            V.check_spec(_placeless, repo_root=_rgp) == 0)
     _shipped = _rgp / "specs" / "Sh.md"
     _shipped.write_text("---\nschema: veldo.spec/v1\nid: Sh\ntitle: t\nstatus: shipped\n"
-                        "risk: standard\nowner: d\nacceptance_criteria: [x]\n---\nbody\n")
+                        "risk: standard\nowner: d\nhuman_approval: required\nacceptance_criteria: [x]\n---\nbody\n")
     expect("WARP-1103 AC6 no-corpus-sweep: a shipped placeless spec still validates via check_spec (never swept)",
            V.check_spec(_shipped, repo_root=_rgp) == 0)
     _placed = _rgp / "specs" / "P.md"

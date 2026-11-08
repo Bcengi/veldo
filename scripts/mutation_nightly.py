@@ -155,8 +155,9 @@ class Runner:
         self.notified = []
 
     def git(self, *arguments, cwd=None):
-        result = subprocess.run(['git', '-C', str(cwd or self.root), *arguments], capture_output=True,
-                                text=True, timeout=600)
+        _git_process = selection.git_boundary()
+        result = _git_process.run(['git', '-C', str(cwd or self.root), *arguments], capture_output=True,
+                                  text=True, timeout=600)
         if result.returncode:
             raise RuntimeError('git %s: %s' % (' '.join(arguments), result.stderr.strip()[:300]))
         return result.stdout.strip()

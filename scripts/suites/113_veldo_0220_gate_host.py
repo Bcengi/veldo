@@ -369,8 +369,10 @@ for claimed in (str(os.getpid()), str(os.getppid()), '99999999'):
             events = []
             ops = LD.GitLandOps(repo, 'HEAD', push=False, installation=install, observations=top,
                                 observe=events.append, domain='fixture', repository='fixture')
+            # A built candidate always carries the watermark sync_main fixed; the gate hands it to the
+            # installed gate as its selection base (VELDO-0267). This one-commit fixture sits on itself.
             ops.candidate = {'state': 'built', 'workspace': str(repo), 'commit': commit, 'unit': 'VELDO-9220',
-                             'id': 'fixture'}
+                             'id': 'fixture', 'watermark': commit}
             landed = ops.gate()
             claims = top / ('claims-' + name)
             claims.mkdir()
