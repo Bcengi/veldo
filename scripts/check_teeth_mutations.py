@@ -12499,6 +12499,18 @@ def cases():
         "FLAGS = ('-I', '-S', '-B')\n",
         "FLAGS = ('-I', '-B')  # defect: site packages importable in the child\n",
         ['launch/stdlib-only'])
+    # AC2 row: a forged runner answer leading a branch to a land node is refused by the cycle (suite 128).
+    add(262, 'v262-cycle-branch-trace-unjudged', '128_veldo_0247_check_join.py', 'control_workflow_cycle.py',
+        "            if len(found) != 1 or last != [position, port, found[0]['to']] or entry.get('position') != found[0]['to']:\n",
+        "            if False:  # defect: a branch's reported step is not judged against the revision\n",
+        ['fanout/forged-land-in-branch'])
+    # AC3 wiring: factory setup and its VELDO-0189 upgrade refuse leftover_runtime before the first write.
+    add(262, 'v262-factory-leftover-accepted', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup.py',
+        "    if leftover:\n        raise Refused(leftover[0], ', '.join(leftover), leftover)\n",
+        "    if leftover and False:  # defect: a leftover runtime is not refused\n"
+        "        raise Refused(leftover[0], ', '.join(leftover), leftover)\n",
+        ['upgrade/retires-langgraph', 'setup/leftover-refused'])
+    result[-1]['timeout'] = 900
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

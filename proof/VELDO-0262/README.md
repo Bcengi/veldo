@@ -47,9 +47,9 @@ Results (local, no lock):
 Falsifiers (registered as finding 262 against suite 130; red with the mutation, green without):
 1. v262-notes-earlier-win: red, first difference pm-0.2 answer.proposals[0].evidence[1].
 2. v262-suspend-with-proposals: red, first difference probe-suspend-proposal-0.1 answer.failure.
-3. v262-step-not-advanced: red, first difference qualify-cycle.1 answer.resume.step. Open: the declared
-   form ("not advanced for a node that failed") cannot red anything, because a failure answer carries no
-   step on LangGraph or here; the registered mutation drops the one increment every node takes.
+3. v262-step-not-advanced: red, first difference qualify-cycle.1 answer.resume.step. The spec's literal
+   form cannot be produced as a red; see Premises, P1. The registered mutation drops the one increment
+   every node takes, and is the nearest form that reaches an answer.
 
 Retargeted VELDO-0043 and VELDO-0132 rows (same intent, at the step runner): see `removed-rows.json`
 `retargeted`. All registered anchors resolve (0 moved). Suite 59's VELDO-0043 rows, driven locally
@@ -74,9 +74,13 @@ run pending.
 Falsifiers: v262-join-on-first-input red on fanout/join-waits-for-all; v262-branches-share-state red on
 fanout/branch-isolation. VELDO-0247's branch-around-approval falsifier is unchanged (pending in teeth-247).
 
-Open: the row "a forged runner answer naming a land node from inside a branch is refused by the cycle"
-is not added; suite 128's existing forged-branch and trace rows cover the cycle side, a new
-branch-to-land row was not written in this increment.
+Forged branch to land (suite 128, row fanout/forged-land-in-branch, green locally): a saved revision
+`fanned-land` holds a land node reachable only after the join and an owner approval; the cycle is started
+through the real Cycles service, and the runner it stages is forged (CY.runner_source swapped, as in
+check/forged-branch) so the copy branch's assignment reports moving straight to `land`. The cycle refuses
+invalid_response:trace at node assign_copy, branch copy; steps unchanged; no land, approval or join in the
+trace; no branch_step, superstep or arrive event. Registered falsifier v262-cycle-branch-trace-unjudged
+(the cycle's branch trace check disabled): red on that row only, through the teeth driver locally.
 
 ## AC3: removal
 
@@ -102,15 +106,67 @@ Falsifiers: v262-lock-restored red (leftover/repository names engine/.veldo/cont
 scaffold of that tree refuses leftover_runtime naming it); v262-cycle-imports-langgraph red;
 v262-upgrade-follows-link red. `control_runtime.py enforcement` and the isolation probe: pending runs.
 
-NOT DONE, outside the footprint (stopped and reported, not changed):
-- The `~/.local/share/veldo/langgraph` read root is still in both agent_sandbox.json copies:
-  scripts/suites/101_veldo_0208_landing_reuse.py (not in the footprint) asserts it is present, so removing
-  it reds suite 101. Also, main and other branches on this shared host still run LangGraph-based gates.
-- The VELDO-0189 factory upgrade and factory setup (control_factory_setup.py,
-  control_factory_setup_upgrade.py) are not in the footprint, so the retire and the leftover refusal are
-  wired into init_scaffold only. The account runtime directory is judged when a home is given or on
-  `--upgrade`; a fresh scaffold without one judges the target only, because this host still holds the
-  runtime that main's gate needs.
+Sandbox read root: `~/.local/share/veldo/langgraph` removed from both agent_sandbox.json copies
+(protected, in the footprint). Suite 101's installed-tools row asserted it present; it now asserts it
+absent (footprint addition). Suite 101 locally: 214 passed, 2 failed; the same two rows fail identically
+with the parent's three files restored (see Inherited reds).
+
+Factory setup and its VELDO-0189 upgrade (control_factory_setup.py, footprint addition):
+`check()` (shared by a fresh setup and a re-run, before either writes) on a re-run first retires the
+account's runtime directory through `init_scaffold.retire_runtime` (digest-named plain directories only,
+no link followed, each logged), then refuses `leftover_runtime:<path>` (all leftovers in `problems`) for
+anything under the account's runtime directory, a retired file or retired import in the engine directory
+it lays from, and on a fresh setup in an engine already at install_root/bin. A re-run's previous engine
+holds the retired files and leaves whole with the VELDO-0189 engine switch (premise P3).
+init_scaffold gained `leftover_modules(directory)` for flat engine directories, and `target=None` in
+`leftover_runtime` and `retire_runtime` to judge or retire only the account runtime. Rows (suite 86_0189,
+62 passed, 0 failed locally): upgrade/retires-langgraph (the re-run retires a scratch account's digest
+directory, logs it, writes nothing in the installation; then a digest-named link is not followed and the
+re-run refuses naming it, nothing written), setup/leftover-refused (a fresh setup refuses naming the
+leftover with nothing written). Registered falsifier v262-factory-leftover-accepted: red on both rows when
+run directly (59 passed, 3 failed: the two rows and install/assets, which compares the engine copy); through
+the teeth driver its baseline is invalid on this host, as is the existing VELDO-0189 case
+upgrade189-runtime-unrecorded (the confined worker cannot run suite 86_0189 here), so it is pending for the
+lead in teeth-262.
+
+## Premises
+
+P1 (AC1 falsifier 3, the spec's form cannot be produced). The spec states the mutation "the step count is
+not advanced for a node that failed" reds the replay row naming the first differing exchange and field.
+It cannot: a failure answer carries no step. The veldo.graph/v1 failure shape is {schema, operation,
+cycle_id, command_id, domain_uuid, repository_uuid, outcome, runtime, failure: {code, detail}} on
+LangGraph as recorded and on the step runner, and the spec puts that shape out of scope for change. A
+failed node also ends the exchange, so no later node sees the step either, and the other failure ends
+(a raise, the step bound, a fan-out or suspend refusal, a branch failure) carry no step on either runner.
+`falsifier3_literal.py` applies exactly the literal form (the three failure ends of an ordinary node keep
+the step they entered with) to a scratch copy and replays the corpus: 2508 replayed, first difference
+null, 519 failure answers, every one with failure fields {code, detail} and none carrying a step
+(`falsifier3-literal.json`). Producing the red would need a field the spec forbids adding. So the
+registered falsifier keeps the nearest form that reaches an answer (the increment every node takes).
+
+P2 (account runtime directory in factory setup). The account's runtime directory is judged and retired
+when the setup runs on the default installation (no install_root given, the production command), using
+the account home from the password database; a caller naming its own install_root names `runtime_home`
+too, or the account directory is not judged. Without this, every suite that runs factory setup with a
+scratch install root would retire or refuse on this shared host's real runtime, which main's gate still
+uses.
+
+P3 (re-run engine directory). On a re-run the installed engine at install_root/bin is the previous engine,
+which carries the retired modules; it is not judged for leftovers because the VELDO-0189 switch replaces
+it whole and removes it, and removing files from it before the switch would leave the running service on
+an incomplete engine.
+
+## Footprint additions
+
+For the lead to amend the spec before landing:
+- `scripts/suites/101_veldo_0208_landing_reuse.py`: its installed-tools row asserted the langgraph read
+  root present in agent_sandbox.json; AC3 removes it, so the row now asserts it absent (one condition).
+- `.veldo/control_factory_setup.py`, `engine/.veldo/control_factory_setup.py`: AC3's setup and upgrade
+  wiring (the VELDO-0189 upgrade runs through this module's `check()` and `rerun()`).
+- Protected paths changed (already listed in the spec's protected_paths): `scripts/agent_sandbox.json`,
+  `engine/scripts/agent_sandbox.json` (the read root line removed), `scripts/mutation_case_inputs.json`
+  (earlier increment).
+- `control_factory_setup_upgrade.py` was not changed.
 
 ## AC4: performance
 
@@ -130,15 +186,19 @@ standard library modules.
 ## Pending runs
 
 `pending_runs.sh` (bash -n clean, set -u, no lock, no systemd-run): lint, template sync, corpus replay
-and twice, control_runtime check, qualify, install, enforcement, the isolation probe and enforcement, 27
+and twice, falsifier 3's literal form (P1), control_runtime check, qualify, install, enforcement, the isolation probe and enforcement, 27
 suites, the teeth findings 262, 43, 45, 132 and 247, requires.json current, and a clean-tree check that
 ignores `pending-summary.txt`. Each step appends one line to `pending-summary.txt` with its exit code, the
 selftest tally and a /tmp log path. Partial selftest runs never exit 0 by design: read the tally.
 
 Local checks already run without the lock: lint pass; template sync pass; suites 130 (13 rows), 59 (20),
-62 (15) green; the nine 262 mutants red on their rows; suite 59's 57 VELDO-0043 mutants red; suite 62's fourteen 0045 mutants red after two
+62 (15), 128 (47 checks), 86_0189 (62) green; 101 as under Inherited reds; falsifier3_literal premise holds; the nine 262 mutants red on their rows; suite 59's 57 VELDO-0043 mutants red; suite 62's fourteen 0045 mutants red after two
 were retargeted; every registered anchor resolves.
 
 ## Inherited reds
 
-None observed in the suites run locally. Suites not run locally: see pending_runs.sh.
+Suite 101: `VELDO-0208 sandbox/unavailable-refuses-before-exec` and `sandbox/old-abi-refuses-before-exec`
+fail locally with this branch's files and identically with the parent's agent_sandbox.json copies and
+suite 101 restored (214 passed, 2 failed both ways; logs /tmp/v262-s101.log, /tmp/v262-s101-parent.log),
+so they are not from this change; likely the nested sandbox of this session. Other suites not run
+locally: see pending_runs.sh.

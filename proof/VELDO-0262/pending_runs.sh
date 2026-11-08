@@ -34,6 +34,9 @@ step template-sync bash scripts/check_template_sync.sh
 # AC1: the corpus recorded on the LangGraph runner, replayed on the step runner, and twice.
 step corpus-replay python3 proof/VELDO-0262/corpus.py replay
 step corpus-twice python3 proof/VELDO-0262/corpus.py twice
+# AC1 falsifier 3 in the spec's literal form, on a scratch copy: exit 0 means the recorded premise holds (the
+# literal mutation changes no replayed answer and no failure answer carries a step).
+step falsifier3-literal python3 proof/VELDO-0262/falsifier3_literal.py
 
 # AC3: the runtime journey that remains: check, qualify, install answering runtime_removed, enforcement.
 step runtime-check python3 .veldo/control_runtime.py check
@@ -77,7 +80,8 @@ do
     step "suite-$suite" python3 scripts/selftest.py --suite "$suite"
 done
 
-# The falsifiers through the gate's mutation driver: this ticket's nine (finding 262), then every
+# The falsifiers through the gate's mutation driver: this ticket's eleven (finding 262: the nine declared, the
+# suite 128 forged-land row and the suite 86_0189 factory leftover rows), then every
 # VELDO-0043, VELDO-0045, VELDO-0132 and VELDO-0247 row, the retargeted ones among them.
 step teeth-262 python3 scripts/check_teeth_mutations.py --finding 262 --worker-log-dir "$LOGS/teeth-262"
 step teeth-43 python3 scripts/check_teeth_mutations.py --finding 43 --worker-log-dir "$LOGS/teeth-43"
