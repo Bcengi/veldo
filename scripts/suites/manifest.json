@@ -1840,6 +1840,15 @@
    ],
    "regions": "A local landing keeping every working tree that has the trunk checked out in step with the trunk (VELDO-0260): the set read from the repository's own working-tree list (the main tree holding main, a linked tree holding main, a detached HEAD at the tip, another branch and a bare repository), a clean tree moved with the trunk by a two-tree merge with its untracked and ignored files byte for byte unchanged, a lost swap restoring the moved tree to the old tip, an edited and a staged tracked file, a merge in progress and a locked index refusing as trunk_checkout_dirty or trunk_checkout_unmovable before the swap with the ref and files unchanged and re-landed under VELDO-0148 once clean, a main tree on another branch never read or written, and the publication events and counts by working-tree outcome.",
    "requires_note": "Only ROOT, expect and launcher_fds. Real Git (small repositories with linked and bare clones for the unit rows; a scaffolded seed and its own gate and the caller's repository with its main and a linked working tree for the integration rows), the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0058's installed gate and VELDO-0057's Landing. Fixture units, floor handoffs and candidate policy. Writes only temporary files."
+  },
+  {
+   "name": "130_veldo_0275_approved_engine",
+   "file": "130_veldo_0275_approved_engine.py",
+   "requires": [
+    "130_veldo_0275_approved_engine"
+   ],
+   "regions": "Runs using only the approved engine version, pinned by digest (VELDO-0275 AC1): with a newer Claude Code and Codex installed and on PATH, setup's check resolves the approved Claude Code version and the approved Codex binary the engines record names, the approved version pins and binds, and a launch naming the newer version or binary is refused engine_not_approved; the approved pinned copy and Codex binary with bytes changed after approval are refused engine_not_approved at binding and at setup.",
+   "requires_note": "Only ROOT and expect. A temporary .veldo copy with the production modules laid over it, its runtime holding the engines record and the two qualification records re-keyed to small fake approved binaries (the shipped records' entries), fake newer versions on a PATH the suite prepends and restores in a finally block. Nothing is executed; writes only temporary files."
   }
  ],
  "resource_capacities": {

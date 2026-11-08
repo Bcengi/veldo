@@ -73,6 +73,8 @@ def check(Refused):
         raise Refused('missing_evidence:engine_version:claude_code')
     try:
         record = claude.qualification()
+        if version not in record['versions']:
+            raise Refused('engine_not_approved')
         entry = claude.qualified(version, record)
         claude.qualified_baseline({'version': version}, record)
         claude.qualified_tools(version, entry)
@@ -80,6 +82,9 @@ def check(Refused):
             raise Refused('engine_not_approved')
         record = codex.load_qualification()
         vendor = str(approved_codex(codex, record, Refused))
+        _, manifest = codex._package(vendor)
+        if (manifest or {}).get('version') != record['package_version']:
+            raise Refused('engine_not_approved')
         bound = codex.bind({'executable': vendor})
     except (claude.Refused, codex.Refused) as error:
         raise Refused(error.code) from None

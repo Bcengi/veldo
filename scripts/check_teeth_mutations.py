@@ -7797,9 +7797,9 @@ def cases():
     # AC1 (declared falsifier): executable binding skipped after the pinned copy's digest changes.
     claude('claude-pin-digest-unchecked', 'control_engine_claude.py',
            "    if _file_digest(path) != entry['sha256']:\n"
-           "        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')\n",
+           "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
            "    if False:  # defect: the pinned copy's digest is not checked before the launch\n"
-           "        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')\n",
+           "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
            'pin/unexpected-launch')
     claude('claude-binding-skipped', 'control_launch.py',
            "        if module is None:\n            return None\n        try:\n            bound = module.bind(",
@@ -9993,8 +9993,8 @@ def cases():
         '            if recorded != engines:',
         '            if False:', ['engines/refuse-record'], [])
     add(189, 'upgrade189-codex-refusal-differs', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
-        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code\n        raise Refused(code) from None",
-        '        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused(error.code) from None', ['engines/codex-refusal'], [])
+        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused(error.code) from None",
+        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused('stale_subject:engine_digest' if error.code == 'engine_not_approved' else error.code) from None", ['engines/codex-refusal'], [])
     add(189, 'upgrade189-repair-reported-done', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "        wrote = report.get('pins_made', 0) or report.get('engines_record')",
         '        wrote = False', ['engines/repair-report'], [])
@@ -10097,8 +10097,8 @@ def cases():
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', "        for name, data in laid['assets'].items():", '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])
     add(186, 'setup186-missing-runtime-ignored', '86_veldo_0186_setup_assets.py', 'control_service.py', "            raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None", '            continue', ['runtime/missing'], [])
-    add(186, 'setup186-claude-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "            raise Refused('missing_evidence:engine_baseline:' + version)", "            raise Refused('invalid_input:engine_version:' + version)", ['engines/unlisted'], [])
-    add(186, 'setup186-codex-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "            raise Refused('missing_evidence:engine_baseline:' + str(manifest.get('version')))", "            raise Refused('stale_subject:engine_version')", ['engines/unlisted'], [])
+    add(186, 'setup186-claude-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if version not in record['versions']:\n            raise Refused('engine_not_approved')", "        if version not in record['versions']:\n            raise Refused('invalid_input:engine_version:' + version)", ['engines/unlisted'], [])
+    add(186, 'setup186-codex-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if (manifest or {}).get('version') != record['package_version']:\n            raise Refused('engine_not_approved')", "        if (manifest or {}).get('version') != record['package_version']:\n            raise Refused('stale_subject:engine_version')", ['engines/unlisted'], [])
     add(186, 'setup186-claude-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if claude._file_digest(paths['claude_code']) != entry['sha256']:", '        if False:', ['engines/digest'], [])
     add(186, 'setup186-codex-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        bound = codex.bind({'executable': vendor})", "        bound = {'sha256': record['sha256']}", ['engines/digest'], [])
 
@@ -12486,6 +12486,34 @@ def cases():
         named261.replace('    if code == sqlite3.SQLITE_BUSY:', '    if True:  # defect: every error named busy'),
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
+
+    # VELDO-0275 AC1: runs use only the approved engine version, pinned by digest. (1) The launch or setup picks
+    # the newest installed version: the stays-on-approved row goes red; (2) the digest check is skipped: the
+    # changed-bytes row goes red.
+    def approved275(name, module, old, new, row):
+        add(275, name, '130_veldo_0275_approved_engine.py', module, old, new, ['approved/' + row])
+
+    approved275('approved275-claude-newest-installed', 'control_factory_setup_engines.py',
+                "    if not path.is_absolute() or not path.is_file():\n"
+                "        raise Refused('missing_evidence:engine_source:claude_code')\n    return path\n",
+                "    if not path.is_absolute() or not path.is_file():\n"
+                "        raise Refused('missing_evidence:engine_source:claude_code')\n"
+                "    return max(path.parent.iterdir(), key=lambda p: p.name)  # defect: the newest installed version\n",
+                'stays-on-approved')
+    approved275('approved275-codex-newest-installed', 'control_factory_setup_engines.py',
+                "        if codex._file_digest(path) == record['sha256']:\n            return path\n",
+                "        return path  # defect: the first installed binary, the newer one on PATH\n",
+                'stays-on-approved')
+    approved275('approved275-claude-digest-skipped', 'control_engine_claude.py',
+                "    if _file_digest(path) != entry['sha256']:\n"
+                "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
+                "    if False:  # defect: the pinned copy's digest is not checked\n"
+                "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
+                'changed-bytes')
+    approved275('approved275-codex-digest-skipped', 'control_engine_codex.py',
+                "    if digest != record['sha256']:\n        raise Refused('engine_not_approved')\n",
+                "    if False:  # defect: the binary's digest is not checked\n        raise Refused('engine_not_approved')\n",
+                'changed-bytes')
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

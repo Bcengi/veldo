@@ -779,7 +779,7 @@ sys.exit(payload.get('code', 0))
                   and (found.get('executable') or {}).get('sha256') == FORMATS['sha256'])
 
         with region('pin/unexpected-launch'):
-            expected = {'changed': 'stale_subject:engine_digest', 'newer': 'stale_subject:engine_version',
+            expected = {'changed': 'engine_not_approved', 'newer': 'engine_not_approved',
                         'link': 'invalid_input:engine_link', 'npm': 'invalid_input:engine_link',
                         'flags': 'invalid_input:engine_flags', 'shell': 'invalid_input:engine_executable',
                         'link-first': 'invalid_input:engine_executable'}

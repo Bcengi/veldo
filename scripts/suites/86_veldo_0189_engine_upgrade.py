@@ -1115,7 +1115,7 @@ def _v189_suite():
                 upgraded = refusal(lambda: engines_helper.ensure(str(fresh.root), fresh.home / 'bin', engine_plan,
                                                                  F.Refused, lambda event: None))
                 check(CD, 'same changed Codex bytes have the fresh refusal: ' + str((installed, upgraded)),
-                      installed == upgraded == 'binding_mismatch:engine_digest')
+                      installed == upgraded == 'engine_not_approved')
                 check(CD, 'no record of refused binding', not engine_record.exists())
             finally:
                 vendor.write_bytes(vendor_bytes)

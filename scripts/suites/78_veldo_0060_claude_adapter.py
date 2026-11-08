@@ -828,7 +828,7 @@ sys.exit(payload.get('code', 0))
             pinned.chmod(0o555)
             launch, record = run('acct-60a', admitted('VELDO-6002-changed'), 'claude', normal())
             cases.append(('a pinned copy whose digest changed', launch.dispatch_id, record,
-                          'binding_mismatch:engine_digest'))
+                          'engine_not_approved'))
             pinned.chmod(0o755)
             pinned.write_bytes(original)
             pinned.chmod(0o555)
@@ -837,7 +837,7 @@ sys.exit(payload.get('code', 0))
                   % (record or {}).get('state'),
                   (record or {}).get('state') == 'exited' and len(engine_markers(launch.dispatch_id)) == 1)
             launch, record = run('acct-60a', admitted('VELDO-6002-unknown'), 'claude-unknown', normal())
-            cases.append(('an unknown version', launch.dispatch_id, record, 'invalid_input:engine_version:9.9.9'))
+            cases.append(('an unknown version', launch.dispatch_id, record, 'engine_not_approved'))
             moved = factory / 'moved'
             os.replace(pinned, moved)
             os.symlink(str(versions / VERSION), str(pinned))  # the qualified bytes, reached through a link
@@ -898,7 +898,7 @@ sys.exit(payload.get('code', 0))
             left = sorted(p.name for p in (elsewhere / 'engines' / 'claude_code').glob('*')) \
                 if (elsewhere / 'engines' / 'claude_code').is_dir() else []
             check('pin/copy', 'a versioned file of another digest is refused by name and nothing is left in place '
-                  '[%s, %s]' % (changed, left), changed == 'binding_mismatch:engine_digest' and not left)
+                  '[%s, %s]' % (changed, left), changed == 'engine_not_approved' and not left)
             linked = base / 'linked-versions'
             linked.mkdir()
             os.symlink(str(versions / VERSION), str(linked / VERSION))
@@ -906,7 +906,7 @@ sys.exit(payload.get('code', 0))
             _, unknown = attempt(lambda: E.pin('9.9.9', versions=str(versions), state_root=str(elsewhere)))
             check('pin/copy', 'a versioned path that is a link (the auto-updating link\'s shape) and an unqualified '
                   'version are refused by name [%s, %s]' % (through, unknown),
-                  through == 'binding_mismatch:engine_source' and unknown == 'invalid_input:engine_version:9.9.9'
+                  through == 'binding_mismatch:engine_source' and unknown == 'engine_not_approved'
                   and not (elsewhere / 'engines' / 'claude_code' / VERSION).exists())
 
         # AC1: the qualification record this repository ships for the real 2.1.281.
@@ -1233,11 +1233,11 @@ sys.exit(payload.get('code', 0))
             return [{'line': line} for line in lines]
         ENGINE_CASES = {
             'claude': {'adapter': 'claude-contained', 'refused': 'claude-contained-unknown', 'account': 'acct-60a',
-                       'refusal': 'invalid_input:engine_version:9.9.9', 'exe': str(pinned),
+                       'refusal': 'engine_not_approved', 'exe': str(pinned),
                        'flags': QUALIFIED['flags'], 'sha256': FAKE_SHA, 'profile': 'CLAUDE_CONFIG_DIR',
                        'normal': lambda: normal(), 'start': lambda: [c_init()]},
             'codex': {'adapter': 'codex-contained', 'refused': 'codex-contained-changed', 'account': 'acct-60x',
-                      'refusal': 'stale_subject:engine_digest', 'exe': str(CODEX_BIN), 'flags': CODEX_FLAGS,
+                      'refusal': 'engine_not_approved', 'exe': str(CODEX_BIN), 'flags': CODEX_FLAGS,
                       'sha256': (codex_record or {}).get('sha256'), 'profile': 'CODEX_HOME',
                       'normal': lambda: x_normal('thread-' + os.urandom(3).hex()),
                       'start': lambda: x_normal('thread-' + os.urandom(3).hex())[:2]}}
