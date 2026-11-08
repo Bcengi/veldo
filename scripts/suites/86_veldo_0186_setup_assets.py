@@ -122,8 +122,9 @@ def _v186_suite():
         installed = Path(report.get('home', home / 'absent')) / 'bin'
         config_path = installed.parent / 'config/service.json'
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
-        expected = ['runtime/claude-tables.json', 'runtime/codex-tables.json', 'runtime/engines.json',
-                    'runtime/future.json', 'runtime/nested/future.json']
+        expected = ['runtime/claude-summary.json', 'runtime/claude-tables.json', 'runtime/codex-summary.json',
+                    'runtime/codex-tables.json', 'runtime/engines.json', 'runtime/future.json',
+                    'runtime/nested/future.json']
         for name in expected:
             target = installed / name
             check('runtime/assets', name + ' installed with digest', target.is_file()

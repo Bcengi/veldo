@@ -10,8 +10,9 @@ A landing candidate built on landing-c 9ea10fdf (landing-c lands first). Two rev
 2. agent/claude/veldo-0275 (VELDO-0275, approved engine pinned by digest, qualification summaries, stream probe),
    merge commit 84b5889a. Eleven conflicted files, resolved keeping both tickets' behaviour: .veldo/init_scaffold.py
    and its engine copy keep 0262's leftover_runtime refusal and CLI default home and 0275's installation of the
-   qualification tables and summaries; proof/VELDO-0127/factory.py keeps 0275's engines record install and 0262's
-   step-runner changes; suites 86_veldo_0186 and 88_veldo_0127 keep both sides' rows; check_teeth_mutations.py
+   qualification tables and summaries; proof/VELDO-0127/factory.py keeps 0275's engines record install and landing-c's
+   VELDO-0274 slice ownership; suites 86_veldo_0186 and 88_veldo_0127 keep both sides' rows (86_0186's expected
+   runtime assets gained 0275's two installed summaries after the merge review, which found that row red); check_teeth_mutations.py
    and mutation_case_inputs.json keep every case and entry; specs/VELDO-0275 takes the 0275 branch's revised spec;
    requires.json and index.md regenerated. Checks before the commit: py_compile on changed files, engine copies
    byte-identical, template sync, and all 2941 registered mutation anchors occur exactly once.
