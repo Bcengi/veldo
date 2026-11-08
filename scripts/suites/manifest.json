@@ -1811,7 +1811,7 @@
    "requires": [
     "128_veldo_0247_check_join"
    ],
-   "regions": "Check and join steps and parallel branches (VELDO-0247): the check's closed configuration refused by name at save, one branch taken per check and re-evaluated by the cycle, a forged branch refused, two assignment branches dispatched together and run in one superstep of the step runner with a join that waits for all its inputs, fan-outs bounded at eight, and the owner approval rule on every path through checks, branches and joins.",
+   "regions": "Check and join steps and parallel branches (VELDO-0247): the check's closed configuration refused by name at save, one branch taken per check and re-evaluated by the cycle, a forged branch refused, a forged runner answer leading a branch to a land node refused by the cycle (VELDO-0262), two assignment branches dispatched together and run in one superstep of the step runner with a join that waits for all its inputs, fan-outs bounded at eight, and the owner approval rule on every path through checks, branches and joins.",
    "requires_note": "Only ROOT, expect and fast_temp. Real SQLite store with OpenSSH journal signatures, a real Git workspace and VELDO-0035 snapshot, the eligibility Gate, VELDO-0132 workflow saves and cycles on the VELDO-0045 checked step runner staged into a temporary directory. Writes only temporary fixtures."
   },
   {
