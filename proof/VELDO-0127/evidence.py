@@ -61,7 +61,7 @@ def problems(root, engine, record, handoff):
     if {(r.get('mode'), r.get('marker')) for r in runs} != {
             (m, p) for m in ('always', 'deferred') for p in (False, True)} or len(runs) != 4:
         return bad + ['both roles need baseline and marker runs']
-    qualification = json.loads((Path(root) / '.veldo/runtime' / (engine + '-qualification.json')).read_text())
+    qualification = json.loads((Path(root) / '.veldo/runtime' / (engine + '-tables.json')).read_text())
     engines = json.loads((Path(root) / '.veldo/runtime/engines.json').read_text())
     pinned = (qualification['versions'][engines['claude_code']['version']]['sha256'] if engine == 'claude'
               else qualification['sha256'])

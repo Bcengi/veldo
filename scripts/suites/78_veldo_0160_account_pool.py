@@ -247,6 +247,12 @@ def _v160_suite():
         fake = '''#!%s -B
 import json, os, sys, time
 from pathlib import Path
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance, on a ChatGPT login; the qualified Codex binary prints its
     # login status on stderr.
@@ -277,6 +283,9 @@ def stream_input():
                                    'pid': os.getpid()}}}
             sys.stdout.write(json.dumps(complete_event(answer)) + chr(10))
             sys.stdout.flush()
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            sys.stdout.write(json.dumps(complete_event({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})) + chr(10)); sys.stdout.flush()
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}
@@ -326,10 +335,10 @@ sys.exit(payload.get('code', 0))
             claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names, and its stream reader's tables.
-            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                 .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
@@ -344,7 +353,7 @@ sys.exit(payload.get('code', 0))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o755)
         CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
-        codex_qualification = base / 'codex-qualification.json'
+        codex_qualification = base / 'codex-tables.json'
         if hasattr(CODEX_ENGINE, 'qualification'):
             codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
         config = base / 'receiver.json'
@@ -2105,7 +2114,7 @@ sys.exit(payload.get('code', 0))
             # VELDO-0230: the reader's tables follow the qualified binary (qualify writes them into its record); a message
             # or a frame a newer binary brings that its evaluation does not grant is withheld, and the record lists it.
             withheld = {(item['kind'], item['name']) for item in json.loads(
-                (ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())['versions'][CLAUDE_VERSION]
+                (ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_text())['versions'][CLAUDE_VERSION]
                 .get('new_capabilities') or () if item.get('decision') != 'granted'}
             named = lambda pair: '/'.join(part for part in pair if part is not None)
             claude_tables = {'messages': {tuple(m) for m in CFORMS.get('messages') or ()

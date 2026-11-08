@@ -325,6 +325,12 @@ def login(effective):
         return json.loads((home / 'auth.json').read_text()).get('auth_mode')
     except (OSError, ValueError):
         return None
+if '--ephemeral' in argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if argv[:2] == ['login', 'status']:
     effective = merge(user_config(), overrides(argv[2:]))
     kind = login(effective)
@@ -407,7 +413,7 @@ out.close()
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake)
         CODEX_BIN.chmod(0o755)
-        record_path = base / 'codex-qualification.json'
+        record_path = base / 'codex-tables.json'
         codex_record, _ = attempt(lambda: X.qualification(str(CODEX_BIN)))
         record_path.write_text(json.dumps(codex_record or {}))
         unqualified_path = base / 'codex-unqualified.json'
@@ -618,7 +624,7 @@ out.close()
             check('baseline/qualified', 'the generated configuration is kept in the run\'s own configuration directory, '
                   'as passed [%s]' % reported(normal_launch).get('files'),
                   reported(normal_launch).get('files') == ['config.toml'])
-            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'codex-qualification.json').read_text())
+            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'codex-tables.json').read_text())
             base_line = shipped.get('baseline') or {}
             check('baseline/qualified', 'the shipped record qualifies the binary with the module\'s baseline, '
                   'every option and key in it the binary\'s own [%s]' % base_line,
@@ -721,7 +727,7 @@ out.close()
 
         with region('baseline/connectors-off'):
             features = TABLE.get('features') or {}
-            shipped_options = ((json.loads((ROOT / 'engine' / 'runtime' / 'codex-qualification.json').read_text())
+            shipped_options = ((json.loads((ROOT / 'engine' / 'runtime' / 'codex-tables.json').read_text())
                                 .get('baseline') or {}).get('options') or [])
             pairs = list(zip(argv, argv[1:]))
             check('baseline/connectors-off', 'the launch and the shipped record carry --disable apps, the apps feature '

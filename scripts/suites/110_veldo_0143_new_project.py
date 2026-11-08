@@ -2243,7 +2243,12 @@ if '--input-format' in sys.argv:
     assert opening['type'] == 'control_request'
     emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
           'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
-    packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
+    message = json.loads(sys.stdin.readline())
+    while message.get('shouldQuery') is False:
+        # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+        emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})
+        message = json.loads(sys.stdin.readline())
+    packet = json.loads(message['message']['content'])
 else:
     packet = json.load(sys.stdin)
 Path(sys.argv[2]).write_text(json.dumps(packet))

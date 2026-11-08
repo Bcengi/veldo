@@ -7754,9 +7754,9 @@ def cases():
     # AC1 (declared falsifier): executable binding skipped after the pinned copy's digest changes.
     claude('claude-pin-digest-unchecked', 'control_engine_claude.py',
            "    if _file_digest(path) != entry['sha256']:\n"
-           "        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')\n",
+           "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
            "    if False:  # defect: the pinned copy's digest is not checked before the launch\n"
-           "        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')\n",
+           "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
            'pin/unexpected-launch')
     claude('claude-binding-skipped', 'control_launch.py',
            "        if module is None:\n            return None\n        try:\n            bound = module.bind(",
@@ -7788,7 +7788,7 @@ def cases():
            "        if False:  # defect: the copy's digest is not checked\n",
            'pin/copy')
     claude('claude-qualification-not-installed', 'init_scaffold.py',
-           '_RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude-qualification.json")]\n',
+           '_RUNTIME_ASSETS += [("runtime/claude-tables.json", ".veldo/runtime/claude-tables.json")]\n',
            '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid beside the engine module\n',
            'pin/shipped-qualification')
     claude('claude-lifecycle-stop-unregistered', 'control_engine_claude.py',
@@ -7942,8 +7942,8 @@ def cases():
             "            return None\n        try:\n            bound = module.bind(",
             'pin/unexpected-launch')
     adapter('adapter-version-unbound', 'control_engine_codex.py',
-            "    if manifest.get('version') != record['package_version']:\n",
-            "    if False:  # defect: another version of the package is launched\n",
+            "    if (manifest.get('version') != record['package_version']\n",
+            "    if (False  # defect: another version of the package is launched\n",
             'pin/unexpected-launch')
     adapter('adapter-link-accepted', 'control_engine_codex.py',
             "    if os.path.realpath(executable) != os.path.normpath(executable):\n",
@@ -8059,7 +8059,7 @@ def cases():
             "FLAGS = ('exec', '--json')  # defect: the binary's own startup update check stays on\n",
             'pin/qualified-record')
     adapter('adapter-qualification-not-scaffolded', 'init_scaffold.py',
-            '_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]\n',
+            '_RUNTIME_ASSETS += [("runtime/codex-tables.json", ".veldo/runtime/codex-tables.json")]\n',
             '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid down\n',
             'pin/qualified-record')
     # Integration review: a stopped Codex invocation is judged as Claude Code's is, whatever it printed and
@@ -8769,7 +8769,7 @@ def cases():
 
     extracted165 = set()
     for engine165 in ('claude', 'codex'):
-        record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-qualification.json')).read_text())
+        record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-tables.json')).read_text())
         engines165 = json.loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
         entry165 = (record165['versions'][engines165['claude_code']['version']] if engine165 == 'claude'
                     else record165)
@@ -9790,7 +9790,8 @@ def cases():
         '                    self.first_turn_context = None', ['launch/instructions'])
     # VELDO-0127 live qualification: what the real engines accept and report, which the fakes now follow.
     add(127, 'role127-probe-withheld', suite127, 'control_engine_claude.py',
-        "            self.probed = True\n            return (json.dumps(PROBE) + '\\n').encode()\n",
+        "            self.probed = True\n            self.probe_deadline = time.monotonic() + PROBE_SECONDS\n"
+        "            return (json.dumps(PROBE) + '\\n').encode()\n",
         "            return None  # defect: the prompt waits for an init the engine reports only for a message\n",
         ['handoff/claude'])
     add(127, 'role127-probe-content', suite127, 'control_engine_claude.py',
@@ -9860,8 +9861,8 @@ def cases():
         "            if self.require_prompt and (not self.prompt_written or decoded['num_turns'] == 0):",
         "            if False:", ['review/probe-terminal'])
     add(127, 'role127-prompt-write-failure-swallowed', suite127, 'control_launch.py',
-        "                and (input_failed.is_set() or not metering.terminal.prompt_written)):",
-        "                and False):", ['review/probe-terminal'])
+        "                and (input_failed.is_set() or not metering.terminal.prompt_written)\n",
+        "                and False\n", ['review/probe-terminal'])
     add(127, 'role127-init-unbounded', suite127, 'control_engine_claude.py',
         "                self.init_deadline = time.monotonic() + 5",
         "                self.init_deadline = time.monotonic() + 90", ['review/init-bound'])
@@ -9950,8 +9951,8 @@ def cases():
         '            if recorded != engines:',
         '            if False:', ['engines/refuse-record'], [])
     add(189, 'upgrade189-codex-refusal-differs', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_engines.py',
-        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code\n        raise Refused(code) from None",
-        '        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused(error.code) from None', ['engines/codex-refusal'], [])
+        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused(error.code) from None",
+        "        return report\n    except (claude.Refused, codex.Refused) as error:\n        raise Refused('stale_subject:engine_digest' if error.code == 'engine_not_approved' else error.code) from None", ['engines/codex-refusal'], [])
     add(189, 'upgrade189-repair-reported-done', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup_upgrade.py',
         "        wrote = report.get('pins_made', 0) or report.get('engines_record')",
         '        wrote = False', ['engines/repair-report'], [])
@@ -10054,8 +10055,8 @@ def cases():
     add(186, 'setup186-python-only', '86_veldo_0186_setup_assets.py', 'control_service.py', "        for name, data in laid['assets'].items():", '        for name, data in {}.items():', ['runtime/assets', 'bind/engines'], [])
     add(186, 'setup186-skip-claude-pin', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        pinned = claude.pin(plan['claude_code']['version'], versions=plan['claude_code']['versions'],\n                            state_root=state_root)", "        pinned = dict(engine='claude_code', version=plan['claude_code']['version'],\n                      path=str(claude.pinned_path(state_root, plan['claude_code']['version'])),\n                      sha256=claude.qualified(plan['claude_code']['version'])['sha256'])", ['bind/engines'], [])
     add(186, 'setup186-missing-runtime-ignored', '86_veldo_0186_setup_assets.py', 'control_service.py', "            raise Refused('missing_evidence:runtime_asset:' + name, str(source / name)) from None", '            continue', ['runtime/missing'], [])
-    add(186, 'setup186-claude-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "            raise Refused('missing_evidence:engine_baseline:' + version)", "            raise Refused('invalid_input:engine_version:' + version)", ['engines/unlisted'], [])
-    add(186, 'setup186-codex-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "            raise Refused('missing_evidence:engine_baseline:' + str(manifest.get('version')))", "            raise Refused('stale_subject:engine_version')", ['engines/unlisted'], [])
+    add(186, 'setup186-claude-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if version not in record['versions']:\n            raise Refused('engine_not_approved')", "        if version not in record['versions']:\n            raise Refused('invalid_input:engine_version:' + version)", ['engines/unlisted'], [])
+    add(186, 'setup186-codex-unlisted-taxonomy', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if (manifest or {}).get('version') != record['package_version']:\n            raise Refused('engine_not_approved')", "        if (manifest or {}).get('version') != record['package_version']:\n            raise Refused('stale_subject:engine_version')", ['engines/unlisted'], [])
     add(186, 'setup186-claude-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        if claude._file_digest(paths['claude_code']) != entry['sha256']:", '        if False:', ['engines/digest'], [])
     add(186, 'setup186-codex-digest-unchecked', '86_veldo_0186_setup_assets.py', 'control_factory_setup_engines.py', "        bound = codex.bind({'executable': vendor})", "        bound = {'sha256': record['sha256']}", ['engines/digest'], [])
 
@@ -12094,7 +12095,7 @@ def cases():
     # Suite 125's row drives qualify.py's main on recorded readings (seconds); suite 126's qualify/covers runs
     # the real binaries end to end (86 to 119 s), too near the mutation worker's unmeasured 120 s floor.
     add(230, 'qualify230-claude-record-unwritten', census230, 'qualify.py',
-        "    write(root, 'claude-qualification.json', text(claude_qualification), written)\n",
+        "    write(stage, 'claude-tables.json', text(claude_qualification), staged)\n",
         "    pass  # defect: the Claude Code record is not written\n", ['qualify/claude-record-written'])
     add(230, 'qualify230-granted-feature-off', '88_veldo_0127_feature_defaults.py', 'control_agent_config_handoff.py',
         "        if feature in granted and feature not in CODEX_FEATURE_GRANTS and feature not in CODEX_FEATURES_UNGRANTED:\n",
@@ -12225,7 +12226,8 @@ def cases():
         ['ac2/declared-base'])
     result[-1]['dir'] = 'scripts'
     add(259, 'writers259-home-kept', install259, 'qualify.py',
-        "        (here / name).write_text(home_as_tilde(content))\n", "        (here / name).write_text(content)\n",
+        "        (stage / FIXTURES / name).write_text(home_as_tilde(content))\n",
+        "        (stage / FIXTURES / name).write_text(content)\n",
         ['writers/home-as-tilde'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
@@ -12907,6 +12909,67 @@ def cases():
         "        raise Refused(leftover[0], ', '.join(leftover), leftover)\n",
         ['upgrade/retires-langgraph', 'setup/leftover-refused'])
     result[-1]['timeout'] = 900
+
+    # VELDO-0275 AC1: runs use only the approved engine version, pinned by digest. (1) The launch or setup picks
+    # the newest installed version: the stays-on-approved row goes red; (2) the digest check is skipped: the
+    # changed-bytes row goes red.
+    def approved275(name, module, old, new, row):
+        add(275, name, '130_veldo_0275_approved_engine.py', module, old, new, ['approved/' + row])
+
+    approved275('approved275-claude-newest-installed', 'control_factory_setup_engines.py',
+                "    if not path.is_absolute() or not path.is_file():\n"
+                "        raise Refused('missing_evidence:engine_source:claude_code')\n    return path\n",
+                "    if not path.is_absolute() or not path.is_file():\n"
+                "        raise Refused('missing_evidence:engine_source:claude_code')\n"
+                "    return max(path.parent.iterdir(), key=lambda p: p.name)  # defect: the newest installed version\n",
+                'stays-on-approved')
+    approved275('approved275-codex-newest-installed', 'control_factory_setup_engines.py',
+                "    for path in present:\n        if codex._file_digest(path) == record['sha256']:\n            return path\n",
+                "    return max(present, key=lambda path: str((codex._package(path)[1] or {}).get('version')))"
+                "  # defect: the newest installed binary\n",
+                'stays-on-approved')
+    # Fix round 3: the PATH codex's candidate tried before the engines record's kept copy (the order fix 1 restored).
+    approved275('approved275-codex-path-first', 'control_factory_setup_engines.py',
+                "            candidates.append(package / record['executable'])\n",
+                "            candidates.insert(0, package / record['executable'])  # defect: PATH before the kept copy\n",
+                'stays-on-approved')
+    approved275('approved275-claude-digest-skipped', 'control_engine_claude.py',
+                "    if _file_digest(path) != entry['sha256']:\n"
+                "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
+                "    if False:  # defect: the pinned copy's digest is not checked\n"
+                "        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')\n",
+                'changed-bytes')
+    approved275('approved275-codex-digest-skipped', 'control_engine_codex.py',
+                "    if digest != record['sha256']:\n        raise Refused('engine_not_approved')\n",
+                "    if False:  # defect: the binary's digest is not checked\n        raise Refused('engine_not_approved')\n",
+                'changed-bytes')
+
+    # VELDO-0275 AC3: every launch starts with a stream probe. The launch skips the probe for an approved version
+    # (Claude Code's Guard probes only a role-bound run, as before; the receiver never runs Codex's): the
+    # unknown-frame row goes red.
+    add(275, 'probe275-claude-skipped', '131_veldo_0275_stream_probe.py', 'control_engine_claude.py',
+        "        if not self.probed:\n            self.probed = True\n",
+        "        if not self.probed and self.expected is not None:  # defect: only a role-bound launch is probed\n"
+        "            self.probed = True\n",
+        ['probe/unknown-frame'])
+    add(275, 'probe275-codex-skipped', '131_veldo_0275_stream_probe.py', 'control_launch.py',
+        "        probe = getattr(module, 'stream_probe', None)\n",
+        "        probe = None  # defect: the receiver skips the stream probe\n",
+        ['probe/unknown-frame'])
+    # The receiver holds the prompt only for a role-bound Claude Code launch, as before: the receiver-driven
+    # probe/every-launch row of suite 82 0129 (a role-free launch, its end-of-run handling) goes red.
+    add(275, 'probe275-claude-hold-role-bound', '82_veldo_0129_worker_wiring.py', 'control_launch.py',
+        "        if self.engine.PROVIDER == 'claude_code':\n"
+        "            # VELDO-0275 AC3: every Claude Code launch runs the stream probe before its prompt, so its result frame\n"
+        "            # is the probe's, never the run's terminal one.\n"
+        "            self.terminal.hold_prompt()\n"
+        "            if receiver.binding.get('expected'):\n"
+        "                self.login_guard.expected = receiver.binding['expected']\n",
+        "        if receiver.binding.get('expected') and self.engine.PROVIDER == 'claude_code':"
+        "  # defect: only a role-bound launch holds its prompt\n"
+        "            self.login_guard.expected = receiver.binding['expected']\n"
+        "            self.terminal.hold_prompt()\n",
+        ['probe/every-launch'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

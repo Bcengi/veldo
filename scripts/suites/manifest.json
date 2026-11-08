@@ -1661,7 +1661,7 @@
    "requires": [
     "126_veldo_0230_qualify_reproduces"
    ],
-   "regions": "Four rows (VELDO-0230 AC2, AC3): qualify/builtin-plugins, against a fake Claude Code whose bytes register built-in plugins its logged-out init probe does not load, discovery finds every registered one, each new one is listed with its evaluation, a granted one is accepted in the init comparison present or absent and the rest turned off, and an unlisted plugin still stops the run; qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).; qualify/gate-reads, every binary the engines record names lies beneath an optional_read_roots entry of scripts/agent_sandbox.json and of its engine canon, so the gate's confinement and its mutation workers can run the qualified binaries",
+   "regions": "Five rows (VELDO-0230 AC2, AC3; VELDO-0275 AC1): qualify/failed-approves-nothing, a qualify run whose late loopback check fails exits nonzero and leaves the live engines record, tables, summaries and fixtures unchanged; qualify/builtin-plugins, against a fake Claude Code whose bytes register built-in plugins its logged-out init probe does not load, discovery finds every registered one, each new one is listed with its evaluation, a granted one is accepted in the init comparison present or absent and the rest turned off, and an unlisted plugin still stops the run; qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).; qualify/gate-reads, every binary the engines record names lies beneath an optional_read_roots entry of scripts/agent_sandbox.json and of its engine canon, so the gate's confinement and its mutation workers can run the qualified binaries",
    "requires_note": "Only ROOT and expect. Copies .veldo, engine/runtime, packs and the extractor and VELDO-0127 proof directories into scratch and runs the copy's qualify command there; runs the qualified binaries offline in empty profiles (extractor reads, features list, bundled catalog, loopback capture, Claude Code init probe). Writes only temporary files."
   },
   {
@@ -1834,6 +1834,24 @@
    ],
    "regions": "Veldo's own step runner replacing the LangGraph runtime (VELDO-0262): the exchange corpus recorded on the LangGraph runner replayed on the step runner byte for byte apart from the runtime label and twice identically, the runner's plain imports and statically read label, two assignment branches in one superstep with a join that waits for all its inputs, a branch's private view, permuted branch names giving identical bytes, nine branches refused, nothing of the removed runtime left in the repository, a scaffold refusing leftover_runtime before writing and the upgrade retiring the runtime following no link, the child launched -I -S -B importing only the standard library, and the exchange observations.",
    "requires_note": "Only ROOT and expect. The step runner through the production adapter in real child processes, proof/VELDO-0262/corpus.py and its recorded corpus, init_scaffold over temporary targets and account homes, and git ls-files over the repository. Writes only temporary files."
+  },
+  {
+   "name": "130_veldo_0275_approved_engine",
+   "file": "130_veldo_0275_approved_engine.py",
+   "requires": [
+    "130_veldo_0275_approved_engine"
+   ],
+   "regions": "Runs using only the approved engine version, pinned by digest (VELDO-0275 AC1): with a newer Claude Code and Codex installed and on PATH, setup's check resolves the approved Claude Code version and the approved Codex binary the engines record names, the approved version pins and binds, and a launch naming the newer version or binary is refused engine_not_approved; the approved pinned copy and Codex binary with bytes changed after approval are refused engine_not_approved at binding and at setup; init installs every qualification summary the installed engines record names.",
+   "requires_note": "Only ROOT and expect. A temporary .veldo copy with the production modules laid over it, its runtime holding the engines record and the two qualification records re-keyed to small fake approved binaries (the shipped records' entries), fake newer versions on a PATH the suite prepends and restores in a finally block. Nothing is executed; writes only temporary files."
+  },
+  {
+   "name": "131_veldo_0275_stream_probe",
+   "file": "131_veldo_0275_stream_probe.py",
+   "requires": [
+    "131_veldo_0275_stream_probe"
+   ],
+   "regions": "Every launch starting with a stream probe read by the run's own stream reader (VELDO-0275 AC3): a fake Claude Code driven as the receiver drives it, whose zero-turn probe prints a frame of an unknown type or draws no result frame, is stopped stream_probe_failed with that frame kept and its prompt never written, and one answering in today's format gets its prompt once after the probe's result on a role-free launch; a fake Codex whose one-turn probe (the receiver's step before acceptance) prints an unknown frame or no terminal frame is refused stream_probe_failed with the frame in the event, and one in today's format proceeds with one line naming the engine, binary, version and the parsed probe.",
+   "requires_note": "Only ROOT and expect. A temporary .veldo copy with the production modules laid over it; small fake Claude Code and Codex programs run as real processes (the Codex one inside a fake @openai/codex package). Writes only temporary files."
   }
  ],
  "resource_capacities": {

@@ -43,8 +43,8 @@ def qualified(root):
     """What is qualified, from the generated files: {versions, digests, paths, slugs, tools, features, lines}."""
     runtime = Path(root) / '.veldo' / 'runtime'
     engines = json.loads((runtime / 'engines.json').read_text())
-    codex = json.loads((runtime / 'codex-qualification.json').read_text())
-    claude = json.loads((runtime / 'claude-qualification.json').read_text())
+    codex = json.loads((runtime / 'codex-tables.json').read_text())
+    claude = json.loads((runtime / 'claude-tables.json').read_text())
     entry = claude['versions'][engines['claude_code']['version']]
     versions = {engines['codex']['version'], engines['codex']['package_version'], engines['claude_code']['version']}
     digests = {engines['codex']['sha256'], engines['claude_code']['sha256'], codex.get('model_catalog_digest') or ''}
@@ -55,7 +55,7 @@ def qualified(root):
         paths |= {named, home + named[1:] if named.startswith('~/') else named}
     listing = [line for line in (codex.get('feature_listing') or '').splitlines() if line.strip()]
     return {'versions': sorted(versions), 'digests': sorted(d.split(':', 1)[-1][:16] for d in digests if d),
-            'paths': sorted(paths), 'slugs': {m['slug'] for m in (codex.get('model_catalog') or {}).get('models', [])},
+            'paths': sorted(paths), 'slugs': set(codex.get('model_tool_modes') or {}),
             'plugins': set(entry.get('engine_plugins') or ()),
             'builtins': set(entry.get('engine_plugins') or ()) | set(entry.get('engine_skills') or ()),
             'tools': set(entry.get('tool_registry') or ()), 'features': {line.split()[0] for line in listing},

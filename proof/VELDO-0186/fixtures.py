@@ -27,7 +27,7 @@ def install(root, base, mods):
     source.write_text(fake)
     source.chmod(0o755)
     record['versions'][version]['sha256'] = claude._file_digest(source)
-    (mods / 'runtime/claude-qualification.json').write_text(json.dumps(record))
+    (mods / 'runtime/claude-tables.json').write_text(json.dumps(record))
     package = base / 'package'
     vendor = package / 'vendor/fixture/codex'
     vendor.parent.mkdir(parents=True)
@@ -39,10 +39,10 @@ def install(root, base, mods):
     qualification = codex.qualification(str(vendor))
     # VELDO-0230: the qualified binary's bundled catalog, as the shipped record holds it, with its digest and the
     # model tool modes the writer derives from it (codex.catalog_modes), never copied apart from their catalog.
-    catalog = json.loads((root / '.veldo/runtime/codex-qualification.json').read_text())['model_catalog']
+    catalog = json.loads((root / 'proof/VELDO-0127/catalog-fixture.json').read_text())  # VELDO-0275: the bundled catalog
     qualification.update(model_catalog=catalog, model_catalog_digest=codex.catalog_digest(catalog),
                          model_tool_modes=codex.catalog_modes(catalog))
-    (mods / 'runtime/codex-qualification.json').write_text(json.dumps(qualification))
+    (mods / 'runtime/codex-tables.json').write_text(json.dumps(qualification))
     shim = package / 'bin/codex.js'
     shim.parent.mkdir()
     shim.write_text('installation fixture shim; must not execute\n')

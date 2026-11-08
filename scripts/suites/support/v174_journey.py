@@ -50,6 +50,12 @@ def opts():
             result[key] = tomllib.loads('x=' + value)['x']
     return result
 if ENGINE == 'codex':
+    if '--ephemeral' in args:
+        # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+        sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+        sys.stdout.write('{"type": "turn.started"}' + chr(10))
+        sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+        sys.exit(0)
     if args[:2] == ['login','status']:
         print('Logged in using ChatGPT'); sys.exit(0)
     cfg = opts()
@@ -135,10 +141,10 @@ def engines(root, f, CS):
         if provider == 'claude_code':
             version = engines['claude_code']['version']; versions = f['root'] / 'versions'; versions.mkdir()
             executable = versions / version; executable.write_text(source); executable.chmod(0o755)
-            shipped = json.loads((root / '.veldo/runtime/claude-qualification.json').read_text())['versions'][version]
+            shipped = json.loads((root / '.veldo/runtime/claude-tables.json').read_text())['versions'][version]
             entry = dict(shipped, sha256='sha256:'+hashlib.sha256(executable.read_bytes()).hexdigest(),
                          session_environment=module.session_environment(executable))
-            (mods / 'runtime/claude-qualification.json').write_text(json.dumps({'schema':'veldo.engine_qualification/v1',
+            (mods / 'runtime/claude-tables.json').write_text(json.dumps({'schema':'veldo.engine_qualification/v1',
                            'engine':provider,'versions':{version:entry}}))
             module.pin(version, versions=str(versions), state_root=str(state))
             adapters[provider] = {'engine':provider,'identity':'reported','executable':{'version':version},'argv':wrapper}
@@ -154,7 +160,7 @@ def engines(root, f, CS):
             qualified.update(feature_listing='shell_tool stable true\n',model_catalog=catalog,
                              model_catalog_digest=module.catalog_digest(catalog),
                              model_tool_modes=module.catalog_modes(catalog))
-            qualification = mods / 'runtime/codex-qualification.json'; qualification.write_text(json.dumps(qualified))
+            qualification = mods / 'runtime/codex-tables.json'; qualification.write_text(json.dumps(qualified))
             adapters[provider] = {'engine':provider,'identity':'reported','executable':str(executable),
                 'qualification':str(qualification),'argv':wrapper+[str(executable)]+list(module.FLAGS)}
     authority = f['authority']

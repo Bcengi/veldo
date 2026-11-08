@@ -303,7 +303,11 @@ def claude(extra, capability, inventory, config, *, engine):
 def codex_model(bound, revision):
     """Use only the digest-bound bundled entry; never substitute a model."""
     model = revision['settings'].get('model')
-    catalog = bound.get('model_catalog')
+    # VELDO-0275 AC1: the approved binary's own catalog, held to the digest its reviewed tables keep.
+    try:
+        catalog = X.model_catalog(bound)
+    except X.Refused:
+        catalog = None
     entries = catalog.get('models', []) if isinstance(catalog, dict) else []
     entry = next((m for m in entries if m.get('slug') == model), None)
     if (not entry or bound.get('model_catalog_digest') != X.catalog_digest(catalog)

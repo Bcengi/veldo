@@ -1,0 +1,59 @@
+{
+ "checks": [
+  {
+   "duration_s": 35.5,
+   "name": "proof/VELDO-0062/extract_formats.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 3.8,
+   "name": "proof/VELDO-0061/extract_items.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 8.2,
+   "name": "proof/VELDO-0141/extract_stream.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 1.9,
+   "name": "proof/VELDO-0156/extract_baseline.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 0.5,
+   "name": "proof/VELDO-0156/render_offline.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 9.1,
+   "name": "proof/VELDO-0156/capture_mentions.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 10.3,
+   "name": "proof/VELDO-0165/extract_environment.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 0.7,
+   "name": "codex record: package, flags, baseline, features list, bundled catalog",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 9.0,
+   "name": "codex loopback requests (VELDO-0127 fixtures, resource readers, undelivered grants)",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 0.1,
+   "name": "tables load as a launch reads them",
+   "outcome": "pass"
+  }
+ ],
+ "engine": "codex",
+ "schema": "veldo.engine_summary/v1",
+ "sha256": "sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8",
+ "verdict": "approved",
+ "version": "0.166.0"
+}

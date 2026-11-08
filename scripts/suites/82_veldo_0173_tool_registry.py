@@ -293,17 +293,17 @@ sys.exit(payload.get('code', 0))
         (versions / VERSION).chmod(0o755)
         # This installation's record: the fake's digest, the qualified flags, baseline and session names of
         # the version, and (VELDO-0173) the shipped record's tool registry and classification.
-        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())
+        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_text())
         shipped_entry = shipped['versions'][VERSION]
         entry = {'sha256': 'sha256:' + hashlib.sha256((versions / VERSION).read_bytes()).hexdigest(),
                  'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
                  'environment': {'DISABLE_AUTOUPDATER': '1'}, 'baseline': E.BASELINE,
                  'session_environment': E.session_environment(versions / VERSION)}
         # VELDO-0230: and its built-in plugins and skills, which a role-bound run turns off.
-        for key in ('tool_registry', 'tool_classification', 'engine_plugins', 'engine_skills', 'limit_names'):
+        for key in ('tool_registry', 'tool_classification', 'engine_plugins', 'engine_skills', 'limit_names', 'stream_forms'):
             if key in shipped_entry:
                 entry[key] = shipped_entry[key]
-        record_path = mods / 'runtime' / 'claude-qualification.json'
+        record_path = mods / 'runtime' / 'claude-tables.json'
         (mods / 'runtime').mkdir()
         record_path.write_text(json.dumps({'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code',
                                            'versions': {VERSION: entry}}))

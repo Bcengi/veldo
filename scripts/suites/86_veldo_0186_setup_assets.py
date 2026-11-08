@@ -122,7 +122,7 @@ def _v186_suite():
         installed = Path(report.get('home', home / 'absent')) / 'bin'
         config_path = installed.parent / 'config/service.json'
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
-        expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/engines.json',
+        expected = ['runtime/claude-tables.json', 'runtime/codex-tables.json', 'runtime/engines.json',
                     'runtime/future.json', 'runtime/nested/future.json']
         for name in expected:
             target = installed / name
@@ -188,7 +188,7 @@ def _v186_suite():
                     adapter = {'executable': {'version': engines['version']} if engine == 'claude_code' else str(source)}
                     result, error = attempt(lambda: worker._bind(adapter, 'changed-engine'))
                     check('metrics/binds', engine + ' refused bind counted once: ' + str((result, error, events[-1:])), error is None
-                          and result in ('binding_mismatch:engine_digest', 'stale_subject:engine_digest')
+                          and result == 'engine_not_approved'
                           and len(events) > 0 and events[-1].get('engine') == engine
                           and events[-1].get('refusal') == result
                           and events[-1].get('metrics', {}).get('binds_refused') == 1)
@@ -247,7 +247,7 @@ def _v186_suite():
             _home, neg_args, neg_kwargs = fresh()
             _result, error = attempt(lambda: F.setup(*neg_args, **neg_kwargs))
             check('engines/unlisted', engine + ' unknown version refused before writing: ' + str(error),
-                  error == 'missing_evidence:engine_baseline:9.9.9' and not list(Path(neg_args[0]).iterdir()))
+                  error == 'engine_not_approved' and not list(Path(neg_args[0]).iterdir()))
             if engine == 'claude_code':
                 point_claude(engines['source'])
             else:
@@ -258,7 +258,7 @@ def _v186_suite():
             _home, neg_args, neg_kwargs = fresh()
             _result, error = attempt(lambda: F.setup(*neg_args, **neg_kwargs))
             check('engines/digest', engine + ' changed digest refused before writing: ' + str(error),
-                  error == 'binding_mismatch:engine_digest' and not list(Path(neg_args[0]).iterdir()))
+                  error == 'engine_not_approved' and not list(Path(neg_args[0]).iterdir()))
             source.write_bytes(original)
     except Exception as error:
         # Infrastructure errors cannot masquerade as successful red proof.

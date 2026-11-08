@@ -313,6 +313,12 @@ def _v62_suite():
         fake = '''#!%s -B
 import json, os, sqlite3, sys, time
 from pathlib import Path
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
     print('Logged in using ChatGPT', file=sys.stderr)
@@ -359,6 +365,9 @@ def stream_input():
                            apiProvider='firstParty')
             say({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
                                                           'response': {'account': account, 'pid': os.getpid()}}})
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            say({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}
@@ -392,7 +401,7 @@ sys.exit(payload.get('code', 0))
             'store, markers, domain = %r, Path(%r), %r' % (str(db), str(markers), DOMAIN)))
         (versions / CLAUDE_VERSION).chmod(0o755)
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps({
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps({
             'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code', 'versions': {CLAUDE_VERSION: {
                 'sha256': 'sha256:' + hashlib.sha256((versions / CLAUDE_VERSION).read_bytes()).hexdigest(),
                 'flags': ['--print', '--output-format', 'stream-json', '--verbose', '--input-format', 'stream-json'],
@@ -407,13 +416,13 @@ sys.exit(payload.get('code', 0))
         if hasattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'qualified_tools'):
             # VELDO-0173: the full tool registry and its classification, read from the pinned qualified bytes.
             tools173 = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
-            record173 = json.loads((mods / 'runtime' / 'claude-qualification.json').read_text())
+            record173 = json.loads((mods / 'runtime' / 'claude-tables.json').read_text())
             record173['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-            record173['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
-                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
-            (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(record173))
+            record173['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
+            (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(record173))
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
         if pin is not None:
             pin(CLAUDE_VERSION, versions=str(versions), state_root=str(factory))
@@ -427,7 +436,7 @@ sys.exit(payload.get('code', 0))
         vendored.write_text(fake)
         vendored.chmod(0o755)
         CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
-        codex_qualification = base / 'codex-qualification.json'
+        codex_qualification = base / 'codex-tables.json'
         if hasattr(CODEX_ENGINE, 'qualification'):
             codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
         CODEX_FLAGS = list(getattr(CODEX_ENGINE, 'FLAGS', ()))

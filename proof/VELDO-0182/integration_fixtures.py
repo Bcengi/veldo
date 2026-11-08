@@ -586,6 +586,11 @@ if sys.argv[1:3] == ['login', 'status']:
     # login status on stderr.
     sys.stderr.write('Logged in using ChatGPT' + chr(10))
     sys.exit(0)
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed one-word answer).
+    for event in ({'type': 'thread.started'}, {'type': 'turn.started'}, {'type': 'turn.completed'}):
+        sys.stdout.write(json.dumps(complete_event(event)) + chr(10))
+    sys.exit(0)
 markers = Path(MARKERS)
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 own = {'engine': ENGINE, 'pid': os.getpid(), 'dispatch': dispatch, 'started': time.time(),
@@ -616,6 +621,9 @@ def stream_input():
                       'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
                                    'pid': os.getpid()}}}
             emit(complete_event(answer))
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            emit(complete_event({'type': 'result', 'subtype': 'success', 'num_turns': 0, 'result': ''}))
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}
@@ -684,10 +692,10 @@ sys.exit(payload.get('code', 0))
             claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
-                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
@@ -702,7 +710,7 @@ sys.exit(payload.get('code', 0))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o755)
         CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
-        codex_qualification = base / 'codex-qualification.json'
+        codex_qualification = base / 'codex-tables.json'
         if hasattr(CODEX_ENGINE, 'qualification'):
             codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
         config = base / 'receiver.json'

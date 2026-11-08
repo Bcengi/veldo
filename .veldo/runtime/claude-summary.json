@@ -1,0 +1,54 @@
+{
+ "checks": [
+  {
+   "duration_s": 35.5,
+   "name": "proof/VELDO-0062/extract_formats.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 0.9,
+   "name": "proof/VELDO-0060/extract_cli.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 8.2,
+   "name": "proof/VELDO-0141/extract_stream.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 16.0,
+   "name": "proof/VELDO-0155/extract_baseline.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 10.3,
+   "name": "proof/VELDO-0165/extract_environment.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 1.0,
+   "name": "proof/VELDO-0173/extract_tools.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 0.8,
+   "name": "proof/VELDO-0185/extract_login_status.py",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 1.4,
+   "name": "claude_code record: built-in plugins and skills (init probe), tool registry, login status",
+   "outcome": "pass"
+  },
+  {
+   "duration_s": 0.1,
+   "name": "tables load as a launch reads them",
+   "outcome": "pass"
+  }
+ ],
+ "engine": "claude_code",
+ "schema": "veldo.engine_summary/v1",
+ "sha256": "sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0",
+ "verdict": "approved",
+ "version": "2.1.317"
+}

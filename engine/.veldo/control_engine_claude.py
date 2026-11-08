@@ -139,8 +139,8 @@ given (a streamed block, a tool_progress's tool, a task's last tool) may be dura
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
 THE PINNED EXECUTABLE, VELDO-0060. A Claude Code adapter names the version it runs (`executable:
-{version}`), never a path. The qualification record (QUALIFICATION, the installed
-`.veldo/runtime/claude-qualification.json` beside this module, canonical at engine/runtime/) lists each
+{version}`), never a path. The qualification record (QUALIFICATION, VELDO-0275: the reviewed tables of the
+approved version, `.veldo/runtime/claude-tables.json` beside this module, canonical at engine/runtime/) lists each
 qualified version with its digest, the flags of print mode with stream JSON output (read from the
 binary's own options, proof/VELDO-0060/cli-options.json), the environment it runs with
 (DISABLE_AUTOUPDATER, the binary's switch that turns its updater off), its terminal protocol, its
@@ -371,7 +371,7 @@ IN_RUN_TASKS = {'field': 'task_type',
 
 # STREAM TABLES (VELDO-0230 AC2). The reader's tables that follow the qualified binary are not literals here: python3
 # .veldo/qualify.py writes them, from the binary's own (cli-formats.json tool_forms), into the qualified version's
-# record (`stream_forms` in runtime/claude-qualification.json beside this module), and `stream_tables` reads them from
+# record (`stream_forms` in runtime/claude-tables.json beside this module), and `stream_tables` reads them from
 # there (each read of the record's current bytes; the module's names MESSAGES, TOOL_FREE_FRAMES, TOOL_FIELDS, NESTED,
 # IN_RUN_TOOLS, IN_RUN and IN_RUN_HOST resolve to them). A form a newer binary brings is read by its evaluation in
 # runtime/capability-decisions.json: a message or a frame it does not grant is no known message and no tool-free frame
@@ -1131,7 +1131,8 @@ class Meter:
         if kind == 'result':
             found = self._result_limit(event, seen)
             turns = event.get('num_turns')
-            if not _count(turns):
+            if not _count(turns) or turns == 0:
+                # VELDO-0275 AC3: the stream probe's result (no turn) settles no usage of the run.
                 return found
             running = _model_tokens(event.get('modelUsage'))
             if running is not None:
@@ -1195,7 +1196,7 @@ class Meter:
 
 # VELDO-0060: the pinned executable, its command line and the terminal record.
 
-QUALIFICATION = 'runtime/claude-qualification.json'
+QUALIFICATION = 'runtime/claude-tables.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The adapter registration (control_launch.ENGINE_PROTOCOL): its lifecycle operations, each with what
@@ -1243,12 +1244,14 @@ def qualification(path=None):
 
 
 def qualified(version, record=None):
-    """The qualified entry of `version`: refused by name when the record does not list it."""
+    """The qualified entry of `version`. VELDO-0275 AC1: only the approved version runs (the one version the
+    qualification record beside this module holds, written with runtime/engines.json by .veldo/qualify.py); a
+    version the record does not list is engine_not_approved, never another version installed beside it."""
     record = qualification() if record is None else record
     entry = record['versions'].get(version) if isinstance(version, str) and VERSION_TEXT.fullmatch(version) else None
     if (not isinstance(entry, dict) or not isinstance(entry.get('sha256'), str)
             or not isinstance(entry.get('flags'), list)):
-        raise Refused('invalid_input:engine_version:%s' % version, 'no qualified Claude Code version')
+        raise Refused('engine_not_approved', 'Claude Code %s is not the approved version' % version)
     return entry
 
 
@@ -1277,7 +1280,7 @@ def pin(version, *, versions, state_root, record=None):
             shutil.copyfileobj(reading, writing, 1 << 20)
         os.chmod(partial, 0o555)
         if _file_digest(partial) != entry['sha256']:
-            raise Refused('binding_mismatch:engine_digest', 'the versioned executable is not the qualified one')
+            raise Refused('engine_not_approved', 'the versioned executable is not the approved one')
         os.replace(partial, target)
     finally:
         if partial.exists():
@@ -1309,7 +1312,7 @@ def bind(adapter, state_root, record=None):
     if info.st_mode & 0o7222:
         raise Refused('binding_mismatch:engine_mode', 'the pinned executable is writable or carries a special bit')
     if _file_digest(path) != entry['sha256']:
-        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')
+        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')
     # VELDO-0155: the version is qualified with the everything-off baseline, or nothing is accepted.
     base = qualified_baseline({'version': version}, record)
     # VELDO-0173: and with its full tool registry and the classification of every registry tool.
@@ -1380,6 +1383,12 @@ TOKEN_SOURCE = 'CLAUDE_CODE_OAUTH_TOKEN'
 # next user message that queries. With no content it adds nothing to that message; the binary answers it with
 # its init event (after the selected MCP servers have connected) and a zero-turn result, before any model request.
 PROBE = {'type': 'user', 'message': {'role': 'user', 'content': []}, 'parent_tool_use_id': None, 'shouldQuery': False}
+# VELDO-0275 AC3: the stream probe every launch runs (PROBE, before the prompt): how long its result frame may take,
+# the frames of the stream protocol itself the reader classifies outside the message union, and the bound on what
+# a failed probe keeps (frames, bytes per frame).
+PROBE_SECONDS = 30
+CONTROL_FRAMES = frozenset(('control_response', 'control_request'))
+PROBE_FRAMES, PROBE_FRAME_BYTES = 16, 2048
 # The Anthropic profile store the binary reads when ANTHROPIC_CONFIG_DIR is unset (it is stripped):
 # XDG_CONFIG_HOME/anthropic, else HOME/.config/anthropic; the active profile named by its active_config
 # file, else `default`; a profile of either type below logs a run in ahead of the claude.ai login.
@@ -1694,6 +1703,9 @@ class Guard:
         self.builtin_commands = ()
         self.init_deadline = None
         self.probe_result = None
+        self.probe_deadline = None
+        self.probe_frames = []
+        self.probe_failure = None
 
     def opening(self, prompt):
         """(bytes, close): the initialize control request, written at once with the engine's input left open;
@@ -1703,17 +1715,19 @@ class Guard:
         return (json.dumps(request) + '\n').encode(), False
 
     def release(self):
-        """The next input to write after a confirmed subscription login and with no stop, else None: for a
-        role-bound run (`expected` set, VELDO-0127) first the capability PROBE, once, and the prompt only after
-        the init event it draws matches; then the prompt as the user message of stream JSON input, once.
-        `released` is true once the prompt itself is returned, the input's last write."""
+        """The next input to write after a confirmed subscription login and with no stop, else None: first the
+        zero-turn PROBE, once, on every launch (VELDO-0275 AC3: the stream probe; for a role-bound run, `expected`
+        set, VELDO-0127, also the capability probe), and the prompt only after its result frame came back and,
+        role-bound, the init event it draws matches; then the prompt as the user message of stream JSON input,
+        once. `released` is true once the prompt itself is returned, the input's last write."""
         if not self.confirmed or self.stop is not None or self.prompt is None or self.released:
             return None
-        if self.expected is not None and (not self.capabilities_confirmed or self.probe_result is None):
-            if self.probed:
-                return None
+        if not self.probed:
             self.probed = True
+            self.probe_deadline = time.monotonic() + PROBE_SECONDS
             return (json.dumps(PROBE) + '\n').encode()
+        if self.probe_result is None or (self.expected is not None and not self.capabilities_confirmed):
+            return None
         self.released = True
         message = {'type': 'user', 'message': {'role': 'user', 'content': self.prompt.decode('utf-8', 'replace')},
                    'parent_tool_use_id': None}
@@ -1768,18 +1782,65 @@ class Guard:
                 and not self.released and self.stop is None):
             self.stop = 'configuration_stop:init_missing'
             return self.stop
+        # VELDO-0275 AC3: a probe that draws no result frame in time refuses the launch.
+        if (self.probe_deadline is not None and now >= self.probe_deadline and self.probe_result is None
+                and not self.released and self.stop is None):
+            return self._probe_failed('missing_result', None)
+        return None
+
+    def ended(self):
+        """VELDO-0275 AC3: the engine's output ended. A probe that drew no result frame by then fails
+        (stream_probe_failed, missing_result); None otherwise."""
+        if self.probed and self.probe_result is None and not self.released and self.stop is None:
+            return self._probe_failed('missing_result', None)
+        return None
+
+    def _probe_failed(self, reason, line):
+        """VELDO-0275 AC3: the stream probe failed: the launch is refused as stream_probe_failed, with the frame
+        (bounded) and the frames the probe read before it kept for the run's evidence."""
+        frame = None if line is None else line[:PROBE_FRAME_BYTES].decode('utf-8', 'replace')
+        self.probe_failure = {'reason': reason, 'frame': frame, 'frames': list(self.probe_frames)}
+        self.stop = 'stream_probe_failed'
+        return self.stop
+
+    def _probe_frame(self, line, event):
+        """VELDO-0275 AC3: one frame the engine printed in answer to the probe, read by the run's own stream
+        reader: a frame that is no JSON object with a string type, or whose type the reader cannot classify (neither
+        a known message nor a tool-free frame of the version's stream tables, nor a control frame), refuses the
+        launch with that frame. None, or the stop."""
+        if len(self.probe_frames) < PROBE_FRAMES:
+            self.probe_frames.append(line[:PROBE_FRAME_BYTES].decode('utf-8', 'replace'))
+        if not isinstance(event, dict) or not _text(event.get('type')):
+            return self._probe_failed('unparsed', line)
+        kind = event['type']
+        if kind in CONTROL_FRAMES:
+            return None
+        try:
+            MESSAGES, TOOL_FREE_FRAMES = _tables('MESSAGES', 'TOOL_FREE_FRAMES')
+        except Refused:
+            return self._probe_failed('no_stream_tables', line)  # a version without stream tables classifies nothing
+        tag = (kind, event.get('subtype') if kind in SUBTYPED else None)
+        if tag not in MESSAGES and tag not in TOOL_FREE_FRAMES:
+            return self._probe_failed('unknown_frame', line)
         return None
 
     def _line(self, line):
         try:
             event = json.loads(line)
         except ValueError:
-            return None
+            event = None
+        probing = self.probed and not self.released and self.probe_result is None and self.stop is None
+        if probing and line.strip():
+            problem = self._probe_frame(line, event)
+            if problem:
+                return problem
         if not isinstance(event, dict):
             return None
-        if event.get('type') == 'result' and self.probed and not self.released:
+        if event.get('type') == 'result' and probing:
             self.probe_result = _terminal(event)
-            if self.probe_result is None or self.probe_result['num_turns'] != 0:
+            if self.probe_result is None:
+                return self._probe_failed('result', line)
+            if self.probe_result['num_turns'] != 0:
                 self.stop = 'configuration_stop:probe_result'
                 return self.stop
         if event.get('type') == 'control_response':
