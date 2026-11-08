@@ -1,12 +1,17 @@
 {
  "engine": "codex",
- "problems": [],
+ "problems": [
+  "Codex generated catalog missing or different",
+  "Codex generated catalog missing or different",
+  "Codex generated catalog missing or different",
+  "Codex generated catalog missing or different"
+ ],
  "production": {
-  "control_agent_config.py": "cb38a3a0bcd862334ec138d87b59f16e17646b368ae195865fd2f8374c5f63ee",
-  "control_agent_config_handoff.py": "6388e401352a4ed34c58f2432ff51eb9206604e0a288a82df64c3a56d73d2853",
-  "control_engine_claude.py": "65e8dad8c9792db3b0c1a58dd21543af8487240010a272fdf3f70567a88c0fbb",
-  "control_engine_codex.py": "ab74086733af8e5e89cb9263d486ac9100e4e78cd0c775442c538421a698e837",
-  "control_launch.py": "85f40e1e54e4e8ad030f01e599a91d7699a2defdc9ac9142dfd5c4a2cfca4194"
+  "control_agent_config.py": "0222a7f34da7fd3f5922d0b550be149f8897521cd42a79d97bfb17cc3a948b93",
+  "control_agent_config_handoff.py": "ebc9688af049d41f2e1099e925e95ab532a02cb3e0783a8b9fa871ab6554a243",
+  "control_engine_claude.py": "86deb567190a183060d2e4711b56a86b2f94862252ffca6a7f3be9684318f1bd",
+  "control_engine_codex.py": "360d317a6138b1296a02f4476642f19699da3ffe095c94562b6a74eea5146e12",
+  "control_launch.py": "d805c8fd88fdc2ce1dc9fa8f2d03dcec29a96a9a680cbe654e87667e9a5ab9c2"
  },
  "runs": [
   {
@@ -192,8 +197,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-       "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+       "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+       "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -206,7 +211,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/66f45bc2623b282686207bb59a03f934/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/1b63b845170f5432e366533cfc929e57/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -215,7 +220,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -236,7 +241,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 7925,
+      "input_tokens": 7917,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -271,7 +276,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 7925,
+   "first_turn_context": 7917,
    "init": {},
    "listing": [
     {
@@ -414,8 +419,8 @@
    },
    "probe": null,
    "record_commitment": {
-    "bytes": 4424,
-    "digest": "sha256:ac75cdd941afa9c060287b067b7dcce3f9386a26c7eca54d503ca4532483edf5",
+    "bytes": 4430,
+    "digest": "sha256:a1379fa3035cdf406ebd9c8f815a357513dedb3ac8d2032cedf9c0b7f6856236",
     "lines": 14
    },
    "revision": {
@@ -642,8 +647,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-        "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+        "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+        "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -656,7 +661,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/66f45bc2623b282686207bb59a03f934/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/1b63b845170f5432e366533cfc929e57/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -665,7 +670,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -686,20 +691,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a1ad18-c3b3-71c3-ae9a-dde8eec7743f",
-        "session_id": "01a1ad18-c39c-7be0-9c31-45f5c12a78a5",
-        "thread_id": "01a1ad18-c39c-7be0-9c31-45f5c12a78a5",
-        "turn_id": "01a1ad18-c3b3-71c3-ae9a-dde8eec7743f",
-        "x-codex-installation-id": "2a8cb92f-c9b4-4e66-b615-e17038ce61ad",
-        "x-codex-turn-metadata": "{\"installation_id\":\"2a8cb92f-c9b4-4e66-b615-e17038ce61ad\",\"session_id\":\"01a1ad18-c39c-7be0-9c31-45f5c12a78a5\",\"thread_id\":\"01a1ad18-c39c-7be0-9c31-45f5c12a78a5\",\"agent_name\":\"/root\",\"turn_id\":\"01a1ad18-c3b3-71c3-ae9a-dde8eec7743f\",\"window_id\":\"01a1ad18-c39c-7be0-9c31-45f5c12a78a5:0\",\"window_number\":0,\"context_window_id\":\"01a1ad18-c39d-70f3-8b8b-023d14a5d175\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1ad18-c3b3-71c3-ae9a-dde8eec7743f\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1793905443764,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
-        "x-codex-window-id": "01a1ad18-c39c-7be0-9c31-45f5c12a78a5:0"
+        "root_turn_id": "01a1bb0f-cc43-7c73-a5d7-9d2cf26617ed",
+        "session_id": "01a1bb0f-cc2e-72a2-b18c-20259c82f093",
+        "thread_id": "01a1bb0f-cc2e-72a2-b18c-20259c82f093",
+        "turn_id": "01a1bb0f-cc43-7c73-a5d7-9d2cf26617ed",
+        "x-codex-installation-id": "98980390-d8b0-43d2-8010-4dec5da597ae",
+        "x-codex-turn-metadata": "{\"installation_id\":\"98980390-d8b0-43d2-8010-4dec5da597ae\",\"session_id\":\"01a1bb0f-cc2e-72a2-b18c-20259c82f093\",\"thread_id\":\"01a1bb0f-cc2e-72a2-b18c-20259c82f093\",\"agent_name\":\"/root\",\"turn_id\":\"01a1bb0f-cc43-7c73-a5d7-9d2cf26617ed\",\"window_id\":\"01a1bb0f-cc2e-72a2-b18c-20259c82f093:0\",\"window_number\":0,\"context_window_id\":\"01a1bb0f-cc2e-72a2-b18c-205da7508c8c\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1bb0f-cc43-7c73-a5d7-9d2cf26617ed\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1794139737156,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
+        "x-codex-window-id": "01a1bb0f-cc2e-72a2-b18c-20259c82f093:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_a48fb0f1-ce94-52ec-a535-03b38ac99f2e",
+         "id": "at_63a1b197-798d-5be0-9ce1-05334424532f",
          "role": "developer",
          "tools": [
           {
@@ -760,7 +765,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_0efa92bb-718b-5bba-b4c9-f675e87b6c9f",
+         "id": "msg_f0cc849b-72ac-54df-b5bb-c85c58bcc469",
          "role": "developer",
          "type": "message"
         },
@@ -771,7 +776,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-pmabuuwm/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-bkxn3nxv/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -783,18 +788,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-c47f-7681-b07c-47f41dfd062f",
+         "id": "msg_01a1bb0f-cc9f-7013-970e-81c42cee36d9",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-pmabuuwm/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-05</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-pmabuuwm/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-bkxn3nxv/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-08</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-bkxn3nxv/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-c47f-7681-b07c-480eac328110",
+         "id": "msg_01a1bb0f-cc9f-7013-970e-81d8d5c16c5b",
          "role": "user",
          "type": "message"
         },
@@ -805,14 +810,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-c482-71c3-8d46-ad3ca6d9be0a",
+         "id": "msg_01a1bb0f-ccac-7101-9bae-10a9bebfd39b",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a1ad18-c39c-7be0-9c31-45f5c12a78a5",
+       "prompt_cache_key": "01a1bb0f-cc2e-72a2-b18c-20259c82f093",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -829,8 +834,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-pmabuuwm\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-pmabuuwm/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1ad18-c39c-7be0-9c31-45f5c12a78a5\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-bkxn3nxv\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-bkxn3nxv/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1bb0f-cc2e-72a2-b18c-20259c82f093\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
@@ -1082,8 +1087,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-       "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+       "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+       "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -1096,7 +1101,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/45c8487d62d27524ba4f68d9ced854a3/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/8c89629afea137ad9f4c6e3083dd1ddf/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -1105,7 +1110,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -1126,7 +1131,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 7923,
+      "input_tokens": 7919,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -1161,7 +1166,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 7923,
+   "first_turn_context": 7919,
    "init": {},
    "listing": [
     {
@@ -1305,7 +1310,7 @@
    "probe": null,
    "record_commitment": {
     "bytes": 4426,
-    "digest": "sha256:5a59727827637a525eebc0034e6a67637832fce4cabda027caed20413ae11c33",
+    "digest": "sha256:34d29d7e0109d2390f8c5166af6c90429182ffd38d75733659137f6613b31e2b",
     "lines": 14
    },
    "revision": {
@@ -1532,8 +1537,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-        "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+        "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+        "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -1546,7 +1551,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/45c8487d62d27524ba4f68d9ced854a3/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/8c89629afea137ad9f4c6e3083dd1ddf/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -1555,7 +1560,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -1576,20 +1581,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a1ad18-dfc4-78d0-9c42-dd99fd8abed0",
-        "session_id": "01a1ad18-dfa4-77b3-9868-c4849c6532c6",
-        "thread_id": "01a1ad18-dfa4-77b3-9868-c4849c6532c6",
-        "turn_id": "01a1ad18-dfc4-78d0-9c42-dd99fd8abed0",
-        "x-codex-installation-id": "f9efec38-6cf7-4a99-9d14-ea19c3c4e851",
-        "x-codex-turn-metadata": "{\"installation_id\":\"f9efec38-6cf7-4a99-9d14-ea19c3c4e851\",\"session_id\":\"01a1ad18-dfa4-77b3-9868-c4849c6532c6\",\"thread_id\":\"01a1ad18-dfa4-77b3-9868-c4849c6532c6\",\"agent_name\":\"/root\",\"turn_id\":\"01a1ad18-dfc4-78d0-9c42-dd99fd8abed0\",\"window_id\":\"01a1ad18-dfa4-77b3-9868-c4849c6532c6:0\",\"window_number\":0,\"context_window_id\":\"01a1ad18-dfa4-77b3-9868-c4b27010a7b0\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1ad18-dfc4-78d0-9c42-dd99fd8abed0\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1793905450949,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
-        "x-codex-window-id": "01a1ad18-dfa4-77b3-9868-c4849c6532c6:0"
+        "root_turn_id": "01a1bb0f-f1f1-7ee3-8f94-226b68d3fa83",
+        "session_id": "01a1bb0f-f1dc-7411-a3f6-86e77c82f782",
+        "thread_id": "01a1bb0f-f1dc-7411-a3f6-86e77c82f782",
+        "turn_id": "01a1bb0f-f1f1-7ee3-8f94-226b68d3fa83",
+        "x-codex-installation-id": "28adc6d3-29d1-4494-a9fe-ad89228c74fd",
+        "x-codex-turn-metadata": "{\"installation_id\":\"28adc6d3-29d1-4494-a9fe-ad89228c74fd\",\"session_id\":\"01a1bb0f-f1dc-7411-a3f6-86e77c82f782\",\"thread_id\":\"01a1bb0f-f1dc-7411-a3f6-86e77c82f782\",\"agent_name\":\"/root\",\"turn_id\":\"01a1bb0f-f1f1-7ee3-8f94-226b68d3fa83\",\"window_id\":\"01a1bb0f-f1dc-7411-a3f6-86e77c82f782:0\",\"window_number\":0,\"context_window_id\":\"01a1bb0f-f1dc-7411-a3f6-871ce3b3ff3e\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1bb0f-f1f1-7ee3-8f94-226b68d3fa83\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1794139746802,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
+        "x-codex-window-id": "01a1bb0f-f1dc-7411-a3f6-86e77c82f782:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_3c63d175-0f33-50d7-a8ce-5628f9ce281c",
+         "id": "at_c0f19c4a-31b4-502b-9c79-f623d94e653a",
          "role": "developer",
          "tools": [
           {
@@ -1650,7 +1655,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_28fc8d4b-fb4f-5a32-af25-0243d2fa31d3",
+         "id": "msg_63738d10-ccc8-53f6-9979-742e842b6a58",
          "role": "developer",
          "type": "message"
         },
@@ -1661,7 +1666,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-8tzdqel1/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-dwo6vsl6/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -1673,18 +1678,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-e073-7e32-a819-e9b217ec84b0",
+         "id": "msg_01a1bb0f-f262-76e2-877a-107ff76eb189",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-8tzdqel1/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-05</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-8tzdqel1/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-dwo6vsl6/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-08</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-dwo6vsl6/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-e073-7e32-a819-e9cf3b150b23",
+         "id": "msg_01a1bb0f-f262-76e2-877a-108bfe83d512",
          "role": "user",
          "type": "message"
         },
@@ -1695,14 +1700,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-e078-7230-af25-0dbea534bc55",
+         "id": "msg_01a1bb0f-f266-7cc0-a5da-86f7e1625b07",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a1ad18-dfa4-77b3-9868-c4849c6532c6",
+       "prompt_cache_key": "01a1bb0f-f1dc-7411-a3f6-86e77c82f782",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -1719,8 +1724,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-8tzdqel1\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-8tzdqel1/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1ad18-dfa4-77b3-9868-c4849c6532c6\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-dwo6vsl6\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-dwo6vsl6/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1bb0f-f1dc-7411-a3f6-86e77c82f782\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
@@ -1972,8 +1977,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-       "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+       "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+       "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -1986,7 +1991,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/8b5d9125116d77e50eca981ff01c66cd/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/c76fa8c16ab4e0f42e5412bbc2d14554/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -1995,7 +2000,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -2016,7 +2021,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 7972,
+      "input_tokens": 7965,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -2051,7 +2056,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 7972,
+   "first_turn_context": 7965,
    "init": {},
    "listing": [
     {
@@ -2194,8 +2199,8 @@
    },
    "probe": null,
    "record_commitment": {
-    "bytes": 4434,
-    "digest": "sha256:dd9179f91722804bdfa8b513d05eb96a158bbd9ea622fb22f2d008b8d3effa9a",
+    "bytes": 4432,
+    "digest": "sha256:0df56877534314fafcfdfc568e1d6d0d4a25e187db7772903d927a02247a6fe6",
     "lines": 14
    },
    "revision": {
@@ -2433,8 +2438,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-        "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+        "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+        "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -2447,7 +2452,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/8b5d9125116d77e50eca981ff01c66cd/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/c76fa8c16ab4e0f42e5412bbc2d14554/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -2456,7 +2461,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -2477,20 +2482,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a1ad18-fd05-7db2-84b5-b4216b59ec68",
-        "session_id": "01a1ad18-fcc6-7073-9c7b-2d04072c2b53",
-        "thread_id": "01a1ad18-fcc6-7073-9c7b-2d04072c2b53",
-        "turn_id": "01a1ad18-fd05-7db2-84b5-b4216b59ec68",
-        "x-codex-installation-id": "024d3244-5234-4bfa-9051-38536cda6fc1",
-        "x-codex-turn-metadata": "{\"installation_id\":\"024d3244-5234-4bfa-9051-38536cda6fc1\",\"session_id\":\"01a1ad18-fcc6-7073-9c7b-2d04072c2b53\",\"thread_id\":\"01a1ad18-fcc6-7073-9c7b-2d04072c2b53\",\"agent_name\":\"/root\",\"turn_id\":\"01a1ad18-fd05-7db2-84b5-b4216b59ec68\",\"window_id\":\"01a1ad18-fcc6-7073-9c7b-2d04072c2b53:0\",\"window_number\":0,\"context_window_id\":\"01a1ad18-fcc7-79f3-9c7c-3143c622a6f4\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1ad18-fd05-7db2-84b5-b4216b59ec68\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1793905458438,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
-        "x-codex-window-id": "01a1ad18-fcc6-7073-9c7b-2d04072c2b53:0"
+        "root_turn_id": "01a1bb10-152d-7a10-a37d-17f98088e44c",
+        "session_id": "01a1bb10-1516-7e20-b5ae-0550108aa6e4",
+        "thread_id": "01a1bb10-1516-7e20-b5ae-0550108aa6e4",
+        "turn_id": "01a1bb10-152d-7a10-a37d-17f98088e44c",
+        "x-codex-installation-id": "bad6de3d-6b62-49dc-80af-8ecba0eb4c8e",
+        "x-codex-turn-metadata": "{\"installation_id\":\"bad6de3d-6b62-49dc-80af-8ecba0eb4c8e\",\"session_id\":\"01a1bb10-1516-7e20-b5ae-0550108aa6e4\",\"thread_id\":\"01a1bb10-1516-7e20-b5ae-0550108aa6e4\",\"agent_name\":\"/root\",\"turn_id\":\"01a1bb10-152d-7a10-a37d-17f98088e44c\",\"window_id\":\"01a1bb10-1516-7e20-b5ae-0550108aa6e4:0\",\"window_number\":0,\"context_window_id\":\"01a1bb10-1517-70b0-8f1d-991791977aca\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1bb10-152d-7a10-a37d-17f98088e44c\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1794139755822,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
+        "x-codex-window-id": "01a1bb10-1516-7e20-b5ae-0550108aa6e4:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_e1da999d-e8ad-576e-ab9c-338659739e07",
+         "id": "at_637361ca-daf0-50fa-abc5-f81b946691d9",
          "role": "developer",
          "tools": [
           {
@@ -2551,7 +2556,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_4b994e0e-c331-57bc-820a-d89fec82ed51",
+         "id": "msg_202d41d5-b973-53d3-acdf-45c22b0d797a",
          "role": "developer",
          "type": "message"
         },
@@ -2562,7 +2567,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-h9i13uzl/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-az0fq59b/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -2574,18 +2579,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-fd8a-7ef0-9765-d87c8bfcb299",
+         "id": "msg_01a1bb10-158a-73a0-ba17-e62df952182a",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-h9i13uzl/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-05</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-h9i13uzl/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-az0fq59b/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-08</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-az0fq59b/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-fd8a-7ef0-9765-d8896c1d7ae8",
+         "id": "msg_01a1bb10-158a-73a0-ba17-e63fd71220f1",
          "role": "user",
          "type": "message"
         },
@@ -2596,14 +2601,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad18-fd94-7fb0-8cca-a3c300c3bd1d",
+         "id": "msg_01a1bb10-1592-7620-8fe8-35c27c1d3292",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a1ad18-fcc6-7073-9c7b-2d04072c2b53",
+       "prompt_cache_key": "01a1bb10-1516-7e20-b5ae-0550108aa6e4",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -2620,8 +2625,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-h9i13uzl\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-h9i13uzl/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1ad18-fcc6-7073-9c7b-2d04072c2b53\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-az0fq59b\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-az0fq59b/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1bb10-1516-7e20-b5ae-0550108aa6e4\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
@@ -2873,8 +2878,8 @@
     "mcp_servers": {
      "jira": {
       "args": [
-       "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-       "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+       "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+       "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
       ],
       "command": "/usr/bin/python3",
       "enabled_tools": [
@@ -2887,7 +2892,7 @@
      }
     },
     "model": "gpt-6-astra",
-    "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/814f1045a7d877fa50bf43553d621127/config/model-catalog.json",
+    "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/e2810e849b3231054776a7f6e661ba43/config/model-catalog.json",
     "project_doc_max_bytes": 0,
     "skills": {
      "bundled": {
@@ -2896,7 +2901,7 @@
      "config": [
       {
        "enabled": true,
-       "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+       "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
       }
      ],
      "include_instructions": true
@@ -2917,7 +2922,7 @@
      "usage": {
       "cache_write_input_tokens": 0,
       "cached_input_tokens": 0,
-      "input_tokens": 7971,
+      "input_tokens": 7967,
       "output_tokens": 5,
       "reasoning_output_tokens": 0
      }
@@ -2952,7 +2957,7 @@
      "update_plan"
     ]
    },
-   "first_turn_context": 7971,
+   "first_turn_context": 7967,
    "init": {},
    "listing": [
     {
@@ -3095,8 +3100,8 @@
    },
    "probe": null,
    "record_commitment": {
-    "bytes": 4431,
-    "digest": "sha256:c92b001e79ea8ff78ae8c4b8f075de24c638368edc78de43fefb1aa0b7a59bfd",
+    "bytes": 4433,
+    "digest": "sha256:c98618132262e09e7b2e1bc5a3994f4467f5edf9ed089079980c8a8012cf8176",
     "lines": 14
    },
    "revision": {
@@ -3334,8 +3339,8 @@
      "mcp_servers": {
       "jira": {
        "args": [
-        "/run/user/UID/veldo0127-live-qhzdjjfr/server.py",
-        "/run/user/UID/veldo0127-live-qhzdjjfr/jira.value"
+        "/run/user/1000/veldo0127-live-we1wi3p0/server.py",
+        "/run/user/1000/veldo0127-live-we1wi3p0/jira.value"
        ],
        "command": "/usr/bin/python3",
        "enabled_tools": [
@@ -3348,7 +3353,7 @@
       }
      },
      "model": "gpt-6-astra",
-     "model_catalog_json": "/run/user/UID/veldo0127-live-qhzdjjfr/factory/runs/814f1045a7d877fa50bf43553d621127/config/model-catalog.json",
+     "model_catalog_json": "/run/user/1000/veldo0127-live-we1wi3p0/factory/runs/e2810e849b3231054776a7f6e661ba43/config/model-catalog.json",
      "project_doc_max_bytes": 0,
      "skills": {
       "bundled": {
@@ -3357,7 +3362,7 @@
       "config": [
        {
         "enabled": true,
-        "path": "/run/user/UID/veldo0127-live-qhzdjjfr/source/.agents/skills/inspect/SKILL.md"
+        "path": "/run/user/1000/veldo0127-live-we1wi3p0/source/.agents/skills/inspect/SKILL.md"
        }
       ],
       "include_instructions": true
@@ -3378,20 +3383,20 @@
      {
       "body": {
        "client_metadata": {
-        "root_turn_id": "01a1ad19-1dfe-7701-bca1-793f4d897ad9",
-        "session_id": "01a1ad19-1dd9-7501-8615-8df454bd97af",
-        "thread_id": "01a1ad19-1dd9-7501-8615-8df454bd97af",
-        "turn_id": "01a1ad19-1dfe-7701-bca1-793f4d897ad9",
-        "x-codex-installation-id": "9f315755-da2e-43b3-aea8-d76c9481697c",
-        "x-codex-turn-metadata": "{\"installation_id\":\"9f315755-da2e-43b3-aea8-d76c9481697c\",\"session_id\":\"01a1ad19-1dd9-7501-8615-8df454bd97af\",\"thread_id\":\"01a1ad19-1dd9-7501-8615-8df454bd97af\",\"agent_name\":\"/root\",\"turn_id\":\"01a1ad19-1dfe-7701-bca1-793f4d897ad9\",\"window_id\":\"01a1ad19-1dd9-7501-8615-8df454bd97af:0\",\"window_number\":0,\"context_window_id\":\"01a1ad19-1dda-7e63-9d8a-2613a0488c84\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1ad19-1dfe-7701-bca1-793f4d897ad9\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1793905466879,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
-        "x-codex-window-id": "01a1ad19-1dd9-7501-8615-8df454bd97af:0"
+        "root_turn_id": "01a1bb10-3b18-7772-9728-0218e63d9790",
+        "session_id": "01a1bb10-3b00-7183-9b28-a73febb6e6be",
+        "thread_id": "01a1bb10-3b00-7183-9b28-a73febb6e6be",
+        "turn_id": "01a1bb10-3b18-7772-9728-0218e63d9790",
+        "x-codex-installation-id": "ae76c17e-ee91-4bd9-b9db-2959ac75ba3b",
+        "x-codex-turn-metadata": "{\"installation_id\":\"ae76c17e-ee91-4bd9-b9db-2959ac75ba3b\",\"session_id\":\"01a1bb10-3b00-7183-9b28-a73febb6e6be\",\"thread_id\":\"01a1bb10-3b00-7183-9b28-a73febb6e6be\",\"agent_name\":\"/root\",\"turn_id\":\"01a1bb10-3b18-7772-9728-0218e63d9790\",\"window_id\":\"01a1bb10-3b00-7183-9b28-a73febb6e6be:0\",\"window_number\":0,\"context_window_id\":\"01a1bb10-3b01-7463-9f95-1cc0ab517e42\",\"request_kind\":\"turn\",\"history_initialization\":\"new\",\"root_turn_id\":\"01a1bb10-3b18-7772-9728-0218e63d9790\",\"thread_source\":\"user\",\"turn_trigger\":\"exec\",\"sandbox\":\"seccomp\",\"sandbox_mode\":\"read-only\",\"auto_review_enabled\":false,\"node_repl_auto_review_required\":true,\"node_repl_disabled\":false,\"turn_started_at_unix_ms\":1794139765529,\"analytics_enabled\":true,\"model\":\"gpt-6-astra\",\"reasoning_effort\":\"low\"}",
+        "x-codex-window-id": "01a1bb10-3b00-7183-9b28-a73febb6e6be:0"
        },
        "include": [
         "reasoning.encrypted_content"
        ],
        "input": [
         {
-         "id": "at_70ee4413-ba2f-510c-80cf-56d229853e14",
+         "id": "at_f4b37d31-bcba-59ea-9a1c-9c2982fe0407",
          "role": "developer",
          "tools": [
           {
@@ -3452,7 +3457,7 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_2a607ec1-5419-5c9d-8668-6f30e6bd1356",
+         "id": "msg_9cde8391-c9ac-5371-842b-ec8295362c56",
          "role": "developer",
          "type": "message"
         },
@@ -3463,7 +3468,7 @@
            "type": "input_text"
           },
           {
-           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-290s0z0m/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
+           "text": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and a short path that can be expanded into an absolute path using the skill roots table.\n### Skill roots\n- `r0` = `/tmp/v127-loopback-2ckdcb8b/clone/.agents/skills`\n### Available skills\n- selected: selected role skill (file: r0/selected0/SKILL.md)\n</skills_instructions>",
            "type": "input_text"
           },
           {
@@ -3475,18 +3480,18 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad19-1ebe-74c1-96e7-6b51e2b3ee1b",
+         "id": "msg_01a1bb10-3b92-70c1-bee7-e735313ce4bc",
          "role": "developer",
          "type": "message"
         },
         {
          "content": [
           {
-           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-290s0z0m/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-05</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-290s0z0m/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
+           "text": "<environment_context>\n  <cwd>/tmp/v127-loopback-2ckdcb8b/clone</cwd>\n  <shell>bash</shell>\n  <current_date>2026-11-08</current_date>\n  <timezone>America/New_York</timezone>\n  <filesystem><workspace_roots><root>/tmp/v127-loopback-2ckdcb8b/clone</root></workspace_roots><permission_profile type=\"managed\"><file_system type=\"restricted\"><entry access=\"read\"><special>:root</special></entry></file_system></permission_profile></filesystem>\n</environment_context>",
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad19-1ebe-74c1-96e7-6b6ab7c17e8a",
+         "id": "msg_01a1bb10-3b92-70c1-bee7-e748a5f95d8b",
          "role": "user",
          "type": "message"
         },
@@ -3497,14 +3502,14 @@
            "type": "input_text"
           }
          ],
-         "id": "msg_01a1ad19-1ec7-7b52-991f-ab700135c83c",
+         "id": "msg_01a1bb10-3b97-7282-81c5-126a04ece17e",
          "role": "user",
          "type": "message"
         }
        ],
        "model": "gpt-6-astra",
        "parallel_tool_calls": false,
-       "prompt_cache_key": "01a1ad19-1dd9-7501-8615-8df454bd97af",
+       "prompt_cache_key": "01a1bb10-3b00-7183-9b28-a73febb6e6be",
        "reasoning": {
         "context": "all_turns",
         "effort": "low"
@@ -3521,8 +3526,8 @@
     ],
     "returncode": 0,
     "schema": "veldo.offline-tool-observation/v1",
-    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-290s0z0m\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-290s0z0m/profile\"))\nReading prompt from stdin...\n",
-    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1ad19-1dd9-7501-8615-8df454bd97af\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
+    "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp/v127-loopback-2ckdcb8b\" (codex_home: AbsolutePathBuf(\"/tmp/v127-loopback-2ckdcb8b/profile\"))\nReading prompt from stdin...\n",
+    "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a1bb10-3b00-7183-9b28-a73febb6e6be\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"`[features.guardianv2].thread_context` is deprecated and ignored. (Thread-owned Guardian context is always enabled. Remove `thread_context` from [features.guardianv2] in config.toml, including profile overrides.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"error\",\"message\":\"`[features].transcript_v2` is deprecated and ignored. (Use `[tui].fullscreen_transcript` in config.toml instead.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"error\",\"message\":\"`[features].use_legacy_landlock` is deprecated and will be removed soon. (Remove this setting to stop opting into the legacy Linux sandbox behavior.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_3\",\"type\":\"error\",\"message\":\"`[features].web_search_cached` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"error\",\"message\":\"`[features].web_search_request` is deprecated because web search is enabled by default. (Set `web_search` to `\\\"live\\\"`, `\\\"indexed\\\"`, `\\\"cached\\\"`, or `\\\"disabled\\\"` at the top level (or under a profile) in config.toml if you want to override it.)\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"error\",\"message\":\"`[features].shell_zsh_fork` is deprecated and ignored. (The patched zsh backend has been removed. Shell commands now use the standard shell executor. Remove `shell_zsh_fork` from [features] in config.toml or profile configuration files.)\"}}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_6\",\"type\":\"agent_message\",\"text\":\"ready\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":1,\"reasoning_output_tokens\":0}}\n"
    },
    "wire_tools": [
     {
