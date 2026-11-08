@@ -698,7 +698,7 @@ def selfcheck():
          "body": "POST /checkout returns 500 when the cart is empty", "labels": ["veldo-repo:repo-a", "bug"]},
         {"id": "BUG-2", "title": "no routing label", "body": "x", "labels": ["bug"]},
     ])
-    d = intake_item(ft, "BUG-1", config, spec_id="WARP-9001", owner="dmitry")
+    d = intake_item(ft, "BUG-1", config, spec_id="WARP-9001", owner="owner")
     check("intake resolves the ticket to its repo", d["repo"] == "repo-a")
     check("draft binds the spec to the resolved repo", d["front_matter"]["tracker_repo"] == "repo-a")
     check("draft is a draft status", d["front_matter"]["status"] == "draft")

@@ -310,8 +310,12 @@ print(json.dumps(results))
                 def __init__(self, *args, **kwargs):
                     self.invocations = 0; self.driver_spans = {}; self.resources = None
                     self.parallel = 1; self.active = {}; self.outcomes = []; self.peak = 0
+                    self.retargeted = {}
                 def check(self): pass
                 def cleanup(self, on_result=None): return []
+                # VELDO-0285: the coordinator retargets an unmeasured case's noop once its
+                # baseline is measured in this stage; the worker protocol includes that call.
+                def retarget(self, name, seconds): self.retargeted[name] = seconds
                 def run(self, jobs, directory, frozen, on_result=None):
                     results = {}
                     for name, job in jobs.items():

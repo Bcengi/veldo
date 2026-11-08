@@ -110,6 +110,41 @@ STEP_KINDS.update({
              'changes_subject': False},
     'end': {'ports': (), 'config': {}, 'input': None, 'terminal': True, 'station': True, 'changes_subject': False},
 })
+# VELDO-0247: CHECK AND JOIN, AND PARALLEL BRANCHES. A definition may declare `fields` ({name: {type, source,
+# choices?, private?}}): a type (FIELD_TYPES; a choice lists its `choices`), a source ({subject: key}, the key of the
+# subject's record, or {node, result}, the named result of an assignment node that lies on every path from the entry
+# to each check reading it) and `private` (its observed value is logged only as a digest). A check node's config is
+# exactly {branches: [{name, conditions: [{field, comparison, value}]}], otherwise: true}: its ports are its branch
+# names plus `otherwise`, each with exactly one transition, tried in order, the first branch whose conditions all hold
+# taken, otherwise when none does. A comparison is one of COMPARISONS, allowed only for the field's type; a value is
+# a literal of the field's type (a list of them for `is one of`), plain text matching TEXT. Nothing is ever
+# evaluated, interpolated or run: a value is compared as data (evaluate). Any other port that leads to several
+# transitions makes its node a fan-out of at most FAN_OUT_CEILING branches, each branch named by the id of the
+# transition that starts it; every branch reaches the one join node whose config is {inputs: [those ids]}, no path
+# leaves a branch except through that join, and a fan-out inside a branch is refused (block_problems).
+CHECK = 'check'
+JOIN = 'join'
+OTHERWISE = 'otherwise'
+DEFINITION_OPTIONAL = ('fields',)
+FAN_OUT_CEILING = 8
+FIELD_FIELDS = ('type', 'source')
+FIELD_OPTIONAL = ('choices', 'private')
+COMPARISONS = ('is', 'is not', 'less than', 'at most', 'more than', 'at least', 'contains', 'is one of')
+FIELD_TYPES = {
+    'text': ('is', 'is not', 'contains', 'is one of'),
+    'number': ('is', 'is not', 'less than', 'at most', 'more than', 'at least', 'is one of'),
+    'yes_no': ('is', 'is not'),
+    'choice': ('is', 'is not', 'is one of'),
+}
+TEXT = re.compile(r'[A-Za-z0-9 .,_/:@-]{0,200}\Z')
+CODE_LIKE = frozenset('{}`$\'"[]();|<>=')
+CHECK_FIELDS = ('branches', 'otherwise')
+BRANCH_FIELDS = ('name', 'conditions')
+CONDITION_FIELDS = ('field', 'comparison', 'value')
+STEP_KINDS.update({
+    CHECK: {'ports': (), 'config': None, 'input': None, 'terminal': False, 'changes_subject': False},
+    JOIN: {'ports': ('done',), 'config': None, 'input': None, 'terminal': False, 'changes_subject': False},
+})
 LAYOUT_FIELDS = ('nodes', 'transitions', 'viewport')
 IDENTIFIER = re.compile(r'[a-z][a-z0-9_-]{0,62}\Z')
 # Node names the runner and this service keep for themselves.
@@ -188,8 +223,195 @@ def step_kind(node):
     return STEP_KINDS.get(kind) if type(kind) is str else None
 
 
+def node_ports(node):
+    """The ports of a node: a check's branch names plus otherwise, else its kind's ports."""
+    kind = step_kind(node)
+    if kind is None:
+        return ()
+    if node.get('kind') != CHECK:
+        return kind['ports']
+    branches = (node.get('config') or {}).get('branches') if type(node.get('config')) is dict else None
+    names = [b.get('name') for b in branches if type(b) is dict] if type(branches) is list else []
+    return tuple(name for name in names if type(name) is str) + (OTHERWISE,)
+
+
 def _count(value, low=1, high=None):
     return type(value) is int and value >= low and (high is None or value <= high)
+
+
+def _literal(field, value):
+    """'ok', 'code_like' or 'type' for one literal of the field's type."""
+    kind = field['type']
+    if kind == 'number':
+        return 'ok' if type(value) is int else 'type'
+    if kind == 'yes_no':
+        return 'ok' if type(value) is bool else 'type'
+    if type(value) is not str:
+        return 'type'
+    if CODE_LIKE & set(value):
+        return 'code_like'
+    if not TEXT.match(value):
+        return 'type'
+    if kind == 'choice' and value not in field['choices']:
+        return 'type'
+    return 'ok'
+
+
+def _field_problems(fields, nodes):
+    """(problems, declared fields) of the definition's `fields` section."""
+    problems, declared = [], {}
+    if type(fields) is not dict:
+        return ['invalid_input:fields is not a mapping'], declared
+    for name, field in sorted(fields.items()):
+        where = 'fields.' + str(name)
+        if not _identifier(name):
+            problems.append('invalid_input:%s is not an identifier' % where)
+            continue
+        shape = _closed(field, FIELD_FIELDS, FIELD_OPTIONAL, where)
+        if shape:
+            problems += shape
+            continue
+        if field['type'] not in FIELD_TYPES:
+            problems.append('invalid_input:%s.type is not one of %s' % (where, ', '.join(FIELD_TYPES)))
+            continue
+        choices = field.get('choices')
+        if (field['type'] == 'choice') != ('choices' in field) or (choices is not None and (
+                type(choices) is not list or not choices or len(set(map(str, choices))) != len(choices)
+                or not all(type(c) is str and c and TEXT.match(c) and not CODE_LIKE & set(c) for c in choices))):
+            problems.append('invalid_input:%s.choices' % where)
+            continue
+        if 'private' in field and type(field['private']) is not bool:
+            problems.append('invalid_input:%s.private is not yes or no' % where)
+            continue
+        source = field['source']
+        if type(source) is dict and set(source) == {'subject'} and _identifier(source['subject']):
+            pass
+        elif (type(source) is dict and set(source) == {'node', 'result'} and _identifier(source['result'])
+              and type(source['node']) is str and (step_kind(nodes.get(source['node'])) or {}).get('input')
+              == 'worker_result'):
+            pass
+        else:
+            problems.append('invalid_input:%s.source is not {subject} or {node, result} of an assignment' % where)
+            continue
+        declared[name] = field
+    return problems, declared
+
+
+def _check_problems(name, config, fields):
+    """Problems of one check node's closed configuration."""
+    bad = 'unsupported_configuration:invalid_config:%s:' % name
+    if type(config) is not dict:
+        return [bad + 'config']
+    problems = []
+    if config.get('otherwise') is not True:
+        problems.append('unsupported_configuration:check_without_otherwise:%s' % name)
+    unknown = sorted(set(config) - set(CHECK_FIELDS))
+    problems += [bad + key for key in unknown]
+    branches = config.get('branches')
+    if type(branches) is not list or not branches:
+        return problems + [bad + 'branches']
+    seen = set()
+    for index, branch in enumerate(branches):
+        if type(branch) is not dict or set(branch) != set(BRANCH_FIELDS):
+            problems.append(bad + 'branches[%d]' % index)
+            continue
+        rule = branch['name']
+        if not _identifier(rule) or rule == OTHERWISE or rule in seen:
+            problems.append(bad + 'branches[%d].name' % index)
+            continue
+        seen.add(rule)
+        conditions = branch['conditions']
+        if type(conditions) is not list or not conditions:
+            problems.append(bad + '%s.conditions' % rule)
+            continue
+        for condition in conditions:
+            if type(condition) is not dict or set(condition) != set(CONDITION_FIELDS):
+                problems.append(bad + '%s.condition' % rule)
+                continue
+            field = fields.get(condition['field']) if type(condition['field']) is str else None
+            if field is None:
+                problems.append('unsupported_configuration:undeclared_field:%s:%s' % (name, condition['field']))
+                continue
+            comparison = condition['comparison']
+            if comparison not in FIELD_TYPES[field['type']]:
+                problems.append('unsupported_configuration:unknown_comparison:%s:%s' % (name, comparison))
+                continue
+            value = condition['value']
+            if comparison == 'is one of':
+                verdicts = [_literal(field, item) for item in value] if type(value) is list and value else ['type']
+            else:
+                verdicts = [_literal(field, value)]
+            if 'code_like' in verdicts:
+                problems.append('unsupported_configuration:code_like_value:%s:%s' % (name, rule))
+            elif 'type' in verdicts:
+                problems.append('unsupported_configuration:value_type:%s:%s' % (name, rule))
+    return problems
+
+
+def _observed_type(field, value):
+    """Whether an observed value is of the field's type."""
+    kind = field['type']
+    if kind == 'number':
+        return type(value) is int
+    if kind == 'yes_no':
+        return type(value) is bool
+    if type(value) is not str:
+        return False
+    return kind != 'choice' or value in field['choices']
+
+
+def _holds(comparison, observed, value):
+    if comparison == 'is':
+        return observed == value
+    if comparison == 'is not':
+        return observed != value
+    if comparison == 'less than':
+        return observed < value
+    if comparison == 'at most':
+        return observed <= value
+    if comparison == 'more than':
+        return observed > value
+    if comparison == 'at least':
+        return observed >= value
+    if comparison == 'contains':
+        return value in observed
+    return observed in value
+
+
+def evaluate(name, config, fields, values):
+    """THE CHECK, as data: (decision, None) or (None, 'invalid_input:field_unsupplied:<field>'). Every field the
+    rules name must have a supplied value of its type, else the step fails and takes no branch. The decision is
+    {node, branch, rule, conditions}: each condition of the taken rule and of every earlier rule with its observed
+    value and whether it held. Nothing is evaluated, interpolated or run."""
+    for branch in config['branches']:
+        for condition in branch['conditions']:
+            field = condition['field']
+            if field not in values or not _observed_type(fields[field], values[field]):
+                return None, 'invalid_input:field_unsupplied:%s' % field
+    conditions = []
+    for branch in config['branches']:
+        results = []
+        for condition in branch['conditions']:
+            observed = values[condition['field']]
+            held = bool(_holds(condition['comparison'], observed, condition['value']))
+            results.append(held)
+            conditions.append({'rule': branch['name'], 'field': condition['field'],
+                               'comparison': condition['comparison'], 'value': condition['value'],
+                               'observed': observed, 'holds': held})
+        if all(results):
+            return {'node': name, 'branch': branch['name'], 'rule': branch['name'], 'conditions': conditions}, None
+    return {'node': name, 'branch': OTHERWISE, 'rule': OTHERWISE, 'conditions': conditions}, None
+
+
+def redacted(decision, fields):
+    """A decision as the record and the log hold it: a private field's observed value only as its digest."""
+    out = dict(decision, conditions=[])
+    for condition in decision['conditions']:
+        if (fields.get(condition['field']) or {}).get('private'):
+            condition = dict({k: v for k, v in condition.items() if k != 'observed'},
+                             observed_digest=digest(canonical(condition['observed'])))
+        out['conditions'].append(condition)
+    return out
 
 
 def plain_problems(value, where, floats=False):
@@ -256,7 +478,7 @@ def _reference_problems(references):
     return problems, declared
 
 
-def _node_problems(nodes, declared):
+def _node_problems(nodes, declared, fields=None):
     problems, used = [], set()
     for name, node in sorted(nodes.items()):
         where = 'nodes.' + str(name)
@@ -272,6 +494,15 @@ def _node_problems(nodes, declared):
             problems.append('unsupported_configuration:unknown_step_kind:%s:%s' % (name, node['kind']))
             continue
         config = node['config']
+        if node['kind'] == CHECK:
+            problems += _check_problems(name, config, fields or {})
+            continue
+        if node['kind'] == JOIN:
+            inputs = config.get('inputs') if type(config) is dict and set(config) == {'inputs'} else None
+            if (type(inputs) is not list or len(inputs) < 2 or not all(_identifier(i) for i in inputs)
+                    or len(set(inputs)) != len(inputs)):
+                problems.append('unsupported_configuration:invalid_config:%s:inputs' % name)
+            continue
         required = tuple(field for field, (_, needed) in kind['config'].items() if needed)
         shape = _closed(config, required, tuple(kind['config']), where + '.config')
         if shape:
@@ -321,10 +552,13 @@ def _transition_problems(nodes, transitions):
         kind = step_kind(nodes[source])
         if kind is None:
             continue
-        if port not in kind['ports']:
+        if port not in node_ports(nodes[source]):
             problems.append('unsupported_configuration:unknown_port:%s:%s.%s' % (tid, source, port))
             continue
-        if (source, port) in seen_ports:
+        # VELDO-0247: a port may lead to several transitions (a fan-out), never twice to one node; a check's
+        # ports lead to exactly one each.
+        if (source, port) in seen_ports and (nodes[source].get('kind') == CHECK or any(
+                (e['from'], e['port'], e['to']) == (source, port, target) for e in edges)):
             problems.append('unsupported_configuration:duplicate_transition:%s:%s.%s' % (tid, source, port))
             continue
         seen_ports.add((source, port))
@@ -333,10 +567,78 @@ def _transition_problems(nodes, transitions):
             continue
         edges.append(item)
     for name, node in sorted(nodes.items()):
-        for port in (step_kind(node) or {}).get('ports', ()):
+        for port in node_ports(node):
             if (name, port) not in seen_ports:
                 problems.append('unsupported_configuration:missing_transition:%s.%s' % (name, port))
+    wide = sorted({e['from'] for e in edges if sum(1 for o in edges if (o['from'], o['port']) == (e['from'], e['port']))
+                   > FAN_OUT_CEILING})
+    problems += ['unsupported_configuration:fan_out_too_wide:%s' % name for name in wide]
     return problems, edges
+
+
+def fan_outs(edges):
+    """{(node, port): [transitions]} of every port that leads to several transitions."""
+    ports = {}
+    for edge in edges:
+        ports.setdefault((edge['from'], edge['port']), []).append(edge)
+    return {key: found for key, found in ports.items() if len(found) > 1}
+
+
+def block_problems(nodes, edges):
+    """(problems, blocks) of every fan-out: each block is {fan_out, port, join, branches: {branch id: first node},
+    regions: {branch id: set of nodes}}. Every branch reaches the one join naming exactly the fan-out's branch ids,
+    no path leaves a branch except through that join, nothing enters a branch or the join from outside the block,
+    and no fan-out or join lies inside a branch (branch_escapes_join, join_inputs)."""
+    problems, blocks = [], []
+    leaving = {}
+    for edge in edges:
+        leaving.setdefault(edge['from'], []).append(edge)
+    joins = {name: node['config']['inputs'] for name, node in nodes.items()
+             if node.get('kind') == JOIN and type(node.get('config')) is dict
+             and type(node['config'].get('inputs')) is list}
+    named = set()
+    for (source, port), starts in sorted(fan_outs(edges).items()):
+        ids = sorted(edge['id'] for edge in starts)
+        join = [name for name, inputs in sorted(joins.items()) if sorted(inputs) == ids]
+        if len(join) != 1:
+            problems.append('unsupported_configuration:join_inputs:%s' % source)
+            continue
+        join = join[0]
+        named.add(join)
+        block = {'fan_out': source, 'port': port, 'join': join, 'branches': {e['id']: e['to'] for e in starts},
+                 'regions': {}}
+        for edge in starts:
+            region, todo, arrives = set(), [edge['to']], False
+            while todo:
+                here = todo.pop()
+                if here == join:
+                    arrives = True
+                    continue
+                if here in region:
+                    continue
+                region.add(here)
+                todo.extend(e['to'] for e in leaving.get(here, ()))
+            block['regions'][edge['id']] = region
+            if not arrives:
+                problems.append('unsupported_configuration:branch_escapes_join:%s' % edge['to'])
+        blocks.append(block)
+    terminal = {name for name, node in nodes.items() if (step_kind(node) or {}).get('terminal')}
+    for block in blocks:
+        inside = set().union(*block['regions'].values())
+        fanning = {key[0] for key in fan_outs(edges)}
+        for branch, region in sorted(block['regions'].items()):
+            others = set().union(*(r for b, r in block['regions'].items() if b != branch))
+            for name in sorted(region):
+                # Leaving: a terminal, the fan-out, another branch, a nested fan-out or join; entering from outside.
+                entered = [e for e in edges if e['to'] == name and e['from'] not in region
+                           and not (e['from'] == block['fan_out'] and e['id'] == branch)]
+                if (name in terminal or name == block['fan_out'] or name in others or name in fanning
+                        or name in joins or entered):
+                    problems.append('unsupported_configuration:branch_escapes_join:%s' % name)
+        if any(e['to'] == block['join'] and e['from'] not in inside for e in edges):
+            problems.append('unsupported_configuration:join_inputs:%s' % block['join'])
+    problems += ['unsupported_configuration:join_inputs:%s' % name for name in sorted(set(joins) - named)]
+    return sorted(set(problems), key=problems.index), blocks
 
 
 def _ring(nodes, edges):
@@ -411,13 +713,74 @@ def approval_problems(nodes, edges, entry):
     return problems
 
 
+def ran_before(nodes, edges, entry, blocks):
+    """{node: the nodes that have run on every path from the entry to it}. A fan-out and its join are one block:
+    every branch runs before the join, so the join has after it whatever each of its branches had."""
+    universe, incoming = set(nodes), {}
+    for edge in edges:
+        incoming.setdefault(edge['to'], []).append(edge)
+    ran = {name: set(universe) for name in nodes}
+    ran[entry] = set()
+    joined = {block['join']: block for block in blocks}
+    changed = True
+    while changed:
+        changed = False
+        for name in sorted(nodes):
+            arriving = incoming.get(name, [])
+            if name == entry or not arriving:
+                continue
+            block = joined.get(name)
+            if block is not None:
+                parts = []
+                for region in block['regions'].values():
+                    ins = [e for e in arriving if e['from'] in region]
+                    if ins:
+                        parts.append(set.intersection(*[ran[e['from']] | {e['from']} for e in ins]))
+                found = set().union(*parts) if parts else set(universe)
+            else:
+                found = set.intersection(*[ran[e['from']] | {e['from']} for e in arriving])
+            if found != ran[name]:
+                ran[name], changed = found, True
+    return ran
+
+
+def _source_problems(nodes, edges, entry, blocks, fields):
+    """A field a check reads from a node's result must come from a node on every path to that check."""
+    problems, ran = [], ran_before(nodes, edges, entry, blocks)
+    for name, node in sorted(nodes.items()):
+        if node.get('kind') != CHECK:
+            continue
+        named = []
+        for branch in node['config']['branches']:
+            named += [c['field'] for c in branch['conditions'] if c['field'] not in named]
+        for field in named:
+            source = fields[field]['source']
+            if 'node' in source and source['node'] not in ran[name]:
+                problems.append('unsupported_configuration:undeclared_field:%s:%s' % (name, field))
+    return problems
+
+
+def branch_approval_problems(nodes, blocks):
+    """VELDO-0247 AC4: no owner_approval and no outward step inside a parallel branch; the approval sits before the
+    fan-out or after the join. Named as VELDO-0241's problems, naming why."""
+    problems = []
+    for block in blocks:
+        for name in sorted(set().union(*block['regions'].values())):
+            kind = step_kind(nodes[name]) or {}
+            if nodes[name].get('kind') == APPROVAL:
+                problems.append('invalid_input:approval_not_last:approval_in_branch:%s' % name)
+            if kind.get('outward'):
+                problems.append('invalid_input:missing_owner_approval:outward_in_branch:%s' % name)
+    return problems
+
+
 def definition_problems(definition, resolve=None):
     """Every problem with a workflow definition, by name; [] when it is valid. `resolve(kind, ref)`
     (optional) answers whether a declared configuration reference names an accepted record."""
     problems = plain_problems(definition, 'definition')
     if problems:
         return problems
-    problems = _closed(definition, DEFINITION_FIELDS, (), 'definition')
+    problems = _closed(definition, DEFINITION_FIELDS, DEFINITION_OPTIONAL, 'definition')
     if problems:
         return problems
     if definition['schema'] != SCHEMA:
@@ -429,7 +792,9 @@ def definition_problems(definition, resolve=None):
         return problems + ['invalid_input:definition.nodes is not a non-empty mapping']
     reference_problems, declared = _reference_problems(definition['references'])
     problems += reference_problems
-    node_problems, used = _node_problems(nodes, declared)
+    field_problems, fields = _field_problems(definition.get('fields', {}), nodes)
+    problems += field_problems
+    node_problems, used = _node_problems(nodes, declared, fields)
     problems += node_problems
     problems += ['unsupported_configuration:unused_reference:%s/%s' % key for key in sorted(set(declared) - used)]
     if resolve is not None:
@@ -454,6 +819,14 @@ def definition_problems(definition, resolve=None):
                     reached.add(edge['to'])
                     todo.append(edge['to'])
         problems += ['unsupported_configuration:unreachable_node:%s' % name for name in sorted(set(nodes) - reached)]
+        # VELDO-0247: the block structure of every fan-out, then the approval walk over every path, every check
+        # branch (otherwise included) being a port it follows; a fan-out's branches are each walked to the join,
+        # which is the block rule (a subject-changing step in any branch precedes whatever follows the join).
+        structure, blocks = block_problems(nodes, edges)
+        problems += structure
+        if not node_problems and not field_problems and not structure:
+            problems += _source_problems(nodes, edges, entry, blocks, fields)
+        problems += branch_approval_problems(nodes, blocks)
         problems += approval_problems(nodes, edges, entry)
     ring = _ring(nodes, edges)
     if ring is not None:

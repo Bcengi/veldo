@@ -1,0 +1,7 @@
+VELDO-0254 AC1 falsifier against suite 129, applied by hand to .veldo/control_launch.py (engine_environment resolves keychain:fixture-mail into FIXTURE_MAIL_TOKEN), restored with git checkout (sha256 85f40e1e54e4e8ad equals engine/.veldo/control_launch.py):
+  SELFTEST FAIL: VELDO-0254 ac1/canary-keystore
+  SELFTEST FAIL: VELDO-0254 ac1/canary-engine-run
+  SELFTEST FAIL: VELDO-0254 ac1/canary-conversation
+  SELFTEST FAIL: VELDO-0254 ac1/canary-workflow-step
+  129_veldo_0254_canary_launch                     3 passed    2.90s
+selftest (PARTIAL, 1 of 191 suites): 29 passed, 4 failed in 2.90s

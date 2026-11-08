@@ -10,12 +10,16 @@ import { useLiveRead } from '@/composables/useLiveRead'
 import FactorySheet from '@/features/factory/FactorySheet.vue'
 import LiveMeta from '@/features/factory/LiveMeta.vue'
 import MessageBox from '@/features/projects/MessageBox.vue'
-import { intakeOf, projectsOf, searchProjects } from '@/features/projects/projects'
+import { batchCommand, intakeOf, projectsOf, searchProjects } from '@/features/projects/projects'
+import { sendMessage, type MessageAnswer } from '@/api/messages'
+import { ApiRefusal } from '@/api/refusal'
+import RefusalNotice from '@/components/RefusalNotice.vue'
 import '@/styles/factory.css'
 
 /** Objectives and projects (VELDO-0131): a searchable list of projects, the selected project's objectives with
  * their evidence and status, and the message box to the factory beside them (a sheet on a phone, opened from a
- * message button that stays on screen). Each project names its landing destination in words (VELDO-0235 AC3). */
+ * message button that stays on screen). Each project names its landing destination in words (VELDO-0235 AC3), and
+ * the selected project's batch is started from its detail panel (VELDO-0239 AC1). */
 const route = useRoute()
 const router = useRouter()
 const desktop = useDesktop()
@@ -29,6 +33,24 @@ const intake = computed(() => intakeOf(live.data.value))
 const chat = ref(false)
 const STATE_TONE: Record<string, string> = { ACTIVE: '', SATISFIED: 'is-done', ACCEPTED: '', PROPOSED: 'is-waiting', BLOCKED: 'is-stop', PAUSED: 'is-waiting', CANCELED: 'is-stop', REJECTED: 'is-stop', COMPLETED: 'is-done' }
 const open = (name: string) => router.push({ name: 'project', params: { project: name } })
+// VELDO-0239: the owner starts the selected project's batch; the answer shown is the intake's (the batch outcome).
+const batchPending = ref(false)
+const batchAnswer = ref<MessageAnswer | null>(null)
+const batchRefusal = ref<ApiRefusal | null>(null)
+async function startBatch(name: string) {
+  if (batchPending.value) return
+  batchPending.value = true
+  batchAnswer.value = null
+  batchRefusal.value = null
+  try {
+    batchAnswer.value = await sendMessage(batchCommand(name), name)
+    live.refresh()
+  } catch (error) {
+    batchRefusal.value = error instanceof ApiRefusal ? error : new ApiRefusal(0, 'unavailable:network', 'unavailable')
+  } finally {
+    batchPending.value = false
+  }
+}
 onMounted(() => void live.start())
 </script>
 
@@ -81,6 +103,13 @@ onMounted(() => void live.start())
               <dl class="factory-facts">
                 <dt>Landing</dt><dd :data-destination="selected.destination" data-testid="project-detail-destination">{{ selected.destinationWords }}</dd>
               </dl>
+              <div class="factory-actions">
+                <VButton label="Start batch" pending-label="Starting batch" variant="secondary" size="small" :pending="batchPending" data-testid="project-batch" @click="startBatch(selected.name)" />
+              </div>
+              <p v-if="batchAnswer" class="factory-meta" role="status" data-testid="project-batch-answer" :data-outcome="String(batchAnswer.batch_outcome ?? batchAnswer.outcome)">
+                Batch {{ batchAnswer.batch ?? '' }}: {{ batchAnswer.batch_outcome ?? batchAnswer.outcome }}.
+              </p>
+              <RefusalNotice v-if="batchRefusal" :refusal="batchRefusal" compact />
               <h3 class="panel-title">Objectives <span class="panel-count">{{ selected.objectives.length }}</span></h3>
               <ul class="factory-list">
                 <li v-for="objective in selected.objectives" :key="objective.id" class="factory-card" :data-objective="objective.id" :data-state="objective.state">

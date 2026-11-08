@@ -336,7 +336,9 @@ class NewProjectPass:
         intake = IN.Intake(S, CM, m['AC'], ingress.acquirer, s.conn, domain=s.domain,
                            projects=lambda: sorted(set(IN.store_projects(s.conn)) | {proposal['project']}),
                            api_edge=ingress.settlement.api_edge, journal_signer=s.principal, sign=s.sign,
-                           asker=ingress.presenter.edge, authority_generation=s.generation)
+                           asker=ingress.presenter.edge, authority_generation=s.generation,
+                           batches=organ('control_batch_service').starter(
+                               S, s.conn, domain=s.domain, signer=s.principal, sign=s.sign, generation=s.generation))
         coordinates = dict(ids, repository_uuid=repository)
         objectives = organ('control_objective').Objectives(S, CM, s.conn, coordinates, s.principal, s.sign,
                                                            authority_generation=s.generation)

@@ -654,7 +654,11 @@ def _cycles(line, store, membership, assignment, ids, signature, allocations, re
             services['intake'] = intake_module.Intake(store, membership, modules['AC'], ingress.acquirer, service.conn,
                 domain=service.domain, projects=lambda: intake_module.store_projects(service.conn),
                 api_edge=ingress.settlement.api_edge, journal_signer=service.principal, sign=service.sign,
-                asker=ingress.presenter.edge, authority_generation=service.generation)
+                asker=ingress.presenter.edge, authority_generation=service.generation,
+                # VELDO-0239: the owner's `/batch <project>` from Telegram starts that project's batch.
+                batches=organ('control_batch_service').starter(store, service.conn, domain=service.domain,
+                                                               signer=service.principal, sign=service.sign,
+                                                               generation=service.generation))
             # VELDO-0143: the factory's new-project decisions, the one owner of the PM's new-project document
             # (built before from_line took the registrations, R4-6).
             if callable(getattr(service, 'new_projects', None)):

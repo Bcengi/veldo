@@ -7961,8 +7961,8 @@ def cases():
            "        if False:  # defect: any program may run the entrance, and then nothing re-hashes the engine\n",
            'pin/entrance-interpreter')
     claude('claude-wrapper-path-unresolved', 'control_launch.py',
-           "    elif pinned is not None and os.path.realpath(path) == os.path.realpath(pinned):\n",
-           "    elif pinned is not None and os.path.abspath(path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
+           "    elif pinned is not None and os.path.realpath(target_path) == os.path.realpath(pinned):\n",
+           "    elif pinned is not None and os.path.abspath(target_path) == pinned:  # defect: a `..` in the path skips the re-hash\n",
            'pin/rehash-dot-dot')
     claude('claude-wrapper-entrance-unforwarded', 'control_launch.py',
            "        environment[ENGINE_PATH], environment[ENGINE_DIGEST] = pinned, expected\n",
@@ -9640,7 +9640,7 @@ def cases():
               '                        group.retain()\n', '', ['receiver/settled-scope'])
     # AC1: a stale-subject refusal leaves the land failed, so nothing re-lands it.
     reland148('reland148-stale-left-failed', 'control_landing_station.py',
-              "                and (landing.get('observed') or {}).get('classification') in LG.TRUNK_MOVED):\n",
+              "                and (landing.get('observed') or {}).get('classification') in LG.RELAND):\n",
               "                and (landing.get('observed') or {}).get('classification') == 'trunk-moved'):"
               "  # defect: a stale-subject refusal leaves the land failed\n", ['reland/stale-subject'])
     # AC2: a lease lost between the listing and the push is recorded unknown, whatever the new tip holds.
@@ -10480,6 +10480,47 @@ def cases():
                   "    current, definition = bound_revision(store, conn, domain, repository, found['id'],"
                   " WF.head_version(conn, domain, repository, found['id']))  # defect: the head, not the recorded revision\n"
                   "    if False:\n", 'binding/pinned-revision')
+
+    # VELDO-0247: each criterion's declared falsifier, against the suite 128 row it names.
+    def check_join(name, module, old, new, row):
+        add(247, name, '128_veldo_0247_check_join.py', module, old, new, [row])
+
+    # AC1, declared: a check whose config has no otherwise branch is accepted.
+    check_join('v247-check-without-otherwise-accepted', 'control_workflow.py',
+               "    if config.get('otherwise') is not True:\n",
+               "    if False:  # defect: a check without otherwise is accepted\n",
+               'check/configuration-refusals')
+    # AC2, declared: the cycle accepts the branch the runner reports without re-evaluating the rule.
+    check_join('v247-runner-branch-trusted', 'control_workflow_cycle.py',
+               "        mine, problem = WF.evaluate(position, node['config'], definition.get('fields') or {}, values)\n"
+               "        if problem is not None or reported != mine or port != mine['branch']:\n",
+               "        mine, problem = reported, None  # defect: the runner's branch is taken on its word\n"
+               "        if False:\n",
+               'check/forged-branch')
+    # AC3, declared: the join runs when its first input arrives.
+    check_join('v247-join-on-first-input', 'control_graph_langgraph.py',
+               "        if all(b['position'] == join for b in branches.values()):\n",
+               "        if any(b['position'] == join for b in branches.values()):  # defect: the join fires on its first input\n",
+               'fanout/join-waits-for-all')
+    # AC4, declared: a check's otherwise branch straight to land is accepted while its named branch passes the approval.
+    check_join('v247-otherwise-around-approval', 'control_workflow.py',
+               "            for edge in leaving.get(here, ()):\n                if node.get('kind') == APPROVAL:\n",
+               "            for edge in leaving.get(here, ()):\n                if edge['port'] == OTHERWISE:\n"
+               "                    continue  # defect: a check's otherwise branch is not walked\n"
+               "                if node.get('kind') == APPROVAL:\n",
+               'approval/branch-around-approval')
+    # The Line part (lead's ruling, round 2): the Line's join passes on when its first branch arrives, and the Line
+    # walks a fan-out's branches one after another, stopping at the first that has not arrived.
+    add(247, 'v247-line-join-on-first-arrival', '129_veldo_0247_line.py', 'control_workflow_unit.py',
+        "        if waiting:\n            return None, waiting\n",
+        "        if len(waiting) == len(block['branches']):  # defect: the join passes when its first branch arrives\n"
+        "            return None, waiting\n",
+        ['line/join-waits-for-all'])
+    add(247, 'v247-line-branches-in-turn', '129_veldo_0247_line.py', 'control_workflow_unit.py',
+        "            if got is not ARRIVED:\n                waiting[branch] = got\n",
+        "            if got is not ARRIVED:\n                waiting[branch] = got\n"
+        "                break  # defect: the next branch waits for this one\n",
+        ['line/dispatched-together'])
 
     # VELDO-0203: owner signatures, exact revision identity and the service lock.
     add(203, 'v203-base-from-head', '95_veldo_0203_owner_revisions.py', 'control_owner_revisions.py',
@@ -11678,6 +11719,19 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0285: an unmeasured case's baseline is bounded by the ceiling, not the floor, and its
+    # noop and mutant by 3 x that baseline as measured in the same stage.
+    add(285, 'deadline285-unmeasured-floor', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        planned = {identity: WORKER_CEILING if seconds is None else seconds\n',
+        '        planned = {identity: WORKER_BUDGET if seconds is None else seconds\n',
+        ['case-deadlines/unmeasured-slow-baseline'])
+    result[-1]['dir'] = 'scripts'
+    add(285, 'deadline285-no-same-stage-derivation', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '            control_results = workers.run(controls, directory, frozen, on_result=measured_baseline)\n',
+        '            control_results = workers.run(controls, directory, frozen)\n',
+        ['case-deadlines/unmeasured-mutant-deadline'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0219: measured admission and conservative guaranteed parallelism.
     suite219 = '115_veldo_0219_measured_admission.py'
     add(219, 'admission219-slowest-rate', suite219, 'check_gate_mutations.py',
@@ -12106,9 +12160,11 @@ def cases():
     add(230, 'qualify230-new-tools-unlisted', census230, 'qualify.py',
         "    return [(name, entry['tool_classification'][name]['class'])",
         "    return [] and [(name, entry['tool_classification'][name]['class'])", ['newer/claude-tool'])
-    add(230, 'qualify230-claude-record-unwritten', '126_veldo_0230_qualify_reproduces.py', 'qualify.py',
+    # Suite 125's row drives qualify.py's main on recorded readings (seconds); suite 126's qualify/covers runs
+    # the real binaries end to end (86 to 119 s), too near the mutation worker's unmeasured 120 s floor.
+    add(230, 'qualify230-claude-record-unwritten', census230, 'qualify.py',
         "    write(root, 'claude-qualification.json', text(claude_qualification), written)\n",
-        "    pass  # defect: the Claude Code record is not written\n", ['qualify/covers'])
+        "    pass  # defect: the Claude Code record is not written\n", ['qualify/claude-record-written'])
     add(230, 'qualify230-granted-feature-off', '88_veldo_0127_feature_defaults.py', 'control_agent_config_handoff.py',
         "        if feature in granted and feature not in CODEX_FEATURE_GRANTS and feature not in CODEX_FEATURES_UNGRANTED:\n",
         "        if False:  # defect: an evaluation's grant is ignored\n", ['defaults/unknown'])
@@ -12146,8 +12202,8 @@ def cases():
         ['destination/default-push'])
     # AC2 (declared falsifier): land locally also pushes the candidate to the project's remote.
     add(235, 'dest235-local-also-pushes', dest235, 'control_landing.py',
-        "            if swapped.returncode == 0 and after == payload['commit']:\n",
-        "            if swapped.returncode == 0 and after == payload['commit']:\n"
+        "            if stuck is None and swapped.returncode == 0 and after == payload['commit']:\n",
+        "            if stuck is None and swapped.returncode == 0 and after == payload['commit']:\n"
         "                # defect: the local landing pushes too\n"
         "                origin = self._git(self.clone, 'config', '--get', 'remote.origin.url').stdout.strip()\n"
         "                identity = _organ('control_git_identity').resolve(self.conn, self.domain, self.repository)\n"
@@ -12170,6 +12226,187 @@ def cases():
         ['exact-tip/compare-and-swap'])
     add(235, 'dest235-push-routed-local', dest235, 'control_landing.py', local235, pushed235,
         ['destination/default-push', 'push/unchanged'])
+
+    # VELDO-0254: the falsifier of each acceptance criterion. AC1 a keystore reference resolved into a run's
+    # environment is named by the static row; AC2 a finding line that prints the matched value is found by the
+    # masking row; AC3 the confined runner made the default fails the default-run row.
+    scan254 = '127_veldo_0254_secret_scan.py'
+    add(254, 'delivery254-keystore-into-environment', scan254, 'control_launch.py',
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n",
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n"
+        "    environment['FIXTURE_MAIL_TOKEN'] = _organ('secretref').resolve_for_runtime('keychain:fixture-mail', "
+        "_organ('control_credential_keystore').SecretService()).reveal()\n", ['ac1/static-sites'])
+    # The same falsifier against the real-launch canary row: the canary reaches the engine's environment.
+    add(254, 'delivery254-keystore-into-launch-canary', '129_veldo_0254_canary_launch.py', 'control_launch.py',
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n",
+        "    runtime = environment.pop(ENGINE_RUNTIME, None)\n"
+        "    environment['FIXTURE_MAIL_TOKEN'] = _organ('secretref').resolve_for_runtime('keychain:fixture-mail', "
+        "_organ('control_credential_keystore').SecretService()).reveal()\n",
+        ['ac1/canary-keystore', 'ac1/canary-engine-run', 'ac1/canary-conversation', 'ac1/canary-workflow-step'])
+    add(254, 'scan254-value-in-finding', scan254, 'secret_scan.py',
+        "'masked': mask(kind, value)})", "'masked': mask(kind, value), 'value': value})", ['ac2/masked'])
+    add(254, 'runner254-confined-default', scan254, 'control_launch.py',
+        "    return {'runner': 'default', 'why': None}\n", "    return {'runner': 'confined', 'why': None}\n",
+        ['ac3/default-reaches'])
+
+    # VELDO-0259: one installation reader, and a gate stage that refuses a candidate adding personal setup.
+    install259 = '127_veldo_0259_installation.py'
+    add(259, 'install259-builtin-person', install259, 'installation.py',
+        "            raise _missing(key)\n",
+        "            return {'display_name': 'Built In', 'role_id': 'owner'} if key == 'owner' else ['x']\n",
+        ['ac1/missing-by-name'])
+    result[-1]['siblings'] = True
+    add(259, 'install259-setup-untraced', install259, 'control_factory_setup.py',
+        "        print(json.dumps(dict(value, installation=installation), sort_keys=True))\n",
+        "        print(json.dumps(value, sort_keys=True))\n", ['ac1/traces'])
+    result[-1]['siblings'] = True
+    add(259, 'personal259-red-without-installation', install259, 'check_personal_setup.py',
+        "    return 1 if findings else 0\n",
+        "    return 1 if findings or not _load('installation.py').resolve()['found'] else 0\n",
+        ['ac1/fresh-clone', 'ac2/no-installation'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-patterns-ignored', install259, 'check_personal_setup.py',
+        "        for category, matcher in installation_rules:\n", "        for category, matcher in ():\n",
+        ['ac2/planted'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-uid-shape-dropped', install259, 'check_personal_setup.py',
+        "BUILTIN = ('home_path', 'login_uid', 'fixture_email', 'secret')",
+        "BUILTIN = ('home_path', 'fixture_email', 'secret')", ['ac2/planted'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-unmasked', install259, 'check_personal_setup.py',
+        "    return value[:2] + '***'\n", "    return value\n", ['ac2/masked'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-silent-builtin-only', install259, 'check_personal_setup.py',
+        "        out.write('personal setup: no installation found; ran the built-in shapes only\\n')\n",
+        "        pass\n", ['ac2/no-installation'])
+    result[-1]['dir'] = 'scripts'
+    # Fix round 1 (review F1, F2, F3 and the lead's ruling on the home path in proof/).
+    add(259, 'personal259-quoted-names-skipped', install259, 'check_personal_setup.py',
+        "    return [n for n in names.split('\\0') if n]\n",
+        "    return [n for n in names.split('\\0') if n and n.isascii() and '\"' not in n and '\\\\' not in n]\n",
+        ['ac2/quoted-names'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-base-guessed', install259, 'check_personal_setup.py',
+        "    ref = base or DECLARED_TRUNK\n", "    ref = base or 'main'\n", ['ac2/declared-base'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-no-base-silent', install259, 'check_personal_setup.py',
+        "        raise NoBase('%s does not resolve to a commit' % ref)\n", "        return 'HEAD'\n",
+        ['ac2/declared-base'])
+    result[-1]['dir'] = 'scripts'
+    add(259, 'writers259-home-kept', install259, 'qualify.py',
+        "        (here / name).write_text(home_as_tilde(content))\n", "        (here / name).write_text(content)\n",
+        ['writers/home-as-tilde'])
+
+    # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
+    batch239 = '129_veldo_0239_batch_landing.py'
+    # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip
+    # holds two files numbered 037.
+    add(239, 'batch239-hook-not-run', batch239, 'control_batch.py',
+        "                if self.hook:\n                    hook_run = self._renumber(entry, merge)\n",
+        "                if False:  # defect: the units are merged without running the hook\n"
+        "                    hook_run = self._renumber(entry, merge)\n",
+        ['batch/renumber'])
+    # AC2 (declared falsifier): the batch stops at the first red stage, so the second red stage is missing from the
+    # inventory.
+    add(239, 'batch239-stops-at-first-red', batch239, 'control_batch.py',
+        "            for check in stage['checks']:\n"
+        "                inventory.append({'stage': stage['stage'], 'check': check['check'],\n"
+        "                                  'units': self._attribute(check['text'])})\n",
+        "            for check in stage['checks']:\n"
+        "                inventory.append({'stage': stage['stage'], 'check': check['check'],\n"
+        "                                  'units': self._attribute(check['text'])})\n"
+        "            break  # defect: the batch stops at the first red stage\n",
+        ['gate/inventory'])
+    # AC3 (declared falsifier): each unit of the batch is landed by its own compare-and-swap, so the trunk moves more
+    # than once.
+    add(239, 'batch239-swap-per-unit', batch239, 'control_batch.py',
+        "            push = self._git(self.clone, 'push', '-q', '--force-with-lease=%s:%s' % (ref, r['watermark']), url,\n"
+        "                             '%s:%s' % (r['tip'], ref), ok=None, profile=profile, remote_url=url)\n",
+        "            old = r['watermark']\n"
+        "            for step in [u['renumber'] or u['merge'] for u in r['units']][:-1] + [r['tip']]:  # defect: a swap per unit\n"
+        "                push = self._git(self.clone, 'push', '-q', '--force-with-lease=%s:%s' % (ref, old), url,\n"
+        "                                 '%s:%s' % (step, ref), ok=None, profile=profile, remote_url=url)\n"
+        "                old = step\n",
+        ['land/together'])
+    # AC4 (declared falsifier): a single unit's landing is routed through the batch path: the candidate is swapped
+    # by the batch's compare-and-swap and kept as a batch record, so VELDO-0057's exact-tip row finds no publication
+    # effect of its dispatch.
+    add(239, 'batch239-single-through-batch-0057', '70_veldo_0057_landing.py', 'lander.py',
+        "            landed = self.landing.publish(unit, self.record())\n",
+        "            # defect: a single unit's landing is routed through the batch path\n"
+        "            BT = _load('veldo_batch_ld', 'control_batch.py')\n"
+        "            single = BT.Batch(self.repo_root, project=str(_unit_id(unit)), identity=('Lander', 'lander@example.invalid'),\n"
+        "                              trunk=self.trunk, remote=self.remote, push_identity=self.identity_record)\n"
+        "            single.record = {'id': 'batch-single', 'remote_url': c.get('remote_url'), 'watermark': c['watermark'],\n"
+        "                             'tip': c['commit'], 'clone': c['workspace'], 'units': [], 'receipts': []}\n"
+        "            swapped, _found = single._swap()\n"
+        "            landed = {'ok': swapped, 'outcome': 'landed' if swapped else 'failed', 'published': swapped,\n"
+        "                      'batch': single.record}\n",
+        ['exact-tip/compare-and-swap'])
+    # Fix round 1, F1 (AC1): the API's intake is built without the batch starter, so the project view's Start batch
+    # would be an ordinary intake proposal.
+    add(239, 'batch239-api-intake-unwired', batch239, 'control_service_api.py',
+        "                              batches=_organ('control_batch_service').starter(\n"
+        "                                  self.S, self.conn, domain=ids['domain_uuid'], signer=principal, sign=sign,\n"
+        "                                  generation=generation, clock=clock))\n",
+        "                              )  # defect: the batch starter is not wired\n",
+        ['wire/constructions'])
+    # Fix round 1, F2 (AC3): the batch takes a caller's grant for its own subject as the approval.
+    add(239, 'batch239-caller-grant-accepted', batch239, 'control_batch.py',
+        "        grant = self.authority.approval(subject)\n",
+        "        grant = (dict(grant, ruling='grant', assignment=None) if isinstance(grant, dict)  # defect: caller's grant\n"
+        "                 and grant.get('subject') == subject else self.authority.approval(subject))\n",
+        ['authority/unsettled-grant'])
+    # Fix round 1, F2 (AC3): a unit's stored review is not bound to the commit the batch merges.
+    add(239, 'batch239-review-unbound', batch239, 'control_batch.py',
+        "        if review is None or review['commit'] != entry['commit'] or authority.landed(entry['unit']):\n",
+        "        if review is None or authority.landed(entry['unit']):  # defect: the review is not bound to the commit\n",
+        ['authority/review-commit'])
+    # Fix round 1, F3 (AC3): the swap is judged by the push's exit status, not by the trunk found after it.
+    add(239, 'batch239-push-status-judged', batch239, 'control_batch.py',
+        "        if not read:\n"
+        "            raise Refused(UNREAD, 'the trunk could not be read after the swap (%s exit %s)' % (operation, swap.returncode))\n",
+        "        return swap.returncode == 0 and found == r['tip'], found  # defect: judged by the swap's exit status\n",
+        ['push/at-tip', 'push/at-watermark'])
+
+    # VELDO-0260: a local landing keeps every working tree that has the trunk checked out in step with the trunk.
+    step260 = '129_veldo_0260_checkout_in_step.py'
+    # AC1 (declared falsifier): only the repository's main working tree is checked, so a linked one is missed.
+    add(260, 'step260-main-tree-only', step260, 'control_landing.py',
+        "        for entry in entries:\n",
+        "        for entry in entries[:1]:  # defect: only the main working tree is checked\n",
+        ['set/linked'])
+    # AC2 (declared falsifier): the ref is moved only, as VELDO-0235 did, so the clean tree is left behind.
+    add(260, 'step260-ref-only', step260, 'control_landing.py',
+        "                why = self._move_checkout(tree['path'], payload['old_tip'], payload['commit'])\n",
+        "                why = None  # defect: the working tree is not moved with the trunk\n",
+        ['move/clean'])
+    # AC3 (declared falsifier): the clean check is skipped and the swap made anyway.
+    add(260, 'step260-no-clean-check', step260, 'control_landing.py',
+        "        dirty = next((c for c in trees if c['clean'] is False), None)\n",
+        "        dirty = None  # defect: a tree with local changes does not refuse the landing\n",
+        ['dirty/edited'])
+    # AC4 (declared falsifier): the main working tree is moved whenever the repository has one, whatever its HEAD.
+    add(260, 'step260-main-tree-always', step260, 'control_landing.py',
+        "            if 'bare' in entry or entry.get('branch') != self.ref or not _text(entry.get('worktree')):\n",
+        "            if 'bare' in entry or (entry.get('branch') != self.ref and entry is not entries[0])"
+        " or not _text(entry.get('worktree')):  # defect: the main tree is always taken\n",
+        ['none/other-branch'])
+    # Fix round 1 (AC3, F1): the re-land does not wait for the tree, so every loop pass rebuilds and gates again.
+    add(260, 'step260-reland-spins', step260, 'control_landing_station.py',
+        "            self._checkout_wait(unit, follows, ops.landing)\n",
+        "            pass  # defect: the re-land does not wait for the working tree\n",
+        ['dirty/waits'])
+    # Fix round 1 (AC2, F3): a moved tree that could not be put back is recorded as a lost swap, re-landed.
+    add(260, 'step260-restore-failed-relands', step260, 'control_landing.py',
+        "                unrestored = next((c for c in trees if c['outcome'] == 'restore_failed'), None)\n",
+        "                unrestored = None  # defect: a failed rollback ends as trunk-moved\n",
+        ['move/restore-failed'])
+    # Fix round 2 (AC3): the waiting landing's working tree is no wake source, so a cleaned tree waits for an event.
+    add(260, 'step260-tree-never-wakes', step260, 'control_service.py',
+        "                self.wake('working_tree', tree)\n",
+        "                pass  # defect: a change to the watched working tree wakes no pass\n",
+        ['dirty/wakes'])
 
     # VELDO-0261: the three intermittent rows become deterministic. Each criterion's declared falsifiers.
     # AC1: the delivery fixture keeps every row and the whole failure. Its fixture is the mutated module.

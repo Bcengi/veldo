@@ -1,0 +1,18 @@
+  85_veldo_0158_credential_delivery               23 passed    4.78s
+selftest (PARTIAL, 1 of 190 suites): 49 passed, 0 failed in 4.78s
+  82_veldo_0129_worker_wiring                     29 passed   35.33s
+selftest (PARTIAL, 1 of 190 suites): 55 passed, 0 failed in 35.33s
+  73_veldo_0139_factory_setup                     17 passed   26.25s
+selftest (PARTIAL, 1 of 190 suites): 43 passed, 0 failed in 26.25s
+  85_veldo_0171_setup_api                         18 passed    9.84s
+selftest (PARTIAL, 1 of 190 suites): 44 passed, 0 failed in 9.84s
+  80_veldo_0155_claude_baseline                   19 passed   14.48s
+selftest (PARTIAL, 1 of 190 suites): 45 passed, 0 failed in 14.48s
+  81_veldo_0156_codex_baseline                    22 passed    3.32s
+selftest (PARTIAL, 1 of 190 suites): 48 passed, 0 failed in 3.32s
+  78_veldo_0060_claude_adapter                    35 passed   23.20s
+selftest (PARTIAL, 1 of 190 suites): 61 passed, 0 failed in 23.20s
+  79_veldo_0061_codex_adapter                     21 passed   14.59s
+selftest (PARTIAL, 1 of 190 suites): 47 passed, 0 failed in 14.59s
+  67_veldo_0041_heartbeat                         23 passed   11.45s
+selftest (PARTIAL, 1 of 190 suites): 49 passed, 0 failed in 11.45s

@@ -49,6 +49,8 @@ TICKET_KEY = re.compile(r'(?<![A-Za-z0-9_-])([A-Za-z][A-Za-z0-9_]*)-[0-9]+(?![A-
 # The attribution's own reasons for a message it attributed to a person but that is no presentation
 # answer: it replies to nothing, or to a message that is not a presentation.
 ORDINARY = ('missing_reply_reference', 'unknown_presentation')
+# VELDO-0239: the owner's batch command, as control_batch.COMMAND reads it.
+BATCH_COMMAND = re.compile(r'^/batch(?:@[A-Za-z0-9_]{1,64})?[ \t]+([A-Za-z0-9][A-Za-z0-9_.-]{0,127})[ \t]*$')
 EVIDENCE_KIND = 'channel_evidence'  # VELDO-0066's kept Telegram evidence
 TEXT_LIMIT = 16384
 ID_LIMIT = 128
@@ -183,7 +185,7 @@ class Intake(RT.Routes):
     signs journal records as `journal_signer`."""
 
     def __init__(self, store, membership, contract, acquirer, conn, *, domain, projects, api_edge, journal_signer,
-                 sign, asker=None, authority_generation=1, clock=time.time, observe=None):
+                 sign, asker=None, authority_generation=1, clock=time.time, observe=None, batches=None):
         if not _identifier(domain) or not _identifier(api_edge) or not _identifier(journal_signer):
             raise Refused('invalid_input', 'domain, API edge and journal signer are named')
         if not callable(projects) and (not projects or not all(_identifier(p) for p in projects)
@@ -193,6 +195,9 @@ class Intake(RT.Routes):
         self.domain, self.projects, self.api_edge = domain, projects, api_edge
         self.journal_signer, self.sign, self.generation = journal_signer, sign, authority_generation
         self.asker, self.clock = asker, clock
+        # VELDO-0239: the owner's `/batch <project>` starts a batch of that project through this starter,
+        # called (project, principal, source); without one the message is ordinary intake.
+        self.batches = batches
         self.observe = observe or (lambda event: None)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
@@ -289,6 +294,11 @@ class Intake(RT.Routes):
         except Refused as error:
             result = self._event('receive', 'refused', error.code, source_kind=source_kind)
         else:
+            started = self.batch_started(command)
+            if started is not None:
+                self._event('batch', 'started', source_kind=source_kind, source=command['source_id'],
+                            project=started['project'], batch=started.get('batch'))
+                return started
             result = self._submit(command)
         if source_kind == 'telegram_message' and type(payload) is str:
             result['evidence_id'] = payload
@@ -340,6 +350,18 @@ class Intake(RT.Routes):
                                'update_id': fields['update_id'], 'date': fields['date'],
                                'evidence_id': record['evidence_id'], 'evidence_digest': record['source_digest'],
                                'reply_to_message_id': fields.get('reply_to_message_id')}}
+
+    def batch_started(self, command):
+        """VELDO-0239: the owner's `/batch <project>` (from Telegram, or the same text from the UI's project
+        view through the API) is the batch command, not work: it goes to the batch starter, which judges the
+        principal and the project, and no proposal is written. None for any other message."""
+        text = command.get('text') if isinstance(command, dict) else None
+        found = BATCH_COMMAND.match(text.strip()) if isinstance(text, str) and self.batches is not None else None
+        if found is None:
+            return None
+        answer = self.batches(project=found.group(1), principal=command.get('principal'),
+                              source=command.get('source_id')) or {}
+        return dict(answer, outcome='batch', project=found.group(1), batch_outcome=answer.get('outcome'))
 
     def _replied_proposal(self, bot, chat, message):
         """The proposal a Telegram reply clarifies: the one its replied message was taken into, or the

@@ -413,6 +413,23 @@ def assess(inputs: dict, workdir: str | os.PathLike, harness: list | None = None
     return assessment_record(brief, run)
 
 
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
+
+
 def main(argv: list) -> int:
     if len(argv) >= 4 and argv[1] == "run":
         # The arguments are read BEFORE anything is opened: a flag where a path belongs would otherwise
@@ -441,7 +458,7 @@ def main(argv: list) -> int:
         except AssessorError as e:
             print(f"REFUSED: {e}")
             return 2
-        (out / "assessment.json").write_text(json.dumps(rec, indent=1, sort_keys=True) + "\n")
+        (out / "assessment.json").write_text(home_as_tilde(json.dumps(rec, indent=1, sort_keys=True) + "\n"))
         print(json.dumps({k: rec[k] for k in ("closed", "provenance_missing", "unparseable", "timed_out")}))
         return 0
     print(__doc__)

@@ -348,6 +348,23 @@ def _digest(obj) -> str:
     return "sha256:" + hashlib.sha256(json.dumps(obj, sort_keys=True, default=str).encode()).hexdigest()
 
 
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
+
+
 def write_record(runner_record: dict, assessment_record: dict, spec_id: str, repo, proof_dir) -> dict:
     """Compose proof/<SPEC>/validation.json from the runner's record (four results per finding) and the
     assessor's (a verdict per finding). A finding is closed when its four results passed AND the
@@ -387,7 +404,7 @@ def write_record(runner_record: dict, assessment_record: dict, spec_id: str, rep
     }
     out = Path(proof_dir)
     out.mkdir(parents=True, exist_ok=True)
-    body = json.dumps(rec, indent=1, sort_keys=True) + "\n"
+    body = home_as_tilde(json.dumps(rec, indent=1, sort_keys=True) + "\n")
     (out / RECORD_FILE).write_text(body)
     (out / RECORD_DIR).mkdir(exist_ok=True)
     (out / RECORD_DIR / f"{str(fixed)[:12]}.json").write_text(body)

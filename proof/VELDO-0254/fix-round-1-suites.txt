@@ -1,0 +1,12 @@
+VELDO-0254 fix round 1, green after. Each run as python3 scripts/selftest.py --suite NAME (verify.sh's single suite); the full gate was not run.
+  127_veldo_0254_secret_scan                      22 passed    4.88s
+  128_veldo_0254_confined_runner                   1 passed    0.71s
+  129_veldo_0254_canary_launch                     7 passed    2.70s
+  62_veldo_0039_dispatch 25, 63_veldo_0040_containment 59, 67_veldo_0041_heartbeat 23, 73_veldo_0139_factory_setup 17,
+  78_veldo_0060_claude_adapter 35, 79_veldo_0061_codex_adapter 21, 80_veldo_0155_claude_baseline 19,
+  81_veldo_0156_codex_baseline 22, 82_veldo_0129_worker_wiring 29, 82_veldo_0141_execution_record 40,
+  85_veldo_0158_credential_delivery 23, 85_veldo_0171_setup_api 18, 86_veldo_0168_text 26,
+  91_veldo_0167_setup_records 9, 103_veldo_0142_git_identities 23, 123_veldo_0174_conversations 38,
+  125_veldo_0230_engine_census 7: all passed.
+Teeth driver: the three suite 127 cases rejected (falsifiers-fix-round-1.txt); the suite 129 case stops at the
+confined baseline until its unconfined entry exists (OPEN.md item 1); its red by hand is falsifier-ac1-canary.txt.

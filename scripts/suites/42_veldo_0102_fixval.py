@@ -800,7 +800,9 @@ else:
     _v102_plan_file.write_text(_v102_json.dumps(dict(_v102_plan, findings=[_v102_plan["findings"][0]])))
     _v102_rc = FV102.main(["fix_validation.py", "run", str(_v102_plan_file), str(_v102_out)])
     _v102_written = (_v102_out / "fix-validation.json").is_file()
-    _v102_run_dir = _v102_json.loads((_v102_out / "fix-validation.json").read_text())["run_directory"] if _v102_written else ""
+    # The record is evidence written into proof/, so it names the run directory with the home directory as ~
+    # (VELDO-0259); under the confined gate HOME is the scratch directory the runs are made in.
+    _v102_run_dir = _v102_os.path.expanduser(_v102_json.loads((_v102_out / "fix-validation.json").read_text())["run_directory"]) if _v102_written else ""
     _v102_M_runs, _ = _v102_organs("runsinside", [('        runs = Path(tempfile.mkdtemp(prefix="fixval-runs-"))', '        runs = out / "runs"')])
     _v102_rc_m = _v102_M_runs.main(["fix_validation.py", "run", str(_v102_plan_file), str(_v102_out / "m")])
     expect("VELDO-0102 AC2 fixval/record-inside-runs-outside: the command writes its record into a directory inside the repository "

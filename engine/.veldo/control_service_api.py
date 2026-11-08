@@ -174,7 +174,11 @@ class ServiceApi:
                                           authority_generation=generation, clock=clock)
         intake = AS.IN.Intake(self.S, CM, AC, ingress.acquirer, self.conn, domain=self.config['domain'],
                               projects=list(self.config['projects']), api_edge=self.config['api_edge'],
-                              journal_signer=principal, sign=sign, authority_generation=generation, clock=clock)
+                              journal_signer=principal, sign=sign, authority_generation=generation, clock=clock,
+                              # VELDO-0239: the project view's Start batch sends `/batch <project>` here.
+                              batches=_organ('control_batch_service').starter(
+                                  self.S, self.conn, domain=ids['domain_uuid'], signer=principal, sign=sign,
+                                  generation=generation, clock=clock))
         workflows = WF.Workflows(self.S, self.conn, domain=self.config['domain'],
                                  repository=self.config['workflows_repository'], signer=principal, sign=sign,
                                  generation=generation, clock=clock)

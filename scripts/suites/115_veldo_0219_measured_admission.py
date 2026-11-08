@@ -484,7 +484,10 @@ def _v219_checks():
                 return real_load(path)
             patches = dict(inventory=lambda *a: stage_cases,read_inputs=lambda *a: stage_files,
                 git=lambda *a: 'head',snapshot=lambda *a: None,inputs_unchanged=lambda *a: True,
-                load=loader,CaseClaims=lambda: claim_store,case_deadline=lambda key: 240,
+                load=loader,CaseClaims=lambda: claim_store,
+                # Every fixture case is measured at 240s; since VELDO-0285 the stage reads its
+                # deadlines through case_deadlines, where an unmeasured case is None.
+                case_deadlines=lambda keys: {identity: 240 for identity in keys},
                 record_case_times=lambda root,samples,authority=False: real_record(root,samples,times,authority=authority),
                 record_case_resources=lambda cases,keys,outcomes,group,authority=False:
                     real_resources(cases,keys,outcomes,group,times,authority=authority))

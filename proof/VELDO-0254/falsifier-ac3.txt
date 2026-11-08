@@ -1,0 +1,8 @@
+AC3 falsifier: the confined runner made the default (control_launch.runner_decision)
+  selector    --suite 127_veldo_0254_secret_scan
+  running     1 of 189 suites: 127_veldo_0254_secret_scan
+  SELFTEST FAIL: VELDO-0254 ac3/default-reaches: an unmarked launch takes the default runner [{'runner': 'confined', 'why': None}]
+  SELFTEST FAIL: VELDO-0254 ac3/risky-confined: another project's mark leaves this launch on the default runner
+  SELFTEST FAIL: VELDO-0254 ac3/no-runner-host: a default run there starts and reaches its services [{'exit': 2, 'error': "agent sandbox refused to start: [Errno 2] No such file or directory: '/dev/shm/v254-36rzcjny/.veldo/reuse_evidence.py'"}]
+  127_veldo_0254_secret_scan                      12 passed    2.81s
+selftest (PARTIAL, 1 of 189 suites): 38 passed, 3 failed in 2.81s

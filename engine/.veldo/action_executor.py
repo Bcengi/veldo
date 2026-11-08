@@ -865,10 +865,10 @@ def _cli(argv):
     kill = KillSwitch()
     budget = ActionBudget(5)
     target = FakeActionSystem()
-    cred = ExecutorCredential("dmitry-executor", "fake-deploy-controller", object())
+    cred = ExecutorCredential("owner-executor", "fake-deploy-controller", object())
     ex = ActionExecutor(cred, ladder, kill, budget, target, ACT, INC, timeout_seconds=300)
 
-    confirmation = {"decision": "confirmed", "confirmed_by": "dmitry",
+    confirmation = {"decision": "confirmed", "confirmed_by": "owner",
                     "proposal_digest": proposal_digest(remedy), "incident": remedy.get("incident")}
     if len(argv) > 1 and argv[1] == "--no-confirm":
         confirmation = None

@@ -1,0 +1,5 @@
+restored
+  selector    --suite 127_veldo_0254_secret_scan
+  running     1 of 189 suites: 127_veldo_0254_secret_scan
+  127_veldo_0254_secret_scan                      15 passed    2.81s
+selftest (PARTIAL, 1 of 189 suites): 41 passed, 0 failed in 2.81s

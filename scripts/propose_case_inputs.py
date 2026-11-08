@@ -3,7 +3,11 @@
 
 --from-measurement imports baseline read sets as explicitly incomplete proposals.
 --case DRIVER:NAME traces baseline, noop and mutant; --all repeats that sequentially.
-All workers have a deadline and owned process group, removed with their temporary tree.
+All workers have a deadline and owned process group, removed with their temporary tree. Tracing
+slows a worker by a factor nobody measured, so a traced run is bounded only against a hang, by the
+gate's WORKER_CEILING, as an unmeasured baseline is (VELDO-0285). A fixed 90 s once sat under a case
+whose untraced workers take 38-66 s; on a loaded gate host the deadline killed the tracer and the
+proposal failed on its truncated trace (landing-b gate e6aed167). A run past the ceiling is an error.
 """
 import argparse
 import importlib.util
@@ -61,7 +65,7 @@ def trace_case(gate, case):
                 proc = subprocess.Popen(argv, env=gate.fixed_env(directory), cwd=ROOT, stdin=subprocess.DEVNULL,
                                         stdout=stdout, stderr=stderr, start_new_session=True)
                 try:
-                    code = proc.wait(timeout=90)
+                    code = proc.wait(timeout=gate.WORKER_CEILING)
                 except subprocess.TimeoutExpired:
                     code = 124
                 finally:
@@ -76,6 +80,11 @@ def trace_case(gate, case):
                     row['observation'] = json.load(stdout)
                 except ValueError:
                     row['error'] = stderr.read().decode(errors='replace')[-1500:]
+            if code == 124:
+                # The tracer died with its tracees, so the trace ends mid-call: no evidence, and no
+                # read set may be proposed from it. Say why, rather than what the parser then finds.
+                raise TimeoutError('%s: traced worker exceeded its %gs deadline; its trace is incomplete'
+                                   % (mode, gate.WORKER_CEILING))
             accesses = list(T.accesses(trace, cwd=ROOT))
             reads = {(p, kind == 'listing') for p, kind, success in accesses}
             runtime_absent.update(str(p) for p, kind, success in accesses
@@ -114,6 +123,23 @@ def trace_case(gate, case):
             modes.append(row)
     return {'files': sorted(files), 'absent': sorted(absent - files), 'modes': modes, 'directories': sorted(directories),
             'runtime_absent': sorted(runtime_absent)}, runtime
+
+
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
 
 
 def main():
@@ -159,7 +185,7 @@ def main():
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(document, indent=2) + '\n')
-        args.report.write_text(json.dumps(report, indent=2) + '\n')
+        args.report.write_text(home_as_tilde(json.dumps(report, indent=2) + '\n'))
         print(name, len(result['files']), 'proposed', flush=True)
 
 

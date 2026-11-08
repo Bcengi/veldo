@@ -1,0 +1,182 @@
+qualified codex 0.166.0 (~/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex) sha256:b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8
+qualified claude_code 2.1.317 (~/.local/share/claude/versions/2.1.317) sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0
+replaced codex 0.166.0, claude_code 2.1.317
+codex features on by default the classification does not name: api_key_cyber_access_programs, api_key_model_discovery, bedrock_setup_wizard, browser_annotation_api, cli_daybreak, code_mode_interrupt, daemon_auto_start, guardian_reuse_parent_compaction, in_app_voice, incremental_tools, instant_interrupt, mcp_oauth_refresh_coordination, plugin_discovery_prefetch, prediction_preserve_parent_tools, realtime_conversation, reasoning_effort_override, system_proxy_fallback, ultrafast_mode, worktrees, write_stdin_approval
+claude_code tools the replaced classification did not hold: none
+new codex features api_key_cyber_access_programs: not_applicable (access programs of an API-key login; Veldo runs only the ChatGPT login (forced_login_method chatgpt); on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features api_key_model_discovery: not_applicable (remote model discovery for an API-key login; Veldo runs only the ChatGPT login and the bundled catalog; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features bedrock_setup_wizard: not_applicable (the TUI wizard that sets up the Bedrock provider; codex exec has no TUI and Veldo's provider is the subscription; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features browser_annotation_api: not_applicable (annotations of the desktop app's in-app browser, which codex exec does not have (the browser tool sources stay ungranted); on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features cli_daybreak: not_applicable (the TUI's Daybreak account-eligibility check (tui/src/app_server_session); codex exec does not run it; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features code_mode_interrupt: granted (a running Code Mode cell can be interrupted, so a stopped or timed-out run ends its cell; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features daemon_auto_start: off by VELDO-0040 AC1/AC3 (starts the local app-server daemon, a process that outlives the run)
+new codex features guardian_reuse_parent_compaction: granted (the approval guardian reuses the parent's compacted context, fewer tokens per assessment; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features in_app_voice: not_applicable (voice input of the desktop app; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features incremental_tools: granted (a later request declares only the tools that changed (an additional_tools item after "This is an incremental tools update. Previously declared tools remain available..."), so later requests are smaller; the wire comparison reads every request of a run and the tools declared by then, so a tool the role does not list is refused wherever it is first declared (VELDO-0127 AC4; owner Telegram 38895-38896; loopback capture of 2026-11-03, proof/VELDO-0230/fix3-incremental-capture.json))
+new codex features instant_interrupt: granted (an interrupt takes effect at once, so a stop ends the turn sooner; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features mcp_oauth_refresh_coordination: not_applicable (coordinates OAuth refresh of MCP servers across processes; Veldo delivers MCP credentials itself (VELDO-0158) and the run's CODEX_HOME holds no OAuth store; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features plugin_discovery_prefetch: off by VELDO-0156 AC1 (prefetches the plugin marketplace over the network; plugins are no source of a Veldo run)
+new codex features prediction_preserve_parent_tools: not_applicable (the app server's prediction mode keeps the parent thread's tools; codex exec has no prediction thread; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features realtime_conversation: not_applicable (realtime voice conversations of the TUI and app; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features reasoning_effort_override: granted (a reasoning effort set for the run applies over the model default; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features system_proxy_fallback: granted (a failed OAuth token exchange retries through the host's system proxy, as the kept proxy variables already allow; keeps the subscription login refreshing; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features ultrafast_mode: granted (the faster service mode, the same class as fast_mode, which Veldo already leaves on; no tool; on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features worktrees: off by VELDO-0042 AC1 (creates managed git worktrees outside the run's clone)
+new codex features write_stdin_approval: not_applicable (asks approval before writing to a running exec session; a Veldo run never asks for approval (codex exec's policy is never); on and off it sends the identical model request on loopback (tools, instructions and fields; scratch probe of 2026-11-03))
+new codex features agent_message_board: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features analytics_plan_history: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features app_server_websocket_compression: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features async_compaction: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features code_mode_host_grpc: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features code_mode_only_strict_3p_tools: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features code_mode_tool_description_first: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features code_mode_tool_search: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features codex_apps_mcp_2026_07_28: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features credential_masking: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features critical_path_timing: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features defer_mailbox_preemption: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features executor_capability_discovery_v2: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features guardian_conversation_history_tools: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features guardian_native_multi_agent_history: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features guardian_recorded_items: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features guardian_root_handoff_context: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features guardian_trust_orchestrator_connectors: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features guardianv2_decisions_comparison: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features guardianv3: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features login_shell_package_path: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features mcp_connection_sharing: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features mcp_tool_list_changed: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features model_catalog_in_context: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features multi_agent_v2_dynamic_tools: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features multi_env_copy_file: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features nonfatal_clock_read_errors: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features omit_skill_descriptions: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features output_token_replay: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features prefer_mxc: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features retain_client_tool_outputs: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features runtime_agent_instances: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features send_message_to_user_async: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features simplified_selection_hints: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features skill_catalog_deltas: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features stable_environment_tools: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features subagent_default_context_limits: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features subagent_thread_environments: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features tui_multi_backend: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features untrusted_as_tool_output: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features use_xaa: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex features wake_on_agent_messages: not_applicable (off by default, or classified by VELDO-0127; Veldo writes every listed feature it does not grant off)
+new codex tools_without_server list_mcp_resource_templates: not_applicable (offered to a Code Mode model with no MCP server selected; with no server there is nothing to list or read. Cannot be switched off (each non-tool feature forced off leaves it); accepted on the wire for a run without a server, never granted; with a selected server the three are its grant as before (Telegram 29400/29401 amended by 38878))
+new codex tools_without_server list_mcp_resources: not_applicable (offered to a Code Mode model with no MCP server selected; with no server there is nothing to list or read. Cannot be switched off (each non-tool feature forced off leaves it); accepted on the wire for a run without a server, never granted; with a selected server the three are its grant as before (Telegram 29400/29401 amended by 38878))
+new codex tools_without_server read_mcp_resource: not_applicable (offered to a Code Mode model with no MCP server selected; with no server there is nothing to list or read. Cannot be switched off (each non-tool feature forced off leaves it); accepted on the wire for a run without a server, never granted; with a selected server the three are its grant as before (Telegram 29400/29401 amended by 38878))
+new codex grants request_user_input_async: off by VELDO-0127 AC4 (on this binary the asynchronous user message reaches the model only with tools.experimental_request_user_input on, which also delivers the synchronous request_user_input that no role lists; the run launches without it)
+new codex items: 66, 7 granted, 55 not_applicable, 4 off
+new claude_code tools GetTask: not_applicable (not callable: the binary answers that GetTask is not a tool you can call (a background result arrives by itself))
+new claude_code tools OfferChromeSetup: off by VELDO-0160 AC3 (shows the person a setup card for Claude in Chrome and blocks until they answer, to use their own signed-in browser, accounts and cookies)
+new claude_code tools PublishPlugin: off by VELDO-0160 AC3 (publishes a plugin folder of this machine to the organization's library on claude.ai)
+new claude_code tools ReadWidgetContext: not_applicable (reads the state an MCP App view drawn in the conversation shared; a print-mode run draws no view)
+new claude_code tools SendToProject: off by VELDO-0160 AC3 (creates or updates a Claude Project on claude.ai with this session's brief and repository)
+new claude_code tools SendToProjectContext: off by VELDO-0160 AC3 (the context companion of SendToProject, sent to claude.ai)
+new claude_code tools WrapUp: not_applicable (fills the desktop app's next-step box under a closing message; a print-mode run has no app to draw it)
+new claude_code environment ALLUSERSPROFILE: granted (a home name the worker's tools need, as APPDATA and PROGRAMDATA)
+new claude_code environment BUN_TLS_REFUSE_DISTRUSTED_KEYS: granted (TLS hardening of the runtime, as NODE_TLS_REJECT_UNAUTHORIZED)
+new claude_code environment CCR_AGENT_PROXY_TOKEN_FILE_DESCRIPTOR: off by VELDO-0062 AC1 (a token handed through a file descriptor to an agent proxy; stripped and refused when configured)
+new claude_code environment CLAUDE_CODE_3P_PROBE_WROTE_HAIKU_DEFAULT: granted (model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login))
+new claude_code environment CLAUDE_CODE_3P_SEEDED_OPUS_DEFAULT: granted (model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login))
+new claude_code environment CLAUDE_CODE_3P_SEEDED_SONNET_DEFAULT: granted (model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login))
+new claude_code environment CLAUDE_CODE_DISABLE_HTTPS_AGENT_KEEPING: granted (a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE: off the inherited environment, passed when the adapter configures it)
+new claude_code environment CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP: granted (a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE)
+new claude_code environment CLAUDE_CODE_DISABLE_SELF_NAMED_CERT_DROP: granted (a Claude Code connection setting, not a login, as CLAUDE_CODE_CERT_STORE)
+new claude_code environment CLAUDE_CODE_GB_BASE_URL: off by VELDO-0062 AC1 (an endpoint override of the feature-flag service; stripped and refused when configured, as the other endpoint overrides)
+new claude_code environment CLAUDE_CODE_SESSIONS_OAUTH_TOKEN: off by VELDO-0062 AC1 (a session OAuth token: a login other than the account's subscription; stripped and refused when configured)
+new claude_code environment CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL: granted (model configuration, as model_config's other names: off the inherited environment, passed when the adapter configures it (a configured model is a capability, not a login))
+new claude_code environment INPUT_CLAUDE_CODE_SESSIONS_OAUTH_TOKEN: off by VELDO-0062 AC1 (a session OAuth token: a login other than the account's subscription; stripped and refused when configured)
+new claude_code environment NPM_CONFIG_HTTPS_PROXY: granted (the general proxy npm uses, as HTTPS_PROXY)
+new claude_code environment NPM_CONFIG_HTTP_PROXY: granted (the general proxy npm uses, as HTTP_PROXY)
+new claude_code environment NPM_CONFIG_PROXY: granted (the general proxy npm uses, as HTTPS_PROXY)
+new claude_code environment SSL_CERT_DIR: granted (the CA directory the worker's tools verify TLS with, as NODE_EXTRA_CA_CERTS)
+new claude_code environment SSL_CERT_FILE: granted (the CA bundle the worker's tools verify TLS with, as NODE_EXTRA_CA_CERTS)
+new claude_code options --allow-other-models: not_applicable (widens model selection; Veldo passes the role's model and only its qualified flags)
+new claude_code options --client-data-url: not_applicable (a client data URL for a hosted client; never passed)
+new claude_code options --desktop: not_applicable (the desktop app mode; never passed)
+new claude_code options --fast-mode: off by VELDO-0062 AC2 (the faster output mode draws on extra usage the run's reservation does not meter)
+new claude_code options --host-auth-is-org-sign-in: off by VELDO-0062 AC1 (marks a host-provided login as an organization sign-in)
+new claude_code options --include-unsupported-models: not_applicable (lists unsupported models in the picker; Veldo passes the role's model)
+new claude_code messages system/file_attachments_missing: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/inherited_asks_settled: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/instruction_size_warning: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/permission_check_status: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/session_title_changed: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/session_writes_lost: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_focus: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_invalidate: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_log: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_panes: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_placed: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_scroll: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_status: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code messages system/ui_toast: granted (a status or UI frame of the stream; its schema carries no tool call (a tool_use_id it may name is a free field), so the reader knows it as a message of the union)
+new claude_code frames system/session_metadata: granted (session metadata the CLI writes outside the message union; its schema carries no tool call, so the reader takes it as tool-free)
+new claude_code tool_fields assistant tool_use_meta.tool_name: granted (a display copy of a tool_use block's name, read in the content; no call of its own)
+new claude_code tool_fields result/error_during_execution process_turn_states.agent_tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_during_execution process_turn_states.tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_during_execution tool_schema_build_detail: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/error_during_execution tool_schema_build_detail.tools: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/error_max_budget_usd process_turn_states.agent_tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_max_budget_usd process_turn_states.tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_max_budget_usd tool_schema_build_detail: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/error_max_budget_usd tool_schema_build_detail.tools: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/error_max_structured_output_retries process_turn_states.agent_tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_max_structured_output_retries process_turn_states.tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_max_structured_output_retries tool_schema_build_detail: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/error_max_structured_output_retries tool_schema_build_detail.tools: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/error_max_turns process_turn_states.agent_tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_max_turns process_turn_states.tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/error_max_turns tool_schema_build_detail: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/error_max_turns tool_schema_build_detail.tools: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/success process_turn_states.agent_tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/success process_turn_states.tool: granted (diagnostic state of the turn's processes at its end, naming a tool the stream already showed; no call of its own)
+new claude_code tool_fields result/success tool_schema_build_detail: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields result/success tool_schema_build_detail.tools: granted (diagnostic detail of how the tool schemas were built (the tools offered); no call of its own)
+new claude_code tool_fields system/permission_check_status tool_use_id: granted (the id of a call waiting on its permission check (status checking or done), as permission_denied's tool_use_id; the call itself is its tool_use block)
+new claude_code tool_fields user tool_result_meta.built_in_tool: granted (display metadata of a tool_result block: the built-in tool whose completed run made the result, a copy of the call the content shows)
+new claude_code tool_fields user tool_states: granted (the MCP App views' states a remote client sends with a prompt (widget context); no call of its own and nothing a print-mode run receives)
+new claude_code routing CLAUDE_CODE_REMOTE_TOOLS_FORWARD: off by VELDO-0160 AC3 (the switch that routes a file tool's or Bash's _host to another machine; stripped from the inherited environment and refused when configured (CREDENTIALS), and a _host naming another machine still asks (IN_RUN_HOST))
+new claude_code plugins cc-plugin-claude-platform@builtin: off by VELDO-0127 AC4 (setup guidance for Claude Platform on AWS or Google Cloud; a worker authenticates only with its subscription login and loads only what its role lists; turned off)
+new claude_code plugins cc-plugin-claude-test@builtin: off by VELDO-0127 AC4 (a test-and-fix workflow (Claude tests your app, fixes what it finds, and checks again) the role does not list; turned off)
+new claude_code plugins cc-plugin-diff@builtin: not_applicable (a diff view of the interactive terminal; a stream-JSON worker draws nothing; turned off with the rest)
+new claude_code plugins cc-plugin-easel@builtin: not_applicable (a canvas of the interactive and remote cowork sessions; a stream-JSON worker draws nothing; turned off with the rest)
+new claude_code plugins cc-plugin-mermaid@builtin: not_applicable (draws mermaid code fences as box-drawing text in the interactive terminal; a stream-JSON worker draws nothing; turned off with the rest)
+new claude_code plugins cc-plugin-mods-guide@builtin: off by VELDO-0127 AC4 (teaches the model how this build's mods are written, a skill and context the role does not list; turned off)
+new claude_code plugins cc-plugin-responsive-mode@builtin: off by VELDO-0127 AC4 (adds instructions to every prompt (reply in a sentence before thinking or using tools), context the role does not list; turned off)
+new claude_code plugins cc-plugin-sec-default@builtin: granted (the organization's security guard, seated by the account (a Team or Enterprise organization, or managed settings) and enabled from policy only, so no setting Veldo writes turns it off; it keeps the organization's hooks, settings and tool policy above plugins a person installs and adds no tool, skill or policy of its own; left on, and the init comparison accepts it present or absent)
+new claude_code plugins cc-plugin-tips@builtin: not_applicable (tips shown to a person in the interactive terminal; a stream-JSON worker shows none; turned off with the rest)
+new claude_code plugins cc-plugin-you-should-know@builtin: off by VELDO-0127 AC4 (a side agent that watches the session and surfaces notes above the prompt, a model process the role does not list; turned off)
+new claude_code items: 81, 54 granted, 11 not_applicable, 16 off
+claude_code built-in plugins and skills turned off in a role-bound run: cc-plugin-agents-md@builtin, cc-plugin-claude-platform@builtin, cc-plugin-claude-test@builtin, cc-plugin-diff@builtin, cc-plugin-easel@builtin, cc-plugin-mermaid@builtin, cc-plugin-mods-guide@builtin, cc-plugin-plugin-authoring@builtin, cc-plugin-privacy@builtin, cc-plugin-responsive-mode@builtin, cc-plugin-telemetry@builtin, cc-plugin-tips@builtin, cc-plugin-you-should-know@builtin; design, doctor, plugin-authoring
+claude_code built-in plugins granted (left on, accepted in the init event): cc-plugin-sec-default@builtin
+wrote .veldo/runtime/engines.json
+wrote engine/runtime/engines.json
+wrote proof/VELDO-0062/cli-formats.json
+wrote proof/VELDO-0061/codex-exec.json
+wrote proof/VELDO-0060/cli-options.json
+wrote proof/VELDO-0141/stream-formats.json
+wrote proof/VELDO-0155/claude-baseline.json
+wrote proof/VELDO-0156/codex-baseline.json
+wrote proof/VELDO-0156/codex-rendered.json
+wrote proof/VELDO-0156/codex-mentions.json
+wrote proof/VELDO-0165/claude-environment.json
+wrote proof/VELDO-0165/codex-environment.json
+wrote proof/VELDO-0173/claude-tools.json
+wrote proof/VELDO-0185/login-status.json
+wrote .veldo/runtime/codex-qualification.json
+wrote engine/runtime/codex-qualification.json
+wrote .veldo/runtime/claude-qualification.json
+wrote engine/runtime/claude-qualification.json
+wrote proof/VELDO-0127/catalog-fixture.json
+wrote proof/VELDO-0127/fixture-models.json
+wrote proof/VELDO-0127/features-fixture.json
+wrote proof/VELDO-0127/resources-gpt-6-astra-selected.json
+wrote proof/VELDO-0127/resources-gpt-6-astra-none.json
+wrote proof/VELDO-0127/resources-gpt-5.5-selected.json
+wrote proof/VELDO-0127/resources-gpt-5.5-none.json
+wrote proof/VELDO-0127/resource-qualification.json

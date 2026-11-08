@@ -637,6 +637,23 @@ def _tree_digest(worktree: Path) -> str:
     return h.hexdigest()
 
 
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
+
+
 def main(argv: list) -> int:
     if len(argv) >= 4 and argv[1] == "run":
         try:
@@ -658,7 +675,7 @@ def main(argv: list) -> int:
         # finding whose four results all passed, which is the one someone will want to look at again.
         # A record naming a directory that has been deleted is worth less than the disk it saved.
         # The record names the directory; whoever runs this removes it when they are done with it.
-        (out / "fix-validation.json").write_text(json.dumps(rec, indent=1, sort_keys=True) + "\n")
+        (out / "fix-validation.json").write_text(home_as_tilde(json.dumps(rec, indent=1, sort_keys=True) + "\n"))
         print(json.dumps({"all_results_passed": rec["all_results_passed"], "open": rec["open"],
                           "worktree_unchanged": rec["worktree_unchanged"], "closes_findings": False}))
         # Zero means every finding's four mechanical results passed. It does not mean anything closed:

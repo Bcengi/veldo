@@ -72,6 +72,23 @@ def differences(a, b, path='$'):
     return [] if type(a) is type(b) and a == b else [{'field': path, 'old': a, 'new': b}]
 
 
+def home_as_tilde(text):
+    """Evidence text with the user's home directory written as ~ (VELDO-0259). The personal-setup gate
+    stage refuses a home path on any line a candidate adds, proof/ included, so the writer that records
+    into proof/ does this when it writes, and no builder has to remember to."""
+    import os
+    import re
+    homes = {os.path.expanduser('~')}
+    try:
+        import pwd
+        homes.add(pwd.getpwuid(os.getuid()).pw_dir)
+    except (ImportError, KeyError):
+        pass
+    for home in sorted({h.rstrip('/') for h in homes if h and h.rstrip('/')}, key=len, reverse=True):
+        text = re.sub(re.escape(home) + r'(?![A-Za-z0-9_.\-])', lambda _: '~', text)
+    return text
+
+
 def main():
     old = archive('.veldo/validate.py', {'front_matter', 'parse_yamlish', '_split_top', '_scalar',
                                        '_parse_block', '_parse_map', '_parse_list'})
@@ -115,7 +132,7 @@ def main():
               'different': sum(bool(r['comparisons']) for r in rows), 'corpus': rows,
               'additional_yaml': additional}
     target = ROOT / 'proof/VELDO-0110/corpus-before.json'
-    target.write_text(json.dumps(report, indent=2, ensure_ascii=True) + '\n')
+    target.write_text(home_as_tilde(json.dumps(report, indent=2, ensure_ascii=True) + '\n'))
     refused = [r for r in rows if any(any(d['field'].startswith('$.refusal') for d in ds)
                                     for ds in r['comparisons'].values())]
     lines = ['# Parser corpus comparison before migration', '',
@@ -137,7 +154,7 @@ def main():
               'prose must become quoted content. Actual status/risk annotations must become comments, not status values. '
               'Flattened-reader differences also expose lists, numbers, and quote delimiters that used to be strings. '
               'No refusal is resolved by this report, and historical proof bindings must not be fabricated after document edits.', '']
-    (target.parent / 'corpus-before.md').write_text('\n'.join(lines))
+    (target.parent / 'corpus-before.md').write_text(home_as_tilde('\n'.join(lines)))
     print(f'{len(rows)} documents, {report["different"]} differ, {len(refused)} refused; report: {target}')
 
 

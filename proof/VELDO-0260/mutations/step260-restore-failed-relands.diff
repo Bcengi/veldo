@@ -1,0 +1,5 @@
+--- a/.veldo/control_landing.py
++++ b/.veldo/control_landing.py
+@@ -757 +757 @@
+-                unrestored = next((c for c in trees if c['outcome'] == 'restore_failed'), None)
++                unrestored = None  # defect: a failed rollback ends as trunk-moved

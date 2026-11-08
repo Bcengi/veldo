@@ -432,6 +432,8 @@ def _v168_suite():
                 ('control_telegram_report.py', 'Reporter.report', 'self', '_send'),
                 ('control_intake.py', 'Intake._ask', 'self.asker', 'send'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'presenter', '_send'),
+                # VELDO-0254 AC2: the owner's notice of a secret scan that found a credential or failed.
+                ('control_service_channel.py', 'Channel.tell_secrets', 'presenter', '_send'),
                 ('control_client_api.py', 'ServiceAuthority._call', 'CC', 'send'),
                 # Setup and passkey commands use the local authority socket, not a Telegram renderer.
                 ('control_factory_setup.py', 'enroll_api_edge_through_service.send', 'CC', 'send'),
@@ -464,6 +466,7 @@ def _v168_suite():
                 ('control_channel_presentation.py', 'Presenter._tell', 'TEXT.message'),
                 ('control_channel_presentation.py', 'Presenter._hint_text', 'TEXT.visible'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'V.TEXT.message'),
+                ('control_service_channel.py', 'Channel.tell_secrets', 'V.TEXT.message'),
             }
             wanted_assignments = {
                 ('control_channel_presentation.py', 'Presenter._tell', 'text', 'TEXT.message(text, free_text=False)'),

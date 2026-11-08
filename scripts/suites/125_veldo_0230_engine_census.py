@@ -11,7 +11,10 @@ require the census to name it (AC1's falsifier); census/planted-model and census
 catalog model name, a built-in plugin name and a two-name tuple of the built-in skills. newer/claude-tool reads the shipped Claude Code entry with one
 registry tool its classification does not know: the VELDO-0173 extractor's classification makes it outward,
 the record qualifies (no refusal), the launch options switch it off and the qualify command lists it by name
-(AC3). setup/engines-record points `claude` on PATH at a newer, unqualified version and requires factory
+(AC3). qualify/claude-record-written runs the qualify command's main in scratch with the binaries' readings
+replaced by the checkout's recorded ones (no binary runs) and the engine canon's Claude Code record removed:
+the command writes and reports the record in both runtimes, byte-identical to the shipped one (AC2; suite 126's
+qualify/covers proves the same end to end against the real binaries). setup/engines-record points `claude` on PATH at a newer, unqualified version and requires factory
 setup's engine check to take the engines record's copy, and to refuse by name, not fall back to PATH, when the
 record is absent (AC4). The Codex half of AC3 is suite 88's defaults/unknown row. Reads the checkout and the
 qualified binaries' digests; writes only temporary files.
@@ -35,7 +38,7 @@ def _v230_census_suite():
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
     }
     ROWS = ('census/clean', 'census/planted-version', 'census/planted-digest', 'census/planted-model',
-            'census/planted-builtin', 'newer/claude-tool', 'setup/engines-record')
+            'census/planted-builtin', 'newer/claude-tool', 'qualify/claude-record-written', 'setup/engines-record')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -119,6 +122,71 @@ def _v230_census_suite():
               and claude.qualified_baseline({'version': version}, record) == claude.BASELINE)
     except Exception as error:
         check('newer/claude-tool', 'raised ' + type(error).__name__ + ': ' + str(error)[:200], False)
+
+    # qualify/claude-record-written: the qualify command's own main, driven to its Claude Code record with the
+    # binaries' readings replaced by the checkout's recorded ones (the engines record, the Codex record, the
+    # Claude Code entry before main's own AC3 steps, and the proof tables main reads), so no binary runs. The
+    # engine canon's copy is removed first: the command must write it again, and report it, from the record it
+    # builds (suite 126's qualify/covers proves the same end to end against the real binaries).
+    temp = tempfile.mkdtemp(prefix='v230-written-')
+    try:
+        tree = Path(temp)
+        for part in ('.veldo/runtime/engines.json', '.veldo/runtime/codex-qualification.json',
+                     '.veldo/runtime/claude-qualification.json', '.veldo/runtime/capability-decisions.json',
+                     'engine/runtime/engines.json', 'engine/runtime/codex-qualification.json',
+                     'proof/VELDO-0060/cli-options.json', 'proof/VELDO-0062/cli-formats.json',
+                     'proof/VELDO-0156/codex-baseline.json'):
+            (tree / part).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / part, tree / part)
+        for name in ('codex', 'claude'):
+            (tree / name).write_bytes(b'#!/bin/sh\nexit 1\n')
+        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())
+        codex_shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'codex-qualification.json').read_text())
+        version = engines['claude_code']['version']
+
+        def recorded_claude(root, executable):
+            # What claude_record returns: the plugins discovered (turned off and accepted alike), before main's
+            # new-capability, stream-form and plugin-split steps.
+            record = copy.deepcopy(shipped)
+            entry = record['versions'][version]
+            entry['engine_plugins'] = sorted(set(entry['engine_plugins']) | set(entry.pop('accepted_plugins', ())))
+            for key in ('new_capabilities', 'stream_forms'):
+                entry.pop(key, None)
+            return record
+
+        class RecordedCodex:
+            @staticmethod
+            def qualification(executable, catalog=False):
+                record = copy.deepcopy(codex_shipped)
+                record.pop('new_capabilities', None)
+                return record
+
+        written_qualify = load('v230_written_qualify', PRODUCTION['qualify.py'])
+        real_load = written_qualify.load
+        written_qualify.EXTRACTORS = ()
+        written_qualify.engines_record = lambda codex, claude: copy.deepcopy(engines)
+        written_qualify.load = lambda name, path: RecordedCodex if name == 'qualify_codex' else real_load(name, path)
+        written_qualify.claude_record = recorded_claude
+        written_qualify.fixtures = lambda root, executable, written: None
+        import contextlib
+        import io
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = written_qualify.main(['--codex', str(tree / 'codex'), '--claude', str(tree / 'claude'),
+                                         '--root', str(tree)])
+        reported = {line[len('wrote '):] for line in out.getvalue().splitlines() if line.startswith('wrote ')}
+        wanted = {'.veldo/runtime/claude-qualification.json', 'engine/runtime/claude-qualification.json'}
+        check('qualify/claude-record-written', 'the command writes and reports the Claude Code record in both '
+              'runtimes [exit %s; missing %s]' % (code, sorted(wanted - reported)), code == 0 and wanted <= reported)
+        expected = (ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_bytes()
+        differing = [name for name in sorted(wanted)
+                     if not (tree / name).is_file() or (tree / name).read_bytes() != expected]
+        check('qualify/claude-record-written', 'each copy holds the record the recorded readings give, the shipped '
+              'one [differing %s]' % differing, not differing)
+    except (Exception, SystemExit) as error:
+        check('qualify/claude-record-written', 'raised ' + type(error).__name__ + ': ' + str(error)[:200], False)
+    finally:
+        shutil.rmtree(temp, ignore_errors=True)
 
     temp = tempfile.mkdtemp(prefix='v230-setup-')
     saved = os.environ.get('PATH', '')

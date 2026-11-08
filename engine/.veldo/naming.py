@@ -75,7 +75,7 @@ CASE = {
     "branding": "Veldo",
     "identifiers": "VELDO",
     "test": r"VELDO(?![_-]?[A-Z0-9#N])(?!\.[a-z])",
-    "ruled_by": "dmitry",
+    "ruled_by": "owner",
     "ruled_at": "2026-08-09",
 }
 

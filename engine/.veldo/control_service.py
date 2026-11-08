@@ -101,8 +101,9 @@ anything else refuses installation by name) into config/work.json, and `serve` b
 one Line per repository, whose VELDO-0039 Runner dispatches through the repository's installed launch receiver,
 choosing each dispatch's account from the VELDO-0160 pool, over this instance's connection as its principal. A
 pass starts only when something woke it: a packet or channel pass that advanced the journal (hint_after), a run's
-end on a launch pipe the service loop's poll set watches, or the account reset timer the last pass set for the
-earliest reset a waiting unit needs. A pass settles each run that ended (a receiver that died has its run
+end on a launch pipe the service loop's poll set watches, the account reset timer the last pass set for the
+earliest reset a waiting unit needs, or (VELDO-0260) a change to the git index, HEAD or index lock of a working
+tree a waiting re-land names (the station's cheap probe then decides; no rebuild or gate is polled). A pass settles each run that ended (a receiver that died has its run
 recorded outcome_unknown and its account slot freed), offers every unit the builder holds a claim on its next
 station (build, then review once the build completed; the Gate refuses a paused project's units, so none is
 offered; VELDO-0241: the stations, and the order they come in, are the unit's bound workflow revision, the shipped
@@ -274,6 +275,8 @@ LIM = _organ('control_account_limit', lazy=True)
 LS = _organ('control_landing_station', lazy=True)
 # VELDO-0241: a unit's process, the versioned workflow revision the Line runs it by.
 WU = _organ('control_workflow_unit', lazy=True)
+# VELDO-0239: the owner's batches of a line's project, run on the line's pass.
+BS = _organ('control_batch_service', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -1613,11 +1616,20 @@ class Service:
         self._log(dict(sent, kind='api', operation='api_announce', at=time.time(), domain_uuid=self.domain))
         return sent
 
+    def installation_status(self):
+        """The installation folder and revision this service loaded (VELDO-0259), read once through the one
+        reader, which prints its resolution line."""
+        loaded = getattr(self, 'installation_loaded', None)
+        if loaded is None:
+            loaded = _organ('installation').trace()
+            self.installation_loaded = loaded
+        return dict(loaded)
+
     def api_status(self):
         if self.api is None:
             return {'available': False, 'configured': bool(self.config.get('api_service')),
-                    'refusal': self.api_refusal}
-        return dict(self.api.status(), configured=True)
+                    'refusal': self.api_refusal, 'installation': Service.installation_status(self)}
+        return dict(self.api.status(), configured=True, installation=Service.installation_status(self))
 
     def inbox(self, repository):
         """VELDO-0064's inbox of `repository` on this instance's connection, made for each use: its
@@ -2093,6 +2105,24 @@ class Line:
             principal=service.principal, signer=service.principal, sign=service.sign, generation=service.generation,
             settlement_trust=self.gate.settlement_trust,
             observe=lambda event: service._log(dict(event, kind='land', at=time.time()))) if roles.get('land') else None
+        # VELDO-0239: the owner's `/batch <project>` requests of this repository, run with the same land
+        # configuration, the repository's identity record and the repository's inbox for his approval.
+        self.batches = self.batch_line() if roles.get('land') else None
+
+    def batch_line(self):
+        service, land = self.service, self.roles['land']
+        identities = _organ('control_git_identity')
+        try:
+            record = identities.resolve(service.conn, service.domain, self.repository, land['repository'])
+        except identities.Refused:
+            record = None
+        return BS.BatchLine(
+            S, service.conn, domain=service.domain, repository=self.repository, land=land, signer=service.principal,
+            sign=service.sign, generation=service.generation, store_uuid=service.store,
+            command_sign=lambda data: SIG.sign_bytes(service.config['journal_key'], data, AC.SIGNATURE_NAMESPACE),
+            inbox=lambda: service.inbox(self.repository),
+            identity=identities.author(record) if record else None,
+            push_identity=record, observe=lambda event: service._log(dict(event, kind='batch', at=time.time())))
 
     def invoke(self, contract):
         """The Runner's receiver: the installed launch receiver of this repository, a separate process."""
@@ -2116,15 +2146,21 @@ class Line:
                        and isinstance(claim.get('unit_id'), str) and claim['unit_id']})
 
     def latest(self):
-        """{(unit, station): the record of its latest attempt} over this repository's dispatch records."""
+        """{(unit, station): the record of its latest attempt} over this repository's dispatch records, and
+        (VELDO-0247) {(unit, station, node): the latest attempt of that station at that node of the unit's workflow}
+        for every record whose payload names its node, which a process holding several nodes of one kind reads."""
         found = {}
         for record in self._rows(L.D.RECORD_KIND):
             contract = (record or {}).get('contract') or {}
             if contract.get('domain') != self.service.domain or contract.get('repository') != self.repository:
                 continue
             key = (contract.get('unit'), contract.get('station'))
-            if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):
-                found[key] = record
+            payload = (contract.get('input') or {}).get('payload') if isinstance(contract.get('input'), dict) else None
+            workflow = payload.get('workflow') if isinstance(payload, dict) else None
+            node = workflow.get('node') if isinstance(workflow, dict) else None
+            for key in [key] + ([key + (node,)] if isinstance(node, str) else []):
+                if key not in found or contract.get('attempt', 0) > found[key]['contract'].get('attempt', 0):
+                    found[key] = record
         return found
 
     def invocation(self, dispatch_id):
@@ -2173,6 +2209,8 @@ class Line:
         latest = self.latest()
         for unit in self.assigned():
             self.next(unit, latest, report)
+        if getattr(self, 'batches', None) is not None:
+            report.setdefault('batches', []).extend(self.batches.pass_once())
 
     def wants_cycles(self):
         """Whether this line runs project cycles: an active project executes in its repository, or it is the
@@ -2227,7 +2265,8 @@ class Line:
         found, definition = process
         last = self.station.latest(unit) if self.station is not None else None
         state = {'unit': unit, 'latest': latest, 'report': report, 'pin': found, 'definition': definition,
-                 'last': last, 'anchor': None, 'build': None, 'port': None, 'landed': False}
+                 'last': last, 'anchor': None, 'build': None, 'port': None, 'landed': False, 'branch': None,
+                 'route': [], 'branches': {}}
         if last is not None:
             lands = WU.nodes_of(definition, LS.STATION)
             named = (last.get('workflow') or {}).get('node') if isinstance(last.get('workflow'), dict) else None
@@ -2236,7 +2275,8 @@ class Line:
                 return None
         else:
             start = definition['entry']
-        problem, value = WU.walk(definition, start, lambda node, kind: self.station_step(state, node, kind))
+        problem, value = WU.walk(definition, start, lambda node, kind: self.station_step(state, node, kind),
+                                 fork=lambda branch: self.fork(state, branch))
         if problem is not None:
             report['refused'].append({'repository': self.repository, 'unit': unit, 'station': None,
                                       'refusals': [problem]})
@@ -2246,8 +2286,8 @@ class Line:
         """(pin, definition) of the revision `unit` runs: the one its stations recorded (control_workflow_unit
         .pinned), the shipped `code` for a unit whose stations predate that record, else for its first station the
         revision its project binds for its kind of work (resolve). None, named in the pass, when it is missing."""
-        records = [record for (owner, _station), record in sorted(latest.items(), key=lambda item: str(item[0]))
-                   if owner == unit]
+        records = [record for key, record in sorted(latest.items(), key=lambda item: str(item[0]))
+                   if len(key) == 2 and key[0] == unit]
         last = self.station.latest(unit) if self.station is not None else None
         found = next((WU.recorded(((r.get('contract') or {}).get('input') or {}).get('payload')) for r in records
                       if WU.recorded(((r.get('contract') or {}).get('input') or {}).get('payload'))), None)
@@ -2279,8 +2319,17 @@ class Line:
         the land (VELDO-0058) and the first land and its approval are the landing path's, so a gate node, and an
         approval or land node with nothing for the Line to do, waits; an end node ends."""
         workflow = dict(state['pin'], node=node)
+        # VELDO-0247: a station in a parallel branch records its branch, and one after a check the route it took.
+        if state['branch'] is not None:
+            workflow['branch'] = state['branch']
+        if state['route']:
+            workflow['route'] = list(state['route'])
         self.__dict__.setdefault('processes', {})[state['unit']] = workflow
         arrived, state['port'] = state['port'], None
+        if kind == WU.WF.CHECK:
+            return self.step_check(state, node)
+        if kind == WU.WF.JOIN:
+            return self.step_join(state)
         if kind == 'build':
             return self.step_build(state, workflow)
         if kind == 'review':
@@ -2291,6 +2340,71 @@ class Line:
             return 'stop', self.grant(state['unit'], state['last'], state['report'], workflow=workflow)
         return 'stop', None
 
+    def fork(self, state, branch):
+        """VELDO-0247: the act of one parallel branch, on its own copy of the walk's state (its position, the build
+        its stations follow, its route), kept under the branch id for the join."""
+        mine = dict(state, branch=branch, route=list(state['route']), port=None, branches={})
+        state['branches'][branch] = mine
+        return lambda node, kind: self.station_step(mine, node, kind)
+
+    def step_join(self, state):
+        """The join, reached only when every branch has arrived (control_workflow_unit.walk): the branches' builds
+        and routes are the unit's from here on, and it passes on by `done`."""
+        for _branch, mine in sorted(state['branches'].items()):
+            if mine['build'] is not None and mine['build'] is not state['build']:
+                state['build'] = mine['build']
+            state['route'] += [decision for decision in mine['route'] if decision not in state['route']]
+        state['branches'] = {}
+        return 'port', 'done'
+
+    def recorded_route(self, state, node):
+        """The branches the unit's station records hold as taken at check `node`."""
+        taken = set()
+        for key, record in state['latest'].items():
+            if key[0] != state['unit']:
+                continue
+            payload = ((record.get('contract') or {}).get('input') or {}).get('payload')
+            workflow = payload.get('workflow') if isinstance(payload, dict) else None
+            route = workflow.get('route') if isinstance(workflow, dict) else None
+            taken |= {d.get('branch') for d in route or () if isinstance(d, dict) and d.get('node') == node}
+        return taken
+
+    def step_check(self, state, node):
+        """VELDO-0247: a check node, evaluated by the Line as data (control_workflow.evaluate) over the fields its
+        definition declares from the subject, the unit's record. Exactly one branch is taken and its decision (the
+        rule and every condition with its observed value, a private field's only as a digest) goes into the pass
+        and the record of every station after it; a declared field with no value or the wrong type is refused
+        field_unsupplied and takes no branch; a branch a station of the unit already recorded at this check that
+        differs from the evaluation now is refused unsupported_workflow:branch_mismatch, and nothing follows."""
+        unit, report, definition = state['unit'], state['report'], state['definition']
+        fields = definition.get('fields') or {}
+        subject = self.gate.unit_record(unit) or {}
+        values = {name: subject[field['source']['subject']] for name, field in fields.items()
+                  if 'subject' in field['source'] and field['source']['subject'] in subject}
+        entry = {'repository': self.repository, 'unit': unit, 'station': WU.WF.CHECK, 'node': node,
+                 'branch': state['branch'], 'workflow': dict(state['pin'])}
+        decision, problem = WU.WF.evaluate(node, definition['nodes'][node]['config'], fields, values)
+        if problem is None and self.recorded_route(state, node) - {decision['branch']}:
+            problem = 'unsupported_workflow:branch_mismatch'
+        counts = self.__dict__.setdefault('check_counts', {})
+        if problem is not None:
+            counts[problem] = counts.get(problem, 0) + 1
+            report['refused'].append(dict(entry, refusals=[problem]))
+            return 'stop', None
+        shown = WU.WF.redacted(decision, fields)
+        key = '%s:%s' % (node, decision['branch'])
+        counts[key] = counts.get(key, 0) + 1
+        state['route'].append(shown)
+        report.setdefault('checks', []).append(dict(entry, decision=shown))
+        return 'port', decision['branch']
+
+    def at(self, state, station, node):
+        """The unit's latest record of `station`: by station, as today, when its process has one node of that kind,
+        else (VELDO-0247) the latest at exactly `node`."""
+        if len(WU.nodes_of(state['definition'], station)) <= 1:
+            return state['latest'].get((state['unit'], station))
+        return state['latest'].get((state['unit'], station, node))
+
     @staticmethod
     def follows(record):
         return ((((record or {}).get('contract') or {}).get('input') or {}).get('payload') or {}).get('follows')
@@ -2298,8 +2412,8 @@ class Line:
     def step_build(self, state, workflow):
         """The build station: offered when the unit has none (after a land, none following it: a new build told to
         merge the new trunk); passed on once it completed."""
-        unit, latest, report, last = state['unit'], state['latest'], state['report'], state['last']
-        build = latest.get((unit, 'build'))
+        unit, report, last = state['unit'], state['report'], state['last']
+        build = self.at(state, 'build', workflow['node'])
         if state['anchor'] is not None and self.follows(build) != state['anchor']:
             build = None
         if build is None and state['anchor'] is not None:
@@ -2333,8 +2447,8 @@ class Line:
     def step_review(self, state, workflow):
         """The review station: offered once the build before it completed, to a reviewer independent of its holder;
         a review that ended is handed to limited as today, and passes on once it completed."""
-        unit, latest, report = state['unit'], state['latest'], state['report']
-        review = latest.get((unit, 'review'))
+        unit, report = state['unit'], state['report']
+        review = self.at(state, 'review', workflow['node'])
         if state['anchor'] is not None and self.follows(review) != state['anchor']:
             review = None
         if review is not None:
@@ -2403,10 +2517,20 @@ class Line:
         holder, generation = self.claim_of(unit)
         entry = {'repository': self.repository, 'unit': unit, 'station': LS.STATION, 'identity': self.service.principal,
                  'follows': last['dispatch_id'], 'rerun_of': None}
+        # VELDO-0260: the tree a refused local publication named, its git files read before the station's cheap probe,
+        # so a change made while the probe ran still differs from what the loop then watches.
+        seen = (last.get('observed') or {}).get('working_tree')
+        before = (seen, tree_signature(seen)) if isinstance(seen, str) and seen else None
         try:
             record = self.station.land(unit, evidence=last['evidence'], holder=holder, generation=generation,
                                        follows=last['dispatch_id'], **({'workflow': workflow} if workflow else {}))
         except LS.Refused as error:
+            word, _, tree = error.code.partition(':')
+            if word in CHECKOUT_WAITS and tree:
+                # The landing waits on that working tree: a change to its git files wakes the loop (watch_tree).
+                self.loop.watch_tree(tree, before[1] if before and before[0] == tree else tree_signature(tree))
+                report['refused'].append(dict(entry, refusals=[error.code], working_tree=tree))
+                return None
             report['refused'].append(dict(entry, refusals=[error.code]))
             return None
         report['offered'].append(dict(entry, dispatch_id=record['dispatch_id'], attempt=record['attempt'],
@@ -2869,13 +2993,51 @@ class ConversationLine:
         return launch
 
 
+# VELDO-0260: the refusal words of a re-land that waits on a working tree holding the trunk, and the files of that
+# tree's git directory whose change wakes the loop (`working_tree`): its index, its HEAD and its index lock.
+CHECKOUT_WAITS = ('trunk_checkout_dirty', 'trunk_checkout_unmovable')
+TREE_WATCHED = ('index', 'HEAD', 'index.lock')
+
+
+def tree_git_dir(tree):
+    """VELDO-0260: the git directory of working tree `tree` (its `.git` directory, or the one a linked tree's `.git`
+    file names), read without running git; None when there is none."""
+    dot = os.path.join(tree, '.git')
+    if os.path.isdir(dot):
+        return dot
+    try:
+        text = Path(dot).read_text()
+    except (OSError, ValueError):
+        return None
+    if not text.startswith('gitdir:'):
+        return None
+    found = text[len('gitdir:'):].strip()
+    return found if os.path.isabs(found) else os.path.normpath(os.path.join(tree, found))
+
+
+def tree_signature(tree):
+    """VELDO-0260: what a change of working tree `tree` changes: its git directory and, for each watched file, its
+    inode, size and change times (None for one absent). Stats only; nothing is run or written."""
+    found, marks = tree_git_dir(tree), []
+    for name in TREE_WATCHED:
+        try:
+            info = os.stat(os.path.join(found, name)) if found else None
+        except OSError:
+            info = None
+        marks.append(None if info is None else (info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns))
+    return found, tuple(marks)
+
+
 class FactoryLoop:
     """THE FACTORY LOOP (VELDO-0154): the Runner of every line, inside this authority service, the one scheduling
-    instance. A pass starts only from its three WAKE SOURCES: a packet or channel pass that advanced the journal
+    instance. A pass starts only from its WAKE SOURCES: a packet or channel pass that advanced the journal
     (`journal`, from hint_after), a run's end seen on its launch pipe (`run_end`: the receiver's `exited` or
-    `unknown` report, or the pipe's end of file when the receiver died), and the account reset timer (`account_reset`,
-    set to the earliest reset a waiting unit needs). Nothing else starts one: the service loop's accept timeout
-    and channel pass start none, and the loop never polls. The wakes a service loop iteration collects make one
+    `unknown` report, or the pipe's end of file when the receiver died), the account reset timer (`account_reset`,
+    set to the earliest reset a waiting unit needs), and (VELDO-0260) a change to the git index, HEAD or index lock
+    of a working tree a re-land waits on (`working_tree`, watch_tree and trees_changed: a stat of those files at
+    each service loop iteration, never a pass, a rebuild or a gate by itself; on the wake the station's cheap probe
+    decides). Nothing else starts one: the service loop's accept timeout and channel pass start none, and the loop
+    never polls for work. The wakes a service loop iteration collects make one
     pass. Each pass is logged (kind `loop`) with its sources and what it ended, freed, offered, refused, left
     waiting, decided and asked, each land dispatch it ran (VELDO-0148), and the timer it set."""
 
@@ -2894,6 +3056,7 @@ class FactoryLoop:
         conversation_path = conversation_receiver(service.config)
         self.conversation = ConversationLine(self, conversation_path) if conversation_path else None
         self.wakes, self.ended, self.timer = [], [], None
+        self.trees = {}
         self.passes, self.last = 0, None
         self.counts = {'offered': 0, 'conversation_offered': 0, 'refused': 0, 'waiting': 0,
                        'asked': 0, 'released': 0, 'faults': 0, 'lands': 0}
@@ -3064,6 +3227,22 @@ class FactoryLoop:
     def wake(self, source, detail=None):
         self.wakes.append({'source': source, 'detail': detail, 'at': time.time()})
 
+    def watch_tree(self, tree, signature):
+        """VELDO-0260: a re-land waits on working tree `tree`, whose git files read `signature` before the probe
+        refused it; until the next pass, a change to them wakes the loop."""
+        self.trees[tree] = signature
+
+    def trees_changed(self):
+        """VELDO-0260: every watched working tree whose index, HEAD or index lock changed wakes the loop
+        (`working_tree`), once; the pass it starts asks the station's cheap probe again. Returns the trees."""
+        changed = []
+        for tree, signature in sorted(self.trees.items()):
+            if tree_signature(tree) != signature:
+                del self.trees[tree]
+                changed.append(tree)
+                self.wake('working_tree', tree)
+        return changed
+
     def pipes(self):
         """{fd: (line, launch)}: the launch pipe of every dispatch a Runner of this loop watches."""
         found = {}
@@ -3103,6 +3282,8 @@ class FactoryLoop:
         wakes, self.wakes = self.wakes, []
         ended, self.ended = self.ended, []
         self.timer = None
+        # VELDO-0260: the trees this pass's re-lands still wait on are watched again; the others no longer.
+        self.trees = {}
         self.passes += 1
         report = {'kind': 'loop', 'operation': 'loop_pass', 'pass': self.passes, 'at': time.time(),
                   'domain_uuid': self.service.domain, 'principal': self.service.principal,
@@ -3144,6 +3325,7 @@ class FactoryLoop:
 
     def status(self):
         return {'available': True, 'passes': self.passes, 'timer': self.timer, 'counts': dict(self.counts),
+                'watched_trees': sorted(self.trees),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
                 'last_sources': (self.last or {}).get('sources'),
@@ -3312,6 +3494,9 @@ def serve(config_path):
                             service.loop.readable(pipes[fd])
                     if service.loop is not None and service.loop.due(time.time()):
                         service.loop.wake('account_reset')
+                    # VELDO-0260: a working tree a waiting re-land names changed its git index, HEAD or index lock.
+                    if service.loop is not None and service.loop.trees:
+                        service.loop.trees_changed()
                     if service.channel is not None and not stopping and time.monotonic() >= next_pass:
                         service.channel_pass()
                         next_pass = time.monotonic() + CH.POLL_SECONDS

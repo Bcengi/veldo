@@ -1,4 +1,6 @@
-"""VELDO-0215: coordinator deadlines and authority measurements, with scratch stores only."""
+"""VELDO-0215: coordinator deadlines and authority measurements, with scratch stores only.
+VELDO-0285: an unmeasured case's baseline is bounded by the ceiling, and its noop and mutant by
+WORKER_MULTIPLIER times that baseline as measured in the same stage."""
 
 
 def _v215_case_deadlines():
@@ -132,12 +134,14 @@ def _v215_case_deadlines():
         maximums.extend([record_at(1, 80) == 900, record_at(31, 90) == 270])
         row('rolling-maximum', all(maximums))
 
-        def exercise(duration=150, fault=None, reuse_hit=False, measure=True):
+        def exercise(duration=150, fault=None, reuse_hit=False, measure=True, measured=True, parallel=1):
             runroot = scratch / ('run-' + str(len(list(scratch.glob('run-*')))))
             runroot.mkdir()
             times = runroot / 'times'
             # This is the authority's own root for this in-process fixture; its cache is scratch.
             sample(80)
+            if not measured:
+                (store / (key + '.json')).unlink()
             clock, kills, cleaned, children, alarms = [1.0], [], [], [], []
             pool = gate.SuiteResources({'suites': [{'file': 'sample.py'}], 'resource_capacities': {}})
             class Session:
@@ -182,11 +186,11 @@ def _v215_case_deadlines():
                 if Path(p).name == 'mutation_ownership.py':
                     return types.SimpleNamespace(cleanup=lambda home, ledger: cleaned.append(str(home)))
                 return real_load(p)
-            real_deadline, real_record = gate.case_deadline, gate.record_case_times
+            real_deadlines, real_record = gate.case_deadlines, gate.record_case_times
             with contextlib.ExitStack() as stack:
                 overrides = dict(inventory=lambda *a: [case], read_inputs=lambda *a: files,
                     git=lambda *a: 'head', snapshot=lambda *a: None, inputs_unchanged=lambda *a: True,
-                    load=loader, case_deadline=lambda k: real_deadline(k, store),
+                    load=loader, case_deadlines=lambda keys: real_deadlines(keys, store),
                     record_case_times=lambda root, samples, authority=False: real_record(
                         root, samples, times, authority=authority), CASE_TIMES=times)
                 for name, value in overrides.items():
@@ -198,7 +202,7 @@ def _v215_case_deadlines():
                 stack.enter_context(patch.object(gate.time, 'monotonic', lambda: clock[0]))
                 stack.enter_context(patch.object(gate.time, 'sleep', lambda _: None))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: alarms.append(a)))
-                receipt = gate.run_stage(runroot, runroot / '.git', parallel=1, measure=measure)
+                receipt = gate.run_stage(runroot, runroot / '.git', parallel=parallel, measure=measure)
             return receipt, children, kills, cleaned, times, alarms
 
         with patch.object(gate, 'inventory', side_effect=subprocess.TimeoutExpired('inventory', 120)):
@@ -224,6 +228,48 @@ def _v215_case_deadlines():
             and len(ch) == count and len(k) == len(cl) == count
             and r['surviving_workers'] == 0 and not list(t.glob('*.json'))
             for count, (r, ch, k, cl, t, _) in enumerate(hang_results, 1)))
+
+        # VELDO-0285: a case with no live sample. Its baseline measures (bounded only by the
+        # ceiling against a hang); its noop and mutant are held to 3 x that baseline's time.
+        def outcome(receipt, mode):
+            # A mode that never launched (its stage stopped first) is an empty outcome, a red row.
+            return next((o for o in receipt['worker_outcomes'] if o['mode'] == mode), {'elapsed': 0})
+        slow, _, _, _, slow_times, slow_alarms = exercise(measured=False)
+        base = outcome(slow, 'baseline')
+        derived = gate.WORKER_MULTIPLIER * base['elapsed']
+        slow_file = slow_times / (key + '.json')
+        slow_record = json.loads(slow_file.read_text()) if slow_file.exists() else {}
+        row('unmeasured-slow-baseline', slow['status'] == 'passed' and slow.get('unmeasured_cases') == [case['identity']]
+            and base.get('budget_seconds') == gate.WORKER_CEILING and base['elapsed'] > gate.WORKER_BUDGET
+            and derived == 450 and slow.get('case_deadlines') == {case['identity']: derived}
+            and outcome(slow, 'noop').get('budget_seconds') == outcome(slow, 'mutant').get('budget_seconds') == derived
+            and slow_record.get('seconds') == 150
+            # The plan bounds the whole stage at the ceiling; once measured, the rest is bounded
+            # by the derived deadlines, never above the plan.
+            and max(a[1] for a in slow_alarms) >= gate.BUDGET + 3 * gate.WORKER_CEILING
+            and slow['elapsed'] <= slow.get('budget_seconds') < max(a[1] for a in slow_alarms))
+        late = [exercise(measured=False, fault='hang-mutant'),
+                exercise(measured=False, fault='hang-noop', parallel=2)]
+        settled = gate.Workers(0)
+        settled.jobs['g:noop'] = {'budget_seconds': gate.WORKER_CEILING}
+        settled.outcomes.append(dict(name='g:noop', elapsed=500.0, budget_seconds=gate.WORKER_CEILING))
+        try:
+            settled.retarget('g:noop', 450)
+            judged = None
+        except gate.Refused as exc:
+            judged = exc.code
+        row('unmeasured-mutant-deadline', all(
+            r.get('error') == 'mutation_budget_exceeded' and r['surviving_workers'] == 0
+            and outcome(r, mode).get('error') == 'mutation_budget_exceeded'
+            and outcome(r, mode).get('budget_seconds') == 450 and 450 <= outcome(r, mode)['elapsed'] <= 480
+            and not list(t.glob('*.json'))
+            for mode, (r, _, _, _, t, _) in zip(('mutant', 'noop'), late))
+            and judged == 'mutation_budget_exceeded' and settled.outcomes[0].get('budget_seconds') == 450)
+        hung, hung_children, hung_kills, _, hung_times, _ = exercise(measured=False, fault='hang-baseline')
+        row('unmeasured-hang', hung.get('error') == 'mutation_budget_exceeded' and len(hung_children) == 1
+            and outcome(hung, 'baseline').get('error') == 'mutation_budget_exceeded'
+            and gate.WORKER_CEILING <= outcome(hung, 'baseline')['elapsed'] <= gate.WORKER_CEILING + 30
+            and hung_kills and hung['surviving_workers'] == 0 and not list(hung_times.glob('*.json')))
         bad, _, _, _, bad_times, _ = exercise(fault='false-baseline')
         row('baseline-details', bad['error'] == 'invalid_baseline'
             and 'inner operation expired' in bad['detail'] and 'TEST target' in bad['detail'])

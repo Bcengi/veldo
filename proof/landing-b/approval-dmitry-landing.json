@@ -1,0 +1,22 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-LANDING-B",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "landing-b",
+    "commit": "34e62fe01b55526ad2f8717b0c7a00ea0365d423",
+    "paths": [
+      "engine/scripts/check_gate_mutations.py",
+      "scripts/check_gate_mutations.py",
+      "scripts/gate_graph.json",
+      "scripts/gate_unconfined.json",
+      "scripts/propose_case_inputs.py",
+      "scripts/verify.sh"
+    ]
+  },
+  "basis": "Dmitry approved landing of the landing-b batch (20 tickets) at 34e62fe0 over Telegram on 2026-11-08: ask 39938 listed every protected path and explained the security-adjacent one, scripts/gate_unconfined.json adding suites 128 (VELDO-0254 confined runner, cannot be judged inside the gate's confinement) and 129 (VELDO-0254 canary launch, real launches in transient systemd scopes like suite 85) to the suites allowed to run outside the sandbox; the other five are test machinery (scripts/verify.sh, scripts/gate_graph.json, both copies of check_gate_mutations.py, scripts/propose_case_inputs.py). He answered 'Yes land it' in 39939. The canonical gate was GREEN at 34e62fe0. WHAT IT DOES NOT COVER: any other protected path or commit.",
+  "recorded_at": "2026-11-08T10:00:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-08T00:00:00Z"
+}

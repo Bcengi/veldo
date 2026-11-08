@@ -177,9 +177,24 @@ def case_deadline(key, times=CASE_TIMES):
     seconds = max((seconds for _, seconds in case_samples(key, times, time.time())), default=0)
     if not seconds:
         return WORKER_BUDGET
+    return scaled_deadline(seconds)
+
+
+def scaled_deadline(seconds):
+    """WORKER_MULTIPLIER times a measured time, within the floor and the ceiling."""
     # Clamp before multiplying, including finite floats near overflow.
     return min(WORKER_CEILING, max(WORKER_BUDGET,
                WORKER_MULTIPLIER * min(seconds, WORKER_CEILING)))
+
+
+def case_deadlines(keys, times=CASE_TIMES):
+    """Each case's worker deadline from its recorded samples, or None for a case with no live
+    sample. An unmeasured case's baseline in this stage is its measurement, not a judged run
+    (VELDO-0285): it is bounded only against a hang, and its noop and mutant are then held to
+    scaled_deadline of that baseline's time in the same stage."""
+    now = time.time()
+    return {identity: case_deadline(key, times) if case_samples(key, times, now) else None
+            for identity, key in keys.items()}
 
 
 def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
@@ -778,6 +793,21 @@ class Workers:
         if time.monotonic() - started >= self.budgets.get(name, WORKER_BUDGET):
             raise Refused('mutation_budget_exceeded', name + ': worker deadline (%gs)' % self.budgets.get(name, WORKER_BUDGET))
 
+    def retarget(self, name, seconds):
+        """A deadline known only once this stage measured the baseline it derives from
+        (VELDO-0285): a pending worker launches under it, a running one is held to it, and one
+        that already finished is judged by it."""
+        self.jobs[name]['budget_seconds'] = seconds
+        if name in self.budgets:
+            self.budgets[name] = seconds
+        for outcome in self.outcomes:
+            if outcome['name'] == name:
+                outcome['budget_seconds'] = seconds
+                if 'error' not in outcome and outcome['elapsed'] >= seconds:
+                    outcome.update(error='mutation_budget_exceeded',
+                                   detail=name + ': worker deadline (%gs)' % seconds)
+                    raise Refused('mutation_budget_exceeded', outcome['detail'])
+
     def release_snapshot(self, name):
         path = self.owned_snapshots.pop(name, None)
         if path is not None and path.exists():
@@ -1141,8 +1171,15 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                                            'worker_seconds': 0.0, 'executed': 0, 'reused': 0}
         files = read_inputs(root, expected_common)
         time_keys = {c['identity']: case_time_key(c, files, leg) for c in cases}
-        deadlines = {identity: case_deadline(key) for identity, key in time_keys.items()}
+        deadlines = case_deadlines(time_keys)
+        unmeasured = {identity for identity, seconds in deadlines.items() if seconds is None}
+        # Updated in place once this stage measures an unmeasured case's baseline.
         receipt['case_deadlines'] = deadlines
+        receipt['unmeasured_cases'] = sorted(unmeasured)
+        # Plan an unmeasured case at the ceiling: its baseline is bounded only against a hang, and
+        # its noop and mutant can be held to no more than that (VELDO-0285).
+        planned = {identity: WORKER_CEILING if seconds is None else seconds
+                   for identity, seconds in deadlines.items()}
         claims = None
         if admission:
             store = CaseClaims()
@@ -1211,9 +1248,9 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                               if c['identity'] in getattr(reuse, 'snapshots', {})}
             def group_for(case):
                 return case['identity'] if prepared_cases.get(case['identity']) else control_group(case)
-            controls = control_jobs(fresh, group_for, prepared_cases, deadlines, claims)
+            controls = control_jobs(fresh, group_for, prepared_cases, planned, claims)
             mutant_jobs = {c['identity']: {'case': c, 'mode': 'mutant',
-                           'budget_seconds': deadlines[c['identity']],
+                           'budget_seconds': planned[c['identity']],
                            **({'claim': claims[c['identity']]} if claims is not None else {}),
                            **prepared_cases.get(c['identity'], {})} for c in fresh}
             workers.resources = SuiteResources.from_root(frozen, capacities)
@@ -1230,7 +1267,34 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 log_dir = Path(log_dir).resolve()
                 log_dir.mkdir(parents=True, exist_ok=False)
                 directory = log_dir
-            control_results = workers.run(controls, directory, frozen)
+            members = collections.defaultdict(list)
+            for case in fresh:
+                members[group_for(case)].append(case)
+
+            def measured_baseline(name, completed):
+                # An unmeasured case's noop and mutant take their deadline from its baseline as
+                # measured in this stage; a measured member keeps its recorded deadline, and the
+                # shared noop serves the larger of them (VELDO-0285).
+                group, _, mode = name.rpartition(':')
+                own = [c for c in members[group] if c['identity'] in unmeasured]
+                if mode != 'baseline' or not own:
+                    return
+                seconds = scaled_deadline(completed['elapsed'])
+                for case in own:
+                    deadlines[case['identity']] = seconds
+                    mutant_jobs[case['identity']]['budget_seconds'] = seconds
+                workers.retarget(group + ':noop', max(deadlines[c['identity']] for c in members[group]))
+
+            control_results = workers.run(controls, directory, frozen, on_result=measured_baseline)
+            if unmeasured.intersection(c['identity'] for c in fresh):
+                # The mutants' deadlines are measured now: the rest of the stage is bounded by
+                # them, never by more than the plan made at the ceiling.
+                budget = min(budget, time.monotonic() - started + budget_for(
+                    len(full_inventory), workers.parallel, [mutant_jobs.values()], workers.resources,
+                    floor=admission.floor if admission else None))
+                receipt['budget_seconds'] = budget
+                workers.deadline = started + budget
+                signal.setitimer(signal.ITIMER_REAL, max(workers.deadline - time.monotonic(), 0.001))
             by_identity = {c['identity']: c for c in fresh}
 
             def collect(identity, completed):
