@@ -984,16 +984,24 @@ def _head_spec_id():
 # candidate tree, with the installation's own reader; an installation without that reader (every
 # adopter's) has no nightly sweep and nothing to refuse.
 LANDING = None
+# The loader helper that loads a file from outside every installed directory by design (the
+# installation's own scripts/mutation_selection.py, which an adopter's installation lacks), declared
+# so the authority service's closure reads it as no module of the fixed executable (VELDO-0148's form).
+EXTERNAL_LOADERS = ("_installation_module",)
+
+
+def _installation_module(alias, path):
+    spec = importlib.util.spec_from_file_location(alias, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _nightly_reader():
     reader = Path(__file__).resolve().parent.parent / "scripts" / "mutation_selection.py"
     if not reader.is_file():
         return None
-    spec = importlib.util.spec_from_file_location("veldo_mutation_selection", reader)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return _installation_module("veldo_mutation_selection", reader)
 
 
 def approval_rule():

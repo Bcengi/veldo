@@ -147,7 +147,7 @@ authentication and security, database schema changes, irreversible infrastructur
 to see. Routine work and test machinery land on a green gate and a passed independent review without
 him, and he gets a daily summary of what landed. Today 234 of 424 Veldo specs are approval-required and
 122 are critical, and most of the protected list is gate machinery
-(/home/dmitry/projects/myday/research/veldo-core-weight-audit-2026-11-07.md, decision I). This is
+(~/projects/myday/research/veldo-core-weight-audit-2026-11-07.md, decision I). This is
 README principle 7 ("Human sign-off is a risk control reserved for the irreversible (money, auth, schema,
 core infrastructure), not a ritual") and docs/method.md 2.8, made mechanical.
 
@@ -233,7 +233,7 @@ repository changes.
 ## History
 
 2026-11-07: written as a draft from the owner's decision, Telegram 39707 and 39708, and the weight audit
-/home/dmitry/projects/myday/research/veldo-core-weight-audit-2026-11-07.md decision I. It changes
+~/projects/myday/research/veldo-core-weight-audit-2026-11-07.md decision I. It changes
 protected policy files, so it is approval-required itself.
 
 2026-11-07: ready. Owner approved, Telegram 39747 ("Yes" to 39746, which listed its four points).

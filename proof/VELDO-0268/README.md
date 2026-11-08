@@ -92,7 +92,7 @@ mutation row green):
 - Development run (shared.py plus the fragment in one namespace): 30 of 30 VELDO-0268 rows green,
   about 4 s.
 - `python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs` under
-  `flock -w 21600 /home/dmitry/.local/state/core-gates/.gate.lock`: SUITE_RESULT_PLACEHOLDER
+  `flock -w 21600 ~/.local/state/core-gates/.gate.lock`: SUITE_RESULT_PLACEHOLDER
 
 ## Fix round 1 (check of 2026-11-07, NOT SOUND, finding F1 and the trigger side note)
 

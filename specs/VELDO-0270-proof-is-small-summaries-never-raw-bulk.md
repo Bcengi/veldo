@@ -168,7 +168,7 @@ proof should be larger than 1 MB and that bulky evidence is not kept at all.
 
 ## Context
 
-The weight audit of 2026-11-06 (/home/dmitry/projects/myday/research/veldo-core-weight-audit-2026-11-07.md,
+The weight audit of 2026-11-06 (~/projects/myday/research/veldo-core-weight-audit-2026-11-07.md,
 item 2) measured Veldo proof at 5,831 files and 108 MB, 1,636 of 3,372 commits touching proof/. At main
 afa292f0 eight files are over 1,048,576 bytes; the largest is proof/VELDO-0110/corpus-before.json at
 7.45 MB. The audit recommended moving large files to object storage; the owner rejected keeping them

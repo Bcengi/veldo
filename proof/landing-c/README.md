@@ -3,7 +3,7 @@
 Branch landing-c, started at main 918e7c0e. Every merge is `git merge --no-edit`; no rebase, no
 cherry-pick, no force. Line numbers are in the tree of the merge commit named.
 
-The gate lock (/home/dmitry/.local/state/core-gates/.gate.lock) was held when each merge commit was
+The gate lock (~/.local/state/core-gates/.gate.lock) was held when each merge commit was
 checked, so no suite ran here: the suites whose files conflicted are listed in
 [pending_runs.sh](pending_runs.sh) (summary lines go to pending-summary.txt, logs to /tmp/lc-*.log).
 The full gate was not run (the lead runs it).
@@ -191,3 +191,41 @@ Source: the merge review landing-c-merge-review-2026-11-08.md (MERGES SOUND with
 Checks: py_compile clean on every changed .py; the two policy_check.py copies identical.
 Pending (gate lock busy, in pending_runs.sh): suites 129_veldo_0272_approval_scope and
 129_veldo_0270_small_proof, teeth findings 267 and 272.
+
+## Fix round 2
+
+Source: the full gate at 1cef8eb1 (lock job 52d, log landing-c-1cef8eb1-verify.log, 1563 lines), RED on
+unit, generated, personal_setup, mutation and contracts.
+
+1. unit (both legs) and mutation: one cause. closure() (.veldo/control_service.py:597-652) refused
+   `invalid_input:closure:unresolved` at policy_check.py:993 (log 1047 confined, suite v28_install; 1131
+   unconfined, suite v138_service); the mutation driver_error (log 337) is suite 58's baseline failing the
+   same way. VELDO-0267's `_nightly_reader` called `spec_from_file_location` with a Path variable, which
+   names no file for certain (_Loads, control_service.py:471-473). A literal 'mutation_selection.py'
+   would resolve but then refuse as `closure:absent`, since .veldo holds no such module. closure() already
+   has the exemption for this case: a module-level EXTERNAL_LOADERS tuple naming loader helpers that load
+   a file from outside every installed directory by design (control_service.py:405-409, 444-449, 562-564;
+   precedent control_verification.py:73, `_policy_main`). `_nightly_reader` now calls
+   `_installation_module(alias, path)`, declared in `EXTERNAL_LOADERS = ("_installation_module",)` in
+   policy_check.py; closure() is unchanged. Behaviour unchanged: reads scripts/mutation_selection.py
+   beside the installation when present, returns None without it. Checked: closure() over engine/.veldo
+   and .veldo returns 160 modules (policy_check.py in, mutation_selection.py not); `_nightly_reader()`
+   loads the module here and returns None in a copy of .veldo with no scripts/ beside it; the two
+   policy_check.py copies are identical (cmp); py_compile clean.
+2. generated: another cause (log 1173). VELDO-0278 (merge 6) changed scripts/selftest.py (272 to 332
+   lines) without regenerating proof/WARP-0716/crossing-state.md. Updated to the generator's output: the
+   file now equals `python3 scripts/suite_survey.py --emit-report` (diff empty).
+3. personal_setup: another cause (log 1262-1268). Seven home paths carried in by the merges and this
+   README: proof/VELDO-0267/README.md:144, proof/VELDO-0268/README.md:95, proof/VELDO-0268/pending_runs.sh:6,
+   proof/landing-c/README.md:6, specs/VELDO-0270-...md:171, specs/VELDO-0272-...md:150 and :236. Each
+   now uses `~/` (prose) or `"$HOME/` (the script's cd); none of these files exists on main and none is
+   bound by a manifest digest.
+4. contracts: another cause (log 1309-1319, 11 problems), not fixed here. Five specs (VELDO-0239, 0254,
+   0256, 0257, 0259) are critical with no risk_areas (critical_without_area), and six (VELDO-0273, 0274,
+   0278, 0279, 0280, 0285) declare human_approval not_required where the VELDO-0272 rule computes required
+   (approval_flag_below_rule). Both come from VELDO-0272's validator rule meeting specs merged from other
+   branches. Fixing them sets a spec's approval flag or risk areas, which is the owner's call under
+   VELDO-0272 (Existing specs), not a merge resolution; left for the lead.
+
+Pending (gate lock busy, in pending_runs.sh): suites 58_veldo_0028_effects and
+71_veldo_0138_channel_service.

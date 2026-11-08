@@ -3,7 +3,7 @@
 # 20 minute budget. The lead runs this already inside the gate lock (no flock here). Each step
 # appends one line to proof/VELDO-0268/pending-summary.txt; logs go under /tmp, never the repo.
 set -u
-cd /home/dmitry/projects/veldo-worktrees/veldo-0268 || exit 1
+cd "$HOME/projects/veldo-worktrees/veldo-0268" || exit 1
 SUMMARY=proof/VELDO-0268/pending-summary.txt
 HEAD_SHA=$(git rev-parse --short HEAD)
 

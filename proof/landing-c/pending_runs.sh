@@ -65,3 +65,8 @@ step round1-129_veldo_0272_approval_scope python3 scripts/selftest.py --suite 12
 step round1-129_veldo_0270_small_proof python3 scripts/selftest.py --suite 129_veldo_0270_small_proof
 step round1-teeth-267 python3 scripts/check_teeth_mutations.py --finding 267
 step round1-teeth-272 python3 scripts/check_teeth_mutations.py --finding 272
+
+# Fix round 2: _nightly_reader loads through the declared external loader, so closure() resolves
+# policy_check.py again (suite 58 is the mutation stage's baseline, suite 71 an unconfined-leg traceback).
+step round2-58_veldo_0028_effects python3 scripts/selftest.py --suite 58_veldo_0028_effects
+step round2-71_veldo_0138_channel_service python3 scripts/selftest.py --suite 71_veldo_0138_channel_service

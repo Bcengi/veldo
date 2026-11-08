@@ -141,7 +141,7 @@ trigger/every-group-forces-full; ac2-3 empties the declared canary list and targ
 
 ## Suites run
 
-- Suite 140 at 3d886d3f, inside `flock -w 1200 /home/dmitry/.local/state/core-gates/.gate.lock`
+- Suite 140 at 3d886d3f, inside `flock -w 1200 ~/.local/state/core-gates/.gate.lock`
   (lock taken after 375 s on the second attempt): `140_veldo_0267_mutation_selection 48 passed`,
   `74 passed, 0 failed` with its closure. Every in-suite falsifier row green (targeted row green on the
   real module, red on the mutated copy).
