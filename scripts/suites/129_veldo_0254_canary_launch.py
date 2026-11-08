@@ -426,10 +426,12 @@ if option(@@INPUT@@) == 'stream-json':
             # The capability probe of a role-bound run: the init event of what this launch configured, and a
             # zero-turn result, before any model request.
             probed = True
-            emit({'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'tools': tools_of(),
+            emit({'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'tools': tools_of() or ['Bash'],
                   'mcp_servers': [{'name': n, 'status': 'connected'} for n in mcp_of()], 'plugins': [], 'skills': [],
                   'slash_commands': [], 'claude_code_version': @@VERSION@@, 'model': 'configured-model',
-                  'session_id': str(uuid.uuid4()), 'cwd': str(cwd)}, keep=('plugins', 'skills', 'slash_commands'))
+                  'session_id': str(uuid.uuid4()), 'cwd': str(cwd)},
+                 # VELDO-0275 AC3: a role-free launch is probed too; its init is the binary's whole one.
+                 keep=('plugins', 'skills', 'slash_commands') if tools_of() else ())
             emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '',
                   'usage': {'input_tokens': 0, 'output_tokens': 0}})
         elif message.get('type') == 'user':

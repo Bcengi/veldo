@@ -22,6 +22,8 @@ Rows:
 - probe/accepted: an approved fake engine whose probe answers in today's format: Claude Code's prompt is written
   once after the probe's result (a role-free launch, not only a role-bound one), and Codex's launch proceeds with
   one event naming the engine, binary, version and the parsed probe.
+- format/probe-lines: every line the Claude Code fake printed in today's format is an event of the binary's own
+  table (proof/VELDO-0062's), and VELDO-0172's read-back conforms the fake to the live capture at teardown.
 """
 
 
@@ -43,8 +45,8 @@ def _v275_probe_suite():
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
     }
-    ROWS = ('probe/unknown-frame', 'probe/accepted')
-    UNKNOWN, ACCEPTED = ROWS
+    ROWS = ('probe/unknown-frame', 'probe/accepted', 'format/probe-lines')
+    UNKNOWN, ACCEPTED, FORMAT = ROWS
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
     VENDOR = 'vendor/x86_64-unknown-linux-musl/bin/codex'
@@ -58,14 +60,24 @@ def _v275_probe_suite():
         spec.loader.exec_module(module)
         return module
 
-    CLAUDE_FAKE = '''#!%s -B
+    fake_spec = importlib.util.spec_from_file_location('v275p_fake_formats', ROOT / 'proof/VELDO-0172/fake_formats.py')
+    fake_formats = importlib.util.module_from_spec(fake_spec)
+    fake_spec.loader.exec_module(fake_formats)
+    # VELDO-0172: this suite checks its own fake engine against the live capture at its teardown.
+    conform_spec = importlib.util.spec_from_file_location('v275p_compare_formats',
+                                                          ROOT / 'proof/VELDO-0172/compare_formats.py')
+    conform_formats = importlib.util.module_from_spec(conform_spec)
+    conform_spec.loader.exec_module(conform_formats)
+    live_step = fake_formats.live_step
+
+    # The Claude Code fake: stream JSON input, the login answer, the probe as its mode says, then the prompt's
+    # scripted lines (VELDO-0172's constructors), each line completed to the binary's own shape.
+    CLAUDE_FAKE = fake_formats.embed('''#!%s -B
 import json, os, sys
 mode, marker = sys.argv[1], sys.argv[2]
 def emit(event):
-    sys.stdout.write(json.dumps(event) + chr(10))
+    sys.stdout.write(json.dumps(complete_event(event)) + chr(10))
     sys.stdout.flush()
-result = {'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '',
-          'session_id': 'fixture-session', 'stop_reason': None}
 for line in sys.stdin:
     message = json.loads(line)
     if message.get('type') == 'control_request':
@@ -73,31 +85,72 @@ for line in sys.stdin:
               'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
     elif message.get('type') == 'user' and message.get('shouldQuery') is False:
         if mode == 'unknown':
-            emit({'type': 'veldo_fixture_frame', 'note': 'a frame no stream table lists'})
+            sys.stdout.write(json.dumps({'type': 'veldo_fixture_frame', 'note': 'a frame no stream table lists'}) + chr(10))
+            sys.stdout.flush()
         if mode != 'silent':
             emit({'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'session_id': 'fixture-session'})
-            emit(result)
+            emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '',
+                  'session_id': 'fixture-session', 'stop_reason': None})
     elif message.get('type') == 'user':
         open(marker, 'w').write(json.dumps(message))
-        emit(dict(result, num_turns=1, result='done'))
+        content = (message.get('message') or {}).get('content')
+        packet = json.loads(content) if isinstance(content, str) and content.strip().startswith('{') else {}
+        for step in (packet.get('payload') or {}).get('script') or []:
+            emit(step['line'])
         break
-''' % sys.executable
+''' % sys.executable)
+    fake = CLAUDE_FAKE
+    SESSION = 'session-275-' + os.urandom(4).hex()
 
+    def c_usage(inp, out):
+        return {'input_tokens': inp, 'output_tokens': out, 'cache_creation_input_tokens': 0,
+                'cache_read_input_tokens': 0,
+                'cache_creation': {'ephemeral_5m_input_tokens': 0, 'ephemeral_1h_input_tokens': 0},
+                'service_tier': 'standard'}
+
+    @live_step
+    def c_msg(mid, inp, out):
+        return {'line': {'type': 'assistant', 'parent_tool_use_id': None, 'uuid': 'uuid-' + os.urandom(6).hex(),
+                         'session_id': SESSION,
+                         'message': {'id': mid, 'type': 'message', 'role': 'assistant', 'model': 'fixture-model',
+                                     'content': [], 'stop_reason': None, 'stop_sequence': None,
+                                     'usage': c_usage(inp, out)}}}
+
+    @live_step
+    def c_rate(status, reset, kind='five_hour'):
+        return {'line': {'type': 'rate_limit_event', 'uuid': 'uuid-' + os.urandom(6).hex(), 'session_id': SESSION,
+                         'rate_limit_info': {'status': status, 'rateLimitType': kind, 'resetsAt': int(reset)}}}
+
+    @live_step
+    def c_result(inp, out, turns=1, text='done'):
+        return {'line': {'type': 'result', 'subtype': 'success', 'duration_ms': 5, 'duration_api_ms': 4,
+                         'is_error': False, 'num_turns': turns, 'result': text, 'stop_reason': 'end_turn',
+                         'total_cost_usd': 0, 'usage': c_usage(inp, out),
+                         'modelUsage': {'fixture-model': {'inputTokens': inp, 'outputTokens': out,
+                                                          'cacheReadInputTokens': 0, 'cacheCreationInputTokens': 0,
+                                                          'webSearchRequests': 0, 'costUSD': 0,
+                                                          'contextWindow': 200000, 'maxOutputTokens': 32000}},
+                         'permission_denials': [], 'uuid': 'uuid-' + os.urandom(6).hex(), 'session_id': SESSION}}
+
+    def readback_args(engine, base):
+        # VELDO-0172's read-back runs the fake in today's format, its prompt marker in the read-back directory.
+        return ['today', str(base / 'readback-prompt')]
+
+    # The Codex fake answers only the receiver's probe (exec with --ephemeral); its lines are written as JSON text.
     CODEX_FAKE = '''#!%s -B
-import json, os, sys
+import os, sys
 mode = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mode')).read().strip()
 if '--ephemeral' not in sys.argv:
     sys.exit(97)
 sys.stdin.read()
-events = [{'type': 'thread.started', 'thread_id': 'fixture-thread'}, {'type': 'turn.started'}]
+lines = ['{"type": "thread.started", "thread_id": "fixture-thread"}', '{"type": "turn.started"}']
 if mode == 'unknown':
-    events.append({'type': 'veldo.fixture_frame'})
+    lines.append('{"type": "veldo.fixture_frame"}')
 if mode != 'silent':
-    events.append({'type': 'item.completed', 'item': {'id': 'item_0', 'type': 'agent_message', 'text': 'ready'}})
-    events.append({'type': 'turn.completed', 'usage': {'input_tokens': 1, 'cached_input_tokens': 0,
-                   'output_tokens': 1}})
-for event in events:
-    sys.stdout.write(json.dumps(event) + chr(10))
+    lines.append('{"type": "item.completed", "item": {"id": "item_0", "type": "agent_message", "text": "ready"}}')
+    lines.append('{"type": "turn.completed", "usage": {"input_tokens": 1, "cached_input_tokens": 0, "output_tokens": 1}}')
+for line in lines:
+    sys.stdout.write(line + chr(10))
 ''' % sys.executable
 
     def claude_launch(C, base, mode):
@@ -110,7 +163,8 @@ for event in events:
         worker = subprocess.Popen([str(fake), mode, str(marker)], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         lines = []
         try:
-            opening, _close = guard.opening(b'{"payload": "the prompt"}')
+            packet = {'payload': {'script': [c_msg('msg-275', 2, 3), c_rate('allowed', 2000000000), c_result(2, 4)]}}
+            opening, _close = guard.opening(json.dumps(packet).encode())
             worker.stdin.write(opening)
             worker.stdin.flush()
             pending, end = b'', time.monotonic() + 10
@@ -184,6 +238,16 @@ for event in events:
         check(UNKNOWN, 'Claude Code: the receiver stops such a launch as a configuration stop',
               L._stop_cause('stream_probe_failed') == 'configuration_stop')
         guard, prompted, lines = claude_launch(C, base, 'today')
+        table = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())['claude_code']['events']
+        bad = []
+        for raw in lines:
+            event = json.loads(raw)
+            name = conform_formats.event_name(event)
+            schema = table.get(name)
+            if schema is None or conform_formats.conform(event, schema, name):
+                bad.append(name)
+        check(FORMAT, 'every line the Claude Code fake printed in today\'s format is an event of the binary\'s own table '
+              '[%s]' % bad[:4], lines and not bad)
         check(ACCEPTED, 'Claude Code: a role-free launch whose probe answers in today\'s format writes the prompt once '
               'after the probe\'s result [%s %s %s]' % (guard.stop, guard.probe_result, prompted),
               guard.stop is None and guard.expected is None and guard.probed and prompted
@@ -213,13 +277,19 @@ for event in events:
                       refusal is None and len(receiver.events) == 1 and event.get('result') == 'parsed'
                       and event.get('engine') == 'codex' and event.get('binary') == str(vendor)
                       and event.get('version') == '1.0.0')
+        return L
 
+    fake_capture = (['not run'], [])
+    directory = tempfile.mkdtemp(prefix='v275p-')
+    base = Path(directory)
     try:
-        with tempfile.TemporaryDirectory(prefix='v275p-') as directory:
-            exercise(Path(directory))
+        L = exercise(base)
     except Exception as error:  # noqa: BLE001
         for name in ROWS:
             check(name, 'ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
+    finally:
+        fake_capture = conform_formats.conform_fake(locals(), '0275_stream_probe')
+        shutil.rmtree(directory, ignore_errors=True)
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
         for label, one in observed:
@@ -227,6 +297,9 @@ for event in events:
                 print('  VELDO-0275 %s %s: %s' % (name, 'detail' if not one else 'observed', label))
         failed = next((label for label, one in observed if not one), 'no check ran' if not observed else '')
         expect('VELDO-0275 ' + name + (': ' + failed if failed else ''), ok)
+    for line in conform_formats.describe('0275_stream_probe', *fake_capture):
+        print(line)
+    expect('VELDO-0172 fake/capture:0275_stream_probe', bool(fake_capture[1]) and not fake_capture[0])
     print('VELDO-0275 probe suite seconds: %.3f' % (time.monotonic() - started))
 
 
