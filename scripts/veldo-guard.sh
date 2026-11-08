@@ -119,7 +119,7 @@ GIT_VALUE = ("-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-en
 # The same options in the raw text, for a command that is not one simple command: git, any global
 # options, then push or merge.
 WORD = r"""(?:"[^"]*"|'[^']*'|\\.|[^\s"'\\])+"""
-PUSHISH = re.compile(r"git (push|merge)|gh pr merge|git(?:\s+(?:(?:%s)\s+%s|-\S*))*\s+(?:push|merge)\b"
+PUSHISH = re.compile(r"git (push|merge)(?!-)|gh pr merge|git(?:\s+(?:(?:%s)\s+%s|-\S*))*\s+(?:push|merge)\b(?!-)"
                      % ("|".join(GIT_VALUE), WORD))
 
 
