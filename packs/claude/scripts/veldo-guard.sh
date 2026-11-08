@@ -266,7 +266,7 @@ def alias_in_text(command, cwd):
         return True
     # Every git in the text, overlapping ones too: a git inside another's -c value (an editor or a
     # pager) or inside a wrapper's argument is judged on its own (VELDO-0268 fix round 6).
-    for start in (m.start() for m in re.finditer(r"\bgit", command)):
+    for start in (m.start() for m in re.finditer(r"(?<![\w.-])git(?=\s)", command)):
         match = GITSUB.match(command, start)
         if match is None:
             continue
