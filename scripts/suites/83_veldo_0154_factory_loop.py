@@ -19,7 +19,8 @@ execution records, VELDO-0160's account pool and re-run-or-ask decision, and VEL
 answers arrive as signed packets through the service. The engine is a fake `codex` laid out as the vendor
 package and qualified by the production writer: it prints the lines of Codex 0.154.0's exec JSON (its usage-limit
 message with its reset minute, and its MCP tool-call item) that a script file of this suite names for its unit,
-station and attempt, waiting on a file where the script says, and exits with the scripted code. Worker launches
+station and attempt, waiting on a file where the script says (the reset row's limit line has its reset minute
+chosen as it is printed, recorded for the suite), and exits with the scripted code. Worker launches
 go through the wrapper without a containment group (`identity: reported`). No real engine runs, nothing logs in
 and no credential exists. Each row is reported once. The fake's lines come from VELDO-0172's shared constructors;
 its `format/fake-lines` row checks every scripted line against the binary's table, and at teardown the suite drives
@@ -217,6 +218,26 @@ for step in chosen['script']:
         end = time.time() + 150
         while not os.path.exists(step['wait']) and time.time() < end:
             time.sleep(0.02)
+    elif 'limit' in step:
+        # The usage-limit line whose reset minute is chosen as it is printed: the first minute end at least
+        # `lead` seconds after this moment, stated as the minute before it, as limit_message states it. The
+        # reset and the message are recorded first, so the suite judges the wait against what was printed.
+        import datetime
+        spec = step['limit']
+        printed_at = time.time()
+        reset = (int(printed_at + spec['lead']) // 60) * 60 + 60
+        at = datetime.datetime.fromtimestamp(reset - 30, datetime.timezone.utc)
+        clock = '{}:{:02d} {}'.format(at.hour %% 12 or 12, at.minute, 'AM' if at.hour < 12 else 'PM')
+        if at.date() != datetime.datetime.fromtimestamp(printed_at, datetime.timezone.utc).date():
+            suffix = 'th' if 11 <= at.day %% 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(at.day %% 10, 'th')
+            clock = '{} {}{}, {} {}'.format(('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
+                                             'Dec')[at.month - 1], at.day, suffix, at.year, clock)
+        message = spec['prefix'] + clock + '.'
+        Path(spec['record'] + '.tmp').write_text(json.dumps({'reset': reset, 'printed_at': printed_at,
+                                                             'message': message}))
+        os.rename(spec['record'] + '.tmp', spec['record'])
+        sys.stdout.write(json.dumps({'type': 'turn.failed', 'error': {'message': message}}) + chr(10))
+        sys.stdout.flush()
 sys.exit(chosen['code'])
 ''' % (sys.executable,)
         package = base / 'bin' / 'codex-package'
@@ -591,11 +612,12 @@ sys.exit(chosen['code'])
         def failed(message):
             return {'line': {'type': 'turn.failed', 'error': {'message': message}}}
 
-        def limit_message(stated):
+        def limit_message(stated, now=None):
             """Codex's usage-limit message with the minute `stated` as its reset, in the engine's zone (UTC)."""
             at = datetime.datetime.fromtimestamp(stated, datetime.timezone.utc)
             clock = '%d:%02d %s' % (at.hour % 12 or 12, at.minute, 'AM' if at.hour < 12 else 'PM')
-            if at.date() != datetime.datetime.now(datetime.timezone.utc).date():
+            today = datetime.datetime.fromtimestamp(time.time() if now is None else now, datetime.timezone.utc).date()
+            if at.date() != today:
                 day = at.day
                 suffix = 'th' if 11 <= day % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
                 clock = '%s %d%s, %d %s' % (('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
@@ -609,9 +631,6 @@ sys.exit(chosen['code'])
             if result is not None:
                 item['result'] = result
             return {'line': {'type': kind, 'item': item}}
-
-        def end_of_minute(ts):
-            return (int(ts) // 60) * 60 + 60
 
         SUCCESS = {'script': [thread(), turn(), done()], 'code': 0}
         FAILS = {'script': [thread(), turn(), failed('internal error; agent loop died unexpectedly')], 'code': 1}
@@ -638,10 +657,13 @@ sys.exit(chosen['code'])
         # other time. Nothing ran there before its first packet (the first instance's rows watch a start for longer).
         quiet_start_b = B.passes()
         # The reset is the end of a minute (Codex states its reset to the minute): the first far enough ahead to
-        # watch the service for longer than every interval it uses.
-        reset = end_of_minute(time.time() + LEAD)
-        timing['reset'] = reset - (deadline - BUDGET)
-        script(U['L4'], 'build', [limited(reset - 30), SUCCESS])
+        # watch the service for longer than every interval it uses. The fake chooses it as it prints the limit,
+        # never here: chosen here, the claim, the offer and the launch before the print drew on LEAD, and a slow
+        # host let the reset pass before the unit waited for it (landing-c round 6: both rows red on a noop).
+        reset_record = base / 'l4-reset.json'
+        script(U['L4'], 'build', [{'script': [thread(), turn(), {'limit': {
+            'lead': LEAD, 'record': str(reset_record), 'prefix': XLIMIT['message'] + '.' + XLIMIT['retry_at'][0]}}],
+            'code': 1}, SUCCESS])
         script(U['L4'], 'review', [SUCCESS])
         B.claim(U['L4'])
         mark_b = B.last_pass()
@@ -656,7 +678,14 @@ sys.exit(chosen['code'])
                     lambda p: bool([w for w in p.get('waiting') or [] if w['unit'] == U['L4']]), mark_b)
                 watch['first_run'] = (B.dispatches(U['L4'], 'build') or [{}])[0]
                 quiet_from = watch['quiet_from'] = B.last_pass()
-                if waiting is None or waiting.get('timer') != reset:
+                try:
+                    printed = watch['printed'] = json.loads(reset_record.read_text())
+                except (OSError, ValueError):
+                    printed = watch['printed'] = {}
+                reset = watch['reset'] = printed.get('reset')
+                if reset is not None:
+                    timing['reset'] = reset - (deadline - BUDGET)
+                if waiting is None or reset is None or waiting.get('timer') != reset:
                     # The quiet interval ends at the wake this pass's timer sets for the reset; with none set there,
                     # the wait for that wake, and the watch it closes, depend on a pass that cannot come.
                     B.stalled = True
@@ -1047,16 +1076,20 @@ sys.exit(chosen['code'])
             waiting, first_run = watch.get('waiting'), watch.get('first_run') or {}
             quiet_from = watch.get('quiet_from', B.last_pass())
             quiet, watched, switched = watch.get('quiet', []), watch.get('watched', 0.0), watch.get('switched', 0)
+            # The reset the fake printed, and the message it printed for it, which must be limit_message's own.
+            reset, printed = watch.get('reset'), watch.get('printed') or {}
             woke = B.wait_pass(lambda p: 'account_reset' in p['sources'], quiet_from,
-                               max(0.0, reset - time.time()) + WAIT)
+                               max(0.0, (reset or 0) - time.time()) + WAIT)
             time.sleep(0.5)
             resets = [p for p in B.passes() if p['pass'] > quiet_from and 'account_reset' in p['sources']]
             between = [p for p in B.passes() if woke is not None and quiet_from < p['pass'] < woke['pass']]
             intervals = (getattr(CS, 'ACCEPT_SECONDS', 0.25), getattr(getattr(CS, 'CH', None), 'POLL_SECONDS', 1.0))
             entry = [w for w in (waiting or {}).get('waiting') or [] if w['unit'] == U['L4']]
             check('loop/reset-timer-wake', 'the unit waits for the account\'s reported reset, and the pass set its timer to '
-                  'that earliest reset [%s, %s, %s]' % (entry, (waiting or {}).get('timer'), reset),
-                  len(entry) == 1 and entry[0]['until'] == reset and entry[0]['rerun_of'] == first_run.get('dispatch_id')
+                  'that earliest reset, the one the limit message stated [%s, %s, %s, %s]'
+                  % (entry, (waiting or {}).get('timer'), reset, printed.get('message')),
+                  reset is not None and printed.get('message') == limit_message(reset - 30, printed.get('printed_at'))
+                  and len(entry) == 1 and entry[0]['until'] == reset and entry[0]['rerun_of'] == first_run.get('dispatch_id')
                   and waiting['timer'] == reset)
             again = offered(woke, U['L4'], 'build')
             check('loop/reset-timer-wake', 'at the reset the timer started a pass whose only source is the reset, and it '
