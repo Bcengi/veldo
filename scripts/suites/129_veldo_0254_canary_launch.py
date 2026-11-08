@@ -472,6 +472,12 @@ argv, env, cwd = sys.argv[1:], os.environ, Path.cwd()
 pid = os.getpid()
 dispatch = env.get('VELDO_DISPATCH_ID', '')
 home = Path(env.get('CODEX_HOME') or '/nonexistent')
+if '--ephemeral' in argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if argv[:2] == ['login', 'status']:
     try:
         mode = json.loads((home / 'auth.json').read_text()).get('auth_mode')

@@ -92,6 +92,12 @@ if args[:3] == ['debug', 'models', P + 'bundled']:
 if args[:2] == ['features', 'list']:
     print(json.loads(Path(CATALOG_FIXTURE).with_name('features-fixture.json').read_text())['stdout'], end='')
     sys.exit(0)
+if '--ephemeral' in args:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if args[:2] == ['login', 'status']:
     print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)

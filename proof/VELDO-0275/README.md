@@ -1,93 +1,113 @@
-# VELDO-0275 proof: approved engine pinned by digest (partly built), stream probe (blocked)
+# VELDO-0275 proof: approved engine pinned by digest, records replaced by summaries, stream probe on every launch
 
-Branch agent/claude/veldo-0275, base main 918e7c0e, spec as revised at 765d3101. This build replaces the
-earlier blocker note (bbffb0ce). Suite and mutation runs inside the gate lock are pending:
-proof/VELDO-0275/pending_runs.sh (see the end of this file).
+Branch agent/claude/veldo-0275, base main 918e7c0e, spec as revised at 765d3101. Builds on the AC1 pin
+(0eb521e0, 8b0e991d). Suite and mutation runs inside the gate lock are pending:
+proof/VELDO-0275/pending_runs.sh (see "Runs" at the end). Local runs below are partial and not gate evidence.
 
 ## Summary per AC
 
 | AC | State |
 | --- | --- |
-| AC1 approved version pinned by digest | Built: launch and setup refusal, setup resolves the approved binaries, new suite, four mutations |
-| AC1 records replaced by summaries | Not built: blocked, readers and extractors outside the footprint (below) |
-| AC3 stream probe on every launch | Not built: blocked, fake engines outside the footprint (below) |
+| AC1 approved version pinned by digest | Built (0eb521e0, 8b0e991d): suite 130, four mutations |
+| AC1 records replaced by summaries | Built (203b5a30): reviewed tables plus per-engine summaries; extractors run as checks |
+| AC3 stream probe on every launch | Built (eecbbb40 and later): Claude Code in the stream, Codex before acceptance; suite 131, two mutations |
 
-## AC1: what was built
+## AC1: records replaced by summaries and reviewed tables
 
-- `.veldo/control_engine_claude.py` (and its engine/ copy): `qualified()` refuses a version the qualification
-  record does not list as `engine_not_approved` (was `invalid_input:engine_version:<v>`); `pin()` and `bind()`
-  refuse a copy whose digest differs from the approved one as `engine_not_approved` (was
-  `binding_mismatch:engine_digest`).
-- `.veldo/control_engine_codex.py` (and copy): `bind()` refuses a package version or a digest other than the
-  approved one as `engine_not_approved` (was `stale_subject:engine_version` and `stale_subject:engine_digest`).
-- `.veldo/control_factory_setup_engines.py` (and copy): `check()` resolves the approved Codex binary
-  (`approved_codex`): the one the `codex` on PATH runs if its digest is the approved one, else the installer's
-  kept copy that runtime/engines.json names. A newer version on PATH is never used. If neither matches, setup is
-  refused `engine_not_approved`. Claude Code was already taken from the engines record (VELDO-0230). The
-  `stale_subject` to `binding_mismatch` mapping is gone: both engines give the same code.
-- Suites whose expected codes moved: 78 (0060), 79 (0061), 86 (0186), 86 (0189). Registered mutations whose
-  anchors moved: claude-pin-digest-unchecked, upgrade189-codex-refusal-differs, setup186-claude-unlisted-taxonomy,
-  setup186-codex-unlisted-taxonomy. Each still injects the same kind of defect.
+What replaced what, in every runtime copy (.veldo/runtime, engine/runtime):
 
-### New suite: scripts/suites/130_veldo_0275_approved_engine.py
+| Before | After | Size |
+| --- | --- | --- |
+| codex-qualification.json (793,287 B) | codex-tables.json: the same tables minus the bundled model catalog; its digest (`model_catalog_digest`) stays | 38,401 B |
+| claude-qualification.json (96,204 B) | claude-tables.json: the approved version's tables (stream forms, tool classes, baseline, login status) | 96,204 B |
+| (none) | claude-summary.json, codex-summary.json: per check name, outcome, duration; verdict, version, digest | about 1.2 KB each |
+| engines.json | adds `summary` per engine (`runtime/claude-summary.json`, `runtime/codex-summary.json`) | 820 B |
 
-Registered in scripts/suites/manifest.json. requires.json was regenerated with
-`python3 scripts/run_scope.py --emit-requires`.
+- The Codex model catalog (748 KB) is read at launch from the approved binary itself (`control_engine_codex.model_catalog`:
+  `debug models --bundled` offline, as qualify.py read it, 0.1 s on this host) and must have the recorded digest, else
+  engine_not_approved; a fixture record carrying a catalog inline gives that one. Its readers moved to it:
+  control_agent_config.codex_grants, control_agent_config_handoff.codex_model and .codex, control_factory_setup_dispatch.codex_model,
+  scripts/engine_census.py (model slugs from `model_tool_modes`). Suites and proof fixtures needing the catalog read
+  proof/VELDO-0127/catalog-fixture.json, which qualify.py already writes from the same binary.
+- qualify.py: each extractor in the nine proof directories runs in its own `--check` mode (writes nothing; fails when
+  the binary differs from the committed table). The suites keep comparing against those committed tables, so every
+  check they feed stays. `--write-tables` runs them in write mode instead: how a new version is approved until
+  VELDO-0275b. The record writers, the init probe, the VELDO-0127 loopback captures and a final "tables load as a
+  launch reads them" step are checks too. Summaries are written only when every check passed; a failed check approves
+  nothing (exit nonzero, nothing written).
+- The tables keep the schema name `veldo.engine_qualification/v1` and their structure, so every reader and fixture
+  needed only the path; Claude Code's stays keyed by version (one entry, the approved one).
+- Local reproduction: `python3 .veldo/qualify.py --codex <approved> --claude 2.1.317` rewrote every runtime file and
+  VELDO-0127 fixture byte for byte except the fixtures' `production` module digests (modules changed), in 102 s.
+
+Suite 126 now checks: every file written reproduces (a summary's durations aside); both tables and summaries in both
+runtimes; every reader of the binaries ran as a passed check in the summary of each engine it reads; none of their
+tables was rewritten; each summary is under 1 MB with only name, outcome and duration per check, approved for the
+recorded version and digest, and named by the engines record.
+
+## AC3: stream probe on every launch
+
+- Claude Code (`control_engine_claude.Guard`): the zero-turn PROBE (shouldQuery false) is written before the prompt on
+  every launch, not only role-bound ones; the receiver holds the prompt for every Claude Code launch
+  (control_launch Metering). Every frame printed in answer is read by the run's own stream reader: a frame that is no
+  JSON object with a string type, or whose type is neither a known message nor a tool-free frame of the version's
+  stream tables (control frames aside), or an undecodable result, stops the launch `stream_probe_failed`; so does no
+  result frame within PROBE_SECONDS (30). The prompt is never written. The artifact's `login` carries
+  `{stop: stream_probe_failed, probe: {reason, frame, frames}}` (frames bounded: 16, 2 KB each). The stop cause is
+  `configuration_stop`.
+- Codex (`control_engine_codex.stream_probe`, run by `control_launch.Receiver._stream_probe` before acceptance, after
+  the login checks): see Premises. Every line goes through the run's reader (`_malformed`); an unclassifiable line or
+  no terminal frame refuses the launch `stream_probe_failed`, nothing accepted or spawned. One `stream_probe` event per
+  launch names engine, binary, version and result (parsed or failed, with the frame).
+
+### New suite: scripts/suites/131_veldo_0275_stream_probe.py
+
+Registered in manifest.json; requires.json regenerated (`python3 scripts/run_scope.py --emit-requires`).
 
 | Row | What it checks | Local outcome |
 | --- | --- | --- |
-| approved/stays-on-approved | Newer Claude Code and Codex are installed and on PATH. Setup still resolves the approved version and binary, pins and binds them, and refuses a launch naming the newer one as engine_not_approved (8 checks) | green |
-| approved/changed-bytes | After approval, the bytes of the approved pinned Claude copy and of the Codex binary change. Both bindings and setup refuse engine_not_approved; once the bytes are restored, setup resolves again (5 checks) | green |
+| probe/unknown-frame | Fake Claude Code (real process, driven as the receiver drives it) prints an unknown frame in its probe: stopped stream_probe_failed with that frame, prompt never written; no result frame in time: same; fake Codex (receiver's probe step) prints an unknown frame or no terminal frame: refused stream_probe_failed with the frame in the event | green |
+| probe/accepted | Today's format: Claude Code role-free launch gets its prompt once after the probe result; Codex proceeds with one parsed probe event | green |
 
-These local results come from `python3 scripts/selftest.py --suite 130_veldo_0275_approved_engine`, outside
-the lock. It printed "2 passed" in 0.05 s. That is a partial run and not gate evidence.
+### Falsifiers (scripts/check_teeth_mutations.py, finding 275)
 
-### Falsifiers (registered in scripts/check_teeth_mutations.py, finding 275)
+Red checked by swapping each mutation into the production module in place, running suite 131, restoring (git status
+clean afterwards); green without it as above.
 
-To see each one go red, I swapped the mutation into the production module in place, ran suite 130, then restored
-the file (git status was clean afterwards). Each one is green again without the mutation, as shown above.
-
-| Mutation | Defect | Row that went red |
+| Mutation | Defect | Rows red |
 | --- | --- | --- |
-| approved275-claude-newest-installed | setup takes the newest file in the versions directory | approved/stays-on-approved |
-| approved275-codex-newest-installed | setup takes the first installed Codex (the newer one on PATH) | approved/stays-on-approved |
-| approved275-claude-digest-skipped | the Claude pinned copy's digest is not checked | approved/changed-bytes |
-| approved275-codex-digest-skipped | the Codex binary's digest is not checked | approved/changed-bytes |
+| probe275-claude-skipped | the Guard probes only a role-bound launch (as before) | probe/unknown-frame (and probe/accepted) |
+| probe275-codex-skipped | the receiver skips the Codex probe | probe/unknown-frame (and probe/accepted) |
 
-The driver runs (`check_teeth_mutations.py --case ...`) are pending in pending_runs.sh.
+## Premises
 
-## Blockers: files outside the footprint that would have to change
+- The spec assumed every engine has "the zero-turn probe the adapters already run (assistants_before_prompt,
+  num_turns 0)". Claude Code has it (stream JSON input, a user message with shouldQuery false). Codex does not:
+  `codex exec` reads only the prompt and always runs a model turn (0.166.0 `exec --help` lists no dry or zero-turn
+  mode). So, as the lead allowed, Codex's probe is the smallest real one: one turn, prompt "Reply with the single word
+  ready and nothing else. Use no tool.", `--ephemeral --skip-git-repo-check --sandbox read-only`,
+  `web_search="disabled"`, the baseline's everything-off options and configuration, the account's login environment,
+  an empty temporary directory, 120 s bound. It costs one small model turn on the account per Codex launch. A
+  terminal frame of either kind (turn.completed or turn.failed) proves the stream; a usage-limited account therefore
+  still launches and is classified by the run as today.
+- The probe answer of the real binaries was not run here (no account turn spent in this build); the fakes follow the
+  committed stream tables and proof/VELDO-0172's frame templates.
 
-1. AC1 record replacement. The two records cannot be deleted and replaced by summaries without changing these
-   files, which the footprint does not list:
-   - Readers of the records: proof/VELDO-0186/fixtures.py line 42 (suite 86 0186 calls it), proof/VELDO-0162/setup_assets.py,
-     proof/VELDO-0167/review_rows.py, proof/VELDO-0182/integration_fixtures.py, proof/VELDO-0188/round2/served_scenario.py,
-     proof/VELDO-0230/fix2_unevaluated.py.
-   - "The extractors that only fed them" live in proof/VELDO-0060, 0061, 0062, 0141, 0155, 0156, 0165, 0173 and 0185
-     (qualify.py EXTRACTORS). Running qualify.py, which the spec says writes the summaries, also rewrites their tables
-     in those directories.
-   - Sizes: the Codex record is 793 KB, and 748 KB of it is the bundled model catalog. Every role-bound Codex run passes
-     that catalog to the engine whole (control_agent_config_handoff.codex_model, model_catalog_json), so a "small
-     reviewed tables" file still has to carry it or read it from the binary at launch. That is a design choice for
-     the spec.
-   - For the same reason, engines.json does not yet name a summary path: no summary file exists to point at.
-2. AC3 stream probe. Today the probe only runs for role-bound Claude Code runs (Guard.release with `expected` set).
-   Running it on every launch breaks every fake Claude Code engine that answers the initialize request but treats
-   the next user message as the prompt. One is proof/VELDO-0182/integration_fixtures.py (suite 105), which is
-   outside the footprint. About fifteen suite fakes inside the footprint (78, 75, 78 0160, 80, 82 0141, 82 0165,
-   85 0158 and others) would need a probe answer as well. Codex has no zero-turn probe to reuse (exec reads only
-   the prompt), so "every launch" for Codex also needs the spec to say what the probe is.
-3. Taxonomy leftovers. The exec-time re-hash still reports `binding_mismatch:engine_digest`, in .veldo/control_clone.py
-   line 400 (outside the footprint) and in the wrapper message at .veldo/control_launch.py line 2783, which I kept
-   matching the clone. The observability lines (one launch line per engine; version and probe result in the
-   execution record) depend on AC3 and the summary, so they are not built either.
+## Footprint additions (files outside the spec's footprint, each the smallest change)
+
+| File | Why |
+| --- | --- |
+| proof/VELDO-0186/fixtures.py, proof/VELDO-0162/setup_assets.py | read the catalog from proof/VELDO-0127/catalog-fixture.json instead of the deleted Codex record |
+| proof/VELDO-0167/review_rows.py | the pre-record engine (f1e1abb9) reads the old record names: written there from the new tables |
+| proof/VELDO-0182/integration_fixtures.py | record path renamed; the fake answers the Claude Code probe (a result of no turn) and the Codex probe (--ephemeral) |
+| proof/VELDO-0188/round2/served_scenario.py | record path renamed; its fake's `debug models` prints the catalog fixture |
+| proof/VELDO-0230/fix2_unevaluated.py | record path renamed |
+| scripts/suites/manifest.json, scripts/suites/requires.json | suite 131 registered (scripts/suites/** is in the footprint; listed for clarity) |
+| proof/VELDO-0275/** fake-engine edits in other suites | see the list under Runs (all under scripts/suites/**, in the footprint) |
+
+Protected paths changed: scripts/mutation_case_inputs.json (declared in protected_paths): record names renamed in the
+case input lists.
 
 ## Runs
 
-- No lock needed: `bash scripts/check_lint.sh`: lint pass (1157 python, 39 shell). Suite 130 alone: 2 passed (partial).
-  I also checked by script that every registered mutation on the three changed modules finds its anchor exactly once.
-- Pending, inside the lock: `bash proof/VELDO-0275/pending_runs.sh`. It writes one line per step to
-  proof/VELDO-0275/pending-summary.txt (step, exit code, /tmp log path). It checks that the tree is clean before and
-  after, ignoring that summary file. Steps: lint, suite 130, 41 suites that load the engine or setup modules,
-  the four new mutations, and the seven registered mutations whose anchors or codes this change touched.
-- Inherited reds: none observed. No full suite was run in this build.
+See the end of this file, updated after the local sweep.

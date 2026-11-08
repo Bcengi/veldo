@@ -125,6 +125,12 @@ if sys.argv[1:3] == ['auth', 'status']:
     sys.stdout.write(json.dumps({'loggedIn': logged, 'authMethod': 'claude.ai' if logged else 'none',
                                  'apiProvider': 'firstParty'}, indent=2) + chr(10))
     sys.exit(0 if logged else 1)
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if sys.argv[1:3] == ['login', 'status']:
     logged = (Path(os.environ.get('CODEX_HOME') or '/nonexistent') / 'auth.json').is_file()
     sys.stderr.write(('Logged in using ChatGPT' if logged else 'Not logged in') + chr(10))

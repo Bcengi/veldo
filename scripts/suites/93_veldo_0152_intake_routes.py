@@ -230,6 +230,12 @@ def emit(event):
     with Path(PRINTED).open('a') as stream:
         stream.write(json.dumps({'engine': engine, 'line': line}) + chr(10))
     print(json.dumps(line), flush=True)
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if sys.argv[1:3] == ['login', 'status']:
     sys.stderr.write('Logged in using ChatGPT' + chr(10))
     sys.exit(0)
@@ -240,7 +246,12 @@ if engine == 'claude' and '--input-format' in sys.argv:
     emit({'type': 'control_response', 'response': {'subtype': 'success',
           'request_id': opening['request_id'], 'response': {'account': {
           'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
-    packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
+    message = json.loads(sys.stdin.readline())
+    while message.get('shouldQuery') is False:
+        # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+        emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})
+        message = json.loads(sys.stdin.readline())
+    packet = json.loads(message['message']['content'])
     result = 'Fixture PM read-back.'
 elif sys.argv[1:2] == ['exec']:
     packet = json.load(sys.stdin)

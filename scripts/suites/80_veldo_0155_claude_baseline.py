@@ -508,6 +508,9 @@ if option('--input-format') == 'stream-json':
             note('initialize', message['request_id'])
             emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
                                                            'response': {'account': account, 'pid': os.getpid()}}})
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             note('user', content)
@@ -572,7 +575,7 @@ out.close()
                                                         tool_classification=tools173['tool_classification'])
                 # VELDO-0230: the shipped record's built-in plugins, skills and window names.
                 test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
-                    .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+                    .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir()
         record_path = mods / 'runtime' / 'claude-tables.json'
         record_path.write_text(json.dumps(test_record, indent=1))

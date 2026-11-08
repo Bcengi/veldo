@@ -1807,7 +1807,10 @@ class Guard:
         kind = event['type']
         if kind in CONTROL_FRAMES:
             return None
-        MESSAGES, TOOL_FREE_FRAMES = _tables('MESSAGES', 'TOOL_FREE_FRAMES')
+        try:
+            MESSAGES, TOOL_FREE_FRAMES = _tables('MESSAGES', 'TOOL_FREE_FRAMES')
+        except Refused:
+            return self._probe_failed('no_stream_tables', line)  # a version without stream tables classifies nothing
         tag = (kind, event.get('subtype') if kind in SUBTYPED else None)
         if tag not in MESSAGES and tag not in TOOL_FREE_FRAMES:
             return self._probe_failed('unknown_frame', line)

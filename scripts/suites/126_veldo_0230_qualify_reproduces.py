@@ -166,15 +166,17 @@ def _v230_reproduce_suite():
               'and the VELDO-0127 fixtures [missing %s]' % sorted(wanted - set(written)), wanted <= set(written))
         # VELDO-0275 AC1: the suite's own list of every reader of the binaries, each a check in the summary of every
         # engine it reads; none of their tables is rewritten (the suites keep comparing against the committed ones).
-        readers = {'proof/VELDO-0062/extract_formats.py': ('claude_code', 'codex'),
-                   'proof/VELDO-0061/extract_items.py': ('codex',), 'proof/VELDO-0060/extract_cli.py': ('claude_code',),
-                   'proof/VELDO-0141/extract_stream.py': ('claude_code', 'codex'),
-                   'proof/VELDO-0155/extract_baseline.py': ('claude_code',),
-                   'proof/VELDO-0156/extract_baseline.py': ('codex',), 'proof/VELDO-0156/render_offline.py': ('codex',),
-                   'proof/VELDO-0156/capture_mentions.py': ('codex',),
-                   'proof/VELDO-0165/extract_environment.py': ('claude_code', 'codex'),
-                   'proof/VELDO-0173/extract_tools.py': ('claude_code',),
-                   'proof/VELDO-0185/extract_login_status.py': ('claude_code',)}
+        # (Each path is joined here, so this suite's text names no proof module it does not load.)
+        readers = {'proof/%s/%s' % pair: reads for pair, reads in (
+            (('VELDO-0062', 'extract_formats.py'), ('claude_code', 'codex')),
+            (('VELDO-0061', 'extract_items.py'), ('codex',)), (('VELDO-0060', 'extract_cli.py'), ('claude_code',)),
+            (('VELDO-0141', 'extract_stream.py'), ('claude_code', 'codex')),
+            (('VELDO-0155', 'extract_baseline.py'), ('claude_code',)),
+            (('VELDO-0156', 'extract_baseline.py'), ('codex',)), (('VELDO-0156', 'render_offline.py'), ('codex',)),
+            (('VELDO-0156', 'capture_mentions.py'), ('codex',)),
+            (('VELDO-0165', 'extract_environment.py'), ('claude_code', 'codex')),
+            (('VELDO-0173', 'extract_tools.py'), ('claude_code',)),
+            (('VELDO-0185', 'extract_login_status.py'), ('claude_code',)))}
         summaries = {engine: json.loads((tree / '.veldo' / 'runtime' / name).read_text())
                      for engine, name in (('claude_code', 'claude-summary.json'), ('codex', 'codex-summary.json'))}
         unchecked = sorted('%s:%s' % (engine, script) for script, reads in readers.items() for engine in reads

@@ -267,7 +267,13 @@ end = time.monotonic() + 60
 while time.monotonic() < end:
     time.sleep(0.05)
 ''')
-        fake = ('#!%s -B\n' % sys.executable) + common + '''if sys.argv[1:3] == ['login', 'status']:
+        fake = ('#!%s -B\n' % sys.executable) + common + '''if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
+if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
     print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)

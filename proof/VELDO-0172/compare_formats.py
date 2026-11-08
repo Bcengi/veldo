@@ -2,6 +2,7 @@
 import ast
 import copy
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -279,6 +280,13 @@ def describe(suite_name, issues, trace):
     return lines
 
 
+def selector_ready(stream, seconds):
+    """Whether `stream` has a line to read within `seconds`."""
+    with selectors.DefaultSelector() as selector:
+        selector.register(stream, selectors.EVENT_READ)
+        return bool(selector.select(seconds))
+
+
 def observe_fake(local, suite_name, table, capture):
     """Run the suite's actual generated executable and line constructors, then compare its bytes.
 
@@ -374,6 +382,27 @@ def observe_fake(local, suite_name, table, capture):
                 prefix = child.stdout.readline()
                 guard.feed(prefix)
                 release = guard.release()
+                # VELDO-0275 AC3: the stream probe comes first; each line it draws is fed until the Guard
+                # releases the prompt (its last input) or stops. Read from the descriptor, line by line.
+                pending = b''
+                while release is not None and not getattr(guard, 'released', True) and guard.stop is None:
+                    child.stdin.write(release)
+                    child.stdin.flush()
+                    release = None
+                    while release is None and guard.stop is None:
+                        if b'\n' not in pending:
+                            chunk = os.read(child.stdout.fileno(), 65536) if selector_ready(child.stdout, 15) else b''
+                            if not chunk:
+                                break
+                            pending += chunk
+                            continue
+                        line, _, pending = pending.partition(b'\n')
+                        prefix += line + b'\n'
+                        guard.feed(line + b'\n')
+                        release = guard.release()
+                    if release is None:
+                        break
+                prefix += pending
                 if release is None:
                     problems.append(engine + ':fake:handshake-refused')
                 stdout, stderr = child.communicate(release or b'', timeout=15)

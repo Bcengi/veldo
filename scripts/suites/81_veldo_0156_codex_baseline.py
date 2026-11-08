@@ -325,6 +325,12 @@ def login(effective):
         return json.loads((home / 'auth.json').read_text()).get('auth_mode')
     except (OSError, ValueError):
         return None
+if '--ephemeral' in argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if argv[:2] == ['login', 'status']:
     effective = merge(user_config(), overrides(argv[2:]))
     kind = login(effective)

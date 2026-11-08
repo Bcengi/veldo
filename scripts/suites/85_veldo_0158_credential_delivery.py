@@ -424,6 +424,9 @@ if option(@@INPUT@@) == 'stream-json':
                                                            'response': {'account': {'apiProvider': 'firstParty',
                                                                                     'subscriptionType': 'Claude Team'},
                                                                         'pid': pid}}})
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             packet = json.loads(content) if content.strip() else {}
@@ -488,6 +491,12 @@ argv, env, cwd = sys.argv[1:], os.environ, Path.cwd()
 pid = os.getpid()
 dispatch = env.get('VELDO_DISPATCH_ID', '')
 home = Path(env.get('CODEX_HOME') or '/nonexistent')
+if '--ephemeral' in argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if argv[:2] == ['login', 'status']:
     try:
         mode = json.loads((home / 'auth.json').read_text()).get('auth_mode')
@@ -582,7 +591,7 @@ err.close()
                                                     tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
             test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
-                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'

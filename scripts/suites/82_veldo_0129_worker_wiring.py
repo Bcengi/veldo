@@ -235,6 +235,12 @@ import hashlib, json, os, sqlite3, subprocess, sys, uuid
 from pathlib import Path
 markers, protected = Path(@@MARKERS@@), Path(@@PRIVATE@@)
 engine = 'codex' if 'codex' in sys.argv[0] else 'claude_code'
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if sys.argv[1:3] == ['login', 'status']:
     # The qualified Codex binary prints its login status on stderr.
     print(@@STATUS@@, file=sys.stderr)
@@ -250,7 +256,12 @@ if engine == 'claude_code':
         sys.exit(2)
     emit(complete_event({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': request['request_id'],
           'response': {'account': {'subscriptionType': @@SUBSCRIPTION@@, 'apiProvider': @@PROVIDER@@}}}}))
-    packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
+    message = json.loads(sys.stdin.readline())
+    while message.get('shouldQuery') is False:
+        # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+        emit(complete_event({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None}))
+        message = json.loads(sys.stdin.readline())
+    packet = json.loads(message['message']['content'])
 else:
     packet = json.loads(sys.stdin.read())
 mode = packet['configuration'].get('fixture_mode', 'valid')
@@ -391,7 +402,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                                                tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
             record['versions'][version].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
-                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir(exist_ok=True)
         (mods / 'runtime/claude-tables.json').write_text(json.dumps(record))
         E.pin(version, versions=str(versions), state_root=str(factory))
