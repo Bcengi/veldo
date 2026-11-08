@@ -74,7 +74,7 @@ import json,os,subprocess,sys
 from pathlib import Path
 shipped=json.loads(Path(SHIPPED).read_text())
 if sys.argv[1:3] == ['debug','models']:
-    print(json.dumps(shipped['model_catalog']))
+    print(Path(CATALOG).read_text())
     sys.exit(0)
 if sys.argv[1:3] == ['features','list']:
     sys.stdout.write(shipped['feature_listing'])
@@ -113,7 +113,7 @@ Path(OUTPUT,unit+'.json').write_text(json.dumps(dict(packet=packet,workspace=os.
 print(json.dumps({'type':'thread.started','thread_id':'188'}))
 print(json.dumps({'type':'turn.started'}))
 print(json.dumps({'type':'turn.completed','usage':{'input_tokens':2,'cached_input_tokens':0,'output_tokens':1}}))
-'''.replace('EXEC', sys.executable).replace('OUTPUT', repr(str(out))).replace('SHIPPED', repr(str(ROOT / '.veldo/runtime/codex-qualification.json')))
+'''.replace('EXEC', sys.executable).replace('OUTPUT', repr(str(out))).replace('SHIPPED', repr(str(ROOT / '.veldo/runtime/codex-tables.json'))).replace('CATALOG', repr(str(ROOT / 'proof/VELDO-0127/catalog-fixture.json')))
            .replace('RECEIVERS', repr(str(base / 'installation' / SV.CC.service_id(CE.read_binding(str(workspace))) / 'config'))))
         executable.chmod(0o755)
         qualification = base / 'qualification.json'

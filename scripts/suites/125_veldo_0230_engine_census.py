@@ -83,7 +83,7 @@ def _v230_census_suite():
         hits = census.findings(source + '\nPLANTED = {"model": %r}\n' % slug, known, 'planted.py')
         check('census/planted-model', 'one catalog model name planted in a suite is named [%s]' % hits,
               any(h[2] == 'model_name' and h[3] == slug for h in hits))
-        entry = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())['versions'][
+        entry = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_text())['versions'][
             engines['claude_code']['version']]
         pair = tuple(sorted(entry['engine_skills'])[:2]) if len(entry['engine_skills']) > 1 else (
             entry['engine_skills'][0], entry['engine_plugins'][0])
@@ -102,7 +102,7 @@ def _v230_census_suite():
         qualify = load('v230_qualify', PRODUCTION['qualify.py'])
         extractor = load('v230_tools', ROOT / 'proof' / 'VELDO-0173' / 'extract_tools.py')
         version = engines['claude_code']['version']
-        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())
+        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_text())
         entry = copy.deepcopy(shipped['versions'][version])
         tools = json.loads((ROOT / 'proof' / 'VELDO-0173' / 'claude-tools.json').read_text())
         future = {'name': 'FutureTool', 'hint': 'a tool a newer binary registers', 'hint_source': 'searchHint'}
@@ -131,17 +131,17 @@ def _v230_census_suite():
     temp = tempfile.mkdtemp(prefix='v230-written-')
     try:
         tree = Path(temp)
-        for part in ('.veldo/runtime/engines.json', '.veldo/runtime/codex-qualification.json',
-                     '.veldo/runtime/claude-qualification.json', '.veldo/runtime/capability-decisions.json',
-                     'engine/runtime/engines.json', 'engine/runtime/codex-qualification.json',
+        for part in ('.veldo/runtime/engines.json', '.veldo/runtime/codex-tables.json',
+                     '.veldo/runtime/claude-tables.json', '.veldo/runtime/capability-decisions.json',
+                     'engine/runtime/engines.json', 'engine/runtime/codex-tables.json',
                      'proof/VELDO-0060/cli-options.json', 'proof/VELDO-0062/cli-formats.json',
                      'proof/VELDO-0156/codex-baseline.json'):
             (tree / part).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / part, tree / part)
         for name in ('codex', 'claude'):
             (tree / name).write_bytes(b'#!/bin/sh\nexit 1\n')
-        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())
-        codex_shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'codex-qualification.json').read_text())
+        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_text())
+        codex_shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'codex-tables.json').read_text())
         version = engines['claude_code']['version']
 
         def recorded_claude(root, executable):
@@ -168,6 +168,8 @@ def _v230_census_suite():
         written_qualify.load = lambda name, path: RecordedCodex if name == 'qualify_codex' else real_load(name, path)
         written_qualify.claude_record = recorded_claude
         written_qualify.fixtures = lambda root, executable, written: None
+        # VELDO-0275 AC1: the launch-read check reads the Codex catalog from the binary, which this row never runs.
+        written_qualify.loaded = lambda root, record: None
         import contextlib
         import io
         out = io.StringIO()
@@ -175,10 +177,10 @@ def _v230_census_suite():
             code = written_qualify.main(['--codex', str(tree / 'codex'), '--claude', str(tree / 'claude'),
                                          '--root', str(tree)])
         reported = {line[len('wrote '):] for line in out.getvalue().splitlines() if line.startswith('wrote ')}
-        wanted = {'.veldo/runtime/claude-qualification.json', 'engine/runtime/claude-qualification.json'}
+        wanted = {'.veldo/runtime/claude-tables.json', 'engine/runtime/claude-tables.json'}
         check('qualify/claude-record-written', 'the command writes and reports the Claude Code record in both '
               'runtimes [exit %s; missing %s]' % (code, sorted(wanted - reported)), code == 0 and wanted <= reported)
-        expected = (ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_bytes()
+        expected = (ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_bytes()
         differing = [name for name in sorted(wanted)
                      if not (tree / name).is_file() or (tree / name).read_bytes() != expected]
         check('qualify/claude-record-written', 'each copy holds the record the recorded readings give, the shipped '

@@ -462,10 +462,10 @@ err.close()
             test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-            test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+            test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                 .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
         (mods / 'runtime').mkdir(exist_ok=True)
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'
         factory.mkdir(mode=0o700)
         pinned = factory / 'engines' / 'claude_code' / VERSION
@@ -551,7 +551,7 @@ err.close()
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake_codex)
         CODEX_BIN.chmod(0o755)
-        codex_record_path = base / 'codex-qualification.json'
+        codex_record_path = base / 'codex-tables.json'
         codex_record, _ = attempt(lambda: X.qualification(str(CODEX_BIN)))
         codex_record_path.write_text(json.dumps(codex_record or {}))
 
@@ -1009,7 +1009,7 @@ err.close()
                   % argv[1:],
                   '--verbose' in argv and all(w and w in argv and w in OPTIONS['options'] for w in wanted)
                   and all(w in ((getattr(E, 'BASELINE', None) or {}).get('stream_options') or []) for w in wanted))
-            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-qualification.json').read_text())
+            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-tables.json').read_text())
             check('record/stream-options', 'the shipped record qualifies the baseline with them',
                   ((shipped.get('versions') or {}).get(VERSION) or {}).get('baseline') == getattr(E, 'BASELINE', None)
                   and all(w in (((shipped['versions'][VERSION]).get('baseline') or {}).get('stream_options') or [])

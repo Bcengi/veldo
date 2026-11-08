@@ -97,14 +97,14 @@ def _v275_suite():
         (bindir / 'codex').symlink_to(on_path / 'bin' / 'codex.js')
         # The approval: the engines record and the qualification records, as qualify.py writes them together.
         runtime = mods / 'runtime'
-        shipped = json.loads((ROOT / '.veldo/runtime/claude-qualification.json').read_text())
+        shipped = json.loads((ROOT / '.veldo/runtime/claude-tables.json').read_text())
         entry = dict(next(iter(shipped['versions'].values())), sha256=sha(approved_claude),
                      source=str(approved_claude), pinned='<state root>/engines/claude_code/' + APPROVED)
-        (runtime / 'claude-qualification.json').write_text(json.dumps(dict(shipped, versions={APPROVED: entry})))
-        codex_record = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())
+        (runtime / 'claude-tables.json').write_text(json.dumps(dict(shipped, versions={APPROVED: entry})))
+        codex_record = json.loads((ROOT / '.veldo/runtime/codex-tables.json').read_text())
         codex_record.update(version=APPROVED, package_version=APPROVED + '-linux-x64', executable=VENDOR,
                             sha256=sha(approved_codex))
-        (runtime / 'codex-qualification.json').write_text(json.dumps(codex_record))
+        (runtime / 'codex-tables.json').write_text(json.dumps(codex_record))
         engines = json.loads((runtime / 'engines.json').read_text())
         engines['claude_code'].update(version=APPROVED, binary=str(approved_claude), sha256=sha(approved_claude))
         engines['codex'].update(version=APPROVED, package_version=APPROVED + '-linux-x64', binary=str(approved_codex),

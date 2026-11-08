@@ -122,7 +122,7 @@ def _v186_suite():
         installed = Path(report.get('home', home / 'absent')) / 'bin'
         config_path = installed.parent / 'config/service.json'
         config = json.loads(config_path.read_text()) if config_path.is_file() else {}
-        expected = ['runtime/claude-qualification.json', 'runtime/codex-qualification.json', 'runtime/engines.json',
+        expected = ['runtime/claude-tables.json', 'runtime/codex-tables.json', 'runtime/engines.json',
                     'runtime/langgraph-records.json', 'runtime/future.json', 'runtime/nested/future.json']
         for name in expected:
             target = installed / name

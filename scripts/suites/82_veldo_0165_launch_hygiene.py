@@ -304,10 +304,10 @@ sys.exit(payload.get('code', 0))
             claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                 .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
@@ -322,7 +322,7 @@ sys.exit(payload.get('code', 0))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o755)
         CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
-        codex_qualification = base / 'codex-qualification.json'
+        codex_qualification = base / 'codex-tables.json'
         if hasattr(CODEX_ENGINE, 'qualification'):
             codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
         config = base / 'receiver.json'
@@ -536,7 +536,7 @@ sys.exit(payload.get('code', 0))
 
         # Remove each kind of qualification evidence separately, then drive a real dispatch.
         for engine, account, path, version in (
-                ('claude', 'acct-c1', mods / 'runtime' / 'claude-qualification.json', CLAUDE_VERSION),
+                ('claude', 'acct-c1', mods / 'runtime' / 'claude-tables.json', CLAUDE_VERSION),
                 ('codex', 'acct-x1', codex_qualification, CODEX_VERSION)):
             original_record = json.loads(path.read_text())
             for missing in ('strip_prefixes', 'session_environment', 'null_session_environment'):
@@ -614,7 +614,7 @@ sys.exit(payload.get('code', 0))
             return found
         for engine, version, module in (('claude', CLAUDE_VERSION, CLAUDE_ENGINE), ('codex', CODEX_VERSION, CODEX_ENGINE)):
             evidence = json.loads((TREE / 'proof' / 'VELDO-0165' / (engine + '-environment.json')).read_text())
-            shipped = json.loads((ROOT / '.veldo' / 'runtime' / (engine + '-qualification.json')).read_text())
+            shipped = json.loads((ROOT / '.veldo' / 'runtime' / (engine + '-tables.json')).read_text())
             entry = shipped['versions'][version] if engine == 'claude' else shipped
             extracted, extraction_error = attempt(lambda: extractor.extract(engine, QUALIFY165.binary({'claude': 'claude_code', 'codex': 'codex'}[engine], ENGINES_RECORD)))
             check('evidence/completeness', engine + ': rerun byte extraction equals inventory and covers child structures',

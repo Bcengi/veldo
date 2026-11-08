@@ -217,7 +217,7 @@ def restart(h, check, here):
     with tarfile.open(fileobj=io.BytesIO(data)) as archive:
         archive.extractall(directory, filter='data')
     old = h['load']('v167_before_records', directory / '.veldo/control_factory_setup.py')
-    codex = directory / '.veldo/runtime/codex-qualification.json'
+    codex = directory / '.veldo/runtime/codex-tables.json'
     own = json.loads(codex.read_text()) if codex.is_file() else {}
     shutil.copytree(h['mods'] / 'runtime', directory / '.veldo/runtime', dirs_exist_ok=True)
     # The earlier engine keeps its own bundled catalog readings, the ones that host was qualified with, so the

@@ -99,15 +99,16 @@ def _v185_suite():
     def code_mode():
         """The qualified catalog's code-mode models, whose runs the binary also gives its runner tools."""
         modes = load('v185_codex_modes', PRODUCTION['control_engine_codex.py']).model_tool_modes(
-            ROOT / '.veldo' / 'runtime' / 'codex-qualification.json')
+            ROOT / '.veldo' / 'runtime' / 'codex-tables.json')
         return sorted(slug for slug, mode in modes.items() if mode == 'code_mode_only')
 
     def newest_model():
         """The newest model of the shipped qualified Codex catalog, read here independently of setup: of its listed
         models not retired in favour of another (no `upgrade`), the one of the lowest priority, the catalog's own
         order, newest first."""
-        record = json.loads((ROOT / '.veldo' / 'runtime' / 'codex-qualification.json').read_text())
-        listed = [m for m in record['model_catalog']['models'] if m.get('visibility') == 'list' and not m.get('upgrade')]
+        # VELDO-0275: the tables keep the catalog by digest; the bundled catalog itself is the VELDO-0127 fixture.
+        record = json.loads((ROOT / 'proof' / 'VELDO-0127' / 'catalog-fixture.json').read_text())
+        listed = [m for m in record['models'] if m.get('visibility') == 'list' and not m.get('upgrade')]
         return min(listed, key=lambda m: m['priority'])['slug'], listed
     helper = load('v185_fixture', here / 'proof/VELDO-0185/fixture.py')
     conform_formats = load('v185_conform', ROOT / 'proof/VELDO-0172/compare_formats.py')
@@ -232,8 +233,8 @@ else:
               and '.veldo/control_factory_setup.py' in scaffold._FILES)
         # The installed Codex record of the generated binary carries the shipped record's bundled model catalog and
         # feature listing, as `qualification(catalog=True)` records them from the real binary (VELDO-0127).
-        record_path = h['mods'] / 'runtime' / 'codex-qualification.json'
-        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'codex-qualification.json').read_text())
+        record_path = h['mods'] / 'runtime' / 'codex-tables.json'
+        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'codex-tables.json').read_text())
         record = json.loads(record_path.read_text())
         record.update({k: shipped[k] for k in ('feature_listing', 'model_catalog', 'model_catalog_digest',
                                                'model_tool_modes', 'native_tool_mapping') if k in shipped})
@@ -878,9 +879,9 @@ else:
         # The fixture's engine records (its generated engines' digests) replace the shipped ones, as in the current tree;
         # the Codex record keeps the earlier engine's own bundled catalog readings, the ones that host was qualified
         # with, so the row survives every later qualify of a newer binary (VELDO-0230 AC2).
-        for name in ('claude-qualification.json', 'codex-qualification.json'):
+        for name in ('claude-tables.json', 'codex-tables.json'):
             record = json.loads((h['mods'] / 'runtime' / name).read_text())
-            if name == 'codex-qualification.json':
+            if name == 'codex-tables.json':
                 own = json.loads((older / '.veldo' / 'runtime' / name).read_text())
                 record.update({k: own[k] for k in ('feature_listing', 'model_catalog', 'model_catalog_digest',
                                                    'model_tool_modes', 'native_tool_mapping') if k in own})

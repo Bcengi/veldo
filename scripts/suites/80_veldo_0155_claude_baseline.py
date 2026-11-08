@@ -571,10 +571,10 @@ out.close()
                 test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
                 # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                     .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
         (mods / 'runtime').mkdir()
-        record_path = mods / 'runtime' / 'claude-qualification.json'
+        record_path = mods / 'runtime' / 'claude-tables.json'
         record_path.write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'
         factory.mkdir(mode=0o700)
@@ -855,7 +855,7 @@ out.close()
                   and files.get('mcp') == {'mcpServers': {}}
                   and env.get(switches['disable_claude_mds']['name']) == '1'
                   and env.get(switches['disable_auto_memory']['name']) == '1')
-            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-qualification.json').read_text())
+            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-tables.json').read_text())
             entry = (shipped.get('versions') or {}).get(VERSION) or {}
             named = (set((entry.get('baseline') or {}).get('options') or [])
                      | set((entry.get('baseline') or {}).get('stream_options') or [])

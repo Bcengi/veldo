@@ -139,8 +139,8 @@ given (a streamed block, a tool_progress's tool, a task's last tool) may be dura
 Each observation carries the raw line it came from (the receipt) and that line's digest.
 
 THE PINNED EXECUTABLE, VELDO-0060. A Claude Code adapter names the version it runs (`executable:
-{version}`), never a path. The qualification record (QUALIFICATION, the installed
-`.veldo/runtime/claude-qualification.json` beside this module, canonical at engine/runtime/) lists each
+{version}`), never a path. The qualification record (QUALIFICATION, VELDO-0275: the reviewed tables of the
+approved version, `.veldo/runtime/claude-tables.json` beside this module, canonical at engine/runtime/) lists each
 qualified version with its digest, the flags of print mode with stream JSON output (read from the
 binary's own options, proof/VELDO-0060/cli-options.json), the environment it runs with
 (DISABLE_AUTOUPDATER, the binary's switch that turns its updater off), its terminal protocol, its
@@ -371,7 +371,7 @@ IN_RUN_TASKS = {'field': 'task_type',
 
 # STREAM TABLES (VELDO-0230 AC2). The reader's tables that follow the qualified binary are not literals here: python3
 # .veldo/qualify.py writes them, from the binary's own (cli-formats.json tool_forms), into the qualified version's
-# record (`stream_forms` in runtime/claude-qualification.json beside this module), and `stream_tables` reads them from
+# record (`stream_forms` in runtime/claude-tables.json beside this module), and `stream_tables` reads them from
 # there (each read of the record's current bytes; the module's names MESSAGES, TOOL_FREE_FRAMES, TOOL_FIELDS, NESTED,
 # IN_RUN_TOOLS, IN_RUN and IN_RUN_HOST resolve to them). A form a newer binary brings is read by its evaluation in
 # runtime/capability-decisions.json: a message or a frame it does not grant is no known message and no tool-free frame
@@ -1195,7 +1195,7 @@ class Meter:
 
 # VELDO-0060: the pinned executable, its command line and the terminal record.
 
-QUALIFICATION = 'runtime/claude-qualification.json'
+QUALIFICATION = 'runtime/claude-tables.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The adapter registration (control_launch.ENGINE_PROTOCOL): its lifecycle operations, each with what

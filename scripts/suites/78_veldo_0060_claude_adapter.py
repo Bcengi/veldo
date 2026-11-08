@@ -395,10 +395,10 @@ sys.exit(payload.get('code', 0))
                 test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
                 # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                     .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(test_record, indent=1))
         QUALIFIED = test_record['versions'][VERSION]
         factory = state / 'factory'
         factory.mkdir(mode=0o700)
@@ -419,7 +419,7 @@ sys.exit(payload.get('code', 0))
             return vendored
         CODEX_BIN = codex_package('codex')
         CODEX_CHANGED = codex_package('codex-changed')
-        codex_qualification = base / 'codex-qualification.json'
+        codex_qualification = base / 'codex-tables.json'
         codex_record, codex_error = attempt(lambda: X.qualification(str(CODEX_BIN)))
         if codex_record is not None:
             codex_qualification.write_text(json.dumps(codex_record))
@@ -911,15 +911,15 @@ sys.exit(payload.get('code', 0))
 
         # AC1: the qualification record this repository ships for the real 2.1.281.
         with region('pin/shipped-qualification'):
-            shipped_path = ROOT / 'engine' / 'runtime' / 'claude-qualification.json'
-            installed_path = ROOT / '.veldo' / 'runtime' / 'claude-qualification.json'
+            shipped_path = ROOT / 'engine' / 'runtime' / 'claude-tables.json'
+            installed_path = ROOT / '.veldo' / 'runtime' / 'claude-tables.json'
             shipped = json.loads(shipped_path.read_text()) if shipped_path.is_file() else {}
             entry = (shipped.get('versions') or {}).get(VERSION) or {}
             check('pin/shipped-qualification', 'the canonical record and its installed copy are byte-identical, and '
                   'the scaffold lays it beside the engine module [%s]' % shipped_path.is_file(),
                   shipped_path.is_file() and installed_path.is_file()
                   and shipped_path.read_bytes() == installed_path.read_bytes()
-                  and ('runtime/claude-qualification.json', '.veldo/runtime/claude-qualification.json')
+                  and ('runtime/claude-tables.json', '.veldo/runtime/claude-tables.json')
                   in [tuple(a) for a in getattr(load('v60_scaffold', PRODUCTION['init_scaffold.py']),
                                                 '_RUNTIME_ASSETS', [])])
             check('pin/shipped-qualification', 'its qualified digest is the installed binary\'s, as both extractions read '

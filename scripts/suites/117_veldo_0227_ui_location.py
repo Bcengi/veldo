@@ -224,9 +224,9 @@ def _v227_suite():
         # The fixture's engine records (its generated engines' digests) replace the shipped ones, as in the current tree;
         # the Codex record keeps the earlier engine's own bundled catalog readings, the ones that host was qualified
         # with, so the row survives every later qualify of a newer binary (VELDO-0230 AC2).
-        for name in ('claude-qualification.json', 'codex-qualification.json'):
+        for name in ('claude-tables.json', 'codex-tables.json'):
             record = json.loads((h['mods'] / 'runtime' / name).read_text())
-            if name == 'codex-qualification.json':
+            if name == 'codex-tables.json':
                 own = json.loads((older / '.veldo' / 'runtime' / name).read_text())
                 record.update({k: own[k] for k in ('feature_listing', 'model_catalog', 'model_catalog_digest',
                                                    'model_tool_modes', 'native_tool_mapping') if k in own})

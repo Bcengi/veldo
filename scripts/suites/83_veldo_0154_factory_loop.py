@@ -230,7 +230,7 @@ sys.exit(chosen['code'])
         def fake_engine(name):
             # VELDO-0172's read-back drives the installed executable itself.
             return vendored.read_text()
-        qualification = base / 'codex-qualification.json'
+        qualification = base / 'codex-tables.json'
         qualification.write_text(json.dumps(CODEX.qualification(str(vendored))))
 
         BIG = dict(capacity=50, invocations=500, wall_seconds=10 ** 7)

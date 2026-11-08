@@ -152,7 +152,13 @@ def codex_model(Refused):
     """The model a Codex role starts on: the newest of the installed qualification's bundled catalog, its model
     of the lowest priority (the catalog's own order, newest first) among catalog_models, whatever its tool mode
     (a code-mode model's runner tools are part of its expected tool set, control_agent_config_handoff)."""
-    record = organ('control_engine_codex').load_qualification(Path(__file__).parent / 'runtime' / 'codex-qualification.json')
+    engine = organ('control_engine_codex')
+    record = engine.load_qualification(Path(__file__).parent / 'runtime' / 'codex-tables.json')
+    # VELDO-0275 AC1: the reviewed tables keep the catalog's digest; the catalog is the approved binary's own.
+    try:
+        record = dict(record, model_catalog=engine.model_catalog(record))
+    except engine.Refused as error:
+        raise Refused(error.code, 'the approved Codex binary gives no bundled catalog with the recorded digest')
     models = catalog_models(record)
     if not models:
         raise Refused('missing_evidence:codex_model_catalog', 'the Codex qualification names no model a role can bind')

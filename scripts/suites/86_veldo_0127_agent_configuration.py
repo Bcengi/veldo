@@ -235,7 +235,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
 '''
     # VELDO-0230: the qualified Claude Code's own built-in plugins and skills (its record, which qualify.py reads
     # from the binary's init event) and its bundled skills (the VELDO-0155 table read from its bytes).
-    claude_entry = json.loads((ROOT / '.veldo/runtime/claude-qualification.json').read_text())['versions'][
+    claude_entry = json.loads((ROOT / '.veldo/runtime/claude-tables.json').read_text())['versions'][
         json.loads((ROOT / '.veldo/runtime/engines.json').read_text())['claude_code']['version']]
     bundled = json.loads((TREE / 'proof/VELDO-0155/claude-baseline.json').read_text())['bundled_skills']
     fake = (fake.replace('V230_BUNDLED_SKILLS', repr(list(bundled)))
@@ -404,7 +404,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
                     check('review/codex-tools', 'qualification writer and comparator share the shell and plan vocabulary',
                           observed.get('native_tool_mapping', {}).get('shell') == ['exec_command','write_stdin']
-                          and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
+                          and json.loads((base / 'codex-tables.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
                           and observed.get('missing') == [] and observed.get('unexpected') == []
                           and observe(missing, wanted, L.HANDOFF).get('missing') == sorted(resources + ['mcp__jira__jira_search', 'write_stdin']))
                     check('wire/resources', 'selected server grants exactly its three resource readers',
@@ -540,10 +540,10 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 unreadable, _ = attempt(lambda: run_compare([first, {}], wanted))
                 check('wire/later-requests', mode + ': an empty run and an unreadable later request are refused by name',
                       empty == unreadable == 'missing_evidence:codex_request_tools')
-            qualified = json.loads((base / 'codex-qualification.json').read_text())
+            qualified = json.loads((base / 'codex-tables.json').read_text())
             # VELDO-0230 (Telegram 38878): without a server, none is granted; the readers the qualified binary
             # offers a model of its tool mode anyway (nothing to list or read) are recorded and accepted, no other.
-            shipped_offered = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())[
+            shipped_offered = json.loads((ROOT / '.veldo/runtime/codex-tables.json').read_text())[
                 'mcp_resource_rule'].get('offered_without_server')
             check('wire/no-server', 'qualification records the conditional MCP server grant and the readers the '
                   'binary offers without a server [%s]' % shipped_offered,

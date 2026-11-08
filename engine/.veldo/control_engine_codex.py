@@ -116,8 +116,9 @@ each, the flags of the qualified configuration and the environment the engine is
 
 PINNED EXECUTABLE. The adapter launches the vendor binary inside its npm package (the `executable` its
 configuration names), never the package manager's `codex` link, a Node shim the next install replaces.
-`qualification(executable)` writes the record of one installed binary (runtime/codex-qualification.json,
-written by .veldo/qualify.py for the Codex the engines record names): its package, version, package-relative path, digest and flags, the
+`qualification(executable)` writes the record of one installed binary (VELDO-0275: the reviewed tables
+runtime/codex-tables.json, written by .veldo/qualify.py for the Codex the engines record names, without the
+bundled model catalog, which `model_catalog` reads from the approved binary by its recorded digest): its package, version, package-relative path, digest and flags, the
 terminal protocol and usage it is read with. `bind(adapter, state_root)` checks the configured executable
 against that record before anything is accepted or spawned: an absolute path, no link on the way to it,
 inside a package of the recorded name and version at the recorded relative path, with the recorded
@@ -150,6 +151,7 @@ import importlib.util
 import os
 from pathlib import Path
 import re
+import shutil
 import struct
 import subprocess
 import time
@@ -422,7 +424,7 @@ class Meter:
 # binary names; DISABLE_AUTOUPDATER is not one it reads); the prompt is what the receiver writes on stdin.
 FLAGS = ('exec', '--json', '-c', 'check_for_update_on_startup=false')
 ENVIRONMENT = {'DISABLE_AUTOUPDATER': '1'}
-QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-qualification.json'
+QUALIFICATION = Path(__file__).resolve().with_name('runtime') / 'codex-tables.json'
 QUALIFICATION_SCHEMA = 'veldo.engine_qualification/v1'
 # Exact direct call signatures; Code Mode wrappers are not aliases for these capabilities.
 NATIVE_TOOL_MAPPING = {'shell': ['exec_command', 'write_stdin'], 'update_plan': ['update_plan'],
@@ -557,6 +559,55 @@ def bundled_catalog(executable):
             return catalog
         except (OSError, ValueError, subprocess.SubprocessError):
             raise Refused('missing_evidence:codex_bundled_catalog') from None
+
+
+_CATALOGS = {}
+
+
+def _approved_paths(record):
+    """VELDO-0275 AC1: where the approved vendor binary may stand on this host: the installer's kept copy the
+    engines record beside this module names, then the package the `codex` on PATH runs."""
+    paths = []
+    try:
+        named = str(json.loads((QUALIFICATION.parent / 'engines.json').read_text())['codex']['binary'])
+        if named == '~' or named.startswith('~/'):
+            import pwd
+            named = pwd.getpwuid(os.getuid()).pw_dir + named[1:]
+        paths.append(named)
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    found = shutil.which('codex')
+    if found is not None:
+        package, _ = _package(Path(found).resolve())
+        if package is not None and record.get('executable'):
+            paths.append(str(package / record['executable']))
+    return paths
+
+
+def model_catalog(record=None, executable=None):
+    """VELDO-0275 AC1: the bundled model catalog of the approved binary. The reviewed tables keep only its digest
+    (`model_catalog_digest`); the catalog is read from the approved binary itself (`executable`, else a bound
+    run's `path`, else the kept copy or the one on PATH, whichever has the approved digest), offline as
+    qualify.py read it, and must have that digest, else engine_not_approved. A record that carries the catalog
+    itself (a test fixture's) gives that one; one that names no catalog gives None."""
+    record = load_qualification(record) if record is None or isinstance(record, (str, Path)) else record
+    if isinstance(record.get('model_catalog'), dict):
+        return record['model_catalog']
+    wanted = record.get('model_catalog_digest')
+    if not wanted:
+        return None
+    if wanted in _CATALOGS:
+        return _CATALOGS[wanted]
+    named = executable or record.get('path')
+    for path in ([named] if named else _approved_paths(record)):
+        if not os.path.isfile(path) or _file_digest(path) != record.get('sha256'):
+            continue
+        catalog = bundled_catalog(path)
+        if catalog_digest(catalog) != wanted:
+            raise Refused('engine_not_approved')
+        _CATALOGS[wanted] = catalog
+        return catalog
+    raise Refused('missing_evidence:codex_bundled_catalog')
 
 
 def feature_listing(executable):

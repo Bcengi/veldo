@@ -125,7 +125,7 @@ def _v166_suite():
                   and json.loads(kept[0])['dispatch_id'] == 'dispatch/live'
                   and meter.receipts == ['sha256:' + hashlib.sha256(raw).hexdigest()] * 2)
 
-            qualified = json.loads((ROOT / 'engine/runtime/claude-qualification.json').read_text())
+            qualified = json.loads((ROOT / 'engine/runtime/claude-tables.json').read_text())
             names = qualified['versions'][CLAUDE_VERSION]['rate_limit_windows']
             event = json.loads(raw)
             info = event['rate_limit_info']

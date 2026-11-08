@@ -10,14 +10,19 @@ THE ENGINES RECORD (runtime/engines.json, beside this module, byte-identical in 
 qualified Codex and Claude Code: version, binary path and digest. It is the one place a version lives: every
 extractor's default binary, every suite's fake package and pinned copy, the census and setup read it.
 
-ONE COMMAND. In order it writes the engines record, runs every extractor in write mode against the two
-binaries (EXTRACTORS: the tables the engine modules and the suites compare against), regenerates the
-VELDO-0127 fixtures from the Codex binary (FIXTURES), and writes the Codex and the Claude Code qualification
-records to every runtime copy (RUNTIMES): the Codex record by control_engine_codex.qualification, its model
-tool modes read from the bundled catalog; the Claude Code record by `claude_record`, from the extracted
-tables, with the stream reader's tables (`stream_forms`, read by control_engine_claude: its known messages,
-tool-free frames, fields naming a tool, nested-work and in-run tables, `stream_forms` below). On the binaries
-already qualified it rewrites every file with the bytes it holds.
+ONE COMMAND. In order it runs every extractor as a check against the two binaries (EXTRACTORS, in their
+--check mode: the tables the engine modules and the suites compare against must be what the binaries hold; with
+--write-tables they are rewritten instead, how a new version is approved until VELDO-0275b), writes the engines
+record, regenerates the VELDO-0127 fixtures from the Codex binary (FIXTURES), and writes the Codex and the Claude
+Code reviewed tables to every runtime copy (RUNTIMES): the Codex tables (codex-tables.json) by
+control_engine_codex.qualification, its model tool modes read from the bundled catalog, which the tables keep by
+digest only (a launch reads it from the approved binary); the Claude Code tables (claude-tables.json) by
+`claude_record`, from the extracted tables, with the stream reader's tables (`stream_forms`, read by
+control_engine_claude: its known messages, tool-free frames, fields naming a tool, nested-work and in-run tables,
+`stream_forms` below). VELDO-0275 AC1: each step is a check, and each engine's qualification summary (Checks: per
+check its name, outcome and duration; no table, no transcript) is written beside the tables (claude-summary.json,
+codex-summary.json) and named in the engines record; a failed check approves nothing. On the binaries already
+qualified it rewrites every file with the bytes it holds, the summaries' durations aside.
 
 A NEWER BINARY NEVER BLOCKS (AC3). A Codex feature the classification (control_agent_config_handoff
 CODEX_FEATURES) does not name is off at launch unless its evaluation grants it, and listed by name in the record (`unclassified_default_on`)
@@ -41,6 +46,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 HERE = Path(__file__).resolve().parent
 ENGINES = HERE / 'runtime' / 'engines.json'
@@ -320,7 +326,7 @@ def builtin_plugins(plugins, previous, carried, same, decisions):
 def previous_plugins(root):
     """The replaced Claude Code record's built-in plugin readings, or None."""
     try:
-        record = json.loads((Path(root) / '.veldo/runtime/claude-qualification.json').read_text())
+        record = json.loads((Path(root) / '.veldo/runtime/claude-tables.json').read_text())
         entry = next(iter(record['versions'].values()))
         return {k: entry[k] for k in ('engine_plugins', 'accepted_plugins') if k in entry}
     except (OSError, ValueError, KeyError, StopIteration, TypeError, AttributeError):
@@ -380,6 +386,8 @@ def fixtures(root, executable, written):
     LB = load('qualify_loopback', here / 'loopback.py')
     E = load('qualify_evidence', here / 'evidence.py')
     qualified = H.X.load_qualification()
+    # VELDO-0275 AC1: the tables keep only the catalog's digest; the catalog is the binary's own.
+    qualified = dict(qualified, model_catalog=H.X.model_catalog(qualified, str(executable)))
     outputs = {'catalog-fixture.json': fixture_text(qualified['model_catalog'])}
     # The catalog's models the mutation registry names its rows by (a plain table it reads by key): the first
     # Code Mode model, the first that supports the clock, the first direct model, and the first direct model
@@ -444,7 +452,7 @@ def fixtures(root, executable, written):
             or qualified.get('undelivered_grants') != sorted(undelivered)):
         qualified['mcp_resource_rule']['offered_without_server'] = offered
         qualified['undelivered_grants'] = sorted(undelivered)
-        write(root, 'codex-qualification.json', text(qualified), [])
+        write(root, 'codex-tables.json', text({k: v for k, v in qualified.items() if k != 'model_catalog'}), [])
     cases = []
     for model, selected, capability, inventory, catalog, result in captured:
         wanted = H.expected(capability, inventory)
@@ -490,11 +498,11 @@ def previous_tables(root):
         except (OSError, ValueError, KeyError, TypeError):
             return None
     credentials = lambda engine: lambda t: [n for table in t[engine]['credential_tables'] for n in table['names']]
-    return {'codex_features': read('.veldo/runtime/codex-qualification.json',
+    return {'codex_features': read('.veldo/runtime/codex-tables.json',
                                    lambda r: [line.split()[0] for line in r['feature_listing'].splitlines() if line.strip()]),
             'codex_options': read('proof/VELDO-0156/codex-baseline.json', lambda t: t['options']),
             'codex_environment': read('proof/VELDO-0062/cli-formats.json', credentials('codex')),
-            'claude_tools': read('.veldo/runtime/claude-qualification.json',
+            'claude_tools': read('.veldo/runtime/claude-tables.json',
                                  lambda r: next(iter(r['versions'].values()))['tool_registry']),
             'claude_options': read('proof/VELDO-0060/cli-options.json', lambda t: t['claude_code']['options']),
             'claude_environment': read('proof/VELDO-0062/cli-formats.json', credentials('claude_code'))}
@@ -503,7 +511,7 @@ def previous_tables(root):
 def previous_new(root, engine):
     """The (kind, name) pairs the replaced record listed as new, with the digest it was qualified at."""
     try:
-        name = {'codex': 'codex', 'claude_code': 'claude'}[engine] + '-qualification.json'
+        name = {'codex': 'codex', 'claude_code': 'claude'}[engine] + '-tables.json'
         record = json.loads((Path(root) / '.veldo/runtime' / name).read_text())
         entry = record if engine == 'codex' else next(iter(record['versions'].values()))
         return entry['sha256'], {(i['kind'], i['name']) for i in entry.get('new_capabilities') or ()}
@@ -522,7 +530,7 @@ def newer(current, before, carried, kind, same):
 def previous_forms(root):
     """The stream forms the replaced Claude Code record gave its reader (`stream_forms`), or None."""
     try:
-        record = json.loads((Path(root) / '.veldo/runtime/claude-qualification.json').read_text())
+        record = json.loads((Path(root) / '.veldo/runtime/claude-tables.json').read_text())
         forms = next(iter(record['versions'].values()))['stream_forms']
         return forms if isinstance(forms, dict) else None
     except (OSError, ValueError, KeyError, StopIteration, TypeError):
@@ -591,11 +599,96 @@ def new_tools(entry, known):
             for name in sorted(set(entry['tool_registry']) - set(known))] if known else []
 
 
+class CheckFailed(Exception):
+    """A qualification check that did not pass: nothing is approved."""
+
+
+class Checks:
+    """VELDO-0275 AC1: the qualification summary of each engine: every check qualify.py runs on its binary, with its
+    name, outcome and duration (seconds, to a tenth). Small by construction (no table, no transcript); written to
+    runtime/<engine>-summary.json, which the engines record names, only when every check passed."""
+
+    def __init__(self, record):
+        self.record = record
+        self.found = {'claude_code': [], 'codex': []}
+        for engine, name in SUMMARIES.items():
+            record[engine]['summary'] = 'runtime/' + name
+
+    def run(self, name, engines):
+        checks = self
+
+        class Timed:
+            def __enter__(self):
+                self.start = time.monotonic()
+
+            def __exit__(self, kind, error, trace):
+                outcome = 'pass' if kind is None else 'fail'
+                for engine in engines:
+                    checks.found[engine].append({'name': name, 'outcome': outcome,
+                                                 'duration_s': round(time.monotonic() - self.start, 1)})
+                print('check %s %s: %s' % ('+'.join(engines), name, outcome))
+                if kind is None or kind is CheckFailed:
+                    return False
+                raise CheckFailed('%s: %s' % (name, error)) from None
+        return Timed()
+
+    def summary(self, engine):
+        entry = self.record[engine]
+        checks = self.found[engine]
+        return {'schema': SUMMARY_SCHEMA, 'engine': engine, 'version': entry['version'], 'sha256': entry['sha256'],
+                'verdict': 'approved' if checks and all(c['outcome'] == 'pass' for c in checks) else 'failed',
+                'checks': checks}
+
+    def write(self, root, written):
+        for engine, name in SUMMARIES.items():
+            summary = self.summary(engine)
+            if summary['verdict'] != 'approved':
+                raise CheckFailed('%s has a failed check' % engine)
+            write(root, name, text(summary), written)
+
+
+SUMMARY_SCHEMA = 'veldo.engine_summary/v1'
+# VELDO-0275 AC1: each engine's qualification summary, beside its tables in every runtime copy.
+SUMMARIES = {'claude_code': 'claude-summary.json', 'codex': 'codex-summary.json'}
+
+
+def tables_of(codex_record):
+    """The Codex record as its reviewed tables keep it: everything but the bundled model catalog (748 KB on
+    0.166.0), whose digest stays (`model_catalog_digest`) and which a launch reads from the approved binary."""
+    return {k: v for k, v in codex_record.items() if k != 'model_catalog'}
+
+
+def loaded(root, record):
+    """The written tables as a launch reads them: the approved Claude Code version, its baseline, tool classes and
+    stream tables; the Codex tables, its baseline and its catalog, read from the binary by its digest."""
+    C = load('qualify_loaded_claude', Path(root) / '.veldo/control_engine_claude.py')
+    X = load('qualify_loaded_codex', Path(root) / '.veldo/control_engine_codex.py')
+    version = record['claude_code']['version']
+    claude = C.qualification(Path(root) / '.veldo' / C.QUALIFICATION)
+    entry = C.qualified(version, claude)
+    C.qualified_baseline({'version': version}, claude)
+    C.qualified_tools(version, entry)
+    C.stream_tables(Path(root) / '.veldo' / C.QUALIFICATION)
+    codex = X.load_qualification(Path(root) / '.veldo/runtime/codex-tables.json')
+    X.qualified_baseline(None, codex)
+    if X.model_catalog(codex, str(binary('codex', record))) is None:
+        raise CheckFailed('the Codex tables name no bundled catalog')
+
+
 def main(argv=None):
+    try:
+        return _main(argv)
+    except CheckFailed as error:
+        raise SystemExit('qualify: %s; nothing approved' % error) from None
+
+
+def _main(argv=None):
     parser = argparse.ArgumentParser(description='Qualify the installed or named Codex and Claude Code.')
     parser.add_argument('--codex', help='the Codex vendor binary (default: the one the codex on PATH runs)')
     parser.add_argument('--claude', help='a Claude Code version or path (default: the claude on PATH)')
     parser.add_argument('--root', default=str(ROOT), help='the repository to write (default: this one)')
+    parser.add_argument('--write-tables', action='store_true',
+                        help='run the extractors in write mode (approving a new version until VELDO-0275b lands)')
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     codex = Path(args.codex).resolve() if args.codex else installed_codex()
@@ -609,7 +702,7 @@ def main(argv=None):
     except (OSError, ValueError):
         previous = None
     try:
-        known_tools = set(next(iter(json.loads((root / '.veldo/runtime/claude-qualification.json').read_text())
+        known_tools = set(next(iter(json.loads((root / '.veldo/runtime/claude-tables.json').read_text())
                                     ['versions'].values()))['tool_classification'])
     except (OSError, ValueError, KeyError, StopIteration):
         known_tools = set()
@@ -622,18 +715,24 @@ def main(argv=None):
     except (OSError, ValueError):
         decisions = {}
     record = engines_record(codex, claude)
-    write(root, 'engines.json', text(record), written)
+    checks = Checks(record)
+    # VELDO-0275 AC1: each extractor is a check of the binaries against the tables it keeps (its --check mode, which
+    # writes nothing); only --write-tables rewrites them, as approving a new version did before VELDO-0275b.
     for script, reads, tables in EXTRACTORS:
-        argv = [sys.executable, '-B', str(root / script)]
+        argv = [sys.executable, '-B', str(root / script)] + ([] if args.write_tables else ['--check'])
         argv += ['--claude', str(claude)] if 'claude' in reads else []
         argv += ['--codex', str(codex)] if 'codex' in reads else []
-        done = subprocess.run(argv, cwd=root, capture_output=True, text=True)
-        if done.returncode:
-            sys.stderr.write(done.stdout + done.stderr)
-            raise SystemExit('qualify: %s failed on these binaries (exit %d)' % (script, done.returncode))
-        written += [str(Path(script).parent / table) for table in tables]
+        with checks.run(script, [{'claude': 'claude_code'}.get(r, r) for r in reads]):
+            done = subprocess.run(argv, cwd=root, capture_output=True, text=True)
+            if done.returncode:
+                sys.stderr.write(done.stdout + done.stderr)
+                raise CheckFailed('%s failed on these binaries (exit %d)' % (script, done.returncode))
+        if args.write_tables:
+            written += [str(Path(script).parent / table) for table in tables]
+    write(root, 'engines.json', text(record), written)
     X = load('qualify_codex', root / '.veldo/control_engine_codex.py')
-    codex_record = X.qualification(str(codex), catalog=True)
+    with checks.run('codex record: package, flags, baseline, features list, bundled catalog', ['codex']):
+        codex_record = X.qualification(str(codex), catalog=True)
     # VELDO-0230 AC3: every new item the binary brings, with its evaluation (the features before the loopback
     # captures, since a granted feature stays on at launch; the readers and grants those captures find, after).
     same = codex_before[0] == codex_record['sha256']
@@ -649,8 +748,11 @@ def main(argv=None):
                                                               'options', same), {
         'decision': 'not_applicable', 'reason': 'Veldo passes only its qualified flags and baseline options'})
     codex_record['new_capabilities'] = codex_new
-    write(root, 'codex-qualification.json', text(codex_record), written)
-    claude_qualification = claude_record(root, claude)
+    # VELDO-0275 AC1: the reviewed tables keep the catalog's digest only; a launch reads the catalog from the binary.
+    write(root, 'codex-tables.json', text(tables_of(codex_record)), written)
+    with checks.run('claude_code record: built-in plugins and skills (init probe), tool registry, login status',
+                    ['claude_code']):
+        claude_qualification = claude_record(root, claude)
     entry = claude_qualification['versions'][record['claude_code']['version']]
     same = claude_before[0] == entry['sha256']
     cli = json.loads((root / 'proof/VELDO-0060/cli-options.json').read_text())['claude_code']['options']
@@ -674,15 +776,19 @@ def main(argv=None):
     if accepted:
         entry['accepted_plugins'] = accepted
     entry['new_capabilities'] += found
-    write(root, 'claude-qualification.json', text(claude_qualification), written)
-    fixtures(root, codex, written)
-    codex_record = json.loads((root / '.veldo/runtime/codex-qualification.json').read_text())
+    write(root, 'claude-tables.json', text(claude_qualification), written)
+    with checks.run('codex loopback requests (VELDO-0127 fixtures, resource readers, undelivered grants)', ['codex']):
+        fixtures(root, codex, written)
+    codex_record = json.loads((root / '.veldo/runtime/codex-tables.json').read_text())
     found = decided(decisions, 'codex', 'tools_without_server', set().union(
         *codex_record['mcp_resource_rule']['offered_without_server'].values())) + decided(
         decisions, 'codex', 'grants', codex_record['undelivered_grants'])
     if found:
         codex_record['new_capabilities'] += found
-        write(root, 'codex-qualification.json', text(codex_record), [])
+        write(root, 'codex-tables.json', text(codex_record), [])
+    with checks.run('tables load as a launch reads them', ['claude_code', 'codex']):
+        loaded(root, record)
+    checks.write(root, written)
     print('qualified codex %s (%s) %s' % (record['codex']['version'], record['codex']['binary'], record['codex']['sha256']))
     print('qualified claude_code %s (%s) %s' % (record['claude_code']['version'], record['claude_code']['binary'],
                                                record['claude_code']['sha256']))

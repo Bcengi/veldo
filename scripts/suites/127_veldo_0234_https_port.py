@@ -323,7 +323,7 @@ def _v234_suite():
         with tarfile.open(fileobj=io.BytesIO(shipped.stdout)) as archive:
             archive.extractall(str(older), filter='data')
         # The fixture's engine records (its generated engines' digests) replace the shipped ones, as in the current tree.
-        for name in ('claude-qualification.json', 'codex-qualification.json', 'engines.json'):
+        for name in ('claude-tables.json', 'codex-tables.json', 'engines.json'):
             (older / '.veldo' / 'runtime' / name).write_bytes((h['mods'] / 'runtime' / name).read_bytes())
         F0 = load('v234_setup_before', older / '.veldo' / 'control_factory_setup.py')
         ts.set('ready')

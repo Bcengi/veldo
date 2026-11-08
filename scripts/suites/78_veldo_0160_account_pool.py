@@ -326,10 +326,10 @@ sys.exit(payload.get('code', 0))
             claude_record['versions'][CLAUDE_VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names, and its stream reader's tables.
-            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+            claude_record['versions'][CLAUDE_VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                 .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(claude_record))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(claude_record))
         factory = base / 'factory'
         factory.mkdir(mode=0o700)
         pin = getattr(getattr(L, 'ENGINES', {}).get('claude_code'), 'pin', None)
@@ -344,7 +344,7 @@ sys.exit(payload.get('code', 0))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o755)
         CODEX_ENGINE = getattr(L, 'ENGINES', {}).get('codex')
-        codex_qualification = base / 'codex-qualification.json'
+        codex_qualification = base / 'codex-tables.json'
         if hasattr(CODEX_ENGINE, 'qualification'):
             codex_qualification.write_text(json.dumps(CODEX_ENGINE.qualification(str(vendored))))
         config = base / 'receiver.json'
@@ -2105,7 +2105,7 @@ sys.exit(payload.get('code', 0))
             # VELDO-0230: the reader's tables follow the qualified binary (qualify writes them into its record); a message
             # or a frame a newer binary brings that its evaluation does not grant is withheld, and the record lists it.
             withheld = {(item['kind'], item['name']) for item in json.loads(
-                (ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())['versions'][CLAUDE_VERSION]
+                (ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_text())['versions'][CLAUDE_VERSION]
                 .get('new_capabilities') or () if item.get('decision') != 'granted'}
             named = lambda pair: '/'.join(part for part in pair if part is not None)
             claude_tables = {'messages': {tuple(m) for m in CFORMS.get('messages') or ()

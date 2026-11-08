@@ -135,10 +135,10 @@ def engines(root, f, CS):
         if provider == 'claude_code':
             version = engines['claude_code']['version']; versions = f['root'] / 'versions'; versions.mkdir()
             executable = versions / version; executable.write_text(source); executable.chmod(0o755)
-            shipped = json.loads((root / '.veldo/runtime/claude-qualification.json').read_text())['versions'][version]
+            shipped = json.loads((root / '.veldo/runtime/claude-tables.json').read_text())['versions'][version]
             entry = dict(shipped, sha256='sha256:'+hashlib.sha256(executable.read_bytes()).hexdigest(),
                          session_environment=module.session_environment(executable))
-            (mods / 'runtime/claude-qualification.json').write_text(json.dumps({'schema':'veldo.engine_qualification/v1',
+            (mods / 'runtime/claude-tables.json').write_text(json.dumps({'schema':'veldo.engine_qualification/v1',
                            'engine':provider,'versions':{version:entry}}))
             module.pin(version, versions=str(versions), state_root=str(state))
             adapters[provider] = {'engine':provider,'identity':'reported','executable':{'version':version},'argv':wrapper}
@@ -154,7 +154,7 @@ def engines(root, f, CS):
             qualified.update(feature_listing='shell_tool stable true\n',model_catalog=catalog,
                              model_catalog_digest=module.catalog_digest(catalog),
                              model_tool_modes=module.catalog_modes(catalog))
-            qualification = mods / 'runtime/codex-qualification.json'; qualification.write_text(json.dumps(qualified))
+            qualification = mods / 'runtime/codex-tables.json'; qualification.write_text(json.dumps(qualified))
             adapters[provider] = {'engine':provider,'identity':'reported','executable':str(executable),
                 'qualification':str(qualification),'argv':wrapper+[str(executable)]+list(module.FLAGS)}
     authority = f['authority']

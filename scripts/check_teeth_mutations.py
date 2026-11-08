@@ -7831,7 +7831,7 @@ def cases():
            "        if False:  # defect: the copy's digest is not checked\n",
            'pin/copy')
     claude('claude-qualification-not-installed', 'init_scaffold.py',
-           '_RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude-qualification.json")]\n',
+           '_RUNTIME_ASSETS += [("runtime/claude-tables.json", ".veldo/runtime/claude-tables.json")]\n',
            '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid beside the engine module\n',
            'pin/shipped-qualification')
     claude('claude-lifecycle-stop-unregistered', 'control_engine_claude.py',
@@ -8102,7 +8102,7 @@ def cases():
             "FLAGS = ('exec', '--json')  # defect: the binary's own startup update check stays on\n",
             'pin/qualified-record')
     adapter('adapter-qualification-not-scaffolded', 'init_scaffold.py',
-            '_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]\n',
+            '_RUNTIME_ASSETS += [("runtime/codex-tables.json", ".veldo/runtime/codex-tables.json")]\n',
             '_RUNTIME_ASSETS += []  # defect: the qualification record is not laid down\n',
             'pin/qualified-record')
     # Integration review: a stopped Codex invocation is judged as Claude Code's is, whatever it printed and
@@ -8812,7 +8812,7 @@ def cases():
 
     extracted165 = set()
     for engine165 in ('claude', 'codex'):
-        record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-qualification.json')).read_text())
+        record165 = json.loads((ROOT / '.veldo' / 'runtime' / (engine165 + '-tables.json')).read_text())
         engines165 = json.loads((ROOT / '.veldo' / 'runtime' / 'engines.json').read_text())
         entry165 = (record165['versions'][engines165['claude_code']['version']] if engine165 == 'claude'
                     else record165)
@@ -12163,7 +12163,7 @@ def cases():
     # Suite 125's row drives qualify.py's main on recorded readings (seconds); suite 126's qualify/covers runs
     # the real binaries end to end (86 to 119 s), too near the mutation worker's unmeasured 120 s floor.
     add(230, 'qualify230-claude-record-unwritten', census230, 'qualify.py',
-        "    write(root, 'claude-qualification.json', text(claude_qualification), written)\n",
+        "    write(root, 'claude-tables.json', text(claude_qualification), written)\n",
         "    pass  # defect: the Claude Code record is not written\n", ['qualify/claude-record-written'])
     add(230, 'qualify230-granted-feature-off', '88_veldo_0127_feature_defaults.py', 'control_agent_config_handoff.py',
         "        if feature in granted and feature not in CODEX_FEATURE_GRANTS and feature not in CODEX_FEATURES_UNGRANTED:\n",

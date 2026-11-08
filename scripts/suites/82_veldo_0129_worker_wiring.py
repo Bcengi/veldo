@@ -390,10 +390,10 @@ sys.exit(7 if mode == 'nonzero' else 0)
             record['versions'][version].update(tool_registry=tools173['tool_registry'],
                                                tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-            record['versions'][version].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+            record['versions'][version].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                 .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
         (mods / 'runtime').mkdir(exist_ok=True)
-        (mods / 'runtime/claude-qualification.json').write_text(json.dumps(record))
+        (mods / 'runtime/claude-tables.json').write_text(json.dumps(record))
         E.pin(version, versions=str(versions), state_root=str(factory))
         package = factory / 'engines/codex'
         package.mkdir(parents=True)
@@ -402,7 +402,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
         binary.write_text(fake)
         binary.chmod(0o555)
         CE = L.ENGINES['codex']
-        cq = mods / 'runtime/codex-qualification.json'
+        cq = mods / 'runtime/codex-tables.json'
         cq.write_text(json.dumps(CE.qualification(str(binary))))
         clones = dict(clones=str(state / 'clones'), caches=str(state / 'caches'), protected=[str(private)],
                       engines=[str(factory / 'engines')])

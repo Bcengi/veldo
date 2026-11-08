@@ -581,10 +581,10 @@ err.close()
             test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-            test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
+            test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
                 .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
         (mods / 'runtime').mkdir(exist_ok=True)
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'
         factory.mkdir(mode=0o700)
         E.pin(VERSION, versions=str(versions), state_root=str(factory))
@@ -594,7 +594,7 @@ err.close()
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake_codex)
         CODEX_BIN.chmod(0o755)
-        codex_record_path = base / 'codex-qualification.json'
+        codex_record_path = base / 'codex-tables.json'
         codex_record_path.write_text(json.dumps(X.qualification(str(CODEX_BIN))))
 
         real_systemd_run = shutil.which('systemd-run', path=tools.get('PATH', os.defpath)) or '/usr/bin/systemd-run'
