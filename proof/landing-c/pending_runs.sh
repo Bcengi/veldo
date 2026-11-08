@@ -87,3 +87,9 @@ step round3-teeth-272 python3 scripts/check_teeth_mutations.py --finding 272
 # The confined unit leg stopped at suite 99's crash, so no suite after it ran there at 9ea10fdf:
 # only a full gate shows them.
 step round3-full-gate bash scripts/verify.sh
+
+# Fix round 4 (README "Fix round 4"): the intake writer drafts human_approval required (cause E,
+# lead decision), so suites 05 and 14 are expected green, no longer expected red.
+for suite in 05_tracker_routing_resolver_veldo 14_warp_0717_subset_runner; do
+    step "round4-$suite" python3 scripts/selftest.py --suite "$suite"
+done

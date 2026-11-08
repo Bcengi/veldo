@@ -104,7 +104,9 @@ def draft_spec_from_item(item, config, spec_id="VELDO-XXXX", owner="unassigned")
         "owner": owner,
         "lane": "standalone",
         "tracker_repo": repo,
-        "human_approval": "not_required",
+        # VELDO-0272: a draft with no footprint computes required; the author or the rule's report sets
+        # the flag from the footprint once one is added.
+        "human_approval": "required",
         "depends_on": [],
         "protected_paths": [],
         "intake_source": source,
@@ -229,7 +231,7 @@ def draft_spec_from_requirements(item, config, spec_id="VELDO-XXXX", owner="unas
 
     front_matter = {
         "schema": "veldo.spec/v1", "id": spec_id, "title": title, "status": "draft", "risk": "standard",
-        "owner": owner, "lane": "standalone", "tracker_repo": repo, "human_approval": "not_required",
+        "owner": owner, "lane": "standalone", "tracker_repo": repo, "human_approval": "required",
         "depends_on": [], "protected_paths": [], "intake_source": source,
         "acceptance_criteria": criteria, "required_evidence": ["unit"], "rollback": "git revert",
     }

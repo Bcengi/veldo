@@ -325,3 +325,20 @@ policy_check.py); no teeth mutation anchors on a changed line.
 Pending (gate lock held by another repository's gate, in pending_runs.sh): every suite in the table,
 129_veldo_0272_approval_scope, 140_veldo_0267_mutation_selection, teeth findings 267 and 272, and a full
 gate (the confined leg never reached the suites after 99).
+
+## Fix round 4
+
+Cause E (round 3) decided by the lead: the VELDO-0272 rule stands and the writer follows it.
+
+- .veldo/tracker_intake.py and its engine copy: draft_spec_from_item and draft_spec_from_requirements
+  render `human_approval: required` (was not_required). An intake draft declares no footprint, and the
+  rule computes required when the footprint is absent; once a footprint is added, the author or the
+  rule's report sets the flag from it. The rule (validate.py check_approval_scope, policy_check
+  approval_bases) is unchanged.
+- Suites 05 and 14: no row asserted the old not_required default (their drafts reach the rule through
+  check_spec, suite 05 at :629, :645, :708 and :854), so no expectation changed.
+
+Checks run here: py_compile on both copies; `cmp` clean for the pair; no teeth or gate mutation names
+tracker_intake.py.
+
+Pending (gate lock busy, in pending_runs.sh): suites 05 and 14, now expected green.
