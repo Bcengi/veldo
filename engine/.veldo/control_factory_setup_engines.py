@@ -35,15 +35,11 @@ def qualified_claude(Refused, directory=None):
 
 def approved_codex(codex, record, Refused, directory=None):
     """VELDO-0275 AC1: the approved Codex vendor binary, the one whose digest the qualification record holds: the
-    one the `codex` on PATH runs when that is the approved one, else the installer's kept copy the engines record
-    beside the modules names (runtime/engines.json, written by qualify.py). A newer version installed on PATH is
-    never used because it is installed; with neither approved, setup is refused as engine_not_approved."""
+    installer's kept copy the engines record beside the modules names (runtime/engines.json, written by qualify.py)
+    first, and the one the `codex` on PATH runs only when that copy is not the approved one, so a later in-place
+    upgrade of the PATH install never moves setup off the kept copy. A newer version installed on PATH is never used
+    because it is installed; with neither approved, setup is refused as engine_not_approved."""
     candidates = []
-    found = shutil.which('codex')
-    if found is not None:
-        package, _ = codex._package(Path(found).resolve())
-        if package is not None:
-            candidates.append(package / record['executable'])
     try:
         named = str(json.loads((Path(directory or Path(__file__).parent) / 'runtime' / 'engines.json')
                                .read_text())['codex']['binary'])
@@ -54,6 +50,11 @@ def approved_codex(codex, record, Refused, directory=None):
             import pwd
             named = pwd.getpwuid(os.getuid()).pw_dir + named[1:]
         candidates.append(Path(named))
+    found = shutil.which('codex')
+    if found is not None:
+        package, _ = codex._package(Path(found).resolve())
+        if package is not None:
+            candidates.append(package / record['executable'])
     present = [path for path in candidates if path.is_absolute() and path.is_file()]
     if not present:
         raise Refused('missing_evidence:engine_source:codex')

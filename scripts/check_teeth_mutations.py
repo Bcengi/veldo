@@ -12501,8 +12501,9 @@ def cases():
                 "    return max(path.parent.iterdir(), key=lambda p: p.name)  # defect: the newest installed version\n",
                 'stays-on-approved')
     approved275('approved275-codex-newest-installed', 'control_factory_setup_engines.py',
-                "        if codex._file_digest(path) == record['sha256']:\n            return path\n",
-                "        return path  # defect: the first installed binary, the newer one on PATH\n",
+                "    for path in present:\n        if codex._file_digest(path) == record['sha256']:\n            return path\n",
+                "    return max(present, key=lambda path: str((codex._package(path)[1] or {}).get('version')))"
+                "  # defect: the newest installed binary\n",
                 'stays-on-approved')
     approved275('approved275-claude-digest-skipped', 'control_engine_claude.py',
                 "    if _file_digest(path) != entry['sha256']:\n"

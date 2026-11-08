@@ -686,13 +686,14 @@ def bind(adapter, state_root=None):
     if not os.path.isfile(executable) or not os.access(executable, os.X_OK):
         raise Refused('unavailable_service:engine_executable')
     root, manifest = _package(executable)
-    if (root is None or manifest is None or manifest.get('name') != record['package']
-            or str(Path(executable).relative_to(root)) != record['executable']):
+    if root is None or manifest is None or manifest.get('name') != record['package']:
         raise Refused('invalid_input:engine_package')
     # VELDO-0275 AC1: only the approved binary runs (the version and digest the qualification record holds, written
-    # with runtime/engines.json by .veldo/qualify.py); a newer one installed in its place, or the approved one with
-    # changed bytes, is engine_not_approved.
-    if manifest.get('version') != record['package_version']:
+    # with runtime/engines.json by .veldo/qualify.py); a newer one installed in its place (another package version,
+    # or the package's binary at another path in a changed layout), or the approved one with changed bytes, is
+    # engine_not_approved.
+    if (manifest.get('version') != record['package_version']
+            or str(Path(executable).relative_to(root)) != record['executable']):
         raise Refused('engine_not_approved')
     digest = _file_digest(executable)
     if digest != record['sha256']:

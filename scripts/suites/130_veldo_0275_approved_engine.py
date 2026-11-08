@@ -11,7 +11,8 @@ check reads bytes, the pin copies them, and the binding hashes them.
 
 Rows:
 - approved/stays-on-approved: with a newer version installed and on PATH, setup's check resolves the approved
-  Claude Code version and the approved Codex binary (the installer's kept copy the engines record names), the
+  Claude Code version and the approved Codex binary (the installer's kept copy the engines record names, also
+  when the PATH install runs the approved bytes), the
   pinned approved version binds, and a launch naming the newer version, or the newer Codex binary, is refused
   engine_not_approved.
 - approved/changed-bytes: the approved Claude Code pinned copy and the approved Codex binary, their bytes
@@ -128,6 +129,18 @@ def _v275_suite():
             check(STAYS, 'setup resolves the approved Codex binary, not the newer one on PATH [%s, %s]'
                   % (error, (plan or {}).get('codex')),
                   error is None and plan['codex'] == {'executable': str(approved_codex), 'sha256': sha(approved_codex)})
+            # The PATH install runs the approved bytes too (a later in-place upgrade would replace them): setup
+            # still resolves the kept copy the engines record names.
+            same = codex_package(base / 'npm-approved' / 'lib/node_modules/@openai/codex', APPROVED, 'codex approved')
+            (bindir / 'codex').unlink()
+            (bindir / 'codex').symlink_to(same.parents[3] / 'bin' / 'codex.js')
+            kept_plan, error = attempt(lambda: S.check(Refused))
+            check(STAYS, 'with the approved version on PATH setup still resolves the kept copy [%s, %s]'
+                  % (error, (kept_plan or {}).get('codex')),
+                  error is None and sha(same) == sha(approved_codex)
+                  and kept_plan['codex'] == {'executable': str(approved_codex), 'sha256': sha(approved_codex)})
+            (bindir / 'codex').unlink()
+            (bindir / 'codex').symlink_to(on_path / 'bin' / 'codex.js')
             bound, error = attempt(lambda: S.install(str(state), str(mods), plan, Refused))
             check(STAYS, 'setup pins and binds the approved versions [%s, %s]' % (error, bound),
                   error is None and bound['claude_code']['version'] == APPROVED
