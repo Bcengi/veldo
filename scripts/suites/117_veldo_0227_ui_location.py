@@ -224,13 +224,15 @@ def _v227_suite():
         # The fixture's engine records (its generated engines' digests) replace the shipped ones, as in the current tree;
         # the Codex record keeps the earlier engine's own bundled catalog readings, the ones that host was qualified
         # with, so the row survives every later qualify of a newer binary (VELDO-0230 AC2).
-        for name in ('claude-tables.json', 'codex-tables.json'):
+        # VELDO-0275: the earlier engine reads them under the record names it had (claude- and codex-qualification).
+        for name, earlier in (('claude-tables.json', 'claude-qualification.json'),
+                              ('codex-tables.json', 'codex-qualification.json')):
             record = json.loads((h['mods'] / 'runtime' / name).read_text())
             if name == 'codex-tables.json':
-                own = json.loads((older / '.veldo' / 'runtime' / name).read_text())
+                own = json.loads((older / '.veldo' / 'runtime' / earlier).read_text())
                 record.update({k: own[k] for k in ('feature_listing', 'model_catalog', 'model_catalog_digest',
                                                    'model_tool_modes', 'native_tool_mapping') if k in own})
-            (older / '.veldo' / 'runtime' / name).write_text(json.dumps(record))
+            (older / '.veldo' / 'runtime' / earlier).write_text(json.dumps(record))
         F0 = load('v227_setup_before', older / '.veldo' / 'control_factory_setup.py')
         prior = host('prior', module=F0)
         if prior['code'] != 0 or prior['report'].get('outcome') != 'set_up':

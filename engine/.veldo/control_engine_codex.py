@@ -998,6 +998,55 @@ def login_problem(bound, environment, cwd=None):
     return None if kind == 'chatgpt' and done.returncode == 0 else 'paid_api:codex_login:' + kind
 
 
+# VELDO-0275 AC3: the stream probe every Codex launch runs before acceptance. exec has no zero-turn probe (it reads
+# only the prompt and always runs a turn), so the smallest real one: one turn whose prompt asks for a fixed one-word
+# answer, in an empty directory, ephemeral, read-only, web search off and the baseline's everything-off switches,
+# with the account's own login environment. Every line it prints is read by the run's own stream reader
+# (_malformed); a line it cannot classify, or no terminal frame (turn.completed or turn.failed), refuses the launch.
+PROBE_PROMPT = 'Reply with the single word ready and nothing else. Use no tool.'
+PROBE_OPTIONS = ['--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only', '-c', 'web_search="disabled"']
+PROBE_SECONDS = 120
+PROBE_FRAMES, PROBE_FRAME_BYTES = 16, 2048
+
+
+def stream_probe(bound, environment, cwd=None):
+    """VELDO-0275 AC3: the pinned binary's stream probe (PROBE_PROMPT). None when every frame it printed parsed and
+    a terminal frame came, else {reason, frame, frames}: the first frame the reader could not classify (or None for
+    a missing terminal frame), and the frames before it, each bounded. `cwd` is not used: the probe runs in an
+    empty temporary directory, never the clone."""
+    argv = [bound['path']] + list(bound['flags']) + list(BASELINE['options']) + PROBE_OPTIONS
+    for key, value in sorted(generated(environment).items()):
+        argv += ['-c', '%s=%s' % (key, _toml(value))]
+    frames = []
+
+    def failed(reason, line):
+        return {'reason': reason, 'frame': None if line is None else line[:PROBE_FRAME_BYTES], 'frames': frames}
+    with tempfile.TemporaryDirectory(prefix='veldo-probe-') as temp:
+        try:
+            done = subprocess.run(argv, input=PROBE_PROMPT, capture_output=True, text=True, errors='replace',
+                                  timeout=PROBE_SECONDS, cwd=temp,
+                                  env=dict(environment, **BASELINE['environment'], **ENVIRONMENT))
+        except subprocess.TimeoutExpired:
+            return failed('missing_result', None)
+        except (OSError, subprocess.SubprocessError):
+            return failed('unavailable', None)
+    terminal = False
+    for line in done.stdout.splitlines():
+        if not line.strip():
+            continue
+        if len(frames) < PROBE_FRAMES:
+            frames.append(line[:PROBE_FRAME_BYTES])
+        try:
+            event = json.loads(line)
+        except ValueError:
+            return failed('unparsed', line)
+        problem = _malformed(event)
+        if problem:
+            return failed(problem, line)
+        terminal = terminal or event['type'] in ('turn.completed', 'turn.failed')
+    return None if terminal else failed('missing_result', None)
+
+
 def account_login(bound, environment, cwd=None):
     """VELDO-0185 AC4: the account's login as the pinned binary itself reports it, read exactly as
     login_problem (VELDO-0156 AC3) reads it: None for a ChatGPT login, else the kind it reports instead

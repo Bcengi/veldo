@@ -12515,6 +12515,19 @@ def cases():
                 "    if False:  # defect: the binary's digest is not checked\n        raise Refused('engine_not_approved')\n",
                 'changed-bytes')
 
+    # VELDO-0275 AC3: every launch starts with a stream probe. The launch skips the probe for an approved version
+    # (Claude Code's Guard probes only a role-bound run, as before; the receiver never runs Codex's): the
+    # unknown-frame row goes red.
+    add(275, 'probe275-claude-skipped', '131_veldo_0275_stream_probe.py', 'control_engine_claude.py',
+        "        if not self.probed:\n            self.probed = True\n",
+        "        if not self.probed and self.expected is not None:  # defect: only a role-bound launch is probed\n"
+        "            self.probed = True\n",
+        ['probe/unknown-frame'])
+    add(275, 'probe275-codex-skipped', '131_veldo_0275_stream_probe.py', 'control_launch.py',
+        "        probe = getattr(module, 'stream_probe', None)\n",
+        "        probe = None  # defect: the receiver skips the stream probe\n",
+        ['probe/unknown-frame'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

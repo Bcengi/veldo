@@ -586,6 +586,11 @@ if sys.argv[1:3] == ['login', 'status']:
     # login status on stderr.
     sys.stderr.write('Logged in using ChatGPT' + chr(10))
     sys.exit(0)
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed one-word answer).
+    for event in ({'type': 'thread.started'}, {'type': 'turn.started'}, {'type': 'turn.completed'}):
+        sys.stdout.write(json.dumps(complete_event(event)) + chr(10))
+    sys.exit(0)
 markers = Path(MARKERS)
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 own = {'engine': ENGINE, 'pid': os.getpid(), 'dispatch': dispatch, 'started': time.time(),
@@ -616,6 +621,9 @@ def stream_input():
                       'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'},
                                    'pid': os.getpid()}}}
             emit(complete_event(answer))
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            emit(complete_event({'type': 'result', 'subtype': 'success', 'num_turns': 0, 'result': ''}))
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}

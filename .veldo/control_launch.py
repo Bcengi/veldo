@@ -1283,6 +1283,12 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
 
 # The receiver process.
 
+def _stop_cause(stop):
+    """The stop cause of a Guard's named stop: a configuration stop (VELDO-0275 AC3's stream_probe_failed among
+    them, the artifact's login naming it with its frame), else the paid-API guard's."""
+    return 'configuration_stop' if stop == 'stream_probe_failed' or stop.startswith('configuration_stop:') else 'paid_api'
+
+
 def _write_held_input(stdin, data, last, terminal):
     """Mark the prompt before an engine can answer during write or flush."""
     if last and getattr(terminal, 'require_prompt', False):
@@ -1745,11 +1751,29 @@ class Receiver:
         self.token, problem = self._token()
         problem = (problem or self._account_login(module, bound, adapter, login_environment, cwd)
                    or module.profile_problem(self.binding, login_environment, cwd)
-                   or module.login_problem(bound, login_environment, cwd))
+                   or module.login_problem(bound, login_environment, cwd)
+                   or self._stream_probe(module, bound, login_environment, cwd))
         if problem:
             self.binding, self.token = None, None
             return problem
         return None
+
+    def _stream_probe(self, module, bound, environment, cwd):
+        """VELDO-0275 AC3: an engine whose probe runs before acceptance (the engine module's `stream_probe`: Codex,
+        whose exec has no zero-turn probe; Claude Code's runs in the stream, its Guard) is probed with the account's
+        login environment once its login is confirmed: a frame the run's stream reader cannot classify, or no
+        terminal frame, refuses the launch by name (stream_probe_failed), the frame and the frames before it kept
+        in the event; nothing is accepted, reserved or spawned. One line per launch names the engine, its binary,
+        version and the probe result."""
+        probe = getattr(module, 'stream_probe', None)
+        if not callable(probe):
+            return None
+        failure = probe(bound, environment, cwd)
+        self.emit(dict({'event': 'stream_probe', 'engine': module.PROVIDER, 'binary': bound.get('path'),
+                        'version': bound.get('version'), 'result': 'parsed' if failure is None else 'failed',
+                        'metrics': {'stream_probes_failed': 0 if failure is None else 1}},
+                       **({} if failure is None else {'probe': failure})))
+        return None if failure is None else 'stream_probe_failed'
 
     def _account_login(self, module, bound, adapter, environment, cwd):
         """VELDO-0185 AC4: for an adapter factory setup wrote (`account_login` true), the account's own login
@@ -2311,7 +2335,7 @@ class Receiver:
             # VELDO-0155, VELDO-0156: a login that is not a subscription stops it by name, and the held prompt
             # goes to the engine only once its login is confirmed and nothing has stopped it.
             if metering is not None and metering.guarded(chunk):
-                begin('configuration_stop' if metering.login_stop.startswith('configuration_stop:') else 'paid_api')
+                begin(_stop_cause(metering.login_stop))
             if metering is not None and metering.feed(chunk):
                 begin('usage_cap')
             if login is not None and cause is None and code is None:
@@ -2390,7 +2414,7 @@ class Receiver:
                 now = time.monotonic()
                 if cause is None and code is None and hasattr(login, 'expired') and login.expired(now):
                     metering.login_stop = login.stop
-                    begin('configuration_stop')
+                    begin(_stop_cause(login.stop))
                 if cause is None and code is None and time.time() >= contract['deadline']:
                     begin('deadline')
                 elif cause is None and code is None and watch is not None and watch.expired(now):
@@ -2562,9 +2586,12 @@ class Metering:
         self.report = None
         # VELDO-0155, VELDO-0156: the stream side of the paid-API guard, and the named stop it made.
         self.login_guard = self.engine.Guard()
-        if receiver.binding.get('expected') and self.engine.PROVIDER == 'claude_code':
-            self.login_guard.expected = receiver.binding['expected']
+        if self.engine.PROVIDER == 'claude_code':
+            # VELDO-0275 AC3: every Claude Code launch runs the stream probe before its prompt, so its result frame
+            # is the probe's, never the run's terminal one.
             self.terminal.hold_prompt()
+            if receiver.binding.get('expected'):
+                self.login_guard.expected = receiver.binding['expected']
         self.login_stop = None
         self.context_pending = b''
         self.first_turn_context = None
@@ -2659,7 +2686,10 @@ class Metering:
         document = dict(self.terminal.document(termination, cause), dispatch_id=self.dispatch_id,
                         invocation=self.invocation, account=self.account,
                         executable={k: executable.get(k) for k in ('engine', 'version', 'path', 'sha256')},
-                        login={'source': self.login_guard.source, 'stop': self.login_stop},
+                        login=dict({'source': self.login_guard.source, 'stop': self.login_stop}, **(
+                            # VELDO-0275 AC3: a failed stream probe keeps its frame and the frames before it (bounded).
+                            {'probe': self.login_guard.probe_failure}
+                            if getattr(self.login_guard, 'probe_failure', None) else {})),
                         first_turn_context=self.first_turn_context)
         data = (json.dumps(document, sort_keys=True) + '\n').encode()
         directory = Path(self.receiver.config.get('artifacts') or Path(self.receiver.config['store']).parent / 'artifacts')
