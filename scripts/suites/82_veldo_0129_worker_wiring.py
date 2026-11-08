@@ -35,7 +35,7 @@ def _v129_suite():
              'source/no-completion', 'installation/assets', 'build/gitdir-symlink', 'build/gitdir-gitfile',
              'build/gitdir-commondir', 'build/gitdir-alternates', 'build/gitdir-missing',
              'build/config-neutralization', 'artifact/runtime-binding', 'artifact/floor-binding', 'build/handoff',
-             'format/fake-lines')
+             'format/fake-lines', 'probe/every-launch', 'probe/slow-codex')
     rows = {name: [] for name in names}
     def check(row, label, ok):
         rows[row].append((label, bool(ok)))
@@ -236,7 +236,10 @@ from pathlib import Path
 markers, protected = Path(@@MARKERS@@), Path(@@PRIVATE@@)
 engine = 'codex' if 'codex' in sys.argv[0] else 'claude_code'
 if '--ephemeral' in sys.argv:
-    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer); in the slow
+    # mode it answers only after the invoker's accept wait.
+    if (markers / 'probe-mode').is_file() and (markers / 'probe-mode').read_text() == 'slow':
+        __import__('time').sleep(@@SLOW@@)
     sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
     sys.stdout.write('{"type": "turn.started"}' + chr(10))
     sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
@@ -258,6 +261,9 @@ if engine == 'claude_code':
           'response': {'account': {'subscriptionType': @@SUBSCRIPTION@@, 'apiProvider': @@PROVIDER@@}}}}))
     message = json.loads(sys.stdin.readline())
     while message.get('shouldQuery') is False:
+        if (markers / 'probe-mode').is_file() and (markers / 'probe-mode').read_text() == 'exit':
+            # VELDO-0275 AC3: the engine ends once the probe is sent, with no result frame.
+            sys.exit(0)
         # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
         emit(complete_event({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None}))
         message = json.loads(sys.stdin.readline())
@@ -370,6 +376,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
 '''
         fake = fake.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
             '@@DB@@', repr(str(db))).replace('@@PRIVATE@@', repr(str(private / 'builder'))).replace('@@STATUS@@', repr(status_line)).replace(
+            '@@SLOW@@', repr(L.ACCEPT_SECONDS + 5)).replace(
             '@@SUBSCRIPTION@@', repr('Claude Team')).replace(
             '@@PROVIDER@@', repr(baseline['input_protocol']['providers']['subscription']))
         fake = fake_formats.embed(fake)
@@ -431,9 +438,9 @@ sys.exit(7 if mode == 'nonzero' else 0)
         profile = dict(kind='linux-systemd', slice=slice_name, lock=str(base / 'slice.lock'), concurrency=8,
                        runtime_seconds=60, memory_bytes=1 << 30, cpu_percent=400, file_bytes=64 << 20,
                        tasks_max=256, stop_grace_seconds=0.3, kill_grace_seconds=0.3)
-        def role(engine, identity, mode='valid'):
+        def role(engine, identity, mode='valid', seconds=30):
             return dict(identity=identity, account='account-' + ('claude_code' if engine == 'claude' else engine),
-                        adapter=engine, seconds=30, configuration={'fixture_mode': mode},
+                        adapter=engine, seconds=seconds, configuration={'fixture_mode': mode},
                         signing_file=str(private / identity))
         trust_file = base / 'host-trust.json'
         signers = base / 'allowed-signers'
@@ -444,10 +451,10 @@ sys.exit(7 if mode == 'nonzero' else 0)
                       domain=domain, repository=repository, host='fixture-host', state_root=str(factory),
                       profile=profile, adapters=adapters, clones=clones, host_trust=str(trust_file))
         counter = [0]
-        def session(engine, mode='valid', review_mode='valid'):
+        def session(engine, mode='valid', review_mode='valid', seconds=30):
             counter[0] += 1
             path = base / ('receiver-%d.json' % counter[0])
-            value = dict(config, work={'builder': role(engine, 'builder', mode),
+            value = dict(config, work={'builder': role(engine, 'builder', mode, seconds),
                                       'reviewers': [role(engine, who, review_mode) for who in ('review-a', 'review-b')],
                                       'candidates': str(candidates), 'projections': str(state / 'projections')})
             path.write_text(json.dumps(value))
@@ -456,11 +463,11 @@ sys.exit(7 if mode == 'nonzero' else 0)
             sessions.append(runtime)
             return loop, runtime, path
         next_unit = [0]
-        def build(engine, mode='valid', review_mode='valid', risk='standard'):
+        def build(engine, mode='valid', review_mode='valid', risk='standard', seconds=30):
             unit = units[next_unit[0]]
             next_unit[0] += 1
             generation = admit(unit, risk)
-            loop, run, path = session(engine, mode, review_mode)
+            loop, run, path = session(engine, mode, review_mode, seconds)
             spec = loop.resolve(unit)
             result, error = attempt(lambda: loop.build(spec))
             return unit, generation, loop, run, path, spec, result, error
@@ -624,6 +631,47 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 check('outcome/' + mode, engine + ': no verdict manufactured: ' + str(error),
                       verdict is None and str(error).startswith('missing_evidence:review_')
                       and not (run.floor.record(unit) or {}).get('reviews'))
+        # VELDO-0275 AC3, driven through the receiver. Every Claude Code launch, role-free here (no role revision),
+        # holds its prompt for the stream probe: the artifact keeps the probe's zero-turn result apart from the run's
+        # own terminal one, and an engine that ends once the probe is sent is stopped stream_probe_failed as a
+        # configuration stop (the end-of-run handling).
+        def document(run):
+            location = ((run.last or {}).get('artifact') or {}).get('path')
+            return json.loads(Path(location).read_text()) if location and Path(location).is_file() else {}
+        built = build('claude')
+        doc = document(built[3])
+        check('probe/every-launch', 'a role-free Claude Code launch holds its prompt for the probe, whose zero-turn '
+              'result stays apart from the run\'s own: %s' % {k: doc.get(k) for k in ('probe', 'verdict')},
+              built[6] and ((doc.get('probe') or {}).get('result') or {}).get('num_turns') == 0
+              and (doc.get('probe') or {}).get('prompt_written') is True
+              and (doc.get('terminal') or {}).get('num_turns') == 1 and doc.get('verdict') == 'complete')
+        (markers / 'probe-mode').write_text('exit')
+        try:
+            built = build('claude')
+        finally:
+            (markers / 'probe-mode').unlink()
+        doc = document(built[3])
+        login = doc.get('login') or {}
+        check('probe/every-launch', 'a role-free Claude Code engine ending once the probe is sent, with no result '
+              'frame, is stopped stream_probe_failed as a configuration stop, its prompt never written: %s %s %s'
+              % (built[7], login, doc.get('exit')),
+              built[6] is None and login.get('stop') == 'stream_probe_failed'
+              and (login.get('probe') or {}).get('reason') == 'missing_result'
+              and (doc.get('exit') or {}).get('cause') == 'configuration_stop'
+              and (doc.get('probe') or {}).get('prompt_written') is False)
+        # VELDO-0275 AC3: Codex's probe (one model turn) runs before acceptance; one slower than the invoker's accept
+        # wait still launches, never lost.
+        (markers / 'probe-mode').write_text('slow')
+        began = time.monotonic()
+        try:
+            built = build('codex', seconds=L.ACCEPT_SECONDS + 120)
+        finally:
+            (markers / 'probe-mode').unlink()
+        took = time.monotonic() - began
+        record = (built[3].last or {}).get('record') or {}
+        check('probe/slow-codex', 'a Codex launch whose probe outlasts the %ss accept wait runs, not lost: %s %s %s %.1fs'
+              % (L.ACCEPT_SECONDS, built[7], record.get('state'), record.get('refusal'), took),
+              built[6] and took > L.ACCEPT_SECONDS and record.get('state') == 'exited')
         missing, error = attempt(lambda: EX.LiveLoop(root=src, configuration=base / 'absent.json').build({'id': 'absent'}))
         check('build/configuration', 'missing installed configuration refuses before dispatch: ' + str(error),
               missing is None and 'missing_authority:worker_configuration' in str(error))

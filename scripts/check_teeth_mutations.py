@@ -12528,6 +12528,20 @@ def cases():
         "        probe = getattr(module, 'stream_probe', None)\n",
         "        probe = None  # defect: the receiver skips the stream probe\n",
         ['probe/unknown-frame'])
+    # The receiver holds the prompt only for a role-bound Claude Code launch, as before: the receiver-driven
+    # probe/every-launch row of suite 82 0129 (a role-free launch, its end-of-run handling) goes red.
+    add(275, 'probe275-claude-hold-role-bound', '82_veldo_0129_worker_wiring.py', 'control_launch.py',
+        "        if self.engine.PROVIDER == 'claude_code':\n"
+        "            # VELDO-0275 AC3: every Claude Code launch runs the stream probe before its prompt, so its result frame\n"
+        "            # is the probe's, never the run's terminal one.\n"
+        "            self.terminal.hold_prompt()\n"
+        "            if receiver.binding.get('expected'):\n"
+        "                self.login_guard.expected = receiver.binding['expected']\n",
+        "        if receiver.binding.get('expected') and self.engine.PROVIDER == 'claude_code':"
+        "  # defect: only a role-bound launch holds its prompt\n"
+        "            self.login_guard.expected = receiver.binding['expected']\n"
+        "            self.terminal.hold_prompt()\n",
+        ['probe/every-launch'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

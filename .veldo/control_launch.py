@@ -1278,7 +1278,19 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
         child.stdin.flush()
     except OSError:
         pass
-    return launch.start(accept_seconds)
+    return launch.start(_accept_seconds(config, contract, accept_seconds))
+
+
+def _accept_seconds(config, contract, seconds):
+    """VELDO-0275 AC3: the accept wait of an engine whose stream probe runs before acceptance (the engine module's
+    `stream_probe`: Codex's, one model turn) gains the probe's bound, so a slow probe never turns a healthy launch
+    into a lost one; every other launch waits `seconds`."""
+    adapters = config.get('adapters')
+    name = (contract.get('capability') or {}).get('adapter')
+    adapter = adapters.get(name) if isinstance(adapters, dict) and isinstance(name, str) else None
+    engine = adapter.get('engine') if isinstance(adapter, dict) else None
+    module = ENGINES.get(engine) if isinstance(engine, str) else None
+    return seconds + module.PROBE_SECONDS if callable(getattr(module, 'stream_probe', None)) else seconds
 
 
 # The receiver process.
