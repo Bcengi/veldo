@@ -139,7 +139,7 @@ protected_refs:
 # refs/tags/*; a key present but malformed is a refusal, never the default.
 proof:
   max_file_bytes: 1048576
-  protected_refs: [refs/heads/main, refs/tags/*]
+  protected_refs: [refs/heads/main, refs/heads/master, refs/heads/release, refs/heads/release/*, refs/heads/release-*, refs/tags/*]
 # VELDO-0272, set by Dmitry on 2026-11-07 (Telegram 39707, 39708; ready 39747): where the computed
 # approval flag STARTS. The validator judges every spec first committed after this commit by the rule
 # (approval_flag_below_rule, critical_without_area); a spec first committed at or before it keeps its

@@ -34,7 +34,7 @@ def _v272_suite():
             'AC3 executor/computed-flag',
             'AC3 lowered/rename', 'AC3 lowered/two-step', 'AC3 lowered/delete-re-add', 'AC3 lowered/merge',
             'AC3 review/producer-identity', 'AC3 review/per-spec',
-            'AC3 lowered/old-base-merge', 'AC3 approval/identity', 'AC3 review/covered',
+            'AC3 lowered/old-base-merge', 'AC3 approval/identity', 'AC3 approval/rule-producer', 'AC3 review/covered',
             'AC3 lowered/honest-trunk-merge', 'AC3 review/spec-only',
             'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped',
             'AC4 summary/every-landing', 'AC4 summary/judged-fields',
@@ -827,6 +827,40 @@ def _v272_suite():
                   ap['r-owner'][2] is None)
             check('AC3 approval/identity', 'a lowering whose approval has no approver field: exit 1 [%s]' % ap['l-none'][1].strip()[:160],
                   lowered(*ap['l-none'][:2]))
+
+            # Landing round 1: the nightly approval rule (approval_rule) judges self-approval against the producers
+            # of the specs the push lands, never the producer of whatever verdict binds HEAD or its parent. The
+            # push lands VELDO-9331 (producer builder), then a trailing commit carries another spec's proof and a
+            # verdict bound to its parent, recording producer other.
+            def rule_case(where, Pmod, name, approver):
+                repo = new_repo(where, 'rule-' + name)
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                sid, other = 'VELDO-9331', 'VELDO-9334'
+                write(repo, '.veldo/authorization.py', '# changed\n')
+                write(repo, 'specs/%s-auth.md' % sid, spec_text(sid, 'required', ['.veldo/authorization.py']))
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                c = commit(repo, 'change the authorization module')
+                owner_approval(repo, sid, c, paths=['.veldo/authorization.py'], approver=approver)
+                commit(repo, 'evidence')
+                write(repo, 'proof/%s/manifest.json' % other, json.dumps(manifest(other, producer='other')))
+                o = commit(repo, 'another spec\'s proof')
+                write(repo, 'proof/%s/verdict.json' % other,
+                      json.dumps(verdict(other, o, 'reviewer', Pmod.proof_digest(manifest(other, producer='other')))))
+                commit(repo, 'another spec\'s verdict, bound to the parent of HEAD')
+                real = Pmod.ROOT
+                try:
+                    Pmod.ROOT = repo
+                    return Pmod.approval_rule()(lambda a: True)
+                finally:
+                    Pmod.ROOT = real
+
+            rr = {'self': rule_case(Path(base) / 'ar1', P, 'self', 'builder'),
+                  'owner': rule_case(Path(base) / 'ar2', P, 'owner', 'owner')}
+            check('AC3 approval/rule-producer', 'the HEAD verdict belongs to VELDO-9334 (producer other); the approval '
+                  'rule still refuses the landing spec producer\'s own approval [%r]' % (rr['self'],), rr['self'] is None)
+            check('AC3 approval/rule-producer', 'the same push approved by the owner: the rule finds it [%r]' % (rr['owner'],),
+                  bool(rr['owner']) and rr['owner'].endswith('approval-owner.json'))
 
             # Fix round 5: the spec workflow's own pushes. A push changing only spec files (and the index and
             # approval records) lands no work, so it needs no review; it needs the owner approval its spec's flag

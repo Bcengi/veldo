@@ -184,6 +184,20 @@ with _p270_tmp.TemporaryDirectory(prefix='veldo-0270-') as _p270_d:
     expect('p270/guard/hook-on-unprotected-branch-not-refused-for-proof',
            'proof_file_over_limit' not in _p270_h2.stderr)
 
+    # Landing round 1: this repository's own proof policy size checks every ref 0268's protected_refs
+    # protects; a push to refs/heads/release sending the 2 MB commit is refused.
+    _p270_own = (ROOT / '.veldo/policy.yaml').read_text().split('\nproof:\n', 1)[1]
+    _p270_own = [l.strip() for l in _p270_own.splitlines()[:next(i for i, l in enumerate(_p270_own.splitlines())
+                                                                 if not l.startswith('  '))]]
+    _p270_r5 = _p270_scratch(_p270_base, 'release', _p270_own)
+    _p270_first5 = _p270_commit_file(_p270_r5, 'proof/Y/raw.log', b'x\n' * (1024 * 1024), 'add 2 MB')
+    _p270_line5 = 'refs/heads/work %s refs/heads/release %s\n' % (_p270_first5, _p270_zero)
+    _p270_p5 = _p270_sp.run([_p270_sys.executable, str(_p270_r5 / '.veldo/validate.py'), 'push-proof', 'origin'],
+                            cwd=str(_p270_r5), input=_p270_line5, capture_output=True, text=True, timeout=300)
+    expect('p270/guard/push-to-release-size-checked',
+           _p270_p5.returncode != 0 and 'proof_file_over_limit' in _p270_p5.stdout + _p270_p5.stderr
+           and _p270_first5 in _p270_p5.stdout + _p270_p5.stderr)
+
     # ---- AC2 (1)(2): each writer, on a fixture whose raw output exceeds the limit, writes a summary
     # under the limit with the deciding numbers, command, environment and the raw bytes' sha256;
     # the contract check over the bundle stays clean (a writer copying raw output reds it).

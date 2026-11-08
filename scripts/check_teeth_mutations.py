@@ -4528,8 +4528,8 @@ def cases():
                 '                                                       bind_refs=True)  # defect: the caller\'s refs are bound\n',
                 'live-loop-siblings')
     gate_output('gate-output-land-does-not-bind-refs', 'lander.py',
-                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=True)\n',
-                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=False)'
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=True, base=c["watermark"])\n',
+                'Path(c["observation_dir"]) / "gate",\n                                                  bind_refs=False, base=c["watermark"])'
                 '  # defect: the workspace\'s refs are not bound\n',
                 'refs-bound',
                 also=[('c["workspace"], c["commit"],\n                                               bind_refs=True)\n',
@@ -12769,6 +12769,11 @@ def cases():
         '        producer = producer_for(_head_spec_id())  # defect: the producer of the verdict at HEAD\n'
         '        for tf, p in touched:',
         ['approval/identity'])
+    # Landing round 1: the nightly approval rule takes the producer of the verdict at HEAD or its parent.
+    add(272, 'scope272-approval-rule-producer-from-head', scope272, 'policy_check.py',
+        '    files = changed_files()\n    producer = approval_producer(push_producer(landing_specs(files)), files, commits)\n',
+        '    producer = producer_for(_head_spec_id())  # defect: the producer of the verdict at HEAD\n',
+        ['approval/rule-producer'])
     # Fix round 2, N4 and N5: the summary lists any approver, or merges two same-day runs of one ticket.
     add(272, 'scope272-approvers-unjudged', scope272, 'landed_summary.py',
         '        if accepted:',

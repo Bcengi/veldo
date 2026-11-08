@@ -1002,7 +1002,8 @@ def approval_rule():
     the push range, approver not the work's producer, and accepted by `accept`), or None. The
     nightly check (VELDO-0267) explains a red sweep only through it, never through a second copy."""
     commits = push_range_commits() or [head()]
-    producer = producer_for(_head_spec_id())
+    files = changed_files()
+    producer = approval_producer(push_producer(landing_specs(files)), files, commits)
     return lambda accept: valid_approval_for(commits, producer=producer, accept=accept)
 
 
