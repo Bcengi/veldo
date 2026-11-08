@@ -62,6 +62,8 @@ footprint:
   - "scripts/suites/101_veldo_0208_landing_reuse.py"
   - ".veldo/control_factory_setup.py"
   - "engine/.veldo/control_factory_setup.py"
+  - "scripts/suites/26_veldo_0009_install_stamp.py"
+  - "scripts/check_install_and_run.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -303,3 +305,5 @@ and VELDO-0247 as written in the landing-b batch. Built after landing-b lands.
 2026-11-07: ready on the owner's approval, Telegram 39630 ("Ok") to the summary in 39629. Built after landing-b lands.
 
 2026-11-08 (lead, before landing): footprint gains scripts/suites/101_veldo_0208_landing_reuse.py (its installed-tools row now asserts the removed langgraph read root absent) and both copies of .veldo/control_factory_setup.py (AC3's setup and upgrade wiring). AC1 falsifier 3 as written cannot red because a failure answer carries no step count (0 of 2508 exchanges differ); the registered nearest form drops the increment every node takes, recorded as premise P1 in proof/VELDO-0262/README.md; the criterion itself is unchanged.
+
+2026-11-08 (lead, after the check): footprint gains suite 26 and scripts/check_install_and_run.py, which now launch the init_scaffold CLI with a temporary home so no suite depends on the account home. Premises P4 (a branch failure keeps the shape AC1's corpus equivalence fixes, without the branch name) and P5 (suite 59 VELDO-0043 rows changed where they imported LangGraph or read its lock) are recorded in proof/VELDO-0262/README.md. AC4's code/advance is accepted as not applicable: the code definition's kinds are station kinds the step runner never runs.
