@@ -1,4 +1,4 @@
-"""Default project pipeline, spliced into the isolated LangGraph runner.
+"""Default project pipeline, spliced into the isolated step runner (control_graph_steps.py).
 Only plain snapshots and result digests enter; no store or command owner exists here.
 """
 import hashlib as _pm_hashlib

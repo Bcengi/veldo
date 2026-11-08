@@ -1,4 +1,4 @@
-"""Workflow cycles: each LangGraph cycle executes one exact accepted revision, and every step it takes
+"""Workflow cycles: each cycle executes one exact accepted revision, and every step it takes
 acts only through ordinary proposals and eligibility checks (PLAN-0019 W95, VELDO-0132 AC2, AC4).
 Standard library only; the graph runs in the isolated runtime, never in this process.
 
@@ -10,12 +10,12 @@ record of the cycle whose binding, subject or snapshot differs (workflow_immutab
 revision saved while the cycle runs changes nothing it executes. Every exchange of the cycle is built
 from the bound revision's stored bytes, re-read and re-verified from the store each time.
 
-THE RUNNER. runner_source() is the production runner (control_graph_langgraph.py) with the step
-kinds (control_workflow_langgraph.py) and exactly one registration spliced before its entry point:
-the bound definition's canonical text and version. Nothing else of the canvas document reaches it:
-the layout never does. The actual LangGraph runtime executes it through the VELDO-0043 adapter,
-activated first through VELDO-0045 (control_runtime.activation), and every answer must carry that
-locked LangGraph's label.
+THE RUNNER. runner_source() is the production step runner (control_graph_steps.py) with the step
+kinds (control_workflow_steps.py) and exactly one constant literal spliced before its entry point:
+VELDO_DEFINITION, the bound definition's canonical text and version. Nothing else of the canvas
+document reaches it: the layout never does. The step runner executes it through the VELDO-0043
+adapter, checked first through VELDO-0045 (control_runtime.activation), and every answer must carry
+the step runner's label (VELDO-0262).
 
 ONE STEP PER EXCHANGE, EACH JUDGED. start runs the intake, which must report the bound digest. Then,
 node by node, this service decides whether the next step may run and supplies only what the node's
@@ -58,7 +58,7 @@ so the runner never chooses the route; a field with no value or the wrong type f
 (invalid_input:field_unsupplied:<field>). The record's `decisions` and the `check` event hold the node,
 branch, rule and every condition with its observed value (a private field's as its digest).
 A fan-out suspends at PARALLEL with one branch per transition of its port; the record's `block` holds
-each branch's position, input and arrival. Each exchange is one LangGraph superstep of branches: every
+each branch's position, input and arrival. Each exchange is one superstep of branches: every
 branch with what it needs runs, all in that superstep, and every branch's transition is judged as a
 main-path step is; an assignment branch is dispatched (its ordinary checks, then waiting) without
 waiting for another. The join runs only when every branch has reached it. The step budget counts
@@ -83,8 +83,8 @@ CYCLE_KIND = 'workflow_cycle'
 RECORD = 'record_workflow_cycle'
 OWNER = 'VELDO-0132 workflow cycles'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
-RUNNER = 'control_graph_langgraph.py'
-STEPS = 'control_workflow_langgraph.py'
+RUNNER = 'control_graph_steps.py'
+STEPS = 'control_workflow_steps.py'
 GUARD = "\nif __name__ == '__main__':\n"
 INTAKE = 'veldo_intake'
 STATES = ('running', 'waiting', 'proposed', 'refused', 'canceled')
@@ -211,24 +211,24 @@ def _record_transition(conn, params, before):
 
 
 def installed_runtime(home=None, stage=None):
-    """The activated LangGraph runtime (VELDO-0045), with `stage` replacing the account stage."""
+    """The checked step runner (VELDO-0045, VELDO-0262), with `stage` replacing the account stage."""
     report = _organ('control_runtime').activation(home)
     if report['outcome'] != 'accepted':
         raise Refused('unavailable_service:runtime', '; '.join(report['problems'][:4]))
     runtime = _organ('control_graph').resolve_runtime(home)
     if runtime is None:
-        raise Refused('unavailable_service:runtime', 'no runtime is installed')
+        raise Refused('unavailable_service:runtime', 'the step runner asset is absent')
     return dict(runtime, stage=str(stage)) if stage is not None else runtime
 
 
 def runner_source(revision):
-    """The production runner with the step kinds and exactly one revision registered before its entry
-    point: the stored definition's canonical text and version, and nothing else of the document."""
+    """The production runner with the step kinds and exactly one revision spliced before its entry point as
+    one constant literal: the stored definition's canonical text and version, and nothing else of the document."""
     source = (HERE / RUNNER).read_text()
     if source.count(GUARD) != 1:
         raise Refused('unavailable_service:runner', 'the runner has no single entry point to register before')
     text = WF.canonical(revision['definition']).decode()
-    block = '\n' + (HERE / STEPS).read_text() + '\nveldo_register_workflow(%r, %d)\n' % (text, revision['version'])
+    block = '\n' + (HERE / STEPS).read_text() + '\nVELDO_DEFINITION = (%r, %d)\n' % (text, revision['version'])
     return source.replace(GUARD, block + GUARD, 1)
 
 
