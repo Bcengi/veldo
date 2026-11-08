@@ -568,10 +568,13 @@ def _v267_checks():
         git(subject, 'commit', '-q', '-m', 'base')
         subject_base = git(subject, 'rev-parse', 'HEAD')
         (subject / 'work.txt').write_text('work\n')
-        git(subject, 'add', 'work.txt')
+        # landing-c fix round 1 (00d2731e, a merge review finding) takes approval_rule's producer from the
+        # specs the push lands (VELDO-0272 N2), so the proof bundle is committed in the push: an
+        # untracked manifest names no landing spec and every approval would be refused.
+        (subject / 'proof/VELDO-9999/manifest.json').write_text(json.dumps({'producer': 'agent-builder'}))
+        git(subject, 'add', 'work.txt', 'proof/VELDO-9999/manifest.json')
         git(subject, 'commit', '-q', '-m', 'work')
         subject_work = git(subject, 'rev-parse', 'HEAD')
-        (subject / 'proof/VELDO-9999/manifest.json').write_text(json.dumps({'producer': 'agent-builder'}))
         (subject / 'proof/VELDO-9999/verdict.json').write_text(json.dumps(
             {'spec_id': 'VELDO-9999', 'commit': subject_work}))
         reader = load(SELECTION)
