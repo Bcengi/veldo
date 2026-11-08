@@ -105,3 +105,31 @@ against 45 and 47 listed). Both changes hold if suite 101 gains '129_0274' and t
 Checks: py_compile clean on every changed .py; `bash -n` clean on proof/landing-c/pending_runs.sh.
 Pending: suites 129_veldo_0274, 86, 88, 89, 90, 101, teeth finding 274 (confined) and
 `check_gate_mutations.py --finding 274` (the unconfined leg VELDO-0274's proof names).
+
+## Merge 6: agent/claude/veldo-0278 (VELDO-0278), commit 2959a002
+
+Merge base b40b3123 (branch tip 4ceb78f5). Line numbers are in the tree of the merge 6 commit.
+
+| File | Conflict | Resolution |
+| --- | --- | --- |
+| .veldo/policy.yaml:94-97 | landing-c's narrowed list (VELDO-0272) plus the six union entries against the branch, which keeps the pre-0272 list and moves `scripts/check_first_use.py` to `scripts/parked/estimation/check_first_use.py` | Lead rule from merge 4, the union: landing-c's list, then the parked entry with a comment (94-97). Every other entry only the branch side holds is in VELDO-0272's removed list (static check), and `scripts/check_first_use.py` itself stays off (0272 removed it; suite 129_veldo_0278:155-157 requires the parked line and the old path's absence). 52 entries, no duplicate |
+| specs/VELDO-0272-...md:13, :253 | follows from the union (lead) | protected_paths gains the parked entry; one History line (253) |
+| scripts/suites/129_veldo_0272_approval_scope.py:167-170 | follows from the union (lead) | `expected` gains the parked entry; nothing else changed. Static check: the policy list equals the expected set, none of the 29 removed paths present, counts 11, 17, 29 unchanged |
+| scripts/suites/113_veldo_0220_gate_host.py:85-87 | landing-c adds the `check_personal_setup.py` stub (VELDO-0259); the branch drops the `check_first_use.py` stub | Both: no `check_first_use.py` stub, `check_personal_setup.py` kept (86) |
+| scripts/suites/114_veldo_0220_gate_scope.py:114-116 | the same | The same (115). landing-b's round 8 fix to inside-a-scope is unchanged: unique unit per run (215), the 180 s ceiling (219), the lock-release wait (249 and after the case) |
+| scripts/suites/101_veldo_0208_landing_reuse.py:1272, 1280, 1316 | landing-c counts 46 whole; the branch adds `declared_commands_na` (integration is na) and counts 44 | Both: the branch's `declared_commands_na` check with 47 whole (1280), `'129_0274'` added to `control_plane` (1272) and 49 listed (1316). Counted from scripts/gate_unconfined.json: 49 entries, 47 whole, two rowed (100, 101); 0278 adds none. Static check: `expected_whole` from the manifest equals the 47 whole entries |
+| scripts/suites/manifest.json:1821 | the branch removes the nine parked suites (111_veldo_0214, 15_warp_1402 to 1409, 16_warp_1403, files moved to scripts/parked/estimation/) and appends 129_veldo_0278; landing-c appended its 13 suites | Three-way: landing-c's order, less the nine the branch parked, then 129_veldo_0278_parked_estimation (197 suites). No suite changed by both sides; every listed file exists and no suite file is unlisted |
+| scripts/suites/requires.json:656 | the same | Regenerated with `run_scope.py --emit-requires` (196 suites): the nine parked entries leave, 129_veldo_0278 joins, nothing else changes |
+| specs/index.md | both sides | Regenerated with `python3 scripts/update_index.py` (449 specs); equals landing-c's (VELDO-0278 at 204) |
+
+Staged auto-merges: scripts/check_teeth_mutations.py, scripts/gate_graph.json, scripts/gate_unconfined.json,
+scripts/verify.sh and suite 114_veldo_0216 changed on both sides and each equals a clean diff3 of base,
+landing-c and branch; every other staged file was changed by the branch only. check_teeth_mutations.py:
+every case of landing-c and of the branch is present (2873); the nine absent are the branch's own
+removal under VELDO-0278 AC (spec lines 70-73: the seven VELDO-0214 cases of parked suite 111 and the
+two judgment_load.py cases), not a merge drop; the three 0278 cases (11581-) each find their anchor
+once. scripts/gate_legs.py and gate_schedule.py equal their engine copies.
+
+Checks: py_compile clean on every changed .py; `bash -n` clean on proof/landing-c/pending_runs.sh.
+Pending: suites 129_veldo_0278, 08, 113_veldo_0220, 114_veldo_0220, 114_veldo_0216, 101, 129_veldo_0272
+and teeth finding 278.

@@ -15,6 +15,11 @@
 # (expected red: the unconfined list now holds 49, see the README), the teeth cases of finding 274
 # (confined: the slice rows stand down there) and check_gate_mutations.py --finding 274 (the unconfined leg
 # VELDO-0274's own proof names as the only entry that runs its cases with a user manager).
+# Merge 6 (VELDO-0278): .veldo/policy.yaml, suites 101, 113_veldo_0220 and 114_veldo_0220, the manifest,
+# requires.json and specs/index.md conflicted; 0278 changed suites 08 and 114_veldo_0216, selftest.py and the
+# teeth cases, and suite 129_veldo_0272's expected list gained the parked entry, so suites 129_veldo_0278, 08,
+# 113_veldo_0220, 114_veldo_0220, 114_veldo_0216 (101 and 129_veldo_0272 are above) and the teeth cases of
+# finding 278.
 # Run from the landing-c worktree root, under the host gate lock held by the caller (no flock here).
 # One summary line per step goes to proof/landing-c/pending-summary.txt; logs go under /tmp.
 cd "$(dirname "$0")/../.." || exit 1
@@ -46,3 +51,10 @@ step teeth-267 python3 scripts/check_teeth_mutations.py --finding 267
 step teeth-272 python3 scripts/check_teeth_mutations.py --finding 272
 step teeth-274 python3 scripts/check_teeth_mutations.py --finding 274
 step gate-mutations-274 python3 scripts/check_gate_mutations.py --finding 274
+
+# Merge 6 (VELDO-0278).
+for suite in 129_veldo_0278_parked_estimation 08_restoration_spec_generation_veldo 113_veldo_0220_gate_host \
+        114_veldo_0220_gate_scope 114_veldo_0216_concurrent_stages; do
+    step "$suite" python3 scripts/selftest.py --suite "$suite"
+done
+step teeth-278 python3 scripts/check_teeth_mutations.py --finding 278
