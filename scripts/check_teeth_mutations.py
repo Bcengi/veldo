@@ -12549,6 +12549,150 @@ def cases():
                  '            pass  # self-approval: the approver produced the work',
                  ['landing/self-approval-does-not-clear'])
 
+    # VELDO-0268: the push guard judges only protected destinations. The spec's registered falsifiers and
+    # fix round 1's (a quiet push, git global options before the subcommand, hooks re-enabled by the command).
+    refs268 = '141_veldo_0268_protected_refs.py'
+    add(268, 'refs268-union-reads-only-tree', refs268, 'policy_check.py',
+        '    if trunk.returncode == 0 and trunk.stdout.strip():\n',
+        '    if False:  # defect: the union reads only the working tree\n', ['refs/union-shrink'])
+    add(268, 'refs268-missing-key-protects-nothing', refs268, 'policy_check.py',
+        '        return (EVERY_REF, "no policy declares protected_refs")\n',
+        '        return None  # defect: no protected_refs key means nothing is protected\n', ['refs/no-key'])
+
+    def guard268(name, old, new, rows, also=()):
+        add(268, name, refs268, 'veldo-guard.sh', old, new, rows, also=also)
+        result[-1]['dir'] = 'scripts'
+
+    guard268('guard268-destination-from-text',
+             '    if sub == "push":\n        return dry_run(kept, rest, cwd)\n',
+             '    if sub == "push":\n        return [("refs/heads/" + rest[-1].split(":")[0], None)]  # defect: read the text\n',
+             ['push/head-colon-main'])
+    guard268('guard268-unresolved-unprotected',
+             '            log("unresolved", "%s; treated as protected; %s" % (reason, CHECKS))\n'
+             '            protected.append("unresolved")\n',
+             '            log("unresolved", reason)  # defect: an unresolved destination is unprotected\n',
+             ['push/unreproducible'])
+    guard268('guard268-tags-skip-approval', 'if [ -f .veldo/policy_check.py ]; then\n',
+             'if [ -f .veldo/policy_check.py ] && ! printf \'%s\\n\' "$JUDGED" | grep -q \'^refs/tags/\'; then\n',
+             ['refuse/tag'])
+    forced268 = 'FORCED = ["--no-quiet", "--dry-run", "--porcelain", "--no-verify"]\n'
+    forced268_defect = 'FORCED = ["--dry-run", "--porcelain", "--no-verify"]  # defect: quiet is not overridden\n'
+    empty268 = '    if not found:\n        return unresolved("the dry run named no destination")\n'
+    empty268_defect = ('    if False:  # defect: a dry run naming no destination is allowed\n'
+                       '        return unresolved("the dry run named no destination")\n')
+    guard268('guard268-quiet-silences-answer', forced268, forced268_defect, ['push/quiet-main'],
+             also=[(empty268, empty268_defect)])
+    guard268('guard268-empty-answer-allowed', empty268, empty268_defect, ['push/empty-answer'])
+    guard268('guard268-trigger-misses-global-options', "grep -qE '(git|gh pr (merge|create))'",
+             "grep -qE '(git (push|merge)|gh pr (merge|create))'", ['push/global-options-main'])
+    guard268('guard268-hooks-path-before-globals',
+             '        r = subprocess.run(["git"] + kept + ["-c", "core.hooksPath=/dev/null", "push"]\n'
+             '                           + rest[:end] + FORCED + rest[end:],\n',
+             '        r = subprocess.run(["git", "-c", "core.hooksPath=/dev/null"] + kept\n'
+             '                           + ["push", "--dry-run", "--porcelain", "--no-verify"] + rest,\n',
+             ['push/hooks-not-run'])
+    guard268('guard268-quiet-not-overridden', forced268, forced268_defect, ['push/branch-variants'])
+    # Fix round 3: the guard's dry run runs no program the command, configuration or environment
+    # chooses, and an alias that expands to push is judged as a push.
+    ssh_pin268 = 'PINNED = ["core.sshCommand=" + SSH,\n'
+    ssh_pin268_defect = 'PINNED = [  # defect: the ssh command is not pinned\n'
+    env268 = '           if not (k.startswith("GIT_") and k not in GIT_ENV_KEPT) and k != "SSH_ASKPASS"}\n'
+    env268_defect = '           if True}  # defect: the environment chooses programs\n'
+    guard268('guard268-push-option-allowlist-off', '            if name not in PUSH_LONG:\n',
+             '            if False:  # defect: every push option is reproduced\n', ['push/program-options'])
+    guard268('guard268-config-key-allowlist-off', '    if unsafe:\n',
+             '    if False:  # defect: every -c key is reproduced\n', ['push/program-config-option'])
+    guard268('guard268-configured-receivepack-runs', '    problem = configured_program(kept, cwd, env)\n',
+             "    problem = None  # defect: the configuration's receive-pack runs\n", ['push/program-repo-config'])
+    guard268('guard268-ssh-command-not-pinned', ssh_pin268, ssh_pin268_defect, ['push/ssh-config'])
+    guard268('guard268-environment-chooses-programs', env268, env268_defect, ['push/ssh-env'])
+    guard268('guard268-git-ssh-reaches-dry-run', env268, env268_defect, ['push/ssh-env-git-ssh'],
+             also=[(ssh_pin268, ssh_pin268_defect)])
+    guard268('guard268-every-transport-allowed', '    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"\n',
+             '    pass  # defect: every transport is allowed\n', ['push/ext-transport'])
+    askpass268 = '          "core.askPass=",\n'
+    guard268('guard268-askpass-runs', askpass268, '          # defect: askpass is not pinned\n',
+             ['push/credential-global'])
+    guard268('guard268-alias-not-expanded',
+             '        value = None if sub in (None, "push", "merge") else alias_of(kept, sub, cwd)\n',
+             '        value = None  # defect: aliases are not expanded\n', ['push/alias'])
+    guard268('guard268-alias-in-text-ignored',
+             '        return unresolved("a git alias that may push or merge, in a command the guard cannot '
+             'reproduce")\n',
+             '        pass  # defect: an alias in a compound command is not judged\n', ['push/alias'])
+    # Fix round 4: a credential helper runs only from the global or system configuration (owner decision
+    # Telegram 39895), a vcs remote helper never runs, an alias is looked up where the command runs.
+    cred268 = '    problem = credential_program(kept, cwd, env)\n'
+    cred268_defect = '    problem = None  # defect: any credential helper runs\n'
+    guard268('guard268-repository-helper-runs', cred268, cred268_defect, ['push/credential'])
+    guard268('guard268-url-scoped-helper-missed', '                                         r"^credential\\..*helper$"],\n',
+             '                                         r"^credential\\.helper$"],  # defect: URL-scoped missed\n',
+             ['push/credential-url-scoped'])
+    guard268('guard268-command-line-helper-runs', '    if unsafe:\n',
+             '    if False:  # defect: every -c key is reproduced\n', ['push/credential-command'],
+             also=[(cred268, cred268_defect)])
+    guard268('guard268-included-helper-under-repository-runs',
+             '                or any(real == d or real.startswith(d.rstrip("/") + "/") for d in repo)):\n',
+             '                or False):  # defect: a file under the repository counts as global\n',
+             ['push/credential-included'])
+    guard268('guard268-global-helper-pinned-off', askpass268,
+             '          "credential.helper=",  # defect: the global helper is pinned off\n' + askpass268,
+             ['push/credential-global'])
+    guard268('guard268-global-helper-refused', '        if (scope not in ("global", "system") or not real\n',
+             '        if (scope not in ("system",) or not real  # defect: global is refused\n',
+             ['push/credential-global'])
+    guard268('guard268-vcs-helper-runs', '    env["GIT_ALLOW_PROTOCOL"] = "file:ssh:http:https"\n',
+             '    pass  # defect: every transport is allowed\n', ['push/vcs'])
+    guard268('guard268-alias-ignores-dash-c',
+             '            value = None if sub in ("push", "merge") else alias_of(kept, sub, cwd)\n',
+             '            value = None if sub in ("push", "merge") else alias_of([], sub, cwd)  # defect: cwd only\n',
+             ['push/alias-elsewhere'])
+    guard268('guard268-alias-ignores-cd', '        if split is None or ELSEWHERE.search(command[:match.start()]):\n',
+             '        if split is None:  # defect: a cd before git is ignored\n', ['push/alias-elsewhere'])
+    guard268('guard268-alias-ignores-prefix',
+             '    elsewhere = git_globals(words) is None or any("=" in w or w == "env" for w in prefix)\n',
+             '    elsewhere = False  # defect: an assignment or option before the subcommand is ignored\n',
+             ['push/alias-elsewhere'],
+             # Fix round 7: round 6's alias_in_text check after judge_git's alias loop also catches an
+             # assignment or option before git, so this defect is applied with that check off too.
+             also=[('        if alias_in_text(command, cwd):\n'
+                    '            return unresolved("a git alias that may push or merge, in the text of a command '
+                    'that runs "\n',
+                    '        if False:  # defect: a wrapper or editor beside a git word is not alias-checked\n'
+                    '            return unresolved("a git alias that may push or merge, in the text of a command '
+                    'that runs "\n')])
+    # Fix round 5: the dry run's upstream line is read; an alias lookup that fails or reads an expanded -C
+    # value is unresolved; a command whose first word is not git (sh -c) is alias-checked.
+    guard268('guard268-upstream-line-unread',
+             '        elif not (line.startswith("To ") or line == "Done" or not line.strip() '
+             'or UPSTREAM.fullmatch(line)):\n',
+             '        elif not (line.startswith("To ") or line == "Done" or not line.strip()):'
+             '  # defect: the upstream line is unread\n',
+             ['push/set-upstream'])
+    guard268('guard268-lookup-failure-is-no-alias', '        raise AliasUnreadable(sub)\n',
+             '        return None  # defect: a lookup that cannot run reads as no alias\n', ['push/alias-unreadable'])
+    guard268('guard268-expanded-dash-c-looked-up',
+             '            split = None  # a -C or -c value the shell expands: where git runs is not known\n',
+             '            pass  # defect: an expanded -C value is looked up as written\n', ['push/alias-unreadable'])
+    guard268('guard268-shell-c-not-alias-checked',
+             '            return unresolved("a git alias that may push or merge, in a command whose first word '
+             'is not git")\n',
+             '            pass  # defect: a command whose first word is not git is not alias-checked\n',
+             ['push/alias-shell-c'])
+    # Fix round 6: a wrapper (sh -c '...' git) or an editor or pager value beside a git word is alias-checked.
+    guard268('guard268-text-beside-git-not-alias-checked',
+             '        if alias_in_text(command, cwd):\n'
+             '            return unresolved("a git alias that may push or merge, in the text of a command that runs "\n',
+             '        if False:  # defect: a wrapper or editor beside a git word is not alias-checked\n'
+             '            return unresolved("a git alias that may push or merge, in the text of a command that runs "\n',
+             ['push/alias-shell-c'])
+    guard268('guard268-git-inside-git-skipped',
+             '    for start in (m.start() for m in re.finditer(r"\\bgit", command)):\n'
+             '        match = GITSUB.match(command, start)\n',
+             '    for match in GITSUB.finditer(command):  # defect: a git inside another git\'s text is skipped\n'
+             '        start = match.start()\n',
+             ['push/alias-shell-c'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

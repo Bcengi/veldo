@@ -92,6 +92,106 @@ def protected_patterns():
     return [row["path"] for row in rows]
 
 
+# THE PROTECTED REFS (VELDO-0268). The push guard judges a push or merge only when it moves a ref
+# this set names; a working branch is a backup and a review surface, and the gate and approvals
+# bind where the trunk moves (at landing, and at any push that moves a protected ref). The set is
+# DECLARED in policy.yaml as protected_refs, fnmatch patterns over full ref names, and is the UNION
+# of every source that declares it: the working tree's policy, the policy committed at the local
+# trunk ref (so a candidate cannot shrink the set by editing its own policy before it pushes main),
+# and POLICY when the installed-policy runner sets it. Anything may add a ref; nothing removes one.
+# When no source declares the key, every ref is protected: the behaviour before the key existed.
+TRUNK_REF = "refs/heads/main"
+EVERY_REF = "*"
+
+
+class ProtectedRefsUnreadable(ValueError):
+    """A protected_refs key that is present but cannot be read. The guard refuses the push."""
+
+    def __init__(self, source):
+        super().__init__("protected_refs in %s cannot be read" % source)
+        self.source = source
+
+
+def _protected_refs_of(document, source):
+    """The patterns one parsed policy declares, or None when it declares no protected_refs key."""
+    if not isinstance(document, dict) or "protected_refs" not in document:
+        return None
+    rows = document["protected_refs"]
+    if not isinstance(rows, list) or any(not isinstance(r, str) or not r for r in rows):
+        raise ProtectedRefsUnreadable(source)
+    return rows
+
+
+def protected_ref_sources():
+    """[(pattern, source)] over every source that declares protected_refs, or None when none does.
+    A source that cannot be read where it exists raises ProtectedRefsUnreadable (fail closed)."""
+    found = []
+    declared = False
+    tree = ROOT / ".veldo" / "policy.yaml"
+    files = [tree]
+    if POLICY is not None and Path(POLICY).resolve() != tree.resolve():
+        files.append(Path(POLICY))
+    for path in files:
+        if not path.exists():
+            continue
+        try:
+            document = _Y.read(path)
+        except Exception:
+            raise ProtectedRefsUnreadable(str(path))
+        rows = _protected_refs_of(document, str(path))
+        if rows is not None:
+            declared = True
+            found += [(r, str(path)) for r in rows]
+    trunk = _git_process.run(["git", "rev-parse", "--verify", "--quiet", TRUNK_REF + "^{commit}"],
+                             capture_output=True, text=True, cwd=ROOT)
+    if trunk.returncode == 0 and trunk.stdout.strip():
+        source = "%s:.veldo/policy.yaml" % TRUNK_REF
+        listed = _git_process.run(["git", "ls-tree", "--name-only", trunk.stdout.strip(), ".veldo/policy.yaml"],
+                                  capture_output=True, text=True, cwd=ROOT)
+        if listed.returncode != 0:
+            raise ProtectedRefsUnreadable(source)
+        if listed.stdout.strip():
+            shown = _git_process.run(["git", "show", trunk.stdout.strip() + ":.veldo/policy.yaml"],
+                                     capture_output=True, cwd=ROOT)
+            try:
+                if shown.returncode != 0:
+                    raise ValueError(source)
+                document = _Y.parse(shown.stdout.decode("utf-8-sig"), source)
+            except Exception:
+                raise ProtectedRefsUnreadable(source)
+            rows = _protected_refs_of(document, source)
+            if rows is not None:
+                declared = True
+                found += [(r, source) for r in rows]
+    return found if declared else None
+
+
+def protected_ref(name):
+    """(pattern, source) that makes the full ref name `name` protected, or None when it is not.
+    With no source declaring protected_refs every ref is protected: (EVERY_REF, the reason)."""
+    sources = protected_ref_sources()
+    if sources is None:
+        return (EVERY_REF, "no policy declares protected_refs")
+    for pattern, source in sources:
+        if fnmatch.fnmatchcase(name, pattern):
+            return (pattern, source)
+    return None
+
+
+def _protected_ref_main(names):
+    """`policy_check.py --protected-ref REF...`: one line per ref, tab separated: the ref, then
+    'protected', the pattern and its source, or 'not-protected'. Exit 0; exit 3 with the guard's
+    refusal on standard error when protected_refs cannot be read."""
+    try:
+        for name in names:
+            hit = protected_ref(name)
+            print("\t".join((name, "protected") + hit) if hit else name + "\tnot-protected")
+    except ProtectedRefsUnreadable as error:
+        print("VELDO guard: blocked. %s" % error, file=sys.stderr)
+        return 3
+    return 0
+
+
 def _range_specs():
     """The comparison bases to try, in order, for "what is this push".
 
@@ -629,4 +729,6 @@ def main():
 
 
 if __name__ == "__main__":
+    if sys.argv[1:2] == ["--protected-ref"]:
+        sys.exit(_protected_ref_main(sys.argv[2:]))
     sys.exit(main())

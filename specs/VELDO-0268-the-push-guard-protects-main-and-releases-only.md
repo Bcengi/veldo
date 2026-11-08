@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0058]
 placement: [enforcement]
-protected_paths: ["scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", ".veldo/policy_check.py", "engine/.veldo/policy_check.py", ".veldo/policy.yaml"]
+protected_paths: ["scripts/veldo-guard.sh", "engine/scripts/veldo-guard.sh", "packs/claude/scripts/veldo-guard.sh", ".veldo/policy_check.py", "engine/.veldo/policy_check.py", ".veldo/policy.yaml"]
 footprint:
   - "scripts/veldo-guard.sh"
   - "engine/scripts/veldo-guard.sh"
@@ -21,6 +21,8 @@ footprint:
   - "engine/AGENTS.md"
   - "scripts/suites/141_veldo_0268_protected_refs.py"
   - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0268-the-push-guard-protects-main-and-releases-only.md"
   - "specs/index.md"
   - "proof/VELDO-0268/**"
@@ -167,3 +169,7 @@ never a working branch, with a nightly push of all working branches, which now r
 myday/scripts/push_work_branches.sh). A draft: only the owner marks it ready.
 
 2026-11-07: ready on the owner's approval, Telegram 39694 ("Ok") to the summary in 39693.
+
+2026-11-07: footprint gains scripts/suites/requires.json and scripts/check_teeth_mutations.py, by the lead under Telegram 39708 (mechanical, ACs unchanged): the suite's registration and its falsifiers in the mutation stage (check of 2026-11-07, research/claude-runs/veldo-0268-check-2026-11-07.md).
+
+2026-11-07: protected_paths names packs/claude/scripts/veldo-guard.sh (this ticket protects it in policy.yaml). Owner decision Telegram 39895 ("YES" to 39888): the guard's dry run may use a credential helper only when every helper configured for the URL comes from the global or system git configuration (the gh login), the same trust it gives ~/.ssh/config; a helper set in the repository configuration or on the command line keeps the push unresolved without running it.
