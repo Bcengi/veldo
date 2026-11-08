@@ -7985,8 +7985,8 @@ def cases():
             "            return None\n        try:\n            bound = module.bind(",
             'pin/unexpected-launch')
     adapter('adapter-version-unbound', 'control_engine_codex.py',
-            "    if manifest.get('version') != record['package_version']:\n",
-            "    if False:  # defect: another version of the package is launched\n",
+            "    if (manifest.get('version') != record['package_version']\n",
+            "    if (False  # defect: another version of the package is launched\n",
             'pin/unexpected-launch')
     adapter('adapter-link-accepted', 'control_engine_codex.py',
             "    if os.path.realpath(executable) != os.path.normpath(executable):\n",
@@ -12163,7 +12163,7 @@ def cases():
     # Suite 125's row drives qualify.py's main on recorded readings (seconds); suite 126's qualify/covers runs
     # the real binaries end to end (86 to 119 s), too near the mutation worker's unmeasured 120 s floor.
     add(230, 'qualify230-claude-record-unwritten', census230, 'qualify.py',
-        "    write(root, 'claude-tables.json', text(claude_qualification), written)\n",
+        "    write(stage, 'claude-tables.json', text(claude_qualification), staged)\n",
         "    pass  # defect: the Claude Code record is not written\n", ['qualify/claude-record-written'])
     add(230, 'qualify230-granted-feature-off', '88_veldo_0127_feature_defaults.py', 'control_agent_config_handoff.py',
         "        if feature in granted and feature not in CODEX_FEATURE_GRANTS and feature not in CODEX_FEATURES_UNGRANTED:\n",
@@ -12294,7 +12294,8 @@ def cases():
         ['ac2/declared-base'])
     result[-1]['dir'] = 'scripts'
     add(259, 'writers259-home-kept', install259, 'qualify.py',
-        "        (here / name).write_text(home_as_tilde(content))\n", "        (here / name).write_text(content)\n",
+        "        (stage / FIXTURES / name).write_text(home_as_tilde(content))\n",
+        "        (stage / FIXTURES / name).write_text(content)\n",
         ['writers/home-as-tilde'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.

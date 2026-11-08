@@ -10,7 +10,8 @@ written file is byte-identical to the checkout's (a qualification summary's chec
 set covers both engines' reviewed tables and qualification summaries and the engines record in every runtime copy
 and the VELDO-0127 fixtures. VELDO-0275 AC1: every extractor runs as a check (its --check mode), named with a pass
 in both summaries it reads, and none of their tables is rewritten; each summary is small (under 1 MB, per check
-only name, outcome and duration) and the engines record names it. Runs the qualified
+only name, outcome and duration) and the engines record names it; a run whose late check fails changes none of the
+live files (qualify/failed-approves-nothing). Runs the qualified
 binaries offline (extractor reads, the VELDO-0156 prompt rendering and loopback request, `features list`, `debug models --bundled`, the loopback capture and the
 Claude Code init probe in empty profiles); writes only temporary files.
 """
@@ -30,7 +31,8 @@ def _v230_reproduce_suite():
     PRODUCTION = {
         'qualify.py': ROOT / ".veldo" / "qualify.py",
     }
-    ROWS = ('qualify/reproduces', 'qualify/covers', 'qualify/builtin-plugins', 'qualify/gate-reads')
+    ROWS = ('qualify/reproduces', 'qualify/covers', 'qualify/builtin-plugins', 'qualify/gate-reads',
+            'qualify/failed-approves-nothing')
     rows = {name: [] for name in ROWS}
     COPIED = ('.veldo', 'engine/runtime', 'packs', 'proof/VELDO-0060', 'proof/VELDO-0061', 'proof/VELDO-0062',
               'proof/VELDO-0127', 'proof/VELDO-0141', 'proof/VELDO-0155', 'proof/VELDO-0156', 'proof/VELDO-0165',
@@ -194,8 +196,28 @@ def _v230_reproduce_suite():
                  + '-summary.json']
         check('qualify/covers', 'each summary is under 1 MB, approved for the recorded version and digest, holds per '
               'check only its name, outcome and duration, and the engines record names it [%s]' % heavy, not heavy)
+        # VELDO-0275 AC1: a check failing late (the VELDO-0127 loopback check, once every table is built) approves
+        # nothing: the live engines record, tables, summaries and fixtures stay byte for byte as they were (each marked
+        # first, so a rewrite with the same content still shows).
+        marked = {name: (tree / name).read_bytes() + b'\n' for name in sorted(wanted) if (tree / name).is_file()}
+        for name, data in marked.items():
+            (tree / name).write_bytes(data)
+        (tree / 'proof' / 'VELDO-0127' / 'codex-live.json').unlink()
+        failed = subprocess.run([sys.executable, '-B', str(tree / '.veldo' / 'qualify.py'), '--codex', str(codex),
+                                 '--claude', str(claude), '--root', str(tree)],
+                                capture_output=True, text=True, timeout=1500, stdin=subprocess.DEVNULL,
+                                env={'PATH': os.environ.get('PATH', '/usr/bin:/bin'),
+                                     'HOME': os.environ.get('HOME', '/'), 'LANG': 'C.UTF-8',
+                                     'TMPDIR': tempfile.gettempdir()})
+        late = [line for line in failed.stdout.splitlines() if line.startswith('check ') and line.endswith(': fail')]
+        changed = sorted(name for name, data in marked.items() if (tree / name).read_bytes() != data)
+        check('qualify/failed-approves-nothing', 'a run whose late loopback check fails exits nonzero, approves nothing '
+              'and leaves the live engines record, tables, summaries and fixtures unchanged [exit %s, %s, changed %s]'
+              % (failed.returncode, late, changed[:6]),
+              failed.returncode != 0 and 'nothing approved' in failed.stderr and len(late) == 1
+              and 'loopback' in late[0] and len(marked) == len(wanted) and not changed)
     except Exception as error:
-        for row in ROWS[:2]:
+        for row in ROWS[:2] + ROWS[4:]:
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:200], False)
     finally:
         shutil.rmtree(temp, ignore_errors=True)

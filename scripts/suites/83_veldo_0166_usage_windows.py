@@ -125,8 +125,9 @@ def _v166_suite():
                   and json.loads(kept[0])['dispatch_id'] == 'dispatch/live'
                   and meter.receipts == ['sha256:' + hashlib.sha256(raw).hexdigest()] * 2)
 
-            qualified = json.loads((ROOT / 'engine/runtime/claude-tables.json').read_text())
-            names = qualified['versions'][CLAUDE_VERSION]['rate_limit_windows']
+            # VELDO-0275 AC1: the reported windows are the binary's own table (the reviewed tables no longer carry them).
+            names = json.loads((ROOT / 'proof/VELDO-0062/cli-formats.json').read_text())['claude_code']['events'][
+                'rate_limit_event']['fields']['rate_limit_info']['fields']['rateLimitType']['values']
             event = json.loads(raw)
             info = event['rate_limit_info']
             info['unifiedWindows'] = {name: dict(utilization=(i + 1) / 10, resetsAt=1790960400 + i)

@@ -167,7 +167,7 @@ def _v230_census_suite():
         written_qualify.engines_record = lambda codex, claude: copy.deepcopy(engines)
         written_qualify.load = lambda name, path: RecordedCodex if name == 'qualify_codex' else real_load(name, path)
         written_qualify.claude_record = recorded_claude
-        written_qualify.fixtures = lambda root, executable, written: None
+        written_qualify.fixtures = lambda root, executable, written, stage=None: None
         # VELDO-0275 AC1: the launch-read check reads the Codex catalog from the binary, which this row never runs.
         written_qualify.loaded = lambda root, record: None
         import contextlib

@@ -17,6 +17,7 @@ Rows:
   engine_not_approved.
 - approved/changed-bytes: the approved Claude Code pinned copy and the approved Codex binary, their bytes
   changed after approval: each binding is refused engine_not_approved, and so is setup's check.
+- approved/installed-summaries: init installs every qualification summary the installed engines record names.
 """
 
 
@@ -35,9 +36,10 @@ def _v275_suite():
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
         'control_factory_setup_engines.py': ROOT / ".veldo" / "control_factory_setup_engines.py",
+        'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
-    ROWS = ('approved/stays-on-approved', 'approved/changed-bytes')
-    STAYS, CHANGED = ROWS
+    ROWS = ('approved/stays-on-approved', 'approved/changed-bytes', 'approved/installed-summaries')
+    STAYS, CHANGED, INSTALLED = ROWS
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
     APPROVED, NEWER = '1.0.0', '1.0.1'
@@ -188,6 +190,17 @@ def _v275_suite():
             check(CHANGED, 'with the approved bytes restored setup resolves them again [%s]' % error, error is None)
         finally:
             os.environ['PATH'] = original
+
+        # approved/installed-summaries: an installed project holds every summary its engines record names.
+        target = base / 'installed'
+        load('v275_scaffold', PRODUCTION['init_scaffold.py']).scaffold(target, templates=ROOT / 'engine')
+        installed = json.loads((target / '.veldo/runtime/engines.json').read_text())
+        named = {engine: installed[engine].get('summary') for engine in ('claude_code', 'codex')}
+        check(INSTALLED, 'init installs each qualification summary the installed engines record names, as shipped %s'
+              % named, all(named.values()) and all(
+                  (target / '.veldo' / path).is_file()
+                  and (target / '.veldo' / path).read_bytes() == (ROOT / 'engine' / path).read_bytes()
+                  for path in named.values()))
 
     try:
         with tempfile.TemporaryDirectory(prefix='v275-') as directory:

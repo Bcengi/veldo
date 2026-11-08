@@ -948,15 +948,13 @@ sys.exit(payload.get('code', 0))
                   and INPUT['flags'][1] in declared['--input-format']['choices']
                   and 'requires --print' in INPUT['requires']['text'] and flags[flags.index('--output-format') + 1] == 'stream-json'
                   and set(entry.get('environment') or {}) == {'DISABLE_AUTOUPDATER'} <= set(OPTIONS['environment']))
-            rate = FORMATS['events']['rate_limit_event']['fields']['rate_limit_info']['fields']['rateLimitType']['values']
-            check('pin/shipped-qualification', 'its terminal protocol, login and reported windows are the binary\'s '
-                  '[%s]' % entry.get('terminal_protocol'),
-                  (entry.get('terminal_protocol') or {}).get('error_subtypes') == errors
-                  and (entry.get('terminal_protocol') or {}).get('success_subtype') == 'success'
-                  and (entry.get('authentication') or {}).get('mode') == 'subscription'
-                  and 'none' in FORMATS['events']['system/init']['fields']['apiKeySource']['values']
-                  and entry.get('rate_limit_windows') == rate
-                  and set(entry.get('usage_units') or ()) == {'invocations', 'wall_seconds', 'tokens', 'messages'})
+            # VELDO-0275 AC1: the tables keep only the fields a reader uses; the terminal protocol, login policy,
+            # reported windows and usage units are the binary's tables (proof/VELDO-0062) and no reader's.
+            check('pin/shipped-qualification', 'it keeps only the fields a reader uses, none of the terminal protocol, '
+                  'login policy, reported windows or usage units no reader reads [%s]' % sorted(entry),
+                  not {'terminal_protocol', 'authentication', 'rate_limit_windows', 'usage_units', 'input', 'host_kind',
+                       'live_usage', 'pinned', 'source'} & set(entry)
+                  and 'none' in FORMATS['events']['system/init']['fields']['apiKeySource']['values'])
 
         # AC2: live exits and perturbed stream bytes, each through the production decoder in the receiver.
         exit_records = {}

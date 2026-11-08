@@ -1,7 +1,7 @@
 {
  "checks": [
   {
-   "duration_s": 35.1,
+   "duration_s": 35.5,
    "name": "proof/VELDO-0062/extract_formats.py",
    "outcome": "pass"
   },
@@ -26,12 +26,12 @@
    "outcome": "pass"
   },
   {
-   "duration_s": 11.0,
+   "duration_s": 9.1,
    "name": "proof/VELDO-0156/capture_mentions.py",
    "outcome": "pass"
   },
   {
-   "duration_s": 10.2,
+   "duration_s": 10.3,
    "name": "proof/VELDO-0165/extract_environment.py",
    "outcome": "pass"
   },
@@ -41,7 +41,7 @@
    "outcome": "pass"
   },
   {
-   "duration_s": 10.9,
+   "duration_s": 9.0,
    "name": "codex loopback requests (VELDO-0127 fixtures, resource readers, undelivered grants)",
    "outcome": "pass"
   },

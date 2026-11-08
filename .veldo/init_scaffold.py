@@ -493,8 +493,8 @@ _DIRS = [".veldo/examples"]
 # beside the modules that read it (source, destination). scripts/check_template_sync.sh pairs
 # engine/runtime/<name> with .veldo/runtime/<name> by the same rule.
 _RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-records.json")]
-# VELDO-0060, VELDO-0275: the reviewed tables of the approved Claude Code version (its digest, flags, terminal
-# protocol and stream tables), read by control_engine_claude.py beside it before any Claude Code launch.
+# VELDO-0060, VELDO-0275: the reviewed tables of the approved Claude Code version (its digest, flags and stream
+# tables), read by control_engine_claude.py beside it before any Claude Code launch.
 _RUNTIME_ASSETS += [("runtime/claude-tables.json", ".veldo/runtime/claude-tables.json")]
 # VELDO-0061, VELDO-0275: the reviewed tables of the approved Codex binary (its bundled model catalog by digest
 # only), which control_engine_codex.py reads beside itself before a Codex engine is accepted or spawned.
@@ -502,6 +502,9 @@ _RUNTIME_ASSETS += [("runtime/codex-tables.json", ".veldo/runtime/codex-tables.j
 # VELDO-0230: the engines record (the qualified Codex and Claude Code: version, binary path, digest), written by
 # qualify.py and read by factory setup for the Claude Code copy it pins.
 _RUNTIME_ASSETS += [("runtime/engines.json", ".veldo/runtime/engines.json")]
+# VELDO-0275 AC1: each approved engine's qualification summary, which the engines record names beside it.
+_RUNTIME_ASSETS += [("runtime/claude-summary.json", ".veldo/runtime/claude-summary.json"),
+                    ("runtime/codex-summary.json", ".veldo/runtime/codex-summary.json")]
 
 # VELDO-0145: the factory UI. The API serves its page from a `ui` directory beside its own installed module
 # (control_api_ui.directory), so the built UI (the templates' ui/dist, built by `npm ci && npm run build` in

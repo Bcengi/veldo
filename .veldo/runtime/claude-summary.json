@@ -1,7 +1,7 @@
 {
  "checks": [
   {
-   "duration_s": 35.1,
+   "duration_s": 35.5,
    "name": "proof/VELDO-0062/extract_formats.py",
    "outcome": "pass"
   },
@@ -16,12 +16,12 @@
    "outcome": "pass"
   },
   {
-   "duration_s": 16.2,
+   "duration_s": 16.0,
    "name": "proof/VELDO-0155/extract_baseline.py",
    "outcome": "pass"
   },
   {
-   "duration_s": 10.2,
+   "duration_s": 10.3,
    "name": "proof/VELDO-0165/extract_environment.py",
    "outcome": "pass"
   },
