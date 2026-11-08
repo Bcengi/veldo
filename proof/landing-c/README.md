@@ -133,3 +133,35 @@ once. scripts/gate_legs.py and gate_schedule.py equal their engine copies.
 Checks: py_compile clean on every changed .py; `bash -n` clean on proof/landing-c/pending_runs.sh.
 Pending: suites 129_veldo_0278, 08, 113_veldo_0220, 114_veldo_0220, 114_veldo_0216, 101, 129_veldo_0272
 and teeth finding 278.
+
+## Protected paths landing-c touches against main
+
+Read at commit 81564c7d. Patterns: `python3 -c 'import sys; sys.path.insert(0,".veldo"); import
+policy_check as p; print(p.protected_patterns())'` (landing-c's policy, 52 patterns). Files:
+`git diff --name-only main...HEAD` (156 paths, renames under their new name). Each file matched with
+`fnmatch` against every pattern: 14 match.
+
+| Path | Pattern | Protected on main too |
+| --- | --- | --- |
+| .veldo/control_verification.py | itself | yes |
+| .veldo/policy.yaml | itself | yes |
+| .veldo/policy_check.py | itself | yes |
+| engine/.veldo/control_verification.py | itself | yes |
+| engine/.veldo/policy_check.py | itself | yes |
+| engine/scripts/mutation_nightly.py | itself | no (VELDO-0267) |
+| engine/scripts/mutation_selection.py | itself | no (VELDO-0267) |
+| engine/scripts/veldo-guard.sh | itself | yes |
+| packs/claude/scripts/veldo-guard.sh | itself | no (VELDO-0268) |
+| scripts/mutation_nightly.py | itself | no (VELDO-0267) |
+| scripts/mutation_selection.json | itself | no (VELDO-0267) |
+| scripts/mutation_selection.py | itself | no (VELDO-0267) |
+| scripts/parked/estimation/check_first_use.py | itself | no (VELDO-0278) |
+| scripts/veldo-guard.sh | itself | yes |
+
+Not in the instructed listing, recorded because a landing is judged by the trunk's policy as well
+(VELDO-0058): main's own list (`git show main:.veldo/policy.yaml`) also protects 12 more paths landing-c
+changes, all test machinery VELDO-0272 removes: engine/scripts/check_gate_mutations.py,
+engine/scripts/gate_legs.py, engine/scripts/gate_schedule.py, engine/scripts/verify.sh,
+scripts/check_gate_mutations.py, scripts/gate_graph.json, scripts/gate_legs.py, scripts/gate_schedule.py,
+scripts/gate_unconfined.json, scripts/mutation_case_inputs.json, scripts/selftest.py, scripts/verify.sh;
+and the deleted scripts/check_first_use.py (renamed by VELDO-0278, `--no-renames --diff-filter=D`).
