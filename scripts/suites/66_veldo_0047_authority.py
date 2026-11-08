@@ -275,20 +275,41 @@ def _v47_suite():
             return [line for line in text.splitlines()[1:] if line.split() and line.split()[-1] == str(address)]
 
         def flock_holders(path):
-            """Every flock on the file, from the kernel's own lock table: (mode, pid), matched by device
-            and inode."""
+            """Every flock on the file, from the kernel's own lock list for its inode: (mode, pid), one
+            per lock. Read through the fdinfo of every descriptor this account's processes hold on the
+            file, never through /proc/locks: that table is served a page per read and walked again for
+            each page, so a lock taken or released anywhere on the host between two pages drops or
+            repeats lines of this one (landing-c round 6 saw a steady flock read 0, 2 and 3 times).
+            An fdinfo is one short read under the inode's lock list, and a flock is held by an open
+            file description, so every flock on the file is named by a descriptor some process holds.
+            A lock is named once however many descriptors share its file description."""
             try:
                 info = os.stat(str(path))
-                text = Path('/proc/locks').read_text()
+                pids = [entry for entry in os.listdir('/proc') if entry.isdigit()]
             except OSError:
                 return None
             identity = '%02x:%02x:%d' % (os.major(info.st_dev), os.minor(info.st_dev), info.st_ino)
-            holders = []
-            for line in text.splitlines():
-                parts = line.split()
-                if len(parts) >= 6 and parts[1] == 'FLOCK' and parts[5] == identity:
-                    holders.append((parts[3], int(parts[4])))
-            return holders
+            locks = {}
+            for proc in pids:
+                try:
+                    if os.stat('/proc/' + proc).st_uid != os.getuid():
+                        continue
+                    fds = os.listdir('/proc/%s/fd' % proc)
+                except OSError:
+                    continue  # gone, or not this account's: it holds nothing on a 0700 directory's file
+                for fd in fds:
+                    try:
+                        held = os.stat('/proc/%s/fd/%s' % (proc, fd))
+                        if (held.st_dev, held.st_ino) != (info.st_dev, info.st_ino):
+                            continue
+                        text = Path('/proc/%s/fdinfo/%s' % (proc, fd)).read_text()
+                    except OSError:
+                        continue  # closed while read: a lock it held ended with it
+                    for line in text.splitlines():
+                        parts = line.split()
+                        if parts[:1] == ['lock:'] and len(parts) >= 7 and parts[2] == 'FLOCK' and parts[6] == identity:
+                            locks[(parts[4], int(parts[5]))] = True
+            return sorted(locks)
 
         def mode(path):
             try:
