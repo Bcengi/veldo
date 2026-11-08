@@ -243,3 +243,5 @@ No lock taken (the shared gate lock was busy). Every result here is a local, par
   proof/VELDO-0275/pending-summary.txt: step, exit code, /tmp log path; the tree is checked clean before and after,
   ignoring that file). Steps: lint, suites 130 and 131, the engine and setup suites, the six VELDO-0275 mutations
   and the seven registered mutations whose anchors or codes this change touched.
+
+Correction (lead, landing-d): suite 86 0186 was red after fix 1 (cca0e5c0) installed the two summaries; its expected list gained them on landing-d (eede5acb). The "green at a45cf474 and later" claim above does not hold for that suite between cca0e5c0 and eede5acb.
