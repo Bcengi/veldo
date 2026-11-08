@@ -48,7 +48,29 @@ def _v267_checks():
         module.__file__ = str(path)
         sys.modules[module.__name__] = module
         exec(compile(source, str(path), 'exec'), module.__dict__)
+        for loaded in (module, getattr(module, 'selection', None)):
+            seed_git_boundary(loaded)
         return module
+
+    real_git_boundary = []
+
+    def seed_git_boundary(module):
+        """A registered mutant runs from a scratch directory with no .veldo beside it, so the Git
+        boundary the selection module loads by its own path (landing-c fix round 3) is absent there.
+        Such a module gets this repository's real boundary, as production() gives a .veldo mutant its
+        real siblings; a module in its installed place loads its own. The nightly module's selection
+        sibling is seeded the same way."""
+        boundary = getattr(module, '_GIT_BOUNDARY', None)
+        if boundary != [] or not hasattr(module, 'HERE'):
+            return
+        if (Path(module.HERE).parent / '.veldo' / 'git_process.py').is_file():
+            return
+        if not real_git_boundary:
+            spec = importlib.util.spec_from_file_location('v267_git_process', ROOT / '.veldo' / 'git_process.py')
+            real = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(real)
+            real_git_boundary.append(real)
+        boundary.append(real_git_boundary[0])
 
     def row(name, condition):
         expect('VELDO-0267 ' + name, bool(condition))
