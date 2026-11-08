@@ -12663,8 +12663,9 @@ def cases():
              '        if False:  # defect: a wrapper or editor beside a git word is not alias-checked\n'
              '            return unresolved("a git alias that may push or merge, in the text of a command that runs "\n',
              ['push/alias-shell-c'])
+    # The scan's pattern as landing-c 07636fb4 narrowed it (a .git path is not a git command).
     guard268('guard268-git-inside-git-skipped',
-             '    for start in (m.start() for m in re.finditer(r"\\bgit", command)):\n'
+             '    for start in (m.start() for m in re.finditer(r"(?<![\\w.-])git(?=\\s)", command)):\n'
              '        match = GITSUB.match(command, start)\n',
              '    for match in GITSUB.finditer(command):  # defect: a git inside another git\'s text is skipped\n'
              '        start = match.start()\n',
