@@ -10,7 +10,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0051, VELDO-0058, VELDO-0128]
 placement: [enforcement, contracts]
-protected_paths: [".veldo/policy.yaml", ".veldo/policy_check.py", "engine/.veldo/policy_check.py", "scripts/mutation_selection.json", "scripts/mutation_selection.py", "engine/scripts/mutation_selection.py", "scripts/mutation_nightly.py", "engine/scripts/mutation_nightly.py", "packs/claude/scripts/veldo-guard.sh"]
+protected_paths: [".veldo/policy.yaml", ".veldo/policy_check.py", "engine/.veldo/policy_check.py", "scripts/mutation_selection.json", "scripts/mutation_selection.py", "engine/scripts/mutation_selection.py", "scripts/mutation_nightly.py", "engine/scripts/mutation_nightly.py", "packs/claude/scripts/veldo-guard.sh", "scripts/parked/estimation/check_first_use.py"]
 footprint:
   - ".veldo/policy.yaml"
   - ".veldo/policy_check.py"
@@ -249,3 +249,5 @@ protected policy files, so it is approval-required itself.
 2026-11-07: by the lead under Telegram 39708 (reading recorded, ACs unchanged): a push that changes only spec files needs no review verdict (a draft cannot have one); a draft to ready push carries the owner approval its human_approval requires; generated index files and approval records are exempt from the reviewed-spec coverage rule. Final fix check SOUND (research/claude-runs/veldo-0272-fixcheck4-2026-11-07.md).
 
 2026-11-08 landing-c merge: the list gains the six protected paths VELDO-0267 and VELDO-0268 added, so their protection stands (lead)
+
+2026-11-08 landing-c merge 6: the list gains scripts/parked/estimation/check_first_use.py, the parked path VELDO-0278 moved that protection to, so the union keeps it (lead rule from merge 4)

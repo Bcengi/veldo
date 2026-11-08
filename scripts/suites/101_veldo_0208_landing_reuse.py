@@ -1260,13 +1260,16 @@ def _v208_unconfined_leg():
     document, digest = L.load()
     listed = {e['suite']: e.get('rows') for e in document['suites']}
     gate_text = (ROOT / 'scripts/verify.sh').read_text()
+    # The stages the list declares are exactly the required catalog items it covers: unit and
+    # mutation. Integration is na since VELDO-0278 and has no entry.
     declared_commands = {name: re.search(r'^CHECK_%s="required:(.*)"$' % name, gate_text, re.M).group(1)
-                         for name in ('unit', 'integration', 'mutation')}
+                         for name in ('unit', 'mutation')}
+    declared_commands_na = re.search(r'^CHECK_integration="na:', gate_text, re.M) is not None
     control_plane = ['62_0039', '63_0040', '63_0049', '64_0050', '66_0042', '66_0047', '67_0041', '67_0135', '71_0076',
                      '71_0130', '71_0138', '73_0139', '78_0060', '79_0061', '80_0155', '81_0156', '82_0129',
                      '82_0141', '83_0154', '85_0158', '85_0171', '86_0127', '86_0148', '86_0189', '87_0170',
                      '91_0167', '92_0088', '93_0152', '94_0162', '95_0203', '96_0204', '106_0185', '110_0143',
-                     '114_0220', '116_0188', '117_0227', '127_0234', '128_0254', '129_0254']
+                     '114_0220', '116_0188', '117_0227', '127_0234', '128_0254', '129_0254', '129_0274']
     # Browser suites (system Chrome, and the npm registry for 120 to 122 and 124): VELDO-0159, 0163 and 0131.
     browser = ['118_0159', '119_0163', '120_0131', '121_0131', '122_0131', '124_0131']
     manifest = [s['name'] for s in json.loads((ROOT / 'scripts/suites/manifest.json').read_text())['suites']]
@@ -1274,7 +1277,7 @@ def _v208_unconfined_leg():
     expected_whole = sorted([n for n in manifest for short in control_plane + browser + ['65_0067']
                              if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 46 and whole == expected_whole
+           document['stages'] == declared_commands and declared_commands_na and len(expected_whole) == 47 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
                                                          '101_veldo_0208_landing_reuse': 'strace'}
            and all(n in manifest for n in listed)
@@ -1304,12 +1307,13 @@ def _v208_unconfined_leg():
            {'scripts/gate_unconfined.json', 'scripts/gate_legs.py'} <= set(front['protected_paths']))
     # The candidate's dispatcher applies the list, so it is protected with it; the listed suites are
     # not, because review of the candidate, not a protected path, is the safeguard for their code.
-    dispatcher_files = {'scripts/selftest.py', 'scripts/run_scope.py', 'scripts/suites/shared.py',
-                        'scripts/check_first_use.py'}
+    # check_first_use.py left the set with the integration stage (VELDO-0278): it is parked, and
+    # its protection moved to its parked path.
+    dispatcher_files = {'scripts/selftest.py', 'scripts/run_scope.py', 'scripts/suites/shared.py'}
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
            dispatcher_files <= set(front['protected_paths'])  # VELDO-0272 AC1: off the installed list
-           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 48
+           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 49
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])
 
@@ -1636,9 +1640,9 @@ def _v208_unconfined_leg():
         shutil.copyfile(ROOT / 'scripts/gate_legs.py', authority / 'scripts/gate_legs.py')
         shutil.copyfile(authority_list, authority / 'scripts/gate_unconfined.json')
         (authority / 'scripts/gate_candidate.py').symlink_to(ROOT / 'scripts/gate_candidate.py')
-        # This authority copy runs its own list, so its gate_legs.py records a passing unit leg's
-        # time in the leg-time store under HOME (VELDO-0214). Its drivers get a scratch HOME, set in
-        # their subprocess environment only, so a suite run never writes the owner's store.
+        # This authority copy runs its own list. Its drivers get a scratch HOME, set in their
+        # subprocess environment only, so a suite run never writes the owner's store. Since
+        # VELDO-0278 removed VELDO-0214's unit-leg handoff, gate_legs.py records no leg time there.
         authority_home = top / 'authority-home'
         authority_home.mkdir()
         def through_stage(stage, command, delete):
@@ -1698,27 +1702,26 @@ def _v208_unconfined_leg():
                and '02_asks' not in own.stdout.split('UNCONFINED LEG', 1)[-1].split('\n', 1)[0]
                and L.stamp(own_record) == {'declaration': 'sha256:' + __import__('hashlib').sha256(
                    authority_list.read_bytes()).hexdigest(), 'legs': {'unit': ['01_listed', '03_rows:strace']}})
-        # The authority copy's unit leg times land in the scratch HOME given to each driver, one
-        # file naming the copy as its authority (VELDO-0214 AC6). A driver without the scratch HOME
-        # writes the owner's store instead, and the scratch store stays empty.
+        # The unit leg's time is no longer recorded (VELDO-0214's handoff left with the integration
+        # stage, VELDO-0278): after the kept driver and again after the list-read driver, the scratch
+        # HOME's leg-time store holds no file, though both drivers ran a passing unit leg there.
         own_store = scratch_store()
-        copy_authority = str(authority.resolve())
-        expect('VELDO-0208 unconfined-leg/authority-copy-records-under-its-scratch-home: '
-               + repr((kept_store, own_store, copy_authority)),
-               len(kept_store) == 1 and kept_store[0][1] == copy_authority
-               and len(own_store) == 1 and own_store[0][1] == copy_authority)
+        expect('VELDO-0208 unconfined-leg/authority-copy-records-no-leg-time: '
+               + repr((kept_store, own_store, kept[0], own.returncode)),
+               kept_store == [] and own_store == []
+               and kept[0] == 0 and kept[1][0]['status'] == 'green'
+               and own.returncode == 0 and 'unit: unconfined leg: pass' in own.stdout)
 
         # No file in scripts/ or scripts/suites/ shadows a standard-library module the dispatcher
         # imports, nor one of the protected modules it imports by name. A candidate scripts/json.py
         # and suites/tempfile.py, and a scripts/shared.py and suites/run_scope.py standing in for the
         # protected suites/shared.py and scripts/run_scope.py, each announcing its import, run through
-        # both legs of the real runner and dispatcher, with shared.py's own imports, and through
-        # check_first_use.py, and none is imported; the control shows each plant is live for an
+        # both legs of the real runner and dispatcher, with shared.py's own imports, and none is
+        # imported (check_first_use.py, parked by VELDO-0278, is no stage); the control shows each plant is live for an
         # ordinary script in the same directory. The plants in suites/ are enumerated, so the
         # dispatcher reaches shared.py rather than refusing them as SUITE_NOT_ENUMERATED.
         shadow = top / 'shadow'
         shutil.copytree(candidate, shadow)
-        shutil.copyfile(ROOT / 'scripts/check_first_use.py', shadow / 'scripts/check_first_use.py')
         real_imports = ''.join(ast.get_source_segment(shared_source, node) + '\n'
                                for node in ast.parse(shared_source).body
                                if isinstance(node, (ast.Import, ast.ImportFrom)))
@@ -1735,21 +1738,17 @@ def _v208_unconfined_leg():
             shadow_manifest['suites'].append({'name': 'control_' + module, 'file': 'control_%s.py' % module})
         (shadow / 'scripts/suites/manifest.json').write_text(json.dumps(shadow_manifest))
         legs, _, _ = stage('unit', 'python3 scripts/selftest.py', root=shadow)
-        first_use = subprocess.run([sys.executable, 'scripts/check_first_use.py', '--refuse-this'], cwd=str(shadow),
-                                   capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
         controls = [subprocess.run([sys.executable, str(shadow / relative)], cwd=str(shadow), capture_output=True,
                                    text=True, timeout=60, stdin=subprocess.DEVNULL).stdout
                     for relative in (str(Path(planted).with_name('control_' + Path(planted).name))
                                      for planted in plants)]
         shadow_out = legs.stdout + legs.stderr
         expect('VELDO-0208 unconfined-leg/dispatcher-never-imports-a-candidate-stdlib-shadow: '
-               + repr((legs.returncode, shadow_out[-400:], first_use.returncode, first_use.stdout[-200:], controls)),
+               + repr((legs.returncode, shadow_out[-400:], controls)),
                {'import json', 'import subprocess', 'import tempfile'} <= set(real_imports.splitlines())
                and legs.returncode == 0 and 'V208-SHADOWED' not in shadow_out
                and 'selftest leg confined:' in shadow_out and 'selftest leg unconfined:' in shadow_out
                and 'unit: confined leg: pass' in shadow_out and 'unit: unconfined leg: pass' in shadow_out
-               and first_use.returncode == 2 and 'UNRECOGNISED_FLAG' in first_use.stdout
-               and 'V208-SHADOWED' not in first_use.stdout + first_use.stderr
                and controls == ['V208-SHADOWED %s\n' % Path(planted).stem for planted in plants])
 
         # The list is optional in the authority (with none, every stage is confined: the first
@@ -1818,7 +1817,7 @@ if leg_runs():
 
 
 def _v208_first_use_nested_copy():
-    """The integration stage's nested copy (scripts/check_first_use.py) is a tree a gate and a
+    """The parked integration check's nested copy (scripts/parked/estimation/check_first_use.py) is a tree a gate and a
     launcher can run over, and a failing row there is named. Five confined-stage rows of this suite
     failed only in that copy, in both its runs, and the stage passed on the equal counts without a
     name on the page: a linked worktree's copied `.git` was refused as a redirect, the launcher
@@ -1850,7 +1849,7 @@ def _v208_first_use_nested_copy():
                                        GIT_COMMITTER_NAME='fixture', GIT_COMMITTER_EMAIL='fixture@example.test',
                                        GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null')).stdout.strip()
 
-    F = load('v208_first_use', ROOT / 'scripts/check_first_use.py')
+    F = load('v208_first_use', ROOT / 'scripts/parked/estimation/check_first_use.py')  # parked, VELDO-0278
     G = load('v208_first_use_git', ROOT / '.veldo/candidate_git.py')
     S = load('v208_first_use_sandbox', ROOT / 'scripts/agent_sandbox.py')
     with tempfile.TemporaryDirectory(prefix='v208-first-use-') as temporary:

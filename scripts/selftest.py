@@ -24,6 +24,13 @@ different suites do not collide, plus the selectors below.
   python3 scripts/selftest.py --suite NAME    one suite plus its measured prerequisite closure
   python3 scripts/selftest.py --upto NAME     everything up to and including one suite
   python3 scripts/selftest.py --list          the manifest order, with each closure's size
+  python3 scripts/selftest.py --parked SET    a parked set (scripts/parked/SET/), never the gate
+
+A PARKED SET IS NOT PART OF THE UNIT SUITE (VELDO-0278). The estimation layer's suites left the
+gate until a spend source exists and live in scripts/parked/estimation/ with their own manifest.
+`--parked estimation` runs them in order in the same shared namespace, under a selector scope, so
+it cannot print the aggregate line, write the verify stamp or exit 0, exactly like --suite. It
+takes no other selector, and a gate leg never runs it.
 
 A FLAG TAKES ITS VALUE AS THE NEXT WORD, AND AN UNRECOGNISED FLAG IS A REFUSAL. `--suite=NAME`
 is not `--suite`, and until this was corrected it was recognised by nothing, so the equals form
@@ -117,7 +124,7 @@ if ON_DISK != DECLARED:
 # direction, because a genuine full run happened and the line it printed was true, but
 # someone chasing a fast inner loop silently paid the entire suite and read a green line as
 # their subset's. So an argument beginning with `--` that is not in this table is a REFUSAL.
-FLAGS = {"--list": 0, "--suite": 1, "--upto": 1}
+FLAGS = {"--list": 0, "--suite": 1, "--upto": 1, "--parked": 1}
 UNRECOGNISED_FLAG = "UNRECOGNISED_FLAG"
 
 
@@ -158,6 +165,59 @@ if UNKNOWN_ARGS:
           % (UNRECOGNISED_FLAG, ", ".join(repr(a) for a in UNKNOWN_ARGS),
              ", ".join(sorted(FLAGS))))
     sys.exit(2)
+
+PARKED = HERE / "parked"
+
+
+def _parked_run(name):
+    """Run one parked set (VELDO-0278) and exit. Never a gate pass: the scope always carries a
+    selector, so the aggregate line and the verify stamp refuse, and the exit is 2 or 1."""
+    if len(SEEN) != 1 or len(VALUES["--parked"]) != 1:
+        print("selftest: AMBIGUOUS_SELECTOR: --parked takes one set and no other selector")
+        sys.exit(2)
+    if os.environ.get(RS.GATE_LEG) or os.environ.get(RS.GATE_UNCONFINED):
+        print("selftest: PARKED_IN_GATE_LEG: a parked set is never part of a gate leg")
+        sys.exit(2)
+    available = sorted(p.name for p in PARKED.iterdir() if (p / "manifest.json").is_file()) \
+        if PARKED.is_dir() else []
+    if name not in available:
+        print("selftest: unknown parked set %r (available: %s)" % (name, ", ".join(available) or "none"))
+        sys.exit(2)
+    where = PARKED / name
+    parked = json.loads((where / "manifest.json").read_text())
+    entries = parked["suites"]
+    missing = [s["file"] for s in entries if not (where / s["file"]).is_file()]
+    if missing:
+        print("selftest: parked set %s lists files that are absent: %s" % (name, missing))
+        sys.exit(2)
+    names = [s["name"] for s in entries]
+    scope = RS.RunScope("--parked %s" % name, names, names)
+    print("selftest parked %s: %d parked suite(s), NOT the unit suite and never a gate pass: %s"
+          % (name, len(names), ", ".join(names)), flush=True)
+    module = _protected("shared", SUITES / "shared.py")
+    module.SCOPE = scope
+    started, per_suite = time.monotonic(), []
+    for entry in entries:
+        path = where / entry["file"]
+        module.__dict__["__suite_file__"] = str(path)
+        before_pass, before_fail, t = module.PASS, module.FAIL, time.monotonic()
+        exec(compile(path.read_text(), str(path), "exec"), module.__dict__)
+        per_suite.append((entry["name"], module.PASS - before_pass, module.FAIL - before_fail,
+                          time.monotonic() - t))
+    for suite, passed, failed, elapsed in per_suite:
+        print("  %-44s %5d passed %3d failed  %6.2fs" % (suite, passed, failed, elapsed))
+    try:
+        scope.verify_stamp_payload("parked", "green", "", 0, 0)
+        print("selftest parked %s: verify stamp: ALLOWED" % name)
+    except RS.PartialRunCannotVerify:
+        print("selftest parked %s: verify stamp: refused (%s)" % (name, RS.REFUSAL))
+    print("selftest parked %s: %d passed, %d failed in %.2fs (not a gate result)"
+          % (name, module.PASS, module.FAIL, time.monotonic() - started))
+    sys.exit(scope.exit_code(module.FAIL))
+
+
+if "--parked" in SEEN:
+    _parked_run(VALUES["--parked"][-1])
 
 if "--list" in SEEN:
     try:

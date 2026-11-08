@@ -162,10 +162,12 @@ def _v272_suite():
     removed = set(PATH.findall(block('Protected paths removed', 'Protected paths added')))
     added = set(PATH.findall(block('Protected paths added', 'Schema and irreversible')))
     # landing-c merge (lead, 2026-11-08): the union keeps the six protected paths VELDO-0267 and
-    # VELDO-0268 added (the spec's protected_paths and History record them).
+    # VELDO-0268 added (the spec's protected_paths and History record them); merge 6 keeps VELDO-0278's
+    # parked check_first_use.py entry the same way.
     expected = kept | added | {'engine/' + p for p in added} | {
         'scripts/mutation_selection.json', 'scripts/mutation_selection.py', 'engine/scripts/mutation_selection.py',
-        'scripts/mutation_nightly.py', 'engine/scripts/mutation_nightly.py', 'packs/claude/scripts/veldo-guard.sh'}
+        'scripts/mutation_nightly.py', 'engine/scripts/mutation_nightly.py', 'packs/claude/scripts/veldo-guard.sh',
+        'scripts/parked/estimation/check_first_use.py'}
     forbidden = removed | {'engine/' + p for p in removed}
     policy = Y.read(Path(POLICY_FILE))
 

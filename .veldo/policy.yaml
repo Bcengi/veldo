@@ -91,6 +91,10 @@ protected_paths:
   - {path: "engine/scripts/mutation_nightly.py", floor: high}
   # VELDO-0268: the push guard's copy the Claude Code plugin installs.
   - {path: "packs/claude/scripts/veldo-guard.sh", floor: high}
+  # VELDO-0278 (landing-c merge 6, lead rule from merge 4): the estimation layer was parked, and its
+  # integration command check_first_use.py moved with its protection to its parked path at the same
+  # floor; the union keeps that entry, so 0278 removes no protection it carried.
+  - {path: "scripts/parked/estimation/check_first_use.py", floor: high}
 # VELDO-0016 (PLAN-0019 W1), 2026-09-17: this repository's architecture contract is REQUIRED.
 # The loader (validate_checks.load_contract_state) reads this one line; with it, an absent
 # .veldo/architecture.yaml refuses the ready transition, the frontier, run-check and the shape

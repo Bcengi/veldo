@@ -1,6 +1,6 @@
 """VELDO-0214: the first-use check's budget per nested run is measured from the unit stage's leg.
 
-Run: python3 scripts/selftest.py --suite 111_veldo_0214_first_use_budget
+Run: python3 scripts/selftest.py --parked estimation (parked by VELDO-0278)
 
 Only shared ROOT and expect are consumed. The authority's scripts/gate_legs.py runs a fixture list's
 unit and integration stages over a scratch root with fake stage commands; its confined runner is
@@ -37,7 +37,14 @@ def _v214_suite():
             sys.path[:] = saved
 
     GL = load('gate_legs_0214', ROOT / "scripts" / "gate_legs.py")
-    CF = load('check_first_use_0214', ROOT / "scripts" / "check_first_use.py")
+    # VELDO-0278 removed the handoff this suite tests from gate_legs.py with the integration stage.
+    # Until both return, the suite says so in one red row instead of raising, so the parked set's
+    # other fragments still report.
+    if not hasattr(GL, 'UNIT_SECONDS'):
+        expect('VELDO-0214 first-use-budget/handoff-present: gate_legs.py carries no unit-leg handoff '
+               '(removed by VELDO-0278 with the integration stage)', False)
+        return
+    CF = load('check_first_use_0214', ROOT / "scripts" / "parked" / "estimation" / "check_first_use.py")
 
     with tempfile.TemporaryDirectory(prefix='veldo-0214-') as top:
         top = Path(top)

@@ -115,7 +115,10 @@ import tempfile  # noqa: E402
 import time  # noqa: E402
 from pathlib import Path  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+# PARKED (VELDO-0278): this file lives in scripts/parked/estimation/ and is no gate stage; the
+# repository root is three levels up. Run it by hand from the root as
+# `python3 scripts/parked/estimation/check_first_use.py`.
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def launcher_fds():
