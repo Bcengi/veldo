@@ -12463,9 +12463,14 @@ def cases():
     # landing check. Each is the falsifier the suite also applies to an in-memory copy.
     suite267 = '140_veldo_0267_mutation_selection.py'
 
-    def selection267(name, module, old, new, rows, **extra):
-        add(267, name, suite267, module, old, new, rows)
-        result[-1].update(extra)
+    # Named parameters, not **extra: VELDO-0153's registry audit (proof/VELDO-0153/audit_anchors.py)
+    # reads this factory as data and evaluates only the forms guard268 below uses (landing-c).
+    def selection267(name, module, old, new, rows, dir=None, also=(), companions=None):
+        add(267, name, suite267, module, old, new, rows, also=also)
+        if dir:
+            result[-1]['dir'] = dir
+        if companions:
+            result[-1]['companions'] = companions
 
     selection267('selection267-rule-ignores-covered-files', 'mutation_selection.py',
                  "    if changed & covered:\n        reasons.append('covered_file')",
