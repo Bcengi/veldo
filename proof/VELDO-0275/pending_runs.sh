@@ -43,7 +43,7 @@ for suite in 78_veldo_0060_claude_adapter 79_veldo_0061_codex_adapter 86_veldo_0
     127_veldo_0234_https_port 127_veldo_0254_secret_scan 127_veldo_0259_installation 129_veldo_0254_canary_launch \
     70_veldo_0073_activation 101_veldo_0208_landing_reuse 102_veldo_0210_agent_profile_runtime \
     123_veldo_0174_conversations 93_veldo_0152_intake_routes 82_veldo_0172_live_formats \
-    60_veldo_0052_eligibility 60_veldo_0053_architecture; do
+    60_veldo_0052_eligibility 60_veldo_0053_architecture 94_veldo_0162_configuration_routes 95_veldo_0203_owner_revisions; do
   step "suite-${suite}" python3 scripts/selftest.py --suite "$suite"
 done
 

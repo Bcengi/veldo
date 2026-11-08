@@ -97,17 +97,58 @@ clean afterwards); green without it as above.
 
 | File | Why |
 | --- | --- |
-| proof/VELDO-0186/fixtures.py, proof/VELDO-0162/setup_assets.py | read the catalog from proof/VELDO-0127/catalog-fixture.json instead of the deleted Codex record |
-| proof/VELDO-0167/review_rows.py | the pre-record engine (f1e1abb9) reads the old record names: written there from the new tables |
-| proof/VELDO-0182/integration_fixtures.py | record path renamed; the fake answers the Claude Code probe (a result of no turn) and the Codex probe (--ephemeral) |
-| proof/VELDO-0188/round2/served_scenario.py | record path renamed; its fake's `debug models` prints the catalog fixture |
-| proof/VELDO-0230/fix2_unevaluated.py | record path renamed |
-| scripts/suites/manifest.json, scripts/suites/requires.json | suite 131 registered (scripts/suites/** is in the footprint; listed for clarity) |
-| proof/VELDO-0275/** fake-engine edits in other suites | see the list under Runs (all under scripts/suites/**, in the footprint) |
+| proof/VELDO-0186/fixtures.py, proof/VELDO-0162/setup_assets.py | AC1: read the bundled catalog from proof/VELDO-0127/catalog-fixture.json instead of the deleted Codex record |
+| proof/VELDO-0167/review_rows.py | AC1: the pre-record engine (f1e1abb9) reads the old record names; they are written there from the new tables |
+| proof/VELDO-0188/round2/served_scenario.py | AC1: record path renamed, its fake's `debug models` prints the catalog fixture; AC3: its Codex fake answers the probe |
+| proof/VELDO-0230/fix2_unevaluated.py | AC1: record path renamed |
+| proof/VELDO-0182/integration_fixtures.py | AC1: path renamed and stream tables carried; AC3: the fake answers the Claude Code probe (a result of no turn) and the Codex probe (--ephemeral) |
+| proof/VELDO-0172/compare_formats.py | AC3: the shared fake read-back wrote only the Guard's first release, which is now the probe; it writes each release in turn until the prompt |
 
-Protected paths changed: scripts/mutation_case_inputs.json (declared in protected_paths): record names renamed in the
-case input lists.
+Protected paths changed: scripts/mutation_case_inputs.json (already in the spec's protected_paths): the record names
+renamed in its case input lists. No other protected path was touched.
+
+Inside the footprint but worth naming: scripts/suites/** fakes in 75, 78 0060, 78 0160, 79, 80, 81, 82 0129, 82 0141,
+82 0165, 82 0173, 83 0154, 85, 86 0127, 86 0148, 93, 94, 95, 106, 110, 116, 129 and support/v174_journey.py answer the
+probe; suites that build a Claude record by hand now carry its `stream_forms`; 78 0060 counts the probe's result line;
+82 0129's missing-usage row allows the probe's own result its modelUsage; the earlier-host rows of 106, 117 and 127
+write the old record names the earlier engine reads.
+
+## Behaviour notes for the reviewer
+
+- The usage meter ignores a result of zero turns (the probe's): it settles no usage. A real run that ends with zero
+  turns keeps its tokens unknown and its reservation retained, the conservative reading.
+- A Claude Code run whose engine ends before its login is confirmed (the probe never sent) fails as before; one that
+  reached the probe and ended without its result is `stream_probe_failed` (missing_result); both are configuration
+  stops (outcome cancelled), as a role-bound run's unwritten prompt already was.
+- A Claude Code record without stream tables refuses the probe by name (`no_stream_tables`) instead of crashing the
+  receiver.
 
 ## Runs
 
-See the end of this file, updated after the local sweep.
+No lock taken (the shared gate lock was busy). Every result here is a local, partial run and not gate evidence.
+
+- `bash scripts/check_lint.sh`: lint pass (1158 python, 40 shell).
+- `python3 .veldo/qualify.py` on the approved binaries: exit 0, every check pass, rewrote the runtime files and the
+  VELDO-0127 fixtures (the four resources-*.json files change only in the `production` module digests).
+- Local suites at a45cf474 and later (scratch worktrees, `python3 scripts/selftest.py --suite <name>`), green:
+  70 0073, 73 0139, 75 0062, 78 0060, 78 0160, 79 0061, 80 0155, 81 0156, 82 0129, 82 0141, 82 0165, 82 0172,
+  82 0173, 83 0154, 83 0166, 85 0158, 86 0148, 86 0186, 86 0189, 87 0127, 88 0127, 89 0127, 90 0127, 91 0167, 93 0152,
+  94 0162, 95 0203, 102 0210, 105 0182, 106 0185, 110 0143, 116 0188, 117 0227, 123 0174, 125 0230, 127 0234, 129 0254,
+  130 0275, 131 0275.
+- Falsifiers, red then green (in-place swap, suite run, restore; git status clean after): approved275-claude-newest-installed,
+  approved275-codex-newest-installed (stays-on-approved red), approved275-claude-digest-skipped,
+  approved275-codex-digest-skipped (changed-bytes red), probe275-claude-skipped, probe275-codex-skipped
+  (unknown-frame red).
+- Not green, inherited: suite 86 0127 rows live/claude and live/codex ("missing or stale live capture"). The live
+  captures (proof/VELDO-0127/claude-live.json, codex-live.json) bind the production digests of five modules; they
+  were already stale at 45772a2e (the AC1 pin changed control_engine_claude.py and control_engine_codex.py) and need
+  the lead's live recapture with real accounts (proof/VELDO-0127/live.py), as at 3b9b9a8c.
+- Suite 126 0230 (qualify reproduces, real binaries offline): green, 30 passed, 102 s, at the final qualify commit.
+- Not green, inherited: suite 101 0208 rows sandbox/unavailable-refuses-before-exec and sandbox/old-abi-refuses-before-exec.
+  The same two rows are red at 45772a2e in a scratch worktree on this host (214 passed, 2 failed both times); every
+  other row of 101 is green here, its fixture-sharers row included (suite 126's text names no proof module it does not
+  load).
+- Pending, inside the lock: `bash proof/VELDO-0275/pending_runs.sh` (summary lines in
+  proof/VELDO-0275/pending-summary.txt: step, exit code, /tmp log path; the tree is checked clean before and after,
+  ignoring that file). Steps: lint, suites 130 and 131, the engine and setup suites, the six VELDO-0275 mutations
+  and the seven registered mutations whose anchors or codes this change touched.
