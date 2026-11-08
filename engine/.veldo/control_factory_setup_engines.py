@@ -33,38 +33,56 @@ def qualified_claude(Refused, directory=None):
     return path
 
 
+def approved_codex(codex, record, Refused, directory=None):
+    """VELDO-0275 AC1: the approved Codex vendor binary, the one whose digest the qualification record holds: the
+    one the `codex` on PATH runs when that is the approved one, else the installer's kept copy the engines record
+    beside the modules names (runtime/engines.json, written by qualify.py). A newer version installed on PATH is
+    never used because it is installed; with neither approved, setup is refused as engine_not_approved."""
+    candidates = []
+    found = shutil.which('codex')
+    if found is not None:
+        package, _ = codex._package(Path(found).resolve())
+        if package is not None:
+            candidates.append(package / record['executable'])
+    try:
+        named = str(json.loads((Path(directory or Path(__file__).parent) / 'runtime' / 'engines.json')
+                               .read_text())['codex']['binary'])
+    except (OSError, ValueError, KeyError, TypeError):
+        named = None
+    if named is not None:
+        if named == '~' or named.startswith('~/'):
+            import pwd
+            named = pwd.getpwuid(os.getuid()).pw_dir + named[1:]
+        candidates.append(Path(named))
+    present = [path for path in candidates if path.is_absolute() and path.is_file()]
+    if not present:
+        raise Refused('missing_evidence:engine_source:codex')
+    for path in present:
+        if codex._file_digest(path) == record['sha256']:
+            return path
+    raise Refused('engine_not_approved')
+
+
 def check(Refused):
-    """Locate the qualified versioned Claude file (the engines record's) and the Codex package through PATH,
-    before any write."""
+    """Locate the approved versioned Claude file (the engines record's) and the approved Codex vendor binary
+    (approved_codex), before any write. VELDO-0275 AC1: anything else is engine_not_approved."""
     claude, codex = organ('control_engine_claude'), organ('control_engine_codex')
     paths = {'claude_code': qualified_claude(Refused)}
-    found = shutil.which('codex')
-    if found is None:
-        raise Refused('missing_evidence:engine_source:codex')
-    paths['codex'] = Path(found).resolve()
     version = paths['claude_code'].name
     if not claude.VERSION_TEXT.fullmatch(version):
         raise Refused('missing_evidence:engine_version:claude_code')
     try:
         record = claude.qualification()
-        if version not in record['versions']:
-            raise Refused('missing_evidence:engine_baseline:' + version)
         entry = claude.qualified(version, record)
         claude.qualified_baseline({'version': version}, record)
         claude.qualified_tools(version, entry)
         if claude._file_digest(paths['claude_code']) != entry['sha256']:
-            raise Refused('binding_mismatch:engine_digest')
+            raise Refused('engine_not_approved')
         record = codex.load_qualification()
-        package, manifest = codex._package(paths['codex'])
-        if package is None:
-            raise Refused('invalid_input:engine_package')
-        if manifest.get('version') != record['package_version']:
-            raise Refused('missing_evidence:engine_baseline:' + str(manifest.get('version')))
-        vendor = str(package / record['executable'])
+        vendor = str(approved_codex(codex, record, Refused))
         bound = codex.bind({'executable': vendor})
     except (claude.Refused, codex.Refused) as error:
-        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code
-        raise Refused(code) from None
+        raise Refused(error.code) from None
     return {'claude_code': {'version': version, 'versions': str(paths['claude_code'].parent)},
             'codex': {'executable': vendor, 'sha256': bound['sha256']}}
 
@@ -77,8 +95,7 @@ def install(state_root, directory, plan, Refused):
                             state_root=state_root)
         vendor = codex.bind({'executable': plan['codex']['executable']})
     except (claude.Refused, codex.Refused) as error:
-        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code
-        raise Refused(code) from None
+        raise Refused(error.code) from None
     return {bound['engine']: {key: bound[key] for key in ('version', 'path', 'sha256')}
             for bound in (pinned, vendor)}
 
@@ -129,5 +146,4 @@ def ensure(state_root, directory, plan, Refused, observe):
             observe({'point': 'engines_record', 'path': str(record_path)})
         return report
     except (claude.Refused, codex.Refused) as error:
-        code = 'binding_mismatch:engine_digest' if error.code == 'stale_subject:engine_digest' else error.code
-        raise Refused(code) from None
+        raise Refused(error.code) from None

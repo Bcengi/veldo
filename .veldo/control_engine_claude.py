@@ -1243,12 +1243,14 @@ def qualification(path=None):
 
 
 def qualified(version, record=None):
-    """The qualified entry of `version`: refused by name when the record does not list it."""
+    """The qualified entry of `version`. VELDO-0275 AC1: only the approved version runs (the one version the
+    qualification record beside this module holds, written with runtime/engines.json by .veldo/qualify.py); a
+    version the record does not list is engine_not_approved, never another version installed beside it."""
     record = qualification() if record is None else record
     entry = record['versions'].get(version) if isinstance(version, str) and VERSION_TEXT.fullmatch(version) else None
     if (not isinstance(entry, dict) or not isinstance(entry.get('sha256'), str)
             or not isinstance(entry.get('flags'), list)):
-        raise Refused('invalid_input:engine_version:%s' % version, 'no qualified Claude Code version')
+        raise Refused('engine_not_approved', 'Claude Code %s is not the approved version' % version)
     return entry
 
 
@@ -1277,7 +1279,7 @@ def pin(version, *, versions, state_root, record=None):
             shutil.copyfileobj(reading, writing, 1 << 20)
         os.chmod(partial, 0o555)
         if _file_digest(partial) != entry['sha256']:
-            raise Refused('binding_mismatch:engine_digest', 'the versioned executable is not the qualified one')
+            raise Refused('engine_not_approved', 'the versioned executable is not the approved one')
         os.replace(partial, target)
     finally:
         if partial.exists():
@@ -1309,7 +1311,7 @@ def bind(adapter, state_root, record=None):
     if info.st_mode & 0o7222:
         raise Refused('binding_mismatch:engine_mode', 'the pinned executable is writable or carries a special bit')
     if _file_digest(path) != entry['sha256']:
-        raise Refused('binding_mismatch:engine_digest', 'the pinned executable is not the qualified one')
+        raise Refused('engine_not_approved', 'the pinned executable is not the approved one')
     # VELDO-0155: the version is qualified with the everything-off baseline, or nothing is accepted.
     base = qualified_baseline({'version': version}, record)
     # VELDO-0173: and with its full tool registry and the classification of every registry tool.

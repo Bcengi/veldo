@@ -638,11 +638,14 @@ def bind(adapter, state_root=None):
     if (root is None or manifest is None or manifest.get('name') != record['package']
             or str(Path(executable).relative_to(root)) != record['executable']):
         raise Refused('invalid_input:engine_package')
+    # VELDO-0275 AC1: only the approved binary runs (the version and digest the qualification record holds, written
+    # with runtime/engines.json by .veldo/qualify.py); a newer one installed in its place, or the approved one with
+    # changed bytes, is engine_not_approved.
     if manifest.get('version') != record['package_version']:
-        raise Refused('stale_subject:engine_version')
+        raise Refused('engine_not_approved')
     digest = _file_digest(executable)
     if digest != record['sha256']:
-        raise Refused('stale_subject:engine_digest')
+        raise Refused('engine_not_approved')
     # VELDO-0156: the binary is qualified with the everything-off baseline, or nothing is accepted.
     base = qualified_baseline(None, record)
     return {'engine': PROVIDER, 'path': executable, 'version': record['version'],
