@@ -56,6 +56,12 @@ done
 for case in probe275-claude-skipped probe275-codex-skipped; do
   step "mutation-${case}" python3 scripts/check_teeth_mutations.py --case "$case"
 done
+# Fix round 1: the receiver holds the prompt only for a role-bound Claude Code launch (suite 82 0129 probe/every-launch).
+step mutation-probe275-claude-hold-role-bound python3 scripts/check_teeth_mutations.py --case probe275-claude-hold-role-bound
+# Fix round 1: anchors on lines this round changed.
+for case in adapter-version-unbound qualify230-claude-record-unwritten writers259-home-kept; do
+  step "mutation-${case}" python3 scripts/check_teeth_mutations.py --case "$case"
+done
 # Registered mutations whose anchors this change rewrote (refusal codes now engine_not_approved).
 for case in claude-pin-digest-unchecked claude-unknown-version-accepted upgrade189-codex-refusal-differs \
     setup186-claude-unlisted-taxonomy setup186-codex-unlisted-taxonomy setup186-claude-digest-unchecked \

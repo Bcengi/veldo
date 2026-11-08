@@ -19,7 +19,7 @@ What replaced what, in every runtime copy (.veldo/runtime, engine/runtime):
 | Before | After | Size |
 | --- | --- | --- |
 | codex-qualification.json (793,287 B) | codex-tables.json: the same tables minus the bundled model catalog; its digest (`model_catalog_digest`) stays | 38,401 B |
-| claude-qualification.json (96,204 B) | claude-tables.json: the approved version's tables (stream forms, tool classes, baseline, login status) | 96,204 B |
+| claude-qualification.json (96,204 B) | claude-tables.json: the approved version's tables, only the fields a reader uses (below) | 93,207 B |
 | (none) | claude-summary.json, codex-summary.json: per check name, outcome, duration; verdict, version, digest | about 1.2 KB each |
 | engines.json | adds `summary` per engine (`runtime/claude-summary.json`, `runtime/codex-summary.json`) | 820 B |
 
@@ -33,8 +33,27 @@ What replaced what, in every runtime copy (.veldo/runtime, engine/runtime):
   the binary differs from the committed table). The suites keep comparing against those committed tables, so every
   check they feed stays. `--write-tables` runs them in write mode instead: how a new version is approved until
   VELDO-0275b. The record writers, the init probe, the VELDO-0127 loopback captures and a final "tables load as a
-  launch reads them" step are checks too. Summaries are written only when every check passed; a failed check approves
-  nothing (exit nonzero, nothing written).
+  launch reads them" step are checks too. Every file it writes (engines record, tables, summaries, VELDO-0127
+  fixtures) is staged in a scratch copy of .veldo, which the later checks read, and moved into place only after every
+  check passed: a failed check approves nothing (exit nonzero, no runtime file or fixture written; with
+  --write-tables the extractors still rewrite their own tables as they run). Suite 126 row
+  qualify/failed-approves-nothing: a run whose late loopback check fails leaves every live file byte for byte (red
+  checked with engines.json written live before the checks: both engines.json copies changed).
+- Fields kept, each with its reader (lead decision of fix round 1: AC1 to its words). Claude Code tables, per version:
+  `sha256`, `flags` (control_engine_claude.qualified, pin, bind); `baseline`, `session_environment`
+  (qualified_baseline); `tool_registry`, `tool_classification` (qualified_tools; qualify.py's known tools);
+  `environment` (control_engine_claude.environment); `limit_names` (limit_names); `login_status` (account_login);
+  `stream_forms` (stream_tables; qualify.py previous_forms); `engine_plugins`, `engine_skills`, `accepted_plugins`
+  (control_agent_config_handoff.claude, scripts/engine_census.py; qualify.py previous_plugins); `new_capabilities`
+  (qualify.py previous_new, so the same binary writes the same bytes; VELDO-0230 AC3's listing). Top level: `schema`,
+  `engine`, `versions` (control_engine_claude.qualification). Dropped, no reader: `authentication`, `host_kind`,
+  `input`, `live_usage`, `pinned`, `rate_limit_windows`, `source`, `terminal_protocol`, `usage_units`, `note`,
+  `spec_id`; suite 78 0060's record row now checks they are absent, suite 83 0166 reads the windows from
+  proof/VELDO-0062/cli-formats.json. Codex tables: `feature_listing` (control_agent_config_handoff.codex; qualify.py
+  previous_tables) and `new_capabilities` (control_agent_config_handoff.codex_granted; qualify.py previous_new) both
+  have readers and stay.
+- init_scaffold installs claude-summary.json and codex-summary.json with the tables, so an installed engines record
+  names files the project holds (suite 130 row approved/installed-summaries).
 - The tables keep the schema name `veldo.engine_qualification/v1` and their structure, so every reader and fixture
   needed only the path; Claude Code's stays keyed by version (one entry, the approved one).
 - Local reproduction: `python3 .veldo/qualify.py --codex <approved> --claude 2.1.317` rewrote every runtime file and
@@ -58,7 +77,23 @@ recorded version and digest, and named by the engines record.
 - Codex (`control_engine_codex.stream_probe`, run by `control_launch.Receiver._stream_probe` before acceptance, after
   the login checks): see Premises. Every line goes through the run's reader (`_malformed`); an unclassifiable line or
   no terminal frame refuses the launch `stream_probe_failed`, nothing accepted or spawned. One `stream_probe` event per
-  launch names engine, binary, version and result (parsed or failed, with the frame).
+  launch names engine, binary, version and result (parsed or failed, with the frame). The invoker's accept wait
+  (ACCEPT_SECONDS, 30) gains the probe's bound (control_engine_codex.PROBE_SECONDS, 120) for an engine whose module
+  has `stream_probe` (control_launch._accept_seconds), so a slow probe turn never ends a healthy launch as lost.
+  Note: the probe turn runs before reservation and is never metered, so it spends account quota outside the usage
+  windows.
+- AC1 setup and bind (fix round 1): setup's Codex step takes the kept copy the engines record names first and the
+  PATH install only when that is not the approved one, so a later in-place upgrade of the PATH install never moves
+  setup off the kept copy (suite 130 stays-on-approved checks it with the approved bytes on PATH); a bind whose
+  package name matches but whose version or binary path differs (an in-place upgrade with a changed layout) is
+  engine_not_approved.
+
+### Receiver-driven rows: scripts/suites/82_veldo_0129_worker_wiring.py
+
+| Row | What it checks | Local outcome |
+| --- | --- | --- |
+| probe/every-launch | A role-free Claude Code build through the real receiver: the artifact keeps the probe's zero-turn result apart from the run's own terminal one; a fake ending once the probe is sent is stopped stream_probe_failed (missing_result), a configuration stop, prompt never written (the end-of-run handling) | green; red with probe275-claude-hold-role-bound swapped in |
+| probe/slow-codex | A Codex build whose fake probe answers after ACCEPT_SECONDS + 5 s runs to its end, not lost | green; red without the accept-wait extension (refused receiver_unavailable at 30.2 s) |
 
 ### New suite: scripts/suites/131_veldo_0275_stream_probe.py
 
@@ -78,6 +113,11 @@ clean afterwards); green without it as above.
 | --- | --- | --- |
 | probe275-claude-skipped | the Guard probes only a role-bound launch (as before) | probe/unknown-frame (and probe/accepted) |
 | probe275-codex-skipped | the receiver skips the Codex probe | probe/unknown-frame (and probe/accepted) |
+| probe275-claude-hold-role-bound (suite 82 0129) | the receiver holds the prompt only for a role-bound Claude Code launch, as before | probe/every-launch |
+
+Re-anchored in fix round 1: approved275-codex-newest-installed now picks the newest installed Codex by package version
+(red: stays-on-approved); adapter-version-unbound, qualify230-claude-record-unwritten and writers259-home-kept follow
+the changed lines (red checked: the first by in-place swap on suite 79, the other two through the driver).
 
 ## Premises
 
@@ -148,6 +188,17 @@ No lock taken (the shared gate lock was busy). Every result here is a local, par
   The same two rows are red at 45772a2e in a scratch worktree on this host (214 passed, 2 failed both times); every
   other row of 101 is green here, its fixture-sharers row included (suite 126's text names no proof module it does not
   load).
+- Fix round 1 (local, partial): lint pass; qualify.py rerun on the approved binaries (exit 0; tables trimmed, the
+  VELDO-0127 resources fixtures change only in their `production` digests); suites green: 78 0060, 79 0061, 80 0155,
+  82 0129 (31 rows), 82 0173, 83 0166, 125 0230, 126 0230 (five rows, 190 s), 130 0275 (three rows). Mutations red
+  through the driver: approved275-codex-newest-installed, qualify230-claude-record-unwritten, writers259-home-kept.
+  The driver's confined leg cannot create its scratch under /run/user on this host for suites 79 and 82 0129 (an
+  existing worker129 case fails the same way), so probe275-claude-hold-role-bound and adapter-version-unbound were
+  checked red by in-place swap and restore; both are in pending_runs.sh.
+- Found, not fixed (outside this round's findings): the registered mutation role127-prompt-write-failure-swallowed
+  anchors a control_launch.py line this ticket changed before fix round 1 (its anchor already occurs 0 times at
+  e52f26a0); it needs re-anchoring before the gate's mutation stage.
+- Suite 86 0127 live/claude and live/codex: the lead recaptures them after this round (not attempted here).
 - Pending, inside the lock: `bash proof/VELDO-0275/pending_runs.sh` (summary lines in
   proof/VELDO-0275/pending-summary.txt: step, exit code, /tmp log path; the tree is checked clean before and after,
   ignoring that file). Steps: lint, suites 130 and 131, the engine and setup suites, the six VELDO-0275 mutations
