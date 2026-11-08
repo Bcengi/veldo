@@ -70,6 +70,11 @@ for case in claude-pin-digest-unchecked claude-unknown-version-accepted upgrade1
 done
 # Fix round 1b: re-anchored after AC3 added a condition to the prompt-write check (suite 86 review/probe-terminal).
 step mutation-role127-prompt-write-failure-swallowed python3 scripts/check_teeth_mutations.py --case role127-prompt-write-failure-swallowed
+# Fix round 3: role127-probe-withheld re-anchored onto Guard.release's probe lines (suite 86 0127 handoff/claude);
+# approved275-codex-path-first, the PATH candidate before the kept copy (suite 130 approved/stays-on-approved).
+for case in role127-probe-withheld approved275-codex-path-first; do
+  step "mutation-${case}" python3 scripts/check_teeth_mutations.py --case "$case"
+done
 
 step clean-after bash -c "test -z \"\$(git status --porcelain | grep -v -e 'proof/VELDO-0275/pending-summary.txt')\""
 exit 0

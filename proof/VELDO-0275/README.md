@@ -221,6 +221,24 @@ No lock taken (the shared gate lock was busy). Every result here is a local, par
   (29 rows, 55 checks, live/codex included, because the existing capture is now judged against the approved
   binary), 88 0127, 89 0127, 90 0127; lint pass. codex-live.json is not edited: its stored problems stay until the
   lead recaptures (or rejudges).
+- Fix round 3 (fix check 2026-11-08). Finding 1: role127-probe-withheld re-anchored onto Guard.release's three probe
+  lines (`self.probed = True`, the probe_deadline line, the PROBE write), defect `return None`. In-place swap: suite
+  86 0127 handoff/claude red; restored: suite 86 0127 green (29 rows, 55 checks). The driver's confined leg still
+  cannot create its scratch under /run/user here, so the driver run is in pending_runs.sh. Finding 2: new mutation
+  approved275-codex-path-first moves the PATH candidate before the engines record's kept copy. In-place swap: suite
+  130 approved/stays-on-approved red (setup resolves the npm path); restored: suite 130 green (three rows); in
+  pending_runs.sh. Anchor scan at the round's tree: every registered mutation (2,856) whose module is a file this
+  branch changed: 525 cases, 540 anchors, each found exactly once; no other dead anchor.
+- Fix round 3, finding 1's residual: tried and left out. Tried change: the accept wait becomes ACCEPT_SECONDS plus
+  two LOGIN_SECONDS plus PROBE_SECONDS. The slow-probe row was extended to the worst case: account_login on, and
+  each login check and the probe answering just inside its bound (28 s, 28 s, 117 s). The fake saw both login
+  checks, and the invoker now waited past 150 s, but the run was refused missing_authority:claim at 173.5 s. Cause:
+  the claim goes stale after claim.STALE_AFTER_SECONDS (90 s) without a heartbeat, and nothing renews it before
+  acceptance (renewals start only after acceptance, control_launch.py _renew), so acceptance
+  (control_dispatch.py:396) refuses. AC3's probe bound alone (120 s) is already past that window, so a longer
+  accept wait cannot make the worst case launch. The fix is a design choice: renew the claim before acceptance, or
+  keep the pre-acceptance bounds under the stale window. Both changes were reverted, so control_launch.py and the
+  live captures stay as they were at 2f5d3410.
 - Pending, inside the lock: `bash proof/VELDO-0275/pending_runs.sh` (summary lines in
   proof/VELDO-0275/pending-summary.txt: step, exit code, /tmp log path; the tree is checked clean before and after,
   ignoring that file). Steps: lint, suites 130 and 131, the engine and setup suites, the six VELDO-0275 mutations

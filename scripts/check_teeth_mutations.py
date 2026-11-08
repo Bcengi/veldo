@@ -9833,7 +9833,8 @@ def cases():
         '                    self.first_turn_context = None', ['launch/instructions'])
     # VELDO-0127 live qualification: what the real engines accept and report, which the fakes now follow.
     add(127, 'role127-probe-withheld', suite127, 'control_engine_claude.py',
-        "            self.probed = True\n            return (json.dumps(PROBE) + '\\n').encode()\n",
+        "            self.probed = True\n            self.probe_deadline = time.monotonic() + PROBE_SECONDS\n"
+        "            return (json.dumps(PROBE) + '\\n').encode()\n",
         "            return None  # defect: the prompt waits for an init the engine reports only for a message\n",
         ['handoff/claude'])
     add(127, 'role127-probe-content', suite127, 'control_engine_claude.py',
@@ -12505,6 +12506,11 @@ def cases():
                 "    for path in present:\n        if codex._file_digest(path) == record['sha256']:\n            return path\n",
                 "    return max(present, key=lambda path: str((codex._package(path)[1] or {}).get('version')))"
                 "  # defect: the newest installed binary\n",
+                'stays-on-approved')
+    # Fix round 3: the PATH codex's candidate tried before the engines record's kept copy (the order fix 1 restored).
+    approved275('approved275-codex-path-first', 'control_factory_setup_engines.py',
+                "            candidates.append(package / record['executable'])\n",
+                "            candidates.insert(0, package / record['executable'])  # defect: PATH before the kept copy\n",
                 'stays-on-approved')
     approved275('approved275-claude-digest-skipped', 'control_engine_claude.py',
                 "    if _file_digest(path) != entry['sha256']:\n"
