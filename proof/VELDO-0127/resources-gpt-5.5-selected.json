@@ -356,9 +356,9 @@
  "production": {
   "control_agent_config.py": "0222a7f34da7fd3f5922d0b550be149f8897521cd42a79d97bfb17cc3a948b93",
   "control_agent_config_handoff.py": "ebc9688af049d41f2e1099e925e95ab532a02cb3e0783a8b9fa871ab6554a243",
-  "control_engine_claude.py": "a425a61468342c0102c93bc7b70563349a46512a0e0fd139733d4bba4a515651",
-  "control_engine_codex.py": "818191c1744c3986b1d347e744e57da86e19c031c4692a1b8d84340745ff0b38",
-  "control_launch.py": "85f40e1e54e4e8ad030f01e599a91d7699a2defdc9ac9142dfd5c4a2cfca4194"
+  "control_engine_claude.py": "86deb567190a183060d2e4711b56a86b2f94862252ffca6a7f3be9684318f1bd",
+  "control_engine_codex.py": "8b61476d5413d80020c48c3b98fc8b55c754e4e1657a83357b64a6ef7f169703",
+  "control_launch.py": "6b97f4e8f93f675ab41ef42b4dd9e3048b9346ce965adad46a39d5c5ba98c272"
  },
  "requests": [
   {
