@@ -165,3 +165,29 @@ engine/scripts/gate_legs.py, engine/scripts/gate_schedule.py, engine/scripts/ver
 scripts/check_gate_mutations.py, scripts/gate_graph.json, scripts/gate_legs.py, scripts/gate_schedule.py,
 scripts/gate_unconfined.json, scripts/mutation_case_inputs.json, scripts/selftest.py, scripts/verify.sh;
 and the deleted scripts/check_first_use.py (renamed by VELDO-0278, `--no-renames --diff-filter=D`).
+
+## Fix round 1
+
+Source: the merge review landing-c-merge-review-2026-11-08.md (MERGES SOUND with findings). Findings 1,
+2 and 3 fixed in commit 00d2731e; finding 4 is not a defect and is left as it stands.
+
+1. scripts/check_teeth_mutations.py, case gate-output-land-does-not-bind-refs: the anchor now matches the
+   current .veldo/lander.py call (old and new strings gain `, base=c["watermark"]`), so the mutation
+   applies again. Checked by applying the mutation by hand: the refs-bound row went red; lander.py was
+   restored.
+2. .veldo/policy_check.py approval_rule (engine copy byte-identical, `cmp` clean): the producer is taken
+   as main() does under 0272 N2: `files = changed_files(); producer = approval_producer(push_producer(
+   landing_specs(files)), files, commits)`, no longer `producer_for(_head_spec_id())`. Suite
+   129_veldo_0272_approval_scope gains rows `AC3 approval/rule-producer`: the HEAD verdict belongs to
+   another spec (producer other) and the rule still refuses the landing spec producer's own approval
+   (red before the fix); the owner's approval of the same push is found. Falsifier
+   scope272-approval-rule-producer-from-head registered under finding 272.
+3. .veldo/policy.yaml proof.protected_refs: set to 0268's protected_refs patterns (refs/heads/main,
+   master, release, release/*, release-*, refs/tags/*); the smaller change than teaching proof_size.py a
+   fallback. Suite 129_veldo_0270_small_proof gains `p270/guard/push-to-release-size-checked`: a push of
+   a 2 MB proof file to refs/heads/release under this repository's own proof policy is refused with
+   proof_file_over_limit (red before the fix).
+
+Checks: py_compile clean on every changed .py; the two policy_check.py copies identical.
+Pending (gate lock busy, in pending_runs.sh): suites 129_veldo_0272_approval_scope and
+129_veldo_0270_small_proof, teeth findings 267 and 272.

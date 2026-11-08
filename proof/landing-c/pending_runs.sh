@@ -58,3 +58,10 @@ for suite in 129_veldo_0278_parked_estimation 08_restoration_spec_generation_vel
     step "$suite" python3 scripts/selftest.py --suite "$suite"
 done
 step teeth-278 python3 scripts/check_teeth_mutations.py --finding 278
+
+# Fix round 1 (merge review findings 1 to 3, commit 00d2731e): the approval rule row and its falsifier,
+# the push to refs/heads/release row, and the moved land-does-not-bind-refs anchor.
+step round1-129_veldo_0272_approval_scope python3 scripts/selftest.py --suite 129_veldo_0272_approval_scope
+step round1-129_veldo_0270_small_proof python3 scripts/selftest.py --suite 129_veldo_0270_small_proof
+step round1-teeth-267 python3 scripts/check_teeth_mutations.py --finding 267
+step round1-teeth-272 python3 scripts/check_teeth_mutations.py --finding 272
