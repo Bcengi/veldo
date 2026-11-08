@@ -933,14 +933,14 @@ def retired_imports(source):
 def leftover_runtime(target, home=None):
     """leftover_runtime:<path> for every part of the removed runtime still present: a retired file in the
     target's .veldo, an installed module importing a retired package, and (when `home` is given) anything
-    under the account's runtime directory."""
-    target, problems = Path(target), []
-    for rel in RETIRED_FILES:
-        path = target / rel
+    under the account's runtime directory. With `target` None only the account's runtime directory is judged."""
+    problems = []
+    for rel in RETIRED_FILES if target is not None else ():
+        path = Path(target) / rel
         if path.is_symlink() or path.exists():
             problems.append("leftover_runtime:" + rel)
-    veldo = target / ".veldo"
-    if veldo.is_dir():
+    veldo = Path(target) / ".veldo" if target is not None else None
+    if veldo is not None and veldo.is_dir():
         for path in sorted(veldo.rglob("*.py")):
             if path.is_file() and not path.is_symlink() and retired_imports(path.read_text(errors="replace")):
                 problems.append("leftover_runtime:" + str(path.relative_to(target)))
@@ -953,14 +953,30 @@ def leftover_runtime(target, home=None):
     return list(dict.fromkeys(problems))
 
 
+def leftover_modules(directory):
+    """leftover_runtime:<path> for a flat engine directory (an installation's bin, or the engine a factory
+    setup lays from): a retired file by name, and a module importing a retired package."""
+    directory, problems = Path(directory), []
+    if not directory.is_dir():
+        return problems
+    for name in sorted({Path(rel).name for rel in RETIRED_FILES}):
+        if (directory / name).is_symlink() or (directory / name).exists():
+            problems.append("leftover_runtime:" + str(directory / name))
+    for path in sorted(directory.glob("*.py")):
+        if path.is_file() and not path.is_symlink() and retired_imports(path.read_text(errors="replace")):
+            problems.append("leftover_runtime:" + str(path))
+    return list(dict.fromkeys(problems))
+
+
 def retire_runtime(target, home=None, log=None):
     """The upgrade's removal: each retired regular file in the target's .veldo, and each plain directory named
     by a 64 character hex digest under the account's runtime directory, then that directory when empty. No
-    link is followed or removed through; each removal and each leftover refused is logged by path."""
+    link is followed or removed through; each removal and each leftover refused is logged by path. With `target`
+    None only the account's runtime directory is retired."""
     log = log or (lambda line: print(line, file=sys.stderr))
-    target, removed = Path(target), []
-    for rel in RETIRED_FILES:
-        path = target / rel
+    removed = []
+    for rel in RETIRED_FILES if target is not None else ():
+        path = Path(target) / rel
         if path.is_file() and not path.is_symlink():
             path.unlink()
             removed.append(rel)
