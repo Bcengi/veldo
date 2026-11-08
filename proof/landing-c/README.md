@@ -253,7 +253,7 @@ suite 99's traceback (log 2045-2058), so no suite after 99 ran in that leg. The 
 | confined | 62_veldo_0045_runtime | enforcement/no-runtime | 1804 | same refused import in the policy_check entry (reproduced here) | I |
 | confined | 99_veldo_0205_reuse | crash, whole suite | 2045-2058 | check_gate_mutations.py:1550 run_stage: `'ControlledWorkers' object has no attribute 'coverage'` | A |
 | unconfined | 64_veldo_0050_proof | accepted-before-offer, actual-checks, build-only-no-landing, fresh-reviewer-resolves, contextual-refusals, owning-services, observations | 2106-2112 | executor.merge_ready computes required for the fixture units (no footprint) | D |
-| unconfined | 91_veldo_0167_setup_records | installed-record, late-subscriber, older-host, older-engine-host, interrupted-record-write, hints-without-api, record-hint-counts, upgrade-restart-answer | 2289-2303 | 2288: `FileNotFoundError: .../proof/VELDO-0189/older/8bc34e94.tar.gz` | B |
+| unconfined | 91_veldo_0167_setup_records | installed-record, late-subscriber, older-host, older-engine-host, interrupted-record-write, hints-without-api, record-hint-counts, upgrade-restart-answer | 2289-2303 | 2288: `FileNotFoundError` on the 0189 older archive (now proof/VELDO-0189/older/8bc34e94.tar.gz.summary.json) | B |
 | mutation | 113_veldo_0220_gate_host | baseline of case gate_host.py | 5736 | worker stderr: lander.py:797 gate `base=c["watermark"]`: `KeyError: 'watermark'` | J |
 
 Suite 100_veldo_0207_case_reuse has the same fake worker as 99 (cause A) and is fixed with it.
@@ -266,7 +266,7 @@ None is a red main 918e7c0e also has: every cause is code that exists only on la
 - A (VELDO-0267 vs the fake workers): run_stage reads `workers.coverage` after every stage; the real
   Workers sets it to None, the hand-written ControlledWorkers of suites 99 and 100 did not. Fixed: both
   fakes set `self.coverage = None`, the real class's default.
-- B (VELDO-0270 vs VELDO-0167): 0270 removed proof/VELDO-0189/older/8bc34e94.tar.gz; 0167's review rows
+- B (VELDO-0270 vs VELDO-0167): 0270 replaced the 0189 older archive with proof/VELDO-0189/older/8bc34e94.tar.gz.summary.json; 0167's review rows
   still read it from the tree. Fixed: proof/VELDO-0167/review_rows.py reads it as suite 86's fixture()
   does, through its summary from the commit that keeps it (`git show readable_at:original_path`), matched
   against the summary's sha256 and digests.json; a failed read reddens that row only.
