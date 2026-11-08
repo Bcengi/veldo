@@ -12447,6 +12447,60 @@ def cases():
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
 
+    # VELDO-0262: Veldo's own step runner replaces LangGraph. Each criterion's declared falsifiers, against suite 130.
+    step262 = '130_veldo_0262_step_runner.py'
+    # AC1 (1): later notes lose to earlier ones in the merge.
+    add(262, 'v262-notes-earlier-win', step262, 'control_graph_steps.py',
+        "        notes = dict(self.notes, **(out.get('notes') or {}))\n",
+        "        notes = dict(out.get('notes') or {}, **self.notes)  # defect: earlier notes win\n",
+        ['replay/corpus'])
+    # AC1 (2): a suspend that carries proposals is accepted.
+    add(262, 'v262-suspend-with-proposals', step262, 'control_graph_steps.py',
+        "            if following is None or proposals:\n",
+        "            if following is None:  # defect: a suspend may carry proposals\n",
+        ['replay/corpus'])
+    # AC1 (3): the step count is not advanced for a node. A failed node's step reaches no answer (a failure answer
+    # carries none, on LangGraph as here), so the declared form is applied to the one increment every node takes.
+    add(262, 'v262-step-not-advanced', step262, 'control_graph_steps.py',
+        "        step = self.step + 1\n",
+        "        step = self.step  # defect: the step count is not advanced\n",
+        ['replay/corpus'])
+    # AC2 (1): the join runs when its first input arrives.
+    add(262, 'v262-join-on-first-input', step262, 'control_graph_steps.py',
+        "        if all(b['position'] == join for b in branches.values()):\n",
+        "        if any(b['position'] == join for b in branches.values()):  # defect: the join fires on its first input\n",
+        ['fanout/join-waits-for-all'])
+    # AC2 (2): branches run in sequence on one shared state, each seeing the previous branch's writes.
+    add(262, 'v262-branches-share-state', step262, 'control_graph_steps.py',
+        "        view = dict(copy.deepcopy(state), branch=branch)\n",
+        "        view = state  # defect: every branch runs on one shared state\n        view['branch'] = branch\n",
+        ['fanout/branch-isolation'])
+    # AC3 (1): control_graph_lock.py restored to engine/.veldo (the suite's RESTORED seam lays it over the tree).
+    add(262, 'v262-lock-restored', step262, step262,
+        "    RESTORED = ()\n",
+        "    RESTORED = ('engine/.veldo/control_graph_lock.py',)  # defect: the lock is restored\n",
+        ['leftover/repository'])
+    result[-1]['dir'] = 'scripts/suites'
+    # AC3 (2): `import langgraph` inside a function of control_workflow_cycle.py.
+    add(262, 'v262-cycle-imports-langgraph', step262, 'control_workflow_cycle.py',
+        "    def runtime(self):\n        if self._runtime is None:\n",
+        "    def runtime(self):\n        import langgraph  # defect: the removed runtime imported again\n"
+        "        if self._runtime is None:\n",
+        ['leftover/repository'])
+    result[-1]['dir'] = 'engine/.veldo'
+    # AC3 (3): the upgrade follows a link named by a digest and removes through it.
+    add(262, 'v262-upgrade-follows-link', step262, 'init_scaffold.py',
+        "            if _DIGEST_NAME.match(name) and not path.is_symlink() and path.is_dir():\n"
+        "                shutil.rmtree(path)\n",
+        "            if _DIGEST_NAME.match(name) and path.is_dir():\n"
+        "                shutil.rmtree(path.resolve())  # defect: the link is followed\n",
+        ['leftover/upgrade-link'])
+    # AC4 (2): -S dropped from the adapter's launch flags.
+    add(262, 'v262-launch-without-S', step262, 'control_graph.py',
+        "FLAGS = ('-I', '-S', '-B')\n",
+        "FLAGS = ('-I', '-B')  # defect: site packages importable in the child\n",
+        ['launch/stdlib-only'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
