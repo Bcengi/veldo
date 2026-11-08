@@ -12866,6 +12866,41 @@ def cases():
         '                     % (item["ticket"], item["title"], item["gate"], approval)',
         ['summary/file', 'summary/registry-identical'])
 
+    # VELDO-0274: the VELDO-0127 factory owns its slice (suite 129 loads the factory by the path the worker replaces).
+    # Suite 129 is listed whole in scripts/gate_unconfined.json, so these cases run in the unconfined leg
+    # (check_gate_mutations.in_leg), where the user manager their rows need answers. Only the coordinator's own
+    # CLI passes that leg: run them with `check_gate_mutations.py --finding 274`; this driver's main runs every
+    # case confined, where the slice rows stand down. An unconfined case is never declared or reuse-keyed.
+    slices274 = '129_veldo_0274_factory_slices.py'
+    # AC1: the context manager's exit skips the stop. sweep-dead goes red too: its 'enter' child leaves the factory,
+    # whose exit then raises SliceLeft, so that child exits nonzero.
+    add(274, 'slices274-exit-skips-stop', slices274, 'factory.py',
+        "        self.previous_handlers = {}\n        unit('stop', self.slice_name, self.inherited)\n",
+        "        self.previous_handlers = {}  # defect: the exit skips the stop\n",
+        ['slices/return', 'slices/raise', 'slices/sweep-dead'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    # AC2 (1): the signal handler is not installed.
+    add(274, 'slices274-no-signal-handler', slices274, 'factory.py',
+        'self.previous_handlers[number] = signal.signal(number, self._interrupted)',
+        'self.previous_handlers[number] = signal.getsignal(number)  # defect: no handler installed',
+        ['slices/sigterm'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    # AC2 (2): the entry sweep ignores pid liveness.
+    add(274, 'slices274-sweep-ignores-liveness', slices274, 'factory.py',
+        'if pid != os.getpid() and not live(pid):',
+        'if pid != os.getpid():  # defect: the sweep ignores liveness',
+        ['slices/sweep-live'])
+    result[-1]['dir'] = 'proof/VELDO-0127'
+    # AC3: suite 86, the factory user in suite 129's leg, starts the factory without its ExitStack, so the slice
+    # outlives it. Suite 129 names suite 86 by the path the worker replaces and runs the replaced copy (the no-op
+    # copy as control) in its own process before slices/end-of-run, which goes red naming the leaked slice.
+    add(274, 'slices274-factory-user-without-exit-stack', slices274, '86_veldo_0127_agent_configuration.py',
+        'f = owned.enter_context(fixture.factory(ROOT, base, PRODUCTION, fake_engine, deadline_seconds=30))',
+        'f = fixture.factory(ROOT, base, PRODUCTION, fake_engine, deadline_seconds=30).__enter__()'
+        '  # defect: no ExitStack',
+        ['slices/end-of-run'])
+    result[-1]['dir'] = 'scripts/suites'
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     # VELDO-0270: proof is small summaries, never raw bulk.

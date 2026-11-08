@@ -46,96 +46,96 @@ def _v127_feature_listing():
         # VELDO-0230: the qualified catalog's first Code Mode model, never a typed name.
         code_model = next(m['slug'] for m in json.loads(catalog.read_text())['models'] if m.get('tool_mode') == 'code_mode_only')
         try:
-            f = factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault))
-            L, X, C = f.L, f.X, f.config_api
-            # VELDO-0230: a Code Mode run's runner and nested tools, with the readers the qualified binary offers it
-            # without a server (its record's reading; none to list or read), and nothing else.
-            runner = {'exec', 'wait'} | set(X.offered_without_server().get('code_mode_only', []))
-            serial = [0]
-            def launch(grants):
-                serial[0] += 1
-                d = f.role('codex', 'features-' + str(serial[0]))
-                d.update(skills=[], instructions=[], mcp=[])
-                d['settings']['model'] = code_model
-                d['native_tools'] = [{'name': n, 'load': 'always'} for n in grants]
-                f.save(d)
-                binding = C.bind(f.writer, f.DOMAIN, f.REPOSITORY, {'role': d['role']})
-                revision = binding['role_revision']
-                capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, revision,
-                                                  {'project': f.src, 'factory': base})
-                bound = X.bind({'executable': str(f.vendored), 'qualification': str(f.codex_qualification)})
-                receiver = object.__new__(L.Receiver)
-                receiver.config = {'runs': str(base / 'runs')}
-                receiver.binding = dict(bound, revision=revision, capability=capability,
-                                        configured_environment={}, environment={})
-                receiver.login = {'engine': X, 'record': f.accounts.get('acct-x1')}
-                receiver.host, receiver.token, receiver.metering = f.HOST, None, None
-                receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, binding, keystore=f.keystore)
-                events = []
-                receiver.emit = events.append
-                # Absence of argv in the stop case proves no preflight worker ran.
-                args_path = fault.with_suffix('.args.json')
-                args_path.write_text('[]')
-                _, error = attempt(lambda: receiver._baseline('features-' + str(serial[0]),
-                                   [str(f.vendored)] + list(X.FLAGS), dict(f.inherited), False))
-                args = json.loads(args_path.read_text())
-                config = {}
-                def merge(a, b):
-                    for key, value in b.items():
-                        if isinstance(value, dict):
-                            merge(a.setdefault(key, {}), value)
-                        else:
-                            a[key] = value
-                for i, arg in enumerate(args):
-                    if arg == '-c':
-                        merge(config, tomllib.loads(args[i + 1]))
-                tools = next((e['tools'] for e in events if e.get('event') == 'capability_tools'), None)
-                return config.get('features', {}), error, tools, args
+            with factory.factory(ROOT, base, PRODUCTION, lambda _: wire.engine_source(catalog, fault)) as f:
+                L, X, C = f.L, f.X, f.config_api
+                # VELDO-0230: a Code Mode run's runner and nested tools, with the readers the qualified binary offers it
+                # without a server (its record's reading; none to list or read), and nothing else.
+                runner = {'exec', 'wait'} | set(X.offered_without_server().get('code_mode_only', []))
+                serial = [0]
+                def launch(grants):
+                    serial[0] += 1
+                    d = f.role('codex', 'features-' + str(serial[0]))
+                    d.update(skills=[], instructions=[], mcp=[])
+                    d['settings']['model'] = code_model
+                    d['native_tools'] = [{'name': n, 'load': 'always'} for n in grants]
+                    f.save(d)
+                    binding = C.bind(f.writer, f.DOMAIN, f.REPOSITORY, {'role': d['role']})
+                    revision = binding['role_revision']
+                    capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, revision,
+                                                      {'project': f.src, 'factory': base})
+                    bound = X.bind({'executable': str(f.vendored), 'qualification': str(f.codex_qualification)})
+                    receiver = object.__new__(L.Receiver)
+                    receiver.config = {'runs': str(base / 'runs')}
+                    receiver.binding = dict(bound, revision=revision, capability=capability,
+                                            configured_environment={}, environment={})
+                    receiver.login = {'engine': X, 'record': f.accounts.get('acct-x1')}
+                    receiver.host, receiver.token, receiver.metering = f.HOST, None, None
+                    receiver.credentials = L.DL.resolve(f.writer, f.DOMAIN, binding, keystore=f.keystore)
+                    events = []
+                    receiver.emit = events.append
+                    # Absence of argv in the stop case proves no preflight worker ran.
+                    args_path = fault.with_suffix('.args.json')
+                    args_path.write_text('[]')
+                    _, error = attempt(lambda: receiver._baseline('features-' + str(serial[0]),
+                                       [str(f.vendored)] + list(X.FLAGS), dict(f.inherited), False))
+                    args = json.loads(args_path.read_text())
+                    config = {}
+                    def merge(a, b):
+                        for key, value in b.items():
+                            if isinstance(value, dict):
+                                merge(a.setdefault(key, {}), value)
+                            else:
+                                a[key] = value
+                    for i, arg in enumerate(args):
+                        if arg == '-c':
+                            merge(config, tomllib.loads(args[i + 1]))
+                    tools = next((e['tools'] for e in events if e.get('event') == 'capability_tools'), None)
+                    return config.get('features', {}), error, tools, args
 
-            def qualify(stdout, missing=False):
-                # The external listing is the fixture seam. Every record starts
-                # at the production writer; missing deletes just that field.
-                listing.write_text(json.dumps(dict(fixture, stdout=stdout)))
-                record = X.qualification(str(f.vendored), catalog=True)
-                if missing:
-                    record.pop('feature_listing')
-                f.codex_qualification.write_text(json.dumps(record))
+                def qualify(stdout, missing=False):
+                    # The external listing is the fixture seam. Every record starts
+                    # at the production writer; missing deletes just that field.
+                    listing.write_text(json.dumps(dict(fixture, stdout=stdout)))
+                    record = X.qualification(str(f.vendored), catalog=True)
+                    if missing:
+                        record.pop('feature_listing')
+                    f.codex_qualification.write_text(json.dumps(record))
 
-            flags, error, tools, args = launch([])
-            for feature in off_sources:
-                check('explicit/' + feature, feature not in defaults and error is None
-                      and flags.get(feature) is False and set(tools or []) == runner and bool(args),
-                      str((error, flags.get(feature), tools)))
+                flags, error, tools, args = launch([])
+                for feature in off_sources:
+                    check('explicit/' + feature, feature not in defaults and error is None
+                          and flags.get(feature) is False and set(tools or []) == runner and bool(args),
+                          str((error, flags.get(feature), tools)))
 
-            # Each refusal has a valid-listing positive control, including the
-            # new explicit default-off value. Baseline refusal logic already
-            # exists; the control is the changed behavior in these paired rows.
-            valid = error is None and flags.get('standalone_web_search') is False and set(tools or []) == runner and bool(args)
-            for kind in ('missing', 'empty', 'malformed'):
-                row = 'listing/' + kind
-                check(row, valid, 'valid listing explicitly disables standalone_web_search and launches')
-                stdout = {'missing': fixture['stdout'], 'empty': '',
-                          'malformed': fixture['stdout'] + 'broken_feature stable maybe\n'}[kind]
-                qualify(stdout, missing=kind == 'missing')
-                _, error, tools, args = launch([])
-                check(row, error == 'configuration_stop:codex_feature_listing'
-                      and tools is None and not args, str((error, tools, bool(args))))
+                # Each refusal has a valid-listing positive control, including the
+                # new explicit default-off value. Baseline refusal logic already
+                # exists; the control is the changed behavior in these paired rows.
+                valid = error is None and flags.get('standalone_web_search') is False and set(tools or []) == runner and bool(args)
+                for kind in ('missing', 'empty', 'malformed'):
+                    row = 'listing/' + kind
+                    check(row, valid, 'valid listing explicitly disables standalone_web_search and launches')
+                    stdout = {'missing': fixture['stdout'], 'empty': '',
+                              'malformed': fixture['stdout'] + 'broken_feature stable maybe\n'}[kind]
+                    qualify(stdout, missing=kind == 'missing')
+                    _, error, tools, args = launch([])
+                    check(row, error == 'configuration_stop:codex_feature_listing'
+                          and tools is None and not args, str((error, tools, bool(args))))
 
-            # A mapped feature must follow the grant even if its recorded default
-            # changes to false. Both granted and ungranted launches reach the wire.
-            changed = ''.join(('sleep_tool stable false\n' if line.split()[0] == 'sleep_tool' else line + '\n')
-                              for line in fixture['stdout'].splitlines())
-            qualify(changed)
-            for grants in ([], ['clock']):
-                flags, error, tools, args = launch(grants)
-                expected = runner | (set(X.NATIVE_TOOL_MAPPING['clock']) if grants else set())
-                check('explicit/mapped-default-off', error is None and flags.get('sleep_tool') is bool(grants)
-                      and set(tools or []) == expected and bool(args), str((grants, error, flags.get('sleep_tool'), tools)))
+                # A mapped feature must follow the grant even if its recorded default
+                # changes to false. Both granted and ungranted launches reach the wire.
+                changed = ''.join(('sleep_tool stable false\n' if line.split()[0] == 'sleep_tool' else line + '\n')
+                                  for line in fixture['stdout'].splitlines())
+                qualify(changed)
+                for grants in ([], ['clock']):
+                    flags, error, tools, args = launch(grants)
+                    expected = runner | (set(X.NATIVE_TOOL_MAPPING['clock']) if grants else set())
+                    check('explicit/mapped-default-off', error is None and flags.get('sleep_tool') is bool(grants)
+                          and set(tools or []) == expected and bool(args), str((grants, error, flags.get('sleep_tool'), tools)))
 
-            qualify(fixture['stdout'] + 'future_role_tool stable false\n')
-            flags, error, tools, args = launch([])
-            check('explicit/unknown-default-off', error is None and flags.get('future_role_tool') is False
-                  and set(tools or []) == runner and bool(args), str((error, flags.get('future_role_tool'), tools)))
+                qualify(fixture['stdout'] + 'future_role_tool stable false\n')
+                flags, error, tools, args = launch([])
+                check('explicit/unknown-default-off', error is None and flags.get('future_role_tool') is False
+                      and set(tools or []) == runner and bool(args), str((error, flags.get('future_role_tool'), tools)))
         except Exception as error:
             for row in rows:
                 check(row, False, 'raised ' + type(error).__name__ + ': ' + str(error)[:160])
