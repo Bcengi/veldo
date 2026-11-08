@@ -164,3 +164,5 @@ are written by qualify.py from the checks it already runs. AC3 is unchanged. Tit
 reviewer's list follow the moved ACs. Status stays ready: the kept ACs are unchanged in behaviour.
 
 2026-11-08 (lead, before the check): footprint gains the seven proof fixtures and extractor modules that read the replaced per-binary records (listed in proof/VELDO-0275/README.md under Footprint additions) and the split-out draft spec VELDO-0275b. AC3's Codex probe is one real turn because Codex offers no zero-turn probe (README, Premises); the criterion is unchanged.
+
+2026-11-08 (lead, after the fix check): accepted known limit. The invoker's accept wait covers the Codex probe's bound but not the case where both pre-acceptance login checks also run to their full 30 s bounds (worst case 180 s against 150 s); extending it further makes the 90 s claim go stale. A launch whose login checks hang to their bounds has a broken login and fails anyway, so no work follows; recorded in proof/VELDO-0275/README.md.
