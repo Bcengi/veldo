@@ -93,3 +93,9 @@ step round3-full-gate bash scripts/verify.sh
 for suite in 05_tracker_routing_resolver_veldo 14_warp_0717_subset_runner; do
     step "round4-$suite" python3 scripts/selftest.py --suite "$suite"
 done
+
+# Fix round 5 (README "Fix round 5"): the suites changed here ran green under the lock; the teeth of
+# the findings whose suites changed and were not run here, then the full gate.
+step round5-teeth-216 python3 scripts/check_teeth_mutations.py --finding 216
+step round5-teeth-278 python3 scripts/check_teeth_mutations.py --finding 278
+step round5-full-gate bash scripts/verify.sh

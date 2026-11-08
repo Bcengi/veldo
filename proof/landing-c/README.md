@@ -342,3 +342,31 @@ Checks run here: py_compile on both copies; `cmp` clean for the pair; no teeth o
 tracker_intake.py.
 
 Pending (gate lock busy, in pending_runs.sh): suites 05 and 14, now expected green.
+
+## Fix round 5
+
+Gate 3 on eb1ad19c was red in three slots: contracts, unit (18 rows) and mutation. Causes:
+
+- K (contracts, and the "repository validates" rows of suites 18, 27, 43 and 129_0270): this README
+  named the 0189 older archive by its removed path. It now names the summary; `validate.py all` exits 0.
+- L (VELDO-0272 fix 2, 53ca9ea9, and fix 3, 129fb2ec; suite 141 stale): refusal text now carries the
+  undetermined-producer clause (refuse/path, tag, lander), and an app.txt push without a reviewed spec
+  is refused before the debt is read, so refuse/debt pushes a draft spec file. No refusal weakened.
+- M (07636fb4 narrowed the guard's git scan): the fix6 anchor in suite 141 and teeth case
+  guard268-git-inside-git-skipped follow it. The three guard copies are untouched.
+- N (VELDO-0272 push_range, code regression): outside a repository policy_check died on an uncaught
+  RuntimeError (suites 59, 62). It now prints a block and exits 1, same exit; both copies identical.
+- O (round 1, 00d2731e, suite 140 stale): approval_rule takes the producer from the landing specs, so
+  the landing subject commits its proof bundle in the push.
+- P (VELDO-0267 vs the 0153 audit): selection267 used **extra, which the registry audit cannot
+  evaluate; it takes named parameters now, same 2934 registrations.
+- Q (VELDO-0267 vs suite 114_0216): verify.sh's new VELDO_GATE_BASE_COMMIT=$(git rev-parse matched the
+  slice anchor; the suite anchors at the line start.
+- R (main's VELDO-0259 vs suite 129_0278): the fixture gate stubs check_personal_setup.py.
+- S (mutation driver_error, round 3 regression): git_boundary loads .veldo/git_process.py beside the
+  module; a mutant runs from a scratch directory, so every case of suite 140, the noop included, raised
+  FileNotFoundError. Deterministic, not flaky. Suite 140 seeds the real boundary into such a mutant.
+
+Runs here, each under the gate lock: suites 141, 59, 62, 140, 107, 114_0216, 129_0278, 129_0270, 27,
+18, 43 and 129_0272 all 0 failed; teeth 267 13/13, 268 36/36, 272 34/34 rejected.
+Pending (pending_runs.sh): teeth 216 and 278, and the full gate.
