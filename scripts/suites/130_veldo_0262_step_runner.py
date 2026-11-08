@@ -24,6 +24,8 @@ so a mutation of any of them reaches every row that uses it.
                        before writing anything; --upgrade retires it and the scaffold passes
   leftover/upgrade-link  AC3: the upgrade removes a digest-named runtime directory, nothing through a link
                        named by a digest, and the scaffold then refuses leftover_runtime naming the link
+  leftover/fresh-cli   AC3: a fresh `init_scaffold.py <target>` with no home flag judges the account's runtime
+                       directory and refuses leftover_runtime naming a digest under it, before writing anything
   launch/stdlib-only   AC4: the adapter launches the staged runner with -I -S -B, and under those flags the
                        child's importtime shows only standard library modules
   observe/exchange     every exchange observation carries the staged runner's sha256, exit and elapsed ms
@@ -58,7 +60,8 @@ def _v262_suite():
     RESTORED = ()
     ROWS = ('replay/corpus', 'replay/twice', 'runner/plain', 'fanout/superstep', 'fanout/join-waits-for-all',
             'fanout/branch-isolation', 'fanout/permuted', 'fanout/nine-refused', 'leftover/repository',
-            'leftover/setup', 'leftover/upgrade-link', 'launch/stdlib-only', 'observe/exchange')
+            'leftover/setup', 'leftover/upgrade-link', 'leftover/fresh-cli', 'launch/stdlib-only',
+            'observe/exchange')
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
 
@@ -366,6 +369,25 @@ WORKFLOWS['isolation'] = {'version': 1, 'entry': 'f', 'nodes': {'f': _i_fan, 'ma
                   and ('retired runtime directory ' + str(plain_dir)) in log.getvalue()
                   and ('refused ' + str(link) + ': a link') in log.getvalue())
         run('leftover/upgrade-link', upgrade_link)
+
+        def fresh_cli():
+            home = top / 'fresh-home'
+            digest = home / '.local/share/veldo/langgraph' / ('c' * 64)
+            (digest / 'bin').mkdir(parents=True)
+            target = top / 'fresh-target'
+            saved = scaffold.account_home, scaffold.DEFAULT_TEMPLATES
+            scaffold.account_home, scaffold.DEFAULT_TEMPLATES = (lambda: home), ROOT / 'engine'
+            out = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+                    code = scaffold.main([str(target)])
+            finally:
+                scaffold.account_home, scaffold.DEFAULT_TEMPLATES = saved
+            check('leftover/fresh-cli', 'with no home flag the CLI judges the account home and refuses naming the '
+                  'digest before writing anything (exit %r) [%s]' % (code, out.getvalue().strip()[:300]),
+                  code == 1 and ('leftover_runtime:' + str(digest)) in out.getvalue() and not target.exists()
+                  and digest.is_dir())
+        run('leftover/fresh-cli', fresh_cli)
 
         def launch():
             import ast

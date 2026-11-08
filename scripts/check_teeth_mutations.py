@@ -12494,6 +12494,12 @@ def cases():
         "            if _DIGEST_NAME.match(name) and path.is_dir():\n"
         "                shutil.rmtree(path.resolve())  # defect: the link is followed\n",
         ['leftover/upgrade-link'])
+    # AC3 (4): a fresh CLI scaffold without the home flag never judges the account's runtime directory.
+    add(262, 'v262-fresh-cli-home-unjudged', step262, 'init_scaffold.py',
+        "    home = account_home()\n    if len(argv) == 3 and argv[0] == \"--home\":\n",
+        "    home = None  # defect: a fresh CLI scaffold judges no account runtime directory\n"
+        "    if len(argv) == 3 and argv[0] == \"--home\":\n",
+        ['leftover/fresh-cli'])
     # AC4 (2): -S dropped from the adapter's launch flags.
     add(262, 'v262-launch-without-S', step262, 'control_graph.py',
         "FLAGS = ('-I', '-S', '-B')\n",

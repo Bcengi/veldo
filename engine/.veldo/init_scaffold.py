@@ -1063,7 +1063,9 @@ def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     want_ui, upgrade = "--ui" in argv, "--upgrade" in argv
     argv = [a for a in argv if a not in ("--ui", "--upgrade")]
-    home = None
+    # VELDO-0262 AC3: setup, fresh or upgrade, judges the account's runtime directory; the library default
+    # stays None so a suite passes its own home.
+    home = account_home()
     if len(argv) == 3 and argv[0] == "--home":
         home, argv = argv[1], argv[2:]
     if len(argv) != 1 or argv[0].startswith("-"):

@@ -80,8 +80,12 @@ do
     step "suite-$suite" python3 scripts/selftest.py --suite "$suite"
 done
 
-# The falsifiers through the gate's mutation driver: this ticket's eleven (finding 262: the nine declared, the
-# suite 128 forged-land row and the suite 86_0189 factory leftover rows), then every
+# Suite 130's row leftover/fresh-cli alone (fix round 1, finding 3): a fresh CLI scaffold with no home flag
+# refuses leftover_runtime under the account home; VELDO_0262_DETAILS prints its observation.
+step suite-130-fresh-cli bash -c 'VELDO_0262_DETAILS=1 python3 scripts/selftest.py --suite 130_veldo_0262_step_runner 2>&1 | grep -E "leftover/fresh-cli|selftest \(PARTIAL"; true'
+
+# The falsifiers through the gate's mutation driver: this ticket's twelve (finding 262: the nine declared, the
+# suite 128 forged-land row, the suite 86_0189 factory leftover rows and suite 130's leftover/fresh-cli), then every
 # VELDO-0043, VELDO-0045, VELDO-0132 and VELDO-0247 row, the retargeted ones among them.
 step teeth-262 python3 scripts/check_teeth_mutations.py --finding 262 --worker-log-dir "$LOGS/teeth-262"
 step teeth-43 python3 scripts/check_teeth_mutations.py --finding 43 --worker-log-dir "$LOGS/teeth-43"

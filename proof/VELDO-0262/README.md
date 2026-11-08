@@ -41,8 +41,10 @@ Results (local, no lock):
 - Crossing (`crossing.json`, run while both runners existed): each cycle alternated runners exchange by
   exchange, 933 LangGraph resumes advanced on the step runner and 923 the other way, 0 differences.
 - Suite 130 rows replay/corpus, replay/twice, runner/plain: green.
-- Suites that drive the adapter, edited only for the label, file names and splice form: 59 (20 rows),
-  62 (15 rows), green locally; 65, 128, 92 and the rest pending.
+- Suites that drive the adapter: 59 (20 rows), 62 (15 rows), green locally; 65, 128, 92 and the rest
+  pending. They were edited for the label, file names and splice form, except suite 59's VELDO-0043 rows
+  graph/runtime/installed, lifecycle, plain-data and tracing-off, whose assertions changed, and its row
+  graph/runtime/rebuild-swap, which was removed; each with its reason in Premises, P5.
 
 Falsifiers (registered as finding 262 against suite 130; red with the mutation, green without):
 1. v262-notes-earlier-win: red, first difference pm-0.2 answer.proposals[0].evidence[1].
@@ -62,7 +64,7 @@ branch not at the join runs its node on a deep copy of the pre-superstep view, e
 ran, in sorted branch order; one step per branch node that moved; the join runs only when all arrived,
 then once as an ordinary node; superstep numbers match LangGraph's (the corpus covers widths 2 to 8).
 Equivalence note: a branch failure ends the cycle with the branch's own failure code and detail, exactly
-as the LangGraph runner did (the corpus binds this); it does not add the branch name.
+as the LangGraph runner did (the corpus binds this); it does not add the branch name (premise P4).
 
 Rows (suite 130, green locally): fanout/superstep (both first nodes, one superstep number, step +2),
 fanout/join-waits-for-all (one result in: join not run, still suspended; second still out: still not
@@ -101,10 +103,19 @@ link, logging each removal and each refusal; `leftover_runtime` refuses before a
 retired files, any installed module importing langgraph, langchain or langsmith (AST: imports at any
 depth, literal import_module and __import__), and anything under the runtime directory.
 
-Rows (suite 130, green locally): leftover/repository, leftover/setup, leftover/upgrade-link.
+The CLI (`init_scaffold.py <target>`, fresh or `--upgrade`) defaults its home to the account home from the
+password database when `--home` is absent, so a fresh scaffold judges ~/.local/share/veldo/langgraph; the
+library `scaffold()` keeps home None for a fresh scaffold, so suites pass their own home (as P2 argues for
+factory setup).
+
+Rows (suite 130, green locally): leftover/repository, leftover/setup, leftover/upgrade-link,
+leftover/fresh-cli (the CLI with no home flag, its account home pointed at a scratch home holding a digest
+directory, exits 1 refusing leftover_runtime naming it, nothing written; red before the CLI default: exit 0
+and 258 files scaffolded).
 Falsifiers: v262-lock-restored red (leftover/repository names engine/.veldo/control_graph_lock.py and the
 scaffold of that tree refuses leftover_runtime naming it); v262-cycle-imports-langgraph red;
-v262-upgrade-follows-link red. `control_runtime.py enforcement` and the isolation probe: pending runs.
+v262-upgrade-follows-link red; v262-fresh-cli-home-unjudged (the CLI home default back to None) registered
+on leftover/fresh-cli, pending in teeth-262. `control_runtime.py enforcement` and the isolation probe: pending runs.
 
 Sandbox read root: `~/.local/share/veldo/langgraph` removed from both agent_sandbox.json copies
 (protected, in the footprint). Suite 101's installed-tools row asserted it present; it now asserts it
@@ -156,6 +167,36 @@ which carries the retired modules; it is not judged for leftovers because the VE
 it whole and removes it, and removing files from it before the switch would leave the running service on
 an incomplete engine.
 
+P4 (AC2 branch failure, the spec's wording cannot hold). AC2 says a branch failure ends the cycle with
+node_failed naming the branch. The step runner answers with the branch's own failure code and detail and
+no branch name (`.veldo/control_graph_steps.py:264-267`; a branch node returning
+{failure: {code: missing_evidence}} ends as missing_evidence). main's LangGraph runner answered exactly so
+(main `.veldo/control_graph_langgraph.py:254-258`), and the corpus records that shape. AC1 requires every
+recorded exchange to answer identically, label aside, so changing the code to node_failed or adding the
+branch name would break the corpus equivalence AC1 forbids breaking. The failure shape is kept; AC2's
+sentence is read as "a branch failure ends the cycle with that branch's failure".
+
+P5 (AC1 "no edit other than the expected runtime label", suite 59's VELDO-0043 rows). AC1 says the suites
+pass with no edit other than the label, the VELDO-0043 isolation rows of suite 59 included. These rows
+changed their assertions, each because it imported langgraph, read its lock or judged its installer, all
+of which AC3 removes:
+- graph/runtime/installed (`scripts/suites/59_veldo_0043_graph.py:412`): the interpreter was the locked
+  virtual environment under ~/.local/share/veldo/langgraph/<lock digest>, its directory listing and its
+  package census were checked against control_graph_lock.PACKAGES; the lock and the environment are
+  removed, so the row now checks the base interpreter, the step runner asset and FLAGS == ('-I', '-S', '-B').
+- graph/runtime/lifecycle (`:717`): the audit asserted the child invoked
+  langgraph.graph.state.CompiledStateGraph; it now asserts Exchange.run, and a no-foreign-modules condition
+  (modules == []) was added, since the runner imports nothing outside the standard library.
+- graph/runtime/plain-data (`:727`): the foreign objects a node returns were langgraph.types.Command and
+  StateSnapshot, which needed langgraph importable; synthetic foreign.types classes of the same names
+  replace them, and the expected node_failed answers are unchanged.
+- graph/runtime/tracing-off (`:736`): the tracing switches were set to 'false' in the child's environment
+  for LangGraph and LangSmith; with no LangGraph the environment no longer carries them, so the row asserts
+  them absent (None) in the child and in graph.ENVIRONMENT, adds no-foreign-modules, and the source check
+  names langgraph and socket instead of langgraph_sdk.
+- graph/runtime/rebuild-swap (removed): it judged control_graph_install.py --rebuild; the installer is
+  removed (`removed-rows.json`).
+
 ## Footprint additions
 
 For the lead to amend the spec before landing:
@@ -191,7 +232,7 @@ suites, the teeth findings 262, 43, 45, 132 and 247, requires.json current, and 
 ignores `pending-summary.txt`. Each step appends one line to `pending-summary.txt` with its exit code, the
 selftest tally and a /tmp log path. Partial selftest runs never exit 0 by design: read the tally.
 
-Local checks already run without the lock: lint pass; template sync pass; suites 130 (13 rows), 59 (20),
+Local checks already run without the lock: lint pass; template sync pass; suites 130 (14 rows), 59 (20),
 62 (15), 128 (47 checks), 86_0189 (62) green; 101 as under Inherited reds; falsifier3_literal premise holds; the nine 262 mutants red on their rows; suite 59's 57 VELDO-0043 mutants red; suite 62's fourteen 0045 mutants red after two
 were retargeted; every registered anchor resolves.
 
