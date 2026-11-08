@@ -9,13 +9,6 @@ answers only that revision, and the adapter stages it content-addressed like any
 execution environment, not enforcement: it holds no store, path or credential, and
 control_workflow_cycle re-judges every step it reports against the stored revision before anything
 follows from it.
-NOTHING IMPORTS THIS FILE. control_workflow_cycle.runner_source() splices its text into a copy of
-the production runner (control_graph_langgraph.py), after the runner's own definitions and before
-its entry point, followed by ONE call registering the exact stored definition of one revision:
-veldo_register_workflow(<the definition's canonical text>, <version>). That runner answers only that
-revision, and the adapter stages it content-addressed like any runner. This is the execution
-environment, not enforcement: it holds no store, path or credential, and control_workflow_cycle
-re-judges every step it reports against the stored revision before anything follows from it.
 
 ONE STEP PER EXCHANGE. `start` runs the intake node, which runs no step of the definition: it
 reports the digest of the definition this runner was built from and suspends at the entry. Each
