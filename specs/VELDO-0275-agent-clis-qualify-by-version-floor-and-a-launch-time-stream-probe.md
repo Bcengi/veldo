@@ -41,6 +41,14 @@ footprint:
   - "specs/VELDO-0275-agent-clis-qualify-by-version-floor-and-a-launch-time-stream-probe.md"
   - "specs/index.md"
   - "proof/VELDO-0275/**"
+  - "proof/VELDO-0162/setup_assets.py"
+  - "proof/VELDO-0167/review_rows.py"
+  - "proof/VELDO-0172/compare_formats.py"
+  - "proof/VELDO-0182/integration_fixtures.py"
+  - "proof/VELDO-0186/fixtures.py"
+  - "proof/VELDO-0188/round2/served_scenario.py"
+  - "proof/VELDO-0230/fix2_unevaluated.py"
+  - "specs/VELDO-0275b-new-agent-cli-versions-qualify-automatically-and-environment-by-named-patterns.md"
 behavior_bearing: true
 observability:
   logs: >
@@ -154,3 +162,5 @@ the owner's decision.
 interim is stated: until 0275b lands a new version is approved as today, and the approved versions' summaries
 are written by qualify.py from the checks it already runs. AC3 is unchanged. Title, out of scope and the
 reviewer's list follow the moved ACs. Status stays ready: the kept ACs are unchanged in behaviour.
+
+2026-11-08 (lead, before the check): footprint gains the seven proof fixtures and extractor modules that read the replaced per-binary records (listed in proof/VELDO-0275/README.md under Footprint additions) and the split-out draft spec VELDO-0275b. AC3's Codex probe is one real turn because Codex offers no zero-turn probe (README, Premises); the criterion is unchanged.
