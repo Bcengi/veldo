@@ -370,3 +370,32 @@ Gate 3 on eb1ad19c was red in three slots: contracts, unit (18 rows) and mutatio
 Runs here, each under the gate lock: suites 141, 59, 62, 140, 107, 114_0216, 129_0278, 129_0270, 27,
 18, 43 and 129_0272 all 0 failed; teeth 267 13/13, 268 36/36, 272 34/34 rejected.
 Pending (pending_runs.sh): teeth 216 and 278, and the full gate.
+
+## Fix round 6
+
+Gate 4 on ee5d2a85 was red on the mutation slot only: 2939 executed, 2934 rejected, invalid_baseline.
+The 5 not rejected are all invalid controls, none a surviving mutant: authority-client-starts-missing-service,
+authority-client-queues-locally, authority-client-starts-dead-service (suite 66, baseline failed
+authority/one-instance-under-the-lock) and loop154-eof-ignored, loop154-orphan-not-stopped (suite 83,
+noop failed loop/reset-timer-wake and loop/no-other-timer). Both are flaky tests:
+
+- T (suite 66): flock_holders read /proc/locks, which the kernel serves a page per read and walks again
+  for each page, so locks taken or released elsewhere between pages drop or repeat lines. Demo on
+  dmitry-pc (Linux 7.0.0-38), one steady flock, 3 lock-churn processes, 3 s
+  (`python3 -I locks_demo.py 3`): of 22089 reads it appeared 0 times in 10, twice in 361 and three
+  times in 5. The holders are now read from each holding descriptor's fdinfo (one short read under the
+  inode's lock list): `python3 -I fdinfo_demo.py <suite 66> 3` read exactly [WRITE, pid] in 69 of 69
+  reads under the same churn and [] after unlock. The row still asserts exactly one flock, the service's.
+- U (suite 83): the reset minute was fixed before the second instance claimed its unit; the claim,
+  offer and launch drew on LEAD (5 s), and a slow host let the reset pass before the unit waited. The
+  fake now chooses the minute as it prints the limit line and records it. The row also checks the
+  printed message equals limit_message's. LEAD, budgets and waits are unchanged.
+  `python3 -I fake_limit_check.py <suite 83>`: message equal, reset on a minute end, 5 to 65 s after the print.
+- Same class, not changed here: scripts/gate_host.py holders() (engine canon) reads /proc/locks the same
+  way; a follow-up spec.
+
+Demo scripts (in /tmp, discarded): locks_demo.py 1596 bytes sha256 154136f63b4bf1c7ecf28b67d22a5b7fbb3dc368f30b993d1e3e4d7242fb07bf,
+fdinfo_demo.py 2041 bytes 9cd4e2383ef664a0cd67d249174a59be6c8d6eb8ed95484b6c3f713eb27be6e1,
+fake_limit_check.py 2388 bytes f9dc817f9c49428f2f18c75ca804e53aaadd46c00566564a4a958e8ec704b1ae.
+The gate lock was held all round, so no suite ran here. Pending (pending_runs.sh): suites 66 and 83
+ten times alone and ten times with every core busy, teeth 47 and 154, and the full gate.

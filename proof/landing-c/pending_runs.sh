@@ -99,3 +99,24 @@ done
 step round5-teeth-216 python3 scripts/check_teeth_mutations.py --finding 216
 step round5-teeth-278 python3 scripts/check_teeth_mutations.py --finding 278
 step round5-full-gate bash scripts/verify.sh
+
+# Fix round 6 (README "Fix round 6"): the two suites whose controls failed unmutated at ee5d2a85, each
+# ten times alone and ten times with every core busy (one busy loop per core), every run expected green;
+# then the teeth of findings 47 and 154 (their 5 cases went unjudged) and the full gate.
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    step "round6-66-alone-$i" python3 scripts/selftest.py --suite 66_veldo_0047_authority
+    step "round6-83-alone-$i" python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop
+done
+hogs=()
+for _ in $(seq "$(nproc)"); do
+    python3 -c 'while True: pass' &
+    hogs+=($!)
+done
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    step "round6-66-loaded-$i" python3 scripts/selftest.py --suite 66_veldo_0047_authority
+    step "round6-83-loaded-$i" python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop
+done
+kill "${hogs[@]}"
+step round6-teeth-47 python3 scripts/check_teeth_mutations.py --finding 47
+step round6-teeth-154 python3 scripts/check_teeth_mutations.py --finding 154
+step round6-full-gate bash scripts/verify.sh
