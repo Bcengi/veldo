@@ -76,7 +76,7 @@ def _v268_suite():
             text += 'protected_refs:\n' + ''.join('  - "%s"\n' % r for r in refs)
         return text
 
-    def fixture(under, refs=ENGINE_REFS, raw=None, touch='app.txt', hook=False):
+    def fixture(under, refs=ENGINE_REFS, raw=None, touch='app.txt', hook=False, content='change\n'):
         """A working clone on main, one commit ahead of its bare remote's main (touching `touch`),
         with agent/claude/x at the same commit, a red gate stamp and no proof manifest."""
         counter[0] += 1
@@ -100,7 +100,7 @@ def _v268_suite():
         git(work, 'push', '-q', 'origin', 'main')
         path = work / touch
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text('change\n')
+        path.write_text(content)
         git(work, 'add', '-A')
         git(work, 'commit', '-q', '-m', 'change')
         git(work, 'branch', 'agent/claude/x')
@@ -176,7 +176,10 @@ def _v268_suite():
                  '  secure/key.txt  (protected by secure/**)\n'
                  '  Required: an approved, unexpired veldo.approval/v1 whose scope.commit is a\n'
                  '  commit in this push, whose scope.paths covers secure/key.txt, and whose approver\n'
-                 '  is not the proof producer (no self-approval).\n')
+                 '  is not the proof producer (no self-approval); the producer cannot be determined (no landing'
+                 ' spec, or one whose proof records no producer), so every approval is refused.\n')
+    # landing-c: VELDO-0272 fix 2 (53ca9ea9) refuses every approval when the producer cannot be
+    # determined and says so; these fixtures carry no landing spec, so the clause is part of the text.
 
     def debt_text(at, commit):
         return ('VELDO policy: blocked. An emergency backfill debt is open (emergency.push at %s, commit %s).\n'
@@ -788,7 +791,11 @@ def _v268_suite():
         return same('protected path', (str(g.returncode), checks_text(g.stderr)), ('2', PATH_TEXT))
 
     def row_refuse_debt(under):
-        work, _, head = fixture(under)
+        # landing-c: since VELDO-0272 fix 3 (129fb2ec) an app.txt push with no reviewed spec is refused
+        # as landing_without_review before the debt is read, so this push changes only a draft spec
+        # file (work 0272 admits) and the open debt is what refuses it.
+        work, _, head = fixture(under, touch='specs/VELDO-9001-debt.md',
+                                content='---\nid: VELDO-9001\nstatus: draft\n---\n')
         stamp(work, head, 'green')
         manifest(work, head)
         at = '2026-11-06T00:00:00Z'
@@ -938,7 +945,8 @@ def _v268_suite():
     TEXT_BESIDE_GIT_DEFECT = ('        if False:  # defect: a wrapper or editor beside a git word is not alias-checked\n'
                               '            return unresolved("a git alias that may push or merge, in the text of a '
                               'command that runs "\n')
-    EVERY_GIT = ('    for start in (m.start() for m in re.finditer(r"\\bgit", command)):\n'
+    # landing-c 07636fb4 (a .git path is not a git command) narrowed this scan's pattern; the anchor follows it.
+    EVERY_GIT = ('    for start in (m.start() for m in re.finditer(r"(?<![\\w.-])git(?=\\s)", command)):\n'
                  '        match = GITSUB.match(command, start)\n')
     EVERY_GIT_DEFECT = ('    for match in GITSUB.finditer(command):  # defect: a git inside another git\'s text is skipped\n'
                         '        start = match.start()\n')
