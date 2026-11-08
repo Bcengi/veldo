@@ -699,7 +699,8 @@ sys.exit(7 if mode == 'nonzero' else 0)
                         schema = json.loads(json.dumps(schema))
                         schema['fields']['modelUsage']['optional'] = True
                         exceptions.append('missing-usage/modelUsage')
-                        valid = 'modelUsage' not in event and matches(event, schema)
+                        # (VELDO-0275 AC3: the stream probe's own zero-turn result keeps its modelUsage.)
+                        valid = ('modelUsage' not in event or event.get('num_turns') == 0) and matches(event, schema)
                     else:
                         valid = matches(event, schema)
                 else:

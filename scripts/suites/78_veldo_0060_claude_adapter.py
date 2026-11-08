@@ -794,20 +794,21 @@ sys.exit(payload.get('code', 0))
             artifact = returned(launch) or {}
             stored, mode = artifact_file(launch.dispatch_id)
             lines = [line for line in (own.get('printed') or b'').split(b'\n') if line]
-            result_line = next((line for line in lines if json.loads(line).get('type') == 'result'), None)
+            result_line = next((line for line in reversed(lines) if json.loads(line).get('type') == 'result'), None)
             termination = record.get('termination') or {}
             call = invocation(launch.dispatch_id)
             answer = json.loads(lines[0]) if lines else {}
             check('artifact/complete', 'a zero exit with its result: the artifact is complete, its terminal record '
                   'the result the engine printed, bound to its line and the receiver\'s own output digest, the stream '
-                  'the initialize answer and then the three scripted lines [%s, %s]'
+                  'the initialize answer, the stream probe\'s result (VELDO-0275 AC3) and then the three scripted lines '
+                  '[%s, %s]'
                   % (artifact.get('verdict'), artifact.get('problems')),
                   artifact.get('verdict') == 'complete' and artifact.get('complete') is True
                   and (artifact.get('terminal') or {}).get('subtype') == 'success'
                   and (artifact.get('terminal') or {}).get('result_digest') == sha(normal_run['text'].encode())
                   and result_line is not None and artifact.get('terminal_receipt') == sha(result_line)
                   and (artifact.get('stream') or {}).get('output_digest') == termination.get('output_digest')
-                  and (artifact.get('stream') or {}).get('lines') == len(lines) == 4
+                  and (artifact.get('stream') or {}).get('lines') == len(lines) == 5
                   and answer.get('type') == 'control_response'
                   and (answer.get('response') or {}).get('subtype') == 'success')
             check('artifact/complete', 'its terminal record\'s tokens are the result\'s modelUsage total [%s]'
@@ -1018,13 +1019,14 @@ sys.exit(payload.get('code', 0))
                 script = [c_init(), bad, c_msg('m-%s' % name, 2, 2), c_result(2, 2, 1)]
                 launch, record, artifact, call = artifact_of('acct-60a', 'malformed-' + name, script)
                 check('artifact/malformed-output', '%s line in an otherwise complete stream with a zero exit: the '
-                      'artifact is malformed_output, one of five lines (the initialize answer first), the result still decoded '
+                      'artifact is malformed_output, one of six lines (the initialize answer and the probe\'s result first), the '
+                      'result still decoded '
                       '[%s, %s]'
                       % (name, artifact.get('verdict'), artifact.get('stream')),
                       record.get('state') == 'exited' and artifact.get('verdict') == 'malformed_output'
                       and artifact.get('problems') == ['malformed_output']
                       and (artifact.get('stream') or {}).get('malformed') == 1
-                      and (artifact.get('stream') or {}).get('lines') == 5
+                      and (artifact.get('stream') or {}).get('lines') == 6
                       and (artifact.get('terminal') or {}).get('subtype') == 'success'
                       and call.get('outcome') == 'failed')
 

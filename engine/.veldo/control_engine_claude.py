@@ -1131,7 +1131,8 @@ class Meter:
         if kind == 'result':
             found = self._result_limit(event, seen)
             turns = event.get('num_turns')
-            if not _count(turns):
+            if not _count(turns) or turns == 0:
+                # VELDO-0275 AC3: the stream probe's result (no turn) settles no usage of the run.
                 return found
             running = _model_tokens(event.get('modelUsage'))
             if running is not None:
@@ -1784,6 +1785,13 @@ class Guard:
         # VELDO-0275 AC3: a probe that draws no result frame in time refuses the launch.
         if (self.probe_deadline is not None and now >= self.probe_deadline and self.probe_result is None
                 and not self.released and self.stop is None):
+            return self._probe_failed('missing_result', None)
+        return None
+
+    def ended(self):
+        """VELDO-0275 AC3: the engine's output ended. A probe that drew no result frame by then fails
+        (stream_probe_failed, missing_result); None otherwise."""
+        if self.probed and self.probe_result is None and not self.released and self.stop is None:
             return self._probe_failed('missing_result', None)
         return None
 

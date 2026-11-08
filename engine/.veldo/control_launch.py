@@ -2452,8 +2452,14 @@ class Receiver:
                     if recorder is not None:
                         recorder.feed('stderr', chunk)
         feeder.join(timeout=1)
+        guard = metering.login_guard if metering is not None else None
         if (metering is not None and getattr(metering.terminal, 'require_prompt', False)
-                and (input_failed.is_set() or not metering.terminal.prompt_written)):
+                and (input_failed.is_set() or not metering.terminal.prompt_written)
+                # VELDO-0275 AC3: every Claude Code launch holds its prompt for the stream probe; one whose engine
+                # ended before its login was confirmed (the probe never sent) fails as it did before.
+                and (getattr(guard, 'expected', None) is not None or getattr(guard, 'probed', False))):
+            if hasattr(guard, 'ended') and metering.login_stop is None:
+                metering.login_stop = guard.ended()
             metering.login_stop = metering.login_stop or 'configuration_stop:prompt_write_failed'
             cause = cause or 'configuration_stop'
         if recorder is not None:
