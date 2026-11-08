@@ -166,6 +166,8 @@ def _v278_checks():
         'scripts/reuse_stamp.py': 'print(\'"force_fresh":false,"reused":{"mutation":0,"unit":0}\')\n',
         'scripts/check_lint.sh': 'exit 0\n', 'scripts/selftest.py': '', 'scripts/secret_inventory.py': '',
         'scripts/check_install_and_run.py': '', 'scripts/check_generated.sh': 'exit 0\n',
+        # landing-c: main's VELDO-0259 added the personal_setup stage this branch's catalog now carries.
+        'scripts/check_personal_setup.py': '',
         'scripts/check_docs.sh': 'exit 0\n', 'scripts/check_template_sync.sh': 'exit 0\n',
         '.veldo/validate.py': '', '.veldo/shape_gate.py': '', '.veldo/events.py': '',
     }
