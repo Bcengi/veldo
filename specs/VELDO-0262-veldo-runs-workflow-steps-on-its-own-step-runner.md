@@ -59,6 +59,9 @@ footprint:
   - "specs/VELDO-0262-veldo-runs-workflow-steps-on-its-own-step-runner.md"
   - "specs/index.md"
   - "proof/VELDO-0262/**"
+  - "scripts/suites/101_veldo_0208_landing_reuse.py"
+  - ".veldo/control_factory_setup.py"
+  - "engine/.veldo/control_factory_setup.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -298,3 +301,5 @@ updated. Proof bundles, specs and design provenance that mention LangGraph stay 
 and VELDO-0247 as written in the landing-b batch. Built after landing-b lands.
 
 2026-11-07: ready on the owner's approval, Telegram 39630 ("Ok") to the summary in 39629. Built after landing-b lands.
+
+2026-11-08 (lead, before landing): footprint gains scripts/suites/101_veldo_0208_landing_reuse.py (its installed-tools row now asserts the removed langgraph read root absent) and both copies of .veldo/control_factory_setup.py (AC3's setup and upgrade wiring). AC1 falsifier 3 as written cannot red because a failure answer carries no step count (0 of 2508 exchanges differ); the registered nearest form drops the increment every node takes, recorded as premise P1 in proof/VELDO-0262/README.md; the criterion itself is unchanged.
