@@ -332,7 +332,7 @@ def probe_graph():
             try:
                 if label == 'absent':
                     graph.Adapter(graph.resolve_runtime(empty, runner=Path(empty) / RUNNER), 'probe-domain',
-                                  'probe-repository', evidence=graph.runtime_evidence()).start(
+                                  'probe-repository').start(
                         'probe-cycle', 'probe-command', version, version)
                 else:
                     adapter('probe-domain', 'probe-repository', home=empty, stage=Path(empty) / 'stage').start(

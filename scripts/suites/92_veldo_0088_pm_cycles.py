@@ -1,4 +1,4 @@
-"""VELDO-0088: real signed project inputs, LangGraph and Runner coordination.
+"""VELDO-0088: real signed project inputs, step runner and Runner coordination.
 The fixture worker is a plain protocol process, not a Claude Code or Codex fake.
 It makes no model call and supplies only predetermined proposal documents.
 """

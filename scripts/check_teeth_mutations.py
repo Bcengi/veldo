@@ -2875,7 +2875,7 @@ def cases():
     # VELDO-0262: scaffold-omits-runtime-records is removed with the records (removed-rows.json).
     runtime('runtime-records-source-fallback', 'control_runtime.py',
             "    return HERE / rel\n",
-            "    return HERE / rel if (HERE / rel).is_file() else Path.cwd() / 'engine' / rel  # defect: the source tree\n",
+            "    return HERE / rel if (HERE / rel).is_file() else Path.cwd() / 'engine/.veldo' / rel  # defect: the source tree\n",
             'journey/omitted-asset-named')
     runtime('runtime-missing-asset-unnamed', 'control_runtime.py',
             "    missing = ['missing_asset:.veldo/' + rel for rel in JOURNEY if not _asset(rel).is_file()]\n"
@@ -2890,9 +2890,8 @@ def cases():
     runtime('authorization-reads-runtime-by-path', 'authorization.py',
             'from pathlib import Path\nimport json\n',
             'from pathlib import Path\nimport json\n'
-            'try:  # defect: reads the graph runtime by path, past every import check\n'
-            '    import glob as _g, os as _o, pwd as _p\n'
-            "    _g.glob(_p.getpwuid(_o.getuid()).pw_dir + '/.local/share/veldo/langgraph/*/lib/python3.12/site-packages/langgraph/*.py')\n"
+            'try:  # defect: reads the step runner by path, past every import check\n'
+            "    Path(__file__).with_name('control_graph_steps.py').read_text()\n"
             'except OSError:\n    pass\n',
             'enforcement/no-runtime')
     runtime('enforcement-catalog-unread', 'control_runtime.py',

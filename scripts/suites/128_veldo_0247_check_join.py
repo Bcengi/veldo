@@ -1,13 +1,13 @@
 """VELDO-0247: a Check step routes the work by a plain rule over declared fields with a required otherwise path,
-parallel branches from one step run at the same time on the real LangGraph runtime and a Join step waits for all
+parallel branches from one step run at the same time on the step runner (VELDO-0262) and a Join step waits for all
 of them, every fan-out is bounded, and no branch can go around the owner's approval.
 
 Only shared ROOT, expect and fast_temp are consumed. One temporary tree holds an installed .veldo copy; the
 production anchors below are the registered mutation driver's seam, so a mutation of any of them reaches every
 reader, including the runner each cycle stages. The store is the real SQLite authority with OpenSSH journal
 signatures; saves go through VELDO-0132's Workflows service; cycles run through VELDO-0132's Cycles service on the
-VELDO-0045 activated LangGraph runtime, staged into a temporary directory so the account's stage is never touched.
-When that runtime is absent every cycle is refused unavailable_service and every cycle row fails by name.
+VELDO-0045 checked step runner, staged into a temporary directory so the account's stage is never touched.
+When its asset is absent every cycle is refused unavailable_service and every cycle row fails by name.
 
 The role and tool configuration records, admissions and the proof bundles a worker's result stands for are
 fixture records written with the store's generic command, as in suite 65.
@@ -29,8 +29,8 @@ def _v247_suite():
     PRODUCTION = {
         'control_workflow.py': ROOT / ".veldo" / "control_workflow.py",
         'control_workflow_cycle.py': ROOT / ".veldo" / "control_workflow_cycle.py",
-        'control_workflow_langgraph.py': ROOT / ".veldo" / "control_workflow_langgraph.py",
-        'control_graph_langgraph.py': ROOT / ".veldo" / "control_graph_langgraph.py",
+        'control_workflow_steps.py': ROOT / ".veldo" / "control_workflow_steps.py",
+        'control_graph_steps.py': ROOT / ".veldo" / "control_graph_steps.py",
     }
 
     def load(name, path):
@@ -459,7 +459,7 @@ def _v247_suite():
                       and WF.FAN_OUT_CEILING == 8 and joins['named'] and joins['nothing']
                       and escapes['named'] and escapes['nothing'])
 
-            # AC2 and AC3 on the actual LangGraph runtime.
+            # AC2 and AC3 on the step runner (the label row keeps its VELDO-0247 name).
             with region('check/one-branch', 'check/field-unsupplied', 'check/forged-branch', 'check/observations',
                         'fanout/dispatched-together', 'fanout/join-waits-for-all', 'fanout/budget-whole-superstep',
                         'fanout/actual-langgraph'):
@@ -636,7 +636,7 @@ def _v247_suite():
                 labels = {json.dumps(e.get('runtime'), sort_keys=True) for e in events
                           if e.get('schema') == CY.SCHEMA and e.get('cycle') in ('fan-together', 'fan-one', 'check-many')
                           and e.get('operation') in ('step', 'branch_step', 'propose') and e.get('outcome') == 'accepted'}
-                check('fanout/actual-langgraph', lambda: labels == {evidence} and '"langgraph"' in evidence)
+                check('fanout/actual-langgraph', lambda: labels == {evidence} and '"veldo-steps"' in evidence)
         finally:
             for conn in connections:
                 with contextlib.suppress(Exception):
