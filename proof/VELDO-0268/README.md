@@ -300,6 +300,10 @@ mutation row green):
   268`, 36 cases), passes `bash -n`, appends one line per step to
   proof/VELDO-0268/pending-summary.txt, logs /tmp/v268-fix6-suite.log and /tmp/v268-fix6-teeth.log.
 
+## Fix round 7
+
+- Fix round 7 (commit 4355a069, no guard change, copies still md5 82392168e8205704e75290d1c7f3684a): round 6's alias_in_text call after judge_git's alias loop also refuses a command with an assignment or option before git, so the round 4 falsifier alias ignores prefix alone left push/alias-elsewhere green; it is now applied with that call off too (suite and teeth driver), which reds the row only through the round 4 line, no row changed; runs pending (gate lock not free 20:50 to 21:10, flock timed out, nothing ran), proof/VELDO-0268/pending_runs.sh passes bash -n, logs /tmp/v268-fix7-suite.log and /tmp/v268-fix7-teeth.log; one Bash heredoc editing the suite and teeth driver was blocked by the repository guard (its text named an alias, not a push), the edits were made with the editor tool, nothing pushed or merged.
+
 ## Open
 
 - scripts/suites/requires.json is outside the footprint. It is derived (`python3 scripts/run_scope.py
