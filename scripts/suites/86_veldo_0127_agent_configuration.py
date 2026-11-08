@@ -37,7 +37,7 @@ def _v127_suite():
             'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
             'review/skill-commit', 'review/skill-git-boundary', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
             'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture',
-            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources', 'wire/no-server',
+            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'catalog/launch-approved', 'wire/normalization', 'wire/resources', 'wire/no-server',
             'wire/later-requests')
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
@@ -601,6 +601,31 @@ for step in (packet.get('payload') or {}).get('script',[]):
             check('catalog/integrity', 'qualification captures the fake binary bundled catalog with its digest',
                   catalog == json.loads((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())
                   and qualified.get('model_catalog_digest') == f.config_api.digest(catalog))
+            # VELDO-0275 fix 2: a live run's launch catalog and the judge's are the one codex_model over the approved
+            # binary. The installed tree reads the approved binary the engines record names (no `codex` on PATH
+            # here), and a live launch record keeps only the catalog digest, as the approved tables do.
+            def launch_catalogs():
+                engines_record = json.loads((ROOT / '.veldo/runtime/engines.json').read_text())['codex']
+                approved = Path(os.path.expanduser(engines_record['binary']))
+                shipped = json.loads((ROOT / '.veldo/runtime/codex-tables.json').read_text())
+                revision = dict(native_tools=['shell', 'update_plan'], settings={'model': DIRECT_MODEL})
+                saved = os.environ.get('PATH', '')
+                os.environ['PATH'] = '/usr/bin:/bin'
+                try:
+                    record = fixture.launch_record(L.HANDOFF.X, approved, True)
+                    return (record, L.HANDOFF.codex_model(record, revision),
+                            L.HANDOFF.codex_model(shipped, revision), shipped)
+                finally:
+                    os.environ['PATH'] = saved
+                    # The catalog this read cached by digest must not answer the later rows' absent-catalog stops.
+                    getattr(L.HANDOFF.X, '_CATALOGS', {}).clear()
+            launched, error = attempt(launch_catalogs)
+            record, launch_catalog, judged, shipped = launched or ({}, None, None, {})
+            check('catalog/launch-approved', 'the launch catalog equals the judge codex_model for the approved binary [%s]'
+                  % error, error is None and launch_catalog is not None and launch_catalog == judged
+                  and 'model_catalog' not in record
+                  and record.get('model_catalog_digest') == shipped.get('model_catalog_digest')
+                  and record.get('sha256') == shipped.get('sha256'))
             role_model = getattr(L.HANDOFF, 'codex_model', None)
             for model in CODE_MODE_MODELS:
                 definition = f.role('codex', 'restricted-' + model)

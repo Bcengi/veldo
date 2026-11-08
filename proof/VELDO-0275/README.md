@@ -200,6 +200,27 @@ No lock taken (the shared gate lock was busy). Every result here is a local, par
   e52f26a0); it needs re-anchoring before the gate's mutation stage.
 - Fix round 1b: role127-prompt-write-failure-swallowed re-anchored to the prompt-write condition line (one occurrence); in-place swap turns suite 86 0127 review/probe-terminal red, restore green; in pending_runs.sh.
 - Suite 86 0127 live/claude and live/codex: the lead recaptures them after this round (not attempted here).
+- Fix round 2, the Codex live capture's "Codex generated catalog missing or different" (all four runs of
+  proof/VELDO-0127/codex-live.json at b570ff91). Cause: the judge's side, not the run's. Each run's recorded
+  model_catalog equals handoff.codex_model(shipped tables, revision) on this host from the branch's .veldo (all four
+  equal, read without running live.py). But live.py judges with the factory's handoff, whose engine module sits in
+  the factory's installed tree (installed/.veldo), and that tree's runtime held no engines.json. Under AC1,
+  model_catalog then found no kept copy and fell back to the `codex` on PATH (0.154.0 on this host, not the
+  approved digest), refused, and the judge's catalog was None. The launch side read no binary at all: the factory's
+  Codex record kept the whole catalog inline (X.qualification with catalog=True), a shape the approved tables no
+  longer have, so the live launch never used AC1's read. Fix (proof/VELDO-0127/factory.py): the installed tree gets
+  the engines record (as an installed runtime has), and a live run's launch record keeps only the catalog digest
+  (new launch_record), so the launch and the judge both get their catalog from codex_model reading the approved
+  binary. A fake run keeps the catalog inline, because a fake binary is never approved. The judge (evidence.py)
+  is unchanged. New row: suite 86 0127 catalog/launch-approved checks, with no `codex` on PATH, that the live
+  launch record is digest-only, binds the shipped digest and sha256, and that its codex_model catalog equals the
+  judge's codex_model for the approved binary. The row clears the module's digest-keyed catalog cache afterwards,
+  so the later absent-catalog stops still stop. Red by in-place swap, then restored: with the engines-record copy
+  removed, catalog/launch-approved fails (configuration_stop:codex_model_catalog) and live/codex fails with the
+  lead's four problems. With the live trim removed, catalog/launch-approved fails. Green at the fix: suite 86 0127
+  (29 rows, 55 checks, live/codex included, because the existing capture is now judged against the approved
+  binary), 88 0127, 89 0127, 90 0127; lint pass. codex-live.json is not edited: its stored problems stay until the
+  lead recaptures (or rejudges).
 - Pending, inside the lock: `bash proof/VELDO-0275/pending_runs.sh` (summary lines in
   proof/VELDO-0275/pending-summary.txt: step, exit code, /tmp log path; the tree is checked clean before and after,
   ignoring that file). Steps: lint, suites 130 and 131, the engine and setup suites, the six VELDO-0275 mutations
