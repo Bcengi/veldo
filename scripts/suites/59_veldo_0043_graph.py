@@ -5,11 +5,11 @@ anchors below, which are also the mutation harness's production seam.
 
 The graph/shape/* and graph/boundary/* rows use a deterministic stdlib stub runner and check
 SHAPES and the process boundary only. The graph/runtime/* and graph/authority/* rows are the AC1
-and AC2 runtime evidence: they run the actual LangGraph installed from control_graph_lock.py at
-<passwd home>/.local/share/veldo/langgraph/<lock digest>/, through the production adapter and the
-production runner, with the suite's own workflows registered through the runner's serve().
-When that runtime is absent every runtime row FAILS BY NAME, with the install command in its
-message; the suite never skips them and never installs anything.
+and AC2 runtime evidence: they run Veldo's step runner (VELDO-0262, control_graph_steps.py) in the
+resolved base interpreter started -I -S -B, through the production adapter and the production runner,
+with the suite's own workflows registered through the runner's serve(). When the runner asset is
+absent every runtime row FAILS BY NAME; the suite never skips them. The rows of the removed LangGraph
+runtime (the installer's rebuild swap) are removed with it (proof/VELDO-0262/removed-rows.json).
 """
 import importlib.util as _s43_ilu
 import json as _s43_json
@@ -75,7 +75,7 @@ elif mode == 'environment':
         'argv': sys.argv, 'request_text': json.dumps(request, sort_keys=True)})})
 elif mode == 'notes-object':
     reply.update(outcome='suspended', resume={'position': 'rank', 'step': 1, 'notes': {'handoff': {
-        '__class__': 'langgraph.types.Command', 'repr': "Command(goto='rank')"}}})
+        '__class__': 'foreign.types.Command', 'repr': "Command(goto='rank')"}}})
 elif mode == 'resume-open':
     reply.update(outcome='suspended', resume={'position': 'rank', 'step': 1, 'notes': '{}', 'graph': 'x'})
 elif mode == 'resume-no-notes':
@@ -133,27 +133,25 @@ def egress(event, args):
 
 
 sys.addaudithook(egress)
-from langgraph.types import Command, StateSnapshot
-import langgraph.pregel
+# Objects that are not plain data, from a foreign module: the runner must refuse them by name.
+Command = type('Command', (), {'__module__': 'foreign.types', '__init__': lambda self, goto=None: None})
+StateSnapshot = type('StateSnapshot', (tuple,), {'__module__': 'foreign.types'})
 SWITCHES = ('LANGSMITH_TRACING', 'LANGSMITH_TRACING_V2', 'LANGCHAIN_TRACING', 'LANGCHAIN_TRACING_V2')
+_t_run_cycle = run_cycle
 INVOKED = []
-_invoke = langgraph.pregel.Pregel.invoke
 
 
-def _counting(self, *args, **kwargs):
-    INVOKED.append(type(self).__module__ + '.' + type(self).__qualname__)
-    return _invoke(self, *args, **kwargs)
-
-
-langgraph.pregel.Pregel.invoke = _counting
+def run_cycle(request, workflow, resume):
+    INVOKED.append('Exchange.run')
+    return _t_run_cycle(request, workflow, resume)
 
 
 def audit(request):
-    import langsmith.utils
     directory = _t_Path(AUDIT) / request['domain_uuid']
     directory.mkdir(parents=True, exist_ok=True)
     (directory / (request['command_id'] + '.json')).write_text(json.dumps({
-        'switches': {k: _t_os.environ.get(k) for k in SWITCHES}, 'tracing': langsmith.utils.tracing_is_enabled(),
+        'switches': {k: _t_os.environ.get(k) for k in SWITCHES},
+        'modules': sorted({m.split('.')[0] for m in sys.modules} - set(sys.stdlib_module_names) - {'__main__'}),
         'sockets': sorted(set(SOCKETS)), 'invoked': INVOKED, 'argv0': sys.argv[0]}))
 
 
@@ -181,7 +179,7 @@ def foreign_command(view):
 
 def foreign_snapshot(view):
     return {'next': None, 'proposals': [{'type': 'completion', 'proposal_id': 'p1', 'subject': 'unit-1',
-                                         'evidence': StateSnapshot({}, (), {}, None, None, None, (), ())}]}
+                                         'evidence': StateSnapshot(({}, (), {}))}]}
 
 
 def foreign_notes(view):
@@ -401,46 +399,26 @@ def _s43_canon(name):
     return _s43_re.sub(r'[-_.]+', '-', name).lower()
 
 
-def _s43_census(directory):
-    """(name, version) of every distribution installed in the runtime, read from its metadata."""
-    import email.parser as _s43_email
-    found = []
-    for info in sorted(directory.glob('lib/python*/site-packages/*.dist-info')):
-        meta = _s43_email.Parser().parsestr((info / 'METADATA').read_text(errors='replace'), headersonly=True)
-        found.append((_s43_canon(meta['Name']), meta['Version']))
-    return found
-
-
 def _s43_runtime(root, repo, graph, store, snapshot):
     import pwd as _s43_pwd
-    lock = _s43_load('s43_lock', repo / '.veldo/control_graph_lock.py')
     home = _s43_pwd.getpwuid(_s43_os.getuid()).pw_dir
-    directory = lock.runtime_directory()
-    observations = {'lock_digest': lock.digest(), 'python': lock.PYTHON,
-                    'runtime_directory': str(directory)}
     runtime = graph.resolve_runtime()
-    absent = ('' if runtime else ': runtime absent at ' + str(directory) + '; install it with: '
-              + graph.INSTALL_COMMAND)
-    # The runtime holds exactly the locked distributions: no installer's own pip, nothing unpinned.
-    census = _s43_census(directory)
-    observations['census_unlocked'] = sorted(set(census) - {(_s43_canon(n), v) for n, v, _, _ in lock.PACKAGES})
+    observations = {'runtime': runtime, 'flags': list(graph.FLAGS)}
+    absent = '' if runtime else ': the step runner asset is absent at ' + str(repo / '.veldo/control_graph_steps.py')
     expect('graph/runtime/installed' + absent, runtime is not None
-           and runtime['python'] == str(_s43_Path(home) / '.local/share/veldo/langgraph' / lock.digest() / 'bin/python')
-           and runtime['runner'] == str(repo / '.veldo/control_graph_langgraph.py')
+           and runtime['python'] == _s43_os.path.realpath(getattr(_s43_sys, '_base_executable', None) or _s43_sys.executable)
+           and runtime['runner'] == str(repo / '.veldo/control_graph_steps.py')
            and runtime['stage'] == str(_s43_Path(home) / '.local/state/veldo/graph-stage')
-           and sorted(p.name for p in directory.iterdir()) == ['bin', 'include', 'lib', 'lib64', 'pyvenv.cfg',
-                                                                'veldo-lock.txt']
-           and sorted(census) == sorted((_s43_canon(n), v) for n, v, _, _ in lock.PACKAGES)
-           and not (directory / 'bin/pip').exists())
+           and tuple(graph.FLAGS) == ('-I', '-S', '-B'))
     account_stage = _s43_Path(home) / '.local/state/veldo/graph-stage'
 
     def account_state():
-        # The account's runtime and stage, entry by entry: the suite must leave both untouched.
+        # The account's stage, entry by entry: the suite must leave it untouched.
         # Inside the gate's confinement (VELDO-0208) the account stage is private state the domain
         # can neither list nor write, so there the kernel is what keeps it untouched, and it is
         # recorded as unreadable on both sides of the comparison.
         listing = {}
-        for base in (directory, account_stage):
+        for base in (account_stage,):
             try:
                 entries = sorted(base.rglob('*')) if base.is_dir() else []
             except PermissionError:
@@ -481,8 +459,8 @@ def _s43_runtime(root, repo, graph, store, snapshot):
 
     store.execute(connection, command('seed-unit-1', 'owner', 5, 0), 'dmitry', sign, 1)
     before = store.table_snapshot(connection)
-    production_runner = (repo / '.veldo/control_graph_langgraph.py').read_text()
-    installed_runner = checkout / '.veldo/control_graph_langgraph.py'
+    production_runner = (repo / '.veldo/control_graph_steps.py').read_text()
+    installed_runner = checkout / '.veldo/control_graph_steps.py'
     installed_runner.parent.mkdir()
     audit_root = root / 'graph-audit'
     installed_runner.write_text(production_runner.split("\nif __name__ == '__main__':\n")[0] + '\n'
@@ -513,7 +491,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         except Exception as error:
             return getattr(error, 'code', type(error).__name__) + ': ' + getattr(error, 'detail', '')
 
-    # The caller's own environment asks for LangSmith tracing; the graph child must not see it.
+    # The caller's own environment sets tracing switches; the graph child must not see them.
     # The domain process works inside its checkout and holds an open, inheritable descriptor on
     # the store (besides its own connection) for every exchange.
     saved = {name: _s43_os.environ.get(name) for name in _S43_SWITCHES}
@@ -533,7 +511,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         canceled = call('cancel', 'cycle-r2', 'command-r5', workflow('lifecycle'), second.get('resume'))
         failed = call('start', 'cycle-r3', 'command-r6', snapshot, workflow('failing'))
         lifecycle_counts = dict(adapter.counts)
-        # Runtime evidence is what the locked LangGraph produced: a stub's own label is refused.
+        # Runtime evidence is what the step runner produced: a stub's own label is refused.
         try:
             stub_answer = graph.Adapter({'python': _s43_sys.executable, 'runner': str(root / 'stub_runner.py'),
                                          'stage': str(root / 'stage')},
@@ -630,7 +608,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         (fake / 'bin').mkdir(parents=True)
         (fake / 'bin/python').symlink_to(_s43_os.path.realpath(runtime['python']))
         (fake / 'lib/python3.12').mkdir(parents=True)
-        (fake / 'lib/python3.12/site-packages').symlink_to(next(directory.glob('lib/python*/site-packages')))
+        (fake / 'lib/python3.12/site-packages').mkdir()
         (fake / 'pyvenv.cfg').write_text('home = /usr/bin\ninclude-system-site-packages = false\nversion = 3.12.3\n'
                                          'command = ' + str(checkout / '.venv/bin/python3') + ' -m venv ' + str(fake) + '\n')
         try:
@@ -640,8 +618,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
                 'cycle-pyvenv', 'command-pyvenv', snapshot, workflow('cwd-probe'))
             pyvenv = 'launched: ' + fake_answer.get('outcome', '')
         except Exception as error:
-            pyvenv = getattr(error, 'code', type(error).__name__) + ('' if 'pyvenv' in str(error) else ' (other)') + (
-                '' if 'python3 .veldo/control_graph_install.py --rebuild' in str(error) else ' (no recovery command)')
+            pyvenv = getattr(error, 'code', type(error).__name__) + ('' if 'pyvenv' in str(error) else ' (other)')
         # Every pyvenv.cfg value is judged whole, as a path (the command line split like a shell
         # would), including a repository under a directory whose name has a space and a quoted
         # value; and the interpreter is judged at every hop of its link chain.
@@ -717,8 +694,7 @@ def _s43_runtime(root, repo, graph, store, snapshot):
         record = audit_directory / (observed['command_id'] + '.json')
         audits.append(_s43_json.loads(record.read_text()) if record.is_file() else None)
     _s43_shutil.rmtree(audit_directory, ignore_errors=True)
-    pinned = dict((name, version) for name, version, _, _ in lock.PACKAGES)['langgraph']
-    identity = {'name': 'langgraph', 'version': pinned}
+    identity = graph.runtime_evidence()
     observations.update(started=started, held=held, advanced=advanced, canceled=canceled, failed=failed,
                         production=production, foreign=foreign, untyped=untyped, assertions=assertions,
                         probe=probe.get('resume'), proposed=proposed, unit=list(unit), journal=journal, reach=reach,
@@ -737,38 +713,39 @@ def _s43_runtime(root, repo, graph, store, snapshot):
            and lifecycle_counts == {'accepted': 6, 'refused': 0}
            and all(r.get('runtime') == identity for r in (started, held, advanced, canceled, failed))
            and production.get('runtime') == {'name': 'none', 'version': ''}
-           and len(audits) >= 6 and all(a and a['invoked'] == ['langgraph.graph.state.CompiledStateGraph']
+           and identity['name'] == 'veldo-steps'
+           and len(audits) >= 6 and all(a and a['invoked'] == ['Exchange.run'] and a['modules'] == []
                                         for a in audits[:6])
            and stub_evidence == 'missing_evidence'
            and [o['operation'] for o in adapter.observations[:6]] ==
            ['start', 'suspend', 'advance', 'start', 'cancel', 'start']
            and adapter.observations[2]['accepted_inputs'] == {'snapshot': snapshot, 'workflow': workflow('lifecycle')})
     carried = [r for r in responses if r.get('outcome') != 'failure'
-               and ('langgraph.' in _s43_json.dumps(r) or '__class__' in _s43_json.dumps(r))]
-    observations['langgraph_objects_in_domain_answers'] = carried
+               and ('foreign.' in _s43_json.dumps(r) or '__class__' in _s43_json.dumps(r))]
+    observations['foreign_objects_in_domain_answers'] = carried
     expect('graph/runtime/plain-data', [f.get('failure', {}).get('code') for f in foreign] == ['node_failed'] * 3
-           and 'langgraph.types.Command' in foreign[0]['failure']['detail']
-           and 'langgraph.types.StateSnapshot' in foreign[1]['failure']['detail']
-           and 'langgraph.types.Command' in foreign[2]['failure']['detail'] and not carried
+           and 'foreign.types.Command' in foreign[0]['failure']['detail']
+           and 'foreign.types.StateSnapshot' in foreign[1]['failure']['detail']
+           and 'foreign.types.Command' in foreign[2]['failure']['detail'] and not carried
            and len(responses) == 23 and all(_s43_exact_plain(r) for r in responses))
-    source = (repo / '.veldo/control_graph_langgraph.py').read_text()
+    source = (repo / '.veldo/control_graph_steps.py').read_text()
     present = [a for a in audits if a]
+    # The row keeps its VELDO-0043 name: the caller's tracing switches never reach the child, which
+    # imports nothing outside the standard library and makes no network call.
     expect('graph/runtime/tracing-off', len(present) == 23 and all(
-               a['switches'] == {name: 'false' for name in _S43_SWITCHES} and a['tracing'] is False
+               a['switches'] == {name: None for name in _S43_SWITCHES} and a['modules'] == []
                and a['sockets'] == [] for a in present)
-           and all(graph.ENVIRONMENT.get(name) == 'false' for name in _S43_SWITCHES)
-           and not any(word in source for word in ('langgraph_sdk', 'RemoteGraph', 'get_client')))
+           and not any(name in graph.ENVIRONMENT for name in _S43_SWITCHES)
+           and not any(word in source for word in ('langgraph', 'RemoteGraph', 'get_client', 'socket')))
     notes = _s43_notes(probe)
     observations['stage_in_repository'] = in_repository
     observations['handed_descriptors'] = handed
     observations['stage_links'] = links
     observations['pyvenv'] = pyvenv
     observations['pyvenv_values_judged'] = cfg_judged
-    cfg_paths = [token for line in (directory / 'pyvenv.cfg').read_text().splitlines()
-                 for token in line.partition('=')[2].split() if token.startswith('/')]
     expect('graph/runtime/pyvenv-clean', pyvenv == 'runtime_unavailable'
-           and not (audit_directory / 'command-pyvenv.json').exists() and cfg_paths
-           and not any(graph.inside_repository(token) for token in cfg_paths)
+           and not (audit_directory / 'command-pyvenv.json').exists()
+           and graph.runtime_problems({'python': runtime['python']}) == []
            and cfg_judged == {name: True for name in list(cfg_cases) + ['link-chain', 'directory-hop', 'dotdot-hop']})
     expect('graph/authority/stage-links',
            links['work'] == 'runtime_unavailable: the stage work is a link the adapter did not make'
@@ -828,9 +805,7 @@ def _s43_run():
             'control_graph.py': ROOT / ".veldo" / "control_graph.py",
             'control_graph_isolation.py': ROOT / ".veldo" / "control_graph_isolation.py",
             'authorization.py': ROOT / ".veldo" / "authorization.py",
-            'control_graph_langgraph.py': ROOT / ".veldo" / "control_graph_langgraph.py",
-            'control_graph_lock.py': ROOT / '.veldo/control_graph_lock.py',
-            'control_graph_install.py': ROOT / ".veldo" / "control_graph_install.py",
+            'control_graph_steps.py': ROOT / ".veldo" / "control_graph_steps.py",
             'two_key.py': ROOT / '.veldo/two_key.py',
             'request.py': ROOT / '.veldo/request.py',
         }.items():
@@ -838,8 +813,7 @@ def _s43_run():
         graph = _s43_load('s43_graph', repo / '.veldo/control_graph.py')
         expect('graph/installed-assets', not missing and all(
                '.veldo/' + name in installed for name in (
-                   'control_graph.py', 'control_graph_isolation.py', 'control_graph_lock.py',
-                   'control_graph_install.py', 'control_graph_langgraph.py')))
+                   'control_graph.py', 'control_graph_isolation.py', 'control_graph_steps.py')))
 
         # AC3: every installed enforcement entry, run with the execution environment absent.
         isolated = _s43_sp.run([_s43_sys.executable, '-B', str(repo / '.veldo/control_graph_isolation.py'),
@@ -1114,31 +1088,6 @@ def _s43_run():
         expect('graph/authority/stage-shapes', all(
             shapes[name][0] == 'runtime_unavailable' and shapes[name][1].startswith(reason)
             and shapes[name][2] is True and shapes[name][3] == 'runtime_unavailable' for name, reason in reasons.items()))
-
-        # The installer's --rebuild swap: the new runtime goes in, the old one leaves only after;
-        # a failed second rename puts the old runtime back.
-        swaps = {}
-        try:
-            installer = _s43_load('s43_install', repo / '.veldo/control_graph_install.py')
-            for case in ('swapped', 'restored'):
-                target, building = root / ('rebuild-' + case) / 'runtime', root / ('rebuild-' + case) / 'building'
-                target.mkdir(parents=True)
-                (target / 'which').write_text('old')
-                if case == 'swapped':
-                    building.mkdir()
-                    (building / 'which').write_text('new')
-                try:
-                    installer.swap_in(building, target)
-                    outcome = 'swapped'
-                except OSError:
-                    outcome = 'refused'
-                swaps[case] = [outcome, (target / 'which').read_text() if (target / 'which').is_file() else None,
-                               sorted(p.name for p in target.parent.iterdir())]
-        except Exception as error:  # recorded as a wrong answer, never raised
-            swaps['error'] = type(error).__name__
-        observations['rebuild_swap'] = swaps
-        expect('graph/runtime/rebuild-swap', swaps == {'swapped': ['swapped', 'new', ['runtime']],
-                                                       'restored': ['refused', 'old', ['runtime']]})
 
         # The child runs in its own session and its whole process group is killed on the deadline
         # and on every exit path: nothing a node started outlives the exchange.
