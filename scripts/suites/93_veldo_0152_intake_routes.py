@@ -4,6 +4,8 @@ def _v152_suite():
     import compileall
     import contextlib
     import copy
+    import hashlib
+    import io
     import importlib.util
     import json
     from pathlib import Path
@@ -93,7 +95,13 @@ def _v152_suite():
             # Start from the actual pre-route engine's file and 0126 declarations.
             intake_path = mods / 'control_intake.py'
             current_intake = intake_path.read_bytes()
-            with tarfile.open(ROOT / 'proof/VELDO-0189/older/971186ac.tar.gz') as archive:
+            # VELDO-0270: the archive left the tree; read it where its summary says it stays readable.
+            _older = json.loads((ROOT / 'proof/VELDO-0189/older/971186ac.tar.gz.summary.json').read_text())
+            _older_bytes = load('v152_older_git', mods / 'git_process.py').run(['git', '-C', str(ROOT), 'show', _older['readable_at'] + ':' + _older['original_path']],
+                                  check=True, capture_output=True).stdout
+            if hashlib.sha256(_older_bytes).hexdigest() != _older['sha256']:
+                raise RuntimeError('the older engine archive does not match its summary sha256')
+            with tarfile.open(fileobj=io.BytesIO(_older_bytes), mode='r:gz') as archive:
                 previous_intake = archive.extractfile('.veldo/control_intake.py').read()
             intake_path.write_bytes(previous_intake)
             S.declare_owners(conn, IN.OWNER,

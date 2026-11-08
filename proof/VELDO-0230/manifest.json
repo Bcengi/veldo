@@ -17,8 +17,8 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/gate.log",
-     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
+     "ref": "proof/VELDO-0230/gate.log.summary.json",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log.summary.json is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   },
@@ -38,8 +38,8 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/gate.log",
-     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
+     "ref": "proof/VELDO-0230/gate.log.summary.json",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log.summary.json is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   },
@@ -59,8 +59,8 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/gate.log",
-     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
+     "ref": "proof/VELDO-0230/gate.log.summary.json",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log.summary.json is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   },
@@ -75,8 +75,8 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0230/gate.log",
-     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log is), first use (a nested run exceeded its 1800 s budget)."
+     "ref": "proof/VELDO-0230/gate.log.summary.json",
+     "detail": "Full gate at 4ebd96db: RED. Rows of this change it found (VELDO-0153 registry audit, git boundary in the census, suite 125 reading suite 79, extractor mutants unable to find the repository) are fixed at 412a79d4 and their suites pass by hand; the full gate was not re-run (one run asked). Still red by cause outside the code: suite 86 live/claude and live/codex (lead-only retake), contracts and shape (the agent sandbox refuses a standard descriptor inside the repository, which the prescribed log path proof/VELDO-0230/gate.log.summary.json is), first use (a nested run exceeded its 1800 s budget)."
     }
    ]
   }

@@ -9,8 +9,8 @@ merge, push, or independent approval is represented by this work.
 
 1. 6b2135a adds only the reader, its engine mirror, and behavior tests.
 2. 62d338b commits the comparison of all 331 specifications and plans, before any
-   caller or document migration. `corpus-before.json` records all input hashes,
-   differences by reader and field, and refusals. `corpus-before.md` lists refusals.
+   caller or document migration. `corpus-before.json.summary.json` records all input hashes,
+   which readers differ, and refusals (the per field values are readable at afa292f0). `corpus-before.md` lists refusals.
    `python3 scripts/parser_corpus_audit.py` reproduces this report from the frozen
    input and reader commits, even after migration; it does not measure edited inputs
    and label them as the original corpus.

@@ -10,6 +10,11 @@ set -u
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
 GUARD="$ROOT/scripts/veldo-guard.sh"
 if [ -f "$GUARD" ]; then
+  # VELDO-0270: git's ref lines (this hook's stdin) and the remote name ($1) go to the guard, which
+  # judges every commit the push sends for proof over the limit or an encoded archive.
+  VELDO_PUSH_REFS="$(cat 2>/dev/null || true)"
+  VELDO_PUSH_REMOTE="${1:-}"
+  export VELDO_PUSH_REFS VELDO_PUSH_REMOTE
   printf '%s' '{"tool_input":{"command":"git push"}}' | bash "$GUARD"
   exit $?
 fi

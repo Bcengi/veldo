@@ -445,6 +445,15 @@ def load(path):
     return module
 
 
+def write_summary(path, receipt, root=ROOT):
+    """VELDO-0270: what goes into proof is the summary, per case the expected and observed verdict
+    and each red's detail, with the sha256 of the full result array instead of the array."""
+    V = load(Path(root) / '.veldo/validate.py')
+    results = json.dumps(receipt.get('results') or [], sort_keys=True, separators=(',', ':'))
+    return V.write_proof_summary(path, ' '.join(['python3', *sys.argv]), V.summarize_mutation_receipt(receipt),
+                                 discarded=[('mutation result array', results)], root=root, timing=True)
+
+
 def inventory_local(root):
     result = []
     for driver in DRIVERS:
@@ -1568,6 +1577,7 @@ def main():
     parser.add_argument('--worker', type=Path)
     parser.add_argument('--root', type=Path, default=ROOT)
     parser.add_argument('--receipt', type=Path)
+    parser.add_argument('--summary', type=Path, help='write the proof summary (VELDO-0270), never the raw receipt')
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
     parser.add_argument('--finding', type=int, action='append')
     parser.add_argument('--case', action='append', dest='names')
@@ -1615,6 +1625,8 @@ def main():
         receipt['graph'] = os.environ['VELDO_GATE_GRAPH_DIGEST']
     if args.receipt:
         args.receipt.write_bytes(canonical(receipt))
+    if args.summary:
+        write_summary(args.summary, receipt)
     print(json.dumps(receipt, sort_keys=True), flush=True)
     if leg is not None:
         print_leg(leg, receipt, legs.DECLARATION)

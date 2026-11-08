@@ -27,6 +27,7 @@ def load(path, name):
 
 Q = load(ROOT / 'scripts/suites/53_veldo_0123_mutations.py', 'qualification')
 SOURCE = ROOT / 'scripts/check_gate_mutations.py'
+V = load(ROOT / '.veldo/validate.py', 'veldo_validate')
 FULL = False
 
 
@@ -176,7 +177,17 @@ def removed_teeth(out):
                                 diff=''.join(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
                                                                fromfile=suite, tofile=suite)),
                                 failure=weakened))
-            write(out / 'removed-teeth.json', results)
+            # VELDO-0270: a summary per case, never the raw result array (its sha256 stands in).
+            V.write_proof_summary(
+                out / 'removed-teeth.summary.json',
+                'python3 -B proof/VELDO-0123/drive.py removed-teeth --output ' + str(out),
+                {'cases': len(results), 'targets': len(targets),
+                 'rows': [{'case': r['driver'] + ':' + r['target'], 'expected': 'mutation_survived',
+                           'observed': 'mutation_survived', 'elapsed': r['elapsed'], 'workers': r['workers'],
+                           'red': {k: r['failure'].get(k) for k in ('status', 'registered', 'executed', 'rejected')}}
+                          for r in results]},
+                discarded=[('removed-teeth raw result array', json.dumps(results, sort_keys=True))],
+                root=ROOT, timing=True)
             print(f'{len(results)}/{len(targets)} {driver} {target}: mutation_survived', flush=True)
         # A no-op copy preserves all observations while executing every case again.
         path = repo / 'scripts/suites/shared.py'

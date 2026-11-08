@@ -82,7 +82,7 @@
       "name": "integration",
       "status": "passed",
       "command": "python3 -B proof/VELDO-0123/drive.py removed-teeth --output /tmp/veldo-0123-assertions",
-      "ref": "proof/VELDO-0123/removed-teeth.json"
+      "ref": "proof/VELDO-0123/removed-teeth.json.summary.json"
     }
   ],
   "artifacts": [
@@ -92,7 +92,7 @@
     "proof/VELDO-0123/assertion-noop.json",
     "proof/VELDO-0123/falsifiers.json",
     "proof/VELDO-0123/qualification.json",
-    "proof/VELDO-0123/removed-teeth.json",
+    "proof/VELDO-0123/removed-teeth.json.summary.json",
     "proof/VELDO-0123/host.json",
     "proof/VELDO-0123/history.json",
     "proof/VELDO-0123/interrupted-qualification.log",

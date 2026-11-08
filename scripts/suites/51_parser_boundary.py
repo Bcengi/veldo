@@ -36,7 +36,7 @@ with tempfile.TemporaryDirectory() as _y_dir:
     expect('parser/delegating-reader-is-allowed-control', not _y_boundary.check(_y_tree))
 
 _y_reader = V._yamlish
-_y_report = json.loads((ROOT / 'proof/VELDO-0110/corpus-before.json').read_text())
+_y_report = json.loads((ROOT / 'proof/VELDO-0110/corpus-before.json.summary.json').read_text())['deciding']
 _y_git = _y_load('parser_audit_git', ROOT / '.veldo/git_process.py')
 _y_paths = _y_git.check_output(['git', 'ls-tree', '-r', '--name-only', _y_report['baseline']], cwd=ROOT, text=True).splitlines()
 _y_baseline = {p for p in _y_paths if len(Path(p).parts) == 2 and Path(p).parts[0] in ('specs', 'plans') and p.endswith('.md')}

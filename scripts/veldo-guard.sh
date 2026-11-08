@@ -623,6 +623,19 @@ if [ "${VELDO_EMERGENCY:-0}" = "1" ]; then
   exit 0
 fi
 
+# Guard 0 (VELDO-0270): proof is small summaries, never raw bulk. When git's pre-push ref lines
+# are handed over (VELDO_PUSH_REFS, set by the packs' hooks/pre-push, remote in
+# VELDO_PUSH_REMOTE), every commit a push to a protected ref sends that the remote does not
+# already have is judged, not only the tip: a proof file over proof.max_file_bytes or a base64
+# encoded archive is refused, naming the ref and the commit that added it. One implementation,
+# the contract validator's, so the gate and the guard cannot disagree.
+if [ -n "${VELDO_PUSH_REFS:-}" ] && [ -f .veldo/validate.py ]; then
+  if ! printf '%s\n' "$VELDO_PUSH_REFS" | python3 .veldo/validate.py push-proof "${VELDO_PUSH_REMOTE:-}" >&2; then
+    echo "VELDO guard: blocked. The push adds a proof file over the limit or an encoded archive; proof is small summaries, never raw bulk." >&2
+    exit 2
+  fi
+fi
+
 # Guard 1: the gate must be green for exactly this commit.
 if [ -f .veldo/last_verify ]; then
   V_COMMIT=$(python3 -c 'import json;print(json.load(open(".veldo/last_verify"))["commit"])' 2>/dev/null || echo "")

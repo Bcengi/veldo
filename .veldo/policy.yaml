@@ -150,6 +150,14 @@ protected_refs:
   - "refs/heads/release/*"
   - "refs/heads/release-*"
   - "refs/tags/*"
+# PROOF IS SMALL SUMMARIES, NEVER RAW BULK (VELDO-0270). The contract check (.veldo/validate.py) and
+# the push guard (scripts/veldo-guard.sh) refuse a tracked proof file larger than max_file_bytes
+# and a base64 encoded archive at any size. The guard judges every commit a push to one of
+# protected_refs sends, not only the tip. Absent keys mean 1048576 bytes and refs/heads/main plus
+# refs/tags/*; a key present but malformed is a refusal, never the default.
+proof:
+  max_file_bytes: 1048576
+  protected_refs: [refs/heads/main, refs/tags/*]
 merge_rule: >
   Auto-merge if and only if: the specification is ready and valid; every
   acceptance criterion is passed in a valid proof manifest for this exact

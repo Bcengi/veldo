@@ -6,6 +6,10 @@
 4. Protected paths and merge policy: .veldo/policy.yaml.
 5. Never approve your own implementation. Review runs in a fresh context.
 
+## Proof is small summaries
+
+Proof is small summaries, never raw bulk. No file under proof/ may be larger than the limit read from `.veldo/policy.yaml` key `proof.max_file_bytes` (1,048,576 bytes when the key is absent), and a base64 encoded archive is refused at any size; the gate's contract check and the push guard both refuse them. A summary carries the numbers that decide pass or fail with their bounds and verdicts, the exact command that produced them, the environment (commit, tree, host, tool versions, and host load when the result is timing sensitive) and, for every raw file the run produced, its name, size in bytes and sha256. Raw data is discarded, not stored elsewhere.
+
 ## This repository
 
 This is the VELDO home repository: the method and its companion documents

@@ -89,6 +89,46 @@ def home_as_tilde(text):
     return text
 
 
+def summarize(report):
+    """Counts, every input with its digest, and which readers differ for it; not the values."""
+    def refused(row):
+        return any(any(d['field'].startswith('$.refusal') for d in ds) for ds in row['comparisons'].values())
+    rows = [{'path': r['path'], 'sha256': r['sha256'], 'has_front_matter': r['has_front_matter'],
+             'differing_readers': sorted(k for k, v in r['comparisons'].items() if v), 'refused': refused(r)}
+            for r in report['corpus']]
+    return {'baseline': report['baseline'], 'parser_commit': report['parser_commit'],
+            'documents': report['documents'], 'with_front_matter': report['with_front_matter'],
+            'different': report['different'], 'refused': sum(r['refused'] for r in rows),
+            'additional_yaml': len(report['additional_yaml']),
+            'additional_yaml_different': sum(bool(r['comparisons']) for r in report['additional_yaml']),
+            'corpus': rows}
+
+
+def summary_text(report, target, root=ROOT):
+    """The summary of `report` as the text for target, keeping the removal record already there: the
+    record and the text that .veldo/validate.py write_proof_summary makes, with its size limit."""
+    V = load('audit_validate', Path(root) / '.veldo/validate.py')
+    raw = json.dumps(report, indent=2, ensure_ascii=True) + '\n'
+    keep = ('original_path', 'bytes', 'sha256', 'readable_at', 'read_back', 'removed_by')
+    prior = json.loads(Path(target).read_text()) if Path(target).is_file() else {}
+    rec = V.proof_summary('python3 scripts/parser_corpus_audit.py', summarize(report),
+                          discarded=[('parser corpus raw report', raw)], root=root,
+                          extra={k: prior[k] for k in keep if k in prior})
+    text = json.dumps(rec, indent=1, sort_keys=True, ensure_ascii=True) + '\n'
+    limit = V.proof_policy(root)[0]
+    if len(text.encode()) > limit:
+        raise ValueError(f'proof summary {target} is {len(text.encode())} bytes, over the limit {limit}')
+    return text
+
+
+def write_summary(report, target, root=ROOT):
+    """Write the summary of `report` to target, keeping the removal record already there. The text
+    goes through home_as_tilde, as every writer into proof/ does (VELDO-0259)."""
+    text = home_as_tilde(summary_text(report, target, root))
+    Path(target).write_text(text)
+    return json.loads(text)
+
+
 def main():
     old = archive('.veldo/validate.py', {'front_matter', 'parse_yamlish', '_split_top', '_scalar',
                                        '_parse_block', '_parse_map', '_parse_list'})
@@ -131,8 +171,11 @@ def main():
               'documents': len(rows), 'with_front_matter': sum(r['has_front_matter'] for r in rows),
               'different': sum(bool(r['comparisons']) for r in rows), 'corpus': rows,
               'additional_yaml': additional}
-    target = ROOT / 'proof/VELDO-0110/corpus-before.json'
-    target.write_text(home_as_tilde(json.dumps(report, indent=2, ensure_ascii=True) + '\n'))
+    # VELDO-0270: proof keeps the summary (counts, the inventory and which documents differ),
+    # never the raw report; the raw report's sha256 stands in for it. The removal record of the
+    # report this replaced (original path, digest, the commit it stays readable at) is kept.
+    target = ROOT / 'proof/VELDO-0110/corpus-before.json.summary.json'
+    target.write_text(home_as_tilde(summary_text(report, target)))
     refused = [r for r in rows if any(any(d['field'].startswith('$.refusal') for d in ds)
                                     for ds in r['comparisons'].values())]
     lines = ['# Parser corpus comparison before migration', '',

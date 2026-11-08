@@ -1,0 +1,104 @@
+{
+ "schema": "veldo.proof-summary/v1",
+ "original_path": "proof/VELDO-0215/full-gate.log.gz",
+ "bytes": 1212832,
+ "sha256": "5b92730a947756dc4bb1a08a1e3e69b406809d43c194db3dfc9551bdfe3d04fa",
+ "readable_at": "afa292f0087ebea55b3a8adbe4b16b68c26ed4b9",
+ "read_back": "git show afa292f0087ebea55b3a8adbe4b16b68c26ed4b9:proof/VELDO-0215/full-gate.log.gz",
+ "removed_by": "VELDO-0270 AC3: proof is small summaries, never raw bulk",
+ "command": "systemd-run --user --wait --collect --pipe -p MemoryHigh=14G -p MemoryMax=16G -p OOMScoreAdjust=900 bash scripts/verify.sh",
+ "environment": {
+  "commit": "fbd62ba1aefafb92d59b47d8415bb31b982d32b5",
+  "tree": "fb69dfaeef2009cb776b264bd57ef4ba3618eab8",
+  "note": "the commit that added the file; host and tool versions were not recorded in it"
+ },
+ "discarded": [
+  {
+   "name": "proof/VELDO-0215/full-gate.log.gz",
+   "bytes": 1212832,
+   "sha256": "5b92730a947756dc4bb1a08a1e3e69b406809d43c194db3dfc9551bdfe3d04fa"
+  }
+ ],
+ "deciding": {
+  "gate": "GATE: GREEN (45c714d2db159f139482da3f12aed02da334f3af)",
+  "stages": [
+   {
+    "stage": "lint",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "unit: confined leg",
+    "verdict": "pass",
+    "seconds": 1889.9
+   },
+   {
+    "stage": "unit: unconfined leg",
+    "verdict": "pass",
+    "seconds": 803.3
+   },
+   {
+    "stage": "unit",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "integration: confined leg",
+    "verdict": "pass",
+    "seconds": 1761.7
+   },
+   {
+    "stage": "integration: unconfined leg",
+    "verdict": "pass",
+    "seconds": 808.5
+   },
+   {
+    "stage": "integration",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "security",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "generated",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "docs",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "packaging",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "extra",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "mutation",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "secret scan",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "contracts",
+    "verdict": "pass",
+    "seconds": null
+   }
+  ],
+  "nodes": [],
+  "failing_rows_first_40": []
+ }
+}

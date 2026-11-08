@@ -1,0 +1,165 @@
+{
+ "schema": "veldo.proof-summary/v1",
+ "original_path": "proof/VELDO-0230/gate.log",
+ "bytes": 2189179,
+ "sha256": "f1a6d97619dc8392ea7139c3a3079d85dbcf953d82a5076b31b8a52dc573183d",
+ "readable_at": "afa292f0087ebea55b3a8adbe4b16b68c26ed4b9",
+ "read_back": "git show afa292f0087ebea55b3a8adbe4b16b68c26ed4b9:proof/VELDO-0230/gate.log",
+ "removed_by": "VELDO-0270 AC3: proof is small summaries, never raw bulk",
+ "command": "bash scripts/verify.sh",
+ "environment": {
+  "commit": "412a79d44f2420b89d343a2fdae060390a2dc171",
+  "tree": "772e6d1449a931f2f6d269eef28d4ab4cda7fa79",
+  "note": "the commit that added the file; host and tool versions were not recorded in it"
+ },
+ "discarded": [
+  {
+   "name": "proof/VELDO-0230/gate.log",
+   "bytes": 2189179,
+   "sha256": "f1a6d97619dc8392ea7139c3a3079d85dbcf953d82a5076b31b8a52dc573183d"
+  }
+ ],
+ "deciding": {
+  "gate": "GATE: RED (4ebd96dbf0fa2cdc2ae4861a83d052d22fdd574b)",
+  "stages": [
+   {
+    "stage": "unit: confined leg",
+    "verdict": "FAIL",
+    "seconds": 1943.1
+   },
+   {
+    "stage": "unit: unconfined leg",
+    "verdict": "FAIL",
+    "seconds": 1281.6
+   },
+   {
+    "stage": "integration: confined leg",
+    "verdict": "FAIL",
+    "seconds": 1801.8
+   },
+   {
+    "stage": "integration: unconfined leg",
+    "verdict": "pass",
+    "seconds": 2530.3
+   },
+   {
+    "stage": "lint",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "unit",
+    "verdict": "FAIL",
+    "seconds": null
+   },
+   {
+    "stage": "integration",
+    "verdict": "FAIL",
+    "seconds": null
+   },
+   {
+    "stage": "security",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "generated",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "docs",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "packaging",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "extra",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "mutation",
+    "verdict": "FAIL",
+    "seconds": null
+   },
+   {
+    "stage": "secret scan",
+    "verdict": "pass",
+    "seconds": null
+   },
+   {
+    "stage": "contracts",
+    "verdict": "FAIL",
+    "seconds": null
+   }
+  ],
+  "nodes": [
+   {
+    "node": "extra",
+    "verdict": "pass",
+    "seconds": 0.394
+   },
+   {
+    "node": "docs",
+    "verdict": "pass",
+    "seconds": 0.682
+   },
+   {
+    "node": "generated",
+    "verdict": "pass",
+    "seconds": 0.705
+   },
+   {
+    "node": "lint",
+    "verdict": "pass",
+    "seconds": 2.324
+   },
+   {
+    "node": "packaging",
+    "verdict": "pass",
+    "seconds": 14.122
+   },
+   {
+    "node": "security",
+    "verdict": "pass",
+    "seconds": 65.032
+   },
+   {
+    "node": "unit.unconfined",
+    "verdict": "FAIL",
+    "seconds": 1281.67
+   },
+   {
+    "node": "unit.confined",
+    "verdict": "FAIL",
+    "seconds": 1943.14
+   },
+   {
+    "node": "integration.confined",
+    "verdict": "FAIL",
+    "seconds": 1801.884
+   },
+   {
+    "node": "integration.unconfined",
+    "verdict": "pass",
+    "seconds": 2530.363
+   },
+   {
+    "node": "mutation",
+    "verdict": "FAIL",
+    "seconds": 4336.036
+   }
+  ],
+  "failing_rows_first_40": [
+   "SELFTEST FAIL: git-boundary/no-private-git-invocations",
+   "SELFTEST FAIL: VELDO-0208 unconfined-leg/fixture-sharers-are-listed: {'125_veldo_0230_engine_census': ['79_veldo_0061_codex_adapter']}",
+   "SELFTEST FAIL: VELDO-0127 live/claude",
+   "SELFTEST FAIL: VELDO-0127 live/codex"
+  ]
+ }
+}

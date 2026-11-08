@@ -7,6 +7,9 @@ Usage:
   python3 .veldo/validate.py spec <file.md>
   python3 .veldo/validate.py plan <file.md>
   python3 .veldo/validate.py proof <manifest.json>
+  python3 .veldo/validate.py proof-files [<root>]     # proof size, encoded archives, summaries
+  python3 .veldo/validate.py push-proof [<remote>]    # pre-push ref lines on stdin
+  python3 .veldo/validate.py gate-summary <transcript> <out.summary.json> [<command>]
   python3 .veldo/validate.py verdict <verdict.json>
   python3 .veldo/validate.py approval <approval.json>
   python3 .veldo/validate.py arch [<architecture.yaml>]
@@ -653,6 +656,36 @@ def check_requests(requests_dir=None, root=None):
     return _request_module().check_requests_dir(rdir, base, parse_yamlish, fail)
 
 
+# VELDO-0270: proof is small summaries, never raw bulk. The rules live in .veldo/proof_size.py,
+# loaded by path on first use the way _request_module loads request.py (a caller that never judges
+# proof does not need the file), handed this module's ONE parser and ONE reporter, and reached
+# through the same public names as before (V.check_proof_files, V.write_proof_summary, ...).
+_PS = None
+
+
+def _proof_size_module():
+    global _PS
+    if _PS is None:
+        pspec = importlib.util.spec_from_file_location("veldo_proof_size", Path(__file__).resolve().with_name("proof_size.py"))
+        mod = importlib.util.module_from_spec(pspec)
+        pspec.loader.exec_module(mod)
+        mod.parse_yamlish, mod.fail = parse_yamlish, fail
+        _PS = mod
+    return _PS
+
+
+def proof_policy(*a, **k): return _proof_size_module().proof_policy(*a, **k)
+def encoded_archives(*a, **k): return _proof_size_module().encoded_archives(*a, **k)
+def summary_problems(*a, **k): return _proof_size_module().summary_problems(*a, **k)
+def check_proof_files(*a, **k): return _proof_size_module().check_proof_files(*a, **k)
+def check_push_proof(*a, **k): return _proof_size_module().check_push_proof(*a, **k)
+def proof_summary(*a, **k): return _proof_size_module().proof_summary(*a, **k)
+def write_proof_summary(*a, **k): return _proof_size_module().write_proof_summary(*a, **k)
+def summarize_mutation_receipt(*a, **k): return _proof_size_module().summarize_mutation_receipt(*a, **k)
+def summarize_gate_transcript(*a, **k): return _proof_size_module().summarize_gate_transcript(*a, **k)
+def write_gate_summary(*a, **k): return _proof_size_module().write_gate_summary(*a, **k)
+
+
 def run_all():
     errs = 0
     errs += check_events(ROOT / ".veldo" / "events.jsonl")
@@ -698,6 +731,7 @@ def run_all():
     for p in _corpus(_CORPUS.APPROVAL_PATTERN):
         errs += check_json(p, APPROVAL_REQ, "approval")
     errs += check_verdict_domain_is_the_validated_set()
+    errs += check_proof_files()  # VELDO-0270: proof is small summaries, never raw bulk
     ex = ROOT / ".veldo" / "examples"
     if ex.exists():
         errs += check_spec(ex / "spec-example.md")
@@ -734,6 +768,15 @@ def main():
         errs = check_plan(sys.argv[2], specs_dir=ROOT / "specs")
     elif mode == "events":
         errs = check_events(sys.argv[2] if len(sys.argv) > 2 else ROOT / ".veldo" / "events.jsonl")
+    elif mode == "proof-files":
+        errs = check_proof_files(sys.argv[2] if len(sys.argv) > 2 else None)
+    elif mode == "gate-summary":
+        # gate-summary <transcript> <out.summary.json> [command] (VELDO-0270: the stage table, not the log).
+        write_gate_summary(sys.argv[2], sys.argv[3], *(sys.argv[4:5]))
+        errs = 0
+    elif mode == "push-proof":
+        # push-proof [remote]: git's pre-push ref lines on stdin (VELDO-0270, the push guard).
+        errs = check_push_proof(sys.stdin.read().splitlines(), sys.argv[2] if len(sys.argv) > 2 else "")
     elif mode == "proof":
         errs = check_json(sys.argv[2], PROOF_REQ, "proof")
     elif mode == "verdict":

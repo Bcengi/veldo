@@ -671,13 +671,24 @@ def _v189_suite():
             return bool(self.send({'operation': 'inspect', 'entity_ids': []}).get('accepted'))
 
     def fixture(name, row):
-        """Verify committed historical bytes before any extraction or parsing."""
+        """Verify committed historical bytes before any extraction or parsing. A fixture still in
+        the tree is read there and matched against digests.json. VELDO-0270: an archive that left
+        the tree is read through its summary, which names the commit where the bytes stay
+        readable; they must match both the summary's sha256 and the digest digests.json recorded."""
         directory = ROOT / 'proof/VELDO-0189/older'
         try:
             manifest = json.loads((directory / 'digests.json').read_text())
-            data = (directory / name).read_bytes()
-            valid = hashlib.sha256(data).hexdigest() == manifest['files'][name]['sha256']
-        except (OSError, ValueError, KeyError, TypeError):
+            if (directory / name).is_file():
+                data = (directory / name).read_bytes()
+                valid = hashlib.sha256(data).hexdigest() == manifest['files'][name]['sha256']
+            else:
+                summary = json.loads((directory / (name + '.summary.json')).read_text())
+                data = _git_process.run(['git', '-C', str(ROOT), 'show',
+                                         summary['readable_at'] + ':' + summary['original_path']],
+                                        check=True, capture_output=True).stdout
+                valid = (hashlib.sha256(data).hexdigest() == summary['sha256']
+                         == manifest['files'][name + '.summary.json']['sha256'])
+        except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError):
             data, valid = None, False
         check(row, 'committed fixture exists and matches its recorded digest: ' + name, valid)
         return data if valid else None
