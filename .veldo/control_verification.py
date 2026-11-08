@@ -338,10 +338,16 @@ def _installation(installation):
     return Path(installation), "directory:" + str(installation)
 
 
-def gate_env():
+def gate_env(base=None):
     """The gate's environment: no inherited Git knob can select another repository (the isolated
-    Git profile), and no Python process writes bytecode into the candidate."""
+    Git profile), and no Python process writes bytecode into the candidate. `base` is the trunk
+    commit the caller synced (a landing's watermark): it is handed to the verifier as
+    VELDO_GATE_BASE_COMMIT, the base its mutation selection compares the candidate with
+    (VELDO-0267), and an inherited value never stands in for it."""
     env = dict(_git_process.clean_env(profile="isolated"), PYTHONDONTWRITEBYTECODE="1")
+    env.pop("VELDO_GATE_BASE_COMMIT", None)
+    if isinstance(base, str) and base:
+        env["VELDO_GATE_BASE_COMMIT"] = base
     # Landing permits authenticated reuse; always select that policy explicitly.
     # Preserve an operator's force-fresh override, including supported truthy forms.
     env["VELDO_GATE_FORCE_FRESH"] = env.get("VELDO_GATE_FORCE_FRESH") or "0"
@@ -452,12 +458,13 @@ def judge(observation):
     return problems
 
 
-def observe_gate(candidate, installation, directory, *, bind_refs, timeout=None):
+def observe_gate(candidate, installation, directory, *, bind_refs, timeout=None, base=None):
     """Run the installed verifier against `candidate` in candidate mode and observe it. `directory` is
     a new or empty directory outside the candidate: it receives the sink and observation.json.
     `bind_refs` (required, True or False) is whether the repository's refs are part of the candidate
-    state compared before and after (see state). Returns (observation, reference); reference is
-    {path, digest} of the written observation."""
+    state compared before and after (see state). `base`, when given, is the trunk commit the caller
+    synced, handed to the verifier through gate_env (VELDO-0267). Returns (observation, reference);
+    reference is {path, digest} of the written observation."""
     CP = _proof()
     bind_refs = _bind_refs(bind_refs)
     candidate = Path(_real(candidate))
@@ -484,7 +491,7 @@ def observe_gate(candidate, installation, directory, *, bind_refs, timeout=None)
     try:
         # Inside a tree the agent launcher made, the gate's launcher needs the marker (VELDO-0210 AC6).
         run = subprocess.run(command, cwd=str(candidate), capture_output=True, stdin=subprocess.DEVNULL,
-                             env=gate_env(), timeout=timeout, pass_fds=CP.launcher_fds())
+                             env=gate_env(base), timeout=timeout, pass_fds=CP.launcher_fds())
         exit_code, out, err = run.returncode, run.stdout, run.stderr
     except subprocess.TimeoutExpired as error:
         exit_code, out, err = None, error.stdout or b"", (error.stderr or b"") + b"\ngate timed out"

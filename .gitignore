@@ -6,3 +6,6 @@ __pycache__/
 
 # Generated graph receipt, like the gate stamp, is not a candidate input.
 .veldo/gate-schedule.json
+
+# The mutation selection record (VELDO-0267), like the gate stamp, is not a candidate input.
+.veldo/mutation-selection.json

@@ -159,13 +159,15 @@ def _approval_covers(approval, path):
     return False
 
 
-def valid_approval_for(commits, path=None, producer=None):
+def valid_approval_for(commits, path=None, producer=None, accept=None):
     """An approval is valid if it is approved, unexpired, commit-bound to a
     commit in the push range, and - when a path is given - scopes that path.
     Commit binding to HEAD alone is unsatisfiable (the approval lands in an
     evidence commit that cannot name its own hash), so range binding is used.
     Self-separation: an approver who is also the proof producer cannot approve
-    their own work."""
+    their own work. `accept`, when given, is a caller's own scope test on the
+    approval object (the nightly sweep's run id and cases, VELDO-0267): it
+    narrows which approvals count and never replaces a check above."""
     if isinstance(commits, str):
         commits = [commits]
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -205,6 +207,8 @@ def valid_approval_for(commits, path=None, producer=None):
         if exp <= now:
             continue
         if path is not None and not _approval_covers(a, path):
+            continue
+        if accept is not None and not accept(a):
             continue
         if producer and a.get("approver") and a["approver"] == producer:
             continue  # self-approval: the approver produced the work
@@ -468,6 +472,55 @@ def _head_spec_id():
     return None
 
 
+# THE NIGHTLY SWEEP (VELDO-0267). While the latest finished nightly mutation sweep on the trunk is
+# red, landing is refused as nightly_red, until a later sweep is green or the owner's approval
+# (veldo.approval/v1) names that sweep's run id and every failing case with a reason. It applies to
+# the landing check only: the lander's installed policy run (BASE set) and a run told it judges a
+# protected ref (--protected-ref, or LANDING set by a caller that knows the destination). A working
+# branch's push and a candidate's own gate are never refused by it. The sweep records are read from
+# the state directory the INSTALLATION's scripts/mutation_selection.json names, outside every
+# candidate tree, with the installation's own reader; an installation without that reader (every
+# adopter's) has no nightly sweep and nothing to refuse.
+LANDING = None
+
+
+def _nightly_reader():
+    reader = Path(__file__).resolve().parent.parent / "scripts" / "mutation_selection.py"
+    if not reader.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("veldo_mutation_selection", reader)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def approval_rule():
+    """The protected-path approval rule over this push, for a caller that adds its own scope test:
+    accept -> the approval file valid_approval_for finds (approved, unexpired, bound to a commit of
+    the push range, approver not the work's producer, and accepted by `accept`), or None. The
+    nightly check (VELDO-0267) explains a red sweep only through it, never through a second copy."""
+    commits = push_range_commits() or [head()]
+    producer = producer_for(_head_spec_id())
+    return lambda accept: valid_approval_for(commits, producer=producer, accept=accept)
+
+
+def nightly_refusal():
+    """None, or the line that refuses landing as nightly_red."""
+    reader = _nightly_reader()
+    if reader is None:
+        return None
+    try:
+        state = reader.state_directory(reader.load_rule(reader.RULE))
+    except reader.Invalid as error:
+        return "nightly_red: the nightly sweep state cannot be located (%s)" % error
+    try:
+        rule = approval_rule()
+    except Exception:  # The push range cannot be read: no approval explains anything.
+        rule = None
+    refused = reader.landing_refusal(state, rule)
+    return None if refused is None else "%s: %s" % refused
+
+
 def main():
     h = head()
 
@@ -552,6 +605,16 @@ def main():
               + ", ".join(stale))
         print("  The spec revised after the proof ran; re-run the gate, proof, and review.")
         return 1
+
+    # a red nightly sweep blocks landing only (VELDO-0267)
+    if BASE is not None or LANDING or "--protected-ref" in sys.argv[1:]:
+        refused = nightly_refusal()
+        if refused:
+            print("VELDO policy: blocked. " + refused)
+            print("  The latest nightly mutation sweep on the trunk is red. Landing waits until a later")
+            print("  sweep is green, or the owner's approval (veldo.approval/v1) names that sweep's run id")
+            print("  in scope.nightly_run and every failing case with a reason in scope.cases.")
+            return 1
 
     # emergency debt blocks ordinary pushes
     debt = open_emergency_debt()

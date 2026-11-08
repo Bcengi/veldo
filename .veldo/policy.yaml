@@ -47,6 +47,14 @@ protected_paths:
   - {path: "scripts/gate_reuse.py", floor: high}
   - {path: "scripts/mutation_sandbox.py", floor: high}
   - {path: "scripts/reuse_stamp.py", floor: high}
+  # VELDO-0267 (owner approval Telegram 39692, 2026-11-07): which mutation cases a gate runs (the
+  # canaries and the trigger list), the reader that selects them and judges a red nightly sweep at
+  # landing, and the nightly runner. Weakening any of them is this protected change.
+  - {path: "scripts/mutation_selection.json", floor: high}
+  - {path: "scripts/mutation_selection.py", floor: high}
+  - {path: "engine/scripts/mutation_selection.py", floor: high}
+  - {path: "scripts/mutation_nightly.py", floor: high}
+  - {path: "engine/scripts/mutation_nightly.py", floor: high}
   # VELDO-0208, owner decision Telegram 32403-32407 (2026-10-07): the suites the gate runs OUTSIDE
   # its confinement, and the runner that reads that list. Adding a suite to it is this protected
   # change, never a step an agent takes on its own behalf.
