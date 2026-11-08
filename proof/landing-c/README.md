@@ -79,3 +79,29 @@ every other staged file equals the branch's version and was not changed on main.
 Checks: py_compile clean on every changed .py; `bash -n` clean on proof/VELDO-0272/pending_runs.sh
 and proof/landing-c/pending_runs.sh. Pending: suites 129_veldo_0272, 140, 141, 01, 10, 101 and the
 teeth cases of findings 267 and 272.
+
+## Merge 5: agent/claude/veldo-0274 (VELDO-0274), commit f54075a8
+
+Merge base afa292f0 (branch tip cf742f6a). Line numbers are in the tree of the merge 5 commit.
+
+| File | Conflict | Resolution |
+| --- | --- | --- |
+| scripts/check_teeth_mutations.py:12490-12903 | VELDO-0267, 0268 and 0272 blocks (landing-c) against VELDO-0274's block at the same place in `cases()` | Both: landing-c's blocks (12490-12867), a blank line, VELDO-0274's four cases (12869-12903). The result less the 0274 block equals landing-c's side exactly; the branch's only change to the file is that block. Static check: no duplicate case name; each of the four 0274 anchors occurs exactly once in its target (proof/VELDO-0127/factory.py three, suite 86 one) |
+| scripts/suites/manifest.json:1890 | both sides appended suites | Every suite kept (205: landing-c's 204 in its order, then 129_veldo_0274_factory_slices). No suite removed by either side, none changed by both; the branch's edits to 88, 89 and 90 and landing-c's to 125 are kept; every other key equals landing-c's |
+| scripts/suites/requires.json:680 | the same | Regenerated with `run_scope.py --emit-requires`; the only change from landing-c is the 0274 entry |
+| specs/index.md | auto-merged with VELDO-0273, 0274 and 0278 to 0280 in the draft section | Regenerated with `python3 scripts/update_index.py` (449 specs): the five ready rows move to the ready section |
+
+Staged auto-merges checked against the base: scripts/gate_unconfined.json changed on both sides and
+keeps both (landing-c's 128_veldo_0254 and 129_veldo_0254, the branch's 129_veldo_0274_factory_slices);
+every other staged file (proof/VELDO-0127/factory.py, suites 86, 88, 89, 90, the new suite, proof and
+specs) was not changed on landing-c since the base and equals the branch's version.
+
+Open, for the lead (not changed here): suite 101 will go red. scripts/gate_unconfined.json now lists 49
+suites, 47 whole. scripts/suites/101_veldo_0208_landing_reuse.py:1265-1269 (`control_plane`) does not
+name 129_0274, so 1277 (`len(expected_whole) == 46 and whole == expected_whole`) fails, and 1312
+(`len(listed_files) == 48`) fails. The branch alone was red the same way (its base counts 44 and 46
+against 45 and 47 listed). Both changes hold if suite 101 gains '129_0274' and the counts 47 and 49.
+
+Checks: py_compile clean on every changed .py; `bash -n` clean on proof/landing-c/pending_runs.sh.
+Pending: suites 129_veldo_0274, 86, 88, 89, 90, 101, teeth finding 274 (confined) and
+`check_gate_mutations.py --finding 274` (the unconfined leg VELDO-0274's proof names).
