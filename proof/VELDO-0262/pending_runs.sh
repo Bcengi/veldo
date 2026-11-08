@@ -75,7 +75,9 @@ for suite in \
     113_veldo_0115_authority_store \
     113_veldo_0220_gate_host \
     129_veldo_0239_batch_landing \
-    129_veldo_0254_canary_launch
+    129_veldo_0254_canary_launch \
+    26_veldo_0009_install_stamp \
+    24_veldo_0007_install_and_run
 do
     step "suite-$suite" python3 scripts/selftest.py --suite "$suite"
 done

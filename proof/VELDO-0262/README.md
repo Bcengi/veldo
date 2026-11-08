@@ -208,6 +208,24 @@ For the lead to amend the spec before landing:
   `engine/scripts/agent_sandbox.json` (the read root line removed), `scripts/mutation_case_inputs.json`
   (earlier increment).
 - `control_factory_setup_upgrade.py` was not changed.
+- Fix round 1b: `scripts/suites/26_veldo_0009_install_stamp.py` and `scripts/check_install_and_run.py`
+  (see Fix round 1b below).
+
+## Fix round 1b: no suite depends on the account home
+
+Fix round 1 made the init_scaffold CLI judge the account home by default, and this host still carries
+`~/.local/share/veldo/langgraph` (the lead retires it at landing; this round does not touch it). Every
+place that runs `.veldo/init_scaffold.py` as a command was searched (scripts/suites, scripts/, proof
+fixtures); every other suite and fixture loads the module and calls `scaffold()`, whose library default
+home stays None, or (suite 130's leftover/fresh-cli) already substitutes its own home. Two launch the CLI:
+- suite 26's thin-pack stand-down row now passes `--home` an empty directory inside its own temporary
+  directory, created by the row and removed with it;
+- `scripts/check_install_and_run.py` (the gate's packaging check, driven by suites 24 and 101) now
+  launches the pack's scaffolder with `--home` a `tempfile.TemporaryDirectory`, removed when the launch
+  returns. scaffolder_argv still records the real launch, and the pack's own scaffolder is still the one
+  argv entry ending in `.veldo/init_scaffold.py`.
+No assertion was added or changed. Both files compile. The gate lock was held, so suites 26 and 24 are
+added to `pending_runs.sh`.
 
 ## AC4: performance
 
@@ -227,7 +245,7 @@ standard library modules.
 ## Pending runs
 
 `pending_runs.sh` (bash -n clean, set -u, no lock, no systemd-run): lint, template sync, corpus replay
-and twice, falsifier 3's literal form (P1), control_runtime check, qualify, install, enforcement, the isolation probe and enforcement, 27
+and twice, falsifier 3's literal form (P1), control_runtime check, qualify, install, enforcement, the isolation probe and enforcement, 29
 suites, the teeth findings 262, 43, 45, 132 and 247, requires.json current, and a clean-tree check that
 ignores `pending-summary.txt`. Each step appends one line to `pending-summary.txt` with its exit code, the
 selftest tally and a /tmp log path. Partial selftest runs never exit 0 by design: read the tally.

@@ -210,7 +210,10 @@ def install_and_run(pack_dir, target, gate=True):
     target.mkdir(parents=True, exist_ok=True)
     _run(["git", "init", "-q", "."], cwd=target)
 
-    init = _run([sys.executable, pack_dir / SCAFFOLDER, "."], cwd=target)
+    # VELDO-0262: the CLI judges the account home's runtime directory unless told otherwise, so the
+    # stage hands it an empty temporary home and never depends on the host's own.
+    with tempfile.TemporaryDirectory() as home:
+        init = _run([sys.executable, pack_dir / SCAFFOLDER, "--home", home, "."], cwd=target)
     # THE RECORD IS READ OFF THE LAUNCH ITSELF, never off a list assigned beside the call.
     # CompletedProcess.args is the argv subprocess received, so the record and the launch cannot
     # disagree. Building it from a variable one line above the call is not enough and that was
