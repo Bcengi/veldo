@@ -1,0 +1,22 @@
+{
+ "failure_answers": 519,
+ "failure_answers_carrying_a_step": 0,
+ "failure_codes": {
+  "invalid_input": 354,
+  "missing_evidence": 2,
+  "node_failed": 30,
+  "unsupported_workflow": 133
+ },
+ "failure_shapes": {
+  "command_id,cycle_id,domain_uuid,failure,operation,outcome,repository_uuid,runtime,schema": 519,
+  "failure:code,detail": 519
+ },
+ "first_difference": null,
+ "mutation": {
+  "anchor": "return self.end('failure', step=step, position=name",
+  "mutant": "return self.end('failure', step=self.step, position=name",
+  "sites": 3
+ },
+ "premise_holds": true,
+ "replayed": 2508
+}

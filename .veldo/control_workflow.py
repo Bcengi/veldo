@@ -75,7 +75,7 @@ REFERENCE_FIELDS = ('id', 'version', 'digest')
 # The accepted configuration kinds a reference may name (their schema and writer are VELDO-0127's).
 REFERENCE_KINDS = {'roles': 'role_configuration', 'tools': 'tool_configuration'}
 BUDGET_FIELDS = ('steps',)
-# The graph runner bounds one invocation at 64 steps (control_graph_langgraph.MAX_STEPS).
+# The graph runner bounds one invocation at 64 steps (control_graph_steps.MAX_STEPS).
 STEP_CEILING = 64
 # THE REGISTERED STEP KINDS. ports: the named outcomes a node of the kind routes by; config: its closed
 # configuration ({field: (reference type or None, required)}); input: what the cycle must supply before

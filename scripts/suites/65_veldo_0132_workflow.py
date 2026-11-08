@@ -1,16 +1,16 @@
 """VELDO-0132: versioned workflow definitions stored as immutable revisions, loaded without executing,
-and executed by the actual LangGraph runtime one exact revision per cycle, every step through the
+and executed by the step runner (VELDO-0262) one exact revision per cycle, every step through the
 ordinary checks.
 
 Only shared ROOT and expect are consumed. One temporary tree holds an installed .veldo copy that the
 workflow service, the cycle service, the eligibility Gate, the VELDO-0035 snapshot service, the
-VELDO-0043 adapter, the VELDO-0045 activation and the runner all load; the three production anchors
+VELDO-0043 adapter, the VELDO-0045 check and the runner all load; the three production anchors
 below are the registered mutation driver's seam, so a mutation of any of them reaches every reader,
 including the child process that saves and loads under an audit hook. The store is the real SQLite
 authority with OpenSSH journal signatures; the snapshot is a real accepted VELDO-0035 snapshot of a
-real Git commit; the graph is the locked LangGraph installed for this account, staged into a
-temporary directory so the account's stage is never touched. When that runtime is absent the cycles
-are refused unavailable_service and every cycle row fails by name; the suite never installs.
+real Git commit; the graph is Veldo's step runner in the base interpreter (-I -S -B), staged into a
+temporary directory so the account's stage is never touched. When its asset is absent the cycles are
+refused unavailable_service and every cycle row fails by name.
 
 The role and tool configuration records, admissions, blockers and the proof bundle a worker's result
 stands for are fixture records written with the store's generic command; their own services are
@@ -35,7 +35,7 @@ def _v132_suite():
     PRODUCTION = {
         'control_workflow.py': ROOT / ".veldo" / "control_workflow.py",
         'control_workflow_cycle.py': ROOT / ".veldo" / "control_workflow_cycle.py",
-        'control_workflow_langgraph.py': ROOT / ".veldo" / "control_workflow_langgraph.py",
+        'control_workflow_steps.py': ROOT / ".veldo" / "control_workflow_steps.py",
     }
 
     def load(name, path):
@@ -366,7 +366,7 @@ def _v132_suite():
                 source1 = attempt(CY.runner_source, loaded1).get('ok') or ''
                 source2 = attempt(CY.runner_source, loaded2).get('ok') or ''
                 text = canon(document1['definition']).decode()
-                registration = 'veldo_register_workflow(%r, %d)' % (text, 1)
+                registration = 'VELDO_DEFINITION = (%r, %d)' % (text, 1)
                 observed['canvas'] = {'first': first, 'second': second, 'stale': stale, 'overwrite': overwrite}
                 check('workflow/canvas-round-trip',
                       lambda: bool(loaded1) and canon(loaded1.get('definition')) == canon(document1['definition'])
@@ -429,8 +429,8 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                 records = writer.execute('SELECT command_id, transition FROM journal WHERE seq > ? ORDER BY seq',
                                          (seq_before,)).fetchall()
                 kinds = {change['kind'] for _, transition in records for change in json.loads(transition).values()}
-                forbidden = {'control_graph.py', 'control_graph_langgraph.py', 'control_workflow_cycle.py',
-                             'control_workflow_langgraph.py', 'control_runtime.py', 'control_graph_install.py',
+                forbidden = {'control_graph.py', 'control_graph_steps.py', 'control_workflow_cycle.py',
+                             'control_workflow_steps.py', 'control_runtime.py',
                              'control_dispatch.py', 'control_launch.py', 'dispatch.py', 'executor.py'}
                 observed['edit'] = {'result': {k: result.get(k) for k in ('launches', 'network', 'files', 'signed', 'failed')},
                                     'records': [r[0] for r in records], 'kinds': sorted(kinds)}
@@ -443,7 +443,7 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                       and kinds == {'workflow_revision', 'workflow_head'}
                       and {t: writer.execute('SELECT COUNT(*) FROM ' + t).fetchone()[0] for t in tables} == counts_before)
 
-            # AC2 and AC4: cycles on the actual LangGraph runtime.
+            # AC2 and AC4: cycles on the step runner (the row keeps its VELDO-0132 name).
             with region('workflow/pinned-revision', 'workflow/actual-langgraph', 'workflow/ordinary-authorization',
                         'workflow/owner-answer-per-visit',
                         'workflow/no-workflow-authority', 'workflow/observations'):
@@ -574,14 +574,14 @@ print(json.dumps({'saved': saved, 'loaded': loaded, 'history': history, 'launche
                       and rb.get('state') == 'waiting' and (rb.get('waiting') or {}).get('input') == 'worker_result'
                       and ra['proposals'] and ra['proposals'][0]['subject'] == 'VELDO-9601'
                       and entity('proof-bundle:9601')['digest'] in ra['proposals'][0]['evidence'])
-                # Every exchange ran the actual locked LangGraph, from the bound revision's own staged runner.
+                # Every exchange ran the step runner, from the bound revision's own staged runner.
                 staged = sorted((stage / 'runners').glob('*.py')) if (stage / 'runners').is_dir() else []
                 staged_text = [p.read_text() for p in staged]
                 texts = {canon(ok(attempt(workflows.load, w, v)).get('definition')).decode(): (w, v) for w, v in (
                     ('delivery', 1), ('delivery', 2), ('intruding', 1), ('tight', 1), ('asserting', 1), ('rework', 1))}
-                registered = [[(w, v) for t, (w, v) in texts.items() if 'veldo_register_workflow(%r, %d)' % (t, v) in s]
+                registered = [[(w, v) for t, (w, v) in texts.items() if 'VELDO_DEFINITION = (%r, %d)' % (t, v) in s]
                               for s in staged_text]
-                production = (mods / 'control_graph_langgraph.py').read_text().split("\nif __name__ == '__main__':\n")[0]
+                production = (mods / 'control_graph_steps.py').read_text().split("\nif __name__ == '__main__':\n")[0]
                 rc = records['cycle-c']
                 check('workflow/actual-langgraph',
                       lambda: all(labels(c) == {evidence} for c in ('cycle-a', 'cycle-b', 'cycle-c'))

@@ -269,7 +269,7 @@ POLICY_BOUNDARIES = (
     {"id": "replaceable_execution", "clause": "R03, R21, R35",
      "decision": "VELDO-DEC-0006", "version": 1,
      "activating_option": "langgraph-adapter-veldo-owned-state",
-     "effect": "LangGraph runs the graph behind a replaceable adapter over state Veldo owns"},
+     "effect": "Veldo's own step runner runs the workflow behind a replaceable adapter over state Veldo owns"},
     {"id": "review_and_completion", "clause": "R03, R46, R50",
      "decision": "VELDO-DEC-0007", "version": 1,
      "activating_option": "gate-and-owner-authorize-review-informs",

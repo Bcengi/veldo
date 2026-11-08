@@ -1,13 +1,13 @@
 """The PM cycles' graph stage inside a suite fixture's own run directory, for the whole suite process.
 
-control_graph.resolve_runtime() puts the graph runtime's stage under the account's home, which
-control_graph_lock.account_home() reads from the password database (pwd.getpwuid(os.getuid()).pw_dir, never
+control_graph.resolve_runtime() puts the step runner's stage under the account's home, which
+control_graph.account_home() reads from the password database (pwd.getpwuid(os.getuid()).pw_dir, never
 $HOME), so an exchange made without an explicit stage stages its runner under ~/.local/state/veldo/graph-stage.
 That is every exchange of a line whose cycles the product builds itself (control_service Line.build_cycles), as
 well as every installed_runtime() a suite calls. A fixture enters own(base): for its duration, that one read (the
 account home resolve_runtime takes for the stage) answers base/graph-home, so every exchange in this process, on
 any line, stages in the fixture's directory, whatever builds the cycles and whenever. Every other password
-database read is the real one, the runtime's own directory (control_graph_lock.runtime_directory) among them.
+database read is the real one.
 The real reader is put back when the fixture ends.
 
 The guard: while a fixture is active, a resolution of the real account stage is recorded with its call chain,
@@ -39,8 +39,8 @@ def _named(frame, filename, function):
 
 
 def _stage_read(frame):
-    """Whether `frame` is account_home() called by resolve_runtime() for the stage (not by runtime_directory)."""
-    return _named(frame, 'control_graph_lock.py', 'account_home') \
+    """Whether `frame` is account_home() called by resolve_runtime() for the stage."""
+    return _named(frame, 'control_graph.py', 'account_home') \
         and _named(frame.f_back, 'control_graph.py', 'resolve_runtime')
 
 
@@ -57,7 +57,7 @@ def pm_runners(stage, mods):
     """How many runners staged under `stage` are a PM exchange's. control_graph.stage copies each runner it launches,
     content-addressed, to <stage>/runners/<sha256>.py and never removes it (only the exchange's working directory
     under <stage>/work goes), so every one lasts as long as the stage; a PM exchange's runner is
-    control_graph_langgraph.py with mods/control_graph_pm.py inside it (control_workflow_cycle_pm exchange). This
+    control_graph_steps.py with mods/control_graph_pm.py inside it (control_workflow_cycle_pm exchange). This
     is the seam's outcome, judged apart from its frame match: an exchange that resolved the real account stage left
     nothing here."""
     runners = Path(stage) / 'runners'

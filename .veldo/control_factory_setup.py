@@ -256,7 +256,7 @@ def host_trust_directory_problem(directory):
 
 
 def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir,
-          profile, writable, origin, rerun=False, accounts_root=None):
+          profile, writable, origin, rerun=False, accounts_root=None, runtime_home=None):
     """Every precondition, as a plan the setup then carries out, or Refused naming the first problem. With
     `rerun` the state root holds a store laid down before, and the host trust file and the workspace binding
     it wrote are expected (rerun() then compares them with this run's arguments)."""
@@ -334,6 +334,19 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         raise Refused(error.code, str(error)) from None
     # VELDO-0185: the engines the host's account registry names, read before the first write.
     dispatch = organ('control_factory_setup_dispatch').plan(workspace, engines, E, Refused, accounts_root)
+    # VELDO-0262: the removed LangGraph runtime. A re-run (the VELDO-0189 upgrade) first retires the account's
+    # runtime directories, logging each; then setup, fresh or re-run, refuses every leftover before its first
+    # write: anything under the account's runtime directory (judged when `runtime_home` names the account, as
+    # setup() does for the default installation), a retired module in the engine it lays, and on a fresh setup
+    # in an engine already at install_root. A re-run's previous engine leaves whole with the engine switch.
+    IS = organ('init_scaffold')
+    if rerun and runtime_home is not None:
+        IS.retire_runtime(None, runtime_home)
+    leftover = ((IS.leftover_runtime(None, runtime_home) if runtime_home is not None else [])
+                + IS.leftover_modules(Path(__file__).parent)
+                + ([] if rerun else IS.leftover_modules(os.path.join(install_root, 'bin'))))
+    if leftover:
+        raise Refused(leftover[0], ', '.join(leftover), leftover)
     host_identity = re.sub(r'[^A-Za-z0-9._-]', '-', platform.node() or '') or 'veldo-host'
     return dict(root=root, owner=owner, owner_key=key, owner_public=owner_public, workspace=workspace, chat=chat,
                 token_file=token_file, host_trust=str(host_trust), install_root=install_root,
@@ -485,7 +498,7 @@ class _Step:
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
           tailscale=None, api_port=None, git_identities=None, workspace_identity=None, accounts_root=None,
-          memory=None, https_port=None):
+          memory=None, https_port=None, runtime_home=None):
     """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
     system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port,
@@ -494,8 +507,13 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
     # VELDO-0234: the option is judged before anything else, so a value Serve does not offer writes nothing.
     requested = _api(lambda: API.https_port_option(https_port))
+    # VELDO-0262: the default installation is the account's own, so its LangGraph runtime directory is judged
+    # (and retired on a re-run); a caller naming its own install_root names the account home to judge too.
+    if runtime_home is None and install_root is None:
+        runtime_home = str(organ('init_scaffold').account_home())
     options = dict(host_trust=host_trust or EL.host_trust_path(), install_root=install_root, unit_dir=unit_dir,
-                   profile=profile, writable=writable, origin=origin, accounts_root=accounts_root)
+                   profile=profile, writable=writable, origin=origin, accounts_root=accounts_root,
+                   runtime_home=runtime_home)
     port = API.PORT if api_port is None else api_port
     runner = runner or organ('control_service').Systemctl()
     if state_root_problems(state_root) == ['invalid_input:state_root:holds_store']:
@@ -1198,7 +1216,7 @@ def scan_projects_reporting(plan):
 
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
           writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None,
-          accounts_root=None, memory=None, https_port=None):
+          accounts_root=None, memory=None, https_port=None, runtime_home=None):
     """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
     the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
     before the first write: an earlier step is reported already done, a missing one is run, and an existing
@@ -1211,7 +1229,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     S, CM, AC = claims.S, claims.CM, claims.AC
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, host_trust=host_trust,
                  install_root=install_root, unit_dir=unit_dir, profile=profile, writable=writable, origin=origin,
-                 rerun=True, accounts_root=accounts_root)
+                 rerun=True, accounts_root=accounts_root, runtime_home=runtime_home)
     root, keys, workspace = plan['root'], plan['keys'], plan['workspace']
     host = os.path.join(root, HOST_DIR)
     try:

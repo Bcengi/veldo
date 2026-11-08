@@ -1,0 +1,43 @@
+{
+ "schema": "veldo.removed-rows/v1",
+ "spec": "VELDO-0262",
+ "reason_common": "AC3: the LangGraph runtime (runner, step kinds, lock, installer, records) is removed; a row or mutation that judged only that runtime has nothing left to judge.",
+ "suite_rows": [
+  {"suite": "62_veldo_0045_runtime.py", "row": "runtime/records-cover-lock", "reason": "judged the license and provenance records against the lock; both are removed"},
+  {"suite": "62_veldo_0045_runtime.py", "row": "runtime/altered-hash-refused", "reason": "judged an altered artifact hash in the lock; the lock is removed"},
+  {"suite": "62_veldo_0045_runtime.py", "row": "runtime/altered-wheel-refused", "reason": "judged a wheel installed with hash enforcement bypassed; nothing is installed"},
+  {"suite": "62_veldo_0045_runtime.py", "row": "runtime/omitted-dependency-refused", "reason": "judged the installed requirement closure; there is no closure"},
+  {"suite": "59_veldo_0043_graph.py", "row": "graph/runtime/rebuild-swap", "reason": "judged control_graph_install.py --rebuild; the installer is removed"}
+ ],
+ "mutation_rows": [
+  {"name": "graph-tracing-switch-on", "reason": "mutated the LangSmith switches in the child environment; they are removed with the runtime that read them (the row runtime/tracing-off keeps graph-child-inherits-caller-environment)"},
+  {"name": "graph-rebuild-message-dropped", "reason": "mutated the rebuild command in a refusal detail; there is no rebuild command"},
+  {"name": "graph-rebuild-no-restore", "reason": "targeted control_graph_install.py, removed"},
+  {"name": "graph-rebuild-old-left", "reason": "targeted control_graph_install.py, removed"},
+  {"name": "runtime-content-enforcement-bypassed", "reason": "targeted the RECORD content check of the locked runtime, removed"},
+  {"name": "runtime-record-digest-unchecked", "reason": "targeted the RECORD digest check, removed"},
+  {"name": "runtime-lock-hash-unchecked", "reason": "targeted the lock hash check, removed"},
+  {"name": "runtime-lock-hash-prefix-only", "reason": "targeted the lock hash check, removed"},
+  {"name": "runtime-requirements-ignored", "reason": "targeted the requirement evaluation, removed"},
+  {"name": "runtime-installed-set-unchecked", "reason": "targeted the installed distribution check, removed"},
+  {"name": "runtime-license-unjudged", "reason": "targeted the license judgement, removed"},
+  {"name": "runtime-unrecorded-package-passes", "reason": "targeted the records coverage check, removed"},
+  {"name": "scaffold-omits-runtime-records", "reason": "targeted the records asset init_scaffold laid, removed"}
+ ],
+ "retargeted": [
+  {"name": "graph-runner-emits-langgraph-object", "to": "control_graph_steps.py", "same_intent": "the runner emits a non-plain object"},
+  {"name": "graph-runner-tuple-as-plain", "to": "control_graph_steps.py", "same_intent": "a tuple passes as plain data"},
+  {"name": "graph-runner-accepts-untyped-assertion", "to": "control_graph_steps.py", "same_intent": "an untyped node output key is accepted"},
+  {"name": "graph-suspend-without-graph", "to": "control_graph_steps.py", "same_intent": "suspend answered without running a step (now labelled NO_RUNTIME, refused as missing evidence)"},
+  {"name": "graph-start-unavailable-mislabelled", "to": "control_graph.py new refusal text", "same_intent": "runtime_unavailable mislabelled"},
+  {"name": "graph-runner-launched-in-place", "to": "control_graph.py launch with FLAGS", "same_intent": "the runner launched from its source, not the stage"},
+  {"name": "workflow-runner-unregistered", "to": "VELDO_DEFINITION splice", "same_intent": "the runner carries no revision"},
+  {"name": "v247-join-on-first-input", "to": "control_graph_steps.py", "same_intent": "the join fires on its first input"},
+  {"name": "scaffold-omits-runtime-lock", "to": ".veldo/control_graph_steps.py in init_scaffold", "same_intent": "a journey asset is not installed"},
+  {"name": "graph-unavailable-mislabelled", "to": "control_runtime.adapter refusal", "same_intent": "runtime_unavailable mislabelled"},
+  {"name": "graph-probe-absent-only", "to": "control_runtime.probe_graph", "same_intent": "the hidden case never asked"},
+  {"name": "runtime-hide-not-enforced", "to": "the hidden step runner", "same_intent": "the hide hook does not refuse"},
+  {"name": "runtime-records-source-fallback", "to": "engine/.veldo fallback", "same_intent": "an omitted asset read from the source tree"},
+  {"name": "authorization-reads-runtime-by-path", "to": "the step runner file", "same_intent": "enforcement reads the execution environment by path"}
+ ]
+}

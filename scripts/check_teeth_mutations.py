@@ -721,23 +721,24 @@ def cases():
     graph('graph-start-without-runtime-launches', 'control_graph.py',
           '    if not available(runtime):\n', '    if False:\n', 'start-unavailable')
     graph('graph-start-unavailable-mislabelled', 'control_graph.py',
-          "        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation",
-          "        raise Refused('unknown_outcome', 'no graph runtime is installed for this operation",
+          "        raise Refused('runtime_unavailable', 'the step runner asset is absent",
+          "        raise Refused('unknown_outcome', 'the step runner asset is absent",
           'start-unavailable')
-    # VELDO-0043 AC1 and AC2 against the actual installed LangGraph: each declared falsifier, a
-    # second different defect per row, and two for the tracing-off and typed-proposal rows.
-    graph('graph-runner-emits-langgraph-object', 'control_graph_langgraph.py',
+    # VELDO-0043 AC1 and AC2 against the actual runner: each declared falsifier, a second different
+    # defect per row, and two for the typed-proposal row. VELDO-0262 retargets the rows that named the
+    # LangGraph runner at the step runner (control_graph_steps.py) with the same intent.
+    graph('graph-runner-emits-langgraph-object', 'control_graph_steps.py',
           '        body = json.dumps(closed(reply), allow_nan=False)\n',
           "        body = json.dumps(reply, allow_nan=False, default=lambda o: {'__class__': "
           "type(o).__module__ + '.' + type(o).__qualname__, 'repr': repr(o)})\n", 'runtime/plain-data')
-    graph('graph-runner-tuple-as-plain', 'control_graph_langgraph.py',
+    graph('graph-runner-tuple-as-plain', 'control_graph_steps.py',
           '    if kind is list:\n', '    if isinstance(value, (list, tuple)):\n', 'runtime/plain-data')
     graph('graph-child-inherits-working-directory', 'control_graph.py',
           'cwd=str(empty),', 'cwd=None,', 'authority/no-direct-write')
     graph('graph-child-inherits-store-descriptor', 'control_graph.py',
           'close_fds=True,', 'close_fds=False,', 'authority/no-direct-write')
-    graph('graph-runner-accepts-untyped-assertion', 'control_graph_langgraph.py',
-          '            if untyped:\n', '            if False:\n', 'authority/typed-proposals-only')
+    graph('graph-runner-accepts-untyped-assertion', 'control_graph_steps.py',
+          '        if untyped:\n', '        if False:\n', 'authority/typed-proposals-only')
     graph('graph-untyped-proposal-read-as-priority', 'control_graph.py',
           "            if kind not in PROPOSALS:\n"
           "                raise Refused('invalid_response', where + ': untyped proposal')\n",
@@ -746,8 +747,7 @@ def cases():
           'authority/typed-proposals-only')
     graph('graph-child-inherits-caller-environment', 'control_graph.py',
           'env=dict(ENVIRONMENT),', 'env=None,', 'runtime/tracing-off')
-    graph('graph-tracing-switch-on', 'control_graph.py',
-          "'LANGSMITH_TRACING_V2': 'false'", "'LANGSMITH_TRACING_V2': 'true'", 'runtime/tracing-off')
+    # VELDO-0262: graph-tracing-switch-on is removed with the LangSmith switches (proof/VELDO-0262/removed-rows.json).
     # Review findings F5, F4, F3, F2 and F1 (2026-09-23): two different defects per new row.
     graph('graph-deep-answer-unbounded', 'control_graph.py',
           '    if text_depth(raw) > MAX_DEPTH:\n', '    if False:\n', 'shape/deep-answer')
@@ -765,17 +765,17 @@ def cases():
     graph('graph-answer-notes-any-plain', 'control_graph.py',
           "    if type(value['notes']) is not str or len(value['notes']) > MAX_NOTES:\n",
           "    if len(value['notes']) > MAX_NOTES:\n", 'shape/closed-response')
-    graph('graph-suspend-without-graph', 'control_graph_langgraph.py',
+    graph('graph-suspend-without-graph', 'control_graph_steps.py',
           '    return run_cycle(request, workflow, resume)\n',
           "    if request['operation'] == 'suspend':\n"
-          "        return _reply(request, 'suspended', {'name': 'langgraph', 'version': '1.2.12'}, resume=resume)\n"
+          "        return _reply(request, 'suspended', NO_RUNTIME, resume=resume)  # defect: no step ran\n"
           '    return run_cycle(request, workflow, resume)\n', 'runtime/lifecycle')
     graph('graph-runtime-evidence-unchecked', 'control_graph.py',
           '            if self.evidence is not None and not evidenced(result, self.evidence):\n',
           '            if False:\n', 'runtime/lifecycle')
     graph('graph-runner-launched-in-place', 'control_graph.py',
-          "            proc = subprocess.Popen([runtime['python'], '-I', '-B', str(staged)],",
-          "            proc = subprocess.Popen([runtime['python'], '-I', '-B', runtime['runner']],",
+          "            proc = subprocess.Popen([runtime['python'], *FLAGS, str(staged)],",
+          "            proc = subprocess.Popen([runtime['python'], *FLAGS, runtime['runner']],",
           'authority/no-direct-write')
     # The stated limit's real falsifier (second review): the adapter makes itself non-dumpable,
     # which closes /proc/<parent>/cwd and fd to a same-account child. It replaces the two earlier
@@ -838,21 +838,14 @@ def cases():
     graph('graph-refused-workdir-kept', 'control_graph.py',
           "        _remove(path)\n        raise Refused('runtime_unavailable', 'the child working directory",
           "        raise Refused('runtime_unavailable', 'the child working directory", 'authority/stage-links')
-    graph('graph-rebuild-message-dropped', 'control_graph.py',
-          "'; '.join(problems) + '; rebuild it with: ' + REBUILD_COMMAND)",
-          "'; '.join(problems))", 'runtime/pyvenv-clean')
+    # VELDO-0262: graph-rebuild-message-dropped is removed with the rebuild command (removed-rows.json).
     graph('graph-root-file-check-dropped', 'control_graph.py',
           "    if root.exists() and not root.is_dir():\n        raise Refused('runtime_unavailable', 'the stage root is not a directory')\n",
           '', 'authority/stage-shapes')
     graph('graph-option-values-unjudged', 'control_graph.py',
           "        words += [word.partition('=')[2] for word in words if word.startswith('-') and '=' in word]\n",
           '', 'runtime/pyvenv-clean')
-    graph('graph-rebuild-no-restore', 'control_graph_install.py',
-          '    except OSError:\n        os.rename(retired, target)\n        raise\n', '    except OSError:\n        raise\n',
-          'runtime/rebuild-swap')
-    graph('graph-rebuild-old-left', 'control_graph_install.py',
-          '    if retired.is_symlink() or not retired.is_dir():\n        retired.unlink()\n    else:\n        shutil.rmtree(retired)\n',
-          '', 'runtime/rebuild-swap')
+    # VELDO-0262: graph-rebuild-no-restore and graph-rebuild-old-left are removed with control_graph_install.py.
     graph('graph-problems-repeated', 'control_graph.py',
           '    return list(dict.fromkeys(problems))\n', '    return problems\n', 'runtime/pyvenv-clean')
     graph('graph-shape-opinion-dropped', 'control_graph.py',
@@ -2859,38 +2852,8 @@ def cases():
     def runtime(name, module, old, new, row):
         add(45, name, '62_veldo_0045_runtime.py', module, old, new, [row])
 
-    runtime('runtime-content-enforcement-bypassed', 'control_runtime.py',
-            "    if content_digest(kept) != entry['content'].get('sha256'):\n",
-            "    if False:  # defect: hash enforcement bypassed, the genuine wheel's content is never compared\n",
-            'runtime/altered-wheel-refused')
-    runtime('runtime-record-digest-unchecked', 'control_runtime.py',
-            "            if algorithm != 'sha256' or not target.is_file() or _record_hash(target.read_bytes()) != value:\n",
-            "            if algorithm != 'sha256' or not target.is_file():  # defect: a file is never hashed against RECORD\n",
-            'runtime/altered-wheel-refused')
-    runtime('runtime-lock-hash-unchecked', 'control_runtime.py',
-            "        if entry.get('sha256') != pinned:\n",
-            "        if False:  # defect: the lock's artifact hash is never compared with the registry's\n",
-            'runtime/altered-hash-refused')
-    runtime('runtime-lock-hash-prefix-only', 'control_runtime.py',
-            "        if entry.get('sha256') != pinned:\n",
-            "        if str(entry.get('sha256'))[:16] != pinned[:16]:  # defect: a digest prefix stands for the digest\n",
-            'runtime/altered-hash-refused')
-    runtime('runtime-requirements-ignored', 'control_runtime.py',
-            "    for requirement in report['requirements']:\n",
-            "    for requirement in []:  # defect: the installed requirements are never evaluated\n",
-            'runtime/omitted-dependency-refused')
-    runtime('runtime-installed-set-unchecked', 'control_runtime.py',
-            "        if found is None:\n            problems.append('missing_dependency:' + name)\n            continue\n",
-            "        if found is None:\n            continue  # defect: a locked distribution may be absent\n",
-            'runtime/omitted-dependency-refused')
-    runtime('runtime-license-unjudged', 'control_runtime.py',
-            "    return ['license_unapproved:%s:%s' % (name, t) for t in identifiers if t not in APPROVED_LICENSES] or (\n",
-            "    return [] or (  # defect: any recorded license is accepted\n",
-            'runtime/records-cover-lock')
-    runtime('runtime-unrecorded-package-passes', 'control_runtime.py',
-            "        if entry is None:\n            problems.append('unrecorded_package:' + name)\n            continue\n",
-            "        if entry is None:\n            continue  # defect: a locked package needs no record\n",
-            'runtime/records-cover-lock')
+    # VELDO-0262: the eight activation rows of the locked LangGraph runtime (content, RECORD digest, lock hash
+    # twice, requirements, installed set, license, unrecorded package) are removed with it (removed-rows.json).
     runtime('runtime-qualification-after-entry-point', 'control_runtime.py',
             "    return source.replace(guard, '\\n' + QUALIFICATION + guard, 1)\n",
             "    return source + '\\n' + QUALIFICATION  # defect: registered after the entry point has served\n",
@@ -2907,15 +2870,12 @@ def cases():
             "    report['counts'] = dict(COUNTS)\n", "",
             'runtime/observations')
     runtime('scaffold-omits-runtime-lock', 'init_scaffold.py',
-            '    ".veldo/control_graph_lock.py",\n', '',
+            '    ".veldo/control_graph_steps.py",\n', '',
             'journey/assets-installed')
-    runtime('scaffold-omits-runtime-records', 'init_scaffold.py',
-            '_RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-records.json")]\n',
-            '_RUNTIME_ASSETS = []  # defect: the records are never laid down\n',
-            'journey/assets-installed')
+    # VELDO-0262: scaffold-omits-runtime-records is removed with the records (removed-rows.json).
     runtime('runtime-records-source-fallback', 'control_runtime.py',
             "    return HERE / rel\n",
-            "    return HERE / rel if (HERE / rel).is_file() else Path.cwd() / 'engine' / rel  # defect: the source tree\n",
+            "    return HERE / rel if (HERE / rel).is_file() else Path.cwd() / 'engine/.veldo' / rel  # defect: the source tree\n",
             'journey/omitted-asset-named')
     runtime('runtime-missing-asset-unnamed', 'control_runtime.py',
             "    missing = ['missing_asset:.veldo/' + rel for rel in JOURNEY if not _asset(rel).is_file()]\n"
@@ -2930,9 +2890,8 @@ def cases():
     runtime('authorization-reads-runtime-by-path', 'authorization.py',
             'from pathlib import Path\nimport json\n',
             'from pathlib import Path\nimport json\n'
-            'try:  # defect: reads the graph runtime by path, past every import check\n'
-            '    import glob as _g, os as _o, pwd as _p\n'
-            "    _g.glob(_p.getpwuid(_o.getuid()).pw_dir + '/.local/share/veldo/langgraph/*/lib/python3.12/site-packages/langgraph/*.py')\n"
+            'try:  # defect: reads the step runner by path, past every import check\n'
+            "    Path(__file__).with_name('control_graph_steps.py').read_text()\n"
             'except OSError:\n    pass\n',
             'enforcement/no-runtime')
     runtime('enforcement-catalog-unread', 'control_runtime.py',
@@ -2944,15 +2903,15 @@ def cases():
             "    for script in (GATE,):  # defect: the guard's entries are not enumerated\n",
             'enforcement/entries-enumerated')
     runtime('graph-unavailable-mislabelled', 'control_runtime.py',
-            "        raise graph.Refused('runtime_unavailable', 'the graph runtime is not activated ('",
-            "        raise graph.Refused('unknown_outcome', 'the graph runtime is not activated ('",
+            "        raise graph.Refused('runtime_unavailable', 'the step runner cannot be used ('",
+            "        raise graph.Refused('unknown_outcome', 'the step runner cannot be used ('",
             'enforcement/graph-unavailable')
     runtime('graph-probe-absent-only', 'control_runtime.py',
-            "        for label, home in (('absent', empty), ('hidden', None)):\n",
-            "        for label, home in (('absent', empty),):  # defect: the hidden runtime is never asked\n",
+            "        for label in ('absent', 'hidden'):\n",
+            "        for label in ('absent',):  # defect: the hidden runner is never asked\n",
             'enforcement/graph-unavailable')
     runtime('runtime-hide-not-enforced', 'control_runtime.py',
-            "            raise PermissionError('the graph runtime is hidden: ' + _hide_os.fsdecode(place))\n", "",
+            "            raise PermissionError('the step runner is hidden: ' + _hide_os.fsdecode(place))\n", "",
             'enforcement/graph-unavailable')
     # VELDO-0039: each criterion's declared falsifier and further defects, each against the one
     # suite row it names. Anchors are exact text in the production modules the suite installs.
@@ -4118,7 +4077,7 @@ def cases():
              '        version = 1 if WF._identifier(workflow) and WF.head_version(conn, domain, repository, workflow) else 0  # defect: a new cycle binds the first revision\n',
              'pinned-revision', module=cycle)
     workflow('workflow-runner-unregistered',
-             "    block = '\\n' + (HERE / STEPS).read_text() + '\\nveldo_register_workflow(%r, %d)\\n' % (text, revision['version'])\n",
+             "    block = '\\n' + (HERE / STEPS).read_text() + '\\nVELDO_DEFINITION = (%r, %d)\\n' % (text, revision['version'])\n",
              "    block = '\\n' + (HERE / STEPS).read_text() + '\\n'  # defect: the runner registers no revision\n",
              'actual-langgraph', module=cycle)
     workflow('workflow-cancel-without-graph', "            if record['resume'] is not None:\n",
@@ -10496,7 +10455,7 @@ def cases():
                "        if False:\n",
                'check/forged-branch')
     # AC3, declared: the join runs when its first input arrives.
-    check_join('v247-join-on-first-input', 'control_graph_langgraph.py',
+    check_join('v247-join-on-first-input', 'control_graph_steps.py',
                "        if all(b['position'] == join for b in branches.values()):\n",
                "        if any(b['position'] == join for b in branches.values()):  # defect: the join fires on its first input\n",
                'fanout/join-waits-for-all')
@@ -12877,6 +12836,77 @@ def cases():
         '  # defect: no ExitStack',
         ['slices/end-of-run'])
     result[-1]['dir'] = 'scripts/suites'
+    # VELDO-0262: Veldo's own step runner replaces LangGraph. Each criterion's declared falsifiers, against suite 130.
+    step262 = '130_veldo_0262_step_runner.py'
+    # AC1 (1): later notes lose to earlier ones in the merge.
+    add(262, 'v262-notes-earlier-win', step262, 'control_graph_steps.py',
+        "        notes = dict(self.notes, **(out.get('notes') or {}))\n",
+        "        notes = dict(out.get('notes') or {}, **self.notes)  # defect: earlier notes win\n",
+        ['replay/corpus'])
+    # AC1 (2): a suspend that carries proposals is accepted.
+    add(262, 'v262-suspend-with-proposals', step262, 'control_graph_steps.py',
+        "            if following is None or proposals:\n",
+        "            if following is None:  # defect: a suspend may carry proposals\n",
+        ['replay/corpus'])
+    # AC1 (3): the step count is not advanced for a node. A failed node's step reaches no answer (a failure answer
+    # carries none, on LangGraph as here), so the declared form is applied to the one increment every node takes.
+    add(262, 'v262-step-not-advanced', step262, 'control_graph_steps.py',
+        "        step = self.step + 1\n",
+        "        step = self.step  # defect: the step count is not advanced\n",
+        ['replay/corpus'])
+    # AC2 (1): the join runs when its first input arrives.
+    add(262, 'v262-join-on-first-input', step262, 'control_graph_steps.py',
+        "        if all(b['position'] == join for b in branches.values()):\n",
+        "        if any(b['position'] == join for b in branches.values()):  # defect: the join fires on its first input\n",
+        ['fanout/join-waits-for-all'])
+    # AC2 (2): branches run in sequence on one shared state, each seeing the previous branch's writes.
+    add(262, 'v262-branches-share-state', step262, 'control_graph_steps.py',
+        "        view = dict(copy.deepcopy(state), branch=branch)\n",
+        "        view = state  # defect: every branch runs on one shared state\n        view['branch'] = branch\n",
+        ['fanout/branch-isolation'])
+    # AC3 (1): control_graph_lock.py restored to engine/.veldo (the suite's RESTORED seam lays it over the tree).
+    add(262, 'v262-lock-restored', step262, step262,
+        "    RESTORED = ()\n",
+        "    RESTORED = ('engine/.veldo/control_graph_lock.py',)  # defect: the lock is restored\n",
+        ['leftover/repository'])
+    result[-1]['dir'] = 'scripts/suites'
+    # AC3 (2): `import langgraph` inside a function of control_workflow_cycle.py.
+    add(262, 'v262-cycle-imports-langgraph', step262, 'control_workflow_cycle.py',
+        "    def runtime(self):\n        if self._runtime is None:\n",
+        "    def runtime(self):\n        import langgraph  # defect: the removed runtime imported again\n"
+        "        if self._runtime is None:\n",
+        ['leftover/repository'])
+    result[-1]['dir'] = 'engine/.veldo'
+    # AC3 (3): the upgrade follows a link named by a digest and removes through it.
+    add(262, 'v262-upgrade-follows-link', step262, 'init_scaffold.py',
+        "            if _DIGEST_NAME.match(name) and not path.is_symlink() and path.is_dir():\n"
+        "                shutil.rmtree(path)\n",
+        "            if _DIGEST_NAME.match(name) and path.is_dir():\n"
+        "                shutil.rmtree(path.resolve())  # defect: the link is followed\n",
+        ['leftover/upgrade-link'])
+    # AC3 (4): a fresh CLI scaffold without the home flag never judges the account's runtime directory.
+    add(262, 'v262-fresh-cli-home-unjudged', step262, 'init_scaffold.py',
+        "    home = account_home()\n    if len(argv) == 3 and argv[0] == \"--home\":\n",
+        "    home = None  # defect: a fresh CLI scaffold judges no account runtime directory\n"
+        "    if len(argv) == 3 and argv[0] == \"--home\":\n",
+        ['leftover/fresh-cli'])
+    # AC4 (2): -S dropped from the adapter's launch flags.
+    add(262, 'v262-launch-without-S', step262, 'control_graph.py',
+        "FLAGS = ('-I', '-S', '-B')\n",
+        "FLAGS = ('-I', '-B')  # defect: site packages importable in the child\n",
+        ['launch/stdlib-only'])
+    # AC2 row: a forged runner answer leading a branch to a land node is refused by the cycle (suite 128).
+    add(262, 'v262-cycle-branch-trace-unjudged', '128_veldo_0247_check_join.py', 'control_workflow_cycle.py',
+        "            if len(found) != 1 or last != [position, port, found[0]['to']] or entry.get('position') != found[0]['to']:\n",
+        "            if False:  # defect: a branch's reported step is not judged against the revision\n",
+        ['fanout/forged-land-in-branch'])
+    # AC3 wiring: factory setup and its VELDO-0189 upgrade refuse leftover_runtime before the first write.
+    add(262, 'v262-factory-leftover-accepted', '86_veldo_0189_engine_upgrade.py', 'control_factory_setup.py',
+        "    if leftover:\n        raise Refused(leftover[0], ', '.join(leftover), leftover)\n",
+        "    if leftover and False:  # defect: a leftover runtime is not refused\n"
+        "        raise Refused(leftover[0], ', '.join(leftover), leftover)\n",
+        ['upgrade/retires-langgraph', 'setup/leftover-refused'])
+    result[-1]['timeout'] = 900
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

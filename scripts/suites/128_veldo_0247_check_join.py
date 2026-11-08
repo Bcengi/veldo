@@ -1,13 +1,13 @@
 """VELDO-0247: a Check step routes the work by a plain rule over declared fields with a required otherwise path,
-parallel branches from one step run at the same time on the real LangGraph runtime and a Join step waits for all
+parallel branches from one step run at the same time on the step runner (VELDO-0262) and a Join step waits for all
 of them, every fan-out is bounded, and no branch can go around the owner's approval.
 
 Only shared ROOT, expect and fast_temp are consumed. One temporary tree holds an installed .veldo copy; the
 production anchors below are the registered mutation driver's seam, so a mutation of any of them reaches every
 reader, including the runner each cycle stages. The store is the real SQLite authority with OpenSSH journal
 signatures; saves go through VELDO-0132's Workflows service; cycles run through VELDO-0132's Cycles service on the
-VELDO-0045 activated LangGraph runtime, staged into a temporary directory so the account's stage is never touched.
-When that runtime is absent every cycle is refused unavailable_service and every cycle row fails by name.
+VELDO-0045 checked step runner, staged into a temporary directory so the account's stage is never touched.
+When its asset is absent every cycle is refused unavailable_service and every cycle row fails by name.
 
 The role and tool configuration records, admissions and the proof bundles a worker's result stands for are
 fixture records written with the store's generic command, as in suite 65.
@@ -29,8 +29,8 @@ def _v247_suite():
     PRODUCTION = {
         'control_workflow.py': ROOT / ".veldo" / "control_workflow.py",
         'control_workflow_cycle.py': ROOT / ".veldo" / "control_workflow_cycle.py",
-        'control_workflow_langgraph.py': ROOT / ".veldo" / "control_workflow_langgraph.py",
-        'control_graph_langgraph.py': ROOT / ".veldo" / "control_graph_langgraph.py",
+        'control_workflow_steps.py': ROOT / ".veldo" / "control_workflow_steps.py",
+        'control_graph_steps.py': ROOT / ".veldo" / "control_graph_steps.py",
     }
 
     def load(name, path):
@@ -166,7 +166,7 @@ def _v247_suite():
                                                  scope_digest='sha256:scope-' + sid, revision=1, depends_on=[],
                                                  risk='standard'), **FIELDS.get(sid, {})))
             put('backlog:' + sid, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=REPOSITORY))
-        for sid in ('VELDO-9707', 'VELDO-9708', 'VELDO-9709'):
+        for sid in ('VELDO-9707', 'VELDO-9708', 'VELDO-9709', 'VELDO-9710'):
             put('admission:' + sid, 'admission', dict(unit=sid, state='accepted', scope_digest='sha256:scope-' + sid))
 
         __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['bind_paths'](
@@ -459,10 +459,10 @@ def _v247_suite():
                       and WF.FAN_OUT_CEILING == 8 and joins['named'] and joins['nothing']
                       and escapes['named'] and escapes['nothing'])
 
-            # AC2 and AC3 on the actual LangGraph runtime.
+            # AC2 and AC3 on the step runner (the label row keeps its VELDO-0247 name).
             with region('check/one-branch', 'check/field-unsupplied', 'check/forged-branch', 'check/observations',
                         'fanout/dispatched-together', 'fanout/join-waits-for-all', 'fanout/budget-whole-superstep',
-                        'fanout/actual-langgraph'):
+                        'fanout/forged-land-in-branch', 'fanout/actual-langgraph'):
                 tight = fanned('fanned-tight', 4)
                 tight['budget'] = {'steps': 3}
                 saved = {name: attempt(workflows.save, {'definition': body}, principal='owner', base=0)
@@ -632,11 +632,65 @@ def _v247_suite():
                       and tight_record.get('steps') == 1
                       and not [e for e in tight_record.get('trace') or [] if e[0].startswith('assign_')]
                       and tight_branch_events == [])
+                # VELDO-0262 AC2: a forged runner answer naming a land node from inside a branch is refused by the
+                # cycle. The revision holds a land node, reachable only after the join and the owner's approval; the
+                # forged runner reports the copy branch's assignment moving straight to it.
+                landing = fanned('fanned-land')
+                landing['nodes'].update(approval={'kind': 'owner_approval', 'config': {'approves': 'land'}},
+                                        land={'kind': 'land', 'config': {}})
+                landing['transitions'] = [t for t in landing['transitions'] if t['id'] != 't-joined'] + [
+                    {'id': 't-joined', 'from': 'meet', 'port': 'done', 'to': 'approval'},
+                    {'id': 't-granted', 'from': 'approval', 'port': 'granted', 'to': 'land'},
+                    {'id': 't-stopped', 'from': 'approval', 'port': 'stopped', 'to': 'handle'}] + [
+                    {'id': 't-land-' + port, 'from': 'land', 'port': port, 'to': 'handle'} for port in WF.LAND_PORTS]
+                saved['fanned-land'] = attempt(workflows.save, {'definition': landing}, principal='owner', base=0)
+                land_start = attempt(cycles.start, 'fan-land', workflow='fanned-land', subject='VELDO-9710',
+                                     snapshot=snapshot)
+                land_waiting = cycles.record('fan-land') or {}
+                for name in ('copy', 'image'):
+                    put('proof-bundle:9710-' + name, 'proof_bundle', dict(unit='VELDO-9710', domain=DOMAIN, part=name,
+                                                                         repository=REPOSITORY, source={'commit': commit}))
+                marker = "        return entry\n"
+
+                def to_land(revision):
+                    source = genuine(revision)
+                    forged_entry = ("        if branch == 'copy' and 'position' in entry:  # forged: the branch lands\n"
+                                    "            entry.update(position='land', last=[name, 'done', 'land'])\n")
+                    return source.replace(marker, forged_entry + marker, 1) if source.count(marker) == 1 \
+                        else source + '\n# unforged\n'
+
+                CY.runner_source = to_land
+                try:
+                    land_in = attempt(cycles.advance, 'fan-land', {'worker_result': {
+                        'assign_copy': 'proof-bundle:9710-copy', 'assign_image': 'proof-bundle:9710-image'}})
+                finally:
+                    CY.runner_source = genuine
+                land_record = cycles.record('fan-land') or {}
+                land_events = [e for e in events if e.get('schema') == CY.SCHEMA and e.get('cycle') == 'fan-land']
+                observed['fan_land'] = {
+                    'saved': saved['fanned-land'].get('refused') or 'ok', 'start': land_start.get('refused'),
+                    'advance': land_in.get('refused'),
+                    'waiting': {k: land_waiting.get(k) for k in ('state', 'steps', 'trace')},
+                    'record': {k: land_record.get(k) for k in ('state', 'steps', 'trace', 'refusal')},
+                    'refusals': [{k: e.get(k) for k in ('operation', 'refusal', 'node', 'branch')}
+                                 for e in land_events if e.get('refusal')]}
+                check('fanout/forged-land-in-branch',
+                      lambda: (saved['fanned-land'].get('ok') or {}).get('version') == 1
+                      and land_waiting.get('state') == 'waiting'
+                      and (land_waiting.get('waiting') or {}).get('node') == 'veldo_parallel'
+                      and land_record.get('state') == 'refused'
+                      and land_record.get('refusal') == 'invalid_response:trace'
+                      and land_record.get('steps') == land_waiting.get('steps')
+                      and not [e for e in land_record.get('trace') or [] if e[0] in ('land', 'approval', 'meet')
+                               or (len(e) == 3 and e[2] == 'land')]
+                      and [(e.get('node'), e.get('branch')) for e in land_events if e.get('refusal')]
+                      == [('assign_copy', 'copy')]
+                      and not [e for e in land_events if e.get('operation') in ('branch_step', 'superstep', 'arrive')])
                 evidence = json.dumps(load('v247_graph', mods / 'control_graph.py').runtime_evidence(), sort_keys=True)
                 labels = {json.dumps(e.get('runtime'), sort_keys=True) for e in events
                           if e.get('schema') == CY.SCHEMA and e.get('cycle') in ('fan-together', 'fan-one', 'check-many')
                           and e.get('operation') in ('step', 'branch_step', 'propose') and e.get('outcome') == 'accepted'}
-                check('fanout/actual-langgraph', lambda: labels == {evidence} and '"langgraph"' in evidence)
+                check('fanout/actual-langgraph', lambda: labels == {evidence} and '"veldo-steps"' in evidence)
         finally:
             for conn in connections:
                 with contextlib.suppress(Exception):

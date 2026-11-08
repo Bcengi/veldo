@@ -1,6 +1,6 @@
 """Project coordination cycles over accepted snapshots (VELDO-0088).
 
-The authority owns scheduling and receipts. LangGraph owns only the bounded step
+The authority owns scheduling and receipts. The step runner owns only the bounded step
 trace. Reasoning is a coordination dispatch on the ordinary Runner. Returned
 commands are applied in order by their registered owners; the first refusal stops
 the document. A cycle never writes the entities owned by those commands.
@@ -286,7 +286,7 @@ class ProjectCycles:
     def exchange(self, record, operation, supplied=()):
         graph = organ('control_graph')
         runtime = self.runtime or CY.installed_runtime(stage=self.stage)
-        source = (Path(__file__).with_name('control_graph_langgraph.py')).read_text()
+        source = (Path(__file__).with_name('control_graph_steps.py')).read_text()
         extension = Path(__file__).with_name('control_graph_pm.py').read_text()
         guard = "\nif __name__ == '__main__':\n"
         with tempfile.TemporaryDirectory(prefix='pm-graph-') as temporary:

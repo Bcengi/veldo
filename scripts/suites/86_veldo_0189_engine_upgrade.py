@@ -68,6 +68,9 @@ def _v189_suite():
     CD, WR = 'engines/codex-refusal', 'engines/repair-report'
     RT, RC = 'upgrade/corrupt-runtime-record', 'upgrade/receiver-without-store'
     ROWS += (EQ, RN, PF, AT, ER, EM, CD, WR, RT, RC)
+    # VELDO-0262: the re-run retires the removed LangGraph runtime of the account it names; setup refuses a leftover.
+    LG, LR = 'upgrade/retires-langgraph', 'setup/leftover-refused'
+    ROWS += (LG, LR)
     COMMANDS = 'ownership/restore-commands'
     ROWS += (COMMANDS, AK)
     rows = {name: [] for name in ROWS}
@@ -604,6 +607,7 @@ def _v189_suite():
             self.manager = Manager(self.units)
             managers.append(self.manager)
             self.laid = {}
+            self.runtime_home = None
 
         def argv(self):
             return ['setup', '--state-root', str(self.root), '--owner', owner, '--owner-key', str(owner_key),
@@ -614,6 +618,8 @@ def _v189_suite():
                          profile=profile, writable=[], origin=url)
             if current:
                 found.update(tailscale=[ts.path], api_port=port)
+            if current and self.runtime_home is not None:
+                found.update(runtime_home=str(self.runtime_home))
             if current and not list(self.root.glob('authority/*.sqlite3')):
                 found.update(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/git_identity.py'))['options']())
             return found
@@ -1021,6 +1027,58 @@ def _v189_suite():
             changed = changes(before, after)
             check(PF, 'post-0186 re-run writes nothing: ' + str(changed), after == before)
             check(PF, 'post-0186 re-run keeps the journal unchanged', journal(fresh.store) == head)
+        # VELDO-0262: a scratch account home holding the removed LangGraph runtime: the re-run retires its
+        # digest-named directory, logging it, and writes nothing else; a link named by a digest is not followed,
+        # and the re-run then refuses leftover_runtime naming it with nothing written. A fresh setup over the same
+        # account refuses before its first write.
+        with section(LG):
+            v262_account = base / 'v262-account'
+            v262_runtime = v262_account / '.local/share/veldo/langgraph'
+            v262_made = v262_runtime / ('c' * 64)
+            (v262_made / 'bin').mkdir(parents=True)
+            (v262_made / 'bin' / 'python').write_text('')
+            fresh.runtime_home = v262_account
+            before = snapshot(*fresh.trees())
+            v262_log = io.StringIO()
+            try:
+                code, report = fresh.setup(stderr=v262_log)
+            finally:
+                fresh.runtime_home = None
+            check(LG, 'the re-run is accepted and retires the digest-named runtime directory, logging it [%s %s] [%s]'
+                  % (code, report.get('reason'), v262_log.getvalue().strip()[-300:]),
+                  code == 0 and not v262_made.exists() and not v262_runtime.exists()
+                  and ('retired runtime directory ' + str(v262_made)) in v262_log.getvalue())
+            check(LG, 'the retiring re-run writes nothing in the installation: ' + str(changes(before, snapshot(*fresh.trees()))),
+                  snapshot(*fresh.trees()) == before)
+            v262_victim = base / 'v262-victim'
+            v262_victim.mkdir()
+            (v262_victim / 'keep').write_text('kept')
+            v262_runtime.mkdir(parents=True)
+            v262_link = v262_runtime / ('d' * 64)
+            v262_link.symlink_to(v262_victim, target_is_directory=True)
+            fresh.runtime_home = v262_account
+            v262_log = io.StringIO()
+            try:
+                code, report = fresh.setup(stderr=v262_log)
+            finally:
+                fresh.runtime_home = None
+            check(LG, 'a link named by a digest is not followed and the re-run refuses naming it [%s %s]'
+                  % (code, report.get('reason')),
+                  code != 0 and report.get('reason') == 'leftover_runtime:' + str(v262_link) and v262_link.is_symlink()
+                  and (v262_victim / 'keep').read_text() == 'kept' and ('refused ' + str(v262_link) + ': a link') in v262_log.getvalue()
+                  and snapshot(*fresh.trees()) == before)
+        with section(LR):
+            v262_fresh_account = base / 'v262-fresh-account'
+            v262_leftover = v262_fresh_account / '.local/share/veldo/langgraph' / ('e' * 64)
+            v262_leftover.mkdir(parents=True)
+            v262_spare = Host('v262-leftover')
+            v262_spare.runtime_home = v262_fresh_account
+            v262_trees = snapshot(*v262_spare.trees())
+            code, report = v262_spare.setup()
+            check(LR, 'a fresh setup refuses leftover_runtime naming the runtime directory, writing nothing [%s %s]'
+                  % (code, report.get('reason')),
+                  code != 0 and report.get('reason') == 'leftover_runtime:' + str(v262_leftover) and v262_leftover.is_dir()
+                  and snapshot(*v262_spare.trees()) == v262_trees and not v262_spare.install.exists())
         # Review rows start from the real installer's host and record, restored between cases.
         restore(saved_fresh)
         engines_helper = load('v189_engines_review', mods / 'control_factory_setup_engines.py')
