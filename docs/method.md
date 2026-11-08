@@ -272,6 +272,8 @@ Human sign-off is reserved for changes where being wrong could create severe or 
 
 Human approval is a risk control, not a ritual.
 
+The requirement is computed, not declared. A specification's approval flag follows its placement: it is required when its footprint and a protected path match each other (either pattern matching the other), when it names protected paths, when its risk areas name money, authentication and security, schema or irreversible infrastructure, or when it declares no footprint at all. An author may raise the flag, never lower it below what the rule computes, and lowering a flag on an existing specification needs the owner's recorded approval for that specification file. The protected list holds only paths in those categories; test and gate machinery is ordinary work. Ordinary work lands on a green gate and a passing verdict from a reviewer who is not the producer, bound to the change and its proof. A verdict is a file an agent can write, so the reviewer identity check and a daily summary of everything that landed (ticket, title, gate result, reviewer, and whether approval was required and who gave it) make a forged review visible to the owner, not impossible.
+
 ### 2.9 Changes flow continuously into one trunk
 
 Veldo uses continuous integration into a shared primary branch. There are no sprint boundaries. There are no release trains for ordinary changes. There is no requirement to batch unrelated work into a scheduled deployment.

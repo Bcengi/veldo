@@ -154,7 +154,7 @@ def _v56_suite():
             return '\n'.join([
                 '---', 'schema: veldo.spec/v1', 'id: ' + sid, 'title: ' + title, 'status: ' + status,
                 'risk: standard', 'owner: dmitry', 'human_approval: not_required', 'lane: standalone',
-                'protected_paths: []', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
+                'protected_paths: []', 'footprint: ["src/**"]', 'acceptance_criteria:', '  - id: AC1', '    text: The unit check passes.',
                 'required_evidence: [unit]', 'rollback: git revert', '---', '', '## Intent', '', 'Candidate fixture.', ''])
 
         UNITS = ['VELDO-95%02d' % n for n in range(61, 72)]
@@ -233,6 +233,18 @@ if mode != 'no-proof':
                    'reviewer': {'model': 'fixture-reviewer', 'context': 'fresh'}, 'verdict': 'fail',
                    'criteria': [{'id': 'AC1', 'assessment': 'not_satisfied'}],
                    'findings': {'blocking': ['the fixture review objects'], 'non_blocking': []}}
+        (work / 'proof' / unit / 'verdict-r1.json').write_text(json.dumps(verdict, indent=1) + '\\n')
+    else:
+        # VELDO-0272 AC3 (b): a not-required landing needs a pass verdict bound to the implementation
+        # commit and to this manifest's proof digest (policy_check.proof_digest), from a reviewer who is
+        # not the producer.
+        bound = json.dumps({k: manifest.get(k) for k in ('spec_id', 'commit', 'criteria', 'checks')},
+                           sort_keys=True, default=str)
+        verdict = {'schema': 'veldo.verdict/v1', 'spec_id': unit, 'commit': implementation,
+                   'reviewer': 'fixture-reviewer', 'verdict': 'pass',
+                   'criteria': [{'id': 'AC1', 'assessment': 'satisfied'}],
+                   'findings': {'blocking': [], 'non_blocking': []},
+                   'proof_digest': 'sha256:' + hashlib.sha256(bound.encode()).hexdigest()[:16]}
         (work / 'proof' / unit / 'verdict-r1.json').write_text(json.dumps(verdict, indent=1) + '\\n')
     (work / 'proof' / unit / 'manifest.json').write_text(json.dumps(manifest, indent=1, sort_keys=True) + '\\n')
     git('add', '--', 'proof/' + unit)

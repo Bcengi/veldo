@@ -39,26 +39,43 @@ engine copy, and the three veldo-guard.sh copies, auto-merged and stay byte-iden
 Checks: py_compile clean; `bash -n` clean on the three veldo-guard.sh copies and
 proof/VELDO-0268/pending_runs.sh. Pending suite: 141_veldo_0268_protected_refs.
 
-## Merge 3: agent/claude/veldo-small-proof (VELDO-0270): STOPPED, not committed
+## Merge 3: agent/claude/veldo-small-proof (VELDO-0270), commit 14b5ecb5
 
-The merge was attempted and aborted (`git merge --abort`); landing-c is at merge 2. Merges 4 to 6
-(veldo-approval-scope, veldo-0274, veldo-0278) were not attempted.
+An earlier attempt stopped on scripts/parser_corpus_audit.py (main's raw write through
+`home_as_tilde`, VELDO-0259, against the branch's summary write, VELDO-0270). The lead chose a tilded
+summary, and the merge was then made and committed.
 
-Conflicts:
+| File | Conflict | Resolution |
+| --- | --- | --- |
+| scripts/parser_corpus_audit.py:178 | main writes the raw report through `home_as_tilde` (VELDO-0259); the branch replaces it with the summary `corpus-before.json.summary.json` (VELDO-0270) | Both: `main()` writes the summary, and writes it through `home_as_tilde`: `target.write_text(home_as_tilde(summary_text(report, target)))`. `main()` still has two `write_text` calls through `home_as_tilde` (178, and 200 for corpus-before.md), so suite 127_veldo_0259's writer count (scripts/suites/127_veldo_0259_installation.py:612, `{'main': 2}`, checked at 630-646) holds unchanged. `write_summary` (124-129) writes through it too |
+| .veldo/policy.yaml:146-160 | main+0268 add `protected_refs:` (VELDO-0268); the branch adds `proof:` (VELDO-0270) at the same place | Both keys: `protected_refs` (146-152), then `proof:` with `max_file_bytes` and `proof.protected_refs` (153-160) |
+| scripts/suites/manifest.json:1863 | both sides appended suites | Every suite kept (203); 129_veldo_0270_small_proof appended after 141 |
+| scripts/suites/requires.json:674 | the same | Regenerated with `run_scope.py --emit-requires` |
 
-1. .veldo/policy.yaml (not in the lead's trial list; it follows from merge 2): main+0268 adds the
-   top level `protected_refs:` list (VELDO-0268); the branch adds `proof:` with `max_file_bytes`
-   and its own `proof.protected_refs` (VELDO-0270), at the same place after `fix_validation`. These
-   are different keys and both can be kept.
-2. scripts/parser_corpus_audit.py: the two changes to the same lines cannot both hold.
-   - main 918e7c0e (VELDO-0259 fix round 1, e509bce0): lines 75-89 add `home_as_tilde`, line 134-135
-     write the raw report `proof/VELDO-0110/corpus-before.json` through `home_as_tilde`.
-   - branch a3e9c00c (VELDO-0270, 4600fda7): lines 75-98 add `summarize` and `write_summary`, lines
-     143-147 replace that raw write with `write_summary(report, target)` to
-     `corpus-before.json.summary.json` (no raw bulk in proof).
-   - main's scripts/suites/127_veldo_0259_installation.py:612 requires
-     `'scripts/parser_corpus_audit.py': {'main': 2}`, and its check at :630-646 counts `write_text`
-     calls in `main()` whose argument goes through `home_as_tilde`. With the branch's summary write
-     `main()` has one such call (corpus-before.md, line 169 on the branch, tilded by main), so
-     suite 127 goes red; keeping main's raw write instead defeats VELDO-0270. Holding both needs a
-     choice (for example a tilded summary plus a changed count in suite 127), which is left to the lead.
+Checks: py_compile clean. Pending suites: 127_veldo_0259_installation, 129_veldo_0270_small_proof.
+
+## Merge 4: agent/claude/veldo-approval-scope (VELDO-0272)
+
+Merge base afa292f0. Line numbers are in the tree of the merge 4 commit.
+
+| File | Conflict | Resolution |
+| --- | --- | --- |
+| .veldo/policy_check.py:591-681 | main (VELDO-0267) adds `accept` to `valid_approval_for` and inlines its checks; the branch moves the checks into `approval_refusal` (603-650, stricter: an approver must name somebody, a producer that cannot be determined refuses every approval, identities normalized) and adds `spec_id` and `owner_approved` (591) | Both: the branch's `owner_approved` and `approval_refusal`; `valid_approval_for(commits, path=None, producer=None, spec_id=None, accept=None)` (653) judges through `approval_refusal`, then `accept`. The docstring keeps both notes. A self-approval refusal is tested last, on its own line `continue  # self-approval: the approver produced the work` (679), so the VELDO-0267 falsifier (suite 140 ac4-4-self-approval-accepted, teeth selection267-self-approval-accepted at scripts/check_teeth_mutations.py:12547) still finds its anchor and still makes a self-approval count; the result is the same as `approval_refusal(...) is None` and `accept`. protected_refs (VELDO-0268, 106-175) and `approval_rule` (999, VELDO-0267) are unchanged; `approval_rule` now passes through the stricter refusal (fail closed when its producer cannot be determined) |
+| engine/.veldo/policy_check.py | the same | Copied; byte-identical (cmp) |
+| .veldo/policy.yaml:16-93 | main's protected list (with VELDO-0267's five mutation_selection/mutation_nightly entries and VELDO-0268's packs/claude/scripts/veldo-guard.sh) against the branch's narrowed list | Lead decision: the union. The branch's narrowed list (16-80), then the six entries with a comment naming the decision (81-93). None of the six is in the spec's removed list |
+| .veldo/policy.yaml:124-147 | main+0270 `protected_refs:` and `proof:` against the branch's `approval_scope:` | All three keys kept: `protected_refs` (124), `proof` (136), `approval_scope` (146) |
+| specs/VELDO-0272-...md:13, :251 | follows from the union (lead) | protected_paths gains the six entries; one History line (251) |
+| scripts/suites/129_veldo_0272_approval_scope.py:164-168 | follows from the union (lead) | `expected` gains the six entries, so the exact-match check holds on the union; nothing else in the suite changed. Static check: the policy list equals the expected set, no duplicates, none removed |
+| scripts/suites/101_veldo_0208_landing_reuse.py:1311-1312 | main counts 48 listed unconfined suites (landing-b added 128_veldo_0254 and 129_veldo_0254) and checks the dispatcher in the installed list; the branch drops that installed-list check (the dispatcher left the list) and counts 46 | Both: the branch's check (dispatcher in VELDO-0208's own protected_paths only) and main's count 48 (scripts/gate_unconfined.json lists 48) |
+| scripts/check_teeth_mutations.py:12490-12869 | VELDO-0267 and VELDO-0268 blocks against VELDO-0272's block at the same place in `cases()` | Both blocks: 0267 and 0268 (12490-12694), a blank line, 0272 (12696-). Static check: every case of findings 267, 268, 270 and 272 (87) has its anchor exactly once in its target module; no duplicate case names (2935) |
+| scripts/suites/manifest.json:1872 | both sides appended suites | Every suite kept (204, union of main's 203 and the branch's 193); 129_veldo_0272_approval_scope after 129_veldo_0270; no suite changed by both sides |
+| scripts/suites/requires.json:677 | the same | Regenerated with `run_scope.py --emit-requires` |
+| specs/index.md:201 | both sides | Regenerated with `python3 scripts/update_index.py` (441 specs); the only change is the VELDO-0272 row |
+
+Staged auto-merges checked against both parents: .veldo/validate.py and .veldo/init_scaffold.py (and
+their engine copies, byte-identical) changed on both sides and equal a clean three-way merge (diff3);
+every other staged file equals the branch's version and was not changed on main.
+
+Checks: py_compile clean on every changed .py; `bash -n` clean on proof/VELDO-0272/pending_runs.sh
+and proof/landing-c/pending_runs.sh. Pending: suites 129_veldo_0272, 140, 141, 01, 10, 101 and the
+teeth cases of findings 267 and 272.

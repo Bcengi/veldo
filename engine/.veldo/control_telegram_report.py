@@ -240,6 +240,26 @@ def events():
     return tuple(name for name, _kinds, _handler in REGISTRY)
 
 
+# VELDO-0272 AC4: the owner's daily summary of what landed. It is not a REGISTRY event: REGISTRY reports
+# one journal record each, and this one reports a day, once, after the hour the owner configures. It is
+# derived from the day's spec.shipped completions (VELDO-0051) and rendered by landed_summary.format_day,
+# the formatter the file path (python3 .veldo/landed_summary.py day YYYY-MM-DD) uses, so the message and
+# the file cannot differ.
+DAILY_EVENT = 'daily_landed'
+
+
+def daily_landed_text(day, shipped, root):
+    """The daily_landed text of `day` from its spec.shipped records, through landed_summary's one formatter."""
+    LS = _renderer_module('landed_summary')
+    return LS.format_day(day, LS.from_shipped(root, shipped))
+
+
+def daily_due(day, now, hour):
+    """Whether `day`'s summary is due at epoch `now`: its day has reached the configured local hour."""
+    local = time.localtime(now)
+    return time.strftime('%Y-%m-%d', local) > day or (time.strftime('%Y-%m-%d', local) == day and local.tm_hour >= hour)
+
+
 def _record_transition(params, before):
     """The phases of the reporter's records: `intent` creates a report `pending` before any send;
     `complete` finishes that pending record from what the send returned; `cursor` stores the since,
@@ -658,6 +678,8 @@ class Reporter:
     def render(self, source, stats=None):
         """(text, reply_to): plain text, no markup; the committed fact, its next action or evidence, and
         its source identity."""
+        if source['event'] == DAILY_EVENT:
+            return TEXT.message(source['text'], stats), None
         reply_to, nxt = None, source.get('next')
         if source['event'] in ('decision_awaiting', 'stop'):
             reply_to, nxt = self._presentation(source.get('request'))
@@ -760,6 +782,31 @@ class Reporter:
         if done['outcome'] == 'unknown_outcome':
             reason = 'unknown_outcome'
         return self._observe(source, rid, done['outcome'], reason, versions)
+
+    def daily_source(self, day, shipped, root):
+        """The daily_landed source of `day`: one per day (its id names the day), its text the formatter's."""
+        return {'event': DAILY_EVENT, 'text': daily_landed_text(day, shipped, root), 'project': None, 'unit': None,
+                'run': None, 'source': {'journal_seq': 0, 'command_id': None, 'record_digest': None,
+                                        'entity_id': '%s:%s' % (DAILY_EVENT, day), 'entity_kind': DAILY_EVENT,
+                                        'entity_digest': None}}
+
+    def report_daily(self, day, root, hour):
+        """Send `day`'s summary once, on a channel tick at or after the configured hour: the day's
+        spec.shipped events from VELDO-0051's reader, by the day their landing was committed. None when
+        not yet due; a day already reported is not sent again (one record per day)."""
+        if not daily_due(day, self.clock(), hour):
+            return None
+        rows = self._rows()
+        committed = {row[0]: row[4] for row in rows}
+        shipped, _judged = self._landings.derive(rows, 0)
+        mine = []
+        for event in shipped:
+            at = committed.get(event['journal_seq'])
+            when = (time.strftime('%Y-%m-%d', time.localtime(at)) if isinstance(at, (int, float))
+                    else str(at or '')[:10])
+            if when == day:
+                mine.append(dict(event, spec=event.get('spec') or event.get('unit')))
+        return self.report(self.daily_source(day, mine, root))
 
     def _advance(self, since):
         found = self._entity(self.cursor)

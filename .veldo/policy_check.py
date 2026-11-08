@@ -10,6 +10,14 @@ prints the reason and exits 1 (block). Checks, for the current HEAD:
 2. Emergency debt: an emergency.push event without a later backfill-closing
    event (spec.shipped for its backfill, or an explicit emergency.closed)
    blocks ordinary pushes, as the setup promises.
+3. VELDO-0272: a lowering of a spec's human_approval from required, judged by
+   spec id between the push base and HEAD and in every commit of the push,
+   needs an owner approval scoping that spec's files (approval_flag_lowered);
+   every spec a push carries needs a passing verdict from a reviewer who is
+   not the producer (landing_without_review), and a spec the rule computes
+   as required needs the owner's approval as well; a push changing anything
+   but spec files and proof bundles needs at least one such spec that is not a draft
+   (N3: a draft covers nothing).
 
 Proportionate by design: stdlib only, no yaml dependency (reads the simple
 policy.yaml shape the template ships).
@@ -249,25 +257,411 @@ def push_range_commits():
     return []
 
 
+def glob_covers(path, pat):
+    """THE ONE fnmatch reading of a protected pattern: the pattern as written, or with its trailing
+    stars widened to one, so "dir/*" also covers a file deeper under dir/. The push check, the
+    approval scope and the computed approval flag (VELDO-0272) all read a pattern this way."""
+    return fnmatch.fnmatch(path, pat) or fnmatch.fnmatch(path, pat.rstrip("*") + "*")
+
+
+# --- VELDO-0272: the approval flag a spec's placement computes ------------------------------------
+# The owner's approval follows a spec's footprint and risk areas, not its author's word. The rule is
+# here, beside the protected list it reads, and the validator and executor.merge_ready load it from
+# here, so the three cannot disagree about what "required" means.
+APPROVAL_AREAS = ("money", "auth_security", "schema", "irreversible_infra")
+
+
+def globs_meet(a, b):
+    """A footprint entry and a protected path match each other: either glob matches the other."""
+    return glob_covers(a, b) or glob_covers(b, a)
+
+
+def declared_flag(fm):
+    """The human_approval a spec declares: required unless it says not_required (absent reads as
+    not_required, as the index and the executor have always read it)."""
+    words = str((fm or {}).get("human_approval", "not_required")).split()
+    return "not_required" if words and words[0] == "not_required" else "required"
+
+
+def approval_bases(fm, patterns=None):
+    """Every basis on which the rule computes approval REQUIRED for this front matter; an empty list
+    is not_required. Bases: each protected path a footprint entry meets, a non-empty protected_paths,
+    each risk area naming money, auth_security, schema or irreversible_infra, and an absent footprint
+    (a spec that declares no footprint has not said it stays off the protected list)."""
+    fm = fm or {}
+    pats = protected_patterns() if patterns is None else patterns
+    bases = []
+    footprint = fm.get("footprint")
+    if isinstance(footprint, str):
+        footprint = [footprint]
+    if not isinstance(footprint, list) or not footprint:
+        bases.append("footprint absent")
+    else:
+        for entry in footprint:
+            for pat in pats:
+                if isinstance(entry, str) and globs_meet(entry, pat):
+                    bases.append("protected path %s (footprint %s)" % (pat, entry))
+    if fm.get("protected_paths"):
+        bases.append("protected_paths declared %s" % (fm.get("protected_paths"),))
+    areas = fm.get("risk_areas")
+    for area in areas if isinstance(areas, list) else []:
+        if area in APPROVAL_AREAS:
+            bases.append("risk area %s" % area)
+    return bases
+
+
+def effective_flag(fm, patterns=None):
+    """required when the spec declares it or the rule computes it; a declaration can raise the flag,
+    never lower it."""
+    if declared_flag(fm) == "required" or approval_bases(fm, patterns):
+        return "required"
+    return "not_required"
+
+
+_SPEC_FILE = re.compile(r"specs/([A-Z]+-\d+)-[^/]*\.md$")
+_PROOF_FILE = re.compile(r"proof/([A-Z]+-\d+)/")
+
+
+def _spec_names(rev, cache):
+    """{spec id: [spec file names]} in the tree of `rev`, keyed by the id in the file name, or None when
+    Git cannot list that tree. Cached per revision for one check."""
+    if rev not in cache:
+        r = _git_process.run(["git", "ls-tree", "--name-only", rev, "specs/"],
+                             capture_output=True, text=True, cwd=ROOT)
+        names = None
+        if r.returncode == 0:
+            names = {}
+            for name in r.stdout.splitlines():
+                m = _SPEC_FILE.match(name)
+                if m:
+                    names.setdefault(m.group(1), []).append(name)
+        cache[rev] = names
+    return cache[rev]
+
+
+def _flag_state(rev, sid, cache):
+    """(state, names) of spec `sid` at `rev`: state is required, not_required, absent (no spec file of
+    that id) or unreadable (Git cannot read the tree or the file, more than one file carries the id, or
+    the front matter does not parse). Keyed by id, never by path, so a rename is the same spec."""
+    by_id = _spec_names(rev, cache)
+    if by_id is None:
+        return "unreadable", []
+    names = by_id.get(sid, [])
+    if not names:
+        return "absent", []
+    if len(names) != 1:
+        return "unreadable", names
+    r = _git_process.run(["git", "show", "%s:%s" % (rev, names[0])], capture_output=True, cwd=ROOT)
+    if r.returncode != 0:
+        return "unreadable", names
+    try:
+        fm = _Y.front_matter(r.stdout.decode("utf-8"), names[0])
+    except Exception:
+        return "unreadable", names
+    return (declared_flag(fm), names) if isinstance(fm, dict) else ("unreadable", names)
+
+
+def _lowers(now, before):
+    """A change from the `before` states (one per real parent, or the push base) to `now` lowers the
+    flag when `now` is lower than the value on EVERY before that has the spec: `now` is not required,
+    at least one before has the spec (a before where it is absent is no value to lower), and every
+    before that has it is required or unreadable (FAIL CLOSED: a value that cannot be read counts as
+    required, so a lowering through a broken or deleted spec is still a lowering). A merge that takes
+    a value one side already has lowers nothing itself (VELDO-0272 M1), and that includes a side where the
+    spec is absent: a merge taking trunk's retirement or renumbering of a spec takes a state trunk already
+    has, so the `now in before` test reads the raw parent states BEFORE the absent ones are set aside
+    (fix round 5, F1)."""
+    if now == "required" or now in before:
+        return False
+    before = [b for b in before if b != "absent"]
+    return bool(before) and all(b in ("required", "unreadable") for b in before)
+
+
+def _parents(c):
+    r = _git_process.run(["git", "rev-list", "--parents", "-n", "1", c], capture_output=True, text=True, cwd=ROOT)
+    words = r.stdout.split() if r.returncode == 0 else []
+    if not words:
+        raise RuntimeError("the parents of %s cannot be read" % c)
+    return words[1:]
+
+
+def _changed_ids(a, b, cache):
+    """The spec ids whose files differ between trees a and b, renames off (a rename shows both names,
+    and both carry the id). When Git cannot answer, every id in either tree (fail closed)."""
+    r = _git_process.run(["git", "diff-tree", "-r", "--name-only", "--no-renames", a, b, "--", "specs/"],
+                         capture_output=True, text=True, cwd=ROOT)
+    if r.returncode == 0:
+        return {m.group(1) for m in (_SPEC_FILE.match(n) for n in r.stdout.splitlines()) if m}
+    ids = set()
+    for rev in (a, b):
+        ids |= set(_spec_names(rev, cache) or {})
+    return ids
+
+
+def push_range():
+    """(commits, bases): every commit being pushed, HEAD first (rev-list over the same `_range_specs`, so
+    it cannot disagree with push_range_commits), and the push base: the ONE commit the range is measured
+    from, the protected ref's current tip (BASE, or the ref `_range_specs` resolved). VELDO-0272 N1: never
+    every boundary commit, because a merge whose second parent is an old trunk commit puts a pre-raise
+    state among the boundaries, and a lowering judged against any ancestor is no lowering at all. A tip
+    that cannot be resolved for a range that can be read is an error (FAIL CLOSED). With no readable
+    range and no BASE, the range is HEAD and the bases are its parents."""
+    for spec in _range_specs():
+        r = _git_process.run(["git", "rev-list", spec], capture_output=True, text=True, cwd=ROOT)
+        if r.returncode == 0:
+            commits = [l for l in r.stdout.splitlines() if l]
+            left = spec[:-len("..HEAD")]
+            t = _git_process.run(["git", "rev-parse", "--verify", "--quiet", left + "^{commit}"],
+                                 capture_output=True, text=True, cwd=ROOT)
+            tip = t.stdout.strip() if t.returncode == 0 else ""
+            if not tip:
+                raise RuntimeError("the push base %s cannot be resolved" % left)
+            return commits, [tip]
+    if BASE is not None:
+        raise RuntimeError("the push range %s..HEAD cannot be read" % BASE)
+    h = head()
+    return [h], _parents(h)
+
+
+def lowered_flags(commits, bases):
+    """[(spec id, commit, spec file names)]: every lowering of a spec's human_approval from required
+    (approval_flag_lowered unless the owner scoped its files). VELDO-0272 F1: judged by spec ID, so a
+    rename, a delete and re-add, or a two-step lowering through an unreadable state is seen, (1) between
+    the push base and HEAD, which is what lands, and (2) per commit in the range, merges included, which
+    is the AC's per-commit reading. A base value that cannot be read counts as required (fail closed).
+    VELDO-0272 N1: the push base is the protected ref's current tip, so an old trunk commit (a state from
+    before a raise) is never a value the landed state is measured against. VELDO-0272 M1: a commit is
+    judged only for the spec ids it changed against its REAL parents, and against those parents (a merge
+    against every parent), never against the tip: a branch commit made before trunk added or raised a
+    spec did not lower it, and an honest merge of trunk keeps trunk's value."""
+    cache = {}
+    out = []
+    seen = set()
+
+    def judge(target, befores):
+        ids = set()
+        for b in befores:
+            ids |= _changed_ids(b, target, cache)
+        for sid in sorted(ids):
+            now, names = _flag_state(target, sid, cache)
+            states = [_flag_state(b, sid, cache) for b in befores]
+            if _lowers(now, [s for s, _ in states]):
+                files = sorted(set(names).union(*[set(n) for _, n in states]))
+                key = (sid, target)
+                if key not in seen:
+                    seen.add(key)
+                    out.append((sid, target, files))
+
+    if commits and bases:
+        judge(head(), bases)
+    for c in commits:
+        befores = _parents(c)
+        if befores:
+            judge(c, befores)
+    return out
+
+
+_PROJECTIONS = []
+
+
+def _projection_paths():
+    """The derived files the lander regenerates (lander.PROJECTIONS, today specs/index.md), read from the
+    lander beside this file so the set is spelled once. When the lander cannot be loaded, none: a derived
+    file then counts as work (fail closed)."""
+    if not _PROJECTIONS:
+        try:
+            spec = importlib.util.spec_from_file_location("veldo_lander_pc", Path(__file__).resolve().with_name("lander.py"))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            _PROJECTIONS.append(frozenset(path for path, _generator in module.PROJECTIONS))
+        except Exception:
+            _PROJECTIONS.append(frozenset())
+    return _PROJECTIONS[0]
+
+
+def _approval_record(f):
+    """A file of the approval corpus (proof/<one directory>/approval*.json), the set valid_approval_for
+    reads: an owner's decision, judged by approval_refusal wherever it authorizes something."""
+    return _VC.corpus_member(f, _VC.APPROVAL_PATTERN)
+
+
+def _not_work(f):
+    """VELDO-0272 fix round 5 (F2): a spec file, a file of a spec's proof bundle, a derived projection or an
+    approval record is not work for the reviewed-spec coverage rule (N3). Any other file under specs/ or
+    proof/ (a script, a loose note) is work like any other (fix round 4)."""
+    return bool(_SPEC_FILE.match(f) or _PROOF_FILE.match(f) or f in _projection_paths() or _approval_record(f))
+
+
+def spec_only(files):
+    """True when a push changes only spec files, derived projections and approval records: no proof
+    manifest, verdict or other bundle file, and no work. Such a push lands no work, so no review of it can
+    exist yet (fix round 5)."""
+    return bool(files) and all(_SPEC_FILE.match(f) or f in _projection_paths() or _approval_record(f) for f in files)
+
+
+def committer_identities(commits):
+    """The committer names and emails of `commits`, as one list for the self-approval test, or "" when
+    none can be read (fail closed)."""
+    out = []
+    for i in range(0, len(commits), 200):
+        r = _git_process.run(["git", "show", "-s", "--format=%cn%x00%ce"] + list(commits[i:i + 200]),
+                             capture_output=True, text=True, cwd=ROOT)
+        if r.returncode != 0:
+            return ""
+        for line in r.stdout.splitlines():
+            out += [w for w in line.split("\0") if w.strip()]
+    return out if _identities(out) else ""
+
+
+def approval_producer(producer, files, commits):
+    """The identity an approval in this push must not share (fix round 5). A determined producer is kept.
+    A producer that cannot be determined, in a push that changes only spec files (spec_only), is replaced by
+    the push's committer identities: an owner approval of a spec-only change (a spec moved to ready, a
+    re-mark) has no producer, because nothing it covers has proof. In any other push a missing producer
+    stays missing, and every approval is refused (N2)."""
+    if _identities(producer) or not spec_only(files):
+        return producer
+    return committer_identities(commits)
+
+
+def push_specs(files):
+    """The spec ids a push carries: each spec file and each proof bundle it changes."""
+    ids = set()
+    for f in files:
+        m = _SPEC_FILE.match(f) or _PROOF_FILE.match(f)
+        if m:
+            ids.add(m.group(1))
+    return sorted(ids)
+
+
+def _identities(who):
+    """The normalized identities a producer or reviewer field names: a string with its whitespace
+    collapsed and its case folded; a mapping or a list, every string inside it. Empty when it names
+    nobody. VELDO-0272 F2: a reviewer stored as a mapping is compared by what it names, never by its type."""
+    if isinstance(who, str):
+        flat = " ".join(who.split()).casefold()
+        return {flat} if flat else set()
+    if isinstance(who, dict):
+        parts = list(who.values())
+    elif isinstance(who, (list, tuple)):
+        parts = list(who)
+    else:
+        return set()
+    out = set()
+    for part in parts:
+        out |= _identities(part)
+    return out
+
+
+def _self_review(reviewer, producer):
+    """True when a verdict cannot count as an independent review (FAIL CLOSED): no producer is
+    recorded, so independence cannot be established; the verdict names no reviewer; or the reviewer
+    and the producer share a normalized identity."""
+    if not _identities(producer):
+        return True
+    if not _identities(reviewer):
+        return True
+    return bool(_identities(reviewer) & _identities(producer))
+
+
+def reviewed_landing(spec_id, commits):
+    """The verdict a not-required spec lands on (VELDO-0272 AC3 b), or None: pass or pass_with_notes,
+    no blocking findings, bound to a commit in the push range and to the spec's CURRENT proof digest
+    (valid_verdict_for), from a reviewer who is not the proof producer. The limit is the merge rule's:
+    a verdict is a file an agent can write, so the reviewer identity check and the daily summary make
+    a forged review visible, not impossible."""
+    producer = producer_for(spec_id)
+    for c in commits:
+        found = valid_verdict_for(c, spec_id=spec_id, bound=True, producer=producer)
+        if found:
+            return found
+    return None
+
+
 def _approval_covers(approval, path):
     """Path-scoped authorization: an approval only authorizes the paths its
     scope names. Empty scope.paths authorizes nothing (fail closed) - name the
     paths."""
     for pat in approval.get("scope", {}).get("paths", []) or []:
-        if fnmatch.fnmatch(path, pat) or fnmatch.fnmatch(path, pat.rstrip("*") + "*"):
+        if glob_covers(path, pat):
             return True
     return False
 
 
-def valid_approval_for(commits, path=None, producer=None, accept=None):
+def owner_approved(spec_id, commits, producer=None):
+    """An owner approval of an approval-required spec (VELDO-0272 AC3, judged per spec): bound to a
+    commit in the push, not self approved, naming the spec by scope.spec_id or covering its spec file.
+    With no spec file at HEAD, only scope.spec_id can name it. `producer` None reads the spec's own."""
+    names = sorted(str(p.relative_to(ROOT)) for p in (ROOT / "specs").glob(f"{spec_id}-*.md"))
+    if producer is None:
+        producer = producer_for(spec_id)
+    if valid_approval_for(commits, producer=producer, spec_id=spec_id):
+        return True
+    return bool(names) and all(valid_approval_for(commits, path=n, producer=producer) for n in names)
+
+
+def approval_refusal(a, commits, now, path=None, producer=None, spec_id=None):
+    """Why one parsed approval record cannot count, or None when it does. THE ONE approval predicate:
+    the push check (valid_approval_for) and the daily summary (landed_summary) both judge through it.
+    Valid: approved, scope an object bound to a commit of `commits`, unexpired at `now`, scoping `path`
+    and naming `spec_id` when given, and (VELDO-0272 N2, FAIL CLOSED) an approver who names somebody.
+    With `producer` not None the self-approval test always runs: a producer that names nobody (it cannot
+    be determined) refuses every approval, and an approver sharing a normalized identity with the
+    producer (case, spacing, a mapping or a list) is a self-approval. None means the caller asks no
+    self-separation; every call in main() passes one."""
+    if not isinstance(a, dict):
+        # A payload that PARSES but is not an object is skipped like one that does not parse at all:
+        # `"text"` and `[1,2]` are both valid JSON and neither is an approval.
+        return "not an object"
+    if a.get("decision") != "approved":
+        return "not approved"
+    # SCOPE MAY NOT BE AN OBJECT, and this is not hypothetical. `proof/WARP-0620/
+    # approval-dmitry.json` predates the current shape: it declares the same
+    # `veldo.approval/v1` schema but carries PROSE in `scope` and its `spec_id` at the top
+    # level. Two incompatible shapes under one schema string is the actual defect; the record
+    # itself is a faithful account of a decision Dmitry made and is not going to be rewritten
+    # to suit a parser.
+    #
+    # An approval whose scope is not an object cannot be commit-bound, and validity REQUIRES
+    # commit binding, so skipping is the same answer the next line gives when `bound` is missing.
+    scope = a.get("scope")
+    if not isinstance(scope, dict):
+        return "scope is not an object"
+    bound = scope.get("commit")
+    if not isinstance(bound, str) or not bound or not any(c.startswith(bound) for c in commits):
+        return "not bound to a commit of the push"
+    try:
+        exp = datetime.datetime.fromisoformat(a["expires_at"].replace("Z", "+00:00"))
+        if exp <= now:
+            return "expired"
+    except Exception:
+        return "no readable expiry"
+    if path is not None and not _approval_covers(a, path):
+        return "scope does not cover %s" % path
+    if spec_id is not None and scope.get("spec_id") != spec_id:
+        return "scope does not name %s" % spec_id
+    if not _identities(a.get("approver")):
+        return "names no approver"
+    if producer is not None:
+        if not _identities(producer):
+            return "the producer cannot be determined"
+        if _identities(a.get("approver")) & _identities(producer):
+            return "self-approval"
+    return None
+
+
+def valid_approval_for(commits, path=None, producer=None, spec_id=None, accept=None):
     """An approval is valid if it is approved, unexpired, commit-bound to a
     commit in the push range, and - when a path is given - scopes that path.
     Commit binding to HEAD alone is unsatisfiable (the approval lands in an
     evidence commit that cannot name its own hash), so range binding is used.
     Self-separation: an approver who is also the proof producer cannot approve
-    their own work. `accept`, when given, is a caller's own scope test on the
-    approval object (the nightly sweep's run id and cases, VELDO-0267): it
-    narrows which approvals count and never replaces a check above."""
+    their own work, and (VELDO-0272 N2) an approval naming no approver, or one
+    judged against a producer that cannot be determined, is refused (see
+    approval_refusal, the one predicate). `accept`, when given, is a caller's
+    own scope test on the approval object (the nightly sweep's run id and
+    cases, VELDO-0267): it narrows which approvals count and never replaces a
+    check above."""
     if isinstance(commits, str):
         commits = [commits]
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -276,44 +670,40 @@ def valid_approval_for(commits, path=None, producer=None, accept=None):
             a = json.loads(f.read_text())
         except Exception:
             continue
-        # A payload that PARSES but is not an object is skipped like one that does not parse at all:
-        # `"text"` and `[1,2]` are both valid JSON and neither is an approval. The reader already
-        # tolerates a file that does not parse, so tolerating one that parses to the wrong type is
-        # the consistent behaviour, not an extra kindness.
-        if not isinstance(a, dict):
-            continue
-        if a.get("decision") != "approved":
-            continue
-        # SCOPE MAY NOT BE AN OBJECT, and this is not hypothetical. `proof/WARP-0620/
-        # approval-dmitry.json` predates the current shape: it declares the same
-        # `veldo.approval/v1` schema but carries PROSE in `scope` and its `spec_id` at the top
-        # level. Two incompatible shapes under one schema string is the actual defect; the record
-        # itself is a faithful account of a decision Dmitry made and is not going to be rewritten
-        # to suit a parser.
-        #
-        # An approval whose scope is not an object cannot be commit-bound, and this function's own
-        # contract is that validity REQUIRES commit binding, so skipping is the same answer the
-        # next line already gives when `bound` is missing.
-        scope = a.get("scope")
-        if not isinstance(scope, dict):
-            continue
-        bound = scope.get("commit")
-        if not bound or not any(c.startswith(bound) for c in commits):
-            continue
-        try:
-            exp = datetime.datetime.fromisoformat(a["expires_at"].replace("Z", "+00:00"))
-        except Exception:
-            continue
-        if exp <= now:
-            continue
-        if path is not None and not _approval_covers(a, path):
+        refusal = approval_refusal(a, commits, now, path=path, producer=producer, spec_id=spec_id)
+        if refusal is not None and refusal != "self-approval":
             continue
         if accept is not None and not accept(a):
             continue
-        if producer and a.get("approver") and a["approver"] == producer:
+        if refusal == "self-approval":
             continue  # self-approval: the approver produced the work
         return str(f)
     return None
+
+
+def push_producer(spec_ids):
+    """The producers of the specs a push lands, as one list for the self-approval test, or "" when it
+    cannot be determined (VELDO-0272 N2): no landing spec, or one whose proof records no producer. Never
+    the producer of whatever verdict happens to bind HEAD or its parent, which is "" after one trailing
+    commit and switched the test off."""
+    producers = [producer_for(sid) for sid in spec_ids]
+    if not producers or any(not _identities(p) for p in producers):
+        return ""
+    return producers
+
+
+def landing_specs(files):
+    """The specs a push lands: each spec it carries (push_specs) that is not a draft at HEAD. A draft
+    lands no work; an unreadable spec is not a draft."""
+    out = []
+    for sid in push_specs(files):
+        try:
+            fm = _spec_file_fm(sid)
+        except ValueError:
+            fm = {}
+        if fm.get("status") != "draft":
+            out.append(sid)
+    return out
 
 
 def open_emergency_debt():
@@ -533,19 +923,31 @@ def spec_revision_stale():
     return stale
 
 
-def valid_verdict_for(commit):
+def valid_verdict_for(commit, spec_id=None, bound=False, producer=None):
+    """A passing verdict bound to `commit`. VELDO-0272: `spec_id` narrows it to one spec, `bound`
+    requires a proof digest (an unbound verdict reviewed no particular proof), and a `producer` (not
+    None) refuses a verdict with no reviewer, a verdict whose reviewer shares a normalized identity with
+    that producer, and every verdict when the producer is empty (no self-review, fail closed)."""
     for f in _verdict_files():
         try:
             v = json.loads(f.read_text())
         except Exception:
             continue
-        if v.get("verdict") in ("pass", "pass_with_notes") and commit.startswith(v.get("commit", "\0")):
+        if not isinstance(v, dict) or not isinstance(v.get("commit", "\0"), str):
+            continue
+        if v.get("verdict") in ("pass", "pass_with_notes") and commit.startswith(v.get("commit", "\0") or "\0"):
             if blocking_findings(v):
+                continue
+            if spec_id is not None and v.get("spec_id") != spec_id:
+                continue
+            if producer is not None and _self_review(v.get("reviewer"), producer):
                 continue
             # if the verdict binds to a proof digest, it must match the current
             # proof manifest for that spec - a verdict cannot be reused for a
             # proof it did not review.
             pd = v.get("proof_digest")
+            if bound and not pd:
+                continue
             if pd:
                 sid = v.get("spec_id")
                 _, m = _proof_for_spec(sid) if sid else (None, None)
@@ -637,6 +1039,11 @@ def main():
     # reviews still run and still report findings for a human to read, they just no longer
     # certify. Deleting the machinery is a separate item, so that a regression in either change
     # can be attributed to the change that caused it.
+    # VELDO-0272 (owner, 2026-11-07, Telegram 39707 and 39708) consults it again, for one case only:
+    # the owner left the approval of routine work, so a push whose specs are all not_required and
+    # that touches no protected path lands on a recorded review by someone who is not the producer.
+    # The forgery limit above still holds and the merge rule states it: the reviewer identity check
+    # and the daily summary make a forged review visible, not impossible.
     #
     # BUT AN OBJECTION STILL STOPS THE PUSH (WARP-0732), and leaving that out was a real gap
     # rather than a consequence of the above. Dmitry, 2026-08-02: "Not good if werdict is rework
@@ -649,7 +1056,8 @@ def main():
         # THE OWNER'S OVERRIDE IS THE APPROVAL BLOCK THAT ALREADY EXISTS, not a new artifact and
         # not a new field: it is the one thing at this gate an agent cannot produce, and an
         # override belongs on that footing. Self-approval is refused by valid_approval_for.
-        override = valid_approval_for(rng_f, producer=producer_for(_head_spec_id()))
+        files_f = changed_files()
+        override = valid_approval_for(rng_f, producer=approval_producer(push_producer(landing_specs(files_f)), files_f, rng_f))
         if not override:
             print("VELDO policy: blocked. A review objected and the objection is unresolved.")
             for sid, path, finding in objections:
@@ -673,22 +1081,106 @@ def main():
     touched = []
     for f in changed_files():
         for p in pats:
-            if fnmatch.fnmatch(f, p) or fnmatch.fnmatch(f, p.rstrip("*") + "*"):
+            if glob_covers(f, p):
                 touched.append((f, p))
                 break
     if touched:
         rng = push_range_commits() or [h]
         # each touched protected path needs an approval that names it, whose
         # approver is not the work's producer (self-separation).
+        files_p = changed_files()
+        producer = approval_producer(push_producer(landing_specs(files_p)), files_p, rng)
         for tf, p in touched:
-            producer = producer_for(_head_spec_id())
             if not valid_approval_for(rng, path=tf, producer=producer):
                 print("VELDO policy: blocked. Protected path touched with no valid path-scoped approval.")
                 print(f"  {tf}  (protected by {p})")
                 print("  Required: an approved, unexpired veldo.approval/v1 whose scope.commit is a")
                 print(f"  commit in this push, whose scope.paths covers {tf}, and whose approver")
-                print("  is not the proof producer (no self-approval).")
+                print("  is not the proof producer (no self-approval)%s." % (
+                    "" if producer else "; the producer cannot be determined (no landing spec, or one whose"
+                    " proof records no producer), so every approval is refused"))
                 return 1
+
+    # VELDO-0272 AC3 (a): nothing lowers a flag silently. A lowering of a spec's human_approval from
+    # required, between the push base and HEAD or in any commit of the push (by spec id, merges and
+    # renames included, an unreadable earlier value counting as required), needs an owner approval
+    # scoping every file the spec had on both sides.
+    rng, bases = push_range()
+    if not rng:
+        rng, bases = [h], _parents(h)
+    pushed = changed_files()
+    for sid, c, files in lowered_flags(rng, bases):
+        producer = approval_producer(producer_for(sid), pushed, rng)
+        missing = [f for f in files if not valid_approval_for(rng, path=f, producer=producer)] if files else ["specs/%s-*.md" % sid]
+        if missing:
+            print("VELDO policy: blocked. approval_flag_lowered: %s" % ", ".join(files or missing))
+            print(f"  commit {c[:12]} lowers {sid}'s human_approval from required (or from a value that")
+            print("  cannot be read), and no approved, unexpired veldo.approval/v1 bound to a commit in this")
+            print(f"  push, whose scope.paths covers {', '.join(missing)} and whose approver is not the")
+            print("  proof producer, records the owner's decision to lower it.")
+            return 1
+
+    # VELDO-0272 AC3 (b), judged PER SPEC (the reading recorded in the spec's History, check F5): every
+    # spec this push carries needs a passing verdict bound to a commit in the push and to the spec's
+    # current proof digest, from a reviewer who is not the producer, whatever else the push carries; a
+    # spec the rule computes as required needs the owner's approval as well, never instead.
+    # Fix round 5: a push that changes only spec files, derived projections and approval records lands no
+    # work, so no review of it can exist yet (a spec moved from draft to ready, a re-mark). It is judged
+    # only for the specs whose files it changes, and only for the owner's approval their flag requires.
+    only_specs = spec_only(pushed)
+    carried = sorted({m.group(1) for m in (_SPEC_FILE.match(f) for f in pushed) if m}) if only_specs else push_specs(pushed)
+    for sid in carried:
+        try:
+            fm = _spec_file_fm(sid)
+        except ValueError:
+            fm = {}
+        if fm.get("status") == "draft":
+            # A draft lands no work: it cannot carry proof (the ready boundary below refuses one), so
+            # no verdict can bind to it. It covers no work either: the N3 check below refuses a push
+            # changing anything but spec files and proof bundles with only drafts; an unreadable spec is not a
+            # draft and is judged.
+            continue
+        if only_specs:
+            if effective_flag(fm, pats) == "required" and not owner_approved(
+                    sid, rng, producer=approval_producer(producer_for(sid), pushed, rng)):
+                bases_ = approval_bases(fm, pats) or ["declared required"]
+                print("VELDO policy: blocked. owner approval missing: %s is approval required (%s)" % (sid, "; ".join(bases_)))
+                print("  Required (a push changing only spec files): an approved, unexpired veldo.approval/v1 bound to")
+                print("  a commit in this push, whose scope names this spec, and whose approver is not a committer of")
+                print("  the push when the spec has no proof producer.")
+                return 1
+            continue
+        if not reviewed_landing(sid, rng):
+            print("VELDO policy: blocked. landing_without_review: %s" % sid)
+            producer = producer_for(sid)
+            print("  Required: a pass or pass_with_notes verdict with no blocking findings, bound")
+            print("  to a commit in this push and to the spec's current proof digest, whose")
+            print("  reviewer is not the proof producer (%s)." % (producer or "no producer recorded: refused"))
+            return 1
+        if effective_flag(fm, pats) == "required" and not owner_approved(sid, rng):
+            bases_ = approval_bases(fm, pats) or ["declared required"]
+            print("VELDO policy: blocked. owner approval missing: %s is approval required (%s)" % (sid, "; ".join(bases_)))
+            print("  Required: an approved, unexpired veldo.approval/v1 bound to a commit in this push,")
+            print("  whose scope names this spec (scope.spec_id, or scope.paths covering its spec file)")
+            print("  and whose approver is not the proof producer.")
+            return 1
+
+    # VELDO-0272 N3: a push that changes anything but spec files and proof bundles must be covered by a spec
+    # whose landing the loop above judged (reviewed, and owner approved when required). A draft spec
+    # covers nothing, and neither does a ready spec switched back to draft in the same push: it is a
+    # draft at HEAD. Without this, code with no spec, or with only a draft beside it, landed unreviewed.
+    # A spec file, a file of a spec's proof bundle, a derived projection or an approval record is exempt;
+    # any other file under specs/ or proof/ (a script, a loose note) is work like any other (VELDO-0272 fix
+    # rounds 4 and 5).
+    work = [f for f in pushed if not _not_work(f)]
+    if work and not landing_specs(pushed):
+        print("VELDO policy: blocked. landing_without_review: no spec covers %s" % ", ".join(sorted(work)[:5])
+              + (" (and %d more)" % (len(work) - 5) if len(work) > 5 else ""))
+        print("  A push that changes anything but spec files and proof bundles must carry a spec that is not a")
+        print("  draft at HEAD, with a pass or pass_with_notes verdict bound to a commit in this push and")
+        print("  to its current proof digest, from a reviewer who is not the proof producer (and the")
+        print("  owner's approval when the spec is approval required). A draft spec covers nothing.")
+        return 1
 
     # ready-spec boundary: no draft spec may carry a proof
     drafts = ready_boundary_violations()

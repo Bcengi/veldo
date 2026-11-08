@@ -12693,6 +12693,179 @@ def cases():
              '        start = match.start()\n',
              ['push/alias-shell-c'])
 
+    # VELDO-0272: owner approval narrows to money, authentication and security, schema and irreversible
+    # infrastructure; routine work lands on a green gate and a recorded review; a daily landed summary.
+    # The suite runs its modules from a temporary .veldo tree laid over by the file the driver hands it.
+    scope272 = '129_veldo_0272_approval_scope.py'
+    # AC1 (declared falsifier): test machinery protected again, or the approval rule's own module unprotected.
+    add(272, 'scope272-gate-legs-added-back', scope272, 'policy.yaml',
+        '  - {path: "engine/.veldo/policy_check.py", floor: high}\n',
+        '  - {path: "engine/.veldo/policy_check.py", floor: high}\n'
+        '  - {path: "scripts/gate_legs.py", floor: high}\n',
+        ['policy/lists-match'])
+    add(272, 'scope272-policy-check-unprotected', scope272, 'policy.yaml',
+        '  - {path: ".veldo/policy_check.py", floor: high}\n', '', ['policy/lists-match'])
+    # AC2 (declared falsifier): the footprint match runs one way only, so scripts/** no longer meets the
+    # protected paths beneath it.
+    add(272, 'scope272-reverse-direction-dropped', scope272, 'policy_check.py',
+        'return glob_covers(a, b) or glob_covers(b, a)',
+        'return glob_covers(a, b)  # defect: a footprint glob wider than a protected path is not matched',
+        ['flag/fixtures'])
+    # AC3 (declared falsifier): the reviewer is not compared with the producer, so a self-review lands.
+    add(272, 'scope272-reviewer-comparison-skipped', scope272, 'policy_check.py',
+        'if producer is not None and _self_review(v.get("reviewer"), producer):',
+        'if False:  # defect: the reviewer is not compared with the producer',
+        ['review/landing'])
+    # Fix round 1, F1: one falsifier per evasion of the flag-lowering check.
+    add(272, 'scope272-lowering-keyed-by-path', scope272, 'policy_check.py',
+        '            if _lowers(now, [s for s, _ in states]):',
+        '            if _lowers(now, [s for s, n in states if n == names]):  # defect: a renamed file is another spec',
+        ['lowered/rename'])
+    add(272, 'scope272-unreadable-base-not-required', scope272, 'policy_check.py',
+        '    return bool(before) and all(b in ("required", "unreadable") for b in before)',
+        '    return bool(before) and all(b == "required" for b in before)  # defect: a base that cannot be read lowers nothing',
+        ['lowered/two-step'])
+    add(272, 'scope272-unreadable-head-not-lowered', scope272, 'policy_check.py',
+        '    if now == "required" or now in before:',
+        '    if now in ("required", "unreadable") or now in before:  # defect: breaking a spec is not a lowering',
+        ['lowered/two-step'])
+    add(272, 'scope272-deleted-not-lowered', scope272, 'policy_check.py',
+        '    if now == "required" or now in before:',
+        '    if now in ("required", "absent") or now in before:  # defect: deleting a spec is not a lowering',
+        ['lowered/delete-re-add'])
+    add(272, 'scope272-merges-skipped', scope272, 'policy_check.py',
+        '        if befores:\n            judge(c, befores)',
+        '        if befores and len(_parents(c)) == 1:  # defect: a merge commit is not judged\n            judge(c, befores)',
+        ['lowered/merge'])
+    # Fix round 1, F2: no producer recorded, or identities compared raw.
+    add(272, 'scope272-missing-producer-passes', scope272, 'policy_check.py',
+        '    if not _identities(producer):\n        return True',
+        '    if False:  # defect: no producer recorded lets any reviewer pass\n        return True',
+        ['review/producer-identity'])
+    add(272, 'scope272-identity-compared-raw', scope272, 'policy_check.py',
+        '    return bool(_identities(reviewer) & _identities(producer))',
+        '    return reviewer == producer  # defect: identities compared raw',
+        ['review/producer-identity'])
+    # Fix round 1, F5: the review skipped for the whole push, or for a required spec.
+    add(272, 'scope272-review-skipped-when-protected', scope272, 'policy_check.py',
+        '    for sid in carried:',
+        '    for sid in ([] if touched else carried):  # defect: a protected path skips review',
+        ['review/per-spec'])
+    add(272, 'scope272-review-skipped-when-required', scope272, 'policy_check.py',
+        '        if not reviewed_landing(sid, rng):',
+        '        if effective_flag(fm, pats) == "not_required" and not reviewed_landing(sid, rng):'
+        '  # defect: approval instead of review',
+        ['review/per-spec'])
+    # Fix round 1, F3 and F4: the daily summary leaves out a landing, or shows the declared flag or any reviewer.
+    add(272, 'scope272-unnamed-landings-dropped', scope272, 'landed_summary.py',
+        '        if ticket is None:\n            items.append((None, sha, subject))',
+        '        if ticket is None:\n            continue  # defect: unnamed landings dropped',
+        ['summary/every-landing'])
+    add(272, 'scope272-declared-flag-shown', scope272, 'landed_summary.py',
+        '        if pats is not None and P.effective_flag(fm, pats) == "required":',
+        '        if pats is not None and P.declared_flag(fm) == "required":  # defect: the declared flag',
+        ['summary/judged-fields'])
+    add(272, 'scope272-any-reviewer-shown', scope272, 'landed_summary.py',
+        '        if v.get("proof_digest") != P.proof_digest(manifest) or P._self_review(v.get("reviewer"), producer):\n'
+        '            continue',
+        '        if False:  # defect: any passing verdict names the reviewer\n            continue',
+        ['summary/judged-fields'])
+    # Fix round 2, N1: the lowering judged against every boundary commit and every parent, not the push base.
+    add(272, 'scope272-lowering-any-ancestor', scope272, 'policy_check.py',
+        '            return commits, [tip]',
+        '            return commits, [tip] + [q for c in commits for q in _parents(c) if q not in commits]'
+        '  # defect: every boundary is a base',
+        ['lowered/old-base-merge'])
+    # Fix round 2, N2: the one approval predicate accepts a missing approver, skips the self-approval test
+    # when the producer cannot be determined, compares identities raw, or the protected-path check takes the
+    # producer from the verdict at HEAD or its parent.
+    add(272, 'scope272-approver-missing-accepted', scope272, 'policy_check.py',
+        '    if not _identities(a.get("approver")):\n        return "names no approver"',
+        '    if False:  # defect: an approval naming no approver counts\n        return "names no approver"',
+        ['approval/identity'])
+    add(272, 'scope272-approval-producer-unknown-skipped', scope272, 'policy_check.py',
+        '        if not _identities(producer):\n            return "the producer cannot be determined"',
+        '        if False:  # defect: no producer skips the self-approval test\n'
+        '            return "the producer cannot be determined"',
+        ['approval/identity'])
+    add(272, 'scope272-approval-identity-raw', scope272, 'policy_check.py',
+        '        if _identities(a.get("approver")) & _identities(producer):',
+        '        if a.get("approver") == producer:  # defect: identities compared raw',
+        ['approval/identity'])
+    add(272, 'scope272-protected-producer-from-head', scope272, 'policy_check.py',
+        '        producer = approval_producer(push_producer(landing_specs(files_p)), files_p, rng)\n        for tf, p in touched:',
+        '        producer = producer_for(_head_spec_id())  # defect: the producer of the verdict at HEAD\n'
+        '        for tf, p in touched:',
+        ['approval/identity'])
+    # Fix round 2, N4 and N5: the summary lists any approver, or merges two same-day runs of one ticket.
+    add(272, 'scope272-approvers-unjudged', scope272, 'landed_summary.py',
+        '        if accepted:',
+        '        if data.get("decision") == "approved" and data.get("approver"):  # defect: any approver listed',
+        ['summary/approvers-judged'])
+    add(272, 'scope272-same-day-runs-merged', scope272, 'landed_summary.py',
+        '        if date != day or continues:',
+        '        if date != day or continues or any(i[0] == ticket for i in items if ticket):'
+        '  # defect: one line per ticket',
+        ['summary/separate-runs'])
+    # Fix round 3, N3: a push changing code lands with no reviewed spec covering it.
+    add(272, 'scope272-uncovered-code-lands', scope272, 'policy_check.py',
+        '    if work and not landing_specs(pushed):',
+        '    if False:  # defect: code with no reviewed spec lands',
+        ['review/covered'])
+    # Fix round 4, M1: a commit is judged against the tip instead of its real parents, so an honest merge of
+    # trunk after trunk added or raised a required spec is refused as a lowering.
+    add(272, 'scope272-lowering-judged-against-tip', scope272, 'policy_check.py',
+        '        befores = _parents(c)\n        if befores:',
+        '        befores = [p if p in commits else bases[0] for p in _parents(c)]'
+        '  # defect: an outside parent is judged as the tip\n        if befores:',
+        ['lowered/honest-trunk-merge'])
+    # Fix round 4: any file under specs/ or proof/ is exempt, so a script there lands with no spec.
+    add(272, 'scope272-loose-file-exempt', scope272, 'policy_check.py',
+        '    return bool(_SPEC_FILE.match(f) or _PROOF_FILE.match(f) or f in _projection_paths() or _approval_record(f))',
+        '    return f.startswith("specs/") or f.startswith("proof/")  # defect: every file under specs/ or proof/ is exempt',
+        ['review/covered'])
+    # Fix round 5, F1: absent parent states are set aside before the `now in before` test, so an honest merge
+    # of trunk after trunk retired or renumbered a required spec is refused as a lowering.
+    add(272, 'scope272-absent-filtered-first', scope272, 'policy_check.py',
+        '    if now == "required" or now in before:\n        return False\n'
+        '    before = [b for b in before if b != "absent"]\n',
+        '    before = [b for b in before if b != "absent"]  # defect: absent is dropped first\n'
+        '    if now == "required" or now in before:\n        return False\n',
+        ['lowered/honest-trunk-merge'])
+    # Fix round 5, F2: a derived projection or an approval record counts as work, so an index-only push, an
+    # approval-only push and the draft-spec commit with its index line are refused.
+    add(272, 'scope272-projection-is-work', scope272, 'policy_check.py',
+        ' or f in _projection_paths() or _approval_record(f))\n',
+        '))  # defect: a projection or an approval record is work\n',
+        ['review/covered'])
+    # Fix round 5: a spec-only push is required to carry a review that cannot exist yet.
+    add(272, 'scope272-spec-only-review-required', scope272, 'policy_check.py',
+        '    only_specs = spec_only(pushed)',
+        '    only_specs = False  # defect: a spec-only push needs a review',
+        ['review/spec-only'])
+    # Fix round 5: a spec-only push keeps its missing producer, so every owner approval of it is refused.
+    add(272, 'scope272-spec-only-producer-missing', scope272, 'policy_check.py',
+        '    if _identities(producer) or not spec_only(files):\n        return producer',
+        '    if True:  # defect: the missing producer stays missing\n        return producer',
+        ['review/spec-only'])
+    # Fix round 5: the committers of a spec-only push are not compared, so a committer approves their own push.
+    add(272, 'scope272-spec-only-committer-unchecked', scope272, 'policy_check.py',
+        '    return committer_identities(commits)\n',
+        '    return ["nobody"]  # defect: the committers are not compared\n',
+        ['review/spec-only'])
+    # Fix round 5: the committer replacement applies to a push with code, so a missing producer stops refusing.
+    add(272, 'scope272-committer-replaces-code-producer', scope272, 'policy_check.py',
+        '    if _identities(producer) or not spec_only(files):',
+        '    if _identities(producer):  # defect: any push takes its committers as producer',
+        ['approval/identity'])
+    # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
+    add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',
+        '"- %s %s | gate %s | reviewer %s | approval %s"\n'
+        '                     % (item["ticket"], item["title"], item["gate"], item["reviewer"], approval)',
+        '"- %s %s | gate %s | approval %s"  # defect: the reviewer is not reported\n'
+        '                     % (item["ticket"], item["title"], item["gate"], approval)',
+        ['summary/file', 'summary/registry-identical'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     # VELDO-0270: proof is small summaries, never raw bulk.

@@ -452,6 +452,11 @@ class LiveLoop(LoopSteps):
             return (False, "approval for protected paths: %s" % protected)
         if str(spec.get("human_approval", "not_required")).split()[0] != "not_required":
             return (False, "human approval required by the spec")
+        # VELDO-0272: the flag the rule computes from the footprint and risk areas, not only the
+        # declared one, so a spec cannot declare its way out of the owner's approval.
+        bases = _load_module("veldo_policy_check_exec", ".veldo/policy_check.py").approval_bases(spec)
+        if bases:
+            return (False, "human approval required by the rule: %s" % "; ".join(bases))
         return (True, "human go-ahead to merge (policy clear)")
 
     def approve(self, spec, receipt_bits):

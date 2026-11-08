@@ -132,6 +132,104 @@ def check_spec(path, repo_root=None):
     errs += check_tracker_repo(path, fm, repo_root)
     errs += check_placement(path, repo_root)
     errs += check_observability(path, repo_root) + _VC.check_falsification_declared(path, repo_root)
+    errs += check_approval_scope(path, fm, repo_root)
+    return errs
+
+
+# ---------------------------------------------------------------------------
+# VELDO-0272: the approval flag follows the spec's placement, not its author's word. The rule
+# (policy_check.approval_bases) lives beside the protected list it reads; this check enforces it for
+# every spec first committed after approval_scope.from_commit, read the way fix_validation.from_commit
+# is read: absent, not a full commit id, or not a commit here, and every spec is in scope.
+# ---------------------------------------------------------------------------
+APPROVAL_SCOPE_KEY = "approval_scope"
+_APPROVAL_SCOPES = {}
+
+
+def _policy_check_module():
+    if "module" not in _APPROVAL_SCOPES:
+        s = importlib.util.spec_from_file_location("veldo_policy_check_v272", ROOT / ".veldo" / "policy_check.py")
+        m = importlib.util.module_from_spec(s)
+        s.loader.exec_module(m)
+        _APPROVAL_SCOPES["module"] = m
+    return _APPROVAL_SCOPES["module"]
+
+
+def _git_lines(root, *args):
+    r = _git_process_module().run(["git", "-C", str(root), *args], capture_output=True, text=True, timeout=300)
+    return r.stdout.splitlines() if r.returncode == 0 else None
+
+
+def _git_process_module():
+    return _policy_check_module()._git_process
+
+
+def approval_scope(repo_root=None):
+    """(protected patterns, start line, commits at or before it or None, {path: add commits}) of one
+    repository, read once. None for the commit set means the start line is unreadable: in scope."""
+    root = Path(repo_root or ROOT).resolve()
+    if root in _APPROVAL_SCOPES:
+        return _APPROVAL_SCOPES[root]
+    try:
+        policy = _Y.read(root / ".veldo" / "policy.yaml")
+    except Exception:
+        policy = {}
+    rows = policy.get("protected_paths") if isinstance(policy, dict) else None
+    pats = [r["path"] for r in rows or [] if isinstance(r, dict) and isinstance(r.get("path"), str)]
+    block = policy.get(APPROVAL_SCOPE_KEY) if isinstance(policy, dict) else None
+    start = str(block.get("from_commit", "")) if isinstance(block, dict) else ""
+    before, added = None, {}
+    if re.fullmatch(r"[0-9a-f]{40}", start):
+        listed = _git_lines(root, "rev-list", start)
+        if listed:
+            before = set(listed)
+            commit = None
+            for line in _git_lines(root, "log", "--format=%x00%H", "--name-only", "--diff-filter=A",
+                                   "--no-renames", "--", "specs/") or []:
+                if line.startswith("\0"):
+                    commit = line[1:]
+                elif line.strip() and commit:
+                    added.setdefault(line.strip(), set()).add(commit)
+    _APPROVAL_SCOPES[root] = (pats, start, before, added)
+    return _APPROVAL_SCOPES[root]
+
+
+def approval_in_scope(path, repo_root=None):
+    """Is this spec judged by the computed flag? A file outside the repository is not one of its specs
+    and is not judged. Inside it, out of scope only when the start line resolves and the file was first
+    committed at or before it; uncommitted, unreadable or later is in scope."""
+    root = Path(repo_root or ROOT).resolve()
+    try:
+        rel = Path(path).resolve().relative_to(root).as_posix()
+    except ValueError:
+        return False
+    _pats, _start, before, added = approval_scope(root)
+    if before is None:
+        return True
+    commits = added.get(rel)
+    if commits is None:
+        commits = set(_git_lines(root, "log", "--format=%H", "--diff-filter=A", "--no-renames", "--", rel) or [])
+    return not (commits & before)
+
+
+def check_approval_scope(path, fm, repo_root=None):
+    """risk_areas is an optional list of the four areas; and, in scope, a critical spec names an area
+    (critical_without_area) and a spec declaring not_required where the rule computes required is
+    refused (approval_flag_below_rule) with every basis. Declaring required is the owner's hand mark."""
+    errs = 0
+    PC = _policy_check_module()
+    areas = fm.get("risk_areas")
+    if areas is not None and (not isinstance(areas, list) or any(a not in PC.APPROVAL_AREAS for a in areas)):
+        errs += fail(path, f"risk_areas must be a list of {', '.join(PC.APPROVAL_AREAS)}, not {areas!r}")
+    if not approval_in_scope(path, repo_root):
+        return errs
+    if str(fm.get("risk") or "").split()[:1] == ["critical"] and not areas:
+        errs += fail(path, "critical_without_area: a critical spec names no risk_areas "
+                           f"({', '.join(PC.APPROVAL_AREAS)})")
+    bases = PC.approval_bases(fm, approval_scope(repo_root)[0])
+    if PC.declared_flag(fm) == "not_required" and bases:
+        errs += fail(path, "approval_flag_below_rule: declares human_approval not_required, the rule computes "
+                           "required; basis: " + "; ".join(bases))
     return errs
 
 

@@ -1867,6 +1867,15 @@
    ],
    "regions": "Proof is small summaries, never raw bulk (VELDO-0270): the contract check refusing a proof file over proof.max_file_bytes (limit read from policy, default 1,048,576 bytes, an invalid key a refusal) and a base64 encoded archive at any size; the push guard, through a pack's pre-push hook, refusing a push to main whose first commit adds a 2 MB proof file the second deletes, naming that commit, and passing the same commits to an unprotected branch; each proof writer (gate transcript, mutation writers and the engine copy, corpus audits) writing a summary under the limit with command, environment and the discarded bytes' sha256; incomplete summaries and dangling references refused; the eight removed files' summaries matching their bytes at the commit that keeps them; the rule paragraph verbatim in CLAUDE.md, VELDO.md, engine/VELDO.md and every reviewer brief.",
    "requires_note": "Only ROOT and expect. Scratch Git repositories through git_process holding a copy of this tree's .veldo, the guard and the claude pack's pre-push hook, each with its own policy; the eight removed files read back from Git history. Writes only temporary fixtures."
+  },
+  {
+   "name": "129_veldo_0272_approval_scope",
+   "file": "129_veldo_0272_approval_scope.py",
+   "requires": [
+    "129_veldo_0272_approval_scope"
+   ],
+   "regions": "Owner approval narrowed to money, authentication and security, schema and irreversible infrastructure (VELDO-0272): protected_paths exactly the Design section's kept and added lists with high floors, high no longer needing the owner and critical still needing it, approval_scope.from_commit a commit here; a push touching only test machinery needing no approval and one touching authorization needing it; the computed approval flag refusing a spec declared below its footprint or risk areas after the start commit and accepting one committed before it; a lowered flag with no owner approval refused, a not-required landing refused without a bound, digest-matching review by someone other than the producer, and merge_ready refusing a declared flag below the rule; the daily landed summary file and the report's daily_landed text byte-identical, with an empty day as one line.",
+   "requires_note": "Only ROOT and expect. Real Git scratch repositories with the real .veldo/policy.yaml, the real policy_check.main(), validate.check_approval_scope, executor.merge_ready, landed_summary.write_day and the reporter's render; the modules under test run from a temporary copy of .veldo/ so the mutation driver's copy is the one loaded. Writes only temporary fixtures."
   }
  ],
  "resource_capacities": {

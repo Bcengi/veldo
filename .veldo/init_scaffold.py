@@ -346,6 +346,9 @@ _FILES = [
     # VELDO-0128: owner Telegram reports projected from committed journal events through the activated
     # edge. A runtime asset the authority loads; not validator substrate.
     ".veldo/control_telegram_report.py",
+    # VELDO-0272: the daily landed summary the reporter's daily_landed text renders through (one formatter
+    # for the file path and the message). A runtime asset the reporter loads; not validator substrate.
+    ".veldo/landed_summary.py",
     # VELDO-0078: the backlog service (grooming, owner admission and priority through settlement, approved
     # decomposition, blocked phases and evidence-based DONE) and the executable-work question every claim
     # entry asks. A runtime asset the authority, the frontier and the task source load; not substrate.

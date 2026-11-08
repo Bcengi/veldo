@@ -189,7 +189,18 @@ _v32_doc = " ".join((P.unresolved_blocking.__doc__ or "").lower().split())  # un
 # phrases below span line breaks in the source, and matching raw text would fail on the wrap
 # AC1 + AC4 at the real gate, over an isolated repository. The live checkout can
 # legitimately touch protected paths; that must not decide a test of review objections.
-def _v32_main(objections, approval, protected_change=False):
+def _v32_spec(sid):
+    return "\n".join(["---", "schema: veldo.spec/v1", "id: " + sid, "title: fixture", "status: ready",
+                      "risk: standard", "owner: fixture", "human_approval: not_required",
+                      "footprint:", '  - "ordinary.txt"', "acceptance_criteria:", "  - id: AC1",
+                      "    text: fixture", "---", "", "Body.", ""])
+
+
+def _v32_main(objections, approval, protected_change=False, reviewed=False):
+    """reviewed: the push carries a ready, not-required spec with a pass verdict bound to the change
+    commit and its proof digest, from a reviewer who is not the producer. VELDO-0272 N3 refuses a push
+    that changes anything outside specs/ and proof/ with no such spec, so a row expecting an ordinary
+    change to pass must carry one; what the row proves about objections is unchanged."""
     import contextlib as _c, io as _io
     real_u, real_a, real_root = P.unresolved_blocking, P.valid_approval_for, P.ROOT
     P.unresolved_blocking = lambda _c_: objections
@@ -208,8 +219,25 @@ def _v32_main(objections, approval, protected_change=False):
             fixture_git("commit", "-qm", "base")
             fixture_git("update-ref", "refs/remotes/origin/main", "HEAD")
             (root / (".veldo/policy_check.py" if protected_change else "ordinary.txt")).write_text("change")
+            if reviewed:
+                sid = "WARP-9000"
+                manifest = {"schema": "veldo.proof/v1", "spec_id": sid, "commit": "f" * 40,
+                            "producer": "builder", "checks": [{"name": "unit"}],
+                            "criteria": [{"id": "AC1", "status": "passed", "evidence": [{"type": "unit"}]}]}
+                (root / "specs").mkdir()
+                (root / "specs" / (sid + "-fixture.md")).write_text(_v32_spec(sid))
+                (root / "proof" / sid).mkdir(parents=True)
+                (root / "proof" / sid / "manifest.json").write_text(json.dumps(manifest))
             fixture_git("add", ".")
             fixture_git("commit", "-qm", "change")
+            if reviewed:
+                change = fixture_git("rev-parse", "HEAD").stdout.strip()
+                (root / "proof" / sid / "verdict.json").write_text(json.dumps({
+                    "schema": "veldo.verdict/v1", "spec_id": sid, "commit": change, "reviewer": "reviewer",
+                    "verdict": "pass", "findings": {"blocking": [], "non_blocking": []},
+                    "proof_digest": P.proof_digest(manifest)}))
+                fixture_git("add", ".")
+                fixture_git("commit", "-qm", "review")
             P.ROOT = root
             with _c.redirect_stdout(_io.StringIO()):
                 return P.main()
@@ -219,11 +247,11 @@ def _v32_main(objections, approval, protected_change=False):
 
 _V32_OBJ = [("WARP-9000", Path("proof/WARP-9000/verdict.json"), {"text": "AC2 unevidenced"})]
 expect("WARP-0732 AC1: main() BLOCKS on an unresolved objection with no override",
-       _v32_main(_V32_OBJ, None) == 1)
+       _v32_main(_V32_OBJ, None, reviewed=True) == 1)
 expect("WARP-0732 AC1 control: main() does not block when nothing objects",
-       _v32_main([], None) == 0)
+       _v32_main([], None, reviewed=True) == 0)
 expect("WARP-0732 AC4: a recorded owner approval overrides the objection",
-       _v32_main(_V32_OBJ, {"approver": "dmitry"}) == 0)
+       _v32_main(_V32_OBJ, {"approver": "dmitry"}, reviewed=True) == 0)
 
 expect("WARP-0732 control: an objection override never approves a protected path",
        _v32_main(_V32_OBJ, {"approver": "fixture-owner"}, protected_change=True) == 1)
