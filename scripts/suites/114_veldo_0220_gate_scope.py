@@ -181,7 +181,8 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
             return False
         try:
             return Path('/proc/%d/stat' % pid).read_text().rsplit(')', 1)[1].split()[0] != 'Z'
-        except FileNotFoundError:
+        except (FileNotFoundError, ProcessLookupError):
+            # A process that exits between the open and the read is gone, as state() reads it.
             return False
 
     def state(pid):
