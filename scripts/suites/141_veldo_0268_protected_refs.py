@@ -1004,7 +1004,10 @@ def _v268_suite():
         ('fix4-vcs-helper-runs', 'veldo-guard.sh', PROTOCOLS, PROTOCOLS_DEFECT, 'push/vcs'),
         ('fix4-alias-ignores-dash-c', 'veldo-guard.sh', ALIAS_C, ALIAS_C_DEFECT, 'push/alias-elsewhere'),
         ('fix4-alias-ignores-cd', 'veldo-guard.sh', ALIAS_CD, ALIAS_CD_DEFECT, 'push/alias-elsewhere'),
-        ('fix4-alias-ignores-prefix', 'veldo-guard.sh', ALIAS_PREFIX, ALIAS_PREFIX_DEFECT, 'push/alias-elsewhere'),
+        # Fix round 7: round 6's alias_in_text check after judge_git's alias loop also catches an
+        # assignment or option before git, so this defect is applied with that check off too.
+        ('fix4-alias-ignores-prefix', 'veldo-guard.sh', ALIAS_PREFIX, ALIAS_PREFIX_DEFECT, 'push/alias-elsewhere',
+         ((TEXT_BESIDE_GIT, TEXT_BESIDE_GIT_DEFECT),)),
         # Fix round 5: the upstream line is read; a failed or expanded alias lookup is unresolved; sh -c.
         ('fix5-upstream-line-unread', 'veldo-guard.sh', UPSTREAM_LINE, UPSTREAM_LINE_DEFECT, 'push/set-upstream'),
         ('fix5-lookup-failure-is-no-alias', 'veldo-guard.sh', LOOKUP_FAILS, LOOKUP_FAILS_DEFECT,

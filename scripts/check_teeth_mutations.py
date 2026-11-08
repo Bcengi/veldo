@@ -12353,7 +12353,15 @@ def cases():
     guard268('guard268-alias-ignores-prefix',
              '    elsewhere = git_globals(words) is None or any("=" in w or w == "env" for w in prefix)\n',
              '    elsewhere = False  # defect: an assignment or option before the subcommand is ignored\n',
-             ['push/alias-elsewhere'])
+             ['push/alias-elsewhere'],
+             # Fix round 7: round 6's alias_in_text check after judge_git's alias loop also catches an
+             # assignment or option before git, so this defect is applied with that check off too.
+             also=[('        if alias_in_text(command, cwd):\n'
+                    '            return unresolved("a git alias that may push or merge, in the text of a command '
+                    'that runs "\n',
+                    '        if False:  # defect: a wrapper or editor beside a git word is not alias-checked\n'
+                    '            return unresolved("a git alias that may push or merge, in the text of a command '
+                    'that runs "\n')])
     # Fix round 5: the dry run's upstream line is read; an alias lookup that fails or reads an expanded -C
     # value is unresolved; a command whose first word is not git (sh -c) is alias-checked.
     guard268('guard268-upstream-line-unread',
