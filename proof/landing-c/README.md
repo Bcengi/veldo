@@ -57,7 +57,7 @@ Conflicts:
      143-147 replace that raw write with `write_summary(report, target)` to
      `corpus-before.json.summary.json` (no raw bulk in proof).
    - main's scripts/suites/127_veldo_0259_installation.py:612 requires
-     `'scripts/parser_corpus_audit.py': {'main': 2}`, and its check at :629-646 counts `write_text`
+     `'scripts/parser_corpus_audit.py': {'main': 2}`, and its check at :630-646 counts `write_text`
      calls in `main()` whose argument goes through `home_as_tilde`. With the branch's summary write
      `main()` has one such call (corpus-before.md, line 169 on the branch, tilded by main), so
      suite 127 goes red; keeping main's raw write instead defeats VELDO-0270. Holding both needs a
