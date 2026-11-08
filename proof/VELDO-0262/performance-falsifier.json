@@ -1,0 +1,63 @@
+{
+ "claim_holds": false,
+ "claims": {
+  "code/advance": {
+   "applicable": false,
+   "langgraph_median_ms": 37.554,
+   "reason": "nothing ran on the LangGraph runner (NO_RUNTIME): it never imported LangGraph",
+   "steps_median_ms": 337.9685
+  },
+  "code/start": {
+   "applicable": true,
+   "holds": false,
+   "import_build_ms": 287.1513329446316,
+   "langgraph_median_ms": 390.943,
+   "required_ms": 229.72106635570526,
+   "saved_ms": 54.77800000000002,
+   "steps_median_ms": 336.16499999999996
+  },
+  "fan-4/advance": {
+   "applicable": true,
+   "holds": false,
+   "import_build_ms": 295.4670280450955,
+   "langgraph_median_ms": 393.7735,
+   "required_ms": 236.3736224360764,
+   "saved_ms": 57.176000000000045,
+   "steps_median_ms": 336.59749999999997
+  },
+  "fan-4/start": {
+   "applicable": true,
+   "holds": false,
+   "import_build_ms": 295.4670280450955,
+   "langgraph_median_ms": 392.8945,
+   "required_ms": 236.3736224360764,
+   "saved_ms": 57.102499999999964,
+   "steps_median_ms": 335.79200000000003
+  },
+  "qualification/advance": {
+   "applicable": true,
+   "holds": false,
+   "import_build_ms": 291.302802041173,
+   "langgraph_median_ms": 389.038,
+   "required_ms": 233.04224163293839,
+   "saved_ms": 55.82600000000002,
+   "steps_median_ms": 333.212
+  },
+  "qualification/start": {
+   "applicable": true,
+   "holds": false,
+   "import_build_ms": 291.302802041173,
+   "langgraph_median_ms": 393.017,
+   "required_ms": 233.04224163293839,
+   "saved_ms": 59.46949999999998,
+   "steps_median_ms": 333.5475
+  }
+ },
+ "load_average": [
+  3.19921875,
+  4.6640625,
+  4.59619140625
+ ],
+ "samples_per_case": 10,
+ "sleep_ms": 312.0
+}
