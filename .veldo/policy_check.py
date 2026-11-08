@@ -1235,4 +1235,11 @@ def main():
 if __name__ == "__main__":
     if sys.argv[1:2] == ["--protected-ref"]:
         sys.exit(_protected_ref_main(sys.argv[2:]))
-    sys.exit(main())
+    # A range, base or parent Git cannot read (VELDO-0272's push_range, outside a repository or on an
+    # unreadable history) refuses as a stated block with the same exit 1, never a traceback (landing-c).
+    try:
+        code = main()
+    except RuntimeError as error:
+        print("VELDO policy: blocked. %s; nothing can be judged, so the push is refused." % error)
+        code = 1
+    sys.exit(code)
