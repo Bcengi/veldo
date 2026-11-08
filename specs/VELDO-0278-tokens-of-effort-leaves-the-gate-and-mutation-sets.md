@@ -5,7 +5,7 @@ title: Tokens of Effort leaves the gate and the mutation sets until a spend sour
 status: ready
 risk: standard
 owner: dmitry
-human_approval: not_required
+human_approval: required
 lane: standalone
 depends_on: [VELDO-0267, VELDO-0271]
 placement: [enforcement]
@@ -139,3 +139,5 @@ core half).
 2026-11-07: by the lead (Telegram 39708 scope, ACs keep their meaning): the AC1 falsifier row no longer runs the real eight parked suites at the gate (the build measured 15_warp_1404 alone at 539 s, about 10 minutes added to the unit stage, which defeats the parking); the gate row uses a one-fragment fixture and the all-eight green run is proof evidence run once. Footprint gains scripts/suites/114_veldo_0216_concurrent_stages.py, whose four handoff rows drop with the VELDO-0214 handoff (proof/VELDO-0278/README.md).
 
 2026-11-07: footprint gains scripts/suites/08_restoration_spec_generation_veldo.py, by the lead under Telegram 39708 (ACs unchanged): its row 'governing_spec resolves a behavior by declared footprint match' asserts which spec governs the live .veldo/evidence.py, so it turns red whenever a later spec on the branch declares a broader footprint (the cleanup specs of ded89b93 do); the row must prove the footprint resolution on a fixed fixture corpus instead (check of 2026-11-07, research/claude-runs/veldo-0278-check-2026-11-07.md F3).
+
+2026-11-08 (lead, landing-c): human_approval set to required, as VELDO-0272's rule computes from the protected paths this spec touches; the owner's landing approval names them. No behaviour change.

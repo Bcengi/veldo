@@ -4,6 +4,7 @@ id: VELDO-0259
 title: Veldo reads everything that belongs to one deployment from one installation folder through one reader, no product default names a person, and a gate stage refuses a candidate that adds personal setup
 status: ready
 risk: "critical - the same change rewires how a running factory finds its owner, accounts, channels and records, so a wrong cutover stops the factory, and a check that lets personal values through feeds them toward a public repository."
+risk_areas: [auth_security]
 owner: dmitry
 human_approval: required
 lane: standalone
@@ -203,3 +204,5 @@ in the next message. Standalone; no plan work item.
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
 
 2026-11-05: footprint widened by the lead after the independent review (proof/VELDO-0259/review-2026-11-05.md): Veldo's own evidence and log writers that record into proof/ write the home directory as "~", so the built-in home_path rule never blocks normal work; the writers are listed in proof/VELDO-0259/OPEN.md by fix round 1. Acceptance criteria unchanged.
+
+2026-11-08 (lead, landing-c): risk_areas [auth_security] added for VELDO-0272's critical_without_area rule; no behaviour change.

@@ -5,7 +5,7 @@ title: The gate reuse machinery, which has never reused a result, and the finish
 status: ready
 risk: high
 owner: dmitry
-human_approval: not_required
+human_approval: required
 lane: standalone
 depends_on: [VELDO-0267, VELDO-0271]
 placement: [enforcement]
@@ -125,3 +125,5 @@ The mutation selection (VELDO-0267), the sandbox (VELDO-0271), the resource ledg
 2026-11-07: drafted by the lead from the weight audit's item 11 (Telegram 39708, 39710). A draft.
 
 2026-11-07: ready by the lead under the owner's narrowed approval scope (Telegram 39708): test machinery and cleanup, no money, security, schema or infrastructure decision.
+
+2026-11-08 (lead, landing-c): human_approval set to required, as VELDO-0272's rule computes from the protected paths this spec touches; the owner's landing approval names them. No behaviour change.

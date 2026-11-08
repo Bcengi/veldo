@@ -5,7 +5,7 @@ title: An unmeasured case's baseline is a measurement bounded only against a han
 status: ready
 risk: high
 owner: dmitry
-human_approval: not_required
+human_approval: required
 lane: standalone
 depends_on: [VELDO-0215]
 placement: [enforcement]
@@ -113,3 +113,5 @@ peer sample at its key.
 lead's design: an unmeasured baseline is bounded by the ceiling, its noop and mutant by 3 x that
 baseline as measured in the same stage. The peer read, its rows and its three mutants are removed;
 the spec file is renamed to match.
+
+2026-11-08 (lead, landing-c): human_approval set to required, as VELDO-0272's rule computes from the protected paths this spec touches; the owner's landing approval names them. No behaviour change.

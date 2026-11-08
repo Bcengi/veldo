@@ -4,6 +4,7 @@ id: VELDO-0256
 title: A run reads the production database through a read-only server behind the outside gate, on a database role that can only read, with the connection credential held gate side
 status: ready
 risk: critical
+risk_areas: [auth_security]
 owner: dmitry
 human_approval: required
 lane: standalone
@@ -119,3 +120,5 @@ on VELDO-0254 are removed; the read-only production database behind the gate sta
 from the control plane at landing (VELDO-0258). The file is renamed to match.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
+
+2026-11-08 (lead, landing-c): risk_areas [auth_security] added for VELDO-0272's critical_without_area rule; no behaviour change.

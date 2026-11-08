@@ -4,6 +4,7 @@ id: VELDO-0257
 title: Every credential path that existing features open into a run moves behind the outside gate and the old path is removed, while programs outside Veldo keep their own credentials until each is retired
 status: ready
 risk: critical
+risk_areas: [auth_security]
 owner: dmitry
 human_approval: required
 lane: standalone
@@ -170,3 +171,5 @@ secrets behind the gate but no longer fences a run from host store sockets or lo
 memory_socket_refused name is removed; the dependency on VELDO-0256 is removed.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
+
+2026-11-08 (lead, landing-c): risk_areas [auth_security] added for VELDO-0272's critical_without_area rule; no behaviour change.

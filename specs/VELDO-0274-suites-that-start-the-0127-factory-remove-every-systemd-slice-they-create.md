@@ -5,7 +5,7 @@ title: The VELDO-0127 factory fixture removes every systemd slice it creates, on
 status: ready
 risk: standard
 owner: dmitry
-human_approval: not_required
+human_approval: required
 lane: standalone
 depends_on: [VELDO-0127]
 placement: [enforcement]
@@ -111,3 +111,5 @@ draft.
 2026-11-07: footprint and protected_paths gain scripts/gate_unconfined.json, by the lead under Telegram 39708 (ACs unchanged): AC3 says the gate catches a leak, and the unit stage gives a user manager only to suites listed there (scripts/gate_graph.json node unit.unconfined), so the end-of-run row must run in that leg (check of 2026-11-07, research/claude-runs/veldo-0274-check-2026-11-07.md finding 1). The landing lists this protected path.
 
 2026-11-07: AC3 falsifier names suite 86 instead of suite 88, by the lead under Telegram 39708 (the property is unchanged): in the gate only suite 86 among the factory users runs in the unconfined leg with a user manager, so a mutation of suite 88 can never leak a slice there and the gate could not see it (fix check of 2026-11-07, research/claude-runs/veldo-0274-fixcheck-2026-11-07.md finding 1).
+
+2026-11-08 (lead, landing-c): human_approval set to required, as VELDO-0272's rule computes from the protected paths this spec touches; the owner's landing approval names them. No behaviour change.

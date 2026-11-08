@@ -4,6 +4,7 @@ id: VELDO-0254
 title: No outside-service credential is ever delivered into a run, a secret scan of workspaces and project trees reports any such credential it finds there, masked, so it is moved behind the outside gate, and the confined runner stays opt-in for risky work
 status: ready
 risk: critical
+risk_areas: [auth_security]
 owner: dmitry
 human_approval: required
 lane: standalone
@@ -173,3 +174,5 @@ by this ticket. Changes recorded in proof/VELDO-0254/no-sandbox-revision-2026-11
 2026-11-05: fix round 1 (proof/VELDO-0254/review-2026-11-05.md). The lead's footprint widening names `.veldo/control_service_channel.py` and `engine/.veldo/control_service_channel.py`, the owner notice's one call site (`Channel.tick` runs `Channel.tell_secrets`), and the one send-inventory line that call needs in `scripts/suites/86_veldo_0168_text.py`; listed in proof/VELDO-0254/OPEN.md item 5. `.veldo/secret_scan_patterns.json` and its engine copy are removed: the formats live in `secret_scan.py`, which the installed receiver carries. Acceptance criteria unchanged.
 
 2026-11-05: footprint and protected paths widened by the lead after fix round 1: scripts/gate_unconfined.json gets entries for suites 128 (nested namespace of the confined runner) and 129 (real launches under the user manager). A protected path: the owner approves it at landing. Acceptance criteria unchanged.
+
+2026-11-08 (lead, landing-c): risk_areas [auth_security] added for VELDO-0272's critical_without_area rule; no behaviour change.

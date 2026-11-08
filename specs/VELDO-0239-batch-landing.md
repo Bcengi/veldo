@@ -4,6 +4,7 @@ id: VELDO-0239
 title: Batch landing - several reviewed units of a project are assembled onto trunk in one candidate, colliding migrations are renumbered by the project's own hook, the candidate is gated once with every red inventoried, and all land together on one owner approval
 status: ready
 risk: critical
+risk_areas: [irreversible_infra]
 owner: dmitry
 human_approval: required
 lane: standalone
@@ -160,3 +161,5 @@ joins depends_on (A21, R1); no project names, owner report or message ids outsid
 owner approves the amendments in one message. Dispositions: proof/VELDO-0236/review-dispositions-2026-11-04.md.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
+
+2026-11-08 (lead, landing-c): risk_areas [irreversible_infra] added for VELDO-0272's critical_without_area rule; no behaviour change.
