@@ -472,7 +472,8 @@ raise SystemExit(m.main())
             if refusing:
                 (shell_out/'last_verify').write_text('{"status":"green"}')
                 (shell_out/'events.jsonl').write_text('')
-                emitted_fragment += verify[verify.index('COMMIT=$(git rev-parse'): ]
+                # At a line start: VELDO-0267 (a963583f) added VELDO_GATE_BASE_COMMIT=$(git rev-parse earlier.
+                emitted_fragment += verify[verify.index('\nCOMMIT=$(git rev-parse') + 1:]
             env['VELDO_HOST_FIELD'] = ''
             result = subprocess.run(['bash','-c',emitted_fragment],cwd=candidate,env=env,capture_output=True,text=True,
                                     pass_fds=legs._launcher_fds())
