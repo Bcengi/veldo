@@ -209,30 +209,58 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
         limit = str(module('v220_host', host_source).load(scoped / 'scripts/gate_host.json')['scope']['memory_max'])
         own = Path('/proc/self/cgroup').read_text().split('::', 1)[1].strip()
         cases, seen = {}, {}
-        caller = 'v220-caller-%d.scope' % os.getpid()
+        # Unique per control and per run: two controls of one mutation case (or a scope of a run
+        # not yet collected) never share a unit name, even when their pids coincide.
+        caller = 'v220-caller-%d-%s.scope' % (os.getpid(), os.urandom(4).hex())
+        # Every wait here is bounded by the deadline this suite gives a fixture gate (finish),
+        # never a short fixed sleep: under gate load teardown is slow, not wrong. A wait returns
+        # the moment its condition holds, so the bound only costs time on a real red.
+        ceiling = 180
+        lock = top / 'locks' / '.scope.lock'
         for name, prefix in (('outside', ()), ('inside-a-scope', (
                 'systemd-run', '--user', '--scope', '--quiet', '--collect', '--unit', caller,
                 '-p', 'MemoryMax=1G'))):
             probe_path = top / ('probe-scope-' + name)
             gate = start(scoped, probe_path, prefix=prefix)
-            code, out = finish(gate)
+            code, out = finish(gate, ceiling)
             seen[name] = got = json.loads(probe_path.read_text()) if probe_path.is_file() else {}
             scope = got.get('scope') or ''
             stamp = records(scoped)[0] or {}
-            cases[name] = bool(
-                code == 0 and re.fullmatch(r'.*/veldo-gate-[0-9]+-[0-9a-f]+\.scope', scope)
-                and scope != own and not scope.endswith('/' + caller)
-                and got.get('memory_max') == limit and got.get('oom') == stated['scope']['oom_score_adj']
-                and got['chain'][-1][0] == gate.pid and got['holder'] == gate.pid
-                and all(cg == scope + '/gate' for _, cg in got['chain'])
-                and set(got['procs'].values()) == {'gate'} and got['outsiders'] == []
-                and {'cpu', 'memory', 'pids'} <= set(got['subtree']) and got['child'] is True
-                and stamp.get('host', {}).get('scope') == scope.rsplit('/', 1)[1]
-                and stamp['host'].get('memory_max') == int(limit)
-                and ('running in scope %s' % scope.rsplit('/', 1)[1]) in out
-                and until(lambda: not Path('/sys/fs/cgroup' + scope).exists(), 15))
+            # Each condition is named, so a red names the first one that failed. The keeper holds
+            # the lock until teardown completes and releases it as it exits, which can be after the
+            # scope's cgroup is gone: the case asserts that release too, so the next case never
+            # starts against a lock this one still holds (round 8: inside-a-scope NOT STARTED, 75).
+            checks = (
+                ('exit 0', lambda: code == 0),
+                ('scope named veldo-gate-*', lambda: bool(re.fullmatch(r'.*/veldo-gate-[0-9]+-[0-9a-f]+\.scope', scope))),
+                ('scope is not the caller', lambda: scope != own and not scope.endswith('/' + caller)),
+                ('memory_max', lambda: got.get('memory_max') == limit),
+                ('oom_score_adj', lambda: got.get('oom') == stated['scope']['oom_score_adj']),
+                ('holder is the gate', lambda: got['chain'][-1][0] == gate.pid and got['holder'] == gate.pid),
+                ('chain in scope/gate', lambda: all(cg == scope + '/gate' for _, cg in got['chain'])),
+                ('only gate leaf procs', lambda: set(got['procs'].values()) == {'gate'} and got['outsiders'] == []),
+                ('controllers delegated', lambda: {'cpu', 'memory', 'pids'} <= set(got['subtree'])),
+                ('child cgroup', lambda: got['child'] is True),
+                ('stamp scope', lambda: stamp.get('host', {}).get('scope') == scope.rsplit('/', 1)[1]),
+                ('stamp memory_max', lambda: stamp['host'].get('memory_max') == int(limit)),
+                ('output names scope', lambda: ('running in scope %s' % scope.rsplit('/', 1)[1]) in out),
+                ('scope cgroup gone', lambda: until(lambda: not Path('/sys/fs/cgroup' + scope).exists(), ceiling)),
+                ('lock released', lambda: until(lambda: not held(lock), ceiling)),
+            )
+            failed = None
+            for label, check in checks:
+                try:
+                    passed = bool(check())
+                except (KeyError, IndexError, TypeError, AttributeError) as error:
+                    passed, label = False, '%s (%s: %s)' % (label, type(error).__name__, error)
+                if not passed:
+                    failed = label
+                    break
+            cases[name] = failed is None
             if not cases[name]:
-                seen[name] = dict(got, exit=code, out=out[-1500:])
+                seen[name] = dict(got, failed=failed, exit=code, out=out[-1500:])
+            # A red case still never leaves its gate's lock for the next case to collide with.
+            until(lambda: not held(lock), ceiling)
         # Scope teardown must also reach a worker in another session and a delegated child
         # cgroup. Check the first instant we can take the lock, before any test cleanup.
         for name, number, red in (('killed', signal.SIGKILL, False),
