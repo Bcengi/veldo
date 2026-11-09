@@ -399,3 +399,27 @@ fdinfo_demo.py 2041 bytes 9cd4e2383ef664a0cd67d249174a59be6c8d6eb8ed95484b6c3f71
 fake_limit_check.py 2388 bytes f9dc817f9c49428f2f18c75ca804e53aaadd46c00566564a4a958e8ec704b1ae.
 The gate lock was held all round, so no suite ran here. Pending (pending_runs.sh): suites 66 and 83
 ten times alone and ten times with every core busy, teeth 47 and 154, and the full gate.
+
+## Fix round 7
+
+Gate 5 on 2d6ba203 was red on the mutation slot only (invalid_baseline). The round 6 queue
+(lock-queue/logs/71) had suite 83 red once in 20 and teeth 47 and 154 red on every control.
+
+- V (suite 78, gate 5): the baseline of claude-qualification-not-installed redded every contained row
+  and engines-protected (no check ran), with no detail kept. The fake wrote `<pid>.children` with a
+  truncating write while marker_wait(children=1) polled and json.loads it; a read between the open and
+  the write raised JSONDecodeError inside the contained region. The file is now written whole and
+  renamed, as the marker already was. The teeth worker now keeps a false row's printed detail lines
+  (3 per row, 400 chars) in failed_details, so the next red control says why.
+- W (suite 83, loaded-4): loop/owner-stop-asked-on-wake read the stop result from the record polled
+  when the state left STOPPABLE; honor_stops commits it after the receiver recorded the end, so it read
+  None at 0.13 s. It is now read after the asking pass is logged; asked true, the end within WAIT and one
+  dispatch are still required.
+- X (teeth 47 and 154 standalone): check_teeth_mutations.py passed no leg, so suites 66 and 83, which
+  scripts/gate_unconfined.json lists whole, ran confined (1.4 s, 8 to 9 s per control): 47 missing_target
+  on all 38 cases, 154 invalid_baseline ("veldo installation: none found"). The standalone entry is meant
+  to work; it now reads the leg as check_gate_mutations.main does. Every 47 and 154 anchor still matches
+  once, so no tooth was re-anchored.
+
+The gate lock was held, so nothing ran here. Pending (pending_runs.sh): suites 78 and 83 ten times alone
+and ten times loaded, teeth 60 (16 jobs), 47 and 154, and the full gate.

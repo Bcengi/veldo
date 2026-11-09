@@ -120,3 +120,27 @@ kill "${hogs[@]}"
 step round6-teeth-47 python3 scripts/check_teeth_mutations.py --finding 47
 step round6-teeth-154 python3 scripts/check_teeth_mutations.py --finding 154
 step round6-full-gate bash scripts/verify.sh
+
+# Fix round 7 (README "Fix round 7"): suite 78 (the fake's children file, gate 5's red baseline) and suite
+# 83 (the stop result read after its pass), each ten times alone and ten times with every core busy, every
+# run expected green; then the teeth of findings 60 (suite 78's cases, the red baseline's own, 16 workers so
+# the controls share the user manager as in the gate), 47 and 154 (now in the unconfined leg standalone too,
+# every case expected rejected), and the full gate.
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    step "round7-78-alone-$i" python3 scripts/selftest.py --suite 78_veldo_0060_claude_adapter
+    step "round7-83-alone-$i" python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop
+done
+hogs=()
+for _ in $(seq "$(nproc)"); do
+    python3 -c 'while True: pass' &
+    hogs+=($!)
+done
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    step "round7-78-loaded-$i" python3 scripts/selftest.py --suite 78_veldo_0060_claude_adapter
+    step "round7-83-loaded-$i" python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop
+done
+kill "${hogs[@]}"
+step round7-teeth-60 python3 scripts/check_teeth_mutations.py --finding 60 --jobs 16
+step round7-teeth-47 python3 scripts/check_teeth_mutations.py --finding 47
+step round7-teeth-154 python3 scripts/check_teeth_mutations.py --finding 154
+step round7-full-gate bash scripts/verify.sh
