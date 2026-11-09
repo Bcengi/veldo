@@ -223,10 +223,14 @@ expect("the cursor pack has the guard (git pre-push + .cursor hook)",
        (_cur / "hooks/pre-push").is_file() and (_cur / ".cursor/hooks/hooks.json").is_file())
 # enforcement: both hooks must feed the guard the JSON payload it parses (tool_input.command on
 # stdin), NOT an env CMD the guard ignores - the fix for the fail-open gap the W3 review caught.
+# Landing-c fix round 8: each pack's git pre-push hook now calls the guard once per ref line with
+# VELDO_GUARD_REF, which the guard reads on its pre-push path; the bare payload it sent before made
+# the guard judge the checked-out branch instead of the pushed refs. The editor hooks still send
+# tool_input. Row names stay as written because earlier proof bundles cite them.
 _cur_pp = (_cur / "hooks/pre-push").read_text()
 _cur_hk = (_cur / ".cursor/hooks/veldo-guard-hook.sh").read_text()
 expect("the cursor push gate feeds veldo-guard.sh the JSON stdin payload (not an ignored env CMD)",
-       "tool_input" in _cur_pp and "veldo-guard.sh" in _cur_pp and "tool_input" in _cur_hk)
+       "VELDO_GUARD_REF" in _cur_pp and "veldo-guard.sh" in _cur_pp and "tool_input" in _cur_hk)
 expect("the cursor pack carries the reused skills and agents",
        (_cur / "skills/spec/SKILL.md").is_file() and (_cur / ".cursor/agents/veldo-reviewer.md").is_file())
 # cross-pack teeth: a drifted engine copy in a real pack tree is caught (proven on a temp clone)
@@ -259,7 +263,7 @@ expect("the codex pack has its Codex driver (config.toml + hooks) and reused ski
 _cdx_pp = (_cdx / "hooks/pre-push").read_text()
 _cdx_hk = (_cdx / ".codex/veldo-guard-hook.sh").read_text()
 expect("the codex push gate feeds veldo-guard.sh the JSON stdin payload (not an ignored env CMD)",
-       "tool_input" in _cdx_pp and "veldo-guard.sh" in _cdx_pp and "tool_input" in _cdx_hk)
+       "VELDO_GUARD_REF" in _cdx_pp and "veldo-guard.sh" in _cdx_pp and "tool_input" in _cdx_hk)
 
 # --- GitHub Copilot pack (WARP-0805, W5 of PLAN-0008): the hook-less-enforcement case. No editor
 # hook; the guaranteed gate is the git pre-push hook + the CI required check. Uses PK from W2 block.
@@ -279,7 +283,7 @@ expect("the copilot pack has its always-injected instructions + a prompt + reuse
 _cop_pp = (_cop / "hooks/pre-push").read_text()
 _cop_ci = (_cop / ".github/copilot-instructions.md").read_text()
 expect("the copilot git pre-push hook feeds veldo-guard.sh the JSON stdin payload",
-       "tool_input" in _cop_pp and "veldo-guard.sh" in _cop_pp)
+       "VELDO_GUARD_REF" in _cop_pp and "veldo-guard.sh" in _cop_pp)
 expect("the copilot instructions document the hook-less gate (git pre-push + required CI check)",
        "core.hooksPath" in _cop_ci and "veldo-gate.yml" in _cop_ci and "required status check" in _cop_ci)
 
@@ -297,7 +301,7 @@ expect("the antigravity pack has its agy plugin wrapper (plugin.json + hooks.jso
 _agy_pp = (_agy / "hooks/pre-push").read_text()
 _agy_hk = (_agy / "veldo-guard-hook.sh").read_text()
 expect("the antigravity push gate feeds veldo-guard.sh the JSON stdin payload (not an ignored env CMD)",
-       "tool_input" in _agy_pp and "veldo-guard.sh" in _agy_pp and "tool_input" in _agy_hk)
+       "VELDO_GUARD_REF" in _agy_pp and "veldo-guard.sh" in _agy_pp and "tool_input" in _agy_hk)
 
 # --- OpenCode pack (WARP-0807, W7 of PLAN-0008): CLI-cluster committed self-contained pack. Uses PK.
 _oc = ROOT / "packs/opencode"
@@ -311,7 +315,7 @@ expect("the opencode pack has its OpenCode driver (opencode.json + command) and 
 _oc_pp = (_oc / "hooks/pre-push").read_text()
 _oc_hk = (_oc / ".opencode/veldo-guard-hook.sh").read_text()
 expect("the opencode push gate feeds veldo-guard.sh the JSON stdin payload (not an ignored env CMD)",
-       "tool_input" in _oc_pp and "veldo-guard.sh" in _oc_pp and "tool_input" in _oc_hk)
+       "VELDO_GUARD_REF" in _oc_pp and "veldo-guard.sh" in _oc_pp and "tool_input" in _oc_hk)
 
 # enforcement mode fix (WARP-0807 review): a committed git pre-push hook + guard scripts MUST be
 # executable, else git silently skips the hook and an unproven push fails OPEN. The assembler now
@@ -348,7 +352,7 @@ expect("the aider pack has its Aider driver (CONVENTIONS.md + .aider.conf.yml) a
 _ai_conf = (_ai / ".aider.conf.yml").read_text()
 _ai_pp = (_ai / "hooks/pre-push").read_text()
 expect("the aider config enables git-commit-verify (does not bypass hooks)", "git-commit-verify: true" in _ai_conf)
-expect("the aider git pre-push hook feeds veldo-guard.sh the JSON stdin payload", "tool_input" in _ai_pp and "veldo-guard.sh" in _ai_pp)
+expect("the aider git pre-push hook feeds veldo-guard.sh the JSON stdin payload", "VELDO_GUARD_REF" in _ai_pp and "veldo-guard.sh" in _ai_pp)
 expect("the aider git pre-push hook is executable (git runs it, not fail-open)", _pkos.access(_ai / "hooks/pre-push", _pkos.X_OK))
 
 # --- cross-pack conformance (WARP-0809, W9 of PLAN-0008): the join point. A table-driven harness

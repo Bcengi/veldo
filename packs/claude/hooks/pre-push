@@ -9,20 +9,36 @@
 #
 #   git config core.hooksPath hooks
 #
-# It invokes the shared engine guard (scripts/veldo-guard.sh). The guard reads the command from a
-# JSON payload on STDIN (tool_input.command), NOT from an env var, so this feeds it that payload
-# (git's ref list on the hook's stdin goes to the guard in VELDO_PUSH_REFS). A push is what we are gating.
+# It invokes the shared engine guard (scripts/veldo-guard.sh) once per ref line git gives this hook
+# on stdin (<local ref> <local sha> <remote ref> <remote sha>), as the guard's header says a pre-push
+# hook must: VELDO_GUARD_REF is the remote ref, so the guard judges the ref git will move and not
+# the current branch's upstream; VELDO_GUARD_COMMIT is the local sha (all zeros for a deletion);
+# VELDO_PUSH_REFS is that one line and VELDO_PUSH_REMOTE the remote name ($1), for the proof size
+# check (VELDO-0270). No tool payload goes on the guard's stdin. Any refusal fails the push. With
+# no ref lines the guard runs once with an empty VELDO_GUARD_REF, an unresolved destination it
+# treats as protected.
 set -u
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
 GUARD="$ROOT/scripts/veldo-guard.sh"
 if [ -f "$GUARD" ]; then
-  # VELDO-0270: git's ref lines (this hook's stdin) and the remote name ($1) go to the guard, which
-  # judges every commit the push sends for proof over the limit or an encoded archive.
-  VELDO_PUSH_REFS="$(cat 2>/dev/null || true)"
+  unset VELDO_PUSH_REFS VELDO_GUARD_REF VELDO_GUARD_COMMIT
   VELDO_PUSH_REMOTE="${1:-}"
-  export VELDO_PUSH_REFS VELDO_PUSH_REMOTE
-  printf '%s' '{"tool_input":{"command":"git push"}}' | bash "$GUARD"
-  exit $?
+  export VELDO_PUSH_REMOTE
+  status=0
+  seen=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    [ -z "$line" ] && continue
+    seen=1
+    read -r lref lsha rref rsha <<EOL
+$line
+EOL
+    VELDO_PUSH_REFS="$line" VELDO_GUARD_REF="${rref:-}" VELDO_GUARD_COMMIT="${lsha:-}" \
+      bash "$GUARD" </dev/null || status=$?
+  done
+  if [ "$seen" = "0" ]; then
+    VELDO_GUARD_REF="" bash "$GUARD" </dev/null || status=$?
+  fi
+  exit "$status"
 fi
 echo "VELDO pre-push: scripts/veldo-guard.sh not found; refusing to push without the gate." >&2
 exit 1

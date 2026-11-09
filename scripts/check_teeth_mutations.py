@@ -12945,6 +12945,24 @@ def cases():
         '## Proof\n\n',
         ['p270/rule/paragraph-verbatim/engine/VELDO.md'])
     result[-1]['dir'] = 'engine'
+    # Landing-c fix round 8: the pack hook back to feeding the guard a bare "git push" payload instead
+    # of VELDO_GUARD_REF per ref line; the guard then judges the checked-out branch's upstream.
+    add(270, 'proof270-hook-bare-payload', p270, 'pre-push',
+        '  unset VELDO_PUSH_REFS VELDO_GUARD_REF VELDO_GUARD_COMMIT\n'
+        '  VELDO_PUSH_REMOTE="${1:-}"\n'
+        '  export VELDO_PUSH_REMOTE\n'
+        '  status=0\n',
+        '  VELDO_PUSH_REFS="$(cat 2>/dev/null || true)"\n'
+        '  VELDO_PUSH_REMOTE="${1:-}"\n'
+        '  export VELDO_PUSH_REFS VELDO_PUSH_REMOTE\n'
+        '  printf \'%s\' \'{"tool_input":{"command":"git push"}}\' | bash "$GUARD"\n'
+        '  exit $?  # defect: one bare payload, no VELDO_GUARD_REF per ref line\n'
+        '  status=0\n',
+        ['p270/guard/remote-push-to-main-over-limit-refused-naming-commit',
+         'p270/guard/remote-push-to-main-no-gate-stamp-refused',
+         'p270/guard/remote-push-to-unprotected-branch-passes',
+         'p270/guard/remote-delete-unprotected-branch-passes'])
+    result[-1]['dir'] = 'packs/claude/hooks'
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
     return result

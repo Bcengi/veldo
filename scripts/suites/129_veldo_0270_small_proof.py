@@ -51,6 +51,9 @@ _p270_modules = _p270_tmp.TemporaryDirectory(prefix='veldo-0270-modules-')
 _p270_shutil.copytree(ROOT / '.veldo', _p270_Path(_p270_modules.name) / '.veldo', ignore=_P270_IGNORE)
 _p270_shutil.copyfile(_P270_PROOF_SIZE, _p270_Path(_p270_modules.name) / '.veldo' / 'proof_size.py')
 _P270_VALIDATE = _p270_Path(_p270_modules.name) / '.veldo' / 'validate.py'
+# The Claude pack's pre-push hook every scratch repository gets, spelled as the mutation observer's
+# production-copy anchor so a teeth run substitutes its mutant here (landing-c fix round 8).
+_P270_HOOK = ROOT / "packs/claude/hooks" / "pre-push"
 
 
 def _p270_scratch(base, name, policy_proof=None):
@@ -62,7 +65,9 @@ def _p270_scratch(base, name, policy_proof=None):
     (repo / 'scripts').mkdir()
     _p270_shutil.copy(ROOT / 'scripts/veldo-guard.sh', repo / 'scripts/veldo-guard.sh')
     (repo / 'hooks').mkdir()
-    _p270_shutil.copy(ROOT / 'packs/claude/hooks/pre-push', repo / 'hooks/pre-push')
+    _p270_shutil.copy(_P270_HOOK, repo / 'hooks/pre-push')
+    # Executable, as the index records it (100755); a teeth run's copy of the hook may not be.
+    (repo / 'hooks/pre-push').chmod(0o755)
     text = (ROOT / '.veldo/policy.yaml').read_text()
     start = text.index('\nproof:\n')
     end = text.index('\nmerge_rule:', start)
@@ -197,6 +202,62 @@ with _p270_tmp.TemporaryDirectory(prefix='veldo-0270-') as _p270_d:
     expect('p270/guard/push-to-release-size-checked',
            _p270_p5.returncode != 0 and 'proof_file_over_limit' in _p270_p5.stdout + _p270_p5.stderr
            and _p270_first5 in _p270_p5.stdout + _p270_p5.stderr)
+
+    # Landing-c fix round 8: the pack hook through a real push to a real local bare remote. git runs
+    # the hook with its ref lines; the hook runs the guard once per line with VELDO_GUARD_REF set to
+    # the remote ref. Before the fix the hook sent the guard a bare "git push", the guard judged the
+    # checked-out branch's upstream instead of the ref lines, and work:main passed every guard while
+    # work tracked the unprotected origin/work. Rows (c) and (d) run with main checked out, so a hook
+    # judging the checked-out branch would refuse them.
+    def _p270_remote_repo(name, rel, data):
+        """(repo, bare, commit): a scratch repository whose branch work tracks origin/work on a local
+        bare remote, the pack hook enabled, and one commit on work adding rel with data."""
+        repo = _p270_scratch(_p270_base, name, None)
+        bare = _p270_base / (name + '-origin.git')
+        _p270_git.run(['git', 'init', '-q', '--bare', '-b', 'main', str(bare)], check=True, capture_output=True)
+        _p270_run(repo, 'remote', 'add', 'origin', str(bare))
+        _p270_run(repo, 'push', '-q', '--no-verify', 'origin', 'main')
+        _p270_run(repo, 'checkout', '-qb', 'work')
+        _p270_run(repo, 'push', '-q', '--no-verify', '-u', 'origin', 'work')
+        _p270_run(repo, 'config', 'core.hooksPath', 'hooks')
+        return repo, bare, _p270_commit_file(repo, rel, data, 'add ' + rel)
+
+    def _p270_push(repo, *args):
+        return _p270_sp.run(['git', '-C', str(repo), 'push', *args], capture_output=True, text=True,
+                            env=_p270_env, timeout=300)
+
+    def _p270_tip_of(bare, ref):
+        r = _p270_sp.run(['git', '-C', str(bare), 'rev-parse', '--verify', '--quiet', ref],
+                         capture_output=True, text=True)
+        return r.stdout.strip() if r.returncode == 0 else None
+
+    # (a) work:main sending a 2,200,000-byte proof file is refused, naming the commit; main stays put.
+    _p270_ra, _p270_ba, _p270_big = _p270_remote_repo('remote-a', 'proof/Y/raw.log', b'x' * 2200000)
+    _p270_main_a = _p270_tip_of(_p270_ba, 'refs/heads/main')
+    _p270_pa = _p270_push(_p270_ra, 'origin', 'work:main')
+    expect('p270/guard/remote-push-to-main-over-limit-refused-naming-commit',
+           _p270_pa.returncode != 0 and 'proof_file_over_limit' in _p270_pa.stderr and _p270_big in _p270_pa.stderr
+           and 'refs/heads/main' in _p270_pa.stderr and _p270_tip_of(_p270_ba, 'refs/heads/main') == _p270_main_a)
+
+    # (b) work:main with small proof and no gate stamp passes Guard 0 and is refused by the gate stamp guard.
+    _p270_rb, _p270_bb, _p270_small = _p270_remote_repo('remote-b', 'app.txt', b'change\n')
+    _p270_main_b = _p270_tip_of(_p270_bb, 'refs/heads/main')
+    _p270_pb = _p270_push(_p270_rb, 'origin', 'work:main')
+    expect('p270/guard/remote-push-to-main-no-gate-stamp-refused',
+           _p270_pb.returncode != 0 and 'The canonical gate is not green' in _p270_pb.stderr
+           and 'proof_file_over_limit' not in _p270_pb.stderr
+           and _p270_tip_of(_p270_bb, 'refs/heads/main') == _p270_main_b)
+
+    # (c) work to the unprotected work branch passes, with main checked out.
+    _p270_run(_p270_rb, 'checkout', '-q', 'main')
+    _p270_pc = _p270_push(_p270_rb, 'origin', 'work')
+    expect('p270/guard/remote-push-to-unprotected-branch-passes',
+           _p270_pc.returncode == 0 and _p270_tip_of(_p270_bb, 'refs/heads/work') == _p270_small)
+
+    # (d) deleting the unprotected work branch passes.
+    _p270_pd = _p270_push(_p270_rb, 'origin', '--delete', 'work')
+    expect('p270/guard/remote-delete-unprotected-branch-passes',
+           _p270_pd.returncode == 0 and _p270_tip_of(_p270_bb, 'refs/heads/work') is None)
 
     # ---- AC2 (1)(2): each writer, on a fixture whose raw output exceeds the limit, writes a summary
     # under the limit with the deciding numbers, command, environment and the raw bytes' sha256;

@@ -424,3 +424,52 @@ Gate 5 on 2d6ba203 was red on the mutation slot only (invalid_baseline). The rou
 
 The gate lock was held, so nothing ran here. Pending (pending_runs.sh): suites 78 and 83 ten times alone
 and ten times loaded, teeth 60 (16 jobs), 47 and 154, and the full gate.
+
+## Fix round 8
+
+The VELDO-0270 landing review (F1) pushed work:main from a scratch repository whose work branch
+tracked origin/work on a local bare remote, with the Claude pack hook enabled and a 2,200,000-byte
+proof file in the commit. The push landed.
+
+Cause: every packs/*/hooks/pre-push sent the guard one bare tool payload for the command "git push"
+and never set VELDO_GUARD_REF. The guard dry-ran that bare command, judged the checked-out branch's
+upstream (refs/heads/work, not protected) and exited 0 before Guard 0. Suite 129's main row stayed
+green only because its scratch repository has no remote, so the dry run failed and the destination
+counted as protected.
+
+Change: all seven hooks read git's ref lines and run the guard once per line with VELDO_GUARD_REF
+set to the remote ref, VELDO_GUARD_COMMIT to the local sha and VELDO_PUSH_REFS to that line, with
+nothing on the guard's stdin. The guard's nonzero exit fails the push. If git sends no ref lines,
+the guard runs once with an empty ref, which it treats as protected, so pack_conformance's fail-open
+check still sees a block. The guard itself is unchanged. Suite 06's six hook rows now check for
+VELDO_GUARD_REF instead of tool_input; the row names stay because older bundles cite them.
+
+New suite 129 rows, each a real push to a local bare remote with work tracking origin/work:
+- p270/guard/remote-push-to-main-over-limit-refused-naming-commit (work:main, 2,200,000 bytes)
+- p270/guard/remote-push-to-main-no-gate-stamp-refused (small commit; Guard 0 passes, Guard 1 refuses)
+- p270/guard/remote-push-to-unprotected-branch-passes (work, with main checked out)
+- p270/guard/remote-delete-unprotected-branch-passes (--delete work, with main checked out)
+
+Red: teeth case proof270-hook-bare-payload puts back the old hook body. All four rows go false
+under it. Green, on 59b139b9 (tree 8052fd80), host dmitry-pc, Python 3.12.3, bash 5.2.21,
+systemd 255, each in `systemd-run --user --scope -p MemoryMax=10G`, load 4.3 / 7.7 / 11.4:
+- `python3 scripts/selftest.py --suite 129_veldo_0270_small_proof`: 38 passed, 0 failed
+- `python3 scripts/selftest.py --suite 06_capabilities_manifest_honesty_veldo`: 262 passed, 0 failed
+- `python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs`: 84 passed, 0 failed
+- `python3 scripts/check_teeth_mutations.py --finding 270`: passed, 6 registered, 6 executed
+- `python3 scripts/selftest.py`: 9050 passed, 3 failed. The failures are VELDO-0208
+  sandbox/unavailable-refuses-before-exec, sandbox/old-abi-refuses-before-exec and VELDO-0259
+  ac1/fresh-clone (72 home_path findings). Each fails the same way at 4e961b56 when run like this,
+  so this change did not cause them. They still need a run under the gate.
+
+Raw logs were discarded (name, bytes, sha256): selftest.log 247312 78d2092f998726e75497e3191c862b84b016249a63e085195fb5f6bfef09a93e;
+teeth270.log 140673 f668e359d436f36244b538a3985e486bf1484af1fa48fb6a4fb66ff2b2b93848;
+s129.log 9364 65cea2d63b477c737abeba0df983593ee2937ad4c783251ab17e889cabffa59d;
+s06.log 19299 bb971e747596d48bc5914025ce8f00834574231861d77a0c4476fdb52cfc2b72;
+s141.log 9402 3a113616cd626fcfd2b09725829483080bebefb3de422f5833957c08b7bd37ba;
+mutant_worker.log 509 faea669bf39457dd352c038b659a852aac5c50c72809bbb62520e858b92b3f22;
+base259.log 10123 81a0a07e45f15da3fe3f2ee2e2de858ef32a20ef786a88027fc52f8596f61dda;
+new259.log 10123 0d61b98d53c83ec88e45d2a94e7a7a9778296a80eefae8c6f600335f8bdc475d;
+base208.log 9501 3e7f39a05e8e8e24ba3dfb64ea1719692905522ca702bc038ca565ebbeb0b852;
+new208.log 9501 e23a7f1d706296e27750fe0e8ced26c3fc4e29dac1f8a71f7ba189d5d52428df.
+The canonical gate was not run.
