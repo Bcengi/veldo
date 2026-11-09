@@ -12771,13 +12771,13 @@ def cases():
         '        if a.get("approver") == producer:  # defect: identities compared raw',
         ['approval/identity'])
     add(272, 'scope272-protected-producer-from-head', scope272, 'policy_check.py',
-        '        producer = approval_producer(push_producer(landing_specs(files_p)), files_p, rng)\n        for tf, p in touched:',
+        '        producer = approval_producer(push_producer(built_specs(files_p)), files_p, rng)\n        for tf, p in touched:',
         '        producer = producer_for(_head_spec_id())  # defect: the producer of the verdict at HEAD\n'
         '        for tf, p in touched:',
         ['approval/identity'])
     # Landing round 1: the nightly approval rule takes the producer of the verdict at HEAD or its parent.
     add(272, 'scope272-approval-rule-producer-from-head', scope272, 'policy_check.py',
-        '    files = changed_files()\n    producer = approval_producer(push_producer(landing_specs(files)), files, commits)\n',
+        '    files = changed_files()\n    producer = approval_producer(push_producer(built_specs(files)), files, commits)\n',
         '    producer = producer_for(_head_spec_id())  # defect: the producer of the verdict at HEAD\n',
         ['approval/rule-producer'])
     # Fix round 2, N4 and N5: the summary lists any approver, or merges two same-day runs of one ticket.
@@ -12792,7 +12792,7 @@ def cases():
         ['summary/separate-runs'])
     # Fix round 3, N3: a push changing code lands with no reviewed spec covering it.
     add(272, 'scope272-uncovered-code-lands', scope272, 'policy_check.py',
-        '    if work and not landing_specs(pushed):',
+        '    if work and not built_specs(pushed):',
         '    if False:  # defect: code with no reviewed spec lands',
         ['review/covered'])
     # Fix round 4, M1: a commit is judged against the tip instead of its real parents, so an honest merge of
@@ -12841,6 +12841,36 @@ def cases():
         '    if _identities(producer) or not spec_only(files):',
         '    if _identities(producer):  # defect: any push takes its committers as producer',
         ['approval/identity'])
+    # VELDO-0287: a spec lands only when it is new to main. Same suite (its rows are 0272's rows plus four).
+    # AC1: a spec already on main lands again, so a slimmed bundle asks it for a review and a re-land passes.
+    add(287, 'land287-on-base-lands', scope272, 'policy_check.py',
+        '        if sid in landed:\n            continue\n',
+        '        pass  # defect: a spec already on main lands again\n',
+        ['landing/slimmed-bundle', 'landing/re-land'])
+    # AC1: a spec ready on main with no proof there is not landing when this push first builds it.
+    add(287, 'land287-first-build-refused', scope272, 'policy_check.py',
+        ' for b in bases) and not first_build(sid)}\n',
+        ' for b in bases)}  # defect: a first build of a spec ready on main is a re-land\n',
+        ['landing/re-land'])
+    # AC2: a file of a spec on main is not work, so its slimming lands with no reviewed ticket.
+    add(287, 'land287-on-base-not-work', scope272, 'policy_check.py',
+        '    landed = set() if only_specs else on_base(pushed)\n',
+        '    landed = set()  # defect: a file of a spec on main is not work\n',
+        ['landing/slimmed-bundle'])
+    # AC3: a ready spec with nothing built is asked for a review, or covers work it did not build.
+    add(287, 'land287-unbuilt-reviewed', scope272, 'policy_check.py',
+        '        if only_specs or not bundle_touched(sid, pushed):',
+        '        if only_specs:  # defect: a landing spec with nothing built needs a review',
+        ['landing/ready-no-work'])
+    add(287, 'land287-unbuilt-covers-work', scope272, 'policy_check.py',
+        '    if work and not built_specs(pushed):',
+        '    if work and not landing_specs(pushed):  # defect: a spec with nothing built covers work',
+        ['landing/ready-no-work'])
+    # AC4: an id absent at the push base and at HEAD is judged as a lowering.
+    add(287, 'land287-renumbered-lowered', scope272, 'policy_check.py',
+        '    return [x for x in out if not (bases and _flag_state(tip, x[0], cache)[0] == "absent"\n',
+        '    return [x for x in out if not (False and _flag_state(tip, x[0], cache)[0] == "absent"  # defect\n',
+        ['lowered/renumbered-draft'])
     # AC4 (declared falsifier): the reviewer is dropped from the formatter, red in the file and the message.
     add(272, 'scope272-reviewer-dropped', scope272, 'landed_summary.py',
         '"- %s %s | gate %s | reviewer %s | approval %s"\n'
