@@ -22,13 +22,13 @@
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Falsifiers ac1-1 to ac1-4 (selection267-*) are registered in scripts/check_teeth_mutations.py as finding 267. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
-          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+          "ref": "the lead's gate stamp for d0bb5da9",
+          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (the lead's gate stamp for d0bb5da9: status green, checks_run 9, mutation mode full, run 2939)."
         }
       ]
     },
@@ -43,18 +43,18 @@
         },
         {
           "type": "integration",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "The gate at d0bb5da9 stamped mutation.canaries 6 apart from mutation.selected 2933."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Falsifiers ac2-1 to ac2-3 are registered in scripts/check_teeth_mutations.py as finding 267. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
-          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+          "ref": "the lead's gate stamp for d0bb5da9",
+          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (the lead's gate stamp for d0bb5da9: status green, checks_run 9, mutation mode full, run 2939)."
         }
       ]
     },
@@ -69,18 +69,18 @@
         },
         {
           "type": "integration",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "The gate at d0bb5da9 ran mode full and named its trigger: kind trigger_path, path engine/scripts/check_gate_mutations.py."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Falsifiers ac3-1, ac3-2 are registered in scripts/check_teeth_mutations.py as finding 267. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
-          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+          "ref": "the lead's gate stamp for d0bb5da9",
+          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (the lead's gate stamp for d0bb5da9: status green, checks_run 9, mutation mode full, run 2939)."
         }
       ]
     },
@@ -95,17 +95,17 @@
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Falsifiers ac4-1 to ac4-4 are registered in scripts/check_teeth_mutations.py as finding 267. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
-          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+          "ref": "the lead's gate stamp for d0bb5da9",
+          "detail": "Suite 140_veldo_0267_mutation_selection is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (the lead's gate stamp for d0bb5da9: status green, checks_run 9, mutation mode full, run 2939)."
         },
         {
           "type": "note",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Not shown: a real nightly sweep on the trunk. The stamp at d0bb5da9 records mutation.nightly null, and no file records the owner's crontab line being installed or a sweep having run."
         }
       ]
@@ -165,7 +165,7 @@
       "command": "./scripts/verify.sh",
       "commit": "d0bb5da99b56433146013d0a7c5753342c5c3004",
       "at": "2026-11-09T06:21:24Z",
-      "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+      "ref": "the lead's gate stamp for d0bb5da9",
       "detail": "GATE GREEN. The nine checks above are the items scripts/verify.sh at d0bb5da9 declares required (the other 16 catalog items are na); the stamp records checks_run 9 and checks_na 16 but not their names."
     }
   ],
