@@ -13050,11 +13050,11 @@ def _coordinator():
 
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
-              jobs=None, diff_dir=None):
+              jobs=None, diff_dir=None, leg=None):
     """Use the gate's process ownership, per-child accounting and launch deadlines."""
     return _coordinator().run_stage(root, expected_common, capacities=capacities, findings=findings, names=names,
                                    log_dir=log_dir, drivers=['check_teeth_mutations.py'],
-                                   parallel=jobs, diff_dir=diff_dir)
+                                   parallel=jobs, diff_dir=diff_dir, leg=leg)
 
 
 def main():
@@ -13076,12 +13076,23 @@ def main():
         print(json.dumps(worker(case, args.mutant)))
         return 0
     coordinator = _coordinator()
+    # The unconfined leg, as the gate's own entry reads it (check_gate_mutations.main): the authority's
+    # scripts/gate_unconfined.json beside this file, never a caller's variable. Without it a case of a
+    # listed suite (66_veldo_0047, 83_veldo_0154, ...) ran confined here, away from the user manager and
+    # the owner's installation its suite needs, and every control redded: never the gate's conditions.
+    legs = coordinator.load(ROOT / 'scripts/gate_legs.py')
+    try:
+        leg = legs.mutation_leg()
+    except legs.Invalid as error:
+        print('   mutation: the unconfined list %s is invalid (%s); nothing ran, in either leg'
+              % (legs.DECLARATION, error), flush=True)
+        return 1
     # This checkout owns itself, so it names its own Git common directory.
     receipt = run_stage(ROOT, coordinator.common_directory(ROOT),
                         capacities=coordinator.resource_capacities(args.resource_capacity),
                         findings=[args.finding] if args.finding is not None else None,
                         names=args.names, log_dir=args.worker_log_dir, jobs=max(1, args.jobs),
-                        diff_dir=args.diff_dir)
+                        diff_dir=args.diff_dir, leg=leg)
     if args.summary:
         coordinator.write_summary(args.summary, receipt, ROOT)
     print(json.dumps(receipt, sort_keys=True), flush=True)
