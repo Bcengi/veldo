@@ -1,0 +1,110 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --finding 262 --summary /tmp/ld2/teeth-262.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 697.5955767580308,
+   "executed": 12,
+   "registered": 12,
+   "rejected": 12,
+   "reused": 0,
+   "status": "passed",
+   "worker_invocations": 26
+  },
+  "results_count": 12,
+  "results_sha256": "9c5a61df3b6d7a293af901a98c7a2641c140c775de63817fc498fd542c500b1d",
+  "rows": [
+   {
+    "case": "v262-notes-earlier-win",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-cycle-imports-langgraph",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-lock-restored",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-branches-share-state",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-suspend-with-proposals",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-join-on-first-input",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-upgrade-follows-link",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-step-not-advanced",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-cycle-branch-trace-unjudged",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-fresh-cli-home-unjudged",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-launch-without-S",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-factory-leftover-accepted",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 127643,
+   "name": "mutation result array",
+   "sha256": "9c5a61df3b6d7a293af901a98c7a2641c140c775de63817fc498fd542c500b1d"
+  }
+ ],
+ "environment": {
+  "commit": "167454a3aaccb53d4870ca6421d0f9a166b39cb9",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   48.27099609375,
+   41.4140625,
+   28.1474609375
+  ],
+  "python": "3.12.3",
+  "tree": "36815f22a13c1e83989bf6330bd2428ee835eb5f"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

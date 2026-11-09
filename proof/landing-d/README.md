@@ -61,3 +61,39 @@ are protected, all by main's patterns only; landing-c's policy alone protects no
 - engine/scripts/agent_sandbox.json (main: engine/scripts/agent_sandbox.json)
 - scripts/agent_sandbox.json (main: scripts/agent_sandbox.json)
 - scripts/mutation_case_inputs.json (main: scripts/mutation_case_inputs.json)
+
+## Local runs (landing-d2)
+
+Run after landing-c gate 7 recorded its end (runner.log: "69f3a-landing-c-gate7 rc=1 end 2026-11-09T18:17:45Z").
+Commit 167454a3, tree 36815f22, host dmitry-pc, Python 3.12.3, systemd 255. Each command ran on its own in
+`systemd-run --user --scope -p MemoryMax=10G`, one after another. These are partial local runs, not gate evidence.
+selftest exits 2 on every partial run by design; the tallies decide.
+
+`python3 scripts/selftest.py --suite NAME` (suite rows, then the selftest total with the prerequisite closure):
+
+- 130_veldo_0262_step_runner: 14 passed; 40 passed, 0 failed (9.6 s)
+- 130_veldo_0275_approved_engine: 3 passed; 29 passed, 0 failed (0.1 s)
+- 131_veldo_0275_stream_probe: 4 passed; 30 passed, 0 failed (0.2 s)
+- 86_veldo_0186_setup_assets: 11 passed; 37 passed, 0 failed (19.1 s)
+- 78_veldo_0060_claude_adapter (merged on both sides): 35 passed; 61 passed, 0 failed (24.4 s)
+- 83_veldo_0154_factory_loop (merged on both sides): 14 passed; 40 passed, 0 failed (25.5 s)
+- 91_veldo_0167_setup_records (loads the merged review_rows.py): 9 passed; 35 passed, 0 failed (31.7 s)
+
+Teeth, `python3 scripts/check_teeth_mutations.py --finding N --summary FILE`, exit 0:
+
+- 262: registered 12, executed 12, rejected 12, status passed, 697.6 s (host load 48.27 at the end).
+  Summary: landing-d2-teeth-262.summary.json.
+- 275: registered 8, executed 8, rejected 8, status passed, 160.7 s (host load 11.42 at the end).
+  Summary: landing-d2-teeth-275.summary.json.
+
+Nothing failed, so nothing was rerun or fixed. The raw logs were discarded:
+
+- suite-130_veldo_0262_step_runner.log 9485 bytes sha256 c0ee553a8c5e81a10970c3d0968e959d97d69a885f215a81c1c7e3c3ceed85c8
+- suite-130_veldo_0275_approved_engine.log 9489 bytes sha256 a2f5a7958bbe78d7bede61a88562f2ba2c583526e41677959ed9d264388380d3
+- suite-131_veldo_0275_stream_probe.log 9687 bytes sha256 8b59549ff651f0dcdfeee4d14efb7275f6dea7597719b1c55bb5852bc1c5ed6f
+- suite-78_veldo_0060_claude_adapter.log 10357 bytes sha256 f9b1ba8ec9c7c85fc75f02669a658ef98751b796ac10f3b1b288d4bb6c71772a
+- suite-83_veldo_0154_factory_loop.log 10796 bytes sha256 ce81d5d36d77a4476a0e8aaa7c29c25ef1db7ba918f709bec0c986a3820be5f1
+- suite-86_veldo_0186_setup_assets.log 9666 bytes sha256 41f3f04bd9791d59d09ad3665bd0b7e2fccafa1ba7456112d5986a2cd2b7f527
+- suite-91_veldo_0167_setup_records.log 12134 bytes sha256 a0242c5c0948c5234f62d53aa3d86de803ba16cbacfead3c195e7e01a5a6017c
+- teeth-262.log 149400 bytes sha256 5726389059802e4605b3d9f4460dce95456415daa3704b944860f7f137c5922c
+- teeth-275.log 86715 bytes sha256 024ae977c50ad008e9fca65def222b6b8cd942f6bd71e12d76a72b410e2cca72

@@ -1,0 +1,86 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --finding 275 --summary /tmp/ld2/teeth-275.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 160.7459019839298,
+   "executed": 8,
+   "registered": 8,
+   "rejected": 8,
+   "reused": 0,
+   "status": "passed",
+   "worker_invocations": 20
+  },
+  "results_count": 8,
+  "results_sha256": "3b45e50e77f68f7a7b256f5d803b5681e3be0aa8d76e964d77e5e24f2e2ac764",
+  "rows": [
+   {
+    "case": "approved275-claude-newest-installed",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "approved275-codex-newest-installed",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "approved275-codex-path-first",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "approved275-codex-digest-skipped",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "approved275-claude-digest-skipped",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "probe275-codex-skipped",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "probe275-claude-skipped",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "probe275-claude-hold-role-bound",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 70575,
+   "name": "mutation result array",
+   "sha256": "3b45e50e77f68f7a7b256f5d803b5681e3be0aa8d76e964d77e5e24f2e2ac764"
+  }
+ ],
+ "environment": {
+  "commit": "167454a3aaccb53d4870ca6421d0f9a166b39cb9",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   11.4189453125,
+   27.6669921875,
+   24.97265625
+  ],
+  "python": "3.12.3",
+  "tree": "36815f22a13c1e83989bf6330bd2428ee835eb5f"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
