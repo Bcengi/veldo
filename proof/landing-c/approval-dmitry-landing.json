@@ -1,0 +1,43 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-LANDING-C",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "landing-c",
+    "commit": "d0bb5da99b56433146013d0a7c5753342c5c3004",
+    "paths": [
+      ".veldo/control_verification.py",
+      ".veldo/policy.yaml",
+      ".veldo/policy_check.py",
+      "engine/.veldo/control_verification.py",
+      "engine/.veldo/policy_check.py",
+      "engine/scripts/check_gate_mutations.py",
+      "engine/scripts/gate_legs.py",
+      "engine/scripts/gate_schedule.py",
+      "engine/scripts/mutation_nightly.py",
+      "engine/scripts/mutation_selection.py",
+      "engine/scripts/veldo-guard.sh",
+      "engine/scripts/verify.sh",
+      "packs/claude/scripts/veldo-guard.sh",
+      "scripts/check_gate_mutations.py",
+      "scripts/gate_graph.json",
+      "scripts/gate_legs.py",
+      "scripts/gate_schedule.py",
+      "scripts/gate_unconfined.json",
+      "scripts/mutation_case_inputs.json",
+      "scripts/mutation_nightly.py",
+      "scripts/mutation_selection.json",
+      "scripts/mutation_selection.py",
+      "scripts/parked/estimation/check_first_use.py",
+      "scripts/run_scope.py",
+      "scripts/selftest.py",
+      "scripts/veldo-guard.sh",
+      "scripts/verify.sh"
+    ]
+  },
+  "basis": "Dmitry approved landing of the landing-c batch (VELDO-0267, 0268, 0270, 0272, 0274, 0278) at d0bb5da9 over Telegram on 2026-11-09: ask 40121 described each ticket, said the batch changes the approval rule, the push guard and the gate itself, and listed all 27 protected paths it touches (the union of landing-c's policy and main's policy against merge-base 918e7c0e). He answered 'Yes approved' in 40124. The canonical gate was GREEN at d0bb5da9 (lock job 64a, gate 6). WHAT IT DOES NOT COVER: any other protected path or commit.",
+  "recorded_at": "2026-11-09T12:05:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-09T00:00:00Z"
+}
