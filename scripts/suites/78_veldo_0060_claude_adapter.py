@@ -358,7 +358,10 @@ for step in payload.get('script') or []:
         while not ready.exists() and time.monotonic() < until:
             time.sleep(0.01)
         children.append({'pid': child.pid, 'start': start(child.pid), 'escape': bool(step.get('escape'))})
-        (markers / ('%%d.children' %% os.getpid())).write_text(json.dumps(children))
+        # Written whole and renamed into place, as the marker is: the suite polls this file while the fake
+        # runs, and a read between a truncating open and its write saw an empty file (JSONDecodeError).
+        (markers / ('%%d.children.tmp' %% os.getpid())).write_text(json.dumps(children))
+        (markers / ('%%d.children.tmp' %% os.getpid())).rename(markers / ('%%d.children' %% os.getpid()))
     elif 'signal' in step:
         out.close()
         os.kill(os.getpid(), step['signal'])

@@ -12995,7 +12995,8 @@ def worker(case, mutant=None):
     for node in tree.body:
         if isinstance(node, ast.FunctionDef) and node.name == 'expect':
             node.body = ast.parse('__observe__(name, condition)').body
-    with contextlib.redirect_stdout(io.StringIO()):
+    printed = io.StringIO()
+    with contextlib.redirect_stdout(printed):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         suite = ROOT / 'scripts/suites' / case['suite']
         source = suite.read_text()
@@ -13013,6 +13014,16 @@ def worker(case, mutant=None):
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
         ns['__suite_file__'] = str(suite)
         exec(compile(source, str(suite), 'exec'), ns)
+    # A suite that names its row bare prints what a false row saw as '<row> detail: <words>' before
+    # its expect; keep the first three per false row, so a red control says why (a gate 5 baseline
+    # recorded ten red rows and no reason).
+    failed = {name for name, ok in rows if not ok}
+    told = {}
+    for line in printed.getvalue().splitlines():
+        row, mark, words = line.strip().partition(' detail: ')
+        if mark and row in failed and told.get(row, 0) < 3:
+            told[row] = told.get(row, 0) + 1
+            details.append([row, words[:400]])
     return {'count': len(rows), 'observations': rows,
             'row_names': [name for name, _ in rows],
             'failed_rows': [name for name, ok in rows if not ok],
