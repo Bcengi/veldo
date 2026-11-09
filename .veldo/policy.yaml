@@ -146,9 +146,10 @@ proof:
 # declared flag. Read exactly as fix_validation.from_commit is read: absent, not a forty character
 # commit id, or not a commit in this repository, and EVERY spec is in scope (fail closed). It records
 # the commit that lands VELDO-0272; at build time it names the branch's base, and the landing points
-# it at the landing commit.
+# it at the landing commit. Landing value (2026-11-09): bd8a4bc5, the last landing-c commit before
+# the landing pass, because a landing commit cannot name itself.
 approval_scope:
-  from_commit: ed0c995f446f9bfd6050bfb0f5434adee1a91a6f
+  from_commit: bd8a4bc52d8b2c50b3c74165aa1e185a770556b1
 merge_rule: >
   Auto-merge if and only if: the specification is ready and valid; every
   acceptance criterion is passed in a valid proof manifest for this exact
