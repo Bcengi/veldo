@@ -561,7 +561,8 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                                 lines.append(' '.join(first.split(' ')[:2]))
                             connection.close()
 
-                    threading.Thread(target=serve, daemon=True).start()
+                    server_thread = threading.Thread(target=serve, daemon=True)
+                    server_thread.start()
                     state_dir = home / ('.' + name)
                     before = {str(p) for p in state_dir.rglob('*') if p.is_file()}
                     begun = time.time()
@@ -586,8 +587,16 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                     if group is not None and scoped:
                         group.wait_empty(10)
                     wrote = sorted({str(p) for p in state_dir.rglob('*') if p.is_file()} - before)
+                    # Closing a socket does not wake a thread blocked in its accept(): the thread would keep the
+                    # descriptor's number and accept on a later suite's listener under it (landing-c fix round
+                    # 9b). The listener is shut down first, which ends the accept(), and the thread is joined.
+                    with contextlib.suppress(OSError):
+                        listener.shutdown(socket.SHUT_RDWR)
+                    server_thread.join(30)
                     listener.close()
-                    text = (logs / ('dispatch_VELDO-9401_aaaa.%s.out' % name)).read_text(errors='replace') \
+                    if server_thread.is_alive():
+                        raise RuntimeError('VELDO-0042: the proxy listener thread of %s outlived its listener' % name)
+                    text = (logs /('dispatch_VELDO-9401_aaaa.%s.out' % name)).read_text(errors='replace') \
                         if proc is not None else ''
                     engines[name] = {'installed': True, 'rc': proc.returncode if proc else None, 'scoped': scoped,
                                      'seconds': round(time.time() - begun, 2), 'requests': seen[:8],

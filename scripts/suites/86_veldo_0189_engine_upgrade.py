@@ -391,8 +391,17 @@ def _v189_suite():
                         conn.sendall(json.dumps(answer).encode())
 
         def close(self):
+            # Closing a socket does not wake a thread blocked in its accept(). That thread kept the descriptor's
+            # number, and when its call was restarted after a signal it accepted on whichever listener a later
+            # suite had opened under that number (landing-c fix round 9b). So the listener is shut down first,
+            # which ends the blocked accept() with an error, and the thread is gone before the number is free.
+            with contextlib.suppress(OSError):
+                self.server.shutdown(socket.SHUT_RDWR)
+            self.thread.join(30)
             with contextlib.suppress(OSError):
                 self.server.close()
+            if self.thread.is_alive():
+                raise RuntimeError('VELDO-0189: the bridge thread of %s outlived its listener' % self.path)
 
     # The setup run in a process of its own, SIGKILLed right after its upgrade's Nth step-log line (0: never).
     # `point` is wrapped once per module, so the count is one per step-log line however often setup fetches the
