@@ -1,0 +1,163 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0272",
+  "commit": "d0bb5da99b56433146013d0a7c5753342c5c3004",
+  "tree": "270106fb082b4967d76d2af309149f6d023d799d",
+  "producer": "Claude implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-09T12:32:19+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/129_veldo_0272_approval_scope.py",
+          "detail": "Rows AC1 policy/lists-match, AC1 policy/tiers-and-start, AC1 policy/engine-identical, AC1 push/test-machinery-no-approval, AC1 push/authorization-needs-approval, AC1 mutation/gate-legs-added-back, AC1 mutation/policy-check-removed."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Falsifiers scope272-gate-legs-added-back, scope272-policy-check-unprotected are registered in scripts/check_teeth_mutations.py as finding 272. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Suite 129_veldo_0272_approval_scope is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0272/README.md",
+          "detail": "Pending: approval_scope.from_commit must record the commit that lands this spec. It still names ed0c995f; the lead re-points it at landing with the owner's approval (README, F6 and Still open)."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/129_veldo_0272_approval_scope.py",
+          "detail": "Rows AC2 flag/fixtures, AC2 flag/before-start-valid, AC2 mutation/reverse-direction-dropped."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Falsifiers scope272-reverse-direction-dropped are registered in scripts/check_teeth_mutations.py as finding 272. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Suite 129_veldo_0272_approval_scope is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "scripts/suites/129_veldo_0272_approval_scope.py",
+          "detail": "Policy check rows on scratch repositories: AC3 lowered/flip, lowered/rename, lowered/two-step, lowered/delete-re-add, lowered/merge, lowered/old-base-merge, lowered/honest-trunk-merge, review/landing, review/producer-identity, review/per-spec, review/covered, review/spec-only, approval/identity, approval/rule-producer, executor/computed-flag, mutation/reviewer-comparison-skipped."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Falsifiers scope272-* for AC3 (fix rounds 1 to 5) are registered in scripts/check_teeth_mutations.py as finding 272. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Suite 129_veldo_0272_approval_scope is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/129_veldo_0272_approval_scope.py",
+          "detail": "Rows AC4 summary/file, summary/registry-identical, summary/every-landing, summary/judged-fields, summary/approvers-judged, summary/separate-runs, mutation/reviewer-dropped."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Falsifiers scope272-reviewer-dropped and the AC4 fix round cases are registered in scripts/check_teeth_mutations.py as finding 272. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
+        },
+        {
+          "type": "unit",
+          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "detail": "Suite 129_veldo_0272_approval_scope is listed in scripts/suites/manifest.json at d0bb5da9 and ran in the unit stage (python3 scripts/selftest.py). Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0272/README.md",
+          "detail": "Not shown: the daily_landed send is not wired to the channel tick; control_service_channel.py must call Reporter.report_daily with the owner's hour (README, Still open). The file path, python3 .veldo/landed_summary.py day YYYY-MM-DD, is built."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed",
+      "command": "bash scripts/check_lint.sh"
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py",
+      "detail": "Confined and unconfined legs; the unconfined suites are listed under unconfined.legs.unit in the stamp."
+    },
+    {
+      "name": "security",
+      "status": "passed",
+      "command": "python3 scripts/secret_inventory.py"
+    },
+    {
+      "name": "generated",
+      "status": "passed",
+      "command": "bash scripts/check_generated.sh"
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "command": "bash scripts/check_docs.sh"
+    },
+    {
+      "name": "packaging",
+      "status": "passed",
+      "command": "python3 scripts/check_install_and_run.py"
+    },
+    {
+      "name": "personal_setup",
+      "status": "passed",
+      "command": "python3 scripts/check_personal_setup.py"
+    },
+    {
+      "name": "extra",
+      "status": "passed",
+      "command": "bash scripts/check_template_sync.sh"
+    },
+    {
+      "name": "mutation",
+      "status": "passed",
+      "command": "authority mutation stage",
+      "detail": "mode full, trigger trigger_path engine/scripts/check_gate_mutations.py, selected 2933, canaries 6, run 2939, wall_seconds 12485.336, digest c46354df5c3c9ef8e64ccfd0d3caad48ab01a20a37d2df9a0df54488eb4ac9ce, reused 0."
+    },
+    {
+      "name": "gate",
+      "status": "passed",
+      "command": "./scripts/verify.sh",
+      "commit": "d0bb5da99b56433146013d0a7c5753342c5c3004",
+      "at": "2026-11-09T06:21:24Z",
+      "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+      "detail": "GATE GREEN. The nine checks above are the items scripts/verify.sh at d0bb5da9 declares required (the other 16 catalog items are na); the stamp records checks_run 9 and checks_na 16 but not their names."
+    }
+  ],
+  "rollback": "Revert the commit. The protected list, the tier flags and the merge rule return to their previous text, the validator stops computing the flag, and the summary stops."
+}
