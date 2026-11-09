@@ -12847,6 +12847,11 @@ def cases():
         '        if sid in landed:\n            continue\n',
         '        pass  # defect: a spec already on main lands again\n',
         ['landing/slimmed-bundle', 'landing/re-land'])
+    # AC1: a spec ready on main with no proof there is not landing when this push first builds it.
+    add(287, 'land287-first-build-refused', scope272, 'policy_check.py',
+        ' for b in bases) and not first_build(sid)}\n',
+        ' for b in bases)}  # defect: a first build of a spec ready on main is a re-land\n',
+        ['landing/re-land'])
     # AC2: a file of a spec on main is not work, so its slimming lands with no reviewed ticket.
     add(287, 'land287-on-base-not-work', scope272, 'policy_check.py',
         '    landed = set() if only_specs else on_base(pushed)\n',

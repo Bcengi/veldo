@@ -39,12 +39,16 @@ acceptance_criteria:
       draft at HEAD. A spec absent, draft or unreadable at the base is not on the base. Only landing specs
       whose proof bundle the push changes (any bundle file other than an approval record) give the
       producer to the protected-path check, the objection override and approval_rule, and need the
-      review. A spec already on main that the push builds again (a re-land) is not a landing spec.
+      review. A spec already on main that the push builds again (a re-land: its proof bundle is on the
+      base) is not a landing spec. A spec ready on main with no proof bundle there, whose bundle this push
+      creates, is its first build and lands (the factory makes a spec ready on main before it is built).
     falsified_by: >
       Suite 129 row AC3 landing/slimmed-bundle: a reviewed ticket that rewrites a file in the proof
       bundle of a required spec on main exits 0, with no review or owner approval asked of that spec. Row
       AC3 landing/re-land: a spec on main rebuilt with its own new manifest and review and no new spec
-      exits 1. Mutation land287-on-base-lands (a spec on main lands again) reds both.
+      exits 1, and a spec ready on main with no proof there, built and reviewed in the push, exits 0.
+      Mutation land287-on-base-lands (a spec on main lands again) reds both; land287-first-build-refused
+      (a first build counts as a re-land) reds re-land.
   - id: AC2
     text: >
       In any push that is not spec-only, a changed spec file or proof bundle file (not an approval record)
@@ -108,8 +112,10 @@ situation, so it is judged the same way. Because it builds nothing, it does not 
 not cover work: a push whose only landing specs are unbuilt and that changes anything else is refused, as
 before.
 
-Re-land (a spec on main whose work is built again) fails closed: its files are work, and another reviewed
-landing spec in the push has to cover them.
+Re-land (a spec on main whose proof bundle is already on main, built again) fails closed: its files are
+work, and another reviewed landing spec in the push has to cover them. A spec made ready on main and built
+later, the factory's order, is new work when its first proof bundle arrives, so that push lands it: the
+spec is on main, but its build is not.
 
 A spec-only push of files of specs on main (the VELDO-0272 re-mark design) is unchanged: it lands no work,
 and it is judged for the owner approval each spec's flag requires and for lowerings.

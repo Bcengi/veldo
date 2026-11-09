@@ -1058,6 +1058,24 @@ def _v272_suite():
                 return run_main(P, repo)
 
             rl = reland_case(Path(base) / 'rl')
+
+            def first_build_case(where):
+                """The factory's order: the spec is made ready on main, then a worker builds it."""
+                repo = new_repo(where, 'first-build')
+                sid = 'VELDO-9381'
+                write(repo, 'specs/%s-ready.md' % sid, spec_text(sid, 'not_required', ['docs/**']))
+                commit(repo, 'the spec, ready on main')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                write(repo, 'docs/guide.md', 'built\n')
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                c = commit(repo, 'first build')
+                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', P.proof_digest(manifest(sid)))))
+                commit(repo, 'review')
+                return run_main(P, repo)
+
+            fb = first_build_case(Path(base) / 'fb')
+            check('AC3 landing/re-land', 'a spec ready on main with no proof there, built and reviewed in this push (its first '
+                  'build): exit 0 [%s]' % fb[1].strip()[:200], fb[0] == 0)
             check('AC3 landing/re-land', 'a spec on main built again with its own review and no new spec: exit 1, its '
                   'files are work no landing spec covers [%s]' % rl[1].strip()[:200],
                   rl[0] == 1 and 'no spec covers docs/guide.md' in rl[1])

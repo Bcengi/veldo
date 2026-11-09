@@ -716,18 +716,40 @@ def _status_at(rev, sid, cache):
     return str(fm.get("status")) if isinstance(fm, dict) else "unreadable"
 
 
+def _built_at(rev):
+    """The spec ids with a proof bundle file other than an approval record in the tree of `rev`, or None
+    when Git cannot list it."""
+    r = _git_process.run(["git", "ls-tree", "-r", "--name-only", rev, "proof/"], capture_output=True, text=True, cwd=ROOT)
+    if r.returncode != 0:
+        return None
+    return {m.group(1) for m in (_PROOF_FILE.match(f) for f in r.stdout.splitlines() if not _approval_record(f)) if m}
+
+
 def on_base(files):
     """VELDO-0287: the specs a push carries that are already on main: not a draft at the push base
     (push_range, the protected ref's tip) and readable there. They land nothing; a file of theirs the push
     changes is work, which a reviewed landing spec must cover (N3). Absent, draft or unreadable at the
-    base, a spec is not on the base."""
+    base, a spec is not on the base. A spec ready on main with no proof bundle there, whose bundle this
+    push creates, is its first build (the factory makes a spec ready on main before a worker builds it)
+    and lands; one whose bundle is already on main is a re-land and stays on the base (fail closed)."""
     ids = push_specs(files)
     if not ids:
         return set()
     _commits, bases = push_range()
-    cache = {}
+    cache, built = {}, {}
+
+    def first_build(sid):
+        if not bundle_touched(sid, files):
+            return False
+        for b in bases:
+            if b not in built:
+                built[b] = _built_at(b)
+            if built[b] is None or sid in built[b]:
+                return False
+        return True
+
     return {sid for sid in ids if bases and all(
-        _status_at(b, sid, cache) not in ("absent", "draft", "unreadable") for b in bases)}
+        _status_at(b, sid, cache) not in ("absent", "draft", "unreadable") for b in bases) and not first_build(sid)}
 
 
 def bundle_touched(sid, files):
