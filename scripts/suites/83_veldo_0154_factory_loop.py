@@ -1045,7 +1045,10 @@ sys.exit(chosen['code'])
             # The pass is logged once it is done, after the receiver it asked has recorded the end.
             wait_pass(lambda p: 'journal' in p['sources'], mark)
             after = [p for p in passes() if p['pass'] > mark]
-            stop_request = settled.get('stop_request') or {}
+            # The ask's result is read once that pass is logged: the runner commits it (honor_stops) after the
+            # receiver it asked has recorded the end, so the record polled above, read the moment the state left
+            # STOPPABLE, can still hold the request without its result (a loaded run read None at 0.13 s).
+            stop_request = (dispatches(U['S1'], 'build') or [{}])[0].get('stop_request') or {}
             check('loop/owner-stop-asked-on-wake', 'the line\'s only worker ran, offered by a journal pass [%s, %s]'
                   % ((took or {}).get('sources'), running.get('state')),
                   took is not None and running.get('state') == 'running' and bool(sid))
