@@ -1,27 +1,21 @@
-"""VELDO-0045: the pinned isolated LangGraph runtime, its license and provenance records, the journey's
-installed assets, and enforcement with the runtime hidden.
+"""VELDO-0045 as VELDO-0262 leaves it: the step runner's runtime journey (check, qualify, enforcement)
+with no lock, no records and no install, the journey's installed assets, and enforcement with the step runner
+hidden.
 
 Only shared ROOT and expect are consumed. The reference installation is laid by the production
-scaffolder (the literal init_scaffold anchor below) from the canonical engine templates, and the two
-production modules the mutation driver substitutes (control_runtime.py and authorization.py) are laid
+scaffolder from the canonical engine, and the production copies the mutation driver substitutes are laid
 over it from their anchors. Everything the rows judge runs as a real command in that installation:
-`control_runtime.py install | check | qualify | enforcement`, traced by an audit hook where a row
-needs to know what the journey opened. The runtime is the one this account installed from
-control_graph_lock.py with control_graph_install.py (real pip --require-hashes). The suite never
-installs from an index and never touches that runtime: every tampered scenario is a copy under a
-temporary home, changed with a real pip (a throwaway environment's bundled pip, offline, with
---no-index) the way an installation would be changed, and pip check is the outside judge of the
-dependency scenarios. When the account has no runtime every runtime row fails by name, with the
-install command in its observation. Each region reds its own rows on a raise, and a `ran/` row says
-whether it did, so a row that is red is red by its assertion.
+`control_runtime.py install | check | qualify | enforcement`, traced by an audit hook where a row needs to
+know what the journey opened. The step runner runs in the resolved base interpreter (-I -S -B). The rows
+of the removed LangGraph runtime (records against the lock, an altered lock hash, an altered wheel, an
+omitted dependency) are removed with it, each listed in proof/VELDO-0262/removed-rows.json. Each region
+reds its own rows on a raise, and a `ran/` row says whether it did, so a row that is red is red by its
+assertion.
 """
 
 
 def _v45_suite():
-    import base64
     import contextlib
-    import csv
-    import email.parser
     import hashlib
     import importlib.util
     import io
@@ -34,7 +28,6 @@ def _v45_suite():
     import sys
     import sysconfig
     import tempfile
-    import zipfile
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -43,9 +36,6 @@ def _v45_suite():
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
     OVERLAID = ('control_runtime.py', 'authorization.py')
-    APPROVED = {'MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'MPL-2.0', 'PSF-2.0'}
-    ALTERED = 'typing_extensions'
-    MARKER = b'\nVELDO_0045_ALTERED_WHEEL = True\n'
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -56,24 +46,10 @@ def _v45_suite():
     def digest(path):
         return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
-    def record_hash(data):
-        return 'sha256=' + base64.urlsafe_b64encode(hashlib.sha256(data).digest()).rstrip(b'=').decode()
-
-    def canonical(name):
-        return re.sub(r'[-_.]+', '-', name).lower()
-
     def run(command, cwd=None, env=None, stdin=None, timeout=300):
         return subprocess.run([str(c) for c in command], cwd=None if cwd is None else str(cwd), env=env,
                               input=stdin, stdin=None if stdin is not None else subprocess.DEVNULL,
                               capture_output=True, timeout=timeout)
-
-    def read_json(path):
-        """A JSON file's object, or {} when it is absent or not one (a pre-fix tree has no records)."""
-        try:
-            value = json.loads(Path(path).read_text())
-        except (OSError, ValueError):
-            return {}
-        return value if type(value) is dict else {}
 
     def report(proc):
         try:
@@ -99,15 +75,9 @@ def _v45_suite():
                 if label not in emitted:
                     check(label, False)
 
-    lock = load('v45_lock', ROOT / '.veldo/control_graph_lock.py')
-    account = lock.runtime_directory()
-    site_of = lambda runtime: Path(runtime) / 'lib' / ('python' + lock.PYTHON) / 'site-packages'  # noqa: E731
-    have_runtime = (account / 'bin' / 'python').is_file()
-    if not have_runtime:
-        observed['runtime_absent'] = ('no locked runtime at %s; install it with: python3 .veldo/control_runtime.py '
-                                      'install (the runtime rows fail by name)' % account)
+    graph_source = load('v45_graph_source', ROOT / '.veldo/control_graph.py')
+    base_python = graph_source.base_interpreter()
     FIXED = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8'}
-    evidence = {'name': 'langgraph', 'version': dict((r[0], r[1]) for r in lock.PACKAGES)['langgraph']}
 
     # One audit hook traces a real command: every file it opens (absolute, as the process resolved it) and
     # every process it launches. It writes its log and nothing else.
@@ -171,17 +141,10 @@ with open(log, 'w') as out:
             state.update(created=set(laid['created']), laid_from=laid_from)
             runtime_py = installed / '.veldo' / 'control_runtime.py'
             state['cr'] = runtime_py
-            tool = tmp / 'tool'
-            made = run([sys.executable, '-I', '-m', 'venv', tool], env=dict(FIXED, HOME=str(tmp)))
-            # pip stashes what it uninstalls in a temporary directory: this fixture's own, never the
-            # host's /tmp, which a confined gate (VELDO-0208) cannot write.
-            state['pip_env'] = dict(FIXED, HOME=str(tmp), TMPDIR=str(tmp), PIP_CONFIG_FILE=os.devnull,
-                                    PIP_DISABLE_PIP_VERSION_CHECK='1', PIP_NO_INPUT='1', PIP_NO_CACHE_DIR='1',
-                                    PYTHONDONTWRITEBYTECODE='1')
-            state['tool'] = tool / 'bin' / 'python'
-            observed['tool_venv'] = made.returncode
+            evidence = load('v45_graph_installed', installed / '.veldo/control_graph.py').runtime_evidence()
         except Exception as error:  # noqa: BLE001 - recorded, then every row below reds by its assertion
             raised.append(('setup', repr(error)))
+            evidence = None
 
         def cr(*argv, cwd=None, home=None):
             extra = ['--home', str(home)] if home is not None else []
@@ -189,103 +152,23 @@ with open(log, 'w') as out:
                        env=dict(FIXED, HOME=str(tmp)))
             return proc, report(proc)
 
-        def pip(*argv):
-            return run([state['tool'], '-I', '-m', 'pip', *argv], env=state['pip_env'])
+        # VELDO-0262: install answers runtime_removed, the step runner needs no install
+        with region('runtime/install-removed'):
+            proc, removed = cr('install')
+            removed = removed or {}
+            observed['install'] = {k: removed.get(k) for k in ('outcome', 'problems', 'taxonomy')}
+            check('runtime/install-removed', proc.returncode == 1 and removed.get('outcome') == 'refused'
+                  and removed.get('taxonomy') == ['unsupported_configuration']
+                  and [p.split(':', 1)[0] for p in removed.get('problems') or []] == ['runtime_removed']
+                  and 'needs no install' in (removed.get('problems') or [''])[0])
 
-        def runtime_copy(home, name=None):
-            target = Path(home) / '.local/share/veldo/langgraph' / (name or lock.digest())
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(account, target, symlinks=True)
-            return target
-
-        def variant(name, edit):
-            """A copy of the installation whose one file `edit` changes (a lock or the records)."""
-            tree = tmp / name
-            shutil.copytree(installed / '.veldo', tree / '.veldo', symlinks=True)
-            edit(tree / '.veldo')
-            return tree
-
-        def variant_lock(tree):
-            return load('v45_lock_' + tree.name, tree / '.veldo' / 'control_graph_lock.py')
-
-        def altered_wheel(out, consistent):
-            """A typing_extensions wheel rebuilt from the installed files with one line added: its RECORD
-            regenerated to match (consistent) or left claiming the genuine hashes."""
-            site = site_of(account)
-            info = site / 'typing_extensions-4.16.0.dist-info'
-            rows = [r for r in csv.reader(io.StringIO((info / 'RECORD').read_text())) if r]
-            kept = [r for r in rows if r[1] and not r[0].startswith('../')
-                    and r[0].split('/')[-1] not in ('INSTALLER', 'REQUESTED', 'RECORD', 'direct_url.json')]
-            out.mkdir(parents=True, exist_ok=True)
-            wheel = out / 'typing_extensions-4.16.0-py3-none-any.whl'
-            record = []
-            with zipfile.ZipFile(wheel, 'w', zipfile.ZIP_DEFLATED) as archive:
-                for path, hashed, size in kept:
-                    data = (site / path).read_bytes()
-                    if path == 'typing_extensions.py':
-                        data += MARKER
-                    archive.writestr(path, data)
-                    record.append([path, record_hash(data), str(len(data))] if consistent else [path, hashed, size])
-                record.append(['typing_extensions-4.16.0.dist-info/RECORD', '', ''])
-                text = io.StringIO()
-                csv.writer(text, lineterminator='\n').writerows(record)
-                archive.writestr('typing_extensions-4.16.0.dist-info/RECORD', text.getvalue())
-            return wheel
-
-        # AC1: records against the lock, the registry and the installed metadata
-        with region('runtime/records-cover-lock'):
-            proc, accepted = cr('check')
-            records = read_json(installed / '.veldo/runtime/langgraph-records.json')
-            packages = {canonical(p['name']): p for p in records.get('packages') or []}
-            locked = {canonical(row[0]): row for row in lock.PACKAGES}
-            spdx = {k: [t for t in re.findall(r'[A-Za-z0-9.+-]+', p['license']['spdx'] or '') if t not in ('AND', 'OR', 'WITH')]
-                    for k, p in packages.items()}
-            covered = (set(packages) == set(locked) and records['lock_digest'] == lock.digest()
-                       and all(packages[k]['version'] == row[1] and packages[k]['wheel'] == row[2]
-                               and packages[k]['sha256'] == row[3] for k, row in locked.items())
-                       and all(spdx[k] and set(spdx[k]) <= APPROVED for k in packages)
-                       and all(p['approval'] and str(p['source']).startswith('https://')
-                               and re.fullmatch(r'[0-9a-f]{64}', p['content']['sha256']) for p in packages.values()))
-            metadata = {}
-            for info in site_of(account).glob('*.dist-info'):
-                meta = email.parser.Parser().parsestr((info / 'METADATA').read_text(), headersonly=True)
-                metadata[canonical(meta['Name'])] = (meta['Version'], meta.get('License') or None,
-                                                     meta.get('License-Expression') or None)
-            agrees = set(metadata) == set(locked) == set(packages) and all(
-                metadata[k] == (packages[k]['version'], packages[k]['license']['registry_license'],
-                                packages[k]['license']['registry_license_expression']) for k in locked)
-
-            def relicense(veldo):
-                path = veldo / 'runtime/langgraph-records.json'
-                if not path.is_file():
-                    return  # a tree without records has nothing to relicense
-                data = json.loads(path.read_text())
-                for entry in data['packages']:
-                    if entry['name'] == 'certifi':
-                        entry['license']['spdx'] = 'LicenseRef-Proprietary'
-                data['packages'] = [e for e in data['packages'] if e['name'] != 'sniffio']
-                path.write_text(json.dumps(data))
-            bad = variant('relicensed', relicense)
-            proc_bad = run([sys.executable, '-B', bad / '.veldo/control_runtime.py', 'check'], cwd=bad,
-                           env=dict(FIXED, HOME=str(tmp)))
-            refused = report(proc_bad) or {}
-            observed['records'] = {'accepted': (accepted or {}).get('outcome'), 'problems': (accepted or {}).get('problems'),
-                                   'covered': covered, 'installed_metadata_agrees': agrees,
-                                   'relicensed': refused.get('problems'), 'attested': sum(1 for p in packages.values() if p['attestation'])}
-            check('runtime/records-cover-lock', have_runtime and proc.returncode == 0 and accepted
-                  and accepted['outcome'] == 'accepted' and accepted['packages'] == len(lock.PACKAGES)
-                  and accepted['lock_digest'] == lock.digest() and covered and agrees
-                  and proc_bad.returncode == 1 and refused.get('outcome') == 'refused'
-                  and refused.get('problems') == ['license_unapproved:certifi:LicenseRef-Proprietary',
-                                                  'unrecorded_package:sniffio'])
-
-        # AC1: the actual nonpersistent adapter workload on the activated runtime
+        # AC1: the actual nonpersistent adapter workload on the step runner
         with region('runtime/workload'):
             proc, qualified = cr('qualify', '--stage', tmp / 'qualify-stage')
             work = (qualified or {}).get('workload') or {}
             steps = work.get('steps') or []
             observed['workload'] = {k: work.get(k) for k in ('passed', 'steps', 'proposals', 'counts', 'pending', 'refused')}
-            check('runtime/workload', have_runtime and proc.returncode == 0 and (qualified or {}).get('outcome') == 'accepted'
+            check('runtime/workload', evidence is not None and proc.returncode == 0 and (qualified or {}).get('outcome') == 'accepted'
                   and [(s.get('operation'), s.get('outcome')) for s in steps] == [
                       ('start', 'suspended'), ('suspend', 'suspended'), ('advance', 'proposal'),
                       ('start-second', 'suspended'), ('cancel', 'canceled')]
@@ -295,133 +178,35 @@ with open(log, 'w') as out:
                   and work.get('counts') == {'accepted': 5, 'refused': 0} and work.get('pending') == []
                   and len(work.get('observations') or []) == 5)
 
-        # AC1: an altered artifact hash in the lock refuses activation
-        with region('runtime/altered-hash-refused'):
-            pinned = dict((r[0], r[3]) for r in lock.PACKAGES)[ALTERED]
-            flipped = pinned[:-1] + ('0' if pinned[-1] != '0' else '1')
-
-            def alter_hash(veldo):
-                path = veldo / 'control_graph_lock.py'
-                path.write_text(path.read_text().replace(pinned, flipped))
-            tree = variant('altered-hash', alter_hash)
-            home = tmp / 'home-altered-hash'
-            target = home / '.local/share/veldo/langgraph' / variant_lock(tree).digest()
-            target.parent.mkdir(parents=True)
-            os.symlink(account, target)  # the genuine runtime, read only, at the altered lock's address
-            proc = run([sys.executable, '-B', tree / '.veldo/control_runtime.py', 'check', '--home', home], cwd=tree,
-                       env=dict(FIXED, HOME=str(tmp)))
-            answer = report(proc) or {}
-            observed['altered_hash'] = answer.get('problems')
-            check('runtime/altered-hash-refused', have_runtime and proc.returncode == 1 and answer.get('outcome') == 'refused'
-                  and 'hash_mismatch:' + ALTERED in (answer.get('problems') or [])
-                  and not any(p.startswith('runtime_absent') for p in answer.get('problems') or []))
-
-        # AC1: a wheel installed with hash enforcement bypassed; the runtime-integrity check refuses it
-        with region('runtime/altered-wheel-refused'):
-            outcomes = {}
-            requirement = tmp / 'one-locked-requirement.txt'
-            requirement.write_text('%s==4.16.0 --hash=sha256:%s\n' % (ALTERED, dict((r[0], r[3]) for r in lock.PACKAGES)[ALTERED]))
-            for kind in ('consistent', 'genuine'):
-                home = tmp / ('home-wheel-' + kind)
-                copy = runtime_copy(home)
-                wheel = altered_wheel(tmp / ('wheel-' + kind), kind == 'consistent')
-                enforced = pip('--python', copy / 'bin/python', 'install', '--quiet', '--require-hashes', '--no-deps',
-                               '--no-index', '--find-links', wheel.parent, '--only-binary=:all:', '--force-reinstall',
-                               '-r', requirement)
-                bypassed = pip('--python', copy / 'bin/python', 'install', '--quiet', '--no-deps', '--no-index',
-                               '--force-reinstall', wheel)
-                present = MARKER in (site_of(copy) / 'typing_extensions.py').read_bytes()
-                proc, answer = cr('check', home=home)
-                outcomes[kind] = {'enforced_exit': enforced.returncode,
-                                  'enforced_says': b'DO NOT MATCH THE HASHES' in enforced.stderr,
-                                  'bypassed_exit': bypassed.returncode, 'altered_code_installed': present,
-                                  'check_exit': proc.returncode, 'problems': (answer or {}).get('problems')}
-            observed['altered_wheel'] = outcomes
-            check('runtime/altered-wheel-refused', have_runtime
-                  and all(o['enforced_exit'] != 0 and o['enforced_says'] and o['bypassed_exit'] == 0
-                          and o['altered_code_installed'] and o['check_exit'] == 1 for o in outcomes.values())
-                  and outcomes['consistent']['problems'] == ['content_mismatch:' + ALTERED]
-                  and outcomes['genuine']['problems'] == ['file_mismatch:%s:%s.py' % (ALTERED, ALTERED)])
-
-        # AC1: an omitted dependency refuses activation; pip check is the outside judge
-        with region('runtime/omitted-dependency-refused'):
-            omitted = {}
-            home = tmp / 'home-no-sniffio'
-            copy = runtime_copy(home)
-            removed = pip('--python', copy / 'bin/python', 'uninstall', '--quiet', '-y', 'sniffio')
-            judged = pip('--python', copy / 'bin/python', 'check')
-            proc, answer = cr('check', home=home)
-            omitted['uninstalled'] = {'removed': removed.returncode, 'pip_check_exit': judged.returncode,
-                                      'pip_check_says': b'requires sniffio, which is not installed' in judged.stdout,
-                                      'check_exit': proc.returncode, 'problems': (answer or {}).get('problems')}
-
-            def drop_sniffio(veldo):
-                path = veldo / 'control_graph_lock.py'
-                text = path.read_text()
-                row = re.search(r"    \('sniffio', '[^']*',\n[^\n]*\n[^\n]*\n", text).group(0)
-                path.write_text(text.replace(row, ''))
-            tree = variant('lock-omits-sniffio', drop_sniffio)
-            home_b = tmp / 'home-lock-omits'
-            (home_b / '.local/share/veldo/langgraph').mkdir(parents=True)
-            os.rename(copy, home_b / '.local/share/veldo/langgraph' / variant_lock(tree).digest())
-            proc = run([sys.executable, '-B', tree / '.veldo/control_runtime.py', 'check', '--home', home_b], cwd=tree,
-                       env=dict(FIXED, HOME=str(tmp)))
-            answer = report(proc) or {}
-            omitted['lock_omits'] = {'check_exit': proc.returncode, 'problems': answer.get('problems')}
-            home_c = tmp / 'home-no-langgraph'
-            copy_c = runtime_copy(home_c)
-            removed = pip('--python', copy_c / 'bin/python', 'uninstall', '--quiet', '-y', 'langgraph')
-            judged = pip('--python', copy_c / 'bin/python', 'check')
-            proc, answer = cr('check', home=home_c)
-            omitted['root_uninstalled'] = {'removed': removed.returncode, 'pip_check_exit': judged.returncode,
-                                           'check_exit': proc.returncode, 'problems': (answer or {}).get('problems')}
-            genuine = pip('--python', account / 'bin/python', 'check')
-            omitted['genuine_pip_check_exit'] = genuine.returncode
-            observed['omitted_dependency'] = omitted
-            check('runtime/omitted-dependency-refused', have_runtime and genuine.returncode == 0
-                  and omitted['uninstalled']['removed'] == 0 and omitted['uninstalled']['pip_check_exit'] == 1
-                  and omitted['uninstalled']['pip_check_says'] and omitted['uninstalled']['check_exit'] == 1
-                  and omitted['uninstalled']['problems'] == ['missing_dependency:sniffio']
-                  and omitted['lock_omits']['check_exit'] == 1
-                  and 'missing_dependency:sniffio' in (omitted['lock_omits']['problems'] or [])
-                  and 'unlocked_record:sniffio' in (omitted['lock_omits']['problems'] or [])
-                  and omitted['root_uninstalled']['removed'] == 0 and omitted['root_uninstalled']['pip_check_exit'] == 0
-                  and omitted['root_uninstalled']['check_exit'] == 1
-                  and omitted['root_uninstalled']['problems'] == ['missing_dependency:langgraph'])
-
         # observability: every activation says what it judged, and a refusal keeps its taxonomy
         with region('runtime/observations'):
             proc, fine = cr('check')
-            empty = tmp / 'home-empty'
-            empty.mkdir()
-            proc_absent, absent = cr('check', home=empty)
-            wheel_home = tmp / 'home-wheel-consistent'
-            proc_wheel, altered = cr('check', home=wheel_home)
-            fields = {'schema', 'operation', 'journey', 'lock_digest', 'records_digest', 'runtime', 'packages',
-                      'problems', 'outcome', 'taxonomy', 'counts'}
-            records_file = installed / '.veldo/runtime/langgraph-records.json'
-            records_digest = 'sha256:' + digest(records_file) if records_file.is_file() else None
-            observed['observations'] = {'accepted': {k: (fine or {}).get(k) for k in ('outcome', 'taxonomy', 'counts')},
-                                        'absent': {k: (absent or {}).get(k) for k in ('problems', 'taxonomy')},
-                                        'altered': {k: (altered or {}).get(k) for k in ('problems', 'taxonomy')}}
-            answers = [fine or {}, absent or {}, altered or {}]
-            fine, absent, altered = fine or {}, absent or {}, altered or {}
-            check('runtime/observations', have_runtime and all(set(a) == fields for a in answers)
-                  and all(a.get('operation') == 'activate' and a.get('lock_digest') == lock.digest()
-                          and a.get('records_digest') == records_digest for a in answers)
+            broken = tmp / 'unreadable'
+            shutil.copytree(installed, broken, symlinks=True)
+            (broken / '.veldo/control_graph_steps.py').write_text('VERSION = None\n')
+            proc_broken = run([sys.executable, '-B', broken / '.veldo/control_runtime.py', 'check'], cwd=broken,
+                              env=dict(FIXED, HOME=str(tmp)))
+            unreadable = report(proc_broken) or {}
+            fields = {'schema', 'operation', 'journey', 'runtime', 'problems', 'outcome', 'taxonomy', 'counts'}
+            fine = fine or {}
+            observed['observations'] = {'accepted': {k: fine.get(k) for k in ('outcome', 'taxonomy', 'counts', 'runtime')},
+                                        'unreadable': {k: unreadable.get(k) for k in ('problems', 'taxonomy')}}
+            check('runtime/observations', all(set(a) == fields for a in (fine, unreadable))
+                  and all(a.get('operation') == 'activate' for a in (fine, unreadable))
                   and fine.get('outcome') == 'accepted' and fine.get('taxonomy') == []
                   and fine.get('counts') == {'accepted': 1, 'refused': 0}
-                  and absent.get('outcome') == 'refused' and absent.get('taxonomy') == ['unavailable_service']
-                  and absent.get('problems') == ['runtime_absent:' + lock.digest()]
-                  and altered.get('taxonomy') == ['invalid_input'] and altered.get('counts') == {'accepted': 0, 'refused': 1})
+                  and (fine.get('runtime') or {}).get('python') == base_python
+                  and (fine.get('runtime') or {}).get('version') == (evidence or {}).get('version')
+                  and unreadable.get('outcome') == 'refused' and unreadable.get('taxonomy') == ['unavailable_service']
+                  and unreadable.get('problems') == ['runtime_unreadable:ValueError']
+                  and unreadable.get('counts') == {'accepted': 0, 'refused': 1})
 
         # AC2: the journey's every reached asset is installed, with the digest it was laid with
         with region('journey/assets-installed'):
-            proc, trace = traced(tmp, 'journey', state['cr'], ['install', '--stage', stage], cwd=installed)
+            proc, trace = traced(tmp, 'journey', state['cr'], ['qualify', '--stage', stage], cwd=installed)
             answer = report(proc) or {}
             journey = set((answer.get('activation') or {}).get('journey') or [])
             reached, fallback, elsewhere, wrote, probed, bytecode = set(), [], [], [], 0, {}
-            runtime_opened = set()
             for path, mode in trace['opened']:
                 # The audit event comes before the open, so a probe for a file that is not there (bytecode
                 # the interpreter looks for first) is an attempt, not a reach. Any attempt under the source
@@ -449,24 +234,9 @@ with open(log, 'w') as out:
                                          and int.from_bytes(header[12:16], 'little') == facts.st_size & 0xFFFFFFFF)
                         rel = source
                     reached.add(rel)
-                elif under(path, account):
-                    runtime_opened.add(os.path.realpath(path))
                 elif not (under(path, stage) or under(path, sysconfig.get_path('stdlib'))
                           or under(path, tempfile.gettempdir()) or path.startswith(('/dev/', '/proc/'))):
                     elsewhere.append(path)
-            recorded = {}
-            for info in site_of(account).glob('*.dist-info'):
-                for row in csv.reader(io.StringIO((info / 'RECORD').read_text())):
-                    if row:
-                        recorded[os.path.realpath(str(site_of(account) / row[0]))] = row[1]
-
-            def runtime_file_ok(path):
-                if path == os.path.realpath(str(account / 'pyvenv.cfg')):
-                    return True
-                if path not in recorded:
-                    return False
-                return not recorded[path] or record_hash(Path(path).read_bytes()) == recorded[path]
-            bad_runtime = sorted(p for p in runtime_opened if not runtime_file_ok(p))
             mismatched = sorted(rel for rel in reached if rel not in state['laid_from']
                                 or state['laid_from'][rel] != digest(installed / rel))
             # The runner child the adapter launched, run again under the runtime with the same tracer.
@@ -480,40 +250,35 @@ with open(log, 'w') as out:
                            'workflow': (answer.get('workload') or {}).get('workflow')}
                 empty_cwd = tmp / 'runner-cwd'
                 empty_cwd.mkdir()
-                run_proc, run_trace = traced(tmp, 'runner', staged[0], [], cwd=empty_cwd, python=account / 'bin/python',
+                run_proc, run_trace = traced(tmp, 'runner', staged[0], [], cwd=empty_cwd, python=base_python,
                                              stdin=json.dumps(request).encode(), env=dict(graph.ENVIRONMENT))
-                stdlib = [p.decode().strip() for p in run([account / 'bin/python', '-I', '-c',
+                stdlib = [p.decode().strip() for p in run([base_python, '-I', '-S', '-c',
                           'import sysconfig; print(sysconfig.get_path("stdlib"))'], env=FIXED).stdout.splitlines()]
-                child_runtime, child_other = set(), []
+                child_other = []
                 for path, _mode in run_trace['opened']:
                     if not os.path.isfile(path) and not under(path, ROOT) and not under(path, installed):
                         continue  # an attempt at a file that is not there reaches nothing
-                    if under(path, account):
-                        child_runtime.add(os.path.realpath(path))
-                    elif not (under(path, staged[0]) or any(under(path, s) for s in stdlib) or under(path, tmp / 'trace-runner.json')
+                    if not (under(path, staged[0]) or any(under(path, s) for s in stdlib) or under(path, tmp / 'trace-runner.json')
                               or path.startswith(('/dev/', '/proc/'))):
                         child_other.append(path)
                 child.update(answer=(report(run_proc) or {}).get('outcome'), runtime_label=(report(run_proc) or {}).get('runtime'),
-                             runtime_files=len(child_runtime), bad_runtime=sorted(p for p in child_runtime if not runtime_file_ok(p)),
                              outside=sorted(child_other)[:20], exit=run_trace['exit'])
             observed['journey'] = {'exit': proc.returncode, 'outcome': answer.get('outcome'), 'trace_exit': trace['exit'],
                                    'reached_installed': sorted(reached), 'declared': sorted(journey), 'fallback': fallback[:20],
                                    'elsewhere': elsewhere[:20], 'wrote': wrote, 'mismatched': mismatched, 'probed': probed,
-                                   'bytecode': bytecode,
-                                   'runtime_files': len(runtime_opened), 'bad_runtime': bad_runtime[:20], 'runner_child': child}
-            check('journey/assets-installed', have_runtime and proc.returncode == 0 and answer.get('outcome') == 'accepted'
-                  and answer.get('operation') == 'install' and trace['exit'] == 0
-                  and reached == journey and {'.veldo/control_graph_lock.py', '.veldo/runtime/langgraph-records.json'} <= reached
+                                   'bytecode': bytecode, 'runner_child': child}
+            check('journey/assets-installed', proc.returncode == 0 and answer.get('outcome') == 'accepted'
+                  and answer.get('operation') == 'qualify' and trace['exit'] == 0
+                  and reached == journey and {'.veldo/control_graph.py', '.veldo/control_graph_steps.py'} <= reached
                   and reached <= state['created'] and not mismatched and not fallback and not elsewhere and not wrote
                   and all(bytecode.values())
-                  and len(runtime_opened) > 1000 and not bad_runtime
                   and child.get('answer') == 'suspended' and child.get('runtime_label') == evidence
-                  and child.get('runtime_files', 0) > 100 and not child.get('bad_runtime') and not child.get('outside'))
+                  and not child.get('outside'))
 
         # AC2: an omitted asset is a named failure, never a read of the source tree
         with region('journey/omitted-asset-named'):
             named = {}
-            for rel in ('.veldo/runtime/langgraph-records.json', '.veldo/control_graph_lock.py'):
+            for rel in ('.veldo/control_graph_steps.py', '.veldo/control_graph.py'):
                 tree = tmp / ('omitted-' + Path(rel).name)
                 shutil.copytree(installed, tree, symlinks=True)
                 (tree / rel).unlink(missing_ok=True)
@@ -562,14 +327,14 @@ with open(log, 'w') as out:
             check('enforcement/no-runtime', entries and all(
                 e.get('status') == 'pass' and e.get('exit') in (e.get('verdicts') or []) and not e.get('refused_imports')
                 and not e.get('hidden_hits') and not e.get('static_violations') and e.get('exception') is None for e in entries)
-                and verdict.get('hidden') == [os.path.realpath(str(account.parent))])
+                and verdict.get('hidden') == [os.path.realpath(str(installed / '.veldo/control_graph_steps.py'))])
             probe = verdict.get('graph') or {}
             answers = [a for a in probe.get('answers') or [] if type(a) is dict]
             proc_present, present = cr('check')
-            check('enforcement/graph-unavailable', have_runtime and probe.get('status') == 'pass'
+            check('enforcement/graph-unavailable', probe.get('status') == 'pass'
                   and [(a.get('home'), a.get('refusal')) for a in answers] == [('absent', 'runtime_unavailable'),
                                                                                ('hidden', 'runtime_unavailable')]
-                  and 'runtime_absent' in answers[0].get('detail', '') and 'runtime_unreadable' in answers[1].get('detail', '')
+                  and 'asset is absent' in answers[0].get('detail', '') and 'runtime_unreadable' in answers[1].get('detail', '')
                   and probe.get('hidden_hits') and (present or {}).get('outcome') == 'accepted')
 
         for first in regions:

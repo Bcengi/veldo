@@ -1,12 +1,14 @@
-"""The registered workflow step kinds as the graph runner executes them (VELDO-0132).
+"""The registered workflow step kinds as the step runner executes them (VELDO-0132, VELDO-0262).
 
 NOTHING IMPORTS THIS FILE. control_workflow_cycle.runner_source() splices its text into a copy of
-the production runner (control_graph_langgraph.py), after the runner's own definitions and before
-its entry point, followed by ONE call registering the exact stored definition of one revision:
-veldo_register_workflow(<the definition's canonical text>, <version>). That runner answers only that
-revision, and the adapter stages it content-addressed like any runner. This is the execution
-environment, not enforcement: it holds no store, path or credential, and control_workflow_cycle
-re-judges every step it reports against the stored revision before anything follows from it.
+the production step runner (control_graph_steps.py), after the runner's own definitions and before
+its entry point, followed by ONE constant literal holding the exact stored definition of one revision:
+VELDO_DEFINITION = (<the definition's canonical text>, <version>). Nothing is registered into a module
+level table: workflows() builds the one workflow from that constant for each exchange, so that runner
+answers only that revision, and the adapter stages it content-addressed like any runner. This is the
+execution environment, not enforcement: it holds no store, path or credential, and
+control_workflow_cycle re-judges every step it reports against the stored revision before anything
+follows from it.
 
 ONE STEP PER EXCHANGE. `start` runs the intake node, which runs no step of the definition: it
 reports the digest of the definition this runner was built from and suspends at the entry. Each
@@ -23,7 +25,7 @@ THE STEP KINDS read only the plain supplied results the cycle hands them, by id:
   accepted_result  {kind}          the accepted result a result handling node cites
 grooming routes groomed; result_handling proposes completion of the subject citing the digest of
 every result it was supplied. A node with nothing to route by fails by name (invalid_input).
-Standard library only; `json` and `WORKFLOWS` are the runner's own.
+Standard library only; `json` is the runner's own.
 
 VELDO-0247. A check node reads `fields` {name: value} and routes by the first of its branches whose
 conditions all hold, else otherwise; a field it names with no value or the wrong type fails it
@@ -145,8 +147,8 @@ def _veldo_node(definition, reference, name):
     return step
 
 
-def veldo_register_workflow(text, version):
-    """Register the one definition this runner answers, built from its exact canonical text."""
+def veldo_workflows(text, version):
+    """The one workflow this runner answers, built from the definition's exact canonical text."""
     definition = json.loads(text)
     reference = {'id': definition['id'], 'version': version,
                  'digest': 'sha256:' + _veldo_hashlib.sha256(text.encode()).hexdigest()}
@@ -158,5 +160,9 @@ def veldo_register_workflow(text, version):
     for name, node in definition['nodes'].items():
         if node['kind'] in VELDO_STEP_KINDS:
             nodes[name] = _veldo_node(definition, reference, name)
-    WORKFLOWS[definition['id']] = {'version': version, 'entry': VELDO_INTAKE, 'nodes': nodes}
-    return reference
+    return {definition['id']: {'version': version, 'entry': VELDO_INTAKE, 'nodes': nodes}}
+
+
+def workflows():
+    """The spliced revision's workflow, built from the constant literal for this exchange."""
+    return veldo_workflows(*VELDO_DEFINITION)

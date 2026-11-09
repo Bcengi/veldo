@@ -94,7 +94,7 @@ def codex_grants(definition):
     if not model:
         return
     engine = organ('control_engine_codex')
-    catalog = engine.load_qualification()['model_catalog']
+    catalog = engine.model_catalog()  # VELDO-0275 AC1: read from the approved binary by its recorded digest
     entry = next((m for m in catalog['models'] if m['slug'] == model), None)
     if entry is None:
         raise Refused('unsupported_configuration:codex_model:' + model)

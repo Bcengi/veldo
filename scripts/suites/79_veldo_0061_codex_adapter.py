@@ -5,7 +5,7 @@ Run: python3 scripts/selftest.py --suite 79_veldo_0061_codex_adapter
 
 Only shared ROOT and expect are consumed. One temporary tree, in the owner's runtime directory so the
 VELDO-0042 clone layout has no protected target beneath a temporary directory, holds the installed
-.veldo copy (with its runtime/codex-qualification.json) the runner loads and the receiver, trusted
+.veldo copy (with its runtime/codex-tables.json) the runner loads and the receiver, trusted
 wrapper and clone entrance execute, so a registered mutation of a production module reaches all of
 them. Real: a SQLite control store with OpenSSH journal signatures, Codex account records registered by
 the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production
@@ -123,9 +123,9 @@ def _v61_suite():
             shutil.copyfile(source, mods / source.name)
         for name, source in PRODUCTION.items():
             shutil.copyfile(source, mods / name)
-        INSTALLED_QUALIFICATION = ROOT / '.veldo' / 'runtime' / 'codex-qualification.json'
+        INSTALLED_QUALIFICATION = ROOT / '.veldo' / 'runtime' / 'codex-tables.json'
         if INSTALLED_QUALIFICATION.is_file():
-            shutil.copyfile(INSTALLED_QUALIFICATION, mods / 'runtime' / 'codex-qualification.json')
+            shutil.copyfile(INSTALLED_QUALIFICATION, mods / 'runtime' / 'codex-tables.json')
         compiler.install_main_cache(mods / 'control_launch.py', base, code_cache)
         S = load('v61_store', mods / 'control_store.py')
         L = load('v61_launch', mods / 'control_launch.py')
@@ -267,7 +267,13 @@ end = time.monotonic() + 60
 while time.monotonic() < end:
     time.sleep(0.05)
 ''')
-        fake = ('#!%s -B\n' % sys.executable) + common + '''if sys.argv[1:3] == ['login', 'status']:
+        fake = ('#!%s -B\n' % sys.executable) + common + '''if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
+if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
     print('Logged in using ChatGPT', file=sys.stderr)
     sys.exit(0)
@@ -677,8 +683,8 @@ sys.exit(payload.get('code', 0))
             named = {'accept', 'launch', 'observe', 'stop', 'exit', 'artifacts'}
             check('lifecycle/registered', 'the installed Codex adapter registration enumerates exactly the six lifecycle '
                   'operations the specification names [%s]' % sorted(operations), operations == named)
-            installed = json.loads((mods / 'runtime' / 'codex-qualification.json').read_text()) \
-                if (mods / 'runtime' / 'codex-qualification.json').is_file() else {}
+            installed = json.loads((mods / 'runtime' / 'codex-tables.json').read_text()) \
+                if (mods / 'runtime' / 'codex-tables.json').is_file() else {}
             check('lifecycle/registered', 'the registration\'s flags are the installed qualification\'s, and every '
                   'configured Codex adapter launches with them [%s %s]' % (registration.get('flags'), installed.get('flags')),
                   list(registration.get('flags') or ()) == installed.get('flags') == FLAGS and FLAGS
@@ -779,7 +785,7 @@ sys.exit(payload.get('code', 0))
                   and (found.get('executable') or {}).get('sha256') == FORMATS['sha256'])
 
         with region('pin/unexpected-launch'):
-            expected = {'changed': 'stale_subject:engine_digest', 'newer': 'stale_subject:engine_version',
+            expected = {'changed': 'engine_not_approved', 'newer': 'engine_not_approved',
                         'link': 'invalid_input:engine_link', 'npm': 'invalid_input:engine_link',
                         'flags': 'invalid_input:engine_flags', 'shell': 'invalid_input:engine_executable',
                         'link-first': 'invalid_input:engine_executable'}
@@ -802,6 +808,9 @@ sys.exit(payload.get('code', 0))
         with region('pin/qualified-record'):
             installed = json.loads(INSTALLED_QUALIFICATION.read_text()) if INSTALLED_QUALIFICATION.is_file() else {}
             fresh, error = attempt(lambda: X.qualification(REAL, catalog=True))
+            # VELDO-0275 AC1: the reviewed tables keep the bundled catalog by its digest only (a launch reads it from the
+            # approved binary), so the writer's record is compared without the catalog itself.
+            fresh = {k: v for k, v in fresh.items() if k != 'model_catalog'} if isinstance(fresh, dict) else fresh
             # VELDO-0230: the qualify command completes the writer's record with what its loopback captures and the
             # evaluations find (the new items, the readers offered without a server, the undelivered grants);
             # suite 126 proves those reproduce. Every other field is the writer's.
@@ -823,12 +832,12 @@ sys.exit(payload.get('code', 0))
                   and sorted(installed.get('terminal_protocol', {}).get('events', [])) == sorted(EXEC['events'])
                   and installed.get('terminal_protocol', {}).get('item_kinds') == EXEC['item']['kinds'])
             scaffold = load('v61_scaffold', mods / 'init_scaffold.py')
-            engine_copy = ROOT / 'engine' / 'runtime' / 'codex-qualification.json'
+            engine_copy = ROOT / 'engine' / 'runtime' / 'codex-tables.json'
             check('pin/qualified-record', 'init lays it down beside the module that reads it, from a canonical engine copy '
-                  'identical to it', ('runtime/codex-qualification.json', '.veldo/runtime/codex-qualification.json')
+                  'identical to it', ('runtime/codex-tables.json', '.veldo/runtime/codex-tables.json')
                   in list(scaffold._RUNTIME_ASSETS) and engine_copy.is_file()
                   and engine_copy.read_bytes() == INSTALLED_QUALIFICATION.read_bytes()
-                  and Path(getattr(X, 'QUALIFICATION', '/nonexistent')) == mods / 'runtime' / 'codex-qualification.json')
+                  and Path(getattr(X, 'QUALIFICATION', '/nonexistent')) == mods / 'runtime' / 'codex-tables.json')
 
         # AC2: terminal output as artifacts
         with region('artifacts/normal-exit'):

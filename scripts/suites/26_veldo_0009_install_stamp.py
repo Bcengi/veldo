@@ -185,7 +185,12 @@ def _is_ac3():
         target = Path(d) / "target"
         target.mkdir()
         _is_sp.run(["git", "init", "-q", "."], cwd=str(target), capture_output=True)
-        out = _is_sp.run([_is_sys.executable, str(pack / ".veldo" / "init_scaffold.py"), str(target)],
+        # VELDO-0262: the CLI judges the account home's runtime directory unless told otherwise, so
+        # the suite hands it an empty temporary home and never depends on the host's own.
+        home = Path(d) / "home"
+        home.mkdir()
+        out = _is_sp.run([_is_sys.executable, str(pack / ".veldo" / "init_scaffold.py"),
+                          "--home", str(home), str(target)],
                          capture_output=True, text=True, timeout=300)
         expect("VELDO-0009 AC3: an install from a pack that declares NO version PRINTS the stand-down "
                "and still exits 0, so an adopter is TOLD the record was not laid instead of reading "

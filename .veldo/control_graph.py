@@ -11,35 +11,39 @@ is exactly one of the plain versioned shapes below. Typed proposals are data for
 authorized commands; this module holds no store and commits nothing.
 
 The runtime is {'python': interpreter, 'runner': runner source file, 'stage': directory}.
-Adapter.installed() resolves the locked LangGraph runtime: the virtual environment at
-<account home>/.local/share/veldo/langgraph/<lock digest>/ (control_graph_lock.py; the home comes
-from the password database, never $HOME), the sibling runner source control_graph_langgraph.py,
-and the per-account stage <account home>/.local/state/veldo/graph-stage/, separate from the
-runtime. Before each launch the runner is copied, content-addressed, to <stage>/runners/<sha256>.py
+Adapter.installed() resolves Veldo's own step runner (VELDO-0262): the resolved base interpreter of
+the python3 running this adapter, started -I -S -B so no site package is importable in the child, the
+sibling runner source control_graph_steps.py (standard library only), and the per-account stage
+<account home>/.local/state/veldo/graph-stage/ (the home comes from the password database, never
+$HOME), separate from the interpreter. Before each launch the runner is copied, content-addressed, to <stage>/runners/<sha256>.py
 and run from there in a fresh working directory under <stage>/work/, so the child's argv[0],
 __file__, script directory, working directory and any Git discovery from them lead to no
 repository and no store. The adapter follows no link it did not make: a link at runners/, work/
 or the staged runner, a stage inside a Git repository, or a working directory that does not
 resolve outside every repository immediately before launch, is refused as runtime_unavailable. What the adapter hands the child leads nowhere; a hostile node reading its parent
 through /proc as the same account is a stated limit, confined in Release 2. None,
-or an interpreter that is not present, is the named refusal runtime_unavailable, whose detail
-names the install command. Release 1 is nonpersistent, so a suspended cycle's resume data is
+a runner asset that is not present, or an interpreter that leads to a repository, is the named
+refusal runtime_unavailable; there is nothing to install. Release 1 is nonpersistent, so a suspended cycle's resume data is
 returned to the caller and never stored by the runtime.
 
-The child's environment turns LangSmith tracing off by construction: the fixed ENVIRONMENT sets
-every tracing switch langsmith reads to false, and nothing is inherited from the caller.
+Every exchange is observed with its operation, cycle, command, accepted inputs, outcome, named refusal
+and runtime label, plus the sha256 of the staged runner it launched, the child's exit status and the
+exchange's elapsed milliseconds (exchange_durations() reduces them by operation and outcome).
 """
 import hashlib
 import importlib.util
 import json
+import ast
 import os
 import math
 from pathlib import Path
+import pwd
 import re
 import shlex
 import shutil
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 import unicodedata
@@ -84,51 +88,60 @@ RESPONSE_FIELDS = {
     'canceled': (),
 }
 ENVIRONMENT = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
-               'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONNOUSERSITE': '1',
-               'LANGSMITH_TRACING': 'false', 'LANGSMITH_TRACING_V2': 'false',
-               'LANGCHAIN_TRACING': 'false', 'LANGCHAIN_TRACING_V2': 'false'}
+               'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONNOUSERSITE': '1'}
 # Bounds checked before parsing or walking, without recursion: an answer or request nested deeper
 # than MAX_DEPTH, or an answer larger than MAX_ANSWER_BYTES, is a named refusal.
 MAX_DEPTH = 32
 MAX_ANSWER_BYTES = 1 << 20
 HERE = Path(__file__).resolve().parent
-INSTALL_COMMAND = 'python3 .veldo/control_graph_install.py'
-REBUILD_COMMAND = INSTALL_COMMAND + ' --rebuild'
-RUNNER = 'control_graph_langgraph.py'
-# Staged runner copies and child working directories: per account, separate from the runtime,
-# which holds only what the lock installed.
+RUNNER = 'control_graph_steps.py'
+# The child's flags: isolated mode, no site packages at all, no bytecode written.
+FLAGS = ('-I', '-S', '-B')
+# Staged runner copies and child working directories: per account, separate from the interpreter.
 STAGE_RELATIVE = Path('.local/state/veldo/graph-stage')
 
 
 NO_RUNTIME = {'name': 'none', 'version': ''}
 
 
-def _lock():
-    spec = importlib.util.spec_from_file_location('veldo_control_graph_lock', HERE / 'control_graph_lock.py')
-    lock = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(lock)
-    return lock
+def account_home():
+    """The account's home from the password database, never $HOME (the gate replaces HOME)."""
+    return Path(pwd.getpwuid(os.getuid()).pw_dir)
+
+
+def declared_version(path=None):
+    """The step runner's declared VERSION, read from its source statically: never imported."""
+    tree = ast.parse(Path(path or HERE / RUNNER).read_text())
+    for node in tree.body:
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == 'VERSION' and isinstance(node.value, ast.Constant)
+                and type(node.value.value) is str):
+            return node.value.value
+    raise ValueError('the step runner declares no VERSION')
 
 
 def runtime_evidence():
-    """The runtime label an answer must carry to count as evidence from the locked LangGraph."""
-    return {'name': 'langgraph', 'version': dict((name, version) for name, version, _, _ in _lock().PACKAGES)['langgraph']}
+    """The runtime label an answer must carry to count as evidence from the step runner."""
+    return {'name': 'veldo-steps', 'version': declared_version()}
 
 
 def evidenced(result, evidence):
-    """An answer is runtime evidence when the locked LangGraph produced it. A failure may instead
-    say that nothing ran (NO_RUNTIME); a failure confers nothing."""
+    """An answer is runtime evidence when the step runner produced it. A failure may instead say that
+    nothing ran (NO_RUNTIME); a failure confers nothing."""
     if result['outcome'] == 'failure':
         return result['runtime'] in (evidence, NO_RUNTIME)
     return result['runtime'] == evidence
 
 
-def resolve_runtime(home=None):
-    """The locked runtime for this account, or None when it is not installed."""
-    lock = _lock()
-    directory = lock.runtime_directory(home)
-    runtime = {'python': str(directory / 'bin' / 'python'), 'runner': str(HERE / RUNNER),
-               'stage': str(lock.account_home() / STAGE_RELATIVE if home is None else Path(home) / STAGE_RELATIVE)}
+def base_interpreter():
+    """The resolved base interpreter of the python3 running this adapter (never a virtual environment's)."""
+    return os.path.realpath(getattr(sys, '_base_executable', None) or sys.executable)
+
+
+def resolve_runtime(home=None, runner=None):
+    """The step runner for this account, or None when its asset is absent."""
+    runtime = {'python': base_interpreter(), 'runner': str(runner or HERE / RUNNER),
+               'stage': str(account_home() / STAGE_RELATIVE if home is None else Path(home) / STAGE_RELATIVE)}
     return runtime if available(runtime) else None
 
 
@@ -511,8 +524,8 @@ def stage(runtime):
 
 def runtime_problems(runtime):
     """Why the runtime interpreter would lead a child toward a repository: the interpreter itself
-    resolving inside one, or a path in its virtual environment's pyvenv.cfg (such as the creating
-    interpreter recorded in `command`) that lies inside one. Checked before every launch."""
+    resolving inside one, or a path in a pyvenv.cfg beside it that lies inside one. Checked before every
+    launch."""
     problems = []
     python = Path(runtime['python'])
     for hop in visited_paths(python):
@@ -630,18 +643,20 @@ def _end_group(proc):
     proc.wait()
 
 
-def exchange(runtime, sent, timeout=120):
+def exchange(runtime, sent, timeout=120, seen=None):
     """One request, one response, one child process with nothing inherited, in its own session;
-    the whole process group is killed on the deadline and on every exit path."""
+    the whole process group is killed on the deadline and on every exit path. `seen`, when given,
+    receives the staged runner's sha256, the child's exit status and the elapsed milliseconds."""
+    seen = {} if seen is None else seen
+    started = time.monotonic()
     if not available(runtime):
-        raise Refused('runtime_unavailable', 'no graph runtime is installed for this operation; install it with: '
-                      + INSTALL_COMMAND)
+        raise Refused('runtime_unavailable', 'the step runner asset is absent or the stage is not usable')
     try:
         problems = runtime_problems(runtime)
     except (OSError, RuntimeError, ValueError) as error:
         raise Refused('runtime_unavailable', 'the runtime cannot be judged: ' + str(error)[:120]) from error
     if problems:
-        raise Refused('runtime_unavailable', '; '.join(problems) + '; rebuild it with: ' + REBUILD_COMMAND)
+        raise Refused('runtime_unavailable', '; '.join(problems))
     try:
         staged, work = stage(runtime)
         empty = _working_directory(work)
@@ -661,7 +676,8 @@ def exchange(runtime, sent, timeout=120):
                       + (error.strerror or type(error).__name__)) from error
     with given, answer:
         try:
-            proc = subprocess.Popen([runtime['python'], '-I', '-B', str(staged)],
+            seen['runner_sha256'] = staged.stem
+            proc = subprocess.Popen([runtime['python'], *FLAGS, str(staged)],
                                     stdin=given, stdout=answer, stderr=subprocess.DEVNULL, cwd=str(empty),
                                     env=dict(ENVIRONMENT), close_fds=True, start_new_session=True)
         except OSError as error:
@@ -672,6 +688,8 @@ def exchange(runtime, sent, timeout=120):
         finally:
             _end_group(proc)
             _remove(empty)
+            seen['exit'] = proc.returncode
+            seen['elapsed_ms'] = round((time.monotonic() - started) * 1000, 3)
         if not finished:
             raise Refused('unknown_outcome', 'graph runtime did not answer within its deadline')
         if proc.returncode:
@@ -685,11 +703,11 @@ class Adapter:
     """Lifecycle operations over one domain and repository, with counts and observations."""
 
     @classmethod
-    def installed(cls, domain_uuid, repository_uuid, home=None, timeout=120, stage=None):
-        """An adapter over the locked runtime this account has installed (None if absent), whose
-        answers must be runtime evidence from that locked LangGraph. `stage` replaces the account
-        stage directory (the suite stages into a temporary one)."""
-        runtime = resolve_runtime(home)
+    def installed(cls, domain_uuid, repository_uuid, home=None, timeout=120, stage=None, runner=None):
+        """An adapter over the step runner (its runtime None if the asset is absent), whose
+        answers must be runtime evidence from that step runner. `stage` replaces the account
+        stage directory (the suite stages into a temporary one); `runner` replaces the runner asset."""
+        runtime = resolve_runtime(home, runner)
         if runtime is not None and stage is not None:
             runtime = dict(runtime, stage=str(stage))
         return cls(runtime, domain_uuid, repository_uuid, timeout, evidence=runtime_evidence())
@@ -708,19 +726,20 @@ class Adapter:
                       accepted_inputs={name: {k: fields[name][k] for k in ('id', 'version', 'digest')}
                                        for name in ('snapshot', 'workflow') if type(fields.get(name)) is dict
                                        and {'id', 'version', 'digest'} <= set(fields[name])})
+        seen = {}
         try:
-            result = exchange(self.runtime, request(operation, identity, **fields), self.timeout)
+            result = exchange(self.runtime, request(operation, identity, **fields), self.timeout, seen)
             if self.evidence is not None and not evidenced(result, self.evidence):
                 raise Refused('missing_evidence', 'answer labelled ' + repr(result['runtime'])
                               + ' is not runtime evidence from ' + repr(self.evidence))
         except Refused as error:
             self.counts['refused'] += 1
-            self.observations.append(dict(record, outcome='refused', refusal=error.code))
+            self.observations.append(dict(record, outcome='refused', refusal=error.code, **_seen(seen)))
             raise
         self.counts['accepted'] += 1
         self._last[cycle_id] = result['outcome']
         self.observations.append(dict(record, outcome=result['outcome'], refusal=None,
-                                      runtime=result['runtime']))
+                                      runtime=result['runtime'], **_seen(seen)))
         return result
 
     def start(self, cycle_id, command_id, snapshot, workflow):
@@ -739,3 +758,23 @@ class Adapter:
     def pending(self):
         """Cycles whose last accepted outcome leaves work outstanding."""
         return sorted(cycle for cycle, outcome in self._last.items() if outcome == 'suspended')
+
+
+def _seen(seen):
+    return {key: seen.get(key) for key in ('runner_sha256', 'exit', 'elapsed_ms')}
+
+
+def exchange_durations(observations):
+    """Exchange duration by operation and outcome (count, median, p95), from adapter observations."""
+    groups = {}
+    for item in observations:
+        if type(item.get('elapsed_ms')) in (int, float):
+            groups.setdefault((item['operation'], item['outcome']), []).append(item['elapsed_ms'])
+    report = {}
+    for (operation, outcome), values in sorted(groups.items()):
+        values = sorted(values)
+        report[operation + '/' + outcome] = {
+            'count': len(values), 'median': values[len(values) // 2] if len(values) % 2 else
+            (values[len(values) // 2 - 1] + values[len(values) // 2]) / 2,
+            'p95': values[min(len(values) - 1, max(0, -(-95 * len(values) // 100) - 1))]}
+    return report

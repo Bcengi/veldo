@@ -100,6 +100,16 @@ class Factory(SimpleNamespace):
             time.sleep(0.1)
 
 
+def launch_record(X, vendored, live):
+    """The Codex record the factory's launches read. A live run's is the approved tables' shape (VELDO-0275 AC1):
+    the bundled catalog's digest only, so the launch's codex_model reads the catalog from the approved binary,
+    as the judge's does; a fake binary is never approved, so a fake run keeps its catalog in the record."""
+    record = X.qualification(str(vendored), **({'catalog': True} if hasattr(X, 'bundled_catalog') else {}))
+    if live:
+        record.pop('model_catalog', None)
+    return record
+
+
 def factory(ROOT, base, PRODUCTION, fake_engine=None, live=None, deadline_seconds=90):
     # VELDO-0230: the qualified versions are the engines record's, never typed here.
     CLAUDE_VERSION, CODEX_VERSION, CODEX_PACKAGE_VERSION = (lambda r: (r['claude_code']['version'], r['codex']['version'], r['codex']['package_version']))(
@@ -279,7 +289,7 @@ for raw in sys.stdin:
                         principal='owner', base=0, command_id='skill-inspect')
     versions = base / 'versions'
     versions.mkdir()
-    shipped = json.loads((ROOT / '.veldo/runtime/claude-qualification.json').read_text())
+    shipped = json.loads((ROOT / '.veldo/runtime/claude-tables.json').read_text())
     entry = shipped['versions'][CLAUDE_VERSION]
     if live:
         versions = Path(live['claude']).parent
@@ -289,7 +299,7 @@ for raw in sys.stdin:
         entry = dict(entry, sha256='sha256:' + hashlib.sha256((versions / CLAUDE_VERSION).read_bytes()).hexdigest(),
                      session_environment=E.session_environment(versions / CLAUDE_VERSION))
     (mods / 'runtime').mkdir()
-    (mods / 'runtime/claude-qualification.json').write_text(json.dumps(dict(shipped, versions={CLAUDE_VERSION: entry})))
+    (mods / 'runtime/claude-tables.json').write_text(json.dumps(dict(shipped, versions={CLAUDE_VERSION: entry})))
     state = base / 'factory'
     state.mkdir(mode=0o700)
     E.pin(CLAUDE_VERSION, versions=str(versions), state_root=str(state))
@@ -302,18 +312,22 @@ for raw in sys.stdin:
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         vendored.write_text(fake_engine('codex'))
         vendored.chmod(0o700)
-    codex_qualification = base / 'codex-qualification.json'
-    codex_record = X.qualification(str(vendored), **({'catalog': True} if hasattr(X, 'bundled_catalog') else {}))
+    codex_qualification = base / 'codex-tables.json'
+    codex_record = launch_record(X, vendored, live)
+    # VELDO-0275 fix 2: the installed tree carries the engines record, as an installed runtime does, so
+    # model_catalog in this tree reads the approved binary the record names (the judge's codex_model with the
+    # shipped tables), never the `codex` on PATH.
+    shutil.copyfile(ROOT / '.veldo/runtime/engines.json', mods / 'runtime/engines.json')
     # VELDO-0230: the fake forwards every model request to the qualified binary, so it offers what that binary
     # offers without a server: the shipped record's reading of it (qualify.py's loopback capture).
-    shipped_rule = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text()).get('mcp_resource_rule') or {}
+    shipped_rule = json.loads((ROOT / '.veldo/runtime/codex-tables.json').read_text()).get('mcp_resource_rule') or {}
     if 'offered_without_server' in shipped_rule and isinstance(codex_record.get('mcp_resource_rule'), dict):
         codex_record['mcp_resource_rule']['offered_without_server'] = shipped_rule['offered_without_server']
     # Likewise the grants it does not deliver under Veldo's switches.
-    codex_record['undelivered_grants'] = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text()).get(
+    codex_record['undelivered_grants'] = json.loads((ROOT / '.veldo/runtime/codex-tables.json').read_text()).get(
         'undelivered_grants', [])
     codex_qualification.write_text(json.dumps(codex_record))
-    shutil.copyfile(codex_qualification, mods / 'runtime/codex-qualification.json')
+    shutil.copyfile(codex_qualification, mods / 'runtime/codex-tables.json')
     config = base / 'receiver.json'
     wrapper = []
     slice_name = 'veldo0127-' + str(os.getpid()) + '.slice'

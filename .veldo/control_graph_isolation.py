@@ -14,8 +14,8 @@ command does two things against that repository's own installed modules:
      packages, no user site, no environment path) and an import finder that refuses, and records,
      any module that is neither standard library nor an installed sibling.
 
-The graph runner control_graph_langgraph.py IS the execution environment: it is launched as a
-separate process under the locked runtime's interpreter, never imported. A module that merely
+The step runner control_graph_steps.py IS the execution environment: it is launched as a
+separate process under the base interpreter (-I -S -B), never imported. A module that merely
 names it (the adapter's launch target) records it as a launch target and does not follow it; any
 import of it, or any load of it by path that a run exercises, is still refused.
 
@@ -33,7 +33,7 @@ import sys
 import tempfile
 
 HERE = Path(__file__).resolve().parent
-EXECUTION_ENVIRONMENT = frozenset({'control_graph_langgraph.py'})
+EXECUTION_ENVIRONMENT = frozenset({'control_graph_steps.py'})
 # id, installed module, ordinary argv, ordinary verdict exit codes.
 ENTRIES = (
     ('validator', 'validate.py', ('all',), (0,)),
@@ -155,14 +155,15 @@ def check(root):
 
 
 def probe_graph():
-    """Graph start with the execution environment absent (resolution over an empty account home):
+    """Graph start with the execution environment absent (the step runner asset resolved where it is not):
     the only acceptable answer is runtime_unavailable."""
     import importlib.util
     spec = importlib.util.spec_from_file_location('isolated_control_graph', HERE / 'control_graph.py')
     graph = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(graph)
     with tempfile.TemporaryDirectory(prefix='veldo-no-runtime-') as empty:
-        adapter = graph.Adapter.installed('isolated-domain', 'isolated-repository', home=empty)
+        adapter = graph.Adapter.installed('isolated-domain', 'isolated-repository', home=empty,
+                                          runner=Path(empty) / graph.RUNNER)
     version = {'id': 'probe', 'version': 1, 'digest': 'sha256:' + '0' * 64}
     try:
         adapter.start('probe-cycle', 'probe-command', version, version)

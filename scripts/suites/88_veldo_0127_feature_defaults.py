@@ -126,7 +126,7 @@ def _v127_feature_defaults():
                       str((error, flags.get('future_role_tool'), requalified.get('unclassified_default_on'), tools)))
                 # VELDO-0230 AC3 (Telegram 38878): a new feature the record's evaluation grants stays at its default at
                 # launch (not written off), and the launch still proceeds with the tools it had.
-                installed = f.mods / 'runtime' / 'codex-qualification.json'
+                installed = f.mods / 'runtime' / 'codex-tables.json'
                 original = installed.read_bytes()
                 try:
                     installed.write_text(json.dumps(dict(json.loads(original), new_capabilities=[

@@ -1969,8 +1969,8 @@ def _v208_installed_tools():
     expect('VELDO-0208 worker/installed-tools-read-only: ' + repr((granted, from_scratch_home)),
            granted == [(top / 'tool').resolve()]
            and from_scratch_home == expected_real
-           and {'~/.nvm/versions/node', '~/.local/share/claude', '~/.local/share/veldo/langgraph'}
-               <= set(real['optional_read_roots'])
+           and {'~/.nvm/versions/node', '~/.local/share/claude'} <= set(real['optional_read_roots'])
+           and '~/.local/share/veldo/langgraph' not in real['optional_read_roots']  # VELDO-0262: runtime removed
            and "    if runtime_paths is None:\n" in sandbox_source
            and "grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]" in sandbox_source)
 

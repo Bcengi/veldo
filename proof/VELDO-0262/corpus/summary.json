@@ -1,0 +1,61 @@
+{
+ "exchanges": 2508,
+ "failures": {
+  "invalid_input: N was supplied nothing to route by": 146,
+  "invalid_input: bz failed": 1,
+  "invalid_input: field_unsupplied:N": 153,
+  "invalid_input: resume is not this workflow's plain position": 50,
+  "invalid_input: the qualification cycle takes one supplied rank": 1,
+  "invalid_input: the resume carries no plain branch set": 3,
+  "missing_evidence: probe needs xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx": 1,
+  "missing_evidence: the cycle ended without a proposal": 1,
+  "node_failed: N suspended without a resume node or with proposals": 19,
+  "node_failed: a node failed without a named code": 1,
+  "node_failed: c suspended without a resume node or with proposals": 3,
+  "node_failed: n returned an untyped assertion: admitted": 1,
+  "node_failed: n returned no node output mapping": 1,
+  "node_failed: n suspended without a resume node or with proposals": 2,
+  "node_failed: node raised KeyError": 1,
+  "node_failed: the cycle exceeded its step bound": 1,
+  "node_failed: value.proposals[].priority: builtins.tuple is not plain data": 1,
+  "unsupported_workflow: N names no node 'done'": 18,
+  "unsupported_workflow: j names no node 'done'": 8,
+  "unsupported_workflow: n fans out to no bounded set of nodes": 2,
+  "unsupported_workflow: n names no node 'missing'": 1,
+  "unsupported_workflow: no registered workflow N version 2": 104
+ },
+ "fan_out_widths": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8
+ ],
+ "files": [
+  "exchanges-000.jsonl.gz",
+  "exchanges-001.jsonl.gz",
+  "exchanges-002.jsonl.gz"
+ ],
+ "generated_revisions": 520,
+ "operations": {
+  "advance": 1723,
+  "cancel": 35,
+  "start": 652,
+  "suspend": 98
+ },
+ "outcomes": {
+  "canceled": 35,
+  "failure": 519,
+  "proposal": 151,
+  "suspended": 1803
+ },
+ "runners": {
+  "pm": 13,
+  "probe": 48,
+  "qualification": 4,
+  "revision": 2443
+ },
+ "seed": 262
+}

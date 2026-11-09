@@ -5,7 +5,7 @@ scratch, worktree = Path(sys.argv[1]), Path(sys.argv[2])
 def load(n, p):
     s = importlib.util.spec_from_file_location(n, p); m = importlib.util.module_from_spec(s); s.loader.exec_module(m); return m
 Q = load('q', scratch / '.veldo/qualify.py')
-before = next(iter(json.loads((worktree / '.veldo/runtime/claude-qualification.json').read_text())['versions'].values()))['stream_forms']
+before = next(iter(json.loads((worktree / '.veldo/runtime/claude-tables.json').read_text())['versions'].values()))['stream_forms']
 decisions = json.loads((scratch / '.veldo/runtime/capability-decisions.json').read_text())
 cut = copy.deepcopy(decisions)
 del cut['claude_code']['frames']['system/session_metadata']

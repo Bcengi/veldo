@@ -21,7 +21,7 @@ def _v127_delivery():
     delivery = load('v127_delivery_cases', ROOT / "proof/VELDO-0127" / "delivery_fixture.py")
     engine = load('v127_delivery_models', PRODUCTION['control_engine_codex.py'])
     # VELDO-0230: the qualified binary's models, from its record's bundled catalog.
-    models = list(engine.model_tool_modes(ROOT / '.veldo' / 'runtime' / 'codex-qualification.json'))
+    models = list(engine.model_tool_modes(ROOT / '.veldo' / 'runtime' / 'codex-tables.json'))
     # Two disjoint factories, including SQLite connections and fault files. Each
     # still launches every singleton grant and retains its actual wire evidence.
     # VELDO-0261: each worker registers every row it will judge before its first case, and judges each one,

@@ -508,6 +508,9 @@ if option('--input-format') == 'stream-json':
             note('initialize', message['request_id'])
             emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
                                                            'response': {'account': account, 'pid': os.getpid()}}})
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             note('user', content)
@@ -571,10 +574,10 @@ out.close()
                 test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
                 # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
-                    .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
+                    .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir()
-        record_path = mods / 'runtime' / 'claude-qualification.json'
+        record_path = mods / 'runtime' / 'claude-tables.json'
         record_path.write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'
         factory.mkdir(mode=0o700)
@@ -855,7 +858,7 @@ out.close()
                   and files.get('mcp') == {'mcpServers': {}}
                   and env.get(switches['disable_claude_mds']['name']) == '1'
                   and env.get(switches['disable_auto_memory']['name']) == '1')
-            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-qualification.json').read_text())
+            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-tables.json').read_text())
             entry = (shipped.get('versions') or {}).get(VERSION) or {}
             named = (set((entry.get('baseline') or {}).get('options') or [])
                      | set((entry.get('baseline') or {}).get('stream_options') or [])

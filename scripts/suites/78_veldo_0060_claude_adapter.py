@@ -270,6 +270,12 @@ def _v60_suite():
         fake = '''#!%(python)s -B
 import json, os, signal, sqlite3, subprocess, sys, time
 from pathlib import Path
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if sys.argv[1:3] == ['login', 'status']:
     # VELDO-0156: the receiver's check before acceptance; these rows run on a ChatGPT login.
     print('Logged in using ChatGPT', file=sys.stderr)
@@ -319,6 +325,9 @@ def stream_input():
             out.flush()
             sys.stdout.buffer.write(data)
             sys.stdout.flush()
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            data = (json.dumps(complete_event({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})) + chr(10)).encode(); out.write(data); out.flush(); sys.stdout.buffer.write(data); sys.stdout.flush()
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             return json.loads(content) if isinstance(content, str) and content.strip() else {}
@@ -398,10 +407,10 @@ sys.exit(payload.get('code', 0))
                 test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                         tool_classification=tools173['tool_classification'])
                 # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
-                    .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+                test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
+                    .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir()
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(test_record, indent=1))
         QUALIFIED = test_record['versions'][VERSION]
         factory = state / 'factory'
         factory.mkdir(mode=0o700)
@@ -422,7 +431,7 @@ sys.exit(payload.get('code', 0))
             return vendored
         CODEX_BIN = codex_package('codex')
         CODEX_CHANGED = codex_package('codex-changed')
-        codex_qualification = base / 'codex-qualification.json'
+        codex_qualification = base / 'codex-tables.json'
         codex_record, codex_error = attempt(lambda: X.qualification(str(CODEX_BIN)))
         if codex_record is not None:
             codex_qualification.write_text(json.dumps(codex_record))
@@ -788,20 +797,21 @@ sys.exit(payload.get('code', 0))
             artifact = returned(launch) or {}
             stored, mode = artifact_file(launch.dispatch_id)
             lines = [line for line in (own.get('printed') or b'').split(b'\n') if line]
-            result_line = next((line for line in lines if json.loads(line).get('type') == 'result'), None)
+            result_line = next((line for line in reversed(lines) if json.loads(line).get('type') == 'result'), None)
             termination = record.get('termination') or {}
             call = invocation(launch.dispatch_id)
             answer = json.loads(lines[0]) if lines else {}
             check('artifact/complete', 'a zero exit with its result: the artifact is complete, its terminal record '
                   'the result the engine printed, bound to its line and the receiver\'s own output digest, the stream '
-                  'the initialize answer and then the three scripted lines [%s, %s]'
+                  'the initialize answer, the stream probe\'s result (VELDO-0275 AC3) and then the three scripted lines '
+                  '[%s, %s]'
                   % (artifact.get('verdict'), artifact.get('problems')),
                   artifact.get('verdict') == 'complete' and artifact.get('complete') is True
                   and (artifact.get('terminal') or {}).get('subtype') == 'success'
                   and (artifact.get('terminal') or {}).get('result_digest') == sha(normal_run['text'].encode())
                   and result_line is not None and artifact.get('terminal_receipt') == sha(result_line)
                   and (artifact.get('stream') or {}).get('output_digest') == termination.get('output_digest')
-                  and (artifact.get('stream') or {}).get('lines') == len(lines) == 4
+                  and (artifact.get('stream') or {}).get('lines') == len(lines) == 5
                   and answer.get('type') == 'control_response'
                   and (answer.get('response') or {}).get('subtype') == 'success')
             check('artifact/complete', 'its terminal record\'s tokens are the result\'s modelUsage total [%s]'
@@ -831,7 +841,7 @@ sys.exit(payload.get('code', 0))
             pinned.chmod(0o555)
             launch, record = run('acct-60a', admitted('VELDO-6002-changed'), 'claude', normal())
             cases.append(('a pinned copy whose digest changed', launch.dispatch_id, record,
-                          'binding_mismatch:engine_digest'))
+                          'engine_not_approved'))
             pinned.chmod(0o755)
             pinned.write_bytes(original)
             pinned.chmod(0o555)
@@ -840,7 +850,7 @@ sys.exit(payload.get('code', 0))
                   % (record or {}).get('state'),
                   (record or {}).get('state') == 'exited' and len(engine_markers(launch.dispatch_id)) == 1)
             launch, record = run('acct-60a', admitted('VELDO-6002-unknown'), 'claude-unknown', normal())
-            cases.append(('an unknown version', launch.dispatch_id, record, 'invalid_input:engine_version:9.9.9'))
+            cases.append(('an unknown version', launch.dispatch_id, record, 'engine_not_approved'))
             moved = factory / 'moved'
             os.replace(pinned, moved)
             os.symlink(str(versions / VERSION), str(pinned))  # the qualified bytes, reached through a link
@@ -901,7 +911,7 @@ sys.exit(payload.get('code', 0))
             left = sorted(p.name for p in (elsewhere / 'engines' / 'claude_code').glob('*')) \
                 if (elsewhere / 'engines' / 'claude_code').is_dir() else []
             check('pin/copy', 'a versioned file of another digest is refused by name and nothing is left in place '
-                  '[%s, %s]' % (changed, left), changed == 'binding_mismatch:engine_digest' and not left)
+                  '[%s, %s]' % (changed, left), changed == 'engine_not_approved' and not left)
             linked = base / 'linked-versions'
             linked.mkdir()
             os.symlink(str(versions / VERSION), str(linked / VERSION))
@@ -909,20 +919,20 @@ sys.exit(payload.get('code', 0))
             _, unknown = attempt(lambda: E.pin('9.9.9', versions=str(versions), state_root=str(elsewhere)))
             check('pin/copy', 'a versioned path that is a link (the auto-updating link\'s shape) and an unqualified '
                   'version are refused by name [%s, %s]' % (through, unknown),
-                  through == 'binding_mismatch:engine_source' and unknown == 'invalid_input:engine_version:9.9.9'
+                  through == 'binding_mismatch:engine_source' and unknown == 'engine_not_approved'
                   and not (elsewhere / 'engines' / 'claude_code' / VERSION).exists())
 
         # AC1: the qualification record this repository ships for the real 2.1.281.
         with region('pin/shipped-qualification'):
-            shipped_path = ROOT / 'engine' / 'runtime' / 'claude-qualification.json'
-            installed_path = ROOT / '.veldo' / 'runtime' / 'claude-qualification.json'
+            shipped_path = ROOT / 'engine' / 'runtime' / 'claude-tables.json'
+            installed_path = ROOT / '.veldo' / 'runtime' / 'claude-tables.json'
             shipped = json.loads(shipped_path.read_text()) if shipped_path.is_file() else {}
             entry = (shipped.get('versions') or {}).get(VERSION) or {}
             check('pin/shipped-qualification', 'the canonical record and its installed copy are byte-identical, and '
                   'the scaffold lays it beside the engine module [%s]' % shipped_path.is_file(),
                   shipped_path.is_file() and installed_path.is_file()
                   and shipped_path.read_bytes() == installed_path.read_bytes()
-                  and ('runtime/claude-qualification.json', '.veldo/runtime/claude-qualification.json')
+                  and ('runtime/claude-tables.json', '.veldo/runtime/claude-tables.json')
                   in [tuple(a) for a in getattr(load('v60_scaffold', PRODUCTION['init_scaffold.py']),
                                                 '_RUNTIME_ASSETS', [])])
             check('pin/shipped-qualification', 'its qualified digest is the installed binary\'s, as both extractions read '
@@ -941,15 +951,13 @@ sys.exit(payload.get('code', 0))
                   and INPUT['flags'][1] in declared['--input-format']['choices']
                   and 'requires --print' in INPUT['requires']['text'] and flags[flags.index('--output-format') + 1] == 'stream-json'
                   and set(entry.get('environment') or {}) == {'DISABLE_AUTOUPDATER'} <= set(OPTIONS['environment']))
-            rate = FORMATS['events']['rate_limit_event']['fields']['rate_limit_info']['fields']['rateLimitType']['values']
-            check('pin/shipped-qualification', 'its terminal protocol, login and reported windows are the binary\'s '
-                  '[%s]' % entry.get('terminal_protocol'),
-                  (entry.get('terminal_protocol') or {}).get('error_subtypes') == errors
-                  and (entry.get('terminal_protocol') or {}).get('success_subtype') == 'success'
-                  and (entry.get('authentication') or {}).get('mode') == 'subscription'
-                  and 'none' in FORMATS['events']['system/init']['fields']['apiKeySource']['values']
-                  and entry.get('rate_limit_windows') == rate
-                  and set(entry.get('usage_units') or ()) == {'invocations', 'wall_seconds', 'tokens', 'messages'})
+            # VELDO-0275 AC1: the tables keep only the fields a reader uses; the terminal protocol, login policy,
+            # reported windows and usage units are the binary's tables (proof/VELDO-0062) and no reader's.
+            check('pin/shipped-qualification', 'it keeps only the fields a reader uses, none of the terminal protocol, '
+                  'login policy, reported windows or usage units no reader reads [%s]' % sorted(entry),
+                  not {'terminal_protocol', 'authentication', 'rate_limit_windows', 'usage_units', 'input', 'host_kind',
+                       'live_usage', 'pinned', 'source'} & set(entry)
+                  and 'none' in FORMATS['events']['system/init']['fields']['apiKeySource']['values'])
 
         # AC2: live exits and perturbed stream bytes, each through the production decoder in the receiver.
         exit_records = {}
@@ -1012,13 +1020,14 @@ sys.exit(payload.get('code', 0))
                 script = [c_init(), bad, c_msg('m-%s' % name, 2, 2), c_result(2, 2, 1)]
                 launch, record, artifact, call = artifact_of('acct-60a', 'malformed-' + name, script)
                 check('artifact/malformed-output', '%s line in an otherwise complete stream with a zero exit: the '
-                      'artifact is malformed_output, one of five lines (the initialize answer first), the result still decoded '
+                      'artifact is malformed_output, one of six lines (the initialize answer and the probe\'s result first), the '
+                      'result still decoded '
                       '[%s, %s]'
                       % (name, artifact.get('verdict'), artifact.get('stream')),
                       record.get('state') == 'exited' and artifact.get('verdict') == 'malformed_output'
                       and artifact.get('problems') == ['malformed_output']
                       and (artifact.get('stream') or {}).get('malformed') == 1
-                      and (artifact.get('stream') or {}).get('lines') == 5
+                      and (artifact.get('stream') or {}).get('lines') == 6
                       and (artifact.get('terminal') or {}).get('subtype') == 'success'
                       and call.get('outcome') == 'failed')
 
@@ -1236,11 +1245,11 @@ sys.exit(payload.get('code', 0))
             return [{'line': line} for line in lines]
         ENGINE_CASES = {
             'claude': {'adapter': 'claude-contained', 'refused': 'claude-contained-unknown', 'account': 'acct-60a',
-                       'refusal': 'invalid_input:engine_version:9.9.9', 'exe': str(pinned),
+                       'refusal': 'engine_not_approved', 'exe': str(pinned),
                        'flags': QUALIFIED['flags'], 'sha256': FAKE_SHA, 'profile': 'CLAUDE_CONFIG_DIR',
                        'normal': lambda: normal(), 'start': lambda: [c_init()]},
             'codex': {'adapter': 'codex-contained', 'refused': 'codex-contained-changed', 'account': 'acct-60x',
-                      'refusal': 'stale_subject:engine_digest', 'exe': str(CODEX_BIN), 'flags': CODEX_FLAGS,
+                      'refusal': 'engine_not_approved', 'exe': str(CODEX_BIN), 'flags': CODEX_FLAGS,
                       'sha256': (codex_record or {}).get('sha256'), 'profile': 'CODEX_HOME',
                       'normal': lambda: x_normal('thread-' + os.urandom(3).hex()),
                       'start': lambda: x_normal('thread-' + os.urandom(3).hex())[:2]}}

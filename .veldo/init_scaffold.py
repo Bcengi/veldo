@@ -18,13 +18,23 @@ gate slots and protected paths with a human. This module is the mechanical
 scaffolder that skill, or an adopting human, can call directly.
 
 Usage:
-  python3 .veldo/init_scaffold.py [--ui] <target-dir>
+  python3 .veldo/init_scaffold.py [--ui] [--upgrade] [--home DIR] <target-dir>
+
+--upgrade first retires the removed LangGraph runtime (VELDO-0262): the retired files in the target's
+.veldo and the account's runtime directories under ~/.local/share/veldo/langgraph/ (only plain
+directories named by a 64 character hex digest, following no link), logging each. Fresh or upgrade, the
+scaffold then refuses before it writes anything, leftover_runtime:<path>, for any retired file in the
+target's .veldo, any installed module that imports langgraph, langchain or langsmith, and, when an account
+home is given (--home) or on --upgrade, anything still under that runtime directory.
 
 --ui also lays the built factory UI (VELDO-0145) at <target-dir>/.veldo/ui; without it no UI is laid.
 """
+import ast
 import importlib.util
 import json
 import os
+import pwd
+import re
 import shutil
 import subprocess
 import sys
@@ -108,25 +118,23 @@ _FILES = [
     # Runtime assets; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_graph.py",
     ".veldo/control_graph_isolation.py",
-    # VELDO-0043: the exact runtime lock (data), its per-account installer, and the LangGraph
-    # runner the adapter launches under the locked interpreter. No validator import.
-    ".veldo/control_graph_lock.py",
-    ".veldo/control_graph_install.py",
-    ".veldo/control_graph_langgraph.py",
+    # VELDO-0262: Veldo's own step runner the adapter launches (standard library only, -I -S -B).
+    # No validator import.
+    ".veldo/control_graph_steps.py",
     # VELDO-0132: versioned workflow definitions and their revisions, cycles bound to one exact
-    # revision, and the step kinds spliced into the LangGraph runner. No validator import.
+    # revision, and the step kinds spliced into the step runner. No validator import.
     ".veldo/control_workflow.py",
     ".veldo/control_workflow_cycle.py",
     ".veldo/control_workflow_cycle_pm.py",
     ".veldo/control_workflow_cycle_assignment.py",
     ".veldo/control_graph_pm.py",
-    ".veldo/control_workflow_langgraph.py",
+    ".veldo/control_workflow_steps.py",
     # VELDO-0241: a unit's process as a workflow revision, and the shipped `code` definition the canvas shows
     # and setup saves. No validator import.
     ".veldo/control_workflow_unit.py",
     ".veldo/workflows/code.json",
-    # VELDO-0045: activation of that runtime against its license and provenance records (laid down
-    # from _RUNTIME_ASSETS below), the qualification workload and the no-runtime enforcement check.
+    # VELDO-0045, VELDO-0262: the step runner's check, the qualification workload and the no-runtime
+    # enforcement check.
     # Runtime asset; no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_runtime.py",
     # VELDO-0045: the installed authorization entry and every module its two-key path loads, so the
@@ -493,20 +501,23 @@ _FILES = [
 # Directories whose every file is copied (recursively).
 _DIRS = [".veldo/examples"]
 
-# VELDO-0045: non-code runtime assets. The canonical copy is the templates' runtime/ directory
+# Non-code runtime assets. The canonical copy is the templates' runtime/ directory
 # (engine/runtime/ here, runtime/ in a composed pack) and it is laid down under the target's .veldo,
 # beside the modules that read it (source, destination). scripts/check_template_sync.sh pairs
 # engine/runtime/<name> with .veldo/runtime/<name> by the same rule.
-_RUNTIME_ASSETS = [("runtime/langgraph-records.json", ".veldo/runtime/langgraph-records.json")]
-# VELDO-0060: the Claude Code qualification record (the pinned version, its digest, flags and terminal
-# protocol), read by control_engine_claude.py beside it before any Claude Code launch.
-_RUNTIME_ASSETS += [("runtime/claude-qualification.json", ".veldo/runtime/claude-qualification.json")]
-# VELDO-0061: the qualification record of the pinned Codex executable, which control_engine_codex.py
-# reads beside itself before a Codex engine is accepted or spawned.
-_RUNTIME_ASSETS += [("runtime/codex-qualification.json", ".veldo/runtime/codex-qualification.json")]
+_RUNTIME_ASSETS = []
+# VELDO-0060, VELDO-0275: the reviewed tables of the approved Claude Code version (its digest, flags and stream
+# tables), read by control_engine_claude.py beside it before any Claude Code launch.
+_RUNTIME_ASSETS += [("runtime/claude-tables.json", ".veldo/runtime/claude-tables.json")]
+# VELDO-0061, VELDO-0275: the reviewed tables of the approved Codex binary (its bundled model catalog by digest
+# only), which control_engine_codex.py reads beside itself before a Codex engine is accepted or spawned.
+_RUNTIME_ASSETS += [("runtime/codex-tables.json", ".veldo/runtime/codex-tables.json")]
 # VELDO-0230: the engines record (the qualified Codex and Claude Code: version, binary path, digest), written by
 # qualify.py and read by factory setup for the Claude Code copy it pins.
 _RUNTIME_ASSETS += [("runtime/engines.json", ".veldo/runtime/engines.json")]
+# VELDO-0275 AC1: each approved engine's qualification summary, which the engines record names beside it.
+_RUNTIME_ASSETS += [("runtime/claude-summary.json", ".veldo/runtime/claude-summary.json"),
+                    ("runtime/codex-summary.json", ".veldo/runtime/codex-summary.json")]
 
 # VELDO-0145: the factory UI. The API serves its page from a `ui` directory beside its own installed module
 # (control_api_ui.directory), so the built UI (the templates' ui/dist, built by `npm ci && npm run build` in
@@ -890,7 +901,117 @@ def _regenerate_index(target):
             + (res.stderr.strip() or res.stdout.strip()))
 
 
-def scaffold(target, templates=None, ui=False):
+# VELDO-0262: THE REMOVED LANGGRAPH RUNTIME. Its files in an installation's .veldo, the packages it imported,
+# and the per-account runtime directory its installer made. retire_runtime removes what Veldo made;
+# leftover_runtime names whatever is still there, and scaffold refuses on any of it before writing anything.
+RETIRED_FILES = (".veldo/control_graph_langgraph.py", ".veldo/control_workflow_langgraph.py",
+                 ".veldo/control_graph_lock.py", ".veldo/control_graph_install.py",
+                 ".veldo/runtime/langgraph-records.json")
+RETIRED_PACKAGES = ("langgraph", "langchain", "langsmith")
+RUNTIME_RELATIVE = Path(".local/share/veldo/langgraph")
+_DIGEST_NAME = re.compile(r"[0-9a-f]{64}\Z")
+
+
+def account_home():
+    """The account's home from the password database, never $HOME."""
+    return Path(pwd.getpwuid(os.getuid()).pw_dir)
+
+
+def retired_imports(source):
+    """The retired packages a module's source imports: every import statement at any depth and every literal
+    importlib.import_module or __import__ name."""
+    found = set()
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        return []
+    for node in ast.walk(tree):
+        names = []
+        if isinstance(node, ast.Import):
+            names = [alias.name for alias in node.names]
+        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+            names = [node.module]
+        elif (isinstance(node, ast.Call) and node.args and isinstance(node.args[0], ast.Constant)
+              and isinstance(node.args[0].value, str)
+              and ((isinstance(node.func, ast.Name) and node.func.id == "__import__")
+                   or (isinstance(node.func, ast.Attribute) and node.func.attr == "import_module"))):
+            names = [node.args[0].value]
+        found.update(n.split(".")[0] for n in names if n.split(".")[0] in RETIRED_PACKAGES)
+    return sorted(found)
+
+
+def leftover_runtime(target, home=None):
+    """leftover_runtime:<path> for every part of the removed runtime still present: a retired file in the
+    target's .veldo, an installed module importing a retired package, and (when `home` is given) anything
+    under the account's runtime directory. With `target` None only the account's runtime directory is judged."""
+    problems = []
+    for rel in RETIRED_FILES if target is not None else ():
+        path = Path(target) / rel
+        if path.is_symlink() or path.exists():
+            problems.append("leftover_runtime:" + rel)
+    veldo = Path(target) / ".veldo" if target is not None else None
+    if veldo is not None and veldo.is_dir():
+        for path in sorted(veldo.rglob("*.py")):
+            if path.is_file() and not path.is_symlink() and retired_imports(path.read_text(errors="replace")):
+                problems.append("leftover_runtime:" + str(path.relative_to(target)))
+    if home is not None:
+        runtime = Path(home) / RUNTIME_RELATIVE
+        if runtime.is_symlink():
+            problems.append("leftover_runtime:" + str(runtime))
+        elif runtime.is_dir():
+            problems += ["leftover_runtime:" + str(runtime / name) for name in sorted(os.listdir(runtime))]
+    return list(dict.fromkeys(problems))
+
+
+def leftover_modules(directory):
+    """leftover_runtime:<path> for a flat engine directory (an installation's bin, or the engine a factory
+    setup lays from): a retired file by name, and a module importing a retired package."""
+    directory, problems = Path(directory), []
+    if not directory.is_dir():
+        return problems
+    for name in sorted({Path(rel).name for rel in RETIRED_FILES}):
+        if (directory / name).is_symlink() or (directory / name).exists():
+            problems.append("leftover_runtime:" + str(directory / name))
+    for path in sorted(directory.glob("*.py")):
+        if path.is_file() and not path.is_symlink() and retired_imports(path.read_text(errors="replace")):
+            problems.append("leftover_runtime:" + str(path))
+    return list(dict.fromkeys(problems))
+
+
+def retire_runtime(target, home=None, log=None):
+    """The upgrade's removal: each retired regular file in the target's .veldo, and each plain directory named
+    by a 64 character hex digest under the account's runtime directory, then that directory when empty. No
+    link is followed or removed through; each removal and each leftover refused is logged by path. With `target`
+    None only the account's runtime directory is retired."""
+    log = log or (lambda line: print(line, file=sys.stderr))
+    removed = []
+    for rel in RETIRED_FILES if target is not None else ():
+        path = Path(target) / rel
+        if path.is_file() and not path.is_symlink():
+            path.unlink()
+            removed.append(rel)
+            log("retired " + rel)
+        elif path.is_symlink() or path.exists():
+            log("refused " + rel + ": not a regular file")
+    runtime = Path(home if home is not None else account_home()) / RUNTIME_RELATIVE
+    if runtime.is_dir() and not runtime.is_symlink():
+        for name in sorted(os.listdir(runtime)):
+            path = runtime / name
+            if _DIGEST_NAME.match(name) and not path.is_symlink() and path.is_dir():
+                shutil.rmtree(path)
+                removed.append(str(path))
+                log("retired runtime directory " + str(path))
+            else:
+                log("refused " + str(path) + ": " + ("a link" if path.is_symlink() else "not a digest-named directory"))
+        try:
+            runtime.rmdir()
+            log("retired runtime directory " + str(runtime))
+        except OSError:
+            pass
+    return removed
+
+
+def scaffold(target, templates=None, ui=False, home=None, upgrade=False):
     """Lay the VELDO substrate into target from the plugin templates.
 
     Idempotent: an existing file is never overwritten, so a second run over the
@@ -903,6 +1024,12 @@ def scaffold(target, templates=None, ui=False):
     templates = Path(templates) if templates is not None else DEFAULT_TEMPLATES
     if not (templates / _GATE).exists():
         raise ScaffoldError(f"templates not found or incomplete at {templates}")
+    if upgrade:
+        home = account_home() if home is None else home
+        retire_runtime(target, home)
+    leftover = leftover_runtime(target, home)
+    if leftover:
+        raise ScaffoldError(", ".join(leftover))
     target.mkdir(parents=True, exist_ok=True)
 
     created, skipped = [], []
@@ -944,13 +1071,18 @@ def scaffold(target, templates=None, ui=False):
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    want_ui = "--ui" in argv
-    argv = [a for a in argv if a != "--ui"]
+    want_ui, upgrade = "--ui" in argv, "--upgrade" in argv
+    argv = [a for a in argv if a not in ("--ui", "--upgrade")]
+    # VELDO-0262 AC3: setup, fresh or upgrade, judges the account's runtime directory; the library default
+    # stays None so a suite passes its own home.
+    home = account_home()
+    if len(argv) == 3 and argv[0] == "--home":
+        home, argv = argv[1], argv[2:]
     if len(argv) != 1 or argv[0].startswith("-"):
         print(__doc__)
         return 2
     try:
-        report = scaffold(argv[0], ui=want_ui)
+        report = scaffold(argv[0], ui=want_ui, home=home, upgrade=upgrade)
     except ScaffoldError as e:
         print(f"veldo init: FAIL: {e}")
         return 1

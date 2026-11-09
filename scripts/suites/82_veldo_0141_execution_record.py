@@ -358,6 +358,9 @@ if option('--input-format') == 'stream-json':
                 account['subscriptionType'] = 'Claude Team'
             emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': message['request_id'],
                                                            'response': {'account': account, 'pid': pid}}})
+        elif message.get('type') == 'user' and message.get('shouldQuery') is False:
+            # VELDO-0275 AC3: the stream probe every launch sends before the prompt: a result of no turn.
+            emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '', 'session_id': 'fixture-probe', 'stop_reason': None})
         elif message.get('type') == 'user':
             content = (message.get('message') or {}).get('content')
             packet = json.loads(content) if content.strip() else {}
@@ -462,10 +465,10 @@ err.close()
             test_record['versions'][VERSION].update(tool_registry=tools173['tool_registry'],
                                                     tool_classification=tools173['tool_classification'])
             # VELDO-0230: the shipped record's built-in plugins, skills and window names.
-            test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json')
-                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names')})
+            test_record['versions'][VERSION].update({k: v for k, v in __import__('json').loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json')
+                .read_text())['versions'][CLAUDE_VERSION].items() if k in ('engine_plugins', 'engine_skills', 'limit_names', 'stream_forms')})
         (mods / 'runtime').mkdir(exist_ok=True)
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps(test_record, indent=1))
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps(test_record, indent=1))
         factory = state / 'factory'
         factory.mkdir(mode=0o700)
         pinned = factory / 'engines' / 'claude_code' / VERSION
@@ -486,6 +489,12 @@ def login():
         return json.loads((home / 'auth.json').read_text()).get('auth_mode')
     except (OSError, ValueError):
         return None
+if '--ephemeral' in argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if argv[:2] == ['login', 'status']:
     if login() == 'chatgpt':
         # The qualified Codex binary prints its login status on stderr.
@@ -551,7 +560,7 @@ err.close()
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake_codex)
         CODEX_BIN.chmod(0o755)
-        codex_record_path = base / 'codex-qualification.json'
+        codex_record_path = base / 'codex-tables.json'
         codex_record, _ = attempt(lambda: X.qualification(str(CODEX_BIN)))
         codex_record_path.write_text(json.dumps(codex_record or {}))
 
@@ -1009,7 +1018,7 @@ err.close()
                   % argv[1:],
                   '--verbose' in argv and all(w and w in argv and w in OPTIONS['options'] for w in wanted)
                   and all(w in ((getattr(E, 'BASELINE', None) or {}).get('stream_options') or []) for w in wanted))
-            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-qualification.json').read_text())
+            shipped = json.loads((ROOT / 'engine' / 'runtime' / 'claude-tables.json').read_text())
             check('record/stream-options', 'the shipped record qualifies the baseline with them',
                   ((shipped.get('versions') or {}).get(VERSION) or {}).get('baseline') == getattr(E, 'BASELINE', None)
                   and all(w in (((shipped['versions'][VERSION]).get('baseline') or {}).get('stream_options') or [])

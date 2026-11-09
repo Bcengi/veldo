@@ -426,10 +426,12 @@ if option(@@INPUT@@) == 'stream-json':
             # The capability probe of a role-bound run: the init event of what this launch configured, and a
             # zero-turn result, before any model request.
             probed = True
-            emit({'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'tools': tools_of(),
+            emit({'type': 'system', 'subtype': 'init', 'apiKeySource': 'none', 'tools': tools_of() or ['Bash'],
                   'mcp_servers': [{'name': n, 'status': 'connected'} for n in mcp_of()], 'plugins': [], 'skills': [],
                   'slash_commands': [], 'claude_code_version': @@VERSION@@, 'model': 'configured-model',
-                  'session_id': str(uuid.uuid4()), 'cwd': str(cwd)}, keep=('plugins', 'skills', 'slash_commands'))
+                  'session_id': str(uuid.uuid4()), 'cwd': str(cwd)},
+                 # VELDO-0275 AC3: a role-free launch is probed too; its init is the binary's whole one.
+                 keep=('plugins', 'skills', 'slash_commands') if tools_of() else ())
             emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'num_turns': 0, 'result': '',
                   'usage': {'input_tokens': 0, 'output_tokens': 0}})
         elif message.get('type') == 'user':
@@ -472,6 +474,12 @@ argv, env, cwd = sys.argv[1:], os.environ, Path.cwd()
 pid = os.getpid()
 dispatch = env.get('VELDO_DISPATCH_ID', '')
 home = Path(env.get('CODEX_HOME') or '/nonexistent')
+if '--ephemeral' in argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if argv[:2] == ['login', 'status']:
     try:
         mode = json.loads((home / 'auth.json').read_text()).get('auth_mode')
@@ -541,8 +549,8 @@ out.close()
         (versions / CLAUDE_VERSION).chmod(0o755)
         # The shipped qualification entry of the engines record's version, bound to this fake's bytes (as suite 123's
         # conversation journey writes it): it serves both the project run and the role-bound conversation turn.
-        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-qualification.json').read_text())['versions'][CLAUDE_VERSION]
-        (mods / 'runtime' / 'claude-qualification.json').write_text(json.dumps({
+        shipped = json.loads((ROOT / '.veldo' / 'runtime' / 'claude-tables.json').read_text())['versions'][CLAUDE_VERSION]
+        (mods / 'runtime' / 'claude-tables.json').write_text(json.dumps({
             'schema': 'veldo.engine_qualification/v1', 'engine': 'claude_code',
             'versions': {CLAUDE_VERSION: dict(shipped, sha256=file_sha(versions / CLAUDE_VERSION),
                                               session_environment=E.session_environment(versions / CLAUDE_VERSION))}},
@@ -556,7 +564,7 @@ out.close()
         (package / 'package.json').write_text(json.dumps({'name': '@openai/codex', 'version': CODEX_PACKAGE_VERSION}))
         CODEX_BIN.write_text(fake_codex)
         CODEX_BIN.chmod(0o755)
-        codex_record_path = base / 'codex-qualification.json'
+        codex_record_path = base / 'codex-tables.json'
         codex_record_path.write_text(json.dumps(X.qualification(str(CODEX_BIN))))
         # The conversation receiver's Codex record also carries its model catalog (VELDO-0230), as suite 123 writes it.
         conversation_codex = X.qualification(str(CODEX_BIN))
@@ -565,7 +573,7 @@ out.close()
         conversation_codex.update(feature_listing='shell_tool stable true\n', model_catalog=catalog,
                                   model_catalog_digest=X.catalog_digest(catalog), model_tool_modes=X.catalog_modes(catalog))
         # The handoff reads the granted tools from the installed record, so it is the installation's own.
-        conversation_codex_path = mods / 'runtime' / 'codex-qualification.json'
+        conversation_codex_path = mods / 'runtime' / 'codex-tables.json'
         conversation_codex_path.write_text(json.dumps(conversation_codex))
 
         real_systemd_run = shutil.which('systemd-run', path=tools.get('PATH', os.defpath)) or '/usr/bin/systemd-run'

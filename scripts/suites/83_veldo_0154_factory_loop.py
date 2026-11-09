@@ -193,6 +193,12 @@ def _v154_suite():
         fake = '''#!%s -B
 import json, os, sys, time
 from pathlib import Path
+if '--ephemeral' in sys.argv:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
+    sys.exit(0)
 if sys.argv[1:3] == ['login', 'status']:
     sys.stderr.write('Logged in using ChatGPT' + chr(10))
     sys.exit(0)
@@ -251,7 +257,7 @@ sys.exit(chosen['code'])
         def fake_engine(name):
             # VELDO-0172's read-back drives the installed executable itself.
             return vendored.read_text()
-        qualification = base / 'codex-qualification.json'
+        qualification = base / 'codex-tables.json'
         qualification.write_text(json.dumps(CODEX.qualification(str(vendored))))
 
         BIG = dict(capacity=50, invocations=500, wall_seconds=10 ** 7)

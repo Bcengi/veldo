@@ -37,7 +37,7 @@ def _v127_suite():
             'launch/push', 'launch/unlisted', 'launch/instructions', 'live/claude', 'live/codex', 'format/fake-lines',
             'review/skill-commit', 'review/skill-git-boundary', 'review/probe-terminal', 'review/init-bound', 'review/slash-collision',
             'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture',
-            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources', 'wire/no-server',
+            'catalog/fields', 'catalog/grants', 'catalog/integrity', 'catalog/launch-approved', 'wire/normalization', 'wire/resources', 'wire/no-server',
             'wire/later-requests')
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
@@ -93,6 +93,12 @@ if args[:3] == ['debug', 'models', P + 'bundled']:
     sys.exit(0)
 if args[:2] == ['features', 'list']:
     print(json.loads(Path(CATALOG_FIXTURE).with_name('features-fixture.json').read_text())['stdout'], end='')
+    sys.exit(0)
+if '--ephemeral' in args:
+    # VELDO-0275 AC3: the receiver's Codex stream probe before acceptance (one turn, a fixed answer).
+    sys.stdout.write('{"type": "thread.started", "thread_id": "fixture-probe"}' + chr(10))
+    sys.stdout.write('{"type": "turn.started"}' + chr(10))
+    sys.stdout.write('{"type": "turn.completed", "usage": {"input_tokens": 0, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}}' + chr(10))
     sys.exit(0)
 if args[:2] == ['login', 'status']:
     print('Logged in using ChatGPT', file=sys.stderr)
@@ -237,7 +243,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
 '''
     # VELDO-0230: the qualified Claude Code's own built-in plugins and skills (its record, which qualify.py reads
     # from the binary's init event) and its bundled skills (the VELDO-0155 table read from its bytes).
-    claude_entry = json.loads((ROOT / '.veldo/runtime/claude-qualification.json').read_text())['versions'][
+    claude_entry = json.loads((ROOT / '.veldo/runtime/claude-tables.json').read_text())['versions'][
         json.loads((ROOT / '.veldo/runtime/engines.json').read_text())['claude_code']['version']]
     bundled = json.loads((TREE / 'proof/VELDO-0155/claude-baseline.json').read_text())['bundled_skills']
     fake = (fake.replace('V230_BUNDLED_SKILLS', repr(list(bundled)))
@@ -406,7 +412,7 @@ for step in (packet.get('payload') or {}).get('script',[]):
                           and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
                     check('review/codex-tools', 'qualification writer and comparator share the shell and plan vocabulary',
                           observed.get('native_tool_mapping', {}).get('shell') == ['exec_command','write_stdin']
-                          and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
+                          and json.loads((base / 'codex-tables.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
                           and observed.get('missing') == [] and observed.get('unexpected') == []
                           and observe(missing, wanted, L.HANDOFF).get('missing') == sorted(resources + ['mcp__jira__jira_search', 'write_stdin']))
                     check('wire/resources', 'selected server grants exactly its three resource readers',
@@ -542,10 +548,10 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 unreadable, _ = attempt(lambda: run_compare([first, {}], wanted))
                 check('wire/later-requests', mode + ': an empty run and an unreadable later request are refused by name',
                       empty == unreadable == 'missing_evidence:codex_request_tools')
-            qualified = json.loads((base / 'codex-qualification.json').read_text())
+            qualified = json.loads((base / 'codex-tables.json').read_text())
             # VELDO-0230 (Telegram 38878): without a server, none is granted; the readers the qualified binary
             # offers a model of its tool mode anyway (nothing to list or read) are recorded and accepted, no other.
-            shipped_offered = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())[
+            shipped_offered = json.loads((ROOT / '.veldo/runtime/codex-tables.json').read_text())[
                 'mcp_resource_rule'].get('offered_without_server')
             check('wire/no-server', 'qualification records the conditional MCP server grant and the readers the '
                   'binary offers without a server [%s]' % shipped_offered,
@@ -597,6 +603,31 @@ for step in (packet.get('payload') or {}).get('script',[]):
             check('catalog/integrity', 'qualification captures the fake binary bundled catalog with its digest',
                   catalog == json.loads((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())
                   and qualified.get('model_catalog_digest') == f.config_api.digest(catalog))
+            # VELDO-0275 fix 2: a live run's launch catalog and the judge's are the one codex_model over the approved
+            # binary. The installed tree reads the approved binary the engines record names (no `codex` on PATH
+            # here), and a live launch record keeps only the catalog digest, as the approved tables do.
+            def launch_catalogs():
+                engines_record = json.loads((ROOT / '.veldo/runtime/engines.json').read_text())['codex']
+                approved = Path(os.path.expanduser(engines_record['binary']))
+                shipped = json.loads((ROOT / '.veldo/runtime/codex-tables.json').read_text())
+                revision = dict(native_tools=['shell', 'update_plan'], settings={'model': DIRECT_MODEL})
+                saved = os.environ.get('PATH', '')
+                os.environ['PATH'] = '/usr/bin:/bin'
+                try:
+                    record = fixture.launch_record(L.HANDOFF.X, approved, True)
+                    return (record, L.HANDOFF.codex_model(record, revision),
+                            L.HANDOFF.codex_model(shipped, revision), shipped)
+                finally:
+                    os.environ['PATH'] = saved
+                    # The catalog this read cached by digest must not answer the later rows' absent-catalog stops.
+                    getattr(L.HANDOFF.X, '_CATALOGS', {}).clear()
+            launched, error = attempt(launch_catalogs)
+            record, launch_catalog, judged, shipped = launched or ({}, None, None, {})
+            check('catalog/launch-approved', 'the launch catalog equals the judge codex_model for the approved binary [%s]'
+                  % error, error is None and launch_catalog is not None and launch_catalog == judged
+                  and 'model_catalog' not in record
+                  and record.get('model_catalog_digest') == shipped.get('model_catalog_digest')
+                  and record.get('sha256') == shipped.get('sha256'))
             role_model = getattr(L.HANDOFF, 'codex_model', None)
             for model in CODE_MODE_MODELS:
                 definition = f.role('codex', 'restricted-' + model)
