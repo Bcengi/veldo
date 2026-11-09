@@ -458,7 +458,11 @@ def lowered_flags(commits, bases):
         befores = _parents(c)
         if befores:
             judge(c, befores)
-    return out
+    # VELDO-0287 (d): an id absent at the push base and at HEAD never reached main (a draft renumbered
+    # inside the push), so nothing on main loses its approval through it.
+    tip = head()
+    return [x for x in out if not (bases and _flag_state(tip, x[0], cache)[0] == "absent"
+                                   and all(_flag_state(b, x[0], cache)[0] == "absent" for b in bases))]
 
 
 _PROJECTIONS = []
@@ -695,11 +699,59 @@ def push_producer(spec_ids):
     return producers
 
 
+def _status_at(rev, sid, cache):
+    """The status in spec `sid`'s front matter at `rev`, "absent" (no spec file of that id) or
+    "unreadable" (Git cannot read it, more than one file carries the id, or no front matter)."""
+    by_id = _spec_names(rev, cache)
+    names = None if by_id is None else by_id.get(sid, [])
+    if names == []:
+        return "absent"
+    if not names or len(names) != 1:
+        return "unreadable"
+    r = _git_process.run(["git", "show", "%s:%s" % (rev, names[0])], capture_output=True, cwd=ROOT)
+    try:
+        fm = _Y.front_matter(r.stdout.decode("utf-8"), names[0]) if r.returncode == 0 else None
+    except Exception:
+        fm = None
+    return str(fm.get("status")) if isinstance(fm, dict) else "unreadable"
+
+
+def on_base(files):
+    """VELDO-0287: the specs a push carries that are already on main: not a draft at the push base
+    (push_range, the protected ref's tip) and readable there. They land nothing; a file of theirs the push
+    changes is work, which a reviewed landing spec must cover (N3). Absent, draft or unreadable at the
+    base, a spec is not on the base."""
+    ids = push_specs(files)
+    if not ids:
+        return set()
+    _commits, bases = push_range()
+    cache = {}
+    return {sid for sid in ids if bases and all(
+        _status_at(b, sid, cache) not in ("absent", "draft", "unreadable") for b in bases)}
+
+
+def bundle_touched(sid, files):
+    """True when the push changes a file of spec `sid`'s proof bundle other than an approval record:
+    the spec was built in this push (VELDO-0287)."""
+    return any(_PROOF_FILE.match(f) and _PROOF_FILE.match(f).group(1) == sid and not _approval_record(f)
+               for f in files)
+
+
+def built_specs(files):
+    """The landing specs whose proof bundle the push changes (VELDO-0287). Only they give the producer and
+    need the review; a landing spec with nothing built is judged as a spec-only push judges it."""
+    return [sid for sid in landing_specs(files) if bundle_touched(sid, files)]
+
+
 def landing_specs(files):
-    """The specs a push lands: each spec it carries (push_specs) that is not a draft at HEAD. A draft
-    lands no work; an unreadable spec is not a draft."""
+    """The specs a push lands: each spec it carries (push_specs) that is new to main (VELDO-0287: not on
+    the push base, see on_base) and is not a draft at HEAD. A draft lands no work; an unreadable spec is
+    not a draft."""
     out = []
+    landed = on_base(files)
     for sid in push_specs(files):
+        if sid in landed:
+            continue
         try:
             fm = _spec_file_fm(sid)
         except ValueError:
@@ -1014,7 +1066,7 @@ def approval_rule():
     nightly check (VELDO-0267) explains a red sweep only through it, never through a second copy."""
     commits = push_range_commits() or [head()]
     files = changed_files()
-    producer = approval_producer(push_producer(landing_specs(files)), files, commits)
+    producer = approval_producer(push_producer(built_specs(files)), files, commits)
     return lambda accept: valid_approval_for(commits, producer=producer, accept=accept)
 
 
@@ -1069,7 +1121,7 @@ def main():
         # not a new field: it is the one thing at this gate an agent cannot produce, and an
         # override belongs on that footing. Self-approval is refused by valid_approval_for.
         files_f = changed_files()
-        override = valid_approval_for(rng_f, producer=approval_producer(push_producer(landing_specs(files_f)), files_f, rng_f))
+        override = valid_approval_for(rng_f, producer=approval_producer(push_producer(built_specs(files_f)), files_f, rng_f))
         if not override:
             print("VELDO policy: blocked. A review objected and the objection is unresolved.")
             for sid, path, finding in objections:
@@ -1101,7 +1153,7 @@ def main():
         # each touched protected path needs an approval that names it, whose
         # approver is not the work's producer (self-separation).
         files_p = changed_files()
-        producer = approval_producer(push_producer(landing_specs(files_p)), files_p, rng)
+        producer = approval_producer(push_producer(built_specs(files_p)), files_p, rng)
         for tf, p in touched:
             if not valid_approval_for(rng, path=tf, producer=producer):
                 print("VELDO policy: blocked. Protected path touched with no valid path-scoped approval.")
@@ -1140,7 +1192,7 @@ def main():
     # work, so no review of it can exist yet (a spec moved from draft to ready, a re-mark). It is judged
     # only for the specs whose files it changes, and only for the owner's approval their flag requires.
     only_specs = spec_only(pushed)
-    carried = sorted({m.group(1) for m in (_SPEC_FILE.match(f) for f in pushed) if m}) if only_specs else push_specs(pushed)
+    carried = sorted({m.group(1) for m in (_SPEC_FILE.match(f) for f in pushed) if m}) if only_specs else landing_specs(pushed)
     for sid in carried:
         try:
             fm = _spec_file_fm(sid)
@@ -1152,9 +1204,11 @@ def main():
             # changing anything but spec files and proof bundles with only drafts; an unreadable spec is not a
             # draft and is judged.
             continue
-        if only_specs:
+        # VELDO-0287 (c): a landing spec whose proof bundle the push does not change (ready, nothing
+        # built) is judged as a spec-only push judges it: the owner approval its flag requires, no review.
+        if only_specs or not bundle_touched(sid, pushed):
             if effective_flag(fm, pats) == "required" and not owner_approved(
-                    sid, rng, producer=approval_producer(producer_for(sid), pushed, rng)):
+                    sid, rng, producer=approval_producer(producer_for(sid), [f for f in pushed if _SPEC_FILE.match(f)], rng)):
                 bases_ = approval_bases(fm, pats) or ["declared required"]
                 print("VELDO policy: blocked. owner approval missing: %s is approval required (%s)" % (sid, "; ".join(bases_)))
                 print("  Required (a push changing only spec files): an approved, unexpired veldo.approval/v1 bound to")
@@ -1184,9 +1238,14 @@ def main():
     # A spec file, a file of a spec's proof bundle, a derived projection or an approval record is exempt;
     # any other file under specs/ or proof/ (a script, a loose note) is work like any other (VELDO-0272 fix
     # rounds 4 and 5).
-    work = [f for f in pushed if not _not_work(f)]
-    if work and not landing_specs(pushed):
-        print("VELDO policy: blocked. landing_without_review: no spec covers %s" % ", ".join(sorted(work)[:5])
+    # VELDO-0287 (b): a spec file or bundle file of a spec already on main is work, in any push that is
+    # not spec-only; only a landing spec this push built (and so reviewed above) covers work.
+    landed = set() if only_specs else on_base(pushed)
+    work = sorted(f for f in pushed if not _not_work(f)) + sorted(
+        f for f in pushed if (_SPEC_FILE.match(f) or _PROOF_FILE.match(f)) and not _approval_record(f)
+        and (_SPEC_FILE.match(f) or _PROOF_FILE.match(f)).group(1) in landed)
+    if work and not built_specs(pushed):
+        print("VELDO policy: blocked. landing_without_review: no spec covers %s" % ", ".join(work[:5])
               + (" (and %d more)" % (len(work) - 5) if len(work) > 5 else ""))
         print("  A push that changes anything but spec files and proof bundles must carry a spec that is not a")
         print("  draft at HEAD, with a pass or pass_with_notes verdict bound to a commit in this push and")

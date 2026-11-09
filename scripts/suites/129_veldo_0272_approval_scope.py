@@ -36,6 +36,8 @@ def _v272_suite():
             'AC3 review/producer-identity', 'AC3 review/per-spec',
             'AC3 lowered/old-base-merge', 'AC3 approval/identity', 'AC3 approval/rule-producer', 'AC3 review/covered',
             'AC3 lowered/honest-trunk-merge', 'AC3 review/spec-only',
+            'AC3 landing/slimmed-bundle', 'AC3 landing/ready-no-work', 'AC3 lowered/renumbered-draft',
+            'AC3 landing/re-land',
             'AC4 summary/file', 'AC4 summary/registry-identical', 'AC4 mutation/reviewer-dropped',
             'AC4 summary/every-landing', 'AC4 summary/judged-fields',
             'AC4 summary/approvers-judged', 'AC4 summary/separate-runs')
@@ -318,13 +320,13 @@ def _v272_suite():
                 git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
                 write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
                 flip = commit(repo, 'lower the flag')
-                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, flip, 'reviewer', P.proof_digest(m))))
+                # VELDO-0287: the spec is on main, so a verdict for it covers nothing; the push is spec-only.
                 if approver:
                     write(repo, 'proof/%s/approval-owner.json' % sid, json.dumps({
                         'schema': 'veldo.approval/v1', 'id': 'A-9301', 'decision': 'approved', 'approver': approver,
                         'scope': {'commit': flip, 'paths': [rel]}, 'recorded_at': '2026-11-07T00:00:00Z',
                         'expires_at': '2099-01-01T00:00:00Z'}))
-                commit(repo, 'evidence')
+                    commit(repo, 'evidence')
                 return run_main(P, repo)
 
             code, out = flip_case(Path(base) / 'f1', None)
@@ -414,7 +416,6 @@ def _v272_suite():
                 c = commit(repo, 'rename and lower')
                 if approved:
                     owner_approval(repo, sid, c, paths=[old, new])
-                    write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', Pmod.proof_digest(manifest(sid)))))
                     commit(repo, 'evidence')
                 return run_main(Pmod, repo)
 
@@ -668,8 +669,12 @@ def _v272_suite():
                     commit(repo, 'feature work from the tip')
                 git(repo, 'merge', '-q', '--no-ff', '--no-commit', 'side')
                 write(repo, rel, spec_text(sid, 'not_required', ['docs/**']))
+                # VELDO-0287: the work is covered by a spec new to main, built and reviewed in this push.
+                cover = 'VELDO-9318'
+                write(repo, 'specs/%s-cover.md' % cover, spec_text(cover, 'not_required', ['docs/**']))
+                write(repo, 'proof/%s/manifest.json' % cover, json.dumps(manifest(cover)))
                 m = commit(repo, 'merge side, taking the old value')
-                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, m, 'reviewer', Pmod.proof_digest(manifest(sid)))))
+                write(repo, 'proof/%s/verdict.json' % cover, json.dumps(verdict(cover, m, 'reviewer', Pmod.proof_digest(manifest(cover)))))
                 if approved:
                     owner_approval(repo, sid, m, paths=[rel])
                 commit(repo, 'evidence')
@@ -691,11 +696,11 @@ def _v272_suite():
             def honest_merge_case(where, Pmod, kind):
                 repo = new_repo(where, 'honest-' + kind)
                 tsid, trel = 'VELDO-9351', 'specs/VELDO-9351-trunk.md'
-                if kind in ('raised', 'retired', 'renumbered'):
+                if kind in ('raised', 'retired', 'renumbered', 'returned'):
                     write(repo, trel, spec_text(tsid, 'not_required' if kind == 'raised' else 'required', ['docs/**']))
                     write(repo, 'proof/%s/manifest.json' % tsid, json.dumps(manifest(tsid)))
                 fork = commit(repo, 'base')
-                if kind in ('retired', 'renumbered'):
+                if kind in ('retired', 'renumbered', 'returned'):
                     # Fix round 5, F1: trunk retires the required spec, or renumbers it (the shapes of
                     # d4dd1eca and 24f31ce6); the old id is absent at the tip.
                     (repo / trel).unlink()
@@ -717,17 +722,29 @@ def _v272_suite():
                 write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
                 commit(repo, 'branch work from before the trunk change')
                 git(repo, 'merge', '-q', '--no-ff', '-m', 'merge main into feat', 'main')
+                if kind == 'returned':
+                    # VELDO-0287: trunk adds the retired spec back, required, and the branch merges main again. The
+                    # spec is on the push base and at HEAD, so only F1 (the raw parent states) passes the first merge.
+                    git(repo, 'checkout', '-q', 'main')
+                    write(repo, trel, spec_text(tsid, 'required', ['docs/**']))
+                    write(repo, 'proof/%s/manifest.json' % tsid, json.dumps(manifest(tsid)))
+                    commit(repo, 'trunk adds the spec back, required')
+                    git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                    git(repo, 'checkout', '-q', 'feat')
+                    git(repo, 'merge', '-q', '--no-ff', '-m', 'merge main into feat again', 'main')
                 m = git(repo, 'rev-parse', 'HEAD')
                 write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, m, 'reviewer', Pmod.proof_digest(manifest(sid)))))
                 commit(repo, 'review')
                 return run_main(Pmod, repo)
 
             hm = {kind: honest_merge_case(Path(base) / ('hm-' + kind), P, kind)
-                  for kind in ('new', 'raised', 'retired', 'renumbered')}
+                  for kind in ('new', 'raised', 'retired', 'renumbered', 'returned')}
             check('AC3 lowered/honest-trunk-merge', 'trunk retired a required spec after the fork; the branch merges '
                   'main and lands its reviewed work: exit 0 [%s]' % hm['retired'][1].strip()[:200], hm['retired'][0] == 0)
             check('AC3 lowered/honest-trunk-merge', 'trunk renumbered a required spec after the fork; the branch merges '
                   'main and lands its reviewed work: exit 0 [%s]' % hm['renumbered'][1].strip()[:200], hm['renumbered'][0] == 0)
+            check('AC3 lowered/honest-trunk-merge', 'trunk retired a required spec, the branch merged main, trunk added it '
+                  'back and the branch merged main again: exit 0 [%s]' % hm['returned'][1].strip()[:200], hm['returned'][0] == 0)
             check('AC3 lowered/honest-trunk-merge', 'trunk added a required spec after the fork; the branch merges '
                   'main and lands its reviewed work: exit 0 [%s]' % hm['new'][1].strip()[:200], hm['new'][0] == 0)
             check('AC3 lowered/honest-trunk-merge', 'trunk raised a spec to required after the fork; the branch merges '
@@ -941,6 +958,113 @@ def _v272_suite():
                   and ap['r-none'][0] == 1 and ap['r-case'][0] == 1 and lowered(*ap['l-none'][:2])
                   and uncovered(*cv['code-only']) and uncovered(*cv['draft']) and uncovered(*cv['switched'])
                   and lc[0] == 1)
+
+            # VELDO-0287: a spec lands only when it is new to main (not a non-draft spec at the push base).
+            def on_main_repo(where, name, specs):
+                """A repository whose main carries `specs` ({sid: flag}) ready, each with a built proof bundle."""
+                repo = new_repo(where, name)
+                for sid, flag in specs.items():
+                    write(repo, 'specs/%s-landed.md' % sid, spec_text(sid, flag, ['docs/**']))
+                    write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                    write(repo, 'proof/%s/big.json' % sid, json.dumps({'rows': list(range(200))}))
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                return repo
+
+            def built_ticket(repo, sid, files, flag='not_required', footprint=('docs/**', 'proof/**')):
+                """Commit `files` ({path: text}) with a new spec `sid`, its manifest, and a review bound to that commit."""
+                for rel, text in files.items():
+                    write(repo, rel, text)
+                if sid:
+                    write(repo, 'specs/%s-ticket.md' % sid, spec_text(sid, flag, list(footprint)))
+                    write(repo, 'proof/%s/manifest.json' % sid, json.dumps(manifest(sid)))
+                c = commit(repo, 'ticket work')
+                if sid:
+                    write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', P.proof_digest(manifest(sid)))))
+                    commit(repo, 'review')
+                return c
+
+            def slim_case(where, with_ticket):
+                repo = on_main_repo(where, 'slim-%s' % with_ticket, {'VELDO-9371': 'required'})
+                built_ticket(repo, 'VELDO-9372' if with_ticket else None,
+                             {'proof/VELDO-9371/big.json': json.dumps({'rows': 200, 'sha256': '0' * 64})})
+                return run_main(P, repo)
+
+            sl = {'ticket': slim_case(Path(base) / 'sl1', True), 'bare': slim_case(Path(base) / 'sl2', False)}
+            check('AC3 landing/slimmed-bundle', 'a reviewed ticket slims the bundle of a required spec on main: exit 0, no '
+                  'review or owner approval asked of the landed spec [%s]' % sl['ticket'][1].strip()[:200], sl['ticket'][0] == 0)
+            check('AC3 landing/slimmed-bundle', 'the same slimming with no ticket: exit 1, the landed spec\'s file is work no '
+                  'spec covers [%s]' % sl['bare'][1].strip()[:200], sl['bare'][0] == 1
+                  and 'no spec covers proof/VELDO-9371/big.json' in sl['bare'][1])
+
+            def ready_case_287(where, name, ticket=True, approver='owner'):
+                repo = new_repo(where, 'ready287-' + name)
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                ready = 'VELDO-9374'
+                write(repo, 'specs/%s-ready.md' % ready, spec_text(ready, 'required', ['docs/**']))
+                c = built_ticket(repo, 'VELDO-9373' if ticket else None, {'docs/guide.md': 'routine\n'})
+                if approver:
+                    owner_approval(repo, ready, c, spec_id=ready, approver=approver)
+                    commit(repo, 'the owner approves the ready spec')
+                return run_main(P, repo)
+
+            rd = {'owner': ready_case_287(Path(base) / 'rd1', 'owner'),
+                  'none': ready_case_287(Path(base) / 'rd2', 'none', approver=None),
+                  'committer': ready_case_287(Path(base) / 'rd3', 'committer', approver=' Fixture'),
+                  'alone': ready_case_287(Path(base) / 'rd4', 'alone', ticket=False)}
+            check('AC3 landing/ready-no-work', 'a ready required spec with nothing built beside a reviewed ticket, owner '
+                  'approval by spec_id: exit 0, no review asked [%s]' % rd['owner'][1].strip()[:200], rd['owner'][0] == 0)
+            check('AC3 landing/ready-no-work', 'the same with no owner approval: exit 1 owner approval missing [%s]'
+                  % rd['none'][1].strip()[:200], rd['none'][0] == 1 and 'owner approval missing: VELDO-9374' in rd['none'][1])
+            check('AC3 landing/ready-no-work', 'approved by the push\'s committer: exit 1 owner approval missing [%s]'
+                  % rd['committer'][1].strip()[:200],
+                  rd['committer'][0] == 1 and 'owner approval missing: VELDO-9374' in rd['committer'][1])
+            check('AC3 landing/ready-no-work', 'code beside only the unbuilt ready spec, owner approved: exit 1, an unbuilt '
+                  'spec covers no work [%s]' % rd['alone'][1].strip()[:200],
+                  rd['alone'][0] == 1 and 'no spec covers docs/guide.md' in rd['alone'][1])
+
+            def renumber_case(where, on_main):
+                repo = new_repo(where, 'renumber-%s' % on_main)
+                old, new = 'VELDO-9375', 'VELDO-9376'
+                text = spec_text(old, 'required', ['docs/**'])
+                if on_main:
+                    write(repo, 'specs/%s-spec.md' % old, text)
+                commit(repo, 'base')
+                git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')
+                if not on_main:
+                    write(repo, 'specs/%s-spec.md' % old, text.replace('status: ready', 'status: draft'))
+                    commit(repo, 'the draft, required')
+                (repo / 'specs' / ('%s-spec.md' % old)).unlink()
+                write(repo, 'specs/%s-spec.md' % new, spec_text(new, 'required', ['docs/**']).replace('status: ready', 'status: draft'))
+                commit(repo, 'renumber it')
+                return run_main(P, repo)
+
+            rn = {'draft': renumber_case(Path(base) / 'rn1', False), 'on-main': renumber_case(Path(base) / 'rn2', True)}
+            check('AC3 lowered/renumbered-draft', 'a required draft renumbered before it reached main: exit 0, no lowering '
+                  '[%s]' % rn['draft'][1].strip()[:200], rn['draft'][0] == 0)
+            check('AC3 lowered/renumbered-draft', 'the same renumbering of a required spec on main: exit 1 '
+                  'approval_flag_lowered [%s]' % rn['on-main'][1].strip()[:200], lowered(*rn['on-main']))
+
+            def reland_case(where):
+                repo = on_main_repo(where, 'reland', {'VELDO-9380': 'not_required'})
+                sid = 'VELDO-9380'
+                m = manifest(sid, checks=('unit', 'again'))
+                write(repo, 'docs/guide.md', 'built again\n')
+                write(repo, 'proof/%s/manifest.json' % sid, json.dumps(m))
+                c = commit(repo, 'the spec on main, built again')
+                write(repo, 'proof/%s/verdict.json' % sid, json.dumps(verdict(sid, c, 'reviewer', P.proof_digest(m))))
+                commit(repo, 'review')
+                return run_main(P, repo)
+
+            rl = reland_case(Path(base) / 'rl')
+            check('AC3 landing/re-land', 'a spec on main built again with its own review and no new spec: exit 1, its '
+                  'files are work no landing spec covers [%s]' % rl[1].strip()[:200],
+                  rl[0] == 1 and 'no spec covers docs/guide.md' in rl[1])
+            check('AC3 landing/re-land', 'the 0272 rows still hold (flip, rename, merge, old-base merge, honest merge, '
+                  'per-spec, covered, approval identity, spec-only)', all(
+                      all(ok for _label, ok in rows[r]) for r in ROWS if r.startswith('AC3 ') and r.split()[1].split('/')[0]
+                      in ('lowered', 'review', 'approval') and r != 'AC3 lowered/renumbered-draft'))
 
             EX = load('v272_executor', ROOT / '.veldo' / 'executor.py')
             hooks = EX.LiveLoop.__new__(EX.LiveLoop)
