@@ -415,6 +415,7 @@ Gate 5 on 2d6ba203 was red on the mutation slot only (invalid_baseline). The rou
   when the state left STOPPABLE; honor_stops commits it after the receiver recorded the end, so it read
   None at 0.13 s. It is now read after the asking pass is logged; asked true, the end within WAIT and one
   dispatch are still required.
+- W2 (round 7b, check finding 2): that wait now takes only a journal pass whose logged start (`at`) is after request_stop returned, so a pass in flight at `mark` cannot be read first.
 - X (teeth 47 and 154 standalone): check_teeth_mutations.py passed no leg, so suites 66 and 83, which
   scripts/gate_unconfined.json lists whole, ran confined (1.4 s, 8 to 9 s per control): 47 missing_target
   on all 38 cases, 154 invalid_baseline ("veldo installation: none found"). The standalone entry is meant

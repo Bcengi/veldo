@@ -1031,6 +1031,7 @@ sys.exit(chosen['code'])
             mark = last_pass()
             requested = owner_dispatches.request_stop(sid, owner_dispatches.version(sid), 'owner', now=time.time(),
                                                       request='stop-' + sid, channel='api')
+            committed = time.time()
             asked_at = time.monotonic()
             woke = note()
             # Polled here rather than through wait_until, so a stop that is never asked reds this row alone.
@@ -1042,8 +1043,10 @@ sys.exit(chosen['code'])
                     break
                 time.sleep(0.05)
             elapsed = time.monotonic() - asked_at
-            # The pass is logged once it is done, after the receiver it asked has recorded the end.
-            wait_pass(lambda p: 'journal' in p['sources'], mark)
+            # The pass is logged once it is done, after the receiver it asked has recorded the end. The wait is for a
+            # journal pass whose logged start ('at', taken as the pass begins) is after request_stop returned: a pass
+            # already in flight at `mark` started before the request was committed and may be logged first.
+            wait_pass(lambda p: 'journal' in p['sources'] and p.get('at', 0) > committed, mark)
             after = [p for p in passes() if p['pass'] > mark]
             # The ask's result is read once that pass is logged: the runner commits it (honor_stops) after the
             # receiver it asked has recorded the end, so the record polled above, read the moment the state left
