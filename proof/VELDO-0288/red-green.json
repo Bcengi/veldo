@@ -1,0 +1,268 @@
+{
+  "commit": "5865a5b11ab83f103a0a9efb62735c26a84e8f7b",
+  "rows": [
+    {
+      "case": "stop288-no-retry",
+      "production_module": "control_dispatch.py",
+      "production_sha256": "0d128397023f978e3b6a55f9b40bcc0d3f7f22f2d511c62fc4e18e6d626e8bd3",
+      "mutant_sha256": "70b7a03eeaeb40c620122d1310d5615677e6c169e43e05a11ea9f59db2c9da83",
+      "baseline": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed": [
+          "VELDO-0039 dispatch/stop-write-commutes",
+          "VELDO-0039 dispatch/stop-during-exit",
+          "VELDO-0039 dispatch/stop-during-natural-end",
+          "VELDO-0039 dispatch/stop-during-accept-run",
+          "VELDO-0039 dispatch/observations"
+        ],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            false
+          ],
+          "dispatch/stop-during-exit": [
+            false
+          ],
+          "dispatch/stop-during-natural-end": [
+            false
+          ],
+          "dispatch/stop-write-commutes": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-retry-any-change",
+      "production_module": "control_dispatch.py",
+      "production_sha256": "0d128397023f978e3b6a55f9b40bcc0d3f7f22f2d511c62fc4e18e6d626e8bd3",
+      "mutant_sha256": "fb6bf4fc55a3dc299406036be091588443fe372c2c3c74ae5980d5c38886db90",
+      "baseline": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed": [
+          "VELDO-0039 dispatch/lifecycle-write-still-stale"
+        ],
+        "targets": {
+          "dispatch/lifecycle-write-still-stale": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-result-no-retry",
+      "production_module": "control_dispatch.py",
+      "production_sha256": "0d128397023f978e3b6a55f9b40bcc0d3f7f22f2d511c62fc4e18e6d626e8bd3",
+      "mutant_sha256": "342de5ecff92a51007bcaff89386a87568c823c587459d97f15749f6167f194e",
+      "baseline": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed": [
+          "VELDO-0039 dispatch/stop-result-after-exit"
+        ],
+        "targets": {
+          "dispatch/stop-result-after-exit": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-record-before-ask",
+      "production_module": "control_launch.py",
+      "production_sha256": "80e77d8829fef4fef1c54859bdfebd6665df116a3964aa297e309534bd7b05c3",
+      "mutant_sha256": "73ce3a7f44fc301fd94951c76a87d4303c372d592bd0552d6a2a73ce2931f0ef",
+      "baseline": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed": [
+          "VELDO-0039 dispatch/owner-stop-asked-is-delivered",
+          "VELDO-0039 dispatch/owner-stop-crash-before-record"
+        ],
+        "targets": {
+          "dispatch/owner-stop-asked-is-delivered": [
+            false
+          ],
+          "dispatch/owner-stop-crash-before-record": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-docstring-overclaims",
+      "production_module": "control_launch.py",
+      "production_sha256": "80e77d8829fef4fef1c54859bdfebd6665df116a3964aa297e309534bd7b05c3",
+      "mutant_sha256": "473c27f55ab49f1d2f2c4b1c27aefbacbef87863f492650e5af53b258d28b115",
+      "baseline": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed": [
+          "VELDO-0039 dispatch/honor-stops-docstring"
+        ],
+        "targets": {
+          "dispatch/honor-stops-docstring": [
+            false
+          ]
+        }
+      }
+    }
+  ],
+  "stage_status": "failed",
+  "error": "worker_cleanup_error",
+  "detail": "worker_cleanup_error: check_teeth_mutations.py:launch131-stop-recorded-unasked: ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v39-n63f0y_j\"]",
+  "repeated_20_runs": "not run: stopped on the cleanup guard refusal",
+  "captures": "not run: stopped on the cleanup guard refusal"
+}

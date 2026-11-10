@@ -1,0 +1,81 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0288",
+  "commit": "5865a5b11ab83f103a0a9efb62735c26a84e8f7b",
+  "tree": "a0749229b843ee4af0adc0ae21b4145d7106970f",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-10T06:10:33.143669+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/red-green.json",
+          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/red-green.json",
+          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0288/red-green.json",
+          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/red-green.json",
+          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "new_mutation_teeth",
+      "status": "passed",
+      "detail": "Five new mutations killed; baseline and no-op controls green."
+    },
+    {
+      "name": "existing_stop_delivery_tooth",
+      "status": "failed",
+      "detail": "worker_cleanup_error: check_teeth_mutations.py:launch131-stop-recorded-unasked: ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v39-n63f0y_j\"]"
+    },
+    {
+      "name": "20_consecutive_runs",
+      "status": "not_run",
+      "reason": "Stopped on the cleanup guard refusal."
+    },
+    {
+      "name": "VELDO-0127_captures",
+      "status": "not_run",
+      "reason": "Stopped on the cleanup guard refusal. Claude reserved for the lead."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "Forbidden by the build instruction."
+    }
+  ]
+}

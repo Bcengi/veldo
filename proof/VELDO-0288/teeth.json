@@ -1,0 +1,75 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --case stop288-no-retry --case stop288-retry-any-change --case stop288-result-no-retry --case stop288-record-before-ask --case stop288-docstring-overclaims --case launch131-stop-recorded-unasked --jobs 2 --summary proof/VELDO-0288/teeth.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 159.1678459791001,
+   "error": "worker_cleanup_error",
+   "executed": 6,
+   "registered": 6,
+   "rejected": 5,
+   "reused": 0,
+   "status": "failed",
+   "worker_invocations": 10
+  },
+  "results_count": 5,
+  "results_sha256": "7e56d5f1aa1c602bbdeddbb3a172ec9a491c98a690b8c78415c9b4cb6bc6a357",
+  "rows": [
+   {
+    "case": "stop288-no-retry",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-retry-any-change",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-result-no-retry",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-record-before-ask",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-docstring-overclaims",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": null,
+    "expected": "killed",
+    "observed": "worker_cleanup_error",
+    "red": "check_teeth_mutations.py:launch131-stop-recorded-unasked: ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v39-n63f0y_j\"]"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 110066,
+   "name": "mutation result array",
+   "sha256": "7e56d5f1aa1c602bbdeddbb3a172ec9a491c98a690b8c78415c9b4cb6bc6a357"
+  }
+ ],
+ "environment": {
+  "commit": "5865a5b11ab83f103a0a9efb62735c26a84e8f7b",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   4.71484375,
+   11.03662109375,
+   14.99365234375
+  ],
+  "python": "3.12.3",
+  "tree": "a0749229b843ee4af0adc0ae21b4145d7106970f"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
