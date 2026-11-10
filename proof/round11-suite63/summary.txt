@@ -1,0 +1,45 @@
+Round 11 starts at 24c9f5b4 on branch round11-suite63. It lands after landing-c.
+Code commit: f3d0c5b3e738b5727984c4342d2534bbd5031eec. Test only: one file,
+scripts/suites/63_veldo_0040_containment.py. Nothing under .veldo/ changed.
+
+Line numbers checked against 24c9f5b4 before the change:
+258 to 260 start every descendant as a second Python interpreter.
+323 sets runtime_seconds=1.2 and kill_grace_seconds=0.5.
+333 is the 20 s accept wait.
+345 to 347 are job()'s return; the deadline expression is on 347, not 346.
+1181 to 1199 are the runtime-cap conjuncts.
+1219 and 1244 carry deadline=4 and deadline=8.
+
+(a) Done. The fixture engine starts the 'stubborn' descendant by os.fork()
+and runs the child code in its own interpreter. The child resets SIGTERM
+and points stdin at the null device first, so it starts the way a separate
+process did. The other kinds are still started as separate processes.
+runtime_seconds=1.2, kill grace 0.5 and all conjuncts are unchanged.
+
+(b) Left as it was. Runner.submit takes an absolute deadline as a keyword
+and passes it to prepare(), which writes it into the contract and records
+that contract before the receiver is invoked (.veldo/control_launch.py
+960 to 967 and 821 to 879). job() is evaluated in the same expression as
+the submit call, so the deadline already starts at the submit. The time a
+loaded host loses is the launch inside submit, after the contract is
+recorded. Starting the deadline after the launch needs a product change.
+
+(c) Done. Both check() calls pass their observation as the detail.
+
+No assertion, threshold, window or timeout changed. No sleep or retry added.
+
+Results, both started through the shared gate lock:
+alone.summary.json: 20 of 20 runs passed, 60 suite checks each.
+loaded.summary.json: 20 of 20 runs passed, 60 suite checks each, beside 15
+load workers that finished 4735 scopes with 0 errors; 1-minute load 13 to 17
+on 20 cores.
+The stubborn descendant's first beat came 0.09 to 0.12 s after scope
+activation in all 40 runs, against the 1.2 s cap.
+
+The load reached here is far below the one in the review's failing runs
+(suite times of 85 to 127 s). These runs show the change breaks nothing and
+how much room the cap now has; they do not reproduce that starvation.
+
+Final check: python3 scripts/selftest.py --suite 63_veldo_0040_containment
+returned 2, the selector's status for a selected suite, with 86 passed and
+0 failed (60 in suite 63, 26 in the shared preamble).
