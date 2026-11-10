@@ -1,10 +1,12 @@
 """Wait for the preceding gate job before running round 10 suites."""
 
+import os
 from pathlib import Path
 import time
 
 
-log = Path('/home/dmitry/projects/myday/research/lock-queue/runner.log')
+# The lock-queue log lives outside the repository; its path comes from the environment.
+log = Path(os.environ['LOCK_QUEUE_RUNNER_LOG'])
 while True:
     lines = log.read_text().splitlines() if log.exists() else []
     marker = next((line for line in lines if line.startswith('78a-landing-c-gate9 rc=')), None)

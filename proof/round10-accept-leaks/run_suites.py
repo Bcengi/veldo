@@ -2,13 +2,14 @@
 
 from collections import deque
 from pathlib import Path
+import os
 import subprocess
 import sys
 
 
 root = Path(__file__).resolve().parents[2]
 proof = Path(__file__).resolve().parent
-marker = next((line for line in Path('/home/dmitry/projects/myday/research/lock-queue/runner.log')
+marker = next((line for line in Path(os.environ['LOCK_QUEUE_RUNNER_LOG'])
                .read_text().splitlines() if line.startswith('78a-landing-c-gate9 rc=')), None)
 if marker is None:
     raise SystemExit('Gate 9 completion marker is absent; run wait_for_gate.py first')
