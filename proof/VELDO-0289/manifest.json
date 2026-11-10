@@ -1,8 +1,8 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0289",
-  "commit": "160c338e4e7f9bada7a273d0540c23388985b3cb",
-  "tree": "3e05d1aaf00871ea8c90296b22d089d850e12dba",
+  "commit": "3c9ea17e669395993e2168f633ea83272a4ab582",
+  "tree": "0f2f6a82cfd47a381a401cb6f656fe2fca4edb89",
   "producer": "Codex implementation agent; not an independent reviewer",
   "produced_at": "2026-11-10T08:11:37.019362+00:00",
   "criteria": [
