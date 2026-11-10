@@ -1,0 +1,278 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 63_veldo_0040_containment; suite 63 repetition and forced-heartbeat fixtures",
+ "deciding": {
+  "alone": {
+   "checks_per_run": [
+    60
+   ],
+   "failures": [],
+   "full_suite_passed": 20,
+   "heartbeats_in_windows": 0,
+   "idle_checks_passed": 20,
+   "max_anchor_age_seconds": 0.19362422917038202,
+   "max_exit_latency_seconds": 0.1895747184753418,
+   "receiver_wakes": [
+    0
+   ],
+   "runs": 20,
+   "window_seconds": [
+    1.5002004757989198,
+    1.5028937919996679
+   ]
+  },
+  "change": "Run the idle observation before other workers. Anchor it to the first committed heartbeat renewal and the receiver returning to poll. Check actual heartbeat take times from the final control-channel summary.",
+  "existing_assertion_expressions_unchanged": true,
+  "forced_heartbeat": {
+   "control_passed": true,
+   "failed_labels": [
+    "VELDO-0040 containment/exit-notified-no-heartbeat-in-window",
+    "VELDO-0040 containment/exit-notified"
+   ],
+   "forced_expected_failure_observed": true,
+   "method": "Insert CPU work after the 1.5-second sleep until window_start + 10.1 seconds. Keep the suite assertions unchanged.",
+   "observation": {
+    "exit_at": 1794289564.8884687,
+    "exited_after_window": true,
+    "heartbeat": {
+     "beats": 2,
+     "channel_open": false,
+     "first": 1948385.098829935,
+     "interval_seconds": 10,
+     "last": 1948395.093902397,
+     "liveness": "live",
+     "max_gap": 9.995072461897507,
+     "pid": 751080,
+     "recent": [
+      {
+       "renewed": true,
+       "sent": 1948385.092538459,
+       "seq": 1,
+       "taken": 1948385.098829935
+      },
+      {
+       "renewed": true,
+       "sent": 1948395.093686343,
+       "seq": 2,
+       "taken": 1948395.093902397
+      }
+     ],
+     "released": 1948385.094374734,
+     "renewal_refusals": [],
+     "renewed": 2,
+     "uncertain_at": null,
+     "window_seconds": 30
+    },
+    "heartbeats_in_window": [
+     {
+      "renewed": true,
+      "sent": 1948395.093686343,
+      "seq": 2,
+      "taken": 1948395.093902397
+     }
+    ],
+    "idle_worker_alive_in_window": true,
+    "latency": 0.004,
+    "receiver_wakes": 5,
+    "recorded_at": 1794289564.8928232,
+    "window_monotonic": [
+     1948385.118767672,
+     1948395.218894945
+    ],
+    "window_seconds": 10.1
+   }
+  },
+  "load": {
+   "errors": 0,
+   "first_run_retained": "The first loaded run failed. The remaining 19 scheduled runs used the same load; no run was repeated.",
+   "memory_max_per_scope": "10G",
+   "parallel_workers": 15,
+   "scopes": 15123,
+   "work": "Each worker repeatedly creates a systemd user scope that does CPU work for 0.5 seconds."
+  },
+  "loaded": {
+   "checks_per_run": [
+    60
+   ],
+   "failures": [
+    {
+     "labels": [
+      "VELDO-0040 containment/runtime-cap",
+      "VELDO-0040 containment/cooperative-stop",
+      "VELDO-0040 containment/stop-escalation",
+      "VELDO-0040 containment/observations"
+     ],
+     "run": 1,
+     "runtime_false_conjuncts": [
+      "stubborn_present",
+      "beats_present",
+      "first_beat_after_active",
+      "last_beat_before_inactive",
+      "runtime_bound",
+      "cap_stop_bound",
+      "term_present"
+     ]
+    },
+    {
+     "labels": [
+      "VELDO-0040 containment/runtime-cap"
+     ],
+     "run": 8,
+     "runtime_false_conjuncts": [
+      "state_exited",
+      "deadline_stop",
+      "cause_runtime_cap",
+      "result_timeout",
+      "stubborn_present",
+      "beats_present",
+      "timestamps_ordered",
+      "first_beat_after_active",
+      "last_beat_before_inactive",
+      "runtime_bound",
+      "cap_stop_bound",
+      "term_present",
+      "supervision_empty"
+     ]
+    },
+    {
+     "labels": [
+      "VELDO-0040 containment/runtime-cap",
+      "VELDO-0040 containment/cooperative-stop",
+      "VELDO-0040 containment/stop-escalation"
+     ],
+     "run": 10,
+     "runtime_false_conjuncts": [
+      "stubborn_present",
+      "beats_present",
+      "first_beat_after_active",
+      "last_beat_before_inactive",
+      "runtime_bound",
+      "cap_stop_bound",
+      "term_present"
+     ]
+    },
+    {
+     "labels": [
+      "VELDO-0040 containment/runtime-cap",
+      "VELDO-0040 containment/cooperative-stop",
+      "VELDO-0040 containment/stop-escalation"
+     ],
+     "run": 12,
+     "runtime_false_conjuncts": [
+      "stubborn_present",
+      "beats_present",
+      "first_beat_after_active",
+      "last_beat_before_inactive",
+      "runtime_bound",
+      "cap_stop_bound",
+      "term_present"
+     ]
+    }
+   ],
+   "full_suite_passed": 16,
+   "heartbeats_in_windows": 0,
+   "idle_checks_passed": 20,
+   "max_anchor_age_seconds": 0.8967415890656412,
+   "max_exit_latency_seconds": 0.7465717792510986,
+   "receiver_wakes": [
+    0
+   ],
+   "runs": 20,
+   "window_seconds": [
+    1.5002509120386094,
+    1.6830048998817801
+   ]
+  },
+  "protected_files_unchanged": 650,
+  "readiness_bound": "The idle dispatch contract deadline, unchanged.",
+  "retries": 0,
+  "selftest": {
+   "failed_lines": [],
+   "gate_verification": false,
+   "partial_run": true,
+   "returncode": 2,
+   "seconds": 8.698,
+   "summary": [
+    "  63_veldo_0040_containment                       60 passed    8.56s",
+    "selftest (PARTIAL, 1 of 196 suites): 86 passed, 0 failed in 8.56s"
+   ]
+  },
+  "skips": 0,
+  "source_sha256": "5f8404b333bc3fa9db904eb437154726df1678aeb76f11b9c60077e5253dbaa0",
+  "suite": "scripts/suites/63_veldo_0040_containment.py",
+  "thresholds": {
+   "exit_latency_max_seconds": 0.75,
+   "receiver_wakes": 0,
+   "window_min_seconds": 1.5
+  }
+ },
+ "discarded": [
+  {
+   "bytes": 24308,
+   "name": "alone-part2.json",
+   "sha256": "b48e355c74e899d50f70d9ff314a036e6adbd6b94106fbd70d76f5bee71f2287"
+  },
+  {
+   "bytes": 34116,
+   "name": "loaded-part2.json",
+   "sha256": "b48d97c89bb178560ae80d81a354ed253d280d61aca1ac59a0c4511a83ccc775"
+  },
+  {
+   "bytes": 3349,
+   "name": "forced-part2.json",
+   "sha256": "c2b2bb52c0fbd1409dde738f28b55d4f925d8c3c33d836bd71128ec3659f90f4"
+  },
+  {
+   "bytes": 1087,
+   "name": "control-part2.json",
+   "sha256": "36e5971c7c7fc174b250756541bbac896f2da335132dee737a9574cee3eb0dd6"
+  },
+  {
+   "bytes": 1231,
+   "name": "load-part2.json",
+   "sha256": "26acd8d271b386d3f2650f6586abd3a50d3d80380711dedfbfb6a03e41528221"
+  },
+  {
+   "bytes": 1249,
+   "name": "load-part2-remaining.json",
+   "sha256": "c599184e00f046cda825e3238dd7b7e790eddef2a36f2cd4405102d31f84e4d0"
+  },
+  {
+   "bytes": 9473,
+   "name": "selftest-part2.log",
+   "sha256": "835d6a9d34df377d302443e383a233687b08291a565aa7ca0cfd52be2547bfe1"
+  },
+  {
+   "bytes": 1306,
+   "name": "run-suite.py",
+   "sha256": "9993ec33fea52c8c6b14a1d732d4325706cd2275b71a477ed8e606289ad3335a"
+  },
+  {
+   "bytes": 1065,
+   "name": "repeat-part2.py",
+   "sha256": "0f6e783f43a40e52b9b3a1ccfa11723542af8f4c4ea7e739b7a75daa269f23aa"
+  },
+  {
+   "bytes": 1441,
+   "name": "load-part2.py",
+   "sha256": "50f3d26b9074a4109281b8e7a796f0d940ea4fa2be726a1a1a0d9b71d052a9e4"
+  },
+  {
+   "bytes": 72266,
+   "name": "part2-protected.json",
+   "sha256": "8d43fbc90d32b2d0c09aff6ba0490cb97fb77e3f74b0be1dc597382e70a01008"
+  }
+ ],
+ "environment": {
+  "commit": "8955553daaa202266bfec91b0f23db4b89715ed9",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   7.708984375,
+   22.26025390625,
+   27.9736328125
+  ],
+  "python": "3.12.3",
+  "tree": "b3fd40fefe913dbbf090b9fd517f578cd50065ce"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

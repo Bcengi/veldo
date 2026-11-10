@@ -894,14 +894,64 @@ sys.exit(payload.get('code', 0))
 
         started, made = {}, []
         try:
-            # Started first, checked later: the runtime cap and the idle receiver run beside the rest. A
-            # raise here leaves `started` short, which reds the rows that read it.
+            # AC3: the receiver sleeps until an OS notification; an exit is seen when it happens
+            with region('containment/exit-notified', 'containment/exit-notified-no-heartbeat-in-window'):
+                # Nothing else is launched until this observation and the idle worker's exit finish.
+                # Its release controls exit; hold and the contract deadline remain the backstops.
+                idle = runner('main').submit(admitted('VELDO-9421'), 'build', **job(hold=50, release='idle'))
+                idle_facts = marker(idle, 'worker')
+                # The first committed renewal proves the receiver took a heartbeat. Wait for it to
+                # return to poll, so the renewal's own wakes precede the baseline. Use the dispatch's
+                # existing deadline, with no extra sleep or second attempt at the observation.
+                heartbeat_command = 'heartbeat/%s/1' % idle.dispatch_id
+                while time.time() < idle.contract['deadline'] and idle.child.poll() is None:
+                    renewal = reader.execute('SELECT seq FROM commands WHERE command_id=?',
+                                             (heartbeat_command,)).fetchone()
+                    if renewal and 'poll' in (read('/proc/%d/wchan' % idle.child.pid) or ''):
+                        break
+                else:
+                    raise AssertionError('idle receiver did not settle after its first heartbeat')
+                window_start = time.monotonic()
+                counted = [(time.time(), wakes_of(idle.child.pid))]
+                # Longer than any periodic wake of 1 s; unrelated cases do not run in this window.
+                time.sleep(1.5)
+                counted.append((time.time(), wakes_of(idle.child.pid)))
+                window_end = time.monotonic()
+                release(idle)
+                ended = runner('main').wait(idle) or {}
+                exit_at = marker(idle, 'exit').get('at')
+                recorded_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'exited'), None)
+                window = counted[-1][0] - counted[0][0] if len(counted) == 2 else 0
+                wakes = (counted[-1][1] - counted[0][1] if len(counted) == 2 and None not in (counted[0][1], counted[-1][1])
+                         else None)
+                observed['exit_notified'] = {'window_seconds': round(window, 2), 'receiver_wakes': wakes,
+                                             'exit_at': exit_at, 'recorded_at': recorded_at,
+                                             'latency': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
+                                             'idle_worker_alive_in_window': bool(idle_facts),
+                                             'exited_after_window': bool(exit_at and len(counted) == 2
+                                                                         and exit_at > counted[-1][0])}
+                # The control channel reports the receiver's actual take times when the worker exits.
+                # Check them even if load delayed this process across the next scheduled heartbeat.
+                heartbeat = (idle.supervision or {}).get('heartbeat') or {}
+                beats = heartbeat.get('recent') or []
+                in_window = [beat for beat in beats if window_start <= beat['taken'] <= window_end]
+                observed['exit_notified']['heartbeat'] = heartbeat
+                observed['exit_notified']['window_monotonic'] = [window_start, window_end]
+                observed['exit_notified']['heartbeats_in_window'] = in_window
+                check('containment/exit-notified-no-heartbeat-in-window',
+                      bool(beats) and beats[0]['seq'] == 1 and beats[0]['taken'] < window_start
+                      and not in_window, observed['exit_notified'])
+                check('containment/exit-notified',
+                      ended.get('state') == 'exited' and bool(idle_facts) and window >= 1.5 and wakes == 0
+                      and observed['exit_notified']['exited_after_window']
+                      and exit_at is not None and recorded_at is not None
+                      and 0 <= recorded_at - exit_at < 0.75, observed['exit_notified'])
+
+            # The runtime cap runs beside the remaining cases. A raise here leaves `started`
+            # short, which reds the rows that read it.
             with contextlib.suppress(Exception):
                 started['runtime'] = (time.time(), runner('runtime').submit(admitted('VELDO-9420'), 'build', **job(
                     descendants=[['stubborn', 'stubborn', 10]], hold=10, beat=True)))
-                # The idle worker ends only on its release (its hold is a backstop under the 60 s deadline): a
-                # worker that ended by itself inside the watched window would wake its receiver by right.
-                started['idle'] = runner('main').submit(admitted('VELDO-9421'), 'build', **job(hold=50, release='idle'))
 
             # AC1: the worker and its ordinary descendants in the dispatch's own group
             with region('containment/dedicated-group', 'containment/ordinary-exit'):
@@ -974,9 +1024,6 @@ sys.exit(payload.get('code', 0))
 
             # AC1 and AC2: an unqualified profile is refused before anything is spawned
             with region('containment/unqualified-profile-refused', 'containment/required-settings-refused'):
-                idle = started.get('idle')
-                idle_facts = marker(idle, 'worker') if idle else {}
-                counted = [(time.time(), wakes_of(idle.child.pid))] if idle else []
                 u3 = admitted('VELDO-9403')
                 cases = {
                     'absent': (None, 'invalid_input:profile:absent'),
@@ -1000,10 +1047,6 @@ sys.exit(payload.get('code', 0))
                                       'states': states(launch), 'worker': bool(marker(launch, 'worker', timeout=0.05)),
                                       'unit': show(C.unit_name(launch.dispatch_id), 'LoadState').get('LoadState'),
                                       'retired': slot(launch).get('retired')}
-                if idle:
-                    # The idle receiver is watched for at least 1.5 s, longer than any periodic wake of 1 s.
-                    time.sleep(max(0.0, counted[0][0] + 1.5 - time.time()))
-                    counted.append((time.time(), wakes_of(idle.child.pid)))
                 observed['unqualified'] = refusals
                 check('containment/unqualified-profile-refused',
                       all(r['refusal'] == r['expected'] and r.get('states') == ['prepared', 'refused'] and not r.get('worker')
@@ -1032,28 +1075,6 @@ sys.exit(payload.get('code', 0))
                       and all(matrix[name][0] == (None, 'invalid_input:profile:%s:absent' % name) for name in required)
                       and refusals.get('required_absent', {}).get('refusal') == 'invalid_input:profile:memory_bytes:absent'
                       and refusals.get('invalid_value', {}).get('refusal') == 'invalid_input:profile:runtime_seconds:invalid')
-
-            # AC3: the receiver sleeps until an OS notification; an exit is seen when it happens
-            with region('containment/exit-notified'):
-                idle = started['idle']
-                release(idle)
-                ended = runner('main').wait(idle) or {}
-                exit_at = marker(idle, 'exit').get('at')
-                recorded_at = next((h['at'] for h in ended.get('history', []) if h.get('state') == 'exited'), None)
-                window = counted[-1][0] - counted[0][0] if len(counted) == 2 else 0
-                wakes = (counted[-1][1] - counted[0][1] if len(counted) == 2 and None not in (counted[0][1], counted[-1][1])
-                         else None)
-                observed['exit_notified'] = {'window_seconds': round(window, 2), 'receiver_wakes': wakes,
-                                             'exit_at': exit_at, 'recorded_at': recorded_at,
-                                             'latency': round(recorded_at - exit_at, 3) if exit_at and recorded_at else None,
-                                             'idle_worker_alive_in_window': bool(idle_facts),
-                                             'exited_after_window': bool(exit_at and len(counted) == 2
-                                                                         and exit_at > counted[-1][0])}
-                check('containment/exit-notified',
-                      ended.get('state') == 'exited' and bool(idle_facts) and window >= 1.5 and wakes == 0
-                      and observed['exit_notified']['exited_after_window']
-                      and exit_at is not None and recorded_at is not None
-                      and 0 <= recorded_at - exit_at < 0.75, observed['exit_notified'])
 
             # AC2: every declared cap installed before the worker runs, and holding against real descendants
             with region('containment/caps-installed'):
