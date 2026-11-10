@@ -644,7 +644,9 @@ Not done: the canonical gate was not run. Other suites have accept() loops I did
 (scripts/suites 47, 48, 91, 94, 101, 102, 109, 110, 127, 128 and support/identity_wire.py, which
 wakes its thread before closing); none of them left a thread in the 27 legs. In all 27 legs
 VELDO-0127 live/claude and live/codex failed with "missing or stale live capture", before and after
-the fix; that is this session's environment, not this change.
+the fix. Round 9's commit 7c8bcb5d caused that, not the environment: it changed
+.veldo/control_launch.py, and each live capture records the sha256 of that module. Fix round 9c
+has the detail.
 
 Raw logs were discarded (name, bytes, sha256; groups are concatenated in numeric order):
 leg_a1.log 55880 1609fdbe7a5a2f0c7eb7796c528676b2bcedbd353c31d9dc4ac7525cdd0bf380;
@@ -663,3 +665,51 @@ rep_alone 1-20 190884 61799cf116001255ac5b20568510b7d3025912911acb5e8a68161dd150
 rep_loaded 1-20 190882 04c40c30c42598049b6aa8b4d72ec39a1ca72d920d39221d5233ca3823643357;
 legs.summary 999 0b32541b61aed7cbf5396a8731b7ebee07bf78c7f6b0c9c1f8029f250fd69d9e;
 rep.summary 5309 4a7a5e63058626f282bb78d62c0d908e915afeb681fd8251a4781ef7b5507ae2.
+
+## Fix round 9c
+
+Gate 8 on 1d835cd3 was red on VELDO-0127 live/claude, VELDO-0127 live/codex and VELDO-0230
+qualify/reproduces, and the mutation stage stopped with invalid_baseline on the two live rows.
+One cause: 7c8bcb5d changed .veldo/control_launch.py (sha256 85f40e1e to 0df3b4cd). The two live
+captures and the four resource records in proof/VELDO-0127 each record that module's digest. No
+check, threshold or code changed in this round.
+
+Done: the four resource records and codex-live.json are regenerated and their rows pass.
+Not done: claude-live.json. live/claude is still red.
+
+### Runs on 1d835cd3 (tree e4921774)
+
+Host dmitry-pc, Python 3.12.3, Linux 7.0.0-38, 20 CPUs, load 27 throughout. Codex 0.166.0 and
+Claude Code 2.1.317, the binaries .veldo/runtime/engines.json names, both digests as recorded.
+
+- `python3 -B .veldo/qualify.py --codex <the recorded Codex vendor binary> --claude 2.1.317`:
+  exit 0, 26 files written. Git showed four changed: resources-gpt-6-astra-selected.json,
+  resources-gpt-6-astra-none.json, resources-gpt-5.5-selected.json and resources-gpt-5.5-none.json,
+  one line each, the control_launch.py digest. The output is byte-identical to
+  proof/landing-b/qualify-output.txt.
+- `python3 -B proof/VELDO-0127/live.py --only codex` with the recorded binaries, the codex2 login
+  and gpt-6-astra: exit 0 in 34.6 s, "codex: captured", no problems. auth.json in the login was
+  byte-identical before and after. As in landing-b, the run directory's uid is written as UID;
+  evidence.problems returns none after that edit too. Against the previous capture (codex1,
+  2026-11-05) the differences are the control_launch.py digest, run and session identifiers,
+  temporary paths, the date line in the prompt, record commitments and first-turn context: 7913,
+  7915, 7966, 7966 tokens against 7925, 7923, 7972, 7971. The file is 595657 bytes.
+- The same driver with `--only claude` and this run's own login (acct3) stopped in 0.07 s:
+  "borrowed login is busy: .runner-lease is held by another run". The runner of this session
+  holds that lease, and the lease exists so that two processes never refresh one login at once.
+  I did not work around it. The lead retakes this capture from outside a run on that login, or
+  names another login.
+- `python3 scripts/selftest.py --suite 126_veldo_0230_qualify_reproduces`: 4 passed, 0 failed,
+  116.2 s. qualify/reproduces is green.
+- `python3 scripts/selftest.py --suite 86_veldo_0127_agent_configuration`: 27 passed, 1 failed,
+  49.9 s. live/codex is green. live/claude fails with "missing or stale live capture".
+
+The canonical gate was not run.
+
+Raw logs were discarded (name, bytes, sha256):
+qualify-out.txt 32137 32a3db5498c78da707b64b14e013787a96e6558b389a255c3d23bfd10b60df56;
+live-codex-out.txt 16 165aabc977771ab442a2d7e5b16cd7aa578e2edb7e53f1eab3495209b8c1471d;
+live-codex-err.txt 362 f67c89dfa37fb8ad7e162613f2e41cc2016144435a23cf2c593d5561f6758e7a;
+live-claude-err.txt 1232 15996ac0cba90a2a9abca7433565752283228e8fddcd65374e98d17121f78397;
+s126.txt 9417 c4f3603a2f16708e7381efaabdbe7b6e3b2270a118434a29417df87d21e1aca7;
+s86.txt 10197 4aa764ca51975ddc1ed1a5fa3fd85567ba72f9d9c7c9c46f98f64c616cc08339.
