@@ -36,7 +36,8 @@ def unit():
         command = ['python3', 'scripts/selftest.py', '--suite', suite]
         run = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
         lines = run.stdout.splitlines()
-        summary = [line for line in lines if 'passed' in line or 'failed' in line or 'FAIL' in line]
+        summary = [line for line in lines if line.startswith('selftest (PARTIAL')
+                   or line.strip().startswith(suite + ' ') or 'SELFTEST FAIL:' in line]
         passed = run.returncode == 2 and any('0 failed' in line for line in summary)
         results.append(dict(command=command, exit=run.returncode, passed=passed,
                             summary=summary, stderr_tail=run.stderr[-3000:]))
@@ -86,6 +87,9 @@ def teeth():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('check', choices=('unit', 'integration', 'teeth'))
+    parser.add_argument('check', choices=('unit', 'integration', 'teeth', 'all'))
     args = parser.parse_args()
-    sys.exit(0 if globals()[args.check]() else 1)
+    checks = (unit, integration, teeth) if args.check == 'all' else (globals()[args.check],)
+    for check in checks:
+        if not check():
+            sys.exit(1)
