@@ -97,3 +97,44 @@ Nothing failed, so nothing was rerun or fixed. The raw logs were discarded:
 - suite-91_veldo_0167_setup_records.log 12134 bytes sha256 a0242c5c0948c5234f62d53aa3d86de803ba16cbacfead3c195e7e01a5a6017c
 - teeth-262.log 149400 bytes sha256 5726389059802e4605b3d9f4460dce95456415daa3704b944860f7f137c5922c
 - teeth-275.log 86715 bytes sha256 024ae977c50ad008e9fca65def222b6b8cd942f6bd71e12d76a72b410e2cca72
+
+## Merge record (landing-d2 onto 8955553d)
+
+landing-c 8955553d (fix rounds 9, 9b and 9c, eight commits past 39ddd9e5) was merged with --no-ff into
+landing-d2 e26ede48 as merge commit d86aa51d. Git reported six conflicts, all in proof/VELDO-0127:
+claude-live.json, codex-live.json and the four resources-*.json records.
+
+Each of the six records the sha256 of five modules in .veldo. landing-c retook them in round 9c because round 9
+changed control_launch.py. landing-d had retaken them for its own changes to all five modules. The merged
+control_launch.py (sha256 267fc7d2) carries both changes, so neither side's records describe the merged tree.
+
+Resolution: all six keep landing-d's version. It matches four of the five merged modules and was captured on the
+0275 engine pin; landing-c's version matches none. The six are stale by the control_launch.py digest and have to
+be retaken on the merged tree: the resource records with .veldo/qualify.py, the two live captures with
+proof/VELDO-0127/live.py and a login. landing-c's versions of these six files do not survive the merge, and
+cannot: they record a tree without VELDO-0262 and 0275.
+
+Three files changed on both sides and merged automatically. Each was checked by reading both diffs:
+
+- .veldo/control_launch.py and its engine copy: landing-c's Runner.honor_stops (the ask is recorded before it is
+  made) and Launch.can_stop; landing-d's VELDO-0275 stream probe, accept wait and stop cause. Different functions.
+  The two copies are byte-identical.
+- scripts/check_teeth_mutations.py: landing-c re-anchored launch131-stop-recorded-unasked; landing-d's cases are
+  elsewhere. All 2948 registered anchors occur exactly once in the merged tree (materialize in baseline mode).
+- scripts/suites/86_veldo_0189_engine_upgrade.py: landing-c's Bridge.close shuts the listener down and joins its
+  thread; landing-d's VELDO-0262 rows and the engine_not_approved refusal. Both kept.
+
+Everything else landing-c changed (suite 66_veldo_0042, the six manifests of VELDO-0267, 0268, 0270, 0272, 0274
+and 0278, proof/landing-c/README.md) is untouched by landing-d and is byte-identical to 8955553d.
+
+## Protected paths (landing-d2 onto 8955553d)
+
+This replaces the list above. The union of the protected_paths in .veldo/policy.yaml at landing-c 8955553d
+(52 patterns) and at main 918e7c0e (58 patterns), 99 distinct, matched the way policy_check.glob_covers matches
+(fnmatch on the pattern, and on the pattern with its trailing stars widened to one) over
+git diff --name-only 8955553d...HEAD (148 files). Three files are protected, all by main's patterns only;
+landing-c's policy alone protects none of the 148:
+
+- engine/scripts/agent_sandbox.json (main: engine/scripts/agent_sandbox.json)
+- scripts/agent_sandbox.json (main: scripts/agent_sandbox.json)
+- scripts/mutation_case_inputs.json (main: scripts/mutation_case_inputs.json)
