@@ -473,3 +473,243 @@ new259.log 10123 0d61b98d53c83ec88e45d2a94e7a7a9778296a80eefae8c6f600335f8bdc475
 base208.log 9501 3e7f39a05e8e8e24ba3dfb64ea1719692905522ca702bc038ca565ebbeb0b852;
 new208.log 9501 e23a7f1d706296e27750fe0e8ced26c3fc4e29dac1f8a71f7ba189d5d52428df.
 The canonical gate was not run.
+
+## Fix round 9
+
+Gate 7 on 39ddd9e5 was red on three checks: personal_setup, unit and mutation. Two are fixed here. The
+unit failure in VELDO-0143 is not: I found what fails but not why, and it stays open.
+
+### personal_setup and VELDO-0259 ac1/fresh-clone (commit 0c6f94af)
+
+Cause: commit 4e961b56 wrote the absolute path of the lead's gate stamp for d0bb5da9 into the
+manifests of VELDO-0267, 0268, 0270, 0272, 0274 and 0278, 72 times in all (16, 11, 11, 13, 10, 11),
+in `ref` fields and inside `detail` text. Every finding was that one path.
+
+Change: each occurrence now reads "the lead's gate stamp for d0bb5da9". Nothing else in the manifests
+changed. `python3 scripts/check_personal_setup.py` after the commit: 0 findings, exit 0.
+`python3 scripts/selftest.py --suite 127_veldo_0259_installation`: 46 passed, 0 failed.
+
+The proof digests changed, so any verdict bound to the old digests must be taken again. New digests
+(proof_digest in .veldo/policy_check.py): VELDO-0267 sha256:b703e88b16d154d4, VELDO-0268
+sha256:55994b53fa5989c2, VELDO-0270 sha256:c084ffa9f3ff76d4, VELDO-0272 sha256:8dee6d4292876a98,
+VELDO-0274 sha256:b4875bb465773638, VELDO-0278 sha256:2d1353425f34e9d4.
+
+### mutation invalid_baseline: VELDO-0039 dispatch/owner-stop (commit 7c8bcb5d)
+
+The noop control of dispatch-closed-output-killed-at-close failed owner-stop with the record
+`unknown`, asked true, and "the receiver ... ended (exit 0) with the record still running".
+
+Cause, a race in the product. Runner.honor_stops (.veldo/control_launch.py:742-747 at 39ddd9e5) wrote
+the stop to the receiver first and then committed stop_result to the dispatch record. The receiver
+records the worker's end on that same record, and Dispatches._run (.veldo/control_dispatch.py:645)
+reads the record's version before it commits. When the runner's stop_result landed between that read
+and that commit, the store refused the exit as stale_version, main() turned the refusal into a
+`failed` event and exit 0, and Launch.wait settled the run outcome_unknown with the unit held. The
+same race in the other order is what round 7 saw in suite 83 (W).
+
+Change: honor_stops records the ask before it makes it. Launch.can_stop() says whether the runner
+holds a running receiver with its control channel open; that answer is recorded, and only then is the
+stop written. Both copies (.veldo and engine/.veldo) are identical. Tooth
+launch131-stop-recorded-unasked is re-anchored to the new line, with the same defect and rows.
+
+Red, then green: with a temporary 3 s pause in the receiver between its version read and its commit
+and a 1 s pause before stop_result (switched on by a flag file, removed afterwards), the old code
+failed owner-stop exactly as the gate did; the fixed code passed all 51 rows with the same pauses.
+
+Runs on 7c8bcb5d (tree 6b2bc951), host dmitry-pc, Python 3.12.3, OpenSSH 9.6p1, 20 CPUs:
+- `python3 scripts/selftest.py --suite 62_veldo_0039_dispatch`, 20 times alone (load 5.4 at start):
+  20 of 20 passed, 51 rows each, 9.7 to 9.9 s.
+- The same 20 times under 40 busy-loop processes (2 x nproc; load 47.4 at the end): 20 of 20 passed,
+  12.8 to 14.5 s.
+- `python3 scripts/check_teeth_mutations.py --case dispatch-closed-output-killed-at-close --case
+  launch131-stop-recorded-unasked`: passed, registered 2, executed 2, rejected 2.
+- Suites 83_veldo_0154_factory_loop (40), 124_veldo_0131_factory_reads_commands (34) and
+  71_veldo_0130_api (71), the other callers of honor_stops: all passed, 0 failed.
+
+### unit: VELDO-0143 provision/adoption-path (open)
+
+What fails: the harbor proposal's presentation is never published. Its only receipt is
+unknown_outcome, so the decision stays `presented` with no current presentation, the answer is
+refused (missing_evidence) and settled() refuses not_answered. Instrumented runs show why: the
+presenter's sendMessage to the fixture's loopback Bot API stand-in (proof/VELDO-0152/fixture.py) gets
+no answer and fails with TimeoutError after 10.02 s, the edge's timeout. Normal sends take about
+10 ms.
+
+When: only when the suite runs as the gate runs it, in the unconfined leg's single process after the
+35 listed suites before it (driver: scripts/gate_legs.py's leg variables, then `python3
+scripts/selftest.py --upto 110_veldo_0143_new_project`). It hit 3 of 28 completed legs, twice in
+provision/adoption-path and once in proposal/adoption-visibility, always on the first send inside
+`fenced(wire)`. It never hit in about 50 runs of `--suite 110_veldo_0143_new_project`, alone, under
+40 hogs, with 8 at once, or under 16 fixed PYTHONHASHSEED values. Neither load nor hash order explains
+it.
+
+Ruled out: fd limits (1,048,576), the Telegram stand-in's lock, a proxy (bot_opener sets none), fence
+violations (none recorded) and the store. A stack dump armed for any send over 3 s did not fire in
+the last 8 legs, so the line that blocks is not known. It is not fixed, and I did not lengthen the
+timeout or add a retry. One leg also hung for over an hour in suite 0170, a separate fault.
+
+Raw logs were discarded (name, bytes, sha256):
+force_old.log 10566 a22197a0d3ec887734e93f51dcae4ac550922c1918ee406e7d6605810954a005;
+force_new.log 9361 bade9377689b59ba5dc0a27731894584278da5e331e35621147eb91533ffef5d;
+teeth_39.log 41708 31eed7e270a03e5f10f4e01428c639d87f1a43b0bcba24122929e9f0614bc262;
+s259.log 9889 3261a8af508afd91fdeaeb7b54b7210e89a6d49f92f56b47662536652daf8b80;
+rep_alone 1-20 (concatenated) 187200 2c14038bc37c6e8e1c8fbf09b0e1b19f30b7885eda06fd0362df35925e7bcc6e;
+rep_loaded 1-20 (concatenated) 187220 44b7e9890b520bcb5eb9866c191497e2a7407c63ccb3053f095f1e62a970cc57;
+other_83 10707 dc23c9d97ae6bc82b75b0312a325e94c2d6ca6f1e2c79329e0c3edb88c7c26ed;
+other_124 9409 9cec32dedd24786b5ec2fa1cd9adff5c23baad38bdc94b0e461716c7e9dc127a;
+other_71 11512 381c9b953d424b94a30a1ba531cbb594e098197987f937822002da2344ebcf50;
+leg_1.log 57388 0b8eeccc4f0eaa8ce9c7e3748fc7a95fb12531df981a017f95e3c2927b9e10b2;
+leg_21.log 63532 717e8b27c4af7973fcd7889b01b6a7dd2871b093aca6f611c933049a6f63c1d3;
+leg_24.log 63139 80faa0cd881b87d7ec905926a3d15fa14d99c8888426982db0384eed427e68f6.
+
+## Fix round 9b
+
+The VELDO-0143 adoption-path failure that round 9 left open is found and fixed (commit 704c8c28).
+
+### Cause
+
+Two earlier suites of the unconfined leg close a listening socket while one of their own threads is
+still blocked in accept() on it:
+
+- scripts/suites/86_veldo_0189_engine_upgrade.py, Bridge.serve (accept at line 376) and Bridge.close
+  (line 393 at b7bd07e3), which only called self.server.close().
+- scripts/suites/66_veldo_0042_clones.py, the proxy listener's serve thread (accept at line 555),
+  closed by listener.close() at line 589 at b7bd07e3.
+
+On Linux, closing a socket does not wake a thread blocked in accept(). The thread stays in the system
+call and keeps the descriptor's number. The whole leg is one process, so the number is handed out
+again: in the failing legs the listener of the Bot API stand-in (proof/VELDO-0152/fixture.py:258)
+was descriptor 6, the number the 0189 bridge had. When a signal then interrupts the leftover thread
+without a handler to run in it, the kernel restarts accept() with the same number, and the thread is
+now waiting on the stand-in's listener. It takes the next connection before the stand-in's own
+server thread sees it, reads the request as a bridge call, waits for a newline that never comes and
+answers nothing. The presenter's sendMessage gets no reply: TimeoutError after 10 s, or a connection
+reset when the leftover thread gives up first. That one presentation is recorded unknown_outcome,
+and the rest follows as round 9 described. The stand-in, the fixture and the product are not at
+fault.
+
+This is why it needed the suites before 110 and why it was rare. It needs the 0189 thread to survive
+to suite 110, the stand-in's listener to land on that thread's number (it does not when the 0042
+thread also survives, because the numbers shift and 6 becomes a store file), and a signal to restart
+the call. Round 9's 3 s stack dump did not fire because the leftover thread is not always there.
+
+What I saw, on b7bd07e3 with a logging hook loaded at provision/adoption-path through one temporary
+line in suite 110 (removed before the commit): the hook writes every thread's stack, the system call
+each thread is blocked in and the descriptor table, and logs each accept and answer of the stand-in.
+Driver: scripts/gate_legs.py's leg variables for the unconfined leg, then `python3
+scripts/selftest.py --upto 110_veldo_0143_new_project`, 1, 5 and 8 legs at a time.
+
+- 14 legs, nothing forced: 2 failed, both in proposal/adoption-visibility. In the leg with full
+  logging the stand-in logged no accept for the lost send, the thread from 86_veldo_0189 line 376
+  went from accept4(6) to recvfrom(7) at that moment, and descriptor 6 was the stand-in's listener.
+- A thread left in accept() by suite 0189 or 0042 was present at adoption-path in 16 of 21 legs
+  (all 21 legs before the fix, forced or not).
+- A 40-line script outside the repository shows the mechanism alone: a thread blocked in accept(),
+  its socket closed, a new listener under the same number. The thread stays blocked until a signal
+  whose handler restarts system calls arrives; then it accepts the new listener's connection.
+
+### Forced red, then green
+
+Forcing: at provision/adoption-path the hook sends SIGUSR2, set to restart system calls
+(signal.siginterrupt(SIGUSR2, False)), to every thread left in accept().
+
+- Before the fix, 7 forced legs. In the 2 legs where the 0189 thread alone was left and the
+  stand-in's listener was descriptor 6, provision/adoption-path and ran/provision/adoption-path
+  failed with the gate's message (one TimeoutError, one ConnectionResetError). In 3 legs both
+  threads were left, descriptor 6 was a store file, and the rows passed. In 2 legs no thread was
+  left.
+- After the fix, 6 forced legs: no thread left in accept() in any of them, so nothing to force; 109
+  rows of suite 110 passed in each, 0042 passed 20 and 0189 passed 34 in each.
+
+### Fix
+
+Both suites now shut the listener down before closing it (socket.shutdown(SHUT_RDWR), which ends a
+blocked accept() with an error), join the thread, close the socket, and raise if the thread is still
+alive after 30 s. No retry, no longer timeout and no sleep was added anywhere. The 30 s is a bound on
+a join that returns as soon as the thread ends.
+
+### Runs on 704c8c28 (tree 076785f8)
+
+Host dmitry-pc, Python 3.12.3, Linux 7.0.0-38, 20 CPUs.
+
+- `python3 scripts/selftest.py --suite 110_veldo_0143_new_project`, 20 times alone (load 4.5 at
+  start, 3.9 at end): 20 of 20 with 135 passed, 0 failed; provision/adoption-path and
+  ran/provision/adoption-path green in all; 36.3 to 190.3 s (two slow runs while another job used
+  the host, the other 18 under 44 s).
+- The same 20 times under 40 busy-loop processes (2 x nproc; load 46.1 at end): 20 of 20 with 135
+  passed, 0 failed; both rows green in all; 87.2 to 101.1 s.
+- The 6 gate-like legs above ran on this tree plus the temporary hook line.
+
+Not done: the canonical gate was not run. Other suites have accept() loops I did not check
+(scripts/suites 47, 48, 91, 94, 101, 102, 109, 110, 127, 128 and support/identity_wire.py, which
+wakes its thread before closing); none of them left a thread in the 27 legs. In all 27 legs
+VELDO-0127 live/claude and live/codex failed with "missing or stale live capture", before and after
+the fix. Round 9's commit 7c8bcb5d caused that, not the environment: it changed
+.veldo/control_launch.py, and each live capture records the sha256 of that module. Fix round 9c
+has the detail.
+
+Raw logs were discarded (name, bytes, sha256; groups are concatenated in numeric order):
+leg_a1.log 55880 1609fdbe7a5a2f0c7eb7796c528676b2bcedbd353c31d9dc4ac7525cdd0bf380;
+leg_b 1-5 279833 60a11a8f7d90ed9384668b8392e5730694748d955bbd6672597ef26f7da7c1b6;
+leg_c 1-8 447471 b728a3854ae2d781c8a44e686664dbd0e93069f6d89a80d7da6bbea39c4075cb;
+leg_red.log 55879 4a1e60a99a8a7ff871a57fae543993844826ecd1724255f31abdb387fc91c9a9;
+leg_red 1-6 336096 f2b69e8903e68b74dcfe6285ea20f68b55eeaca7112bc1e7dbf463e1447ef825;
+leg_green 1-6 335274 d1334eb7dc6e90d8d567346568fe90235826a59248fddbd7201823d37c377ca2;
+out_a1.txt 2467 443d0517c6048fccb4c8efece76d609d2815c7751c24498043f858f67b0efb7a;
+out_b 1-5 18515 dec088efff3fdb72ebe2e6a3f87af8f4e4ed0e3ea8f9327899db8e101e4d1467;
+out_c 1-8 697976 0aa7ac9ba9832794175ad2a4b960c5fc64c35dac59cd9beb10f8c494aa319a00;
+out_red.txt 84341 beac6dc5d38506aba7ab36b24cf1abe4c5eddf9f6f88ed7ad6f320d0d9d31f81;
+out_red 1-6 521199 4019163ef62694a0339efdb4dfc8918160e3d9a5bc3c300bbfb7bae32a5dd9fb;
+out_green 1-6 506174 ad87dcf456b611ea01232b355beb1b8a0dd756d91b4c752eb9f1c592e9ff3483;
+rep_alone 1-20 190884 61799cf116001255ac5b20568510b7d3025912911acb5e8a68161dd150c0b5f4;
+rep_loaded 1-20 190882 04c40c30c42598049b6aa8b4d72ec39a1ca72d920d39221d5233ca3823643357;
+legs.summary 999 0b32541b61aed7cbf5396a8731b7ebee07bf78c7f6b0c9c1f8029f250fd69d9e;
+rep.summary 5309 4a7a5e63058626f282bb78d62c0d908e915afeb681fd8251a4781ef7b5507ae2.
+
+## Fix round 9c
+
+Gate 8 on 1d835cd3 was red on VELDO-0127 live/claude, VELDO-0127 live/codex and VELDO-0230
+qualify/reproduces, and the mutation stage stopped with invalid_baseline on the two live rows.
+One cause: 7c8bcb5d changed .veldo/control_launch.py (sha256 85f40e1e to 0df3b4cd). The two live
+captures and the four resource records in proof/VELDO-0127 each record that module's digest. No
+check, threshold or code changed in this round.
+
+Done: the four resource records and codex-live.json are regenerated and their rows pass.
+Not done: claude-live.json. live/claude is still red.
+
+### Runs on 1d835cd3 (tree e4921774)
+
+Host dmitry-pc, Python 3.12.3, Linux 7.0.0-38, 20 CPUs, load 27 throughout. Codex 0.166.0 and
+Claude Code 2.1.317, the binaries .veldo/runtime/engines.json names, both digests as recorded.
+
+- `python3 -B .veldo/qualify.py --codex <the recorded Codex vendor binary> --claude 2.1.317`:
+  exit 0, 26 files written. Git showed four changed: resources-gpt-6-astra-selected.json,
+  resources-gpt-6-astra-none.json, resources-gpt-5.5-selected.json and resources-gpt-5.5-none.json,
+  one line each, the control_launch.py digest. The output is byte-identical to
+  proof/landing-b/qualify-output.txt.
+- `python3 -B proof/VELDO-0127/live.py --only codex` with the recorded binaries, the codex2 login
+  and gpt-6-astra: exit 0 in 34.6 s, "codex: captured", no problems. auth.json in the login was
+  byte-identical before and after. As in landing-b, the run directory's uid is written as UID;
+  evidence.problems returns none after that edit too. Against the previous capture (codex1,
+  2026-11-05) the differences are the control_launch.py digest, run and session identifiers,
+  temporary paths, the date line in the prompt, record commitments and first-turn context: 7913,
+  7915, 7966, 7966 tokens against 7925, 7923, 7972, 7971. The file is 595657 bytes.
+- The same driver with `--only claude` and this run's own login (acct3) stopped in 0.07 s:
+  "borrowed login is busy: .runner-lease is held by another run". The runner of this session
+  holds that lease, and the lease exists so that two processes never refresh one login at once.
+  I did not work around it. The lead retakes this capture from outside a run on that login, or
+  names another login.
+- `python3 scripts/selftest.py --suite 126_veldo_0230_qualify_reproduces`: 4 passed, 0 failed,
+  116.2 s. qualify/reproduces is green.
+- `python3 scripts/selftest.py --suite 86_veldo_0127_agent_configuration`: 27 passed, 1 failed,
+  49.9 s. live/codex is green. live/claude fails with "missing or stale live capture".
+
+The canonical gate was not run.
+
+Raw logs were discarded (name, bytes, sha256):
+qualify-out.txt 32137 32a3db5498c78da707b64b14e013787a96e6558b389a255c3d23bfd10b60df56;
+live-codex-out.txt 16 165aabc977771ab442a2d7e5b16cd7aa578e2edb7e53f1eab3495209b8c1471d;
+live-codex-err.txt 362 f67c89dfa37fb8ad7e162613f2e41cc2016144435a23cf2c593d5561f6758e7a;
+live-claude-err.txt 1232 15996ac0cba90a2a9abca7433565752283228e8fddcd65374e98d17121f78397;
+s126.txt 9417 c4f3603a2f16708e7381efaabdbe7b6e3b2270a118434a29417df87d21e1aca7;
+s86.txt 10197 4aa764ca51975ddc1ed1a5fa3fd85567ba72f9d9c7c9c46f98f64c616cc08339.

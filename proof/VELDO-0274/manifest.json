@@ -22,13 +22,13 @@
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Falsifiers slices274-exit-skips-stop are registered in scripts/check_teeth_mutations.py as finding 274. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
-          "detail": "129_veldo_0274_factory_slices is listed in the stamp's unconfined.legs.unit and unconfined.legs.mutation at d0bb5da9, so the gate ran it and its mutation cases with the user manager. Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+          "ref": "the lead's gate stamp for d0bb5da9",
+          "detail": "129_veldo_0274_factory_slices is listed in the stamp's unconfined.legs.unit and unconfined.legs.mutation at d0bb5da9, so the gate ran it and its mutation cases with the user manager. Canonical gate GREEN at d0bb5da9 (the lead's gate stamp for d0bb5da9: status green, checks_run 9, mutation mode full, run 2939)."
         }
       ]
     },
@@ -48,13 +48,13 @@
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Falsifiers slices274-no-signal-handler, slices274-sweep-ignores-liveness are registered in scripts/check_teeth_mutations.py as finding 274. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
-          "detail": "129_veldo_0274_factory_slices is listed in the stamp's unconfined.legs.unit and unconfined.legs.mutation at d0bb5da9, so the gate ran it and its mutation cases with the user manager. Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+          "ref": "the lead's gate stamp for d0bb5da9",
+          "detail": "129_veldo_0274_factory_slices is listed in the stamp's unconfined.legs.unit and unconfined.legs.mutation at d0bb5da9, so the gate ran it and its mutation cases with the user manager. Canonical gate GREEN at d0bb5da9 (the lead's gate stamp for d0bb5da9: status green, checks_run 9, mutation mode full, run 2939)."
         }
       ]
     },
@@ -69,13 +69,13 @@
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+          "ref": "the lead's gate stamp for d0bb5da9",
           "detail": "Falsifiers slices274-factory-user-without-exit-stack are registered in scripts/check_teeth_mutations.py as finding 274. The mutation stage ran every registered case at d0bb5da9 (mode full, selected 2933, canaries 6, run 2939) and the stage was green, so each mutant was killed."
         },
         {
           "type": "unit",
-          "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
-          "detail": "129_veldo_0274_factory_slices is listed in the stamp's unconfined.legs.unit and unconfined.legs.mutation at d0bb5da9, so the gate ran it and its mutation cases with the user manager. Canonical gate GREEN at d0bb5da9 (/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify: status green, checks_run 9, mutation mode full, run 2939)."
+          "ref": "the lead's gate stamp for d0bb5da9",
+          "detail": "129_veldo_0274_factory_slices is listed in the stamp's unconfined.legs.unit and unconfined.legs.mutation at d0bb5da9, so the gate ran it and its mutation cases with the user manager. Canonical gate GREEN at d0bb5da9 (the lead's gate stamp for d0bb5da9: status green, checks_run 9, mutation mode full, run 2939)."
         }
       ]
     }
@@ -134,7 +134,7 @@
       "command": "./scripts/verify.sh",
       "commit": "d0bb5da99b56433146013d0a7c5753342c5c3004",
       "at": "2026-11-09T06:21:24Z",
-      "ref": "/home/dmitry/projects/myday/research/gate-stamps/landing-c-d0bb5da9/last_verify",
+      "ref": "the lead's gate stamp for d0bb5da9",
       "detail": "GATE GREEN. The nine checks above are the items scripts/verify.sh at d0bb5da9 declares required (the other 16 catalog items are na); the stamp records checks_run 9 and checks_na 16 but not their names."
     }
   ],
