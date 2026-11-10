@@ -1,0 +1,201 @@
+{
+ "command": "python3 proof/round11-suite63/run_suite63.py loaded 20, started through the shared gate lock in a user scope with MemoryMax=10G; each run is systemd-run --user --scope -q -p MemoryMax=10G python3 proof/round11-suite63/run_suite63.py observe",
+ "deciding": {
+  "cooperative_deadline_stop": [
+   "False"
+  ],
+  "escalation_deadline_stop": [
+   "False"
+  ],
+  "failed": 0,
+  "failures": [],
+  "measured_seconds": {
+   "cap_stop_after_activation": {
+    "bound": 1.7,
+    "count": 20,
+    "max": 1.2025,
+    "median": 1.2014,
+    "min": 1.2007,
+    "rule": "the suite requires a value below the bound"
+   },
+   "exit_latency": {
+    "bound": 0.75,
+    "count": 20,
+    "max": 0.006,
+    "median": 0.005,
+    "min": 0.005,
+    "rule": "the suite requires a value below the bound"
+   },
+   "first_beat_after_activation": {
+    "bound": 1.2,
+    "count": 20,
+    "max": 0.1165,
+    "median": 0.1055,
+    "min": 0.088,
+    "rule": "not a suite conjunct: the descendant has to be running before the cap fires"
+   },
+   "last_beat_after_activation": {
+    "bound": 2.7,
+    "count": 20,
+    "max": 1.7,
+    "median": 1.6104,
+    "min": 1.6047,
+    "rule": "the suite requires a value below the bound"
+   },
+   "submit_to_running": {
+    "count": 20,
+    "max": 0.2973,
+    "median": 0.2505,
+    "min": 0.2209
+   }
+  },
+  "passed": 20,
+  "rule": "every run ends with selector status 2, a partial line with 0 failed and no failed row",
+  "run_seconds": {
+   "count": 20,
+   "max": 8.65,
+   "median": 8.515,
+   "min": 8.41
+  },
+  "runs": 20,
+  "suite_checks_passed_per_run": [
+   60
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9710,
+   "name": "run-01.log",
+   "sha256": "41bb82e2cf351ff2f8b4b56e1eb9031f51c9b36ea9913848e7b709737429bdad"
+  },
+  {
+   "bytes": 9711,
+   "name": "run-02.log",
+   "sha256": "7fd8b5dc3304e62cb3112c27713fabba06668d76c86b20f8d5638d2c7b75ff9a"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-03.log",
+   "sha256": "27d5aa98c1429ac65e2f1751483feef84935b0e53d35854eb030624e5a4ef6d3"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-04.log",
+   "sha256": "99d6367f00186153b2506e43e7acbcb4a8d8ec3dd4c4b4549851c0f6e4612e27"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-05.log",
+   "sha256": "315dc9a98f25afbf0c62a3bd6836e22ad29303c8a5da0f16433f8d4c782b606c"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-06.log",
+   "sha256": "1b07be45303406d5b6fa5d69abe14e265832193684ab805f4570a6556cbac1c1"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-07.log",
+   "sha256": "b7b461f449269609f37970d05d779830677dd1e4bdddb6e60c98acb565dd0a9d"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-08.log",
+   "sha256": "f89b8fdb93b76766b45240ff278120530989a825c9d723545cab3bb82fc370dc"
+  },
+  {
+   "bytes": 9711,
+   "name": "run-09.log",
+   "sha256": "9d3ced2c4e959e1d86979eb019366d04675cab70ab2176561cb1b17a07fb5125"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-10.log",
+   "sha256": "539efd85a219ae31cbeeaf9041a8bf1d0c6631d6294dafee7242be1c8caec638"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-11.log",
+   "sha256": "b35cfb41ce5b56906a71a08082cafc1912dbf037d79680b38d2db97140ef1db5"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-12.log",
+   "sha256": "a13ee2c2779bf62998f54a43dd4565efe872aa3075a07d5aec77e970b987e150"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-13.log",
+   "sha256": "f40ed290a34240b914e40518c275e0fa8ffebd5cda7213acae254fc49ac65a22"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-14.log",
+   "sha256": "1742564101ec935855d11a9e2fe6e7f06d12ce4e90e7bd47c36aa0b3f10a2596"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-15.log",
+   "sha256": "47117ac1edfb5a0381cbac8c72b1d32220b53a741623bf04ac0aff9d7910b5e6"
+  },
+  {
+   "bytes": 9711,
+   "name": "run-16.log",
+   "sha256": "92d5fc884bb74bd6783520d094dca448a0eea2913edc1b59e6f79233d2f71fed"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-17.log",
+   "sha256": "881a85f4c15923251f9e103434899a525b61ad5f7fe5084fa2115b9f72726555"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-18.log",
+   "sha256": "1621ed3bd547a429eee6650cd9fa6a7ff157c80274e5129330061f827bff8da2"
+  },
+  {
+   "bytes": 9711,
+   "name": "run-19.log",
+   "sha256": "23b9802f2d52b46299c5137709b0758514733c12cc7b5c879cc6c53a5007dc3f"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-20.log",
+   "sha256": "4db286ee94e1edcf95c62bee52f533afcf14f70dd9dc3f4a8165377cb12d0179"
+  }
+ ],
+ "environment": {
+  "commit": "a5890f93e3269a600bded9507c13ba43d65d60e5",
+  "cores": 20,
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "kernel": "7.0.0-38-generic",
+  "load": [
+   14.8515625,
+   9.044921875,
+   6.74365234375
+  ],
+  "load_1min": {
+   "at_end": 14.85,
+   "at_start": 3.25,
+   "per_run_after": {
+    "count": 20,
+    "max": 15.14,
+    "median": 13.55,
+    "min": 5.45
+   }
+  },
+  "python": "3.12.3",
+  "systemd": "systemd 255 (255.4-1ubuntu8.18)",
+  "tree": "ae7126bf489c48c156ad3479515dc9101c5c5527",
+  "uncommitted_changes_under_scripts": false
+ },
+ "load": {
+  "scope_errors": 0,
+  "scopes_finished": 4744,
+  "work": "each worker loops a new systemd user scope (MemoryMax=10G) that burns 0.5 s of CPU",
+  "workers": 15
+ },
+ "schema": "veldo.proof-summary/v1"
+}

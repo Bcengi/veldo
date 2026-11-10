@@ -1,0 +1,69 @@
+Round 11 starts at 24c9f5b4 on branch round11-suite63. It lands after landing-c.
+Code commit: f3d0c5b3e738b5727984c4342d2534bbd5031eec. Test only: one file,
+scripts/suites/63_veldo_0040_containment.py. Nothing under .veldo/ changed.
+
+Line numbers checked against 24c9f5b4 before the change:
+258 to 260 start every descendant as a second Python interpreter.
+323 sets runtime_seconds=1.2 and kill_grace_seconds=0.5.
+333 is the 20 s accept wait.
+345 to 347 are job()'s return; the deadline expression is on 347, not 346.
+1181 to 1199 are the runtime-cap conjuncts.
+1219 and 1244 carry deadline=4 and deadline=8.
+
+(a) Done. The fixture engine starts the 'stubborn' descendant by os.fork()
+and runs the child code in its own interpreter. The child resets SIGTERM
+and points stdin at the null device first, so it starts the way a separate
+process did. The other kinds are still started as separate processes.
+runtime_seconds=1.2, kill grace 0.5 and all conjuncts are unchanged.
+
+(b) Left as it was. Runner.submit takes an absolute deadline as a keyword
+and passes it to prepare(), which writes it into the contract and records
+that contract before the receiver is invoked (.veldo/control_launch.py
+960 to 967 and 821 to 879). job() is evaluated in the same expression as
+the submit call, so the deadline already starts at the submit. The time a
+loaded host loses is the launch inside submit, after the contract is
+recorded. Starting the deadline after the launch needs a product change.
+
+(c) Done. Both check() calls pass their observation as the detail.
+
+No assertion, threshold, window or timeout changed. No sleep or retry added.
+
+Fix 1, after the review, commit a5890f93e3269a600bded9507c13ba43d65d60e5.
+The comment above the fork was wrong. systemd-run execs the wrapper, which
+is a Python interpreter, and the wrapper execs the engine. The 1.2 s cap
+now covers those two interpreter starts; before the fork it covered three.
+run_suite63.py now builds each summary with the validator's proof_summary,
+so it has the veldo.proof-summary/v1 schema and a discarded list with the
+name, bytes and sha256 of every raw log. Both summaries below were written
+by that script at a5890f93. Neither was edited by hand.
+
+Results, both started through the shared gate lock:
+alone.summary.json: 20 of 20 runs passed, 60 suite checks each, 8.1 to
+8.5 s per run. Other jobs had the 1-minute load at 37 when it started; it
+fell to 4 by the end.
+loaded.summary.json: 20 of 20 runs passed, 60 suite checks each, 8.4 to
+8.7 s per run, beside 15 load workers that finished 4744 scopes with 0
+errors; 1-minute load 5 to 15 on 20 cores.
+The stubborn descendant's first beat came 0.09 to 0.12 s after scope
+activation in all 40 runs, against the 1.2 s cap. Submit to running took
+0.21 to 0.30 s.
+
+These runs did not reach the starvation of the failing runs. Those took 85
+to 127 s per suite run, with 9 to 11 s from submit to running. Here a run
+took under 9 s. The 40 runs show the change breaks nothing and how much
+room the cap has on a host that is not starved. They do not show the
+runtime-cap row passing under that starvation.
+
+Cooperative-stop and stop-escalation stay exposed at that starvation. The
+product fixes the deadline at submit, before the launch, and those rows
+use deadlines of 4 s and 8 s. A launch of 9 to 11 s uses up the deadline
+before the stop is asked for. The fork does nothing for the cooperative
+row, which has no stubborn descendant. A test cannot move the deadline;
+that needs a product change.
+
+python3 .veldo/validate.py proof-files reports no problems: 5984 proof
+files checked, exit status 0.
+
+Final check: python3 scripts/selftest.py --suite 63_veldo_0040_containment
+returned 2, the selector's status for a selected suite, with 86 passed and
+0 failed (60 in suite 63, 26 in the shared preamble).

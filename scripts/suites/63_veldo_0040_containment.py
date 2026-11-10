@@ -255,9 +255,38 @@ if payload.get('write_bytes'):
     except OSError as error:
         own['write'] = 'refused:' + str(error.errno)
     own['written'] = (Path(markers) / (tag + '.big')).stat().st_size
+class Forked:
+    def __init__(self, pid):
+        self.pid = pid
+    def send_signal(self, number):
+        os.kill(self.pid, number)
+    def wait(self):
+        return os.waitpid(self.pid, 0)[1]
 for name, kind, hold in payload.get('descendants') or []:
+    if kind == 'stubborn':
+        # Forked, and the child code run in this interpreter: a runtime cap that starts at scope
+        # activation then covers two interpreter starts (the wrapper and the engine), not three. The child
+        # drops the engine's SIGTERM handler and stdin first, as a started process has neither; stdout stays.
+        pid = os.fork()
+        if pid == 0:
+            code = 1
+            try:
+                signal.signal(signal.SIGTERM, signal.SIG_DFL)
+                os.dup2(os.open(os.devnull, os.O_RDONLY), 0)
+                sys.argv = [sys.argv[2], markers, tag, name, kind, str(hold)]
+                exec(compile(Path(sys.argv[0]).read_text(), sys.argv[0], 'exec'), {'__name__': '__main__'})
+                code = 0
+            except SystemExit as error:
+                code = error.code if isinstance(error.code, int) else 0 if error.code is None else 1
+            except BaseException:
+                import traceback
+                traceback.print_exc()
+            finally:
+                os._exit(code)
+        children.append(Forked(pid))
+        continue
     children.append(subprocess.Popen([sys.executable, '-B', sys.argv[2], markers, tag, name, kind, str(hold)],
-                                     stdin=subprocess.DEVNULL, stdout=None if kind == 'stubborn' else subprocess.DEVNULL))
+                                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL))
 mark(markers, tag, 'worker', own)
 if payload.get('burn'):
     path = Path('/sys/fs/cgroup') / own['cgroup'].lstrip('/') / 'cpu.stat'
@@ -1238,7 +1267,8 @@ sys.exit(payload.get('code', 0))
                       and [s['step'] for s in supervision.get('steps', [])] == ['cooperative']
                       and supervision.get('empty') is True and slot_polite.get('retired') is True
                       and (slot_polite.get('retirement') or {}).get('outcome') == 'cancelled'
-                      and (slot_polite.get('retirement') or {}).get('cleaned') is True)
+                      and (slot_polite.get('retirement') or {}).get('cleaned') is True,
+                      observed['cooperative'])
 
                 stubborn = runner('main').submit(u8, 'build', **job(descendants=[['stubborn', 'stubborn', 20]], hold=20,
                                                                     beat=True, on_term='ignore', deadline=8))
@@ -1281,7 +1311,8 @@ sys.exit(payload.get('code', 0))
                       and slot_stubborn.get('retired') is True
                       and (slot_stubborn.get('retirement') or {}).get('outcome') == 'cancelled'
                       and (slot_stubborn.get('retirement') or {}).get('cleaned') is True
-                      and (slot_stubborn.get('retirement') or {}).get('observed_at', 0) >= supervision.get('empty_at', 1e18))
+                      and (slot_stubborn.get('retirement') or {}).get('observed_at', 0) >= supervision.get('empty_at', 1e18),
+                      observed['escalation'])
 
             # AC3: the worker slot is returned only on the runner's own observation of an empty group
             with region('containment/retire-after-empty'):
