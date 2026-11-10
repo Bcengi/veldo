@@ -1,0 +1,132 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0271",
+ "commit": "94377efb38cb46c08366983974ccca2dfa2e07e8",
+ "tree": "24305b98abe41117579461a66b3962cc1cb33bef",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-10T20:30:00+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0271_gate_without_sandbox.py",
+     "detail": "Rows one-leg/user-manager-and-strace-in-one-stage, one-leg/stamp-has-no-unconfined-field, one-leg/unit-stage-reports-every-suite, one-leg/stdin-is-end-of-file: fixture gates over fixture repositories. Run alone on this tree the suite was green (16 rows); a run of one suite is not verification."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/check_teeth_mutations.py",
+     "detail": "Registered as finding 271: oneleg271-dispatcher-skips-once-listed-suites, oneleg271-resource-record-never-written (row concurrent-stages/measured-claims of suite 114_veldo_0216_concurrent_stages), oneleg271-caller-stdin-passed-through."
+    },
+    {
+     "type": "note",
+     "ref": "proof/VELDO-0271/heavy_runs.sh",
+     "detail": "Pending: the whole unit suite (step 1) and the registered mutations (step 3) have not been run on this tree. The unit node's estimate in scripts/gate_graph.json is still the sum of the two old legs; the measured run of step 1 replaces it."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0271_gate_without_sandbox.py",
+     "detail": "Rows kept/authority-scripts-judge, kept/host-lock-not-started, kept/scope-memory-limit, kept/no-credential-variable."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/check_teeth_mutations.py",
+     "detail": "Registered as finding 271: oneleg271-environment-copied-unfiltered, oneleg271-scheduler-resolved-from-candidate."
+    },
+    {
+     "type": "note",
+     "ref": "proof/VELDO-0271/heavy_runs.sh",
+     "detail": "Pending: steps 1 and 3."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0271_gate_without_sandbox.py",
+     "detail": "Row mutation/every-run-fresh. Suite 140_veldo_0267_mutation_selection rows canary/declaration-valid and canary/declaration-covers-drivers-fixture."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/check_teeth_mutations.py",
+     "detail": "Registered as finding 271: oneleg271-stored-result-returned-again, oneleg271-canary-set-cut-to-five."
+    },
+    {
+     "type": "note",
+     "ref": "proof/VELDO-0271/heavy_runs.sh",
+     "detail": "Pending: steps 1 and 3, and step 4, which runs the suite 62 cases of VELDO-0261 through scripts/check_teeth_mutations.py directly. The tree registers two of them (dispatch261-stop-message-ignored, dispatch261-stop-leaves-record-running), not the three the spec counts."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0271/removed.json",
+     "detail": "The table: 437 lines (4 suites, 1 mutation case, 430 suite rows, 2 rows that stay and lost a clause), 343 marked confinement only and 94 naming the row that still checks the behavior. proof/VELDO-0271/rows.json is the inventory it is compared with; proof/VELDO-0271/rows.summary.json says how that inventory was made (one run per changed suite, not yet a whole run)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0271_gate_without_sandbox.py",
+     "detail": "Rows removed/seven-names-gone, removed/lease-not-loaded, removed/lease-only, removed/leftover-reported, removed/leftover-silent-without, removed/gate-never-calls-sudo, removed/table-lists-every-removed-row. Suite 73_veldo_0139_factory_setup rows setup/leftover-reported and setup/never-calls-sudo; suite 103_veldo_0211_borrowed_login live rows; suite 127_veldo_0254_secret_scan row ac3/no-runner-host."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/check_teeth_mutations.py",
+     "detail": "Registered as finding 271: oneleg271-factory-setup-calls-sudo, oneleg271-leftover-report-refuses, oneleg271-removed-row-left-out-of-table, oneleg271-lease-never-taken."
+    },
+    {
+     "type": "note",
+     "ref": "proof/VELDO-0271/README.md",
+     "detail": "Pending: steps 1, 3 and 5 of heavy_runs.sh. Open: VELDO-0230 qualify/reproduces (suite 126) is red on this tree, because four files in proof/VELDO-0127 record the digest of .veldo/control_launch.py, whose two comments AC4 changes; those files are outside this footprint."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "personal_setup",
+   "status": "passed",
+   "command": "python3 scripts/check_personal_setup.py",
+   "detail": "0 findings; no installation on this host, so the built-in shapes only."
+  },
+  {
+   "name": "proof_files",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py proof-files",
+   "detail": "5983 proof files checked, none over the limit of 1048576 bytes; the largest file of this bundle is removed.json, 107080 bytes."
+  },
+  {
+   "name": "unit",
+   "status": "pending",
+   "command": "python3 scripts/selftest.py",
+   "detail": "Not run whole on this tree; step 1 of proof/VELDO-0271/heavy_runs.sh. VELDO-0230 qualify/reproduces is red when suite 126 runs alone (README, Open)."
+  },
+  {
+   "name": "mutation",
+   "status": "pending",
+   "command": "python3 scripts/check_teeth_mutations.py --finding 271",
+   "detail": "Not run; steps 3 and 4 of proof/VELDO-0271/heavy_runs.sh."
+  },
+  {
+   "name": "gate",
+   "status": "pending",
+   "command": "./scripts/verify.sh",
+   "detail": "Not run by the builder; the lead runs the gate."
+  }
+ ],
+ "rollback": "Revert the commit. The legs, the leg list, the launcher, the helper source and its profile return as they were. This spec never touches the installed helper or profile on a host, so on a host where the owner has not removed them confinement works again at once; where they were removed, the restored docs/veldo-userns-setup.txt line reinstalls them."
+}

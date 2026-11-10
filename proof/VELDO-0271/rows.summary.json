@@ -1,0 +1,70 @@
+{
+ "command": "python3 proof/VELDO-0271/record_rows.py merge /tmp/v271/rows-before.json /tmp/v271/work/rows-after-assembled.json proof/VELDO-0271/removed.json proof/VELDO-0271/rows.json proof/VELDO-0271/rows.summary.json",
+ "deciding": {
+  "after": {
+   "aggregate": "not a whole run: the rows of the 31 suites whose files changed, each recorded alone on this branch; every other suite as recorded at 24c9f5b4",
+   "cases_total": 2956,
+   "commit": "94377efb38cb46c08366983974ccca2dfa2e07e8",
+   "exit": null,
+   "rows_total": 6666,
+   "suites": 194
+  },
+  "before": {
+   "aggregate": "selftest: 9056 passed, 2 failed",
+   "cases_total": 2946,
+   "commit": "24c9f5b4a4096fbe3dc7854175ffbf5ff950d394",
+   "exit": 1,
+   "rows_total": 7075,
+   "suites": 196
+  },
+  "cases_added": [
+   "check_teeth_mutations.py:oneleg271-caller-stdin-passed-through",
+   "check_teeth_mutations.py:oneleg271-canary-set-cut-to-five",
+   "check_teeth_mutations.py:oneleg271-dispatcher-skips-once-listed-suites",
+   "check_teeth_mutations.py:oneleg271-environment-copied-unfiltered",
+   "check_teeth_mutations.py:oneleg271-factory-setup-calls-sudo",
+   "check_teeth_mutations.py:oneleg271-lease-never-taken",
+   "check_teeth_mutations.py:oneleg271-leftover-report-refuses",
+   "check_teeth_mutations.py:oneleg271-removed-row-left-out-of-table",
+   "check_teeth_mutations.py:oneleg271-resource-record-never-written",
+   "check_teeth_mutations.py:oneleg271-scheduler-resolved-from-candidate",
+   "check_teeth_mutations.py:oneleg271-stored-result-returned-again"
+  ],
+  "cases_removed": [
+   "check_teeth_mutations.py:concurrent216-lost-leg-record"
+  ],
+  "row_names_added": 21,
+  "row_names_removed": 430,
+  "suites_added": [
+   "141_veldo_0271_gate_without_sandbox"
+  ],
+  "suites_removed": [
+   "102_veldo_0210_agent_profile_runtime",
+   "104_veldo_0210_mutation_workers",
+   "128_veldo_0254_confined_runner"
+  ],
+  "suites_with_different_rows": 12,
+  "table_entries": 437,
+  "verdict": "the suite row removed/table-lists-every-removed-row compares rows.json with removed.json"
+ },
+ "discarded": [
+  {
+   "bytes": 528260,
+   "name": "rows-at-24c9f5b4.json",
+   "sha256": "70d49094475e21f52feddca0896b31a40e000bd99afa4f0e5e58870b1e809d52"
+  },
+  {
+   "bytes": 506533,
+   "name": "rows-after.json",
+   "sha256": "488ef9974cf7e5a4da7beef58965f604ff43f764755a568a14130b97527c700b"
+  }
+ ],
+ "environment": {
+  "commit": "94377efb38cb46c08366983974ccca2dfa2e07e8",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "python": "3.12.3",
+  "tree": "24305b98abe41117579461a66b3962cc1cb33bef"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
