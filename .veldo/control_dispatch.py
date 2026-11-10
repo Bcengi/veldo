@@ -94,6 +94,7 @@ import copy
 import importlib.util
 import json
 import math
+import os
 from pathlib import Path
 
 
@@ -564,6 +565,36 @@ def transition(conn, params, before):
     return changes
 
 
+def _test_hook(point, action, dispatch_id, attempt=1):
+    """File-controlled boundaries, enabled only by the control test harness."""
+    if os.environ.get('VELDO_CONTROL_TEST_HARNESS') != '1':
+        return
+    for hook in json.loads(os.environ.get('VELDO_CONTROL_DISPATCH_HOOKS', '[]')):
+        if (hook['point'] != point or hook.get('action', action) != action
+                or hook.get('dispatch_id', dispatch_id) != dispatch_id
+                or hook.get('attempt', 1) != attempt):
+            continue
+        if hook.get('raise'):
+            raise RuntimeError('dispatch test hook: ' + point)
+        with open(hook['reached'], 'wb', buffering=0) as reached:
+            reached.write(b'1')
+        with open(hook['release'], 'rb', buffering=0) as release:
+            release.read(1)
+
+
+def _only_stop_writes(before, after, rid):
+    """Every field stays equal except stop metadata and appended stop history."""
+    if any(before[k]['version'] != after[k]['version'] for k in before if k != rid):
+        return False
+    old, new = before[rid]['data'], after[rid]['data']
+    history = old.get('history', [])
+    appended = new.get('history', [])[len(history):]
+    return (new.get('history', [])[:len(history)] == history and bool(appended)
+            and all(entry.get('action') in STOP_ACTIONS for entry in appended)
+            and {k: v for k, v in old.items() if k not in ('stop_request', 'history')}
+            == {k: v for k, v in new.items() if k not in ('stop_request', 'history')})
+
+
 class Dispatches:
     """One domain and repository's dispatch records over a real control store connection. The
     principal is the service writing (the runner prepares; the launch receiver accepts, runs and
@@ -641,30 +672,45 @@ class Dispatches:
         # Idempotent by content: a delivery retry of the same observation replays its first result,
         # and a different observation is a new command the transition itself judges.
         command_id = 'dispatch/%s/%s/%s' % (action, dispatch_id, digest(params)[len('sha256:'):][:24])
-        expected = {}
-        for identity in ids:
-            row = self.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
-            expected[identity] = row[0] if row else 0
-        # A delivery retry of the same observation reuses the versions its first commit expected.
+        snapshot = self._snapshot(ids)
+        expected = {identity: entry['version'] for identity, entry in snapshot.items()}
+        # Delivery retries replay the committed command, including its original versions.
         prior = self.conn.execute('SELECT before_versions FROM journal WHERE command_id=?', (command_id,)).fetchone()
         if prior:
             expected = json.loads(prior[0])
         command = dict(command_id=command_id, principal=self.principal, operation=OPERATION, parameters=params,
                        expected_versions=expected, artifact_digests=[], nonce='dispatch/' + command_id)
-        event = {'schema': SCHEMA, 'operation': action, 'domain': self.domain, 'repository': self.repository,
-                 'unit': current.get('unit'), 'station': current.get('station'), 'dispatch_id': dispatch_id,
-                 'request': command_id, 'accepted_versions': dict(expected)}
-        try:
-            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
-        except (Refused, self.store.StoreRefused) as error:
-            self.counts['refused'] += 1
-            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))
-            if isinstance(error, Refused):
-                raise
-            raise Refused(error.code, error.detail) from error
-        self.counts['accepted'] += 1
-        self.observe(dict(event, outcome='accepted', watermark=result['seq'], state=TRANSITIONS[action][1]))
-        return self.record(dispatch_id)
+        # At most two stop writes: one request and one result. Neither changes lifecycle state.
+        for attempt in range(1, 4):
+            event = {'schema': SCHEMA, 'operation': action, 'domain': self.domain, 'repository': self.repository,
+                     'unit': current.get('unit'), 'station': current.get('station'), 'dispatch_id': dispatch_id,
+                     'request': command_id, 'accepted_versions': dict(expected), 'attempt': attempt}
+            _test_hook('before_execute', action, dispatch_id, attempt)
+            try:
+                result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
+            except (Refused, self.store.StoreRefused) as error:
+                self.counts['refused'] += 1
+                self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))
+                if error.code == 'stale_version' and action != 'prepare' and not prior and attempt < 3:
+                    fresh = self._snapshot(ids)
+                    if _only_stop_writes(snapshot, fresh, ids[0]):
+                        snapshot = fresh
+                        expected = {identity: entry['version'] for identity, entry in fresh.items()}
+                        command['expected_versions'] = expected
+                        continue
+                if isinstance(error, Refused):
+                    raise
+                raise Refused(error.code, error.detail) from error
+            self.counts['accepted'] += 1
+            self.observe(dict(event, outcome='accepted', watermark=result['seq'], state=TRANSITIONS[action][1]))
+            return self.record(dispatch_id)
+
+    def _snapshot(self, ids):
+        """Record data and all expected versions from one SQLite statement and snapshot."""
+        found = {identity: {'version': version, 'data': json.loads(data)}
+                 for identity, version, data in self.conn.execute(
+                     'SELECT id, version, data FROM entities WHERE id IN (%s)' % ','.join('?' for _ in ids), ids)}
+        return {identity: found.get(identity, {'version': 0, 'data': {}}) for identity in ids}
 
     @_CLIENTS.entrypoint('dispatch-admission', ('in_process',))
     def request_stop(self, dispatch_id, version, principal, *, now, request, reason='owner_stop', channel=None,
@@ -688,13 +734,27 @@ class Dispatches:
         rid = record_id(dispatch_id) if _text(dispatch_id) else None
         if rid is None:
             raise Refused('invalid_input', 'a dispatch is named')
-        expected = {rid: self.version(dispatch_id)}
+        snapshot = self._snapshot([rid])[rid]
+        pending = snapshot['data'].get('stop_request')
+        expected = {rid: snapshot['version']}
         params = dict(action='stop_result', dispatch_id=dispatch_id, now=now, principal=self.principal,
                       asked=asked, domain=self.domain, repository=self.repository)
         command_id = 'dispatch/stop_result/%s/%s' % (dispatch_id, digest(params)[len('sha256:'):][:24])
         command = dict(command_id=command_id, principal=self.principal, operation=OPERATION, parameters=params,
                        expected_versions=expected, artifact_digests=[], nonce='dispatch/' + command_id)
-        return self._stop_command('stop_result', dispatch_id, command, expected)
+        # Accept, run and end can each displace the result once after a request.
+        for attempt in range(1, 5):
+            _test_hook('before_execute', 'stop_result', dispatch_id, attempt)
+            try:
+                return self._stop_command('stop_result', dispatch_id, command, expected, attempt=attempt)
+            except Refused as error:
+                if error.code == 'stale_version' and attempt < 4:
+                    fresh = self._snapshot([rid])[rid]
+                    if pending and pending.get('result') is None and fresh['data'].get('stop_request') == pending:
+                        expected = {rid: fresh['version']}
+                        command['expected_versions'] = expected
+                        continue
+                raise
 
     def stop_requests(self):
         """The dispatches of this domain and repository whose stop request waits for its ask, oldest first."""
@@ -707,12 +767,12 @@ class Dispatches:
                 found.append((pending.get('at') or 0, record['dispatch_id'], pending.get('reason')))
         return [(d, r) for _at, d, r in sorted(found)]
 
-    def _stop_command(self, action, dispatch_id, command, expected):
+    def _stop_command(self, action, dispatch_id, command, expected, attempt=1):
         current = (self.record(dispatch_id) or {}).get('contract') or {}
         event = {'schema': SCHEMA, 'operation': action, 'domain': self.domain, 'repository': self.repository,
                  'unit': current.get('unit'), 'station': current.get('station'), 'dispatch_id': dispatch_id,
                  'principal': command['principal'], 'request': command['command_id'],
-                 'accepted_versions': dict(expected)}
+                 'accepted_versions': dict(expected), 'attempt': attempt}
         try:
             result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
         except (Refused, self.store.StoreRefused) as error:

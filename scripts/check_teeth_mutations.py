@@ -12085,10 +12085,10 @@ def cases():
         "    if not _text(project):  # defect: the member's scope is not judged\n",
         ['dispatch/owner-stop'])
     # Worker stop: the runner records the ask without asking the receiver (the stop mechanism is never requested).
-    # Since landing-c round 9 the ask is recorded before it is made, so the defect skips the ask after the record.
+    # VELDO-0288: skip the ask and falsely record that the receiver was reached.
     add(131, 'launch131-stop-recorded-unasked', '62_veldo_0039_dispatch.py', 'control_launch.py',
-        "                asked = bool(askable and launch.stop(reason or 'owner_stop'))\n",
-        "                asked = askable  # defect: recorded as asked, the receiver never asked\n",
+        "                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))\n",
+        "                asked = bool(launch is not None)  # defect: recorded as asked, the receiver never asked\n",
         ['dispatch/owner-stop', 'dispatch/owner-stop-other-runner'])
     # Worker stop: a runner that does not hold the running dispatch consumes its stop request as not asked.
     add(131, 'launch131-stop-consumed-unheld', '62_veldo_0039_dispatch.py', 'control_launch.py',
@@ -12408,7 +12408,7 @@ def cases():
         ['delivery/' + code127 + '/none', 'delivery/' + code127 + '/jira', 'stop/' + code127 + '/missing'])
     result[-1]['dir'] = 'proof/VELDO-0127'
     # AC2: the owner stop rows judge the cause of the end (with launch131-stop-recorded-unasked above, the holding
-    # runner records the ask without writing it to its receiver).
+    # runner skips Launch.stop and falsely records asked true).
     stops261 = ['dispatch/owner-stop', 'dispatch/owner-stop-other-runner']
     add(261, 'dispatch261-stop-message-ignored', '62_veldo_0039_dispatch.py', 'control_launch.py',
         "                asked = asked or (isinstance(message, dict) and bool(message.get('stop')))\n",
@@ -12459,6 +12459,35 @@ def cases():
         named261.replace('    if code == sqlite3.SQLITE_BUSY:', '    if True:  # defect: every error named busy'),
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
+
+    # VELDO-0288: stop metadata commutes with lifecycle writes, with a truthful ask result.
+    stop288 = '62_veldo_0039_dispatch.py'
+    add(288, 'stop288-no-retry', stop288, 'control_dispatch.py',
+        "                if error.code == 'stale_version' and action != 'prepare' and not prior and attempt < 3:\n",
+        "                if False:  # defect: stop writes refuse lifecycle writes\n",
+        ['dispatch/stop-write-commutes', 'dispatch/stop-during-exit', 'dispatch/stop-during-natural-end',
+         'dispatch/stop-during-accept-run'])
+    add(288, 'stop288-retry-any-change', stop288, 'control_dispatch.py',
+        "                    if _only_stop_writes(snapshot, fresh, ids[0]):\n",
+        "                    if True:  # defect: a state change is retried too\n",
+        ['dispatch/lifecycle-write-still-stale'])
+    add(288, 'stop288-result-no-retry', stop288, 'control_dispatch.py',
+        "                if error.code == 'stale_version' and attempt < 4:\n",
+        "                if False:  # defect: receiver writes refuse stop results\n",
+        ['dispatch/stop-result-after-exit'])
+    ask288 = ("            try:\n"
+              "                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))\n"
+              "            except Exception:  # noqa: BLE001 - a receiver that cannot be asked is recorded as not asked\n"
+              "                asked = False\n"
+              "            D._test_hook('after_stop', 'stop_result', dispatch_id)\n")
+    add(288, 'stop288-record-before-ask', stop288, 'control_launch.py', ask288,
+        "            asked = bool(launch is not None and launch.can_stop())\n",
+        ['dispatch/owner-stop-asked-is-delivered', 'dispatch/owner-stop-crash-before-record'],
+        also=[("            done.append((dispatch_id, asked))\n", ask288 + "            done.append((dispatch_id, asked))\n")])
+    add(288, 'stop288-docstring-overclaims', stop288, 'control_launch.py',
+        '        Return the recorded (dispatch, asked) pairs in order.\n',
+        '        The writes never race; the runner records the ask before it makes it.\n',
+        ['dispatch/honor-stops-docstring'])
 
     # VELDO-0267: the gate's mutation selection, its canaries and triggers, the nightly sweep and the
     # landing check. Each is the falsifier the suite also applies to an in-memory copy.
