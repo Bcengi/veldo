@@ -909,7 +909,8 @@ class Workers:
                     self.meters[name].close()
                     del self.meters[name]
                 except Exception as cleanup_error:
-                    record['cleanup_error'] = (record['cleanup_error'] + '; ' if 'cleanup_error' in record else '') + str(cleanup_error)
+                    record['cleanup_error'] = ((record['cleanup_error'] + '; ' if 'cleanup_error' in record else '')
+                                               + str(cleanup_error))
                     if error is None:
                         error = Refused('worker_cleanup_error', name + ': ' + record['cleanup_error'])
                         record.update(error=error.code, detail=error.detail)

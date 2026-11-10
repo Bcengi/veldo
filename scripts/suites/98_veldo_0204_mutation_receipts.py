@@ -257,6 +257,8 @@ def _v204_mutation_receipts():
                                   'exit': 'one: worker exit 7', 'trace': str(trace_error)}[first])
                               and (outcome.get('cleanup_error') == text if steps
                                    else 'cleanup_error' not in outcome)
+                              and (first is not None or not steps
+                                   or outcome.get('detail') == 'one: ' + steps[0] + ' failed')
                               and bool(pool.held) == bool(steps)
                               and bool(admission.held) == bool(steps)
                               and released == ([] if steps else ['one']))

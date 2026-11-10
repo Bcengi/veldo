@@ -373,6 +373,7 @@ def _v219_checks():
             if fault == 'deadline-sample':
                 sample_checks.append(admission.raised is admission.deadline_error
                     and 'worker deadline' in outcome.get('detail', '')
+                    and outcome['detail'] == admission.deadline_error.detail
                     and outcome.get('measurement_error') == 'planted last sample failure')
             else:
                 sample_checks.append('planted last sample failure' in outcome.get('detail', '')
