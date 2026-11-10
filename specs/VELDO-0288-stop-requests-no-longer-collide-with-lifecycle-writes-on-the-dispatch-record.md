@@ -20,6 +20,9 @@ footprint:
   - "specs/VELDO-0288-stop-requests-no-longer-collide-with-lifecycle-writes-on-the-dispatch-record.md"
   - "specs/index.md"
   - "proof/VELDO-0288/**"
+  - "proof/VELDO-0127/claude-live.json"
+  - "proof/VELDO-0127/codex-live.json"
+  - "proof/VELDO-0127/resources-*.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -36,44 +39,59 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      A lifecycle write (accept, run, exit, unknown) and stop_result that the store refuses stale_version
-      re-read the dispatch record and commit again only when the re-read differs from the record the write
-      first read in nothing but stop_request and history: the same state, contract digest and every
-      lifecycle field the transition judges. Each retry recomputes its expected versions from the re-read
-      and is a new command only because the re-read showed a stop write; a delivery retry of the same
-      observation still replays its first result. Attempts are bounded by a small fixed number named in
-      the code. Any other change between the read and the commit is refused exactly as today, and so is a
-      stop-only conflict that outlasts the bound.
+      Every command Dispatches._run commits after prepare (accept, run, exit, refuse, unknown) can meet a
+      stop write and be refused stale_version. _run reads the dispatch record's data and the versions of
+      both entities it expects, in one read, just before it executes. On stale_version it reads them again
+      and recommits only when the index entity's version is unchanged and the dispatch record is equal
+      except for stop_request and history entries appended whose action is request_stop or stop_result.
+      The retry reuses the command_id and nonce of the refused attempt, which wrote nothing, and
+      recomputes its expected versions. A delivery retry of a committed observation still replays its
+      first result through the journal's before_versions. A lifecycle write retries at most twice,
+      because a dispatch takes at most two stop writes (one request_stop, one stop_result). stop_result
+      refused stale_version re-reads the record and commits again while the re-read still shows the same
+      stop request with result null; any other re-read is refused as today. stop_result retries at most
+      three times, once for each lifecycle write that can follow a request (accept, run, end). Any other
+      change between the read and the commit is refused exactly as today.
     falsified_by: >
       Suite 62 row dispatch/stop-write-commutes: with the record's version moved by a request_stop and by
       a stop_result between the receiver's read and its commit, accept, run and exit each commit on retry
-      and the record holds the new state. The sibling dispatch/lifecycle-write-still-stale: a state change
-      (another receiver's exit) in the same window is refused stale_version with no retry. Mutation
-      stop288-no-retry (the retry removed) reds the first row; stop288-retry-any-change (the re-read check
-      removed) reds the second; stop288-unbounded (no bound, with a hook that writes stop metadata on
-      every attempt) reds a row that expects the refusal after the bound.
+      and the record holds the new state; the observations show the refused attempt with refusal
+      stale_version and attempt 1, and the committed attempt with attempt 2. The sibling
+      dispatch/lifecycle-write-still-stale: a state change (another receiver's exit) in the same window is
+      refused stale_version with no retry. Row dispatch/stop-result-after-exit: the runner is held after
+      stop_result's version read, the receiver's exit commits, and the record ends exited with
+      stop_request.result.asked true. Mutation stop288-no-retry (the retry removed) reds the first row;
+      stop288-retry-any-change (the re-read check removed) reds the second; stop288-result-no-retry (the
+      stop_result retry removed) reds the third.
   - id: AC2
     text: >
       honor_stops asks the receiver first and records the result afterwards, so stop_request.result.asked
       is what Launch.stop returned: true only when the stop bytes reached a receiver of that dispatch. A
-      runner that crashes between the ask and the record leaves the request pending (result null), which
-      is true, and the next sweep asks again. A receiver that ended before it could be asked is recorded
-      asked false. The round 9 order (record, then ask) and its tooth launch131-stop-recorded-unasked are
-      replaced by this order and the teeth of AC3. The alternative the review allows, a record of intent
-      before the ask and a second commit of delivery after it with an explicit delivery-unknown state
-      after a crash, adds a field to the stored dispatch record; a build that takes it amends this spec
-      first with risk_areas [schema] and the approval that area computes.
+      runner that crashes between the ask and the record leaves the request pending (result null). A
+      runner that doesn't hold the dispatch leaves it waiting while the dispatch runs and records asked
+      false once it has ended. A receiver that ended before it could be asked is recorded asked false.
+      The round 9 order (record, then ask) is replaced by this order. Tooth
+      launch131-stop-recorded-unasked is re-anchored on the new ask line (the defect records asked true
+      without calling Launch.stop) and still reds dispatch/owner-stop and
+      dispatch/owner-stop-other-runner. The comment at check_teeth_mutations.py:12410 is updated to match.
     falsified_by: >
       Suite 62 row dispatch/owner-stop-asked-is-delivered: when Launch.stop returns False (the receiver's
       stdin closed after can_stop), the record carries asked false, and when it raises, asked false; when
-      it returns True, asked true. Row dispatch/owner-stop-crash-before-record: a runner stopped by an
-      injected hook after the ask and before stop_result leaves result null, and a second runner's sweep
-      records it. Mutation stop288-record-before-ask (the round 9 order restored) reds both.
+      it returns True, asked true. Row dispatch/owner-stop-crash-before-record: a runner stopped by the
+      honor_stops hook point of AC3 after the ask and before stop_result leaves result null. A second
+      runner's sweep before the dispatch has ended leaves the request waiting. Its sweep after the
+      dispatch has ended records asked false. Mutation stop288-record-before-ask (the round 9 order
+      restored) reds both rows.
   - id: AC3
     text: >
-      Suite 62 forces the interleavings with an injected hook in the receiver's write path, not a sleep or
-      a load. The hook holds the receiver after it has read the record's version and before it commits,
-      runs honor_stops (and with it stop_result) in that window, and then releases it. Three rows use it:
+      Suite 62 forces the interleavings with a hook in the receiver's write path, not a sleep or a load.
+      Dispatches._run calls a named hook point between its version read and store.execute. It is active
+      only when VELDO_CONTROL_TEST_HARNESS=1, the same gate as control_store._kill_point
+      (control_store.py:550). Under the harness it blocks until the suite releases it through a file whose
+      path is given in an environment variable. honor_stops has a second hook point between Launch.stop
+      and stop_result, which the AC2 crash row uses to raise. Without the harness variable both points do
+      nothing. The suite holds the receiver at the first point, runs honor_stops (and with it
+      stop_result) in that window, and then releases it. Three rows use it:
       the stop causes the end, and the record reaches exited with cause requested and asked true; the
       worker ends on its own (natural end) while the stop lands, and the record reaches exited with the
       natural cause and the stop result recorded; and accept and run are each held while a stop request
@@ -84,8 +102,9 @@ acceptance_criteria:
       Rows dispatch/stop-during-exit, dispatch/stop-during-natural-end and dispatch/stop-during-accept-run
       each fail under mutation stop288-no-retry. With the retry in place both orders reach exited, so the
       order is held by AC2's rows, which stop288-record-before-ask reds; together no single removal of the
-      retry or the order leaves every row green. Each row passes 20 of 20 consecutive runs on an idle
-      host, recorded in the proof with the command, commit and host.
+      retry or the order leaves every row green. Each row passes 20 of 20 consecutive runs under the
+      host's load during a full gate run, recorded in the proof with the command, commit, host and load
+      average.
   - id: AC4
     text: >
       The honor_stops docstring states what is guaranteed and nothing more: the receiver is asked before
@@ -94,14 +113,15 @@ acceptance_criteria:
       leaves the request pending for the next sweep. It does not say the receiver's end "never races" the
       runner's record. The .veldo and engine/.veldo copies of both files stay byte identical.
     falsified_by: >
-      The reviewer reads the docstring against AC1 to AC3 and the code, and the claim "never races" (or
-      any claim with the same meaning) is absent. The gate's template-sync check reds on any difference
-      between the two copies of either file.
+      Suite 62 row dispatch/honor-stops-docstring fails when Runner.honor_stops.__doc__ contains "never
+      race" or still says the ask is recorded before it is made. The gate's template-sync check reds on
+      any difference between the two copies of either file.
 required_evidence: [unit, integration]
 rollback: >
   Revert the commit. honor_stops returns to the round 9 order (record, then ask) and lifecycle writes stop
   retrying, which is the interim landing-c shipped with. No stored record gains a field, so records
-  written under this change read the same after the revert.
+  written under this change read the same after the revert. A revert changes control_launch.py again, so
+  the captures are retaken with the revert.
 ---
 
 ## Intent
@@ -113,12 +133,12 @@ interim and wrong as the fix of record, for two reasons.
 
 The race it closed is one case of a wider one. A stop request and a stop result write stop_request and a
 history entry on the dispatch record. Neither changes the record's state, but both bump its version. The
-receiver's lifecycle writes (accept and run in Launch.launch, exit and unknown in Launch._finish) expect
-the version they read, so any stop write between the read and the commit refuses them stale. The receiver
-then emits failed and exits 0, and the run is settled outcome_unknown with its unit held. The reorder
-only removes this for an end the stop itself caused. Accept and run under a pending stop, and a natural
-end, deadline or heartbeat loss that coincides with a sweep, still hit it. stop_result has the same
-problem in the other direction: refused stale by a receiver write, it now skips the ask entirely.
+receiver's lifecycle writes, in Receiver.launch (accept and run) and Receiver._finish (exit and unknown),
+expect the version they read, so any stop write between the read and the commit refuses them stale. The
+receiver then emits failed and exits 0, and the run is settled outcome_unknown with its unit held. The
+reorder only removes this for an end the stop itself caused. Accept and run under a pending stop, and a
+natural end, deadline or heartbeat loss that coincides with a sweep, still hit it. stop_result has the
+same problem in the other direction: refused stale by a receiver write, it now skips the ask entirely.
 
 The reorder also made the durable record false. A runner that dies between stop_result and the write to
 the receiver's stdin, or a Launch.stop that fails, leaves asked true for a receiver that was never asked.
@@ -130,11 +150,19 @@ place the original order, ask then record, is safe again and the record says wha
 
 ## Design
 
-Optimistic concurrency stays. On stale_version, Dispatches._run and stop_result re-read the record and
-compare it with the record the write first read, excluding stop_request and history. Equal means the
-conflict was a stop write, which commutes with every lifecycle transition, so the write recomputes its
-expected versions and commits again. Unequal means someone changed state, and the refusal stands. The
-retry count is bounded so a stream of stop writes cannot spin a receiver.
+Optimistic concurrency stays. _run reads the dispatch record's data and the versions of both entities it
+expects, in one read, just before it executes. On stale_version it reads them again and recommits only
+when the index entity's version is unchanged and the dispatch record is equal except for stop_request and
+history entries appended whose action is request_stop or stop_result. That conflict was a stop write,
+which changes no state. Any other difference means someone changed state, and the refusal stands.
+
+stop_result has its own condition, because the write that refuses it is a receiver write and that always
+changes state. stop_result refused stale_version re-reads the record and commits again while the re-read
+still shows the same stop request with result null; any other re-read is refused as today.
+
+A lifecycle write retries at most twice, because a dispatch takes at most two stop writes (one
+request_stop, one stop_result). stop_result retries at most three times, once for each lifecycle write
+that can follow a request (accept, run, end).
 
 Moving stop_request into its own entity (record_id + '/stop') would have the same effect with no retry,
 but it changes the record's data shape, which the suite and the API authority read. It is not this
@@ -150,6 +178,14 @@ The API authority's stop path (control_api_authority.py), which runs with stop=N
 receiver's control channel and what EOF on it means; suites 83, 124 and 71 beyond staying green; any
 change to the stored record's shape.
 
+## VELDO-0127 captures
+
+The change to .veldo/control_launch.py makes the VELDO-0127 live captures and resource records stale.
+Retaking them is part of this ticket: .veldo/qualify.py for the four resource records,
+proof/VELDO-0127/live.py run once for codex and once for claude for the two captures. The lead takes the
+Claude capture from outside a run, because a run holds the login lease. Suite 86 0127 passes 28 of 28
+before review.
+
 ## What the reviewer judges
 
 - The re-read comparison covers every field a lifecycle transition judges, so a retry can never commit
@@ -161,3 +197,6 @@ change to the stored record's shape.
 
 2026-11-09: drafted from the landing-c fix round 9 review (verdict NOT SOUND as the fix of record, fix
 brief A to D).
+
+2026-11-10: revision 1. Applied findings 1 to 14 of the spec review
+(~/projects/myday/research/claude-runs/spec-veldo-0288-review-2026-11-10.md).
