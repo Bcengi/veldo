@@ -2500,6 +2500,11 @@ def _v289_timeout_cleanup():
             # Establish ownership in the ledger before judging the timeout or the refusal.
             recorded = directory is not None and ['directory', str(directory)] in entries
             outcome = workers.outcomes[0]
+            observed = dict(raised=raised, ledger_named=recorded,
+                            directory_survived=directory is not None and directory.is_dir(),
+                            resources_held=bool(pool.held),
+                            outcome={key: outcome.get(key) for key in
+                                     ('error', 'detail', 'cleanup_error', 'returncode', 'leg')})
             passed = (recorded and raised == outcome.get('error') == 'mutation_budget_exceeded'
                       and 'worker deadline (2s)' in outcome.get('detail', '')
                       and 'ledger names resources outside this worker' in outcome.get('cleanup_error', '')
@@ -2512,6 +2517,7 @@ def _v289_timeout_cleanup():
             if directory is not None:
                 os.rmdir(directory)
         expect('VELDO-0289 ownership/timeout-then-cleanup-failure', passed)
+        return observed
 
 
 if leg_runs('strace'):

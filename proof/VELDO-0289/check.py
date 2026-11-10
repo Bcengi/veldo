@@ -66,9 +66,9 @@ def integration():
             rows = []
             namespace = dict(ROOT=ROOT, expect=lambda label, ok: rows.append([label, bool(ok)]))
             exec(compile(source.replace(anchor, 'Path(' + repr(str(module)) + ')'), str(path), 'exec'), namespace)
-            namespace['_v289_timeout_cleanup']()
+            observed = namespace['_v289_timeout_cleanup']()
             matched = rows == [['VELDO-0289 ownership/timeout-then-cleanup-failure', expected]]
-            results.append(dict(mode=name, expected=expected, rows=rows, passed=matched))
+            results.append(dict(mode=name, expected=expected, rows=rows, observed=observed, passed=matched))
     save('integration', dict(passed=all(r['passed'] for r in results), results=results))
     return all(r['passed'] for r in results)
 
