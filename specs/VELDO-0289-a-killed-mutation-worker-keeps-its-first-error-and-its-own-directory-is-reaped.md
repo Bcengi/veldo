@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0289
 title: A killed mutation worker is reported by its first error, with a failed cleanup or a failed meter sample recorded beside it
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: not_required
@@ -49,8 +49,8 @@ acceptance_criteria:
       failed keeps its resource grant and its admission grant whatever its first error was: the hold
       is decided by cleanup_error being present, not by the error's name. A worker whose cleanup
       succeeded has no cleanup_error field. When finish is handed an error and the meter's last
-      sample raises, the outcome keeps the handed error and records the sample failure's text in a
-      measurement_error field. With no handed error, the outcome's error is worker_measurement_error
+      sample raises, the outcome keeps the handed error, finish raises the handed error, and the sample
+      failure's text is recorded in a measurement_error field. With no handed error, the outcome's error is worker_measurement_error
       as today.
     falsified_by: >
       Suite 98 row VELDO-0289 receipts/deadline-then-cleanup-failure: a worker passes its deadline
@@ -63,8 +63,11 @@ acceptance_criteria:
       first one) reds the row. Suite 98's existing mutation release-failed-cleanup is re-anchored on
       the new hold condition and still reds its cleanup fault. Suite 115 row VELDO-0289
       admission/deadline-then-sample-failure: a metered worker passes its deadline and its meter's
-      sample raises. The outcome's error is mutation_budget_exceeded with the worker-deadline detail
-      and measurement_error holds the sample text. On 852f133b it reads worker_measurement_error.
+      sample raises only in finish's last sample. The fake Meter's sample succeeds on every call from
+      the run loop and raises on its first call after check_worker has reported the deadline, so
+      finish is handed mutation_budget_exceeded. The outcome's error is mutation_budget_exceeded with the worker-deadline detail
+      and measurement_error holds the sample text, and the error raised to the stage is
+      mutation_budget_exceeded. On 852f133b it reads worker_measurement_error.
       Mutation measure289-replaces-first-error (the sample error assigned over the handed one) reds
       the row. Both mutations are registered teeth in scripts/check_teeth_mutations.py, and each
       one's expected red is the rows this spec names for it.
@@ -156,3 +159,6 @@ cleanup_error holds when both cleanup steps fail. The former AC3 became AC2, one
 worker whose cleanup fails, run in the unconfined leg with budget_seconds 2. The mutations are
 registered teeth in scripts/check_teeth_mutations.py. Every code citation was confirmed again against
 landing-c 852f133b.
+
+2026-11-10: revision 2. Applied the two findings of the re-review of af0738bb (finish's last sample
+only; finish raises the handed error). Status set to ready by the lead.
