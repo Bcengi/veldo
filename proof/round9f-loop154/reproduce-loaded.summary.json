@@ -1,0 +1,251 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop",
+ "deciding": {
+  "background_failures": [],
+  "background_passed": 24,
+  "background_runs": 24,
+  "background_suite_workers": 8,
+  "elapsed_seconds": [
+   59.83,
+   60.37
+  ],
+  "failures": [],
+  "gate_run": false,
+  "load_one_minute": [
+   1.6171875,
+   4.01611328125
+  ],
+  "measured_concurrency": 5,
+  "observed": {
+   "deadline_remaining": [
+    40.88460898399353,
+    41.223459005355835
+   ],
+   "minimum_watched": [
+    2.0,
+    2.0
+   ],
+   "required_switches": [
+    103,
+    105
+   ],
+   "switched": [
+    207,
+    211
+   ],
+   "wait_seconds": [
+    0.8547968864440918,
+    1.0530660152435303
+   ],
+   "watched": [
+    51.753692626953125,
+    52.783881187438965
+   ],
+   "watchers_finished": 10
+  },
+  "partial_suite": true,
+  "passed": 10,
+  "retries": 0,
+  "runs": 10,
+  "source_sha256": [
+   "5ab2c21538519a54c798e30762904a741c3d4d17135c31aeec488d36e66b2ed9"
+  ],
+  "suite": "83_veldo_0154_factory_loop",
+  "summary_lines": [
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.72s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.90s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.94s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.96s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 60.07s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 60.08s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 60.12s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 60.16s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 60.23s"
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 11269,
+   "name": "reproduce-loaded-1.log",
+   "sha256": "7a9ab7477f938025ecc40b4cc318e7e15ad1dddff0b903623fc8ec55a33875c1"
+  },
+  {
+   "bytes": 11274,
+   "name": "reproduce-loaded-10.log",
+   "sha256": "799a598babab066dd4eb0b9c9864074cc4e0ce59b47098beaf00e4b5e939e0aa"
+  },
+  {
+   "bytes": 11273,
+   "name": "reproduce-loaded-2.log",
+   "sha256": "16524e1e4b052c2a58ab2f5a7b89ea1c6ace9a136be4aafec104be927a7d0bd0"
+  },
+  {
+   "bytes": 11273,
+   "name": "reproduce-loaded-3.log",
+   "sha256": "5685349a131950403d7e7f0902df36db0e04d626f82e40e93a3c7f9769932bd1"
+  },
+  {
+   "bytes": 11274,
+   "name": "reproduce-loaded-4.log",
+   "sha256": "0fd5be2c774321e0b3ba971ee4bf7c669bf435c74a102506c347207772e6e763"
+  },
+  {
+   "bytes": 11273,
+   "name": "reproduce-loaded-5.log",
+   "sha256": "baea729b213eeb69614c0d0f753f14de3f9e1712d19748cd286186c20c6fdbea"
+  },
+  {
+   "bytes": 11276,
+   "name": "reproduce-loaded-6.log",
+   "sha256": "7aac2b58cdbe4f5f07284b280c88933d6549ca8d8f44a0b47c83afdb20927a3b"
+  },
+  {
+   "bytes": 11274,
+   "name": "reproduce-loaded-7.log",
+   "sha256": "b72d8dacf5f952acf21a29cb89be438becc05dd283fdc05a23d72f6cda617927"
+  },
+  {
+   "bytes": 11275,
+   "name": "reproduce-loaded-8.log",
+   "sha256": "89eaba7ab81064c35f3d6eb06bc2984c287094e7ab01e99d1a6d7d42e0848b70"
+  },
+  {
+   "bytes": 11273,
+   "name": "reproduce-loaded-9.log",
+   "sha256": "9fa346d5c5a77ea700458c98d088e0ad0523191ae965bf4d946ba2d3d5c060b0"
+  },
+  {
+   "bytes": 11273,
+   "name": "load-reproduce-loaded-0-1.log",
+   "sha256": "c80cd9f8744458e2a54e03d9069a97167b509ea01739ddaeec083d0e808dbe5a"
+  },
+  {
+   "bytes": 11271,
+   "name": "load-reproduce-loaded-0-2.log",
+   "sha256": "6c077a45040ee3027191d9bdf6a6562154d3caa19f0de247829d2d069f22ab26"
+  },
+  {
+   "bytes": 11273,
+   "name": "load-reproduce-loaded-0-3.log",
+   "sha256": "f13979bce8983d880c105a7c0d33e49114698675a593842836556ef6f46c622c"
+  },
+  {
+   "bytes": 11272,
+   "name": "load-reproduce-loaded-1-1.log",
+   "sha256": "d844f839cd64a4f45542b3a0ff362d42fefd49be100122c88a8580aa6ac36401"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-1-2.log",
+   "sha256": "7713726a2296bc9e62a2463586e8c7fd784fa1a87e79831747322b266102c754"
+  },
+  {
+   "bytes": 11275,
+   "name": "load-reproduce-loaded-1-3.log",
+   "sha256": "a178d54c685dbc49a9bb69169dc94e054ff28459351a75cbd2e0390ad76ba459"
+  },
+  {
+   "bytes": 11271,
+   "name": "load-reproduce-loaded-2-1.log",
+   "sha256": "f164f5559f47950723bfae9effce8bdbb9292dcaf976d373cb047ea732f279b6"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-2-2.log",
+   "sha256": "a6e560968fb9a239a1837e9cbfed3d9907aeaf53092d872ffeb23c8e1edc34ef"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-2-3.log",
+   "sha256": "4d4a3590840c83080525922df8bfe7491e1aff89b56b8d3710cbb8684f75e9e4"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-3-1.log",
+   "sha256": "b1d4d84cc8d6f285c4f037aabcf11ff192e17fca584b927a0615a4ca71ab181a"
+  },
+  {
+   "bytes": 11272,
+   "name": "load-reproduce-loaded-3-2.log",
+   "sha256": "f5e5a80fbe721318d5f265042a2f0ce219338df48a69214c992887f1081e3c71"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-3-3.log",
+   "sha256": "ed56bd82731c0cf4ad2d9c3c7696c7d83a94fb4ca9d7ca609003233a409b1a12"
+  },
+  {
+   "bytes": 11273,
+   "name": "load-reproduce-loaded-4-1.log",
+   "sha256": "de3a8ede68cde6d132994a3620259ff26925d8ae7dccdd267c0cc6c705891681"
+  },
+  {
+   "bytes": 11273,
+   "name": "load-reproduce-loaded-4-2.log",
+   "sha256": "d2d8cc5973cedcc3f4239493d5fd5dfc4887081e7476f0b93d4c45f4f08aa70f"
+  },
+  {
+   "bytes": 11271,
+   "name": "load-reproduce-loaded-4-3.log",
+   "sha256": "6440cd7020c4871a0d28bc2a776dbde90a0c9e88cc4d241a9daea73f6ff0fc75"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-5-1.log",
+   "sha256": "ae3a3f5ed94f7850b2a3252218e9438a99a3f4954f3b589361dfc3b330077338"
+  },
+  {
+   "bytes": 11275,
+   "name": "load-reproduce-loaded-5-2.log",
+   "sha256": "60ca40c3a3585264a9474a02c92b88ad10d5b6ec31190a8e1bc51cde094ee4a0"
+  },
+  {
+   "bytes": 11272,
+   "name": "load-reproduce-loaded-5-3.log",
+   "sha256": "98b68ecf9643f079d81b8d8b0f6663d348274bc4b4af4e3d9e3ca245229b572c"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-6-1.log",
+   "sha256": "207208ab246969ae193977151286a2f5f2a824894a73e01a5aa7dec6b8f1d465"
+  },
+  {
+   "bytes": 11272,
+   "name": "load-reproduce-loaded-6-2.log",
+   "sha256": "d395b205b0666065b0ef6ed3a68bb2a9378dbf4a6aab69b9e02fd323a9c81d82"
+  },
+  {
+   "bytes": 11273,
+   "name": "load-reproduce-loaded-6-3.log",
+   "sha256": "69bfef399c51eef1caaae46ad7fa46b2a17df4653a5232faa96d8b0e535d34b5"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-7-1.log",
+   "sha256": "e70148860e73f22ba3691f288a723b47f585b69b04cb8b6e691e9f3ac00b746c"
+  },
+  {
+   "bytes": 11272,
+   "name": "load-reproduce-loaded-7-2.log",
+   "sha256": "7772bbb1ab7a43acd7fcc9e382ce30c68831097a7ad0d8d0e6a8b4643aa6547b"
+  },
+  {
+   "bytes": 11274,
+   "name": "load-reproduce-loaded-7-3.log",
+   "sha256": "47875e2ef91fbf45453bd9a0840725a54f1a864e99a8ca4893a295ceab7455aa"
+  }
+ ],
+ "environment": {
+  "commit": "24c9f5b4a4096fbe3dc7854175ffbf5ff950d394",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.69921875,
+   3.9306640625,
+   5.07666015625
+  ],
+  "python": "3.12.3",
+  "tree": "76ab09b45c5c185cd49b59e30afd3bec0ec708be"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

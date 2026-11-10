@@ -102,11 +102,12 @@ def _v154_suite():
     started = time.monotonic()
     # THE BUDGET. Every wait of the suite has a bound of its own and draws on its instance's deadline, inside the
     # suite's, and once a wait for a pass the scenario needs returns nothing, every later wait of that instance
-    # returns at once: a defect that stops the loop reds its rows by assertion within seconds, never by raising
-    # and never by running to a bound; one that only slows the service reds them at the rows' deadline.
+    # returns at once. Missing behavior fails the row assertions; a slow reset instance can use the full
+    # suite deadline before its wait fails.
     # The first instance's rows take about 12 s, so their own deadline, 45 s in, leaves them more than three times
     # that; the second instance's reset comes at most about 67 s in (the first minute end LEAD after its run starts).
-    # A pass the rows wait for comes within about a second, so each wait's own bound, WAIT, is eight times that.
+    # The first instance uses WAIT for its short waits. The reset instance uses its full deadline: a loaded
+    # host can take longer than WAIT to finish a pass, even though the reset timer behaves correctly.
     BUDGET, ROWS_BUDGET, WAIT = 100.0, 45.0, 8.0
     deadline = time.time() + BUDGET
     # The reset row states the first minute that ends at least this far after its run starts, so the unit waits
@@ -119,6 +120,7 @@ def _v154_suite():
     connections = []
     watching, watcher = threading.Event(), [None]
     timing = {}
+    reset_observation = {}
     try:
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
@@ -674,10 +676,12 @@ sys.exit(chosen['code'])
             """The unit's wait, then the quiet interval up to the reset, watched in full beside the first
             instance's rows: every pass of this instance, and the service's wakes, until a second before it."""
             try:
+                watch['wait_started'] = time.time()
                 waiting = watch['waiting'] = B.wait_pass(
-                    lambda p: bool([w for w in p.get('waiting') or [] if w['unit'] == U['L4']]), mark_b)
+                    lambda p: bool([w for w in p.get('waiting') or [] if w['unit'] == U['L4']]), mark_b, BUDGET)
+                watch['wait_ended'] = time.time()
                 watch['first_run'] = (B.dispatches(U['L4'], 'build') or [{}])[0]
-                quiet_from = watch['quiet_from'] = B.last_pass()
+                quiet_from = watch['quiet_from'] = waiting['pass'] if waiting is not None else mark_b
                 try:
                     printed = watch['printed'] = json.loads(reset_record.read_text())
                 except (OSError, ValueError):
@@ -692,13 +696,19 @@ sys.exit(chosen['code'])
                     return
                 switched = switches(B.pid)
                 watched_from = time.time()
+                watch.update(watched=0.0, switched=0)
                 while time.time() < min(reset - 1.0, deadline) and B.live() and not watching.is_set():
+                    current = switches(B.pid)
+                    sampled_at = time.time()
+                    # A delayed watcher must not count work after the reset as quiet service wakes.
+                    if sampled_at >= reset - 1.0:
+                        break
+                    watch['watched'] = sampled_at - watched_from
+                    watch['switched'] = (current or 0) - (switched or 0)
                     if any(p['pass'] > quiet_from for p in B.passes()):
                         break  # a pass inside the quiet interval: its check is decided
                     time.sleep(0.05)
-                watch['quiet'] = [p for p in B.passes() if p['pass'] > quiet_from]
-                watch['watched'] = time.time() - watched_from
-                watch['switched'] = (switches(B.pid) or 0) - (switched or 0)
+                watch['quiet'] = [p for p in B.passes() if p['pass'] > quiet_from and p['at'] < reset]
             except Exception as exc:  # noqa: BLE001 - reported against the reset rows, never raised
                 watch['error'] = '%s: %s' % (type(exc).__name__, str(exc)[:300])
         watcher[0] = threading.Thread(target=watch_reset, name='v154-reset-watch', daemon=True)
@@ -1084,13 +1094,30 @@ sys.exit(chosen['code'])
             quiet, watched, switched = watch.get('quiet', []), watch.get('watched', 0.0), watch.get('switched', 0)
             # The reset the fake printed, and the message it printed for it, which must be limit_message's own.
             reset, printed = watch.get('reset'), watch.get('printed') or {}
-            woke = B.wait_pass(lambda p: 'account_reset' in p['sources'], quiet_from,
-                               max(0.0, (reset or 0) - time.time()) + WAIT)
-            time.sleep(0.5)
+            woke = B.wait_pass(lambda p: 'account_reset' in p['sources'], quiet_from, BUDGET)
+            # Read the completed review pass before counting resets. A fixed sleep can end before a slow
+            # service has logged its passes, and a dispatch's terminal state precedes its pass log.
+            finished = B.wait_pass(lambda p: any(e['station'] == 'review' for e in ended(p, U['L4'])),
+                                   (woke or {}).get('pass', quiet_from), BUDGET)
             resets = [p for p in B.passes() if p['pass'] > quiet_from and 'account_reset' in p['sources']]
             between = [p for p in B.passes() if woke is not None and quiet_from < p['pass'] < woke['pass']]
             intervals = (getattr(CS, 'ACCEPT_SECONDS', 0.25), getattr(getattr(CS, 'CH', None), 'POLL_SECONDS', 1.0))
             entry = [w for w in (waiting or {}).get('waiting') or [] if w['unit'] == U['L4']]
+            # Require enough actual wakes to cover twice the longest service interval. The host may
+            # deschedule the service between wakes, so their count must not grow with wall-clock delay.
+            required_switches = int(2 * max(intervals) / intervals[0])
+            reset_observation = dict(
+                watcher_alive=watcher[0].is_alive(), stalled=B.stalled,
+                wait_seconds=(watch.get('wait_ended', time.time()) - watch['wait_started']
+                              if 'wait_started' in watch else None),
+                printed_at=printed.get('printed_at'), reset=reset, waiting_timer=(waiting or {}).get('timer'),
+                waiting_pass=(waiting or {}).get('pass'), quiet_from=quiet_from, watched=watched,
+                switched=switched, required_switches=required_switches, minimum_watched=2 * max(intervals),
+                deadline_remaining=deadline - time.time(), finished_pass=(finished or {}).get('pass'),
+                woke_at=(woke or {}).get('at'), woke_sources=(woke or {}).get('sources'),
+                quiet=[(p['pass'], p['sources']) for p in quiet],
+                resets=[(p['pass'], p['sources']) for p in resets],
+                between=[(p['pass'], p['sources']) for p in between])
             check('loop/reset-timer-wake', 'the unit waits for the account\'s reported reset, and the pass set its timer to '
                   'that earliest reset, the one the limit message stated [%s, %s, %s, %s]'
                   % (entry, (waiting or {}).get('timer'), reset, printed.get('message')),
@@ -1104,13 +1131,14 @@ sys.exit(chosen['code'])
                   woke is not None and woke['sources'] == ['account_reset'] and woke['at'] >= reset and len(again) == 1
                   and again[0]['account'] == dig(first_run, 'contract', 'reservation', 'account') and again[0]['attempt'] == 2)
             check('loop/no-other-timer', 'with the unit waiting, no journal advance and no run ending, no pass started for '
-                  '%.1f s, longer than every interval the service uses, while its accept timeout kept waking it '
-                  '[%s, %s switches]' % (watched, [(p['pass'], p['sources']) for p in quiet], switched),
-                  quiet == [] and watched > 2 * max(intervals) and switched >= int(watched / intervals[0] / 2))
-            check('loop/no-other-timer', 'exactly one pass started at the reset, and none between the unit\'s wait and '
-                  'it [%s, %s]' % ([(p['pass'], p['sources'], round(p['at'] - reset, 3)) for p in resets],
+                  '%.1f s, longer than every interval the service uses, with enough observed accept wakes to cover '
+                  'twice its longest interval [%s, %s switches, %s required]'
+                  % (watched, [(p['pass'], p['sources']) for p in quiet], switched, required_switches),
+                  quiet == [] and watched > 2 * max(intervals) and switched >= required_switches)
+            check('loop/no-other-timer', 'through the completed review, exactly one reset pass started, with no pass '
+                  'between the unit\'s wait and reset [%s, %s]' % ([(p['pass'], p['sources'], round(p['at'] - reset, 3)) for p in resets],
                                    [(p['pass'], p['sources']) for p in between]),
-                  woke is not None and resets == [woke] and between == [])
+                  woke is not None and finished is not None and resets == [woke] and between == [])
             everything = passes() + B.passes()
             check('loop/no-other-timer', 'across the whole run of both services every pass came from a wake source, '
                   'neither service\'s start included, and the reset timer started only that one [%s]'
@@ -1118,7 +1146,6 @@ sys.exit(chosen['code'])
                   phase1.get('quiet_start') == [] and quiet_start_b == [] and bool(passes()) and bool(B.passes())
                   and all(set(p['sources']) <= {'journal', 'run_end', 'account_reset'} and p['sources'] for p in everything)
                   and len([p for p in everything if 'account_reset' in p['sources']]) == 1)
-            B.wait_until(lambda: [r['state'] for r in B.dispatches(U['L4'])] == ['exited', 'exited', 'exited'])
 
         # VELDO-0172: every line the fake was scripted to print, its limit message and MCP call among them, is an
         # event of the binary's own table with its item an exec item of a declared kind (named problems, no values).
@@ -1186,7 +1213,10 @@ sys.exit(chosen['code'])
                     print('  VELDO-0154 %s detail: %s' % (name, label))
             if not observed:
                 print('  VELDO-0154 %s detail: no check ran' % name)
-        expect('VELDO-0154 ' + name, ok)
+        detail = '; '.join(label for label, one in observed if not one) or 'no check ran'
+        if not ok and name in ('loop/reset-timer-wake', 'loop/no-other-timer'):
+            detail += '; observation=' + json.dumps(reset_observation, sort_keys=True)
+        expect('VELDO-0154 ' + name + (': ' + detail if not ok else ''), ok)
     for line in conform_formats.describe('0154_factory_loop', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0154_factory_loop', bool(fake_capture[1]) and not fake_capture[0])

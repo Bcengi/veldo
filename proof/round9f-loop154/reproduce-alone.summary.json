@@ -1,0 +1,132 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop",
+ "deciding": {
+  "background_failures": [],
+  "background_passed": 0,
+  "background_runs": 0,
+  "background_suite_workers": 0,
+  "elapsed_seconds": [
+   35.923,
+   60.173
+  ],
+  "failures": [],
+  "gate_run": false,
+  "load_one_minute": [
+   0.50732421875,
+   3.7412109375
+  ],
+  "measured_concurrency": 1,
+  "observed": {
+   "deadline_remaining": [
+    40.90419292449951,
+    65.14859509468079
+   ],
+   "minimum_watched": [
+    2.0,
+    2.0
+   ],
+   "required_switches": [
+    58,
+    107
+   ],
+   "switched": [
+    117,
+    214
+   ],
+   "wait_seconds": [
+    0.641155481338501,
+    0.6951537132263184
+   ],
+   "watched": [
+    29.333611249923706,
+    53.53718543052673
+   ],
+   "watchers_finished": 10
+  },
+  "partial_suite": true,
+  "passed": 10,
+  "retries": 0,
+  "runs": 10,
+  "source_sha256": [
+   "5ab2c21538519a54c798e30762904a741c3d4d17135c31aeec488d36e66b2ed9"
+  ],
+  "suite": "83_veldo_0154_factory_loop",
+  "summary_lines": [
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 35.81s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.70s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.71s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.75s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.89s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.90s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.91s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.94s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.95s",
+   "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 60.07s"
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 11272,
+   "name": "reproduce-alone-1.log",
+   "sha256": "0586ccdc50e76b995e7a1ca622310a12dd4f2101c7727f4eb969cff6a562ce31"
+  },
+  {
+   "bytes": 11274,
+   "name": "reproduce-alone-10.log",
+   "sha256": "10d4da56a005ee150607419f1d52cca025ea7a37567719639c16c7d9e36b10e0"
+  },
+  {
+   "bytes": 11272,
+   "name": "reproduce-alone-2.log",
+   "sha256": "e0ba6ca7761a41b8864cb82833e5210fb8d88956e2b885fb2765aadf934eff20"
+  },
+  {
+   "bytes": 11271,
+   "name": "reproduce-alone-3.log",
+   "sha256": "27afa3ba648beb9cd9d7937427a13f04ee3713abc696a239df1b78acb6e53931"
+  },
+  {
+   "bytes": 11273,
+   "name": "reproduce-alone-4.log",
+   "sha256": "618b95e6d5e79e76388a70fdabbc7466285c300cb665502761eaeee68de1e366"
+  },
+  {
+   "bytes": 11275,
+   "name": "reproduce-alone-5.log",
+   "sha256": "86f0bd0b7ec8bf9db941a052a40d375864cd07c73b0edf754b7624cee1da8eba"
+  },
+  {
+   "bytes": 11274,
+   "name": "reproduce-alone-6.log",
+   "sha256": "ad332ea6e37936a54c637527fc73c647c8ebfef5c9454f652d1de020bc61c32a"
+  },
+  {
+   "bytes": 11274,
+   "name": "reproduce-alone-7.log",
+   "sha256": "720d871f4f2a76f0588d7e9b5398b34f7184356a2f5f337da753f296fae699e4"
+  },
+  {
+   "bytes": 11269,
+   "name": "reproduce-alone-8.log",
+   "sha256": "82012d1a4c1c5726683447c0984a3bdc328814ec5a18ee56af609c8663078cbd"
+  },
+  {
+   "bytes": 11276,
+   "name": "reproduce-alone-9.log",
+   "sha256": "89f34d808907f6988e93177fd768a26e220ad9ea87bb35b6975a726a0067d0c7"
+  }
+ ],
+ "environment": {
+  "commit": "24c9f5b4a4096fbe3dc7854175ffbf5ff950d394",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   2.39990234375,
+   2.85693359375,
+   5.046875
+  ],
+  "python": "3.12.3",
+  "tree": "76ab09b45c5c185cd49b59e30afd3bec0ec708be"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
