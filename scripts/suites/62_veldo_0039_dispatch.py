@@ -371,6 +371,10 @@ sys.exit(child.wait())
                 receiver = launch.child.poll() if launch.child is not None else 'none'
                 return state not in D.STOPPABLE or receiver is not None, {'state': state, 'receiver_exit': receiver}
             what = 'dispatch %s to reach a terminal state' % launch.dispatch_id
+            if launch.stop_requested is not True:
+                report = 'the runner never asked the receiver of %s to stop' % launch.dispatch_id
+                runner.wait(launch, timeout=0)
+                return report
             report = wait_for(ended, bound, what)
             if report is None and rec(launch.dispatch_id).get('state') in D.STOPPABLE:
                 report = 'the receiver of %s ended (exit %r) with the record still %s: nothing is left to record its end' % (
