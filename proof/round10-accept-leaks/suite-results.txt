@@ -1,0 +1,61 @@
+78a-landing-c-gate9 rc=1 end 2026-11-10T04:57:30Z
+Running 128_veldo_0254_confined_runner single in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  128_veldo_0254_confined_runner                   1 passed    0.70s
+selftest (PARTIAL, 1 of 196 suites): 27 passed, 0 failed in 0.70s
+128_veldo_0254_confined_runner single rc=2
+Running 128_veldo_0254_confined_runner repeat in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  128_veldo_0254_confined_runner                   1 passed    0.66s
+  128_veldo_0254_confined_runner                   1 passed    0.66s
+selftest (PARTIAL, 2 of 196 suites): 28 passed, 0 failed in 1.32s
+Round 10 repeat: 128_veldo_0254_confined_runner; new live threads: 0; selector rc=2
+128_veldo_0254_confined_runner repeat rc=2
+Running 127_veldo_0254_secret_scan single in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  127_veldo_0254_secret_scan                      22 passed    4.89s
+selftest (PARTIAL, 1 of 196 suites): 48 passed, 0 failed in 4.89s
+127_veldo_0254_secret_scan single rc=2
+Running 127_veldo_0254_secret_scan repeat in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  127_veldo_0254_secret_scan                      22 passed    4.89s
+  127_veldo_0254_secret_scan                      22 passed    4.66s
+selftest (PARTIAL, 2 of 196 suites): 70 passed, 0 failed in 9.55s
+Round 10 repeat: 127_veldo_0254_secret_scan; new live threads: 0; selector rc=2
+127_veldo_0254_secret_scan repeat rc=2
+Running 102_veldo_0210_agent_profile_runtime single in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  102_veldo_0210_agent_profile_runtime           237 passed   21.12s
+selftest (PARTIAL, 1 of 196 suites): 263 passed, 0 failed in 21.12s
+102_veldo_0210_agent_profile_runtime single rc=2
+Running 102_veldo_0210_agent_profile_runtime repeat in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  102_veldo_0210_agent_profile_runtime           237 passed   20.64s
+  102_veldo_0210_agent_profile_runtime           237 passed   20.94s
+selftest (PARTIAL, 2 of 196 suites): 500 passed, 0 failed in 41.58s
+Round 10 repeat: 102_veldo_0210_agent_profile_runtime; new live threads: 0; selector rc=2
+102_veldo_0210_agent_profile_runtime repeat rc=2
+Running 47_veldo_0107_ipc single in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  47_veldo_0107_ipc                               23 passed    0.86s
+selftest (PARTIAL, 1 of 196 suites): 49 passed, 0 failed in 0.86s
+47_veldo_0107_ipc single rc=2
+Running 47_veldo_0107_ipc repeat in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  47_veldo_0107_ipc                               23 passed    0.86s
+  47_veldo_0107_ipc                               23 passed    0.86s
+selftest (PARTIAL, 2 of 196 suites): 72 passed, 0 failed in 1.72s
+Round 10 repeat: 47_veldo_0107_ipc; new live threads: 0; selector rc=2
+47_veldo_0107_ipc repeat rc=2
+Running 86_veldo_0189_engine_upgrade single in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  86_veldo_0189_engine_upgrade                    34 passed   62.50s
+selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 62.50s
+86_veldo_0189_engine_upgrade single rc=2
+Running 86_veldo_0189_engine_upgrade repeat in a user scope with MemoryMax=10G
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  86_veldo_0189_engine_upgrade                    34 passed   62.07s
+  86_veldo_0189_engine_upgrade                    34 passed   62.11s
+selftest (PARTIAL, 2 of 196 suites): 94 passed, 0 failed in 124.18s
+Round 10 repeat: 86_veldo_0189_engine_upgrade; new live threads: 0; selector rc=2
+86_veldo_0189_engine_upgrade repeat rc=2
