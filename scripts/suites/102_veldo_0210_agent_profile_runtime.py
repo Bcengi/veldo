@@ -235,11 +235,13 @@ print(json.dumps(r))
 
 
 def _v210_agent_profile():
+    import contextlib
     import fcntl
     import importlib.util
     import json
     import os
     from pathlib import Path
+    import socket
     import subprocess
     import sys
     import tempfile
@@ -1487,7 +1489,7 @@ print(json.dumps(seen))
                                   deny_read=[str(other / 'checkout/secret')])
             project_config = top / 'project-config.json'
             project_config.write_text(json.dumps(project_policy))
-            server = __import__('socket').socket()
+            server = socket.socket()
             server.bind(('127.0.0.1', 0))
             server.listen(1)
             import threading
@@ -1499,7 +1501,8 @@ print(json.dumps(seen))
                     connection.close()
                 except OSError:
                     pass
-            threading.Thread(target=serve, daemon=True).start()
+            server_thread = threading.Thread(target=serve, daemon=True)
+            server_thread.start()
             claude_items = [
                 'home:plugin-through-link:.claude/plugins/cache/market/tool/1.0.0/plugin.json',
                 'home:marketplace-through-link:.claude/plugins/marketplaces/market/marketplace.json',
@@ -1521,9 +1524,17 @@ print(json.dumps(seen))
                 'write:runner-refused:%s' % runner, 'write:authority-refused:%s' % launcher,
                 'make:store-refused:%s' % (store / 'planted.json'),
                 'create:worktree-writable:%s' % (worktree / 'edited')]
-            result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *claude_items],
-                         client='claude', env=client_env)
-            server.close()
+            try:
+                result = run(project_config, worktree, [sys.executable, '-I', '-S', str(probe), *claude_items],
+                             client='claude', env=client_env)
+            finally:
+                # The probe can fail before connecting, leaving serve blocked in accept.
+                with contextlib.suppress(OSError):
+                    server.shutdown(socket.SHUT_RDWR)
+                server_thread.join(30)
+                server.close()
+                if server_thread.is_alive():
+                    raise RuntimeError('VELDO-0210: the capability fixture thread outlived its listener')
             found = results(result)
             expect('VELDO-0210 capabilities/claude-run-starts: ' + result.stderr[-300:], result.returncode == 0)
             for item in claude_items:
