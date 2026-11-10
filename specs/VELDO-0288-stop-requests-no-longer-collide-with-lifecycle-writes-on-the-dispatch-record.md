@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0288
 title: Stop requests no longer collide with lifecycle writes on the dispatch record, and the record says whether the receiver was actually asked
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: not_required
@@ -85,7 +85,9 @@ acceptance_criteria:
   - id: AC3
     text: >
       Suite 62 forces the interleavings with a hook in the receiver's write path, not a sleep or a load.
-      Dispatches._run calls a named hook point between its version read and store.execute. It is active
+      Dispatches._run calls a named hook point between its version read and store.execute. stop_result calls
+      the same hook point between its version read and store.execute, which dispatch/stop-result-after-exit
+      uses to hold the runner. The hook point is active
       only when VELDO_CONTROL_TEST_HARNESS=1, the same gate as control_store._kill_point
       (control_store.py:550). Under the harness it blocks until the suite releases it through a file whose
       path is given in an environment variable. honor_stops has a second hook point between Launch.stop
@@ -109,19 +111,20 @@ acceptance_criteria:
     text: >
       The honor_stops docstring states what is guaranteed and nothing more: the receiver is asked before
       the ask is recorded; asked true means the bytes reached the receiver; a lifecycle write that meets a
-      stop write retries within the bound and is otherwise refused as before; a crash before the record
-      leaves the request pending for the next sweep. It does not say the receiver's end "never races" the
+      stop write retries within the bound and is otherwise refused as before; a crash between the ask and
+      the record leaves the request pending, and a runner that doesn't hold the dispatch records it asked
+      false once the dispatch has ended. It does not say the receiver's end "never races" the
       runner's record. The .veldo and engine/.veldo copies of both files stay byte identical.
     falsified_by: >
       Suite 62 row dispatch/honor-stops-docstring fails when Runner.honor_stops.__doc__ contains "never
-      race" or still says the ask is recorded before it is made. The gate's template-sync check reds on
+      race" or contains "before it makes it". The gate's template-sync check reds on
       any difference between the two copies of either file.
 required_evidence: [unit, integration]
 rollback: >
   Revert the commit. honor_stops returns to the round 9 order (record, then ask) and lifecycle writes stop
   retrying, which is the interim landing-c shipped with. No stored record gains a field, so records
   written under this change read the same after the revert. A revert changes control_launch.py again, so
-  the captures are retaken with the revert.
+  the VELDO-0127 live captures and resource records are retaken with the revert.
 ---
 
 ## Intent
@@ -200,3 +203,7 @@ brief A to D).
 
 2026-11-10: revision 1. Applied findings 1 to 14 of the spec review
 (~/projects/myday/research/claude-runs/spec-veldo-0288-review-2026-11-10.md).
+
+2026-11-10: revision 2. Applied the four findings of the re-review of 6f7d3cf7 (stop_result hook point, docstring
+string match, AC4 crash clause, rollback names the captures). Re-review verdict otherwise clean; status set to
+ready by the lead.
