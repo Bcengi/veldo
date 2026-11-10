@@ -17,8 +17,11 @@ own_cgroup() { echo "/sys/fs/cgroup$(cut -d: -f3 /proc/self/cgroup)"; }
 usage_usec() { awk '$1 == "usage_usec" {print $2}' "$(own_cgroup)/cpu.stat"; }
 teeth_line() { grep -E '^mutations: ' "$1" | tail -1; }
 
-# 0. The baseline's row record, only when it is not there yet.
+# 0. The baseline's row record, only when it is not there yet. When it runs here it shares the scope
+#    with step 1, so the scope's peak memory is no longer a measurement of this tree alone.
+BASELINE_RAN=0
 if [ ! -s "$OUT/rows-before.json" ]; then
+  BASELINE_RAN=1
   python3 proof/VELDO-0271/record_rows.py record "$BASE" "$OUT/rows-before.json" > "$OUT/record-before.log" 2>&1
   echo "baseline-record exit $? $(grep -E '^recorded ' "$OUT/record-before.log" | tail -1)" >> "$RESULTS"
 fi
@@ -32,6 +35,7 @@ python3 proof/VELDO-0271/record_rows.py record "$ROOT" "$OUT/rows-after.json" > 
 code=$?
 t1=$(date +%s.%N); cpu1=$(usage_usec)
 peak=$(cat "$(own_cgroup)/memory.peak" 2>/dev/null || echo unknown)
+[ "$BASELINE_RAN" = 1 ] && peak=includes-baseline-run
 wall=$(echo "$t1 - $t0" | bc); cpu=$(echo "($cpu1 - $cpu0) / 1000000" | bc -l | cut -c1-10)
 failing=$(grep -E '^ *SELFTEST FAIL: ' "$OUT/unit.log" | sed -E 's/^ *SELFTEST FAIL: //' | cut -c1-120 | paste -sd ';' -)
 echo "unit exit $code wall $wall cpu $cpu peak_bytes $peak load $(cut -d' ' -f1-3 /proc/loadavg) :: $(grep -E '^selftest: ' "$OUT/unit.log" | tail -1) :: failing: ${failing:-none}" >> "$RESULTS"
@@ -51,6 +55,9 @@ deciding = {'exit': int(code), 'bound': 'exit 0 and no failing row',
             'wall_seconds': float(wall), 'cpu_seconds': float(cpu),
             'peak_cgroup_memory_bytes': int(peak) if peak.isdigit() else None,
             'verdict': 'pass' if code == '0' else 'fail'}
+if peak == 'includes-baseline-run':
+    deciding['peak_cgroup_memory_note'] = ('not measured: step 0 ran the baseline unit suite in this pass and the same scope, '
+                                           'so the scope peak includes the baseline run')
 validate.write_proof_summary(Path(out) / 'unit.summary.json',
                              'python3 proof/VELDO-0271/record_rows.py record <worktree> <scratch dir>/rows-after.json',
                              deciding, discarded=[('unit.log', log)], timing=True)
@@ -112,11 +119,17 @@ spec = importlib.util.spec_from_file_location('heavy_validate', '.veldo/validate
 validate = importlib.util.module_from_spec(spec); spec.loader.exec_module(validate)
 log = (out / 'red.log').read_bytes()
 red = sorted(set(re.findall(r'SELFTEST FAIL: VELDO-0271 ([^: \n]+)', log.decode('utf-8', 'replace'))))
+required = ['removed/leftover-reported', 'removed/lease-only', 'removed/seven-names-gone']
+missing = [name for name in required if name not in red]
 validate.write_proof_summary(out / 'red.summary.json',
                              'python3 scripts/selftest.py --suite 141_veldo_0271_gate_without_sandbox, in a copy of 24c9f5b4 '
                              'with suite 141, its manifest entry and the table laid over it',
-                             {'rows_red': red, 'rows_red_count': len(red), 'bound': 'at least one row of suite 141 red on the old code',
-                              'verdict': 'pass' if red else 'fail'}, discarded=[('red.log', log)])
+                             {'required_red': required, 'required_not_red': missing,
+                              'other_rows_red': [name for name in red if name not in required],
+                              'rows_red': red, 'rows_red_count': len(red),
+                              'bound': 'removed/seven-names-gone, removed/lease-only and removed/leftover-reported '
+                                       'all red on the old code',
+                              'verdict': 'fail' if missing else 'pass'}, discarded=[('red.log', log)])
 EOF
 
 # 6. The summaries, and the inventory of the whole run, into the bundle. Raw logs stay in <scratch dir>.
