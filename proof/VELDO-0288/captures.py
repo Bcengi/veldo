@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 engines = json.loads((ROOT / '.veldo/runtime/engines.json').read_text())
-binaries = {name: str(Path(record['binary']).expanduser()) for name, record in engines.items()}
+binaries = {name: str(Path(engines[name]['binary']).expanduser()) for name in ('codex', 'claude_code')}
 env = dict(os.environ, CODEX_HOME=str(Path.home() / '.codex2'))
 commands = [
     [sys.executable, '.veldo/qualify.py', '--codex', binaries['codex'], '--claude', binaries['claude_code']],
