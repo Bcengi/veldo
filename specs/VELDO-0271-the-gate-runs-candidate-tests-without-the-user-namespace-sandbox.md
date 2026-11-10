@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0208, VELDO-0216, VELDO-0220, VELDO-0267]
 placement: [enforcement]
-protected_paths: ["scripts/verify.sh", "engine/scripts/verify.sh", "scripts/gate_candidate.py", "engine/scripts/gate_candidate.py", "scripts/gate_legs.py", "engine/scripts/gate_legs.py", "scripts/gate_unconfined.json", "scripts/agent_sandbox.py", "engine/scripts/agent_sandbox.py", "scripts/agent_sandbox.json", "engine/scripts/agent_sandbox.json", "scripts/mutation_sandbox.py", "engine/scripts/mutation_sandbox.py", "scripts/gate_schedule.py", "engine/scripts/gate_schedule.py", "scripts/check_gate_mutations.py", "engine/scripts/check_gate_mutations.py", "scripts/reuse_worker.py", "engine/scripts/reuse_worker.py", "scripts/case_inputs.py", "engine/scripts/case_inputs.py", "scripts/propose_case_inputs.py", "scripts/mutation_case_inputs.json", "scripts/mutation_selection.json", "scripts/mutation_selection.py", "engine/scripts/mutation_selection.py", ".veldo/reuse_evidence.py", "engine/.veldo/reuse_evidence.py", "scripts/selftest.py", "scripts/parked/estimation/check_first_use.py", "scripts/run_scope.py", "scripts/suites/shared.py"]
+protected_paths: ["scripts/mutation_selection.json", "scripts/mutation_selection.py", "engine/scripts/mutation_selection.py", "scripts/parked/estimation/check_first_use.py"]
 footprint:
   - "scripts/verify.sh"
   - "engine/scripts/verify.sh"
@@ -108,9 +108,9 @@ acceptance_criteria:
       a transient unit with systemd-run in the user manager and one that traces a child with strace: both
       are green in one stage line and the stamp has no unconfined field. A count row requires the unit
       stage to report every suite in scripts/suites/manifest.json. Registered mutations, each from a green
-      baseline: (1) selftest.py skips the suites the deleted list named: the count row goes red; (2)
-      gate_schedule.py stops recording a node's resource record: the measured-claims row of suite
-      114_veldo_0216_concurrent_stages goes red;
+      baseline: (1) selftest.py skips the suites the deleted list named: the count row goes red; (2) record_resources, moved into gate_schedule.py, returns before it writes: the
+      measured-claims row of suite 114_veldo_0216_concurrent_stages, which records and reads back
+      node unit, goes red;
       (3) gate_candidate.py passes the caller's standard input through: the stdin row, which runs the gate
       with a socket on standard input and requires the candidate to read end of file, goes red.
   - id: AC2
@@ -120,7 +120,8 @@ acceptance_criteria:
       its own systemd scope with the memory limit from scripts/gate_host.json and holds the host lock
       (VELDO-0220); and no credential reaches a candidate's run (VELDO-0254 to VELDO-0258): the
       environment gate_candidate.py builds carries no variable named in the installation's keystore or
-      settings and none whose name matches the credential name patterns of VELDO-0254's scan, and the gate
+      settings and none whose name is in control_launch.py's EXEC_STRIPPED or matches the secret-name pattern
+      _SECRET_NAMES of .veldo/substrate.py, and the gate
       hands no credential file, descriptor or seeded copy to the candidate. Files the owner's account can
       read stay readable to candidate code, as they are to the builder that wrote it; restricting them, if
       the owner wants it, is Landlock on agent processes and not part of this spec.
@@ -175,10 +176,15 @@ acceptance_criteria:
       confined runner) are removed because they test only the launcher. Suite 103 (borrowed login)
       keeps every row that drives the lease through live.py and loses the rows that start the
       launcher. Suite 127 builds its no-runner-host and cached self-test rows on a fixture runner
-      program it writes itself. In suites 65, 100, 101, 114 and selftest.py only the rows that test
-      confinement or leg selection are removed or rewritten for one leg. Every registered mutation case
-      that mutates or loads gate_legs.py (one mutates it on this tree, concurrent216-lost-leg-record)
-      moves to the code it tests in gate_schedule.py. The parked suite
+      program it writes itself. In selftest.py and in suites 53, 64, 69, 98, 99, 100, 101, 112, 114, 126, 127_veldo_0259,
+      129_veldo_0274 and 140, only the rows that test the gate's namespace confinement, the launcher
+      or leg selection are removed; every other row there is rewritten for one leg and a process
+      tree with no launcher in it. Suite 65_veldo_0067_edges is unchanged: its rows test the edge
+      key's own Landlock fence, not the gate's. concurrent216-lost-leg-record, the one case that mutates gate_legs.py on this tree, is removed
+      and listed as confinement only, because the leg record it truncates leaves with the stamp's
+      unconfined field. deadline215-no-prune keeps its intent with its anchor rewritten to the
+      pruning that moves into gate_schedule.py. scope272-gate-legs-added-back and its suite
+      129_veldo_0272_approval_scope row use scripts/gate_schedule.py as the unprotected sample path. The parked suite
       scripts/parked/estimation/111_veldo_0214_first_use_budget.py is deleted with its entry in the
       parked manifest: it tests only the unit-leg handoff in gate_legs.py, which VELDO-0278 already
       removed, and nothing runs it except the hand-run parked selector of selftest.py; suite
@@ -193,14 +199,20 @@ acceptance_criteria:
       rm /etc/apparmor.d/veldo-userns) without changing the result.
     falsified_by: >
       A scan row finds none of these seven names in tracked files outside specs/, proof/, plans/ and
-      docs/design/: agent_sandbox.json, mutation_sandbox.py, veldo_userns.c, veldo-userns.apparmor,
+      docs/design/, other than the suite file that holds the scan and suite 127's config_missing
+      row: agent_sandbox.json, mutation_sandbox.py, veldo_userns.c, veldo-userns.apparmor,
       gate_legs.py, gate_unconfined.json, veldo-userns-setup.txt. A second scan row finds no load of
       scripts/agent_sandbox.py, by import or by command line, in verify.sh, any scripts/gate_*.py,
-      check_gate_mutations.py, reuse_worker.py, selftest.py, scripts/suites/shared.py or any .veldo
-      module, and a third loads the file and requires that it defines none of landlock,
-      fork_gate_domain, Broker, launch, run_tree, namespace_init, namespace_selftest and launcher_fds.
-      Suite 103's live rows (rotation, locking, recovery, restore, sweep and the killed-capture guard)
-      are green against the cut-down file. A suite 127 row requires a launch marked risky to be refused
+      check_gate_mutations.py, reuse_worker.py, selftest.py, check_install_and_run.py,
+      migrate_to_veldo.py, scripts/suites/shared.py or any .veldo module, and a third loads the file and requires that it defines none of landlock,
+      fork_gate_domain, Broker, launch, run_tree, namespace_init, namespace_selftest, launcher_fds,
+      remove_stale_scratch and NAMESPACE_HELPER.
+      Suite 103's live rows (rotation, locking, recovery, restore, the two killed-run recovery rows
+      and the killed-capture guard) are green against the cut-down file. The two killed-run rows
+      keep their recover_orphans assertions, read the unsettled journal directly instead of through
+      pending_borrow, and lose their scratch-removal clause; the row
+      recovery/scratch-swept-once-recovered is removed. Both changes are in the proof table, because
+      the scratch sweep served only the removed launcher. A suite 127 row requires a launch marked risky to be refused
       as confined_runner_unavailable:not_configured when the receiver configuration names no runner, and
       an unmarked launch to start its argv as before. A fixture host root holding a fake helper and
       profile gets the leftover_namespace_helper line from the gate and from factory setup, and both
@@ -332,6 +344,9 @@ VELDO-0273 depend on this spec and land after it.
 - VELDO-0254: its AC3 keeps the risky marks and the named refusal. The half that says a risky run
   starts confined has no runner behind it after this spec. A Landlock-only runner, if the owner wants
   one, is a later spec, and it brings its own suite in place of 128.
+- VELDO-0208 and VELDO-0211: this spec removes the agent confinement of VELDO-0208 and keeps
+  VELDO-0211's borrowed-login lease unchanged. VELDO-0208 stays in depends_on because this spec
+  edits the files it built.
 - VELDO-0278: its AC3 parked suite 111. This spec deletes that suite and edits suite
   129_veldo_0278_parked_estimation, which requires the name in the parked manifest. If Tokens of Effort
   is unparked later, the budget of the first-use check needs a new measurement source, because the leg
@@ -383,3 +398,5 @@ processes).
 2026-11-07: footprint gains the suite registration files (scripts/suites/manifest.json, requires.json and scripts/check_teeth_mutations.py where missing), by the lead under Telegram 39708 (mechanical, ACs unchanged): selftest refuses a suite file the manifest does not enumerate, so a ticket that adds a suite must register it (VELDO-0272 build stopped on this, proof/VELDO-0272/README.md).
 
 2026-11-10: revision 3 by the lead's writer: rebased onto landing-c 24c9f5b4, after two builds stopped correctly because AC4's scan could not pass inside the footprint. Decision: agent_sandbox.json is deleted and agent_sandbox.py is kept, cut down to the login lease of VELDO-0211, because proof/VELDO-0127/live.py loads the lease from that path and the owner's runners use the same lease; the confined runner in it is removed, because it runs only through the root helper and its suite 128 passes only where that helper is installed, so a launch marked risky is refused by the existing confined_runner_unavailable code and control_launch.py changes in two comments only. AC4 changed for that decision: the kept functions are named, the scan covers the seven deleted file names and is joined by a no-load scan and a content row for the kept file, suite 103 keeps its lease rows, suite 128 is removed, suite 127 moves to a fixture runner program, parked suite 111 is deleted, and a fourth mutation covers take_lease. AC1 changed only where the tree forced it, not the decision: VELDO-0278 already removed the unit-seconds handoff and parked suite 111, so that clause is dropped and mutation (2) now targets the node resource record and suite 114's measured-claims row; the leg list count is 49, was 46. AC2 and AC3 are unchanged. Footprint gains control_launch.py and control_factory_setup.py with their engine copies, docs/outside-services.md, scripts/gate_graph.json, mutation_selection.py and mutation_ownership.py with their engine copies, and three files in scripts/parked/estimation/ (check_first_use.py, the deleted suite 111, manifest.json); it loses .veldo/policy.yaml, which VELDO-0272 already cleared of these files, and scripts/check_first_use.py, which VELDO-0278 moved. Context numbers re-measured on this tree and the audit's home path replaced by its file name.
+
+2026-11-10: revision 3 review findings 1 to 7 applied verbatim by the lead (suite 103 sweep rows, concurrent216 removed and the two other gate_legs cases re-anchored, AC1 mutation (2) on record_resources, AC4 suite list, AC2 credential names from EXEC_STRIPPED and _SECRET_NAMES, scan exemptions and wider second and third scans, protected_paths trimmed, VELDO-0208/0211 coordination). Status stays ready.
