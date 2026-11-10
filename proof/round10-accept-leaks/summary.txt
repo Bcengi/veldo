@@ -1,0 +1,68 @@
+Round 10 starts at 8955553d on branch round10-accept-leaks.
+Code commit: 64f1777e95b7e74773b63c90e37943f98283ef2d.
+
+Original locations checked against that commit:
+
+128_veldo_0254_confined_runner: lines 60 to 68 start an unbounded accept loop
+without retaining its thread; line 116 only closes the listener.
+127_veldo_0254_secret_scan: lines 322 to 332 start the TCP and Unix accept
+loops; lines 780 to 787 close sockets without joining their threads.
+102_veldo_0210_agent_profile_runtime: lines 1490 to 1502 start a one-shot
+accept thread; line 1526 closes its listener. If the probe never connects,
+the thread remains blocked. An exception from run also skipped that close.
+47_veldo_0107_ipc: lines 508 to 531 start an exchange thread and join it
+before closing its listener. If inspection refuses before connecting,
+the join expires while accept remains blocked. The other accept sites
+are a synchronous probe at lines 248 to 258 and a two-request deadline
+thread at lines 479 to 501 with an existing two-second listener timeout.
+86_veldo_0189_engine_upgrade: Bridge.close raises at line 404. Its caller
+at lines 2087 to 2088 sits inside the final cleanup block, so that raise
+skips later bridges, managers, the Bot API, transport and temporary trees.
+
+The affected listeners now shut down and their threads join before their
+descriptors close. New joins use the 30-second bound from 704c8c28; suite
+47 keeps its existing two-second join. Suite 127 also joins its HTTP
+server thread and closes that server's listener. Suite 86 collects
+cleanup failures and raises after attempting every cleanup action.
+
+AST comparison preserved all existing check and expect calls, assertions,
+timeout keywords and socket timeout calls. Syntax and git diff checks pass.
+No suite checks, thresholds, existing timeouts, sleeps or retries changed.
+The only new sleep is the requested two-minute gate-marker poll.
+
+Validation started after the foreground poller found this exact line:
+78a-landing-c-gate9 rc=1 end 2026-11-10T04:57:30Z
+
+Every suite ran once through scripts/selftest.py's suite selector, then
+twice in one process through that dispatcher's VELDO_SUITE_ORDER override.
+All ten commands ran in systemd user scopes with MemoryMax=10G. Each
+returned 2, the dispatcher's successful selected-suite status, with zero
+failed checks. Counts below exclude the 26 shared preamble checks.
+
+Suite                                      Single  Repeat 1  Repeat 2  New live threads
+128_veldo_0254_confined_runner                   1         1         1                 0
+127_veldo_0254_secret_scan                      22        22        22                 0
+102_veldo_0210_agent_profile_runtime           237       237       237                 0
+47_veldo_0107_ipc                               23        23        23                 0
+86_veldo_0189_engine_upgrade                    34        34        34                 0
+
+New live threads are counted after each pair of runs against the threads
+present before its dispatcher started. suite-results.txt holds the
+per-run summaries. run_suites.py and repeat_suite.py reproduce the runs.
+
+accept_probe.py executes the edited fixture functions and cleanup blocks
+with no client connection. All five cases passed: suite 128 Unix, suite
+127 Unix and TCP, suite 102 TCP, and suite 47 Unix. Each thread joined
+and each listener closed. The probe ran in a 10G user scope.
+
+cleanup_probe.py executes suite 86's final cleanup block with resource
+stubs. At 8955553d, a failure in the first bridge skips seven remaining
+cleanup actions. The fixed block completed all nine actions and restored
+globals in 11 cases: no failure, one failure at each action, and failures
+at every action. It reported every injected failure after cleanup.
+The first probe revision located a direct stop_bot_api call but missed
+the new callback argument; its lookup was corrected. Both probe outputs
+are retained. No suite code changed in response to that probe error.
+Both probe revisions ran in 10G user scopes.
+
+These selected-suite results make no gate or landing claim.

@@ -507,7 +507,10 @@ if _v107_have_git and _v107_has_peercred:
     for _v107_failure in ('empty', 'timeout', 'reset', 'refusal'):
         _v107_exchange_srv = CC107.bind(CC107.socket_path_for(_v107_current_binding))
         def _v107_exchange_peer(kind=_v107_failure, listener=_v107_exchange_srv):
-            conn, _ = listener.accept()
+            try:
+                conn, _ = listener.accept()
+            except OSError:
+                return
             with conn:
                 while conn.recv(65536):
                     pass
@@ -527,8 +530,15 @@ if _v107_have_git and _v107_has_peercred:
         except CC107.RoutingRefused as exc:
             _v107_exchange_result = {'reason': exc.reason, 'message': exc.message}
         finally:
+            # Inspection can refuse before connecting, so wake the waiting accept first.
+            try:
+                _v107_exchange_srv.shutdown(_v107_socket.SHUT_RDWR)
+            except OSError:
+                pass
             _v107_exchange_thread.join(2)
             _v107_exchange_srv.close()
+            if _v107_exchange_thread.is_alive():
+                raise RuntimeError('VELDO-0107: the exchange thread outlived its listener')
         _v107_exchange_results.append(_v107_exchange_result)
     expect('ipc/empty-timed-out-and-reset-responses-return-the-stale-answer',
            all(answer.get('stale') is True and answer['watermark'] == 7

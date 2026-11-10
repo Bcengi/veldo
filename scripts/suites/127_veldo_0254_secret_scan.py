@@ -328,8 +328,9 @@ def _v254_suite():
                         return
                     with conn:
                         conn.sendall(b'PONG\n')
-            threading.Thread(target=serve, daemon=True).start()
-            servers.append(sock)
+            thread = threading.Thread(target=serve, daemon=True)
+            thread.start()
+            servers.append((sock, thread))
         tcp = socket.socket()
         tcp.bind(('127.0.0.1', 0))
         tcp.listen()
@@ -357,8 +358,9 @@ def _v254_suite():
             def log_message(self, *args):
                 pass
         web = http.server.ThreadingHTTPServer((address, 0), Page)
-        threading.Thread(target=web.serve_forever, daemon=True).start()
-        servers.append(web)
+        web_thread = threading.Thread(target=web.serve_forever, daemon=True)
+        web_thread.start()
+        servers.append((web, web_thread))
         runs = base / 'runs'
         runs.mkdir()
         reach = runs / 'reach.py'
@@ -778,13 +780,25 @@ print(json.dumps({'run_end': len(ended['findings']), 'landing': len(landed['find
         for row in ROWS:
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:300], False)
     finally:
-        for server in servers:
-            try:
-                (server.shutdown() if hasattr(server, 'shutdown') and not isinstance(server, socket.socket)
-                 else server.close())
-            except OSError:
-                pass
+        cleanup_failures = []
+        for server, thread in servers:
+            # Wake accept and join before releasing the descriptor for another suite.
+            with contextlib.suppress(OSError):
+                if isinstance(server, socket.socket):
+                    server.shutdown(socket.SHUT_RDWR)
+                else:
+                    server.shutdown()
+            thread.join(30)
+            with contextlib.suppress(OSError):
+                if isinstance(server, socket.socket):
+                    server.close()
+                else:
+                    server.server_close()
+            if thread.is_alive():
+                cleanup_failures.append(thread.name)
         shutil.rmtree(temp, ignore_errors=True)
+        if cleanup_failures:
+            raise RuntimeError('VELDO-0254: fixture threads outlived their listeners: ' + ', '.join(cleanup_failures))
 
     for row, values in rows.items():
         failed = [label for label, ok in values if not ok]

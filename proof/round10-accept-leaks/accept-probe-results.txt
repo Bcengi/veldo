@@ -1,0 +1,6 @@
+Running as unit: run-r74022d982cf444769450b4f30f20aba6.scope; invocation ID: c37151ee081245bf9298fd2ff3f42530
+128_veldo_0254_confined_runner AF_UNIX: no client; cleanup joined the thread and closed the listener
+127_veldo_0254_secret_scan AF_UNIX: no client; cleanup joined the thread and closed the listener
+127_veldo_0254_secret_scan AF_INET: no client; cleanup joined the thread and closed the listener
+102_veldo_0210_agent_profile_runtime AF_INET: no client; cleanup joined the thread and closed the listener
+47_veldo_0107_ipc AF_UNIX: no client; cleanup joined the thread and closed the listener

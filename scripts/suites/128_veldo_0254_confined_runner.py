@@ -13,6 +13,7 @@ unconfined leg (proof/VELDO-0254/OPEN.md). Writes only temporary files.
 
 
 def _v254_confined_suite():
+    import contextlib
     import importlib.util
     import json
     from pathlib import Path
@@ -43,6 +44,7 @@ def _v254_confined_suite():
 
     temp = tempfile.mkdtemp(prefix='v254c-', dir=fast_temp())
     unix = None
+    server_thread = None
     try:
         base = Path(temp)
         mods = base / 'installed' / '.veldo'
@@ -65,7 +67,8 @@ def _v254_confined_suite():
                     return
                 with conn:
                     conn.sendall(b'PONG\n')
-        threading.Thread(target=serve, daemon=True).start()
+        server_thread = threading.Thread(target=serve, daemon=True)
+        server_thread.start()
         runs = base / 'runs'
         runs.mkdir()
         probe = runs / 'probe.py'
@@ -113,8 +116,15 @@ print(json.dumps(out))
             check(row, 'raised ' + type(error).__name__ + ': ' + str(error)[:300], False)
     finally:
         if unix is not None:
+            # Wake accept and join before releasing the descriptor for another suite.
+            with contextlib.suppress(OSError):
+                unix.shutdown(socket.SHUT_RDWR)
+            if server_thread is not None:
+                server_thread.join(30)
             unix.close()
         shutil.rmtree(temp, ignore_errors=True)
+        if server_thread is not None and server_thread.is_alive():
+            raise RuntimeError('VELDO-0254: the confined-runner fixture thread outlived its listener')
 
     for row, values in rows.items():
         failed = [label for label, ok in values if not ok]

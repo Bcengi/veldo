@@ -2081,19 +2081,30 @@ def _v189_suite():
     except StopIteration:
         pass
     finally:
-        close_runtime()
+        cleanup_failures = []
+
+        def cleanup(label, action):
+            try:
+                action()
+            except Exception as error:
+                cleanup_failures.append((label, error))
+
+        cleanup('runtime', close_runtime)
         os.environ['PATH'] = prior_path186
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         for bridge in bridges:
-            bridge.close()
+            cleanup('bridge ' + bridge.path, bridge.close)
         for manager in managers:
-            with contextlib.suppress(Exception):
-                manager.close()
-        stop_bot_api()
+            cleanup('manager', manager.close)
+        cleanup('Bot API', stop_bot_api)
         if ts is not None:
-            ts.close()
-        remove(base)
-        shutil.rmtree(cache)
+            cleanup('transport', ts.close)
+        cleanup('base', lambda: remove(base))
+        cleanup('cache', lambda: shutil.rmtree(cache))
+        if cleanup_failures:
+            raise RuntimeError('VELDO-0189 cleanup failed: ' + '; '.join(
+                '%s: %s: %s' % (label, type(error).__name__, error)
+                for label, error in cleanup_failures)) from cleanup_failures[0][1]
 
     if profiler is not None:
         profiler.disable()
