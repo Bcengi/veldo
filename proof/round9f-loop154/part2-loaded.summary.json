@@ -1,0 +1,451 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop (20 runs; concurrency 4; 12 CPU burners)",
+ "deciding": {
+  "concurrent_runs": 4,
+  "cpu_burners": 12,
+  "gate_run": false,
+  "mode": "loaded",
+  "partial_suite": true,
+  "passed": 20,
+  "retries": 0,
+  "run_count": 20,
+  "runs": [
+   {
+    "failures": [],
+    "load": [
+     6.326171875,
+     2.2626953125,
+     2.39306640625
+    ],
+    "log": "loaded-1.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 1,
+    "seconds": 27.004,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 26.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     6.326171875,
+     2.2626953125,
+     2.39306640625
+    ],
+    "log": "loaded-2.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 2,
+    "seconds": 27.03,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 26.94s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     6.326171875,
+     2.2626953125,
+     2.39306640625
+    ],
+    "log": "loaded-3.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 3,
+    "seconds": 26.959,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 26.87s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     6.326171875,
+     2.2626953125,
+     2.39306640625
+    ],
+    "log": "loaded-4.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 4,
+    "seconds": 27.031,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 26.94s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.19970703125,
+     4.787109375,
+     3.259765625
+    ],
+    "log": "loaded-5.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 5,
+    "seconds": 60.085,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 60.00s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.19970703125,
+     4.787109375,
+     3.259765625
+    ],
+    "log": "loaded-6.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 6,
+    "seconds": 60.021,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.93s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.19970703125,
+     4.787109375,
+     3.259765625
+    ],
+    "log": "loaded-7.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 7,
+    "seconds": 59.976,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.88s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.19970703125,
+     4.787109375,
+     3.259765625
+    ],
+    "log": "loaded-8.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 8,
+    "seconds": 60.004,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.91s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     14.53515625,
+     6.88720703125,
+     4.08447265625
+    ],
+    "log": "loaded-9.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 9,
+    "seconds": 59.979,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.88s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     14.53515625,
+     6.88720703125,
+     4.08447265625
+    ],
+    "log": "loaded-10.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 10,
+    "seconds": 59.961,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.86s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     14.53515625,
+     6.88720703125,
+     4.08447265625
+    ],
+    "log": "loaded-11.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 11,
+    "seconds": 59.934,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.84s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     14.53515625,
+     6.88720703125,
+     4.08447265625
+    ],
+    "log": "loaded-12.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 12,
+    "seconds": 59.945,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.85s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.38232421875,
+     8.60400390625,
+     4.85693359375
+    ],
+    "log": "loaded-13.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 13,
+    "seconds": 59.921,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.83s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.38232421875,
+     8.60400390625,
+     4.85693359375
+    ],
+    "log": "loaded-14.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 14,
+    "seconds": 59.886,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.79s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.38232421875,
+     8.60400390625,
+     4.85693359375
+    ],
+    "log": "loaded-15.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 15,
+    "seconds": 59.927,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.83s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.38232421875,
+     8.60400390625,
+     4.85693359375
+    ],
+    "log": "loaded-16.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 16,
+    "seconds": 59.898,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.80s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.173828125,
+     9.85693359375,
+     5.5283203125
+    ],
+    "log": "loaded-17.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 17,
+    "seconds": 59.988,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.89s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.173828125,
+     9.85693359375,
+     5.5283203125
+    ],
+    "log": "loaded-18.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 18,
+    "seconds": 60.013,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.91s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.173828125,
+     9.85693359375,
+     5.5283203125
+    ],
+    "log": "loaded-19.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 19,
+    "seconds": 60.011,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.91s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     15.173828125,
+     9.85693359375,
+     5.5283203125
+    ],
+    "log": "loaded-20.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 20,
+    "seconds": 59.984,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.89s"
+    ]
+   }
+  ],
+  "source_sha256": "b9365cbf78d93a0fe53dcc63e813ba1e402c3dad46c8cf98048ddf29ed13b329"
+ },
+ "discarded": [
+  {
+   "bytes": 10707,
+   "name": "loaded-1.log",
+   "sha256": "16331715b35a1b513b1831b6ec4f90479264bcdcaa4a61f8be358c5cd995726c"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-2.log",
+   "sha256": "cc43392d252cccfd9d1084551144eb101a6f618caf2409a263259813511d4784"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-3.log",
+   "sha256": "8e4f37d9675c27709751331e83e536ff192279fd258b9297dc2a4fc3216ea384"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-4.log",
+   "sha256": "b26b649e449b1057b1dfa3f10720e7f3a58ec14bbee3d65083d40fcf1ebd1451"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-5.log",
+   "sha256": "2d60c3b8ddf70e4186a655dbe67391881ad32681ddd866799cce5973b343d63a"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-6.log",
+   "sha256": "611643aeeaea7d4f64f38570cbf256d616967d83f98279d3bd5919dc16cc2481"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-7.log",
+   "sha256": "1dfa453adf7201420eb3f9af794ce2d1d74ded2f4eff744bfab98df6e91dff8b"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-8.log",
+   "sha256": "b366c936b7ceef4fd69a1d109bcfb2a791585ffeb0f75a427496fa1e44e1479e"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-9.log",
+   "sha256": "820552c8fbc681465b5c07cdd87d70d1fdd7b8359315c14679da08878309436f"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-10.log",
+   "sha256": "cece86435d5d45c2096733b365a8f9c99f070496a4793f5df287737f52f4e8e8"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-11.log",
+   "sha256": "816c5ea3a9ef614e06993a4b31c6f736c626cf1d75c01deb2680d7eba82013d3"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-12.log",
+   "sha256": "6ab0bb37239eaf7aa3cf4dae7fbc9c66ad0d0cc8934ce688fc0e7889ffc79fd2"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-13.log",
+   "sha256": "95d37a1a313d0a027986bd6d38e64a605e593bd7ba45f2aadfe61d1f2023fde6"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-14.log",
+   "sha256": "b0b2c836dc0e18106479abcd4d830bb7ba982162f77f04a82761ff9b0e724583"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-15.log",
+   "sha256": "cca70f2ae07506f320a81a972d85a84db714b9efef385f578dc47350197ad1b7"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-16.log",
+   "sha256": "d38dec6c5644da0eafa893a3c4771261200c32f28aeb5e36688dc19efdc9113c"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-17.log",
+   "sha256": "79970fe5fe6244a6a927c3c32aac99b5b89490dd5038e02d753267f0213f706f"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-18.log",
+   "sha256": "0315389e1d1ea64113d5d957a36d1f24d3056d0a3bd5038be9b243eb05cfdf45"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-19.log",
+   "sha256": "3b0cfafac0719c4199beec4582346eea82afaf36305c29bbf3408fbfbbb4d63c"
+  },
+  {
+   "bytes": 10707,
+   "name": "loaded-20.log",
+   "sha256": "cadb94df34852aaedf8cad9a68b72bb708ff06e12483a76c83814e5e4bc644aa"
+  }
+ ],
+ "environment": {
+  "commit": "5243cd62bd75c54a409e03a25a357601f46644be",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   10.1328125,
+   9.09619140625,
+   5.39111328125
+  ],
+  "python": "3.12.3",
+  "tree": "1c30ee07a690c2f063def4976e10de16ddf17dc5"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

@@ -1,0 +1,451 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 83_veldo_0154_factory_loop (20 runs; concurrency 1; 0 CPU burners)",
+ "deciding": {
+  "concurrent_runs": 1,
+  "cpu_burners": 0,
+  "gate_run": false,
+  "mode": "alone",
+  "partial_suite": true,
+  "passed": 20,
+  "retries": 0,
+  "run_count": 20,
+  "runs": [
+   {
+    "failures": [],
+    "load": [
+     1.05224609375,
+     5.63427734375,
+     4.80712890625
+    ],
+    "log": "alone-1.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 1,
+    "seconds": 34.214,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 34.12s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.73876953125,
+     4.73583984375,
+     4.5498046875
+    ],
+    "log": "alone-2.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 2,
+    "seconds": 60.005,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.7939453125,
+     4.05859375,
+     4.3291015625
+    ],
+    "log": "alone-3.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 3,
+    "seconds": 60.004,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.91s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.72705078125,
+     3.47509765625,
+     4.11181640625
+    ],
+    "log": "alone-4.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 4,
+    "seconds": 60.018,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.93s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     1.62890625,
+     3.34326171875,
+     4.03173828125
+    ],
+    "log": "alone-5.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 5,
+    "seconds": 60.015,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.87158203125,
+     2.8330078125,
+     3.81201171875
+    ],
+    "log": "alone-6.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 6,
+    "seconds": 60.012,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.7080078125,
+     2.44677734375,
+     3.61669921875
+    ],
+    "log": "alone-7.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 7,
+    "seconds": 59.963,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.87s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.58447265625,
+     2.11474609375,
+     3.4287109375
+    ],
+    "log": "alone-8.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 8,
+    "seconds": 60.021,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.56884765625,
+     1.8447265625,
+     3.25244140625
+    ],
+    "log": "alone-9.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 9,
+    "seconds": 60.016,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.4306640625,
+     1.5927734375,
+     3.07666015625
+    ],
+    "log": "alone-10.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 10,
+    "seconds": 59.945,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.85s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.583984375,
+     1.4345703125,
+     2.92822265625
+    ],
+    "log": "alone-11.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 11,
+    "seconds": 60.043,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.95s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.83935546875,
+     1.3779296875,
+     2.8154296875
+    ],
+    "log": "alone-12.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 12,
+    "seconds": 59.971,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.88s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     1.0244140625,
+     1.3369140625,
+     2.70947265625
+    ],
+    "log": "alone-13.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 13,
+    "seconds": 60.019,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     1.02099609375,
+     1.2744140625,
+     2.60107421875
+    ],
+    "log": "alone-14.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 14,
+    "seconds": 59.989,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.90s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.7841796875,
+     1.1728515625,
+     2.48193359375
+    ],
+    "log": "alone-15.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 15,
+    "seconds": 60.029,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.93s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.5888671875,
+     1.07177734375,
+     2.36376953125
+    ],
+    "log": "alone-16.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 16,
+    "seconds": 59.955,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.86s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.96875,
+     1.1005859375,
+     2.29248046875
+    ],
+    "log": "alone-17.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 17,
+    "seconds": 60.018,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.81787109375,
+     1.0458984375,
+     2.19873046875
+    ],
+    "log": "alone-18.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 18,
+    "seconds": 60.052,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.95s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.77001953125,
+     1.001953125,
+     2.1103515625
+    ],
+    "log": "alone-19.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 19,
+    "seconds": 59.962,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.87s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     0.81982421875,
+     1.0068359375,
+     2.04248046875
+    ],
+    "log": "alone-20.log",
+    "passed": true,
+    "returncode": 2,
+    "run": 20,
+    "seconds": 60.018,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 40 passed, 0 failed in 59.92s"
+    ]
+   }
+  ],
+  "source_sha256": "b9365cbf78d93a0fe53dcc63e813ba1e402c3dad46c8cf98048ddf29ed13b329"
+ },
+ "discarded": [
+  {
+   "bytes": 10707,
+   "name": "alone-1.log",
+   "sha256": "93728088e17f166d26726cac8c840b5888139d49af2f5a0946a97ace640f61ae"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-2.log",
+   "sha256": "a6cef3629e0d39ba063af07fe4a147283aa7c651e6c24776bdad48388cd180bc"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-3.log",
+   "sha256": "d78b5d581a85d639b71d415a4a5fd969cf41cfb1a3972482def90aad9d117f5d"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-4.log",
+   "sha256": "974b9b460e826ed217858e2a0ff33131c47178ed5734b7ce17c018e78c830716"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-5.log",
+   "sha256": "5667b4d3bfd974c753a937bdfc82b1d695b711c7f039661f9fd35806155f8fa5"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-6.log",
+   "sha256": "4e093e0989c6dbd35a1bd4444572ddf1f8a689d4a7dbc00f54aafea2790ce615"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-7.log",
+   "sha256": "db07eded5cf1b54d9d8e37f8db449aa19b871737d5da451317dbb78e954bb6b7"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-8.log",
+   "sha256": "76490f6b5039c4d7829eb01f7e0ce5341f845949d322f0c1cb973c9011798b16"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-9.log",
+   "sha256": "3e0e887c7c47454c351606c37ea6e90fefb2947f368d0f068762235ed28a44d3"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-10.log",
+   "sha256": "33a60f32fd08eb835bcc1102758902ba135d64efbfc1984b1bc5ecb16f0b40f3"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-11.log",
+   "sha256": "e46ee5a2b721ef231a4e3044d0415e23662644b80afdc53d15c8db6d6a82696e"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-12.log",
+   "sha256": "e73634dd791b8bb4a2a47d84ac90951d643203e52c4b0fe0f7236025b52bd120"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-13.log",
+   "sha256": "e08ff16c1c56a840d67cab6fcb9e2082c6ab5de058a6a2d2dd54026b00058282"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-14.log",
+   "sha256": "c1b12e321beda80e4084eda1a18d5a1b1cd489c25a7097b89fc0978ae0d86389"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-15.log",
+   "sha256": "cb9a8aa8200cb49225545fa3f0b81a7a87a0562baa8df1923698406b67efdd88"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-16.log",
+   "sha256": "62175baf7b5b3c4818aed4b45ffb091e6e3a6c555579f09d532c9cf084f0344c"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-17.log",
+   "sha256": "2f8caee1e52e0c3fbef29d759915b8844bc6e0270f6fe36e8ec5085e810b1e17"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-18.log",
+   "sha256": "89961806e71de510b0afde971622a71b88fa680c5c2c8a4da3b84582c25f1384"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-19.log",
+   "sha256": "8bc27b5b8e9eede5da40dc820c0136ae7ed170b843534669768261fd50ddd63c"
+  },
+  {
+   "bytes": 10707,
+   "name": "alone-20.log",
+   "sha256": "f65e8e1fd1d7cea3698d77db99310fb18f772ebbe4c6a7e3050e32e256ab0d0d"
+  }
+ ],
+ "environment": {
+  "commit": "5243cd62bd75c54a409e03a25a357601f46644be",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   0.8759765625,
+   0.9912109375,
+   1.998046875
+  ],
+  "python": "3.12.3",
+  "tree": "1c30ee07a690c2f063def4976e10de16ddf17dc5"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

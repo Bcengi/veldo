@@ -1,0 +1,50 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --finding 154 --case loop154-periodic-pass --case loop154-reset-timer-unset --jobs 3 --worker-log-dir /tmp/round9f-part2.Ee6uDEoC/quiet-workers --diff-dir /tmp/round9f-part2.Ee6uDEoC/quiet-diffs --summary /tmp/round9f-part2.Ee6uDEoC/quiet-teeth.summary.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 114.1298371439334,
+   "executed": 2,
+   "registered": 2,
+   "rejected": 2,
+   "reused": 0,
+   "status": "passed",
+   "worker_invocations": 4
+  },
+  "results_count": 2,
+  "results_sha256": "88e678762bf1a72680b0a198e8a18687a121a6aa78d9288727d754c5c787cd50",
+  "rows": [
+   {
+    "case": "loop154-reset-timer-unset",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "loop154-periodic-pass",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 49791,
+   "name": "mutation result array",
+   "sha256": "88e678762bf1a72680b0a198e8a18687a121a6aa78d9288727d754c5c787cd50"
+  }
+ ],
+ "environment": {
+  "commit": "5243cd62bd75c54a409e03a25a357601f46644be",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   1.890625,
+   6.68212890625,
+   5.0751953125
+  ],
+  "python": "3.12.3",
+  "tree": "1c30ee07a690c2f063def4976e10de16ddf17dc5"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

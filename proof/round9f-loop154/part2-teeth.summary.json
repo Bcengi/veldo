@@ -1,0 +1,885 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G python3 scripts/check_teeth_mutations.py --finding 154 --case loop154-journal-wake-dropped --jobs 3 (10 runs, five concurrent, with 12 CPU burners; all logs and diffs under mktemp in /tmp)",
+ "deciding": {
+  "concurrent_runs": 5,
+  "controls": [
+   {
+    "counts": {
+     "elapsed": 158.497101272922,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "d5be2a667c0b43852eaad1257ae09ce0f1144c13edbe98ae29a0247493346160",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 158.47322163404897,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "f750b0d052dca75c460beff1001f8ff0a1f89f8200374dd57a3e9a433bcd91e2",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 158.4626300870441,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "32f8404408a8dcc26ee3a01347a5dcc4cfc9794a8ed9fcb74fdc6279e89ad182",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 158.47221039794385,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "1207a8186e10e44a8f183eb9a098e7f549566b948d10765f55d03993e360ebf8",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 158.49829640006647,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "c302507887ef98a7bb08fc0f1f1812283328f24c9dec18efe938873ad97ed996",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 135.7551382740494,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "daea6af6ac0802d1d23904c22a47a8e9a40139ed72066808742e29c2f3249431",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 179.14425882697105,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "97e6b921690c8f6234d0db7f5715181d9127ff9ddad5df42332d74847555be03",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 135.9431828421075,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "b7e6f59b439ffd576fba2942df8a6a0802b7a5845ac0e1d73c269fac0cdbf2b6",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 136.31625948287547,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "83e77e58cd4f67d6e6a8be5a98467e7af297225b71ecdc66ea6d41df6522909d",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   },
+   {
+    "counts": {
+     "elapsed": 136.27217776002362,
+     "executed": 1,
+     "registered": 1,
+     "rejected": 1,
+     "reused": 0,
+     "status": "passed",
+     "worker_invocations": 3
+    },
+    "results_count": 1,
+    "results_sha256": "7d4bc5f407b17590f05103992d5a2240b59f7d3a388be55311c066e32434c5b7",
+    "rows": [
+     {
+      "case": "loop154-journal-wake-dropped",
+      "expected": "killed",
+      "observed": "killed",
+      "source": "fresh"
+     }
+    ]
+   }
+  ],
+  "cpu_burners": 12,
+  "gate_run": false,
+  "mode": "teeth",
+  "partial_suite": false,
+  "passed": 10,
+  "retries": 0,
+  "run_count": 10,
+  "runs": [
+   {
+    "failures": [],
+    "load": [
+     12.416015625,
+     6.96435546875,
+     3.90673828125
+    ],
+    "log": "teeth-1.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 1,
+    "seconds": 158.606,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=158.497s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.416015625,
+     6.96435546875,
+     3.90673828125
+    ],
+    "log": "teeth-2.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 2,
+    "seconds": 158.588,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=158.473s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.416015625,
+     6.96435546875,
+     3.90673828125
+    ],
+    "log": "teeth-3.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 3,
+    "seconds": 158.589,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=158.463s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.416015625,
+     6.96435546875,
+     3.90673828125
+    ],
+    "log": "teeth-4.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 4,
+    "seconds": 158.589,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=158.472s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.416015625,
+     6.96435546875,
+     3.90673828125
+    ],
+    "log": "teeth-5.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 5,
+    "seconds": 158.604,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=158.498s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     13.5703125,
+     9.91796875,
+     5.46484375
+    ],
+    "log": "teeth-6.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 6,
+    "seconds": 135.872,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=135.755s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     12.83251953125,
+     10.240234375,
+     5.78662109375
+    ],
+    "log": "teeth-7.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 7,
+    "seconds": 179.261,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=179.144s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     13.5703125,
+     9.91796875,
+     5.46484375
+    ],
+    "log": "teeth-8.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 8,
+    "seconds": 136.057,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=135.943s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     13.5703125,
+     9.91796875,
+     5.46484375
+    ],
+    "log": "teeth-9.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 9,
+    "seconds": 136.434,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=136.316s"
+    ]
+   },
+   {
+    "failures": [],
+    "load": [
+     13.5703125,
+     9.91796875,
+     5.46484375
+    ],
+    "log": "teeth-10.log",
+    "passed": true,
+    "returncode": 0,
+    "run": 10,
+    "seconds": 136.39,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=136.272s"
+    ]
+   }
+  ],
+  "source_sha256": "b9365cbf78d93a0fe53dcc63e813ba1e402c3dad46c8cf98048ddf29ed13b329",
+  "workers": [
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 1
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 2
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 3
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 4
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 5
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 6
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 7
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 8
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 9
+   },
+   {
+    "baseline": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "count": 40,
+     "failed_rows": [
+      "VELDO-0154 loop/runner-in-service",
+      "VELDO-0154 loop/journal-wake-offers",
+      "VELDO-0154 loop/review-offered",
+      "VELDO-0154 loop/receiver-death",
+      "VELDO-0154 loop/rerun-another-account",
+      "VELDO-0154 loop/ask-before-rerun",
+      "VELDO-0154 loop/owner-yes-reruns",
+      "VELDO-0154 loop/owner-no-stops",
+      "VELDO-0154 loop/owner-stop-asked-on-wake",
+      "VELDO-0154 loop/reset-timer-wake",
+      "VELDO-0154 loop/no-other-timer"
+     ],
+     "reset_observation_in_details": true,
+     "targets": {
+      "loop/journal-wake-offers": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "count": 40,
+     "failed_rows": [],
+     "targets": {
+      "loop/journal-wake-offers": [
+       true
+      ]
+     }
+    },
+    "run": 10
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 22362,
+   "name": "teeth-1.log",
+   "sha256": "41496377a7039278ac17fc1c06ee53c0f336d12bff91a453482ed3a0e4574a4d"
+  },
+  {
+   "bytes": 22362,
+   "name": "teeth-2.log",
+   "sha256": "f937bc21986891181489a6d0415061985dd5db1bf969e54236fa72933b04a192"
+  },
+  {
+   "bytes": 22357,
+   "name": "teeth-3.log",
+   "sha256": "5a83054ff5123c71c8145211244644afb93f68a22735729873cc72aafeca6b0e"
+  },
+  {
+   "bytes": 22362,
+   "name": "teeth-4.log",
+   "sha256": "7186e506ff06e302b66b22d42ef1144c68ed4c34847e1abcdcb43e3b43a3d4d9"
+  },
+  {
+   "bytes": 22361,
+   "name": "teeth-5.log",
+   "sha256": "e1aede970e88769c88e28fda2c45c75a1a02484fab3dec43f9a90f77bbee8769"
+  },
+  {
+   "bytes": 22318,
+   "name": "teeth-6.log",
+   "sha256": "e15959b691fc87b6155c1e08ec264aa7bc5996da0cd4571271050f2946611c30"
+  },
+  {
+   "bytes": 22316,
+   "name": "teeth-7.log",
+   "sha256": "0ed0aa4031ad0c3dcb731d375bf1d12cdda58ce3933df469fdef11f43b1b707d"
+  },
+  {
+   "bytes": 22320,
+   "name": "teeth-8.log",
+   "sha256": "b926cc47c14f80e5eb11ef9d5e72699e17d356b5fcd4aa4d9503c75d40d8b7ad"
+  },
+  {
+   "bytes": 22319,
+   "name": "teeth-9.log",
+   "sha256": "7d03396f962b1616a2c5825d6306712e501a8f1041e9e4d7f022effec181c764"
+  },
+  {
+   "bytes": 22320,
+   "name": "teeth-10.log",
+   "sha256": "bec660b2d13323530de661ac5895a59686f4b5c98b4798098ac22d99b9a69158"
+  }
+ ],
+ "environment": {
+  "commit": "5243cd62bd75c54a409e03a25a357601f46644be",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   0.8759765625,
+   0.9912109375,
+   1.998046875
+  ],
+  "python": "3.12.3",
+  "tree": "1c30ee07a690c2f063def4976e10de16ddf17dc5"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
