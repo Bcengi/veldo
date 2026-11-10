@@ -1,0 +1,457 @@
+{
+  "commit": "1fd2f48c274fd201668df009c7920c4e6049f07e",
+  "tree": "3c4632e576702d6c218860c1a44e448878a49dff",
+  "host": "dmitry-pc",
+  "started_at": "2026-11-10T10:47:18.516603+00:00",
+  "command": "bash $HOST_HEAVY python3 proof/VELDO-0288/repeat.py",
+  "suite_command": "python3 scripts/check_teeth_mutations.py --worker stop288-no-retry",
+  "mode": "baseline; full suite 62 with no mutation",
+  "gate": "not run, as instructed; host load sampled for every run",
+  "runs": [
+    {
+      "run": 1,
+      "seconds": 16.943,
+      "load_average": [
+        3.16845703125,
+        2.60888671875,
+        1.990234375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 2,
+      "seconds": 17.879,
+      "load_average": [
+        2.84130859375,
+        2.5625,
+        1.98583984375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 3,
+      "seconds": 17.596,
+      "load_average": [
+        2.9365234375,
+        2.60595703125,
+        2.01220703125
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 4,
+      "seconds": 17.651,
+      "load_average": [
+        2.59375,
+        2.5439453125,
+        2.0009765625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 5,
+      "seconds": 17.169,
+      "load_average": [
+        2.5,
+        2.525390625,
+        2.00537109375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 6,
+      "seconds": 17.601,
+      "load_average": [
+        2.31494140625,
+        2.48291015625,
+        1.99951171875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 7,
+      "seconds": 17.213,
+      "load_average": [
+        2.80029296875,
+        2.58251953125,
+        2.04248046875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 8,
+      "seconds": 16.771,
+      "load_average": [
+        2.39501953125,
+        2.50390625,
+        2.02490234375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 9,
+      "seconds": 17.473,
+      "load_average": [
+        2.091796875,
+        2.4296875,
+        2.00732421875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 10,
+      "seconds": 17.18,
+      "load_average": [
+        2.50732421875,
+        2.5,
+        2.03857421875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 11,
+      "seconds": 17.476,
+      "load_average": [
+        2.77734375,
+        2.55810546875,
+        2.0654296875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 12,
+      "seconds": 17.573,
+      "load_average": [
+        2.6787109375,
+        2.5400390625,
+        2.0693359375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 13,
+      "seconds": 16.926,
+      "load_average": [
+        2.58984375,
+        2.52880859375,
+        2.07373046875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 14,
+      "seconds": 16.818,
+      "load_average": [
+        1.99658203125,
+        2.396484375,
+        2.03955078125
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 15,
+      "seconds": 16.809,
+      "load_average": [
+        1.78173828125,
+        2.32763671875,
+        2.02197265625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 16,
+      "seconds": 16.835,
+      "load_average": [
+        1.60791015625,
+        2.26171875,
+        2.00439453125
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 17,
+      "seconds": 18.151,
+      "load_average": [
+        1.447265625,
+        2.1796875,
+        1.98291015625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 18,
+      "seconds": 17.921,
+      "load_average": [
+        2.63916015625,
+        2.4013671875,
+        2.05859375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 19,
+      "seconds": 17.886,
+      "load_average": [
+        3.083984375,
+        2.52099609375,
+        2.1064453125
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 20,
+      "seconds": 17.911,
+      "load_average": [
+        3.84033203125,
+        2.7314453125,
+        2.18505859375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    }
+  ],
+  "passed": {
+    "dispatch/stop-during-exit": 20,
+    "dispatch/stop-during-natural-end": 20,
+    "dispatch/stop-during-accept-run": 20
+  }
+}

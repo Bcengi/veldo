@@ -1,30 +1,30 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0288",
-  "commit": "5865a5b11ab83f103a0a9efb62735c26a84e8f7b",
-  "tree": "a0749229b843ee4af0adc0ae21b4145d7106970f",
+  "commit": "1fd2f48c274fd201668df009c7920c4e6049f07e",
+  "tree": "3c4632e576702d6c218860c1a44e448878a49dff",
   "producer": "Codex implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-10T06:10:33.143669+00:00",
+  "produced_at": "2026-11-10T10:56:45.308115+00:00",
   "criteria": [
     {
       "id": "AC1",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0288/red-green.json",
-          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "All retry mutations killed; baseline and no-op controls pass 69 rows."
         }
       ]
     },
     {
       "id": "AC2",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0288/red-green.json",
-          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "Both ask-order rows and both owner-stop rows fail under their mutations. The undelivered-stop mutation finishes in 17.34 seconds."
         }
       ]
     },
@@ -34,43 +34,73 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0288/red-green.json",
-          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+          "ref": "proof/VELDO-0288/repeated.json",
+          "detail": "Each named row passes 20 of 20; all 20 suite runs pass 69 rows. The required host wrapper excludes concurrent gate load, so that condition remains pending."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "All three interleaving rows fail under stop288-no-retry."
         }
       ]
     },
     {
       "id": "AC4",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0288/red-green.json",
-          "detail": "Named rows green in baseline and no-op controls, red under their mutations. Ticket stopped on the existing mutation cleanup guard refusal; remaining checks are not run."
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "The docstring mutation is killed; its baseline and no-op controls pass."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/mirrors.json",
+          "detail": "Both runtime module pairs remain byte identical with these hashes."
         }
       ]
     }
   ],
   "checks": [
     {
-      "name": "new_mutation_teeth",
+      "name": "suite_62",
       "status": "passed",
-      "detail": "Five new mutations killed; baseline and no-op controls green."
+      "detail": "69 of 69 rows; suite62.json."
     },
     {
-      "name": "existing_stop_delivery_tooth",
-      "status": "failed",
-      "detail": "worker_cleanup_error: check_teeth_mutations.py:launch131-stop-recorded-unasked: ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v39-n63f0y_j\"]"
+      "name": "six_mutation_teeth",
+      "status": "passed",
+      "detail": "6 of 6 killed in one command; all controls green. launch131-stop-recorded-unasked: 17.344 seconds; floor unchanged at 120 seconds."
     },
     {
       "name": "20_consecutive_runs",
-      "status": "not_run",
-      "reason": "Stopped on the cleanup guard refusal."
+      "status": "passed",
+      "detail": "20 of 20 for each AC3 row; 69 rows pass in every run; repeated.json."
     },
     {
-      "name": "VELDO-0127_captures",
+      "name": "AC3_concurrent_gate_load",
       "status": "not_run",
-      "reason": "Stopped on the cleanup guard refusal. Claude reserved for the lead."
+      "reason": "The required host_heavy.sh wrapper holds the shared gate lock and excludes overlap. No gate was run."
+    },
+    {
+      "name": "VELDO-0127_resource_records",
+      "status": "passed",
+      "detail": "Four records retaken by .veldo/qualify.py; captures.json."
+    },
+    {
+      "name": "VELDO-0127_codex_live",
+      "status": "passed",
+      "detail": "Retaken with the codex2 profile; no reported problems; captures.json."
+    },
+    {
+      "name": "VELDO-0127_claude_live",
+      "status": "not_run",
+      "reason": "Reserved for the lead; claude-live.json is unchanged."
+    },
+    {
+      "name": "related_suites_and_86",
+      "status": "not_run",
+      "reason": "Queued through host_heavy.sh after the captures."
     },
     {
       "name": "gate",

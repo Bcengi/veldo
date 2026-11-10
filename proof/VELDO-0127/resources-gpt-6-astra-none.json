@@ -393,7 +393,7 @@
   "control_agent_config_handoff.py": "6388e401352a4ed34c58f2432ff51eb9206604e0a288a82df64c3a56d73d2853",
   "control_engine_claude.py": "65e8dad8c9792db3b0c1a58dd21543af8487240010a272fdf3f70567a88c0fbb",
   "control_engine_codex.py": "ab74086733af8e5e89cb9263d486ac9100e4e78cd0c775442c538421a698e837",
-  "control_launch.py": "0df3b4cd23c5f09825f0aced869a742ece2c0d66a84a80146d70fbe6407eb676"
+  "control_launch.py": "80e77d8829fef4fef1c54859bdfebd6665df116a3964aa297e309534bd7b05c3"
  },
  "requests": [
   {
