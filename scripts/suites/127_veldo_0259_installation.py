@@ -23,6 +23,7 @@ AC2 rows: ac2/planted (one value per installation category and one per built-in 
 is refused as personal_setup:<category> with file, line and a masked match); ac2/masked (no planted value
 appears unmasked in any output); ac2/added-only (gate mode judges only the lines a candidate adds; sweep mode
 judges the whole tree); ac2/no-installation (the built-in-only line, and a clean candidate passes);
+ac2/binary-files (Git's binary files are skipped and counted, while text still gets scanned strictly);
 ac2/publish-shares (scripts/publish.py refuses a produced tree through the same code); ac2/stage-declared
 (scripts/verify.sh declares the stage, and scripts/gate_graph.json carries exactly the node the scheduler
 requires for it); ac2/product-clean (no pattern of the fixture installation is in a tracked file).
@@ -56,7 +57,7 @@ def _v259_installation_suite():
     ROWS = ('ac1/resolution', 'ac1/kinds', 'ac1/missing-by-name', 'ac1/invalid-by-name', 'ac1/revision',
             'ac1/one-reader', 'ac1/traces', 'ac1/no-personal-default', 'ac1/fresh-clone',
             'ac1/owner-sites', 'ac2/planted', 'ac2/masked', 'ac2/added-only', 'ac2/quoted-names',
-            'ac2/declared-base', 'ac2/no-installation', 'ac2/publish-shares', 'ac2/stage-declared',
+            'ac2/declared-base', 'ac2/binary-files', 'ac2/no-installation', 'ac2/publish-shares', 'ac2/stage-declared',
             'ac2/product-clean', 'writers/home-as-tilde')
     rows = {name: [] for name in ROWS}
 
@@ -509,6 +510,32 @@ def _v259_installation_suite():
         reserved = candidate('reserved', [('tests/fixtures/data.txt', 'a@example.org b@site.test c@x.example')])
         code, output = gate(reserved)
         check('ac2/added-only', 'reserved example domains in a fixture pass [%s]' % code, code == 0)
+
+        # Binary content is skipped by Git's classification, regardless of the file extension.
+        binary = candidate('binary', [('app.py', 'y = 2')])
+        binary_name = 'binary\t"sample"\n.txt'
+        (binary / binary_name).write_bytes(b'\0\xff\n' + HOME_PATH.encode() + b'\n')
+        git(binary, 'add', '-A')
+        git(binary, 'commit', '-q', '-m', 'binary fixture')
+        code, output = gate(binary)
+        check('ac2/binary-files', 'committed binary passes with zero findings [%s %r]' % (code, output),
+              code == 0 and 'personal setup: 0 finding(s)' in output)
+        check('ac2/binary-files', 'the summary counts the skipped binary [%r]' % output,
+              '1 binary file(s) skipped' in output.strip().splitlines()[-1])
+        (binary / binary_name).write_bytes(b'\0\xfe\nchanged\n')
+        code, output = gate(binary)
+        check('ac2/binary-files', 'uncommitted binary also passes and counts the file once [%s %r]'
+              % (code, output), code == 0 and 'personal setup: 0 finding(s)' in output
+              and '1 binary file(s) skipped' in output.strip().splitlines()[-1])
+        (binary / 'text.gz').write_text(HOME_PATH + '\n')
+        git(binary, 'add', 'text.gz')
+        code, output = gate(binary)
+        check('ac2/binary-files', 'text with an archive extension is still scanned [%s %r]' % (code, output),
+              code == 1 and 'personal_setup:home_path text.gz:1 ' in output)
+        (binary / 'text.gz').write_bytes(b'not UTF-8: \xff\n')
+        code, output = gate(binary)
+        check('ac2/binary-files', 'nonbinary content keeps strict decoding [%s %r]' % (code, output),
+              code == 2 and 'personal setup: REFUSED UnicodeDecodeError' in output)
 
         # Names Git quotes (non-ASCII, a double quote, a backslash) are judged like any other name.
         environ(VELDO_INSTALLATION=temp / 'absent')

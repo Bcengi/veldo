@@ -198,7 +198,16 @@ def _changed(root, *revs):
     return [n for n in names.split('\0') if n]
 
 
-def added_lines(root, base=None):
+def _binary_changed(root, *revs):
+    """Files Git reports as binary, with NUL-separated records and no rename path pairs."""
+    stats = _git(root, 'diff', '--numstat', '-z', '--no-ext-diff', '--no-renames',
+                 '--diff-filter=d', *revs)
+    if stats is None:
+        raise NoBase('git diff numstat %s cannot be read' % ' '.join(revs))
+    return {record.split('\t', 2)[2] for record in stats.split('\0') if record.startswith('-\t-\t')}
+
+
+def added_lines(root, base=None, skipped_binary=None):
     """Every line the candidate adds: commits ahead of the base, uncommitted changes, untracked files."""
     root = Path(root)
     added = {}
@@ -210,7 +219,12 @@ def added_lines(root, base=None):
             raise NoBase('no merge base with %s' % (base or DECLARED_TRUNK))
         ranges = [(merge, 'HEAD'), ('HEAD',)]
     for revs in ranges:
+        binary = _binary_changed(root, *revs)
+        if skipped_binary is not None:
+            skipped_binary.update(binary)
         for rel in _changed(root, *revs):
+            if rel in binary:
+                continue
             for number, text in _diff_added(_git(root, 'diff', *flags, *revs, '--', ':(literal)' + rel)):
                 added[(rel, number, text)] = None
     for rel in (_git(root, 'ls-files', '-z', '--others', '--exclude-standard') or '').split('\0'):
@@ -233,7 +247,7 @@ def installation(stream=None):
     return _load('installation.py').load(stream=stream)
 
 
-def report(findings, out, installed):
+def report(findings, out, installed, skipped_binary=0):
     for f in findings:
         out.write('personal_setup:%s %s:%d %s\n' % (f['category'], f['file'], f['line'], f['masked']))
     counts = {}
@@ -241,8 +255,9 @@ def report(findings, out, installed):
         counts[f['category']] = counts.get(f['category'], 0) + 1
     if not installed:
         out.write('personal setup: no installation found; ran the built-in shapes only\n')
-    out.write('personal setup: %d finding(s)%s\n' % (
-        len(findings), ''.join(' %s=%d' % item for item in sorted(counts.items()))))
+    out.write('personal setup: %d finding(s)%s%s\n' % (
+        len(findings), ''.join(' %s=%d' % item for item in sorted(counts.items())),
+        '; %d binary file(s) skipped' % skipped_binary if skipped_binary else ''))
 
 
 def _rules(out):
@@ -267,8 +282,9 @@ def sweep(root, files=None, out=None, dispositions_root=None):
 def gate(root, base=None, out=None):
     out = sys.stdout if out is None else out
     inst, active = _rules(out)
-    findings = scan_lines(added_lines(root, base), active, _dispositions(root))
-    report(findings, out, inst.found)
+    skipped_binary = set()
+    findings = scan_lines(added_lines(root, base, skipped_binary), active, _dispositions(root))
+    report(findings, out, inst.found, len(skipped_binary))
     return findings
 
 

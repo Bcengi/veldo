@@ -12213,6 +12213,10 @@ def cases():
         "        out.write('personal setup: no installation found; ran the built-in shapes only\\n')\n",
         "        pass\n", ['ac2/no-installation'])
     result[-1]['dir'] = 'scripts'
+    add(259, 'personal259-binary-forced-text', install259, 'check_personal_setup.py',
+        "        binary = _binary_changed(root, *revs)\n", "        binary = set()\n",
+        ['ac2/binary-files'])
+    result[-1]['dir'] = 'scripts'
     # Fix round 1 (review F1, F2, F3 and the lead's ruling on the home path in proof/).
     add(259, 'personal259-quoted-names-skipped', install259, 'check_personal_setup.py',
         "    return [n for n in names.split('\\0') if n]\n",
