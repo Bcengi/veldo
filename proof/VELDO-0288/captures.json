@@ -21,8 +21,9 @@
     "proof/VELDO-0127/resources-gpt-5.5-selected.json": "ee4980010bb2c667f674eabd2615de6829079fba3f4c307aa030f03e3525dc80",
     "proof/VELDO-0127/resources-gpt-6-astra-none.json": "bc4028e9792a01a7d53e9ff1f5185c44bbb8a05bb23c0ebd01fdf4af661d9054",
     "proof/VELDO-0127/resources-gpt-6-astra-selected.json": "59d7de678a4c46a8cc1b991adca429f7d99c317b03a930d9d561e75f5e9728cd",
-    "proof/VELDO-0127/codex-live.json": "f7ac017dd1e2c4b64cf2ab1de83a205f183c0d186d78c128f10096615110ed28"
+    "proof/VELDO-0127/codex-live.json": "f7ac017dd1e2c4b64cf2ab1de83a205f183c0d186d78c128f10096615110ed28",
+    "proof/VELDO-0127/claude-live.json": "5f087afae1a7bc018965fdf458d8321184d86e2b648651738534d37c96b2b87f"
   },
   "codex_problems": [],
-  "claude": "not retaken; reserved for the lead"
+  "claude": "retaken by the lead in commit 40cd9775 with Claude Code 2.1.317 and claude-haiku-4-5-20251001; sha256 above; suite 86 row live/claude passes at 9a0585ca"
 }

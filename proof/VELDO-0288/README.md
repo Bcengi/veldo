@@ -14,17 +14,26 @@ commit f5c14ac9; this run had neither failure.
 All 20 consecutive suite 62 runs passed 69 rows. Each of dispatch/stop-during-exit,
 dispatch/stop-during-natural-end, and dispatch/stop-during-accept-run passed 20 of 20. repeated.json
 includes the command, commit, host, and load averages. These runs used host_heavy.sh, which excludes
-a concurrent gate run. AC3's full gate load condition therefore remains pending.
+a concurrent gate run, so AC3 stays pending until the same 20 runs pass while a full gate runs on the
+host.
+
+Commit 9a0585ca changes repeat.py for that run. It reads the gate's process id from V0288_GATE_PID
+and refuses to start when the variable is unset or the process is not alive. It records gate_alive
+before every run and checks again after it. If the gate ends before the 20 runs finish, it writes the
+runs so far and exits 2, which is not a pass. A process that has exited but not been reaped counts as
+ended. The lead runs it as one lock-queue job that starts verify.sh in a clone and then the 20 runs.
 
 The four VELDO-0127 resource records were retaken with .veldo/qualify.py. codex-live.json was retaken
 with live.py, selecting only Codex and using CODEX_HOME set to the codex2 profile. The Codex capture
 reports no problems. captures.json gives the commands and hashes of the five records. Home paths
-are normalized in the committed records. claude-live.json is unchanged and remains the lead's task.
+are normalized in the committed records. The lead retook claude-live.json in commit 40cd9775; it
+reports no problems and captures.json has its hash.
 
 The selected related suites passed: 71_veldo_0130_api had 45 green rows,
-83_veldo_0154_factory_loop had 14, and 124_veldo_0131_factory_reads_commands had 8. Suite 86 passed
-27 of 28; live/claude failed because its capture is stale. related-suites.json retains this partial
-run's exit 1, counts, and failure. Suite 86 still needs the lead's fresh Claude capture before review.
+83_veldo_0154_factory_loop had 14, and 124_veldo_0131_factory_reads_commands had 8. In that run suite
+86 passed 27 of 28 because the Claude capture was stale. Run again on 9a0585ca with the new capture,
+suite 86 passed all 28 rows, live/claude included. related-suites.json has both runs. A partial
+selftest run exits 2 when nothing fails; it never exits 0.
 
-Every heavy or repeated run in this round used host_heavy.sh. No gate, verify.sh, policy_check.py,
-or push was run. Both runtime module pairs still match the hashes in mirrors.json.
+Every heavy or repeated run in fix 1 used host_heavy.sh. The fix 2 suite 86 run used a systemd scope
+with a 10G memory limit. No gate, verify.sh, policy_check.py, or push was run. Both runtime module pairs still match the hashes in mirrors.json.
