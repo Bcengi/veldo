@@ -13,15 +13,15 @@
    "cap_stop_after_activation": {
     "bound": 1.7,
     "count": 20,
-    "max": 1.205,
-    "median": 1.2015,
+    "max": 1.2025,
+    "median": 1.2019,
     "min": 1.201,
     "rule": "the suite requires a value below the bound"
    },
    "exit_latency": {
     "bound": 0.75,
     "count": 20,
-    "max": 0.016,
+    "max": 0.005,
     "median": 0.005,
     "min": 0.004,
     "rule": "the suite requires a value below the bound"
@@ -29,33 +29,33 @@
    "first_beat_after_activation": {
     "bound": 1.2,
     "count": 20,
-    "max": 0.1141,
-    "median": 0.1015,
-    "min": 0.0946,
+    "max": 0.1094,
+    "median": 0.0995,
+    "min": 0.0872,
     "rule": "not a suite conjunct: the descendant has to be running before the cap fires"
    },
    "last_beat_after_activation": {
     "bound": 2.7,
     "count": 20,
-    "max": 1.7009,
-    "median": 1.6096,
-    "min": 1.603,
+    "max": 1.703,
+    "median": 1.6116,
+    "min": 1.6027,
     "rule": "the suite requires a value below the bound"
    },
    "submit_to_running": {
     "count": 20,
-    "max": 0.3016,
-    "median": 0.2351,
-    "min": 0.2199
+    "max": 0.2495,
+    "median": 0.2277,
+    "min": 0.2142
    }
   },
   "passed": 20,
   "rule": "every run ends with selector status 2, a partial line with 0 failed and no failed row",
   "run_seconds": {
    "count": 20,
-   "max": 8.99,
-   "median": 8.275,
-   "min": 8.09
+   "max": 8.45,
+   "median": 8.18,
+   "min": 8.08
   },
   "runs": 20,
   "suite_checks_passed_per_run": [
@@ -63,130 +63,134 @@
   ],
   "verdict": "pass"
  },
+ "discarded": [
+  {
+   "bytes": 9713,
+   "name": "run-01.log",
+   "sha256": "da9c72f6c0c1f658f8fc69db3fb22ca660f226db1213be1d915c4fcf1a65bc0a"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-02.log",
+   "sha256": "e9c8b75c000ebe141edf10738b77304662207b4565c01ec5fb462e8633a32e81"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-03.log",
+   "sha256": "7cef042a53b32eba6d0f74005dfebfdb98ae33779fa62b86c83fe26a526acafd"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-04.log",
+   "sha256": "f49e4706e90260e1e7c7fe5393cb973b727831187dcba5c317fdc157c39747be"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-05.log",
+   "sha256": "e1cff5b3be58524244419e51e1c45f3c3f56921032d2e93602c62bd38d5efc83"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-06.log",
+   "sha256": "b6756733f7eae7a8fefd57365554cd3104ec50f3aa23b29dc2734aa5b5dbe94e"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-07.log",
+   "sha256": "bb7f284932914fe83aa3758b4fae5496567d2149a2e40fdddb0c174acc1523d0"
+  },
+  {
+   "bytes": 9711,
+   "name": "run-08.log",
+   "sha256": "7940cb45d6e00ba05019b196c7a0823fe81a57c9abb1377dd1b2f5b2ff853ee5"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-09.log",
+   "sha256": "e3223559efa4de045ec0f16a0b2696f6fc9b8d656f3f45cd080564be93efc5df"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-10.log",
+   "sha256": "60225a3601e569a43486a3f9a873df0afde9bac98c4c3e467742da385b2bc42a"
+  },
+  {
+   "bytes": 9711,
+   "name": "run-11.log",
+   "sha256": "1034e4e28266f05987c10fd2334482caebde109469f22eb73e8b4b49881fc36e"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-12.log",
+   "sha256": "41f0263f235405b9cb1038e5ce383c8a1520fbda98d38d93fc9eba09d0386057"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-13.log",
+   "sha256": "a324b879b5ab64c9449a3789b121dbed2d3f25d7e8baa446e28abe06b92bdd66"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-14.log",
+   "sha256": "03d47fc389e8e3af3c86099b769a40b98ba0b7693665bce51c9538f4e5735d5e"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-15.log",
+   "sha256": "2f34d6296bd348efce83f35c6377c660913adac89ab7009815372ebee7ecb256"
+  },
+  {
+   "bytes": 9712,
+   "name": "run-16.log",
+   "sha256": "923ceb53dcba77df7aa63a8bc11f6d7af39707f18d8b8f493247c834cdce99c7"
+  },
+  {
+   "bytes": 9710,
+   "name": "run-17.log",
+   "sha256": "e0d6049558838da39964e7ac83d62843e6b4255df2a2231d46280b81707bc4d7"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-18.log",
+   "sha256": "69be2fbd4cb81959a8f6b05f67f6c04574dd0796c9d0f449c1cd4bcc03a871ad"
+  },
+  {
+   "bytes": 9711,
+   "name": "run-19.log",
+   "sha256": "53e6f4f1c3657b5dfd7125dbc1f9c8558c1bed1a65a191d57065846319ea4b7f"
+  },
+  {
+   "bytes": 9713,
+   "name": "run-20.log",
+   "sha256": "38a461f004e2d7bd455a51b7775832ac4e7ade78b31445220397d76927c51ffd"
+  }
+ ],
  "environment": {
-  "commit": "f3d0c5b3e738b5727984c4342d2534bbd5031eec",
+  "commit": "a5890f93e3269a600bded9507c13ba43d65d60e5",
   "cores": 20,
+  "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "kernel": "7.0.0-38-generic",
+  "load": [
+   3.7412109375,
+   12.40869140625,
+   8.46044921875
+  ],
   "load_1min": {
-   "at_end": 10.77,
-   "at_start": 3.9,
+   "at_end": 3.74,
+   "at_start": 37.13,
    "per_run_after": {
     "count": 20,
-    "max": 13.61,
-    "median": 4.325,
-    "min": 1.87
+    "max": 34.16,
+    "median": 10.51,
+    "min": 3.74
    }
   },
   "python": "3.12.3",
   "systemd": "systemd 255 (255.4-1ubuntu8.18)",
-  "tree": "b91f57e0dc0e246d535b235868bf5090a9825a1d",
+  "tree": "ae7126bf489c48c156ad3479515dc9101c5c5527",
   "uncommitted_changes_under_scripts": false
  },
  "load": "none started by this run",
- "raw_files": {
-  "files": [
-   {
-    "bytes": 9713,
-    "name": "run-01.log",
-    "sha256": "ed9b588668d96d0b96d44416423087fe163a415fcd181f3b99574d19d0980f64"
-   },
-   {
-    "bytes": 9713,
-    "name": "run-02.log",
-    "sha256": "44b5ddde2f8165d71221088c77da1005efc5fa8430d0a34dbe0ed8f76553e2dc"
-   },
-   {
-    "bytes": 9713,
-    "name": "run-03.log",
-    "sha256": "a8c4a012e19d82d8ae909b02e70f868a7fe9991ee7730cd28f6f8859260c8dab"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-04.log",
-    "sha256": "a598729ae35bff5521ffd0b81e2a5bd119a84223ea2f3da11109fd7a2f2f02ca"
-   },
-   {
-    "bytes": 9711,
-    "name": "run-05.log",
-    "sha256": "7aa0f51c51c589c409acab711d3f2b9bcf56fdf0f80836d8553acb60cca4fd22"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-06.log",
-    "sha256": "1db6d4b2ddeef623917773a5db003e56e1500fe2468bacacb00c1eb6c6b1d986"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-07.log",
-    "sha256": "bf121e216291d10a558338d64c176898fadbc596e8fbf44f5c0166e84b75eb5e"
-   },
-   {
-    "bytes": 9713,
-    "name": "run-08.log",
-    "sha256": "a5ba84b409503272cc277033be0778a265e9e0775c4bab67f3e90cd066012af0"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-09.log",
-    "sha256": "f7587231c6be6ddc55e991988338e36e930d01d431281e3c83cd8e3b4e70665b"
-   },
-   {
-    "bytes": 9710,
-    "name": "run-10.log",
-    "sha256": "b2200e314597e5ea43b838bed38d9e26f3ca5dcc9d3fc2da37babf5571f99955"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-11.log",
-    "sha256": "c8f3e613add6ff0fef88aa94408de6563d65d3ff53eb0bc833f96a4b5d896992"
-   },
-   {
-    "bytes": 9711,
-    "name": "run-12.log",
-    "sha256": "caf1fcf0c126d493657614bc771295ec26cf772ab54e5e8a8f430f0b0b620dde"
-   },
-   {
-    "bytes": 9711,
-    "name": "run-13.log",
-    "sha256": "6226bddf4b37e8f761c1d10cc711cb02759979e263a9db2a727ad10793f9c61a"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-14.log",
-    "sha256": "12447a80d2bf19e0beb8bdf74beebce83cd51bbb95874569364a26eca84d2d1f"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-15.log",
-    "sha256": "4d787589a5c8ffd78301397d4e1ff3a5e8d5177a4e4bd5de04cd7fcd94316965"
-   },
-   {
-    "bytes": 9713,
-    "name": "run-16.log",
-    "sha256": "2c8ed543a30c8dd4a76c7af8f7419d3e02944828ad476caed6d49cab4f473749"
-   },
-   {
-    "bytes": 9711,
-    "name": "run-17.log",
-    "sha256": "f5619af1710ae33dce62385a6c4cd0070939dbf975004cfaed97ed745845d283"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-18.log",
-    "sha256": "36a45fcc5b21b25bcade018f4d00d0dc2746c3669285c364b0ebae1250d6555e"
-   },
-   {
-    "bytes": 9712,
-    "name": "run-19.log",
-    "sha256": "a389c870fc4ab0e544958e028ad441e962512ed5213d18e6fe56059de048a383"
-   },
-   {
-    "bytes": 9711,
-    "name": "run-20.log",
-    "sha256": "1d5fa87ec4321268274261c84b3e59acc2d62bf7d7ea6e107f9c59745d565993"
-   }
-  ],
-  "kept": false
- }
+ "schema": "veldo.proof-summary/v1"
 }

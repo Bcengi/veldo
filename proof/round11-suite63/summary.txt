@@ -28,17 +28,41 @@ recorded. Starting the deadline after the launch needs a product change.
 
 No assertion, threshold, window or timeout changed. No sleep or retry added.
 
-Results, both started through the shared gate lock:
-alone.summary.json: 20 of 20 runs passed, 60 suite checks each.
-loaded.summary.json: 20 of 20 runs passed, 60 suite checks each, beside 15
-load workers that finished 4735 scopes with 0 errors; 1-minute load 13 to 17
-on 20 cores.
-The stubborn descendant's first beat came 0.09 to 0.12 s after scope
-activation in all 40 runs, against the 1.2 s cap.
+Fix 1, after the review, commit a5890f93e3269a600bded9507c13ba43d65d60e5.
+The comment above the fork was wrong. systemd-run execs the wrapper, which
+is a Python interpreter, and the wrapper execs the engine. The 1.2 s cap
+now covers those two interpreter starts; before the fork it covered three.
+run_suite63.py now builds each summary with the validator's proof_summary,
+so it has the veldo.proof-summary/v1 schema and a discarded list with the
+name, bytes and sha256 of every raw log. Both summaries below were written
+by that script at a5890f93. Neither was edited by hand.
 
-The load reached here is far below the one in the review's failing runs
-(suite times of 85 to 127 s). These runs show the change breaks nothing and
-how much room the cap now has; they do not reproduce that starvation.
+Results, both started through the shared gate lock:
+alone.summary.json: 20 of 20 runs passed, 60 suite checks each, 8.1 to
+8.5 s per run. Other jobs had the 1-minute load at 37 when it started; it
+fell to 4 by the end.
+loaded.summary.json: 20 of 20 runs passed, 60 suite checks each, 8.4 to
+8.7 s per run, beside 15 load workers that finished 4744 scopes with 0
+errors; 1-minute load 5 to 15 on 20 cores.
+The stubborn descendant's first beat came 0.09 to 0.12 s after scope
+activation in all 40 runs, against the 1.2 s cap. Submit to running took
+0.21 to 0.30 s.
+
+These runs did not reach the starvation of the failing runs. Those took 85
+to 127 s per suite run, with 9 to 11 s from submit to running. Here a run
+took under 9 s. The 40 runs show the change breaks nothing and how much
+room the cap has on a host that is not starved. They do not show the
+runtime-cap row passing under that starvation.
+
+Cooperative-stop and stop-escalation stay exposed at that starvation. The
+product fixes the deadline at submit, before the launch, and those rows
+use deadlines of 4 s and 8 s. A launch of 9 to 11 s uses up the deadline
+before the stop is asked for. The fork does nothing for the cooperative
+row, which has no stubborn descendant. A test cannot move the deadline;
+that needs a product change.
+
+python3 .veldo/validate.py proof-files reports no problems: 5984 proof
+files checked, exit status 0.
 
 Final check: python3 scripts/selftest.py --suite 63_veldo_0040_containment
 returned 2, the selector's status for a selected suite, with 86 passed and
