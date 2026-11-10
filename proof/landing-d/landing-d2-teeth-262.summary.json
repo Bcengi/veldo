@@ -1,8 +1,8 @@
 {
- "command": "python3 scripts/check_teeth_mutations.py --finding 262 --summary /tmp/ld2/teeth-262.json",
+ "command": "python3 scripts/check_teeth_mutations.py --finding 262 --summary proof/landing-d/landing-d2-teeth-262.summary.json",
  "deciding": {
   "counts": {
-   "elapsed": 697.5955767580308,
+   "elapsed": 353.2480381501373,
    "executed": 12,
    "registered": 12,
    "rejected": 12,
@@ -11,34 +11,16 @@
    "worker_invocations": 26
   },
   "results_count": 12,
-  "results_sha256": "9c5a61df3b6d7a293af901a98c7a2641c140c775de63817fc498fd542c500b1d",
+  "results_sha256": "3f6e5c65f6cdb1fc538fafb756d1d34b304a9e99cf1a8da727b66e1882347236",
   "rows": [
    {
-    "case": "v262-notes-earlier-win",
-    "expected": "killed",
-    "observed": "killed",
-    "source": "fresh"
-   },
-   {
-    "case": "v262-cycle-imports-langgraph",
-    "expected": "killed",
-    "observed": "killed",
-    "source": "fresh"
-   },
-   {
-    "case": "v262-lock-restored",
-    "expected": "killed",
-    "observed": "killed",
-    "source": "fresh"
-   },
-   {
-    "case": "v262-branches-share-state",
-    "expected": "killed",
-    "observed": "killed",
-    "source": "fresh"
-   },
-   {
     "case": "v262-suspend-with-proposals",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-step-not-advanced",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -50,13 +32,31 @@
     "source": "fresh"
    },
    {
+    "case": "v262-branches-share-state",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-cycle-imports-langgraph",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
     "case": "v262-upgrade-follows-link",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
    },
    {
-    "case": "v262-step-not-advanced",
+    "case": "v262-notes-earlier-win",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "v262-lock-restored",
     "expected": "killed",
     "observed": "killed",
     "source": "fresh"
@@ -89,22 +89,22 @@
  },
  "discarded": [
   {
-   "bytes": 127643,
+   "bytes": 127638,
    "name": "mutation result array",
-   "sha256": "9c5a61df3b6d7a293af901a98c7a2641c140c775de63817fc498fd542c500b1d"
+   "sha256": "3f6e5c65f6cdb1fc538fafb756d1d34b304a9e99cf1a8da727b66e1882347236"
   }
  ],
  "environment": {
-  "commit": "167454a3aaccb53d4870ca6421d0f9a166b39cb9",
+  "commit": "2ef85b80d94bc51b288c00167c063aaf9f521efe",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "load": [
-   48.27099609375,
-   41.4140625,
-   28.1474609375
+   11.05615234375,
+   15.20703125,
+   23.4443359375
   ],
   "python": "3.12.3",
-  "tree": "36815f22a13c1e83989bf6330bd2428ee835eb5f"
+  "tree": "47eea58127883c7b59d4d654db596bd867a1a19f"
  },
  "schema": "veldo.proof-summary/v1"
 }
