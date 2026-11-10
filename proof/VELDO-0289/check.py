@@ -76,7 +76,7 @@ def integration():
 
 def teeth():
     command = ['python3', 'scripts/check_teeth_mutations.py', '--finding', '289',
-               '--summary', str(HERE / 'teeth.json')]
+               '--summary', 'proof/VELDO-0289/teeth.json']
     run = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
     print(run.stdout.splitlines()[-1] if run.stdout else '', flush=True)
     if run.returncode:

@@ -101,7 +101,7 @@ The VELDO-0288 build ran scripts/check_teeth_mutations.py on its six teeth. One 
 its 120 s deadline and the coordinator killed the worker. The result named no timeout. It said
 worker_cleanup_error. The build check of f5c14ac9 traced this to scripts/check_gate_mutations.py, and
 it isn't VELDO-0288's defect
-(~/projects/myday/research/claude-runs/spec-veldo-0288-review-2026-11-10.md, Build check 1, part 3).
+(spec-veldo-0288-review-2026-11-10.md, Build check 1, part 3).
 The line numbers below are at landing-c 852f133b.
 
 Workers.finish is handed the worker's error, here mutation_budget_exceeded, and loses it in three
@@ -162,3 +162,5 @@ landing-c 852f133b.
 
 2026-11-10: revision 2. Applied the two findings of the re-review of af0738bb (finish's last sample
 only; finish raises the handed error). Status set to ready by the lead.
+
+2026-11-10: by lead decision, replaced the home path in the Intent review reference with its filename.

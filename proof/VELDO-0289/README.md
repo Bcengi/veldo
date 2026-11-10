@@ -35,7 +35,7 @@ Built through 160c338e4e7f9bada7a273d0540c23388985b3cb. The combined proof run c
 host_heavy.sh with exit 0. Run it with:
 
 ```
-bash /home/dmitry/projects/myday/scripts/host_heavy.sh python3 proof/VELDO-0289/check.py all
+bash <myday checkout>/scripts/host_heavy.sh python3 proof/VELDO-0289/check.py all
 ```
 
 - Suite 98 receipts/deadline-then-cleanup-failure is red under cleanup289-replaces-first-error.
