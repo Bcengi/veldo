@@ -21,6 +21,10 @@ with live.py, selecting only Codex and using CODEX_HOME set to the codex2 profil
 reports no problems. captures.json gives the commands and hashes of the five records. Home paths
 are normalized in the committed records. claude-live.json is unchanged and remains the lead's task.
 
-The related suites and suite 86 are queued through host_heavy.sh. Every heavy or repeated run in this
-round uses that wrapper. No gate, verify.sh, policy_check.py, or push was run. Both runtime module
-pairs still match the hashes in mirrors.json.
+The selected related suites passed: 71_veldo_0130_api had 45 green rows,
+83_veldo_0154_factory_loop had 14, and 124_veldo_0131_factory_reads_commands had 8. Suite 86 passed
+27 of 28; live/claude failed because its capture is stale. related-suites.json retains this partial
+run's exit 1, counts, and failure. Suite 86 still needs the lead's fresh Claude capture before review.
+
+Every heavy or repeated run in this round used host_heavy.sh. No gate, verify.sh, policy_check.py,
+or push was run. Both runtime module pairs still match the hashes in mirrors.json.

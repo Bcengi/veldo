@@ -4,7 +4,7 @@
   "commit": "1fd2f48c274fd201668df009c7920c4e6049f07e",
   "tree": "3c4632e576702d6c218860c1a44e448878a49dff",
   "producer": "Codex implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-10T10:56:45.308115+00:00",
+  "produced_at": "2026-11-10T13:08:59.572853+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -98,9 +98,14 @@
       "reason": "Reserved for the lead; claude-live.json is unchanged."
     },
     {
-      "name": "related_suites_and_86",
-      "status": "not_run",
-      "reason": "Queued through host_heavy.sh after the captures."
+      "name": "related_suites_scoped",
+      "status": "passed",
+      "detail": "Selected suites only: 71_veldo_0130_api 45 of 45; 83_veldo_0154_factory_loop 14 of 14; 124_veldo_0131_factory_reads_commands 8 of 8. Partial run, not gate verification; related-suites.json."
+    },
+    {
+      "name": "suite_86_scoped",
+      "status": "failed",
+      "detail": "27 of 28. Only VELDO-0127 live/claude fails: missing or stale live capture. The combined partial run exits 1. The lead must retake Claude before review; related-suites.json."
     },
     {
       "name": "gate",

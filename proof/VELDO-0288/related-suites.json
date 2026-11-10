@@ -1,0 +1,29 @@
+{
+  "command": "python3 scripts/selftest.py --suite 71_veldo_0130_api --suite 83_veldo_0154_factory_loop --suite 124_veldo_0131_factory_reads_commands --suite 86_veldo_0127_agent_configuration",
+  "commit": "5765a30fe9fb53589def5f7f33203705ab7bfc77",
+  "host": "dmitry-pc",
+  "recorded_at": "2026-11-10T13:08:14.936302+00:00",
+  "load_average": [
+    1.453125,
+    6.81201171875,
+    17.0654296875
+  ],
+  "seconds": 114.958,
+  "exit": 1,
+  "output_sha256": "ad256937a40e855fe7d294ddc77485f74057a63eaef6f65aa4686f8bb73d5944",
+  "lines": [
+    "PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.",
+    "  selector    --suite 71_veldo_0130_api 83_veldo_0154_factory_loop 124_veldo_0131_factory_reads_commands 86_veldo_0127_agent_configuration",
+    "  running     4 of 196 suites: 71_veldo_0130_api, 83_veldo_0154_factory_loop, 86_veldo_0127_agent_configuration, 124_veldo_0131_factory_reads_commands",
+    "              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.",
+    "              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.",
+    "  VELDO-0127 live/claude detail: missing or stale live capture",
+    "  SELFTEST FAIL: VELDO-0127 live/claude",
+    "  71_veldo_0130_api                               45 passed   22.18s",
+    "  83_veldo_0154_factory_loop                      14 passed   21.51s",
+    "  86_veldo_0127_agent_configuration               27 passed   39.57s",
+    "  124_veldo_0131_factory_reads_commands            8 passed   31.59s",
+    "selftest (PARTIAL, 4 of 196 suites): 120 passed, 1 failed in 114.84s",
+    "PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done."
+  ]
+}
