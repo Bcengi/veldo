@@ -10,7 +10,7 @@ def _v204_mutation_receipts():
     import types
     from unittest.mock import patch
 
-    source = (ROOT / 'scripts/check_gate_mutations.py').read_text()
+    source = (ROOT / "scripts" / "check_gate_mutations.py").read_text()
     teeth = types.ModuleType('v204_teeth')
     teeth.__file__ = str(ROOT / 'scripts/check_teeth_mutations.py')
     exec(compile(Path(teeth.__file__).read_text(), teeth.__file__, 'exec'), teeth.__dict__)
@@ -39,6 +39,17 @@ def _v204_mutation_receipts():
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 workers.append(self)
+            def finish(self, name, error=None):
+                job = self.jobs[name]
+                if (fault in ('deadline-close', 'deadline-both')
+                        and job['case']['identity'] == 'second' and job['mode'] == 'mutant'):
+                    class Meter:
+                        def sample(self, *args):
+                            return {}
+                        def close(self):
+                            raise RuntimeError('planted meter close failure')
+                    self.meters[name] = Meter()
+                return super().finish(name, error)
         class Child:
             def __init__(self, argv, **kwargs):
                 self.job = json.loads(Path(argv[-1]).read_text())
@@ -75,7 +86,8 @@ def _v204_mutation_receipts():
                     return None
                 if concurrent and self.name == 'third' and fault == 'completed-sibling':
                     self.returncode = 0
-                if self.bad and fault in ('deadline', 'completed-sibling'):
+                if self.bad and fault in ('deadline', 'completed-sibling', 'deadline-cleanup',
+                                          'deadline-close', 'deadline-both'):
                     clock[0] += 121
                     return None
                 if self.polls > 1:
@@ -89,7 +101,7 @@ def _v204_mutation_receipts():
         def cleanup(home, ledger):
             cleaned.append(str(home))
             cleaned_while_held.append(bool(pool.held))
-            if fault == 'cleanup' and len(cleaned) == 4:
+            if fault in ('cleanup', 'deadline-cleanup', 'deadline-both') and len(cleaned) == 4:
                 raise RuntimeError('planted unit still active')
             return dict(units=[], directories=0)
         real_load = gate.load
@@ -168,6 +180,90 @@ def _v204_mutation_receipts():
                    + ': partial results and every failure retained; cleanup precedes release '
                    'and launch precedes the deadline', check(module(), fault, entry))
 
+    def first_error(gate):
+        checks = []
+        for fault in ('deadline-cleanup', 'deadline-close', 'deadline-both'):
+            r, pool, held, children, handles, workers = exercise(gate, fault)
+            outcome = r['invalid_results'][0]
+            wanted = {'deadline-cleanup': 'planted unit still active',
+                      'deadline-close': 'planted meter close failure',
+                      'deadline-both': 'planted unit still active; planted meter close failure'}[fault]
+            checks.append(r['error'] == outcome.get('error') == 'mutation_budget_exceeded'
+                          and 'worker deadline' in outcome.get('detail', '')
+                          and outcome.get('cleanup_error') == wanted
+                          and bool(pool.held) and pool.used['manager'] == 1
+                          and not children and all(h.closed for h in handles))
+
+        # Check finish's admission hold before run's final abort releases the stage's grants.
+        # The same row covers a cancel, bad exit, trace failure and a clean worker at both steps.
+        import io
+        for first in ('deadline', 'cancel', 'exit', 'trace', None):
+            for steps in ((), ('ownership',), ('close',), ('ownership', 'close')):
+                pool = gate.SuiteResources({'resource_capacities': {'manager': 1}, 'suites': [
+                    {'file': 'controlled.py', 'resources': {'manager': 1}}]})
+                released = []
+                admission = gate.Admission(types.SimpleNamespace(release=released.append), {}, {})
+                admission.held['one'] = {'cpu': 1, 'memory': 1}
+                workers = gate.Workers(10000, pool, admission=admission)
+                job = dict(case=dict(driver=gate.DRIVERS[0], suite='controlled.py'), mode='baseline')
+                pool.acquire('one', job)
+                workers.jobs['one'] = job
+                workers.budgets['one'] = 2
+                workers.driver_spans[gate.DRIVERS[0]] = [0, 0]
+                proc = types.SimpleNamespace(pid=1000000, returncode=7 if first == 'exit' else 0,
+                                             wait=lambda **kw: None)
+                workers.active['one'] = (proc, io.BytesIO(b'{}'), io.BytesIO(), 0)
+                handed = (gate.Refused('mutation_budget_exceeded', 'one: worker deadline (2s)')
+                          if first == 'deadline' else gate.Refused('worker_cancelled', 'stage stopped')
+                          if first == 'cancel' else None)
+                trace_error = ValueError('planted trace failure')
+                def trace_check(*args, **kwargs):
+                    raise trace_error
+                def cleanup(*args, **kwargs):
+                    if 'ownership' in steps:
+                        raise RuntimeError('ownership failed')
+                    return {}
+                class Meter:
+                    def sample(self, *args):
+                        return {}
+                    def close(self):
+                        if 'close' in steps:
+                            raise RuntimeError('close failed')
+                workers.meters['one'] = Meter()
+                with tempfile.TemporaryDirectory(prefix='v289-finish-') as temporary:
+                    home = Path(temporary)
+                    workers.homes['one'], workers.ledgers['one'] = home, home / 'ledger'
+                    if first == 'trace':
+                        job.update(snapshot_root=str(home), declared_files=[], runtime_paths=[])
+                    with patch.object(gate.os, 'killpg', lambda *args: None), patch.object(
+                            gate, 'load', lambda path: types.SimpleNamespace(cleanup=cleanup, check=trace_check)):
+                        try:
+                            workers.finish('one', handed)
+                        except (gate.Refused, ValueError) as error:
+                            raised = error
+                        else:
+                            raised = None
+                outcome = workers.outcomes[0]
+                wanted = {'deadline': 'mutation_budget_exceeded', 'cancel': 'worker_cancelled',
+                          'exit': 'driver_error', 'trace': 'driver_error'}.get(first)
+                wanted = wanted or ('worker_cleanup_error' if steps else None)
+                text = '; '.join(step + ' failed' for step in steps)
+                checks.append(outcome.get('error') == wanted
+                              and getattr(raised, 'code', 'driver_error' if raised else None) == wanted
+                              and (handed is None or raised is handed)
+                              and (first != 'trace' or raised is trace_error)
+                              and (not first or outcome.get('detail') == {
+                                  'deadline': 'one: worker deadline (2s)', 'cancel': 'stage stopped',
+                                  'exit': 'one: worker exit 7', 'trace': str(trace_error)}[first])
+                              and (outcome.get('cleanup_error') == text if steps
+                                   else 'cleanup_error' not in outcome)
+                              and bool(pool.held) == bool(steps)
+                              and bool(admission.held) == bool(steps)
+                              and released == ([] if steps else ['one']))
+        return all(checks)
+
+    expect('VELDO-0289 receipts/deadline-then-cleanup-failure', first_error(module()))
+
     def siblings(gate, entry='gate'):
         r, pool, held, children, handles, workers = exercise(gate, 'exit', concurrent=True, entry=entry)
         assert r['status'] == 'failed' and r['executed'] == 3 and r['rejected'] == 1
@@ -230,7 +326,7 @@ def _v204_mutation_receipts():
          "self.resources.release(name)\n            record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],", None),
         ('queued-deadline', 'self.active[name] = (proc, out, err, time.monotonic())',
          'self.active[name] = (proc, out, err, 1.0)', None),
-        ('release-failed-cleanup', "if record.get('error') != 'worker_cleanup_error':", 'if True:', 'cleanup'),
+        ('release-failed-cleanup', "if 'cleanup_error' not in record:", 'if True:', 'cleanup'),
     ]
     for name, old, new, fault in defects:
         assert source.count(old) == 1, name

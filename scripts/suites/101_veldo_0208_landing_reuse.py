@@ -2447,3 +2447,72 @@ def _v208_mutation_leg():
 
 if leg_runs():
     _v208_mutation_leg()
+
+
+def _v289_timeout_cleanup():
+    import importlib.util
+    import json
+    import os
+    from pathlib import Path
+    import signal
+    import tempfile
+    import time
+
+    source = ROOT / "scripts" / "check_gate_mutations.py"
+    spec = importlib.util.spec_from_file_location('v289_gate', source)
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    gate.ROOT = ROOT
+    with tempfile.TemporaryDirectory(prefix='v289-timeout-') as temporary:
+        top = Path(temporary)
+        fixture = top / 'fixture'
+        (fixture / 'scripts/suites').mkdir(parents=True)
+        (fixture / '.veldo').mkdir()
+        (fixture / '.veldo/subject.py').write_text('good')
+        (fixture / 'scripts/suites/shared.py').write_text(
+            'def expect(name, condition): pass\n')
+        marker = top / 'created-directory'
+        (fixture / 'scripts/suites/fixture.py').write_text(
+            'import pathlib, tempfile, time\n'
+            'directory = tempfile.mkdtemp(prefix="v289-killed-", dir="/dev/shm")\n'
+            'pathlib.Path(%r).write_text(directory)\n'
+            'time.sleep(60)\n' % str(marker))
+        case = dict(identity='v289:timeout', name='timeout', driver=gate.DRIVERS[0],
+                    suite='fixture.py', module='subject.py', rows=['target'], old='good', new='bad')
+        pool = gate.SuiteResources({'resource_capacities': {'manager': 1}, 'suites': [
+            {'file': 'fixture.py', 'resources': {'manager': 1}}]})
+        workers = gate.Workers(time.monotonic() + 30, pool, parallel=1)
+        workers.leg = dict(entries=['fixture'], suites=['fixture'])
+        coordinator = top / 'coordinator'
+        coordinator.mkdir()
+        directory = None
+        try:
+            try:
+                workers.run({'late': dict(case=case, mode='baseline', budget_seconds=2)},
+                            coordinator, fixture)
+            except gate.Refused as error:
+                raised = error.code
+            else:
+                raised = None
+            entries = [json.loads(line) for line in workers.ledgers['late'].read_text().splitlines()]
+            if marker.exists():
+                directory = Path(marker.read_text())
+            # Establish ownership in the ledger before judging the timeout or the refusal.
+            recorded = directory is not None and ['directory', str(directory)] in entries
+            outcome = workers.outcomes[0]
+            passed = (recorded and raised == outcome.get('error') == 'mutation_budget_exceeded'
+                      and 'worker deadline (2s)' in outcome.get('detail', '')
+                      and 'ledger names resources outside this worker' in outcome.get('cleanup_error', '')
+                      and outcome['returncode'] == -signal.SIGKILL and outcome['leg'] == 'unconfined'
+                      and directory.is_dir() and bool(pool.held) and not workers.active)
+        finally:
+            # Only this fixture's empty directory is removed. The ownership guard refused it.
+            if directory is None and marker.exists():
+                directory = Path(marker.read_text())
+            if directory is not None:
+                os.rmdir(directory)
+        expect('VELDO-0289 ownership/timeout-then-cleanup-failure', passed)
+
+
+if leg_runs('strace'):
+    _v289_timeout_cleanup()

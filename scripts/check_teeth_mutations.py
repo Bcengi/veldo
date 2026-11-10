@@ -11704,6 +11704,22 @@ def cases():
         ['case-deadlines/unmeasured-mutant-deadline'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0289: a cleanup or final sample failure keeps the worker's first error.
+    add(289, 'cleanup289-replaces-first-error', '98_veldo_0204_mutation_receipts.py',
+        'check_gate_mutations.py',
+        "            if error is None:\n                error = Refused('worker_cleanup_error',",
+        "            if True:\n                error = Refused('worker_cleanup_error',",
+        ['receipts/deadline-then-cleanup-failure'], also=[(
+            "                    if error is None:\n                        error = Refused('worker_cleanup_error',",
+            "                    if True:\n                        error = Refused('worker_cleanup_error',")])
+    result[-1]['dir'] = 'scripts'
+    add(289, 'measure289-replaces-first-error', '115_veldo_0219_measured_admission.py',
+        'check_gate_mutations.py',
+        "                if error is None:\n                    error = Refused('worker_measurement_error',",
+        "                if True:\n                    error = Refused('worker_measurement_error',",
+        ['admission/deadline-then-sample-failure'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0219: measured admission and conservative guaranteed parallelism.
     suite219 = '115_veldo_0219_measured_admission.py'
     add(219, 'admission219-slowest-rate', suite219, 'check_gate_mutations.py',

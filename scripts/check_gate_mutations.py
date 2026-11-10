@@ -831,11 +831,15 @@ class Workers:
     def finish(self, name, error=None):
         proc, out, err, started = self.active[name]
         measurement = None
+        measurement_error = None
         if name in self.meters:
             try:
                 measurement = self.meters[name].sample(self.homes[name], self.ledgers[name])
             except Exception as meter_error:
-                error = Refused('worker_measurement_error', name + ': ' + str(meter_error))
+                if error is None:
+                    error = Refused('worker_measurement_error', name + ': ' + str(meter_error))
+                else:
+                    measurement_error = str(meter_error)
         try:
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
@@ -854,6 +858,8 @@ class Workers:
                       elapsed=elapsed, returncode=proc.returncode, pid=proc.pid,
                       output_directory=str(home),
                       stdout_bytes=len(stdout), stderr_bytes=len(stderr))
+        if measurement_error is not None:
+            record['measurement_error'] = measurement_error
         if measurement is not None:
             record['measurement'] = measurement
         result = None
@@ -893,22 +899,26 @@ class Workers:
             record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],
                                                   **({'born_after': metered} if metered is not None else {}))
         except Exception as cleanup_error:
-            error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
-            record.update(error=error.code, detail=error.detail)
+            record['cleanup_error'] = str(cleanup_error)
+            if error is None:
+                error = Refused('worker_cleanup_error', name + ': ' + record['cleanup_error'])
+                record.update(error=error.code, detail=error.detail)
         finally:
             if name in self.meters:
                 try:
                     self.meters[name].close()
                     del self.meters[name]
                 except Exception as cleanup_error:
-                    error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
-                    record.update(error=error.code, detail=error.detail)
+                    record['cleanup_error'] = (record['cleanup_error'] + '; ' if 'cleanup_error' in record else '') + str(cleanup_error)
+                    if error is None:
+                        error = Refused('worker_cleanup_error', name + ': ' + record['cleanup_error'])
+                        record.update(error=error.code, detail=error.detail)
         record['elapsed'] = time.monotonic() - started
         self.outcomes.append(record)
         self.driver_spans[job['case']['driver']][1] = time.monotonic()
         del self.active[name]
         self.release_snapshot(name)
-        if record.get('error') != 'worker_cleanup_error':
+        if 'cleanup_error' not in record:
             self.resources.release(name)
             if self.admission:
                 self.admission.release(name)
