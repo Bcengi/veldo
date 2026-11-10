@@ -265,8 +265,8 @@ class Forked:
 for name, kind, hold in payload.get('descendants') or []:
     if kind == 'stubborn':
         # Forked, and the child code run in this interpreter: a runtime cap that starts at scope
-        # activation then covers one interpreter start, not two. The child drops the engine's SIGTERM
-        # handler and stdin first, as a started process would have neither; stdout stays inherited.
+        # activation then covers two interpreter starts (the wrapper and the engine), not three. The child
+        # drops the engine's SIGTERM handler and stdin first, as a started process has neither; stdout stays.
         pid = os.fork()
         if pid == 0:
             code = 1

@@ -10,7 +10,7 @@ that burns 0.5 s of CPU. The raw log of every run is hashed, measured and then d
 <mode>.summary.json beside this file is kept.
 """
 
-import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -100,7 +100,15 @@ def one_run(raw, index):
            'seconds': round(elapsed, 2), 'load_before': before, 'load_after': load_average(), 'observed': observed}
     if not passed:
         row['partial_line'] = partial[:200]
-    return row, {'name': log.name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+    return row, (log.name, data)
+
+
+def validator():
+    """The repository's validator, which owns the veldo.proof-summary/v1 shape."""
+    spec = importlib.util.spec_from_file_location('round11_validate', ROOT / '.veldo' / 'validate.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def load_worker(stop, counts, lock):
@@ -144,36 +152,43 @@ def measure(mode, runs):
                 for name, bound in BOUNDS.items()}
     measured['submit_to_running'] = spread([o.get('submit_to_running') for o in seen])
     good = sum(row['passed'] for row in rows)
-    summary = {
-        'command': 'python3 proof/round11-suite63/run_suite63.py %s %d, started through the shared gate lock '
-                   'in a user scope with MemoryMax=10G; each run is %s python3 '
-                   'proof/round11-suite63/run_suite63.py observe' % (mode, runs, ' '.join(SCOPE)),
-        'environment': {
-            'commit': text('git', 'rev-parse', 'HEAD'), 'tree': text('git', 'rev-parse', 'HEAD^{tree}'),
-            'uncommitted_changes_under_scripts': bool(text('git', 'status', '--porcelain', '--', 'scripts')),
-            'host': platform.node(), 'kernel': platform.release(), 'cores': os.cpu_count(),
-            'python': platform.python_version(), 'systemd': text('systemctl', '--version').splitlines()[0],
-            'load_1min': {'at_start': load_start, 'at_end': load_average(),
-                          'per_run_after': spread([row['load_after'] for row in rows])},
-        },
-        'load': ({'workers': WORKERS, 'work': 'each worker loops a new systemd user scope (MemoryMax=10G) that '
-                  'burns 0.5 s of CPU', 'scopes_finished': counts['scopes'], 'scope_errors': counts['errors']}
-                 if mode == 'loaded' else 'none started by this run'),
-        'deciding': {
-            'runs': len(rows), 'passed': good, 'failed': len(rows) - good,
-            'verdict': 'pass' if good == runs == len(rows) else 'fail',
-            'rule': 'every run ends with selector status 2, a partial line with 0 failed and no failed row',
-            'suite_checks_passed_per_run': sorted({row['suite_checks_passed'] for row in rows}, key=str),
-            'failures': [{k: row[k] for k in ('run', 'status', 'failed_labels', 'seconds', 'load_after', 'observed')}
-                         for row in rows if not row['passed']],
-            'run_seconds': spread([row['seconds'] for row in rows]),
-            'measured_seconds': measured,
-            'cooperative_deadline_stop': sorted({str(o.get('cooperative_deadline_stop')) for o in seen}),
-            'escalation_deadline_stop': sorted({str(o.get('escalation_deadline_stop')) for o in seen}),
-        },
-        'raw_files': {'kept': False, 'files': files},
+    command = ('python3 proof/round11-suite63/run_suite63.py %s %d, started through the shared gate lock '
+               'in a user scope with MemoryMax=10G; each run is %s python3 '
+               'proof/round11-suite63/run_suite63.py observe' % (mode, runs, ' '.join(SCOPE)))
+    environment = {
+        'commit': text('git', 'rev-parse', 'HEAD'), 'tree': text('git', 'rev-parse', 'HEAD^{tree}'),
+        'uncommitted_changes_under_scripts': bool(text('git', 'status', '--porcelain', '--', 'scripts')),
+        'host': platform.node(), 'kernel': platform.release(), 'cores': os.cpu_count(),
+        'python': platform.python_version(), 'systemd': text('systemctl', '--version').splitlines()[0],
+        'load_1min': {'at_start': load_start, 'at_end': load_average(),
+                      'per_run_after': spread([row['load_after'] for row in rows])},
     }
-    (PROOF / ('%s.summary.json' % mode)).write_text(json.dumps(summary, indent=1, sort_keys=True) + '\n')
+    deciding = {
+        'runs': len(rows), 'passed': good, 'failed': len(rows) - good,
+        'verdict': 'pass' if good == runs == len(rows) else 'fail',
+        'rule': 'every run ends with selector status 2, a partial line with 0 failed and no failed row',
+        'suite_checks_passed_per_run': sorted({row['suite_checks_passed'] for row in rows}, key=str),
+        'failures': [{k: row[k] for k in ('run', 'status', 'failed_labels', 'seconds', 'load_after', 'observed')}
+                     for row in rows if not row['passed']],
+        'run_seconds': spread([row['seconds'] for row in rows]),
+        'measured_seconds': measured,
+        'cooperative_deadline_stop': sorted({str(o.get('cooperative_deadline_stop')) for o in seen}),
+        'escalation_deadline_stop': sorted({str(o.get('escalation_deadline_stop')) for o in seen}),
+    }
+    load = ({'workers': WORKERS, 'work': 'each worker loops a new systemd user scope (MemoryMax=10G) that '
+             'burns 0.5 s of CPU', 'scopes_finished': counts['scopes'], 'scope_errors': counts['errors']}
+            if mode == 'loaded' else 'none started by this run')
+    # The validator builds the record, so the schema and the discarded list (name, bytes and sha256
+    # of each raw log) have the shape its own check reads. This run's environment facts are added
+    # to the ones it records.
+    V = validator()
+    summary = V.proof_summary(command, deciding, discarded=files, root=ROOT, timing=True, extra={'load': load})
+    summary['environment'].update(environment)
+    problems = V.summary_problems(summary)
+    if problems:
+        raise RuntimeError('The summary is incomplete: ' + '; '.join(problems))
+    (PROOF / ('%s.summary.json' % mode)).write_text(
+        json.dumps(summary, indent=1, sort_keys=True, ensure_ascii=True) + '\n')
     return good == runs
 
 
