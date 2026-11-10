@@ -1,0 +1,47 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G taskset -c 0,1 python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+ "deciding": {
+  "adoption_observations": [],
+  "behavior_changed": false,
+  "concurrent_runs": 1,
+  "cpu_affinity": "0,1",
+  "cpu_burners": 12,
+  "diagnostics_only": true,
+  "gate_run": false,
+  "hypothesis": "The fixture readiness wait may expire on a CPU-starved host.",
+  "partial_suite": true,
+  "passed": 1,
+  "reproduced": false,
+  "results": [
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 1,
+    "seconds": 404.9129966129549,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 404.24s"
+    ]
+   }
+  ],
+  "retries": 0,
+  "runs": 1,
+  "source_sha256": "2d0e35f7db5566e4fce96c4dc9a3fe22acd60be095166a7c04fd4677ecdfdf66",
+  "suite": "86_veldo_0189_engine_upgrade"
+ },
+ "discarded": [
+  {
+   "bytes": 9402,
+   "name": "before-01.log",
+   "sha256": "9572d9b5143e2010603c48a7f53dae6852ed2b9dd25ae2228fa2786b69e3642d"
+  }
+ ],
+ "environment": {
+  "commit": "b57b6fb10ea53f22dfc649a705de95bc85c9869e",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "python": "3.12.3",
+  "tree": "1d1506371886ca98fbb8ab049b5d180059033dc4"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

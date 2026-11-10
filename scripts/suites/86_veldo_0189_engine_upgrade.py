@@ -71,6 +71,7 @@ def _v189_suite():
     COMMANDS = 'ownership/restore-commands'
     ROWS += (COMMANDS, AK)
     rows = {name: [] for name in ROWS}
+    adoption_observation = {'starts': [], 'setups': []}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
 
@@ -597,6 +598,7 @@ def _v189_suite():
                'file_bytes': 64 << 20, 'tasks_max': 256, 'stop_grace_seconds': 1, 'kill_grace_seconds': 1}
     ts = TS.stand_in(CAPTURE, sys.executable) if CAPTURE.is_file() else None
     port = TS.free_port()
+    adoption_observation['api_port'] = port
     managers, bridges = [], []
 
     class Host:
@@ -1520,9 +1522,17 @@ def _v189_suite():
 
             def killed_fresh(at):
                 """One setup of the fresh host in a process of its own, SIGKILLed right after its `at`th write point."""
+                began = time.monotonic()
                 done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), ak_bridge.path,
                                        json.dumps(fresh.overrides()), json.dumps(fresh.argv())], env=child_env(),
                                       capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL)
+                try:
+                    report = json.loads(done.stdout.strip().splitlines()[-1])
+                except (ValueError, IndexError):
+                    report = {}
+                reason = report.get('reason') if isinstance(report, dict) else None
+                adoption_observation['setups'].append(dict(at=at, code=done.returncode, reason=reason,
+                                                           seconds=time.monotonic() - began))
                 return done.returncode
 
             def without_signer():
@@ -1538,7 +1548,10 @@ def _v189_suite():
                     path.write_text(''.join(line for line in path.read_text().splitlines(keepends=True)
                                             if not line.startswith(F.ADOPTION_PRINCIPAL + ' ')))
                 ts.set('ready')
-                fresh.manager.start(fresh.unit)
+                began = time.monotonic()
+                code, _, error = fresh.manager.start(fresh.unit)
+                adoption_observation['starts'].append(dict(code=code, error=error,
+                                                           seconds=time.monotonic() - began))
                 return len(ak_log.read_text().splitlines()) if ak_log.is_file() else 0
 
             def engine_step(report):
@@ -2110,7 +2123,8 @@ def _v189_suite():
         profiler.disable()
         profiler.dump_stats(os.environ['VELDO_SUITE_PROFILE'])
     if timing_path:
-        Path(timing_path).write_text(json.dumps(dict(rows=timings, seconds=time.monotonic() - started), indent=2) + '\n')
+        Path(timing_path).write_text(json.dumps(dict(rows=timings, adoption=adoption_observation,
+                                                   seconds=time.monotonic() - started), indent=2) + '\n')
 
     for name, observed in rows.items():
         ok = bool(observed) and all(one for _, one in observed)
@@ -2120,7 +2134,10 @@ def _v189_suite():
                     print('  VELDO-0189 %s detail: %s' % (name, label))
             if not observed:
                 print('  VELDO-0189 %s detail: no check ran' % name)
-        expect('VELDO-0189 ' + name, ok)
+        detail = '; '.join(label for label, one in observed if not one) or 'no check ran'
+        if not ok and name == AK:
+            detail += '; observation=' + json.dumps(adoption_observation, sort_keys=True)
+        expect('VELDO-0189 ' + name + (': ' + detail if not ok else ''), ok)
     print('VELDO-0189 suite seconds: %.3f' % (time.monotonic() - started))
 
 
