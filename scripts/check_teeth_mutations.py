@@ -12971,7 +12971,7 @@ def cases():
         if dir is not None:
             result[-1]['dir'] = dir
 
-    # The suites the deleted leg list named whole (scripts/gate_unconfined.json at 24c9f5b4, less the removed
+    # The suites the deleted leg list named whole (the unconfined list at 24c9f5b4, less the removed
     # suite 128): the dispatcher that skipped them in one leg is the defect AC1's count row must catch.
     once_listed = (
         '62_veldo_0039_dispatch', '63_veldo_0040_containment', '63_veldo_0049_floor',

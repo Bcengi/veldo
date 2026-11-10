@@ -133,6 +133,14 @@ expect('fixture target', namespace['value'] == 1)
                and not fresh.publish(case, record, gate.validate_result)
                and case['identity'] in fresh.snapshots)
 
+        # A declared case's snapshot holds its declared inputs only: no unrelated file, no .git.
+        for suffix, forced in (('valid', False), ('forced-valid', True)):
+            parent = top / ('snapshot-' + suffix); parent.mkdir()
+            frozen = Path(session(force=forced).prepare(case, parent / 'cases')['snapshot_root'])
+            expect('VELDO-0207 case/snapshot-only-declared-' + suffix,
+                   (frozen / '.veldo/subject.py').is_file() and (frozen / 'shared-helper').is_file()
+                   and not (frozen / 'unrelated').exists() and not (frozen / '.git').exists())
+
         # A declared directory includes every descendant in its key and snapshot.
         expanded = dict(files); expanded['scripts/new-child'] = (0o644, b'new input')
         expect('VELDO-0207 case/listed-directory-new-child-invalidates',
