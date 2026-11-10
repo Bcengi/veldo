@@ -45,8 +45,7 @@ def _v50_suite():
     def sha(body):
         return 'sha256:' + hashlib.sha256(body).hexdigest()
 
-    # Not /dev/shm: the work tree is a candidate the gate runs through the VELDO-0208 launcher, and
-    # its confinement grants nothing beneath /dev, so a candidate there could read none of its files.
+    # A plain temporary directory: the work tree is a candidate the gate runs its commands in.
     with tempfile.TemporaryDirectory(prefix='v50-') as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
@@ -125,8 +124,7 @@ def _v50_suite():
             "sources = sorted(pathlib.Path('src').glob('*.py'))",
             "if any('KILL = True' in p.read_text() for p in sources):",
             '    # The gate is stopped before it prints any result, by the suite\'s watcher (gate_killer):',
-            '    # this check runs confined (VELDO-0208), where /proc and signals outside the domain are',
-            '    # denied, so it only waits. Never stopped, it passes and the gate goes green, which reds',
+            '    # this check only waits. Never stopped, it passes and the gate goes green, which reds',
             '    # the row rather than letting it pass.',
             '    import time',
             '    time.sleep(120)',
@@ -399,12 +397,12 @@ sys.stdout.flush()
                 return False
 
             def running_check():
-                # The confined check: the process the sandbox forked and exec'd, whose parent is the
-                # launcher (whose own argv also names the check, as do the processes above it).
+                # The check itself: the process whose parent is the gate's candidate runner (whose
+                # own argv also names the check, as do the processes above it).
                 for entry in os.listdir('/proc'):
                     if (entry.isdigit() and 'check.py' in cmdline(int(entry))
-                            and 'agent_sandbox.py' not in cmdline(int(entry))
-                            and 'agent_sandbox.py' in cmdline(parent(int(entry))) and ours(int(entry))):
+                            and 'gate_candidate.py' not in cmdline(int(entry))
+                            and 'gate_candidate.py' in cmdline(parent(int(entry))) and ours(int(entry))):
                         return int(entry)
                 return None
 
@@ -440,8 +438,8 @@ sys.stdout.flush()
                 self.launched, self.commits, self.reviews = [], [], []
 
             def gate(self):
-                """LiveLoop's gate, unchanged. In kill mode a watcher outside the confinement stops it
-                once the fixture's unit check is running, as the check itself no longer can."""
+                """LiveLoop's gate, unchanged. In kill mode a watcher beside the gate stops it once the
+                fixture's unit check is running."""
                 if self.mode != 'kill':
                     return super().gate()
                 stop = threading.Event()

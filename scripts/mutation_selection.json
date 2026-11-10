@@ -9,7 +9,7 @@
     "check_teeth_mutations.py:edge-record-drops-connection-key",
     "check_teeth_mutations.py:clone-chain-walked-one-level"
   ],
-  "canary_note": "Six cases: the review driver (49_veldo_0109_unavailable), the teeth driver in the confined leg (61_scope_covers twice, 113_veldo_0145_ui with its browser fixture), the unconfined leg (65_veldo_0067_edges) and a case that needs the systemd user manager service fixture (66_veldo_0042_clones). Chosen as the fastest measured case of each kind.",
+  "canary_note": "Six cases, all in the one leg every stage runs as: the review driver (49_veldo_0109_unavailable), the teeth driver (61_scope_covers twice, 113_veldo_0145_ui with its browser fixture, 65_veldo_0067_edges with its own Landlock fence) and a case that needs the systemd user manager service fixture (66_veldo_0042_clones). Chosen as the fastest measured case of each kind.",
   "triggers": [
     "scripts/check_teeth_mutations.py",
     "scripts/check_review_mutations.py",
@@ -31,9 +31,6 @@
     "scripts/verify.sh",
     "engine/scripts/verify.sh",
     "scripts/gate_graph.json",
-    "scripts/gate_legs.py",
-    "engine/scripts/gate_legs.py",
-    "scripts/gate_unconfined.json",
     "scripts/gate_candidate.py",
     "engine/scripts/gate_candidate.py",
     "scripts/reuse_worker.py",
@@ -44,8 +41,6 @@
     "engine/scripts/gate_reuse.py",
     "scripts/agent_sandbox.py",
     "engine/scripts/agent_sandbox.py",
-    "scripts/agent_sandbox.json",
-    "engine/scripts/agent_sandbox.json",
     ".veldo/candidate_git.py",
     "engine/.veldo/candidate_git.py",
     "scripts/suites/shared.py",

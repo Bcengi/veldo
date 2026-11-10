@@ -1,7 +1,7 @@
 """VELDO-0274: the VELDO-0127 factory removes every systemd slice it creates, on success, failure and interruption.
 
 The last suite of the unit stage, so its end-of-run row sees every factory user of this run before it. In the
-gate it runs in the unconfined leg (scripts/gate_unconfined.json), after suite 86 and in the same process."""
+gate it runs after suite 86 and in the same process."""
 def _v274_factory_slices():
     import importlib.util
     import json
@@ -165,7 +165,7 @@ with factory.factory(root, base / 'factory', {}, lambda _: wire.engine_source(ca
             sleeper.wait()
     # AC3's registered mutation (check_teeth_mutations.py, slices274-factory-user-without-exit-stack): the mutation
     # stage's worker replaces this path with a copy of suite 86, the factory user that runs before this suite in the
-    # gate's unconfined leg, in this process. Only then does this suite run that copy here, before the end-of-run
+    # gate, in this process. Only then does this suite run that copy here, before the end-of-run
     # row, as the gate runs 86 before 129; the no-op copy is the control. Unreplaced, suite 86 runs on its own in
     # the manifest and is not run again here. Its rows stay its own: they are counted here but never reported as
     # this suite's rows, so the control's rows equal the baseline's.
@@ -177,9 +177,7 @@ with factory.factory(root, base / 'factory', {}, lambda _: wire.engine_source(ca
         print('  VELDO-0274 suite 86 copy: %d rows, false: %s' % (
             len(user_rows), ', '.join(name for name, ok in user_rows if not ok) or 'none'))
     # AC3: after the unit stage's last suite, no veldo0127 slice whose pid belongs to this run remains loaded. In
-    # the gate this suite runs in the unconfined leg (scripts/gate_unconfined.json), the leg with a user manager,
-    # in the same selftest process as the factory users listed there and after them (it is the manifest's last
-    # suite). A pid belongs to this run when it is this process, a live descendant of it, or a process that is
+    # the gate this suite runs in the same selftest process as the factory users and after them. A pid belongs to this run when it is this process, a live descendant of it, or a process that is
     # gone and whose slice became active after this process started. A live process outside this process's tree
     # is another run's, and its slice is never judged.
     def parent(pid):

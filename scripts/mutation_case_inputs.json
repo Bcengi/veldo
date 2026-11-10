@@ -17,7 +17,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/propose_case_inputs.py",
         "scripts/suites/47_veldo_0107_ipc.py",
         "scripts/suites/shared.py",
@@ -458,7 +457,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/58_veldo_0028_effects.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py"
@@ -502,7 +500,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/59_veldo_0037_aliases.py",
         "scripts/suites/shared.py"
       ],
@@ -757,7 +754,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/60_veldo_0052_eligibility.py",
         "scripts/suites/shared.py"
       ],
@@ -1012,7 +1008,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/62_veldo_0065_presentations.py",
         "scripts/suites/shared.py"
       ],
@@ -1266,7 +1261,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/70_veldo_0069_bindings.py",
         "scripts/suites/shared.py"
       ],
@@ -1302,7 +1296,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/67_veldo_0041_heartbeat.py",
         "scripts/suites/shared.py"
       ],
@@ -1560,7 +1553,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/66_veldo_0047_authority.py",
         "scripts/suites/shared.py"
       ],
@@ -1816,7 +1808,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/68_veldo_0126_intake.py",
         "scripts/suites/shared.py"
       ],
@@ -2074,7 +2065,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/69_veldo_0133_dispositions.py",
         "scripts/suites/shared.py"
       ],
@@ -2347,7 +2337,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/71_veldo_0130_api.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py",
@@ -2614,7 +2603,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/71_veldo_0138_channel_service.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/v73_authority.py"
@@ -2871,7 +2859,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/72_veldo_0128_reports.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/v73_authority.py"
@@ -3132,7 +3119,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/75_veldo_0062_accounts.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py"
@@ -3402,7 +3388,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/78_veldo_0160_account_pool.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py"
@@ -3446,7 +3431,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/81_veldo_0156_codex_baseline.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py"
@@ -3491,7 +3475,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/82_veldo_0141_execution_record.py",
         "scripts/suites/shared.py"
       ],
@@ -3530,7 +3513,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/82_veldo_0129_worker_wiring.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py"
@@ -3574,7 +3556,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/01_warp_0101_reviewer_notes.py",
         "scripts/suites/02_mobile_ios_runner_b8.py",
         "scripts/suites/03_plugin_extension_loading_runner.py",
@@ -3988,7 +3969,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/85_veldo_0171_setup_api.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/setup_runtime.py",
@@ -4470,7 +4450,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/86_veldo_0148_re_land.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py"
@@ -4733,7 +4712,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/87_veldo_0127_codex_delivery.py",
         "scripts/suites/shared.py"
       ],
@@ -5249,7 +5227,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/86_veldo_0168_text.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/v73_authority.py"
@@ -5518,7 +5495,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/85_veldo_0171_setup_api.py",
         "scripts/suites/91_veldo_0167_setup_records.py",
         "scripts/suites/shared.py",
@@ -5787,7 +5763,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/96_veldo_0204_reservation_policies.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/compiled_sources.py",
@@ -6167,7 +6142,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/44_veldo_0105_startline.py",
         "scripts/suites/shared.py"
       ],
@@ -6193,7 +6167,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/propose_case_inputs.py",
         "scripts/suites/47_veldo_0107_ipc.py",
         "scripts/suites/shared.py",
@@ -6628,7 +6601,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/48_veldo_0108_relay.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/v107_authority_runner.py"
@@ -6667,7 +6639,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/48_veldo_0108_relay.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/v107_authority_runner.py"
@@ -6705,7 +6676,6 @@
         "scripts/check_teeth_mutations.py",
         "scripts/gate_reuse.py",
         "scripts/mutation_reuse.py",
-        "scripts/mutation_sandbox.py",
         "scripts/suites/49_veldo_0109_unavailable.py",
         "scripts/suites/shared.py",
         "scripts/suites/support/v107_authority_runner.py"

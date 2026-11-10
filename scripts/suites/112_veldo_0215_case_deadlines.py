@@ -37,13 +37,12 @@ def _v215_case_deadlines():
         files = {name: (0o644, b'before') for name in (
             '.veldo/sample.py', 'scripts/suites/sample.py', 'scripts/suites/shared.py',
             'scripts/check_gate_mutations.py', 'scripts/mutation_observer.py',
-            'scripts/reuse_worker.py', 'scripts/mutation_sandbox.py', 'scripts/agent_sandbox.py',
-            'scripts/mutation_ownership.py')}
+            'scripts/reuse_worker.py', 'scripts/mutation_ownership.py')}
 
         def row(name, condition):
             expect('VELDO-0215 case-deadlines/' + name, condition)
 
-        key = gate.case_time_key(case, files, None)
+        key = gate.case_time_key(case, files)
         store = scratch / 'times'
         store.mkdir()
         def sample(seconds, sample_key=key):
@@ -59,15 +58,13 @@ def _v215_case_deadlines():
         bounds.append(gate.case_deadline(key, store) == 120)
         row('bounds', all(bounds))
 
-        keys = [gate.case_time_key(dict(case, new='different'), files, None)]
+        keys = [gate.case_time_key(dict(case, new='different'), files)]
         for name in files:
             changed = dict(files, **{name: (0o644, b'changed')})
-            keys.append(gate.case_time_key(case, changed, None))
-        keys.append(gate.case_time_key(case, files, dict(suites=['sample'], entries=['sample'],
-                                                        declaration='other')))
+            keys.append(gate.case_time_key(case, changed))
         sample(80)
         row('key-binding', all(k != key and gate.case_deadline(k, store) == 120 for k in keys)
-            and gate.case_time_key(case, dict(files, **{'proof/note': (0o644, b'new')}), None) == key)
+            and gate.case_time_key(case, dict(files, **{'proof/note': (0o644, b'new')})) == key)
 
         other = dict(case, identity='second', name='second')
         controls = gate.control_jobs([case, other], gate.control_group, {},
@@ -195,7 +192,6 @@ def _v215_case_deadlines():
                         root, samples, times, authority=authority), CASE_TIMES=times)
                 for name, value in overrides.items():
                     stack.enter_context(patch.object(gate, name, value))
-                stack.enter_context(patch.object(gate.Workers, 'launcher_fds', lambda self: ()))
                 stack.enter_context(patch.object(gate.SuiteResources, 'from_root', lambda *a: pool))
                 stack.enter_context(patch.object(gate.subprocess, 'Popen', Child))
                 stack.enter_context(patch.object(gate.os, 'killpg', lambda pid, sig: kills.append(pid)))
@@ -289,10 +285,7 @@ def _v215_case_deadlines():
         # An installed authority verifies another root. Only its CLI opts into recording;
         # neither a caller environment variable nor --root grants a fixture library call this.
         calls = []
-        # main() loads gate_legs.py for the leg and (VELDO-0219) gate_schedule.py for its ledger CHANNEL; only
-        # the leg is doubled, every other module main loads is the real one.
-        real_load = gate.load
-        legs_double = types.SimpleNamespace(mutation_leg=lambda: None)
+        # main() loads (VELDO-0219) gate_schedule.py for its ledger CHANNEL: the real one.
         def cli_stage(root, common, **kwargs):
             calls.append((root, kwargs))
             return dict(status='passed', registered=0, executed=0, reused=0, rejected=0,
@@ -300,7 +293,6 @@ def _v215_case_deadlines():
         with patch.object(gate.sys, 'argv', ['check_gate_mutations.py', '--root', str(scratch / 'candidate')]), \
                 patch.object(gate, 'run_stage', cli_stage), \
                 patch.object(gate, 'common_directory', lambda root: root / '.git'), \
-                patch.object(gate, 'load', lambda path: legs_double if Path(path).name == 'gate_legs.py' else real_load(path)), \
                 contextlib.redirect_stdout(__import__('io').StringIO()):
             code = gate.main()
         row('candidate-authority', code == 0 and calls[0][0] == scratch / 'candidate'
@@ -333,8 +325,7 @@ def _v215_case_deadlines():
                 return types.SimpleNamespace(cleanup=lambda *a: {})
             return real_load(p)
         error = None
-        with patch.object(gate.subprocess, 'Popen', launch), patch.object(gate, 'load', loader), \
-                patch.object(gate.Workers, 'launcher_fds', lambda self: ()):
+        with patch.object(gate.subprocess, 'Popen', launch), patch.object(gate, 'load', loader):
             try:
                 workers.run({'hang': dict(case=case, mode='baseline', budget_seconds=.2)}, home, ROOT)
             except gate.Refused as exc:

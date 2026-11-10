@@ -1671,6 +1671,25 @@ def setup_identities(conn, domain, repository, workspace, identities, workspace_
         raise Refused(error.code, 'Git identity configuration refused') from None
 
 
+# A LEFTOVER NAMESPACE HELPER (VELDO-0271). The gate once ran candidate commands through a root-installed
+# helper and its AppArmor profile. Nothing calls either any more, and setup never installs, calls or requires
+# them. Where one is still installed setup says so once, with the owner's removal command; the answer and the
+# exit status do not change. VELDO_HOST_ROOT names another root to look under (a fixture host).
+LEFTOVER_PATHS = ('/usr/local/lib/veldo/veldo-userns', '/etc/apparmor.d/veldo-userns')
+LEFTOVER_REMOVAL = ('sudo rm /usr/local/lib/veldo/veldo-userns; sudo apparmor_parser -R /etc/apparmor.d/veldo-userns; '
+                    'sudo rm /etc/apparmor.d/veldo-userns')
+
+
+def leftover_namespace_helper(host_root=None):
+    """The report line for a leftover helper or profile under `host_root`, or None when neither is there."""
+    root = os.environ.get('VELDO_HOST_ROOT', '') if host_root is None else str(host_root)
+    found = [path for path in LEFTOVER_PATHS if os.path.lexists(root + path)]
+    if not found:
+        return None
+    return ('leftover_namespace_helper: %s is installed and no longer used; the owner removes it with: %s'
+            % (', '.join(found), LEFTOVER_REMOVAL))
+
+
 def main(argv=None, **overrides):
     """veldo factory setup --state-root DIR --owner NAME --owner-key FILE --workspace CLONE --chat ID
     --token-file FILE. Prints one JSON answer; exit 0 set up, 1 refused by name, 2 usage."""
@@ -1702,6 +1721,9 @@ def main(argv=None, **overrides):
     # VELDO-0259: the answer names the installation folder and revision setup ran with, read through the one
     # reader, which prints its resolution line.
     installation = organ('installation').trace()
+    leftover = leftover_namespace_helper()
+    if leftover:
+        print(leftover, file=sys.stderr, flush=True)
 
     def answer(value, code):
         print(json.dumps(dict(value, installation=installation), sort_keys=True))

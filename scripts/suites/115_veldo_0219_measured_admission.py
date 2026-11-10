@@ -14,6 +14,7 @@ def _v219_checks():
     import math
     import os
     from pathlib import Path
+    import sys
     import tempfile
     import time
     import types
@@ -311,7 +312,6 @@ def _v219_checks():
                 admission.meter_factory = fail
             with patch.object(gate.subprocess, 'Popen', Child), patch.object(gate, 'load', load_fixture), \
                     patch.object(gate.os, 'killpg', lambda *a: None), \
-                    patch.object(gate.Workers, 'launcher_fds', lambda self: ()), \
                     patch.object(gate.time, 'monotonic', lambda: clock[0]), \
                     patch.object(gate.time, 'sleep', lambda dt: clock.__setitem__(0, clock[0] + dt)):
                 try:
@@ -495,7 +495,6 @@ def _v219_checks():
                 for name, value in patches.items():
                     stack.enter_context(patch.object(gate,name,value))
                 stack.enter_context(patch.object(gate.SuiteResources,'from_root',lambda *a:gate.SuiteResources(manifest)))
-                stack.enter_context(patch.object(gate.Workers,'launcher_fds',lambda self:()))
                 stack.enter_context(patch.object(gate.subprocess,'Popen',Child))
                 stack.enter_context(patch.object(gate.os,'killpg',lambda *a:None))
                 stack.enter_context(patch.object(gate.time,'monotonic',lambda:clock[0]))
@@ -517,9 +516,101 @@ def _v219_checks():
         receipt_checks.append(stage_failed['error']=='invalid_baseline' and not list(failed_store.glob('*.json')))
         row('stage-receipts-and-recording', all(receipt_checks))
 
+        # The scheduler's handoff rows. proof/VELDO-0219 round 2 and round 3 hold the same two checks
+        # written for the scheduler that still loaded the leg runner; these are those checks for the
+        # one-leg scheduler (VELDO-0271): real subprocesses and the production inherited channel, with
+        # only the kernel cgroup creation replaced.
+        class NodeMeter:
+            def command(self, argv): return argv
+            def sample(self): return dict(cpu_seconds=.01, peak_anon_bytes=1024)
+            def finish(self): return self.sample()
+
+        def mutation_only_graph(top):
+            graph = json.loads((ROOT / 'scripts/gate_graph.json').read_text())
+            graph['nodes'] = {'mutation': graph['nodes']['mutation']}
+            (top / 'graph.json').write_text(json.dumps(graph))
+
+        def scheduled(schedule, top, argv):
+            with patch.object(schedule, 'command_for', lambda *a: argv), contextlib.redirect_stdout(io.StringIO()):
+                return schedule.run({'mutation': 'fixture'}, top, top / 'logs', top / 'receipt',
+                                    graph_path=top / 'graph.json',
+                                    capacity=dict(cpu=20, memory=15*2**30, manager=16),
+                                    measurement_store=top / 'times',
+                                    meter_factory=lambda n: NodeMeter(), guard_factory=lambda r: lambda: True)
+
+        def handoff(warm=False):
+            schedule = load(ROOT / 'scripts/gate_schedule.py')
+            with tempfile.TemporaryDirectory(prefix='v219-channel-') as tmp:
+                top = Path(tmp)
+                mutation_only_graph(top)
+                child = top/'child.py'
+                child.write_text('''import importlib.util,json,sys,time,subprocess
+from pathlib import Path
+s=importlib.util.spec_from_file_location('gate',sys.argv[1]);g=importlib.util.module_from_spec(s);s.loader.exec_module(g)
+g.ROOT=Path(sys.argv[2])
+a=g.Admission.authority()
+overhead=float(sys.argv[4]);memory_overhead=int(sys.argv[5])
+assert a.floor==dict(cpu=11-overhead,memory=9*2**30-memory_overhead)
+pool=g.SuiteResources(dict(resource_capacities={'systemd_user_manager':16},suites=[dict(file='x.py',resources={'systemd_user_manager':1})]))
+job=dict(case=dict(suite='x.py'),claim=dict(cpu=1,memory=1048576,source='default'))
+assert a.acquire('one',job,pool)
+p=subprocess.Popen([sys.executable,'-c','print("worker ran")'],stdout=subprocess.PIPE,text=True)
+out,_=p.communicate(timeout=10)
+assert p.returncode==0 and 'worker ran' in out
+assert a.acquire('two',job,pool)
+a.release('one');a.release('two')
+for resource,cpu,memory,manager in [('cpu',20-overhead,0,'none'),('memory',0,15*2**30-memory_overhead,'none'),('manager',0,0,'exclusive')]:
+    assert a.client.acquire('blocker',cpu,memory,manager)
+    assert not a.acquire('wait-'+resource,job,pool)
+    assert a.client.last_reply['resource']==resource
+    a.client.release('blocker')
+    assert a.acquire('wait-'+resource,job,pool)
+    assert a.events[-1]['resource']==[resource]
+    assert a.events[-1]['granted']['cpu']==1+overhead
+    a.release('wait-'+resource)
+Path(sys.argv[3]).write_text(json.dumps(a.events))
+a.close()
+''')
+                if warm:
+                    schedule.read_resources = lambda *a: dict(cpu_rate=1, peak_anon_bytes=2**29)
+                result = scheduled(schedule, top, [sys.executable, '-B', str(child), str(Path(gate.__file__)), str(ROOT),
+                                                   str(top / 'events.json'), str(1 if warm else .25),
+                                                   str(2**29 if warm else 2**28)])
+                ok = result['stages']['mutation'] == 'pass'
+                events = json.loads((top / 'events.json').read_text()) if ok else []
+                transfers = [e for e in result['ledger'] if e['action'] == 'handoff']
+                return ok and len(transfers) == 1 and transfers[0]['granted']['manager'] == 0 and len(events) == 5
+
+        def before_handoff(schedule):
+            with tempfile.TemporaryDirectory(prefix='v219-before-handoff-') as temporary:
+                top = Path(temporary)
+                mutation_only_graph(top)
+                child = top / 'child.py'
+                child.write_text('''import importlib.util,sys
+s=importlib.util.spec_from_file_location('schedule',sys.argv[1])
+m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+c=m.Client()
+try:
+    if c.acquire('premature',0,0):
+        c.release('premature')
+except m.Refused as error:
+    assert str(error)=='worker admission requires coordinator handoff'
+finally:
+    c.close()
+''')
+                # Mutants are single-file copies; keep their unchanged sibling modules at the authority
+                # path while exercising the copied scheduler itself.
+                with patch.object(schedule, 'HERE', ROOT / 'scripts'):
+                    result = scheduled(schedule, top, [sys.executable, '-B', str(child), str(schedule.__file__)])
+                node = result['nodes']['mutation']
+                return (result['stages']['mutation'] == 'FAIL' and node['returncode'] == 0
+                        and node['error'] == 'ledger_protocol: worker admission requires coordinator handoff'
+                        and not any(e['action'] == 'grant' and e['claimant'] == 'mutation/premature'
+                                    for e in result['ledger']))
+
         regressions = load(ROOT / 'proof/VELDO-0219/round2/check.py')
-        row('aggregate-handoff', regressions.handoff(gate))
-        row('coordinator-overhead-measured', regressions.handoff(gate, warm=True))
+        row('aggregate-handoff', handoff())
+        row('coordinator-overhead-measured', handoff(warm=True))
         row('unmetered-fixed-cap', regressions.fixed_cap(gate))
         row('cpu-per-run', regressions.per_run(gate))
         row('blocking-resource', regressions.blocking_resource(gate))
@@ -531,7 +622,7 @@ def _v219_checks():
         round3 = load(ROOT / 'proof/VELDO-0219/round3/check.py')
         row('cli-graph-without-channel', round3.cli_channel(gate, False))
         row('cli-graph-with-channel', round3.cli_channel(gate, True))
-        row('worker-before-handoff-refused', round3.before_handoff(scheduler))
+        row('worker-before-handoff-refused', before_handoff(scheduler))
         row('lifecycle-registration-owned', round3.ownership_registration(ownership))
 
         qualification = load(ROOT / 'proof/VELDO-0219/qualification.py')

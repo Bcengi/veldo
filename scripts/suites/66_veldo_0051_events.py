@@ -90,9 +90,7 @@ def _v51_suite():
     def raw(path):
         return Path(path).read_bytes() if Path(path).exists() else b''
 
-    # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
-    # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
-    # none of its own files.
+    # A plain temporary directory: this fixture's work tree is a candidate the gate runs its commands in.
     with tempfile.TemporaryDirectory(prefix='v51-') as directory, contextlib.ExitStack() as wired:
         base = Path(directory)
         tree = base / 'installed'
@@ -122,8 +120,7 @@ def _v51_suite():
         def run(argv, cwd=None, env=None, stdin=None):
             return subprocess.run([str(a) for a in argv], capture_output=True, text=True, timeout=120,
                                   cwd=str(cwd or base), env=env, input=stdin,
-                                  stdin=None if stdin is not None else subprocess.DEVNULL,
-                                  pass_fds=launcher_fds())
+                                  stdin=None if stdin is not None else subprocess.DEVNULL)
 
         def cli(*args, cwd=None, env=None, stdin=None):
             return run([sys.executable, '-B', *args], cwd=cwd, env=env, stdin=stdin)

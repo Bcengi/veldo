@@ -1,4 +1,4 @@
-"""VELDO-0216 ticket checks. Real scheduler, leg runner and candidate launcher.
+"""VELDO-0216 ticket checks. Real scheduler and candidate runner, one node per stage (VELDO-0271).
 
 Only the cgroup meter is a fixture: this suite never creates a manager scope or
 acquires the real host lock. Mutation payloads are controlled authority fixtures,
@@ -29,7 +29,6 @@ def _v216_checks():
         return module
 
     source = ROOT / "scripts" / "gate_schedule.py"
-    leg_source = ROOT / "scripts" / "gate_legs.py"
     original = load(source)
     original.HERE = ROOT / 'scripts'
     mutation = original.load_module('check_gate_mutations')
@@ -56,14 +55,11 @@ def _v216_checks():
         authority = top / 'authority'
         scripts = authority / 'scripts'
         scripts.mkdir(parents=True)
-        for name in ('gate_candidate.py', 'agent_sandbox.py', 'agent_sandbox.json'):
-            shutil.copyfile(ROOT / 'scripts' / name, scripts / name)
+        shutil.copyfile(ROOT / 'scripts' / 'gate_candidate.py', scripts / 'gate_candidate.py')
         shutil.copyfile(source, scripts / 'gate_schedule.py')
-        shutil.copyfile(leg_source, scripts / 'gate_legs.py')
         shutil.copytree(ROOT / '.veldo', authority / '.veldo',
                         ignore=shutil.ignore_patterns('__pycache__', 'events.jsonl', 'last_verify'))
         scheduler = load(scripts / 'gate_schedule.py')
-        legs = scheduler.load_module('gate_legs')
         # Use actual scratch Git inputs, including untracked files and file modes.
         candidate = top / 'candidate'
         candidate.mkdir()
@@ -83,39 +79,28 @@ def _v216_checks():
             head = mutation.git(root, common, 'rev-parse', 'HEAD')
             return lambda: mutation.inputs_unchanged(root, common, files, head)
 
-        code = "import os,time,sys; time.sleep(.12); print('LEG='+os.getenv('VELDO_GATE_LEG','whole')); print('CHANNEL='+os.getenv('VELDO_GATE_LEDGER_FD','absent')); sys.exit(int(os.getenv('V216_FAIL','')==os.getenv('VELDO_GATE_LEG','whole')))"
+        code = "import os,time,sys; time.sleep(.12); print('CHANNEL='+os.getenv('VELDO_GATE_LEDGER_FD','absent')); sys.exit(int(os.getenv('V216_FAIL','')=='stage'))"
         command = shlex.quote(sys.executable) + ' -c ' + shlex.quote(code)
         catalog = {s: command for s in ('lint', 'unit', 'integration', 'security', 'generated', 'docs', 'packaging', 'extra')}
         catalog['mutation'] = 'authority mutation stage'
-        declaration = {'schema': 'veldo.gate-unconfined/v1', 'authority': 'controlled ticket fixture',
-                       'stages': {'unit': command, 'integration': command, 'mutation': catalog['mutation']},
-                       'suites': [{'suite': '01_fixture', 'reason': 'controlled fixture leg for scheduling'}]}
-        listing = scripts / 'gate_unconfined.json'
-        listing.write_text(json.dumps(declaration))
         nodes = {n: {'depends_on': [], 'writes_candidate': False, 'manager': 'none', 'ports': []}
-                 for n in scheduler.required_nodes(catalog, declaration)}
+                 for n in scheduler.required_nodes(catalog)}
         graph = {'schema': 'veldo.gate-graph/v1', 'nodes': nodes,
                  'reserve': {'cpu': 0, 'memory': 0}, 'mutation_floor': {'cpu': 0, 'memory': 0}}
         graph_path = scripts / 'gate_graph.json'
         graph_path.write_text(json.dumps(graph))
-        # A controlled mutation authority with the same receipt and leg-record contract.
+        # A controlled mutation authority with the same receipt contract.
         (scripts / 'check_gate_mutations.py').write_text('''import argparse, importlib.util, json, os
 from pathlib import Path
-p=argparse.ArgumentParser(); p.add_argument('--root'); p.add_argument('--receipt'); p.add_argument('--legs-record'); a=p.parse_args()
-s=importlib.util.spec_from_file_location('legs',Path(__file__).with_name('gate_legs.py')); m=importlib.util.module_from_spec(s); s.loader.exec_module(m)
-leg=m.mutation_leg(); m.write_record(a.legs_record,'mutation',leg['declaration'],leg['entries'])
+p=argparse.ArgumentParser(); p.add_argument('--root'); p.add_argument('--receipt'); a=p.parse_args()
 r={'status':'failed' if os.getenv('V216_FAIL')=='mutation' else 'passed','reused':0,'force_fresh':True,'registered':1,'executed':1,'rejected':0}
 Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExit(r['status']=='failed')
 ''')
-        loads = scheduler.load_module
         # Authority measurement boundary only. Claims below represent fixture measurements;
-        # the production ledger, launcher, legs, record and scheduler remain unchanged.
-        def fixture_load(name):
-            module = loads(name)
-            if name == 'gate_legs':
-                module.read_resources = lambda *a: {'cpu_rate': 1, 'peak_anon_bytes': 1024}
-            return module
-        stack.enter_context(patch.object(scheduler, 'load_module', fixture_load))
+        # the production ledger, candidate runner and scheduler remain unchanged.
+        real_read = scheduler.read_resources
+        stack.enter_context(patch.object(scheduler, 'read_resources',
+                                         lambda *a: {'cpu_rate': 1, 'peak_anon_bytes': 1024}))
         counter = 0
         def run(document=graph, fail='', serial=False, commands=None, capacity=None):
             nonlocal counter
@@ -124,10 +109,9 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             graph_path.write_text(json.dumps(document) if not isinstance(document, str) else document)
             log = io.StringIO()
             with patch.dict(os.environ, V216_FAIL=fail), contextlib.redirect_stdout(log):
-                receipt = scheduler.run(commands or catalog, candidate, out, out / 'legs', out / 'mutation',
+                receipt = scheduler.run(commands or catalog, candidate, out, out / 'mutation',
                     graph_path=graph_path, capacity=capacity or {'cpu': 32, 'memory': 1048576, 'manager': 16},
-                    measurement_store=top / 'store', meter_factory=Meter, guard_factory=guard, serial=serial,
-                    node_inputs_factory=lambda root,dest: scheduler.NodeInputs(root,dest,mutation))
+                    measurement_store=top / 'store', meter_factory=Meter, guard_factory=guard, serial=serial)
             return receipt, out, log.getvalue()
 
         passed, out, log = run()
@@ -159,17 +143,17 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
         row('graph-refusals', all(bad))
         # The graph can delay a node without imposing a barrier on independent nodes.
         dependent = copy.deepcopy(graph)
-        dependent['nodes']['docs']['depends_on'] = ['unit.confined']
+        dependent['nodes']['docs']['depends_on'] = ['unit']
         ordered, _, _ = run(dependent)
-        row('dependency-start', ordered['nodes']['docs']['start'] >= ordered['nodes']['unit.confined']['end']
-            and ordered['nodes']['integration.confined']['start'] < ordered['nodes']['unit.confined']['end'])
+        row('dependency-start', ordered['nodes']['docs']['start'] >= ordered['nodes']['unit']['end']
+            and ordered['nodes']['integration']['start'] < ordered['nodes']['unit']['end'])
         # Every source block appears exactly once in catalog order, even if finish order differs.
         row('ordered-logs', [line[3:] for line in log.splitlines() if line.startswith('== ')] == list(nodes)
             and all('CHANNEL=absent' in (out / (n + '.log')).read_text() for n in nodes if n != 'mutation'))
 
         def run_serial(fail=''):
-            # Today's no-graph runner: one unsplit run_stage per catalog item.
-            # No scheduler invocation, no split-leg argument, no prior-times override.
+            # The no-graph runner of verify.sh: one command per catalog item, each through the
+            # authority's candidate runner, the mutation stage through its coordinator.
             nonlocal counter
             counter += 1
             output = top / ('serial-' + str(counter))
@@ -179,21 +163,18 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
                 for stage, cmd in catalog.items():
                     if stage == 'mutation':
                         argv = [sys.executable, '-I', '-S', str(scripts/'check_gate_mutations.py'),
-                            '--root', str(candidate), '--receipt', str(output/'mutation'),
-                            '--legs-record', str(output/'legs')]
+                            '--root', str(candidate), '--receipt', str(output/'mutation')]
                     else:
-                        argv = [sys.executable, '-I', '-S', str(scripts/'gate_legs.py'),
-                            '--root', str(candidate), '--stage', stage,
-                            '--record', str(output/'legs'), '--', cmd]
-                    completed = subprocess.run(argv, cwd=candidate, capture_output=True,
-                        text=True, pass_fds=legs._launcher_fds())
+                        argv = [sys.executable, '-I', '-S', str(scripts/'gate_candidate.py'),
+                            '--root', str(candidate), '--', 'bash', '-c', cmd]
+                    completed = subprocess.run(argv, cwd=candidate, capture_output=True, text=True)
                     (output/(stage+'.log')).write_text(completed.stdout+completed.stderr)
                     stages[stage] = 'pass' if completed.returncode == 0 else 'FAIL'
             return dict(stages=stages, checks_run=len(stages)), output, ''
 
         pairs = []
         exact_fields = []
-        for failure in ('', 'confined', 'unconfined', 'mutation'):
+        for failure in ('', 'stage', 'mutation'):
             receipts = []
             for serial in (True, False):
                 r, output, _ = run_serial(failure) if serial else run(fail=failure)
@@ -202,10 +183,6 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
                     fields = reduction.fields(m, True)
                 except ValueError:
                     fields = {'force_fresh': True, 'reused': {'unit': 0, 'mutation': None}}
-                try:
-                    unconfined = legs.stamp(output / 'legs', ['unit', 'integration', 'mutation'])
-                except legs.Invalid:
-                    unconfined = None
                 # Exercise the actual shell stamp and event printf, without running verify.sh.
                 verify = (ROOT / 'scripts/verify.sh').read_text()
                 start = verify.index('VELDO_HOST_FIELD="$VELDO_HOST_FIELD$VELDO_GRAPH_FIELD"')
@@ -214,39 +191,36 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
                 env = dict(os.environ, VELDO_HOST_FIELD='', VELDO_GRAPH_FIELD='' if serial else ',"graph":'+json.dumps(r['graph']),
                            EVENT='gate.failed' if failure else 'gate.passed', COMMIT='a'*40, TS='fixture',
                            RAN=str(r['checks_run']), NA='15', STATUS='red' if failure else 'green', VERSION_JSON='null',
-                           TREE_JSON='"clean"', REUSE_JSON=json.dumps(fields)[1:-1],
-                           UNCONFINED_FIELD=',"unconfined":'+json.dumps(unconfined), V216_STAMP=str(output/'stamp'))
+                           TREE_JSON='"clean"', REUSE_JSON=json.dumps(fields)[1:-1], MUTATION_FIELD='',
+                           V216_STAMP=str(output/'stamp'))
                 emitted = subprocess.run(['bash', '-c', fragment], env=env, capture_output=True, text=True, check=True)
                 receipts.append(dict(stages=r['stages'], checks=r['checks_run'], mutation=m,
-                                     unconfined=unconfined, stamp=json.loads((output/'stamp').read_text()),
+                                     stamp=json.loads((output/'stamp').read_text()),
                                      event=json.loads(emitted.stdout)))
-                expected = dict(fields, checks_run=9, unconfined=unconfined)
+                expected = dict(fields, checks_run=9)
                 if not serial:
                     expected['graph'] = r['graph']
+                # The stamp and the event carry no unconfined field: every stage ran as one leg.
                 exact_fields.append(all(receipts[-1][kind].get(k) == v for kind in ('stamp','event')
-                                        for k,v in expected.items()) and receipts[-1]['stamp']['checks_na']==15)
+                                        for k,v in expected.items()) and receipts[-1]['stamp']['checks_na']==15
+                                    and all('unconfined' not in receipts[-1][kind] for kind in ('stamp', 'event')))
             # Graph identity is intentionally absent from the no-graph receipts.
             for kind in ('stamp', 'event'):
                 receipts[1][kind].pop('graph', None)
-            expected_failures = {'unit', 'integration'} if failure in ('confined', 'unconfined') else ({'mutation'} if failure else set())
-            pairs.append(receipts[0] == receipts[1] and receipts[1]['unconfined'] is not None
+            expected_failures = {'stage': set(catalog) - {'mutation'}, 'mutation': {'mutation'}}.get(failure, set())
+            pairs.append(receipts[0] == receipts[1]
                          and {s for s,v in receipts[1]['stages'].items() if v == 'FAIL'} == expected_failures)
         row('same-verdicts', all(pairs) and all(exact_fields))
 
-        # A real unconfined candidate writer is RED by its node name and whole-tree comparison.
-        write_command = 'if [ "$VELDO_GATE_LEG" = unconfined ]; then printf changed > input; else sleep .1; fi'
-        saved = listing.read_text()
-        d = copy.deepcopy(declaration)
-        d['stages']['unit'] = write_command
-        listing.write_text(json.dumps(d))
+        # A stage that writes the candidate tree is RED by the whole-tree comparison. It runs in the
+        # candidate root, so the write is real; the fixture puts the file back.
+        write_command = 'printf changed > input'
         modified = dict(catalog, unit=write_command)
         wrote, _, _ = run(commands=modified)
-        row('tree-unchanged', not wrote['inputs_unchanged'] and wrote['nodes']['unit.unconfined']['verdict'] == 'FAIL'
-            and 'candidate_tree_changed' in wrote['nodes']['unit.unconfined']['error']
-            and all(n['verdict']=='pass' for name,n in wrote['nodes'].items() if name!='unit.unconfined')
-            and (candidate/'input').read_text()=='original\n')
+        row('tree-unchanged', not wrote['inputs_unchanged'] and wrote['error'] == 'candidate_tree_changed'
+            and all(n['verdict']=='pass' for n in wrote['nodes'].values())
+            and (candidate/'input').read_text()=='changed')
         (candidate/'input').write_text('original\n')
-        listing.write_text(saved)
 
         # A failed mutation stage that leaves a worker claim held is named by its own error first,
         # then the leaked claim (batch 2026-10-29 inventory row 18).
@@ -254,9 +228,7 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
         controlled_mutation = mutation_script.read_text()
         mutation_script.write_text('''import argparse, importlib.util, json, os, socket
 from pathlib import Path
-p=argparse.ArgumentParser(); p.add_argument('--root'); p.add_argument('--receipt'); p.add_argument('--legs-record'); a=p.parse_args()
-s=importlib.util.spec_from_file_location('legs',Path(__file__).with_name('gate_legs.py')); m=importlib.util.module_from_spec(s); s.loader.exec_module(m)
-leg=m.mutation_leg(); m.write_record(a.legs_record,'mutation',leg['declaration'],leg['entries'])
+p=argparse.ArgumentParser(); p.add_argument('--root'); p.add_argument('--receipt'); a=p.parse_args()
 channel=socket.socket(fileno=int(os.environ['VELDO_GATE_LEDGER_FD']))
 channel.sendall((json.dumps(dict(operation='acquire',name='leaked',claim=dict(cpu=0,memory=0,manager='none',ports=[])))+'\\n').encode())
 r={'status':'failed','error':'driver_error','detail':'planted child error\\nsecond line','granted':json.loads(channel.recv(65536))['granted']}
@@ -330,7 +302,7 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
         timed_catalog = {'lint': 'sleep .4', 'docs': 'sleep .4', 'extra': 'sleep .4'}
         timed_graph = copy.deepcopy(graph)
         timed_graph['nodes'] = {n:nodes[n] for n in timed_catalog}
-        def direct(root, stage, leg, command, *args):
+        def direct(root, stage, command, *args):
             return ['bash','-c',command]
         with patch.object(scheduler,'command_for',direct):
             timing, _, _ = run(timed_graph, commands=timed_catalog)
@@ -341,10 +313,10 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
         # Measurement storage is authority-bound, expiring, and cannot call cgroup total memory anon.
         store = top / 'measurements'
         metrics = dict(cpu_seconds=4, peak_anon_bytes=4567, metrics_source='cgroup-v2-anon-sampled-50ms')
-        legs.record_resources(store,'digest','unit.confined',2,metrics)
-        measured = legs.read_resources(store,'digest','unit.confined')
-        row('measured-claims', measured['cpu_rate'] == 2 and measured['peak_anon_bytes'] == 4567
-            and legs.read_resources(store,'other','unit.confined') is None)
+        scheduler.record_resources(store,'digest','unit',2,metrics)
+        measured = real_read(store,'digest','unit') or {}
+        row('measured-claims', measured.get('cpu_rate') == 2 and measured.get('peak_anon_bytes') == 4567
+            and real_read(store,'other','unit') is None)
         # Capacity uses exact fractional ancestor quota, scope memory and manifest slots.
         cgroup = top/'cgroups'
         own = Path('/proc/self/cgroup').read_text().split('::',1)[1].strip()
@@ -367,7 +339,7 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
         row('anonymous-metrics', measured['cpu_seconds']==2.5 and measured['peak_anon_bytes']==1234
             and meter.sample()['peak_anon_bytes']==1234)
         # Unknown nodes remain conservative; recorded authority seeds permit a cold overlap.
-        with patch.object(scheduler,'load_module',loads), patch.object(scheduler,'command_for',direct):
+        with patch.object(scheduler,'read_resources',real_read), patch.object(scheduler,'command_for',direct):
             cold, _, _ = run(timed_graph,commands=timed_catalog)
         cold_nodes = list(cold['nodes'].values())
         row('cold-measurements', all(cold_nodes[i]['start'] >= cold_nodes[i-1]['end'] for i in range(1,len(cold_nodes))))
@@ -375,7 +347,7 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
         for node in seeded_graph['nodes'].values():
             node.update(host_lock='shared', estimate=dict(source='controlled recorded fixture',
                 wall_seconds=1, cpu_seconds=1, peak_cgroup_memory_bytes=1024))
-        with patch.object(scheduler,'load_module',loads), patch.object(scheduler,'command_for',direct):
+        with patch.object(scheduler,'read_resources',real_read), patch.object(scheduler,'command_for',direct):
             seeded, _, _ = run(seeded_graph,commands=timed_catalog,
                                capacity=dict(cpu=4,memory=4*2**30,manager=16))
         row('seeded-first-run', max(n['start'] for n in seeded['nodes'].values()) <
@@ -425,13 +397,12 @@ class Meter:
  def sample(self): return dict(cpu_seconds=.01,peak_anon_bytes=1024,metrics_source='fixture')
  def finish(self): return dict(self.sample(),live_descendants=False)
 m.Meter=Meter
+m.read_resources=lambda *a: dict(cpu_rate=1,peak_anon_bytes=1024)
 original=m.load_module
 mutation=load(Path(os.environ['V216_SOURCE_ROOT'])/'scripts/check_gate_mutations.py')
 def modules(name):
  if name=='check_gate_mutations': return mutation
- result=original(name)
- if name=='gate_legs': result.read_resources=lambda *a: dict(cpu_rate=1,peak_anon_bytes=1024)
- return result
+ return original(name)
 m.load_module=modules
 raise SystemExit(m.main())
 """
@@ -465,8 +436,8 @@ raise SystemExit(m.main())
                     "m.Meter=Meter\nm.capacities=lambda *a: dict(cpu=0,memory=1,manager=1)"
                     if graph_enabled=='capacity' else "m.Meter=Meter\nm.Meter=lambda *a: (_ for _ in ()).throw(OSError('meter refusal'))"))
             env = dict(os.environ, VELDO_AUTHORITY=str(authority), VELDO_OUT=str(shell_out),
-                       VELDO_LEGS_RECORD=str(shell_out/'legs'), VELDO_REUSE_RECEIPT=str(shell_out/'mutation'),
-                       VELDO_LEGS_EXPECTED='', V216_SOURCE_ROOT=str(ROOT), V216_FAIL='')
+                       VELDO_REUSE_RECEIPT=str(shell_out/'mutation'),
+                       V216_SOURCE_ROOT=str(ROOT), V216_FAIL='')
             refusing = graph_enabled in ('invalid','capacity','exception')
             emitted_fragment = fragment
             if refusing:
@@ -475,8 +446,7 @@ raise SystemExit(m.main())
                 # At a line start: VELDO-0267 (a963583f) added VELDO_GATE_BASE_COMMIT=$(git rev-parse earlier.
                 emitted_fragment += verify[verify.index('\nCOMMIT=$(git rev-parse') + 1:]
             env['VELDO_HOST_FIELD'] = ''
-            result = subprocess.run(['bash','-c',emitted_fragment],cwd=candidate,env=env,capture_output=True,text=True,
-                                    pass_fds=legs._launcher_fds())
+            result = subprocess.run(['bash','-c',emitted_fragment],cwd=candidate,env=env,capture_output=True,text=True)
             if refusing:
                 stamp = json.loads((shell_out/'last_verify').read_text())
                 events = [json.loads(line) for line in (shell_out/'events.jsonl').read_text().splitlines()]
@@ -498,33 +468,12 @@ raise SystemExit(m.main())
         row('graph-refusal-record', all(refusal_records))
         shutil.copyfile(scripts/'gate_schedule_impl.py',scripts/'gate_schedule.py')
 
-        # An unconfined node reads the gate's own records where a confined node does; they stay
-        # outside the compared closure (batch 2026-10-29 inventory row 16).
-        records = {'.veldo/events.jsonl': b'{"event":"fixture"}\n', '.veldo/last_verify': b'{"status":"green"}\n'}
-        for rel, body in records.items():
-            (candidate/rel).parent.mkdir(exist_ok=True)
-            (candidate/rel).write_bytes(body)
-        (candidate/'.veldo/gate-schedule.json').write_text('{"ignored":"this graph writes it"}')
-        (candidate/'.gitignore').write_text('.veldo/gate-schedule.json\n')
-        subprocess.run(['git', '-C', str(candidate), 'add', '.gitignore', *records], check=True)
-        subprocess.run(['git', '-C', str(candidate), '-c', 'user.name=Fixture',
-                        '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'records'], check=True)
-        node = scheduler.NodeInputs(candidate, top / 'records.inputs', mutation)
-        try:
-            carried = {rel: (node.root/rel).read_bytes() for rel in records if (node.root/rel).is_file()}
-            row('node-reads-gate-records', carried == records and node.unchanged()
-                and sorted(node.outputs) == sorted(records) and not (node.root/'.veldo/gate-schedule.json').exists()
-                and set(records).isdisjoint(node.files))
-        finally:
-            node.close()
-
         # Production graph and catalog are independently enumerated every run.
         verify = (ROOT/'scripts/verify.sh').read_text()
         actual = dict(__import__('re').findall(r'^CHECK_(\w+)="required:([^"]+)"',verify,__import__('re').M))
-        actual_declaration = json.loads((ROOT/'scripts/gate_unconfined.json').read_text())
-        actual_graph, _, _ = original.read_graph(actual,actual_declaration,ROOT/'scripts/gate_graph.json')
+        actual_graph, _, _ = original.read_graph(actual,ROOT/'scripts/gate_graph.json')
         row('authority-wiring', '.veldo/gate-schedule.json' in (ROOT/'.gitignore').read_text().splitlines()
-            and set(actual_graph['nodes']) == set(original.required_nodes(actual,actual_declaration))
+            and set(actual_graph['nodes']) == set(original.required_nodes(actual))
             and all('scripts/gate_schedule.py' in (ROOT/p).read_text() for p in
                     ('.veldo/reuse_evidence.py','engine/.veldo/reuse_evidence.py','.veldo/init_scaffold.py','engine/.veldo/init_scaffold.py'))
             and all('VELDO_GRAPH_FIELD' in (ROOT/p).read_text() for p in ('scripts/verify.sh','engine/scripts/verify.sh')))

@@ -1,6 +1,6 @@
 """VELDO-0220: the gate's own delegated scope and custody through teardown.
 
-This whole suite needs the systemd user manager and is listed unconfined.
+This whole suite needs the systemd user manager.
 Fixtures use scratch locks, real gate helpers and stub stages. Creation is checked
 outside and inside another scope; teardown is checked on kill, termination,
 normal completion and a red stage, including a worker in a separate session.
@@ -143,7 +143,7 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
         with open(log, 'w') as handle:
             process = subprocess.Popen([*prefix, 'bash', str(root / 'scripts/verify.sh')], cwd=str(root.parent),
                                        env=run_env, stdout=handle, stderr=subprocess.STDOUT,
-                                       stdin=subprocess.DEVNULL, pass_fds=launcher_fds())
+                                       stdin=subprocess.DEVNULL)
         process.log = log
         return process
 

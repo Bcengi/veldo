@@ -28,6 +28,10 @@ FIELDS = ('schema', 'workspace', 'domain_uuid', 'store_uuid', 'command',
 RENDERER_LOADERS = ('control_channel_presentation.py', 'control_channel_projection.py', 'control_intake.py',
                     'control_telegram_report.py')
 RENDERER_COMPANIONS = ('control_channel_presentation_text.py', 'control_channel_presentation_v1.py')
+# VELDO-0271: the one line of proof/VELDO-0271/removed.json a registered mutation leaves out of the table.
+TABLE271_ENTRY = ('  {"kind": "row", "name": "VELDO-0211 recovery/scratch-swept-once-recovered", '
+                  '"checked": "the stale scratch sweep removes a scratch once its borrow is recovered", '
+                  '"now": "confinement only"},\n')
 
 
 def cases():
@@ -11624,17 +11628,17 @@ def cases():
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-key-omits-sources', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        "'case': case, 'sources': sources,\n",
-        "'case': case, 'sources': {},\n",
+        "'case': case, 'sources': sources})[:32]\n",
+        "'case': case, 'sources': {}})[:32]\n",
         ['case-deadlines/key-binding'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-key-omits-definition', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        "'case': case, 'sources': sources,\n",
-        "'case': {}, 'sources': sources,\n",
+        "'case': case, 'sources': sources})[:32]\n",
+        "'case': {}, 'sources': sources})[:32]\n",
         ['case-deadlines/key-binding'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-no-prune', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        "            load(ROOT / 'scripts/gate_legs.py').prune_times(times, keep=target)\n",
+        "            load(ROOT / 'scripts/gate_schedule.py').prune_times(times, keep=target)\n",
         '            pass  # defect: never prune\n',
         ['case-deadlines/store-pruned'])
     result[-1]['dir'] = 'scripts'
@@ -11681,8 +11685,8 @@ def cases():
     result[-1]['dir'] = 'scripts'
 
     add(215, 'deadline215-candidate-authority-not-recorded', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        'log_dir=args.worker_log_dir, leg=leg, measure=True)\n',
-        'log_dir=args.worker_log_dir, leg=leg, measure=False)\n',
+        'log_dir=args.worker_log_dir, measure=True)\n',
+        'log_dir=args.worker_log_dir, measure=False)\n',
         ['case-deadlines/candidate-authority'])
     result[-1]['dir'] = 'scripts'
     add(215, 'deadline215-stage-drops-authority', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
@@ -11756,11 +11760,6 @@ def cases():
         "        required = {n: pair for n, pair in required.items() if n in nodes}\n"
         "        if set(nodes) != set(required):\n",
         ['concurrent-stages/graph-complete'])
-    result[-1]['dir'] = 'scripts'
-    add(216, 'concurrent216-lost-leg-record', suite216, 'gate_legs.py',
-        'os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)',
-        'os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)',
-        ['concurrent-stages/same-verdicts'])
     result[-1]['dir'] = 'scripts'
     add(216, 'concurrent216-count-not-sum', suite216, 'gate_schedule.py',
         "        return {r: sum(c[r] for c in self.held.values()) for r in self.capacity}\n",
@@ -12680,7 +12679,7 @@ def cases():
     add(272, 'scope272-gate-legs-added-back', scope272, 'policy.yaml',
         '  - {path: "engine/.veldo/policy_check.py", floor: high}\n',
         '  - {path: "engine/.veldo/policy_check.py", floor: high}\n'
-        '  - {path: "scripts/gate_legs.py", floor: high}\n',
+        '  - {path: "scripts/gate_schedule.py", floor: high}\n',
         ['policy/lists-match'])
     add(272, 'scope272-policy-check-unprotected', scope272, 'policy.yaml',
         '  - {path: ".veldo/policy_check.py", floor: high}\n', '', ['policy/lists-match'])
@@ -12881,10 +12880,8 @@ def cases():
         ['summary/file', 'summary/registry-identical'])
 
     # VELDO-0274: the VELDO-0127 factory owns its slice (suite 129 loads the factory by the path the worker replaces).
-    # Suite 129 is listed whole in scripts/gate_unconfined.json, so these cases run in the unconfined leg
-    # (check_gate_mutations.in_leg), where the user manager their rows need answers. Only the coordinator's own
-    # CLI passes that leg: run them with `check_gate_mutations.py --finding 274`; this driver's main runs every
-    # case confined, where the slice rows stand down. An unconfined case is never declared or reuse-keyed.
+    # These cases need the systemd user manager their suite's rows use. A case runs the same way from this
+    # driver's main and from the gate's coordinator (VELDO-0271).
     slices274 = '129_veldo_0274_factory_slices.py'
     # AC1: the context manager's exit skips the stop. sweep-dead goes red too: its 'enter' child leaves the factory,
     # whose exit then raises SliceLeft, so that child exits nonzero.
@@ -12966,6 +12963,83 @@ def cases():
     result[-1]['dir'] = 'packs/claude/hooks'
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
+    # VELDO-0271: the gate runs every stage as one leg, with no namespace sandbox and no root helper. Suite 141
+    # runs fixture gates from the copies the driver hands it; the lease, the scheduler's resource record, the
+    # canary declaration and factory setup are judged by the suites that already drive them.
+    def oneleg271(name, module, old, new, rows, suite='141_veldo_0271_gate_without_sandbox.py', dir='scripts'):
+        add(271, name, suite, module, old, new, rows)
+        if dir is not None:
+            result[-1]['dir'] = dir
+
+    # The suites the deleted leg list named whole (scripts/gate_unconfined.json at 24c9f5b4, less the removed
+    # suite 128): the dispatcher that skipped them in one leg is the defect AC1's count row must catch.
+    once_listed = (
+        '62_veldo_0039_dispatch', '63_veldo_0040_containment', '63_veldo_0049_floor',
+        '64_veldo_0050_proof', '66_veldo_0042_clones', '66_veldo_0047_authority',
+        '67_veldo_0041_heartbeat', '67_veldo_0135_offers', '71_veldo_0076_projects',
+        '71_veldo_0130_api', '71_veldo_0138_channel_service', '73_veldo_0139_factory_setup',
+        '78_veldo_0060_claude_adapter', '79_veldo_0061_codex_adapter', '80_veldo_0155_claude_baseline',
+        '81_veldo_0156_codex_baseline', '82_veldo_0129_worker_wiring', '82_veldo_0141_execution_record',
+        '83_veldo_0154_factory_loop', '85_veldo_0158_credential_delivery', '85_veldo_0171_setup_api',
+        '86_veldo_0127_agent_configuration', '86_veldo_0148_re_land', '86_veldo_0189_engine_upgrade',
+        '87_veldo_0170_receiver_trust', '91_veldo_0167_setup_records', '92_veldo_0088_pm_cycles',
+        '93_veldo_0152_intake_routes', '94_veldo_0162_configuration_routes', '95_veldo_0203_owner_revisions',
+        '96_veldo_0204_reservation_policies', '106_veldo_0185_dispatch_setup', '117_veldo_0227_ui_location',
+        '127_veldo_0234_https_port', '129_veldo_0274_factory_slices', '110_veldo_0143_new_project',
+        '116_veldo_0188_project_lines', '65_veldo_0067_edges', '114_veldo_0220_gate_scope',
+        '118_veldo_0159_mcp_credential_form', '119_veldo_0163_role_team_form', '120_veldo_0131_factory_ui',
+        '121_veldo_0131_factory_screens_narrow', '122_veldo_0131_factory_screens_wide', '124_veldo_0131_factory_reads_commands',
+        '129_veldo_0254_canary_launch')
+    # AC1 (declared falsifiers).
+    oneleg271('oneleg271-dispatcher-skips-once-listed-suites', 'selftest.py',
+              'SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)\n',
+              'RUN = [s for s in RUN if s["name"] not in %r]  # defect: the suites of the deleted leg list are skipped\n'
+              'SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)\n' % (once_listed,),
+              ['one-leg/unit-stage-reports-every-suite'])
+    oneleg271('oneleg271-resource-record-never-written', 'gate_schedule.py',
+              "    Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)\n    target = _resources_file(times, digest, node)\n",
+              "    return  # defect: the node's measured resources are never written\n"
+              "    Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)\n    target = _resources_file(times, digest, node)\n",
+              ['concurrent-stages/measured-claims'], suite='114_veldo_0216_concurrent_stages.py')
+    oneleg271('oneleg271-caller-stdin-passed-through', 'gate_candidate.py',
+              'stdin=subprocess.DEVNULL, close_fds=True)',
+              'stdin=None, close_fds=True)  # defect: the candidate reads the caller\'s standard input',
+              ['one-leg/stdin-is-end-of-file'])
+    # AC2 (declared falsifiers).
+    oneleg271('oneleg271-environment-copied-unfiltered', 'gate_candidate.py',
+              '    environment = candidate_environment(dict(os.environ), authority)\n',
+              '    environment = dict(os.environ)  # defect: every variable of the caller reaches the candidate\n',
+              ['kept/no-credential-variable'])
+    oneleg271('oneleg271-scheduler-resolved-from-candidate', 'verify.sh',
+              '  if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \\\n',
+              '  if ! python3 -I -S "$(pwd -P)/scripts/gate_schedule.py" --root "$(pwd -P)" \\\n',
+              ['kept/authority-scripts-judge'])
+    # AC3 (declared falsifiers).
+    oneleg271('oneleg271-stored-result-returned-again', 'check_gate_mutations.py',
+              '        reuse_off(reuse, cases)\n',
+              '        pass  # defect: reuse is back on, so a stored result is looked up and returned\n',
+              ['mutation/every-run-fresh'])
+    oneleg271('oneleg271-canary-set-cut-to-five', 'mutation_selection.json',
+              '    "check_review_mutations.py:17",\n', '', ['canary/declaration-valid'],
+              suite='140_veldo_0267_mutation_selection.py')
+    # AC4 (declared falsifiers).
+    oneleg271('oneleg271-factory-setup-calls-sudo', 'control_factory_setup.py',
+              "    if leftover:\n        print(leftover, file=sys.stderr, flush=True)\n",
+              "    if leftover:\n        subprocess.run(['sudo', 'rm', LEFTOVER_PATHS[0]])  # defect: setup removes the helper itself\n"
+              "        print(leftover, file=sys.stderr, flush=True)\n",
+              ['setup/never-calls-sudo'], suite='73_veldo_0139_factory_setup.py', dir=None)
+    oneleg271('oneleg271-leftover-report-refuses', 'verify.sh',
+              'veldo_leftover_report\necho ""\n',
+              'veldo_leftover_report\nif [ -n "$_veldo_left" ]; then FAIL=1; fi  # defect: the report is a refusal\necho ""\n',
+              ['removed/leftover-reported'])
+    oneleg271('oneleg271-removed-row-left-out-of-table', 'removed.json',
+              TABLE271_ENTRY, '', ['removed/table-lists-every-removed-row'], dir='proof/VELDO-0271')
+    oneleg271('oneleg271-lease-never-taken', 'agent_sandbox.py',
+              '    path = login / LEASE_NAME\n',
+              '    return None  # defect: the lease is never taken\n    path = login / LEASE_NAME\n',
+              ['refused-before-launch/live/claude/busy', 'refused-before-launch/live/codex/busy'],
+              suite='103_veldo_0211_borrowed_login.py')
+
     return result
 
 
@@ -13099,11 +13173,11 @@ def _coordinator():
 
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
-              jobs=None, diff_dir=None, leg=None):
+              jobs=None, diff_dir=None):
     """Use the gate's process ownership, per-child accounting and launch deadlines."""
     return _coordinator().run_stage(root, expected_common, capacities=capacities, findings=findings, names=names,
                                    log_dir=log_dir, drivers=['check_teeth_mutations.py'],
-                                   parallel=jobs, diff_dir=diff_dir, leg=leg)
+                                   parallel=jobs, diff_dir=diff_dir)
 
 
 def main():
@@ -13125,23 +13199,12 @@ def main():
         print(json.dumps(worker(case, args.mutant)))
         return 0
     coordinator = _coordinator()
-    # The unconfined leg, as the gate's own entry reads it (check_gate_mutations.main): the authority's
-    # scripts/gate_unconfined.json beside this file, never a caller's variable. Without it a case of a
-    # listed suite (66_veldo_0047, 83_veldo_0154, ...) ran confined here, away from the user manager and
-    # the owner's installation its suite needs, and every control redded: never the gate's conditions.
-    legs = coordinator.load(ROOT / 'scripts/gate_legs.py')
-    try:
-        leg = legs.mutation_leg()
-    except legs.Invalid as error:
-        print('   mutation: the unconfined list %s is invalid (%s); nothing ran, in either leg'
-              % (legs.DECLARATION, error), flush=True)
-        return 1
     # This checkout owns itself, so it names its own Git common directory.
     receipt = run_stage(ROOT, coordinator.common_directory(ROOT),
                         capacities=coordinator.resource_capacities(args.resource_capacity),
                         findings=[args.finding] if args.finding is not None else None,
                         names=args.names, log_dir=args.worker_log_dir, jobs=max(1, args.jobs),
-                        diff_dir=args.diff_dir, leg=leg)
+                        diff_dir=args.diff_dir)
     if args.summary:
         coordinator.write_summary(args.summary, receipt, ROOT)
     print(json.dumps(receipt, sort_keys=True), flush=True)

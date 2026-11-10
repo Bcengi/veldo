@@ -30,7 +30,7 @@ A PARKED SET IS NOT PART OF THE UNIT SUITE (VELDO-0278). The estimation layer's 
 gate until a spend source exists and live in scripts/parked/estimation/ with their own manifest.
 `--parked estimation` runs them in order in the same shared namespace, under a selector scope, so
 it cannot print the aggregate line, write the verify stamp or exit 0, exactly like --suite. It
-takes no other selector, and a gate leg never runs it.
+takes no other selector.
 
 A FLAG TAKES ITS VALUE AS THE NEXT WORD, AND AN UNRECOGNISED FLAG IS A REFUSAL. `--suite=NAME`
 is not `--suite`, and until this was corrected it was recognised by nothing, so the equals form
@@ -61,8 +61,8 @@ import sys
 
 # NO FILE IN scripts/ OR scripts/suites/ CAN SHADOW THE STANDARD LIBRARY HERE (VELDO-0208). The
 # gate runs this file as `python3 scripts/selftest.py`, which puts scripts/ first on sys.path, so an
-# unprotected scripts/json.py would run inside this protected dispatcher before it reads its leg,
-# and a suites/tempfile.py inside shared.py. os and sys are loaded before any script runs, so they
+# unprotected scripts/json.py would run inside this dispatcher before it reads its manifest, and a
+# suites/tempfile.py inside shared.py. os and sys are loaded before any script runs, so they
 # are the interpreter's; the script directory is dropped before the next import, and the two
 # repository directories go back AFTER the standard library, never ahead of it.
 _SCRIPTS = os.path.dirname(os.path.realpath(__file__))
@@ -91,8 +91,8 @@ _after_stdlib(str(HERE), str(SUITES))
 
 # NOR CAN ANY FILE STAND IN FOR A PROTECTED MODULE THIS DISPATCHER IMPORTS (VELDO-0208). Behind the
 # standard library, scripts/ and scripts/suites/ still race each other for a name: an unprotected
-# scripts/shared.py came ahead of the protected suites/shared.py and was the namespace both legs ran
-# in. So the two protected modules are loaded from their fixed paths and registered under the names
+# scripts/shared.py came ahead of the protected suites/shared.py and was the namespace every suite
+# ran in. So the two protected modules are loaded from their fixed paths and registered under the names
 # the suites and shared.py import them by, and a later `import run_scope` finds the protected one.
 def _protected(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -174,9 +174,6 @@ def _parked_run(name):
     selector, so the aggregate line and the verify stamp refuse, and the exit is 2 or 1."""
     if len(SEEN) != 1 or len(VALUES["--parked"]) != 1:
         print("selftest: AMBIGUOUS_SELECTOR: --parked takes one set and no other selector")
-        sys.exit(2)
-    if os.environ.get(RS.GATE_LEG) or os.environ.get(RS.GATE_UNCONFINED):
-        print("selftest: PARKED_IN_GATE_LEG: a parked set is never part of a gate leg")
         sys.exit(2)
     available = sorted(p.name for p in PARKED.iterdir() if (p / "manifest.json").is_file()) \
         if PARKED.is_dir() else []
@@ -263,36 +260,6 @@ elif SUITE_VALUES:
     RUN = [s for s in RUN if s["name"] in WANTED]
     SELECTOR = "--suite %s" % " ".join(ASKED)
 
-# THE GATE'S LEG (VELDO-0208, owner decision 2026-10-07), set only by the authority's
-# scripts/gate_legs.py: the confined leg runs every suite but the ones the authority listed whole,
-# the unconfined leg only the listed ones. A suite listed for some rows runs in both, and its rows
-# ask run_scope.leg_runs which leg owns them. Both legs say so first, with the list, so a leg is
-# never mistaken for the whole suite. Leg variables that are not the complete set gate_legs.py sets
-# are refused, and a leg that runs no suite or no row is refused after it, never a pass.
-try:
-    LEG, LISTED = RS.gate_leg(os.environ)
-except RS.LegRefused as e:
-    print("selftest: %s" % e)
-    sys.exit(2)
-if LEG:
-    _whole = [n for n, rows in LISTED.items() if rows is None]
-    _rows = ["%s:%s" % (n, rows) for n, rows in LISTED.items() if rows is not None]
-    _absent = sorted(n for n in LISTED if n not in ORDER)
-    if LEG == "confined":
-        RUN = [s for s in RUN if s["name"] not in _whole]
-        _what = "skips the %d suite(s) and runs all but the rows the unconfined leg owns" % len(_whole)
-    else:
-        RUN = [s for s in RUN if s["name"] in LISTED]
-        _what = "runs only the %d listed suite(s) present, and of a row-scoped one only its rows" % len(RUN)
-    print("selftest leg %s: %s. Whole: %s. Rows: %s.%s Declaration: %s."
-          % (LEG, _what, ", ".join(_whole) or "none", ", ".join(_rows) or "none",
-             " Not in this manifest: %s." % ", ".join(_absent) if _absent else "",
-             os.environ[RS.GATE_DECLARATION]), flush=True)
-    if not RUN:
-        print("selftest leg %s: LEG_RAN_NOTHING: no suite of this manifest is in the %s leg; "
-              "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, LEG))
-        sys.exit(2)
-
 SCOPE = RS.RunScope(SELECTOR, [s["name"] for s in RUN], ORDER)
 if SCOPE.partial:
     print(SCOPE.banner(), flush=True)
@@ -306,7 +273,6 @@ shared.SCOPE = SCOPE
 
 T0 = time.monotonic()
 PER_SUITE = []
-_LEG_FLOOR = shared.PASS + shared.FAIL
 for _s in RUN:
     _p = SUITES / _s["file"]
     # A fragment's own path, bound before it runs. Its `__file__` is shared.py's, because that
@@ -315,11 +281,6 @@ for _s in RUN:
     _before, _t = shared.PASS, time.monotonic()
     exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
     PER_SUITE.append((_s["name"], shared.PASS - _before, time.monotonic() - _t))
-
-if LEG and shared.PASS + shared.FAIL == _LEG_FLOOR:
-    print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "
-          "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, len(RUN)))
-    sys.exit(2)
 
 if SCOPE.partial:
     # Per-suite counts and times, so a reader sees WHERE the run went and what the SELECTED

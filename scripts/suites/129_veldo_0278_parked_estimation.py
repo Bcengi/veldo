@@ -53,7 +53,7 @@ def _v278_checks():
     parked_manifest = json.loads((parked / 'manifest.json').read_text())
     parked_names = [s['name'] for s in parked_manifest['suites']]
     EIGHT = [n for n in parked_names if any(n.startswith(p + '_') for p in PREFIXES)]
-    PARKED_TOO = EIGHT + ['111_veldo_0214_first_use_budget']
+    PARKED_TOO = list(EIGHT)
     row('parked/spec-names-eight-fragments-and-nine-modules',
         len(PREFIXES) == len(set(PREFIXES)) == 8 and len(MODULES) == len(set(MODULES)) == 9
         and all(re.fullmatch(r'1[56]_warp_14\d\d', p) for p in PREFIXES)
@@ -137,21 +137,19 @@ def _v278_checks():
     # ---- AC3: the integration stage is na, its graph node is gone, and its script is parked --------
     verify = (ROOT / 'scripts' / 'verify.sh').read_text()
     catalog = dict(re.findall(r'^CHECK_(\w+)="required:([^"]+)"', verify, re.M))
-    declaration = json.loads((ROOT / 'scripts' / 'gate_unconfined.json').read_text())
     schedule = load('v278_schedule', ROOT / 'scripts' / 'gate_schedule.py')
     try:
-        graph = schedule.read_graph(catalog, declaration, ROOT / "scripts" / "gate_graph.json")[0]
+        graph = schedule.read_graph(catalog, ROOT / "scripts" / "gate_graph.json")[0]
         nodes, refused = set(graph['nodes']), None
     except schedule.Refused as error:
         nodes, refused = set(), str(error)
     row('integration/graph-nodes-are-required-catalog-items',
-        refused is None and nodes == set(schedule.required_nodes(catalog, declaration))
+        refused is None and nodes == set(schedule.required_nodes(catalog))
         and not [n for n in nodes if n.split('.')[0] == 'integration'],
         repr((refused, sorted(nodes))))
     policy = (ROOT / '.veldo' / 'policy.yaml').read_text()
     row('integration/stage-is-na-and-parked',
         'CHECK_integration="na:%s"' % REASON in verify and 'integration' not in catalog
-        and 'integration' not in declaration['stages']
         and not (ROOT / 'scripts' / 'check_first_use.py').exists() and (parked / 'check_first_use.py').is_file()
         and '  - {path: "scripts/parked/estimation/check_first_use.py", floor: high}' in policy.splitlines()
         and '"scripts/check_first_use.py"' not in policy)
@@ -181,7 +179,7 @@ def _v278_checks():
         with open(log, 'w') as handle:
             code = subprocess.run(['bash', str(root / 'scripts' / 'verify.sh')], cwd=str(root), env=env,
                                   stdout=handle, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                                  timeout=600, pass_fds=launcher_fds()).returncode
+                                  timeout=600).returncode
         gate = log.read_text()
         stamp_path = root / '.veldo' / 'last_verify'
         stamp = json.loads(stamp_path.read_text()) if stamp_path.is_file() else None

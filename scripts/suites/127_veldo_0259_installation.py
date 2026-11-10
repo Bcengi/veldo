@@ -599,9 +599,7 @@ def _v259_installation_suite():
             match = re.search(r'^CHECK_%s="required:([^"]*)"' % name, verify, re.M)
             if match:
                 catalog[name] = match.group(1)
-        listing = ROOT / 'scripts' / 'gate_unconfined.json'
-        legs = SCHED.load_module('gate_legs').load(listing)[0] if listing.exists() else None
-        _, error = attempt(lambda: SCHED.read_graph(catalog, legs, ROOT / 'scripts' / 'gate_graph.json'))
+        _, error = attempt(lambda: SCHED.read_graph(catalog, ROOT / 'scripts' / 'gate_graph.json'))
         check('ac2/stage-declared', 'the scheduler accepts the graph for the declared catalog [%s]' % error,
               error is None and 'personal_setup' in catalog)
 

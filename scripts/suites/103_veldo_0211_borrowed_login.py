@@ -1,10 +1,13 @@
-"""VELDO-0211: offline token rotation through both borrowed-login integrations."""
+"""VELDO-0211: offline token rotation through the borrowed-login lease, driven through live.py.
+
+scripts/agent_sandbox.py is the lease only since VELDO-0271; the rows that started its launcher are gone."""
 
 
 def _v211_borrowed_login():
     from contextlib import ExitStack, contextmanager, redirect_stderr
     import fcntl
     import io
+    import shutil
     import importlib.util
     import json
     import os
@@ -20,6 +23,13 @@ def _v211_borrowed_login():
     spec = importlib.util.spec_from_file_location('v211_live', ROOT / 'proof/VELDO-0127/live.py')
     L = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(L)
+    # The lease module, loaded from the path live.py loads it from. The mutation driver replaces
+    # this anchor with its mutant, so the module live.py borrows through is the one under test.
+    LEASE = ROOT / "scripts" / "agent_sandbox.py"
+    expect('VELDO-0211 canonical/live-loads-the-lease-path',
+           "ROOT / 'scripts/agent_sandbox.py'" in (ROOT / 'proof/VELDO-0127/live.py').read_text()
+           and L.ROOT == ROOT)
+    L.LOGIN = L.load('live_borrowed_login', LEASE)
     S = L.login()
     expect('VELDO-0211 canonical/sandbox-copies-match',
            (ROOT / 'engine/scripts/agent_sandbox.py').read_bytes() == (ROOT / 'scripts/agent_sandbox.py').read_bytes())
@@ -115,31 +125,6 @@ sys.exit(int(sys.argv[4]))
                 os.kill(os.getpid(), signal.SIGTERM)
             return result.returncode
 
-        def sandbox(engine, mode, base):
-            # Keep real prepared_launch and credential lifecycle; replace only host policy/grants
-            # and the process-tree boundary with a foreground fake engine. Suite 102 runs real trees.
-            source = source_for(engine)
-            relative = '.' + engine + '/' + source.name
-            config = {'store': str(top / 'store'), 'seed_files': {}, 'clients': {engine: {
-                'credentials': {str(source): relative}}}}
-            policy = SimpleNamespace(__file__=str(top / 'policy.py'),
-                                     configuration=lambda path: (Path(path), config), private=lambda *a, **k: None)
-
-            def tree(worktree, command, env, *args, after=None, **kwargs):
-                try:
-                    return engine_run(engine, Path(env['CLAUDE_CONFIG_DIR' if engine == 'claude' else 'CODEX_HOME'])
-                                      / source.name, mode)
-                finally:
-                    if after:
-                        after()
-
-            with ExitStack() as stack:
-                for name, replacement in [('policy_module', lambda: policy), ('project_roots', lambda c: []),
-                                          ('grants_for', lambda *a: ([], [])), ('resolver_grants', lambda: []),
-                                          ('toolchain_environment', lambda *a: None), ('run_tree', tree)]:
-                    stack.enter_context(patch.object(S, name, replacement))
-                return S.prepared_launch(top / 'config.json', worktree, ['fake'], 'agent', base, engine)
-
         def live(engine, mode, base):
             args = {'claude_profile': str(account), 'codex_profile': str(account)}
             with L.borrowed_profiles(base, args, [engine]):
@@ -155,7 +140,7 @@ sys.exit(int(sys.argv[4]))
                    token(source, 'claude') == 'fixture-old'
                    and token(copied, 'claude') == 'fixture-old-rotated' and not copied.is_symlink())
 
-        for caller, invoke in [('live', live), ('sandbox', sandbox)]:
+        for caller, invoke in [('live', live)]:
             for engine in ('claude', 'codex'):
                 for mode in ('success', 'nonzero', 'exception', 'signal'):
                     source = reset(engine)
@@ -163,7 +148,7 @@ sys.exit(int(sys.argv[4]))
                         base = Path(tmp)
                         error, result = None, None
                         try:
-                            # Sandbox's outer launch normally installs Stop; mirror it for this seam.
+                            # A borrower installs Stop around its borrow, as live.py's main does.
                             with S.Stop():
                                 result = invoke(engine, mode, base)
                         except (RuntimeError, S.Interrupted) as caught:
@@ -289,7 +274,7 @@ sys.exit(int(sys.argv[4]))
                 expect('VELDO-0211 locking/canonical-alias-refused', rejected)
 
         # A real permission denial, without mocks, must prevent the first engine execution.
-        for caller, invoke in [('live', live), ('sandbox', sandbox)]:
+        for caller, invoke in [('live', live)]:
             source = reset('claude')
             account.chmod(0o500)
             try:
@@ -305,7 +290,7 @@ sys.exit(int(sys.argv[4]))
                 account.chmod(0o700)
 
         # A login without a lease file has never been leased by a runner: refused, nothing created.
-        for caller, invoke in [('live', live), ('sandbox', sandbox)]:
+        for caller, invoke in [('live', live)]:
             source = reset('claude')
             lease.unlink()
             try:
@@ -320,8 +305,8 @@ sys.exit(int(sys.argv[4]))
             finally:
                 lease.touch(mode=0o600)
 
-        # The runner's own lease, inherited by the launcher: checked, never taken twice, never released.
-        for caller, invoke in [('live', live), ('sandbox', sandbox)]:
+        # The runner's own lease, inherited by the borrower: checked, never taken twice, never released.
+        for caller, invoke in [('live', live)]:
             source = reset('claude')
             with open(lease) as runner, tempfile.TemporaryDirectory(dir=top) as tmp:
                 fcntl.flock(runner, fcntl.LOCK_EX)
@@ -354,7 +339,7 @@ sys.exit(int(sys.argv[4]))
             return real_replace(target, data, expected)
 
         with tempfile.TemporaryDirectory(dir=top) as tmp, patch.object(S, 'replace_atomically', recording):
-            sandbox('claude', 'success', Path(tmp))
+            live('claude', 'success', Path(tmp))
         expect('VELDO-0211 write-back/stop-signals-blocked: %s' % masks,
                masks == [True] and signal.SIGTERM not in signal.pthread_sigmask(signal.SIG_BLOCK, [])
                and token(source, 'claude') == 'fixture-old-rotated')
@@ -401,7 +386,7 @@ sys.exit(int(sys.argv[4]))
         # The restore command, under the lease: refused while another run holds the login or once the
         # source changed, then restores the kept rotation and removes the recovery.
         if recovery is not None:
-            launcher = [sys.executable, '-I', '-S', str(ROOT / 'scripts/agent_sandbox.py'), 'restore-login']
+            launcher = [sys.executable, '-I', '-S', str(LEASE), 'restore-login']
             env = dict(os.environ)
             listed = subprocess.run(launcher, capture_output=True, text=True, env=env, timeout=30)
             with held_by_another_run():
@@ -423,70 +408,38 @@ sys.exit(int(sys.argv[4]))
             expect('VELDO-0211 restore/refused-while-busy-or-changed', False)
             expect('VELDO-0211 restore/kept-rotation-restored', False)
 
+        # The recovery store itself failing: the borrower's scratch, the only copy, is kept and so is its
+        # journal; the next start turns it into a recovery.
         source = reset('claude')
-        real_prepared = S.prepared_launch
-        real_mkdtemp = tempfile.mkdtemp
-        held_scratch = []
         parent = top / 'tmp-parent'
         parent.mkdir()
 
-        def mkdtemp(*args, **kwargs):
-            kwargs['dir'] = parent
-            result = real_mkdtemp(*args, **kwargs)
-            held_scratch.append(Path(result))
-            return result
+        def store_failure(*a, **k):
+            raise OSError('fixture store failure')
 
-        def prepared(config_path, tree, command, profile, scratch, client, stop):
-            with patch.object(S, 'prepared_launch', real_prepared):
-                return sandbox('claude', 'nonzero', scratch)
-
-        def launch_failing(extra=()):
-            held_scratch.clear()
-            with ExitStack() as stack:
-                for name, value in [('prepared_launch', prepared), ('replace_atomically', late_failure), *extra]:
-                    stack.enter_context(patch.object(S, name, value))
-                stack.enter_context(patch.object(tempfile, 'mkdtemp', mkdtemp))
-                stack.enter_context(patch.object(tempfile, 'gettempdir', lambda: str(parent)))
+        with tempfile.TemporaryDirectory(dir=top) as tmp:
+            base = Path(tmp)
+            error = None
+            with patch.object(S, 'replace_atomically', late_failure), patch.object(S, 'keep_recovery', store_failure):
                 try:
-                    S.launch(top / 'config.json', worktree, ['fake'], client='claude')
+                    live('claude', 'success', base)
                 except S.CredentialRecovery as caught:
-                    return caught
-            return None
+                    error = caught
+            report = io.StringIO()
+            with redirect_stderr(report):
+                S.recover_orphans()
+            recovered = borrows / base.name
+            expect('VELDO-0211 recovery/scratch-kept-when-store-fails: %s' % report.getvalue()[-200:],
+                   error is not None and error.retained and error.location == base
+                   and token(base / 'claude-login/.credentials.json', 'claude') == 'fixture-old-rotated'
+                   and (recovered / 'recovery.json').is_file() and kept(recovered)
+                   and 'CREDENTIAL RECOVERY REQUIRED' in report.getvalue()
+                   and token(source, 'claude') == 'fixture-old' and lease_free())
+            if recovered.exists():
+                shutil.rmtree(recovered)
 
-        error = launch_failing()
-        expect('VELDO-0211 recovery/sandbox-retains-private-rotated-token',
-               error is not None and not error.retained and kept(error.location)
-               and not held_scratch[0].exists() and token(source, 'claude') == 'fixture-old')
-        expect('VELDO-0211 recovery/sandbox-keeps-run-exit-status', error is not None and error.code == 7)
-        if error is not None and error.location.exists():
-            S.remove_tree(error.location)
-
-        # The recovery store itself failing: the scratch, the only copy, is kept, and so is its
-        # journal; the stale sweep leaves it until the next start turns it into a recovery.
-        source = reset('claude')
-        error = launch_failing([('keep_recovery', lambda *a, **k: (_ for _ in ()).throw(OSError('fixture store failure')))])
-        scratch = held_scratch[0] if held_scratch else top / 'missing'
-        old = __import__('time').time() - 2 * 24 * 60 * 60
-        if scratch.exists():
-            os.utime(scratch, (old, old))
-        S.remove_stale_scratch(parent)
-        swept_early = not scratch.exists()
-        report = io.StringIO()
-        with redirect_stderr(report):
-            S.recover_orphans()
-        recovered = borrows / scratch.name
-        expect('VELDO-0211 recovery/scratch-kept-when-store-fails: %s' % report.getvalue()[-200:],
-               error is not None and error.retained and error.location == scratch and not swept_early
-               and token(scratch / '.claude/.credentials.json', 'claude') == 'fixture-old-rotated'
-               and (recovered / 'recovery.json').is_file() and kept(recovered)
-               and 'CREDENTIAL RECOVERY REQUIRED' in report.getvalue())
-        S.remove_stale_scratch(parent)
-        expect('VELDO-0211 recovery/scratch-swept-once-recovered', not scratch.exists())
-        if recovered.exists():
-            S.remove_tree(recovered)
-
-        # A run killed outright (SIGKILL, no write-back): the next start's sweep keeps a rotated copy
-        # as a recovery and reports it, drops an unchanged one, and only then may remove the scratch.
+        # A run killed outright (SIGKILL, no write-back): the next start keeps a rotated copy as a
+        # recovery and reports it, and drops the journal of an unchanged one.
         killed = '''import importlib.util, json, os, signal, sys
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('s', sys.argv[1]); S = importlib.util.module_from_spec(spec)
@@ -503,25 +456,25 @@ with S.borrowed_credentials(scratch, [(source, '.claude/.credentials.json')], Pa
             source = reset('claude')
             scratch = parent / ('veldo-agent-killed-' + mode)
             scratch.mkdir(mode=0o700)
-            subprocess.run([sys.executable, '-I', '-S', '-c', killed, str(ROOT / 'scripts/agent_sandbox.py'),
+            subprocess.run([sys.executable, '-I', '-S', '-c', killed, str(LEASE),
                             str(scratch), str(source), str(top / 'store'), mode], timeout=30)
-            pending = S.pending_borrow(scratch.name)
+            # The killed run's journal, read where it lies: written, and not yet settled or recovered.
+            journal = borrows / scratch.name
+            pending = (journal / 'borrow.json').is_file() and not (journal / 'recovery.json').exists()
             report = io.StringIO()
             with redirect_stderr(report):
                 S.recover_orphans()
-            os.utime(scratch, (old, old))
-            S.remove_stale_scratch(parent)
             recovered = borrows / scratch.name
             if mode == 'rotate':
                 expect('VELDO-0211 sweep/killed-run-rotation-kept-and-reported: %s' % report.getvalue()[-200:],
                        pending and kept(recovered) and 'CREDENTIAL RECOVERY REQUIRED' in report.getvalue()
-                       and 'restore-login' in report.getvalue() and not scratch.exists()
+                       and 'restore-login' in report.getvalue()
                        and token(source, 'claude') == 'fixture-old' and lease_free())
                 if recovered.exists():
-                    S.remove_tree(recovered)
+                    shutil.rmtree(recovered)
             else:
                 expect('VELDO-0211 sweep/killed-run-unchanged-dropped',
-                       pending and not recovered.exists() and report.getvalue() == '' and not scratch.exists())
+                       pending and not recovered.exists() and report.getvalue() == '')
 
         # live.py killed outright: its guard stops the slice while still holding the lease, then
         # writes the rotation back, then releases the lease.
@@ -593,7 +546,7 @@ with L.borrowed_profiles(base, args, ['claude']) as borrowed:
         # Executed falsifier: remove the production write-back call and require the same rotation
         # observation to detect the stale original. This is deliberately an in-process mutation,
         # never either repository mutation runner.
-        for caller, invoke in [('live', live), ('sandbox', sandbox)]:
+        for caller, invoke in [('live', live)]:
             source = reset('claude')
             with tempfile.TemporaryDirectory(dir=top) as tmp, patch.object(S, 'write_back', lambda *a, **k: None):
                 invoke('claude', 'success', Path(tmp))
@@ -602,5 +555,4 @@ with L.borrowed_profiles(base, args, ['claude']) as borrowed:
                        marker.exists() and not rotation_passed)
 
 
-if leg_runs():
-    _v211_borrowed_login()
+_v211_borrowed_login()

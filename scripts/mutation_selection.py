@@ -103,9 +103,9 @@ def state_directory(rule):
     return Path(os.path.expanduser(text)) if text.startswith('~') else Path(text)
 
 
-def check_canaries(rule, cases, unconfined, resources):
-    """The canaries are registered and cover both drivers, both legs and a service fixture.
-    unconfined(case) and resources(case) answer for one registered case."""
+def check_canaries(rule, cases, resources):
+    """The canaries are registered and cover both drivers and a service fixture.
+    resources(case) answers for one registered case."""
     by_identity = {c['identity']: c for c in cases}
     missing = [c for c in rule['canaries'] if c not in by_identity]
     if missing:
@@ -114,9 +114,6 @@ def check_canaries(rule, cases, unconfined, resources):
     drivers = {c['driver'] for c in chosen}
     if len(drivers) < 2:
         raise Invalid('canaries must cover both drivers, cover only ' + ', '.join(sorted(drivers)))
-    legs = {bool(unconfined(c)) for c in chosen}
-    if legs != {True, False}:
-        raise Invalid('canaries must cover the confined and the unconfined leg')
     if not any(resources(c) for c in chosen):
         raise Invalid('canaries must hold at least one case that needs a service fixture')
 
@@ -484,14 +481,14 @@ def line(record):
 
 
 def plan(cases, *, git, candidate, base=None, trunk=None, rule_path=RULE, case_inputs_path=None,
-         approval_rule=None, started=None, unconfined=lambda c: False, resources=lambda c: {}):
+         approval_rule=None, started=None, resources=lambda c: {}):
     """The gate's selection: never raises. Anything that cannot be read is the full sweep, named."""
     try:
         rule = load_rule(rule_path)
     except Invalid as error:
         return select(cases, None, base=base, candidate=candidate, error=error, started=started)
     try:
-        check_canaries(rule, cases, unconfined, resources)
+        check_canaries(rule, cases, resources)
         # The merge base with the trunk commit the gate was told to compare against (a landing's
         # synced trunk commit), else with the rule's trunk branch.
         base = merge_base(git, base or trunk or rule['nightly']['trunk'], candidate)

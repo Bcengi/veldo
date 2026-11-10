@@ -4,6 +4,11 @@
 Workers see a frozen copy of the working tree Git does not ignore, never gate receipts.
 The source tree is read twice to reject races. Git history is cloned at the measured HEAD.
 All children inherit a fixed environment, no user Python site, and disabled bytecode.
+
+Every case's worker is a plain child in its own process group and, under the gate, its own
+cgroup: no namespace and no Landlock domain (VELDO-0271). A case runs the same way whether the
+gate or a driver started it. Every case runs fresh: with nothing enforcing a case's declared
+inputs a stored result cannot be trusted, so none is looked up or published (reuse_off).
 """
 import argparse
 import collections
@@ -139,23 +144,20 @@ def digest(value):
     return hashlib.sha256(canonical(value)).hexdigest()
 
 
-def case_time_key(case, files, leg):
+def case_time_key(case, files):
     """Duration identity, independent of HEAD, proofs and unrelated registry cases.
 
     This is not an input-closure proof for result reuse. Bind the case's own executable
-    definition and its direct sources, plus the authority execution machinery and leg.
+    definition and its direct sources, plus the authority execution machinery.
     """
     target = str(Path('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo'))
                  / case['module'])
     paths = {target, 'scripts/suites/' + case['suite'], 'scripts/suites/shared.py',
              'scripts/check_gate_mutations.py', 'scripts/mutation_observer.py',
-             'scripts/reuse_worker.py', 'scripts/mutation_sandbox.py', 'scripts/agent_sandbox.py',
-             'scripts/mutation_ownership.py'}
+             'scripts/reuse_worker.py', 'scripts/mutation_ownership.py'}
     sources = {path: file_identity({path: files[path]})[path] if path in files else None
                for path in sorted(paths)}
-    return digest({'authority': str(ROOT), 'case': case, 'sources': sources,
-                   'leg': 'unconfined' if in_leg(leg, case) else 'confined',
-                   'declaration': leg})[:32]
+    return digest({'authority': str(ROOT), 'case': case, 'sources': sources})[:32]
 
 
 def case_samples(key, times, now):
@@ -232,8 +234,8 @@ def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
                            'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), **resources}, handle,
                           sort_keys=True)
             os.replace(pending, target)
-            # Same file naming and ownership metadata as VELDO-0214's store.
-            load(ROOT / 'scripts/gate_legs.py').prune_times(times, keep=target)
+            # Same file naming and ownership metadata as the scheduler's measurement store.
+            load(ROOT / 'scripts/gate_schedule.py').prune_times(times, keep=target)
         except OSError as error:
             print('   mutation: could not record case time in %s (%s)' % (times, error),
                   file=sys.stderr, flush=True)
@@ -269,7 +271,7 @@ def record_case_resources(cases, keys, outcomes, group_for, times=CASE_TIMES, *,
             with os.fdopen(fd, 'w') as handle:
                 json.dump(item, handle, sort_keys=True)
             os.replace(pending, target)
-            timing = load(ROOT / 'scripts/gate_legs.py')
+            timing = load(ROOT / 'scripts/gate_schedule.py')
             timing.prune_times(times, keep=target)
         except (OSError, ValueError, TypeError) as error:
             print('   mutation: could not record case resources (%s)' % error, file=sys.stderr, flush=True)
@@ -476,7 +478,8 @@ def inventory_local(root):
     return result
 
 
-def confined_command(root, command):
+def candidate_command(root, command):
+    """`command` as the gate runs every candidate command: through the authority's gate_candidate.py."""
     return [sys.executable, '-I', '-S', str(ROOT / 'scripts/gate_candidate.py'),
             '--root', str(root), '--', *command]
 
@@ -491,12 +494,9 @@ def common_directory(root):
 def inventory(root, expected_common):
     # Registry imports are candidate execution too. Only data crosses this pipe.
     env = dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(expected_common))
-    # Run inside a tree the agent launcher made (a suite of the gate's), the launcher this starts is
-    # nested and is handed the tree's marker (VELDO-0210 AC6).
-    result = subprocess.run(confined_command(root, [sys.executable, '-I', '-S',
+    result = subprocess.run(candidate_command(root, [sys.executable, '-I', '-S',
         str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root)]),
-        capture_output=True, text=True, timeout=WORKER_BUDGET, env=env,
-        pass_fds=load(ROOT / 'scripts/agent_sandbox.py').launcher_fds())
+        capture_output=True, text=True, timeout=WORKER_BUDGET, env=env)
     if result.returncode:
         raise Refused('candidate_execution_denied', result.stderr[-2000:])
     return json.loads(result.stdout)
@@ -784,21 +784,11 @@ class Workers:
         self.jobs = {}
         self.homes = {}
         self.ledgers = {}
-        # The authority's unconfined leg (gate_legs.mutation_leg) or None: every worker confined.
-        self.leg = None
-        self.legs = {}
         self.budgets = {}
         # VELDO-0267: the nightly sweep traces every control baseline it runs, so the coverage map
         # records the repository files each case's baseline read. None: no tracing (every gate).
         self.coverage = None
         self.coverage_traces = {}
-
-    boundary = None
-
-    def launcher_fds(self):
-        if self.boundary is None:
-            self.boundary = load(ROOT / 'scripts/agent_sandbox.py')
-        return self.boundary.launcher_fds()
 
     def check(self):
         if time.monotonic() >= self.deadline:
@@ -850,7 +840,7 @@ class Workers:
         job = self.jobs[name]
         home = self.homes[name]
         record = dict(name=name, driver=job['case']['driver'], mode=job['mode'],
-                      leg=self.legs.get(name, 'confined'), budget_seconds=self.budgets[name],
+                      budget_seconds=self.budgets[name],
                       elapsed=elapsed, returncode=proc.returncode, pid=proc.pid,
                       output_directory=str(home),
                       stdout_bytes=len(stdout), stderr_bytes=len(stderr))
@@ -858,9 +848,10 @@ class Workers:
             record['measurement'] = measurement
         result = None
         if name in self.coverage_traces:
-            trace, worker_root, confined = self.coverage_traces.pop(name)
-            self.coverage[name] = covered_reads(trace, worker_root, confined)
+            trace, worker_root = self.coverage_traces.pop(name)
+            self.coverage[name] = covered_reads(trace, worker_root)
         if error is None and 'snapshot_root' in job:
+            # Not reached while reuse is off (reuse_off): no job carries a declared snapshot.
             # Trace is outside the worker's writable home. Check before trusting output.
             try:
                 load(ROOT / 'scripts/case_trace.py').check(
@@ -988,35 +979,26 @@ class Workers:
                         ledger = os.open(self.ledgers[name], os.O_WRONLY | os.O_CREAT | os.O_EXCL
                                          | os.O_APPEND | os.O_CLOEXEC, 0o600)
                         worker_root = Path(job.get('snapshot_root', root))
-                        # A case of a suite the authority's list names runs in the unconfined leg,
-                        # as its suite does in the unit stage (VELDO-0208, owner decision): the
-                        # worker installs no boundary. It is never a declared case, so never traced.
-                        leg = 'unconfined' if in_leg(self.leg, job['case']) else 'confined'
-                        if leg == 'unconfined' and 'snapshot_root' in job:
-                            raise Refused('driver_error', name + ': an unconfined case cannot be declared')
-                        self.legs[name] = leg
                         # -I keeps user site and PYTHON* variables out. A fresh worker keeps the
-                        # system site-packages its suites ran with before confinement: without it
-                        # an optional oracle (PyYAML for 0119) stands down and its row passes a
-                        # mutant. A declared case runs only its keyed runtime set, so it adds -S.
+                        # system site-packages its suites run with: without it an optional oracle
+                        # (PyYAML for 0119) stands down and its row passes a mutant. A declared
+                        # case runs only its keyed runtime set, so it adds -S.
                         argv = [sys.executable, '-I', *(('-S',) if 'snapshot_root' in job else ()), '-B',
                                 '-X', 'pycache_prefix=' + str(home / 'bytecode'),
-                                str(ROOT / 'scripts/reuse_worker.py'),
-                                'worker' if leg == 'confined' else 'unconfined',
+                                str(ROOT / 'scripts/reuse_worker.py'), 'worker',
                                 str(worker_root), str(ledger), str(jobpath)]
                         if 'snapshot_root' in job:
                             tracer = load(ROOT / 'scripts/case_trace.py')
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
                         elif (self.coverage is not None and job['mode'] == 'baseline'
-                              and traceable(worker_root, job['case'], leg)):
+                              and traceable(worker_root, job['case'])):
                             tracer = load(ROOT / 'scripts/case_trace.py')
                             trace = directory / ('cover-' + str(self.invocations))
                             argv = tracer.command(trace, argv)
-                            self.coverage_traces[name] = (trace, worker_root, leg == 'confined')
+                            self.coverage_traces[name] = (trace, worker_root)
                         # A worker reads its job from its file, never from the coordinator's
-                        # stdin, which may be a socket the worker's boundary would refuse.
-                        # Inside a tree the agent launcher made, a worker is handed its marker, so a
-                        # fresh worker's own tree nests in it (VELDO-0210 AC6, AC7).
+                        # standard input. It is a plain child: its own process group, the fixed
+                        # environment, and only the descriptors named here.
                         environment = fixed_env(home, str(bindir) + ':/usr/bin:/bin')
                         if meter_fd is not None:
                             environment['VELDO_MUTATION_CGROUP_FD'] = str(meter_fd)
@@ -1026,7 +1008,7 @@ class Workers:
                                                 env=environment,
                                                 stdin=subprocess.DEVNULL, stdout=out, stderr=err,
                                                 pass_fds=(ledger, *((meter_fd,) if meter_fd is not None else ()),
-                                                          *((lifecycle_fd,) if lifecycle_fd is not None else ()), *self.launcher_fds()),
+                                                          *((lifecycle_fd,) if lifecycle_fd is not None else ())),
                                                 start_new_session=True)
                         if lifecycle_fd is not None:
                             meter.launched()
@@ -1083,27 +1065,24 @@ class Workers:
                         self.admission.release(name)
 
 
-def traceable(worker_root, case, leg):
-    """A confined baseline is always traced. An unconfined one is traced unless its suite traces
-    workers itself (nested strace cannot attach under the coverage tracer); such a case keeps no
-    traced coverage and every gate selects it."""
-    if leg == 'confined':
-        return True
+def traceable(worker_root, case):
+    """A baseline is traced unless its suite traces workers itself (nested strace cannot attach
+    under the coverage tracer); such a case keeps no traced coverage and every gate selects it."""
     try:
         return b'strace' not in (Path(worker_root) / 'scripts/suites' / case['suite']).read_bytes()
     except OSError:
         return False
 
 
-def covered_reads(trace, worker_root, confined):
+def covered_reads(trace, worker_root):
     """VELDO-0267: the repository files a traced baseline read (successful content reads under the
-    worker's root, after the confinement when the worker is confined), sorted; None when the trace
-    cannot be read, which the coverage map records as a case it does not know."""
+    worker's root), sorted; None when the trace cannot be read, which the coverage map records as
+    a case it does not know."""
     tracer = load(ROOT / 'scripts/case_trace.py')
     top = Path(worker_root).absolute()
     found = set()
     try:
-        for path, kind, success in tracer.accesses(trace, cwd=top, after_confinement=confined):
+        for path, kind, success in tracer.accesses(trace, cwd=top):
             if success and kind == 'content' and top in path.parents:
                 found.add(str(path.relative_to(top)))
     except (OSError, ValueError):
@@ -1116,14 +1095,8 @@ def covered_reads(trace, worker_root, confined):
     return sorted(found)
 
 
-def worker(job, keep=()):
-    # The same confinement as a coordinator's worker (reuse_worker.py): the gate profile's domain
-    # and network rule. Only the confined child returns; the parent exits with its status. The
-    # repository's Git common directory stays readable, as it is when it lies inside ROOT, so a
-    # linked worktree's suites find their repository as the main checkout's do.
-    load(ROOT / 'scripts/mutation_sandbox.py').confine(ROOT, ROOT, Path(os.environ['TMPDIR']),
-                                                       job.get('runtime_paths'), keep=keep,
-                                                       reads=(common_directory(ROOT),))
+def worker(job):
+    # The developer entry: one case in this process, as a coordinator's worker runs it.
     case = job['case']
     driver = load(ROOT / 'scripts' / case['driver'])
     owner = load(ROOT / 'scripts/check_teeth_mutations.py')
@@ -1134,23 +1107,13 @@ def worker(job, keep=()):
                 **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')})
 
 
-# A case of a suite the authority lists only for some rows: refused, the stage RED.
-ROWS_SCOPED_CASE = 'rows_scoped_unconfined_case'
-
-
-def in_leg(leg, case):
-    """Whether this case runs in the unconfined leg: its suite is one the authority's list names
-    whole. A case runs its whole suite in one worker, so a case of a suite listed only for some rows
-    cannot be held to those rows; it is refused rather than run unconfined with every row of its
-    suite, and those suites are the ones that test the confinement itself."""
-    suite = case['suite']
-    if leg is None or not suite.endswith('.py') or suite[:-3] not in leg['suites']:
-        return False
-    if suite[:-3] in {e.split(':', 1)[0] for e in leg['entries'] if ':' in e}:
-        raise Refused(ROWS_SCOPED_CASE, '%s is a case of %s, which the unconfined list names only for '
-                      'some rows, and a case runs its whole suite; refusing rather than running every '
-                      'row of it unconfined' % (case.get('identity') or case.get('name'), suite[:-3]))
-    return True
+def reuse_off(reuse, cases):
+    """Every case runs fresh (VELDO-0271): no key, so nothing is looked up or published, and no
+    declared snapshot, so a case runs in the frozen tree like any other."""
+    for case in cases:
+        reuse.keys[case['identity']] = None
+        reuse.reasons[case['identity']] = 'reuse_off'
+    getattr(reuse, 'snapshots', {}).clear()
 
 
 def control_group(case):
@@ -1222,11 +1185,10 @@ def verdict_line(receipt):
 
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
-              drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None, measure=False,
+              drivers=None, parallel=None, diff_dir=None, force_fresh=False, measure=False,
               admission=None, admit=False, selection=None, trace_coverage=False):
     """expected_common is the trusted Git common directory of root, named by the caller that owns
-    root: the authority's own for the gate, a fixture's own for the fixture's creator. leg is the
-    authority's unconfined leg (gate_legs.mutation_leg), None for every case confined. Only
+    root: the authority's own for the gate, a fixture's own for the fixture's creator. Only
     the authority CLI sets measure=True; library/fixture drives do not write owner timings.
     selection (VELDO-0267) is a callable taking the registered inventory and returning the sealed
     veldo.mutation-selection/v1 record, already written to the gate's evidence; the stage then runs
@@ -1235,7 +1197,6 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     started = time.monotonic()
     deadline = started + BUDGET
     workers = Workers(deadline, parallel=parallel, admission=admission)
-    workers.leg = leg
     if trace_coverage:
         workers.coverage = {}
     canaries, canary_names = set(), {}
@@ -1281,7 +1242,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             receipt['drivers'][driver] = {'inventory_digest': digest(own), 'registered': len(own),
                                            'worker_seconds': 0.0, 'executed': 0, 'reused': 0}
         files = read_inputs(root, expected_common)
-        time_keys = {c['identity']: case_time_key(c, files, leg) for c in cases}
+        time_keys = {c['identity']: case_time_key(c, files) for c in cases}
         deadlines = case_deadlines(time_keys)
         unmeasured = {identity for identity, seconds in deadlines.items() if seconds is None}
         # Updated in place once this stage measures an unmeasured case's baseline.
@@ -1306,17 +1267,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             {'fixture_version': FIXTURE_VERSION, 'capacities': capacities,
              'worker_environment': fixed_env('<private-worker-home>')}, force_fresh=force_fresh)
         receipt['force_fresh'] = reuse.forced
-        # An unconfined case is neither traced nor confined, so nothing bounds what it read: it is
-        # never reuse-qualified, runs fresh every time, and is never published.
-        outside = [c for c in cases if in_leg(leg, c)]
-        for case in outside:
-            reuse.keys[case['identity']] = None
-            reuse.reasons[case['identity']] = 'unconfined_leg'
-            getattr(reuse, 'snapshots', {}).pop(case['identity'], None)
-        if leg is not None:
-            receipt['unconfined'] = {'declaration': leg['declaration'], 'entries': leg['entries'],
-                                     'cases': sorted(c['identity'] for c in outside),
-                                     'suites': dict(collections.Counter(c['suite'][:-3] for c in outside))}
+        reuse_off(reuse, cases)
         receipt['reuse_qualified'] = sum(key is not None for key in reuse.keys.values())
         results = {}
         fresh = []
@@ -1554,24 +1505,6 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     return receipt
 
 
-def print_leg(leg, receipt, path):
-    """Name the leg on the stage lines as gate_legs.py does for the unit stage: the list, its
-    digest, and what ran unconfined."""
-    ran = receipt.get('unconfined', {})
-    outside = set(ran.get('cases', []))
-    rejected = sum(r['case']['identity'] in outside for r in receipt.get('results', []))
-    print('   mutation: confined leg - every case except those of the %d suite%s the list names (a case '
-          'runs its whole suite, so a case of a suite listed only for some rows is refused)'
-          % (len(leg['suites']), '' if len(leg['suites']) == 1 else 's'), flush=True)
-    print('   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, %s %s), '
-          '%d entr%s: %s' % (os.path.basename(str(path)), leg['declaration'], len(leg['entries']),
-                              'y' if len(leg['entries']) == 1 else 'ies', ', '.join(leg['entries'])), flush=True)
-    print('   mutation: unconfined leg ran %d case%s, %d rejected: %s'
-          % (len(outside), '' if len(outside) == 1 else 's', rejected,
-             ', '.join('%s (%d)' % item for item in sorted(ran.get('suites', {}).items())) or 'none'),
-          flush=True)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker', type=Path)
@@ -1582,7 +1515,6 @@ def main():
     parser.add_argument('--finding', type=int, action='append')
     parser.add_argument('--case', action='append', dest='names')
     parser.add_argument('--worker-log-dir', type=Path)
-    parser.add_argument('--legs-record', type=Path, help="verify.sh's record of the gate's unconfined legs")
     parser.add_argument('--full', action='store_true',
                         help='the nightly sweep (VELDO-0267): every registered case, fresh, baselines traced')
     args = parser.parse_args()
@@ -1591,18 +1523,6 @@ def main():
         # Gate workers start from reuse_worker.py, which reports to the coordinator's ledger.
         print(json.dumps(worker(json.loads(args.worker.read_text()))))
         return 0
-    # THE UNCONFINED LEG (VELDO-0208, owner decision Telegram 32403-32407, 2026-10-07): the cases of
-    # the suites the authority's scripts/gate_unconfined.json names run without the worker
-    # confinement when the list declares this stage. The list is read beside this file, never from
-    # --root; a caller's leg variables decide nothing (no worker environment carries them). An
-    # invalid list runs nothing.
-    legs = load(ROOT / 'scripts/gate_legs.py')
-    try:
-        leg = legs.mutation_leg()
-    except legs.Invalid as error:
-        print('   mutation: the unconfined list %s is invalid (%s); nothing ran, in either leg'
-              % (legs.DECLARATION, error), flush=True)
-        return 1
     # The gate names the authority checkout's own common directory; a candidate root is a linked
     # worktree of it, and its marker is checked against that directory before any Git runs.
     common = common_directory(ROOT)
@@ -1615,12 +1535,12 @@ def main():
         print('   mutation selection: this authority has no scripts/mutation_selection.py; the full sweep runs',
               flush=True)
     elif not (args.full or args.finding or args.names):
-        selection = gate_selection(chooser, args.root, common, leg)
+        selection = gate_selection(chooser, args.root, common)
     receipt = run_stage(args.root, common, capacities=resource_capacities(args.resource_capacity),
                         findings=args.finding, names=args.names, selection=selection,
                         trace_coverage=args.full, force_fresh=args.full,
                         admit=load(ROOT / 'scripts/gate_schedule.py').CHANNEL in os.environ,
-                        log_dir=args.worker_log_dir, leg=leg, measure=True)
+                        log_dir=args.worker_log_dir, measure=True)
     if 'selection' in receipt:
         try:
             receipt['selection']['nightly'] = chooser.nightly_summary(
@@ -1634,10 +1554,6 @@ def main():
     if args.summary:
         write_summary(args.summary, receipt)
     print(json.dumps(receipt, sort_keys=True), flush=True)
-    if leg is not None:
-        print_leg(leg, receipt, legs.DECLARATION)
-        if args.legs_record:
-            legs.write_record(args.legs_record, 'mutation', leg['declaration'], leg['entries'])
     print(verdict_line(receipt), flush=True)
     return 0 if receipt['status'] == 'passed' else 1
 
@@ -1646,18 +1562,12 @@ def main():
 # (VELDO_GATE_BASE_COMMIT, which verify.sh resolves before any candidate command runs), else the merge
 # base with the rule's trunk. The record is written to VELDO_MUTATION_SELECTION, the gate's evidence
 # beside its stamp, before the first case runs. Anything the rule cannot read is the full sweep.
-def gate_selection(chooser, root, common, leg):
+def gate_selection(chooser, root, common):
     def git(*arguments):
         try:
             return git_bytes(root, common, *arguments)
         except Exception as error:  # A refusal, a timeout or an exit status: never fewer cases.
             raise chooser.Invalid('git %s: %s' % (arguments[0], error)) from error
-
-    def unconfined(case):
-        try:
-            return in_leg(leg, case)
-        except Refused:
-            return True
 
     try:
         manifest = json.loads((Path(root) / 'scripts/suites/manifest.json').read_text())
@@ -1677,7 +1587,7 @@ def gate_selection(chooser, root, common, leg):
             base = os.environ.get('VELDO_GATE_BASE_COMMIT') or None
             record = chooser.plan(full_inventory, git=git, candidate=candidate, base=base,
                                   case_inputs_path=Path(root) / 'scripts/mutation_case_inputs.json',
-                                  approval_rule=chooser.policy_approval_rule(root, base), unconfined=unconfined,
+                                  approval_rule=chooser.policy_approval_rule(root, base),
                                   resources=lambda case: demands.get(case['suite']))
         print(chooser.line(record), flush=True)
         destination = os.environ.get('VELDO_MUTATION_SELECTION')

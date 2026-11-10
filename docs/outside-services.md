@@ -53,13 +53,13 @@ scans by trigger, findings by kind and trigger, and the findings still open.
 The scan reports. It does not edit files, stop runs or refuse a landing. Moving a found credential behind the
 gate is the owner's step.
 
-## 3. Runs keep today's access; the confined runner is opt-in
+## 3. Runs keep today's access; a launch marked risky is refused
 
 By default a launch starts as it always has: the host's network, shared databases, container tooling and
 local and loopback services. No network fence, namespace, name resolution change or filesystem confinement is
 added.
 
-A launch starts in the confined runner only when it is marked risky, by one of:
+A launch is marked risky by one of:
 
 | Mark | Where |
 |:-|:-|
@@ -67,13 +67,15 @@ A launch starts in the confined runner only when it is marked risky, by one of:
 | Project | receiver configuration `"risky": {"projects": ["<project>"]}` |
 | Dispatch | the dispatch's input context `"risky": true` |
 
-The confined runner is named in the receiver configuration:
+Veldo ships no confined runner. A launch that carries one of these marks is therefore refused by name, as
+`confined_runner_unavailable:<reason>`, and it stays refused until the receiver configuration names a runner
+this host can start:
 
 ```json
-"confined_runner": {"program": "<checkout>/scripts/agent_sandbox.py", "config": "<checkout>/scripts/agent_sandbox.json"}
+"confined_runner": {"program": "<runner program>", "config": "<runner configuration>"}
 ```
 
-A risky launch on a host that cannot provide the confined runner (none configured, its namespace helper
-missing, or its own `namespace-selftest` failing) is refused as `confined_runner_unavailable:<reason>`. No other
-launch is affected, and no launch that is not marked risky is ever refused for a confinement reason. Each
-launch's accepted (or refused) line names the runner it used and why.
+The reason is `not_configured` when the receiver configuration names no runner, `program_missing` or
+`config_missing` when a named file is absent, and another named reason when the runner's own check fails. No
+other launch is affected, and no launch that is not marked risky is ever refused for a confinement reason.
+Each launch's accepted (or refused) line names the runner it used and why.

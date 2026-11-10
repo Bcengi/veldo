@@ -3,7 +3,7 @@ pushes can run through the factory.
 
 Run: python3 scripts/selftest.py --suite 128_veldo_0235_land_locally
 
-Only shared ROOT, expect and launcher_fds are consumed. One temporary tree holds the installed .veldo copy every
+Only shared ROOT and expect are consumed. One temporary tree holds the installed .veldo copy every
 organ loads, with this change's production modules (PRODUCTION) laid over it, so a registered mutation of any of
 them reaches every row. Real throughout: Git (a scaffolded seed whose canonical gate is its own scripts/verify.sh
 with one fixture check, a disposable bare origin whose pre-receive hook records every receive, the caller's clone
@@ -149,7 +149,7 @@ def _v235_suite():
         git(seed, 'commit', '-q', '-m', 'Fixture repository')
         first = git(seed, 'rev-parse', 'HEAD')
         subprocess.run(['bash', 'scripts/verify.sh'], cwd=str(seed), capture_output=True, text=True,
-                       stdin=subprocess.DEVNULL, env=clean, timeout=300, pass_fds=launcher_fds())
+                       stdin=subprocess.DEVNULL, env=clean, timeout=300)
         git(seed, 'add', '--', '.veldo/last_verify', '.veldo/events.jsonl')
         git(seed, 'commit', '-q', '-m', 'Gate stamp for ' + first[:12])
         SEED = git(seed, 'rev-parse', 'HEAD')

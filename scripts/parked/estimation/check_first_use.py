@@ -28,10 +28,9 @@ repository, uses the sanctioned writer the way the layer exists to be used, runs
 over the result, and requires that NO assertion that passed before now fails. That is the property
 in one sentence and there is no spelling of the defect that survives it.
 
-WHAT IT COSTS AND WHY IT STILL BELONGS IN THE GATE. One nested full selftest of the leg it runs in,
-plus two tree copies of about a second. That nested run is the unit stage's leg over again: on
-2026-10-23 the confined leg's 7849 rows took 2276.8s on a loaded host and the unconfined leg's 873
-rows 870 to 885s. The "about 90 seconds" this paragraph once said was a suite a fraction of that
+WHAT IT COSTS AND WHY IT STILL BELONGS IN THE GATE. One nested full selftest, plus two tree copies
+of about a second. That nested run is the unit stage over again: on 2026-10-23 its 7849 and 873
+rows took 2276.8s and 870 to 885s in the two legs the stage then had, on a loaded host. The "about 90 seconds" this paragraph once said was a suite a fraction of that
 size. The BASELINE run is LAZY: it happens only when
 the mutated run reports a failure, because with zero failures there is nothing to attribute. So
 the green path pays ONE nested run and the second run is paid only when the gate is about to be red
@@ -75,18 +74,11 @@ it is fixing:
      Every failing row of every run is printed by name, so a pre-existing set that the `unit` slot
      does NOT show (a failure only the nested copy has) is on the page rather than a bare count.
 
-THE BUDGET OF ONE NESTED RUN IS MEASURED, NOT FIXED (VELDO-0214). A fixed 1800s could not hold
-the confined leg: it ended "did not finish inside 1800s" on two gate runs while the suite was
-healthy. The budget per nested run is min(max(1800, 2.0 x the unit stage's measured seconds for
-the same leg), 21600): never under the old fixed 1800s, and never over 6 hours, because a value that
-removed the bound would let a hung nested run hold the gate open for good. The cap is printed
-when it applies, and a measurement whose budget is not a finite number of seconds is ignored by
-name. Only the authority's scripts/gate_legs.py measures that, and hands it in
-VELDO_GATE_UNIT_SECONDS bound to the leg and the declaration digest it runs this leg under: this
-gate run's unit leg when it ran fresh, else the last fresh measurement it recorded. A value that is
-not bound to the leg this run is in, or appears outside a gate leg, is ignored by name. With no
-measurement at all (this check run by hand) the budget is 1800s and the check says so. The budget
-and where its number came from are printed before any run, and a run that exceeds it names it.
+THE BUDGET OF ONE NESTED RUN IS FIXED AT 1800s. VELDO-0214 measured it from the unit stage's leg,
+handed in by the gate; VELDO-0278 removed that handoff when it parked this check and VELDO-0271
+removed the leg that was measured, so nothing sets a measurement any more. If this check is
+unparked, its budget needs a new measurement source. The budget is printed before any run, and a
+run that exceeds it names it.
 
 FAILING LOUD IS NOT OPTIONAL. Every way this check can fail to answer exits NONZERO with the reason
 named: no interpreter, a missing writer or dispatcher, a copy that did not complete, a writer that
@@ -97,17 +89,14 @@ default on its own inability would be a worse version of the defect it refuses.
 import os
 import sys
 
-# NO FILE IN scripts/ CAN SHADOW THE STANDARD LIBRARY HERE (VELDO-0208). The gate's integration
-# stage is `python3 scripts/check_first_use.py`, which puts scripts/ first on sys.path, and in the
-# unconfined leg this file runs whole outside the confinement and hands its environment, the leg
-# included, to the nested dispatcher. os and sys are loaded before any script runs; the script
+# NO FILE IN scripts/ CAN SHADOW THE STANDARD LIBRARY HERE (VELDO-0208). Run as a script, this
+# file's directory comes first on sys.path, and it hands its environment to the nested
+# dispatcher. os and sys are loaded before any script runs; the script
 # directory is dropped before the next import, so an unprotected scripts/json.py never runs here.
 _SCRIPTS = os.path.dirname(os.path.realpath(__file__))
 sys.path[:] = [p for p in sys.path if os.path.realpath(p or os.curdir) != _SCRIPTS]
 
-import importlib.util  # noqa: E402 - only after the script directory is gone
-import json  # noqa: E402
-import math  # noqa: E402
+import json  # noqa: E402 - only after the script directory is gone
 import shutil  # noqa: E402
 import stat  # noqa: E402
 import subprocess  # noqa: E402
@@ -121,24 +110,13 @@ from pathlib import Path  # noqa: E402
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def launcher_fds():
-    """pass_fds for the nested dispatcher, whose suites start gates: inside a tree the agent
-    launcher made, the tree's marker, without which their launchers are refused the namespace
-    (VELDO-0210 AC6); nothing elsewhere."""
-    spec = importlib.util.spec_from_file_location("veldo_agent_sandbox", ROOT / "scripts" / "agent_sandbox.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.launcher_fds()
 SELFTEST = ROOT / "scripts" / "selftest.py"
 SUITES = ROOT / "scripts" / "suites"
 EVENT_LOG = Path(".veldo") / "events.jsonl"
 SPEND_FIELDS = ("tokens", "cost_usd", "human_minutes")
 SUMMARY_PREFIX = "selftest:"
 FAIL_MARK = "SELFTEST FAIL:"
-RUN_TIMEOUT_S = 1800  # the floor of the measured budget, and the whole budget with no measurement
-BUDGET_FACTOR = 2.0
-BUDGET_CEILING_S = 21600  # 6 hours: no measurement may remove the bound on a nested run
-UNIT_SECONDS = "VELDO_GATE_UNIT_SECONDS"
+RUN_TIMEOUT_S = 1800  # the budget of one nested run
 WRITE_TIMEOUT_S = 120
 TMP_PREFIX = "veldo-first-use-"
 
@@ -286,49 +264,15 @@ def _copy(src, dest, what):
 
 def _child_env():
     """The environment a nested run gets. VELDO_SUITE_ORDER is dropped because an inherited
-    diagnostic ordering would silently change what this measurement ran, and the unit-leg
-    measurement because it is this check's input, not the nested suite's."""
+    diagnostic ordering would silently change what this measurement ran."""
     env = dict(os.environ)
     env.pop("VELDO_SUITE_ORDER", None)
-    env.pop(UNIT_SECONDS, None)
     return env
 
 
 def run_budget(environ):
-    """(seconds per nested run, where that number came from). See the docstring."""
-    floor = "the fixed floor of %ds" % RUN_TIMEOUT_S
-    raw = environ.get(UNIT_SECONDS)
-    leg, digest = environ.get("VELDO_GATE_LEG"), environ.get("VELDO_GATE_DECLARATION")
-    if raw is None:
-        return RUN_TIMEOUT_S, ("%s: no unit-leg measurement was handed to this run (run by hand, or "
-                               "the authority has recorded none for this leg)" % floor)
-    if leg not in ("confined", "unconfined") or not digest:
-        return RUN_TIMEOUT_S, ("%s: %s is set outside a gate leg, and only the authority's "
-                               "gate_legs.py sets it for a leg, so it is ignored" % (floor, UNIT_SECONDS))
-    try:
-        handed = json.loads(raw)
-        seconds = float(handed["seconds"])
-        bound = handed["leg"] == leg and handed["declaration"] == digest
-        fresh, at = str(handed["fresh"]), str(handed["at"])
-    except (ValueError, TypeError, KeyError):
-        return RUN_TIMEOUT_S, "%s: %s is not the authority's form, so it is ignored" % (floor, UNIT_SECONDS)
-    if not bound:
-        return RUN_TIMEOUT_S, ("%s: %s names another leg or declaration than this %s leg's, so it "
-                               "is ignored" % (floor, UNIT_SECONDS, leg))
-    if not 0 < seconds < float("inf"):
-        return RUN_TIMEOUT_S, "%s: %s carries no usable seconds, so it is ignored" % (floor, UNIT_SECONDS)
-    derived = BUDGET_FACTOR * seconds
-    if not math.isfinite(derived):
-        return RUN_TIMEOUT_S, ("%s: %s carries %gs, and %.1f x that is not a finite number of "
-                               "seconds, so it is ignored" % (floor, UNIT_SECONDS, seconds, BUDGET_FACTOR))
-    budget = min(max(RUN_TIMEOUT_S, derived), BUDGET_CEILING_S)
-    source = ("min(max(%d, %.1f x %.1fs), %d): the unit stage's %s leg as the authority's gate_legs.py "
-              "measured it in %s (%s)" % (RUN_TIMEOUT_S, BUDGET_FACTOR, seconds, BUDGET_CEILING_S, leg,
-                                          fresh, at))
-    if derived > BUDGET_CEILING_S:
-        source += ("; CAPPED at the ceiling of %ds (6 hours), where %.1f x the measurement is %.0fs"
-                   % (BUDGET_CEILING_S, BUDGET_FACTOR, derived))
-    return budget, source
+    """(seconds per nested run, where that number came from): the fixed budget. See the docstring."""
+    return RUN_TIMEOUT_S, "the fixed budget of %ds (nothing measures a nested run since VELDO-0278)" % RUN_TIMEOUT_S
 
 
 def _run_suite(tree, label, budget=RUN_TIMEOUT_S):
@@ -342,7 +286,7 @@ def _run_suite(tree, label, budget=RUN_TIMEOUT_S):
     try:
         proc = subprocess.run([sys.executable, "scripts/selftest.py"], cwd=str(tree),
                               capture_output=True, text=True, env=_child_env(),
-                              timeout=budget, pass_fds=launcher_fds())
+                              timeout=budget)
     except subprocess.TimeoutExpired:
         raise CannotAnswer("the %s run did not finish inside its budget of %.0fs" % (label, budget))
     except OSError as e:

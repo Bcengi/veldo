@@ -1329,7 +1329,7 @@
    "requires": [
     "100_veldo_0207_case_reuse"
    ],
-   "regions": "Per-case declared mutation inputs and sandbox enforcement.",
+   "regions": "Per-case declared mutation input keys, the case trace, and stage receipts with reuse off.",
    "requires_note": "Only ROOT, V and expect; isolated single-worker fixtures and controlled coordinator; no fan-out."
   },
   {
@@ -1342,15 +1342,6 @@
    "requires_note": "Only ROOT, V and expect; foreground child fixtures, sequential, no mutation stage."
   },
   {
-   "name": "102_veldo_0210_agent_profile_runtime",
-   "file": "102_veldo_0210_agent_profile_runtime.py",
-   "requires": [
-    "102_veldo_0210_agent_profile_runtime"
-   ],
-   "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
-   "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
-  },
-  {
    "name": "103_veldo_0142_git_identities",
    "file": "103_veldo_0142_git_identities.py",
    "requires": [
@@ -1358,15 +1349,6 @@
    ],
    "regions": "Explicit Git identities, immutable repository bindings and clone and lander authorship.",
    "requires_note": "Only ROOT and expect. Real SQLite and Git; controlled verification seams, no gate or provider."
-  },
-  {
-   "name": "104_veldo_0210_mutation_workers",
-   "file": "104_veldo_0210_mutation_workers.py",
-   "requires": [
-    "104_veldo_0210_mutation_workers"
-   ],
-   "regions": "Existing mutation worker integration, split from suite 102.",
-   "requires_note": "Only ROOT and expect; sequential foreground fixtures."
   },
   {
    "name": "103_veldo_0211_borrowed_login",
@@ -1496,7 +1478,7 @@
     "113_veldo_0220_gate_host"
    ],
    "regions": "The gate's host lock (VELDO-0220): NOT STARTED with exit 75 when another run holds the lock, release on every exit, and NOT STARTED recorded as not run by the executor, the lander and the proof store.",
-   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks; util-linux flock stands in for the core runner. The executor, lander and proof store run over a scratch Git repository and an installed fixture gate that exits 75 or 1. No systemd user manager."
+   "requires_note": "Only ROOT and expect. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks; util-linux flock stands in for the core runner. The executor, lander and proof store run over a scratch Git repository and an installed fixture gate that exits 75 or 1. No systemd user manager."
   },
   {
    "name": "114_veldo_0220_gate_scope",
@@ -1505,7 +1487,7 @@
     "114_veldo_0220_gate_scope"
    ],
    "regions": "The gate's own delegated scope (VELDO-0220): stated limits, isolation, child cgroups and lock custody until every stage dies on kill, termination, normal completion and a red stage.",
-   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks. Creates and inspects real transient scopes through the systemd user manager; the whole suite is listed unconfined.",
+   "requires_note": "Only ROOT and expect. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks. Creates and inspects real transient scopes through the systemd user manager.",
    "resources": {
     "systemd_user_manager": 1
    }
@@ -1517,7 +1499,7 @@
     "114_veldo_0216_concurrent_stages"
    ],
    "regions": "Authority graph, ledger, verdict parity, and concurrency mechanics.",
-   "requires_note": "Only ROOT and expect. Scratch authorities, real confined launcher, controlled mutation payload, fixture cgroup meter. No host lock or user manager."
+   "requires_note": "Only ROOT and expect. Scratch authorities, real candidate runner, controlled mutation payload, fixture cgroup meter. No host lock or user manager."
   },
   {
    "name": "115_veldo_0219_measured_admission",
@@ -1661,7 +1643,7 @@
    "requires": [
     "126_veldo_0230_qualify_reproduces"
    ],
-   "regions": "Four rows (VELDO-0230 AC2, AC3): qualify/builtin-plugins, against a fake Claude Code whose bytes register built-in plugins its logged-out init probe does not load, discovery finds every registered one, each new one is listed with its evaluation, a granted one is accepted in the init comparison present or absent and the rest turned off, and an unlisted plugin still stops the run; qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).; qualify/gate-reads, every binary the engines record names lies beneath an optional_read_roots entry of scripts/agent_sandbox.json and of its engine canon, so the gate's confinement and its mutation workers can run the qualified binaries",
+   "regions": "Three rows (VELDO-0230 AC2, AC3): qualify/builtin-plugins, against a fake Claude Code whose bytes register built-in plugins its logged-out init probe does not load, discovery finds every registered one, each new one is listed with its evaluation, a granted one is accepted in the init comparison present or absent and the rest turned off, and an unlisted plugin still stops the run; qualify/reproduces, python3 .veldo/qualify.py run in scratch against the Codex and Claude Code binaries the engines record names succeeds and every file it writes is byte-identical to the checkout's; qualify/covers, the files it writes include the engines record and both qualification records in both runtimes, the VELDO-0127 fixtures and every table the readers of the binaries write (the suite's own list, the two VELDO-0156 captures among them).",
    "requires_note": "Only ROOT and expect. Copies .veldo, engine/runtime, packs and the extractor and VELDO-0127 proof directories into scratch and runs the copy's qualify command there; runs the qualified binaries offline in empty profiles (extractor reads, features list, bundled catalog, loopback capture, Claude Code init probe). Writes only temporary files."
   },
   {
@@ -1692,7 +1674,7 @@
     "128_veldo_0235_land_locally"
    ],
    "regions": "A project's landing destination (VELDO-0235): a record without the field reading as land_and_push and landing to the remote, never rewritten; the owner's signed set_landing_destination accepted and recorded with the old and new value and his command id, any other value, another key's signature, another principal and an unsigned command refused writing nothing; land_locally through the land station moving the caller's local main to the candidate by compare-and-swap with the receipt and spec.shipped, the bare origin byte for byte unchanged and no push, fetch or ls-remote logged; a local main moved after the watermark refused as trunk_moved, kept, and re-landed; the owner's grant brief naming the destination in words; a destination changed after the grant refused as stale_subject:landing/destination, asked again and landed after the fresh grant bound to it; land_and_push, set or absent, with today's effect contract, executor push, remote re-read and receipt.",
-   "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
+   "requires_note": "Only ROOT and expect. Real Git (a scaffolded seed and its own gate, a bare origin with a recording pre-receive hook, the caller's and the publication clones), VELDO-0153's identity wire and a logging git first on PATH, the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0057's Landing and the VELDO-0028 executor process; control_service's Line.grant over a recording inbox. Fixture units, floor handoffs, approvals and candidate policy. Writes only temporary files."
   },
   {
    "name": "127_veldo_0254_secret_scan",
@@ -1701,16 +1683,7 @@
     "127_veldo_0254_secret_scan"
    ],
    "regions": "Twenty-two rows (VELDO-0254): ac1/static-sites, the static row lists every place the launch modules build a run's configuration, environment or command and names none that resolves a keystore reference or reads a credential but the VELDO-0158 one VELDO-0257 removes; ac1/static-planted, a keystore reference resolved into a run's environment in a scratch copy is named by its site; ac1/canary-run, canaries in a fixture run's files, environment and command line; ac1/launch-scan, Receiver._spawn scans the run's final environment and command line and refuses by name a credential inherited from the host, an adapter literal, a value read from a file or a command argument, and not the engine's own login; ac2/run-end, ac2/landing, ac2/command and ac2/setup, the one scan entry at each trigger; ac2/masked, no report, log line or notice holds any part of a value; ac2/login, the engine login fixture is not a finding; ac2/reports-only; ac2/one-entry; ac2/installed, the command, run-end and landing scans run from the installed service layout (control_service.closure); ac2/failure-visible, a run-end, landing or setup scan that fails is logged by name and told to the owner; ac2/run-end-changed, the run-end scan reads only the files the run added or changed, after its end is recorded; ac2/owner-notice, the service channel tells the owner's enrolled chat once per scan that found a credential or failed; ac3/default-reaches, a default run reaches a fixture database on host loopback (TCP and its Unix socket) and a fixture service; ac3/risky-confined, a run marked risky by the installation, the project or the dispatch takes the confined runner around the same command (suite 128 starts it); ac3/no-runner-host, without the runner's helper a default run starts and a risky run is refused by name; ac3/one-decision; ac3/risky-spawn, Receiver._spawn gives a risky engine run's confined runner the clone work tree (as _engine_cwd computes it) and the engine's client, and a risky conversation turn its conversation directory; ac3/selftest-cached, the host's confined runner is judged once per receiver.",
-   "requires_note": "Only ROOT, expect and fast_temp. Copies the checkout's .veldo (and its runtime assets) into scratch with its production copies (PRODUCTION) laid over it and lays out the installed service's closure from it; a scratch Git repository; an in-memory entity table standing for the channel's store; loopback TCP, Unix socket and HTTP fixture servers on a local address; names the confined runner (scripts/agent_sandbox.py) and starts a scratch copy of it naming an absent helper. Writes only temporary files."
-  },
-  {
-   "name": "128_veldo_0254_confined_runner",
-   "file": "128_veldo_0254_confined_runner.py",
-   "requires": [
-    "128_veldo_0254_confined_runner"
-   ],
-   "regions": "One row (VELDO-0254 AC3): ac3/risky-starts-confined, a launch its dispatch marks risky takes the confined runner, this host provides it, the launch is not refused, the argv the launcher gives starts in the confined runner (its AppArmor label) out of reach of a host database socket, and the same command unmarked reaches it.",
-   "requires_note": "Only ROOT, expect and fast_temp. Loads the launcher from a scratch copy of .veldo with its production copy laid over it; a loopback Unix socket fixture database; starts the confined runner (scripts/agent_sandbox.py with scripts/agent_sandbox.json and the installed namespace helper /usr/local/lib/veldo/veldo-userns), which needs the gate's unconfined leg. Writes only temporary files."
+   "requires_note": "Only ROOT, expect and fast_temp. Copies the checkout's .veldo (and its runtime assets) into scratch with its production copies (PRODUCTION) laid over it and lays out the installed service's closure from it; a scratch Git repository; an in-memory entity table standing for the channel's store; loopback TCP, Unix socket and HTTP fixture servers on a local address; writes a fixture runner program that names an absent helper and names it as the confined runner. Writes only temporary files."
   },
   {
    "name": "129_veldo_0254_canary_launch",
@@ -1758,7 +1731,7 @@
     "129_veldo_0239_batch_landing"
    ],
    "regions": "Batch landing (VELDO-0239): every reviewed, unlanded unit of a project merged in review-completion order onto the trunk watermark in an isolated clone; the project's renumber hook run after each merge with the watermark and the merge commit, its change a separate recorded renumber commit naming each renamed file, the factory renaming nothing; a conflicting unit left out as conflict:<unit>, a failing hook as hook_failed:renumber:<unit>, no hook no renumbering, no reviewed unit an empty batch that runs nothing; the owner's /batch <project> taken by intake as the batch command; the batch tip gated once by the project's own gate in candidate mode, every stage read, every red inventoried with its stage, check and units, told to the owner and each named unit returned to its fix round, a red batch refused missing_evidence:gate; one approval request showing the units, reviews, renumber commits, gate and destination, bound to the tip and unit list, anything else refused stale_subject:batch and asked again, another approval a unit needs still required; one compare-and-swap of the trunk, pushed or local, a revision_landed receipt per unit naming the batch; a moved trunk ending trunk_moved and re-landed (re-merge, hook, gate, ask); single-unit landing modules carrying no batch path.",
-   "requires_note": "Only ROOT, expect and launcher_fds. Real Git (a scaffolded seed and its own two-stage gate, a bare origin with a recording pre-receive hook, the caller's clone and another pusher's clone), the batch's isolated clone, VELDO-0058's installed gate and a fixture renumber hook outside every repository. Fixture reviews, approval answers and other approvals. Writes only temporary files."
+   "requires_note": "Only ROOT and expect. Real Git (a scaffolded seed and its own two-stage gate, a bare origin with a recording pre-receive hook, the caller's clone and another pusher's clone), the batch's isolated clone, VELDO-0058's installed gate and a fixture renumber hook outside every repository. Fixture reviews, approval answers and other approvals. Writes only temporary files."
   },
   {
    "name": "129_veldo_0260_checkout_in_step",
@@ -1767,7 +1740,7 @@
     "129_veldo_0260_checkout_in_step"
    ],
    "regions": "A local landing keeping every working tree that has the trunk checked out in step with the trunk (VELDO-0260): the set read from the repository's own working-tree list (the main tree holding main, a linked tree holding main, a detached HEAD at the tip, another branch and a bare repository), a clean tree moved with the trunk by a two-tree merge with its untracked and ignored files byte for byte unchanged, a lost swap restoring the moved tree to the old tip, an edited and a staged tracked file, a merge in progress and a locked index refusing as trunk_checkout_dirty or trunk_checkout_unmovable before the swap with the ref and files unchanged and re-landed under VELDO-0148 once clean, a main tree on another branch never read or written, and the publication events and counts by working-tree outcome.",
-   "requires_note": "Only ROOT, expect and launcher_fds. Real Git (small repositories with linked and bare clones for the unit rows; a scaffolded seed and its own gate and the caller's repository with its main and a linked working tree for the integration rows), the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0058's installed gate and VELDO-0057's Landing. Fixture units, floor handoffs and candidate policy. Writes only temporary files."
+   "requires_note": "Only ROOT and expect. Real Git (small repositories with linked and bare clones for the unit rows; a scaffolded seed and its own gate and the caller's repository with its main and a linked working tree for the integration rows), the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0058's installed gate and VELDO-0057's Landing. Fixture units, floor handoffs and candidate policy. Writes only temporary files."
   },
   {
    "name": "140_veldo_0267_mutation_selection",
@@ -1811,7 +1784,7 @@
    "requires": [
     "129_veldo_0274_factory_slices"
    ],
-   "regions": "Six rows (VELDO-0274), the last suite of the unit stage: slices/return and slices/raise, a child that starts the VELDO-0127 factory and launches one fake engine into its slice leaves neither loaded after its body returns or raises; slices/sigterm, SIGTERM to a child inside the factory stops its slice and ends the child by the signal's default action; slices/sweep-dead and slices/sweep-live, entering the factory stops a planted veldo0127 slice named for a dead pid, printing one line naming it, and leaves one named for a live process loaded; slices/end-of-run, no veldo0127 slice whose pid belongs to this run (this process, a live descendant, or a gone process whose slice became active after this process started) remains loaded in the user manager; in the gate it runs in the unconfined leg after suite 86.",
+   "regions": "Six rows (VELDO-0274), the last suite of the unit stage: slices/return and slices/raise, a child that starts the VELDO-0127 factory and launches one fake engine into its slice leaves neither loaded after its body returns or raises; slices/sigterm, SIGTERM to a child inside the factory stops its slice and ends the child by the signal's default action; slices/sweep-dead and slices/sweep-live, entering the factory stops a planted veldo0127 slice named for a dead pid, printing one line naming it, and leaves one named for a live process loaded; slices/end-of-run, no veldo0127 slice whose pid belongs to this run (this process, a live descendant, or a gone process whose slice became active after this process started) remains loaded in the user manager; in the gate it runs after suite 86.",
    "requires_note": "Only ROOT and expect. Runs suite 86 only when the mutation stage replaces its path (AC3's case and its no-op control), in this process before slices/end-of-run, without reporting its rows. Runs the factory in child processes over the user manager's real systemctl and systemd-run, plants and stops its own slices, and stops any slice its children left. Without a user manager the five slice rows stand down by name and only slices/end-of-run runs. Exclusive on the user manager: the factory's entry sweep, and its mutation that ignores liveness, read every veldo0127 slice loaded there.",
    "resources": {
     "systemd_user_manager": "exclusive"
@@ -1824,7 +1797,19 @@
    "requires": [
     "129_veldo_0278_parked_estimation"
    ],
-   "requires_note": "Only ROOT, expect and launcher_fds from shared.py, which always runs; every other name is imported inside its one function. It runs the parked estimation set as a subprocess and a fixture gate over a stub authority."
+   "requires_note": "Only ROOT and expect from shared.py, which always runs; every other name is imported inside its one function. It runs the parked estimation set as a subprocess and a fixture gate over a stub authority."
+  },
+  {
+   "name": "141_veldo_0271_gate_without_sandbox",
+   "file": "141_veldo_0271_gate_without_sandbox.py",
+   "regions": "none - added after the WARP-0712 cut, so no region of the monolith is its origin",
+   "requires": [
+    "141_veldo_0271_gate_without_sandbox"
+   ],
+   "resources": {
+    "systemd_user_manager": 1
+   },
+   "requires_note": "Only ROOT and expect. Fixture gates: this repository's verify.sh, gate_candidate.py, selftest.py, run_scope.py, check_gate_mutations.py and gate_host.py over scratch repositories with stub stages. Starts a transient unit in the systemd user manager, traces a child with strace, takes a scratch lock and a real user scope. Reads proof/VELDO-0271/removed.json and rows.json. Writes only temporary files."
   }
  ],
  "resource_capacities": {

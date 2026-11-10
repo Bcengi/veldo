@@ -115,7 +115,7 @@ sys.exit(1 if os.environ.get('V220_RED') else 0)
         with open(log, 'w') as handle:
             process = subprocess.Popen([*prefix, 'bash', str(root / 'scripts/verify.sh')], cwd=str(root.parent),
                                        env=run_env, stdout=handle, stderr=subprocess.STDOUT,
-                                       stdin=subprocess.DEVNULL, pass_fds=launcher_fds())
+                                       stdin=subprocess.DEVNULL)
         process.log = log
         return process
 

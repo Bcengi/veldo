@@ -1,4 +1,4 @@
-"""VELDO-0254: credentials never enter runs, a secret scan reports leaked ones masked, the confined runner is opt-in.
+"""VELDO-0254: credentials never enter runs, a secret scan reports leaked ones masked, a risky launch needs a runner.
 
 Run: python3 scripts/selftest.py --suite 127_veldo_0254_secret_scan
 
@@ -10,7 +10,8 @@ a fixture run's files, environment and command line for canary credentials. AC2:
 workspace at run end, a landing candidate's changed files, a project tree on the owner's command and at setup,
 masked findings, the engine login fixture, reports only. AC3: the one launcher decision, a default run reaching a
 fixture database on host loopback (TCP and its Unix socket) and a fixture service on a local address, a risky run
-taking the confined runner (scripts/agent_sandbox.py; suite 128 starts it), and a host without the runner's helper. The
+taking the confined runner the receiver configuration names, and a host that cannot provide one. Veldo ships no
+confined runner since VELDO-0271, so the runner here is a fixture program this suite writes. The
 fix round's rows: the launch-time scan through Receiver._spawn, the scans from the installed service layout, a
 failing scan logged and told, the run-end scan of changed files after the recorded end, the channel's owner notice,
 a risky spawn's work tree and client, and the cached runner self-test. Starts only loopback fixture servers and
@@ -46,8 +47,6 @@ def _v254_suite():
         'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
         'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py",
     }
-    SANDBOX = ROOT / 'scripts' / 'agent_sandbox.py'
-    SANDBOX_CONFIG = ROOT / 'scripts' / 'agent_sandbox.json'
     # The one launch path VELDO-0158 opened into a run, which VELDO-0257 removes (proof/VELDO-0254/OPEN.md). The
     # static row accepts no other site, and this one only while it is still there.
     PENDING_0257 = {'credential_delivery_site:control_launch.py:Receiver._spawn'}
@@ -404,6 +403,14 @@ print(json.dumps(out))
             except (ValueError, IndexError):
                 return {'exit': done.returncode, 'error': done.stderr.strip()[-300:]}
 
+        # The confined runner is a fixture program this suite writes. control_launch.py reads the helper a
+        # runner names from the runner's source, so the fixture names one, and it is absent.
+        runner_dir = base / 'runner'
+        runner_dir.mkdir()
+        SANDBOX, SANDBOX_CONFIG = runner_dir / 'fixture_runner.py', runner_dir / 'fixture_runner.json'
+        runner_text = "from pathlib import Path\nNAMESPACE_HELPER = Path(%r)\n" % str(runner_dir / 'absent' / 'helper')
+        SANDBOX.write_text(runner_text)
+        SANDBOX_CONFIG.write_text('{}\n')
         runner_config = {'confined_runner': {'program': str(SANDBOX), 'config': str(SANDBOX_CONFIG)}}
         default = L.runner_decision(runner_config, contract())
         check('ac3/default-reaches', 'an unmarked launch takes the default runner [%s]' % default,
@@ -426,26 +433,35 @@ print(json.dumps(out))
         check('ac3/risky-confined', 'another project\'s mark leaves this launch on the default runner',
               L.runner_decision(dict(runner_config, risky={'projects': ['other']}), contract())['runner'] == 'default')
         confined = L.runner_argv(runner_config, decided[2][1], probe_argv, str(runs))
-        check('ac3/risky-confined', 'the risky run\'s argv is the confined runner around the same command (suite '
-              '128 starts it on a host that provides the runner)',
+        check('ac3/risky-confined', 'the risky run\'s argv is the configured runner around the same command',
               confined[:4] == [sys.executable, '-I', '-S', str(SANDBOX)] and confined[-len(probe_argv):] == probe_argv
               and L.confined_inner(confined) == probe_argv)
 
         # AC3: a host without the confined runner's setup. A default run starts; a risky run is refused by name.
         missing = base / 'nohelper'
         missing.mkdir()
-        shutil.copyfile(SANDBOX_CONFIG, missing / 'agent_sandbox.json')
-        text = SANDBOX.read_text()
-        text = text.replace("NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-userns')",
-                            "NAMESPACE_HELPER = Path(%r)" % str(missing / 'absent' / 'veldo-userns'), 1)
-        (missing / 'agent_sandbox.py').write_text(text)
-        bare = {'confined_runner': {'program': str(missing / 'agent_sandbox.py'),
-                                    'config': str(missing / 'agent_sandbox.json')}}
+        shutil.copyfile(SANDBOX_CONFIG, missing / 'fixture_runner.json')
+        (missing / 'fixture_runner.py').write_text(runner_text)
+        bare = {'confined_runner': {'program': str(missing / 'fixture_runner.py'),
+                                    'config': str(missing / 'fixture_runner.json')}}
         problem = L.confined_runner_problem(bare)
         check('ac3/no-runner-host', 'the missing helper is a named problem [%s]' % problem,
               problem == 'confined_runner_unavailable:helper_missing')
-        check('ac3/no-runner-host', 'an installation with no confined runner configured has one too',
-              str(L.confined_runner_problem({})).startswith('confined_runner_unavailable:'))
+        # No runner ships (VELDO-0271): a receiver configuration that names none refuses a risky launch as
+        # not_configured, and one that still names the deleted configuration file as config_missing.
+        unconfigured = {}
+        named = L.runner_refusal(unconfigured, L.runner_decision(unconfigured, contract({'risky': True})))
+        check('ac3/no-runner-host', 'a launch marked risky is refused as not_configured when the receiver '
+              'configuration names no runner [%s]' % named,
+              named == 'confined_runner_unavailable:not_configured'
+              and L.confined_runner_problem(unconfigured) == named)
+        check('ac3/no-runner-host', 'an unmarked launch there is not refused and starts its argv unwrapped',
+              L.runner_refusal(unconfigured, L.runner_decision(unconfigured, contract())) is None
+              and L.runner_argv(unconfigured, L.runner_decision(unconfigured, contract()), probe_argv, str(runs)) == probe_argv)
+        stale = {'confined_runner': {'program': str(SANDBOX), 'config': str(ROOT / 'scripts' / 'agent_sandbox.json')}}
+        check('ac3/no-runner-host', 'a configuration that still names the deleted file is refused as config_missing',
+              L.runner_refusal(stale, L.runner_decision(stale, contract({'risky': True})))
+              == 'confined_runner_unavailable:config_missing')
         seen_bare = started(L.runner_argv(bare, L.runner_decision(bare, contract()), probe_argv, str(runs)))
         check('ac3/no-runner-host', 'a default run there starts and reaches its services [%s]' % seen_bare,
               seen_bare.get('tcp') == 'PONG' and seen_bare.get('unix') == 'PONG')

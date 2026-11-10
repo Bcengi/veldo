@@ -1,7 +1,7 @@
-"""VELDO-0208: one authenticated landing contract and one confinement config.
+"""VELDO-0208: one authenticated landing contract and the reuse store's location.
 
-The caller is the trusted, unconfined gate/lander. Never load this module or its
-configuration from an implementing agent's candidate before reviewing it.
+The caller is the trusted gate or lander. Never load this module from an implementing
+agent's candidate before reviewing it.
 """
 import hashlib
 import hmac
@@ -25,15 +25,14 @@ def digest(value):
 
 
 # Only reviewed authority files enter this identity; never a candidate-supplied ID.
-AUTHORITY_FILES = ('.veldo/candidate_git.py', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/agent_sandbox.json', '.veldo/reuse_evidence.py', '.veldo/git_process.py', 'scripts/gate_legs.py', 'scripts/gate_unconfined.json', 'scripts/gate_schedule.py', 'scripts/gate_graph.json')
+AUTHORITY_FILES = ('.veldo/candidate_git.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', '.veldo/reuse_evidence.py', '.veldo/git_process.py', 'scripts/gate_schedule.py', 'scripts/gate_graph.json')
 
 
-# An authority may lack these, and that is a state of its own, not an error: with no unconfined
-# list every gate stage is confined (VELDO-0208), as in an authority that predates the list or an
-# adopter's installation, which never receives one. Absent is recorded as ABSENT, which no digest
-# equals, so adding or removing the list changes the identity; a list that is present is hashed
-# like any other file, whatever it holds.
-OPTIONAL_AUTHORITY_FILES = ('scripts/gate_unconfined.json', 'scripts/gate_graph.json')
+# An authority may lack these, and that is a state of its own, not an error: with no graph the
+# gate keeps its serial loop, as in an adopter's installation, which never receives one. Absent is
+# recorded as ABSENT, which no digest equals, so adding or removing the file changes the identity;
+# one that is present is hashed like any other file, whatever it holds.
+OPTIONAL_AUTHORITY_FILES = ('scripts/gate_graph.json',)
 ABSENT = 'absent'
 
 
@@ -51,15 +50,22 @@ def authority_identity():
     return digest({name: _file_identity(root, name) for name in AUTHORITY_FILES})
 
 
+STORE = '~/.cache/veldo/gate-reuse-v2'
+
+
 def configuration(path=None):
-    path = Path(path or os.environ.get('VELDO_AGENT_CONFIG') or
-                Path(__file__).resolve().parents[1] / 'scripts/agent_sandbox.json').resolve(strict=True)
-    document = json.loads(path.read_text())
-    if document.get('schema') != 'veldo.agent-sandbox/v1':
-        raise ValueError('unknown agent sandbox configuration')
+    """(path, document) of the reuse configuration. With no path and no VELDO_AGENT_CONFIG the
+    document is the built-in one, which names only the store, and the path is None."""
+    path = path or os.environ.get('VELDO_AGENT_CONFIG')
+    if path:
+        path = Path(path).resolve(strict=True)
+        document = json.loads(path.read_text())
+        if document.get('schema') != 'veldo.agent-sandbox/v1':
+            raise ValueError('unknown reuse configuration')
+    else:
+        path, document = None, {'schema': 'veldo.agent-sandbox/v1', 'store': STORE}
     raw_store = document['store']
-    # HOME is private scratch inside the launcher. The store belongs to the uid,
-    # not to whichever HOME an implementing process supplies.
+    # The store belongs to the uid, not to whichever HOME a process supplies.
     if raw_store.startswith('~/'):
         raw_store = str(Path(pwd.getpwuid(os.getuid()).pw_dir) / raw_store[2:])
     store = Path(raw_store)

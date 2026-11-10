@@ -18,11 +18,26 @@ VELDO_SELF="$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"; VELDO_START=$(p
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }
-# A caller's gate leg variables (VELDO-0208) never reach a candidate command: this gate runs no
-# unconfined leg, so a candidate's dispatcher must never read one from the caller.
+# Every candidate command starts through the authority's gate_candidate.py (VELDO-0271): in the
+# candidate root, standard input from /dev/null, every inherited descriptor closed, and an
+# environment that carries no credential name. Each stage is one command and one stage line.
 veldo_candidate() {
-  env -u VELDO_GATE_LEG -u VELDO_GATE_UNCONFINED -u VELDO_GATE_DECLARATION \
-    python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
+  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_candidate.py" --root "$(pwd -P)" -- "$@"
+}
+# A LEFTOVER NAMESPACE HELPER (VELDO-0271). The gate once ran candidate commands through a
+# root-installed helper and its AppArmor profile. Nothing calls either any more. Where one is still
+# installed the gate says so once, with the owner's removal command, and the result does not change.
+# VELDO_HOST_ROOT names another root to look under (a fixture host); it changes only this report.
+veldo_leftover_report() {
+  _veldo_left=""
+  for _veldo_p in /usr/local/lib/veldo/veldo-userns /etc/apparmor.d/veldo-userns; do
+    if [ -e "${VELDO_HOST_ROOT:-}$_veldo_p" ] || [ -L "${VELDO_HOST_ROOT:-}$_veldo_p" ]; then
+      _veldo_left="${_veldo_left:+$_veldo_left, }$_veldo_p"
+    fi
+  done
+  if [ -n "$_veldo_left" ]; then
+    echo "leftover_namespace_helper: $_veldo_left is installed and no longer used; the owner removes it with: sudo rm /usr/local/lib/veldo/veldo-userns; sudo apparmor_parser -R /etc/apparmor.d/veldo-userns; sudo rm /etc/apparmor.d/veldo-userns"
+  fi
 }
 
 # CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
@@ -157,7 +172,6 @@ TODAY=$(date -u +%Y-%m-%d)
 VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""; VELDO_GRAPH_REFUSED=0
 if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
   VELDO_SCHEDULE=$(mktemp -d)
-  VELDO_LEGS_RECORD="$VELDO_SCHEDULE/legs.jsonl"
   VELDO_REUSE_RECEIPT="$VELDO_SCHEDULE/mutation.json"
   trap 'rm -rf "$VELDO_SCHEDULE"' EXIT
   _veldo_stages=()
@@ -171,7 +185,7 @@ if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/s
     _veldo_stages+=(--stage "$_veldo_name" "$_veldo_cmd")
   done
   if ! python3 -I -S "$VELDO_AUTHORITY/scripts/gate_schedule.py" --root "$(pwd -P)" \
-      --directory "$VELDO_SCHEDULE" --record "$VELDO_LEGS_RECORD" --receipt "$VELDO_REUSE_RECEIPT" \
+      --directory "$VELDO_SCHEDULE" --receipt "$VELDO_REUSE_RECEIPT" \
       --output "$VELDO_OUT/gate-schedule.json" "${_veldo_stages[@]}"; then FAIL=1; fi
   if [ -f "$VELDO_SCHEDULE/graph-field" ]; then
     VELDO_GRAPH_FIELD=$(cat "$VELDO_SCHEDULE/graph-field")
@@ -372,6 +386,7 @@ else
   fi
 fi
 
+veldo_leftover_report
 echo ""
 echo "catalog: ${RAN} run, ${NA} not-applicable (reasons on record), ${WAIVED} waived, ${UNDECLARED} undeclared"
 if [ "$FAIL" -eq 0 ]; then

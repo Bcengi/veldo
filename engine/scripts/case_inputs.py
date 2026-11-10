@@ -6,14 +6,14 @@ from pathlib import Path
 
 DECLARATIONS = 'scripts/mutation_case_inputs.json'
 DRIVERS = ('scripts/check_teeth_mutations.py', 'scripts/check_review_mutations.py')
-MANDATORY = ('.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/check_gate_mutations.py', 'scripts/mutation_sandbox.py',
+MANDATORY = ('.veldo/reuse_evidence.py', 'scripts/check_gate_mutations.py',
              'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/case_reuse.py',
              'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/suites/shared.py')
 
-# What starts a gate (VELDO-0210 AC7): the gate's entry, the launcher it starts and the leg runner
-# between them, wherever a copy lies (engine/, a fixture). A declared case reads only its declared
-# inputs, so one without any of these starts no gate, and one with any is refused declaration.
-GATE_ENTRIES = ('verify.sh', 'gate_candidate.py', 'gate_legs.py', 'agent_sandbox.py')
+# What starts a gate: the gate's entry and the runner it starts every candidate command through,
+# wherever a copy lies (engine/, a fixture). A declared case reads only its declared inputs, so
+# one without any of these starts no gate, and one with any is refused declaration.
+GATE_ENTRIES = ('verify.sh', 'gate_candidate.py')
 
 
 def gate_entries(names):

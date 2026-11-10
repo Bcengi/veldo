@@ -51,8 +51,10 @@ def _v139_suite():
             'edge/enrolled-with-possession', 'chat/enrolled', 'ingress/configuration', 'token/never-copied',
             'service/starts-inert', 'journey/qualified-and-active', 'genesis/owner-signed',
             'qualification/one-request-across-restart', 'rollback/rerun', 'store/private-and-closed',
-            'host-trust/directory-checked', 'qualification/opening-retried')
-    IA, LD, RW, ES, EK, CE_, IC, TK, SI, JQ, GO, QR, RB, SP, HD, OR = ROWS
+            'host-trust/directory-checked', 'qualification/opening-retried',
+            # VELDO-0271 AC4: a leftover namespace helper is reported and changes nothing; setup never runs sudo.
+            'setup/leftover-reported', 'setup/never-calls-sudo')
+    IA, LD, RW, ES, EK, CE_, IC, TK, SI, JQ, GO, QR, RB, SP, HD, OR, LR, NS = ROWS
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -359,19 +361,42 @@ def _v139_suite():
         argv = {'--state-root': str(state_root), '--owner': owner, '--owner-key': str(owner_key),
                 '--workspace': str(workspace), '--chat': str(owner_user['id']), '--token-file': str(token_file)}
         argv.update(replace)
-        out = io.StringIO()
-        with contextlib.redirect_stdout(out):
-            code = F.main(['setup'] + [x for pair in argv.items() for x in pair], host_trust=str(host_trust),
-                          install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile,
-                          writable=[], runner=manager, origin=url, **ts_overrides)
+        out, err = io.StringIO(), io.StringIO()
+        # VELDO-0271: the first setup runs on a fixture host that still holds the namespace helper and its
+        # profile, every other one on a fixture host that holds neither, whatever this host has installed.
+        prior_host = os.environ.get('VELDO_HOST_ROOT')
+        os.environ['VELDO_HOST_ROOT'] = str(leftover_host if tag == 'main' else clean_host)
+        try:
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = F.main(['setup'] + [x for pair in argv.items() for x in pair], host_trust=str(host_trust),
+                              install_root=str(base / 'install'), unit_dir=str(base / 'units'), profile=profile,
+                              writable=[], runner=manager, origin=url, **ts_overrides)
+        finally:
+            if prior_host is None:
+                os.environ.pop('VELDO_HOST_ROOT', None)
+            else:
+                os.environ['VELDO_HOST_ROOT'] = prior_host
+        said.setdefault(tag, []).append(err.getvalue())
         try:
             shown = json.loads(out.getvalue().strip().splitlines()[-1])
         except (ValueError, IndexError):
             shown = {'unparsed': out.getvalue()[-300:]}
         return code, shown
 
+    # VELDO-0271 AC4: a fixture host root holding the helper and its profile, one holding neither, and a sudo
+    # shim first on PATH that writes down every call it gets.
+    HELPER271, PROFILE271 = '/usr/local/lib/veldo/veldo-userns', '/etc/apparmor.d/veldo-userns'
+    leftover_host, clean_host, said = base / 'host-leftover', base / 'host-clean', {}
+    clean_host.mkdir()
+    for path in (HELPER271, PROFILE271):
+        (leftover_host / path.lstrip('/')).parent.mkdir(parents=True)
+        (leftover_host / path.lstrip('/')).write_text('leftover fixture\n')
+    sudo_shim, sudo_called = base / 'sudo-shim', base / 'sudo-called'
+    sudo_shim.mkdir()
+    (sudo_shim / 'sudo').write_text('#!/bin/sh\necho "$@" >> %s\nexit 0\n' % sudo_called)
+    (sudo_shim / 'sudo').chmod(0o755)
     try:
-        os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
+        os.environ['PATH'] = str(sudo_shim) + os.pathsep + str(engines186['path']) + os.pathsep + prior_path186
         if F is None:
             for name in ROWS:
                 check(name, 'veldo factory setup exists in this tree (.veldo/control_factory_setup.py)', False)
@@ -383,6 +408,12 @@ def _v139_suite():
         host_trust = base / 'xdg' / 'veldo' / 'host_trust.json'
         code, report = setup('main', state_root, workspace, host_trust)
         ok = code == 0 and report.get('outcome') == 'set_up'
+        told = [line for line in ''.join(said.get('main', [])).splitlines() if line.startswith('leftover_namespace_helper')]
+        check(LR, 'on a host that still holds the helper and its profile setup says so once, with both paths and '
+              'the owner\'s removal command, and still sets the factory up [%s %s]' % (code, told),
+              ok and len(told) == 1 and HELPER271 in told[0] and PROFILE271 in told[0]
+              and 'sudo rm /usr/local/lib/veldo/veldo-userns; sudo apparmor_parser -R /etc/apparmor.d/veldo-userns; '
+                  'sudo rm /etc/apparmor.d/veldo-userns' in told[0])
         store = state_root / 'authority' / 'control.sqlite3'
         keys, host = state_root / 'keys', state_root / 'host'
         if store.is_file():
@@ -873,6 +904,12 @@ def _v139_suite():
     except StopIteration:
         pass
     finally:
+        others = {tag: text for tag, texts in said.items() if tag != 'main' for text in texts}
+        check(LR, 'on a host that holds neither, no setup prints the line [%s]' % sorted(others),
+              bool(others) and not [tag for tag, text in others.items() if 'leftover_namespace_helper' in text])
+        check(NS, 'the sudo shim first on PATH got no call across every setup of this suite [%s]'
+              % (sudo_called.read_text()[-200:] if sudo_called.exists() else ''),
+              bool(said.get('main')) and not sudo_called.exists())
         os.environ['PATH'] = prior_path186
         issues186, trace186 = compare_formats.conform_fake(locals(), '0139_factory_setup')
         expect('VELDO-0172 fake/capture:0139_factory_setup', not issues186)

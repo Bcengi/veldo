@@ -109,9 +109,8 @@ def _v204_mutation_receipts():
                     # VELDO-0219 passes the admission floor; these drives admit nothing.
                     'budget_for': lambda *a, floor=None: 10000,
                     # The real reuse session runs: these controlled cases declare no inputs,
-                    # so every one is a fresh miss and no cache is opened. The real launcher names
-                    # the marker each worker is handed (VELDO-0210 AC7).
-                    'load': lambda path: (real_load(path) if Path(path).name in ('case_reuse.py', 'agent_sandbox.py') else
+                    # so every one is a fresh miss and no cache is opened.
+                    'load': lambda path: (real_load(path) if Path(path).name == 'case_reuse.py' else
                                           types.SimpleNamespace(cleanup=cleanup, mutate=teeth.mutate)),
                 }
                 for key, value in overrides.items():

@@ -76,15 +76,6 @@
     "16_warp_1403_sizing_pass"
    ],
    "requires_note": "Post-cut fragment, so it DECLARES its closure rather than having one derived, and the declaration is ITSELF ALONE. MEASURED, not assumed: its FREE names were enumerated from its own AST - Path, ROOT, V, expect, importlib, json, subprocess, sys, tempfile, tmpfile, and nothing else - and every one is bound by shared.py, which always runs, while its own three imports (hashlib, re, shutil) are local, prefixed and deleted at the end. Driven: `python3 scripts/selftest.py --suite 16_warp_1403_sizing_pass` runs this fragment standalone, and its pass count is exactly the contribution it makes to a full run, measured as the delta of the aggregate line with and without it. THE FIGURES ARE DELIBERATELY NOT REPEATED HERE. They were, and every one had gone stale: this note claimed a count while the fragment's own docstring claimed another, which is one fact recorded twice and diverging. A count in prose has no reader that can refresh it, so the command is the record and the number is whatever the command says today."
-  },
-  {
-   "name": "111_veldo_0214_first_use_budget",
-   "file": "111_veldo_0214_first_use_budget.py",
-   "requires": [
-    "111_veldo_0214_first_use_budget"
-   ],
-   "regions": "The first-use check budget per nested run, measured from the unit stage leg the authority timed.",
-   "requires_note": "Only ROOT and expect. A fixture list and fake stage commands through the real gate_legs.py with its confined runner replaced by the plain one; scratch leg-time stores."
   }
  ]
 }

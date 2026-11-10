@@ -14,30 +14,17 @@
         "peak_cgroup_memory_bytes": 228331520
       }
     },
-    "unit.confined": {
-      "depends_on": [],
-      "writes_candidate": false,
-      "manager": "none",
-      "ports": [],
-      "host_lock": "shared",
-      "estimate": {
-        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
-        "wall_seconds": 1913.2,
-        "cpu_seconds": 1902.376,
-        "peak_cgroup_memory_bytes": 2700840960
-      }
-    },
-    "unit.unconfined": {
+    "unit": {
       "depends_on": [],
       "writes_candidate": false,
       "manager": "exclusive",
       "ports": [],
       "host_lock": "shared",
       "estimate": {
-        "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
-        "wall_seconds": 891.6,
-        "cpu_seconds": 663.906,
-        "peak_cgroup_memory_bytes": 2011017216
+        "source": "PENDING measured run, proof/VELDO-0271",
+        "wall_seconds": 2804.8,
+        "cpu_seconds": 2566.282,
+        "peak_cgroup_memory_bytes": 2700840960
       }
     },
     "security": {

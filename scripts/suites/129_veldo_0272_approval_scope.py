@@ -195,8 +195,8 @@ def _v272_suite():
     check('AC1 policy/engine-identical', 'engine/.veldo/policy_check.py is byte-identical',
           (ROOT / '.veldo/policy_check.py').read_bytes() == (ROOT / 'engine/.veldo/policy_check.py').read_bytes())
     check('AC1 mutation/gate-legs-added-back', 'baseline green', lists_match(prot))
-    check('AC1 mutation/gate-legs-added-back', 'mutant red: scripts/gate_legs.py added back',
-          not lists_match(prot + [{'path': 'scripts/gate_legs.py', 'floor': 'high'}]))
+    check('AC1 mutation/gate-legs-added-back', 'mutant red: scripts/gate_schedule.py, test machinery, added back',
+          not lists_match(prot + [{'path': 'scripts/gate_schedule.py', 'floor': 'high'}]))
     check('AC1 mutation/policy-check-removed', 'baseline green', lists_match(prot))
     check('AC1 mutation/policy-check-removed', 'mutant red: .veldo/policy_check.py removed',
           not lists_match([r for r in prot if r.get('path') != '.veldo/policy_check.py']))
@@ -210,7 +210,7 @@ def _v272_suite():
             # AC1 push rows: a test machinery path needs no owner approval; an authentication path needs the
             # owner. N3: each push carries a not-required spec reviewed by someone other than the producer,
             # so the only difference between the two is the path, and no owner approval is in either.
-            for name, rel, want in (('legs', 'scripts/gate_legs.py', 0), ('auth', '.veldo/authorization.py', 1)):
+            for name, rel, want in (('legs', 'scripts/gate_schedule.py', 0), ('auth', '.veldo/authorization.py', 1)):
                 repo = new_repo(base, 'push-' + name)
                 commit(repo, 'base')
                 git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD')

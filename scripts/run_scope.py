@@ -306,68 +306,6 @@ def resolve(selector_values, manifest=None, requires=None):
     return asked, [n for n in names if n in wanted]
 
 
-# THE GATE'S LEGS (VELDO-0208, owner decision 2026-10-07). The authority's scripts/gate_legs.py
-# runs a declared stage twice and tells the run which leg it is through these three variables:
-# VELDO_GATE_LEG is "confined" or "unconfined", VELDO_GATE_UNCONFINED is the authority's list,
-# comma-separated, each entry a suite name or name:rows for a suite only some rows of which run
-# unconfined, and VELDO_GATE_DECLARATION is the sha256 digest of the list gate_legs.py read. All
-# three unset, the run is the whole suite exactly as before. A leg is not a selector: the gate runs
-# both legs and requires both, and a person running one leg by hand has run half the stage.
-# A leg run that is not what gate_legs.py sets, three variables naming a leg, a digest and a
-# non-empty well-formed list, is REFUSED rather than read: an empty list once made an unconfined leg
-# run zero suites and print a passing aggregate line.
-GATE_LEG = "VELDO_GATE_LEG"
-GATE_UNCONFINED = "VELDO_GATE_UNCONFINED"
-GATE_DECLARATION = "VELDO_GATE_DECLARATION"
-GATE_VARIABLES = (GATE_LEG, GATE_UNCONFINED, GATE_DECLARATION)
-LEGS = ("confined", "unconfined")
-
-
-class LegRefused(Exception):
-    """Leg variables that are not the complete, well-formed set the authority's leg runner sets."""
-
-
-def gate_leg(environ):
-    """(leg or None, {suite: rows tag or None for the whole suite}) from the environment."""
-    present = [name for name in GATE_VARIABLES if environ.get(name) is not None]
-    if not present:
-        return None, {}
-    if len(present) != len(GATE_VARIABLES):
-        raise LegRefused("leg variables %s are set without %s; only the authority's gate_legs.py "
-                         "starts a leg, and it sets all three"
-                         % (", ".join(present), ", ".join(n for n in GATE_VARIABLES if n not in present)))
-    leg = environ[GATE_LEG]
-    if leg not in LEGS:
-        raise LegRefused("%s=%r names no leg (%s)" % (GATE_LEG, leg, ", ".join(LEGS)))
-    if not re.match(r"^sha256:[0-9a-f]{64}$", environ[GATE_DECLARATION]):
-        raise LegRefused("%s=%r is not the digest of a declared list"
-                         % (GATE_DECLARATION, environ[GATE_DECLARATION]))
-    if not environ[GATE_UNCONFINED]:
-        raise LegRefused("%s is empty; a leg without the authority's list is not a leg" % GATE_UNCONFINED)
-    listed = {}
-    for item in environ[GATE_UNCONFINED].split(","):
-        name, _, rows = item.partition(":")
-        if not re.match(r"^[0-9A-Za-z][0-9A-Za-z_]*$", name) or (rows and not re.match(r"^[a-z][a-z0-9-]*$", rows)) \
-                or (":" in item and not rows) or name in listed:
-            raise LegRefused("%s carries a malformed or repeated entry %r" % (GATE_UNCONFINED, item))
-        listed[name] = rows or None
-    return leg, listed
-
-
-def leg_runs(suite, rows=None, environ=None):
-    """Whether this leg runs the given rows of `suite`: rows=None is the suite's ordinary rows, a
-    tag names the rows the list may move to the unconfined leg. Outside a leg everything runs."""
-    leg, listed = gate_leg(environ if environ is not None else __import__("os").environ)
-    if leg is None:
-        return True
-    scoped = suite in listed
-    if leg == "confined":
-        return not (scoped and listed[suite] is not None and listed[suite] == rows)
-    if not scoped:
-        return False
-    return listed[suite] is None or listed[suite] == rows
-
-
 class RunScope:
     """The one authority on what a single run of the unit suite may claim.
 
@@ -408,7 +346,7 @@ class RunScope:
 
     def verify_stamp_payload(self, commit, status, at, checks_run, checks_na,
                              veldo_version=None, tree=None, force_fresh=False, reused=None,
-                             reuse_evidence=None, unconfined=None, mutation_ran=False, mutation=None):
+                             reuse_evidence=None, mutation_ran=False, mutation=None):
         """The record .veldo/last_verify carries. See the module docstring: verify.sh writes
         that file in shell and this has no production caller yet, deliberately.
 
@@ -432,11 +370,6 @@ class RunScope:
         receipt existed. reuse_evidence is present only when a reused result had to be
         authenticated, exactly as reuse_stamp.fields adds it only then.
 
-        unconfined is what scripts/gate_legs.py --stamp returns (VELDO-0208, owner decision
-        2026-10-07): the declaration's digest and the entries each stage ran outside the
-        confinement, or None when a leg was expected and its record could not be read (the gate is
-        then RED). Like reuse_evidence it is present only when an unconfined leg was expected.
-
         mutation is the block this repository's gate stamps when its mutation stage ran (VELDO-0267:
         scripts/mutation_selection.py --stamp-field), or None when the stage left no selection to
         report; present exactly when mutation_ran, as verify.sh writes it only then. The engine
@@ -450,8 +383,6 @@ class RunScope:
             payload["mutation"] = mutation
         if reuse_evidence is not None:
             payload["reuse_evidence"] = reuse_evidence
-        if unconfined is not None:
-            payload["unconfined"] = unconfined
         return payload
 
     def unit_evidence_check(self, failed):

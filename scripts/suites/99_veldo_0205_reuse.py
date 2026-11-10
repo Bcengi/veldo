@@ -102,7 +102,7 @@ def _v205_reuse():
         namespace['fixture'](fixture_root, ROOT / 'scripts/check_gate_mutations.py')
         expect('VELDO-0205 reuse/legacy-fixture-dependencies: old fresh-stage fixtures carry new helpers',
                all((fixture_root / 'scripts' / name).is_file()
-                   for name in ('gate_reuse.py', 'mutation_reuse.py', 'mutation_sandbox.py',
+                   for name in ('gate_reuse.py', 'mutation_reuse.py',
                                 'case_inputs.py', 'case_reuse.py', 'case_trace.py', 'reuse_stamp.py')))
 
         def session(source=files, definitions=cases, **kwargs):
@@ -351,30 +351,19 @@ def _v205_reuse():
                  patch.object(reuse, 'Session', side_effect=stage_session):
                 return gate.run_stage(root, root / '.git', force_fresh=force)
 
+        # Reuse is off (VELDO-0271): the same inputs twice, and both runs execute both cases. Nothing
+        # is looked up, nothing is published and no case carries a key.
         cold = run()
         warm = run()
-        expect('VELDO-0205 reuse/receipt-counts: cold executes both drivers; warm validates both cached kills',
+        published = sorted(p.name for p in stage_cache.glob('*.json*')) if stage_cache.is_dir() else []
+        expect('VELDO-0205 reuse/receipt-counts: the same inputs twice execute both drivers both times, reuse nothing '
+               'and publish nothing %r' % [(r.get('status'), r.get('executed'), r.get('reused')) for r in (cold, warm)],
                cold['status'] == warm['status'] == 'passed'
-               and (cold['executed'], cold['reused'], cold['rejected']) == (2, 0, 2)
-               and (warm['executed'], warm['reused'], warm['rejected']) == (0, 2, 2)
-               and warm['worker_invocations'] == 0
-               and all(d['executed'] == 0 and d['reused'] == 1 for d in warm['drivers'].values())
-               and all(r['key'] and r['source'] == 'reused' for r in warm['case_receipts']))
-        # Corrupt one entry. Exactly that case executes again, its peer remains a hit.
-        broken_key = captured[-1].keys[cases[0]['identity']]
-        (stage_cache / (broken_key + '.json')).write_bytes(b'corrupt')
-        mixed = run()
-        expect('VELDO-0205 reuse/mixed-counts: corruption causes one fresh case and retains the other hit',
-               mixed['status'] == 'failed' and mixed['error'] == 'reuse_integrity_conflict'
-               and (mixed['executed'], mixed['reused']) == (1, 1)
-               and mixed['drivers'][gate.DRIVERS[0]]['executed'] == 1
-               and mixed['drivers'][gate.DRIVERS[1]]['reused'] == 1)
-        survivor[0] = True
-        red = run()
-        expect('VELDO-0205 reuse/stale-cannot-pass: a corrupt record cannot hide a surviving fresh mutant',
-               red['status'] == 'failed' and red['error'] == 'mutation_survived'
-               and (red['executed'], red['reused'], red['rejected']) == (1, 1, 1))
-        survivor[0] = False
+               and all((r['executed'], r['reused'], r['rejected'], r['worker_invocations'] > 0) == (2, 0, 2, True)
+                       and all(d['executed'] == 1 and d['reused'] == 0 for d in r['drivers'].values())
+                       and all(c['key'] is None and c['source'] == 'fresh' and c['reason'] == 'reuse_off'
+                               for c in r['case_receipts']) for r in (cold, warm))
+               and published == [])
         fresh = run(True)
         direct = session(force_fresh=True)
         with patch.dict(os.environ, {'VELDO_GATE_FORCE_FRESH': '1'}):
@@ -397,26 +386,20 @@ def _v205_reuse():
         active_files[0] = changed
         survivor[0] = True
         stale = run()
-        expect('VELDO-0205 reuse/changed-input-cannot-pass: stale cache cannot conceal an edited defective subject',
+        expect('VELDO-0205 reuse/changed-input-cannot-pass: an edited defective subject is run and seen',
                stale['status'] == 'failed' and stale['executed'] == 2 and stale['reused'] == 0)
         active_files[0] = files
         survivor[0] = False
 
-        # Run the real coordinator code with planted counting and force-fresh defects.
+        # Run the real coordinator code with a planted force-fresh defect.
         source = (ROOT / 'scripts/check_gate_mutations.py').read_text()
         for label, old, new, criterion in [
-            ('count', "receipt['executed'] += int(attempted)", "receipt['executed'] += int(attempted or hit)",
-             lambda value: value['executed'] == 0 and value['reused'] == 2),
             ('force', 'force_fresh=force_fresh)', 'force_fresh=False)',
-             lambda value: value['executed'] == 2 and value['reused'] == 0)]:
+             lambda value: value['force_fresh'] is True)]:
             assert source.count(old) == 1
             mutant = types.ModuleType('controlled_coordinator_' + label)
             mutant.__file__ = str(ROOT / 'scripts/check_gate_mutations.py')
             exec(compile(source.replace(old, new), mutant.__file__, 'exec'), mutant.__dict__)
-            # Remove the corrupt record and repopulate it through the production path.
-            (stage_cache / (broken_key + '.json')).unlink(missing_ok=True)
-            (stage_cache / (broken_key + '.json.conflict')).unlink(missing_ok=True)
-            run()
             original_gate = gate
             gate = mutant
             try:
@@ -436,7 +419,7 @@ def _v205_reuse():
                [line for line in text.splitlines() if line.startswith('CHECK_mutation=')]
                == ['CHECK_mutation="required:authority mutation stage"']
                and invocations == ['python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" '
-                                   '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT" --legs-record "$VELDO_LEGS_RECORD"']
+                                   '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"']
                and 'VELDO_GATE_FORCE_FRESH=1' in text
                and gate.DRIVERS == ('check_teeth_mutations.py', 'check_review_mutations.py'))
 
@@ -502,35 +485,6 @@ def _v205_review_repairs():
         assert store.put(key, {'first': True})
         expect('VELDO-0205 repair/collision-is-integrity-miss',
                not store.put(key, {'second': True}) and store.get(key) is None and store.integrity_errors)
-        # The worker confinement (mutation_sandbox.confine, the gate profile's domain): the store and
-        # its key stay out of reach of the worker and its children; only scratch is writable.
-        sandbox = ROOT / 'scripts/mutation_sandbox.py'
-        script = '''import importlib.util, pathlib, subprocess, sys
-spec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])
-s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s)
-s.confine(sys.argv[5], sys.argv[2], sys.argv[3])
-p = pathlib.Path(sys.argv[4])
-try:
- p.read_bytes()
-except PermissionError:
- pass
-else:
- raise AssertionError('worker read key')
-child = subprocess.run(['/usr/bin/cat', str(p)], capture_output=True)
-assert child.returncode != 0 and b'Permission denied' in child.stderr
-try:
- p.write_bytes(b'changed')
-except PermissionError:
- pass
-else:
- raise AssertionError('worker wrote key')
-pathlib.Path(sys.argv[3], 'allowed').write_text('ok')
-'''
-        result = subprocess.run([sys.executable, '-B', '-c', script, str(sandbox), str(root),
-                                 str(scratch), str(top / 'private/authentication.key'), str(ROOT)],
-                                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=15)
-        expect('VELDO-0205 repair/worker-and-child-cannot-access-store: ' + result.stderr[-300:],
-               result.returncode == 0 and (scratch / 'allowed').read_text() == 'ok')
     import copy
     spec = importlib.util.spec_from_file_location('landing', ROOT / 'engine/.veldo/control_verification.py')
     landing = importlib.util.module_from_spec(spec)

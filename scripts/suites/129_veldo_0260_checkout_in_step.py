@@ -2,7 +2,7 @@
 
 Run: python3 scripts/selftest.py --suite 129_veldo_0260_checkout_in_step
 
-Only shared ROOT, expect and launcher_fds are consumed. One temporary tree holds the installed .veldo copy every
+Only shared ROOT and expect are consumed. One temporary tree holds the installed .veldo copy every
 organ loads, with this change's production modules (PRODUCTION) laid over it, so a registered mutation of either
 reaches every row. The unit rows drive the Landing's working-tree reads and moves over small real repositories.
 The integration rows are real throughout, as VELDO-0235's suite is: a scaffolded seed whose canonical gate is its
@@ -231,7 +231,7 @@ def _v260_suite():
         git(seed, 'commit', '-q', '-m', 'Fixture repository')
         first = git(seed, 'rev-parse', 'HEAD')
         subprocess.run(['bash', 'scripts/verify.sh'], cwd=str(seed), capture_output=True, text=True,
-                       stdin=subprocess.DEVNULL, env=clean, timeout=300, pass_fds=launcher_fds())
+                       stdin=subprocess.DEVNULL, env=clean, timeout=300)
         git(seed, 'add', '--', '.veldo/last_verify', '.veldo/events.jsonl')
         git(seed, 'commit', '-q', '-m', 'Gate stamp for ' + first[:12])
         SEED = git(seed, 'rev-parse', 'HEAD')

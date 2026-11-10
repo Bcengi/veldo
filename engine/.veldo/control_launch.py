@@ -390,8 +390,8 @@ def launch_scan(config, dispatch_id, project, environment, argv, own=()):
 
 # THE ONE LAUNCHER DECISION (VELDO-0254 AC3). By default a launch starts as today: the host's network, shared
 # databases, container tooling and local and loopback services, with no fence, namespace, name resolution change
-# or filesystem confinement added. A launch starts in the confined runner of VELDO-0208 (scripts/agent_sandbox.py,
-# named with its configuration by the receiver configuration's `confined_runner`: {program, config}) only when it
+# or filesystem confinement added. A launch starts in a confined runner (a program the receiver configuration
+# names with its configuration as `confined_runner`: {program, config}; Veldo ships none since VELDO-0271) only when it
 # is marked risky: by the installation (`risky.installation`), its project (`risky.projects`) or its dispatch (the
 # contract's input context `risky`). A risky launch on a host that cannot provide the confined runner is refused as
 # confined_runner_unavailable:<reason>; no other launch is ever refused for a confinement reason. Receiver.launch is
@@ -456,7 +456,7 @@ def runner_refusal(config, decision, cache=None):
     return confined_runner_problem(config, cache) if decision['runner'] == 'confined' else None
 
 
-# The confined runner's agent client (scripts/agent_sandbox.json `clients`) whose files each engine receives.
+# The confined runner's agent client (a key of `clients` in the runner's configuration) whose files each engine receives.
 RUNNER_CLIENTS = {'claude_code': 'claude', 'codex': 'codex'}
 
 

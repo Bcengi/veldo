@@ -20,7 +20,7 @@ ROWS = ['gate/both-mutation-drivers-are-required', 'gate/mutation-results-have-t
         'gate/mutation-stage-budget-is-enforced', 'gate/removed-teeth-redden-the-gate',
         'gate/fixture-cases-execute-named-targets']
 
-# A driver is candidate code used only for confined registry enumeration; workers run the
+# A driver is candidate code used only for registry enumeration; workers run the
 # authority's mutation observer over the suite (VELDO-0208). So the driver is a registry, and the
 # behaviours the stage must survive (a crash, a hang, a weakened assertion) live in the suite.
 FIXTURE_DRIVER = '''
@@ -79,8 +79,7 @@ def fixture(root, source, driver_source=None, suite_source=None):
     (root / '.veldo').mkdir()
     # The fixture is its own authority when its gate runs, so it carries the authority machinery:
     # every required file of the authority identity (.veldo/reuse_evidence.py), not a copy of that
-    # list kept here, which fell behind when the identity gained scripts/gate_legs.py (VELDO-0208).
-    # The optional unconfined list stays absent, so the fixture's gate confines every stage.
+    # list kept here, which fell behind once when the identity gained a file.
     authority = source.parent.parent
     identity = import_gate(authority / '.veldo/reuse_evidence.py')
     for name in identity.AUTHORITY_FILES:
@@ -127,7 +126,7 @@ expect('fixture/nested', (base / 'nested/control.txt').read_text() == 'nested re
 
 MUTATION_DECLARATION = 'CHECK_mutation="required:authority mutation stage"'
 MUTATION_INVOCATION = ('python3 -I -S "$VELDO_AUTHORITY/scripts/check_gate_mutations.py" '
-                       '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT" --legs-record "$VELDO_LEGS_RECORD"')
+                       '--root "$(pwd -P)" --receipt "$VELDO_REUSE_RECEIPT"')
 
 
 def wiring(gate_source):
@@ -153,7 +152,7 @@ def gate_exit(root, gate_source):
         (root / '.veldo' / name).write_text("print('3.10.1')\n")
     return _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True,
                        env=dict(_m123_os.environ, HOME=str(root.parent / 'gate-home')),
-                       text=True, timeout=30, pass_fds=launcher_fds()).returncode
+                       text=True, timeout=30).returncode
 
 
 def qualification(module, repository, selected=None):
@@ -214,8 +213,7 @@ def qualification(module, repository, selected=None):
                 # (VELDO-0208: the gate never runs a candidate copy of its own machinery).
                 ok &= wiring(repository / 'scripts/verify.sh')
                 (root / 'scripts/check_gate_mutations.py').unlink()
-                absent = _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True, timeout=20,
-                                      pass_fds=launcher_fds())
+                absent = _m123_sp.run(['bash', 'scripts/verify.sh'], cwd=root, capture_output=True, timeout=20)
                 ok &= absent.returncode != 0
                 answers[row] = bool(ok)
             elif row == ROWS[1]:
@@ -609,7 +607,7 @@ if 'expect' in globals():
     finally:
         _m123_sp.run(['rm', '-rf', str(_m123_race)], check=True)
     # END TO END: the real run_stage over the suite's fixture, once clean and once with the ORIGINAL
-    # checkout written while the mutant workers run. Workers are confined to read their snapshot, so
+    # checkout written while the mutant workers run. Workers read their own snapshot, so
     # the write comes from beside them, as any concurrent writer would. Only a stage that re-reads the
     # tree after its workers ran, compares it with its first read, and refuses on a difference is red
     # there; a dead, misplaced or self-comparing check passes the clean run AND the changed one.

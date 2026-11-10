@@ -43,9 +43,8 @@ def probe(jobfile, auditfile):
                 audit.flush()
         sys.addaudithook(hook)
         gate = load_gate()
-        # The worker is confined exactly as a coordinator's (mutation_sandbox.confine); the audit
-        # file is the one descriptor it keeps.
-        print(json.dumps(gate.worker(json.loads(Path(jobfile).read_text()), keep=(audit.fileno(),))))
+        # The worker runs as a coordinator's does: a plain process, the case in it.
+        print(json.dumps(gate.worker(json.loads(Path(jobfile).read_text()))))
 
 
 def trace_case(gate, case):

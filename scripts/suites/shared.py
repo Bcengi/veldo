@@ -51,19 +51,6 @@ pspec = importlib.util.spec_from_file_location("policy_check", ROOT / ".veldo" /
 P = importlib.util.module_from_spec(pspec)
 pspec.loader.exec_module(P)
 
-def launcher_fds():
-    """pass_fds for a child that runs a gate (a fixture's verify.sh, gate_candidate.py, a nested
-    selftest): inside a tree the agent launcher made, the tree's marker, without which the gate's own
-    launcher is refused the namespace (VELDO-0210 AC6); elsewhere, or in a fixture copy of this file
-    with no launcher beside it, nothing."""
-    path = ROOT / "scripts" / "agent_sandbox.py"
-    if not path.is_file():
-        return ()
-    spec = importlib.util.spec_from_file_location("shared_agent_sandbox", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.launcher_fds()
-
 # THE FILE THIS SUITE'S OWN ASSERTIONS ARE IN, whichever file that is. WARP-0712 cut the
 # monolith into fragments executed in one namespace, and the dispatcher binds __suite_file__
 # before each fragment runs. A handful of assertions have their OWN file as their subject, and
@@ -71,15 +58,6 @@ def launcher_fds():
 # vacuously. Before the cut the fallback is the monolith itself, so this works both ways.
 def suite_file():
     return Path(globals().get("__suite_file__", str(ROOT / "scripts/selftest.py")))
-
-
-def leg_runs(rows=None):
-    """Whether the gate leg this run is in owns these rows of the running suite (VELDO-0208, owner
-    decision 2026-10-07). rows=None is the suite's ordinary rows; a tag such as 'strace' names the
-    rows the authority's list may move to the unconfined leg. Outside a gate leg, everything runs.
-    A suite the list does not name keeps every row in the confined leg whatever tag it passes."""
-    import run_scope as _rs
-    return _rs.leg_runs(suite_file().stem, rows)
 
 
 PASS = 0

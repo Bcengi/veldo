@@ -230,7 +230,7 @@ def _v267_checks():
         os.environ['VELDO_MUTATION_SELECTION'] = str(evidence)
         try:
             with contextlib.redirect_stdout(output):
-                written = gate.gate_selection(selection, repository, common, None)(base_cases)
+                written = gate.gate_selection(selection, repository, common)(base_cases)
         finally:
             if previous is None:
                 os.environ.pop('VELDO_MUTATION_SELECTION', None)
@@ -283,8 +283,7 @@ def _v267_checks():
         (install / 'scripts').mkdir(parents=True)
         config = install / 'config.json'
         config.write_text(json.dumps({'root': str(ROOT), 'selection': str(SELECTION), 'rule': str(land_rule_path),
-                                      'cases': base_cases,
-                                      'leg': {'suites': ['k2'], 'entries': ['k2']}}))
+                                      'cases': base_cases}))
         driver = install / 'driver.py'
         driver.write_text(
             'import importlib.util, json, os, sys\n'
@@ -302,7 +301,7 @@ def _v267_checks():
             'selection.plan = lambda *a, **k: plan(*a, rule_path=Path(config["rule"]), **k)\n'
             'gate = load(root / "scripts/check_gate_mutations.py", "v267_land_gate")\n'
             'here = Path.cwd()\n'
-            'record = gate.gate_selection(selection, here, gate.common_directory(here), config["leg"])(config["cases"])\n'
+            'record = gate.gate_selection(selection, here, gate.common_directory(here))(config["cases"])\n'
             'print("v267 landing record " + json.dumps({"mode": record["mode"], "base": record["base"],\n'
             '      "candidate": record["candidate"], "trigger": record["trigger"]}), flush=True)\n')
         verifier = (scripts / 'verify.sh').read_text()
@@ -407,19 +406,16 @@ def _v267_checks():
         inventory = [dict(c, driver=d, identity=d + ':' + c['name'])
                      for d, module in (('check_teeth_mutations.py', teeth), ('check_review_mutations.py', review))
                      for c in module.cases()]
-        legs = load(scripts / 'gate_legs.py')
-        leg = legs.mutation_leg()
         manifest = json.loads((scripts / 'suites/manifest.json').read_text())
         demands = {s['file']: s.get('resources') or {} for s in manifest['suites']}
         try:
             if real_rule is None:
                 raise selection.Invalid('the declaration does not load')
-            selection.check_canaries(real_rule, inventory, lambda c: gate.in_leg(leg, c),
-                                     lambda c: demands.get(c['suite']))
+            selection.check_canaries(real_rule, inventory, lambda c: demands.get(c['suite']))
             covered = True
         except selection.Invalid:
             covered = False
-        row('canary/declaration-covers-drivers-legs-fixture', covered)
+        row('canary/declaration-covers-drivers-fixture', covered)
 
         # AC3: the full sweep and its named trigger.
         def full_for(path, the_rule=rule):
@@ -435,7 +431,6 @@ def _v267_checks():
                   'scripts/case_trace.py', 'engine/scripts/case_inputs.py', 'scripts/gate_schedule.py',
                   'engine/scripts/gate_schedule.py', 'scripts/gate_host.py', 'engine/scripts/gate_host.py',
                   'scripts/gate_host.json', 'scripts/verify.sh', 'engine/scripts/verify.sh', 'scripts/gate_graph.json',
-                  'scripts/gate_legs.py', 'engine/scripts/gate_legs.py', 'scripts/gate_unconfined.json',
                   'scripts/gate_candidate.py', 'engine/scripts/gate_candidate.py', 'scripts/suites/shared.py',
                   'scripts/suites/manifest.json']
         missed = [path for path in groups if not full_for(path)]

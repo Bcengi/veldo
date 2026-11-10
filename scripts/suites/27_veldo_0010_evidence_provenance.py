@@ -316,11 +316,9 @@ def _vp_run_gate(gate_rel, declare_version):
         _vp_shutil.copy2(ROOT / ".veldo" / "version.py", base / ".veldo" / "version.py")
         git_fixture_dependency(base / ".veldo" / "version.py")
         # VELDO-0208: the gate runs every candidate command, the version read included, through
-        # the authority launcher, and the throwaway tree IS the authority installation of the gate
-        # copied into it. So it carries that installation's boundary files from the same home as
-        # the gate under test; without them the version cannot be read and null is correct.
-        # The unconfined list (VELDO-0208) is left out: this tree is an authority with no list, so no
-        # stage expects a leg and the stamp's key set stays the payload's.
+        # the authority's candidate runner, and the throwaway tree IS the authority installation of
+        # the gate copied into it. So it carries that installation's authority files from the same
+        # home as the gate under test; without them the version cannot be read and null is correct.
         _vp_home = ROOT / gate_rel.rsplit("scripts/verify.sh", 1)[0]
         for _vp_rel in _VP_AUTHORITY_FILES:
             if _vp_rel in _vp_re_mod.OPTIONAL_AUTHORITY_FILES:
@@ -332,7 +330,7 @@ def _vp_run_gate(gate_rel, declare_version):
             (base / ".claude-plugin" / "marketplace.json").write_text(json.dumps(
                 {"plugins": [{"name": "veldo", "version": declare_version}]}))
         _vp_subprocess.run(["bash", "scripts/verify.sh"], cwd=str(base),
-                           capture_output=True, text=True, timeout=300, pass_fds=launcher_fds())
+                           capture_output=True, text=True, timeout=300)
         stamp = base / ".veldo" / "last_verify"
         if not stamp.is_file():
             return None, None

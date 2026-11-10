@@ -272,10 +272,9 @@ def gate_results(output, names):
 
 
 def launcher_fds():
-    """pass_fds for a gate this process starts: every namespace descriptor it inherited. Inside a tree
-    the agent launcher made, one is the tree's marker, without which the gate's launcher is refused
-    the namespace (VELDO-0210 AC6); that launcher checks it (agent_sandbox.launcher_marker), so
-    handing on one that is not grants nothing. Elsewhere there are none."""
+    """pass_fds for a gate this process starts: every namespace descriptor it inherited. The gate
+    starts no namespace and checks no such descriptor since VELDO-0271, so handing one on grants
+    nothing. On a host that never ran the removed launcher there are none."""
     own = os.stat("/proc/self/ns/pid")
     found = []
     for name in os.listdir("/proc/self/fd"):

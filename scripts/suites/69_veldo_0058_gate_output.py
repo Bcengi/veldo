@@ -11,7 +11,7 @@ registered mutation of any of the four reaches every row. Real Git throughout: a
 gate stamp was committed by the ordinary landing step, a bare remote, the caller's clone the builds are
 made in, and a work clone the executor's loop runs in. The fixture's one check is a real process that
 fails a source not marked OK and, when a source asks, holds the gate open while this suite's watcher,
-outside the check's VELDO-0208 confinement, changes a tracked file, an index entry, a ref or adds an
+from beside the check, changes a tracked file, an index entry, a ref or adds an
 untracked file, or holds it on a handshake while a sibling worktree of the executor's repository commits
 and a fetch moves its refs. This suite reads the candidates' state with its own walk, never with
 control_verification's.
@@ -69,9 +69,7 @@ def _v58_suite():
                 if label not in emitted:
                     check(label, False)
 
-    # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
-    # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
-    # none of its own files.
+    # A plain temporary directory: this fixture's work tree is a candidate the gate runs its commands in.
     with tempfile.TemporaryDirectory(prefix='v58-') as directory, contextlib.ExitStack() as wired:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
@@ -138,7 +136,7 @@ def _v58_suite():
             return re.sub(r'(?m)^CHECK_([A-Za-z0-9_]+)=".*"$', declare, text)
 
         def act_while_held(workspace):
-            """What a held check's sources ask for, done to the candidate from outside the confinement
+            """What a held check's sources ask for, done to the candidate from beside the check
             while the gate runs: a tracked file, an index entry, an untracked file or a ref changed, or
             a handshake (the started file written, then held until the suite writes the resume file)."""
             texts = [path.read_text() for path in sorted((workspace / 'src').glob('*.py'))]
@@ -162,8 +160,8 @@ def _v58_suite():
                         time.sleep(0.02)
 
         def watch_held_checks(stop):
-            """Find each confined fixture check (the process the launcher forked, under this suite's
-            tree) once it catches SIGUSR1, act on its candidate, then resume it."""
+            """Find each fixture check (the process the gate's candidate runner started, under this
+            suite's tree) once it catches SIGUSR1, act on its candidate, then resume it."""
             def read(path):
                 try:
                     return Path(path).read_bytes()
@@ -183,8 +181,8 @@ def _v58_suite():
                         continue
                     pid = int(entry)
                     if (b'check.py' not in read('/proc/%d/cmdline' % pid)
-                            or b'agent_sandbox.py' in read('/proc/%d/cmdline' % pid)
-                            or b'agent_sandbox.py' not in read('/proc/%d/cmdline' % parent(pid))):
+                            or b'gate_candidate.py' in read('/proc/%d/cmdline' % pid)
+                            or b'gate_candidate.py' not in read('/proc/%d/cmdline' % parent(pid))):
                         continue
                     try:
                         workspace = Path(os.path.realpath('/proc/%d/cwd' % pid))
@@ -225,8 +223,8 @@ def _v58_suite():
             'import pathlib, re, signal, sys, time',
             "texts = {p.name: p.read_text() for p in sorted(pathlib.Path('src').glob('*.py'))}",
             # A source naming a mutation or a handshake holds the check open while the gate runs, until
-            # the suite's watcher has acted and resumes it (at most two minutes). The check itself runs
-            # confined (VELDO-0208): it cannot write the candidate or anything outside its scratch.
+            # the suite's watcher has acted and resumes it (at most two minutes). The check itself
+            # writes nothing.
             "if any(re.search(r'^(MUTATE|HANDSHAKE) = ', t, re.M) for t in texts.values()):",
             '    resumed = []',
             '    signal.signal(signal.SIGUSR1, lambda *_: resumed.append(True))',
@@ -253,7 +251,7 @@ def _v58_suite():
         first = git(seed, 'rev-parse', 'HEAD')
         # The ordinary landing step, unchanged: the checkout's own gate, then its stamp committed.
         ordinary = subprocess.run(['bash', 'scripts/verify.sh'], cwd=str(seed), capture_output=True, text=True,
-                                  stdin=subprocess.DEVNULL, env=clean, timeout=300, pass_fds=launcher_fds())
+                                  stdin=subprocess.DEVNULL, env=clean, timeout=300)
         stamp_path, log_path = seed / '.veldo' / 'last_verify', seed / '.veldo' / 'events.jsonl'
         observed['ordinary'] = {
             'exit': ordinary.returncode, 'terminal': (ordinary.stdout.strip().splitlines() or [''])[-1],
@@ -439,7 +437,7 @@ def _v58_suite():
             probe = base / 'probe'
             GP.run(['git', 'clone', '-q', str(remote), str(probe)], check=True, capture_output=True)
             # The verifier is an installation laid by the production installer from the probe's own
-            # commit: VELDO-0208 runs every candidate command through the authority launcher and
+            # commit: the gate runs every candidate command through the authority's candidate runner and
             # validates the candidate's Git marker against the installation's trusted directory.
             CV.installation_at(probe, git(probe, 'rev-parse', 'HEAD'), base / 'verifier')
             verifier = base / 'verifier' / 'scripts' / 'verify.sh'
@@ -448,8 +446,7 @@ def _v58_suite():
                 args = ['--candidate', str(probe)] + (['--sink', str(sink)] if sink is not None else []) + list(extra)
                 before = snapshot(probe)
                 run = subprocess.run(['bash', str(verifier)] + args, cwd=str(probe), capture_output=True, text=True,
-                                     stdin=subprocess.DEVNULL, env=clean, timeout=300,
-                                     pass_fds=launcher_fds())
+                                     stdin=subprocess.DEVNULL, env=clean, timeout=300)
                 lines = run.stdout.strip().splitlines()
                 return {'exit': run.returncode, 'terminal': lines[-1] if lines else None,
                         'refused': any(line.startswith('== gate output: REFUSED') for line in lines),

@@ -394,8 +394,8 @@ class WorkerMeter:
     Anonymous memory is sampled at each coordinator poll. CPU counters are
     cumulative. Owned user units may live outside the worker's subtree; count
     only disjoint roots so a slice and its services are never charged twice.
-    A directory the worker made outside its home (a suite's /dev/shm store in
-    the unconfined leg) is admitted and tracked once the kernel shows it was
+    A directory the worker made outside its home (a suite's /dev/shm store)
+    is admitted and tracked once the kernel shows it was
     born after this meter started, before the worker was spawned; the reaper
     (cleanup with born_after=started) removes exactly what this rule admits.
     """

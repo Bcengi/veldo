@@ -525,10 +525,9 @@ _UI_IGNORE = ".gitignore"
 # The canonical gate is laid down transformed (see _starter_gate).
 _GATE = "scripts/verify.sh"
 
-# VELDO-0208: the complete authority confinement and reuse identity travels with the gate. The
-# unconfined list (scripts/gate_unconfined.json) does not: it is VELDO's own owner decision, naming
-# VELDO's suites, so an adopter has none and every stage of its gate is confined.
-_REUSE_AUTHORITY = ['.veldo/candidate_git.py', '.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/gate_legs.py', 'scripts/gate_schedule.py']
+# VELDO-0208: the gate's authority scripts and its reuse identity travel with the gate. With them
+# goes scripts/agent_sandbox.py, which since VELDO-0271 is only the login lease of VELDO-0211.
+_REUSE_AUTHORITY = ['.veldo/candidate_git.py', '.veldo/reuse_evidence.py', 'scripts/agent_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/gate_schedule.py']
 _FILES += _REUSE_AUTHORITY
 # VELDO-0220: the host holder travels with the gate. Its configuration (scripts/gate_host.json)
 # does not: it names this host's lock and limits, so an adopter has none, and its gate takes no
