@@ -1,0 +1,72 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 proof/VELDO-0117/heavy_summary.py green-after --runs 1 --name offline-suite; per run: VELDO_0117_REPORT=<scratch file> python3 scripts/selftest.py --suite 113_veldo_0117_domain_store",
+ "deciding": {
+  "bound": "every run: the suite reports no failed row and its report shows each of the three rows true, with the number of checks each made. selftest --suite exits 2 by design (a partial run)",
+  "runs": [
+   {
+    "authority_module_sha256": {
+     "control_client.py": "42ae522ffe416ea3d5d3a605781534374072d5fca0e5c2ac1641cb1a823e1a89",
+     "control_enrollment.py": "7f471f7c68dd6e6933d6f85aa8db597c2583480ae0f6992cc9b2c1213cea365c",
+     "control_store.py": "ba827ad4b3b46817f6db9835623799addf9e48c7f7d18e9fdab93cb052473afc"
+    },
+    "cases": {
+     "enrollment/authority-refuses-domain-store-conflict": 8,
+     "enrollment/domain-binding-survives-restart": 16,
+     "enrollment/one-domain-one-winner": 4
+    },
+    "checks_made_and_true": {
+     "enrollment/authority-refuses-domain-store-conflict": [
+      24,
+      24
+     ],
+     "enrollment/domain-binding-survives-restart": [
+      64,
+      64
+     ],
+     "enrollment/one-domain-one-winner": [
+      30,
+      30
+     ]
+    },
+    "fixture_version": "veldo.authority_store_fixture/v1",
+    "red_rows": [],
+    "returncode": 2,
+    "rows": {
+     "enrollment/authority-refuses-domain-store-conflict": true,
+     "enrollment/domain-binding-survives-restart": true,
+     "enrollment/one-domain-one-winner": true
+    },
+    "run": 1,
+    "suite_passed": 3,
+    "suite_seconds": 16.94,
+    "verdict": "green"
+   }
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9395,
+   "name": "green-01.log",
+   "sha256": "af8cfc3e03584b5dad6ce78378e2693d7e3d18f0546c7b358e76fb465e162ad1"
+  },
+  {
+   "bytes": 22044,
+   "name": "green-01-report.json",
+   "sha256": "6b929f24021609501be51d0e83410935d77b903942c8506739b1937e2819a8f6"
+  }
+ ],
+ "environment": {
+  "commit": "7a70e07e4866e82eaa230b31b51e020736319173",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   20.3125,
+   16.71533203125,
+   10.2392578125
+  ],
+  "python": "3.12.3",
+  "tree": "8a125cbbefde4e5e4db45964811cbcc23940ba13"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

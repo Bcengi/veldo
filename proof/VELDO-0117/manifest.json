@@ -1,0 +1,135 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0117",
+ "commit": "7a70e07e4866e82eaa230b31b51e020736319173",
+ "tree": "8a125cbbefde4e5e4db45964811cbcc23940ba13",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-11T15:05:39+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0117/offline-suite.summary.json",
+     "detail": "Passed. Row enrollment/authority-refuses-domain-store-conflict is green in one run of suite 113_veldo_0117_domain_store at 7a70e07e, 24 of 24 checks true. Two clones with their own Git directories and clone uuids are bound by valid signatures; the second clone's binding is varied over the eight combinations of equal and unequal domain, store uuid and canonical location. The matching binding is accepted into the committed store. Each of the three same-domain conflicts is domain_store_conflict both at admission and for the signed command, with no transaction in either store. The authorities are child processes running the built modules; the clones use the production client, whose resolver returns the conflicting store without complaint. Stores and registry are read back by plain read-only sqlite3 connections."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step green-after: three runs of the suite as built, written to proof/VELDO-0117/green-after.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step red-before: the suite as built over the three product modules of f6b8ae41. The row must be red on the three same-domain conflict cases, and not because its section raised. Written to proof/VELDO-0117/red-before.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step teeth: mutants v117-binding-comparison-removed, v117-registration-comparison-removed, v117-judgment-skips-registry and v117-unregistered-domain-served (finding 117, scripts/check_teeth_mutations.py) must turn the row red. The first three are the declared falsifier, the comparison removed at each place the authority makes it. Written to proof/VELDO-0117/teeth.summary.json with the row's false labels and each diff's sha256. Checked offline only: each anchor occurs once and each mutated module compiles. No mutant has been run."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0117/offline-suite.summary.json",
+     "detail": "Passed. Row enrollment/one-domain-one-winner is green in the same run, 30 of 30 checks true. Two stores are proposed for an unbound domain in four schedules: each clone's store first, one after the other, and each first with the second attempt begun while the first is held inside its registration transaction. In every schedule the first is registered, the second is told domain_store_conflict with the first's identity, the registry holds one whole row, and no row is visible while the first registration is open. The winner's client gets its command accepted naming the winning identity; the loser's client is refused domain_store_conflict naming the same one. The control is two stores of two different domains started the same overlapped way: both register and both serve."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step green-after: three runs of the suite as built, written to proof/VELDO-0117/green-after.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step red-before: on the modules of f6b8ae41 the row must be red in all four schedules on the check that the second store is told domain_store_conflict. Written to proof/VELDO-0117/red-before.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step teeth: mutant v117-registration-not-atomic removes the transaction around the read and the insert. It must turn the row red in the overlapped schedules, where the second attempt then gets past the first. Written to proof/VELDO-0117/teeth.summary.json. Checked offline only: both anchors occur once and the mutated module compiles. The 3 s overlap window is the one timing bound: a loaded host that delays the second process by more than 3 s between its begin report and its read would let this mutant through."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0117/offline-suite.summary.json",
+     "detail": "Passed. Row enrollment/domain-binding-survives-restart is green in the same run, 64 of 64 checks true. After each of the four schedules both authorities are stopped and started again as new processes over the same registry and the VELDO-0115 stores, matching store first and conflicting store first. The committed record, read before and after each proposal, is the winner's identity every time. The winning store restarts under another spelling of its path, with its clone's binding signed over that spelling, and matches; its command is applied. The losing store is told domain_store_conflict again and its clone's command is refused by that name with nothing written."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step green-after: three runs of the suite as built, written to proof/VELDO-0117/green-after.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step red-before: on the modules of f6b8ae41 the row must be red for all eight restarts of a conflicting store. Written to proof/VELDO-0117/red-before.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0117/heavy_runs.sh",
+     "detail": "Pending, step teeth: mutant v117-registry-empty-at-start empties the registry whenever an authority opens it, the declared falsifier. Mutants v117-binding-path-spelling-conflicts and v117-judge-path-spelling-refused take another spelling of the committed file for another store. Each must turn the row red. Written to proof/VELDO-0117/teeth.summary.json. Checked offline only: each anchor occurs once and each mutated module compiles."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite <name>",
+   "detail": "One run each at 7a70e07e, none failed: 113_veldo_0117_domain_store 3 rows in 17 s (proof/VELDO-0117/offline-suite.summary.json), 46_veldo_0029_enrollment 7, 47_veldo_0107_ipc 23, 49_veldo_0109_unavailable 5, 113_veldo_0115_authority_store 4, 113_veldo_0112_registered_clients 3. Partial runs: not the gate's unit stage."
+  },
+  {
+   "name": "integration",
+   "status": "pending",
+   "command": "bash proof/VELDO-0117/heavy_runs.sh",
+   "detail": "Not run by the builder. The lead queues it through the gate lock. It writes red-before.summary.json, green-after.summary.json and teeth.summary.json under proof/VELDO-0117/."
+  },
+  {
+   "name": "mutation_anchors",
+   "status": "passed",
+   "detail": "Static only. All 52 mutants already registered on control_store.py, control_client.py and control_enrollment.py still apply at exactly one place. The eight new ones apply once each and the mutated modules compile."
+  },
+  {
+   "name": "validators",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py spec|ready|placement specs/VELDO-0117-authority-domain-store-uniqueness.md; python3 .veldo/validate.py proof-files",
+   "detail": "No problems reported. specs/index.md regenerates unchanged."
+  },
+  {
+   "name": "personal_setup",
+   "status": "passed",
+   "command": "python3 scripts/check_personal_setup.py",
+   "detail": "0 findings."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The builder does not run the gate. The lead runs ./scripts/verify.sh; scripts/check_teeth_mutations.py is a trigger in scripts/mutation_selection.json, so that gate runs the full mutation sweep."
+  },
+  {
+   "name": "service_wiring",
+   "status": "not_run",
+   "reason": "Outside the footprint. .veldo/control_service.py builds the production Authority and passes no registry, so the installed service does not consult one yet, and its error taxonomy map has no entry for domain_store_conflict. An Authority built without a registry serves its configured store as before. Until the service is wired, the invariant holds only for authorities given the registry."
+  },
+  {
+   "name": "scope_limits",
+   "status": "not_run",
+   "reason": "Not judged here: one store uuid or one file registered under two different domains. The registry keys on the domain, and the spec's criteria ask about conflicts within one domain. The suite records that such a pair is not called domain_store_conflict."
+  }
+ ],
+ "rollback": "Revert the commits of this branch together. The Authority stops taking a registry, the refusal domain_store_conflict goes away, and suite 46 is back to ten reasons. A registry file an operator created stays on disk and nothing reads it. No store's schema changed, so stores written under this change open the same after the revert."
+}
