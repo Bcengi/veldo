@@ -73,14 +73,31 @@ fi
 
 if wanted 3; then
   s=$(date +%s)
-  rm -rf "$OUT/diffs"
-  command="python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3 --worker-log-dir <work>/teeth-workers --diff-dir $OUT/diffs --summary $OUT/teeth.summary.json"
+  # The diffs are written outside the checkout and copied in after the run: the stage reads its
+  # input closure (every file Git does not ignore) before and after, and a diff written under
+  # proof/ during the run fails it with "inputs changed during stage".
+  command="python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3 --worker-log-dir <work>/teeth-workers --diff-dir <work>/diffs --summary $OUT/teeth.summary.json"
   $SCOPE python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3 --worker-log-dir "$WORK/teeth-workers" \
-    --diff-dir "$OUT/diffs" --summary "$OUT/teeth.summary.json" > "$WORK/teeth.log" 2>&1
+    --diff-dir "$WORK/diffs" --summary "$OUT/teeth.summary.json" > "$WORK/teeth.log" 2>&1
   rc=$?
+  if [ -d "$WORK/diffs" ]; then
+    rm -rf "$OUT/diffs" && cp -r "$WORK/diffs" "$OUT/diffs" && rm -rf "$WORK/diffs"
+  fi
   line="$(grep -m1 '^mutations:' "$WORK/teeth.log")"
+  # The receipt's error and detail, which the summary format drops: a failed stage carries its cause.
+  cause="$(python3 -c '
+import json, sys
+receipt = {}
+for text in open(sys.argv[1], errors="replace"):
+    if text.startswith("{"):
+        try:
+            receipt = json.loads(text)
+        except ValueError:
+            pass
+print("error=%s detail=%s" % (receipt.get("error"), str(receipt.get("detail"))[:300]))
+' "$WORK/teeth.log" 2>/dev/null)"
   python3 "$OUT/summarize.py" raw "$OUT/teeth-raw.summary.json" "$ROOT" "$command" "$rc" "$WORK/teeth.log" "$WORK/teeth-workers"
-  note 3 $rc $s "teeth finding 290: $line"
+  note 3 $rc $s "teeth finding 290: $line $cause"
 fi
 
 for pair in 4:quiet 5:off 6:on; do
