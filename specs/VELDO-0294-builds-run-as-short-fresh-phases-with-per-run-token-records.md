@@ -81,22 +81,27 @@ acceptance_criteria:
       conversation. Set: the three payloads of the build in AC1, and one payload built from a
       phase result whose remains list is 40 lines of 400 characters, following five ended phases
       whose notes are 2,000 characters each. Completeness: row
-      phase/brief (prefix VELDO-0294) requires each payload to carry phase (name, index, of and
-      messages), source.commit equal to the contract's source commit, done (one entry per ended
+      phase/brief (prefix VELDO-0294) requires each payload to carry phase (name, index, of,
+      messages and soft, with soft equal to messages minus 10 and never below 1),
+      source.commit equal to the contract's source commit, done (one entry per ended
       phase dispatch: phase, commit and a note), remains (the list the phase before returned),
-      reading equal to READING_RULE, and output naming what this phase returns. It requires the
-      payload without its spec text and its state note to be at most 4,096 bytes of JSON, for the oversized result
+      reading equal to READING_RULE, note equal to NOTE_RULE, and output naming what this
+      phase returns. It requires the
+      payload without its spec text and its state note to be at most 4,096 bytes of JSON, for
+      the oversized result
       too, where remains is cut to 10 lines of 200 characters and each done note to 200
       characters, with five done entries whose notes are 2,000 characters each. And it requires no
       payload to hold
       the final answer text of an earlier phase beyond its note and remains. Red at 6ee5bb5f, where
-      the build payload has none of phase, source, done, remains or reading
+      the build payload has none of phase, source, done, remains, reading or note
       (control_launch_work.py:242 to 246).
     falsified_by: >
       Build the payload without the reading rule. Registered mutant phase294-brief-without-reading-rule
       must turn phase/brief red. Copy the whole final answer of the phase before into the payload.
       Registered mutant phase294-brief-carries-prior-answer must turn phase/brief red. Leave remains
       uncut. Registered mutant phase294-brief-unbounded must turn phase/brief red.
+      Build the payload without the note rule. Registered mutant phase294-brief-without-note-rule must
+      turn phase/brief red.
   - id: AC3
     text: >
       Claim: an engine run that reaches its phase's message cap is stopped with the cause
@@ -186,12 +191,12 @@ acceptance_criteria:
       found at proof/<unit>/phase-state.md in the commit the dispatch before it ended on. Set: suite
       82's stand-in in the mode of AC3, with phase.messages 15, in four variants of the commit it
       makes before it is stopped: a note of 6,000 bytes, a note of 8,193 bytes, no note, and a
-      symlink at the note's path. Completeness: row phase/state-note (prefix VELDO-0294) requires
-      every payload to carry note equal to NOTE_RULE and phase.soft equal to 5; the second
-      dispatch's payload to carry state.note equal, byte for byte, to the 6,000-byte note in the
+      symlink at the note's path. Completeness: row phase/state-note (prefix VELDO-0294)
+      requires the second dispatch's payload to carry state.note equal, byte for byte, to the
+      6,000-byte note in the
       first variant; and in the other three to carry no state.note and state.missing equal to
-      oversize, absent and not_a_file, in that order. Red at 6ee5bb5f, where the build payload has
-      no state, note or phase field (control_launch_work.py:242 to 246).
+      oversize, absent and not_a_file, in that order. Red at 6ee5bb5f, where the build payload
+      has no state field (control_launch_work.py:242 to 246).
     falsified_by: >
       Build the next payload without reading the note. Registered mutant
       phase294-state-note-not-carried must turn phase/state-note red.
@@ -230,7 +235,8 @@ engine session through the path VELDO-0129 already built. No payload carries res
 makes Metering continue a CLI session (control_launch.py:2551), so a phase never inherits a context.
 
 The brief is the dispatch payload. Besides the spec text and the fields it has today, it carries the
-phase (name, index, of, messages), the source commit, a done list with one entry per phase dispatch
+phase (name, index, of, messages, soft), the source commit, a done list with one entry per phase
+dispatch
 that has ended, the remains list the phase before returned, and READING_RULE, a constant in
 control_launch_work.py: read only the parts of a large file you need, by search and line range,
 and never a whole large file. Without the spec text and the state note the payload is at most
@@ -331,8 +337,9 @@ limit is the cap minus 10, so 70 at the default.
 Dispatches per build, default 6. That is the three phases plus one continuation each. A build that
 needs more than that is larger than one spec should be, and is refused rather than left to run.
 
-Flag threshold, default 15,000,000 tokens. It is the number his own check of his assistant's runs already uses. It is about twice the largest phased run measured on 2026-11-11 (7.9M), so a normal phase stays
-quiet and a run that goes back to the old one-session pattern is reported.
+Flag threshold, default 15,000,000 tokens. It is the number his own check of his assistant's runs
+already uses. It is about twice the largest phased run measured on 2026-11-11 (7.9M), so a normal
+phase stays quiet and a run that goes back to the old one-session pattern is reported.
 
 ## What this spec leaves alone
 
@@ -387,3 +394,5 @@ and the note's design. No running engine can be sent a message, so the note is w
 time and the soft limit (the cap minus 10) is given in the brief. AC2's 4,096-byte bound now excludes
 the state note. No new footprint path: the code, the suite and the mutant registry are already
 listed, and this unit's own note falls under proof/VELDO-0294/**.
+2026-11-11: re-review 2 C1 and C2 applied: the note rule and phase.soft belong to AC2 with their own
+mutant; AC9 keeps one claim.
