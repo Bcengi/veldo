@@ -51,7 +51,7 @@ BINDING_FIELDS = ("schema", "repository_uuid", "repository_root_commit", "clone_
 
 REFUSALS = ("not_enrolled", "malformed_binding", "signature_invalid", "repository_identity_mismatch",
             "clone_replaced", "host_binding_stale", "generation_behind", "cross_domain",
-            "store_uuid_mismatch", "not_a_repository")
+            "store_uuid_mismatch", "not_a_repository", "domain_store_conflict")
 
 
 class EnrollmentRefused(Exception):
@@ -214,10 +214,35 @@ def read_binding(workspace):
                                 {"workspace": str(workspace), "binding_path": p})
 
 
+def store_conflict(binding, committed_store):
+    """Why this binding does not name the store its domain is committed to, or None.
+
+    `committed_store` is the identity the authority read from its domain registry: domain_uuid,
+    store_uuid and the store's canonical store_path. A binding of another domain is not judged
+    here (that is cross_domain). The location is compared resolved, so another spelling of the
+    committed file is the same store, and the committed uuid at another file is not."""
+    if binding["domain_uuid"] != committed_store["domain_uuid"]:
+        return None
+    differing = [field for field, named, held in (
+        ("store_uuid", binding["store_uuid"], committed_store["store_uuid"]),
+        ("store_path", os.path.realpath(binding["store_path"]), os.path.realpath(committed_store["store_path"])))
+        if named != held]
+    if not differing:
+        return None
+    return ("domain %s is bound to store %s at %s and this binding names store %s at %s: one domain has "
+            "one store, and a signed binding does not move it"
+            % (committed_store["domain_uuid"], committed_store["store_uuid"], committed_store["store_path"],
+               binding["store_uuid"], binding["store_path"]))
+
+
 def verify_binding(workspace, binding, verify, host_identity, domain_uuid=None, store_uuid=None,
-                   minimum_generation=None):
+                   minimum_generation=None, committed_store=None):
     """Every reason this workspace may NOT use this binding, as a list, checked independently so a
-    caller sees all of them rather than the first."""
+    caller sees all of them rather than the first.
+
+    `committed_store` is given by an authority that keeps a domain registry (VELDO-0117): a binding
+    of that domain naming any other store is domain_store_conflict. A clone has no such record and
+    passes none, so the decision is the authority's."""
     problems = []
     for text in binding_problems(binding):
         problems.append(("malformed_binding", text))
@@ -250,6 +275,9 @@ def verify_binding(workspace, binding, verify, host_identity, domain_uuid=None, 
         problems.append(("cross_domain",
                          "the binding is in domain %s and the request names %s: cross-domain work is "
                          "unsupported" % (binding["domain_uuid"], domain_uuid)))
+    conflict = None if committed_store is None else store_conflict(binding, committed_store)
+    if conflict is not None:
+        problems.append(("domain_store_conflict", conflict))
     if store_uuid is not None and binding["store_uuid"] != store_uuid:
         problems.append(("store_uuid_mismatch",
                          "the binding names store %s and the request names %s"
@@ -263,7 +291,7 @@ def verify_binding(workspace, binding, verify, host_identity, domain_uuid=None, 
 
 
 def resolve_store(workspace, verify, host_identity, domain_uuid=None, store_uuid=None,
-                  minimum_generation=None):
+                  minimum_generation=None, committed_store=None):
     """THE ROUTING DECISION: the absolute path of the authority store this workspace may write to.
 
     `workspace` is REQUIRED and is the only place the answer comes from. This function reads no
@@ -276,7 +304,7 @@ def resolve_store(workspace, verify, host_identity, domain_uuid=None, store_uuid
                                 "and mutations refuse" % workspace,
                                 {"workspace": str(workspace), "binding_path": binding_path(workspace)})
     problems = verify_binding(workspace, binding, verify, host_identity, domain_uuid, store_uuid,
-                              minimum_generation)
+                              minimum_generation, committed_store)
     if problems:
         reason, text = problems[0]
         raise EnrollmentRefused(reason, text + (

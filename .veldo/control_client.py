@@ -61,7 +61,7 @@ MAX_REQUEST_BYTES = 1 << 20
 
 REFUSALS = ("malformed_request", "peer_not_authorized", "command_signature_invalid",
             "coordinate_not_served", "unenrolled_workspace", "authority_unavailable",
-            "peer_identity_unavailable")
+            "peer_identity_unavailable", "domain_store_conflict")
 
 
 class RoutingRefused(Exception):
@@ -376,10 +376,30 @@ class Authority:
     `apply(command)` runs an accepted command. With `context=True` it is `apply(command,
     coordinates)`, where `coordinates` are the request's own judged coordinates (CONTEXT_FIELDS), so
     the service behind this seam can hold a command to the repository its request was judged for
-    rather than to anything the command says about itself."""
+    rather than to anything the command says about itself.
+
+    ONE DOMAIN, ONE STORE (VELDO-0117). `registry` is the domain registry the operator configured
+    this instance with (control_store.DomainRegistry, or anything with its register and committed).
+    Which store a domain writes to is decided there and nowhere in a clone:
+
+      At start this instance registers its own configured identity. The first instance of a domain
+      commits it; a later one naming the same store matches; one naming another store gets
+      domain_store_conflict, stays up, and answers every valid binding of the domain with that
+      name, so a clone bound to the second store is told why instead of finding nobody home.
+
+      On every request the committed identity is read again from the registry and the request's
+      binding is held to it. A valid signed binding of this domain naming another store uuid, or
+      the same uuid at another file, is refused domain_store_conflict before anything is applied;
+      the refusal carries the domain, the committed identity and the proposed one. Another
+      spelling of the committed file is the same store. A domain with no committed store is not
+      served: registering is this instance's start, never a clone's first command.
+
+    `domain_store` is the decision of the registration at start and `domain_store_counts` counts
+    the matching bindings accepted and the conflicts refused since. Without `registry` none of
+    this runs, and the instance serves its configured store on its own word as before."""
 
     def __init__(self, store_uuid, domain_uuid, store_path, enrollment, verify, host_identity, apply,
-                 watermark=None, minimum_generation=1, context=False):
+                 watermark=None, minimum_generation=1, context=False, registry=None):
         self.store_uuid = store_uuid
         self.domain_uuid = domain_uuid
         self.store_path = os.path.realpath(os.path.abspath(store_path))
@@ -393,6 +413,40 @@ class Authority:
         self.watermark = watermark
         self.minimum_generation = minimum_generation
         self.context = context
+        self.registry = registry
+        self.domain_store_counts = {"matching": 0, "domain_store_conflict": 0}
+        self.domain_store = None if registry is None else registry.register(
+            self.domain_uuid, self.store_uuid, self.store_path)
+
+    def _domain_store_refusal(self, request):
+        """The registry's answer for this request, as a refusal or None, with the committed identity.
+
+        Only a binding that is otherwise valid is judged a conflict: one with a bad signature, a
+        stale generation or another domain is named by the checks that follow, as it always was."""
+        committed = self.registry.committed(self.domain_uuid)
+        if committed is None:
+            return self._no("coordinate_not_served",
+                            "domain %s has no committed store in the domain registry: a store is "
+                            "registered when its authority starts, never by a clone's command"
+                            % self.domain_uuid), None
+        try:
+            self.enrollment.resolve_store(request["workspace"], self.verify, self.host_identity,
+                                          domain_uuid=self.domain_uuid,
+                                          minimum_generation=self.minimum_generation,
+                                          committed_store=committed)
+        except self.enrollment.EnrollmentRefused as e:
+            if e.reason != "domain_store_conflict":
+                return None, committed
+            self.domain_store_counts["domain_store_conflict"] += 1
+            binding = self.enrollment.read_binding(request["workspace"])
+            refusal = self._no("domain_store_conflict",
+                               "%s does not route anywhere: %s" % (request["workspace"], e.message))
+            refusal.update(domain_uuid=self.domain_uuid, committed=committed,
+                           proposed={"domain_uuid": binding["domain_uuid"],
+                                     "store_uuid": binding["store_uuid"],
+                                     "store_path": binding["store_path"]})
+            return refusal, committed
+        return None, committed
 
     def judge(self, request, uid):
         """The whole rule, as a response mapping. Both checks, in order, each named separately.
@@ -421,7 +475,14 @@ class Authority:
                             "coordinates it names")
         # 4. IS THIS COORDINATE MINE. Resolved from THE REQUEST's workspace, never from this
         #    process's own location: a serving process has its own current directory and its own
-        #    module path, and neither of them is the caller's.
+        #    module path, and neither of them is the caller's. With a domain registry, the store
+        #    the domain is committed to is asked first, so a binding naming another store is told
+        #    domain_store_conflict and not the vaguer coordinate_not_served.
+        committed = None
+        if self.registry is not None:
+            refusal, committed = self._domain_store_refusal(request)
+            if refusal is not None:
+                return refusal
         try:
             store = self.enrollment.resolve_store(request["workspace"], self.verify,
                                                   self.host_identity,
@@ -432,7 +493,7 @@ class Authority:
             reason = "coordinate_not_served" if e.reason in ("cross_domain", "store_uuid_mismatch") else "unenrolled_workspace"
             return self._no(reason,
                             "%s does not route anywhere: %s" % (request["workspace"], e.message))
-        if (store != self.store_path or request["store_uuid"] != self.store_uuid
+        if (os.path.realpath(store) != self.store_path or request["store_uuid"] != self.store_uuid
                 or request["domain_uuid"] != self.domain_uuid):
             return self._no("coordinate_not_served",
                             "this authority serves store %s at %s; the request names store %s "
@@ -447,10 +508,15 @@ class Authority:
             result = self.apply(request["command"], {k: request[k] for k in CONTEXT_FIELDS})
         else:
             result = self.apply(request["command"])
-        return {"schema": RESPONSE_SCHEMA, "accepted": True,
-                "store_uuid": self.store_uuid, "store_path": self.store_path,
-                "watermark": None if self.watermark is None else self.watermark(),
-                "result": result}
+        response = {"schema": RESPONSE_SCHEMA, "accepted": True,
+                    "store_uuid": self.store_uuid, "store_path": self.store_path,
+                    "watermark": None if self.watermark is None else self.watermark(),
+                    "result": result}
+        if committed is not None:
+            # The binding named the store the registry holds for this domain, and it was applied.
+            self.domain_store_counts["matching"] += 1
+            response["domain_store"] = committed
+        return response
 
     def _no(self, reason, message):
         assert reason in REFUSALS, reason
