@@ -86,7 +86,7 @@ acceptance_criteria:
       live/config-write: printf of an alias section mapping p to !git push origin main, appended to
       .git/config by a redirection, then git p; the same section echoed into tee -a .git/config, then
       git p; the printf form on one line and git p on the next; the printf form, then git named by its
-      absolute path with p; the printf form, then sh -c with the quoted string git p; the printf form appended to the path written as '.g''it/config', then g\it p; the same, then sh -c with the quoted string g\it p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
+      absolute path with p; the printf form, then sh -c with the quoted string git p; the printf form appended to the path written as '.g''it/config', then g\it p; the same, then sh -c with the quoted string g\it p; with x unset, the printf form piped into tee -a with the path written as .g"$x"it/config, then sh -c with the single quoted string "$x"git p; the printf form appended to the path written as .gi[t]/config, then bash -c with a single quoted string that gives bash $'g\x69t' p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
       live/quoted-command-word: true && 'git' push origin main, and true && g\it push origin main.
       live/remap, where D is a directory under the fixture's temporary directory: hash -p /bin/sh cat,
       then cat -c with the quoted push; eval of a single quoted definition of a function cat that runs
@@ -94,7 +94,8 @@ acceptance_criteria:
       of that file, then the same cat; shopt -s expand_aliases and alias cat=sh on one line, the same
       cat on the next; trap of the single quoted text eval "${BASH_COMMAND#cat }" on DEBUG, then cat sh
       -c with the quoted push; a symbolic link D/cat to /bin/sh, then PATH=D:$PATH before the same cat;
-      the same link, then printf -v PATH '%s:%s' D "$PATH", then the same cat; BASH_CMDS[cat]=/bin/sh,
+      the same link, then printf -v PATH '%s:%s' D "$PATH", then the same cat; the same link, then
+      printf -vPATH '%s:%s' D "$PATH", with the option and the name in one word, then the same cat; BASH_CMDS[cat]=/bin/sh,
       then the same cat; cp /bin/sh to D/cat, then D/cat -c with the quoted push; eval of a single
       quoted definition of a function git that runs sh -c on its third argument, then git commit -m
       with the quoted push. The row also runs each live/remap command under bash with a recording git
@@ -114,13 +115,16 @@ acceptance_criteria:
       git or gh) turns live/config-write red; guard292-git-list-per-line (the rule keeps live only the
       last line that names git) turns live/config-write red; guard292-git-list-quoted (the rule tests
       the text without deleting quotes and backslashes) turns live/config-write red;
+      guard292-git-list-expansion-form-off (the second form is not tested) turns live/config-write red;
+      guard292-git-list-escape-form-off (the third form is not tested) turns live/config-write red;
       guard292-list-tail-data (once a command of a list holds data, the commands after it are data too)
       turns live/mixed red; guard292-command-word-raw (the live text keeps command words as written)
       turns live/quoted-command-word red; guard292-builtin-in-subset (every builtin is read as an
       ordinary program inside the subset) turns live/remap red; guard292-assignment-in-subset (an
       assignment stays inside the subset) turns live/remap red; guard292-tool-by-last-component (a
       plain text tool is recognized by the last path component of its command word) turns live/remap
-      red; guard292-builtin-list-short (hash is dropped from the guard's list of builtins) turns
+      red; guard292-printf-v-exact (printf counts as assigning only when one of its words is exactly -v)
+      turns live/remap red; guard292-builtin-list-short (hash is dropped from the guard's list of builtins) turns
       live/remap and subset/builtin-list red. Every row and registered mutation suite 141 carried at
       646ff7c8 still passes; an anchor the change moves is pointed at the same defect again.
   - id: AC3
@@ -262,7 +266,7 @@ with `$(` or backticks, process substitution, arithmetic, `$'...'` strings, here
 brace groups, function definitions, the reserved words (if, for, while, until, case, select, function,
 time, coproc, `!`, `[[`), a command word that contains an expansion or a glob character, an
 assignment word before a command or on its own whatever its name, a command whose command word
-after quote removal is a shell builtin other than echo, printf without -v, test, `[`, true, false,
+after quote removal is a shell builtin other than echo, printf with no word that starts with -v, test, `[`, true, false,
 `:`, cd and pwd, and an unterminated quote or heredoc.
 
 Which program a name runs is decided by the shell's own state: its functions, aliases, hash table,
@@ -287,7 +291,8 @@ A plain text tool is a command whose command word, after quote removal, is a bar
 slash in one fixed set in the guard of programs that never execute their arguments or their
 input: echo, printf, cat, tee, grep, egrep, fgrep, head, tail, wc, sort, uniq, cut, tr, ls, mkdir,
 touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. printf
-with -v is not one: it assigns a variable, and it takes the command outside the subset. A command
+with a word that starts with -v, whether -v NAME or -vNAME, is not one: it may assign a variable,
+and it takes the command outside the subset. A command
 word with a slash is never a plain text tool, so a copy of a shell named cat and called by its
 path keeps its text live.
 
@@ -305,8 +310,15 @@ take the command outside the subset.
 
 When git or gh appears anywhere in the command outside comments and the strings that would otherwise
 be data, no quoted string or heredoc body anywhere in the command is data, except the message values
-named in the next paragraph. The test runs on that text with every quote character and every backslash
-deleted, so 'g'it, "gi"t and g\it count as git at any depth of quoting. It counts wherever no letter,
+named in the next paragraph. The test runs on three forms of that text, and git or gh found in any of them counts. The first is
+the text with every single quote, double quote and backslash deleted. The second first deletes
+every parameter expansion, meaning a `$` followed by a name, by one digit or special character, or
+by a braced `${...}`, and then deletes the quotes and backslashes. The third first replaces every
+backslash escape that `$'...'` or printf turns into a character by that character, and then deletes
+the quotes and backslashes; those escapes are `\x` with hex digits, `\u` and `\U` with hex digits,
+and a backslash with one to three octal digits. So 'g'it, "gi"t, g\it, "$x"git, .g"$x"it/config and
+$'g\x69t' count as git at any depth of quoting. Each form only adds matches, so the three together
+can only add refusals. It counts wherever no letter,
 digit or underscore stands right before or after it: as a command word, as part of a path such as
 /usr/bin/git or .git/config, as an argument, and inside a string given to a shell, a wrapper or an
 interpreter. The command is the whole text of the Bash call, across all its lines. A command that runs
@@ -355,12 +367,15 @@ host that text the scanner called data is text the shell did not run.
   with a plain text tool and then runs it without git, such as cat into /tmp/x.sh from a heredoc
   holding a push of main followed by bash /tmp/x.sh. A hook written in one Bash call and run by git in
   a later call is the same case. It was refused at 646ff7c8 and is allowed now, because the guard
-  does not follow a file. The owner accepts this with the approval. A git whose name is built by an
-  expansion inside a string given to a shell, such as sh -c running $a$b p after export a=g b=it, is
-  the same case: that spelling of a push already passes the guard at 646ff7c8, and a configuration
-  written beside it is not followed. Quoting alone cannot hide the name, because the test deletes
-  every quote and backslash, and an expansion in a command word takes the command outside the subset,
-  where it is judged on its whole text as at 646ff7c8.
+  does not follow a file. The owner accepts this with the approval. A git whose letters an
+  expansion supplies inside a string given to a shell is the same case: sh -c running $a$b p with a
+  and b set in the shell the command starts in, or sh -c running /usr/bin/gi[t] p, where a glob
+  supplies the t. That spelling of a push already passes the guard at 646ff7c8, and a configuration
+  written beside it is not followed, including one written through a path whose letters a glob
+  supplies, such as .gi[t]/config. Quotes, backslashes, $'...' escapes and an expansion that supplies
+  none of the letters cannot hide the name, because the test reads the three forms the Design names,
+  and an expansion in a command word takes the command outside the subset, where it is judged on its
+  whole text as at 646ff7c8.
 - A command cannot rename a plain text tool, git or gh inside the subset. A builtin other than the
   nine the Design allows, an assignment, or a function definition takes the whole command
   outside it, and a plain text tool is only ever a bare name. What is left is a file PATH points
@@ -389,3 +404,4 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: marked ready by the lead; the third re-review found the spec buildable once RR3 was applied (bc696274)
 2026-11-11: amendment 1 closes name remapping inside the subset (build 1 stop, item 3) and records the builder's two allowed corpus fixes
 2026-11-11: revision 5 applies amendment 1 (tool-name remapping) from the checker after the builder's report
+2026-11-11: revision 6 applies N1 and N2 of the fourth re-review of b6cdacaf
