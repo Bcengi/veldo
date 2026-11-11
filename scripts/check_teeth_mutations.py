@@ -13090,6 +13090,74 @@ def cases():
              "        shown = dict(observation)\n",
              "        shown = dict(observation, starts=[])  # defect: the detail leaves the start records out\n",
              'restart/adoption-start-checked')
+    # VELDO-0294: each target includes its spec prefix because these suites serve several specs.
+    phase294 = '82_veldo_0129_worker_wiring.py'
+    tokens294 = '75_veldo_0062_accounts.py'
+    reports294 = '72_veldo_0128_reports.py'
+
+    def build294(name, old, new, row, also=()):
+        add(294, name, phase294, 'control_launch_work.py', old, new,
+            ['VELDO-0294 ' + row], also=also)
+
+    brief294 = '            payload = brief(spec, spec_text, role, phase, limits, source, done, remains, state)\n'
+    build294('phase294-single-dispatch', brief294,
+             brief294 + "            payload.pop('phase')\n"
+             "            payload['output'] = ' '.join(part.format(unit=spec['id']) for part in OUTPUT)\n",
+             'phase/fresh-dispatches', also=[('                phase += 1\n',
+                                            '                phase = len(PHASES)\n')])
+    build294('phase294-session-resumed', brief294,
+             brief294 + "            if count:\n"
+             "                prior = bound(self.last['record'], self.last['artifact'])\n"
+             "                payload['resume'] = (prior['thread'] if prior['engine'] == 'codex' else\n"
+             "                    next(json.loads(line)['session_id'] for line in prior['stream']['usage_lines']\n"
+             "                         if json.loads(line).get('session_id')))\n",
+             'phase/fresh-dispatches')
+    build294('phase294-source-not-advanced', "                source = result['commit']\n",
+             "                source = spec['base']\n", 'phase/fresh-dispatches')
+    build294('phase294-brief-without-reading-rule', '                   reading=READING_RULE, note=NOTE_RULE,',
+             '                   note=NOTE_RULE,', 'phase/brief')
+    build294('phase294-brief-carries-prior-answer',
+             "                note = result.get('note') if isinstance(result.get('note'), str) else ''\n",
+             '                note = json.dumps(result)\n', 'phase/brief')
+    build294('phase294-brief-unbounded',
+             '                   remains=[line[:LINE_CHARS] for line in remains[:REMAINS_LINES]],\n',
+             '                   remains=list(remains),\n', 'phase/brief')
+    build294('phase294-brief-without-note-rule', '                   reading=READING_RULE, note=NOTE_RULE,',
+             '                   reading=READING_RULE,', 'phase/brief')
+    add(294, 'phase294-cap-unenforced', phase294, 'control_launch.py',
+        '        if self.cap is not None and self.meter.steps() >= self.cap:\n',
+        '        if False:\n', ['VELDO-0294 phase/step-cap'])
+    build294('phase294-capped-work-dropped', "                source = reference['commit']\n",
+             '                source = source\n', 'phase/step-cap')
+    add(294, 'tokens294-record-unwritten', tokens294, 'control_launch.py',
+        "                self._record(record, final['outcome'], now)\n", '                pass\n',
+        ['VELDO-0294 tokens/run-record'])
+    add(294, 'tokens294-unknown-as-zero', tokens294, 'control_launch.py',
+        "                    tokens=None if 'tokens' in record.get('unknown', []) else charge.get('tokens'),\n",
+        "                    tokens=0 if 'tokens' in record.get('unknown', []) else charge.get('tokens', 0),\n",
+        ['VELDO-0294 tokens/run-record'])
+    add(294, 'tokens294-flag-threshold-ignored', reports294, 'control_telegram_report.py',
+        '        if not unknown and (tokens is None or tokens <= RUN_TOKENS_FLAG):\n',
+        '        if False:\n', ['VELDO-0294 report/run-over-tokens'])
+    add(294, 'tokens294-unknown-not-flagged', reports294, 'control_telegram_report.py',
+        "        unknown = 'tokens' in data.get('unknown', []) or in_flight\n",
+        "        if 'tokens' in data.get('unknown', []) or in_flight:\n"
+        '            return None\n'
+        '        unknown = False\n', ['VELDO-0294 report/run-over-tokens'])
+    build294('phase294-dispatches-unbounded', "            if count >= limits['dispatches']:\n",
+             '            if False:\n', 'phase/budget')
+    add(294, 'tokens294-never-pruned', tokens294, 'control_launch.py',
+        '        self._prune(now)\n', '        pass\n', ['VELDO-0294 tokens/pruned'])
+    build294('phase294-head-symlink-followed', "        raw = _head_file(gitdir / 'HEAD', 1024)\n",
+             "        raw = (gitdir / 'HEAD').read_bytes()\n", 'phase/head-read')
+    build294('phase294-ref-symlink-followed', '                raw = _head_file(ref, 1024)\n',
+             '                raw = ref.read_bytes()\n', 'phase/head-read')
+    build294('phase294-state-note-not-carried', "            state = self._state(source, spec['id'])\n",
+             "            state = {'missing': 'absent'}\n", 'phase/state-note')
+    add(294, 'phase294-capped-left-unknown', phase294, 'control_launch.py',
+        "            if cause == 'phase_cap' and outcome == 'cancelled':\n",
+        '            if False:\n', ['VELDO-0294 phase/settled-at-stop'])
+
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
     return result
@@ -13203,7 +13271,7 @@ def worker(case, mutant=None):
             'row_names': [name for name, _ in rows],
             'failed_rows': [name for name, ok in rows if not ok],
             'failed_details': details,
-            'targets': {label: [ok for name, ok in rows if name.split()[-1] == label]
+            'targets': {label: [ok for name, ok in rows if name == label or name.split()[-1] == label]
                         for label in case['rows']}}
 
 
