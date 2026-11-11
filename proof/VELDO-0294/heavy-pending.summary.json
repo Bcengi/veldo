@@ -2,8 +2,8 @@
   "schema": "veldo.proof-summary/v1",
   "command": "bash proof/VELDO-0294/heavy_runs.sh",
   "environment": {
-    "commit": "f0434486df1741a70a7b6797401ca1193e0ce808",
-    "phase": "production code complete; acceptance fixtures pending"
+    "commit": "a2d33282aa9edf9e4dbad1d36abf2008aef3908f",
+    "phase": "fixtures implemented; suite 82 artifact accessor requires correction"
   },
   "discarded": [],
   "deciding": {

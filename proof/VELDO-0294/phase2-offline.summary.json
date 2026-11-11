@@ -1,0 +1,49 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "Phase 2 selected offline selftest suites in systemd user scopes with MemoryMax=10G",
+  "environment": {
+    "commit": "a2d33282aa9edf9e4dbad1d36abf2008aef3908f",
+    "suite_72_commit": "3d4475d9",
+    "runtime_copies": "synced"
+  },
+  "discarded": [],
+  "deciding": {
+    "status": "incomplete",
+    "acceptance": "pending",
+    "suites": {
+      "58": {
+        "passed": 36,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "75": {
+        "passed": 52,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "78": {
+        "passed": 60,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "72": {
+        "passed": 45,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "82": {
+        "passed": 27,
+        "failed": 35,
+        "exit_code": 1,
+        "cause": "Fixture iterates the integer Claude artifact stream.lines count"
+      }
+    },
+    "compilation": "passed",
+    "personal_setup_findings": 0,
+    "heavy": "pending",
+    "earlier_failures": [
+      "Suite 82 exception-class, source comparison and project setup errors fixed",
+      "Suite 75 unknown record totals and replay assertion fixed"
+    ]
+  }
+}
