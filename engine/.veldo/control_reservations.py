@@ -22,6 +22,7 @@ SCOPES = ('account', 'project', 'unit')
 USAGE = ('invocations', 'wall_seconds', 'tokens', 'messages')
 KINDS = ('capacity',) + USAGE
 PREFIX = 'reservation:'
+SETTLED_AT_STOP = ('phase_cap',)
 
 
 class Refused(Exception):
@@ -252,7 +253,7 @@ class Reservations:
                               wall_seconds=wall_seconds), now)
 
     def report(self, command_id, invocation, sequence, usage, *, final=False, outcome=None, receipts=(), now,
-               session=None, limit=None):
+               session=None, limit=None, settlement=None):
         """`receipts` are the digests of the CLI's own report lines this report was read from
         (VELDO-0062): the raw lines stay with the receiver, the ledger carries what checks them.
         `session` ({provider, id, tokens, charged}, final reports only) is the CLI session the invocation
@@ -260,6 +261,18 @@ class Reservations:
         case charged it (CHARGED): a CLI that carries a resumed session's earlier totals into its report
         is charged only the difference when it reports that session, read back by `session`."""
         receipts = list(receipts)
+        if settlement is not None and (
+                not final or outcome != 'cancelled' or not isinstance(usage, dict)
+                or not set(USAGE).issubset(usage)
+                or not isinstance(settlement, dict)
+                or set(settlement) != {'at', 'cause', 'lower_bound', 'in_flight'}
+                or settlement['at'] != 'stop' or settlement['cause'] not in SETTLED_AT_STOP
+                or not isinstance(settlement['lower_bound'], list)
+                or any(unit not in ('tokens', 'messages') for unit in settlement['lower_bound'])
+                or len(set(settlement['lower_bound'])) != len(settlement['lower_bound'])
+                or (settlement['in_flight'] is not None and (
+                    type(settlement['in_flight']) is not int or settlement['in_flight'] < 0))):
+            raise Refused('invalid_input')
         # VELDO-0160: an invocation its account's limit stopped ends account_limit, with the window and reset.
         if (outcome == ACC.LIMIT_OUTCOME) != (limit is not None) or (limit is not None and (
                 not final or not isinstance(limit, dict) or set(limit) != {'window', 'reset_at', 'signal'}
@@ -287,6 +300,8 @@ class Reservations:
             payload['session'] = dict(session)
         if limit is not None:
             payload['limit'] = dict(limit)
+        if settlement is not None:
+            payload['settlement'] = copy.deepcopy(settlement)
         return self._run(command_id, 'report', entity('invocation', [self.domain, identity(invocation)]),
                          payload, now)
 
@@ -396,6 +411,8 @@ class Reservations:
                 value['session'] = p['session']
             if 'limit' in p:
                 value['limit'] = p['limit']
+            if 'settlement' in p:
+                value['settlement'] = p['settlement']
             for unit, amount in p['usage'].items():
                 value['charge'][unit] = max(value['charge'].get(unit, 0), amount)
                 if p['final'] and unit in value['unknown']:
