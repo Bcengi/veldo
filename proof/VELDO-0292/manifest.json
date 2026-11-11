@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0292",
-  "commit": "d22cc7aa67ac16b177b3a131d9968df2c214eaa9",
-  "tree": "4429fe516dad1204b24170596f5c01477e4582b5",
+  "commit": "3e37bce1fce428c64b939f5288e2cfc441e21c21",
+  "tree": "77961ad8922086c91df60993e5e6dedc495f3422",
   "producer": "Claude implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-11T15:37:00+00:00",
+  "produced_at": "2026-11-11T15:41:00+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -23,7 +23,7 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0292/README.md",
-          "detail": "Quick run by the builder on the tree of this commit before it was made, a partial run that proves nothing by the gate's rules: python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs, 143 rows, 142 passed, 1 failed (mutation/guard292-sort-plain, the blocker under AC2). The row text/incident and its mutation row passed."
+          "detail": "Quick run by the builder on the tree of this commit before it was made, a partial run that proves nothing by the gate's rules: python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs, 142 rows, 142 passed, 0 failed. The row text/incident and its mutation row passed."
         }
       ]
     },
@@ -34,7 +34,7 @@
         {
           "type": "integration",
           "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
-          "detail": "Rows live/shell-string, live/pipeline, live/outside-subset, live/interpreter, live/plain-runs (4 commands: S2 and S3 added by the build check of 2026-11-11, S1 and S1b by its fix check), live/stored, live/config-write (23 commands), live/config-include (4), live/construct (6), live/mixed, live/quoted-command-word, live/remap and subset/builtin-list, each as the spec's falsifier words it; 25 mutations in 28 mutation rows, guard292-sort-plain and guard292-sort-runs-off among them. Results pending: the rows and mutations of this tree have not run under the gate lock."
+          "detail": "Rows live/shell-string, live/pipeline, live/outside-subset, live/interpreter, live/plain-runs (4 commands: S2 and S3 added by the build check of 2026-11-11, S1 and S1b by its fix check), live/stored, live/config-write (23 commands), live/config-include (4), live/construct (6), live/mixed, live/quoted-command-word, live/remap and subset/builtin-list, each as the spec's falsifier words it; 24 mutations in 27 mutation rows, guard292-sort-runs-off among them (guard292-sort-plain is dropped by the lead's decision of 2026-11-11). Results pending: the rows and mutations of this tree have not run under the gate lock."
         },
         {
           "type": "note",
@@ -44,7 +44,7 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0292/README.md",
-          "detail": "BLOCKER, not resolved: suite 141 is red on this tree, 142 passed and 1 failed, the row mutation/guard292-sort-plain. The test the fix check wrote runs first and reads every word, so it also refuses S2 and S3 (their line now names the sort option, which the row and the spec's AC2 text follow), and it still refuses them when sort is put back in the plain text tools, so that mutant passes live/plain-runs. The fix check expected guard292-sort-plain to stay killed through S2 and S3. The README lists the choices; the lead and the reviewer of record decide."
+          "detail": "The blocker of d22cc7aa is decided by the lead (2026-11-11): guard292-sort-plain is dropped from suite 141, from scripts/check_teeth_mutations.py and from AC2's falsified_by, because the compress program test refuses S1 to S3 before the plain text tool set is read, so a guard with sort put back passes the row. sort stays out of the set and the membership rule stays in the spec as policy, with no mutation of its own. The active layer keeps its mutation, guard292-sort-runs-off: in the builder's quick run on this tree (partial, proves nothing by the gate's rules; 142 rows, 0 failed) the row live/plain-runs is red under it, S1 exiting 0. Finding 292 has 35 mutations and the suite 38 mutation rows."
         },
         {
           "type": "integration",
@@ -54,7 +54,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0292/heavy_runs.sh",
-          "detail": "Pending under the gate lock: red-before.summary.json, green-after.summary.json, teeth-292.summary.json and teeth-268.summary.json (every mutation suite 141 carried at 646ff7c8 still killed). The four summaries in this directory are lock job 96a's runs over 0a2057f5, before sort left the plain text tools and before the S1 test; they do not cover live/plain-runs, guard292-sort-plain or guard292-sort-runs-off and are replaced by the next run."
+          "detail": "Pending under the gate lock: red-before.summary.json, green-after.summary.json, teeth-292.summary.json and teeth-268.summary.json (every mutation suite 141 carried at 646ff7c8 still killed). The four summaries in this directory are lock job 96a's runs over 0a2057f5, before sort left the plain text tools and before the S1 test; they do not cover live/plain-runs or guard292-sort-runs-off and are replaced by the next run."
         }
       ]
     },
@@ -129,7 +129,7 @@
       "name": "teeth-292",
       "status": "pending",
       "command": "bash proof/VELDO-0292/heavy_runs.sh",
-      "detail": "Step 3, python3 scripts/check_teeth_mutations.py for finding 292 (36 cases), writes proof/VELDO-0292/teeth-292.summary.json."
+      "detail": "Step 3, python3 scripts/check_teeth_mutations.py for finding 292 (35 cases), writes proof/VELDO-0292/teeth-292.summary.json."
     },
     {
       "name": "teeth-268",

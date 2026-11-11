@@ -23,14 +23,15 @@ Commit d1c5da1a built the scanner on the spec at a5c17de6. Commit aeb93690 appli
   config outside data. Test 2 does the same for a construct in text that reaches a program other
   than a plain text tool. Test 3 is the name test with only its first form, in any letter case. The
   existing judgment is unchanged.
-- `scripts/suites/141_veldo_0268_protected_refs.py`: 20 rows and 39 mutation rows, 143 rows with the
+- `scripts/suites/141_veldo_0268_protected_refs.py`: 20 rows and 38 mutation rows, 142 rows with the
   older ones. live/config-write has 23 commands, live/config-include 4, live/construct 6 and
   live/plain-runs 4.
-- `scripts/check_teeth_mutations.py`: the 36 mutations as finding 292. A scratch check at aeb93690
+- `scripts/check_teeth_mutations.py`: the 35 mutations as finding 292. A scratch check at aeb93690
   compared the 34 of that build field by field with the suite's own list and found them equal, each
   anchor present once in the guard and each mutant valid Python and valid bash. The 35th,
-  guard292-sort-plain, and the 36th, guard292-sort-runs-off, are each written with the same anchor
-  and replacement in both files.
+  guard292-sort-runs-off, is written with the same anchor and replacement in both files.
+  guard292-sort-plain was registered between the build check and the lead's decision below, and
+  is dropped.
 - `scripts/suites/manifest.json`: the suite's description.
 
 ## The build check of 2026-11-11: sort is not a plain text tool
@@ -43,8 +44,9 @@ text to sh. 646ff7c8 refuses such a command and the build let it through.
 The fix, in all three copies of the guard: sort is out of the set. The membership test is now
 stated in the spec's Design and in the guard: a program is in the set only if no option of this
 program runs another program. The list of tools that do not write is unchanged, so the tools that
-write are nine. Suite 141 has the row live/plain-runs and the mutation guard292-sort-plain, which
-puts sort back and must turn the row red. The registry of finding 292 goes from 34 to 35.
+write are nine. Suite 141 got the row live/plain-runs and the mutation guard292-sort-plain, which
+put sort back and had to turn the row red. The registry of finding 292 went from 34 to 35. That
+mutation is dropped since, by the lead's decision below.
 
 The check named three commands, S1 to S3. A scratch probe (not stored) ran each against this
 tree's guard and then under bash with a recording program first on PATH:
@@ -87,15 +89,34 @@ and the first reviewer bullet no longer names S1. The row now carries four comma
 each required to exit 2 with the line ending "in text the guard does not parse (sort with its
 option --compress-program, which runs a program on its data)" (--compress-prog for S1b), and bash
 with the recording program must record the push. The new mutation guard292-sort-runs-off makes
-runs_program's first return give None and must turn the row red. The registry of finding 292 goes
-from 35 to 36, the suite's mutation rows from 38 to 39, 143 rows in all.
+runs_program's first return give None and must turn the row red. With it the registry of finding
+292 went from 35 to 36 and the suite's mutation rows from 38 to 39, 143 rows in all; the decision
+below takes one of each away again.
 
-### BLOCKER: guard292-sort-plain is no longer killed
+### The blocker of d22cc7aa, decided: guard292-sort-plain is dropped
 
-The fix check says the row's S2 and S3 keep their line and that guard292-sort-plain still turns
-the row red through them. Neither holds with the fix as written, and suite 141 is red on this tree
-for that reason: 142 rows pass, 1 fails, mutation/guard292-sort-plain ("row live/plain-runs under
-the mutation: green").
+The lead's decision of 2026-11-11: drop guard292-sort-plain. sort stays out of the plain text
+tools, and the membership rule stays in the spec's Design as policy. The teeth now sit on the
+active layer, the compress program test, and its own mutation guard292-sort-runs-off covers it:
+with the test's return removed, S1 and S1b exit 0 and live/plain-runs is red. The spec's History
+has the line, and AC2's falsified_by no longer names the mutation (the lead's amendment).
+
+What changed with the decision: guard292-sort-plain is removed from suite 141's list (with its
+anchor PLAIN_START, which nothing else used) and from `scripts/check_teeth_mutations.py`. The
+registry of finding 292 is back to 35, the suite's mutation rows to 38, 142 rows in all;
+`summarize.py` and `heavy_runs.sh` carry the same numbers. The guard itself is not touched.
+
+What this leaves without a mutation: the absence of sort from the set. A guard with sort put
+back passes every row, because the compress program test refuses S1 to S3 before the set is
+read. A command that only pipes a push into sort with no such option would tell the two guards
+apart, but bash runs no push for it. So the membership rule is policy the reviewer reads in the
+guard's PLAIN line, not a row.
+
+The blocker as it was recorded at d22cc7aa, kept for the record. The fix check says the row's S2
+and S3 keep their line and that guard292-sort-plain still turns the row red through them. Neither
+held with the fix as written, and suite 141 was red on that tree for that reason: 142 rows
+passed, 1 failed, mutation/guard292-sort-plain ("row live/plain-runs under the mutation:
+green").
 
 - The new test runs before test 1 and reads every word, so it fires on S2 and S3 too. Their line
   now ends "in text the guard does not parse (sort with its option --compress-program, which runs
@@ -112,14 +133,12 @@ the mutation: green").
   apart (exit 2 against 0), but bash runs no push for it, and the row requires the push in the
   record.
 
-Not decided here, because each choice changes the spec or the check's fix: drop
-guard292-sort-plain (registry back to 35, mutation rows to 38); or keep it with a row that does
-not require bash to run the push; or make the new test fire only for a command whose sort would
-otherwise read data. The lead and the reviewer of record decide. Until then the mutation is
-registered in both files, the counts above stand, and the heavy runs would report it not killed.
+The choices were: drop guard292-sort-plain; or keep it with a row that does not require bash to
+run the push; or make the new test fire only for a command whose sort would otherwise read data.
+The lead took the first.
 
 The four summaries committed as 282d9afb are the runs of lock job 96a over 0a2057f5, before both
-fixes. They are kept as committed until `heavy_runs.sh` runs again under the lock and replaces
+fixes and the decision. They are kept as committed until `heavy_runs.sh` runs again under the lock and replaces
 them.
 
 ## The five commands of build 1 are refused
@@ -253,23 +272,37 @@ After the fix check's S1 test, on the working tree that became commit d22cc7aa:
   e7e9524088fb47bf89066894a9357b20ecd7e870cec61e8a425918cbe9ffe720) is not stored.
   live/plain-runs is green: all four commands exit 2 with the sort option named and bash runs the
   push for each. Under guard292-sort-runs-off S1 and S1b exit 0, so that mutation row is red on
-  the exit code. The failed row is mutation/guard292-sort-plain, the blocker above. An earlier
+  the exit code. The failed row is mutation/guard292-sort-plain, the blocker decided above. An earlier
   run of the same command with S2 and S3 still expecting their old line failed live/plain-runs on
   the wording, which is how the first difference was found.
 - `python3 .veldo/validate.py spec` on the spec, `proof-files`, `proof` on the manifest and `all`,
   and `python3 scripts/check_personal_setup.py`: each exit 0.
+
+After the lead's decision to drop guard292-sort-plain, on the working tree that became commit 3e37bce1:
+
+- `python3 -m py_compile` on the suite, the registry and `summarize.py`; `bash -n` on
+  `heavy_runs.sh`. The guard and its copies are not changed by this commit.
+- A scratch read of both lists: 35 mutations in the suite, 35 in the registry, the same names in
+  the same order, 24 of them under AC2.
+- `VELDO_0268_DETAILS=1 systemd-run --user --scope -q -p MemoryMax=10G -p MemorySwapMax=0
+  -p IPAddressDeny=any python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs`:
+  142 rows, 142 passed, 0 failed, 106 s, host load 16.13 at the end, exit 2, which is the exit
+  of a partial run that passed. A partial run, which proves nothing by the gate's rules. The log
+  (126346 bytes, sha256 99995397f511e9ff86ee9983b86f86ef1d6bbf9e96913fdd1ccebe0060109741) is not
+  stored. live/plain-runs is green: all four commands exit 2 with the sort option named and bash
+  runs the push for each. mutation/guard292-sort-runs-off passed, which means the row is red
+  under it: S2 and S3 are still refused, "in the argument or input of sort, which is not a plain
+  text tool", and S1 exits 0.
 
 ## Pending under the gate lock
 
 `bash proof/VELDO-0292/heavy_runs.sh` runs four steps and writes one summary each:
 
 1. `red-before.summary.json`: suite 141 over the guard and policy_check as they were at 646ff7c8.
-   Expected red: the 18 rows the spec calls red there, live/plain-runs among them, and the 39
+   Expected red: the 18 rows the spec calls red there, live/plain-runs among them, and the 38
    mutation rows. Expected green: live/scanner-edges, live/git-args and every older row.
-2. `green-after.summary.json`: suite 141 over this tree, 143 rows, none red. On this tree it
-   would be red on mutation/guard292-sort-plain until the blocker is decided.
-3. `teeth-292.summary.json`: finding 292, 36 cases, each killed. On this tree
-   guard292-sort-plain would not be killed.
+2. `green-after.summary.json`: suite 141 over this tree, 142 rows, none red.
+3. `teeth-292.summary.json`: finding 292, 35 cases, each killed.
 4. `teeth-268.summary.json`: finding 268, whose anchors sit in the file this change edits.
 
 Not run here: the gate, policy_check, any teeth run, and the red-before run.
