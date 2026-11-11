@@ -365,8 +365,10 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
             return (set(receipt['stages'].values()) == {'pass'}
                     and receipt['claims']['extra'].get('wall_clock') is True
                     and not any('wall_clock' in receipt['claims'][n] for n in ('lint', 'docs', 'security'))
-                    and bool(refusals)
-                    and all(e['resource'] == 'wall_clock' and e['granted']['cpu'] > 2 for e in refusals)
+                    # The first refusal finds 3 cores held, above the ceiling. A later one may find 2
+                    # held when one node has ended: the marked node's own core would still exceed it.
+                    and bool(refusals) and refusals[0]['granted']['cpu'] > 2
+                    and all(e['resource'] == 'wall_clock' and e['granted']['cpu'] + 1 > 2 for e in refusals)
                     and grant['granted']['cpu'] <= 2 and grant['ceiling'] is True
                     and 'ledger refuse extra resource=wall_clock' in printed and ended_first >= 2)
         row290('wall-clock-graph-node', checked290(graph_node_row))

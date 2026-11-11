@@ -749,8 +749,10 @@ def _v219_checks():
                                  dict(file='timed.py', wall_clock='a fixture bound: the 5 s readiness wait'),
                                  dict(file='last.py')])
             def phase(mode, tag):
+                # Per phase 4 declared jobs and 32 others, one core each: 7 others run beside the
+                # declared ones under the ceiling of 11, and the 25 left fill all 20 cores after it.
                 jobs = {}
-                for n in range(12):
+                for n in range(16):
                     for suite in ('first.py', 'timed.py', 'last.py'):
                         if suite != 'timed.py' or n < 4:
                             jobs['%s:%s%d:%s' % (suite, tag, n, mode)] = dict(
@@ -762,7 +764,7 @@ def _v219_checks():
                 [controls, mutants], 20, 31, resources_manifest=three, ceiling=11, client=Recording)
             calls = admission.client.calls
             declared = lambda name: name.startswith('timed.py:')
-            checks = [error is None and len(done) == len(controls) + len(mutants) == 56]
+            checks = [error is None and len(done) == len(controls) + len(mutants) == 72]
             checks.append(all(c['wall_clock'] is declared(c['name']) for c in calls)
                           and sum(c['wall_clock'] for c in calls) >= 8)
             under = [c for c in calls if c['granted'] and c['wall_held']]
