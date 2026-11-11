@@ -1,14 +1,14 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0291",
- "commit": "9a1a4321442d7536dbdf3abab308b3c2fe456d36",
- "tree": "9b1f19d706eca5a055d3f393932c562d0568bd88",
+ "commit": "0a5892776bb479427a3d2d204e17f132d4633a39",
+ "tree": "6a4a9cd2d50066ad954a4b582b70eb75024ae599",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-11T03:23:33+00:00",
+ "produced_at": "2026-11-11T10:45:47+00:00",
  "criteria": [
   {
    "id": "AC1",
-   "status": "pending",
+   "status": "passed",
    "evidence": [
     {
      "type": "unit",
@@ -17,24 +17,24 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step green-after: three runs of suite 86 as built, written to proof/VELDO-0291/green-after.summary.json."
+     "ref": "proof/VELDO-0291/green-after.summary.json",
+     "detail": "Passed, step green-after: 3 of 3 runs of suite 86 as built at 0a589277 are green, 37 rows passed and none failed in each. Row port/held-for-the-run took time in every run (0.48, 0.48 and 0.46 s), so it ran. Suite time 69.0 to 69.5 s."
     },
     {
      "type": "unit",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with reserved_port() returning the port free_port() gives and a closed socket. The row must be red on the open-socket check and on the child's plain bind, and not because its section raised. Written to proof/VELDO-0291/red-before.summary.json."
+     "ref": "proof/VELDO-0291/red-before.summary.json",
+     "detail": "Passed, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with reserved_port() returning the port free_port() gives and a closed socket. Row port/held-for-the-run is red, 1 failed and 36 passed, and its section did not raise. Both named checks are false: the open-socket check ([closed]) and the child's plain bind without SO_REUSEADDR ([errno 0]). No other row is red."
     },
     {
      "type": "unit",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step teeth: mutants port291-not-held and port291-held-without-reuse (finding 291, scripts/check_teeth_mutations.py) must turn port/held-for-the-run red. Written to proof/VELDO-0291/teeth.summary.json with the row's false labels quoted. Checked offline: each anchor occurs once and each mutated copy compiles; in a scratch child the not-held copy lets the plain bind succeed and the copy without SO_REUSEADDR refuses the ThreadingHTTPServer with errno 98."
+     "ref": "proof/VELDO-0291/teeth.summary.json",
+     "detail": "Passed, step teeth: 8 mutants registered under finding 291, 8 executed, 8 killed, driver status passed, every replacement count 1, baseline red rows empty. Both mutants of this criterion are killed on port/held-for-the-run with its false labels quoted: port291-not-held shows the held socket [closed] and the child's plain bind [errno 0]; port291-held-without-reuse shows the ThreadingHTTPServer bind refused [errno 98] and the API unit's start failed with code 1."
     }
    ]
   },
   {
    "id": "AC2",
-   "status": "pending",
+   "status": "passed",
    "evidence": [
     {
      "type": "unit",
@@ -43,24 +43,24 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step green-after: three runs of suite 86 as built, written to proof/VELDO-0291/green-after.summary.json."
+     "ref": "proof/VELDO-0291/green-after.summary.json",
+     "detail": "Passed, step green-after: 3 of 3 runs of suite 86 as built at 0a589277 are green, 37 rows passed and none failed in each. Row start/failure-recorded took time in every run (5.82, 5.83 and 5.83 s), so it ran. Suite time 69.0 to 69.5 s."
     },
     {
      "type": "unit",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with Manager.start put back as the text of 646ff7c8, which keeps no record and never reads the unit log. The row must be red on both legs' record checks. Written to proof/VELDO-0291/red-before.summary.json."
+     "ref": "proof/VELDO-0291/red-before.summary.json",
+     "detail": "Passed, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with Manager.start put back as the text of 646ff7c8, which keeps no record and never reads the unit log. Row start/failure-recorded is red, 2 failed and 35 passed, and its section did not raise. Both named checks are false: the refused bind leg's record check ([no record of the API unit among 0]) and the late start leg's record check ([no record]); the next-start check is false too, with an empty record list. Row restart/adoption-start-checked is also red in this run, as expected, because the base manager keeps no records."
     },
     {
      "type": "unit",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step teeth: mutants start291-log-tail-dropped, start291-wanted-unit-unrecorded and start291-tail-whole-log must turn start/failure-recorded red. Written to proof/VELDO-0291/teeth.summary.json. Checked offline: each anchor occurs once and each mutated suite compiles."
+     "ref": "proof/VELDO-0291/teeth.summary.json",
+     "detail": "Passed, step teeth: 8 mutants registered under finding 291, 8 executed, 8 killed, driver status passed. The three mutants of this criterion are killed on start/failure-recorded with its false labels quoted: start291-log-tail-dropped shows log_tail=None on both legs; start291-wanted-unit-unrecorded shows no record of the API unit among 1; start291-tail-whole-log shows the late start's log_tail as 'earlier output\\nfixture waiting\\n'."
     }
    ]
   },
   {
    "id": "AC3",
-   "status": "pending",
+   "status": "passed",
    "evidence": [
     {
      "type": "unit",
@@ -69,18 +69,18 @@
     },
     {
      "type": "integration",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step green-after: three runs of suite 86 as built, written to proof/VELDO-0291/green-after.summary.json."
+     "ref": "proof/VELDO-0291/green-after.summary.json",
+     "detail": "Passed, step green-after: 3 of 3 runs of suite 86 as built at 0a589277 are green, 37 rows passed and none failed in each. Row restart/adoption-start-checked took time in every run (1.20, 1.16 and 1.16 s), so it ran, and each run made 8 adoption starts with none failed. Suite time 69.0 to 69.5 s."
     },
     {
      "type": "unit",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with without_signer making no check of its start. The row must be red on the check that the last recorded check is the start check. Written to proof/VELDO-0291/red-before.summary.json."
+     "ref": "proof/VELDO-0291/red-before.summary.json",
+     "detail": "Passed, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with without_signer making no check of its start. Row restart/adoption-start-checked is red, 1 failed and 36 passed, and its section did not raise. The named check is false: the last recorded check is the final adoption check, not the start check ([9 checks]), and the row went on to 2 setup runs with 7 calls to the manager. No other row is red."
     },
     {
      "type": "unit",
-     "ref": "proof/VELDO-0291/heavy_runs.sh",
-     "detail": "Pending, step teeth: mutants start291-signer-start-unchecked, start291-row-continues and start291-detail-without-starts must turn restart/adoption-start-checked red. Written to proof/VELDO-0291/teeth.summary.json. Checked offline: each anchor occurs once and each mutated suite compiles."
+     "ref": "proof/VELDO-0291/teeth.summary.json",
+     "detail": "Passed, step teeth: 8 mutants registered under finding 291, 8 executed, 8 killed, driver status passed. The three mutants of this criterion are killed on restart/adoption-start-checked with its false labels quoted: start291-signer-start-unchecked and start291-row-continues show the last recorded check is not the start check and the row running on to 2 setups with 7 calls to the manager; start291-detail-without-starts fails only the detail check ([1 failed start(s) among 4])."
     }
    ]
   }
@@ -94,9 +94,9 @@
   },
   {
    "name": "integration",
-   "status": "pending",
+   "status": "passed",
    "command": "bash proof/VELDO-0291/heavy_runs.sh",
-   "detail": "Not run by the builder. The lead queues it through the gate lock. It writes red-before.summary.json, green-after.summary.json and teeth.summary.json under proof/VELDO-0291/."
+   "detail": "Run by the lead through the gate lock, job 88b, at 0a589277 (tree 6a4a9cd2). All three steps passed: red-before (AC1, AC2 and AC3 each red at 646ff7c8 on the checks the spec names, no section raised), green-after (3 of 3 runs, 37 rows passed and none failed in each) and teeth (8 registered, 8 executed, 8 killed). Summaries: red-before.summary.json, green-after.summary.json and teeth.summary.json under proof/VELDO-0291/."
   },
   {
    "name": "personal_setup",
