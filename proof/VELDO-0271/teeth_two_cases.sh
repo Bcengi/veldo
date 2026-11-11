@@ -43,7 +43,7 @@ shm_list() { ls -ld /dev/shm/b139-* 2>/dev/null || echo "none"; }
 overall=0
 for name in oneleg271-lease-never-taken oneleg271-factory-setup-calls-sudo; do
   rm -rf "$OUT/$name.workers" "$OUT/$name.diffs"
-  mkdir -p "$OUT/$name.workers" "$OUT/$name.diffs"
+  mkdir -p "$OUT/$name.diffs"
   shm_list > "$OUT/$name.shm-before.txt"
   python3 scripts/check_teeth_mutations.py --case "$name" --worker-log-dir "$OUT/$name.workers" \
     --diff-dir "$OUT/$name.diffs" --summary "$OUT/$name.summary.json" > "$OUT/$name.log" 2>&1
