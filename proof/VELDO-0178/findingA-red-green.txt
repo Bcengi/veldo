@@ -1,0 +1,17 @@
+Re-review 2026-11-11 finding A: suite 133's AC1/events row now also matches the owner's conversation id, the turn's
+dispatch id and the turn's intake source against each served event's command id and the whole served JSON of every
+read-model item, and requires that a usage window the store holds as observed on the turn's dispatch is served the
+colleague with no source (the read's credential scanner replaces some dispatch ids, so the id is not always in the
+clear). Run alone (python3 scripts/selftest.py with the suite option, transient user scope MemoryMax=10G). Offline:
+fake engines and loopback only, as the suite is written; the scope itself does not cut the network (this host
+refuses an unprivileged network namespace).
+
+RED: at de3e5256's production modules with the strengthened suite:
+  VELDO-0178 opened: 200 None c-9099ba247f33f31891a7 200 c-ae724b6ab961447fa9ce
+  VELDO-0178 midway: True dispatch/c-9099ba247f33f31891a7/67c30873f5cc4ddf91301054d422dafd
+  VELDO-0178 ended: True completed 8 ended
+  VELDO-0178 detail: AC1/events no id carrying the owner's conversation or its turn's dispatch, nor the turn's intake source, on the colleague's feed or any read model, while the turn ran [] or after it ended ['events:command:window/dispatch/c-9099ba247f33f31891a7/67c30873f5cc4ddf91301054d422dafd/f72480f9773dbc19/five_hour', 'events:command:window/dispatch/c-9099ba247f33f31891a7/67c30873f5cc4ddf91301054d422dafd/f72480f9773dbc19/seven_day', 'spend:window:account:account-claude_code-1:five_hour', 'spend:window:account:account-claude_code-1:seven_day']
+  SELFTEST FAIL: VELDO-0178 AC1/events
+  133_veldo_0178_conversation_api                 15 passed    3.23s
+selftest (PARTIAL, 1 of 195 suites): 41 passed, 1 failed in 3.23s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.

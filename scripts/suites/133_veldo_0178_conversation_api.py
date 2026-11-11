@@ -331,18 +331,45 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         def colleague_leaks(conversation, dispatch, source):
             """Every id the colleague is served, on his whole event feed and on every read model, that carries the
             owner's conversation id or the turn's dispatch id, or is the turn's intake source (review-2026-11-04
-            finding 1), with where it was served."""
+            finding 1), with where it was served; and (re-review 2026-11-11 finding A) every served event whose
+            command id carries one of them and every read-model item whose whole served JSON does, as the shared
+            account's usage windows did."""
             marks = [m for m in (conversation, dispatch) if isinstance(m, str) and m]
             def leaked(identity):
                 return isinstance(identity, str) and (identity == source or any(m in identity for m in marks))
-            found = sorted('events:' + i for i in ids_in(events_of('colleague')[0]) if leaked(i))
+            def carries(value):
+                text = json.dumps(value, sort_keys=True)
+                return any(m in text for m in marks + ([source] if isinstance(source, str) and source else []))
+            feed = events_of('colleague')[0]
+            found = sorted('events:' + i for i in ids_in(feed) if leaked(i))
+            found += sorted('events:command:%s' % e.get('command_id') for e in feed if carries(e.get('command_id')))
+            found += sorted('events:entry:%s' % e.get('seq') for e in feed
+                            if carries({k: v for k, v in e.items() if k != 'command_id'})
+                            and not any(leaked(x['id']) for x in e['entities']))
             for name in READS:
                 status, answer = call('GET', name, who='colleague')
                 if status != 200:
                     found.append('%s:status-%s' % (name, status))
                     continue
-                found += sorted('%s:%s' % (name, item.get('id')) for items in (answer.get('items') or {}).values()
-                                for item in items if leaked(item.get('id')))
+                for items in (answer.get('items') or {}).values():
+                    for item in items:
+                        if leaked(item.get('id')):
+                            found.append('%s:%s' % (name, item.get('id')))
+                        elif carries(item):
+                            found.append('%s:data:%s' % (name, item.get('id')))
+                        elif item.get('kind') == 'account':
+                            # The read's credential scanner replaces a dispatch id whose random part it takes for
+                            # a credential, so the id is not always served in the clear: a usage window the store
+                            # holds as observed on the turn's dispatch must be served him with no source at all.
+                            kept = json.loads(authority.conn.execute('SELECT data FROM entities WHERE id=?',
+                                                                     (item['id'],)).fetchone()[0])
+                            served_windows = (item.get('data') or {}).get('windows') or {}
+                            found += ['%s:window:%s:%s' % (name, item['id'], window)
+                                      for window, value in sorted((kept.get('windows') or {}).items())
+                                      if value.get('source_dispatch') == dispatch
+                                      and (served_windows.get(window) or {}).get('source_dispatch', '') is not None]
+                if carries({k: v for k, v in answer.items() if k != 'items'}):
+                    found.append('%s:answer' % name)
             return found
 
         def drain_hints():
@@ -645,7 +672,8 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
               not ({conversation_entity, turn_entity, 'dispatch:' + str(dispatch_id)} & ids_in(theirs_events))
               and CV.conversation_id(theirs or '') in ids_in(theirs_events))
         # Finding 1: once the turn has ended (its run index released, its reservations retired) and the conversation
-        # closed, still no id of it anywhere he reads.
+        # closed, still no id of it anywhere he reads; nor (re-review 2026-11-11 finding A) in a served command id
+        # or a served item's data, the shared account's usage windows included.
         leaks_ended = colleague_leaks(talk, dispatch_id, turn.get('intake_command'))
         check('AC1/events', 'no id carrying the owner\'s conversation or its turn\'s dispatch, nor the turn\'s intake '
               'source, on the colleague\'s feed or any read model, while the turn ran %s or after it ended %s'
