@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0294",
-  "commit": "a2d33282aa9edf9e4dbad1d36abf2008aef3908f",
+  "commit": "ae91d919301f3931e02964400ff515b054936853",
   "producer": "Codex implementation agent",
   "criteria": [
     {

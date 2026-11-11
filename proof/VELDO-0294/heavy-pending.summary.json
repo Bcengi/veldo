@@ -2,16 +2,17 @@
   "schema": "veldo.proof-summary/v1",
   "command": "bash proof/VELDO-0294/heavy_runs.sh",
   "environment": {
-    "commit": "a2d33282aa9edf9e4dbad1d36abf2008aef3908f",
-    "phase": "fixtures implemented; suite 82 artifact accessor requires correction"
+    "commit": "ae91d919301f3931e02964400ff515b054936853",
+    "runtime_copies": "synced"
   },
   "discarded": [],
   "deciding": {
     "status": "pending",
     "red_before": "pending at 6ee5bb5f with new fixture rows",
     "green_after": "pending for suites 82, 75 and 72",
-    "mutants": "pending for all nineteen new cases",
-    "qualification_and_captures": "pending",
-    "suite_86": "pending"
+    "mutants": "nineteen registered; teeth pending",
+    "qualification_and_captures": "pending; four resource captures, then Claude and Codex live captures",
+    "suite_86": "pending after captures",
+    "script": "ready for the lead with six qualified engine arguments"
   }
 }

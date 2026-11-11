@@ -1,83 +1,95 @@
-# VELDO-0294 phase 2
+# VELDO-0294 phase 3
 
-Phase 2 stops at the session boundary. The build is not ready for review or
-landing. No acceptance criterion is claimed passed. No heavy command ran.
+Phase 3 stops at the session boundary. Implementation and offline baselines are
+complete. Heavy proof is pending, so the build is not ready for review or landing.
+The acceptance criteria and footprint were not edited.
 
 Commits:
 
-- 5a0f12c8 adds the per-phase stand-in, incremental markers and seven phase rows.
-- 3d4475d9 adds token files, mark validation and replay controls, the reporter's
-  ten examples, row prefixes and drain-time exhaustion fixtures.
-- a2d33282 fixes unknown totals in token files and fixture interface mismatches.
+- 2f00314a retains Claude artifact usage lines and fixes the phase fixtures.
+- ae91d919 registers nineteen mutants and prepares the heavy script.
 
-All seven production modules match their runtime copies. The receiver now writes
-null for a token or message total that the ledger still marks unknown. Its charge
-is otherwise unchanged. A marked replay can journal an empty transition under a
-new delivery command; the row checks that neither the invocation nor settlement
-changes. This follows the existing ledger behavior without changing old rows.
+Claude Terminal keeps stream.lines as its existing count and adds
+stream.usage_lines for assistant and result event text. Suite 82 sums those
+artifact events independently. This resolves the design's field-name mismatch
+within the approved footprint. Its runtime copy was synced before all checks.
 
-Offline results, all under user scopes with MemoryMax=10G:
+Suite 82 now passes all seven phase rows. The drain fixtures exhaust the allowance
+only after phase_cap is latched. Claude adds a 200-token assistant event. Codex
+completes its open turn with 200 tokens and opens another, giving 205 tokens,
+two completed turns and in_flight 1. Both engines settle with the mark before
+continuation is refused. The project cap can refuse worker reservation before
+the receiver adds missing_authority:allowance:, so the fixture accepts that exact
+numeric refusal at either boundary. The implementation commit explains this.
 
-- Suite 72: 19 suite checks, 45 total checks, zero failures.
-- Suite 75 after the receiver fix: 26 suite checks, 52 total, zero failures.
-- Suite 58 after that fix: 10 suite checks, 36 total, zero failures.
-- Suite 78 after that fix: 34 suite checks, 60 total, zero failures.
-- Suite 82 remains red. Its latest run had 27 total passes and 35 failures because
-  a fixture exception marks every row failed. The fake-format capture passed.
+The budget fixture captures the Runtime refusal detail before the outer build
+call discards it. The ignored Codex control items are checked against the binary's
+recorded item table when the smaller live table has no entry. Expiring a token
+window still checks unknown usage; the fixture changes it to an invocation
+window before later old rows. No production ledger behavior changed here.
 
-Selected green runs exit 2 by contract. These are offline diagnostics, not gate
-or acceptance evidence. Compilation passed for all phase 2 touched Python files.
-Personal setup reported 0 findings, with no installation found and only built-in
-shapes checked. No hook or command guard rejected an invocation.
+Offline results on synced modules, all with MemoryMax=10G user scopes:
 
-The first two suite 82 failures were fixed: a separately loaded Refused class
-escaped the expected-refusal handler; source payloads need their commit compared,
-not the whole contract source object; isolated projects need a project entity;
-and artifact files live beside the database, not at the fixture root.
+- Suite 82: 36 suite checks, 62 total checks, zero failures.
+- Suite 58: 10 suite checks, 36 total, zero failures.
+- Suite 75: 26 suite checks, 52 total, zero failures.
+- Suite 78: 34 suite checks, 60 total, zero failures.
+- Suite 72: 19 suite checks, 45 total, zero failures.
 
-The current suite 82 failure is TypeError: int object is not iterable in its
-lines(document) helper. Claude Terminal stores stream.lines as an integer count.
-The design, section 3.1 around lines 239 to 240, describes it as event lines.
-Codex stores its actual lines. Do not replace the required artifact usage sums
-with meter counters or fake marker data. AC10 requires the artifact's usage
-lines; preserve that claim. Resolve this within the allowed production modules,
-retaining compatibility for existing consumers of the count. Mention the design
-field-name mismatch in the implementation commit. The acceptance criteria and
-footprint have not been edited.
+The selected suites exit 2 when green. These are offline diagnostics, not gate
+or acceptance evidence. Compilation passed for every touched Python file.
+Personal setup reported 0 findings; no installation was found, so only built-in
+shapes were checked. All nineteen replacement anchors occur exactly once and
+the resulting source compiles. No mutant was executed. The heavy script's Python
+body also compiles. No hook or command guard rejected an invocation.
 
-Next phase, in order:
+The registry now accepts full spec-prefixed target names alongside existing bare
+row names. Every new case names its VELDO-0294 row. The three required baselines
+were green before registration; no production edit followed them.
 
-1. Resolve the Claude artifact usage-line mismatch and update suite 82's accessor.
-   Inspect only the relevant Terminal, Metering._artifact and artifact consumers.
-   Keep the existing count if consumers depend on it. Sync every production edit
-   to its runtime copy before running anything. If satisfying the AC requires a
-   path outside the footprint, stop and report it.
-2. Run offline suite 82 and fix remaining fixture or production failures. Its new
-   rows have not yet completed. The exhaustion cases must latch phase_cap before
-   SIGTERM drains usage: Claude prints a 200-token assistant; Codex completes its
-   second turn with 200 tokens and opens another, for 205 tokens and two completed
-   turns with in_flight 1. Assert the marked settled invocation before refusal of
-   continuation. Keep combined, cap-only, window-only and first-turn controls.
-3. Rerun old ledger suites 58, 75 and 78 after any receiver or ledger change. Run
-   suites 82, 75 and 72 against synced final modules for green baselines. Review
-   new rows against design section 8 before registering mutants. Suite 75's
-   existing rows remain unchanged; its added rows run after those old checks.
-4. Register the nineteen mutants after green baselines. No case has been added
-   yet. Check exact anchors against the final code and include VELDO-0294 in each
-   expected row. Do not run teeth here.
-5. Finish heavy_runs.sh. It still refuses to start without registrations and has
-   not run. Check red-before parsing: copied suite 72 now intentionally expects
-   the new event in old registry rows too, so the current requirement that the
-   total failure count equal only the new rows needs review. Require each named
-   new row to fail and account explicitly for changed old registry expectations.
-   Keep old-tree fallback answers in suite 82. Summaries must stay small; do not
-   retain raw output. All red-before, green-after and teeth work belongs there.
-6. Add the four resource qualifications, both VELDO-0127 live captures, and suite
-   86 to that script, in that order. Inspect their actual CLI options first and
-   respect the Claude login lease. These captures are stale. The lead alone
-   queues the script through the gate lock; do not acquire or wait on the lock.
-7. Refresh the pending manifest and summaries, run proof-files and proof,
-   compilation and personal setup, then commit the next handoff or finished work.
+## Lead command
 
-Proof-files and the pending manifest validation both passed.
-No mutants, qualifications, live captures, teeth, loaded or gate runs were done.
+Run from this worktree, through the lead's gate queue, outside any run holding
+the same Claude login lease. Set the six variables to the qualified binaries,
+source login profiles and selected models. The live capture helper borrows the
+profiles under its own leases and writes rotated credentials back.
+
+```sh
+bash proof/VELDO-0294/heavy_runs.sh \
+  --claude "$VELDO_0294_CLAUDE" --codex "$VELDO_0294_CODEX" \
+  --claude-profile "$VELDO_0294_CLAUDE_PROFILE" \
+  --codex-profile "$VELDO_0294_CODEX_PROFILE" \
+  --claude-model "$VELDO_0294_CLAUDE_MODEL" --codex-model "$VELDO_0294_CODEX_MODEL"
+```
+
+The script does not acquire or wait on a gate lock. It runs the ten red-before
+rows at 6ee5bb5f in a scratch checkout, then the three green-after suites, then
+teeth for all nineteen cases. It requires each named new red row and rejects
+unexpected failures. Suite 72 also expects three old rows to fail because their
+assertions now require run_over_tokens: registry/declared-set, registry/delivery
+and sources/real-writers. A failing partial suite exits 1; a green one exits 2.
+
+Next it qualifies in a scratch checkout under this proof directory and copies
+only the four permitted resource captures. It refuses if runtime qualification
+JSON differs from this tree, since using that change would need a wider footprint.
+Then it retakes Claude and Codex live captures, in that order, and runs suite 86.
+It writes small summaries and discards process output. The lead reviews those
+summaries before updating the pending manifest. The script has not run here.
+
+## Next phase
+
+1. The lead queues the exact command above. Do not run heavy work in an agent
+   session, acquire the gate lock, or claim the current pending evidence passed.
+2. If a queued check fails, inspect its small summary and fix the reported problem
+   within the footprint. If a guard refuses a command, stop and report it.
+   If a required change needs another path, stop and report it.
+3. Any production edit must sync its runtime copy and repeat the affected offline
+   baselines before mutants. Receiver or ledger edits also require old suites
+   58, 75 and 78 again. After the bound engine modules change, qualification and
+   live captures must be refreshed again before suite 86.
+4. Once heavy evidence exists, update the manifest from the actual results and
+   validate proof-files and proof. Keep every summary below 1 MB and retain no
+   raw dumps. The lead owns the later gate and review steps.
+
+The four resource records and two live captures remain stale until the script
+runs. All ten criteria and both required evidence kinds remain pending.

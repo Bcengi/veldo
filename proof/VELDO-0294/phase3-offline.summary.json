@@ -1,0 +1,48 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "Selected offline selftest suites in systemd user scopes with MemoryMax=10G",
+  "environment": {
+    "commit": "ae91d919301f3931e02964400ff515b054936853",
+    "production_commit": "2f00314a",
+    "runtime_copies": "synced"
+  },
+  "discarded": [],
+  "deciding": {
+    "status": "passed",
+    "acceptance": "pending",
+    "suites": {
+      "82": {
+        "passed": 62,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "58": {
+        "passed": 36,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "75": {
+        "passed": 52,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "78": {
+        "passed": 60,
+        "failed": 0,
+        "exit_code": 2
+      },
+      "72": {
+        "passed": 45,
+        "failed": 0,
+        "exit_code": 2
+      }
+    },
+    "compilation": "passed",
+    "mutation_anchors": 19,
+    "mutant_execution": "pending",
+    "personal_setup_findings": 0,
+    "personal_setup_scope": "built-in shapes; no installation found",
+    "initial_82_failures": "Nine rows failed before the fixture corrections in 2f00314a.",
+    "heavy": "pending"
+  }
+}
