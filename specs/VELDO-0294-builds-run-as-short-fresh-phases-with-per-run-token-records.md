@@ -28,6 +28,9 @@ footprint:
   - specs/VELDO-0294-builds-run-as-short-fresh-phases-with-per-run-token-records.md
   - specs/index.md
   - proof/VELDO-0294/**
+  - proof/VELDO-0127/claude-live.json
+  - proof/VELDO-0127/codex-live.json
+  - proof/VELDO-0127/resources-*.json
 behavior_bearing: true
 observability:
   logs: >
@@ -74,13 +77,16 @@ acceptance_criteria:
       Claim: the brief of a phase is its dispatch payload, and it carries the committed state, what
       is done, what remains and the partial-read rule, and nothing of an earlier session's
       conversation. Set: the three payloads of the build in AC1, and one payload built from a
-      phase result whose remains list is 40 lines of 400 characters. Completeness: row
+      phase result whose remains list is 40 lines of 400 characters, following five ended phases
+      whose notes are 2,000 characters each. Completeness: row
       phase/brief (prefix VELDO-0294) requires each payload to carry phase (name, index, of and
       messages), source.commit equal to the contract's source commit, done (one entry per ended
       phase dispatch: phase, commit and a note), remains (the list the phase before returned),
       reading equal to READING_RULE, and output naming what this phase returns. It requires the
       payload without its spec text to be at most 4,096 bytes of JSON, for the oversized result
-      too, where remains is cut to 10 lines of 200 characters. And it requires no payload to hold
+      too, where remains is cut to 10 lines of 200 characters and each done note to 200
+      characters, with five done entries whose notes are 2,000 characters each. And it requires no
+      payload to hold
       the final answer text of an earlier phase beyond its note and remains. Red at 6ee5bb5f, where
       the build payload has none of phase, source, done, remains or reading
       (control_launch_work.py:242 to 246).
@@ -92,42 +98,40 @@ acceptance_criteria:
   - id: AC3
     text: >
       Claim: an engine run that reaches its phase's message cap is stopped with the cause
-      phase_cap, the commits it made are kept, the next dispatch continues the same phase from the
-      last of them, and a build ends refused once it has used its dispatches. Set: suite 82's
+      phase_cap, the commits it made are kept, and the next dispatch continues the same phase from
+      the last of them. Set: suite 82's
       stand-in engine in a mode that commits one file and then keeps answering without ending, with
       phase.messages 5 and phase.dispatches 4. Completeness: row phase/step-cap (prefix VELDO-0294)
       requires the first dispatch's artifact document to name the stop phase_cap after the meter
       counted 5 messages; its ledger invocation to end cancelled; the second dispatch to be the
       same phase, with a source commit equal to the commit the stopped run made and with that commit
-      in its done list; Runtime.build to raise phase_budget:build after the fourth dispatch; and no
-      fifth dispatch record to exist. A run that stays under the cap ends as it does today. Red at
+      in its done list; and a stand-in whose .git/HEAD is a symlink to a file naming the stopped
+      commit ends refused invalid_input:build_head with no second dispatch. A run that stays under
+      the cap ends as it does today. Red at
       6ee5bb5f, where nothing counts a run's messages against a cap of its own and the stand-in runs
       to the role's deadline.
     falsified_by: >
       Never compare the meter's messages with the cap. Registered mutant phase294-cap-unenforced
       must turn phase/step-cap red. Start the next dispatch from the stopped phase's source
-      commit. Registered mutant phase294-capped-work-dropped must turn phase/step-cap red. Drop
-      the dispatch count. Registered mutant phase294-dispatches-unbounded must turn phase/step-cap
-      red.
+      commit. Registered mutant phase294-capped-work-dropped must turn phase/step-cap red. Follow
+      a symlinked .git/HEAD. Registered mutant phase294-head-symlink-followed must turn
+      phase/step-cap red.
   - id: AC4
     text: >
       Claim: Metering.settle writes one run token record for every subscription invocation it
-      settles, with the numbers the ledger committed, and removes records older than 30 days. Set:
-      four invocations in suite 75: one completed, one stopped by phase_cap, one whose stream ends
-      without a usage total, and one whose record is dated 31 days before the next settle.
+      settles, with the numbers the ledger committed. Set: three invocations in suite 75: one
+      completed, one stopped by phase_cap, and one whose stream ends without a usage total.
       Completeness: row tokens/run-record (prefix VELDO-0294) requires one file per invocation in
       the run_tokens directory, mode 0600, at most 2,048 bytes, holding schema veldo.run_tokens/v1,
       the dispatch, invocation, unit, station, phase, attempt, account, provider, boundary, tokens,
       messages, wall_seconds, outcome and ended_at. tokens, messages and wall_seconds equal the
       charge of the ledger's invocation record (control_reservations) for the first two. tokens is
-      null for the third and never 0. After the next settle the fourth file is gone and the other
-      three remain. run_tokens(config) returns the three, newest first. Red at 6ee5bb5f, where the
-      receiver writes no such file.
+      null for the third and never 0. run_tokens(config) returns the three, newest first. Red at
+      6ee5bb5f, where the receiver writes no such file.
     falsified_by: >
       Skip the write. Registered mutant tokens294-record-unwritten must turn tokens/run-record red.
       Write 0 where the ledger holds tokens as unknown. Registered mutant tokens294-unknown-as-zero
-      must turn tokens/run-record red. Never remove an old record. Registered mutant
-      tokens294-never-pruned must turn tokens/run-record red.
+      must turn tokens/run-record red.
   - id: AC5
     text: >
       Claim: the Telegram report tells the owner once about every run whose settled tokens are over
@@ -143,19 +147,43 @@ acceptance_criteria:
       Report every settled run. Registered mutant tokens294-flag-threshold-ignored must turn
       report/run-over-tokens red. Treat unknown tokens as under the threshold. Registered mutant
       tokens294-unknown-not-flagged must turn report/run-over-tokens red.
+  - id: AC6
+    text: >
+      Claim: Runtime.build refuses phase_budget:build once a build has used phase.dispatches
+      dispatches and the proof phase has not returned. Set: suite 82's stand-in in the mode of AC3,
+      with phase.messages 5 and phase.dispatches 4. Completeness: row phase/budget (prefix VELDO-0294)
+      requires Runtime.build to raise phase_budget:build naming the phase it stopped in after the
+      fourth dispatch, and no fifth dispatch record for the unit. Red at 6ee5bb5f, where a build is one
+      dispatch and nothing counts them.
+    falsified_by: >
+      Drop the dispatch count. Registered mutant phase294-dispatches-unbounded must turn phase/budget
+      red.
+  - id: AC7
+    text: >
+      Claim: Metering.settle removes every run token record whose ended_at is more than 30 days
+      before it and keeps the rest. Set: in suite 75, one record dated 31 days and one dated 29 days
+      before a settle. Completeness: row tokens/pruned (prefix VELDO-0294) requires the 31-day file to
+      be gone and the 29-day file and the new record to remain after that settle. Red at 6ee5bb5f,
+      where no record is written or removed.
+    falsified_by: >
+      Never remove an old record. Registered mutant tokens294-never-pruned must turn tokens/pruned
+      red.
 required_evidence: [unit, integration]
 rollback: >
   Revert the commit. Runtime.build again runs a build as one dispatch, no run has a message cap of
   its own, and no run token record or run_over_tokens report is written. The run_tokens directory
   can be deleted. Nothing else reads it. Dispatch, ledger and floor records written while this
   change was in place stay valid, because none of their shapes change.
+  A revert changes control_launch.py and both engine modules again, so the VELDO-0127 live captures
+  and resource records are retaken with the revert.
 ---
 
 ## Intent
 
 Owner requirement, Dmitry, Telegram 40759, 2026-11-11: "veldo should also build this way!"
 
-"This way" is how the lead's own builds changed that day. A build used to be one long engine
+"This way" is how the assistant that builds his own projects changed its builds that day. A build
+used to be one long engine
 session. Measured on 2026-11-11, two such builds used 64M and 70M tokens, one of them in 217 turns.
 Almost all of that is the session's context, a few hundred thousand tokens in this repository, read
 again at every turn. After builds were split into short sessions that each start fresh, no run used
@@ -167,8 +195,6 @@ payload holding the whole task and makes one _run call (line 247). That is one d
 deadline. Nothing in the payload tells the builder to read parts of large files. The ledger
 (control_reservations) does record each invocation's tokens and messages, but nobody is told when one
 run uses ten times what it should.
-
-This spec changes four things.
 
 A phase is one build dispatch. Runtime.build runs the phases edit, test and proof. Edit traces the
 code paths and makes the change. Test runs the tests and fixes what fails. Proof writes the evidence
@@ -187,11 +213,21 @@ and _collect (line 183) imports that commit as it does today. Or the run reaches
 cap. Metering already counts messages from the engine's stream for the ledger. It now also compares
 that count with payload.phase.messages, and the receiver stops the engine with the cause phase_cap
 where it stops one for usage_cap today (control_launch.py:2322). phase_cap joins STOPS in both
-engine modules, so the artifact document names it. Runtime then collects the head commit of the
-stopped clone if it descends from the phase's source commit. It reads that commit the way _collect
-reads a returned one: after _collect's directory checks, from a copy of the objects in the
-authority's own temporary repository, never by running Git on the worker's metadata. Work that was
-not committed is lost with the clone, and the brief says so.
+engine modules, so the artifact document names it.
+
+phase_cap is added to the causes Metering.settle settles as cancelled (control_launch.py:2702) and to
+the causes the remote path treats as a stop (_finish, line 1626). _run returns a capped build run to
+Runtime.build instead of refusing it: a cancelled record whose supervision cause is phase_cap is the
+one exception to the completed-record check at control_launch_work.py:165, and it carries no answer.
+Runtime.build then reads the stopped clone's head commit as plain bytes, never by running Git and
+never by following a link. After _collect's directory checks it reads .git/HEAD, which must be a
+regular file holding either 40 hex digits or "ref: refs/heads/<name>". A ref is read from
+.git/refs/heads/<name>, which must be a regular file, or from the one matching line of
+.git/packed-refs. Anything else refuses invalid_input:build_head. The id is then imported exactly as
+_collect imports a returned commit, from a copy of the objects into the authority's own temporary
+repository, and it is kept only if it descends from the phase's source commit. If it equals the
+source commit, the phase made no commit and the next dispatch starts from the same commit. Work that
+was not committed is lost with the clone, and the brief says so.
 
 The next phase starts from the commit the last one ended on. If the answer said done, it is the
 next phase in order. Otherwise it is the same phase again with the new remains. A build may use
@@ -213,7 +249,34 @@ the owner one report per enabled event. REGISTRY gains run_over_tokens, read fro
 subscription_reservation records the ledger writes. Its handler reports an invocation record when its
 final report commits and its charged tokens are above RUN_TOKENS_FLAG, or its tokens are still
 unknown. The threshold is 15,000,000, the figure the owner's own check uses. The report goes out on
-the channel's next pass, so the owner hears about a ballooning run minutes after it ends.
+the channel's next pass, so the owner hears about a run that used too many tokens on the reporter's
+next pass after it settles.
+
+## VELDO-0127 captures
+
+The change to control_launch.py, control_engine_claude.py and control_engine_codex.py makes the
+VELDO-0127 live captures and resource records stale, because they bind those files by digest.
+Retaking them is part of this ticket: .veldo/qualify.py for the four resource records, and
+proof/VELDO-0127/live.py once for codex and once for claude for the two captures. The Claude capture is
+taken from outside a run, because a run holds the login lease. Suite 86 0127 passes every row before
+review.
+
+## Owner decisions
+
+Three numbers are Dmitry's to set. Each has a default the build uses unless he picks another, and the
+spec does not become ready until he has answered.
+
+Messages per phase, default 80. A turn in this repository re-reads a context of a few hundred thousand
+tokens, so 80 turns of a fresh session come to roughly 8M, the most any phased run used on
+2026-11-11. The 217-turn build that used 70M would have been stopped well before a quarter of its
+length. A lower cap stops more phases mid-work and costs a continuation dispatch each time.
+
+Dispatches per build, default 6. That is the three phases plus one continuation each. A build that
+needs more than that is larger than one spec should be, and is refused rather than left to run.
+
+Flag threshold, default 15,000,000 tokens. It is the number his own check of the lead's runs already
+uses. It is about twice the largest phased run measured on 2026-11-11 (7.9M), so a normal phase stays
+quiet and a run that goes back to the old one-session pattern is reported.
 
 ## What this spec leaves alone
 
@@ -244,12 +307,19 @@ this code.
 
 ## What the reviewer judges
 
-Whether the stopped clone's head commit is read without Git ever running on worker-owned metadata.
-
-Whether 80 messages and 6 dispatches fit this repository's builds. The owner can change both when he
-approves the spec.
+Whether the head commit of a stopped clone is read only as the bytes of regular files, and whether a
+crafted HEAD, ref or packed-refs file can name a commit that does not descend from the phase's source.
 
 ## History
 
-2026-11-11: drafted from the owner's requirement (Telegram 40759) and the lead's note on builds in
+2026-11-11: drafted from the owner's requirement (Telegram 40759) and the note on builds in
 short phases
+2026-11-11: amended from its independent review (spec-veldo-0294-review-2026-11-11.md, verdict
+CHANGES), findings F1 to F6 applied with the review's replacement text. Where the text differs from
+the review: F2 adds the function name _finish to the remote path at control_launch.py:1626, and its
+replacement starts a new paragraph; F4's new criteria are AC6 (dispatch budget) and AC7 (pruning),
+after AC5, so AC3 keeps phase.dispatches 4 in its set without a claim on it; F6a leaves "the lead's
+runs" in the Owner decisions section because that sentence is the review's own F3 text. Not in the
+review and left for the owner: error_taxonomy still says "two new names" although F2 adds the
+refusal invalid_input:build_head, and the three owner values are not yet answered, so status stays
+draft.
