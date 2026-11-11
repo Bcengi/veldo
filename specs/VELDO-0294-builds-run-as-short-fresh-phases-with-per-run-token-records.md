@@ -50,7 +50,7 @@ observability:
     phase_budget:build is a refusal of Runtime.build (the build used every dispatch it is allowed
     and the last phase is not done). invalid_input:build_head is a refusal of a capped run whose clone
     head cannot be read as plain bytes from .git/HEAD and its ref (a link, or anything not a commit
-    id or a branch ref) (F2). No existing refusal changes its name or meaning.
+    id or a branch ref). No existing refusal changes its name or meaning.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -107,17 +107,14 @@ acceptance_criteria:
       requires the first dispatch's artifact document to name the stop phase_cap after the meter
       counted 5 messages; its ledger invocation to end cancelled; the second dispatch to be the
       same phase, with a source commit equal to the commit the stopped run made and with that commit
-      in its done list; and a stand-in whose .git/HEAD is a symlink to a file naming the stopped
-      commit ends refused invalid_input:build_head with no second dispatch. A run that stays under
+      in its done list. A run that stays under
       the cap ends as it does today. Red at
       6ee5bb5f, where nothing counts a run's messages against a cap of its own and the stand-in runs
       to the role's deadline.
     falsified_by: >
       Never compare the meter's messages with the cap. Registered mutant phase294-cap-unenforced
       must turn phase/step-cap red. Start the next dispatch from the stopped phase's source
-      commit. Registered mutant phase294-capped-work-dropped must turn phase/step-cap red. Follow
-      a symlinked .git/HEAD. Registered mutant phase294-head-symlink-followed must turn
-      phase/step-cap red.
+      commit. Registered mutant phase294-capped-work-dropped must turn phase/step-cap red. 
   - id: AC4
     text: >
       Claim: Metering.settle writes one run token record for every subscription invocation it
@@ -170,6 +167,19 @@ acceptance_criteria:
     falsified_by: >
       Never remove an old record. Registered mutant tokens294-never-pruned must turn tokens/pruned
       red.
+  - id: AC8
+    text: >
+      Claim: the head commit of a capped run is read only from regular files, and a head that cannot
+      be read that way is refused. Set: suite 82's stand-in in the mode of AC3, with phase.messages
+      5, in three variants: .git/HEAD a symlink to a file naming the stopped commit, .git/HEAD naming
+      a ref whose file under .git/refs/heads is a symlink, and .git/HEAD holding a ref outside
+      refs/heads. Completeness: row phase/head-read (prefix VELDO-0294) requires each variant to end
+      refused invalid_input:build_head with no second dispatch record for the unit. Red at 6ee5bb5f,
+      where a capped run is not collected at all.
+    falsified_by: >
+      Follow a symlinked .git/HEAD. Registered mutant phase294-head-symlink-followed must turn
+      phase/head-read red. Follow a symlinked ref file. Registered mutant
+      phase294-ref-symlink-followed must turn phase/head-read red.
 required_evidence: [unit, integration]
 rollback: >
   Revert the commit. Runtime.build again runs a build as one dispatch, no run has a message cap of
@@ -276,8 +286,7 @@ length. A lower cap stops more phases mid-work and costs a continuation dispatch
 Dispatches per build, default 6. That is the three phases plus one continuation each. A build that
 needs more than that is larger than one spec should be, and is refused rather than left to run.
 
-Flag threshold, default 15,000,000 tokens. It is the number his own check of the lead's runs already
-uses. It is about twice the largest phased run measured on 2026-11-11 (7.9M), so a normal phase stays
+Flag threshold, default 15,000,000 tokens. It is the number his own check of his assistant's runs already uses. It is about twice the largest phased run measured on 2026-11-11 (7.9M), so a normal phase stays
 quiet and a run that goes back to the old one-session pattern is reported.
 
 ## What this spec leaves alone
@@ -326,4 +335,5 @@ review and left for the owner: error_taxonomy still says "two new names" althoug
 refusal invalid_input:build_head, and the three owner values are not yet answered, so status stays
 draft.
 
-2026-11-11: the lead corrected error_taxonomy to name the three new names, including invalid_input:build_head from F2.
+2026-11-11: error_taxonomy corrected to name the three new names, including invalid_input:build_head.
+2026-11-11: re-review N1 to N3 applied: the head-read refusal is its own criterion, AC8.
