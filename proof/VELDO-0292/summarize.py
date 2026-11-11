@@ -26,6 +26,7 @@ RED_BEFORE = {
     'live/outside-subset': 'the line does not say what was found',
     'live/interpreter': 'the line does not say what was found',
     'live/stored': 'the line does not say what was found',
+    'live/plain-runs': 'the line does not say what was found',
     'live/config-write': 'the line does not say what was found',
     'live/config-include': 'the line does not say what was found',
     'live/construct': 'the line does not say what was found',
@@ -36,7 +37,7 @@ RED_BEFORE = {
 }
 # The VELDO-0292 rows that already hold there: the guard refuses any text with the words of a push.
 GREEN_BEFORE = ('live/scanner-edges', 'live/git-args')
-ROWS, MUTATION_ROWS = 19, 37  # the VELDO-0292 rows, and one mutation row per row a mutation must turn red
+ROWS, MUTATION_ROWS = 20, 38  # the VELDO-0292 rows, and one mutation row per row a mutation must turn red
 ROW =re.compile(r'^\s*(VELDO-0(?:268|292)) (\S+) (observed|detail): (.*)$')
 
 
