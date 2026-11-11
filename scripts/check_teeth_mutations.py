@@ -12968,7 +12968,7 @@ def cases():
     # canary declaration and factory setup are judged by the suites that already drive them.
     def oneleg271(name, module, old, new, rows, suite='141_veldo_0271_gate_without_sandbox.py', dir='scripts'):
         add(271, name, suite, module, old, new, rows)
-        if dir is not None:
+        if dir:
             result[-1]['dir'] = dir
 
     # The suites the deleted leg list named whole (the unconfined list at 24c9f5b4, less the removed

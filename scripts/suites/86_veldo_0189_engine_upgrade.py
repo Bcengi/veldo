@@ -138,6 +138,12 @@ def _v189_suite():
     (mods / 'runtime/nested/upgrade.json').write_text('{"upgrade": true}\n')
     prior_path186 = os.environ.get('PATH', '')
     os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
+    # VELDO-0271: every setup of this suite looks for a leftover namespace helper under an empty fixture
+    # host, whatever this host has installed, so setup's standard error carries no leftover line here.
+    clean_host271 = base / 'host-clean-271'
+    clean_host271.mkdir()
+    prior_host271 = os.environ.get('VELDO_HOST_ROOT')
+    os.environ['VELDO_HOST_ROOT'] = str(clean_host271)
     H = load('v189_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
     TS = load('v189_tailscale', ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py')
     _git_process = load('v189_git', mods / 'git_process.py')
@@ -229,7 +235,8 @@ def _v189_suite():
     def child_env():
         env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', str(base)),
                'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8', 'TZ': 'UTC', 'PYTHONDONTWRITEBYTECODE': '1',
-               'PYTHONPATH': str(guard_dir), 'VELDO_V189_GUARD_LOG': str(guard_log)}
+               'PYTHONPATH': str(guard_dir), 'VELDO_V189_GUARD_LOG': str(guard_log),
+               'VELDO_HOST_ROOT': str(clean_host271)}
         if os.environ.get('XDG_RUNTIME_DIR'):
             env['XDG_RUNTIME_DIR'] = os.environ['XDG_RUNTIME_DIR']
         return env
@@ -2091,6 +2098,10 @@ def _v189_suite():
 
         cleanup('runtime', close_runtime)
         os.environ['PATH'] = prior_path186
+        if prior_host271 is None:
+            os.environ.pop('VELDO_HOST_ROOT', None)
+        else:
+            os.environ['VELDO_HOST_ROOT'] = prior_host271
         socket.create_connection, socket.getaddrinfo = real_connect, real_resolve
         for bridge in bridges:
             cleanup('bridge ' + bridge.path, bridge.close)

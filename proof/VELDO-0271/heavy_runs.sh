@@ -32,29 +32,49 @@ fi
 #    scripts/gate_graph.json.
 cpu0=$(usage_usec); t0=$(date +%s.%N)
 python3 proof/VELDO-0271/record_rows.py record "$ROOT" "$OUT/rows-after.json" > "$OUT/unit.log" 2>&1
-code=$?
+recorder=$?
 t1=$(date +%s.%N); cpu1=$(usage_usec)
+# record_rows.py exits 0 whatever selftest does: the suite's own exit status is the exit field of the
+# record it wrote. "missing" when there is no readable record or no such field.
+code=$(python3 - "$OUT/rows-after.json" <<'EOF'
+import json, sys
+try:
+    value = json.load(open(sys.argv[1]))['exit']
+except (OSError, ValueError, KeyError, TypeError):
+    print('missing')
+else:
+    # sys.exit() with no status is 0, and with a message is 1.
+    print(0 if value is None else value if type(value) is int else 1)
+EOF
+)
 peak=$(cat "$(own_cgroup)/memory.peak" 2>/dev/null || echo unknown)
 [ "$BASELINE_RAN" = 1 ] && peak=includes-baseline-run
 wall=$(echo "$t1 - $t0" | bc); cpu=$(echo "($cpu1 - $cpu0) / 1000000" | bc -l | cut -c1-10)
 failing=$(grep -E '^ *SELFTEST FAIL: ' "$OUT/unit.log" | sed -E 's/^ *SELFTEST FAIL: //' | cut -c1-120 | paste -sd ';' -)
-echo "unit exit $code wall $wall cpu $cpu peak_bytes $peak load $(cut -d' ' -f1-3 /proc/loadavg) :: $(grep -E '^selftest: ' "$OUT/unit.log" | tail -1) :: failing: ${failing:-none}" >> "$RESULTS"
-python3 - "$OUT" "$code" "$wall" "$cpu" "$peak" <<'EOF'
+echo "unit exit $code recorder exit $recorder wall $wall cpu $cpu peak_bytes $peak load $(cut -d' ' -f1-3 /proc/loadavg) :: $(grep -E '^selftest: ' "$OUT/unit.log" | tail -1) :: failing: ${failing:-none}" >> "$RESULTS"
+python3 - "$OUT" "$code" "$wall" "$cpu" "$peak" "$recorder" <<'EOF'
 import importlib.util, json, sys
 from pathlib import Path
-out, code, wall, cpu, peak = sys.argv[1:6]
+out, code, wall, cpu, peak, recorder = sys.argv[1:7]
 spec = importlib.util.spec_from_file_location('heavy_validate', '.veldo/validate.py')
 validate = importlib.util.module_from_spec(spec); spec.loader.exec_module(validate)
 log = (Path(out) / 'unit.log').read_bytes()
 text = log.decode('utf-8', 'replace').splitlines()
-record = json.loads((Path(out) / 'rows-after.json').read_text())
-deciding = {'exit': int(code), 'bound': 'exit 0 and no failing row',
+try:
+    record = json.loads((Path(out) / 'rows-after.json').read_text())['rows']
+except (OSError, ValueError, KeyError, TypeError):
+    record = None
+failing = [l.split('SELFTEST FAIL: ', 1)[1][:200] for l in text if 'SELFTEST FAIL: ' in l]
+# exit is selftest's own status, read from the record; the recorder's status says only that it wrote one.
+deciding = {'exit': int(code) if code.lstrip('-').isdigit() else None, 'recorder_exit': int(recorder),
+            'bound': 'exit 0 and no failing row',
             'aggregate': next((l for l in reversed(text) if l.startswith('selftest: ')), None),
-            'failing_rows': [l.split('SELFTEST FAIL: ', 1)[1][:200] for l in text if 'SELFTEST FAIL: ' in l],
-            'suites': len(record['rows']), 'row_names': sum(len(v) for v in record['rows'].values()),
+            'failing_rows': failing,
+            'suites': len(record) if record is not None else None,
+            'row_names': sum(len(v) for v in record.values()) if record is not None else None,
             'wall_seconds': float(wall), 'cpu_seconds': float(cpu),
             'peak_cgroup_memory_bytes': int(peak) if peak.isdigit() else None,
-            'verdict': 'pass' if code == '0' else 'fail'}
+            'verdict': 'pass' if code == '0' and recorder == '0' and not failing and record is not None else 'fail'}
 if peak == 'includes-baseline-run':
     deciding['peak_cgroup_memory_note'] = ('not measured: step 0 ran the baseline unit suite in this pass and the same scope, '
                                            'so the scope peak includes the baseline run')
