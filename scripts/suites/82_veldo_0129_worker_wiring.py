@@ -210,6 +210,8 @@ def _v129_suite():
         writer.command_registry['claim_operation'] = {'transaction_transition': L.D.CLM.transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
         def admit(unit, risk='standard', project=None):
+            if project:
+                put('project:' + project, 'project', dict(name='phase fixture'))
             put(unit, 'execution_unit', dict(state='READY', repository_uuid=repository, backlog_item_uuid='backlog:' + unit,
                                              requirements=[], eligible_holders=['builder'], project=project or 'p129',
                                              scope_digest='scope-' + unit, revision=1, depends_on=[], risk=risk))
@@ -616,7 +618,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
         def invocation(record):
             return (entity(L.D.RES.entity('invocation', [domain, 'invocation/' + record['dispatch_id']])) or {}).get('data', {})
         def document(record):
-            path = base / 'artifacts' / (hashlib.sha256(('invocation/' + record['dispatch_id']).encode()).hexdigest() + '.json')
+            path = db.parent / 'artifacts' / (hashlib.sha256(('invocation/' + record['dispatch_id']).encode()).hexdigest() + '.json')
             return json.loads(path.read_text()) if path.exists() else {}
         def lines(doc):
             return [json.loads(line) for line in (doc.get('stream', {}).get('lines', [])
@@ -655,7 +657,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 check('phase/brief', engine + ': fields and prior answer exclusion ' + str(index),
                       p.get('phase') == dict(name=('edit', 'test', 'proof')[min(index, 2)], index=index + 1,
                                             of=3, messages=80, soft=70)
-                      and p.get('source') == record['contract']['source']
+                      and p.get('source') == {'commit': record['contract']['source']['commit']}
                       and p.get('done') == [dict(phase=('edit', 'test', 'proof')[i],
                            commit=observations[i]['answer']['commit'], note=observations[i]['answer']['note']) for i in range(index)]
                       and p.get('remains') == (observations[index - 1]['answer']['remains'] if index else [])
@@ -693,7 +695,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 try:
                     run.limits(spec, dict(role_, phase=overrides))
                     refused = None
-                except W.Refused as e:
+                except Exception as e:
                     refused = (e.code, e.detail)
                 check('phase/brief', 'preflight rejects ' + str(overrides),
                       refused == ('missing_authority:worker_configuration/build', detail)
@@ -705,7 +707,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 W.brief(spec, '', role_, 2, dict(messages=5, soft=1, dispatches=100), spec['base'],
                         [dict(phase='proof', commit=spec['base'], note='') for _ in range(99)], [], None)
                 refused = None
-            except W.Refused as e:
+            except Exception as e:
                 refused = (e.code, e.detail)
             check('phase/brief', 'oversized skeleton refuses',
                   refused == ('missing_authority:worker_configuration/build', 'brief_bytes'))

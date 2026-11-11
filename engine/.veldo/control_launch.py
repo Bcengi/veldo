@@ -2760,7 +2760,8 @@ class Metering:
                     unit=self.contract['unit'], station=self.contract['station'],
                     phase=phase if isinstance(phase, str) else None, attempt=self.contract['attempt'],
                     account=self.account, provider=self.engine.PROVIDER, boundary=self.boundary,
-                    tokens=charge.get('tokens'), messages=charge.get('messages'),
+                    tokens=None if 'tokens' in record.get('unknown', []) else charge.get('tokens'),
+                    messages=None if 'messages' in record.get('unknown', []) else charge.get('messages'),
                     wall_seconds=charge.get('wall_seconds'), outcome=outcome, ended_at=now)
         raw = (json.dumps(data, sort_keys=True, separators=(',', ':')) + '\n').encode()
         if len(raw) > RUN_TOKENS_BYTES:

@@ -1657,8 +1657,10 @@ sys.exit(payload.get('code', 0))
                 check('tokens/run-record', 'invalid settlement refuses ' + label + ': ' + str(error), error == 'invalid_input')
             seq = writer.execute('SELECT max(seq) FROM journal').fetchone()[0]
             _, error = attempt(lambda: report294('replay', **({'session': last['session']} if 'session' in last else {})))
-            check('tokens/run-record', 'marked replay adds no journal record', error is None
-                  and writer.execute('SELECT max(seq) FROM journal').fetchone()[0] == seq)
+            check('tokens/run-record', 'marked replay commits no further settlement', error is None
+                  and invocation(meter.dispatch_id) == call
+                  and all(json.loads(change) == {} for change, in writer.execute(
+                      'SELECT transition FROM journal WHERE seq > ?', (seq,))))
             for label, changed in [('changed', dict(mark, in_flight=1)), ('dropped', None)]:
                 _, error = attempt(lambda: report294(label, settlement=changed))
                 check('tokens/run-record', 'marked replay conflict ' + label, error == 'report_conflict')
