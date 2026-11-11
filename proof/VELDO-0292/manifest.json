@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0292",
-  "commit": "7b8ff1fdd4448058880b3b233606cb976ba08b19",
-  "tree": "6b30f5cc39458c3b16f87bb952eed250f555d688",
+  "commit": "d22cc7aa67ac16b177b3a131d9968df2c214eaa9",
+  "tree": "4429fe516dad1204b24170596f5c01477e4582b5",
   "producer": "Claude implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-11T15:20:00+00:00",
+  "produced_at": "2026-11-11T15:37:00+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -23,7 +23,7 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0292/README.md",
-          "detail": "Quick run by the builder on the tree of 7b8ff1fd before its commit, a partial run that proves nothing by the gate's rules: python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs, 142 rows, 0 failed."
+          "detail": "Quick run by the builder on the tree of this commit before it was made, a partial run that proves nothing by the gate's rules: python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs, 143 rows, 142 passed, 1 failed (mutation/guard292-sort-plain, the blocker under AC2). The row text/incident and its mutation row passed."
         }
       ]
     },
@@ -34,12 +34,17 @@
         {
           "type": "integration",
           "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
-          "detail": "Rows live/shell-string, live/pipeline, live/outside-subset, live/interpreter, live/plain-runs (2 commands, added by the build check of 2026-11-11), live/stored, live/config-write (23 commands), live/config-include (4), live/construct (6), live/mixed, live/quoted-command-word, live/remap and subset/builtin-list, each as the spec's falsifier words it; 24 mutations in 27 mutation rows, guard292-sort-plain among them. Results pending: the rows and mutations of this tree have not run under the gate lock."
+          "detail": "Rows live/shell-string, live/pipeline, live/outside-subset, live/interpreter, live/plain-runs (4 commands: S2 and S3 added by the build check of 2026-11-11, S1 and S1b by its fix check), live/stored, live/config-write (23 commands), live/config-include (4), live/construct (6), live/mixed, live/quoted-command-word, live/remap and subset/builtin-list, each as the spec's falsifier words it; 25 mutations in 28 mutation rows, guard292-sort-plain and guard292-sort-runs-off among them. Results pending: the rows and mutations of this tree have not run under the gate lock."
         },
         {
           "type": "note",
           "ref": "proof/VELDO-0292/README.md",
-          "detail": "The build check's fix is applied with one difference the README states: of its three commands S1 to S3, the row carries S2 and S3. S1 (printf of a push into a file, then sort with its compress program set to sh reading that file) still passes this guard, because it is the stated limit: a plain text tool writes a file and a program the guard cannot read uses it. The spec's first reviewer bullet names it."
+          "detail": "The fix check of 1ea03051 is applied as written: a test before test 1 (runs_program) sends a command that names sort with its compress program option to the judgment as written, in all three guard copies. S1 (printf of a push into a file, then sort with its compress program set to sh reading that file) and S1b (the same behind timeout 60, the option abbreviated) are in the row live/plain-runs and are refused with exit 2 in the builder's quick run; S1 is no longer a stated limit and the spec's first reviewer bullet no longer names it."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0292/README.md",
+          "detail": "BLOCKER, not resolved: suite 141 is red on this tree, 142 passed and 1 failed, the row mutation/guard292-sort-plain. The test the fix check wrote runs first and reads every word, so it also refuses S2 and S3 (their line now names the sort option, which the row and the spec's AC2 text follow), and it still refuses them when sort is put back in the plain text tools, so that mutant passes live/plain-runs. The fix check expected guard292-sort-plain to stay killed through S2 and S3. The README lists the choices; the lead and the reviewer of record decide."
         },
         {
           "type": "integration",
@@ -49,7 +54,7 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0292/heavy_runs.sh",
-          "detail": "Pending under the gate lock: red-before.summary.json, green-after.summary.json, teeth-292.summary.json and teeth-268.summary.json (every mutation suite 141 carried at 646ff7c8 still killed). The four summaries in this directory are lock job 96a's runs over 0a2057f5, before sort left the plain text tools; they do not cover live/plain-runs or guard292-sort-plain and are replaced by the next run."
+          "detail": "Pending under the gate lock: red-before.summary.json, green-after.summary.json, teeth-292.summary.json and teeth-268.summary.json (every mutation suite 141 carried at 646ff7c8 still killed). The four summaries in this directory are lock job 96a's runs over 0a2057f5, before sort left the plain text tools and before the S1 test; they do not cover live/plain-runs, guard292-sort-plain or guard292-sort-runs-off and are replaced by the next run."
         }
       ]
     },
@@ -124,7 +129,7 @@
       "name": "teeth-292",
       "status": "pending",
       "command": "bash proof/VELDO-0292/heavy_runs.sh",
-      "detail": "Step 3, python3 scripts/check_teeth_mutations.py for finding 292 (35 cases), writes proof/VELDO-0292/teeth-292.summary.json."
+      "detail": "Step 3, python3 scripts/check_teeth_mutations.py for finding 292 (36 cases), writes proof/VELDO-0292/teeth-292.summary.json."
     },
     {
       "name": "teeth-268",
@@ -136,7 +141,7 @@
       "name": "unread-spellings",
       "status": "passed",
       "command": "python3 proof/VELDO-0292/unread_spellings.py",
-      "detail": "Run by the builder at aeb93690 and not repeated after the build check's fix, which takes sort out of the plain text tools and touches none of these commands: the five commands of build 1 and the control are refused by this tree's guard; the two stated limit commands pass it and bash moves main, as the spec accepts. proof/VELDO-0292/unread-spellings.summary.json."
+      "detail": "Run by the builder at aeb93690 and not repeated after the build check's fix or its fix check, which take sort out of the plain text tools and judge a command naming sort with its compress program option as written, and touch none of these commands: the five commands of build 1 and the control are refused by this tree's guard; the two stated limit commands pass it and bash moves main, as the spec accepts. proof/VELDO-0292/unread-spellings.summary.json."
     },
     {
       "name": "gate",

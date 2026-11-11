@@ -3,7 +3,9 @@
 The guard judges the live text of a command, and since amendment 2 it finds a write to git
 configuration by where the text goes, not by how a later command spells git. Every row and mutation
 of the spec is built and green in the quick run. The five commands build 1 let through are
-now refused. After the build check of 2026-11-11, sort is no longer a plain text tool. Two commands
+now refused. After the build check of 2026-11-11, sort is no longer a plain text tool, and after
+its fix check a command that names sort with its compress program option is judged as written, so
+S1 is refused. Two commands
 still pass and push main: they are the limit the spec states and the owner accepts with the
 approval, and they are measured below, with the other known holes listed beside them.
 
@@ -21,13 +23,14 @@ Commit d1c5da1a built the scanner on the spec at a5c17de6. Commit aeb93690 appli
   config outside data. Test 2 does the same for a construct in text that reaches a program other
   than a plain text tool. Test 3 is the name test with only its first form, in any letter case. The
   existing judgment is unchanged.
-- `scripts/suites/141_veldo_0268_protected_refs.py`: 20 rows and 38 mutation rows, 142 rows with the
+- `scripts/suites/141_veldo_0268_protected_refs.py`: 20 rows and 39 mutation rows, 143 rows with the
   older ones. live/config-write has 23 commands, live/config-include 4, live/construct 6 and
-  live/plain-runs 2.
-- `scripts/check_teeth_mutations.py`: the 35 mutations as finding 292. A scratch check at aeb93690
+  live/plain-runs 4.
+- `scripts/check_teeth_mutations.py`: the 36 mutations as finding 292. A scratch check at aeb93690
   compared the 34 of that build field by field with the suite's own list and found them equal, each
   anchor present once in the guard and each mutant valid Python and valid bash. The 35th,
-  guard292-sort-plain, is written with the same anchor and replacement in both files.
+  guard292-sort-plain, and the 36th, guard292-sort-runs-off, are each written with the same anchor
+  and replacement in both files.
 - `scripts/suites/manifest.json`: the suite's description.
 
 ## The build check of 2026-11-11: sort is not a plain text tool
@@ -53,17 +56,71 @@ tree's guard and then under bash with a recording program first on PATH:
     S1    printf of the quoted push into D/a, then
           sort -S 1K -T D --compress-program=sh D/a D/big         guard exit 0, bash runs the push
 
-S2 and S3 are the row. S1 is not refused by this fix, and the check expected it to be. In S1 the
-push is a string given only to printf, which writes it to a file at a path that names neither git
-nor config, and sort then reads that file. Taking sort out of the set makes sort a program the
-guard cannot read, and S1 becomes the stated limit: a plain text tool writes a file and a program
-the guard cannot read uses it, the same shape as printf into D/a followed by sh D/a. The guard does
-not follow a file. The spec's first reviewer bullet now names S1 as that case, so the row carries
-S2 and S3 only. The reviewer and the owner should read this as a difference from the check's fix
-list, not as the fix applied in full.
+That was the guard of 7b8ff1fd: S2 and S3 were the row, and S1 was not refused. In S1 the push is
+a string given only to printf, which writes it to a file at a path that names neither git nor
+config, and sort then reads that file. Commit 1ea03051 recorded S1 as the stated limit.
 
-The four summaries committed as 282d9afb are the runs of lock job 96a over 0a2057f5, before this
-fix. They are kept as committed until `heavy_runs.sh` runs again under the lock and replaces them.
+## The fix check of 1ea03051: S1 is refused
+
+The reviewer of record checked 1ea03051 and returned CHANGES: S1 really pushes, 646ff7c8 refuses
+it, and it is not the stated limit, because the command line itself names sort with the option
+that runs a program, which the guard can recognize by name.
+
+The fix, in all three copies of the guard, as the check wrote it: one new test before test 1 in
+live_text. runs_program reads every word of every command; when a word's last path component is
+sort and a later word of the same command, up to its `=`, is two hyphens followed by at least two
+letters that begin compress-program, the whole command is judged as written, as at 646ff7c8. The
+646ff7c8 judgment then finds the push in printf's string. A wrapper before sort (timeout 60 sort,
+env sort) and sort called by a path are caught, because every word is read. The line of test 1
+now reads `reason = reason or configuration_write(...)`, so the anchor of
+guard292-config-write-off moved with it and its replacement is `reason = reason or None`, the
+same defect.
+
+The spec's Design has the sentence, AC2 has the two commands in live/plain-runs and the mutation,
+and the first reviewer bullet no longer names S1. The row now carries four commands: S2, S3, and
+
+    S1    printf of the quoted push into D/a; then
+          sort -S 1K -T D --compress-program=sh D/a D/big
+    S1b   printf of the quoted push into D/a && then
+          timeout 60 sort -S 1K -T D --compress-prog=sh D/a D/big
+
+each required to exit 2 with the line ending "in text the guard does not parse (sort with its
+option --compress-program, which runs a program on its data)" (--compress-prog for S1b), and bash
+with the recording program must record the push. The new mutation guard292-sort-runs-off makes
+runs_program's first return give None and must turn the row red. The registry of finding 292 goes
+from 35 to 36, the suite's mutation rows from 38 to 39, 143 rows in all.
+
+### BLOCKER: guard292-sort-plain is no longer killed
+
+The fix check says the row's S2 and S3 keep their line and that guard292-sort-plain still turns
+the row red through them. Neither holds with the fix as written, and suite 141 is red on this tree
+for that reason: 142 rows pass, 1 fails, mutation/guard292-sort-plain ("row live/plain-runs under
+the mutation: green").
+
+- The new test runs before test 1 and reads every word, so it fires on S2 and S3 too. Their line
+  now ends "in text the guard does not parse (sort with its option --compress-program, which runs
+  a program on its data)", not "in the argument or input of sort, which is not a plain text tool".
+  The row and the spec's AC2 text expect the new ending for all four commands. This is a
+  difference from the check's row text, forced by the check's code.
+- With sort put back in the plain text tools, the new test still refuses S2 and S3 with exit 2 and
+  the same line, so the mutant passes the row. I found no command that keeps the mutation's teeth
+  while bash really runs the push: the option must stand in sort's own words, where the new test
+  reads it when it is literal (quoted or abbreviated too), and where a construct is refused under
+  the mutant by test 1 (the mutant makes sort a tool that writes) or by the scanner (an unquoted
+  brace is outside the subset; a scratch command with {--compress-program=sh,-} exits 2 under the
+  mutant). A command that only pipes a push into sort with no such option would tell the mutant
+  apart (exit 2 against 0), but bash runs no push for it, and the row requires the push in the
+  record.
+
+Not decided here, because each choice changes the spec or the check's fix: drop
+guard292-sort-plain (registry back to 35, mutation rows to 38); or keep it with a row that does
+not require bash to run the push; or make the new test fire only for a command whose sort would
+otherwise read data. The lead and the reviewer of record decide. Until then the mutation is
+registered in both files, the counts above stand, and the heavy runs would report it not killed.
+
+The four summaries committed as 282d9afb are the runs of lock job 96a over 0a2057f5, before both
+fixes. They are kept as committed until `heavy_runs.sh` runs again under the lock and replaces
+them.
 
 ## The five commands of build 1 are refused
 
@@ -102,13 +159,14 @@ AC1, where a plain text tool writes a file and a program the guard cannot read u
 does not follow a file. In this repository git's pre-push hook is not enabled, so the PreToolUse
 guard is the only layer for such a command.
 
-The other known holes, so the owner sees every one in one place. The first two are new with this
+Refused since the fix check, and so no longer a hole: S1, sort given a file (printf of a push into
+D/a, then sort with its compress program set to sh reading D/a). It is in the row live/plain-runs.
+
+The other known holes, so the owner sees every one in one place. The first is new with this
 spec; the rest pass this guard exactly as they pass 646ff7c8, so they are outside this spec. The
 exit codes for X2, X5, PH1, T1 to T4 and the gh forms are the build check's measurements at
 0a2057f5 (old guard exit, built guard exit, whether main moved); none of them involves sort.
 
-- S1, sort given a file: printf of a push into D/a, then sort with its compress program set to sh
-  reading D/a. 646ff7c8 exit 2, this guard exit 0, bash runs the push. The same class as L1.
 - X2 and X5, an extended glob: with the alias section written to D/inc,
   `bash -O extglob -c '/usr/bin/@(gi)t -c include.path=D/inc p'` and the same with `gi+(t)`.
   2, 0, moved. An extended glob pattern is not a construct for tests 1 and 2; the spec's first
@@ -184,15 +242,34 @@ After the build check's fix, on the working tree that became commit 7b8ff1fd:
 - `python3 .veldo/validate.py spec` on the spec, `proof-files`, `proof` on the manifest and `all`,
   and `python3 scripts/check_personal_setup.py`: each exit 0.
 
+After the fix check's S1 test, on the working tree that became commit d22cc7aa:
+
+- `python3 -m py_compile` on the suite, the registry and `summarize.py`; `bash -n` on the three
+  copies of the guard and on `heavy_runs.sh`; `cmp` on the three copies.
+- `VELDO_0268_DETAILS=1 systemd-run --user --scope -q -p MemoryMax=10G -p MemorySwapMax=0
+  -p IPAddressDeny=any python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs`:
+  143 rows, 142 passed, 1 failed, 165 s, host load 21.66 at the end. A partial run, which proves
+  nothing by the gate's rules. The log (127786 bytes, sha256
+  e7e9524088fb47bf89066894a9357b20ecd7e870cec61e8a425918cbe9ffe720) is not stored.
+  live/plain-runs is green: all four commands exit 2 with the sort option named and bash runs the
+  push for each. Under guard292-sort-runs-off S1 and S1b exit 0, so that mutation row is red on
+  the exit code. The failed row is mutation/guard292-sort-plain, the blocker above. An earlier
+  run of the same command with S2 and S3 still expecting their old line failed live/plain-runs on
+  the wording, which is how the first difference was found.
+- `python3 .veldo/validate.py spec` on the spec, `proof-files`, `proof` on the manifest and `all`,
+  and `python3 scripts/check_personal_setup.py`: each exit 0.
+
 ## Pending under the gate lock
 
 `bash proof/VELDO-0292/heavy_runs.sh` runs four steps and writes one summary each:
 
 1. `red-before.summary.json`: suite 141 over the guard and policy_check as they were at 646ff7c8.
-   Expected red: the 18 rows the spec calls red there, live/plain-runs among them, and the 38
+   Expected red: the 18 rows the spec calls red there, live/plain-runs among them, and the 39
    mutation rows. Expected green: live/scanner-edges, live/git-args and every older row.
-2. `green-after.summary.json`: suite 141 over this tree, 142 rows, none red.
-3. `teeth-292.summary.json`: finding 292, 35 cases, each killed.
+2. `green-after.summary.json`: suite 141 over this tree, 143 rows, none red. On this tree it
+   would be red on mutation/guard292-sort-plain until the blocker is decided.
+3. `teeth-292.summary.json`: finding 292, 36 cases, each killed. On this tree
+   guard292-sort-plain would not be killed.
 4. `teeth-268.summary.json`: finding 268, whose anchors sit in the file this change edits.
 
 Not run here: the gate, policy_check, any teeth run, and the red-before run.
