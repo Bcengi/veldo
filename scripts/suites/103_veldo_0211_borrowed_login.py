@@ -298,7 +298,7 @@ sys.exit(int(sys.argv[4]))
                     rejected = False
                     try:
                         invoke('claude', 'success', Path(tmp))
-                    except ValueError as caught:
+                    except (AssertionError, ValueError) as caught:
                         rejected = 'has no lease file' in str(caught)
                     expect('VELDO-0211 locking/%s/login-without-lease-refused' % caller,
                            rejected and not marker.exists() and not lease.exists() and journals() == [])
