@@ -12479,6 +12479,16 @@ def cases():
         '                    path.unlink()  # defect: a feed the worker did not take is dropped\n'
         '                    break\n',
         ['AC3/pending'])
+    # Fix round 3 (the independent review of 2026-11-11): a worker's refusal taken for a worker that is away (F2),
+    # and the running worker's version never asked (F3).
+    add(187, 'feed187-refusal-pending', suite187, 'control_memory_feed.py',
+        '                if status >= 500 or status in LATER:\n',
+        '                if not ok:  # defect: a refusal is taken for a worker that cannot answer now\n',
+        ['AC3/worker-refusal'])
+    add(187, 'feed187-version-unasked', suite187, 'control_memory_feed.py',
+        '        checked = False\n',
+        '        checked = True  # defect: the running worker is never asked its version\n',
+        ['AC1/running-version'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

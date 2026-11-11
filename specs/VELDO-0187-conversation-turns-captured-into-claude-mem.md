@@ -50,22 +50,30 @@ observability:
   error_taxonomy: >
     Distinguish an installed claude-mem version the qualification record does not list
     (missing_evidence:claude_mem_version:<version>), a worker address that is not a loopback address
-    (invalid_input:claude_mem:not_loopback) and a worker that does not answer
-    (unavailable_service:claude_mem_worker), which leaves the feed pending, never dropped.
+    (invalid_input:claude_mem:not_loopback), a worker that does not answer or answers 5xx, 408 or 429
+    (unavailable_service:claude_mem_worker), which leaves the feed pending, never dropped, and a worker
+    that answers any other status outside 2xx (invalid_input:claude_mem_worker:<status>), whose turn is
+    recorded not captured and whose feed is set aside under the conversation's refused feeds while the
+    next pending feed goes on.
 acceptance_criteria:
   - id: AC1
     text: >
       Claim: The feed writes to claude-mem only through the interface claude-mem's own hooks use, qualified
       on the installed version, and a version that is not qualified gets no feed. Set and completeness: A
       qualification record `runtime/claude-mem-qualification.json` lists each qualified claude-mem version
-      with the digests of its hook scripts, every request those hooks send its worker (the session's start,
-      each user prompt, each tool observation and the end-of-session summary request) with its fields, and
-      the worker's loopback address; each is read from that version's own hook code at qualification. The
+      with the digests of its hook scripts, every request those hooks send its worker (each user prompt,
+      which also starts the session, each tool observation, the summary request and the session's
+      completion, sent at the conversation's close) with its fields, the version request the hooks ask the
+      worker, and the worker's loopback address; each is read from that version's own hook code at
+      qualification, tied to the hook that sends it, and refused by name when that tie is not unique. The
       feed sends only those requests, only to a loopback address (else invalid_input:claude_mem:not_loopback)
       and never with a credential or any name VELDO-0183 AC2 refuses as a paid API. Setup reads the
       installed version from VELDO-0182's claude-mem part; for a version the record does not list, every
       turn is recorded not captured by name (missing_evidence:claude_mem_version:<version>) and nothing is
-      sent. The suite runs a fixture worker on loopback at a qualified and an unqualified version. Falsifier:
+      sent. Before each pass sends anything it asks the worker its version; a worker running another
+      version than the setting's is sent nothing, its feeds stay pending and each pending turn is recorded
+      not captured (missing_evidence:claude_mem_version:<running version>) until setup runs again. The
+      suite runs a fixture worker on loopback at a qualified and an unqualified version. Falsifier:
       Send the feed whatever the installed version, and the unqualified-version row must fail on the
       requests the fixture worker received.
     falsified_by: >
@@ -164,3 +172,27 @@ factory turns MVP function (the lead's decision). Only the owner marks a specifi
 2026-11-04: footprint widened by the lead after the build (proof/VELDO-0187/OPEN.md items 1 and 2): suite 138 needs the
 systemd user manager, so it joins scripts/gate_unconfined.json (protected, owner approval at landing), and suite 86_0186's
 installed-assets row gains the claude-mem qualification record setup now installs. Acceptance criteria are unchanged.
+
+2026-11-11: batch fixes by the lead's rulings (proof/VELDO-0187/batch-fix1.md, rounds 1 and 2, commits 1ed5b38a to
+5627f1cc), recorded here because they took files outside this footprint. Round 1 repaired suites the conversation
+chain had left red: outside the footprint it changed suites 63_veldo_0040_containment, 86_veldo_0168_text,
+86_veldo_0189_engine_upgrade, 101_veldo_0208_landing_reuse, 103_veldo_0142_git_identities and 105_veldo_0182_memory.
+Round 2 made the fakes of suites 129_veldo_0177_assistant_setup, 130_veldo_0183_memory_servers and
+132_veldo_0175_conversation_routes conform to VELDO-0172, and ruled that attaching a project and VELDO-0180's pointing
+are project handouts that ask the Gate's one project check, while every other conversation operation is
+conversation-scoped: outside the footprint it changed .veldo/control_eligibility.py,
+.veldo/control_intake_conversation.py and .veldo/control_intake_routes.py (with their engine copies), suite
+84_veldo_0169_project_handouts and its census (scripts/suites/support/v169_census.py). The runtime behaviour this added
+outside VELDO-0187's intent: an attach and a pointing are refused when the Gate's project check refuses the project,
+and a new-project pointing whose project now exists is refused stale_subject:project_exists. No acceptance criterion
+changed in either round.
+
+2026-11-11: fix round 3, applying the first independent review (FIX) on the owner's instruction. AC1's request set is
+amended to the interface claude-mem 10.6.2's hooks really use (review finding F1): there is no session-start request; a
+prompt is /api/sessions/init, which also starts the session; then /api/sessions/observations, /api/sessions/summarize,
+and /api/sessions/complete at the conversation's close; the reader ties each request to its hook through the one bundle
+and its subcommand. The version request before each pass (F3) and the worker's refusal by status (F2) are added to AC1
+and the error taxonomy. The falsifiers are unchanged. This amendment changes a ready specification's criterion, so it
+stands only once the owner marks it; until then it is the reviewer's wording, built as written. Round 3 also adds
+behaviour rows for the batch-fix project check (F5) to suites outside this footprint (128_0177 and 133_0180), under the
+same ruling.

@@ -9,13 +9,16 @@ conversation authority, VELDO-0174's conversation Line with real receiver subpro
 the account's resolved subscription token and keeps it in its held session; the fake Codex prints a tool result
 carrying the keystore credential its role's catalog server is delivered (a generated `secret-tool` first on PATH,
 never the real keyring) and keeps it in its held session. claude-mem is the suite's own fixture plugin
-(proof/VELDO-0187/fixtures.py): hook scripts that post four requests to its worker, qualified from that hook code,
-at a qualified and an unqualified version, a fixture worker on loopback in a thread that writes what it is fed into
-its own claude-mem.db, and VELDO-0183's claude-mem search server over that database, started as the catalog record
-names it and as the plugin's .mcp.json names it. The Codex engine runs locally in its own transient user scope
-(systemd-run, as suite 128's), since the receiver delivers catalog credentials only to a contained run: the suite
-needs the systemd user manager. No real engine, login, claude-mem store or worker, or network. Writes only
-temporary fixtures.
+(proof/VELDO-0187/fixtures.py), laid out as claude-mem 10.6.2 lays its own: hook commands that run one bundle with
+a subcommand, whose handlers post their requests through one wrapper, qualified from that hook code, at a
+qualified and an unqualified version, a fixture worker on loopback in a thread that answers its version and writes
+what it is fed into its own claude-mem.db, and VELDO-0183's claude-mem search server over that database, started as
+the catalog record names it and as the plugin's .mcp.json names it. A byte copy of 10.6.2's hooks.json and byte
+excerpts of its bundle (proof/VELDO-0187/claude-mem-10.6.2-*.json) are qualified against the shipped record, and
+the claude-mem plugin installed on this machine, when there is one, is qualified read-only (its code only: never
+its store or its worker). The Codex engine runs locally in its own transient user scope (systemd-run, as suite
+128's), since the receiver delivers catalog credentials only to a contained run: the suite needs the systemd user
+manager. No real engine, login, claude-mem store or worker, or network. Writes only temporary fixtures.
 """
 
 
@@ -45,9 +48,10 @@ def _v187_suite():
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_factory_setup_memory.py': ROOT / ".veldo" / "control_factory_setup_memory.py",
     }
-    ROWS = ('AC1/record', 'AC1/qualified', 'AC1/unqualified', 'AC1/loopback', 'AC1/no-credential',
+    ROWS = ('AC1/record', 'AC1/claude-mem-10.6.2', 'AC1/installed', 'AC1/qualified', 'AC1/unqualified',
+            'AC1/running-version', 'AC1/loopback', 'AC1/no-credential', 'AC1/closed',
             'AC2/one-session', 'AC2/record-order', 'AC2/redaction', 'AC2/feed-log',
-            'AC3/found', 'AC3/pending', 'AC3/loop-pass', 'observability')
+            'AC3/found', 'AC3/pending', 'AC3/loop-pass', 'AC3/worker-refusal', 'observability')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -359,46 +363,128 @@ for raw in sys.stdin:
         # AC1: the qualification record, read from the fixture version's own hook code at qualification.
         QUALIFIED, UNLISTED = '10.6.2-v187', '10.9.9-v187'
         code, data = FX.plugin(stores, QUALIFIED, F183.CLAUDE_MEM, interpreter)
-        worker = FX.Worker(data)
+        worker = FX.Worker(data, QUALIFIED)
         workers.append(worker)
         record_file = mods / FEED.QUALIFICATION
+        shipped = json.loads((ROOT / '.veldo/runtime/claude-mem-qualification.json').read_text())
         written = FEED.record_qualified(code, record_file)
         entry = written['versions'].get(QUALIFIED) or {}
-        shipped = json.loads((ROOT / '.veldo/runtime/claude-mem-qualification.json').read_text())
         check('AC1/record', 'the shipped record is the qualification schema, listing versions by hook digests',
               shipped.get('schema') == FEED.RECORD_SCHEMA and isinstance(shipped.get('versions'), dict)
               and all(set(v) >= {'hooks', 'requests', 'address'} for v in shipped['versions'].values()))
-        check('AC1/record', 'the fixture version is qualified from its own hook code: every hook script\'s digest',
+        check('AC1/record', 'the fixture version is qualified from its own hook code: every hook script\'s digest, '
+              'each found through the variable its hook command assigns the plugin root to',
               entry.get('hooks') == {'hooks/hooks.json': FX_digest(code / 'hooks/hooks.json'),
-                                     **{'scripts/' + s: FX_digest(code / 'scripts' / s)
-                                        for s, _p, _b in FX.ROUTES.values()}})
-        check('AC1/record', 'each of the four requests its hooks send, with its fields, read from the scripts',
+                                     **{name: FX_digest(code / name) for name in FX.SCRIPTS}})
+        check('AC1/record', 'each request its hooks send (the prompt, which starts the session, the observation, the '
+              'summary request, the completion) and the version request, with its fields, read from its hook\'s '
+              'handler in the one bundle',
               {k: (v['method'], v['path'], v['fields']) for k, v in (entry.get('requests') or {}).items()} == {
-                  'start': ('POST', '/api/sessions/start', ['contentSessionId', 'project', 'cwd']),
-                  'prompt': ('POST', '/api/sessions/init', ['contentSessionId', 'project', 'prompt', 'promptNumber']),
+                  'prompt': ('POST', '/api/sessions/init', ['contentSessionId', 'project', 'prompt']),
                   'observation': ('POST', '/api/sessions/observations',
                                   ['contentSessionId', 'tool_name', 'tool_input', 'tool_response', 'cwd']),
-                  'summary': ('POST', '/api/sessions/summarize', ['contentSessionId', 'last_assistant_message'])})
-        check('AC1/record', 'the worker\'s loopback address, read from the scripts',
+                  'summary': ('POST', '/api/sessions/summarize', ['contentSessionId', 'last_assistant_message']),
+                  'complete': ('POST', '/api/sessions/complete', ['contentSessionId']),
+                  'version': ('GET', '/api/version', [])}
+              and {k: (v.get('event'), v.get('subcommand')) for k, v in entry['requests'].items() if k != 'version'}
+              == {kind: (event, subcommand) for event, (kind, subcommand) in FEED.EVENTS.items()})
+        check('AC1/record', 'the observation is the observation handler\'s, not the file-edit handler\'s, and what the '
+              'session-init handler posts to a path it computes is recorded as not sent',
+              entry['requests']['observation']['fields'][1:4] == ['tool_name', 'tool_input', 'tool_response']
+              and entry['requests']['prompt'].get('not_sent') == ['/sessions/${l}/init']
+              and all(v.get('not_sent') == [] for k, v in entry['requests'].items() if k not in ('prompt', 'version')))
+        check('AC1/record', 'the worker\'s loopback address, read from the bundle\'s defaults',
               (entry.get('address') or {}).get('host') == '127.0.0.1' and entry['address'].get('port') == 37777)
         refusals = {}
-        for name, routes, host in (
-                ('paid', dict(FX.ROUTES, Stop=('summarize.js', '/api/sessions/summarize',
-                                               'contentSessionId: input.session_id, ANTHROPIC_API_KEY: input.key')),
-                 '127.0.0.1'),
-                ('far', FX.ROUTES, '192.0.2.7'),
-                ('missing', {k: v for k, v in FX.ROUTES.items() if k != 'PostToolUse'}, '127.0.0.1')):
+        h2, h2_source = FX.HANDLERS['observation']
+        shapes = (
+            ('paid', dict(routes={'summarize': ('/api/sessions/summarize',
+                                                'contentSessionId:r,ANTHROPIC_API_KEY:i')})),
+            ('far', dict(host='192.0.2.7')),
+            ('missing', dict(handlers={'observation': (h2, '%(name)s={async execute(t){return{continue:!0}}}')})),
+            ('two-requests', dict(handlers={'observation': (h2, h2_source.replace(
+                'let u=await %(call)s;', 'let u=await %(call)s;await jt("/api/sessions/observations",'
+                + FX.POST % 'contentSessionId:r,cwd:n' + ');'))})),
+            ('two-handlers', dict(handlers={'observation': (h2, h2_source + ';var ' + h2_source)})),
+            ('two-tables', dict(table='"session-init":h1$,observation:h2$,summarize:h3$,"session-complete":h4$};'
+                                      'var other={"session-init":h1$,observation:h5$,summarize:h3$,'
+                                      '"session-complete":h4$')),
+            ('no-version', dict(bundle_text=FX.bundle().replace('"/api/version"', '"/api/health"'))),
+            ('direct-root', dict(hooks_text=json.dumps(FX.hooks()).replace('$_R/', '${CLAUDE_PLUGIN_ROOT}/'))),
+            ('no-subcommand', dict(hooks_text=json.dumps(FX.hooks()).replace(' hook claude-code observation', ''))))
+        for name, shape in shapes:
             other, _other_data = FX.plugin(base / ('refused-' + name), '0.0.' + str(len(refusals)), 'pass', interpreter,
-                                           host=host, routes=routes)
+                                           **shape)
             try:
-                FEED.qualify(other)
-                refusals[name] = None
+                refusals[name] = sorted(FEED.qualify(other)['requests'])
             except FEED.Refused as error:
                 refusals[name] = error.code
-        check('AC1/record', 'hook code with a paid-API field, a non-loopback address or a missing request is not '
-              'qualified, by name [%s]' % refusals,
-              refusals == {'paid': 'invalid_input:claude_mem:paid_api:ANTHROPIC_API_KEY', 'far': FEED.NOT_LOOPBACK,
-                           'missing': 'missing_evidence:claude_mem_request:observation'})
+        check('AC1/record', 'hook code with a paid-API field, a non-loopback address, a missing request or no version '
+              'request is not qualified, by name [%s]' % refusals,
+              refusals['paid'] == 'invalid_input:claude_mem:paid_api:ANTHROPIC_API_KEY'
+              and refusals['far'] == FEED.NOT_LOOPBACK
+              and refusals['missing'] == 'missing_evidence:claude_mem_request:observation'
+              and refusals['no-subcommand'] == 'missing_evidence:claude_mem_request:observation'
+              and refusals['no-version'] == 'missing_evidence:claude_mem_request:version')
+        check('AC1/record', 'a request that is not uniquely tied to its hook (two requests in its handler, two '
+              'definitions of its handler, two handler tables) is refused by name, never guessed',
+              all(refusals[name] == 'missing_evidence:claude_mem_request:observation:ambiguous'
+                  for name in ('two-requests', 'two-handlers'))
+              and refusals['two-tables'] == 'missing_evidence:claude_mem_request:prompt:ambiguous')
+        check('AC1/record', 'a hook command that names the plugin root directly is read as one that assigns it',
+              refusals['direct-root'] == sorted(entry['requests']))
+
+        # AC1: claude-mem 10.6.2 itself. A byte copy of its hooks.json and byte excerpts of its bundle (the address
+        # defaults, the version request, the four handlers with their call sites and the handler table) qualify to
+        # the shipped record's entry, digests included.
+        copy_hooks = (ROOT / 'proof/VELDO-0187/claude-mem-10.6.2-hooks.json').read_bytes()
+        excerpts = json.loads((ROOT / 'proof/VELDO-0187/claude-mem-10.6.2-excerpts.json').read_text())
+        real_code, _real_data = FX.plugin(base / 'real-copy', excerpts['version'], 'pass', interpreter,
+                                          bundle_text=';'.join(e['text'] for e in excerpts['excerpts']))
+        (real_code / 'hooks' / 'hooks.json').write_bytes(copy_hooks)
+        (real_code / 'scripts' / 'smart-install.js').write_text('')
+        try:
+            real = FEED.qualify(real_code)
+        except FEED.Refused as error:
+            real = {'refused': error.code}
+        listed = shipped['versions'].get(excerpts['version']) or {}
+        print('  VELDO-0187 claude-mem %s:' % excerpts['version'], real.get('refused') or sorted(real['requests']))
+        check('AC1/claude-mem-10.6.2', 'the shipped record lists claude-mem 10.6.2',
+              excerpts['version'] == '10.6.2' and bool(listed))
+        check('AC1/claude-mem-10.6.2', 'its hooks.json, copied byte for byte, has the digest the record lists, and '
+              'the bundle the excerpts were cut from has the digest the record lists for it',
+              FEED.digest(copy_hooks) == excerpts['hooks_digest'] == (listed.get('hooks') or {}).get('hooks/hooks.json')
+              and excerpts['source_digest'] == (listed.get('hooks') or {}).get(excerpts['source']))
+        check('AC1/claude-mem-10.6.2', 'the copy qualifies: each request read from its call site equals the record\'s, '
+              'its handler\'s digest included, and so do the version request and the address',
+              real.get('requests') == listed.get('requests') and real.get('address') == listed.get('address')
+              and all(v.get('handler') for k, v in (real.get('requests') or {}).items() if k != 'version'))
+        check('AC1/claude-mem-10.6.2', 'its session starts at each prompt (no session-start request), and its requests '
+              'are the four its hooks send',
+              {k: v['path'] for k, v in (real.get('requests') or {}).items()} == {
+                  'prompt': '/api/sessions/init', 'observation': '/api/sessions/observations',
+                  'summary': '/api/sessions/summarize', 'complete': '/api/sessions/complete',
+                  'version': '/api/version'}
+              and (real.get('requests') or {}).get('prompt', {}).get('fields') == ['contentSessionId', 'project', 'prompt'])
+
+        # AC1: the claude-mem plugin installed on this machine, when there is one: its code is read (never its store
+        # or its worker) and it qualifies as the record lists it, or its refusal is named.
+        installed = sorted((Path.home() / '.claude/plugins/cache/thedotmack/claude-mem').glob('*/package.json'))
+        outcomes = {}
+        for package in installed:
+            try:
+                found = FEED.qualify(package.parent)
+                version_found = found.pop('version')
+                outcomes[version_found] = ('qualified' if shipped['versions'].get(version_found) == found
+                                           else FEED.UNLISTED % version_found)
+            except FEED.Refused as error:
+                outcomes[package.parent.name] = error.code
+        print('  VELDO-0187 installed claude-mem:', outcomes or 'none on this machine')
+        check('AC1/installed', 'each claude-mem version installed here that the record lists qualifies exactly as '
+              'listed, and any other is refused by name [%s]' % (outcomes or 'none installed'),
+              all(outcome == 'qualified' if version_found in shipped['versions']
+                  else outcome.split(':')[0] in ('missing_evidence', 'invalid_input')
+                  for version_found, outcome in outcomes.items()))
 
         # Setup reads the installed version from VELDO-0182's claude-mem part (setup's memory step).
         definition = json.loads(json.dumps(manifest))
@@ -439,14 +525,15 @@ for raw in sys.stdin:
         F.drive(factory, lambda: settled(f, 'remember', 2), 40)
         F.drive(factory, lambda: capture(turns(f, 'remember')[1]).get('state') == 'captured', 10)
         first, second = turns(f, 'remember')
-        received = list(worker.received)
+        received = worker.posts()
         bodies = [r['body'] or {} for r in received]
         print('  VELDO-0187 turn 2:', second.get('account'), second.get('outcome'), running, capture(second),
-              [(r['path'], (r['body'] or {}).get('promptNumber')) for r in received])
-        numbers = [b.get('promptNumber') for b in bodies if b.get('promptNumber') is not None]
+              [(r['method'], r['path']) for r in worker.received])
+        numbers = [b.get('prompt') for b in bodies if 'prompt' in b]
         states = [s['state'] for s in first.get('claude_mem_states') or []]
         check('AC3/pending', 'the worker was started while turn 2 ran, and turn 1\'s feed was sent, before turn 2\'s',
-              running == 'dispatched' and numbers == [1, 2]
+              running == 'dispatched' and numbers == ['remember the blue harbour plan', 'and the lighthouse logbook']
+              and worker.received[0]['path'] == '/api/version'
               and max((i for i, r in enumerate(received) if 'credentials.txt' in json.dumps(r['body'])), default=10 ** 6)
               < min((i for i, r in enumerate(received) if 'cat vault.txt' in json.dumps(r['body'])), default=-1))
         check('AC3/pending', 'the turn record shows pending, then captured; nothing stays pending',
@@ -484,9 +571,12 @@ for raw in sys.stdin:
         check('AC2/one-session', 'both turns joined one claude-mem session, the conversation\'s [%s]' % sessions,
               sessions == {FEED.session_of('remember')} and capture(first).get('session') == FEED.session_of('remember')
               and capture(second).get('session') == FEED.session_of('remember'))
-        check('AC2/one-session', 'the conversation\'s first feed started it, once',
-              [r['path'] for r in received].count('/api/sessions/start') == 1
-              and received[0]['path'] == '/api/sessions/start')
+        check('AC2/one-session', 'the conversation\'s first feed started it: its first prompt, which the worker '
+              'answers as a new session, and the second as the same one',
+              received[0]['path'] == '/api/sessions/init'
+              and [(r['answer'].get('promptNumber'), r['answer'].get('contextInjected')) for r in received
+                   if r['path'] == '/api/sessions/init'] == [(1, False), (2, True)]
+              and len({r['answer'].get('sessionDbId') for r in received if r['path'] == '/api/sessions/init'}) == 1)
         expected = []
         for turn in (first, second):
             lines = conversations.record_lines('remember', turn['sequence'], turn['dispatch_id'])
@@ -496,7 +586,7 @@ for raw in sys.stdin:
                          for call in read['calls']]
             expected += [('/api/sessions/summarize', read['reply'])]
         sent = []
-        for r in received[1:]:
+        for r in received:
             b = r['body'] or {}
             if r['path'] == '/api/sessions/observations':
                 sent.append((r['path'], json.dumps(b.get('tool_input'), sort_keys=True), b.get('tool_response')))
@@ -524,24 +614,30 @@ for raw in sys.stdin:
               len(observations_sent) == 2 and all('resolved credential [REDACTED' in str(b.get('tool_response'))
                                                   for b in observations_sent))
         log = feed_log(f, 'remember')
-        taken = [e for e in log if e.get('status') == 200]
+        taken = [e for e in log if e.get('status') == 200 and e.get('kind') != 'version']
         check('AC2/feed-log', 'each request is kept in the conversation\'s feed log with its digest and the worker\'s '
               'answer', len(taken) == len(received) and all(
-                  e['digest'] == FEED.digest(e['request']['body']) and e['answer'] in ({'status': 'queued'},
-                  {'status': 'started', 'sessionDbId': FEED.session_of('remember')}) for e in taken)
+                  e['digest'] == FEED.digest(e['request']['body']) for e in taken)
+              and [e['answer'] for e in taken] == [r['answer'] for r in received]
               and [e['request']['body'] for e in taken] == bodies)
+        asked = [e for e in log if e.get('kind') == 'version']
+        check('AC2/feed-log', 'and each version request with the worker\'s answer',
+              {json.dumps(e.get('answer')) for e in asked if e.get('status') == 200} == {json.dumps({'version': QUALIFIED})}
+              and any(e.get('error') == FEED.UNAVAILABLE for e in asked))
         check('AC2/feed-log', 'the attempts the down worker did not take are kept too, by name',
               any(e.get('error') == FEED.UNAVAILABLE and e.get('sequence') == 1 for e in log)
               and oct((directory / 'claude-mem' / 'feed.jsonl').stat().st_mode & 0o777) == '0o600')
-        headers = {name.lower() for r in received for name in r['headers']}
+        headers = {name.lower() for r in worker.received for name in r['headers']}
         check('AC1/no-credential', 'requests carry no header but the content type and the transport\'s own [%s]'
               % sorted(headers), headers <= {'host', 'content-type', 'content-length', 'user-agent',
                                              'accept-encoding', 'connection'})
         paid = FEED.paid_names()
         check('AC1/no-credential', 'no field any request carries is a paid-API or login name',
               paid and not any(name in paid for b in bodies for name in b))
-        check('AC1/qualified', 'a qualified version is fed: only its four qualified routes, on its loopback worker',
-              {r['path'] for r in received} == {v['path'] for v in entry['requests'].values()}
+        check('AC1/qualified', 'a qualified version is fed: only its qualified routes, on its loopback worker, its '
+              'version asked before each pass sends anything',
+              {(r['method'], r['path']) for r in worker.received}
+              == {(v['method'], v['path']) for k, v in entry['requests'].items() if k != 'complete'}
               and capture(second).get('requests') == {'prompt': 1, 'observation': 1, 'summary': 1})
 
         # AC3: a feed the worker did not take is sent on the next loop pass after it answers, without a new turn.
@@ -557,11 +653,106 @@ for raw in sys.stdin:
         check('AC3/loop-pass', 'a turn that ended while the worker was down is pending, then captured by the next loop '
               'pass after the worker answers', capture(waiting_turn).get('state') == 'pending'
               and capture(passed).get('state') == 'captured' and capture(passed).get('late') is True
-              and len(worker.received) - before == 4 and later.search('backlog tide table'))
+              and [r['path'].rsplit('/', 1)[-1] for r in worker.received[before:]]
+              == ['version', 'init', 'observations', 'summarize'] and later.search('backlog tide table'))
+
+        # AC1: the conversation's close completes its claude-mem session, after everything else, once.
+        before = len(worker.received)
+        closed = conversations.close('backlog', conversations.read('backlog')['version'], owner='owner',
+                                     command_id='close-backlog')
+        backlog_directory = Path(closed['directory'])
+        after_close = worker.received[before:]
+        conversations.close('backlog', closed['version'] - 1, owner='owner', command_id='close-backlog')
+        J.pass_(factory)
+        print('  VELDO-0187 close:', closed.get('status'), [(r['path'], r['answer']) for r in after_close])
+        check('AC1/closed', 'a conversation\'s close sends its session\'s completion, the qualified request, with its '
+              'session', closed.get('status') == 'closed'
+              and [(r['method'], r['path']) for r in after_close] == [('GET', '/api/version'),
+                                                                     ('POST', '/api/sessions/complete')]
+              and after_close[1]['body'] == {'contentSessionId': FEED.session_of('backlog')}
+              and after_close[1]['answer'].get('status') == 'completed')
+        check('AC1/closed', 'once: the replayed close and the next loop pass send nothing more, and nothing stays pending',
+              len(worker.received) == before + 2
+              and not list((backlog_directory / 'claude-mem' / 'pending').glob('*.json'))
+              and any(e.get('kind') == 'complete' and e.get('status') == 200 for e in feed_log(f, 'backlog')))
+
+        # AC3: a worker that answers and refuses a request (400) does not stall its conversation's feed: that turn is
+        # not captured by name, its feed is set aside, and the next turn is captured.
+        refused_session = FEED.session_of('refusal')
+        answered = []
+
+        def refuse_first_observation(path, body):
+            if (path == '/api/sessions/observations' and body.get('contentSessionId') == refused_session
+                    and not answered):
+                answered.append(path)
+                return 400
+            return None
+        worker.refuse = refuse_first_observation
+        conversations.open('refusal', owner='owner', role='assistant', intake_digest='sha256:refusal')
+        run_turn(f, factory, 'refusal', 'the refused ferry timetable', 1)
+        for _ in range(3):
+            J.pass_(factory)
+        refused_first = turns(f, 'refusal')[0]
+        refusal_directory = Path(conversations.read('refusal')['directory']) / 'claude-mem'
+        sent_first = [(r['path'].rsplit('/', 1)[-1], r['status']) for r in worker.posts()
+                      if (r['body'] or {}).get('contentSessionId') == refused_session]
+        run_turn(f, factory, 'refusal', 'the accepted ferry timetable', 2)
+        F.drive(factory, lambda: capture(turns(f, 'refusal')[1]).get('state') == 'captured', 10)
+        refused_second = turns(f, 'refusal')[1]
+        worker.refuse = None
+        kept_refused = sorted(p.name for p in (refusal_directory / 'refused').glob('*.json'))
+        print('  VELDO-0187 worker refusal:', capture(refused_first), sent_first, capture(refused_second), kept_refused)
+        check('AC3/worker-refusal', 'the worker answered 400 to turn 1\'s observation: the turn is not captured, by the '
+              'worker\'s refusal and its status, not as a worker that does not answer',
+              capture(refused_first).get('state') == 'not_captured'
+              and capture(refused_first).get('reason') == 'invalid_input:claude_mem_worker:400'
+              and not any(s.get('reason') == FEED.UNAVAILABLE for s in refused_first.get('claude_mem_states') or []))
+        check('AC3/worker-refusal', 'the refused request was sent once, not again on later passes, and nothing of the '
+              'turn after it', sent_first == [('init', 200), ('observations', 400)])
+        check('AC3/worker-refusal', 'the refused feed is kept under the conversation\'s refused feeds with the reason, '
+              'not deleted', kept_refused == ['00000001.json']
+              and json.loads((refusal_directory / 'refused' / '00000001.json').read_text()).get('refused')
+              == 'invalid_input:claude_mem_worker:400')
+        check('AC3/worker-refusal', 'turn 2 is captured and found, and nothing stays pending',
+              capture(refused_second).get('state') == 'captured'
+              and not list((refusal_directory / 'pending').glob('*.json'))
+              and bool(later.search('accepted ferry timetable')))
+
+        # AC1: a worker running another version than the qualified one (claude-mem upgraded itself) gets nothing: the
+        # feed stays pending, the turn is not captured by the running version's name, until the qualified one answers.
+        worker.version = '10.7.0-v187'
+        before = len(worker.received)
+        conversations.open('upgraded', owner='owner', role='assistant', intake_digest='sha256:upgraded')
+        run_turn(f, factory, 'upgraded', 'the upgraded tide gauge', 1)
+        for _ in range(2):
+            J.pass_(factory)
+        upgraded = turns(f, 'upgraded')[0]
+        upgraded_directory = Path(conversations.read('upgraded')['directory']) / 'claude-mem'
+        while_other = worker.received[before:]
+        held_files = sorted(p.name for p in (upgraded_directory / 'pending').glob('*.json'))
+        worker.version = QUALIFIED
+        J.pass_(factory)
+        upgraded_after = turns(f, 'upgraded')[0]
+        upgraded_states = [(s['state'], s.get('reason')) for s in upgraded_after.get('claude_mem_states') or []]
+        print('  VELDO-0187 running version:', capture(upgraded), [(r['method'], r['path']) for r in while_other],
+              held_files, upgraded_states)
+        check('AC1/running-version', 'the worker reports another version than the setting\'s: nothing is sent to it but '
+              'the version request', len(while_other) >= 2
+              and all((r['method'], r['path']) == ('GET', '/api/version') for r in while_other))
+        check('AC1/running-version', 'the turn is recorded not captured by the running version\'s name, once, and its '
+              'feed stays pending', capture(upgraded).get('state') == 'not_captured'
+              and capture(upgraded).get('reason') == 'missing_evidence:claude_mem_version:10.7.0-v187'
+              and held_files == ['00000001.json'])
+        check('AC1/running-version', 'when the qualified version answers again the feed is sent: pending, not captured, '
+              'then captured', upgraded_states == [('pending', None),
+                                                   ('not_captured', 'missing_evidence:claude_mem_version:10.7.0-v187'),
+                                                   ('captured', None)]
+              and not list((upgraded_directory / 'pending').glob('*.json'))
+              and bool(later.search('upgraded tide gauge')))
 
         # AC1: an installed version the record does not list gets no feed: every turn not captured, nothing sent.
         unlisted, unlisted_data = FX.plugin(base / 'unlisted', UNLISTED, F183.CLAUDE_MEM, interpreter)
-        other_worker = FX.Worker(unlisted_data)
+        other_worker = FX.Worker(unlisted_data, UNLISTED)
         workers.append(other_worker)
         other_worker.start()
         unlisted_definition = json.loads(json.dumps(definition))
@@ -584,7 +775,8 @@ for raw in sys.stdin:
               % len(other_worker.received), other_worker.received == [])
         # The qualified version number over hook code that differs from the record is not qualified either.
         changed, changed_data = FX.plugin(base / 'changed', QUALIFIED, F183.CLAUDE_MEM, interpreter)
-        (changed / 'scripts' / 'summarize.js').write_text((changed / 'scripts' / 'summarize.js').read_text() + '// x\n')
+        with (changed / 'scripts' / 'worker-service.cjs').open('a') as bundle_file:
+            bundle_file.write('// x\n')
         changed_definition = json.loads(json.dumps(definition))
         changed_definition['parts']['claude_mem'].update(code=str(changed), data=str(changed_data))
         check('AC1/unqualified', 'a listed version whose hook scripts differ from the record is refused the same way',
@@ -612,6 +804,29 @@ for raw in sys.stdin:
               capture(far_turn).get('state') == 'not_captured' and capture(far_turn).get('reason') == FEED.NOT_LOOPBACK
               and len(worker.received) == before)
         check('AC1/loopback', 'the feed itself sends only to a loopback address', refused_send == FEED.NOT_LOOPBACK)
+        # A feed kept pending under a setting whose address is no longer loopback: refused by the feed itself, and
+        # kept under the refused feeds, not deleted.
+        lone_root, lone_directory = base / 'lone-state', base / 'lone-conversation'
+        lone_directory.mkdir()
+        FEED._write_private(FEED.setting_path(lone_root), dict(setting, address={'host': '127.0.0.1', 'port': worker.port}))
+        lone = FEED.Feed(lone_root)
+        lone_record = {'id': 'lone', 'directory': str(lone_directory)}
+        lone_state = lone.turn(lone_record, 1, 'dispatch-lone', {'message': 'the lone buoy', 'calls': [], 'reply': 'ok'},
+                               None)
+        FEED._write_private(FEED.setting_path(lone_root), dict(setting, address={'host': '192.0.2.9',
+                                                                                 'port': worker.port}))
+        before = len(worker.received)
+        lone_changed = lone.flush(lone_record)
+        lone_kept = sorted((lone_directory / 'claude-mem' / 'refused').glob('*.json'))
+        check('AC1/loopback', 'a pending feed the feed itself refuses is moved to the refused feeds with its requests '
+              'and the reason, never deleted, and nothing is sent',
+              lone_state.get('state') == 'pending'
+              and lone_changed == [(1, {'state': 'not_captured', 'reason': FEED.NOT_LOOPBACK})]
+              and [p.name for p in lone_kept] == ['00000001.json']
+              and json.loads(lone_kept[0].read_text()).get('refused') == FEED.NOT_LOOPBACK
+              and len(json.loads(lone_kept[0].read_text()).get('requests') or []) == 2
+              and not list((lone_directory / 'claude-mem' / 'pending').glob('*.json'))
+              and len(worker.received) == before)
 
         # OBSERVABILITY: each feed logged with conversation, turn, session, request kinds and digests, answers and
         # capture states, joined to its execution record and qualification; never turn content. Metrics counted.
@@ -638,10 +853,10 @@ for raw in sys.stdin:
         metrics = conversations.status().get('claude_mem') or {}
         print('  VELDO-0187 metrics:', metrics)
         check('observability', 'turns captured, pending, not captured by reason, requests by kind and late feeds are '
-              'counted', metrics.get('captured') == 3 and metrics.get('pending') == 0
+              'counted', metrics.get('captured') == 5 and metrics.get('pending') == 0
               and metrics.get('not_captured') == {'missing_evidence:claude_mem_version:' + UNLISTED: 2,
-                                                  FEED.NOT_LOOPBACK: 1}
-              and metrics.get('requests') == {'start': 2, 'prompt': 3, 'observation': 3, 'summary': 3}
+                                                  FEED.NOT_LOOPBACK: 1, 'invalid_input:claude_mem_worker:400': 1}
+              and metrics.get('requests') == {'prompt': 5, 'observation': 5, 'summary': 5}
               and metrics.get('late') == 2)
     except Exception as error:  # noqa: BLE001
         import traceback

@@ -743,6 +743,10 @@ class Conversations:
     def close(self, identity, version, *, owner, command_id=None, now=None):
         record, _receipt = self._run(CLOSE, identity, {'version': version, 'command_id': command_id},
                                      principal=owner, now=now)
+        # VELDO-0187 AC1: the closed conversation's claude-mem session is completed, after every pending turn's feed.
+        _FEED, feed = self._feed()
+        if feed.close(record):
+            self.feed_pending(identity)
         return record
 
     def message(self, identity, intake_command, intake_digest, *, owner, command_id=None, now=None):

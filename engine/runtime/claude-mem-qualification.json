@@ -2,5 +2,107 @@
  "note": "Each claude-mem version VELDO-0187 qualifies, read from that version's own hook code by control_memory_feed.qualify (python3 control_memory_feed.py qualify <plugin directory>). A version not listed here gets no feed: every conversation turn is recorded not captured as missing_evidence:claude_mem_version:<version>.",
  "schema": "veldo.claude_mem_qualification/v1",
  "spec_id": "VELDO-0187",
- "versions": {}
+ "versions": {
+  "10.6.2": {
+   "address": {
+    "host": "127.0.0.1",
+    "host_setting": "CLAUDE_MEM_WORKER_HOST",
+    "port": 37777,
+    "port_setting": "CLAUDE_MEM_WORKER_PORT"
+   },
+   "hooks": {
+    "hooks/hooks.json": "sha256:52e82abecb9affc43d8b2d1fcbbc189662fd64ed942295836ed620585201d69c",
+    "scripts/bun-runner.js": "sha256:41ed2c369b520d4734445de8e49211fefd317d35a777809dca50f095a3d1dfbd",
+    "scripts/setup.sh": null,
+    "scripts/smart-install.js": "sha256:a4be8186e57e2b9ab398d49059a3ae46090cf18612d2caa7d8171afc77f7086d",
+    "scripts/worker-service.cjs": "sha256:e4413cb98c6af03dda4cccd90aaacb4408f663ff39e89056011f517638d711a1"
+   },
+   "requests": {
+    "complete": {
+     "event": "SessionEnd",
+     "fields": [
+      "contentSessionId"
+     ],
+     "handler": "sha256:a2f9ad4e9f0da6ee9aa3f87d5e7daab61546d3491a84581c5f62d9ac0f0a3444",
+     "method": "POST",
+     "not_sent": [],
+     "path": "/api/sessions/complete",
+     "script": "scripts/worker-service.cjs",
+     "subcommand": "session-complete",
+     "values": {
+      "contentSessionId": "session"
+     }
+    },
+    "observation": {
+     "event": "PostToolUse",
+     "fields": [
+      "contentSessionId",
+      "tool_name",
+      "tool_input",
+      "tool_response",
+      "cwd"
+     ],
+     "handler": "sha256:b14510d07485ce40530e6cb1174b0a732fbee4590fbd353325a9e1b4d0ac23b6",
+     "method": "POST",
+     "not_sent": [],
+     "path": "/api/sessions/observations",
+     "script": "scripts/worker-service.cjs",
+     "subcommand": "observation",
+     "values": {
+      "contentSessionId": "session",
+      "cwd": "cwd",
+      "tool_input": "tool_input",
+      "tool_name": "tool_name",
+      "tool_response": "tool_response"
+     }
+    },
+    "prompt": {
+     "event": "UserPromptSubmit",
+     "fields": [
+      "contentSessionId",
+      "project",
+      "prompt"
+     ],
+     "handler": "sha256:84eb036535adebddde32af90b77d3aa516fe19490265e0808751c6cfdd47eb8c",
+     "method": "POST",
+     "not_sent": [
+      "/sessions/${l}/init"
+     ],
+     "path": "/api/sessions/init",
+     "script": "scripts/worker-service.cjs",
+     "subcommand": "session-init",
+     "values": {
+      "contentSessionId": "session",
+      "project": "project",
+      "prompt": "prompt"
+     }
+    },
+    "summary": {
+     "event": "Stop",
+     "fields": [
+      "contentSessionId",
+      "last_assistant_message"
+     ],
+     "handler": "sha256:cce4c22640467b2c944c56dbcbfef40cba61e8c50efea2f1ec851dc20fa8e5b7",
+     "method": "POST",
+     "not_sent": [],
+     "path": "/api/sessions/summarize",
+     "script": "scripts/worker-service.cjs",
+     "subcommand": "summarize",
+     "values": {
+      "contentSessionId": "session",
+      "last_assistant_message": "reply"
+     }
+    },
+    "version": {
+     "answer": "version",
+     "fields": [],
+     "method": "GET",
+     "path": "/api/version",
+     "script": "scripts/worker-service.cjs",
+     "values": {}
+    }
+   }
+  }
+ }
 }

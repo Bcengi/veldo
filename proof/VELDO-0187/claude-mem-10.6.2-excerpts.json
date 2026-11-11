@@ -1,0 +1,45 @@
+{
+ "note": "Byte excerpts of claude-mem 10.6.2 scripts/worker-service.cjs (the bundle its hooks.json runs for every hook), each at its byte offset: the worker address defaults, the version request, the four hook handlers with their request call sites, and the handler table. Read only; claude-mem is its authors' (thedotmack/claude-mem). claude-mem-10.6.2-hooks.json beside this file is a byte copy of its hooks/hooks.json.",
+ "version": "10.6.2",
+ "source": "scripts/worker-service.cjs",
+ "source_digest": "sha256:e4413cb98c6af03dda4cccd90aaacb4408f663ff39e89056011f517638d711a1",
+ "source_bytes": 1793819,
+ "hooks_digest": "sha256:52e82abecb9affc43d8b2d1fcbbc189662fd64ed942295836ed620585201d69c",
+ "excerpts": [
+  {
+   "name": "address defaults",
+   "offset": 138156,
+   "text": "CLAUDE_MEM_WORKER_PORT:\"37777\",CLAUDE_MEM_WORKER_HOST:\"127.0.0.1\""
+  },
+  {
+   "name": "version request",
+   "offset": 144900,
+   "text": "async function pK(){let t=await jt(\"/api/version\",{timeoutMs:R0});if(!t.ok)throw new Error(`Failed to get worker version: ${t.status}`);return(await t.json()).version}"
+  },
+  {
+   "name": "handler session-init",
+   "offset": 1049796,
+   "text": "$$={async execute(t){if(!await en())return{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};let{sessionId:r,cwd:n,prompt:i}=t;if(!r)return y.warn(\"HOOK\",\"session-init: No sessionId provided, skipping (Codex CLI or unknown platform)\"),{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};let s=Ee.loadFromFile(Ft);if(n&&gv(n,s.CLAUDE_MEM_EXCLUDED_PROJECTS))return y.info(\"HOOK\",\"Project excluded from tracking\",{cwd:n}),{continue:!0,suppressOutput:!0};let o=!i||!i.trim()?\"[media prompt]\":i,a=gp(n);y.debug(\"HOOK\",\"session-init: Calling /api/sessions/init\",{contentSessionId:r,project:a});let c=await jt(\"/api/sessions/init\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({contentSessionId:r,project:a,prompt:o})});if(!c.ok)return y.failure(\"HOOK\",`Session initialization failed: ${c.status}`,{contentSessionId:r,project:a}),{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};let u=await c.json(),l=u.sessionDbId,d=u.promptNumber;if(y.debug(\"HOOK\",\"session-init: Received from /api/sessions/init\",{sessionDbId:l,promptNumber:d,skipped:u.skipped,contextInjected:u.contextInjected}),y.debug(\"HOOK\",`[ALIGNMENT] Hook Entry | contentSessionId=${r} | prompt#=${d} | sessionDbId=${l}`),u.skipped&&u.reason===\"private\")return y.info(\"HOOK\",`INIT_COMPLETE | sessionDbId=${l} | promptNumber=${d} | skipped=true | reason=private`,{sessionId:l}),{continue:!0,suppressOutput:!0};if(u.contextInjected)return y.info(\"HOOK\",`INIT_COMPLETE | sessionDbId=${l} | promptNumber=${d} | skipped_agent_init=true | reason=context_already_injected`,{sessionId:l}),{continue:!0,suppressOutput:!0};if(t.platform!==\"cursor\"&&l){let p=o.startsWith(\"/\")?o.substring(1):o;y.debug(\"HOOK\",\"session-init: Calling /sessions/{sessionDbId}/init\",{sessionDbId:l,promptNumber:d});let m=await jt(`/sessions/${l}/init`,{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({userPrompt:p,promptNumber:d})});m.ok||y.failure(\"HOOK\",`SDK agent start failed: ${m.status}`,{sessionDbId:l,promptNumber:d})}else t.platform===\"cursor\"&&y.debug(\"HOOK\",\"session-init: Skipping SDK agent init for Cursor platform\",{sessionDbId:l,promptNumber:d});return y.info(\"HOOK\",`INIT_COMPLETE | sessionDbId=${l} | promptNumber=${d} | project=${a}`,{sessionId:l}),{continue:!0,suppressOutput:!0}}}"
+  },
+  {
+   "name": "handler observation",
+   "offset": 1052150,
+   "text": "I$={async execute(t){if(!await en())return{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};let{sessionId:r,cwd:n,toolName:i,toolInput:s,toolResponse:o}=t;if(!i)return{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};let a=y.formatTool(i,s);if(y.dataIn(\"HOOK\",`PostToolUse: ${a}`,{}),!n)throw new Error(`Missing cwd in PostToolUse hook input for session ${r}, tool ${i}`);let c=Ee.loadFromFile(Ft);if(gv(n,c.CLAUDE_MEM_EXCLUDED_PROJECTS))return y.debug(\"HOOK\",\"Project excluded from tracking, skipping observation\",{cwd:n,toolName:i}),{continue:!0,suppressOutput:!0};try{let u=await jt(\"/api/sessions/observations\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({contentSessionId:r,tool_name:i,tool_input:s,tool_response:o,cwd:n})});if(!u.ok)return y.warn(\"HOOK\",\"Observation storage failed, skipping\",{status:u.status,toolName:i}),{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};y.debug(\"HOOK\",\"Observation sent successfully\",{toolName:i})}catch(u){return y.warn(\"HOOK\",\"Observation fetch error, skipping\",{error:u instanceof Error?u.message:String(u)}),{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS}}return{continue:!0,suppressOutput:!0}}}"
+  },
+  {
+   "name": "handler summarize",
+   "offset": 1054189,
+   "text": "O$={async execute(t){if(!await en())return{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};let{sessionId:r,transcriptPath:n}=t;if(!n)return y.debug(\"HOOK\",`No transcriptPath in Stop hook input for session ${r} - skipping summary`),{continue:!0,suppressOutput:!0,exitCode:ot.SUCCESS};let i=T9(n,\"assistant\",!0);return y.dataIn(\"HOOK\",\"Stop: Requesting summary\",{hasLastAssistantMessage:!!i}),(await jt(\"/api/sessions/summarize\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({contentSessionId:r,last_assistant_message:i}),timeoutMs:lge})).ok?(y.debug(\"HOOK\",\"Summary request sent successfully\"),{continue:!0,suppressOutput:!0}):{continue:!0,suppressOutput:!0}}}"
+  },
+  {
+   "name": "handler session-complete",
+   "offset": 1056737,
+   "text": "D$={async execute(t){if(!await en())return{continue:!0,suppressOutput:!0};let{sessionId:r}=t;if(!r)return y.warn(\"HOOK\",\"session-complete: Missing sessionId, skipping\"),{continue:!0,suppressOutput:!0};y.info(\"HOOK\",\"\\u2192 session-complete: Removing session from active map\",{contentSessionId:r});try{let n=await jt(\"/api/sessions/complete\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({contentSessionId:r})});if(n.ok)y.info(\"HOOK\",\"Session completed successfully\",{contentSessionId:r});else{let i=await n.text();y.warn(\"HOOK\",\"session-complete: Failed to complete session\",{status:n.status,body:i})}}catch(n){y.warn(\"HOOK\",\"session-complete: Error completing session\",{error:n.message})}return{continue:!0,suppressOutput:!0}}}"
+  },
+  {
+   "name": "handler table",
+   "offset": 1057789,
+   "text": "dge={context:w$,\"session-init\":$$,observation:I$,summarize:O$,\"session-complete\":D$,\"user-message\":C$,\"file-edit\":N$}"
+  }
+ ]
+}
