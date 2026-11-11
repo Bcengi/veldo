@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0292
-title: The push guard judges only the git and gh commands the shell would run, so a mention of one in a comment, or in a quoted string or heredoc body given only to plain text tools, is not refused, while a git command the guard cannot resolve stays protected
+title: The push guard judges only the git and gh commands the shell would run, so a mention of one in a comment, or in a quoted string or heredoc body given only to plain text tools in a command that names no git or gh, is not refused, while a git command the guard cannot resolve stays protected
 status: draft
 risk: high
 risk_areas: [auth_security]
@@ -28,7 +28,7 @@ observability:
     refuses a command that is not one simple git or gh command, its existing "destination unresolved"
     line now ends with what it found: the matched text, cut at 120 characters, and where it sits (a
     command of a list or pipeline, the argument or input of a program that is not a plain text tool
-    with the program named, text in a list that also runs git, or text the guard does not parse with
+    with the program named, text in a command that also names git or gh, or text the guard does not parse with
     the construct named). The incident's message gave the builder no way to see which
     words had been read as a command.
   metrics: >
@@ -83,7 +83,8 @@ acceptance_criteria:
       quotes; read of the push from a quoted heredoc, then the same; printf -v of the push, then the same.
       live/config-write: printf of an alias section mapping p to !git push origin main, appended to
       .git/config by a redirection, then git p; the same section echoed into tee -a .git/config, then
-      git p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
+      git p; the printf form on one line and git p on the next; the printf form, then git named by its
+      absolute path with p; the printf form, then sh -c with the quoted string git p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
       live/quoted-command-word: true && 'git' push origin main, and true && g\it push origin main.
       At 646ff7c8 live/quoted-command-word is red because the guard exits 0. Every other row is red only
       because the line does not yet say what was found; the exit code and gate text already hold. A git
@@ -92,8 +93,10 @@ acceptance_criteria:
       tools) turns live/shell-string and live/pipeline red; guard292-unparsed-is-data (a command outside the
       subset has its quoted strings removed anyway) turns live/outside-subset red;
       guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter and
-      live/stored red; guard292-git-list-data (text in a list that also runs git counts as data) turns
-      live/config-write red; guard292-list-tail-data (once a command of a list holds data, the commands
+      live/stored red; guard292-git-list-data (text in a command that also names git counts as data) turns
+      live/config-write red; guard292-git-list-exact-word (the rule fires only on a word that is exactly
+      git or gh) turns live/config-write red; guard292-git-list-per-line (the rule looks only at the line
+      that names git) turns live/config-write red; guard292-list-tail-data (once a command of a list holds data, the commands
       after it are data too) turns live/mixed red; guard292-command-word-raw (the live text keeps command
       words as written) turns live/quoted-command-word red. Every row and registered mutation suite 141
       carried at 646ff7c8 still passes; an anchor the change moves is pointed at the same defect again.
@@ -262,10 +265,14 @@ path, and its reviewer checks that the program cannot run text.
 Checking the whole pipeline covers a string echoed into a shell or an interpreter. Assignment values
 stay live so a string stored in a variable and run later is still seen.
 
-When any word of any command in the list is git or gh after quote removal, no quoted string or heredoc
-body anywhere in the list is data, except the message values named in the next paragraph. A list that
-runs git can use a file it writes, such as a git alias appended to .git/config, a hook under
-.git/hooks or a script git runs, so nothing it writes is data, whatever path it writes to.
+When git or gh appears anywhere in the command outside the strings that would otherwise be data, no
+quoted string or heredoc body anywhere in the command is data, except the message values named in the
+next paragraph. It counts wherever no letter, digit or underscore stands right before or after it: as
+a command word, as the last part of a path such as /usr/bin/git or .git/config, as an argument, and
+inside a string given to a shell, a wrapper or an interpreter. The command is the whole text of the
+Bash call, across all its lines. A command that runs git can use a file it writes, such as a git alias
+appended to .git/config, a hook under .git/hooks or a script git runs, so nothing it writes is data,
+whatever path it writes to.
 
 Git and gh keep their text live with one exception: text they store and never run. In a simple command
 whose words after quote removal start with git, with no global option other than -C, and whose
@@ -274,7 +281,7 @@ In git log, git show and git rev-list, the value of the grep option is data. In 
 starting with gh whose next two words are issue create, issue comment, issue edit, pr create, pr
 comment, pr edit, pr review or release create, the values of -t, -b and -n and of their long
 spellings, title, body and notes, are data. This holds for such a command standing alone or as one
-command of a list. Any other argument, any -c option and any alias keep the command live as today.
+command of a longer command. Any other argument, any -c option and any alias keep the command live as today.
 
 The allowed rows run their command under bash with a recording git and gh, so the suite checks on each
 host that text the scanner called data is text the shell did not run.
@@ -305,7 +312,9 @@ host that text the scanner called data is text the shell did not run.
   with a plain text tool and then runs it without git, such as cat into /tmp/x.sh from a heredoc
   holding a push of main followed by bash /tmp/x.sh. A hook written in one Bash call and run by git in
   a later call is the same case. It was refused at 646ff7c8 and is allowed now, because the guard
-  does not follow a file. The owner accepts this with the approval.
+  does not follow a file. The owner accepts this with the approval. A git whose name never appears in
+  the text, such as g\it inside a string given to sh -c, is the same case: such a spelling already
+  passes the guard at 646ff7c8, and a configuration written beside it is not followed.
 - The scanner gives up rather than guessing: any construct outside the subset sends the whole text to
   today's judgment, and the judgment itself is unchanged. Inside the subset, AC4 holds the scanner to
   bash's own reading.
@@ -321,3 +330,4 @@ host that text the scanner called data is text the shell did not run.
 2026-11-10: drafted from the owner's decision 40683 after the VELDO-0290 builder's false hit
 2026-11-11: revision 1 applies the findings of the review of ba3946cb
 2026-11-11: revision 2 applies the findings of the re-review of c880fe11
+2026-11-11: revision 3 applies the findings of the second re-review of 2bf465e1
