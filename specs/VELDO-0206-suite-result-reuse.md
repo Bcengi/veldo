@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0206
 title: Exact input suite result reuse in the canonical gate
-status: ready
+status: blocked
 risk: high
 owner: dmitry
 human_approval: required
@@ -70,3 +70,5 @@ private store follows VELDO-0205's threat boundary. Unknown closures always exec
 scripts/verify.sh requires high-risk review and exact commit/proof-bound owner approval under
 .veldo/policy.yaml before landing. The design approval is not that final approval. Canonical release
 and landing gates retain VELDO_GATE_FORCE_FRESH=1.
+
+2026-11-11: status set to blocked by the lead; not to be built, because VELDO-0279 deletes the gate reuse machinery and supersedes this spec. Kept for its history; the next status, if any, is a recorded decision.

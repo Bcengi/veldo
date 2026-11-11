@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0223
 title: A result under someone else's load is rerun quietly before it counts, and an unconfirmed red is invalid
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -145,3 +145,5 @@ cannot set the classification: it is computed by the authority from counters out
 write grants, and an unconfined leg that forged load could only turn its own red into a rerun or
 INVALID, neither of which lands. Out of review scope: load that shows in no sampled counter (for
 example disk input and output without CPU or memory pressure).
+
+2026-11-11: status set to blocked by the lead; not to be built, because a quiet rerun of a red conflicts with the owner rule that a flaky test is fixed and never rerun; VELDO-0290 replaces it with CPU headroom for wall-clock suites. Kept for its history; the next status, if any, is a recorded decision.

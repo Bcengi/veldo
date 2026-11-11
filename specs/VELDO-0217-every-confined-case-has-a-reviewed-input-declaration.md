@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0217
 title: Every confined mutation case gets a current, reviewed input declaration with complete keys
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -178,3 +178,5 @@ VELDO-0207 and VELDO-0208. Out of review scope: planted records in the owner's s
 Numbers come from the 2026-10-25 canonical receipt (canonical-mutations.json, case_receipts) and a
 scan of the pending stack at 3ab6e90d; the mechanical staleness check, not the list in AC1, is the
 authority.
+
+2026-11-11: status set to blocked by the lead; not to be built, because it extends the reuse machinery that VELDO-0279 deletes. Kept for its history; the next status, if any, is a recorded decision.

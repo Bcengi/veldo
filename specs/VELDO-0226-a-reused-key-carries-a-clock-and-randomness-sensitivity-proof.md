@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0226
 title: A key is reused only after a sensitivity proof shows its case ignores the clock and randomness
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -125,3 +125,5 @@ insensitive.
 Normal use: landing gates with reviewed declarations on the owner's host. Threat model: as in
 VELDO-0208. Out of review scope: a case whose result depends on the clock only at offsets or rates
 the proof did not try; the stated parameters are the accepted bound.
+
+2026-11-11: status set to blocked by the lead; not to be built, because it extends the reuse machinery that VELDO-0279 deletes. Kept for its history; the next status, if any, is a recorded decision.

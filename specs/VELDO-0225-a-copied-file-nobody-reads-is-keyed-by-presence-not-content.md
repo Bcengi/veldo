@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0225
 title: A file a case copies but never reads again is keyed by its presence, not its content
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -132,3 +132,5 @@ Changing fixtures to copy less; the cases and their assertions; suite result reu
 Normal use: proposals and landing gates with reviewed declarations. Threat model: as in VELDO-0207.
 Out of review scope: none beyond VELDO-0207's; copies the tracer cannot follow are content inputs by
 rule, so no class of copy is left to judgment.
+
+2026-11-11: status set to blocked by the lead; not to be built, because it extends the reuse machinery that VELDO-0279 deletes. Kept for its history; the next status, if any, is a recorded decision.

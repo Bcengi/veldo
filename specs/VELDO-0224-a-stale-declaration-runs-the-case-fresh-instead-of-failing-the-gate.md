@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0224
 title: A stale input declaration runs its case fresh instead of failing the gate
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -107,3 +107,5 @@ Out of review scope: a planted stale list in the owner's store (it can only make
 ## Notes
 
 VELDO-0207's design section gains a pointer to this specification when it lands.
+
+2026-11-11: status set to blocked by the lead; not to be built, because it extends the reuse machinery that VELDO-0279 deletes. Kept for its history; the next status, if any, is a recorded decision.

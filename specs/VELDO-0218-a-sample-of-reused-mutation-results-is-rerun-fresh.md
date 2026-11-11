@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0218
 title: Every gate reruns a random sample of its reused mutation results and compares them
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -123,3 +123,5 @@ the stated detection probability is the accepted residual.
 The four timing-sensitive differences are recorded in
 /tmp/veldo-mutation-throughput-20261025/canonical-observation-comparison.json: additional non-target
 observations in the mutant arrays, with every named rejection matching.
+
+2026-11-11: status set to blocked by the lead; not to be built, because it extends the reuse machinery that VELDO-0279 deletes. Kept for its history; the next status, if any, is a recorded decision.

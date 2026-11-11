@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0222
 title: Unconfined mutation cases may reuse results only when a private user manager keeps every read traced
-status: ready
+status: blocked
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -154,3 +154,5 @@ running with the owner's authority.
 
 VELDO-0208's unconfined-leg section gains a pointer to this specification when it lands; until then
 its rule stands.
+
+2026-11-11: status set to blocked by the lead; not to be built, because VELDO-0279 deletes the gate reuse machinery and supersedes this spec. Kept for its history; the next status, if any, is a recorded decision.
