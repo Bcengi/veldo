@@ -1,0 +1,1033 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G taskset -c 0-19 python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+ "deciding": {
+  "adoption_observations": [
+   {
+    "api_port": 44899,
+    "run": 1,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9293619629461318
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.34263922390528023
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6574968839995563
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.44180171308107674
+     }
+    ]
+   },
+   {
+    "api_port": 51181,
+    "run": 2,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9401323180645704
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3916394088882953
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6643313670065254
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.46106554800644517
+     }
+    ]
+   },
+   {
+    "api_port": 39115,
+    "run": 3,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9108801069669425
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3535944439936429
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6558978881221265
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.45311229792423546
+     }
+    ]
+   },
+   {
+    "api_port": 48905,
+    "run": 4,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9890016119461507
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3406338619533926
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6651121121831238
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4672854139935225
+     }
+    ]
+   },
+   {
+    "api_port": 52057,
+    "run": 5,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.912038475042209
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3638601149432361
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6567769309040159
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.48739774711430073
+     }
+    ]
+   },
+   {
+    "api_port": 44083,
+    "run": 6,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.8841714200098068
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.37492344388738275
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6388921251054853
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4229756109416485
+     }
+    ]
+   },
+   {
+    "api_port": 45057,
+    "run": 7,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9249663897790015
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.36340237502008677
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6486078021116555
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4230948209296912
+     }
+    ]
+   },
+   {
+    "api_port": 42363,
+    "run": 8,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.892325330991298
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3498570991214365
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6809171650093049
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.43085784395225346
+     }
+    ]
+   },
+   {
+    "api_port": 35349,
+    "run": 9,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.8637198510114104
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3749565230682492
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.649383848067373
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.42116133705712855
+     }
+    ]
+   },
+   {
+    "api_port": 55557,
+    "run": 10,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.8893460968974978
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.367793238023296
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6773096090182662
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4273570531513542
+     }
+    ]
+   },
+   {
+    "api_port": 39281,
+    "run": 11,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.941733896965161
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.36039596889168024
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6735969269648194
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4531301879324019
+     }
+    ]
+   },
+   {
+    "api_port": 49873,
+    "run": 12,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9303708330262452
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3661586861126125
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.669602335896343
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4419960789382458
+     }
+    ]
+   },
+   {
+    "api_port": 42085,
+    "run": 13,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9314487979281694
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3794839661568403
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6755626481026411
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4308063380885869
+     }
+    ]
+   },
+   {
+    "api_port": 47237,
+    "run": 14,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9292077040299773
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3683824890758842
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6658300259150565
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4367307689972222
+     }
+    ]
+   },
+   {
+    "api_port": 50869,
+    "run": 15,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.9202962410636246
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3666945800650865
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6520561638753861
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4251122619025409
+     }
+    ]
+   },
+   {
+    "api_port": 52551,
+    "run": 16,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.8470491669140756
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.37022314011119306
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6094682370312512
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.48968216497451067
+     }
+    ]
+   },
+   {
+    "api_port": 56047,
+    "run": 17,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.8549681932199746
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.3735166429542005
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6187296218704432
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.47698069107718766
+     }
+    ]
+   },
+   {
+    "api_port": 60253,
+    "run": 18,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.8334430810064077
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.4098641290329397
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6334853360895067
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4269070259761065
+     }
+    ]
+   },
+   {
+    "api_port": 37099,
+    "run": 19,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.97475621313788
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.33712652907706797
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6273933888878673
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.4892208268865943
+     }
+    ]
+   },
+   {
+    "api_port": 42973,
+    "run": 20,
+    "setups": [
+     {
+      "at": 0,
+      "code": 0,
+      "reason": null,
+      "seconds": 0.858423724072054
+     },
+     {
+      "at": 4,
+      "code": -9,
+      "reason": null,
+      "seconds": 0.33617559005506337
+     }
+    ],
+    "starts": [
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.6908255510497838
+     },
+     {
+      "code": 0,
+      "error": "",
+      "seconds": 0.3979649371467531
+     }
+    ]
+   }
+  ],
+  "adoption_row_failed": false,
+  "behavior_changed": false,
+  "concurrent_runs": 5,
+  "cpu_affinity": "0-19",
+  "cpu_burners": 12,
+  "diagnostics_only": true,
+  "gate_run": false,
+  "hypothesis": "The fixture readiness wait may expire on a CPU-starved host.",
+  "partial_suite": true,
+  "passed": 20,
+  "results": [
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 1,
+    "seconds": 75.29473315807991,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.12s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 2,
+    "seconds": 75.2227386678569,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.06s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 3,
+    "seconds": 74.90092705795541,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 74.73s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 4,
+    "seconds": 76.32759829587303,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 76.17s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 5,
+    "seconds": 75.35761120519601,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.18s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 6,
+    "seconds": 75.29704001313075,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.15s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 7,
+    "seconds": 74.28868733206764,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 74.15s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 8,
+    "seconds": 74.72087062196806,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 74.58s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 9,
+    "seconds": 75.26562593597919,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.11s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 10,
+    "seconds": 75.31138448184356,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.17s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 11,
+    "seconds": 75.39511447609402,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.25s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 12,
+    "seconds": 74.7764561639633,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 74.65s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 13,
+    "seconds": 74.77373224287294,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 74.63s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 14,
+    "seconds": 75.31733286986127,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.17s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 15,
+    "seconds": 75.27652291208506,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 75.15s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 16,
+    "seconds": 74.27255422691815,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 74.14s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 17,
+    "seconds": 73.82908027991652,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 73.70s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 18,
+    "seconds": 73.78878450603224,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 73.66s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 19,
+    "seconds": 73.70586835290305,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 73.56s"
+    ]
+   },
+   {
+    "failures": [],
+    "passed": true,
+    "returncode": 2,
+    "run": 20,
+    "seconds": 74.32807949301787,
+    "summary": [
+     "selftest (PARTIAL, 1 of 196 suites): 60 passed, 0 failed in 74.18s"
+    ]
+   }
+  ],
+  "retries": 0,
+  "runs": 20,
+  "source_sha256": "8c158a835b12cdbab77dce9228d06e7dd0ad9eb5935e7d4e5bdcaacfe20514ff",
+  "suite": "86_veldo_0189_engine_upgrade"
+ },
+ "discarded": [
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-01.log",
+   "sha256": "f3f160e393ac46621b2f6c48cb9d69c3fd98d2cd53a6d096a9c3e6ebc34cd685"
+  },
+  {
+   "bytes": 2255,
+   "name": "concurrent-before-01-timings.json",
+   "sha256": "4389d66152d9b9083ba53ec89c265576ecdc0262ae213eb8c108763d51d1ae29"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-02.log",
+   "sha256": "276f19a70fdb4f7345ed58524dc64f137ef68b2edbb10a22daaeecfc1a760a54"
+  },
+  {
+   "bytes": 2257,
+   "name": "concurrent-before-02-timings.json",
+   "sha256": "1689049ebc1a8f01c6f7458481863d2669850e30bba44bba99418ef59a0845e7"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-03.log",
+   "sha256": "ff3087a296aa111f386ed92905c75e07967f5d144a437d3019fbbd1f7409b934"
+  },
+  {
+   "bytes": 2255,
+   "name": "concurrent-before-03-timings.json",
+   "sha256": "49184319600c94b2299c66a6fc51b1b171128c82731280536cfc048238c9a4fb"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-04.log",
+   "sha256": "2eb5b1e34b69ada1dc185f068fc9d87be9a3008012c9e6ea9a10758a2f6d2504"
+  },
+  {
+   "bytes": 2259,
+   "name": "concurrent-before-04-timings.json",
+   "sha256": "5ce3e22503ac9eea0e059f9fef9ea03ca38c4eb81d4d2d8b6fc300663ffeef5a"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-05.log",
+   "sha256": "cc8c9fb31c9ef5a368a3f73033fd6341ab8150e5f3426d5679756f5735954ce4"
+  },
+  {
+   "bytes": 2252,
+   "name": "concurrent-before-05-timings.json",
+   "sha256": "944247a3510d240d24a6d11d27461bc4f9565d8a68fc8fc8f48192cfd7b72099"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-06.log",
+   "sha256": "821d638a67d256516acfddec72a6cdbbb8d1d1867ac770b9572a3596837de5c5"
+  },
+  {
+   "bytes": 2265,
+   "name": "concurrent-before-06-timings.json",
+   "sha256": "e74dd1982bd6e3e43cdf4ac74326abd6a0c6424b5aa28aebbafed74a48256dd7"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-07.log",
+   "sha256": "6fc1f91a18c0f0b6271521babf8346b652a3d23469ace0b663f7fab09dbe65ef"
+  },
+  {
+   "bytes": 2265,
+   "name": "concurrent-before-07-timings.json",
+   "sha256": "5338b944d426066510ecfbd35a70b3dabc36ca6b965e0a8c3a5cca660d991768"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-08.log",
+   "sha256": "400fe03e299695a239cbc380708cb06b52fcb57654d6bee42669d4ff0c494a82"
+  },
+  {
+   "bytes": 2259,
+   "name": "concurrent-before-08-timings.json",
+   "sha256": "3fb462e3c671f8d34038d731868558a0b3568557a6178726bd10fc1b6fe7fb6d"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-09.log",
+   "sha256": "f7490cc1c04cf26a43edb7313b48e7e3b6ee933918b1fefd88b3befeb0884d85"
+  },
+  {
+   "bytes": 2263,
+   "name": "concurrent-before-09-timings.json",
+   "sha256": "e68885c59a535c8f2ae21e7dc6a2f7347c4e145e9c72a9d6f17a2c9d6e6dc2ac"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-10.log",
+   "sha256": "5f3006b07f0b65c93bf64a105ae74ba8fb95d5cbdb2af54b67aaedd39dc1d9d5"
+  },
+  {
+   "bytes": 2258,
+   "name": "concurrent-before-10-timings.json",
+   "sha256": "75a2abb240ddc63fd7e281ea78a38153d6371a87c18eb85810d0345ee2aa97bf"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-11.log",
+   "sha256": "f2c3c2f25ce2c247f51c3dab37c51d5424a75924d3a8c9bcab350af73f340b04"
+  },
+  {
+   "bytes": 2257,
+   "name": "concurrent-before-11-timings.json",
+   "sha256": "403a850fcfe5e04e0611ee0fe33594ee5d594148550bf48b6e921f1656576bb4"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-12.log",
+   "sha256": "6fe8ef0e338fe38a556b975f5de25a1062bb2edb5951ed91eaca57fea5464bf1"
+  },
+  {
+   "bytes": 2255,
+   "name": "concurrent-before-12-timings.json",
+   "sha256": "a9bbda58d41f59800dd933bc334dde2ff12c0f7ad5be8591e23964ecec5f4b75"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-13.log",
+   "sha256": "72972f3a0c33b94caab47c31138665d3efa4e378f50cb1f3605fa144f2ed4616"
+  },
+  {
+   "bytes": 2256,
+   "name": "concurrent-before-13-timings.json",
+   "sha256": "3a8535fe2ffabfa1eec8e6d8cfec9f6ab17693b006e819e6b959fea6d99ff983"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-14.log",
+   "sha256": "a827eac95e90f8ae7dc77dba07afa1b1384d4d905d80e5e326bc07d927dc1719"
+  },
+  {
+   "bytes": 2261,
+   "name": "concurrent-before-14-timings.json",
+   "sha256": "2380471c581b22066a4a46abdd425ccb1f66ff16f2082ddb1669524fec4bbb32"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-15.log",
+   "sha256": "c7bb82bd3de3c660af7be3588cd2d717bfd58895b8c1f737e9d2cc86e4ab024b"
+  },
+  {
+   "bytes": 2267,
+   "name": "concurrent-before-15-timings.json",
+   "sha256": "6dde6dd4367e92c73610b8fb34cb312552edf253e48d7075152d062b24632572"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-16.log",
+   "sha256": "08bf20b855d8d73415cd5ff9ffc7b92544f6941472c1ecc08381740d460588f1"
+  },
+  {
+   "bytes": 2260,
+   "name": "concurrent-before-16-timings.json",
+   "sha256": "6c7bb27d3395eb841be43966b78595b2566059569fc10ae355622c643e019af2"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-17.log",
+   "sha256": "cc6cd15ea48eab8b448b3781938347527459bc464b729e4f93bd87bef0eef2e2"
+  },
+  {
+   "bytes": 2258,
+   "name": "concurrent-before-17-timings.json",
+   "sha256": "13cd67db6a8074f533783acd9477c590ea7d7ee72c1255b5ccfbd5cc5af1e185"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-18.log",
+   "sha256": "eec33958723eda8fd3c561e9fb217bf3d810c56ba8ee4eaccd940c7ea9ee1817"
+  },
+  {
+   "bytes": 2258,
+   "name": "concurrent-before-18-timings.json",
+   "sha256": "a1e70b959c1d81b0db2a08eee39c2e3bb619defe0c8dd14a0a99966d7cdc950d"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-19.log",
+   "sha256": "f0dbfb00f161685c7cc3ca8f57e74f7d21cfd3bd37b15f4418e4675a9d225509"
+  },
+  {
+   "bytes": 2256,
+   "name": "concurrent-before-19-timings.json",
+   "sha256": "bc880e74fd88169e7f1e5cec7591dd56104332fc32fd48bd67b75415d57b595c"
+  },
+  {
+   "bytes": 9400,
+   "name": "concurrent-before-20.log",
+   "sha256": "fa99880579a51e7bbb40f8cefc2d0145797c3c66c085c81f7c8cce8c8dca440d"
+  },
+  {
+   "bytes": 2258,
+   "name": "concurrent-before-20-timings.json",
+   "sha256": "345eff8cefa58331d42dcb0d82ed341c33a8037286fbd839a3a9c29c9453e929"
+  }
+ ],
+ "environment": {
+  "commit": "0a78a6cfefab364b449d055de54097a6f178869f",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "python": "3.12.3",
+  "tree": "d47ab71e2224f1106c8f5560f6d67a10d1224067"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

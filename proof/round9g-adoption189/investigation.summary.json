@@ -1,0 +1,79 @@
+{
+ "command": "Inspect the target row and compare the saved starvation, repetition, and tooth summaries.",
+ "deciding": {
+  "behavior_changed": false,
+  "cause_proven": false,
+  "diagnostics": "The explicit adoption_observation variable records start and setup results, durations, and API port. Failed check labels and the observation are included in check detail.",
+  "gate_run": false,
+  "hypotheses": [
+   "The fixture readiness deadline may expire under CPU starvation.",
+   "The API port selected early in the suite is unreserved until a service starts and could collide with another process."
+  ],
+  "limits_changed": false,
+  "observed": {
+   "setup_codes": [
+    -9,
+    0
+   ],
+   "setup_count": 80,
+   "setup_seconds_max": 0.9890016119461507,
+   "start_codes": [
+    0
+   ],
+   "start_count": 80,
+   "start_seconds_max": 0.6908255510497838
+  },
+  "original_gate": {
+   "baseline_seconds": 75.80797482817434,
+   "commit": "b57b6fb10ea53f22dfc649a705de95bc85c9869e",
+   "failed_details": [],
+   "status": "invalid_baseline",
+   "tooth": "upgrade189-module-not-scaffolded"
+  },
+  "red_before_green_after_demonstrated": false,
+  "row": "VELDO-0189 restart/adoption-signer-kill",
+  "runs": {
+   "teeth": {
+    "baseline_passed": 10,
+    "mutants_killed": 10,
+    "noop_passed": 10,
+    "runs": 10
+   }
+  },
+  "suite": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+  "suite_counts": {
+   "alone": {
+    "passed": 20,
+    "runs": 20
+   },
+   "before": {
+    "passed": 1,
+    "runs": 1
+   },
+   "concurrent-before": {
+    "passed": 20,
+    "runs": 20
+   }
+  },
+  "timing_audit": {
+   "bridge_close_join_seconds": 30,
+   "close_wait_seconds": 5,
+   "readiness_seconds": 5,
+   "row_has_quiet_window_or_locals_lookup": false,
+   "setup_subprocess_seconds": 180,
+   "signing_subprocess_seconds": 10,
+   "stop_kill_wait_seconds": 5,
+   "stop_wait_seconds": 15,
+   "suite_has_WAIT_or_BUDGET": false
+  }
+ },
+ "discarded": [],
+ "environment": {
+  "commit": "0a78a6cfefab364b449d055de54097a6f178869f",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "python": "3.12.3",
+  "tree": "d47ab71e2224f1106c8f5560f6d67a10d1224067"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

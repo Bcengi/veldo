@@ -1,0 +1,955 @@
+{
+ "command": "bash host_heavy.sh: systemd-run --user --scope -p MemoryMax=10G python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3",
+ "deciding": {
+  "baseline_passed": 10,
+  "commands": [
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-01/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-01/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-01/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-02/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-02/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-02/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-03/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-03/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-03/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-04/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-04/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-04/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-05/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-05/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-05/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-06/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-06/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-06/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-07/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-07/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-07/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-08/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-08/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-08/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-09/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-09/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-09/summary.json",
+   "python3 scripts/check_teeth_mutations.py --finding 189 --case upgrade189-module-not-scaffolded --jobs 3 --worker-log-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-10/workers --diff-dir /tmp/round9g-adoption189.sDPoBS2S/teeth-10/diffs --summary /tmp/round9g-adoption189.sDPoBS2S/teeth-10/summary.json"
+  ],
+  "concurrent_runs": 5,
+  "counts": [
+   {
+    "elapsed": 170.10341495205648,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 1,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 169.55969759402797,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 2,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 168.26222692593,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 3,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 167.69322217418812,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 4,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 169.44578627799638,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 5,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 166.85254157800227,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 6,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 167.76187104987912,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 7,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 166.53327620984055,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 8,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 167.6096958881244,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 9,
+    "status": "passed",
+    "worker_invocations": 3
+   },
+   {
+    "elapsed": 168.3337027200032,
+    "executed": 1,
+    "input_digest": "0aa17b5be17bad41459c6ef2ca265c9155be5577fda2b825997ed71845e8edc6",
+    "registered": 1,
+    "rejected": 1,
+    "reused": 0,
+    "run": 10,
+    "status": "passed",
+    "worker_invocations": 3
+   }
+  ],
+  "cpu_burners": 12,
+  "gate_run": false,
+  "mutants_killed": 10,
+  "mutation_diff_sha256": [
+   "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  ],
+  "noop_passed": 10,
+  "results": [
+   {
+    "returncode": 0,
+    "run": 1,
+    "seconds": 170.22629023483023,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=170.103s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 2,
+    "seconds": 169.68417902011424,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=169.560s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 3,
+    "seconds": 168.38299908698536,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=168.262s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 4,
+    "seconds": 167.81942692399025,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=167.693s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 5,
+    "seconds": 169.5776312428061,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=169.446s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 6,
+    "seconds": 166.9855326290708,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=166.853s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 7,
+    "seconds": 167.89548560604453,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=167.762s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 8,
+    "seconds": 166.66875912807882,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=166.533s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 9,
+    "seconds": 167.74419342400506,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=167.610s"
+    ]
+   },
+   {
+    "returncode": 0,
+    "run": 10,
+    "seconds": 168.46663961699232,
+    "summary": [
+     "mutations: passed registered=1 executed=1 reused=0 rejected=1 workers=3 elapsed=168.334s"
+    ]
+   }
+  ],
+  "retries": 0,
+  "runs": 10,
+  "source_sha256": "8c158a835b12cdbab77dce9228d06e7dd0ad9eb5935e7d4e5bdcaacfe20514ff",
+  "workers": [
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 94.46773041994311,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 72.09242652193643,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.78882162296213,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 1
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 93.38184948312119,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 72.59007324301638,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.41471853083931,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 2
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.70502132899128,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 71.99655950302258,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 91.7565908851102,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 3
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.11300759599544,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 71.9770512750838,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 91.70313762011938,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 4
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.51053796801716,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 72.04593158815987,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 93.82649197010323,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 5
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.16431755619124,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 71.61362803983502,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.6386203870643,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 6
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 94.10445670690387,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 71.07598004303873,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 93.43177290586755,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 7
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.35436318791471,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 71.56765822600573,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 91.87483378406614,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 8
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.89751228806563,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 72.0581199831795,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.96721731405705,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 9
+   },
+   {
+    "baseline": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 94.24836196890101,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "mutant": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": true,
+     "failed_rows": [
+      "VELDO-0189 install/assets"
+     ],
+     "seconds": 71.51849913597107,
+     "targets": {
+      "install/assets": [
+       false
+      ]
+     }
+    },
+    "noop": {
+     "adoption_row": [
+      true
+     ],
+     "count": 60,
+     "failed_details_present": false,
+     "failed_rows": [],
+     "seconds": 92.47797325695865,
+     "targets": {
+      "install/assets": [
+       true
+      ]
+     }
+    },
+    "run": 10
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 20276,
+   "name": "teeth-01/run.log",
+   "sha256": "9dda169683503ccf43b2d6a89f7528da801d57cdc52025390ab177d3f3b2ee76"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-01/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-01/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-01/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-01/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20275,
+   "name": "teeth-02/run.log",
+   "sha256": "5c5e5711c1df0150629f521d9ddd89927f24b05d1e0b9765d929bd949f98e6d2"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-02/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-02/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-02/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-02/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20273,
+   "name": "teeth-03/run.log",
+   "sha256": "f70136b43890f878edbf53fc27c517d5073c129caa35bd87e4bd601f6bd6c62e"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-03/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-03/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-03/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-03/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20271,
+   "name": "teeth-04/run.log",
+   "sha256": "72543214dfe562514cafc8b4d4d6f6d0f14a8df891b2c0b87a56f9344dc082d4"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-04/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-04/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-04/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-04/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20274,
+   "name": "teeth-05/run.log",
+   "sha256": "e20770321ed438bef2cf73b020252adbb1150997f331c967f33bbce2c953e8fa"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-05/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-05/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-05/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-05/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20272,
+   "name": "teeth-06/run.log",
+   "sha256": "ba6e17be583b5ab76dc8c1bfb8344bbbd709cd578503094fab044a31c5a3d4ad"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-06/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-06/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-06/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-06/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20274,
+   "name": "teeth-07/run.log",
+   "sha256": "ba15620e22a88ca372544f3793129765290df69b9a9f9aab648fe26030a4042a"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-07/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-07/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-07/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-07/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20276,
+   "name": "teeth-08/run.log",
+   "sha256": "79c0e1ed75339579575a9db4192c383c1538a2f802038870bb10e7517bde0a6c"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-08/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-08/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-08/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-08/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20274,
+   "name": "teeth-09/run.log",
+   "sha256": "1d3bccc203d4803a0eb2107ae4894dc565b3959a6bbb3ae3e38f2fa3833b3188"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-09/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-09/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-09/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-09/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  },
+  {
+   "bytes": 20267,
+   "name": "teeth-10/run.log",
+   "sha256": "244c0db0368d2621fc99b98aefbcd7385a9992ad5017e5cbca5f5708cee871e6"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-10/workers/1-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5022,
+   "name": "teeth-10/workers/0-stdout",
+   "sha256": "ec241042a43c07fddcc4c17084817ed4a4192ea65ef6fa3c327ff94ef525a605"
+  },
+  {
+   "bytes": 5185,
+   "name": "teeth-10/workers/2-stdout",
+   "sha256": "3c61ef01f6ad0116e143fa73e44b65a11e319e0a83270ca3fdcebe339d187577"
+  },
+  {
+   "bytes": 126,
+   "name": "teeth-10/diffs/upgrade189-module-not-scaffolded.diff",
+   "sha256": "44af0d914d8ec02ac4849cea93259609b615bd1770a166e1a112f4e795b1667c"
+  }
+ ],
+ "environment": {
+  "commit": "0a78a6cfefab364b449d055de54097a6f178869f",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "python": "3.12.3",
+  "tree": "d47ab71e2224f1106c8f5560f6d67a10d1224067"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
