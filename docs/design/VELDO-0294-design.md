@@ -1,10 +1,11 @@
 # VELDO-0294 design: a build as short fresh phases, with a token record per run
 
-Design for the spec at specs/VELDO-0294-builds-run-as-short-fresh-phases-with-per-run-token-records.md
-(approved at a385da5e, amended at 3b6a5a0e). Revision 3 follows that amendment (section 12). Line
-numbers are those of engine/.veldo at b1180439, where the files this design touches are unchanged
-since 6ee5bb5f. Every engine/.veldo file named here has a synced copy under .veldo that changes
-with it.
+Design for the spec at
+specs/VELDO-0294-builds-run-as-short-fresh-phases-with-per-run-token-records.md (approved at
+a385da5e, amended at 3b6a5a0e and 59ec3d52). Revision 4 follows Codex's re-validation of revision 3
+(section 12). Line numbers are those of engine/.veldo at b1180439, where the files this design
+touches are unchanged since 6ee5bb5f. Every engine/.veldo file named here has a synced copy under
+.veldo that changes with it.
 
 The design keeps the spec's shape: Runtime.build becomes a loop of build dispatches, the receiver
 stops a run at its step cap and settles it in the ledger from what its meter saw, the stopped
@@ -14,12 +15,16 @@ gains one event.
 Two things the lead must know before the build starts:
 
 1. A run stopped at its cap is settled at stop (AC10, sections 4.7 and 5.2a). The figures are lower
-   bounds. A tokens cap can therefore be passed by what a stopped run used after its last counted
-   line, and a Codex run stopped inside its first turn is settled with 0 tokens, because Codex
-   prints a turn's usage only when the turn completes. The flag judges that figure, so such a run
-   is not reported (D4, D15).
-2. The ledger changes in one place only: it accepts and stores the settlement mark. Its caps and
-   its admission check are not touched.
+   bounds, so a tokens cap can be passed by what a stopped run used after its last counted line. A
+   Codex run stopped inside its first turn settles 0 tokens, because Codex prints a turn's usage
+   only when the turn completes. That 0 means at least 0. It does not mean the run used nothing, and
+   nothing in this design bounds what the open turn used. The flag reports every settlement with a
+   turn in flight once, whatever its figure (AC5 as amended, section 4.6). A Codex step is an item
+   inside an open turn, so a capped Codex run is reported unless its turn completes in the output
+   drained after the stop.
+2. The ledger's code changes in one place only: it accepts and stores the settlement mark. Its caps
+   and its admission check are not edited. What they guarantee does change for a capped run. Section
+   1 states that exception and section 4.7 says what the ledger's readers show for such a run.
 
 ## 1. Components
 
@@ -37,14 +42,14 @@ Two things the lead must know before the build starts:
 | Cap check | control_launch.py, Metering.__init__ (2540) and Metering.feed (2603) | No cap of its own | Extended | Reads payload.phase.messages of a build contract; says when the run's step count has reached it |
 | Stop cause | control_launch.py, take inside Receiver._reap (2316) | Every metering stop is usage_cap | Extended | Begins the stop with the cause Metering names: usage_cap or phase_cap |
 | Settle | control_launch.py, Metering.settle (2684) | Writes the artifact, then sends the final report | Extended | Settles phase_cap as cancelled; for that cause sends the observed figures with the settlement mark; after the final report, writes the run token record and prunes |
-| Observed figures | control_engine_claude.py and control_engine_codex.py, Meter | final gives figures only when the engine ended by itself | New method observed | What the meter saw up to the stop: tokens, messages, which of them are lower bounds, and the turns in flight |
+| Observed figures | control_engine_claude.py and control_engine_codex.py, Meter | final gives figures only when the engine ended by itself | New method observed | What the meter saw up to the stop: tokens, messages, which of them are lower bounds, and whether a turn is open |
 | Report pass-through | control_reservation_runtime.py, InvocationGuard.observe (47) | Passes session and limit to the ledger's report | One optional argument added | Passes the settlement mark to the ledger's report |
 | Settlement mark | control_reservations.py, Reservations.report (254) and the report action of _transition (374) | A final report may carry session and limit | One optional field added | Validates the mark, refuses a malformed one, stores it on the invocation record |
 | Token record store | control_launch.py, new functions run_tokens_directory and run_tokens | None | New | One place that resolves the directory; one reader that returns the valid kept records newest first |
 | Remote finish | control_launch.py, Receiver._finish (1626) | Stop causes requested and usage_cap | One name added | Treats phase_cap as a stop on a remote transport |
 | Step count | control_engine_claude.py and control_engine_codex.py, Meter | cumulative and final only | New method steps (D1) | The live count the cap is compared with, defined per engine |
 | Stop names | STOPS in both engine modules (claude 1215, codex 474) | No phase_cap | One name added | The artifact document gets verdict stopped and names the cause |
-| Flag | control_telegram_report.py, REGISTRY (140) and new handler Reporter._run_tokens | No event reads the ledger | New event run_over_tokens | One report per settled run over the threshold or with tokens unknown; a run settled at stop is judged by its figure |
+| Flag | control_telegram_report.py, REGISTRY (140) and new handler Reporter._run_tokens | No event reads the ledger | New event run_over_tokens | One report per settled run that is over the threshold, has tokens unknown, or was settled at stop with a turn in flight; a run settled at stop with no turn in flight is judged by its figure |
 | Stand-in engine | scripts/suites/82_veldo_0129_worker_wiring.py | Does a whole build in one run; writes its output record only at a normal exit | Phase aware, with new fixture modes, and records as it goes | Answers per phase; can run on past the cap; can damage its own head or note; leaves its session id, commit and printed events behind when killed |
 | Row prefixes | suites 82, 75, 72 | Each prints one hard-coded prefix (82: 740 to 746; 75: 1731 to 1739; 72: 1037 to 1043) | A row-to-prefix lookup | The ten new rows print VELDO-0294; every existing row keeps its prefix |
 | Rows | suites 82, 75, 72 | | Ten new rows | Section 8 |
@@ -52,10 +57,19 @@ Two things the lead must know before the build starts:
 
 Nothing changes in control_dispatch.py, control_clone.py, control_proof.py or dispatch.py. None of
 them is in the footprint. In control_reservations.py the admission check (143 to 176), the caps and
-the settling rule of a final report (399 to 414) stay as they are. A final report that carries
-tokens and messages already takes both out of the record's unknown list today. What is new is that
-the receiver sends such a report for a run it stopped at the cap, and that the report says the
-figures are lower bounds.
+the settling rule of a final report (399 to 414) keep their code. A final report that carries tokens
+and messages already takes both out of the record's unknown list today. What is new is that the
+receiver sends such a report for a run it stopped at the cap, and that the report says the figures
+are lower bounds.
+
+That changes what the unchanged code guarantees. VELDO-0036 AC3 says a cancellation without
+conclusive usage or evidence of non-execution cannot free the allocation. A capped run is such a
+cancellation, and this design lets the next invocation in on its incomplete tokens and messages. The
+owner approved that one exception (Telegram 40822) and AC10 states it. Its limits:
+
+Only phase_cap with the final classified outcome cancelled settles observed lower bounds for
+admission. All other incomplete reports retain today's unknown usage. Caps/windows continue to
+enforce recorded charges; they no longer bound unobserved consumption of phase-capped invocations.
 
 ### Component view
 
@@ -157,9 +171,10 @@ role, before any dispatch is made, in each of these cases:
 An absent phase object means the defaults.
 
 The last case is the size envelope (D5). The worst-case skeleton is the payload the last allowed
-dispatch could need with everything cuttable already cut: the proof phase, dispatches minus 1 done
-entries each with an empty note, an empty remains list, state.missing with its longest value, and
-the build's real producer, spec revision, unit and limits. It is measured the way section 4.4
+dispatch could need with everything cuttable already cut: the phase whose OUTPUT encodes longest
+(all three are measured, not assumed), dispatches minus 1 done entries each with an empty note and
+the longest phase name, an empty remains list, state.missing with its longest value, and the build's
+real producer, spec revision, unit and limits. It is measured the way section 4.4
 measures a payload. With the default-size fixed fields and the text limits above, a done entry with
 an empty note costs 79 bytes, so the preflight passes up to roughly 39 dispatches and refuses
 beyond; an unusually long producer identity lowers that. There is no separate numeric maximum: the
@@ -207,7 +222,9 @@ the clone happens before Runner.wait retires it (175 to 181):
    then _head, then _import when the head differs from the revision, and returns result None with
    the ending phase_cap.
 3. Otherwise: today's refusal, unchanged (the record's refusal, or unknown_outcome:engine). A
-   refusal the ledger made at admission arrives here under the ledger's own name.
+   refusal the ledger made at admission arrives here as the dispatch record's whole refusal text:
+   the receiver's prefix missing_authority:allowance: followed by the ledger's name
+   (control_launch.py 1961 to 1962, control_launch_work.py 165 to 166).
 
 **bound(record, reference)** is the first half of today's artifact function: read the file the
 reference names, check its digest against the record's artifact digest and its dispatch id against
@@ -288,23 +305,41 @@ It is called after Meter.close. It returns three things:
 
 | Key | Claude Code | Codex |
 | :- | :- | :- |
-| usage | tokens and messages of Meter.cumulative: the latest usage of each distinct assistant message id, summed, and the number of those ids (1092 to 1099) | tokens and messages of Meter.cumulative: the usage of the completed turns, summed, and their number (343 to 344) |
-| lower_bound | The units Meter.final does not give: both when no result line was read, tokens alone when the result line had no token total, none when it had one | Both, unless every turn that opened also completed with valid usage; then none |
-| in_flight | None. The stream does not show a request in flight | 1 when a turn was open or broken at the stop, else 0 |
+| usage | Meter.cumulative as it is (1092 to 1099): tokens is the larger of two numbers, the sum of the latest usage of each distinct assistant message id and the result line's token total when it has a usable one; messages is the larger of the number of those ids and the result line's turn count. A result line can arrive in the output drained after the stop began, and it is counted | Meter.cumulative as it is (343 to 344): the usage of the completed turns, summed, and their number. Both are 0 when no turn completed |
+| lower_bound | The units Meter.final does not give after close (1101 to 1107): both when no result line was read, tokens alone when the result line had no token total, none when it had one | The units Meter.final does not give after close. final gives both only when at least one turn completed with valid usage, no turn is open and no turn was ever broken (346 to 347). In every other case it gives neither, so both are lower bounds. A run with no completed turn is one of those cases |
+| in_flight | None. The stream does not show a request in flight | 1 when a turn is open after close, else 0. It is the meter's open indicator and nothing more |
 
-A Codex turn in flight has printed no usage, so its lower bound is 0 tokens and nothing is added
-for it; in_flight says that the turn existed. Meter.cumulative, Meter.final and the live reports do
-not change.
+observed takes its usage from Meter.cumulative and never from a fresh sum over the message map. A
+fresh sum could fall below a figure a live report already committed, and the ledger refuses a final
+report that does (usage_regressed, control_reservations 385 to 386).
 
-**Metering.settle(termination, cause)** adds phase_cap to the causes at 2702, keeping the deadline
-and account-limit precedence. Its order stays as it is today and gains three steps:
+in_flight is not a count of every turn the figures miss. The Codex meter also keeps a sticky mark
+for a turn that failed, or that completed without valid usage, earlier in the run (393 to 410). That
+mark makes both units lower bounds, but such a turn is closed and is not counted in in_flight. A
+Codex turn in flight has printed no usage, so nothing is added for it; in_flight says that the turn
+existed.
 
-1. Close the meter, decide the outcome, write the artifact (Metering._artifact, 2708). The artifact
-   is written before the final report, today and after this change.
-2. New: when the cause is phase_cap and the outcome is cancelled, the usage of the final report is
+Meter.cumulative, Meter.final and the live reports do not change. The Codex meter's session() keeps
+tokens None while final gives no total (349 to 355), so a lower bound never becomes the baseline of
+a resumed session.
+
+**Metering.settle(termination, cause)** adds phase_cap to the causes at 2702. Its order stays as it
+is today and gains three steps:
+
+1. Close the meter and decide the outcome with today's precedence: a deadline stop is timeout
+   whatever the cause (2698), then the cause, then the artifact's completeness, then the
+   account-limit classification (2710). The artifact is written in this step (Metering._artifact,
+   2706), before the final report, today and after this change.
+2. New: the usage is chosen after step 1, not before it as today (2696). Only when the cause is
+   phase_cap and the classified outcome is cancelled, the usage of the final report is
    Meter.observed's usage with invocations and wall_seconds, and the report carries the settlement
-   mark of section 4.7. For every other cause, and for a run its deadline stopped, the usage is
-   Meter.final's, as today, and there is no mark.
+   mark of section 4.7. A capped run that its deadline also stopped ends timeout, and one that its
+   account's limit stopped ends account_limit; neither takes this branch. In every other case the
+   usage is Meter.final's with invocations and wall_seconds, as today, and settle passes no
+   settlement argument at all, so the report's payload is today's. The units final gives settle and
+   the units it does not give stay unknown. A requested stop, a usage-cap stop or a deadline stop is
+   therefore not always unknown: if the engine had already printed a valid total, that total
+   settles, today and after this change.
 3. Send the final report to the ledger (guard.observe, 2713), catching what it catches today.
 4. New: read back the invocation's record and, when it holds a committed final report, call the new
    private method Metering._record(record, outcome, now).
@@ -319,26 +354,38 @@ else in the guard changes.
 
 **Reservations.report(..., settlement=None)** in control_reservations.py refuses invalid_input, the
 name it already uses for a malformed report, unless all of these hold: the report is final; its
-outcome is cancelled; its usage carries tokens and messages; the mark is an object with exactly the
-keys at, cause, lower_bound and in_flight; at is the word stop; cause is in SETTLED_AT_STOP;
-lower_bound is a list without repeats drawn from tokens and messages; in_flight is None or an
-integer of at least 0 (a boolean is not one). The mark goes into the report's payload. The report
-action stores it on the invocation record as settlement, the way it stores session and limit (395
-to 398). The rest of the action is today's: the figures raise the charge, a final report takes
-each unit it carries out of the unknown list, and the record's state becomes settled.
+outcome is cancelled; its usage carries tokens, messages, invocations and wall_seconds; the mark is
+an object with exactly the keys at, cause, lower_bound and in_flight; at is the word stop; cause is
+in SETTLED_AT_STOP; lower_bound is a list without repeats drawn from tokens and messages; in_flight
+is None or an integer of at least 0 (a boolean is not one). All four units are required because the
+ledger settles a record only when its final report also carries invocations and wall_seconds (413 to
+414). With them, every marked report that commits settles its record.
+
+The mark goes into the report's payload only when one is given. A report without one has today's
+payload, so the replay and conflict comparison of existing reports (378 to 382) does not change. A
+replay of a marked report at the same sequence must carry the same mark; a changed or dropped mark
+is report_conflict by that same comparison. The report action stores the mark on the invocation
+record as settlement, the way it stores session and limit (395 to 398). The ledger accepts a later
+report with a higher sequence after a final one, and such a report replaces the stored mark only if
+it carries one of its own. The rest of the action is today's: the figures raise the charge, a final
+report takes each unit it carries out of the unknown list, and the record's state becomes settled.
+The figures are cumulative for the invocation, never increments.
 
 The mark gives the receiver no new power. A final report with tokens and messages settles a record
-today, whoever sends it under the receiver's authority. The mark makes a lower bound visible as
-one, where without it the figures would read as a total.
+today, whoever sends it under the receiver's authority, and the ledger still accepts such a report
+without a mark: it cannot tell a lower bound from a total in a caller's numbers. The design's
+guarantee is narrower. The new receiver path always sends the mark with observed figures, and the
+ledger validates a mark when one is present.
 
 **run_tokens_directory(config)** in control_launch.py returns the configured path or run_tokens
 beside the store. Metering._record, the pruning and run_tokens all call it, so the rule exists once.
 
 **run_tokens(config)** in control_launch.py returns a list of record dicts, newest ended_at first,
 ties ordered by invocation. A file counts as a record only when it can be read, is a JSON object,
-has the right schema, has ended_at as a number (not a boolean), has invocation as text, and has
-tokens and messages each a number or null. Every other file is skipped. A directory that does not
-exist gives an empty list. The reader never raises on a file's content.
+has the right schema, has ended_at as a finite number of at least 0 (not a boolean, not NaN or an
+infinity), has invocation as text, and has tokens and messages each such a number or null. Every
+other file is skipped. A directory that does not exist gives an empty list. The reader never raises
+on a file's content.
 
 **Reporter._run_tokens(eid, entry, prior, state)** in control_telegram_report.py has the signature
 of every REGISTRY handler and returns a fact dict or None. REGISTRY gains the row run_over_tokens,
@@ -583,26 +630,40 @@ also recorded under an id made of the event, the domain, the repository, the own
 sequence and the source entity (report_id, 223 to 226), so a second pass over the same journal row
 sends nothing more. The two rules together give at most one report per invocation.
 
-Then (D4):
+The cases are tried in this order, and the first that matches decides (D4):
 
 | Case | Result |
 | :- | :- |
 | The outcome is not_executed | None. The ledger settles such a record with all usage zero and nothing unknown |
 | tokens is in the record's unknown list | Fact: tokens unknown. When the charge holds a live figure the text adds "at least" and the figure |
+| The record carries settlement, tokens is in its lower_bound, and its in_flight is an integer of at least 1 | Fact: total unknown. The text says "at least N tokens recorded; turn in flight; total unknown", where N is the charged tokens. It is sent when N is 0 and when N is under the threshold |
 | The record carries settlement, and its tokens are above RUN_TOKENS_FLAG | Fact: over the threshold. The text says "at least" before the tokens |
 | The record carries settlement, and its tokens are at or below RUN_TOKENS_FLAG | None |
 | tokens is known, with no settlement, and above RUN_TOKENS_FLAG | Fact: over the threshold |
 | tokens is known, with no settlement, and at or below RUN_TOKENS_FLAG | None |
 
-"Unknown" is the ledger's word: the unit is still in the record's unknown list after its final
-report. A run settled at stop is not in that state, so a capped run is not reported for being
-capped. A run that ends at its deadline, or whose stream ends without a total, is still unknown and
-is still reported.
+The second and third cases are one test in the handler, total unknown, with two operands. In the
+second the ledger itself says so: the unit is still in the record's unknown list after its final
+report. In the third the ledger's list is empty, because the run was settled at stop, but a turn was
+open and printed no usage, so the settled figure says nothing about the total. This is what the
+owner approved in Telegram 40816, that a run whose tokens are unknown is reported, and AC5 as
+amended at 59ec3d52 requires it.
+
+A run settled at stop with no turn in flight is judged by its figure, so a capped Claude Code run
+under the threshold is not reported for being capped. A capped Codex run is different. A Codex step
+is an item inside an open turn, so the cap is always reached with a turn open, and the run is
+reported unless that turn completes in the output drained after the stop. The owner hears once about
+each capped Codex dispatch.
+
+A run stopped for any other cause goes through Meter.final as today. The units final does not give
+stay unknown and the run is reported; a run whose engine had already printed its total is settled
+and judged by it.
 
 The fact has the keys every handler returns: unit (the record's context unit), run (the record's
 dispatch), project (the context project), headline, fact, next and evidence (None). The fact text
 names the unit, the dispatch, the tokens, the messages and the threshold. The unknown text says the
-tokens are unknown and gives the messages if the ledger has them.
+tokens are unknown and gives the messages if the ledger has them. The in-flight text gives the
+messages too.
 
 The flag reads the ledger, not the token file, so a token file that failed to write does not
 silence it.
@@ -617,7 +678,7 @@ ledger's invocation record under the key settlement. Nothing else stores it.
 | at | stop | The record was settled because Veldo stopped the run, from what the meter had seen |
 | cause | phase_cap | Why Veldo stopped it. SETTLED_AT_STOP holds the causes the ledger accepts |
 | lower_bound | A list drawn from tokens and messages | The units whose figure in the charge is a lower bound and not a total |
-| in_flight | None, or an integer | Codex: the turns open at the stop, 0 or 1, for which no usage was printed. Claude Code: None |
+| in_flight | None, or an integer | Codex: 1 when a turn was open at the stop and printed no usage, else 0. Claude Code: None |
 
 The figures themselves are not in the mark. They are the tokens and messages of the final report's
 usage, and the ledger keeps them in the record's charge, where balances, caps and windows already
@@ -625,18 +686,44 @@ read them. So the record of a run settled at stop looks like this: state settled
 list, outcome cancelled, the charge holding the observed tokens and messages, and settlement saying
 which of the two are lower bounds.
 
-How a lower bound is shown. In the ledger: the unit's name in settlement.lower_bound. For a Codex
-turn in flight: settlement.in_flight is 1, and the bound for that turn is 0 tokens, which is why
-nothing was added. In the Telegram report: the words "at least" before the figure (section 4.6).
-The run token record shows the figure alone.
+How a lower bound is shown. In the ledger: the unit's name in settlement.lower_bound, and for a
+Codex turn in flight settlement.in_flight 1. In the Telegram report: the words "at least" before the
+figure, and for a turn in flight the report of section 4.6 that says the total is unknown. The run
+token record shows the figure alone.
 
-What the figures leave out. For Claude Code: a request that was in flight at the stop, and any
-usage of a message whose line never reached the receiver. For Codex: the whole turn in flight. A
-Codex run stopped inside its first turn has no completed turn, so its settled tokens and messages
-are 0, both named as lower bounds, with in_flight 1. That is the smallest figure the ledger can
-hold, and it is what the owner's decision gives such a run: the ledger admits the continuation, and
-the flag, which judges the figure, stays quiet. The step cap bounds what such a run can have used,
-since it was stopped after at most the cap's steps and the output already in the pipe.
+What the figures leave out. For Claude Code: a request that was in flight at the stop, and any usage
+of a message whose line never reached the receiver. For Codex: the whole turn in flight. A Codex run
+stopped inside its first turn has no completed turn, so its settled tokens and messages are 0, both
+named as lower bounds, with in_flight 1. The record then says at least 0. It does not say the run
+used nothing. The ledger admits the continuation on that figure, which is the owner's decision
+(Telegram 40822), and the flag reports the run once as total unknown.
+
+Nothing in this design bounds what an open turn used. The step cap counts observable work items at
+chunk boundaries, with the overshoot of the drain. It gives no number of tokens per item and sees
+none of the work of a child agent (D1). The Codex stream this repository reads carries usage only on
+a completed turn, so there is no figure to read mid-turn, and the design puts no estimate from
+elapsed time or item count in its place.
+
+**The exception, stated once.** Only phase_cap with the final classified outcome cancelled settles
+observed lower bounds for admission. All other incomplete reports retain today's unknown usage.
+Caps/windows continue to enforce recorded charges; they no longer bound unobserved consumption of
+phase-capped invocations.
+
+**What the ledger's other readers show for a capped run.** None of them reads settlement, and this
+spec does not change them:
+
+- Balances add up the charge alone (control_reservations 114 to 125). A capped run counts for its
+  observed figure and no more.
+- The Usage screen's data (control_accounts.usage, 394 to 417) shows a remaining allowance as
+  unknown only for a unit in some record's unknown list, and counts a call as open only in state
+  pending or unknown. A capped run is in neither state. So the screen shows a numeric remaining
+  allowance that does not include what the run used unseen, and shows no open call for it.
+- A window refresh keeps as outstanding only the invocations in state pending or unknown
+  (control_reservations 421 to 425). A capped run accepted before the refresh is dropped from the
+  window's count like any settled run, with its unseen use.
+
+The lower-bound mark is therefore visible in the invocation record and in the Telegram report, and
+nowhere else. The spec leaves the Usage screen alone, so this limitation ships with the change.
 
 ## 5. Data flows of one build
 
@@ -668,7 +755,8 @@ the contract's source commit, the receiver runs the engine, settles and records 
 3. take begins the stop with that cause. The stop is today's: a termination signal to the engine's
    process, then to its group, then a kill, on the configured graces. Output already in the pipe is
    still metered, so the final count can pass the cap.
-4. Receiver._finish calls Metering.settle with the cause. The outcome is cancelled. The artifact
+4. Receiver._finish calls Metering.settle with the cause. The outcome is cancelled, unless the
+   deadline or the account's limit also stopped the run (section 3.1). The artifact
    document is written with verdict stopped and the cause phase_cap, and is not complete. Then the
    final report goes to the ledger with the figures Meter.observed gives and the settlement mark.
    The ledger takes tokens and messages out of the record's unknown list and the record is
@@ -686,26 +774,37 @@ the contract's source commit, the receiver runs the engine, settles and records 
 ### 5.2a Admission of the next dispatch after a cap
 
 The capped run's invocation record is settled, with nothing unknown. The ledger's admission check
-(control_reservations 143 to 176), unchanged, then decides the next invocation on the figures:
+(control_reservations 143 to 176), unchanged, then decides the next invocation on the figures. It
+visits the account's policy first, then the project's, then the unit's (SCOPES, 21; 130 to 141), and
+within one policy its caps before its windows (149 to 172):
 
 | Policies that match the unit's context | Next dispatch |
 | :- | :- |
 | No cap on tokens or messages and no window in those units | Admitted. The phase continues as in 5.3 |
 | A cap on tokens or messages, with the balance under it | Admitted |
-| A cap on tokens or messages, with the balance at or over it | Refused usage_cap, naming the scope and the unit. The cap is really used up |
+| A cap on tokens or messages, with the balance at or over it | Refused missing_authority:allowance:usage_cap:<scope>:<unit>. The recorded charge has used the cap up |
 | A window whose unit is tokens or messages, with room left | Admitted |
-| Such a window with no room left | Refused window_exhausted |
+| Such a window with no room left | Refused missing_authority:allowance:window_exhausted |
 
-At 6ee5bb5f the second and fourth rows are refusals: a stopped run leaves tokens and messages
-unknown, and the ledger refuses unknown_allowance or unknown_window_usage (suite 75's rows at 1434
-to 1483). The row phase/settled-at-stop pins the new behavior for both.
+Only phase_cap with the final classified outcome cancelled settles observed lower bounds for
+admission. All other incomplete reports retain today's unknown usage. Caps/windows continue to
+enforce recorded charges; they no longer bound unobserved consumption of phase-capped invocations.
 
-A refusal in the third or fifth row reaches _run as path 3 and Runtime.build stops with it, under
-the ledger's name. Nothing is retried. The capped run's commits are already imported.
+At 6ee5bb5f the second and fourth rows are refusals. A stopped run leaves tokens and messages
+unknown, and the next dispatch is refused missing_authority:allowance:unknown_allowance:<unit> under
+a cap or missing_authority:allowance:unknown_window_usage under a window (suite 75's rows at 1434 to
+1484 compare the first of these whole). The row phase/settled-at-stop pins the new behavior for
+both.
 
-Because the figures are lower bounds, the balance the ledger compares is a lower bound too. A cap
-on tokens can be passed by what stopped runs used after their last counted line. With Claude Code
-that is the requests in flight at the stop. With Codex it is the turn in flight (section 4.7).
+A refusal in the third or fifth row is made after the continuation's dispatch was prepared and
+accepted (control_launch.py 1517 to 1537), so that dispatch has a record, in state refused, with no
+engine started. The refusal reaches _run as path 3 and Runtime.build stops with the record's whole
+refusal text. Nothing is retried. The capped run's commits are already imported.
+
+Because the figures are lower bounds, the balance the ledger compares is a lower bound too. A cap on
+tokens can be passed by what stopped runs used after their last counted line. With Claude Code that
+is the requests in flight at the stop. With Codex it is the turn in flight, of unknown size (section
+4.7).
 
 ### 5.3 The next phase from the state note
 
@@ -748,13 +847,13 @@ also end sooner than its budget, when a cap or a window is used up (5.2a).
    journal row changing the invocation's subscription_reservation record.
 2. settle reads the record back, writes the token record and prunes.
 3. On the channel's next pass, Reporter.sources walks the journal rows after its cursor. The row
-   reaches _run_tokens, which finds a final report where the record before had none, and a charge
-   above 15,000,000 or tokens still unknown, and returns the fact. For a record settled at stop
-   the charge is the settled figure.
+   reaches _run_tokens, which finds a final report where the record before had none, and one of
+   three things: a charge above 15,000,000, tokens still unknown, or a settlement with a turn in
+   flight. It returns the fact. For a record settled at stop the charge is the settled figure.
 4. Reporter.report stores the report intent, renders and sends it. A later pass finds the report
    recorded and sends nothing, whatever the outcome of the first send, as for every other event.
 
-A run under the threshold with known tokens produces no fact, so nothing is sent and nothing is
+A run under the threshold with known tokens and no turn in flight produces no fact, so nothing is sent and nothing is
 recorded.
 
 ### Sequence: one capped phase and its continuation
@@ -823,12 +922,12 @@ C1 imported (5.2a).
 
 | Failure | What happens | What is lost | Recovery |
 | :- | :- | :- | :- |
-| The settlement cannot be written: the ledger refuses the final report of a capped run, or the store fails | Today's handling of a failed final report: the error name goes on Metering.errors and settle does not try again. The invocation record keeps tokens and messages unknown. No token record is written (run_tokens:unsettled). Under a cap or window on tokens or messages the next dispatch is refused unknown_allowance or unknown_window_usage and Runtime.build stops with that; without one it is admitted | Under such a cap, the rest of the build. The capped run's commits stay imported, without a ref | The ledger's existing handling of an invocation that was not settled. The next Runtime.build call starts from the spec's base |
+| The settlement cannot be written: the ledger refuses the final report of a capped run, or the store fails | Today's handling of a failed final report: the error name goes on Metering.errors and settle does not try again. settle reads the record back (section 4.2). Only when that shows no committed final report does the following hold: the invocation record keeps tokens and messages unknown, and no token record is written (run_tokens:unsettled). Under a cap or window on tokens or messages the next dispatch is then refused missing_authority:allowance:unknown_allowance:<unit> or missing_authority:allowance:unknown_window_usage and Runtime.build stops with that; without one it is admitted | Under such a cap, the rest of the build. The capped run's commits stay imported, without a ref | The ledger's existing handling of an invocation that was not settled. The next Runtime.build call starts from the spec's base |
 | The mark is malformed | Reservations.report refuses invalid_input and nothing commits. Same as the row above | Same | A defect in the receiver, not an operating condition |
-| A Codex run is stopped at the cap before any turn completed, so the meter has no figure | It is settled with tokens 0 and messages 0, both in lower_bound, in_flight 1. The next dispatch is admitted. The flag judges 0 and sends nothing | The ledger does not count what that turn used | None in this spec. Section 4.7 says what bounds the amount |
-| A run is killed or dies before the meter saw anything, for a cause other than the cap | Not a capped run: the cap needs counted steps. No settlement at stop. Its final report carries no tokens or messages and the record stays unknown, as today. The flag reports it as unknown | Nothing new | Today's handling of an unknown invocation |
+| A Codex run is stopped at the cap before any turn completed, so the meter has no figure | It is settled with tokens 0 and messages 0, both in lower_bound, in_flight 1. The next dispatch is admitted. The flag sends one report: at least 0 tokens recorded; turn in flight; total unknown | The ledger does not count what that turn used, and nothing bounds it | None in this spec. The owner is told once per such run |
+| A run is stopped or dies for a cause other than the cap | No settlement at stop. Its final report carries what Meter.final gives. When the engine printed no total that is nothing, the record stays unknown, and the flag reports it as unknown. When the engine had already printed a valid total, that total settles, as today | Nothing new | Today's handling of an unknown invocation |
 | The receiver's process dies between the stop and the final report | No final report is sent. The invocation stays pending, as today when a receiver dies | Under a cap on tokens or messages, the rest of the build | Today's handling of a pending invocation |
-| The settled figures use up a cap or a window (5.2a) | The next dispatch is refused usage_cap or window_exhausted and Runtime.build stops with it | The rest of the build. The commits stay imported | The owner raises the cap, or the window resets |
+| The settled figures use up a cap or a window (5.2a) | The next dispatch is refused missing_authority:allowance:usage_cap:<scope>:<unit> or missing_authority:allowance:window_exhausted, its dispatch record is in state refused, and Runtime.build stops with it | The rest of the build. The commits stay imported | The owner raises the cap, or the window resets |
 | The overrides are invalid, or the worst-case brief skeleton does not fit | Runtime.limits refuses missing_authority:worker_configuration/build with the detail, before any dispatch | Nothing | Correct the worker configuration |
 | A phase is stopped in the middle of a commit | Git moves the branch only after the commit object exists, so the ref names either the old commit or the new one, and _head reads whichever it is. If the object store was left in a state the copy or the fetch cannot use, _import refuses with today's name | The work of the commit that did not finish; in the refused case, the capped run's commits | The next dispatch starts from the commit the ref names. In the refused case the build stops and the next Runtime.build call starts from the base |
 | The stopped clone's head cannot be read (a link, a linked directory above the ref, a ref outside refs/heads, an oversize file, no matching packed line, a reftable clone) | _head refuses invalid_input:build_head. Runtime.build stops with that refusal. No next dispatch is made | The capped run's commits are not imported | None in this build. The next Runtime.build call for the unit starts again from the spec's base |
@@ -878,9 +977,17 @@ so a mutant that removes the cap ends at the deadline quickly.
 
 **The settled mode.** The row phase/settled-at-stop uses the capped mode with one addition for
 Codex: the stand-in first prints one whole turn, opened, completed and carrying usage, and then
-opens the turn it is stopped in. Its fixture project has a policy with a cap on tokens and a cap on
-messages, both far above what the stand-in prints, and its account has a window whose unit is
-tokens with room left. They are set through the ledger's own configure and window calls.
+opens the turn it is stopped in. A second Codex variant has no completed turn, so the run is stopped
+inside its first. Neither variant prints an event outside the recorded exec table: no token count
+event exists there, and inventing one would prove nothing about production. The fixture policies are
+set through the ledger's own configure and window calls, in four variants:
+
+- Combined, the spec's set: the project's policy caps tokens and messages far above what the
+  stand-in prints, and the account has a window whose unit is tokens with room left.
+- Cap only: the project's caps, no window in tokens or messages.
+- Window only: the account's window, no cap on tokens or messages.
+- Used up: a cap on tokens that the stand-in's completed turn reaches, and separately a tokens
+  window that it empties.
 
 **Prefixes.** The three suites print one hard-coded prefix each: VELDO-0129, VELDO-0062 and
 VELDO-0128. Appending the new rows would print them under those. Each suite gets one lookup from
@@ -889,9 +996,49 @@ unavailable line in 82, the expect line). The ten new row names map to VELDO-029
 row falls back to the suite's own prefix, so no existing row's text changes. The nineteen mutation
 cases are registered under spec 294 and name their rows as printed, with the VELDO-0294 prefix.
 
-**The ledger's own suites.** The report gains an optional argument and the record an optional
-field. Suite 58 and the other suites that drive control_reservations are run unmodified after the
-change; a row that compares a whole record or a whole report payload would show there.
+**The ledger's own suites, and the rows at risk.** Only phase_cap with the final classified outcome
+cancelled settles observed lower bounds for admission. All other incomplete reports retain today's
+unknown usage. Caps/windows continue to enforce recorded charges; they no longer bound unobserved
+consumption of phase-capped invocations.
+
+Suite 58 and the existing rows of suite 75 stay unmodified, and so does suite 78. They stay green
+only if the change is confined to phase_cap, and they are run twice: after the ledger change, and
+again after the receiver sends marked reports (section 11). The first run alone proves nothing about
+the receiver, because the new argument is unused then. What each must still show:
+
+- Suite 58 reservations/usage-controls (180 to 241): unknown caps and windows still block an
+  ordinary incomplete call, and exhaustion and refreshed outstanding usage still count.
+- Suite 58 reservations/settles-once (243 to 256) and suite 75 settle/once (1241 to 1286): exact
+  replay, conflict, totals and receipts. A report without a mark keeps today's payload.
+- Suite 58 reservations/unknown-retained (258 to 268) and reservations/partial-final-retained (270
+  to 281): an empty final report for timeout, cancelled or no outcome keeps the allocation and the
+  unknown state, and a missing final wall total keeps the larger of reserved and observed.
+- Suite 58 reservations/pre-call-order (ends 178) and reservations/report-failure-stops (283 to
+  325): authorization, the reservation before launch, and reporting that fails closed.
+- Suite 75 settle/missing-retained (1434 to 1449), settle/timeout-retained (1451 to 1466) and
+  settle/cancel-retained (1468 to 1484): a missing total, a deadline stop and an owner's
+  cancellation each stay unknown and refuse the next engine. None of them uses phase_cap.
+- Suite 75 settle/model-usage (1289 to 1326), settle/resumed-delta and settle/resumed-other-session
+  (1329 to 1432): Meter.final and the session figures are untouched, and no lower bound reaches
+  session().tokens.
+- Suite 75 usage/allowance-states, usage/cap-stops-worker and usage/rate-limit-reset (1041 to 1061,
+  1095 to 1112, 1115 to 1239): admission on unknown usage, the live usage-cap stop, and the account
+  window refusal. A usage cap already chosen as the stop cause is not replaced by phase_cap.
+- Suite 75 attribution/stored-account and attribution/measurement-removed (1487 to 1556): totals and
+  the unknown remainder for the old cases.
+- Suite 78 limit/stream-exhausted, limit/rate-limit-result and limit/claude-rejected-texts (833 to
+  924): the account-limit outcome is classified before the stop settlement is chosen.
+- Suite 75 format/codex-fake-lines, suite 82 installation/assets and format/fake-lines: the
+  stand-ins print only events of the recorded tables.
+
+These rows do not prove the exception, because none of their cancellations uses the new cause. The
+new coverage sits beside the new rows, with no eleventh row name. In suite 82, phase/settled-at-stop
+checks admission and the refusals when the observed charge uses up a cap or a window (section 8). In
+suite 75, beside the phase_cap invocation of tokens/run-record, two controls run with a build
+payload that carries a phase cap: one stopped on the owner's request and one stopped by its deadline
+after its steps passed the cap. Both must stay unknown with no settlement on the record, write null
+tokens in their token record, and refuse the next invocation
+missing_authority:allowance:unknown_allowance:tokens.
 
 **Suite 72** has rows that compare the registry with the kinds the real writers commit. The new
 event is added to the declared set, to the kind checks and to the real-writer fixture data, with
@@ -922,7 +1069,7 @@ after the unmodified baseline of the same row is green on the synced modules.
 | AC4 | Metering.settle, Metering._record, run_tokens | tokens/run-record (75) | tokens294-record-unwritten | settle: the call to _record |
 | | | | tokens294-unknown-as-zero | _record: the null for an absent tokens value |
 | AC5 | REGISTRY, Reporter._run_tokens | report/run-over-tokens (72) | tokens294-flag-threshold-ignored | _run_tokens: the comparison with RUN_TOKENS_FLAG |
-| | | | tokens294-unknown-not-flagged | _run_tokens: the unknown case |
+| | | | tokens294-unknown-not-flagged | _run_tokens: the total-unknown test of section 4.6, whose two operands are a unit in the unknown list and a settlement with a turn in flight |
 | AC6 | Runtime.build loop, Runtime.limits | phase/budget (82) | phase294-dispatches-unbounded | The loop's check of the dispatch count |
 | AC7 | Metering.settle prune | tokens/pruned (75) | tokens294-never-pruned | settle: the prune call |
 | AC8 | Runtime._head and its file reader | phase/head-read (82) | phase294-head-symlink-followed | _head: the call that reads HEAD through the reader is replaced by a plain read that follows links |
@@ -977,18 +1124,40 @@ What each row has to observe, beyond the spec's wording:
 - phase/settled-at-stop, for each engine:
   - The first dispatch's invocation record is read from the ledger: state settled, an empty unknown
     list, outcome cancelled.
-  - Its charge is compared with figures the row adds up itself from the usage lines in the
-    artifact (read the engine-aware way), never with a number the production code reports. For
-    Codex that is the one completed turn.
+  - Its charge is compared with figures the row adds up itself from the usage lines in the artifact
+    (read the engine-aware way), never with a number the production code reports. For Codex that is
+    the one completed turn, and it is above zero, so an accidental zero cannot pass. The charge
+    alone would not catch the mutant, which keeps the live charge; the state, the mark and the
+    admission do.
   - Its settlement names at stop, cause phase_cap, both units in lower_bound, and in_flight 1 for
-    Codex and None for Claude Code.
-  - The second dispatch has a dispatch record for the same phase, and the stand-in's marker for it
-    shows the engine started. Under the mutant the record keeps tokens and messages unknown, the
-    ledger refuses the second dispatch unknown_allowance:tokens, and neither exists.
-  - The window is part of the same fixture, so the row would also go red on unknown_window_usage
-    if only the cap were satisfied.
-  - Two direct calls of Reservations.report keep the mark honest: a mark on a report that is not
-    final, and a mark whose cause is not in SETTLED_AT_STOP, each refuse invalid_input.
+    Codex and None for Claude Code. In the Codex variant with no completed turn the charge holds
+    tokens 0 and messages 0, both in lower_bound, with in_flight 1.
+  - The continuation is admitted and started: its dispatch record is not refused, an invocation
+    reservation exists for it, and the stand-in's marker for it shows the engine started. A dispatch
+    record alone is not enough, because a refused continuation has one too.
+  - Under the mutant the original invocation remains unknown. The next engine does not start and no
+    next invocation reservation commits. Where the continuation reaches the receiver, its dispatch
+    record is refused with missing_authority:allowance: and the ledger's name, and has no
+    engine-start marker. An account-pool selection may refuse earlier, so the row does not require
+    that record in every configuration.
+  - Which name the mutant's refusal carries depends on the variant (section 7), because of the order
+    the ledger visits policies in (5.2a). Cap only: unknown_allowance:tokens, or messages if the
+    policy lists that unit first. Window only: unknown_window_usage. Combined: the account's policy
+    is visited before the project's, so the window refuses first with unknown_window_usage and the
+    project's cap is never reached, unless the account's own policy caps tokens or messages. The
+    combined variant therefore proves continuation under both together and falsifies only one of
+    them. The cap-only and window-only variants falsify each on its own, and each must be green on
+    unmodified code.
+  - Used up: with the tokens cap reached by the completed turn, the continuation is refused
+    missing_authority:allowance:usage_cap:<scope>:tokens; with the tokens window emptied,
+    missing_authority:allowance:window_exhausted. No engine starts in either.
+  - Direct calls of Reservations.report keep the mark honest. Each of these refuses invalid_input: a
+    mark on a report that is not final; an outcome other than cancelled; a cause not in
+    SETTLED_AT_STOP; usage without tokens, without messages, without invocations or without
+    wall_seconds; a repeated or foreign member in lower_bound; in_flight a boolean or below 0. A
+    replay of a marked report with the same mark commits nothing more, and a replay at the same
+    sequence with the mark changed or dropped refuses report_conflict. A report without a mark
+    stores no settlement key.
 - phase/budget: the fixture's project has an invocations ceiling one above the budget, so the
   mutant that drops the count cannot run forever: it makes a fifth dispatch and then stops on the
   ledger. The row requires the exact code phase_budget:build, the detail naming edit, four dispatch
@@ -1009,10 +1178,15 @@ What each row has to observe, beyond the spec's wording:
 - tokens/pruned: age is judged by the record's ended_at. The 31-day file is given a fresh
   modification time and the 29-day file an old one, so the file's own time cannot make the row
   pass.
-- report/run-over-tokens: the records are written through the real Reservations service, the two
-  settled at stop with a real mark. Beyond the spec's five: exactly 15,000,000 sends nothing; a
-  record whose tokens are unknown with a live figure under the threshold is reported as unknown
-  with "at least"; a non-final report after the final one does not send a second report.
+- report/run-over-tokens: the records are written through the real Reservations service, the four
+  settled at stop with a real mark that names tokens as a lower bound. The fourth and fifth have
+  in_flight 0 and are judged by their figures. The sixth (0 tokens, in_flight 1) and the seventh
+  (9,000,000 tokens, in_flight 1) each send one report whose text says at least 0 and at least
+  9,000,000 tokens recorded, a turn in flight and total unknown. Beyond the spec's seven: exactly
+  15,000,000 sends nothing; a record whose tokens are unknown with a live figure under the threshold
+  is reported as unknown with "at least"; a settlement with in_flight None under the threshold sends
+  nothing; a non-final report after the final one does not send a second report, also for the sixth
+  and seventh.
 
 ## 9. Where the spec and the code disagree, and choices the spec leaves open
 
@@ -1051,13 +1225,18 @@ not_a_file and oversize cases of AC9 cannot be met otherwise. The spec's prose s
 read "with P.blob"; the read still ends in the same Git call, behind those two checks.
 
 **D4. What "unknown" means for the flag.** In the ledger, unknown means the unit is in the record's
-unknown list after its final report. Revision 2 built that meaning and so reported every capped
-run, since a capped run never got a total. The owner's decision removes the cause: a capped run is
-settled at stop, is not unknown, and is judged by its figure (section 4.6). A run with no figure,
-one that ends at its deadline or whose stream ends without a total, is still unknown and still
-reported. One consequence is accepted with the decision: a Codex run stopped inside its first turn
-settles 0 tokens and is not reported, whatever that turn used. AC4 is not affected: it asks for the
-charge, and null only where the charge holds nothing.
+unknown list after its final report. Revision 2 built that meaning and so reported every capped run,
+since a capped run never got a total. The owner's decision removed the cause: a capped run is
+settled at stop and judged by its figure. Revision 3 followed that to its end and let a Codex run
+stopped inside its first turn settle 0 tokens and go unreported. That turned a figure nobody
+measured into silence, against what the owner approved in Telegram 40816. AC5, amended at 59ec3d52,
+closes it: a settlement with a turn in flight is reported once as total unknown, whatever its figure
+(section 4.6). The other cases stand. A settlement with no turn in flight is judged by its figure. A
+run stopped for another cause is unknown wherever Meter.final gives no total, and is reported. The
+spec's mutant list is unchanged: tokens294-unknown-not-flagged removes the whole total-unknown test,
+so no registered mutant removes the in-flight operand alone, and the row asserts the two in-flight
+cases directly. A mutant for that operand alone would need a line in the spec. AC4 is not affected:
+it asks for the charge, and null only where the charge holds nothing.
 
 **D5. The 4,096-byte bound is an envelope with a named failure.** In AC2's oversized case, ten
 remains lines of 200 characters take 2,041 bytes and five done entries with 200-character notes
@@ -1119,15 +1298,24 @@ and 40822): fix the cause, and settle the stopped run from what the meter saw. T
 that is built:
 
 - The figures go into the ordinary final report, and the ledger's existing rule settles the record.
-  No second settling path is added to the ledger, and its admission check is not touched.
-- The mark is separate from the figures and is validated by the ledger, so a lower bound cannot be
-  stored without saying that it is one.
-- Only phase_cap settles this way. A run stopped by its deadline, by a usage cap or on request
-  stays unknown as today. Those stops are not Veldo ending a phase on purpose, and widening the
-  rule to them would change VELDO-0036's behavior outside this spec.
+  No second settling path is added to the ledger, and its admission check is not edited.
+- The mark is separate from the figures. The new receiver path always sends it with observed
+  figures, and the ledger validates it when it is present. The ledger cannot do more: its report
+  still accepts an unmarked final report with figures, from the same authority as before.
+- Only phase_cap settles this way. Every other cause goes through Meter.final as today, and the
+  units it does not give stay unknown. Those stops are not Veldo ending a phase on purpose, and
+  widening the rule to them would change VELDO-0036's behavior outside this spec.
 
-The cost is the one revision 2 named: the figures are lower bounds, so a cap can be passed by what
-stopped runs used unseen. Section 5.2a gives the size per engine.
+This is an exception to VELDO-0036 AC3, which lets no cancellation without conclusive usage free its
+allocation. It is not a reading of that rule under which nothing changed. Only phase_cap with the
+final classified outcome cancelled settles observed lower bounds for admission. All other incomplete
+reports retain today's unknown usage. Caps/windows continue to enforce recorded charges; they no
+longer bound unobserved consumption of phase-capped invocations.
+
+The cost: the figures are lower bounds, so a cap can be passed by what stopped runs used unseen, and
+for a Codex turn in flight that amount has no bound in this design. Balances, the Usage screen and a
+window refresh show the capped run as an ordinary settled one (section 4.7). The owner is told
+through the flag (section 4.6).
 
 Two smaller facts, with no decision needed. Runner.wait retires the slot of a capped run with the
 word failed (control_launch.py 963 to 964), since the record is not a clean exit; the token record
@@ -1136,9 +1324,16 @@ the spec already says.
 
 ## 10. Spec changes
 
-None are open. Revision 2 proposed four, S1 to S4, and all were decided with the owner's approval
-(Telegram 40821 and 40822). The spec's History line of 2026-11-11 records each decision, and the
-spec was amended at 3b6a5a0e.
+Revision 2 proposed four, S1 to S4, and all were decided with the owner's approval (Telegram 40821
+and 40822). The spec's History line of 2026-11-11 records each decision, and the spec was amended at
+3b6a5a0e. The re-validation's R1 needed one more: AC5 was amended at 59ec3d52 to report a settlement
+with a turn in flight.
+
+One wording point is open for the lead and changes nothing in the build. AC10's Red-at sentence says
+the ledger refuses the next invocation unknown_allowance:tokens. With AC10's own set, which has an
+account window, the ledger at 6ee5bb5f visits the account's policy first and refuses
+unknown_window_usage, unless the account's policy caps tokens or messages. The sentence is exact for
+the cap-only variant. Outward, either name follows the prefix missing_authority:allowance:.
 
 ## 11. Build order
 
@@ -1146,11 +1341,14 @@ The rule for every step below: after any edit to an engine/.veldo module, sync i
 before running a suite or a mutant, because both read .veldo.
 
 1. control_reservations.py and control_reservation_runtime.py: the settlement mark and its
-   pass-through. Sync. Run suite 58 and the other ledger suites unmodified before going on.
-2. Engine modules: STOPS, Meter.steps and Meter.observed. Then control_launch.py: the cap check
-   with its station condition, stop_cause, the settle cause, the observed figures and the mark in
-   the final report, the read-back, the token record, pruning, run_tokens and its validation, the
-   remote stop name. Sync.
+   pass-through, with a report that has no mark keeping today's payload. Sync. Run suite 58 and the
+   other ledger suites unmodified before going on.
+2. Engine modules: STOPS, Meter.steps and Meter.observed. Then control_launch.py: the cap check with
+   its station condition, stop_cause, the settle cause, the usage chosen after the outcome is
+   classified, the observed figures and the mark in the final report, the read-back, the token
+   record, pruning, run_tokens and its validation, the remote stop name. Sync. Then rerun the old
+   rows of suites 58, 75 and 78 unmodified (section 7), now that the receiver sends marked reports.
+   Step 1's run cannot stand in for this one, because nothing called the new argument then.
 3. control_launch_work.py, helpers first: stopped_by, bound, the split of _collect, the file
    reader and _head, _state, brief with spec_text and its refusal, limits with the preflight.
    Then _run: the done check on path 1, the capped path as path 2 inside the try block, the third
@@ -1208,3 +1406,31 @@ before running a suite or a mutant, because both read .veldo.
     row and mutant of AC10 (7, 8), and D15 rewritten.
   - S4 is replaced by the same decision: the flag judges a settled figure (4.6, D4).
   - Section 10 has no open items. The build order starts with the ledger (11).
+- Revision 4: revised from Codex's re-validation of revision 3
+  (design-veldo-0294-revalidation-2026-11-11.md, verdict CHANGES). Each correction was checked
+  against the cited code before it was accepted, and the spec's AC5 was amended at 59ec3d52.
+  - R1 accepted. A settlement with a turn in flight is reported once as at least N tokens recorded,
+    turn in flight, total unknown, also for N of 0 (lead, 4.6, 4.7, 6, 8, D4). The claim that the
+    step cap bounds token use is deleted (4.7). Checked: the Codex meter gives no total without a
+    completed turn (346 to 347).
+  - R2 accepted. The exception to VELDO-0036 AC3 is named, with the re-validation's sentence in
+    sections 1, 4.7, 5.2a, 7 and D15, and the effects on balances, the Usage screen and a window
+    refresh are disclosed (4.7). The old ledger rows stay unmodified and are rerun after the
+    receiver changes; the phase_cap admission, refusal and control checks are added (7, 8, 11).
+    Checked at control_reservations 114 to 125 and 421 to 425, and control_accounts 394 to 417.
+  - R3 accepted, with one correction of its own. The refused continuation does have a dispatch
+    record, and the outward refusal carries the prefix missing_authority:allowance:
+    (control_launch.py 1517 to 1537 and 1961 to 1962). But the re-validation says the unknown cap
+    masks the window in the combined fixture. In AC10's set the cap is the project's and the window
+    is the account's, and the ledger visits the account first (SCOPES at 21, 130 to 141), so the
+    window refuses first and masks the cap. The row now has cap-only and window-only variants, which
+    settles it either way (7, 8, 10).
+  - R4 accepted: a mark is accepted only with all four units, so a committed marked report always
+    settles; Claude Code's observed figures include the result line; lower_bound comes from what
+    Meter.final does not give, and in_flight is the open-turn indicator only; other causes use
+    Meter.final and are not always unknown; the outcome is classified before the usage is chosen;
+    the ledger validates a mark when present and cannot label an unmarked bound (3.1, D15).
+  - Also taken from the re-validation's sections 2, 4 and 5: finite non-negative numbers in the
+    token record reader; the preflight measures all three phases; the failure row on a refused
+    settlement depends on the read-back; the mark is absent from a report that has none, and its
+    replay and conflict are tested.
