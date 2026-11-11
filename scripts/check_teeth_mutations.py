@@ -12165,6 +12165,13 @@ def cases():
         "        if data.get('station') == 'turn' and data.get('repository') is None:\n",
         "        if False:  # defect: a released turn index is decided by its cleared dispatch id\n",
         ['AC1/events'])
+    # Re-review 2026-11-11 finding A: the shared account's usage windows served unshaped, so each window observed on
+    # a conversation turn's dispatch names that dispatch (and with it the conversation) to a colleague.
+    add(178, 'account178-window-source-served', suite178, 'control_api_models_scope.py',
+        "        if kind == 'account':\n            return self.account_data(data)\n",
+        "        if False:  # defect: an account's usage windows are served with their source dispatch to anyone\n"
+        "            return self.account_data(data)\n",
+        ['AC1/events'])
     for case in result:
         if case['finding'] == 178:
             case['siblings'] = True
