@@ -13003,6 +13003,64 @@ def cases():
          'p270/guard/remote-push-to-unprotected-branch-passes',
          'p270/guard/remote-delete-unprotected-branch-passes'])
     result[-1]['dir'] = 'packs/claude/hooks'
+
+    # VELDO-0291: suite 86 holds its API port for the run and reports every failed service start. Each
+    # criterion's declared falsifiers. The two port cases mutate the support file the suite loads
+    # (reserved_port); the others mutate the suite's own stand-in manager and adoption row, so the
+    # mutated suite is the copy that runs.
+    s86 = '86_veldo_0189_engine_upgrade.py'
+
+    def port291(name, old, new):
+        add(291, name, s86, 'v171_tailscale.py', old, new, ['port/held-for-the-run'])
+        result[-1]['dir'] = 'scripts/suites/support'
+
+    def start291(name, old, new, row):
+        add(291, name, s86, s86, old, new, [row])
+        result[-1]['dir'] = 'scripts/suites'
+
+    # AC1: the held socket closed before reserved_port() returns, as free_port() leaves it.
+    port291('port291-not-held',
+            "    return held.getsockname()[1], held\n",
+            "    port = held.getsockname()[1]\n"
+            "    held.close()  # defect: nothing holds the port once this returns\n"
+            "    return port, held\n")
+    # AC1: the held socket without SO_REUSEADDR, so no server can bind the port beside it.
+    port291('port291-held-without-reuse',
+            "    held.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n",
+            "    pass  # defect: the held socket does not set SO_REUSEADDR\n")
+    # AC2: a failed start recorded without the bytes it wrote to the unit log.
+    start291('start291-log-tail-dropped',
+             "            if proc is not None and code != 0:\n",
+             "            if False:  # defect: a failed start is recorded without its log tail\n",
+             'start/failure-recorded')
+    # AC2: a wanted unit's start made and not recorded, as before this change.
+    start291('start291-wanted-unit-unrecorded',
+             "                    self.start(link.name)\n",
+             "                    kept = len(self.starts)\n"
+             "                    self.start(link.name)\n"
+             "                    del self.starts[kept:]  # defect: a wanted unit's start is not recorded\n",
+             'start/failure-recorded')
+    # AC2: the tail taken from the last 800 bytes of the whole unit log, earlier starts included.
+    start291('start291-tail-whole-log',
+             "                    handle.seek(offset)\n",
+             "                    handle.seek(0)  # defect: the tail is the whole log's, not this start's\n",
+             'start/failure-recorded')
+    # AC3: without_signer starts the service and does not look at the result.
+    start291('start291-signer-start-unchecked',
+             "                started = code == 0 and not failed\n"
+             "                check(AK, '%s [%s]' % (START_CHECK, '; '.join(start_words(one) for one in failed)), started)\n",
+             "                started = True  # defect: without_signer does not check its start\n",
+             'restart/adoption-start-checked')
+    # AC3: the check is made and the row goes on to the setup run over a host that is not running.
+    start291('start291-row-continues',
+             "                return held if started else None\n",
+             "                return held  # defect: the row goes on after a failed start\n",
+             'restart/adoption-start-checked')
+    # AC3: the failed row's detail built without the start records.
+    start291('start291-detail-without-starts',
+             "        shown = dict(observation)\n",
+             "        shown = dict(observation, starts=[])  # defect: the detail leaves the start records out\n",
+             'restart/adoption-start-checked')
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
     return result

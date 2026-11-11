@@ -23,6 +23,7 @@ is printed.
 
 def _v189_suite():
     import contextlib
+    import errno
     import gzip
     import hashlib
     import importlib.util
@@ -70,6 +71,12 @@ def _v189_suite():
     ROWS += (EQ, RN, PF, AT, ER, EM, CD, WR, RT, RC)
     COMMANDS = 'ownership/restore-commands'
     ROWS += (COMMANDS, AK)
+    # VELDO-0291: the suite holds its API port for the run and reports every failed service start.
+    PH, SF, SC = 'port/held-for-the-run', 'start/failure-recorded', 'restart/adoption-start-checked'
+    V291 = (PH, SF, SC)
+    ROWS += V291
+    START_ERROR = 'the unit did not start'
+    START_CHECK = 'without_signer started the service and every unit it wants'
     rows = {name: [] for name in ROWS}
     adoption_observation = {'starts': [], 'setups': []}
     # The older engines, each the whole .veldo of its commit.
@@ -140,7 +147,8 @@ def _v189_suite():
     prior_path186 = os.environ.get('PATH', '')
     os.environ['PATH'] = str(engines186['path']) + os.pathsep + prior_path186
     H = load('v189_support', ROOT / 'scripts' / 'suites' / 'support' / 'v73_authority.py')
-    TS = load('v189_tailscale', ROOT / 'scripts' / 'suites' / 'support' / 'v171_tailscale.py')
+    # VELDO-0291: the form the registered mutation driver substitutes, so a mutant of reserved_port() is the copy run.
+    TS = load('v189_tailscale', ROOT / "scripts/suites/support" / "v171_tailscale.py")
     _git_process = load('v189_git', mods / 'git_process.py')
     CS = load('v189_service', mods / 'control_service.py')
     CC = load('v189_client', mods / 'control_client.py')
@@ -241,16 +249,38 @@ def _v189_suite():
             import ctypes
             ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)
 
+    def unit_log(unit):
+        """The file every start of `unit` appends its process's output to."""
+        return base / ('unit-%s.log' % unit[:24])
+
+    def start_words(entry):
+        """One start record in words, for a check's label."""
+        return ('unit=%s code=%s error=%s seconds=%s launched=%s exit_code=%s log_tail=%r'
+                % tuple(entry.get(key) for key in ('unit', 'code', 'error', 'seconds', 'launched', 'exit_code',
+                                                   'log_tail')))
+
+    def adoption_detail(words, observation):
+        """What a failed adoption row prints after its false labels: every setup run the row made and every start
+        record the stand-in manager made during it. Row restart/adoption-start-checked reads this same string."""
+        shown = dict(observation)
+        return words + '; observation=' + json.dumps(shown, sort_keys=True)
+
     class Manager:
         """A stand-in for the owner's systemd user manager: start runs a unit's ExecStart (Type=notify waits
         for READY=1) and then every unit its .wants links; stop stops every unit bound to or part of it
         first, with SIGTERM; restart is stop then start, and fails once (the unit left stopped) while
         `fail_restart` is set: before the start, or with `fail_after_start` after the unit came up and was
         stopped again (`came_up` holds that process's pid); show reports the state. `calls` is the invocation log of what setup asked
-        for, the suite's own lifecycle actions calling start and stop directly and never appearing in it."""
+        for, the suite's own lifecycle actions calling start and stop directly and never appearing in it.
+        VELDO-0291: `starts` holds one record for every start made, in the order made and whichever way it was
+        reached (the suite's direct call, setup's start or restart, the start inside a failed restart, each wanted
+        unit): the unit, the code, the error text, the seconds it took, whether a process was launched and its exit
+        code (None while it runs). A failed start that launched a process also holds the last 800 bytes that start
+        wrote to the unit log."""
 
         def __init__(self, unit_dir):
             self.unit_dir, self.procs, self.calls, self.fail_restart = Path(unit_dir), {}, [], 0
+            self.starts = []
             self.fail_after_start, self.came_up = False, []
             self.fail_stop, self.keep_failed_running, self.after_failed_start = False, False, None
             self.lock = threading.Lock()
@@ -302,11 +332,26 @@ def _v189_suite():
                     return self.start(unit)
                 return 0, '', ''
 
+        def record(self, unit, code, error, began, proc=None, offset=0):
+            """Append the record of one start and return what the start answers. `proc` is the process this start
+            launched, None when it launched none; `offset` is the size the unit log had before it."""
+            entry = dict(unit=unit, code=code, error=error, seconds=round(time.monotonic() - began, 3),
+                         launched=proc is not None, exit_code=proc.poll() if proc is not None else None)
+            if proc is not None and code != 0:
+                # The log is shared by every start of the unit, so the tail is read from this start's offset.
+                with open(unit_log(unit), 'rb') as handle:
+                    handle.seek(offset)
+                    entry['log_tail'] = handle.read()[-800:].decode('utf-8', 'replace')
+            self.starts.append(entry)
+            return code, '', error
+
         def start(self, unit):
+            began = time.monotonic()
             if not (self.unit_dir / unit).is_file():
-                return 5, '', 'unit not found'
+                return self.record(unit, 5, 'unit not found', began)
             if any(not self.alive(bound) for bound in self._field(unit, 'BindsTo')):
-                return 1, '', 'a unit it binds to is inactive'
+                return self.record(unit, 1, 'a unit it binds to is inactive', began)
+            proc, offset = None, 0
             if not self.alive(unit):
                 kind = (self._field(unit, 'Type') or ['simple'])[0]
                 env = child_env()
@@ -316,7 +361,8 @@ def _v189_suite():
                 listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
                 listener.bind(str(notify))
                 env['NOTIFY_SOCKET' if kind == 'notify' else 'VELDO_LISTEN_EVENT'] = str(notify)
-                log = base / ('unit-%s.log' % unit[:24])
+                log = unit_log(unit)
+                offset = log.stat().st_size if log.exists() else 0
                 with open(log, 'ab') as out:
                     proc = subprocess.Popen(shlex.split(self._field(unit, 'ExecStart')[0]), env=env,
                                             stdin=subprocess.DEVNULL, stdout=out, stderr=subprocess.STDOUT,
@@ -328,7 +374,10 @@ def _v189_suite():
                     listener.close()
                     notify.unlink()
                 if not ready:
-                    return 1, '', 'the unit did not start'
+                    return self.record(unit, 1, START_ERROR, began, proc, offset)
+            # A wanted unit that fails does not fail the unit that wants it (Wants is the weak dependency); its
+            # failure is in its own record.
+            self.record(unit, 0, '', began, proc, offset)
             wants = self.unit_dir / (unit + '.wants')
             if wants.is_dir():
                 for link in sorted(wants.iterdir()):
@@ -597,7 +646,9 @@ def _v189_suite():
                'concurrency': 1, 'runtime_seconds': 600, 'memory_bytes': 256 << 20, 'cpu_percent': 100,
                'file_bytes': 64 << 20, 'tasks_max': 256, 'stop_grace_seconds': 1, 'kill_grace_seconds': 1}
     ts = TS.stand_in(CAPTURE, sys.executable) if CAPTURE.is_file() else None
-    port = TS.free_port()
+    # VELDO-0291: the API's port, held bound from the kernel's choice of it until this suite's cleanup. Setup writes
+    # it into the API's configuration and the API binds it again at every start; nothing else can between them.
+    port, port_hold = TS.reserved_port()
     adoption_observation['api_port'] = port
     managers, bridges = [], []
 
@@ -1511,9 +1562,25 @@ def _v189_suite():
         # old signers and refuses every adoption while setup reports the factory complete.
         # The row runs in a function of its own: its names (points, at, whole, restarted...) are its own, so the rows
         # after it still read the kill host's whole-run points the kill-point section computed.
-        def adoption_signer_kill():
+        # VELDO-0291: the row's body takes the function its checks go to, the observation it fills and the hook run
+        # before its first without_signer start, so restart/adoption-start-checked can run it over a start that fails.
+        def adoption_signer_kill(check=check, observation=adoption_observation, before_start=None):
+            """Row restart/adoption-signer-kill: its body, then the cleanup, which runs wherever the body ended.
+            `before_start` runs once, before the first without_signer start, and returns what to call after it."""
             serving = fresh.manager.alive(fresh.unit)
-            ak_bridge = Bridge(fresh.manager, base / 'bridge-ak.sock')
+            mark = len(fresh.manager.starts)
+            try:
+                adoption_signer_body(check, observation, [before_start] if before_start else [])
+            finally:
+                fresh.manager.stop_all()
+                restore(saved_fresh)
+                if serving:
+                    ts.set('ready')
+                    fresh.manager.start(fresh.unit)
+                observation['starts'] = fresh.manager.starts[mark:]
+
+        def adoption_signer_body(check, observation, hooks):
+            ak_bridge = Bridge(fresh.manager, base / ('bridge-ak-%d.sock' % len(bridges)))
             bridges.append(ak_bridge)
             ak_log = fresh.home / 'state' / UP.LOG
             ak_key = fresh.root / 'keys' / F.ADOPTION_KEY
@@ -1531,14 +1598,16 @@ def _v189_suite():
                 except (ValueError, IndexError):
                     report = {}
                 reason = report.get('reason') if isinstance(report, dict) else None
-                adoption_observation['setups'].append(dict(at=at, code=done.returncode, reason=reason,
-                                                           seconds=time.monotonic() - began))
+                observation['setups'].append(dict(at=at, code=done.returncode, reason=reason,
+                                                  seconds=time.monotonic() - began))
                 return done.returncode
 
             def without_signer():
                 """The fresh host as a setup from before the adoption signer left it after upgrading it to the current
                 engine: no adoption key, the owner's line alone in both signers files, its service running on that.
-                Returns the number of step-log lines it holds."""
+                Returns the number of step-log lines it holds, or None when the service or a unit it wants did not
+                start (VELDO-0291): the row ends there, since a setup over a host that is not running proves nothing
+                about the adoption signer."""
                 fresh.manager.stop_all()
                 restore(saved_fresh)
                 for path in (ak_key, Path(str(ak_key) + '.pub')):
@@ -1548,11 +1617,18 @@ def _v189_suite():
                     path.write_text(''.join(line for line in path.read_text().splitlines(keepends=True)
                                             if not line.startswith(F.ADOPTION_PRINCIPAL + ' ')))
                 ts.set('ready')
-                began = time.monotonic()
-                code, _, error = fresh.manager.start(fresh.unit)
-                adoption_observation['starts'].append(dict(code=code, error=error,
-                                                           seconds=time.monotonic() - began))
-                return len(ak_log.read_text().splitlines()) if ak_log.is_file() else 0
+                made = len(fresh.manager.starts)
+                after_start = hooks.pop()() if hooks else None
+                try:
+                    code, _, _error = fresh.manager.start(fresh.unit)
+                finally:
+                    if after_start is not None:
+                        after_start()
+                failed = [one for one in fresh.manager.starts[made:] if one['code'] != 0]
+                started = code == 0 and not failed
+                check(AK, '%s [%s]' % (START_CHECK, '; '.join(start_words(one) for one in failed)), started)
+                held = len(ak_log.read_text().splitlines()) if ak_log.is_file() else 0
+                return held if started else None
 
             def engine_step(report):
                 return next((s for s in report.get('steps') or [] if s.get('step') == 'engine_upgrade'), {})
@@ -1561,6 +1637,8 @@ def _v189_suite():
             check(AK, 'the host trust names the state root\'s enrollment signers [%s]' % trust.get('enrollment_signers'),
                   os.path.realpath(str(trust.get('enrollment_signers'))) == os.path.realpath(str(ak_signers[0])))
             held = without_signer()
+            if held is None:
+                return
             ak_owner_only.write_text(ak_signers[0].read_text())
             check(AK, 'the stripped host holds no adoption key and only the owner\'s line, the same in both signers files',
                   not ak_key.exists() and len(ak_owner_only.read_text().splitlines()) == 1
@@ -1576,6 +1654,8 @@ def _v189_suite():
             at = max((i + 1 for i, p in enumerate(points) if p == 'adoption_signers'), default=0)
             if at:
                 held = without_signer()
+                if held is None:
+                    return
                 pid, calls = fresh.manager.pid(fresh.unit), len(fresh.manager.calls)
                 code = killed_fresh(at)
                 after = [json.loads(line).get('point') for line in ak_log.read_text().splitlines()[held:]] \
@@ -1620,14 +1700,237 @@ def _v189_suite():
                 check(AK, 'an adoption is accepted after the next run: the adoption signer\'s binding verifies under the '
                       'signers the restarted service read, and not under those the killed run left it holding [%s %s]'
                       % (restarted, stale), restarted is True and stale is False)
-            fresh.manager.stop_all()
-            restore(saved_fresh)
-            if serving:
-                ts.set('ready')
-                fresh.manager.start(fresh.unit)
 
         with section(AK):
             adoption_signer_kill()
+
+        # VELDO-0291: the three rows below run over the fresh host and leave it as they found it.
+        wanted = fresh.units / (fresh.unit + '.wants')
+        api_unit = next((link.name for link in sorted(wanted.iterdir()) if link.name.startswith('veldo-api-')),
+                        None) if wanted.is_dir() else None
+
+        def api_blocker():
+            """A listening socket on the API port, bound by number with SO_REUSEADDR beside the socket the suite
+            holds. While it listens the API's own bind is refused."""
+            blocker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                blocker.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                blocker.bind(('127.0.0.1', port))
+                blocker.listen(1)
+            except OSError:
+                blocker.close()
+                raise
+            return blocker
+
+        def fresh_stopped():
+            """The fresh host as its setup laid it down, nothing of it running."""
+            fresh.manager.stop_all()
+            restore(saved_fresh)
+            ts.set('ready')
+
+        def fresh_as(serving):
+            """The fresh host as its setup laid it down, its service running if it was."""
+            fresh_stopped()
+            if serving:
+                fresh.manager.start(fresh.unit)
+
+        def fresh_started():
+            """Start the fresh host's service: the code, and the records of every start that made."""
+            made = len(fresh.manager.starts)
+            code, _out, _error = fresh.manager.start(fresh.unit)
+            return code, fresh.manager.starts[made:]
+
+        def running():
+            return fresh.manager.alive(fresh.unit), api_unit is not None and fresh.manager.alive(api_unit)
+
+        # AC1: the port is held from the kernel's choice of it to the cleanup, and the API still binds it.
+        with section(PH):
+            serving = fresh.manager.alive(fresh.unit)
+            try:
+                # A closed socket is reported as closed and never asked for its options: getsockopt on it raises,
+                # and a row red only because its section raised is not evidence.
+                state = 'closed'
+                if port_hold.fileno() != -1:
+                    state = (port_hold.getsockname(), port_hold.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR),
+                             port_hold.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN))
+                check(PH, 'the socket the suite holds is open, bound to 127.0.0.1 at the API port %d, has SO_REUSEADDR '
+                      'set and is not listening [%s]' % (port, state),
+                      state != 'closed' and state[0] == ('127.0.0.1', port) and state[1] != 0 and state[2] == 0)
+                child = base / 'port_child.py'
+                child.write_text(
+                    'import http.server, importlib.util, json, socket, sys\n'
+                    'spec = importlib.util.spec_from_file_location("v291_child_tailscale", sys.argv[1])\n'
+                    'TS = importlib.util.module_from_spec(spec)\n'
+                    'spec.loader.exec_module(TS)\n'
+                    'port, held = TS.reserved_port()\n'
+                    'def plain_bind():\n'
+                    '    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n'
+                    '    try:\n'
+                    '        probe.bind(("127.0.0.1", port))\n'
+                    '        return 0\n'
+                    '    except OSError as error:\n'
+                    '        return error.errno\n'
+                    '    finally:\n'
+                    '        probe.close()\n'
+                    'found = {"port": port, "held_bind": plain_bind()}\n'
+                    'try:\n'
+                    '    server = http.server.ThreadingHTTPServer(("127.0.0.1", port), http.server.BaseHTTPRequestHandler)\n'
+                    '    found["server"] = [server.server_address[1],\n'
+                    '                       server.socket.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN)]\n'
+                    '    server.server_close()\n'
+                    'except OSError as error:\n'
+                    '    found["server"] = "errno %s" % error.errno\n'
+                    'held.close()\n'
+                    'found["released_bind"] = plain_bind()\n'
+                    'print(json.dumps(found))\n')
+                done = subprocess.run([sys.executable, '-B', str(child), TS.__file__], env=child_env(),
+                                      capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+                try:
+                    found = json.loads(done.stdout.strip().splitlines()[-1])
+                except (ValueError, IndexError):
+                    found = {'unparsed': (done.stdout + done.stderr)[-300:]}
+                check(PH, 'in a child process, reserved_port() of the file the suite loaded returns a port that differs '
+                      'from the suite\'s %d [%s]' % (port, found.get('port', found)),
+                      isinstance(found.get('port'), int) and found['port'] != port)
+                check(PH, 'while the child holds its socket, a plain bind of its port without SO_REUSEADDR fails with '
+                      'EADDRINUSE [errno %s]' % found.get('held_bind'), found.get('held_bind') == errno.EADDRINUSE)
+                check(PH, 'while the child holds its socket, a ThreadingHTTPServer binds and listens on its port [%s]'
+                      % (found.get('server'),),
+                      isinstance(found.get('port'), int) and found.get('server') == [found['port'], 1])
+                check(PH, 'after the child closes both, the plain bind succeeds [errno %s]' % found.get('released_bind'),
+                      found.get('released_bind') == 0)
+                fresh_stopped()
+                import resource
+                soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+                need = len(os.listdir('/proc/self/fd')) + 600
+                raised = soft != resource.RLIM_INFINITY and soft < need
+                probes, given = [], []
+                try:
+                    if raised:
+                        resource.setrlimit(resource.RLIMIT_NOFILE,
+                                           (need if hard == resource.RLIM_INFINITY else min(need, hard), hard))
+                    for _ in range(500):
+                        probes.append(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+                        probes[-1].bind(('127.0.0.1', 0))
+                        given.append(probes[-1].getsockname()[1])
+                finally:
+                    for probe in probes:
+                        probe.close()
+                    if raised:
+                        resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+                check(PH, 'with the fresh host\'s service stopped, 500 sockets bound to 127.0.0.1 port 0 and held open '
+                      'together are none of them given the API port [%d bound, %d distinct ports, running %s]'
+                      % (len(given), len(set(given)), running()),
+                      len(given) == 500 and port not in given and running() == (False, False))
+                code, made = fresh_started()
+                check(PH, 'the start that follows succeeds, the API unit with it [%s; running %s; %s]'
+                      % (code, running(), '; '.join(start_words(one) for one in made if one.get('code'))),
+                      code == 0 and running() == (True, True))
+                try:
+                    with socket.create_connection(('127.0.0.1', port), timeout=5):
+                        accepted = True
+                except OSError as error:
+                    accepted = '%s: %s' % (type(error).__name__, error)
+                check(PH, 'a connection to the API port is accepted [%s]' % accepted, accepted is True)
+            finally:
+                fresh_as(serving)
+
+        # AC2: every start is recorded, a wanted unit's too, and a failed record tells a refused bind from a late
+        # start.
+        with section(SF):
+            serving = fresh.manager.alive(fresh.unit)
+            try:
+                fresh_stopped()
+                blocker = api_blocker()
+                try:
+                    code, made = fresh_started()
+                finally:
+                    blocker.close()
+                mine = [one for one in made if one.get('unit') == api_unit]
+                entry = mine[0] if len(mine) == 1 else {}
+                check(SF, 'refused bind: the API unit\'s start is recorded once with code 1, "%s", an exit code and a log '
+                      'tail naming the address in use [%s]'
+                      % (START_ERROR, '; '.join(start_words(one) for one in mine)
+                         or 'no record of %s among %d' % (api_unit, len(made))),
+                      entry.get('code') == 1 and entry.get('error') == START_ERROR
+                      and entry.get('exit_code') is not None
+                      and 'Address already in use' in (entry.get('log_tail') or ''))
+                fresh.manager.stop_all()
+                code, made = fresh_started()
+                check(SF, 'refused bind: with the socket closed and the service stopped, the next start '
+                      'succeeds and its records all carry code 0 [%s; %s]'
+                      % (code, [(one.get('unit'), one.get('code'), one.get('launched')) for one in made]),
+                      code == 0 and all(one.get('code') == 0 for one in made)
+                      and sorted(one.get('unit') for one in made if one.get('launched'))
+                      == sorted([fresh.unit, api_unit or '']))
+                fresh.manager.stop_all()
+                late_units, late_unit = base / 'units-v291-late', 'v291-late-start-fixture.service'
+                late_units.mkdir()
+                (late_units / late_unit).write_text(
+                    '[Unit]\nDescription=VELDO-0291 late start fixture\n\n[Service]\nType=notify\n'
+                    'ExecStart=/bin/sh -c "echo fixture waiting; exec sleep 30"\n')
+                late = Manager(late_units)
+                managers.append(late)
+                unit_log(late_unit).write_text('earlier output\n')
+                code, _out, error = late.start(late_unit)
+                entry = late.starts[0] if len(late.starts) == 1 else {}
+                check(SF, 'late start: the fixture unit\'s start is recorded once with code 1, "%s", no exit code and a log '
+                      'tail equal to "fixture waiting\\n" [%s %s; %s]'
+                      % (START_ERROR, code, error, '; '.join(start_words(one) for one in late.starts) or 'no record'),
+                      code == 1 and error == START_ERROR and entry.get('code') == 1
+                      and entry.get('error') == START_ERROR and entry.get('launched') is True
+                      and entry.get('exit_code') is None and entry.get('log_tail') == 'fixture waiting\n')
+                process = late.procs.get(late_unit)
+                late.stop(late_unit)
+                check(SF, 'late start: the fixture unit is stopped and its process gone [%s]'
+                      % ('never started' if process is None else process.poll()),
+                      process is not None and process.poll() is not None and not late.alive(late_unit))
+            finally:
+                fresh_as(serving)
+
+        # AC3: without_signer checks its start, the row ends at a failed one, and the row's failure detail carries
+        # that start's record. The row's own body runs a second time, its checks recorded here.
+        with section(SC):
+            serving = fresh.manager.alive(fresh.unit)
+            try:
+                fresh_as(True)
+                before = running()
+                recorded, blockers = [], []
+                observation = {'starts': [], 'setups': []}
+
+                def hold_port():
+                    blockers.append(api_blocker())
+                    return blockers[-1].close
+
+                calls = len(fresh.manager.calls)
+                try:
+                    adoption_signer_kill(check=lambda row, label, condition: recorded.append((row, label, bool(condition))),
+                                         observation=observation, before_start=hold_port)
+                finally:
+                    for blocker in blockers:
+                        blocker.close()
+                last = recorded[-1] if recorded else (None, '', None)
+                check(SC, 'the last check the row recorded is the start check, and it is false [%d checks; the last: %s '
+                      '%s]' % (len(recorded), last[1][:120], last[2]),
+                      last[0] == AK and last[1].startswith(START_CHECK) and last[2] is False)
+                label = next((one[1] for one in recorded if one[1].startswith(START_CHECK)), '')
+                check(SC, 'the start check\'s label names the API unit, code 1, "%s" and a log tail holding the refused '
+                      'bind [%s]' % (START_ERROR, label[:300]),
+                      api_unit is not None and 'unit=%s code=1 error=%s ' % (api_unit, START_ERROR) in label
+                      and 'Address already in use' in label)
+                check(SC, 'no setup run was made after it [%d setup(s), %d call(s) to the manager]'
+                      % (len(observation['setups']), len(fresh.manager.calls) - calls),
+                      observation['setups'] == [] and len(fresh.manager.calls) == calls)
+                failed = [one for one in observation['starts'] if one.get('code') != 0]
+                detail = adoption_detail('; '.join(one[1] for one in recorded if not one[2]), observation)
+                check(SC, 'the detail the suite builds for a failed adoption row holds the same record [%d failed '
+                      'start(s) among %d]' % (len(failed), len(observation['starts'])),
+                      len(failed) == 1 and failed[0].get('unit') == api_unit
+                      and json.dumps(failed[0], sort_keys=True) in detail and start_words(failed[0]) in label)
+                check(SC, 'with the port released, the fresh host\'s service runs again as it did before the row [%s '
+                      'then %s]' % (before, running()), before == (True, True) and running() == before)
+            finally:
+                fresh_as(serving)
 
         # AC2 (the review of 2026-09-28): the restart brings the unit up on the current engine, which rebinds the
         # store's ownership declarations to its bytes, and then fails; the switch back runs the current engine's
@@ -2109,6 +2412,8 @@ def _v189_suite():
             cleanup('bridge ' + bridge.path, bridge.close)
         for manager in managers:
             cleanup('manager', manager.close)
+        # After the managers closed every service process: nothing of this run binds the port again.
+        cleanup('API port', port_hold.close)
         cleanup('Bot API', stop_bot_api)
         if ts is not None:
             cleanup('transport', ts.close)
@@ -2126,18 +2431,26 @@ def _v189_suite():
         Path(timing_path).write_text(json.dumps(dict(rows=timings, adoption=adoption_observation,
                                                    seconds=time.monotonic() - started), indent=2) + '\n')
 
+    def expect_291(name, condition):
+        """The rows VELDO-0291 added are reported under its id, never as VELDO-0189 rows."""
+        expect('VELDO-0291 ' + name, condition)
+
+    def expect_189(name, condition):
+        expect('VELDO-0189 ' + name, condition)
+
     for name, observed in rows.items():
+        owner_id, report = ('VELDO-0291', expect_291) if name in V291 else ('VELDO-0189', expect_189)
         ok = bool(observed) and all(one for _, one in observed)
         if not ok:
             for label, one in observed:
                 if not one:
-                    print('  VELDO-0189 %s detail: %s' % (name, label))
+                    print('  %s %s detail: %s' % (owner_id, name, label))
             if not observed:
-                print('  VELDO-0189 %s detail: no check ran' % name)
+                print('  %s %s detail: no check ran' % (owner_id, name))
         detail = '; '.join(label for label, one in observed if not one) or 'no check ran'
         if not ok and name == AK:
-            detail += '; observation=' + json.dumps(adoption_observation, sort_keys=True)
-        expect('VELDO-0189 ' + name + (': ' + detail if not ok else ''), ok)
+            detail = adoption_detail(detail, adoption_observation)
+        report(name + (': ' + detail if not ok else ''), ok)
     print('VELDO-0189 suite seconds: %.3f' % (time.monotonic() - started))
 
 

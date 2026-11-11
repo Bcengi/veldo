@@ -126,3 +126,16 @@ def free_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.bind(('127.0.0.1', 0))
         return probe.getsockname()[1]
+
+
+def reserved_port():
+    """(port, socket): a loopback port the kernel chose, held bound by the returned socket until the
+    caller closes it (VELDO-0291). The socket sets SO_REUSEADDR and never listens, so a server that
+    binds with SO_REUSEADDR (http.server does) can bind and listen on the port beside it, at every
+    start. Every other bind of the number fails with EADDRINUSE, and the kernel gives a bound port
+    to no bind to port 0 and no outgoing connection."""
+    import socket
+    held = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    held.bind(('127.0.0.1', 0))
+    held.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    return held.getsockname()[1], held

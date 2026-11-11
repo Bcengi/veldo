@@ -1,0 +1,51 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 proof/VELDO-0291/heavy_summary.py green-after --runs 1 --name offline-suite; per run: VELDO_ROW_TIMINGS=<scratch file> python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+ "deciding": {
+  "bound": "every run: suite 86 reports no failed row, and each of the three VELDO-0291 rows took time in the row timings file, so it ran. selftest --suite exits 2 by design (a partial run)",
+  "runs": [
+   {
+    "adoption_failed_starts": 0,
+    "adoption_starts": 8,
+    "api_port": 44495,
+    "red_rows": [],
+    "returncode": 2,
+    "row_seconds": {
+     "port/held-for-the-run": 0.4537126978393644,
+     "restart/adoption-start-checked": 1.0799596540164202,
+     "start/failure-recorded": 5.7600517380051315
+    },
+    "run": 1,
+    "suite_failed": 0,
+    "suite_passed": 37,
+    "suite_seconds": 67.01867853896692,
+    "verdict": "green"
+   }
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9400,
+   "name": "green-01.log",
+   "sha256": "82ba01b1195d2c70f6cac18bf94552c1c9a64cb8bc03a27cde17a4e6ab77166a"
+  },
+  {
+   "bytes": 3766,
+   "name": "green-01-rows.json",
+   "sha256": "02e71fa84113a7565c2c7c613fc2e14473a694857959dc6a36f4450c77e1379e"
+  }
+ ],
+ "environment": {
+  "commit": "9a1a4321442d7536dbdf3abab308b3c2fe456d36",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   6.97998046875,
+   14.18212890625,
+   15.51025390625
+  ],
+  "python": "3.12.3",
+  "tree": "9b1f19d706eca5a055d3f393932c562d0568bd88"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
