@@ -30,7 +30,8 @@ observability:
     command of a list or pipeline, the argument or input of a program that is not a plain text tool
     with the program named, text in a command that also names git or gh, or text the guard does not parse with
     the reason named: the construct, a builtin by its name, an assignment by its name, a write the
-    guard reads as git configuration with its path, or a construct in text a program may run). The incident's message gave the builder no way to see which
+    guard reads as git configuration with its path, a construct in text a program may run, or sort
+    with its option that runs a program on its data). The incident's message gave the builder no way to see which
     words had been read as a command.
   metrics: >
     None added.
@@ -67,7 +68,9 @@ acceptance_criteria:
       as one command of a pipeline or list; a push held in a variable that is then run; a push inside a
       function body; a push behind a shell alias or a git alias; a push given as code to an
       interpreter; a push fed as a quoted string or heredoc body to a program one of whose options
-      runs another program, as sort does with its compress program; a push stored by export, read or
+      runs another program, as sort does with its compress program; a push written to a file by a
+      plain text tool in a command that names sort with that option, whatever file sort reads; a
+      push stored by export, read or
       printf -v and run by a later shell; a git alias or
       hook whose text names a push, written by a plain text tool to a path the guard cannot show is
       outside git's configuration, however that path or git is spelled, and used later in the same
@@ -89,7 +92,12 @@ acceptance_criteria:
       command first writes 300 KB of empty lines to D/big with head and tr: cat of a quoted heredoc
       whose body is git push origin main, piped into sort -S 1K -T D --compress-program=sh reading
       standard input and D/big; printf of the quoted push piped into the same sort with the option
-      abbreviated to --compress-prog=sh. The row also runs each command under bash with a recording
+      abbreviated to --compress-prog=sh; printf of the quoted push into D/a, then after ; sort -S 1K
+      -T D --compress-program=sh reading D/a and D/big; the same printf, then after && timeout 60
+      sort -S 1K -T D --compress-prog=sh reading D/a and D/big. The line of each of these four
+      ends with text the guard does not parse (sort with its option, named as written, which runs
+      a program on its data), because the option test runs first and names the option in the two
+      piped commands too. The row also runs each command under bash with a recording
       git first on PATH and requires the record to hold the push. live/stored: export of a variable holding the push, then sh -c running that variable in double
       quotes; read of the push from a quoted heredoc, then the same; printf -v of the push, then the same.
       In the next three rows S is printf of an alias section mapping p to !git push origin main, D is a
@@ -145,6 +153,7 @@ acceptance_criteria:
       the subset has its quoted strings removed anyway) turns live/outside-subset and live/stored red;
       guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter
       red; guard292-sort-plain (sort is put back in the plain text tool set) turns live/plain-runs
+      red; guard292-sort-runs-off (an option that runs a program is not read) turns live/plain-runs
       red; guard292-config-write-off (test 1 never fires) turns live/config-write red;
       guard292-config-site-quoted (test 1 reads a place as written, without quote removal) turns
       live/config-write red; guard292-config-site-unread (a place with an expansion, a glob, a brace, a
@@ -336,7 +345,10 @@ input: echo, printf, cat, tee, grep, egrep, fgrep, head, tail, wc, uniq, cut, tr
 touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. The
 membership test: a program is in the set only if no option of this program runs another program.
 sort fails it, because its compress program option runs any program on sort's own temporary data,
-so sort is not in the set and a string or heredoc body in a pipeline with sort stays live. printf
+so sort is not in the set and a string or heredoc body in a pipeline with sort stays live. A
+command that names sort with its compress program option is judged as written, whatever the file
+it reads: the guard reads every word of every command, so sort behind a wrapper or called by a
+path counts, and the option counts in full or abbreviated to two letters or more. printf
 with a word that starts with -v, whether -v NAME or -vNAME, is not one: it may assign a variable,
 and it takes the command outside the subset. A command
 word with a slash is never a plain text tool, so a copy of a shell named cat and called by its
@@ -449,9 +461,7 @@ host that text the scanner called data is text the shell did not run.
   example with -c include.path. 646ff7c8 refuses such a command and this spec allows it, because
   nothing in its text separates it from the incident: a plain text tool writes a file and a program
   the guard cannot read uses it. The guard does not follow that file, and the owner accepts it with
-  the approval. sort given a file is that case too: printf of a push into D/a, then sort with its
-  compress program set to sh reading D/a, passes and pushes, because sort is a program the guard
-  cannot read and D/a is a file a plain text tool wrote. An extended glob pattern is not a
+  the approval. An extended glob pattern is not a
   construct for tests 1 and 2: with the alias section written to D/inc, bash -O extglob -c
   '/usr/bin/@(gi)t -c include.path=D/inc p' passes the guard and pushes, where 646ff7c8 refuses it.
 - A command cannot rename a plain text tool, git or gh inside the subset. A builtin other than the
@@ -490,3 +500,5 @@ host that text the scanner called data is text the shell did not run.
 
 2026-11-11: marked ready by the lead after the fifth re-review of 4e409b0b (READY)
 2026-11-11: build check, sort removed from the plain text tools
+2026-11-11: fix check, S1 refused
+2026-11-11: blocker recorded by the builder: with the option test first, guard292-sort-plain no longer turns live/plain-runs red (proof/VELDO-0292/README.md); the lead decides

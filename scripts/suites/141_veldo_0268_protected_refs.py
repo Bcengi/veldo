@@ -28,7 +28,8 @@ unresolved line ends with the matched text and its position. The live/config-wri
 alias or a hook to a path the guard cannot show is outside git's configuration, live/config-include
 gives a git the command names a file written elsewhere, and live/construct hides that git behind a
 construct in text a program may run. live/plain-runs feeds a push to sort, whose compress program
-option runs sh on it, so sort is not a plain text tool. The live/remap, live/plain-runs and
+option runs sh on it, so sort is not a plain text tool, and gives sort the push through a file, so
+a command that names sort with that option is judged as written. The live/remap, live/plain-runs and
 live/scanner-edges rows also run each command under bash with the recording git and require the push in its record.
 subset/builtin-list compares the guard's list of builtins with what bash's enable -a prints on the
 host. These rows and their mutation rows are named VELDO-0292 in the output.
@@ -1101,12 +1102,21 @@ def _v268_suite():
         """A program with an option that runs another program is not a plain text tool. GNU sort runs
         its compress program on its own temporary data, so a push fed to sort as a quoted heredoc body
         or a quoted string is text sh runs. {D}/big is 300 KB of empty lines, which with a 1K buffer
-        makes sort write temporary files. The option is given in full and abbreviated."""
+        makes sort write temporary files. The option is given in full and abbreviated. The third and
+        fourth (S1 and S1b of the fix check) give sort the push through a file a plain text tool
+        wrote: a command that names sort with that option is judged as written, behind a wrapper
+        too. That test runs first, so it names the option in the first two as well."""
         big = "head -c 300000 /dev/zero | tr '\\0' '\\n' > {D}/big; "
+        named = PARSE % 'sort with its option %s, which runs a program on its data'
         return refused292(under, [
             (big + "cat <<'EOF' | sort -S 1K -T {D} --compress-program=sh - {D}/big\n%s\nEOF" % PUSH,
-             RUNNER % 'sort'),
-            (big + "printf '%s\\n' | sort -S 1K -T {D} --compress-prog=sh - {D}/big" % PUSH, RUNNER % 'sort')],
+             named % '--compress-program'),
+            (big + "printf '%s\\n' | sort -S 1K -T {D} --compress-prog=sh - {D}/big" % PUSH,
+             named % '--compress-prog'),
+            (big + "printf '%s\\n' > {D}/a; sort -S 1K -T {D} --compress-program=sh {D}/a {D}/big" % PUSH,
+             named % '--compress-program'),
+            (big + "printf '%s\\n' > {D}/a && timeout 60 sort -S 1K -T {D} --compress-prog=sh {D}/a {D}/big" % PUSH,
+             named % '--compress-prog')],
             runs=True, dirs=('d',))
 
     def row_live_mixed(under):
@@ -1289,7 +1299,9 @@ def _v268_suite():
     NAMED_LINE = '    named = [span for span in spans if names_git(outside[span[0]:span[1]])]\n'
     UNQUOTE = ('UNQUOTE = str.maketrans("", "", "\'\\"\\\\")'
                '  # every quote character and backslash, deleted before that test\n')
-    TEST_ONE = '    reason = configuration_write(command, commands, outside)  # test 1\n'
+    TEST_ONE = '    reason = reason or configuration_write(command, commands, outside)  # test 1\n'
+    RUNS_RETURN = ('                    return "%s with its option %s, which runs a program on its data"'
+                   ' % (text, head)\n')
     TEST_TWO = '    reason = reason or run_construct(commands, parts, outside)  # test 2\n'
     SITE = '        if CONSTRUCT.search(written) or CONFIGURATION.search(w.text):\n'
     SITE_NAMES = 'CONFIGURATION = re.compile(r"git|config", re.I)\n'
@@ -1335,8 +1347,11 @@ def _v268_suite():
          'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",'
          '  # defect: sort is a plain text tool\n',
          ['live/plain-runs']),
+        ('guard292-sort-runs-off', RUNS_RETURN,
+         '                    return None  # defect: an option that runs a program is not read\n',
+         ['live/plain-runs']),
         ('guard292-config-write-off', TEST_ONE,
-         '    reason = None  # defect: test 1 never fires\n', ['live/config-write']),
+         '    reason = reason or None  # defect: test 1 never fires\n', ['live/config-write']),
         ('guard292-config-site-quoted', SITE,
          '        if CONSTRUCT.search(written) or CONFIGURATION.search(written):'
          '  # defect: a place is read as written, without quote removal\n',

@@ -12705,11 +12705,18 @@ def cases():
              'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",'
              '  # defect: sort is a plain text tool\n',
              ['live/plain-runs'])
+    # The fix check of 2026-11-11: a command that names sort with its compress program option is
+    # judged as written, whatever file sort reads.
+    guard292('guard292-sort-runs-off',
+             '                    return "%s with its option %s, which runs a program on its data"'
+             ' % (text, head)\n',
+             '                    return None  # defect: an option that runs a program is not read\n',
+             ['live/plain-runs'])
     # Test 1 (amendment 2): a write the guard cannot show is outside git's configuration.
     site292 = '        if CONSTRUCT.search(written) or CONFIGURATION.search(w.text):\n'
     guard292('guard292-config-write-off',
-             '    reason = configuration_write(command, commands, outside)  # test 1\n',
-             '    reason = None  # defect: test 1 never fires\n', ['live/config-write'])
+             '    reason = reason or configuration_write(command, commands, outside)  # test 1\n',
+             '    reason = reason or None  # defect: test 1 never fires\n', ['live/config-write'])
     guard292('guard292-config-site-quoted', site292,
              '        if CONSTRUCT.search(written) or CONFIGURATION.search(written):'
              '  # defect: a place is read as written, without quote removal\n',

@@ -857,6 +857,24 @@ def held(commands, parts):
             and commands[part.command].pipeline in quiet]
 
 
+# A program the guard can name with an option that runs another program on its data: sort with
+# its compress program. The whole command is judged as written, as at 646ff7c8.
+RUNS_PROGRAM = {"sort": "compress-program"}
+
+
+def runs_program(commands):
+    """The reason a command runs a program through an option the guard can name, or None."""
+    for one in commands:
+        texts = [w.text for w in one.words]
+        for at, text in enumerate(texts):
+            option = RUNS_PROGRAM.get(text.rsplit("/", 1)[-1])
+            for later in texts[at + 1:] if option else ():
+                head = later.split("=", 1)[0]
+                if head.startswith("-" * 2) and len(head) >= 4 and option.startswith(head[2:]):
+                    return "%s with its option %s, which runs a program on its data" % (text, head)
+    return None
+
+
 def configuration_write(command, commands, outside):
     """Test 1: the reason the command may write git configuration, or None. The places a command
     writes are the target of every redirection that is not an input and every argument of a plain
@@ -934,7 +952,8 @@ def live_text(command):
     """(the text the judgment reads, what the scanner saw): the command with each comment dropped,
     each heredoc body and quoted string that is data written as a placeholder word, and each command
     word written after quote removal. A command outside the subset is returned as written, with the
-    construct that put it there. So is a command test 1 or test 2 refuses to read, with the reason."""
+    construct that put it there. So is a command test 1 or test 2 refuses to read, or one that names
+    sort with its compress program option, with the reason."""
     try:
         commands, parts, comments = scan(command)
     except Unparsed as error:
@@ -946,7 +965,8 @@ def live_text(command):
     for start, end in dropped + [(part.start, part.end) for part in strings]:
         outside[start:end] = " " * (end - start)
     outside = "".join(outside)
-    reason = configuration_write(command, commands, outside)  # test 1
+    reason = runs_program(commands)  # before test 1
+    reason = reason or configuration_write(command, commands, outside)  # test 1
     reason = reason or run_construct(commands, parts, outside)  # test 2
     if reason:
         return command, reason  # the whole command is judged as written, with no part of it read as data
