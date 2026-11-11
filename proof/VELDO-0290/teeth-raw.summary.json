@@ -1,14 +1,14 @@
 {
- "command": "python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3 --worker-log-dir <work>/teeth-workers --diff-dir proof/VELDO-0290/diffs --summary proof/VELDO-0290/teeth.summary.json",
+ "command": "python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3 --worker-log-dir <work>/teeth-workers --diff-dir <work>/diffs --summary proof/VELDO-0290/teeth.summary.json",
  "deciding": {
-  "exit_status": 1,
+  "exit_status": 0,
   "raw_files": 87
  },
  "discarded": [
   {
-   "bytes": 133341,
+   "bytes": 133257,
    "name": "teeth.log",
-   "sha256": "2b9714e64cd6aa95e610c6a634611ebf2d6133cd843f3f0efa29e999e8347106"
+   "sha256": "3a2f99f01a72e57b0d9c5117eb1440e0f6f3db2415c08ac97c19f6cd0767f920"
   },
   {
    "bytes": 8020928,
@@ -368,90 +368,90 @@
   {
    "bytes": 206,
    "name": "teeth-workers/ownership-0.jsonl",
-   "sha256": "a56d808c146b79344cae5de8a3eb2852225d571c8bf05e5df396b43a74674a7d"
+   "sha256": "2316b2199a18b8d35065c54a33621654279834824e09984d8c565ba0420b8ddd"
   },
   {
    "bytes": 206,
    "name": "teeth-workers/ownership-1.jsonl",
-   "sha256": "28ddd651b4f7291c8303aaee038d322420caaa9d6f69dc21f01c3b44a208799a"
+   "sha256": "7add278d42efa91ea2b5186b3619e130f3b1c217b1499abf05e68b95f9fc04a5"
   },
   {
    "bytes": 1657,
    "name": "teeth-workers/ownership-10.jsonl",
-   "sha256": "daa540b0f3ebe8b266e1c0affedad36aef2005708bb373bd32d2b5c5f683ab73"
+   "sha256": "b8538ed3a812397a770967e5c15841ede69168000e77b60dc25a13b92a94f106"
   },
   {
    "bytes": 1657,
    "name": "teeth-workers/ownership-11.jsonl",
-   "sha256": "4eea557b0b231b424d4f229d0f40d8ce088d55243e103bef0d493806da1c637c"
+   "sha256": "13d98b97e1326e00fb470fcb489ba4058b409dc21729168a7bda1b50caea685f"
   },
   {
    "bytes": 1657,
    "name": "teeth-workers/ownership-12.jsonl",
-   "sha256": "48544ad37989c7dec48084e21c676102343f3575318b6e43f641a816df2a1c84"
+   "sha256": "bc360d74d74b0ccc9af7469e32f432ff0ca72240b442a5934ba94cd644f76e9f"
   },
   {
    "bytes": 1657,
    "name": "teeth-workers/ownership-13.jsonl",
-   "sha256": "02297fc46c20322d17ea903d1b63e888ff6556c0a6400bf8d02ae5721b012574"
+   "sha256": "8b6f2eb9fcdb7381087f36bb41aeb412f2d9132a8ebf9d624120d18b80a12daf"
   },
   {
    "bytes": 1657,
    "name": "teeth-workers/ownership-14.jsonl",
-   "sha256": "b29b0f34c9344e8685e0ea030a90bee1f61eb45d294b835860f326cff0e2085b"
+   "sha256": "08f541df42c5764699d50a17bd51458b53ec54f1a7cfd92d426b9acef57666e6"
   },
   {
    "bytes": 1636,
    "name": "teeth-workers/ownership-2.jsonl",
-   "sha256": "1e375b5c57ab2c133d52c105f7ae711c9c89d282977d89aca9e605d91cfcace5"
+   "sha256": "3854ccd4d80177c9db47f819e185bcb3588477eddd1b54d56c600dd99580131f"
   },
   {
    "bytes": 1636,
    "name": "teeth-workers/ownership-3.jsonl",
-   "sha256": "f313cadfaca39acc48c2f0a8c1160138bed83c0d1b48096410e9f07b85055b80"
+   "sha256": "6753d6060fe0d166548a84e93225941f696fefbdc05483a81e3e8e4c70f17332"
   },
   {
    "bytes": 1636,
    "name": "teeth-workers/ownership-4.jsonl",
-   "sha256": "c76c17ea1d92acb7206c072215fb873a19fd649333506d470e77e03b8f5bd3ae"
+   "sha256": "fb040939bba833511d7c72b8de1be5835ad966d1dc1c00a98837b3be4def5d98"
   },
   {
    "bytes": 1636,
    "name": "teeth-workers/ownership-5.jsonl",
-   "sha256": "ebfd8ede3ba2ace6153e71baee2fd796621a6f9f25a59db44ff12ed0bddfc8fc"
+   "sha256": "f6bcfa764d88e04b39844cfdc8a6935cf0a9c13a4a31a0cad7432379b4b613bf"
   },
   {
    "bytes": 1636,
    "name": "teeth-workers/ownership-6.jsonl",
-   "sha256": "863accf35db9a4c1b526a8c083f8b94fcc0a2c480e2cfd92af4f9271e916f9b6"
+   "sha256": "440a874289fcf77f58be0c0137bc03a2ccab0c5a7d75abe91bbf5539f4ac2d59"
   },
   {
    "bytes": 1636,
    "name": "teeth-workers/ownership-7.jsonl",
-   "sha256": "e485ea2e9d66e939ce1a98eb581b1de2bbd06f13c6367da6e91ce6a84708c064"
+   "sha256": "cebfab8f9c8f9f014b82da9d23816eb9e1352c63c02654516a8bcd70388ce32c"
   },
   {
    "bytes": 206,
    "name": "teeth-workers/ownership-8.jsonl",
-   "sha256": "d271942eb35bc23034b482f550a9ad8340a4c05fd99c817bd8afb65df037d6f6"
+   "sha256": "e0f95105e222de16220f85600063789b6aaa5b5184f5e349fdab7eed2faff9d9"
   },
   {
    "bytes": 1636,
    "name": "teeth-workers/ownership-9.jsonl",
-   "sha256": "dde47f688b6a425e7f2c771cb332f64bb61337656ad68639ab6784a1a4302c30"
+   "sha256": "ab814228a756004e23cabbee2e6bb67481e60a83c642726cd6febe1395f0b590"
   }
  ],
  "environment": {
-  "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+  "commit": "e9a480c829d8fe7ff535cca4252beca8e3b3439c",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "load": [
-   3.4375,
-   4.04248046875,
-   4.1171875
+   14.23291015625,
+   28.64599609375,
+   25.21875
   ],
   "python": "3.12.3",
-  "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340"
+  "tree": "494db46d3fade419031cc814c53ec5e8dc24f4bc"
  },
  "schema": "veldo.proof-summary/v1"
 }
