@@ -1,7 +1,7 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0292
-title: The push guard judges only the git and gh commands the shell would run, so text that mentions one in a quoted string, a heredoc body, a comment or a file the command writes is never refused, while a git command the guard cannot resolve stays protected
+title: The push guard judges only the git and gh commands the shell would run, so a mention of one in a comment, or in a quoted string or heredoc body given only to plain text tools, is not refused, while a git command the guard cannot resolve stays protected
 status: draft
 risk: high
 risk_areas: [auth_security]
@@ -27,8 +27,9 @@ observability:
     A command whose every mention of git or gh is data prints nothing and passes. When the guard
     refuses a command that is not one simple git or gh command, its existing "destination unresolved"
     line now ends with what it found: the matched text, cut at 120 characters, and where it sits (a
-    command of a list or pipeline, the argument or input of a named text runner, or text the guard does
-    not parse, with the construct named). The incident's message gave the builder no way to see which
+    command of a list or pipeline, the argument or input of a program that is not a plain text tool
+    with the program named, text in a list that also runs git, or text the guard does not parse with
+    the construct named). The incident's message gave the builder no way to see which
     words had been read as a command.
   metrics: >
     None added.
@@ -65,7 +66,8 @@ acceptance_criteria:
       as one command of a pipeline or list; a push held in a variable that is then run; a push inside a
       function body; a push behind a shell alias or a git alias; a push given as code to an
       interpreter; a push stored by export, read or printf -v and run by a later shell; a git alias
-      written to a configuration file by a plain text tool and then used; and a command that carries
+      whose text names a push, written to a configuration file by a plain text tool and used later in
+      the same command; and a command that carries
       both a quoted mention and a real push. The refusal line names what the guard found and where.
     falsified_by: >
       Suite 141 rows, each requiring exit 2, the gate refusal text, the remote's main unmoved, and one
@@ -79,8 +81,9 @@ acceptance_criteria:
       a BEGIN block calling system with it, and python3 reading a quoted heredoc that calls os.system with
       it. live/stored: export of a variable holding the push, then sh -c running that variable in double
       quotes; read of the push from a quoted heredoc, then the same; printf -v of the push, then the same.
-      live/config-write: printf of an alias section mapping p to push origin main, appended to .git/config,
-      then git p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
+      live/config-write: printf of an alias section mapping p to !git push origin main, appended to
+      .git/config by a redirection, then git p; the same section echoed into tee -a .git/config, then
+      git p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
       live/quoted-command-word: true && 'git' push origin main, and true && g\it push origin main.
       At 646ff7c8 live/quoted-command-word is red because the guard exits 0. Every other row is red only
       because the line does not yet say what was found; the exit code and gate text already hold. A git
@@ -89,15 +92,15 @@ acceptance_criteria:
       tools) turns live/shell-string and live/pipeline red; guard292-unparsed-is-data (a command outside the
       subset has its quoted strings removed anyway) turns live/outside-subset red;
       guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter and
-      live/stored red; guard292-config-target-data (a redirection into .git counts as data) turns
+      live/stored red; guard292-git-list-data (text in a list that also runs git counts as data) turns
       live/config-write red; guard292-list-tail-data (once a command of a list holds data, the commands
       after it are data too) turns live/mixed red; guard292-command-word-raw (the live text keeps command
       words as written) turns live/quoted-command-word red. Every row and registered mutation suite 141
       carried at 646ff7c8 still passes; an anchor the change moves is pointed at the same defect again.
   - id: AC3
     text: >
-      A mention of git or gh in a quoted string, in a heredoc body read by a plain text tool, or in a
-      comment is never a git command. A command whose every mention is one of these is
+      A mention of git or gh in a comment, or in a quoted string or heredoc body that the Design calls
+      data, is never a git command. A command whose every mention is one of these is
       allowed whatever the gate stamp says, including when it also uses plain variable expansions in its
       arguments.
     falsified_by: >
@@ -141,11 +144,13 @@ acceptance_criteria:
       destination" line, and no push or merge in the record of a recording git and gh when run under
       bash: git commit -m with a message naming git push origin main; git tag -a v0 -m with the same;
       git log with a grep pattern of the words git push; gh issue comment 1 -b with a body naming them;
-      gh pr comment 1 -b with the same. At 646ff7c8 the row is red: the guard exits 2 on each.
+      gh pr comment 1 -b with the same; git add -A followed by && and git commit -m with the same
+      message. At 646ff7c8 the row is red: the guard exits 2 on each.
       live/git-args, each requiring exit 2 and the gate refusal text: git rebase main -x with the
       quoted string git push origin main; git -c core.pager with that string, then log; git commit -m x
       followed by && and a real push of main. Registered mutations: guard292-message-not-data (the
-      message rule is off) turns text/message red; guard292-git-args-data (every quoted argument of a
+      message rule is off) turns text/message red; guard292-message-not-data-in-list (the message rule
+      applies only to a command that stands alone) turns text/message red; guard292-git-args-data (every quoted argument of a
       git command is data) turns live/git-args red.
 required_evidence: [unit, integration]
 rollback: >
@@ -244,19 +249,8 @@ it and no program it reaches can either:
 A plain text tool is a command whose command word, after quote removal and taken by its last path
 component, is in one fixed set in the guard of programs that never execute their arguments or their
 input: echo, printf, cat, tee, grep, egrep, fgrep, head, tail, wc, sort, uniq, cut, tr, ls, mkdir,
-touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. Three
-conditions keep even these live: printf with -v, which assigns a variable; a redirection whose target
-names .git or gitconfig, because a git alias written to a configuration file and used later in the
-same command would otherwise be data; and any word of the command being git or gh after quote removal.
-
-Git and gh keep their text live with one exception: text they store and never run. In a simple command
-whose words after quote removal start with git, with no global option other than -C, and whose
-subcommand is commit, tag, notes or stash, the value of -m and of its long spelling, message, is data.
-In git log, git show and git rev-list, the value of the grep option is data. In a simple command
-starting with gh whose next two words are issue create, issue comment, issue edit, pr create, pr
-comment, pr edit, pr review or release create, the values of -t, -b and -n and of their long
-spellings, title, body and notes, are data. Any other argument, any -c option and any alias keep the
-command live as today.
+touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. printf
+with -v is not one, because it assigns a variable.
 
 Every other program keeps its text live: the shells and eval, the wrappers (timeout, nohup, env, xargs,
 sudo, ssh), the interpreters (python3 -c, perl -e, awk, node -e, a heredoc on an interpreter's standard
@@ -267,6 +261,20 @@ path, and its reviewer checks that the program cannot run text.
 
 Checking the whole pipeline covers a string echoed into a shell or an interpreter. Assignment values
 stay live so a string stored in a variable and run later is still seen.
+
+When any word of any command in the list is git or gh after quote removal, no quoted string or heredoc
+body anywhere in the list is data, except the message values named in the next paragraph. A list that
+runs git can use a file it writes, such as a git alias appended to .git/config, a hook under
+.git/hooks or a script git runs, so nothing it writes is data, whatever path it writes to.
+
+Git and gh keep their text live with one exception: text they store and never run. In a simple command
+whose words after quote removal start with git, with no global option other than -C, and whose
+subcommand is commit, tag, notes or stash, the value of -m and of its long spelling, message, is data.
+In git log, git show and git rev-list, the value of the grep option is data. In a simple command
+starting with gh whose next two words are issue create, issue comment, issue edit, pr create, pr
+comment, pr edit, pr review or release create, the values of -t, -b and -n and of their long
+spellings, title, body and notes, are data. This holds for such a command standing alone or as one
+command of a list. Any other argument, any -c option and any alias keep the command live as today.
 
 The allowed rows run their command under bash with a recording git and gh, so the suite checks on each
 host that text the scanner called data is text the shell did not run.
@@ -294,11 +302,13 @@ host that text the scanner called data is text the shell did not run.
 
 - The only commands that move from refused to allowed are ones where every mention of git or gh is
   data under the Design's definition. One kind of them does run git: a command that writes a script
-  with a plain text tool and then runs it, such as cat into /tmp/x.sh from a heredoc holding a push of
-  main followed by bash /tmp/x.sh. It was refused at 646ff7c8 and is allowed now, because the guard
+  with a plain text tool and then runs it without git, such as cat into /tmp/x.sh from a heredoc
+  holding a push of main followed by bash /tmp/x.sh. A hook written in one Bash call and run by git in
+  a later call is the same case. It was refused at 646ff7c8 and is allowed now, because the guard
   does not follow a file. The owner accepts this with the approval.
-- The scanner never guesses. Any construct outside the subset sends the whole text to today's
-  judgment, and the judgment itself is unchanged.
+- The scanner gives up rather than guessing: any construct outside the subset sends the whole text to
+  today's judgment, and the judgment itself is unchanged. Inside the subset, AC4 holds the scanner to
+  bash's own reading.
 - The stated limit is acceptable to the owner. A script the command writes and then runs is not
   followed, which was always true of a script already on disk. Git's pre-push hook
   (packs/claude/hooks/pre-push) judges a push by its destination however it was started, in a
@@ -310,3 +320,4 @@ host that text the scanner called data is text the shell did not run.
 
 2026-11-10: drafted from the owner's decision 40683 after the VELDO-0290 builder's false hit
 2026-11-11: revision 1 applies the findings of the review of ba3946cb
+2026-11-11: revision 2 applies the findings of the re-review of c880fe11
