@@ -12672,6 +12672,136 @@ def cases():
              '        start = match.start()\n',
              ['push/alias-shell-c'])
 
+    # VELDO-0292: the push guard judges only the git and gh commands the shell would run. Each case is
+    # a defect in the guard's scanner or in what it calls data; the rows are suite 141's, which applies
+    # the same replacement to a temporary copy on every run.
+    def guard292(name, old, new, rows, also=()):
+        add(292, name, refs268, 'veldo-guard.sh', old, new, rows, also=also)
+        result[-1]['dir'] = 'scripts'
+
+    strings292 = 'STRINGS = ("single", "double", "body")  # what can be data: a quoted string, a heredoc body\n'
+    named292 = '    named = [span for span in spans if names_git(outside[span[0]:span[1]])]\n'
+    value_swaps292 = '    swaps += [(w.start, w.end, PLACEHOLDER) for w in values]\n'
+    values292 = '    values = [w for one in commands for w in stored(one)]  # standing alone or in a longer command\n'
+    # AC1: a heredoc body given only to plain text tools is data.
+    guard292('guard292-heredoc-body-live', strings292,
+             'STRINGS = ("single", "double")  # defect: heredoc bodies stay in the judged text\n', ['text/incident'])
+    # AC2: text the shell would execute is judged as before.
+    guard292('guard292-runner-strings-data',
+             '         "sha256sum", "base64", "test", "[", "true", "false", ":"}\n',
+             '         "sha256sum", "base64", "test", "[", "true", "false", ":",\n'
+             '         "sh", "bash", "timeout", "xargs", "env"}  # defect: a shell or a wrapper is a plain text tool\n',
+             ['live/shell-string', 'live/pipeline'])
+    guard292('guard292-unparsed-is-data',
+             '        return command, str(error)  # outside the subset: the whole command is judged as written\n',
+             '        return re.sub("\'[^\']*\'|\\"[^\\"]*\\"", PLACEHOLDER, command), str(error)'
+             '  # defect: quoted strings are removed anyway\n',
+             ['live/outside-subset', 'live/stored'])
+    guard292('guard292-data-set-any-program', '    return name in PLAIN\n',
+             '    return True  # defect: every program counts as a plain text tool\n', ['live/interpreter'])
+    guard292('guard292-git-list-data', named292,
+             '    named = []  # defect: text in a command that also names git counts as data\n',
+             ['live/config-write'])
+    guard292('guard292-git-list-exact-word', named292,
+             '    named = spans if any(w.text in ("git", "gh") for c in commands for w in c.words) else []'
+             '  # defect: only a word that is exactly git or gh\n',
+             ['live/config-write'])
+    guard292('guard292-git-list-per-line', named292,
+             '    named = [span for span in spans if names_git(outside[span[0]:span[1]])][-1:]'
+             '  # defect: only the last line that names git\n',
+             ['live/config-write'],
+             also=[('    spans = [(0, len(outside))]  # the whole text of the Bash call, across all its lines\n',
+                    '    spans = [(m.start(), m.end()) for m in re.finditer(r"[^\\n]*\\n?", outside)'
+                    ' if m.end() > m.start()]  # defect: line by line\n')])
+    guard292('guard292-git-list-quoted',
+             'UNQUOTE = str.maketrans("", "", "\'\\"\\\\")'
+             '  # every quote character and backslash, deleted before that test\n',
+             'UNQUOTE = {}  # defect: quotes and backslashes are not deleted before that test\n',
+             ['live/config-write'])
+    guard292('guard292-git-list-expansion-form-off',
+             '    unexpanded = EXPANSIONS.sub("", text).translate(UNQUOTE)\n',
+             '    unexpanded = plainly  # defect: the second form is not tested\n', ['live/config-write'])
+    guard292('guard292-git-list-escape-form-off',
+             '    unescaped = ESCAPES.sub(character, text).translate(UNQUOTE)\n',
+             '    unescaped = plainly  # defect: the third form is not tested\n', ['live/config-write'])
+    guard292('guard292-list-tail-data', '    outside = "".join(outside)\n',
+             '    outside = "".join(outside)[:min([p.start for p in strings] + [len(command)])]'
+             '  # defect: the text after a data string is not read\n',
+             ['live/mixed'],
+             also=[(value_swaps292,
+                    value_swaps292 + '    swaps += [(p.end, len(command), "") for p in data[:1]]'
+                                     '  # defect: the commands after a data string are data too\n')])
+    guard292('guard292-command-word-raw',
+             '    swaps += [(w.start, w.end, w.text) for w in (c.words[0] for c in commands if c.words)'
+             ' if BARE.fullmatch(w.text)]\n',
+             '    swaps += []  # defect: the live text keeps command words as written\n',
+             ['live/quoted-command-word'])
+    guard292('guard292-builtin-in-subset',
+             '        if head in SHELL_BUILTINS and head not in ALLOWED_BUILTINS:\n',
+             '        if False:  # defect: every builtin is read as an ordinary program inside the subset\n',
+             ['live/remap'])
+    guard292('guard292-assignment-in-subset',
+             '                raise Unparsed("the assignment %s" % name.group(1))\n',
+             '                place(w, "assignment", command)  # defect: an assignment stays inside the subset\n'
+             '                continue\n',
+             ['live/remap'])
+    guard292('guard292-tool-by-last-component',
+             '    name = command.words[0].text if command.words else ""\n',
+             '    name = command.words[0].text.rsplit("/", 1)[-1] if command.words else ""'
+             '  # defect: the last path component\n',
+             ['live/remap'])
+    guard292('guard292-printf-v-exact',
+             '        if head == "printf" and any(w.text.startswith("-v") for w in command.words[1:]):\n',
+             '        if head == "printf" and any(w.text == "-v" for w in command.words[1:]):'
+             '  # defect: only the exact word -v\n',
+             ['live/remap'])
+    guard292('guard292-builtin-list-short',
+             '    dirs disown echo enable eval exec exit export false fc fg getopts hash help history jobs kill\n',
+             '    dirs disown echo enable eval exec exit export false fc fg getopts help history jobs kill\n',
+             ['live/remap', 'subset/builtin-list'])
+    # AC3: a quoted string or a comment that is data is never a git command.
+    guard292('guard292-quoted-live', strings292,
+             'STRINGS = ("body",)  # defect: quoted strings stay in the judged text\n', ['text/quoted'])
+    guard292('guard292-comment-live', '    dropped = list(comments)  # a comment is never run\n',
+             '    dropped = []  # defect: comments stay in the judged text\n', ['text/comment'])
+    # AC4: the scanner never calls text data that bash would run.
+    guard292('guard292-hash-in-word-comment',
+             '            if c in " \\t\\n;&|()":'
+             '  # where a word ends; a # inside a word is an ordinary character\n',
+             '            if c in " \\t\\n;&|()#":  # defect: a # anywhere starts a comment\n',
+             ['live/scanner-edges'])
+    guard292('guard292-comment-continues',
+             '    end = text.find("\\n", at)\n    return len(text) if end < 0 else end\n',
+             '    end = text.find("\\n", at)\n'
+             '    while end > 0 and text[end - 1] == "\\\\":  # defect: a trailing backslash continues a comment\n'
+             '        end = text.find("\\n", end + 1)\n'
+             '    return len(text) if end < 0 else end\n',
+             ['live/scanner-edges'])
+    guard292('guard292-single-quote-escape',
+             '                end = text.find("\'", at + 1)  # nothing escapes inside single quotes\n',
+             '                end = next((i for i in range(at + 1, n) if text[i] == "\'" and text[i - 1] != "\\\\"), -1)'
+             '  # defect: a backslash escapes inside single quotes\n',
+             ['live/scanner-edges'])
+    guard292('guard292-heredoc-line-is-body',
+             '            return name.end()'
+             '  # the body starts after the next newline, not right after this word\n',
+             '            return bodies(name.end())  # defect: the body starts right after the delimiter word\n',
+             ['live/scanner-edges'])
+    guard292('guard292-heredoc-dash-ignored',
+             '            strip = dash  # <<- strips the leading tabs of the delimiter line\n',
+             '            strip = False  # defect: <<- is read as <<\n', ['live/scanner-edges'])
+    # AC5: the text git and gh store and never run is data; every other argument stays live.
+    guard292('guard292-message-not-data', values292,
+             '    values = []  # defect: the message rule is off\n', ['text/message'])
+    guard292('guard292-message-not-data-in-list', values292,
+             '    values = [w for one in commands for w in stored(one)] if len(commands) == 1 else []'
+             '  # defect: only a command that stands alone\n',
+             ['text/message'])
+    guard292('guard292-git-args-data', '    return [w for w in out if not w.expands()]\n',
+             '    return [w for w in (words[1:] if texts[:1] == ["git"] else out)'
+             ' if (w in out or w.quoted()) and not w.expands()]  # defect: every quoted argument of a git command is data\n',
+             ['live/git-args'])
+
     # VELDO-0272: owner approval narrows to money, authentication and security, schema and irreversible
     # infrastructure; routine work lands on a green gate and a recorded review; a daily landed summary.
     # The suite runs its modules from a temporary .veldo tree laid over by the file the driver hands it.

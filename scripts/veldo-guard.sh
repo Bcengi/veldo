@@ -38,6 +38,18 @@
 # unresolved, never "no alias" (fix round 5). A simple command whose first word is not git (sh -c,
 # bash -c) has its text judged for aliases as a compound command is. The dry run's one line beside
 # the ref lines that names no destination, "Would set upstream of ...", is read; any other is not.
+#
+# ONLY THE TEXT THE SHELL WOULD RUN IS JUDGED (VELDO-0292). Before any of the above, one scanner
+# reads the command over the part of the shell grammar POSIX fixes and writes its live text: each
+# comment dropped, and each heredoc body and quoted string that is data written as a placeholder
+# word. A string is data when the shell does not expand it and every command of its pipeline is a
+# plain text tool (echo, cat, grep and the rest of one fixed set), in a command that names no git
+# or gh anywhere else. The text git and gh store and never run (a commit or tag message, a log
+# pattern, an issue or pull request title and body) is data too. A construct outside that grammar
+# (a substitution, a function, a reserved word, an assignment, a shell builtin outside nine
+# allowed ones) sends the whole command to the judgment as written. The judgment itself is the
+# one described above, and it reads the live text. When it refuses a command that is not one
+# simple git or gh command, the "destination unresolved" line ends with what it found and where.
 set -u
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
@@ -58,9 +70,10 @@ except Exception:
 # git goes on to the destination step below, which decides with the guard's own git global option
 # parsing whether it is a push or merge (git -C dir push and git -c k=v push included); only those
 # are judged. Without a tool payload, a git pre-push hook's call names its one destination in
-# VELDO_GUARD_REF.
+# VELDO_GUARD_REF. The match reads the command without its quote characters and backslashes, so a
+# command word written 'git' or g\it goes on to the destination step too (VELDO-0292).
 if [ -n "$CMD" ]; then
-  if ! printf '%s' "$CMD" | grep -qE '(git|gh pr (merge|create))'; then
+  if ! printf '%s' "$CMD" | tr -d "'\"\\\\" | grep -qE '(git|gh pr (merge|create))'; then
     exit 0
   fi
   GUARD_PATH=tool
@@ -89,8 +102,12 @@ OPERATOR = set("();<>|&")
 EXPANSION = ("$", "\x60", "\n")
 
 
+FOUND = []  # what the judged text held and where, for the unresolved line (VELDO-0292)
+
+
 def log(ref, text):
-    print("VELDO guard: destination %s: %s" % (ref, text), file=sys.stderr)
+    note = FOUND[0] if ref == "unresolved" and FOUND else ""
+    print("VELDO guard: destination %s: %s%s" % (ref, text, note), file=sys.stderr)
 
 
 def unresolved(reason):
@@ -465,16 +482,468 @@ def gh_base(rest, cwd):
     return [("refs/heads/" + base, None)]
 
 
+# THE LIVE TEXT (VELDO-0292). The judgment reads the text the shell would run, not every word of the
+# command. One scanner reads the command over the part of the shell grammar POSIX fixes: simple
+# commands joined by newlines, ; && || | and &, words of unquoted text, quotes and backslash escapes,
+# $NAME and ${NAME} in arguments, redirections with a word target, heredocs and comments. Anything
+# else is outside it, and the whole command is then judged as written: a substitution, a subshell, a
+# brace, a function, a reserved word, an expansion or a glob character in a command word, an
+# assignment word, a shell builtin other than the nine allowed, an unterminated quote or heredoc.
+# Only the shell itself can change which program a name runs, and only by a function, a builtin or
+# an assignment, so inside the subset every bare command word runs the program it named when the
+# command started. Inside it a comment is dropped, and a quoted string or heredoc body is written as
+# a placeholder word when it is data: the shell does not expand it and every command of its pipeline
+# is a plain text tool, so no program it reaches can run it. When git or gh is named anywhere else
+# in the command, nothing is data but the text git and gh store and never run. Each command word is
+# written after quote removal, so a quoted or escaped spelling of git reaches the judgment as git.
+PLACEHOLDER = "_data_"
+# The plain text tools: programs that never execute their arguments or their input. A name missing
+# here can only cause a refusal. Adding one changes a protected path, and its reviewer checks that
+# the program cannot run text.
+PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",
+         "cut", "tr", "ls", "mkdir", "touch", "rm", "cp", "mv", "chmod", "ln", "diff", "cmp",
+         "sha256sum", "base64", "test", "[", "true", "false", ":"}
+# Every builtin of bash, as enable -a lists them. A builtin can change which program a name runs or
+# keep text for later, so a command word in this list and not in ALLOWED_BUILTINS puts the command
+# outside the subset. Suite 141 fails on a host whose bash has a builtin this list lacks.
+SHELL_BUILTINS = frozenset("""
+    . : [ alias bg bind break builtin caller cd command compgen complete compopt continue declare
+    dirs disown echo enable eval exec exit export false fc fg getopts hash help history jobs kill
+    let local logout mapfile popd printf pushd pwd read readarray readonly return set shift shopt
+    source suspend test times trap true type typeset ulimit umask unalias unset wait
+""".split())
+# The nine that change nothing a later command word depends on. Allowing one more is a change to a
+# protected path, judged like a new plain text tool. printf stays here only without a -v word.
+ALLOWED_BUILTINS = {"echo", "printf", "test", "[", "true", "false", ":", "cd", "pwd"}
+RESERVED = {"if", "then", "else", "elif", "fi", "for", "while", "until", "do", "done", "case", "esac",
+            "select", "function", "time", "coproc", "in", "!", "[[", "]]"}
+STRINGS = ("single", "double", "body")  # what can be data: a quoted string, a heredoc body
+SHELL_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+ASSIGNMENT = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)(?:\[[^\]]*\])?\+?=")
+DELIMITER = re.compile("\\\\?([A-Za-z0-9_.-]+)|'([A-Za-z0-9_.-]+)'|\"([A-Za-z0-9_.-]+)\"")
+BARE = re.compile(r"[A-Za-z0-9_./+@%:,~-]+")
+# git or gh wherever no letter, digit or underscore stands right before or after it: a command word,
+# part of a path (/usr/bin/git, .git/config), an argument, a string given to a shell.
+GIT_NAME = re.compile(r"(?<![A-Za-z0-9_])(?:git|gh)(?![A-Za-z0-9_])")
+UNQUOTE = str.maketrans("", "", "'\"\\")  # every quote character and backslash, deleted before that test
+# A parameter expansion: a $ followed by a name, by one digit or special character, or by a braced form.
+EXPANSIONS = re.compile(r"\$(?:[A-Za-z_][A-Za-z0-9_]*|[0-9@*#?$!-]|\{[^}]*\})")
+# The backslash escapes an ANSI-C string or printf turns into a character: hex, unicode, octal.
+ESCAPES = re.compile(r"\\(?:x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{1,4}|U[0-9A-Fa-f]{1,8}|[0-7]{1,3})")
+# The text git and gh store and never run: the value of these options, for these subcommands only.
+GIT_STORED = {"commit": ("-m", "--message"), "tag": ("-m", "--message"), "notes": ("-m", "--message"),
+              "stash": ("-m", "--message"), "log": ("--grep",), "show": ("--grep",), "rev-list": ("--grep",)}
+GH_STORED = (("issue", "create"), ("issue", "comment"), ("issue", "edit"), ("pr", "create"), ("pr", "comment"),
+             ("pr", "edit"), ("pr", "review"), ("release", "create"))
+GH_FLAGS = ("-t", "--title", "-b", "--body", "-n", "--notes")
+
+
+class Unparsed(Exception):
+    """A construct outside the subset: the scanner gives up and the whole command is judged as written."""
+
+
+class Part:
+    """One stretch of the command: a run of unquoted text, a quoted string or a heredoc body. `expands`
+    says the shell expands it (a $ or a backquote in it)."""
+
+    def __init__(self, kind, start, end, expands=False):
+        self.kind, self.start, self.end, self.expands = kind, start, end, expands
+        self.role, self.command = None, None
+
+
+class Word:
+    """A word: its parts, and its text after quote removal (an expansion stays as written)."""
+
+    def __init__(self, start):
+        self.start, self.end, self.text, self.parts, self.glob = start, start, "", [], False
+
+    def expands(self):
+        return any(part.expands for part in self.parts)
+
+    def quoted(self):
+        return any(part.kind != "bare" for part in self.parts)
+
+
+class Command:
+    """A simple command: its command word and arguments, and the pipeline it belongs to."""
+
+    def __init__(self, pipeline, index):
+        self.pipeline, self.index, self.words = pipeline, index, []
+
+
+def comment_end(text, at):
+    """Where the comment starting at `at` ends: the next newline. A backslash before that newline
+    does not continue a comment."""
+    end = text.find("\n", at)
+    return len(text) if end < 0 else end
+
+
+def scan(text):
+    """(the simple commands of `text`, their parts in text order, the comments), or Unparsed. The
+    scanner must never read as a string, a comment or a heredoc body what bash reads as a command."""
+    n, at = len(text), 0
+    commands, parts, comments, pending = [], [], [], []
+    state = {"command": None, "pipeline": 0, "joined": False}
+
+    def expansion(at):
+        """Where the $NAME or ${NAME} starting at `at` ends."""
+        name = SHELL_NAME.match(text, at + 1)
+        if name:
+            return name.end()
+        if text.startswith("{", at + 1):
+            name = SHELL_NAME.match(text, at + 2)
+            if name and text.startswith("}", name.end()):
+                return name.end() + 1
+        if text.startswith("\x28", at + 1):
+            raise Unparsed("a command substitution or arithmetic")
+        if text.startswith("'", at + 1):
+            raise Unparsed("a $'...' string")
+        raise Unparsed("an expansion other than $NAME or ${NAME}")
+
+    def word(at):
+        """(the word starting at `at`, where it ends). Digits right before a redirection operator are
+        that redirection's descriptor: (None, where the operator starts)."""
+        w, bare = Word(at), None
+        while at < n:
+            c = text[at]
+            if c in " \t\n;&|()":  # where a word ends; a # inside a word is an ordinary character
+                break
+            if c in "<>":
+                if w.parts and not w.quoted() and re.fullmatch(r"[0-9]+", text[w.start:at]):
+                    return None, at
+                break
+            if c == "'":
+                end = text.find("'", at + 1)  # nothing escapes inside single quotes
+                if end < 0:
+                    raise Unparsed("an unterminated quote")
+                w.parts.append(Part("single", at, end + 1))
+                w.text += text[at + 1:end]
+                at, bare = end + 1, None
+                continue
+            if c == '"':
+                end, expands = at + 1, False
+                while end < n and text[end] != '"':
+                    if text[end] == "\\" and end + 1 < n and text[end + 1] in "$\x60\"\\\n":
+                        w.text += "" if text[end + 1] == "\n" else text[end + 1]
+                        expands = expands or text[end + 1] in "$\x60"
+                        end += 2
+                        continue
+                    if text[end] == "$":
+                        after = expansion(end)
+                        w.text += text[end:after]
+                        end, expands = after, True
+                        continue
+                    if text[end] == "\x60":
+                        raise Unparsed("a command substitution")
+                    w.text += text[end]
+                    end += 1
+                if end >= n:
+                    raise Unparsed("an unterminated quote")
+                w.parts.append(Part("double", at, end + 1, expands))
+                at, bare = end + 1, None
+                continue
+            if bare is None:
+                bare = Part("bare", at, at)
+                w.parts.append(bare)
+            if c == "\\":
+                if text.startswith("\n", at + 1):
+                    at += 2  # a backslash before a newline joins the lines
+                elif at + 1 < n:
+                    w.text += text[at + 1]
+                    at += 2
+                else:
+                    w.text += c
+                    at += 1
+            elif c == "$":
+                after = expansion(at)
+                w.text += text[at:after]
+                at, bare.expands = after, True
+            elif c == "\x60":
+                raise Unparsed("a command substitution")
+            elif c in "{}":
+                raise Unparsed("a brace")
+            else:
+                w.glob = w.glob or c in "*?["
+                w.text += c
+                at += 1
+            bare.end = at
+        w.end = at
+        return w, at
+
+    def current():
+        if state["command"] is None:
+            state["command"] = Command(state["pipeline"], len(commands))
+            commands.append(state["command"])
+        return state["command"]
+
+    def close(joined):
+        """End the simple command being read. `joined`: a | carries its pipeline on to the next one."""
+        state["command"], state["joined"] = None, joined
+        state["pipeline"] += 0 if joined else 1
+
+    def place(w, role, command):
+        for part in w.parts:
+            part.role, part.command = role, command.index
+            parts.append(part)
+
+    def bodies(at):
+        """Read the body of every pending heredoc, the first one starting at `at`. Returns where the
+        commands go on: the line after the last delimiter line."""
+        while pending:
+            delimiter, strip, quoted, command = pending.pop(0)
+            start = at
+            while True:
+                end = text.find("\n", at)
+                line = text[at:] if end < 0 else text[at:end]
+                if (line.lstrip("\t") if strip else line) == delimiter:
+                    break
+                if end < 0:
+                    raise Unparsed("an unterminated heredoc")
+                if not quoted and line.endswith("\\"):
+                    raise Unparsed("a line joined by a backslash in a heredoc body")
+                at = end + 1
+            body = Part("body", start, at, not quoted and any(c in text[start:at] for c in "$\x60"))
+            body.role, body.command = "body", command
+            parts.append(body)
+            at = n if end < 0 else end + 1
+        return at
+
+    def redirect(at):
+        """Read the redirection whose operator starts at `at`; returns where it ends."""
+        command = current()
+        if text.startswith("<<<", at):
+            raise Unparsed("a here-string")
+        if text.startswith("<<", at):
+            at += 2
+            dash = text.startswith("-", at)
+            at += dash
+            strip = dash  # <<- strips the leading tabs of the delimiter line
+            while at < n and text[at] in " \t":
+                at += 1
+            name = DELIMITER.match(text, at)
+            if name is None or (name.end() < n and text[name.end()] not in " \t\n;&|<>"):
+                raise Unparsed("a heredoc delimiter the guard does not read")
+            delimiter = name.group(1) or name.group(2) or name.group(3)
+            pending.append((delimiter, strip, name.group(0) != delimiter, command.index))
+            return name.end()  # the body starts after the next newline, not right after this word
+        at += len(next(op for op in ("<>", "<&", ">>", ">&", ">|", "<", ">") if text.startswith(op, at)))
+        while at < n and text[at] in " \t":
+            at += 1
+        if at >= n or text[at] in "\n;&|()<>#":
+            raise Unparsed("a redirection without a word target")
+        target, at = word(at)
+        if target is None:
+            raise Unparsed("a redirection without a word target")
+        place(target, "target", command)
+        return at
+
+    while at < n:
+        c = text[at]
+        if c in " \t":
+            at += 1
+        elif text.startswith("\\\n", at):
+            at += 2
+        elif c == "\n":
+            at = bodies(at + 1)
+            if state["command"] is not None or not state["joined"]:
+                close(False)  # a newline after | does not end the pipeline
+        elif c == "#":
+            end = comment_end(text, at)
+            comments.append((at, end))
+            at = end
+        elif c == ";":
+            if text.startswith((";;", ";&"), at):
+                raise Unparsed("a case clause")
+            close(False)
+            at += 1
+        elif c == "&":
+            if text.startswith("&>", at):
+                raise Unparsed("a redirection without a word target")
+            close(False)
+            at += 2 if text.startswith("&&", at) else 1
+        elif c == "|":
+            if text.startswith("|&", at):
+                raise Unparsed("a pipe of standard error")
+            close(not text.startswith("||", at))
+            at += 2 if text.startswith("||", at) else 1
+        elif c in "()":
+            raise Unparsed("a parenthesis: a subshell, a function or a substitution")
+        elif c in "<>":
+            at = redirect(at)
+        else:
+            w, at = word(at)
+            if w is None:
+                at = redirect(at)
+                continue
+            command = current()
+            first = not command.words
+            name = ASSIGNMENT.match(text, w.start) if first and w.parts[0].kind == "bare" else None
+            if name and name.end() <= w.parts[0].end:
+                raise Unparsed("the assignment %s" % name.group(1))
+            if first and text[w.start:w.end] in RESERVED:
+                raise Unparsed("the reserved word %s" % w.text)
+            if first and w.expands():
+                raise Unparsed("an expansion in a command word")
+            if first and w.glob and w.text != "[":
+                raise Unparsed("a glob character in a command word")
+            command.words.append(w)
+            place(w, "command" if first else "argument", command)
+    if pending:
+        raise Unparsed("an unterminated heredoc")
+    for command in commands:
+        head = command.words[0].text if command.words else ""
+        if head in SHELL_BUILTINS and head not in ALLOWED_BUILTINS:
+            raise Unparsed("the builtin %s" % head)
+        if head == "printf" and any(w.text.startswith("-v") for w in command.words[1:]):
+            raise Unparsed("the builtin printf with a word that starts with -v")
+    return commands, parts, comments
+
+
+def program(command):
+    """The command's program as written: its command word after quote removal."""
+    return command.words[0].text[:60] if command.words else "a command with no command word"
+
+
+def plain(command):
+    """Whether the command is a plain text tool: a bare name with no slash, in the fixed set. A copy
+    of a shell named cat and called by its path is not one."""
+    name = command.words[0].text if command.words else ""
+    return name in PLAIN
+
+
+def held(commands, parts):
+    """The parts that are data where they stand: a quoted string or a heredoc body the shell does not
+    expand, in a pipeline whose every command is a plain text tool."""
+    tools = {}
+    for command in commands:
+        tools.setdefault(command.pipeline, []).append(plain(command))
+    return [part for part in parts
+            if part.kind in STRINGS and not part.expands and part.role in ("argument", "target", "body")
+            and all(tools[commands[part.command].pipeline])]
+
+
+def stored(command):
+    """The words of a git or gh command that hold text it stores and never runs. Git, as the bare
+    word git with no global option other than -C: the value of -m or --message for commit, tag, notes
+    and stash, and of --grep for log, show and rev-list. Gh, as the bare word gh: the value of -t, -b,
+    -n, --title, --body or --notes for the listed subcommands. A value the shell expands stays live."""
+    words = command.words
+    texts = [w.text for w in words]
+    flags, at = (), 1
+    if texts[:1] == ["git"]:
+        while texts[at:at + 1] == ["-C"]:
+            at += 2
+        flags = GIT_STORED.get(texts[at] if at < len(texts) else None, ())
+        at += 1
+    elif texts[:1] == ["gh"] and tuple(texts[1:3]) in GH_STORED:
+        flags, at = GH_FLAGS, 3
+    out = []
+    while flags and at < len(words) and texts[at] != "--":
+        if texts[at] in flags:
+            out += words[at + 1:at + 2]
+            at += 2
+            continue
+        if texts[at].startswith("--") and "=" in texts[at] and texts[at].split("=", 1)[0] in flags:
+            out.append(words[at])
+        at += 1
+    return [w for w in out if not w.expands()]
+
+
+def character(match):
+    """The character a backslash escape stands for."""
+    digits = match.group(0)[1:]
+    code = int(digits, 8) if digits[0] in "01234567" else int(digits[1:], 16)
+    return chr(code) if code < 0x110000 else match.group(0)
+
+
+def names_git(text):
+    """Whether the text names git or gh, in any of three forms. The first deletes every quote
+    character and backslash. The second first deletes every parameter expansion, the third first
+    writes every backslash escape as its character. Each form only adds matches."""
+    plainly = text.translate(UNQUOTE)
+    unexpanded = EXPANSIONS.sub("", text).translate(UNQUOTE)
+    unescaped = ESCAPES.sub(character, text).translate(UNQUOTE)
+    return any(GIT_NAME.search(form) for form in (plainly, unexpanded, unescaped))
+
+
+def live_text(command):
+    """(the text the judgment reads, what the scanner saw): the command with each comment dropped,
+    each heredoc body and quoted string that is data written as a placeholder word, and each command
+    word written after quote removal. A command outside the subset is returned as written, with the
+    construct that put it there."""
+    try:
+        commands, parts, comments = scan(command)
+    except Unparsed as error:
+        return command, str(error)  # outside the subset: the whole command is judged as written
+    dropped = list(comments)  # a comment is never run
+    strings = held(commands, parts)
+    values = [w for one in commands for w in stored(one)]  # standing alone or in a longer command
+    outside = list(command)
+    for start, end in dropped + [(part.start, part.end) for part in strings]:
+        outside[start:end] = " " * (end - start)
+    outside = "".join(outside)
+    spans = [(0, len(outside))]  # the whole text of the Bash call, across all its lines
+    named = [span for span in spans if names_git(outside[span[0]:span[1]])]
+    data = [part for part in strings if not any(a <= part.start < b for a, b in named)]
+    swaps = [(start, end, "") for start, end in dropped]
+    swaps += [(part.start, part.end, PLACEHOLDER + "\n" * (part.kind == "body")) for part in data]
+    swaps += [(w.start, w.end, PLACEHOLDER) for w in values]
+    swaps += [(w.start, w.end, w.text) for w in (c.words[0] for c in commands if c.words) if BARE.fullmatch(w.text)]
+    live, marks, at, size = [], [(0, 0, False)], 0, 0
+    for start, end, new in sorted(swaps, key=lambda swap: swap[:2]):
+        if start < at:
+            continue
+        live += [command[at:start], new]
+        size += start - at
+        marks += [(size, start, True), (size + len(new), end, False)]
+        size, at = size + len(new), end
+    live.append(command[at:])
+    return "".join(live), (commands, parts, strings, marks)
+
+
+def position(at, seen):
+    """Where the judged text at offset `at` sits in the command, in words."""
+    commands, parts, strings, marks = seen
+    live, raw, swapped = [mark for mark in marks if mark[0] <= at][-1]
+    raw += 0 if swapped else at - live
+    part = next((p for p in parts if p.start <= raw < p.end), None)
+    if part is None or part.role == "command":
+        return "as a command of a list or pipeline" if len(commands) > 1 else "as the command word"
+    if part in strings:
+        return "in text in a command that also names git or gh"
+    own = commands[part.command]
+    runner = next((c for c in [own] + [c for c in commands if c.pipeline == own.pipeline] if not plain(c)), None)
+    if runner is not None:
+        return "in the argument or input of %s, which is not a plain text tool" % program(runner)
+    return "in words of %s that are not quoted or that the shell expands" % program(own)
+
+
+def finding(text, seen):
+    """What the judged text held and where, for the unresolved line of a command that is not one
+    simple git or gh command: the matched text to the end of its line, cut at 120 characters."""
+    match = PUSHISH.search(text) or re.search(r"alias\.\S*=", text, re.I)
+    if match is None:
+        return ""
+    end = text.find("\n", match.start())
+    shown = " ".join(text[match.start():len(text) if end < 0 else end].split())[:120]
+    if isinstance(seen, str):
+        return '; found "%s" in text the guard does not parse (%s)' % (shown, seen)
+    return '; found "%s" %s' % (shown, position(match.start(), seen))
+
+
 def destinations():
     """[(full ref name, None)] for each destination, or (None, reason) for one not resolved."""
     if os.environ.get("VELDO_GUARD_PATH") == "pre-push":
         ref = os.environ.get("VELDO_GUARD_REF", "")
         return [(ref, None)] if ref.startswith("refs/") else unresolved("VELDO_GUARD_REF is not a full ref name")
-    command = os.environ.get("VELDO_GUARD_CMD", "")
+    # The judgment reads the live text: the command as the shell would run it (VELDO-0292).
+    command, seen = live_text(os.environ.get("VELDO_GUARD_CMD", ""))
     cwd = os.environ.get("VELDO_GUARD_CWD") or "."
     if not os.path.isdir(cwd):
         cwd = "."
     words = words_of(command)
+    if words is None or words[0] not in ("git", "gh"):
+        FOUND.append(finding(command, seen))  # not one simple git or gh command
     if words is None:
         if names_push_or_merge(command, words):
             return unresolved("the command is not one simple git or gh command, so it cannot be reproduced")
