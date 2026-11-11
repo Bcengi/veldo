@@ -15,6 +15,10 @@ footprint:
   - .veldo/control_launch_work.py
   - engine/.veldo/control_launch.py
   - .veldo/control_launch.py
+  - engine/.veldo/control_reservations.py
+  - .veldo/control_reservations.py
+  - engine/.veldo/control_reservation_runtime.py
+  - .veldo/control_reservation_runtime.py
   - engine/.veldo/control_engine_claude.py
   - .veldo/control_engine_claude.py
   - engine/.veldo/control_engine_codex.py
@@ -41,7 +45,9 @@ observability:
   metrics: >
     One run token record per settled subscription invocation, in the receiver's run_tokens
     directory: tokens, messages, wall seconds, outcome, unit, station, phase and account.
-    run_tokens(config) reads them.
+    run_tokens(config) reads them. The ledger's invocation record of a run stopped at its phase cap
+    carries settlement: stop, the cause, the units whose figures are lower bounds and the turns in
+    flight.
   traces: >
     None. The phases of one build are joined by the unit and by each phase's source commit, which
     is the commit the phase before it ended on.
@@ -89,8 +95,10 @@ acceptance_criteria:
       phase returns. It requires the
       payload without its spec text and its state note to be at most 4,096 bytes of JSON, for
       the oversized result
-      too, where remains is cut to 10 lines of 200 characters and each done note to 200
-      characters, with five done entries whose notes are 2,000 characters each. And it requires no
+      too, where remains is cut to at most 10 lines of at most 200 characters and each done note to
+      at most 200 characters, with five done entries whose notes are 2,000 characters each, and where
+      done notes, oldest first, and then remains lines, last first, are dropped further when the
+      payload would otherwise be over the bound. And it requires no
       payload to hold
       the final answer text of an earlier phase beyond its note and remains. Red at 6ee5bb5f, where
       the build payload has none of phase, source, done, remains, reading or note
@@ -109,15 +117,18 @@ acceptance_criteria:
       the last of them. Set: suite 82's
       stand-in engine in a mode that commits one file and then keeps answering without ending, with
       phase.messages 5 and phase.dispatches 4. Completeness: row phase/step-cap (prefix VELDO-0294)
-      requires the first dispatch's artifact document to name the stop phase_cap after the meter
-      counted 5 messages; its ledger invocation to end cancelled; the second dispatch to be the
+      requires the first dispatch's artifact document to name the stop phase_cap after the run's
+      step count reached at least 5, a step being a distinct assistant message with usage for Claude
+      Code and a distinct completed item of type agent_message, command_execution, file_change,
+      mcp_tool_call, web_search or collab_tool_call for Codex; its ledger invocation to end
+      cancelled; the second dispatch to be the
       same phase, with a source commit equal to the commit the stopped run made and with that commit
       in its done list. A run that stays under
       the cap ends as it does today. Red at
-      6ee5bb5f, where nothing counts a run's messages against a cap of its own and the stand-in runs
+      6ee5bb5f, where nothing counts a run's steps against a cap of its own and the stand-in runs
       to the role's deadline.
     falsified_by: >
-      Never compare the meter's messages with the cap. Registered mutant phase294-cap-unenforced
+      Never compare the run's step count with the cap. Registered mutant phase294-cap-unenforced
       must turn phase/step-cap red. Start the next dispatch from the stopped phase's source
       commit. Registered mutant phase294-capped-work-dropped must turn phase/step-cap red.
   - id: AC4
@@ -139,14 +150,16 @@ acceptance_criteria:
   - id: AC5
     text: >
       Claim: the Telegram report tells the owner once about every run whose settled tokens are over
-      RUN_TOKENS_FLAG (15,000,000) or unknown, and says nothing about a run under it. Set: three
-      settled invocation records in suite 72's store: 8,000,000 tokens, 15,000,001 tokens, and
-      tokens unknown. Completeness: row report/run-over-tokens (prefix VELDO-0294) requires no
-      report for the first; one report of event run_over_tokens for the second, whose text names
-      the unit, the dispatch, the tokens, the messages and the threshold; one for the third, whose
-      text says the tokens are unknown; and a second pass over the same journal to send nothing
-      more. Red at 6ee5bb5f, where REGISTRY (control_telegram_report.py:140) has no event that
-      reads a subscription_reservation record.
+      RUN_TOKENS_FLAG (15,000,000) or unknown, and says nothing about a run under it. A run settled
+      at stop (AC10) is not unknown: it is judged by its settled figure. Set: five settled invocation
+      records in suite 72's store: 8,000,000 tokens, 15,000,001 tokens, tokens unknown, and two
+      settled at stop, with 9,000,000 and with 15,000,001 tokens. Completeness: row
+      report/run-over-tokens (prefix VELDO-0294) requires no report for the first; one report of
+      event run_over_tokens for the second, whose text names the unit, the dispatch, the tokens, the
+      messages and the threshold; one for the third, whose text says the tokens are unknown; none
+      for the fourth; one for the fifth, whose text says at least before the tokens; and a second
+      pass over the same journal to send nothing more. Red at 6ee5bb5f, where REGISTRY
+      (control_telegram_report.py:140) has no event that reads a subscription_reservation record.
     falsified_by: >
       Report every settled run. Registered mutant tokens294-flag-threshold-ignored must turn
       report/run-over-tokens red. Treat unknown tokens as under the threshold. Registered mutant
@@ -200,12 +213,34 @@ acceptance_criteria:
     falsified_by: >
       Build the next payload without reading the note. Registered mutant
       phase294-state-note-not-carried must turn phase/state-note red.
+  - id: AC10
+    text: >
+      Claim: a run that Veldo stops at its phase cap is settled in the ledger from the figures its
+      meter observed up to the stop, marked as settled at stop, so that a cap or a window on tokens
+      or messages admits the continuation. Set: suite 82's stand-in in the mode of AC3, with
+      phase.messages 5, once with each engine, under a project policy that caps tokens and messages
+      and an account window whose unit is tokens. The Codex stand-in completes one turn with usage
+      before the turn it is stopped in. Completeness: row phase/settled-at-stop (prefix VELDO-0294)
+      requires the first dispatch's invocation record to be in state settled with nothing in its
+      unknown list; its charge to hold the tokens and messages that the usage lines in its artifact
+      add up to, which for Codex are those of the completed turn; its settlement to name stop, the
+      cause phase_cap, tokens and messages as lower bounds, and for Codex one turn in flight; and
+      the second dispatch to be admitted, with a dispatch record for the same phase and a stand-in
+      marker that shows its engine started. Red at 6ee5bb5f, where the final report of a stopped run
+      carries no tokens or messages, both stay unknown, and the ledger refuses the next invocation
+      unknown_allowance:tokens (control_reservations.py:153 to 156).
+    falsified_by: >
+      Send the final report of a capped run without the observed figures. Registered mutant
+      phase294-capped-left-unknown must turn phase/settled-at-stop red.
 required_evidence: [unit, integration]
 rollback: >
   Revert the commit. Runtime.build again runs a build as one dispatch, no run has a message cap of
   its own, and no run token record or run_over_tokens report is written. The run_tokens directory
-  can be deleted. Nothing else reads it. Dispatch, ledger and floor records written while this
-  change was in place stay valid, because none of their shapes change.
+  can be deleted. Nothing else reads it. A run stopped at a cap is no longer settled at stop,
+  because no run is stopped at one. Dispatch and floor records written while this change was in
+  place stay valid, because their shapes do not change. Ledger records stay valid too: an
+  invocation record settled at stop holds one more field, settlement, which the earlier code does
+  not read.
   A revert changes control_launch.py and both engine modules again, so the VELDO-0127 live captures
   and resource records are retaken with the revert.
 ---
@@ -291,6 +326,23 @@ repository, and it is kept only if it descends from the phase's source commit. I
 source commit, the phase made no commit and the next dispatch starts from the same commit. Work that
 was not committed is lost with the clone, and the brief says so.
 
+A run that Veldo stops has no conclusive total, because the engine prints one only when it ends by
+itself. At 6ee5bb5f the final report of a stopped run carries no tokens or messages, the ledger
+keeps both as unknown, and under any cap or window on tokens or messages it refuses the next
+invocation (control_reservations.py:153 to 156 and 171 to 172). The continuation of a capped phase
+would be refused that way. The owner decided to fix that at its root (Telegram 40821 and 40822). For
+a run stopped with the cause phase_cap, and for no other, Metering.settle puts into the final report
+the tokens and messages its meter observed up to the stop, with a settlement mark: stop, the cause,
+which figures are lower bounds, and the turns in flight. For Claude Code the figures are the
+assistant messages that carried usage. For Codex they are the completed turns. A Codex turn in
+flight has printed no usage, so it adds nothing to the figures and the mark counts it. The ledger
+accepts the mark only on a final report with the outcome cancelled that carries both figures. It
+stores the mark on the invocation record and settles the record by the rule it already has for a
+final report, so the record leaves nothing unknown and the next invocation is admitted or refused
+on the figures. The figures are lower bounds: a tokens cap can be passed by what the stopped run
+used after its last counted line. A run stopped for any other cause, or by its deadline, stays
+unknown as today.
+
 The next phase starts from the commit the last one ended on. If the answer said done, it is the
 next phase in order. Otherwise it is the same phase again with the new remains. A build may use
 phase.dispatches dispatches. When they are used up and the proof phase has not returned, Runtime.build
@@ -310,7 +362,8 @@ The flag is a Telegram report. control_telegram_report already walks the committ
 the owner one report per enabled event. REGISTRY gains run_over_tokens, read from the
 subscription_reservation records the ledger writes. Its handler reports an invocation record when its
 final report commits and its charged tokens are above RUN_TOKENS_FLAG, or its tokens are still
-unknown. The threshold is 15,000,000, the figure the owner's own check uses. The report goes out on
+unknown. A run settled at stop has a figure and is judged by it, and its report says at least. The
+threshold is 15,000,000, the figure the owner's own check uses. The report goes out on
 the channel's next pass, so the owner hears about a run that used too many tokens on the reporter's
 next pass after it settles.
 
@@ -353,8 +406,10 @@ counting the unit's build dispatches, so control_reservation_runtime.boundary na
 third phases retry. That label is wrong for a phase and this spec does not fix it. The run token
 record carries the phase beside the boundary.
 
-The ledger. control_reservations and its caps are untouched. A phase's message cap is not a ledger
-cap: it stops one run and refuses nothing.
+The ledger's caps and its admission check. control_reservations checks an invocation against the
+caps and windows as it does today. It gains one thing: it accepts the settlement mark on a final
+report and stores it. A phase's message cap is not a ledger cap: it stops one run and refuses
+nothing.
 
 Review. A review is already one short dispatch on a fresh clone. It gets a run token record and
 nothing else changes.
@@ -397,3 +452,4 @@ listed, and this unit's own note falls under proof/VELDO-0294/**.
 2026-11-11: re-review 2 C1 and C2 applied: the note rule and phase.soft belong to AC2 with their own
 mutant; AC9 keeps one claim.
 2026-11-11: approved by the owner with the defaults 80 messages per phase, 6 dispatches per build and a 15,000,000 token flag (Telegram 40816; the state note written at every commit instead of a soft-limit message was explained to him in 40817). Status ready.
+2026-11-11: amended after the design's validation, with the owner's approval of the spec change (Telegram 40821 and 40822, "Yes ok"). The design's section 10 proposed S1 to S4. S2 accepted: AC3 counts steps, defined per engine, and the count at the stop is at least the cap. S3 accepted: AC2's cuts are upper limits, with the order in which more is dropped. S1 rejected as written: instead of making continuation depend on admission, a run stopped at its phase cap is settled at stop from the meter's observed figures, so a tokens or messages cap or window admits the continuation; this is the new AC10, and AC3's claim is unchanged. S4 replaced by the same decision: AC5 judges a run settled at stop by its settled figure, and a run with no figure is still reported as unknown. Footprint gains control_reservations.py and control_reservation_runtime.py with their .veldo copies. Status stays ready.
