@@ -679,6 +679,9 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
               'source, on the colleague\'s feed or any read model, while the turn ran %s or after it ended %s'
               % (leaks_running, leaks_ended), bool(talk and dispatch_id and turn.get('intake_command'))
               and not leaks_running and not leaks_ended)
+        check('AC1/events', 'the owner is still served his own turn\'s usage window observations by their command id',
+              any(isinstance(e['command_id'], str) and e['command_id'].startswith('window/%s/' % dispatch_id)
+                  for e in mine_events))
 
         # AC1/observability: each conversation route call with its principal, route, conversation id, outcome and
         # the request id its command carries; counted by route and outcome; never a message's text.

@@ -551,6 +551,10 @@ class ApiAuthority:
                 if change.get('kind') in (CR.KIND, 'membership') and data.get('revoked_at') is not None:
                     revocations[eid] = {'kind': change['kind'], 'data': {'credential_id': data.get('credential_id'),
                                                                          'revoked_at': data['revoked_at']}}
+            # VELDO-0178: a command id naming a conversation turn's dispatch (an account window observation's) is
+            # served null to everyone but that conversation's owner, a universal-scope reader included.
+            if scope is not None:
+                command = scope.command(command)
             out.append({'seq': seq, 'command_id': command, 'record_digest': digest, 'committed_at': committed,
                         'entities': [{'id': eid, 'kind': (visible[eid] or {}).get('kind')} for eid in sorted(visible)],
                         'revocations': revocations, 'published': [e['id'] for e in by_seq.get(seq, [])

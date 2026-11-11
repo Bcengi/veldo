@@ -15,3 +15,25 @@ RED: at de3e5256's production modules with the strengthened suite:
   133_veldo_0178_conversation_api                 15 passed    3.23s
 selftest (PARTIAL, 1 of 195 suites): 41 passed, 1 failed in 3.23s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+
+GREEN: with the fix (control_api_models_scope: ReaderScope.project_data serves an account's usage windows through
+account_data, each source_dispatch that is a conversation turn's dispatch null to anyone but the conversation's owner;
+control_api_authority._feed serves an entry's command id through ReaderScope.command, null when it names such a
+dispatch; both decided from the dispatch record the store holds), the suite as committed with the fix:
+  VELDO-0178 opened: 200 None c-99e197dc45821ced2cdd 200 c-7c927130975201b11dae
+  VELDO-0178 midway: True dispatch/c-99e197dc45821ced2cdd/4ddc40322fe24d458cf54a6f0e098325
+  VELDO-0178 ended: True completed 9 ended
+  133_veldo_0178_conversation_api                 16 passed    3.16s
+selftest (PARTIAL, 1 of 195 suites): 42 passed, 0 failed in 3.16s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+
+MUTANT, by hand (case account178-window-source-served applied to the checkout's .veldo/control_api_models_scope.py
+with check_teeth_mutations.mutate, the suite run the same way, the module restored byte for byte). The run through
+the gate's driver is in proof/VELDO-0178/heavy_runs.sh, for the lead's queue:
+  VELDO-0178 opened: 200 None c-de6a9e7619773ba3105f 200 c-a44ac1cc1ceb483b3d2d
+  VELDO-0178 midway: True dispatch/c-de6a9e7619773ba3105f/4ba532da5ad14ed399e77db2d7d82c5f
+  VELDO-0178 ended: True completed 9 ended
+  VELDO-0178 detail: AC1/events no id carrying the owner's conversation or its turn's dispatch, nor the turn's intake source, on the colleague's feed or any read model, while the turn ran [] or after it ended ['spend:window:account:account-claude_code-1:five_hour', 'spend:window:account:account-claude_code-1:seven_day']
+  SELFTEST FAIL: VELDO-0178 AC1/events
+  133_veldo_0178_conversation_api                 15 passed    3.13s
+selftest (PARTIAL, 1 of 195 suites): 41 passed, 1 failed in 3.13s

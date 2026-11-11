@@ -10,7 +10,9 @@ dispatch of one of its turns, with every record of that turn's run (its unit's d
 its reservations, and the policy a conversation's subject names) and the intake records naming it (the turn's intake
 source, a reading proposed in it), are visible to the conversation's owner alone, whatever the reader's scope, the
 universal one included; anyone else is withheld them as `conversation_owner`. Each is decided from its own link to
-its conversation, never from a field its run's end clears.
+its conversation, never from a field its run's end clears. A record that stays shared but names a conversation
+turn's dispatch (an account's usage windows, and the journal command id of the observation that wrote them) is
+served to anyone but the conversation's owner with that name null.
 """
 import copy
 import json
@@ -81,6 +83,34 @@ def conversation_owner(conn, identity):
     return json.loads(row[1]).get('owner') if row and row[0] == 'conversation' else None
 
 
+def turn_dispatch(conn, dispatch_id):
+    """The conversation whose turn the run `dispatch_id` is, or None for no run of a conversation turn; decided
+    from the dispatch record the store holds, never from the id's shape."""
+    if not isinstance(dispatch_id, str) or not dispatch_id:
+        return None
+    row = conn.execute('SELECT kind, data FROM entities WHERE id=?', ('dispatch:' + dispatch_id,)).fetchone()
+    return conversation_of(conn, row[0], json.loads(row[1])) if row and row[0] == 'dispatch' else None
+
+
+def named_turns(conn, text):
+    """The conversations whose turn's dispatch `text` names (a journal command id built from a dispatch id, as an
+    account window observation's is). A dispatch id is a path opening with `dispatch`; each such run of segments
+    is looked up, longest first, and only a dispatch the store holds decides."""
+    found = []
+    if not isinstance(text, str) or 'dispatch/' not in text:
+        return found
+    parts = text.split('/')
+    for start, part in enumerate(parts):
+        if part != 'dispatch':
+            continue
+        for end in range(len(parts), start + 1, -1):
+            conversation = turn_dispatch(conn, '/'.join(parts[start:end]))
+            if conversation is not None:
+                found.append(conversation)
+                break
+    return found
+
+
 class ReaderScope:
     def __init__(self, conn, membership, scope, rules, principal=None):
         self.conn, self.membership, self.scope, self.rules = conn, membership, scope, rules
@@ -139,7 +169,10 @@ class ReaderScope:
         return None
 
     def project_data(self, kind, data):
-        """Project metadata in a visible intake record follows the reader's scope too."""
+        """Project metadata in a visible intake record follows the reader's scope too, and a shared account's
+        usage windows name a conversation turn's dispatch to that conversation's owner alone (VELDO-0178)."""
+        if kind == 'account':
+            return self.account_data(data)
         if self.universal or kind not in ('intake_proposal', 'intake_question'):
             return data
         served = copy.deepcopy(data)
@@ -171,6 +204,31 @@ class ReaderScope:
                     walk(item)
         walk(served)
         return served
+
+    def owns(self, conversation):
+        return isinstance(self.principal, str) and conversation_owner(self.conn, conversation) == self.principal
+
+    def account_data(self, data):
+        """An account is shared, but the dispatch a usage window was observed on (`source_dispatch`) names the
+        conversation when it is a conversation turn's: served as null to everyone but that conversation's owner,
+        whatever the reader's scope (re-review 2026-11-11 finding A)."""
+        windows = data.get('windows') if isinstance(data, dict) else None
+
+        def foreign(window):
+            conversation = turn_dispatch(self.conn, window.get('source_dispatch')) if isinstance(window, dict) else None
+            return conversation is not None and not self.owns(conversation)
+        hidden = [name for name, window in (windows.items() if isinstance(windows, dict) else ()) if foreign(window)]
+        if not hidden:
+            return data
+        served = copy.deepcopy(data)
+        for name in hidden:
+            served['windows'][name]['source_dispatch'] = None
+        return served
+
+    def command(self, command_id):
+        """The journal command id the feed serves this reader: null when it names a conversation turn's dispatch
+        (an account window observation's does) and the reader does not own that conversation, whatever his scope."""
+        return None if any(not self.owns(c) for c in named_turns(self.conn, command_id)) else command_id
 
     def owned(self, kind, data):
         """None for a record of no conversation, else whether the reader is its conversation's owner."""
