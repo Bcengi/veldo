@@ -24,6 +24,9 @@ def _v129_suite():
         'control_launch_work.py': ROOT / ".veldo" / "control_launch_work.py",
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
+        'control_engine_codex.py': ROOT / '.veldo/control_engine_codex.py',
+        'control_reservations.py': ROOT / '.veldo/control_reservations.py',
+        'control_reservation_runtime.py': ROOT / '.veldo/control_reservation_runtime.py',
         'executor.py': ROOT / ".veldo" / "executor.py",
         'dispatch.py': ROOT / ".veldo" / "dispatch.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
@@ -35,7 +38,9 @@ def _v129_suite():
              'source/no-completion', 'installation/assets', 'build/gitdir-symlink', 'build/gitdir-gitfile',
              'build/gitdir-commondir', 'build/gitdir-alternates', 'build/gitdir-missing',
              'build/config-neutralization', 'artifact/runtime-binding', 'artifact/floor-binding', 'build/handoff',
-             'format/fake-lines')
+             'format/fake-lines', 'phase/fresh-dispatches', 'phase/brief', 'phase/step-cap',
+             'phase/budget', 'phase/head-read', 'phase/state-note', 'phase/settled-at-stop')
+    prefixes = {name: 'VELDO-0294' for name in names if name.startswith('phase/')}
     rows = {name: [] for name in names}
     def check(row, label, ok):
         rows[row].append((label, bool(ok)))
@@ -173,7 +178,7 @@ def _v129_suite():
         (src / '.veldo/policy.yaml').write_text('risk_tiers:\n  standard: {reviews: 1}\n  critical: {reviews: 2}\n')
         policy = DSP.review_policy_record(src / '.veldo/policy.yaml')
         put(DSP.review_policy_id(repository), 'review_policy', policy)
-        units = ['VELDO-91%02d' % n for n in range(1, 40)]
+        units = ['VELDO-91%02d' % n for n in range(1, 100)]
         for unit in units:
             (src / 'specs' / (unit + '.md')).write_text('\n'.join([
                 dash, 'schema: veldo.spec/v1', 'id: ' + unit, 'title: Worker fixture', 'status: ready',
@@ -204,9 +209,9 @@ def _v129_suite():
             res.configure('policy/' + account, 'account', account, ceiling, now=time.time())
         writer.command_registry['claim_operation'] = {'transaction_transition': L.D.CLM.transition,
                                                        'writes': ('entities', 'journal', 'commands', 'nonces')}
-        def admit(unit, risk='standard'):
+        def admit(unit, risk='standard', project=None):
             put(unit, 'execution_unit', dict(state='READY', repository_uuid=repository, backlog_item_uuid='backlog:' + unit,
-                                             requirements=[], eligible_holders=['builder'], project='p129',
+                                             requirements=[], eligible_holders=['builder'], project=project or 'p129',
                                              scope_digest='scope-' + unit, revision=1, depends_on=[], risk=risk))
             put('backlog:' + unit, 'backlog_item', dict(state='PRIORITIZED', repository_uuid=repository))
             put('admission:' + unit, 'admission', dict(unit=unit, state='accepted', scope_digest='scope-' + unit))
@@ -231,7 +236,7 @@ def _v129_suite():
         baseline = json.loads((TREE / 'proof/VELDO-0155/claude-baseline.json').read_text())
         status_line = next(message for message, kind in L.ENGINES['codex'].LOGIN_STATUS if kind == 'chatgpt')
         fake = r'''#!@@PYTHON@@ -B
-import hashlib, json, os, sqlite3, subprocess, sys, uuid
+import hashlib, json, os, signal, sqlite3, subprocess, sys, time, uuid
 from pathlib import Path
 markers, protected = Path(@@MARKERS@@), Path(@@PRIVATE@@)
 engine = 'codex' if 'codex' in sys.argv[0] else 'claude_code'
@@ -240,8 +245,11 @@ if sys.argv[1:3] == ['login', 'status']:
     print(@@STATUS@@, file=sys.stderr)
     sys.exit(0)
 printed = []
+output_path = None
 def emit(event):
     printed.append(event)
+    if output_path is not None:
+        output_path.write_text(json.dumps(printed))
     print(json.dumps(event), flush=True)
 if engine == 'claude_code':
     request = json.loads(sys.stdin.readline())
@@ -262,8 +270,13 @@ except PermissionError:
     custody = True
 manifest = json.loads((Path.cwd().parent / 'clone.json').read_text()) if (Path.cwd().parent / 'clone.json').exists() else {}
 own = {'pid': os.getpid(), 'cwd': str(Path.cwd()), 'packet': packet, 'custody': custody,
-       'manifest': manifest, 'argv': sys.argv, 'names': sorted(os.environ)}
-(markers / (packet['dispatch_id'].split('/')[-1] + '.json')).write_text(json.dumps(own))
+       'manifest': manifest, 'argv': sys.argv, 'names': sorted(os.environ), 'session': str(uuid.uuid4()), 'commits': []}
+marker_path = markers / (packet['dispatch_id'].split('/')[-1] + '.json')
+output_path = marker_path.with_suffix('.out')
+def save():
+    marker_path.write_text(json.dumps(own))
+save()
+output_path.write_text(json.dumps(printed))
 def git(*args):
     env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
     env.update(GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL='/dev/null', GIT_AUTHOR_NAME='Fixture',
@@ -273,22 +286,69 @@ def git(*args):
                           env=env, check=True, capture_output=True, text=True).stdout.strip()
 def digest(data):
     return 'sha256:' + hashlib.sha256(data).hexdigest()
+def commit(label):
+    git('add', '-A')
+    git('commit', '-q', '-m', label)
+    value = git('rev-parse', 'HEAD')
+    own['commits'].append(value)
+    save()
+    return value
+phase = payload.get('phase', {}).get('name')
+capped = mode.startswith('cap-') and (not payload.get('done') or mode == 'cap-always')
 if packet['station'] == 'build':
     evidence = Path('proof') / unit / 'evidence.txt'
     evidence.parent.mkdir(parents=True, exist_ok=True)
-    evidence.write_text('implementation evidence\n')
-    Path('built.txt').write_text(unit + '\n')
-    git('add', '-A')
-    git('commit', '-q', '-m', 'Fixture implementation')
-    implementation = git('rev-parse', 'HEAD')
+    note_path = evidence.parent / 'phase-state.md'
+    if phase in (None, 'edit'):
+        evidence.write_text('implementation evidence\n')
+        Path('built.txt').write_text(unit + '\n' + packet['dispatch_id'])
+        note_path.unlink(missing_ok=True)
+        if mode == 'cap-note6000':
+            note_path.write_bytes(('\u00e9\r\nx\n' * 1000).encode())
+        elif mode == 'cap-note8193':
+            note_path.write_bytes(b'x' * 8193)
+        elif mode == 'cap-note-link':
+            note_path.symlink_to('evidence.txt')
+        elif mode != 'cap-note-absent':
+            note_path.write_text('done\nleft\ndecisions made\napproaches tried and rejected\n')
+        implementation = commit('Fixture implementation')
+    else:
+        implementation = git('rev-parse', 'HEAD')
+    if phase in (None, 'proof') and (note_path.exists() or note_path.is_symlink()):
+        note_path.unlink()
+        implementation = commit('Fixture evidence ready')
     proof = {'schema': 'veldo.proof/v1', 'spec_id': unit, 'spec_revision': payload['spec_revision'],
              'commit': implementation, 'producer': payload['producer'], 'checks': [], 'rollback': 'git revert',
              'criteria': [{'id': 'AC1', 'status': 'passed', 'evidence': [
                  {'type': 'unit', 'path': str(evidence), 'digest': digest(evidence.read_bytes())}]}]}
-    (evidence.parent / 'manifest.json').write_text(json.dumps(proof))
-    git('add', '-A')
-    git('commit', '-q', '-m', 'Fixture proof')
-    result = {'commit': git('rev-parse', 'HEAD'), 'proof': proof}
+    if phase in (None, 'proof'):
+        note_path.unlink(missing_ok=True)
+        (evidence.parent / 'manifest.json').write_text(json.dumps(proof))
+        commit('Fixture proof')
+    result = {'commit': git('rev-parse', 'HEAD'), 'proof': proof, 'done': True,
+              'note': 'Finished ' + str(phase), 'remains': ['Next ' + str(phase)],
+              'private_answer': 'PRIOR_ANSWER_MUST_NOT_TRAVEL'}
+    own['answer'] = result
+    save()
+    if capped:
+        head = Path('.git/HEAD')
+        ref = Path('.git/refs/heads/phase-fixture')
+        ref.write_text(result['commit'] + '\n')
+        head.write_text('ref: refs/heads/phase-fixture\n')
+        if mode == 'cap-head-link':
+            head.rename('.git/saved-head')
+            head.symlink_to('saved-head')
+        elif mode == 'cap-ref-link':
+            ref.rename('.git/saved-ref')
+            ref.symlink_to('../../saved-ref')
+        elif mode == 'cap-ref-outside':
+            head.write_text('ref: refs/tags/phase-fixture\n')
+        elif mode == 'cap-heads-link':
+            Path('.git/refs/heads').rename('.git/saved-heads')
+            Path('.git/refs/heads').symlink_to('../saved-heads', target_is_directory=True)
+        elif mode == 'cap-packed':
+            ref.unlink()
+            Path('.git/packed-refs').write_text(result['commit'] + ' refs/heads/phase-fixture\n')
     # A used clone's configuration must never run outside confinement while collecting its result.
     if mode.startswith('gitdir-'):
         if mode == 'gitdir-symlink':
@@ -325,12 +385,24 @@ usage = {'input_tokens': 3, 'output_tokens': 3, 'cache_creation_input_tokens': 0
          'cache_creation': {'ephemeral_1h_input_tokens': 0, 'ephemeral_5m_input_tokens': 0},
          'server_tool_use': {'web_fetch_requests': 0, 'web_search_requests': 0}, 'service_tier': 'standard'}
 if engine == 'claude_code':
-    session = str(uuid.uuid4())
+    session = own['session']
     # The binary's built-in tools, as the live init listed them.
     emit(complete_event({'type': 'system', 'subtype': 'init', 'cwd': str(Path.cwd()), 'session_id': session, 'tools': ['Read', 'Bash'],
                          'mcp_servers': [], 'model': 'configured-model', 'permissionMode': 'default',
                          'slash_commands': [], 'apiKeySource': 'none', 'claude_code_version': __import__('os').path.basename(__import__('sys').argv[0]),
                          'output_style': 'default', 'agents': [], 'skills': [], 'plugins': [], 'uuid': str(uuid.uuid4())}))
+    def step(index):
+        emit(complete_event({'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()),
+             'session_id': session, 'message': {'id': 'msg_step_' + str(index), 'type': 'message',
+             'role': 'assistant', 'model': 'configured-model', 'content': [], 'stop_reason': None,
+             'stop_sequence': None, 'usage': dict(usage)}}))
+    if capped:
+        for index in range(1000):
+            step(index)
+            time.sleep(0.06)
+        sys.exit(3)
+    if mode == 'under-cap':
+        for index in range(3): step(index)
     emit(complete_event({'type': 'assistant', 'parent_tool_use_id': None, 'uuid': str(uuid.uuid4()), 'session_id': session,
                          'message': {'id': 'msg_' + uuid.uuid4().hex[:12], 'type': 'message', 'role': 'assistant',
                                      'model': 'configured-model', 'content': [], 'stop_reason': None,
@@ -348,8 +420,27 @@ if engine == 'claude_code':
         event.pop('modelUsage')
     emit(event)
 else:
-    emit(complete_event({'type': 'thread.started', 'thread_id': str(uuid.uuid4())}))
+    emit(complete_event({'type': 'thread.started', 'thread_id': own['session']}))
     emit(complete_event({'type': 'turn.started'}))
+    if capped:
+        if mode != 'cap-first-turn':
+            emit({'type': 'turn.completed', 'usage': {'input_tokens': 3, 'cached_input_tokens': 0,
+                  'cache_write_input_tokens': 0, 'output_tokens': 2, 'reasoning_output_tokens': 0}})
+            emit(complete_event({'type': 'turn.started'}))
+        for index in range(1000):
+            emit(complete_event({'type': 'item.completed', 'item': {'id': 'step_' + str(index),
+                 'type': 'agent_message', 'text': 'Working'}}))
+            time.sleep(0.06)
+        sys.exit(3)
+    if mode == 'under-cap':
+        for index in range(3):
+            emit(complete_event({'type': 'item.completed', 'item': {'id': 'step_' + str(index),
+                 'type': 'agent_message', 'text': 'Working'}}))
+        for item in [{'id': 'step_0', 'type': 'agent_message', 'text': 'Repeated'},
+                     {'id': 'reason', 'type': 'reasoning', 'text': 'Thinking'},
+                     {'id': 'todo', 'type': 'todo_list', 'items': []},
+                     {'id': 'err', 'type': 'error', 'message': 'Fixture control'}]:
+            emit(complete_event({'type': 'item.completed', 'item': item}))
     emit(complete_event({'type': 'item.completed', 'item': {'id': 'answer', 'type': 'agent_message', 'text': text}}))
     emit({'type': 'turn.completed', 'usage': {} if mode == 'missing-usage' else
           {'input_tokens': 3, 'cached_input_tokens': 0, 'cache_write_input_tokens': 0, 'output_tokens': 2,
@@ -433,23 +524,26 @@ sys.exit(7 if mode == 'nonzero' else 0)
                       domain=domain, repository=repository, host='fixture-host', state_root=str(factory),
                       profile=profile, adapters=adapters, clones=clones, host_trust=str(trust_file))
         counter = [0]
-        def session(engine, mode='valid', review_mode='valid'):
+        def session(engine, mode='valid', review_mode='valid', phase=None):
             counter[0] += 1
             path = base / ('receiver-%d.json' % counter[0])
             value = dict(config, work={'builder': role(engine, 'builder', mode),
                                       'reviewers': [role(engine, who, review_mode) for who in ('review-a', 'review-b')],
                                       'candidates': str(candidates), 'projections': str(state / 'projections')})
+            if phase is not None:
+                value['work']['builder'].update(phase=phase, seconds=5)
             path.write_text(json.dumps(value))
             loop = EX.LiveLoop(root=src, configuration=path)
             runtime = loop.worker()
             sessions.append(runtime)
             return loop, runtime, path
         next_unit = [0]
-        def build(engine, mode='valid', review_mode='valid', risk='standard'):
+        def build(engine, mode='valid', review_mode='valid', risk='standard', phase=None, prepare=None):
             unit = units[next_unit[0]]
             next_unit[0] += 1
-            generation = admit(unit, risk)
-            loop, run, path = session(engine, mode, review_mode)
+            generation = admit(unit, risk, project=unit if prepare else None)
+            if prepare is not None: prepare(unit)
+            loop, run, path = session(engine, mode, review_mode, phase)
             spec = loop.resolve(unit)
             result, error = attempt(lambda: loop.build(spec))
             return unit, generation, loop, run, path, spec, result, error
@@ -492,6 +586,192 @@ sys.exit(7 if mode == 'nonzero' else 0)
             accepted, error = accept(built)
             check('proof/authority', engine + ': accepted stored bundle feeds floor: ' + str(error),
                   accepted and accepted.get('proof_bundle') and accepted['state'] == 'review')
+        # VELDO-0294: observe contracts, engine markers, artifacts and ledger records independently.
+        def dispatches(built):
+            return list(reversed(DSP._dispatches(writer, domain, repository, built[0], 'build')))
+        def marker(record):
+            path = markers / (record['dispatch_id'].split('/')[-1] + '.json')
+            return json.loads(path.read_text()) if path.exists() else {}
+        def invocation(record):
+            return (entity(L.D.RES.entity('invocation', [domain, 'invocation/' + record['dispatch_id']])) or {}).get('data', {})
+        def document(record):
+            path = base / 'artifacts' / (hashlib.sha256(('invocation/' + record['dispatch_id']).encode()).hexdigest() + '.json')
+            return json.loads(path.read_text()) if path.exists() else {}
+        def lines(doc):
+            return [json.loads(line) for line in (doc.get('stream', {}).get('lines', [])
+                    if doc.get('engine') == 'claude_code' else doc.get('lines', []))]
+        def stopped(doc):
+            return doc.get('exit', {}).get('cause') if doc.get('engine') == 'claude_code' else doc.get('cause')
+        def payload(record):
+            return record['contract']['input']['payload']
+        def usage(doc):
+            events = lines(doc)
+            if doc.get('engine') == 'claude_code':
+                messages = {event['message']['id']: event['message']['usage'] for event in events
+                            if event.get('type') == 'assistant' and event.get('message', {}).get('usage')}
+                return sum(sum(u.get(k, 0) for k in ('input_tokens', 'output_tokens',
+                           'cache_creation_input_tokens', 'cache_read_input_tokens')) for u in messages.values()), len(messages)
+            turns = [event['usage'] for event in events if event.get('type') == 'turn.completed']
+            return sum(u.get('input_tokens', 0) + u.get('output_tokens', 0) for u in turns), len(turns)
+        for engine, built in builds.items():
+            records = dispatches(built)
+            observations = [marker(r) for r in records]
+            contracts = [r['contract'] for r in records]
+            check('phase/fresh-dispatches', engine + ': three fresh dispatches, clones and sessions',
+                  len(records) == 3 and len({r['dispatch_id'] for r in records}) == 3
+                  and len({m.get('cwd') for m in observations}) == 3
+                  and len({m.get('session') for m in observations}) == 3
+                  and all('resume' not in payload(r) and W.L.RTM.boundary(r['contract']) != 'follow_on' for r in records))
+            check('phase/fresh-dispatches', engine + ': source chain and newest floor dispatch',
+                  len(records) == 3 and contracts[0]['source']['commit'] == built[5]['base']
+                  and all(contracts[i]['source']['commit'] == observations[i - 1]['answer']['commit'] for i in (1, 2))
+                  and built[6]['commit'] == observations[-1]['answer']['commit']
+                  and built[6]['proof'] == observations[-1]['answer']['proof']
+                  and DSP._build_dispatch(writer, dict(domain=domain, repository=repository, unit=built[0]),
+                                          'builder', built[1])['dispatch_id'] == built[6]['dispatch'])
+            for index, record in enumerate(records):
+                p = payload(record)
+                check('phase/brief', engine + ': fields and prior answer exclusion ' + str(index),
+                      p.get('phase') == dict(name=('edit', 'test', 'proof')[min(index, 2)], index=index + 1,
+                                            of=3, messages=80, soft=70)
+                      and p.get('source') == record['contract']['source']
+                      and p.get('done') == [dict(phase=('edit', 'test', 'proof')[i],
+                           commit=observations[i]['answer']['commit'], note=observations[i]['answer']['note']) for i in range(index)]
+                      and p.get('remains') == (observations[index - 1]['answer']['remains'] if index else [])
+                      and p.get('reading') == getattr(W, 'READING_RULE', None)
+                      and p.get('note') == getattr(W, 'NOTE_RULE', None)
+                      and p.get('output') == (W.OUTPUT[index].format(unit=built[0]) if hasattr(W, 'OUTPUT') else None)
+                      and 'PRIOR_ANSWER_MUST_NOT_TRAVEL' not in json.dumps(p))
+        if hasattr(W, 'brief'):
+            run, spec = builds['claude'][3], builds['claude'][5]
+            role_ = run.role('build')
+            def brief_bytes(p):
+                p = dict(p)
+                p.pop('spec', None)
+                if 'state' in p: p['state'] = {k: v for k, v in p['state'].items() if k != 'note'}
+                return len(json.dumps(p, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode())
+            for index in range(3):
+                for remains in [['r' * 400] * 40, ['short'] * 40, ['r' * 400]]:
+                    done = [dict(phase='edit', commit=spec['base'], note='n' * 2000) for _ in range(5)]
+                    p = W.brief(spec, 'spec', role_, index, dict(messages=5, soft=1, dispatches=6),
+                                spec['base'], done, remains, {'note': 'state'})
+                    check('phase/brief', 'direct cuts and byte fit ' + str(index),
+                          brief_bytes(p) <= 4096 and len(p['done']) == 5
+                          and len(p['remains']) <= 10 and all(len(s) <= 200 for s in p['remains'])
+                          and all(len(d['note']) <= 200 for d in p['done']) and p['phase']['soft'] == 1)
+                    notes = [d['note'] for d in p['done']]
+                    check('phase/brief', 'oldest notes are cut first',
+                          notes == sorted(notes, key=bool) and (len(p['remains']) == min(10, len(remains)) or not any(notes)))
+            for value, limit in [(W.READING_RULE, 110), (W.NOTE_RULE, 200), (W.CAPPED_NOTE, 100)] + [
+                    (value.format(unit=spec['id']), 340) for value in W.OUTPUT]:
+                check('phase/brief', 'literal text bound', value.isascii() and len(value.encode()) <= limit)
+            before = len(dispatches(builds['claude']))
+            for overrides, detail in [(None, 'phase'), ({'messages': True}, 'messages'),
+                    ({'messages': 0}, 'messages'), ({'dispatches': 2}, 'dispatches'),
+                    ({'dispatches': False}, 'dispatches'), ({'dispatches': 100}, 'brief_bytes')]:
+                try:
+                    run.limits(spec, dict(role_, phase=overrides))
+                    refused = None
+                except W.Refused as e:
+                    refused = (e.code, e.detail)
+                check('phase/brief', 'preflight rejects ' + str(overrides),
+                      refused == ('missing_authority:worker_configuration/build', detail)
+                      and len(dispatches(builds['claude'])) == before)
+            check('phase/brief', 'default and small soft arithmetic',
+                  run.limits(spec, role_) == dict(messages=80, soft=70, dispatches=6)
+                  and run.limits(spec, dict(role_, phase={'messages': 5}))['soft'] == 1)
+            try:
+                W.brief(spec, '', role_, 2, dict(messages=5, soft=1, dispatches=100), spec['base'],
+                        [dict(phase='proof', commit=spec['base'], note='') for _ in range(99)], [], None)
+                refused = None
+            except W.Refused as e:
+                refused = (e.code, e.detail)
+            check('phase/brief', 'oversized skeleton refuses',
+                  refused == ('missing_authority:worker_configuration/build', 'brief_bytes'))
+        else:
+            check('phase/brief', 'brief and preflight are available', False)
+        def capped_checks(built, row, engine, expected_flight=None):
+            records = dispatches(built)
+            first = records[0] if records else {}
+            doc = document(first) if first else {}
+            call = invocation(first) if first else {}
+            observed = marker(first) if first else {}
+            steps = len({e['message']['id'] for e in lines(doc) if e.get('type') == 'assistant'
+                         and e.get('message', {}).get('usage')}) if engine == 'claude' else len({
+                             e['item']['id'] for e in lines(doc) if e.get('type') == 'item.completed'
+                             and e.get('item', {}).get('type') in ('agent_message', 'command_execution',
+                                 'file_change', 'mcp_tool_call', 'web_search', 'collab_tool_call')})
+            check(row, engine + ': capped artifact and cancelled outcome: ' + str(built[7]),
+                  stopped(doc) == 'phase_cap' and doc.get('verdict') == 'stopped' and steps >= 5
+                  and call.get('outcome') == 'cancelled')
+            second = records[1] if len(records) > 1 else {}
+            p = payload(second) if second else {}
+            commit_ = observed.get('commits', [None])[0]
+            check(row, engine + ': continuation imports the stopped commit and starts',
+                  commit_ != built[5]['base'] and p.get('phase', {}).get('name') == 'edit'
+                  and second.get('contract', {}).get('source', {}).get('commit') == commit_
+                  and any(d.get('commit') == commit_ for d in p.get('done', []))
+                  and second.get('state') != 'refused' and bool(invocation(second)) and bool(marker(second)))
+            if row == 'phase/settled-at-stop':
+                tokens_, messages_ = usage(doc)
+                check(row, engine + ': settled figures equal independently summed artifact usage',
+                      call.get('state') == 'settled' and call.get('unknown') == []
+                      and call.get('charge', {}).get('tokens') == tokens_
+                      and call.get('charge', {}).get('messages') == messages_
+                      and call.get('settlement') == dict(at='stop', cause='phase_cap',
+                          lower_bound=['tokens', 'messages'], in_flight=expected_flight))
+            return records
+        for engine in ('claude', 'codex'):
+            built = build(engine, 'cap-once', phase=dict(messages=5, dispatches=4))
+            capped_checks(built, 'phase/step-cap', engine)
+            control = build(engine, 'under-cap', phase=dict(messages=5, dispatches=4))
+            check('phase/step-cap', engine + ': four steps finish normally: ' + str(control[7]),
+                  control[6] and len(dispatches(control)) == 3 and all(
+                      L.D.completed(r) and stopped(document(r)) is None for r in dispatches(control)))
+        for mode in ('head-link', 'ref-link', 'ref-outside', 'heads-link', 'packed'):
+            built = build('claude', 'cap-' + mode, phase=dict(messages=5, dispatches=4))
+            records = dispatches(built)
+            if mode == 'packed':
+                capped_checks(built, 'phase/head-read', 'claude')
+            else:
+                check('phase/head-read', mode + ': exact refusal without continuation: ' + str(built[7]),
+                      built[7] == 'invalid_input:build_head' and len(records) == 1)
+        for mode, missing in [('note6000', None), ('note8193', 'oversize'),
+                              ('note-absent', 'absent'), ('note-link', 'not_a_file')]:
+            built = build('claude', 'cap-' + mode, phase=dict(messages=15, dispatches=4))
+            records = dispatches(built)
+            state_ = payload(records[1]).get('state', {}) if len(records) > 1 else {}
+            check('phase/state-note', mode + ': second payload carries bytes or missing reason: ' + str(built[7]),
+                  state_.get('note', '').encode() == ('\u00e9\r\nx\n' * 1000).encode() if missing is None
+                  else state_.get('missing') == missing and 'note' not in state_)
+        budget = build('claude', 'cap-always', phase=dict(messages=5, dispatches=4), prepare=lambda unit:
+                       res.configure('budget/' + unit, 'project', unit, dict(ceiling, invocations=5), now=time.time()))
+        check('phase/budget', 'four dispatches and named budget refusal: ' + str(budget[7]),
+              budget[7] == 'phase_budget:build' and len(dispatches(budget)) == 4
+              and all(payload(r).get('phase', {}).get('name') == 'edit' for r in dispatches(budget)))
+        # Policy variants have separate projects. Window watermarks exclude earlier settled calls.
+        for engine in ('claude', 'codex'):
+            account = 'account-' + ('claude_code' if engine == 'claude' else engine)
+            for variant in ('cap-only', 'window-only', 'combined', 'first-turn'):
+                if variant == 'first-turn' and engine != 'codex': continue
+                def prepare(unit):
+                    caps = dict(ceiling)
+                    if variant != 'window-only': caps.update(tokens=100000, messages=10000)
+                    res.configure('phase-policy/' + unit, 'project', unit, caps, now=time.time())
+                    if variant in ('window-only', 'combined', 'first-turn'):
+                        res.window('phase-window/' + unit, account, 'tokens', 100000, time.time() + 600,
+                                   counter[0] + 1000, now=time.time())
+                built = build(engine, 'cap-first-turn' if variant == 'first-turn' else 'cap-once',
+                              phase=dict(messages=5, dispatches=4), prepare=prepare)
+                records = capped_checks(built, 'phase/settled-at-stop', engine, 1 if engine == 'codex' else None)
+                if records and variant == 'first-turn':
+                    check('phase/settled-at-stop', 'first turn settles zero observed usage',
+                          usage(document(records[0])) == (0, 0))
+                elif records and engine == 'codex':
+                    check('phase/settled-at-stop', 'completed turn contributes nonzero usage',
+                          usage(document(records[0])) == (5, 1))
+            res.window('expire-phase-window/' + engine, account, 'tokens', 100000, time.time() - 1,
+                       counter[0] + 2000, now=time.time())
         # Exercise both binding boundaries with valid artifacts and three substitutions.
         for engine, built in builds.items():
             unit, generation, loop, run, path, spec, result, error = built
@@ -738,12 +1018,13 @@ sys.exit(7 if mode == 'nonzero' else 0)
             with contextlib.suppress(OSError): os.chmod(directory, 0o700)
         shutil.rmtree(base, ignore_errors=True)
         for row, observations in rows.items():
+            prefix = prefixes.get(row, 'VELDO-0129')
             if row in unavailable:
-                print('  VELDO-0129 ' + row + ' unavailable: ' + unavailable[row])
+                print('  ' + prefix + ' ' + row + ' unavailable: ' + unavailable[row])
                 continue
             for label, ok in observations:
-                if not ok: print('  VELDO-0129 %s detail: %s' % (row, label))
-            expect('VELDO-0129 ' + row, bool(observations) and all(ok for _, ok in observations))
+                if not ok: print('  %s %s detail: %s' % (prefix, row, label))
+            expect(prefix + ' ' + row, bool(observations) and all(ok for _, ok in observations))
     for line in conform_formats.describe('0129_worker_wiring', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0129_worker_wiring', bool(fake_capture[1]) and not fake_capture[0])
