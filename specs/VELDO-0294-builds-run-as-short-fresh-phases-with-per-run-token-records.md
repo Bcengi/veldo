@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0294
 title: A build runs as short fresh phases, and every run's token use is recorded and flagged when it balloons
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -396,3 +396,4 @@ the state note. No new footprint path: the code, the suite and the mutant regist
 listed, and this unit's own note falls under proof/VELDO-0294/**.
 2026-11-11: re-review 2 C1 and C2 applied: the note rule and phase.soft belong to AC2 with their own
 mutant; AC9 keeps one claim.
+2026-11-11: approved by the owner with the defaults 80 messages per phase, 6 dispatches per build and a 15,000,000 token flag (Telegram 40816; the state note written at every commit instead of a soft-limit message was explained to him in 40817). Status ready.
