@@ -1,0 +1,56 @@
+{
+ "command": "python3 scripts/selftest.py --suite 115_veldo_0219_measured_admission",
+ "deciding": {
+  "bound": "the VELDO-0290 rows that failed are exactly the expected ones, and no other row failed",
+  "copied_over_root": {
+   "scripts/suites/114_veldo_0216_concurrent_stages.py": "637e3b49edb0683036724f648089570a5753c2e9bb44a5fc54759a69b1c037cf",
+   "scripts/suites/115_veldo_0219_measured_admission.py": "b45e9d884a8c6e70ea92af3b3ec327931a05f32fe731110ef72d8a5552280d3d"
+  },
+  "exit_status": 1,
+  "expected_red": [
+   "declared-bounds",
+   "stall-recorded",
+   "wall-clock-ceiling",
+   "wall-clock-end-to-end",
+   "wall-clock-waiting-bars"
+  ],
+  "observed_red": [
+   "declared-bounds",
+   "stall-recorded",
+   "wall-clock-ceiling",
+   "wall-clock-end-to-end",
+   "wall-clock-waiting-bars"
+  ],
+  "other_failed_rows": [],
+  "rows_failed": 5,
+  "rows_passed": 57,
+  "rows_that_raised": [
+   "VELDO-0290 row raised Refused: invalid_resource_requirement: malformed claim",
+   "VELDO-0290 row raised Refused: invalid_resource_requirement: malformed claim",
+   "VELDO-0290 row raised AttributeError: 'SuiteResources' object has no attribute 'wall_clock'",
+   "VELDO-0290 row raised TypeError: Ledger.__init__() got an unexpected keyword argument 'ceiling'",
+   "VELDO-0290 row raised KeyError: 'stall_seconds'"
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 10047,
+   "name": "red-before-115.summary.json.log",
+   "sha256": "e9101c594f27d811202f3cee12900728a01335ef5d1484370859252f78f4d51b"
+  }
+ ],
+ "environment": {
+  "commit": "646ff7c82fd6aec1df0fe7ffb739bcc479499bdf",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.47705078125,
+   4.40673828125,
+   4.236328125
+  ],
+  "python": "3.12.3",
+  "tree": "9bd33d30f908f625a03333d2cde047b47211a0c7"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

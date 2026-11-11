@@ -1,0 +1,81 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3 --worker-log-dir /tmp/v290-heavy.DPYxFO/teeth-workers --diff-dir proof/VELDO-0290/diffs --summary proof/VELDO-0290/teeth.summary.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 64.64175086887553,
+   "error": "driver_error",
+   "executed": 7,
+   "registered": 7,
+   "rejected": 7,
+   "reused": 0,
+   "status": "failed",
+   "worker_invocations": 15
+  },
+  "results_count": 7,
+  "results_sha256": "b9a25a21dc0b4f729d070e8ffb1fe07ba62dfae5a8c96b0daade493dda0c6311",
+  "rows": [
+   {
+    "case": "admission290-ceiling-not-for-others",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "admission290-no-waiting-bar",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "admission290-refused-not-retried-first",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "admission290-declaration-not-passed",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "admission290-declared-not-first",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "admission290-stall-skips-units",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "admission290-node-mark-dropped",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 117973,
+   "name": "mutation result array",
+   "sha256": "b9a25a21dc0b4f729d070e8ffb1fe07ba62dfae5a8c96b0daade493dda0c6311"
+  }
+ ],
+ "environment": {
+  "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.4375,
+   4.04248046875,
+   4.1171875
+  ],
+  "python": "3.12.3",
+  "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

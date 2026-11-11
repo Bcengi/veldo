@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -403 +403 @@
+-                                          **({'wall_clock': True} if declared else {}))
++                                          **{})

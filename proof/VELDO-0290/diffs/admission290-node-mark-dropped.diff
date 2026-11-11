@@ -1,0 +1,5 @@
+--- a/scripts/gate_schedule.py
++++ b/scripts/gate_schedule.py
+@@ -373 +373 @@
+-    if node.get('wall_clock'):
++    if False:  # the node's wall_clock mark is not sent

@@ -1,0 +1,47 @@
+{
+ "command": "python3 scripts/selftest.py --suite 114_veldo_0216_concurrent_stages",
+ "deciding": {
+  "bound": "the VELDO-0290 rows that failed are exactly the expected ones, and no other row failed",
+  "copied_over_root": {
+   "scripts/suites/114_veldo_0216_concurrent_stages.py": "637e3b49edb0683036724f648089570a5753c2e9bb44a5fc54759a69b1c037cf",
+   "scripts/suites/115_veldo_0219_measured_admission.py": "b45e9d884a8c6e70ea92af3b3ec327931a05f32fe731110ef72d8a5552280d3d"
+  },
+  "exit_status": 1,
+  "expected_red": [
+   "wall-clock-graph-node",
+   "wall-clock-node-withdraws"
+  ],
+  "observed_red": [
+   "wall-clock-graph-node",
+   "wall-clock-node-withdraws"
+  ],
+  "other_failed_rows": [],
+  "rows_failed": 2,
+  "rows_passed": 48,
+  "rows_that_raised": [
+   "VELDO-0290 row raised Refused: invalid graph: invalid graph schema",
+   "VELDO-0290 row raised Refused: invalid graph: invalid graph schema"
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9629,
+   "name": "red-before-114.summary.json.log",
+   "sha256": "6ae0f4f03b58f03b51b0a89d0aa3c43d1314670e1131a3451beb3809c6ea9311"
+  }
+ ],
+ "environment": {
+  "commit": "646ff7c82fd6aec1df0fe7ffb739bcc479499bdf",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.03173828125,
+   4.21533203125,
+   4.17626953125
+  ],
+  "python": "3.12.3",
+  "tree": "9bd33d30f908f625a03333d2cde047b47211a0c7"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

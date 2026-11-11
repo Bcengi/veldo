@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -993 +993 @@
+-        pending = self.resources.declared_first(list(jobs.items()))
++        pending = list(jobs.items())

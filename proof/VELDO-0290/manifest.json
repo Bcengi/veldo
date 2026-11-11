@@ -1,0 +1,145 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0290",
+  "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+  "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340",
+  "producer": "Claude implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-11T09:43:17+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Suite 115 with this checkout's suite files at 646ff7c8: row admission/wall-clock-ceiling is red (5 rows failed, exactly the expected ones, 57 passed, no other row failed)."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/green-115.summary.json",
+          "detail": "Suite 115 at dde37745: 62 rows passed, 0 failed, including admission/wall-clock-ceiling and admission/full-capacity-without-wall-clock. The recorded exit status 2 is the selftest's exit for a run of one selected suite."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Pending: mutant admission290-ceiling-not-for-others is recorded expected killed, observed killed, source fresh, but the stage ended status failed with error driver_error (registered 7, executed 7, rejected 7). Run check 1 traces the error to the run script writing its diffs inside the checkout during the stage. The script now writes them outside; the rerun of step 3 has not happened."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Row admission/wall-clock-waiting-bars is red at 646ff7c8."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/red-before-114.summary.json",
+          "detail": "Suite 114 with this checkout's suite files at 646ff7c8: rows admission/wall-clock-graph-node and admission/wall-clock-node-withdraws are red (2 failed, exactly the expected ones, 48 passed, no other row failed)."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/green-115.summary.json",
+          "detail": "Suite 115 at dde37745: 62 rows passed, 0 failed, including admission/wall-clock-waiting-bars."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/green-114.summary.json",
+          "detail": "Suite 114 at dde37745: 50 rows passed, 0 failed, including the two scheduler rows."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Pending: mutants admission290-no-waiting-bar, admission290-refused-not-retried-first and admission290-node-mark-dropped are each recorded expected killed, observed killed, but the stage ended status failed with error driver_error. The rerun of step 3 has not happened."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "partial",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Rows admission/declared-bounds and admission/wall-clock-end-to-end are red at 646ff7c8."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/green-115.summary.json",
+          "detail": "Suite 115 at dde37745: 62 rows passed, 0 failed, including admission/declared-bounds over the real manifest and admission/wall-clock-end-to-end over Workers.run."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/survey.json",
+          "detail": "The survey of all 197 suites behind the 61 wall_clock declarations in scripts/suites/manifest.json."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Pending: mutants admission290-declaration-not-passed and admission290-declared-not-first are each recorded expected killed, observed killed, but the stage ended status failed with error driver_error. The rerun of step 3 has not happened."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay.json",
+          "detail": "Pending. The verdict at dde37745 is fix_shown false, outcome 'the replay did not reach the stage's load; the fix is not claimed'. 196 control runs in each arm and 49 in the quiet reference, no failed row in any arm. Stall p95 in declared suites: off 2.106 s, on 0.223 s, quiet 0.075 s. The on arm holds its bar (at most 1 s above quiet). The off arm is 9.4 times the on arm's but 1.883 s above it, 0.117 s short of the 2 s gap. Run check 1 proposes an amendment to this criterion that waits for the owner; it is not applied."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay-off.summary.json",
+          "detail": "Off arm: ceiling off, 600 bulk runs, peak 30 workers, mean busy cores 11.09, stage wall 1143.0 s."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay-on.summary.json",
+          "detail": "On arm: ceiling 11, 600 bulk runs, peak 29 workers, mean busy cores 9.71, stage wall 1230.5 s, 603.5 s under the ceiling."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay-quiet.summary.json",
+          "detail": "Quiet reference: every declared control alone, 49 runs, stage wall 1027.3 s."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Row admission/stall-recorded is red at 646ff7c8 and green at dde37745 (proof/VELDO-0290/green-115.summary.json)."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Pending: mutant admission290-stall-skips-units is recorded expected killed, observed killed, but the stage ended status failed with error driver_error. The rerun of step 3 has not happened."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py --suite 115_veldo_0219_measured_admission; python3 scripts/selftest.py --suite 114_veldo_0216_concurrent_stages",
+      "detail": "The two suites that carry this spec's rows, at dde37745 (green-115.summary.json, green-114.summary.json). The full unit stage has not been run."
+    },
+    {
+      "name": "mutation",
+      "status": "pending",
+      "command": "python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3",
+      "detail": "teeth.summary.json: status failed, error driver_error, registered 7, executed 7, rejected 7; teeth-raw.summary.json records the 87 raw files. The lead reruns step 3 of proof/VELDO-0290/heavy_runs.sh."
+    },
+    {
+      "name": "gate",
+      "status": "pending",
+      "command": "./scripts/verify.sh",
+      "detail": "Not run on this branch."
+    }
+  ],
+  "rollback": "Remove wall_clock_ceiling from scripts/gate_graph.json and revert the commit. The ledger again grants to full capacity for every claim. The manifest's wall_clock fields and the recorded stall_seconds are inert without the ceiling, and no stored record depends on them."
+}

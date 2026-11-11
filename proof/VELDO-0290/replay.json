@@ -1,0 +1,150 @@
+{
+ "command": "python3 proof/VELDO-0290/replay.py verdict",
+ "deciding": {
+  "arms": {
+   "off": {
+    "arm": "off",
+    "bulk_runs": 600,
+    "ceiling_cpu": null,
+    "claim_sources": {
+     "measured": 1135,
+     "suite_median": 2
+    },
+    "control_runs": 196,
+    "control_stall_seconds": {
+     "count": 196,
+     "maximum": 3.419,
+     "median": 0.501,
+     "minimum": 0.001,
+     "p95": 2.106
+    },
+    "controls_with_result": 196,
+    "failed_rows": [],
+    "mean_busy_cores": 11.09,
+    "peak_workers": 30,
+    "round_errors": [],
+    "seconds_under_ceiling": 0.0,
+    "stage_wall_seconds": 1143.0,
+    "timing_row_failure": false,
+    "worker_errors": []
+   },
+   "on": {
+    "arm": "on",
+    "bulk_runs": 600,
+    "ceiling_cpu": 11,
+    "claim_sources": {
+     "measured": 1135,
+     "suite_median": 2
+    },
+    "control_runs": 196,
+    "control_stall_seconds": {
+     "count": 196,
+     "maximum": 1.393,
+     "median": 0.027,
+     "minimum": 0.0,
+     "p95": 0.223
+    },
+    "controls_with_result": 196,
+    "failed_rows": [],
+    "mean_busy_cores": 9.71,
+    "peak_workers": 29,
+    "round_errors": [],
+    "seconds_under_ceiling": 603.5,
+    "stage_wall_seconds": 1230.5,
+    "timing_row_failure": false,
+    "worker_errors": []
+   },
+   "quiet": {
+    "arm": "quiet",
+    "bulk_runs": 0,
+    "ceiling_cpu": null,
+    "claim_sources": {
+     "measured": 536,
+     "suite_median": 1
+    },
+    "control_runs": 49,
+    "control_stall_seconds": {
+     "count": 49,
+     "maximum": 1.242,
+     "median": 0.014,
+     "minimum": 0.0,
+     "p95": 0.075
+    },
+    "controls_with_result": 49,
+    "failed_rows": [],
+    "mean_busy_cores": 0.73,
+    "peak_workers": 1,
+    "round_errors": [],
+    "seconds_under_ceiling": 0.0,
+    "stage_wall_seconds": 1027.3,
+    "timing_row_failure": false,
+    "worker_errors": []
+   }
+  },
+  "ceiling_cpu": 11,
+  "checks": {
+   "enough_runs": true,
+   "every_control_has_a_result": true,
+   "off_arm_shows": false,
+   "on_arm_holds": true,
+   "stall_p95_seconds": {
+    "off": 2.106,
+    "on": 0.223,
+    "quiet": 0.075
+   }
+  },
+  "fix_shown": false,
+  "outcome": "the replay did not reach the stage's load; the fix is not claimed",
+  "rule": {
+   "counts": "at least 150 control runs in each arm and 20 in the quiet reference",
+   "off_arm": "a timing-row failure, or its 95th percentile stall at least 3 times the on arm's and at least 2 s above it",
+   "on_arm": "no timing-row failure, and its 95th percentile stall at most 1 s above the quiet reference"
+  },
+  "sources": {
+   "off": {
+    "command": "python3 proof/VELDO-0290/replay.py off",
+    "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+    "file": "proof/VELDO-0290/replay-off.summary.json",
+    "load": [
+     19.30517578125,
+     24.42529296875,
+     19.3408203125
+    ]
+   },
+   "on": {
+    "command": "python3 proof/VELDO-0290/replay.py on",
+    "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+    "file": "proof/VELDO-0290/replay-on.summary.json",
+    "load": [
+     16.5185546875,
+     20.20654296875,
+     19.94921875
+    ]
+   },
+   "quiet": {
+    "command": "python3 proof/VELDO-0290/replay.py quiet",
+    "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+    "file": "proof/VELDO-0290/replay-quiet.summary.json",
+    "load": [
+     2.78857421875,
+     2.60400390625,
+     3.03857421875
+    ]
+   }
+  }
+ },
+ "discarded": [],
+ "environment": {
+  "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   15.35546875,
+   19.90380859375,
+   19.8525390625
+  ],
+  "python": "3.12.3",
+  "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

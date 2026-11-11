@@ -1,0 +1,5 @@
+--- a/scripts/gate_schedule.py
++++ b/scripts/gate_schedule.py
+@@ -243 +243 @@
+-                    self.waiting[name] = True
++                    pass  # the waiting wall_clock claim is not recorded
