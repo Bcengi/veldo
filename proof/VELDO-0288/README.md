@@ -11,11 +11,21 @@ below its unchanged 120-second floor. suite62.json, teeth.json, and fix1-teeth-d
 the results, commands, and individual mutation times. The old timeout and cleanup refusal remain in
 commit f5c14ac9; this run had neither failure.
 
-All 20 consecutive suite 62 runs passed 69 rows. Each of dispatch/stop-during-exit,
-dispatch/stop-during-natural-end, and dispatch/stop-during-accept-run passed 20 of 20. repeated.json
-includes the command, commit, host, and load averages. These runs used host_heavy.sh, which excludes
-a concurrent gate run, so AC3 stays pending until the same 20 runs pass while a full gate runs on the
-host.
+On 1fd2f48c, 20 consecutive suite 62 runs passed 69 rows, and each of dispatch/stop-during-exit,
+dispatch/stop-during-natural-end, and dispatch/stop-during-accept-run passed 20 of 20. Those runs
+used host_heavy.sh, which excludes a concurrent gate run; their record is repeated.json as committed
+in 5765a30f. The lead then ran the same 20 runs on c8747d46 as lock-queue job 84, while a full gate
+(verify.sh in a clone of c8747d46) ran on the host. The gate started at 02:10:28Z on 2026-11-11.
+repeat.py started 600 s later, at 02:20:28.9Z. The 20 runs took 354.3 s in total, 17.3 s to 17.9 s
+each. The gate ended at 03:22:26Z, about 56 minutes after run 20. All 20 runs passed 69 rows with no
+failures, each of the three rows passed 20 of 20, and gate_alive was true before and after every
+run. The load was modest: the 1 minute average was 4.6 to 6.7 on this 20 CPU host, against 1.4 to
+3.8 in the ungated runs. The gate itself came back RED: its mutation stage failed with driver_error
+and it claimed no reuse. Here the gate is load only. Its RED is not a gate verdict on this change,
+and the landing gate is still to be run. The job deleted the raw gate.log with its temporary
+directory without hashing it, so it has no size or sha256 on record. The outcome in gate_result is
+taken from the five tail lines the job kept. repeated.json now holds the gated run: the command,
+commit, host, load averages, gate_alive for every run, and gate_result. AC3 is passed.
 
 Commit 9a0585ca changes repeat.py for that run. It reads the gate's process id from V0288_GATE_PID
 and refuses to start when the variable is unset or the process is not alive. It records gate_alive

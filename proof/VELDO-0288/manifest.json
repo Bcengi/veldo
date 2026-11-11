@@ -1,8 +1,8 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0288",
-  "commit": "9a0585ca86bdfe16d03ca5d70a762cdfe875ebbd",
-  "tree": "0cc8a974e13df3a13bc29d1fd2ecc29626f40f5c",
+  "commit": "d44f4f1e639fec7dfc51200a020ef34c2f15bfe0",
+  "tree": "0efcdf1fa9148d749a0df0513fbfbd2aee56a06d",
   "producer": "Codex implementation agent; not an independent reviewer",
   "produced_at": "2026-11-10T14:13:13.984903+00:00",
   "criteria": [
@@ -30,12 +30,12 @@
     },
     {
       "id": "AC3",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "integration",
           "ref": "proof/VELDO-0288/repeated.json",
-          "detail": "Each named row passes 20 of 20; all 20 suite runs pass 69 rows. These runs had no concurrent gate. The runs under a full gate are a lock-queue job the lead has not run yet, so the criterion stays pending."
+          "detail": "Each of the three rows passes 20 of 20; all 20 suite runs pass 69 rows with no failures. gate_alive is true before and after every run. A concurrent full gate (verify.sh in a clone of c8747d46) started 600 s before the first run. The 1 minute load was 4.6 to 6.7 on 20 CPUs. The gate's own verdict was RED (mutation driver_error); it is recorded as load only."
         },
         {
           "type": "unit",
@@ -75,12 +75,12 @@
     {
       "name": "20_consecutive_runs",
       "status": "passed",
-      "detail": "20 of 20 for each AC3 row; 69 rows pass in every run; repeated.json."
+      "detail": "Two sets, each 20 of 20 for every AC3 row with 69 rows passing in every run. Ungated at 1fd2f48c: repeated.json as committed in 5765a30f. Under a concurrent full gate at c8747d46: repeated.json now."
     },
     {
       "name": "AC3_concurrent_gate_load",
-      "status": "not_run",
-      "reason": "repeat.py now needs a live gate PID in V0288_GATE_PID and records gate_alive for every run. The lead runs it as one lock-queue job that starts the gate and the 20 runs together."
+      "status": "passed",
+      "detail": "Lock-queue job 84, run by the lead: 20 of 20 for each of the three rows, 69 rows and no failures in every run, gate_alive true before and after every run. A concurrent full gate (verify.sh in a clone of c8747d46) started 600 s earlier. 1 minute load 4.6 to 6.7 on 20 CPUs. The gate's own verdict was RED (mutation driver_error), recorded as load only; repeated.json, gate_result."
     },
     {
       "name": "VELDO-0127_resource_records",
