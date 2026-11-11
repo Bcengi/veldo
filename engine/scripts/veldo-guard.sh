@@ -47,9 +47,14 @@
 # or gh anywhere else. The text git and gh store and never run (a commit or tag message, a log
 # pattern, an issue or pull request title and body) is data too. A construct outside that grammar
 # (a substitution, a function, a reserved word, an assignment, a shell builtin outside nine
-# allowed ones) sends the whole command to the judgment as written. The judgment itself is the
-# one described above, and it reads the live text. When it refuses a command that is not one
-# simple git or gh command, the "destination unresolved" line ends with what it found and where.
+# allowed ones) sends the whole command to the judgment as written. So does a write the guard
+# cannot show lands outside git's configuration (a redirection or a writing tool whose path names
+# git or config in any form, or holds an expansion or a glob), the word config outside data, and
+# an expansion, a substitution, a brace, a glob, a tilde or a joined line in text a program other
+# than a plain text tool may run. None of these reads how a later command spells git, and each can
+# only refuse. The judgment itself is the one described above, and it reads the live text. When it
+# refuses a command that is not one simple git or gh command, the "destination unresolved" line
+# ends with what it found and where.
 set -u
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
@@ -493,9 +498,17 @@ def gh_base(rest, cwd):
 # an assignment, so inside the subset every bare command word runs the program it named when the
 # command started. Inside it a comment is dropped, and a quoted string or heredoc body is written as
 # a placeholder word when it is data: the shell does not expand it and every command of its pipeline
-# is a plain text tool, so no program it reaches can run it. When git or gh is named anywhere else
-# in the command, nothing is data but the text git and gh store and never run. Each command word is
-# written after quote removal, so a quoted or escaped spelling of git reaches the judgment as git.
+# is a plain text tool, so no program it reaches can run it. Each command word is written after
+# quote removal, so a quoted or escaped spelling of git reaches the judgment as git.
+#
+# Three tests then decide whether anything in the command is data at all. None of them asks how a
+# later command spells git, and each can only move a command toward refusal. Test 1, a write to
+# git configuration: when a place the command writes is not shown to be outside git's
+# configuration, or the word config stands outside data, the whole command is judged as written.
+# Test 2, a construct in text a program may run: when text that reaches a program other than a
+# plain text tool holds an expansion, a substitution, a brace, a glob, a tilde or a joined line,
+# the whole command is judged as written. Test 3, a command that names git or gh: when git or gh
+# is named anywhere outside data, nothing is data but the text git and gh store and never run.
 PLACEHOLDER = "_data_"
 # The plain text tools: programs that never execute their arguments or their input. A name missing
 # here can only cause a refusal. Adding one changes a protected path, and its reviewer checks that
@@ -503,6 +516,19 @@ PLACEHOLDER = "_data_"
 PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",
          "cut", "tr", "ls", "mkdir", "touch", "rm", "cp", "mv", "chmod", "ln", "diff", "cmp",
          "sha256sum", "base64", "test", "[", "true", "false", ":"}
+# The plain text tools that write nothing. Every other one writes, moves or removes a file (tee, cp,
+# mv, ln, touch, mkdir, chmod, rm, sort and uniq today), and each of its arguments is a place test 1
+# judges. A tool added to PLAIN later counts as writing unless this list names it.
+NO_WRITE = {"echo", "printf", "cat", "grep", "egrep", "fgrep", "head", "tail", "wc", "cut", "tr", "ls",
+            "diff", "cmp", "sha256sum", "base64", "test", "[", "true", "false", ":"}
+WRITERS = PLAIN - NO_WRITE
+# What the guard does not read: an expansion or a substitution, a glob, a brace, a tilde, and a
+# backslash before a newline. In a place a command writes, the path is then not known. In text a
+# program may run, the name it spells is then not known.
+CONSTRUCT = re.compile(r"[$\x60*?\[\]{}~]|\\\n")
+# git or config anywhere in a place, in any letter case, not only as a whole word: .git/config, a
+# hook under .git/hooks, .gitconfig, a path under .config/git.
+CONFIGURATION = re.compile(r"git|config", re.I)
 # Every builtin of bash, as enable -a lists them. A builtin can change which program a name runs or
 # keep text for later, so a command word in this list and not in ALLOWED_BUILTINS puts the command
 # outside the subset. Suite 141 fails on a host whose bash has a builtin this list lacks.
@@ -522,14 +548,11 @@ SHELL_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 ASSIGNMENT = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)(?:\[[^\]]*\])?\+?=")
 DELIMITER = re.compile("\\\\?([A-Za-z0-9_.-]+)|'([A-Za-z0-9_.-]+)'|\"([A-Za-z0-9_.-]+)\"")
 BARE = re.compile(r"[A-Za-z0-9_./+@%:,~-]+")
-# git or gh wherever no letter, digit or underscore stands right before or after it: a command word,
-# part of a path (/usr/bin/git, .git/config), an argument, a string given to a shell.
-GIT_NAME = re.compile(r"(?<![A-Za-z0-9_])(?:git|gh)(?![A-Za-z0-9_])")
+# git or gh in any letter case wherever no letter, digit or underscore stands right before or after
+# it: a command word, part of a path (/usr/bin/git, .git/config), an argument, a string given to a
+# shell.
+GIT_NAME = re.compile(r"(?<![A-Za-z0-9_])(?:git|gh)(?![A-Za-z0-9_])", re.I)
 UNQUOTE = str.maketrans("", "", "'\"\\")  # every quote character and backslash, deleted before that test
-# A parameter expansion: a $ followed by a name, by one digit or special character, or by a braced form.
-EXPANSIONS = re.compile(r"\$(?:[A-Za-z_][A-Za-z0-9_]*|[0-9@*#?$!-]|\{[^}]*\})")
-# The backslash escapes an ANSI-C string or printf turns into a character: hex, unicode, octal.
-ESCAPES = re.compile(r"\\(?:x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{1,4}|U[0-9A-Fa-f]{1,8}|[0-7]{1,3})")
 # The text git and gh store and never run: the value of these options, for these subcommands only.
 GIT_STORED = {"commit": ("-m", "--message"), "tag": ("-m", "--message"), "notes": ("-m", "--message"),
               "stash": ("-m", "--message"), "log": ("--grep",), "show": ("--grep",), "rev-list": ("--grep",)}
@@ -565,10 +588,11 @@ class Word:
 
 
 class Command:
-    """A simple command: its command word and arguments, and the pipeline it belongs to."""
+    """A simple command: its command word and arguments, the pipeline it belongs to, and the target
+    of each of its redirections that is not an input (`writes`)."""
 
     def __init__(self, pipeline, index):
-        self.pipeline, self.index, self.words = pipeline, index, []
+        self.pipeline, self.index, self.words, self.writes = pipeline, index, [], []
 
 
 def comment_end(text, at):
@@ -726,7 +750,8 @@ def scan(text):
             delimiter = name.group(1) or name.group(2) or name.group(3)
             pending.append((delimiter, strip, name.group(0) != delimiter, command.index))
             return name.end()  # the body starts after the next newline, not right after this word
-        at += len(next(op for op in ("<>", "<&", ">>", ">&", ">|", "<", ">") if text.startswith(op, at)))
+        operator = next(op for op in ("<>", "<&", ">>", ">&", ">|", "<", ">") if text.startswith(op, at))
+        at += len(operator)
         while at < n and text[at] in " \t":
             at += 1
         if at >= n or text[at] in "\n;&|()<>#":
@@ -735,6 +760,8 @@ def scan(text):
         if target is None:
             raise Unparsed("a redirection without a word target")
         place(target, "target", command)
+        if operator not in ("<", "<&"):
+            command.writes.append(target)  # a place the command writes
         return at
 
     while at < n:
@@ -811,15 +838,60 @@ def plain(command):
     return name in PLAIN
 
 
-def held(commands, parts):
-    """The parts that are data where they stand: a quoted string or a heredoc body the shell does not
-    expand, in a pipeline whose every command is a plain text tool."""
+def plain_pipelines(commands):
+    """The pipelines whose every command is a plain text tool."""
     tools = {}
     for command in commands:
         tools.setdefault(command.pipeline, []).append(plain(command))
+    return {pipeline for pipeline, each in tools.items() if all(each)}
+
+
+def held(commands, parts):
+    """The parts that are data where they stand: a quoted string or a heredoc body the shell does not
+    expand, in a pipeline whose every command is a plain text tool."""
+    quiet = plain_pipelines(commands)
     return [part for part in parts
             if part.kind in STRINGS and not part.expands and part.role in ("argument", "target", "body")
-            and all(tools[commands[part.command].pipeline])]
+            and commands[part.command].pipeline in quiet]
+
+
+def configuration_write(command, commands, outside):
+    """Test 1: the reason the command may write git configuration, or None. The places a command
+    writes are the target of every redirection that is not an input and every argument of a plain
+    text tool that writes. A place is outside git's configuration only when its word as written
+    holds no construct the guard does not read and its text after quote removal holds neither git
+    nor config anywhere. `outside` is the text outside comments and data strings: the word config in
+    it, with quotes and backslashes deleted, counts too (git config, the GIT_CONFIG variables,
+    XDG_CONFIG_HOME). The test never asks how a later command spells git."""
+    sites = [w for one in commands for w in one.writes]
+    sites += [w for one in commands if one.words and one.words[0].text in WRITERS for w in one.words[1:]]
+    for w in sorted(sites, key=lambda site: site.start):
+        written = command[w.start:w.end]
+        if CONSTRUCT.search(written) or CONFIGURATION.search(w.text):
+            return "a write the guard reads as git configuration: %s" % written[:120]
+    if "config" in outside.translate(UNQUOTE).lower():
+        return "the word config outside data, which the guard reads as a write to git configuration"
+    return None
+
+
+def run_construct(commands, parts, outside):
+    """Test 2: the reason text a program may run holds a construct the guard does not read, or None.
+    The text read is `outside` (the command without its comments and data strings) without the
+    words, redirection targets and heredoc bodies of the plain text tools in a pipeline of only
+    plain text tools: those reach the output or a file, and every file is a place test 1 judges.
+    What is left is every string given to a shell, a wrapper or an interpreter and the command word
+    and arguments of every program that is not a plain text tool."""
+    quiet = plain_pipelines(commands)
+    run = list(outside)
+    for part in parts:
+        own = commands[part.command]
+        if plain(own) and own.pipeline in quiet:
+            run[part.start:part.end] = " " * (part.end - part.start)
+    hit = CONSTRUCT.search("".join(run))
+    if hit is None:
+        return None
+    what = "a backslash before a newline" if hit.group(0).startswith("\\") else "the construct " + hit.group(0)
+    return what + " in text a program may run"
 
 
 def stored(command):
@@ -849,28 +921,18 @@ def stored(command):
     return [w for w in out if not w.expands()]
 
 
-def character(match):
-    """The character a backslash escape stands for."""
-    digits = match.group(0)[1:]
-    code = int(digits, 8) if digits[0] in "01234567" else int(digits[1:], 16)
-    return chr(code) if code < 0x110000 else match.group(0)
-
-
 def names_git(text):
-    """Whether the text names git or gh, in any of three forms. The first deletes every quote
-    character and backslash. The second first deletes every parameter expansion, the third first
-    writes every backslash escape as its character. Each form only adds matches."""
-    plainly = text.translate(UNQUOTE)
-    unexpanded = EXPANSIONS.sub("", text).translate(UNQUOTE)
-    unescaped = ESCAPES.sub(character, text).translate(UNQUOTE)
-    return any(GIT_NAME.search(form) for form in (plainly, unexpanded, unescaped))
+    """Test 3: whether the text names git or gh once every quote character and backslash is deleted.
+    It reads no expansion and no escape: an expansion or a joined line in text a program may run is
+    test 2's, and one in a path is test 1's."""
+    return bool(GIT_NAME.search(text.translate(UNQUOTE)))
 
 
 def live_text(command):
     """(the text the judgment reads, what the scanner saw): the command with each comment dropped,
     each heredoc body and quoted string that is data written as a placeholder word, and each command
     word written after quote removal. A command outside the subset is returned as written, with the
-    construct that put it there."""
+    construct that put it there. So is a command test 1 or test 2 refuses to read, with the reason."""
     try:
         commands, parts, comments = scan(command)
     except Unparsed as error:
@@ -882,6 +944,10 @@ def live_text(command):
     for start, end in dropped + [(part.start, part.end) for part in strings]:
         outside[start:end] = " " * (end - start)
     outside = "".join(outside)
+    reason = configuration_write(command, commands, outside)  # test 1
+    reason = reason or run_construct(commands, parts, outside)  # test 2
+    if reason:
+        return command, reason  # the whole command is judged as written, with no part of it read as data
     spans = [(0, len(outside))]  # the whole text of the Bash call, across all its lines
     named = [span for span in spans if names_git(outside[span[0]:span[1]])]
     data = [part for part in strings if not any(a <= part.start < b for a, b in named)]

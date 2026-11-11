@@ -24,7 +24,10 @@ only to plain text tools, a message git or gh stores): the guard passes each on 
 destination line, and the row then runs the command under bash with a recording git and gh first on
 PATH and reads what they were called with. The live/ rows hold commands where bash does run a push:
 the guard refuses each on the gate text, and where the acceptance criterion asks for it the
-unresolved line ends with the matched text and its position. The live/remap and live/scanner-edges
+unresolved line ends with the matched text and its position. The live/config-write rows write an
+alias or a hook to a path the guard cannot show is outside git's configuration, live/config-include
+gives a git the command names a file written elsewhere, and live/construct hides that git behind a
+construct in text a program may run. The live/remap and live/scanner-edges
 rows also run each command under bash with the recording git and require the push in its record.
 subset/builtin-list compares the guard's list of builtins with what bash's enable -a prints on the
 host. These rows and their mutation rows are named VELDO-0292 in the output.
@@ -57,6 +60,11 @@ def _v268_suite():
                    'refs/heads/release-*', 'refs/tags/*')
     started = time.monotonic()
     base = Path(tempfile.mkdtemp(prefix='v268-'))
+    while re.search('git|config', base.name, re.I):
+        # VELDO-0292: the guard reads a write under a path that names git or config as a write to
+        # git's configuration, so the rows that name the fixture's absolute path need another name.
+        base.rmdir()
+        base = Path(tempfile.mkdtemp(prefix='v268-'))
     home = base / 'home'
     home.mkdir()
     fakebin = base / 'bin'
@@ -866,9 +874,17 @@ def _v268_suite():
 
     # ------------------------------------------------ VELDO-0292: only the text the shell would run
     PUSH = 'git push origin main'
-    # The alias section a plain text tool writes to the configuration in the live/config-write row.
+    # S: the alias section a plain text tool writes in the live/config-write, live/config-include and
+    # live/construct rows. G: the alias run by a git whose name printf builds and pipes into sh, which
+    # no test of the guard reads. In those rows {D} stands for a directory under the fixture's
+    # temporary directory, named by its absolute path.
     SECTION = "printf '[alias]\\n\\tp = !%s\\n'" % PUSH
+    BUILT = "printf '%s%s p\\n' gi t"
+    BUILT_RUN = BUILT + ' | sh'
+    INCLUDE = '-c include.path={D}/inc p'
     PARSE = 'in text the guard does not parse (%s)'
+    CONFIG_WORD = PARSE % 'the word config outside data, which the guard reads as a write to git configuration'
+    CONSTRUCT = PARSE % '%s in text a program may run'
     RUNNER = 'in the argument or input of %s, which is not a plain text tool'
     IN_LIST = 'as a command of a list or pipeline'
     NAMED = 'in text in a command that also names git or gh'
@@ -917,12 +933,22 @@ def _v268_suite():
     def refused292(under, cases, found=True, runs=False, dirs=()):
         """Each (command, position) exits 2 on the gate text with the remote's main unmoved. found:
         exactly one unresolved line, ending with the matched text and that position. runs: bash does
-        run the push (the recording git's record holds it). dirs: directories made beside the clone."""
+        run the push (the recording git's record holds it). dirs: directories made beside the clone.
+        {D} in a command is the absolute path of the directory d beside the clone. A position given
+        as a one item tuple is a write the guard reads as git configuration, with that path."""
         work, bare, head = fixture(under)
         for name in dirs:
-            (work.parent / name).mkdir()
+            (work.parent / name).mkdir(parents=True)
+        absolute = str(work.parent / 'd')
+        if 'd' in dirs and re.search('git|config', absolute, re.I):
+            raise RuntimeError('the temporary directory %s names git or config, so the guard reads every '
+                               'write under it as a write to git configuration' % absolute)
         seen, ok = [], True
         for command, where in cases:
+            command = command.replace('{D}', absolute)
+            if isinstance(where, tuple):
+                where = PARSE % ('a write the guard reads as git configuration: %s'
+                                 % where[0].replace('{D}', absolute)[:120])
             g = guard(work, command)
             why = [l for l in g.stderr.splitlines() if l.startswith('VELDO guard: destination unresolved:')]
             one = g.returncode == 2 and checks_text(g.stderr) == gate_text(head)
@@ -998,7 +1024,8 @@ def _v268_suite():
         return refused292(under, [
             ('python3 -c \'import os; os.system("%s")\'' % PUSH, RUNNER % 'python3'),
             ('perl -e \'system("%s")\'' % PUSH, RUNNER % 'perl'),
-            ('awk \'BEGIN { system("%s") }\'' % PUSH, RUNNER % 'awk'),
+            # The braces of awk's program are a construct in text awk runs (amendment 2, test 2).
+            ('awk \'BEGIN { system("%s") }\'' % PUSH, CONSTRUCT % 'the construct {'),
             ('python3 <<\'EOF\'\nimport os\nos.system("%s")\nEOF' % PUSH, RUNNER % 'python3')])
 
     def row_live_stored(under):
@@ -1009,19 +1036,65 @@ def _v268_suite():
              PARSE % 'the builtin printf with a word that starts with -v')])
 
     def row_live_config_write(under):
-        """A git alias whose text names a push, written to the configuration by a plain text tool and
-        used later in the same command, however git is named beside it."""
+        """A git alias or hook whose text names a push, written by a plain text tool to a path the guard
+        cannot show is outside git's configuration, however that path or git is spelled, and used
+        later in the same command. Each position is the write the guard found, by its path as
+        written; the one command whose path names neither git nor config is found by the word config
+        outside data."""
         real = shutil.which('git', path=ENV['PATH'])
-        return refused292(under, [(command, NAMED) for command in (
-            SECTION + ' >> .git/config; git p',
-            "echo -e '[alias]\\n\\tp = !%s' | tee -a .git/config; git p" % PUSH,
-            SECTION + ' >> .git/config\ngit p',
-            SECTION + ' >> .git/config; %s p' % real,
-            SECTION + " >> .git/config; sh -c 'git p'",
-            SECTION + " >> '.g''it/config'; g\\it p",
-            SECTION + " >> '.g''it/config'; sh -c 'g\\it p'",
-            SECTION + ' | tee -a .g"$x"it/config; sh -c \'"$x"git p\'',
-            SECTION + ' >> .gi[t]/config; bash -c \'$\'"\'"\'g\\x69t\'"\'"\' p\'')])
+        plain, quoted, expanded, globbed = '.git/config', "'.g''it/config'", '.g"$x"it/config', '.gi[t]/config'
+        hook = "printf '#!/bin/sh\\n%s\\n'" % PUSH
+        commit = "printf '%s%s commit -qm x --allow-empty\\n' gi t | sh"
+        hooked, hooked_x = "'.g''it/hooks/post-commit'", '.g"$x"it/hooks/post-commit'
+        return refused292(under, [
+            (SECTION + ' >> .git/config; git p', (plain,)),
+            ("echo -e '[alias]\\n\\tp = !%s' | tee -a .git/config; git p" % PUSH, (plain,)),
+            (SECTION + ' >> .git/config\ngit p', (plain,)),
+            (SECTION + ' >> .git/config; %s p' % real, (plain,)),
+            (SECTION + " >> .git/config; sh -c 'git p'", (plain,)),
+            (SECTION + " >> '.g''it/config'; g\\it p", (quoted,)),
+            (SECTION + " >> '.g''it/config'; sh -c 'g\\it p'", (quoted,)),
+            (SECTION + ' | tee -a .g"$x"it/config; sh -c \'"$x"git p\'', (expanded,)),
+            (SECTION + ' >> .gi[t]/config; bash -c \'$\'"\'"\'g\\x69t\'"\'"\' p\'', (globbed,)),
+            # The builder's five: the write is found whatever the later command spells.
+            (SECTION + " >> '.g''it/config'; sh -c 'gi$(true)t p'", (quoted,)),
+            (SECTION + " >> '.g''it/config'; sh -c 'gi`true`t p'", (quoted,)),
+            (SECTION + " >> '.g''it/config'; sh -c 'gi${x:-${y}}t p'", (quoted,)),
+            (SECTION.replace('\\tp =', '\\tt =') + " >> '.g''it/config'; bash -c '{gi,}t'", (quoted,)),
+            (SECTION + " >> '.g''it/config'; gi\\\nt p", (quoted,)),
+            # A git no test reads: only the place of the write refuses these.
+            (SECTION + " >> '.g''it/config'; " + BUILT_RUN, (quoted,)),
+            (SECTION + " | tee -a '.g''it/config'; " + BUILT_RUN, (quoted,)),
+            (SECTION + ' >> .g"$x"it/config; ' + BUILT_RUN, (expanded,)),
+            (SECTION + ' >> .gi[t]/config; ' + BUILT_RUN, (globbed,)),
+            (SECTION + " >> '{D}/h/.gitconfig'; " + BUILT + ' | env HOME={D}/h sh', ("'{D}/h/.gitconfig'",)),
+            (SECTION + " > '{D}/inc'; " + BUILT + ' | env GIT_CONFIG_GLOBAL={D}/inc sh', CONFIG_WORD),
+            # A hook under .git/hooks, where only git names the path.
+            ('%s > %s; chmod +x %s; %s' % (hook, hooked, hooked, commit), (hooked,)),
+            ('%s > %s; chmod +x %s; %s' % (hook, hooked_x, hooked_x, commit), (hooked_x,)),
+            ("%s > '{D}/post-commit'; chmod +x '{D}/post-commit'; mv '{D}/post-commit' .gi[t]/hooks/; %s"
+             % (hook, commit), ('.gi[t]/hooks/',))], dirs=('d', 'd/h'))
+
+    def row_live_config_include(under):
+        """The alias section written to a path that names neither git nor config, then given to a git
+        the command names by -c include.path. A command that names git has no data."""
+        real = shutil.which('git', path=ENV['PATH'])
+        return refused292(under, [(SECTION + " > '{D}/inc'" + rest, NAMED) for rest in (
+            '; git ' + INCLUDE,
+            '; g\\it ' + INCLUDE,
+            '; %s %s' % (real, INCLUDE),
+            '\ngit ' + INCLUDE)], dirs=('d',))
+
+    def row_live_construct(under):
+        """The same section and path, with git hidden from the name test by a construct in text a
+        program other than a plain text tool may run."""
+        return refused292(under, [(SECTION + " > '{D}/inc'; " + rest, CONSTRUCT % what) for rest, what in (
+            ("sh -c 'gi$(true)t %s'" % INCLUDE, 'the construct $'),
+            ("sh -c 'gi`true`t %s'" % INCLUDE, 'the construct `'),
+            ("sh -c 'gi${x:-${y}}t %s'" % INCLUDE, 'the construct $'),
+            ("bash -c '{gi,}t %s'" % INCLUDE, 'the construct {'),
+            ('gi\\\nt ' + INCLUDE, 'a backslash before a newline'),
+            ("sh -c '/usr/bin/gi[t] %s'" % INCLUDE, 'the construct ['))], dirs=('d',))
 
     def row_live_mixed(under):
         return refused292(under, [("echo 'note: %s'; cd . && %s" % (PUSH, PUSH), NAMED)])
@@ -1085,7 +1158,9 @@ def _v268_suite():
         'text/message': row_text_message,
         'live/shell-string': row_live_shell_string, 'live/pipeline': row_live_pipeline,
         'live/outside-subset': row_live_outside_subset, 'live/interpreter': row_live_interpreter,
-        'live/stored': row_live_stored, 'live/config-write': row_live_config_write, 'live/mixed': row_live_mixed,
+        'live/stored': row_live_stored, 'live/config-write': row_live_config_write,
+        'live/config-include': row_live_config_include, 'live/construct': row_live_construct,
+        'live/mixed': row_live_mixed,
         'live/quoted-command-word': row_live_quoted_command_word, 'live/remap': row_live_remap,
         'subset/builtin-list': row_builtin_list, 'live/scanner-edges': row_live_scanner_edges,
         'live/git-args': row_live_git_args,
@@ -1200,8 +1275,15 @@ def _v268_suite():
     NAMED_LINE = '    named = [span for span in spans if names_git(outside[span[0]:span[1]])]\n'
     UNQUOTE = ('UNQUOTE = str.maketrans("", "", "\'\\"\\\\")'
                '  # every quote character and backslash, deleted before that test\n')
-    FORM_TWO = '    unexpanded = EXPANSIONS.sub("", text).translate(UNQUOTE)\n'
-    FORM_THREE = '    unescaped = ESCAPES.sub(character, text).translate(UNQUOTE)\n'
+    TEST_ONE = '    reason = configuration_write(command, commands, outside)  # test 1\n'
+    TEST_TWO = '    reason = reason or run_construct(commands, parts, outside)  # test 2\n'
+    SITE = '        if CONSTRUCT.search(written) or CONFIGURATION.search(w.text):\n'
+    SITE_NAMES = 'CONFIGURATION = re.compile(r"git|config", re.I)\n'
+    WRITER_ARGS = ('    sites += [w for one in commands if one.words and one.words[0].text in WRITERS'
+                   ' for w in one.words[1:]]\n')
+    CONFIG_NAMED = '    if "config" in outside.translate(UNQUOTE).lower():\n'
+    TOOL_WORDS = '        if plain(own) and own.pipeline in quiet:\n'
+    CONSTRUCT_HIT = '    hit = CONSTRUCT.search("".join(run))\n'
     OUTSIDE = '    outside = "".join(outside)\n'
     VALUE_SWAPS = '    swaps += [(w.start, w.end, PLACEHOLDER) for w in values]\n'
     WORD_SWAPS = ('    swaps += [(w.start, w.end, w.text) for w in (c.words[0] for c in commands if c.words)'
@@ -1235,24 +1317,47 @@ def _v268_suite():
          ['live/outside-subset', 'live/stored']),
         ('guard292-data-set-any-program', PLAIN_TEST,
          '    return True  # defect: every program counts as a plain text tool\n', ['live/interpreter']),
+        ('guard292-config-write-off', TEST_ONE,
+         '    reason = None  # defect: test 1 never fires\n', ['live/config-write']),
+        ('guard292-config-site-quoted', SITE,
+         '        if CONSTRUCT.search(written) or CONFIGURATION.search(written):'
+         '  # defect: a place is read as written, without quote removal\n',
+         ['live/config-write']),
+        ('guard292-config-site-unread', SITE,
+         '        if CONFIGURATION.search(w.text):'
+         '  # defect: a place with a construct is read after quote removal as if it were literal\n',
+         ['live/config-write']),
+        ('guard292-config-site-word', SITE_NAMES,
+         'CONFIGURATION = re.compile(r"(?<![A-Za-z0-9_])(?:git|config)(?![A-Za-z0-9_])", re.I)'
+         '  # defect: only as whole words\n',
+         ['live/config-write']),
+        ('guard292-config-writer-args-off', WRITER_ARGS,
+         '    sites += []  # defect: only redirection targets are places\n', ['live/config-write']),
+        ('guard292-config-word-off', CONFIG_NAMED,
+         '    if False:  # defect: the text outside data is not searched for config\n', ['live/config-write']),
+        ('guard292-construct-off', TEST_TWO,
+         '    reason = reason or None  # defect: test 2 never fires\n', ['live/construct']),
+        ('guard292-construct-command-words-only', TOOL_WORDS,
+         '        if part.role != "command":  # defect: test 2 reads only command words\n', ['live/construct']),
+        ('guard292-construct-joined-line-off', CONSTRUCT_HIT,
+         '    hit = CONSTRUCT.search("".join(run).replace("\\\\\\n", "  "))'
+         '  # defect: a backslash before a newline is not a construct\n',
+         ['live/construct']),
         ('guard292-git-list-data', NAMED_LINE,
-         '    named = []  # defect: text in a command that also names git counts as data\n', ['live/config-write']),
+         '    named = []  # defect: text in a command that also names git counts as data\n', ['live/config-include']),
         ('guard292-git-list-exact-word', NAMED_LINE,
          '    named = spans if any(w.text in ("git", "gh") for c in commands for w in c.words) else []'
          '  # defect: only a word that is exactly git or gh\n',
-         ['live/config-write']),
+         ['live/config-include']),
         ('guard292-git-list-per-line', NAMED_LINE,
          '    named = [span for span in spans if names_git(outside[span[0]:span[1]])][-1:]'
          '  # defect: only the last line that names git\n',
-         ['live/config-write'],
+         ['live/config-include'],
          ((SPANS, '    spans = [(m.start(), m.end()) for m in re.finditer(r"[^\\n]*\\n?", outside)'
                   ' if m.end() > m.start()]  # defect: line by line\n'),)),
         ('guard292-git-list-quoted', UNQUOTE,
-         'UNQUOTE = {}  # defect: quotes and backslashes are not deleted before that test\n', ['live/config-write']),
-        ('guard292-git-list-expansion-form-off', FORM_TWO,
-         '    unexpanded = plainly  # defect: the second form is not tested\n', ['live/config-write']),
-        ('guard292-git-list-escape-form-off', FORM_THREE,
-         '    unescaped = plainly  # defect: the third form is not tested\n', ['live/config-write']),
+         'UNQUOTE = {}  # defect: quotes and backslashes are not deleted before that test\n',
+         ['live/config-include']),
         ('guard292-list-tail-data', OUTSIDE,
          '    outside = "".join(outside)[:min([p.start for p in strings] + [len(command)])]'
          '  # defect: the text after a data string is not read\n',

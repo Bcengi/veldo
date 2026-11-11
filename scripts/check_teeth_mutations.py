@@ -12699,17 +12699,55 @@ def cases():
              ['live/outside-subset', 'live/stored'])
     guard292('guard292-data-set-any-program', '    return name in PLAIN\n',
              '    return True  # defect: every program counts as a plain text tool\n', ['live/interpreter'])
+    # Test 1 (amendment 2): a write the guard cannot show is outside git's configuration.
+    site292 = '        if CONSTRUCT.search(written) or CONFIGURATION.search(w.text):\n'
+    guard292('guard292-config-write-off',
+             '    reason = configuration_write(command, commands, outside)  # test 1\n',
+             '    reason = None  # defect: test 1 never fires\n', ['live/config-write'])
+    guard292('guard292-config-site-quoted', site292,
+             '        if CONSTRUCT.search(written) or CONFIGURATION.search(written):'
+             '  # defect: a place is read as written, without quote removal\n',
+             ['live/config-write'])
+    guard292('guard292-config-site-unread', site292,
+             '        if CONFIGURATION.search(w.text):'
+             '  # defect: a place with a construct is read after quote removal as if it were literal\n',
+             ['live/config-write'])
+    guard292('guard292-config-site-word',
+             'CONFIGURATION = re.compile(r"git|config", re.I)\n',
+             'CONFIGURATION = re.compile(r"(?<![A-Za-z0-9_])(?:git|config)(?![A-Za-z0-9_])", re.I)'
+             '  # defect: only as whole words\n',
+             ['live/config-write'])
+    guard292('guard292-config-writer-args-off',
+             '    sites += [w for one in commands if one.words and one.words[0].text in WRITERS'
+             ' for w in one.words[1:]]\n',
+             '    sites += []  # defect: only redirection targets are places\n', ['live/config-write'])
+    guard292('guard292-config-word-off',
+             '    if "config" in outside.translate(UNQUOTE).lower():\n',
+             '    if False:  # defect: the text outside data is not searched for config\n', ['live/config-write'])
+    # Test 2 (amendment 2): a construct in text a program other than a plain text tool may run.
+    guard292('guard292-construct-off',
+             '    reason = reason or run_construct(commands, parts, outside)  # test 2\n',
+             '    reason = reason or None  # defect: test 2 never fires\n', ['live/construct'])
+    guard292('guard292-construct-command-words-only',
+             '        if plain(own) and own.pipeline in quiet:\n',
+             '        if part.role != "command":  # defect: test 2 reads only command words\n', ['live/construct'])
+    guard292('guard292-construct-joined-line-off',
+             '    hit = CONSTRUCT.search("".join(run))\n',
+             '    hit = CONSTRUCT.search("".join(run).replace("\\\\\\n", "  "))'
+             '  # defect: a backslash before a newline is not a construct\n',
+             ['live/construct'])
+    # Test 3: a command that names git or gh has no data.
     guard292('guard292-git-list-data', named292,
              '    named = []  # defect: text in a command that also names git counts as data\n',
-             ['live/config-write'])
+             ['live/config-include'])
     guard292('guard292-git-list-exact-word', named292,
              '    named = spans if any(w.text in ("git", "gh") for c in commands for w in c.words) else []'
              '  # defect: only a word that is exactly git or gh\n',
-             ['live/config-write'])
+             ['live/config-include'])
     guard292('guard292-git-list-per-line', named292,
              '    named = [span for span in spans if names_git(outside[span[0]:span[1]])][-1:]'
              '  # defect: only the last line that names git\n',
-             ['live/config-write'],
+             ['live/config-include'],
              also=[('    spans = [(0, len(outside))]  # the whole text of the Bash call, across all its lines\n',
                     '    spans = [(m.start(), m.end()) for m in re.finditer(r"[^\\n]*\\n?", outside)'
                     ' if m.end() > m.start()]  # defect: line by line\n')])
@@ -12717,13 +12755,7 @@ def cases():
              'UNQUOTE = str.maketrans("", "", "\'\\"\\\\")'
              '  # every quote character and backslash, deleted before that test\n',
              'UNQUOTE = {}  # defect: quotes and backslashes are not deleted before that test\n',
-             ['live/config-write'])
-    guard292('guard292-git-list-expansion-form-off',
-             '    unexpanded = EXPANSIONS.sub("", text).translate(UNQUOTE)\n',
-             '    unexpanded = plainly  # defect: the second form is not tested\n', ['live/config-write'])
-    guard292('guard292-git-list-escape-form-off',
-             '    unescaped = ESCAPES.sub(character, text).translate(UNQUOTE)\n',
-             '    unescaped = plainly  # defect: the third form is not tested\n', ['live/config-write'])
+             ['live/config-include'])
     guard292('guard292-list-tail-data', '    outside = "".join(outside)\n',
              '    outside = "".join(outside)[:min([p.start for p in strings] + [len(command)])]'
              '  # defect: the text after a data string is not read\n',
