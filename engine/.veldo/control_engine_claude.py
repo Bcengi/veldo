@@ -1846,6 +1846,7 @@ class Terminal:
     def __init__(self):
         self.pending = b''
         self.lines = 0
+        self.usage_lines = []
         self.malformed = 0
         self.result = None
         self.receipt = None
@@ -1883,6 +1884,8 @@ class Terminal:
         if not isinstance(event, dict) or not _text(event.get('type')):
             self.malformed += 1
             return
+        if event['type'] in ('assistant', 'result'):
+            self.usage_lines.append(line.decode('utf-8'))
         if event['type'] == 'assistant' and not self.prompt_written:
             self.assistants_before_prompt += 1
         if event['type'] == 'result':
@@ -1926,7 +1929,7 @@ class Terminal:
                 'complete': not problems, 'problems': problems, 'terminal': self.result, 'terminal_receipt': self.receipt,
                 'probe': {'result': self.probe_result, 'assistants_before_prompt': self.assistants_before_prompt,
                           'prompt_written': self.prompt_written},
-                'stream': {'lines': self.lines, 'malformed': self.malformed,
+                'stream': {'lines': self.lines, 'usage_lines': self.usage_lines, 'malformed': self.malformed,
                            'output_digest': (termination or {}).get('output_digest'),
                            'output_bytes': (termination or {}).get('output_bytes')},
                 'exit': {'returncode': (termination or {}).get('returncode'), 'signal': (termination or {}).get('signal'),

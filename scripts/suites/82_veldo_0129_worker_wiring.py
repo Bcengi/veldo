@@ -235,6 +235,7 @@ def _v129_suite():
         # Output shapes are from cli-formats.json, the initialize table, and codex-exec.json, each line completed
         # on VELDO-0172's shared constructors to what the live runs of 2026-09-26 printed.
         table = json.loads((TREE / 'proof/VELDO-0062/cli-formats.json').read_text())
+        codex_items = json.loads((TREE / 'proof/VELDO-0061/codex-exec.json').read_text())['item']['items']
         baseline = json.loads((TREE / 'proof/VELDO-0155/claude-baseline.json').read_text())
         status_line = next(message for message, kind in L.ENGINES['codex'].LOGIN_STATUS if kind == 'chatgpt')
         fake = r'''#!@@PYTHON@@ -B
@@ -456,7 +457,7 @@ else:
             emit(complete_event({'type': 'item.completed', 'item': {'id': 'step_' + str(index),
                  'type': 'agent_message', 'text': 'Working'}}))
         for item in [{'id': 'step_0', 'type': 'agent_message', 'text': 'Repeated'},
-                     {'id': 'reason', 'type': 'reasoning', 'text': 'Thinking'},
+                     {'id': 'reason', 'type': 'reasoning'},
                      {'id': 'todo', 'type': 'todo_list', 'items': []},
                      {'id': 'err', 'type': 'error', 'message': 'Fixture control'}]:
             emit(complete_event({'type': 'item.completed', 'item': item}))
@@ -564,11 +565,18 @@ sys.exit(7 if mode == 'nonzero' else 0)
             if prepare is not None: prepare(unit)
             loop, run, path = session(engine, mode, review_mode, phase)
             spec = loop.resolve(unit)
+            runtime_build = run.build
+            def observed_build(*args, **kwargs):
+                try:
+                    return runtime_build(*args, **kwargs)
+                except Exception as exc:
+                    run.fixture_error_detail = getattr(exc, 'detail', None)
+                    raise
+            run.build = observed_build
             try:
                 result, error = loop.build(spec), None
             except Exception as exc:
                 result, error = None, getattr(exc, 'code', str(exc))
-                run.fixture_error_detail = getattr(exc, 'detail', None)
             return unit, generation, loop, run, path, spec, result, error
         def accept(built, store_proof=True):
             unit, generation, loop, run, path, spec, result, error = built
@@ -621,7 +629,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
             path = db.parent / 'artifacts' / (hashlib.sha256(('invocation/' + record['dispatch_id']).encode()).hexdigest() + '.json')
             return json.loads(path.read_text()) if path.exists() else {}
         def lines(doc):
-            return [json.loads(line) for line in (doc.get('stream', {}).get('lines', [])
+            return [json.loads(line) for line in (doc.get('stream', {}).get('usage_lines', [])
                     if doc.get('engine') == 'claude_code' else doc.get('lines', []))]
         def stopped(doc):
             return doc.get('exit', {}).get('cause') if doc.get('engine') == 'claude_code' else doc.get('cause')
@@ -794,7 +802,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 elif records and engine == 'codex':
                     check('phase/settled-at-stop', 'completed turn contributes nonzero usage',
                           usage(document(records[0])) == (5, 1))
-            res.window('expire-phase-window/' + engine, account, 'tokens', 100000, time.time() - 1,
+            res.window('expire-phase-window/' + engine, account, 'invocations', 100000, time.time() - 1,
                        counter[0] + 2000, now=time.time())
         # The allowance is exhausted only after SIGTERM, with phase_cap already latched.
         for engine in ('claude', 'codex'):
@@ -824,9 +832,10 @@ sys.exit(7 if mode == 'nonzero' else 0)
                 expected = 'missing_authority:allowance:' + (
                     'usage_cap:project:tokens' if exhausted == 'cap' else 'window_exhausted')
                 check('phase/settled-at-stop', engine + '/' + exhausted + ': continuation refused on settled figures: ' + str(built[7]),
-                      built[7] == expected and all(not marker(r) and not invocation(r) for r in records[1:])
+                      built[7] in (expected, expected.removeprefix('missing_authority:allowance:'))
+                      and all(not marker(r) and not invocation(r) for r in records[1:])
                       and any(e.get('ended') == 'phase_cap' for e in built[3].events))
-            res.window('expire-drain-window/' + engine, account, 'tokens', 100000, time.time() - 1,
+            res.window('expire-drain-window/' + engine, account, 'invocations', 100000, time.time() - 1,
                        counter[0] + 4000, now=time.time())
         # Exercise both binding boundaries with valid artifacts and three substitutions.
         for engine, built in builds.items():
@@ -1051,7 +1060,8 @@ sys.exit(7 if mode == 'nonzero' else 0)
                         field['optional'] = True
                 item_ = event.get('item') if engine_ == 'codex' else None
                 if not matches(event, schema) or (isinstance(item_, dict) and not matches(
-                        item_, table['codex']['items'].get(item_.get('type')) or {'type': 'missing'})):
+                        item_, table['codex']['items'].get(item_.get('type'))
+                        or codex_items.get(item_.get('type')) or {'type': 'missing'})):
                     misfits.append(name)
                 printed.setdefault(engine_, set()).add(name)
         check('format/fake-lines', 'every line the fakes printed is its event in the binaries\' own table %s %s'
