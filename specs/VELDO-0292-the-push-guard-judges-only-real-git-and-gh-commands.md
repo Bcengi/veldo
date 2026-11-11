@@ -84,7 +84,7 @@ acceptance_criteria:
       live/config-write: printf of an alias section mapping p to !git push origin main, appended to
       .git/config by a redirection, then git p; the same section echoed into tee -a .git/config, then
       git p; the printf form on one line and git p on the next; the printf form, then git named by its
-      absolute path with p; the printf form, then sh -c with the quoted string git p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
+      absolute path with p; the printf form, then sh -c with the quoted string git p; the printf form appended to the path written as '.g''it/config', then g\it p; the same, then sh -c with the quoted string g\it p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
       live/quoted-command-word: true && 'git' push origin main, and true && g\it push origin main.
       At 646ff7c8 live/quoted-command-word is red because the guard exits 0. Every other row is red only
       because the line does not yet say what was found; the exit code and gate text already hold. A git
@@ -96,7 +96,7 @@ acceptance_criteria:
       live/stored red; guard292-git-list-data (text in a command that also names git counts as data) turns
       live/config-write red; guard292-git-list-exact-word (the rule fires only on a word that is exactly
       git or gh) turns live/config-write red; guard292-git-list-per-line (the rule looks only at the line
-      that names git) turns live/config-write red; guard292-list-tail-data (once a command of a list holds data, the commands
+      that names git) turns live/config-write red; guard292-git-list-quoted (the rule tests the text without deleting quotes and backslashes) turns live/config-write red; guard292-list-tail-data (once a command of a list holds data, the commands
       after it are data too) turns live/mixed red; guard292-command-word-raw (the live text keeps command
       words as written) turns live/quoted-command-word red. Every row and registered mutation suite 141
       carried at 646ff7c8 still passes; an anchor the change moves is pointed at the same defect again.
@@ -265,14 +265,15 @@ path, and its reviewer checks that the program cannot run text.
 Checking the whole pipeline covers a string echoed into a shell or an interpreter. Assignment values
 stay live so a string stored in a variable and run later is still seen.
 
-When git or gh appears anywhere in the command outside the strings that would otherwise be data, no
-quoted string or heredoc body anywhere in the command is data, except the message values named in the
-next paragraph. It counts wherever no letter, digit or underscore stands right before or after it: as
-a command word, as the last part of a path such as /usr/bin/git or .git/config, as an argument, and
-inside a string given to a shell, a wrapper or an interpreter. The command is the whole text of the
-Bash call, across all its lines. A command that runs git can use a file it writes, such as a git alias
-appended to .git/config, a hook under .git/hooks or a script git runs, so nothing it writes is data,
-whatever path it writes to.
+When git or gh appears anywhere in the command outside comments and the strings that would otherwise
+be data, no quoted string or heredoc body anywhere in the command is data, except the message values
+named in the next paragraph. The test runs on that text with every quote character and every backslash
+deleted, so 'g'it, "gi"t and g\it count as git at any depth of quoting. It counts wherever no letter,
+digit or underscore stands right before or after it: as a command word, as part of a path such as
+/usr/bin/git or .git/config, as an argument, and inside a string given to a shell, a wrapper or an
+interpreter. The command is the whole text of the Bash call, across all its lines. A command that runs
+git can use a file it writes, such as a git alias appended to .git/config, a hook under .git/hooks or
+a script git runs, so nothing it writes is data, whatever path it writes to.
 
 Git and gh keep their text live with one exception: text they store and never run. In a simple command
 whose words after quote removal start with git, with no global option other than -C, and whose
@@ -312,9 +313,12 @@ host that text the scanner called data is text the shell did not run.
   with a plain text tool and then runs it without git, such as cat into /tmp/x.sh from a heredoc
   holding a push of main followed by bash /tmp/x.sh. A hook written in one Bash call and run by git in
   a later call is the same case. It was refused at 646ff7c8 and is allowed now, because the guard
-  does not follow a file. The owner accepts this with the approval. A git whose name never appears in
-  the text, such as g\it inside a string given to sh -c, is the same case: such a spelling already
-  passes the guard at 646ff7c8, and a configuration written beside it is not followed.
+  does not follow a file. The owner accepts this with the approval. A git whose name is built by an
+  expansion inside a string given to a shell, such as sh -c running $a$b p after export a=g b=it, is
+  the same case: that spelling of a push already passes the guard at 646ff7c8, and a configuration
+  written beside it is not followed. Quoting alone cannot hide the name, because the test deletes
+  every quote and backslash, and an expansion in a command word takes the command outside the subset,
+  where it is judged on its whole text as at 646ff7c8.
 - The scanner gives up rather than guessing: any construct outside the subset sends the whole text to
   today's judgment, and the judgment itself is unchanged. Inside the subset, AC4 holds the scanner to
   bash's own reading.
@@ -331,3 +335,4 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: revision 1 applies the findings of the review of ba3946cb
 2026-11-11: revision 2 applies the findings of the re-review of c880fe11
 2026-11-11: revision 3 applies the findings of the second re-review of 2bf465e1
+2026-11-11: revision 4 applies the findings of the third re-review of 20962450
