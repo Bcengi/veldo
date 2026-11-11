@@ -45,7 +45,8 @@ def _v177_suite():
     ROWS = ('AC1/workspace-made', 'AC1/isolation', 'AC1/contained', 'AC1/credentials', 'AC1/launch-guards',
             'AC1/workspace-refused', 'AC1/observability',
             'AC2/offered-tools', 'AC2/codex-launch', 'AC2/turn-record',
-            'AC3/attach-clone', 'AC3/scope', 'AC3/no-publication', 'AC3/attach-again', 'AC3/observability')
+            'AC3/attach-clone', 'AC3/scope', 'AC3/project-check', 'AC3/no-publication', 'AC3/attach-again',
+            'AC3/observability')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -558,10 +559,16 @@ for raw in sys.stdin:
         # Another owner's project whose execution repository is bound nowhere here (VELDO-0177 fix round 2, F1).
         authority.fixture('project:foreign-unbound', 'project',
                           {'name': 'foreign-unbound', 'owner': 'steward', 'execution_repository': 'never-bound-here'})
+        # The owner's own project, in his scope, paused (VELDO-0187 fix round 3, review finding F5): an attach hands
+        # its repository to the conversation's runs, so the Gate's one project check must refuse it.
+        authority.fixture('project:paused-project', 'project',
+                          {'name': 'paused-project', 'owner': 'owner', 'execution_repository': repository_uuid,
+                           'state': 'PAUSED'})
         owner_roles = CV._row(authority.conn, 'owner')['data']['roles']
         authority.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
                                                     'scope': ['activation-repository', 'fixture-project',
-                                                              'foreign-project', 'foreign-unbound']})
+                                                              'foreign-project', 'foreign-unbound',
+                                                              'paused-project']})
         service = CS.Service(J.service_config(f, CS), authority.conn)
         service._conversations = conversations
 
@@ -619,6 +626,15 @@ for raw in sys.stdin:
               unbound == {'ok': False, 'reason': 'missing_authority:project'} and reads == []
               and not (Path(CV.workspace_of(record)) / 'projects' / 'foreign-unbound').exists()
               and conversations.read('attached')['version'] == 2)
+        paused = owner_command(CV.ATTACH, {'conversation': 'attached', 'version': 2, 'project': 'paused-project'})
+        after_paused = conversations.read('attached')
+        check('AC3/project-check', 'an attach of the owner\'s own paused project, in his scope, is refused by the Gate\'s '
+              'project check, by name [%s]' % paused.get('reason'),
+              paused == {'ok': False, 'reason': 'project_not_active:PAUSED'})
+        check('AC3/project-check', 'and nothing is cloned or recorded: no clone directory, no attachment, the version '
+              'unchanged', not (Path(CV.workspace_of(record)) / 'projects' / 'paused-project').exists()
+              and after_paused['version'] == 2 and after_paused.get('project') == 'fixture-project'
+              and [a.get('project') for a in after_paused.get('attachments') or []] == ['fixture-project'])
         authority.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
                                                     'scope': ['activation-repository']})
         unscoped = owner_command(CV.ATTACH, {'conversation': 'attached', 'version': 2, 'project': 'fixture-project'})

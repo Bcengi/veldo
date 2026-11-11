@@ -194,5 +194,6 @@ and /api/sessions/complete at the conversation's close; the reader ties each req
 and its subcommand. The version request before each pass (F3) and the worker's refusal by status (F2) are added to AC1
 and the error taxonomy. The falsifiers are unchanged. This amendment changes a ready specification's criterion, so it
 stands only once the owner marks it; until then it is the reviewer's wording, built as written. Round 3 also adds
-behaviour rows for the batch-fix project check (F5) to suites outside this footprint (128_0177 and 133_0180), under the
-same ruling.
+behaviour rows for the batch-fix project check (F5) to two suites outside this footprint
+(128_veldo_0177_conversation_workspace and 136_veldo_0180_conversation_projects), under the same ruling; it changes no
+production code outside the footprint.

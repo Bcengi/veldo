@@ -12489,6 +12489,22 @@ def cases():
         '        checked = False\n',
         '        checked = True  # defect: the running worker is never asked its version\n',
         ['AC1/running-version'])
+    # The Gate's project check the lead's batch-fix ruling added to an attach and to VELDO-0180's pointing (F5):
+    # each computes its refusals and ignores them.
+    add(187, 'attach187-check-ignored', '128_veldo_0177_conversation_workspace.py', 'control_conversation.py',
+        "            if refusals:\n                raise Refused(refusals[0], str(project))\n",
+        "            if refusals and False:  # defect: the project check's refusals are ignored\n"
+        "                raise Refused(refusals[0], str(project))\n",
+        ['AC3/project-check'])
+    add(187, 'point187-check-ignored', '136_veldo_0180_conversation_projects.py', 'control_conversation.py',
+        "        elif refusals:\n            raise Refused(refusals[0], params['project'])\n",
+        "        elif refusals and False:  # defect: the project check's refusals are ignored\n"
+        "            raise Refused(refusals[0], params['project'])\n",
+        ['AC1/project-check'])
+    add(187, 'point187-existing-as-new', '136_veldo_0180_conversation_projects.py', 'control_conversation.py',
+        "            if refusals != ['missing_authority:project'] or _row(conn, 'project:' + params['project']) is not None:\n",
+        "            if False:  # defect: a new project's pointing never finds that the name now exists\n",
+        ['AC1/project-check'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
