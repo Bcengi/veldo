@@ -51,9 +51,12 @@ _V128_ROWS = ('install/assets', 'registry/declared-set', 'registry/delivery', 'r
               'content/running', 'content/awaiting-decision', 'content/gate-rejected', 'content/completed',
               'content/unknown-explicit', 'stop/no-second-notice', 'recipient/owner-chat-only',
               'recipient/substitution-refused', 'send/refusal-recorded', 'observability/named-refusals',
-              'sources/real-writers', 'wiring/tick-reports', 'wiring/restart', 'wiring/stopped-edge')
+              'sources/real-writers', 'wiring/tick-reports', 'wiring/restart', 'wiring/stopped-edge',
+              'report/run-over-tokens')
+_V128_PREFIXES = {'report/run-over-tokens': 'VELDO-0294'}
 # The spec's declared event universe (AC1), independent of the module's own registry.
-_V128_EVENTS = ('objective_accepted', 'decision_awaiting', 'work_progress', 'gate_result', 'stop', 'completion')
+_V128_EVENTS = ('objective_accepted', 'decision_awaiting', 'work_progress', 'gate_result', 'stop', 'completion',
+                'run_over_tokens')
 
 
 def _v128_load(name, path):
@@ -97,7 +100,7 @@ def _v128_checks(base):
             return default
     failures = []
 
-    (IA, RD, RL, RC, CR, CA, CG, CC, CU, SN, RO, RS, SR, OB, SW, WT, WR, WS) = _V128_ROWS
+    (IA, RD, RL, RC, CR, CA, CG, CC, CU, SN, RO, RS, SR, OB, SW, WT, WR, WS, TOK) = _V128_ROWS
     # The production copies under test; mutation workers replace exactly these paths.
     PRODUCTION = {'control_telegram_report.py': ROOT / ".veldo" / "control_telegram_report.py",
                   'control_service_channel.py': ROOT / ".veldo" / "control_service_channel.py"}
@@ -560,6 +563,30 @@ def _v128_checks(base):
         unit('U128-open', 'LANDING')
         publication(open_did, 'U128-open', cand_open, False)
         landed('U128-open', open_did, cand_open)
+        token_cases = []
+        with section(TOK):
+            for label, tokens, flight, flagged in [
+                    ('under', 8000000, 'ordinary', False), ('over', 15000001, 'ordinary', True),
+                    ('unknown', None, 'ordinary', True), ('stop-under', 9000000, 0, False),
+                    ('stop-over', 15000001, 0, True), ('first-open', 0, 1, True),
+                    ('later-open', 9000000, 1, True), ('exact', 15000000, 'ordinary', False),
+                    ('live-unknown', None, 'ordinary', True), ('claude-stop', 9000000, None, False)]:
+                uid = unit('U294-' + label)
+                did, inv = 'tokens294/' + label, 'invocation/tokens294/' + label
+                reservations.reserve_worker('worker/' + did, did, ACCOUNT, 'project-a', uid, now=_v128_time.time())
+                reservations.reserve_call('call/' + did, did, inv, 'initial', 10, now=_v128_time.time())
+                if label == 'live-unknown':
+                    reservations.report('tokens294/live/' + label, inv, 1, {'tokens': 23, 'messages': 1},
+                                        now=_v128_time.time())
+                usage = dict(invocations=1, wall_seconds=1)
+                if tokens is not None: usage.update(tokens=tokens, messages=2)
+                marked = flight != 'ordinary'
+                kwargs = {'settlement': dict(at='stop', cause='phase_cap', lower_bound=['tokens', 'messages'],
+                                            in_flight=flight)} if marked else {}
+                reservations.report('tokens294/final/' + label, inv, 2, usage, final=True,
+                                    outcome='cancelled' if marked else 'completed', now=_v128_time.time(), **kwargs)
+                token_cases.append(dict(label=label, tokens=tokens, flight=flight, flagged=flagged, unit=uid,
+                                        dispatch=did, invocation=inv, entity=RES.entity('invocation', [domain, inv])))
         committed_head = head()
         committed = journal()
         # VELDO-0051's own reader over the same store, as the independent completion oracle.
@@ -621,8 +648,10 @@ def _v128_checks(base):
                   kinds.get('work_progress') == (D.RECORD_KIND,)
                   and sorted(kinds.get('gate_result', ())) == sorted((CP.OBSERVATION_KIND, DSP.FLOOR_KIND))
                   and kinds.get('objective_accepted') == (OBJ.KIND,) and kinds.get('decision_awaiting') == (ASG.ENTITY_KIND,)
-                  and kinds.get('stop') == (AND.STOP_KIND,) and kinds.get('completion') == ())
-            writers = {'work_progress': 'dispatch/', 'gate_result': ('proof/observe/', 'floor/')}
+                  and kinds.get('stop') == (AND.STOP_KIND,) and kinds.get('completion') == ()
+                  and kinds.get('run_over_tokens') == ('subscription_reservation',))
+            writers = {'work_progress': 'dispatch/', 'gate_result': ('proof/observe/', 'floor/'),
+                       'run_over_tokens': 'tokens294/final/'}
             ok = True
             for event, prefix in writers.items():
                 for r in by_event.get(event, []):
@@ -657,7 +686,8 @@ def _v128_checks(base):
             expected_sources = {'objective_accepted': [oid], 'decision_awaiting': sorted([groom_id, adm_id]),
                                 'work_progress': dispatch_ids,
                                 'gate_result': sorted(observation_ids + [floor_pass, floor_return]),
-                                'stop': [stop_id], 'completion': [land_receipt]}
+                                'stop': [stop_id], 'completion': [land_receipt],
+                                'run_over_tokens': [c['entity'] for c in token_cases if c['flagged']]}
             for event in _V128_EVENTS:
                 got = sorted(set((r.get('source') or {}).get('entity_id') for r in by_event.get(event, [])))
                 check(RL, '%s: a report for every committed source [%s]' % (event, got),
@@ -731,6 +761,38 @@ def _v128_checks(base):
                   'completion [%s]' % sorted(written),
                   written == {'telegram_report', 'telegram_report_cursor'} and not foreign
                   and entities_before == entities_after and before_tick == [])
+
+        with section(TOK):
+            check(TOK, 'all seven settled examples and three boundary controls ran', len(token_cases) == 10)
+            for case in token_cases:
+                found = [r for r in by_event.get('run_over_tokens', [])
+                         if r.get('source', {}).get('entity_id') == case['entity']]
+                text = found[0].get('text', '') if found else ''
+                if not case['flagged']:
+                    check(TOK, case['label'] + ': no report', not found)
+                    continue
+                check(TOK, case['label'] + ': one report with unit, dispatch, messages and threshold',
+                      len(found) == 1 and delivered(found[0]) and case['unit'] in text and case['dispatch'] in text
+                      and 'messages' in text and '15,000,000' in text)
+                if case['tokens'] is None:
+                    check(TOK, case['label'] + ': total unknown', 'tokens unknown' in text)
+                    if case['label'] == 'live-unknown':
+                        check(TOK, 'live figure remains a lower bound on an unknown total', 'at least 23 tokens' in text)
+                elif case['flight'] == 1:
+                    check(TOK, case['label'] + ': open turn makes the total unknown',
+                          'at least {:,} tokens recorded'.format(case['tokens']) in text
+                          and 'turn in flight' in text and 'total unknown' in text)
+                else:
+                    check(TOK, case['label'] + ': settled amount', '{:,} tokens'.format(case['tokens']) in text
+                          and (case['flight'] == 'ordinary' or 'at least 15,000,001' in text))
+            before294 = len(reports()), sends()
+            for case in token_cases:
+                reservations.report('tokens294/later/' + case['label'], case['invocation'], 3,
+                                    {'wall_seconds': 1}, now=_v128_time.time())
+            channel.tick()
+            channel.tick()
+            check(TOK, 'repeated passes and non-final updates after settlement send nothing more',
+                  (len(reports()), sends()) == before294)
 
         # AC2: running, from the committed dispatch record.
         with section(CR):
@@ -1039,8 +1101,8 @@ for _v128_name, _v128_observed in _v128_rows.items():
     if not _v128_ok:
         for _v128_label, _v128_one in _v128_observed:
             if not _v128_one:
-                print('  VELDO-0128 %s detail: %s' % (_v128_name, _v128_label))
-    expect('VELDO-0128 ' + _v128_name, _v128_ok)
+                print('  %s %s detail: %s' % (_V128_PREFIXES.get(_v128_name, 'VELDO-0128'), _v128_name, _v128_label))
+    expect(_V128_PREFIXES.get(_v128_name, 'VELDO-0128') + ' ' + _v128_name, _v128_ok)
 print('VELDO-0128 send/real-telegram: PENDING the lead\'s run with the owner through the running factory; '
       'the rows use a loopback stand-in; not counted as passed')
 print('VELDO-0128 suite seconds: %.3f' % (_v128_time.monotonic() - _v128_started))

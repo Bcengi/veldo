@@ -397,6 +397,14 @@ if engine == 'claude_code':
              'role': 'assistant', 'model': 'configured-model', 'content': [], 'stop_reason': None,
              'stop_sequence': None, 'usage': dict(usage)}}))
     if capped:
+        if mode == 'cap-drain':
+            def drain(_signum, _frame):
+                usage['input_tokens'], usage['output_tokens'] = 200, 0
+                step('drain')
+                own['drained'] = True
+                save()
+                sys.exit(0)
+            signal.signal(signal.SIGTERM, drain)
         for index in range(1000):
             step(index)
             time.sleep(0.06)
@@ -427,6 +435,15 @@ else:
             emit({'type': 'turn.completed', 'usage': {'input_tokens': 3, 'cached_input_tokens': 0,
                   'cache_write_input_tokens': 0, 'output_tokens': 2, 'reasoning_output_tokens': 0}})
             emit(complete_event({'type': 'turn.started'}))
+        if mode == 'cap-drain':
+            def drain(_signum, _frame):
+                emit({'type': 'turn.completed', 'usage': {'input_tokens': 200, 'cached_input_tokens': 0,
+                      'cache_write_input_tokens': 0, 'output_tokens': 0, 'reasoning_output_tokens': 0}})
+                emit(complete_event({'type': 'turn.started'}))
+                own['drained'] = True
+                save()
+                sys.exit(0)
+            signal.signal(signal.SIGTERM, drain)
         for index in range(1000):
             emit(complete_event({'type': 'item.completed', 'item': {'id': 'step_' + str(index),
                  'type': 'agent_message', 'text': 'Working'}}))
@@ -545,7 +562,11 @@ sys.exit(7 if mode == 'nonzero' else 0)
             if prepare is not None: prepare(unit)
             loop, run, path = session(engine, mode, review_mode, phase)
             spec = loop.resolve(unit)
-            result, error = attempt(lambda: loop.build(spec))
+            try:
+                result, error = loop.build(spec), None
+            except Exception as exc:
+                result, error = None, getattr(exc, 'code', str(exc))
+                run.fixture_error_detail = getattr(exc, 'detail', None)
             return unit, generation, loop, run, path, spec, result, error
         def accept(built, store_proof=True):
             unit, generation, loop, run, path, spec, result, error = built
@@ -748,6 +769,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                        res.configure('budget/' + unit, 'project', unit, dict(ceiling, invocations=5), now=time.time()))
         check('phase/budget', 'four dispatches and named budget refusal: ' + str(budget[7]),
               budget[7] == 'phase_budget:build' and len(dispatches(budget)) == 4
+              and getattr(budget[3], 'fixture_error_detail', None) == 'edit'
               and all(payload(r).get('phase', {}).get('name') == 'edit' for r in dispatches(budget)))
         # Policy variants have separate projects. Window watermarks exclude earlier settled calls.
         for engine in ('claude', 'codex'):
@@ -772,6 +794,38 @@ sys.exit(7 if mode == 'nonzero' else 0)
                           usage(document(records[0])) == (5, 1))
             res.window('expire-phase-window/' + engine, account, 'tokens', 100000, time.time() - 1,
                        counter[0] + 2000, now=time.time())
+        # The allowance is exhausted only after SIGTERM, with phase_cap already latched.
+        for engine in ('claude', 'codex'):
+            account = 'account-' + ('claude_code' if engine == 'claude' else engine)
+            for exhausted in ('cap', 'window'):
+                def prepare(unit):
+                    caps = dict(ceiling, tokens=200) if exhausted == 'cap' else dict(ceiling)
+                    res.configure('drain-policy/' + unit, 'project', unit, caps, now=time.time())
+                    if exhausted == 'window':
+                        res.window('drain-window/' + unit, account, 'tokens', 200, time.time() + 600,
+                                   counter[0] + 3000, now=time.time())
+                built = build(engine, 'cap-drain', phase=dict(messages=5, dispatches=4), prepare=prepare)
+                records = dispatches(built)
+                first = records[0] if records else {}
+                doc, call = (document(first), invocation(first)) if first else ({}, {})
+                tokens_, messages_ = usage(doc)
+                mark = dict(at='stop', cause='phase_cap', lower_bound=['tokens', 'messages'],
+                            in_flight=1 if engine == 'codex' else None)
+                check('phase/settled-at-stop', engine + '/' + exhausted + ': drain retains phase_cap and settles usage',
+                      stopped(doc) == 'phase_cap' and marker(first).get('drained') is True
+                      and doc.get('verdict') == 'stopped' and call.get('state') == 'settled'
+                      and call.get('unknown') == [] and call.get('outcome') == 'cancelled'
+                      and call.get('settlement') == mark and tokens_ >= 200
+                      and call.get('charge', {}).get('tokens') == tokens_
+                      and call.get('charge', {}).get('messages') == messages_
+                      and (engine != 'codex' or (tokens_, messages_) == (205, 2)))
+                expected = 'missing_authority:allowance:' + (
+                    'usage_cap:project:tokens' if exhausted == 'cap' else 'window_exhausted')
+                check('phase/settled-at-stop', engine + '/' + exhausted + ': continuation refused on settled figures: ' + str(built[7]),
+                      built[7] == expected and all(not marker(r) and not invocation(r) for r in records[1:])
+                      and any(e.get('ended') == 'phase_cap' for e in built[3].events))
+            res.window('expire-drain-window/' + engine, account, 'tokens', 100000, time.time() - 1,
+                       counter[0] + 4000, now=time.time())
         # Exercise both binding boundaries with valid artifacts and three substitutions.
         for engine, built in builds.items():
             unit, generation, loop, run, path, spec, result, error = built

@@ -72,7 +72,9 @@ def _v62_suite():
             'settle/missing-retained', 'settle/timeout-retained',
             'settle/cancel-retained',
             'attribution/stored-account', 'attribution/measurement-removed', 'attribution/watermark',
-            'format/claude-fake-lines', 'format/codex-fake-lines', 'accounts/owner-cap')
+            'format/claude-fake-lines', 'format/codex-fake-lines', 'accounts/owner-cap',
+            'tokens/run-record', 'tokens/pruned')
+    prefixes = {name: 'VELDO-0294' for name in ('tokens/run-record', 'tokens/pruned')}
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -1577,6 +1579,116 @@ sys.exit(payload.get('code', 0))
         # The fixtures: every line a fake engine was scripted to print, checked against the format table
         # extract_formats.py read out of the installed binary. A CLI whose format moved (after the table
         # is regenerated) reds these rows, not a live run.
+        # VELDO-0294 uses the real ledger and Metering at the deterministic settle boundary.
+        with region('tokens/run-record', 'tokens/pruned'):
+            token_config = dict(store=str(db), run_tokens=str(base / 'tokens294'))
+            token_dir = Path(token_config['run_tokens'])
+            def token_file(dispatch_id):
+                path = token_dir / (hashlib.sha256(('invocation/' + dispatch_id).encode()).hexdigest() + '.json')
+                return path, json.loads(path.read_text()) if path.exists() else {}
+            def metered(label, script, cause=None, *, deadline=False, unstarted=False, raises=False):
+                proj = project('p294-' + label, tokens=10 ** 6)
+                uid = admitted('VELDO-6294-' + label, proj)
+                did = 'tokens294/' + label
+                reservations.reserve_worker('worker/' + did, did, 'acct-c1', proj, uid, now=time.time())
+                contract = dict(dispatch_id=did, unit=uid, station='build', attempt=1,
+                                input={'payload': {'phase': {'name': 'edit', 'messages': 5}}},
+                                reservation={'account': 'acct-c1', 'project': proj})
+                receiver = type('Receiver', (), dict(config=token_config, binding={},
+                                login={'engine': L.ENGINES['claude_code']}))()
+                meter = L.Metering(receiver, contract, reservations, accounts, lambda *_: None)
+                meter.guard.invoke('invoke/' + did, did, meter.invocation, 'initial', 100, {}, now=time.time())
+                if not unstarted:
+                    meter.started()
+                    for step in script:
+                        line = step['line']
+                        fixture_lines.append(('claude', line))
+                        meter.feed((json.dumps(line) + '\n').encode())
+                if raises:
+                    observe = meter.guard.observe
+                    def after_commit(*args, **kwargs):
+                        answer = observe(*args, **kwargs)
+                        if kwargs.get('final'): raise RES.Refused('fixture_after_commit')
+                        return answer
+                    meter.guard.observe = after_commit
+                meter.settle(None if unstarted else dict(returncode=0, signal=None, deadline_stop=deadline), cause)
+                return meter, invocation(did), token_file(did), uid, proj
+            completed = metered('completed', [c_init(), c_msg('complete', 3, 2), c_result(3, 2, 1)])
+            capped = metered('capped', [c_init()] + [c_msg('cap' + str(i), 3, 2) for i in range(5)], 'phase_cap')
+            unknown = metered('unknown', [])
+            expected_keys = {'schema', 'dispatch', 'invocation', 'unit', 'station', 'phase', 'attempt',
+                             'account', 'provider', 'boundary', 'tokens', 'messages', 'wall_seconds', 'outcome', 'ended_at'}
+            for value in (completed, capped, unknown):
+                meter, call, (path, record), uid, _ = value
+                check('tokens/run-record', meter.dispatch_id + ': one private bounded record with committed fields',
+                      path.exists() and path.stat().st_mode & 0o777 == 0o600 and path.stat().st_size <= 2048
+                      and set(record) == expected_keys and record.get('schema') == 'veldo.run_tokens/v1'
+                      and record.get('dispatch') == meter.dispatch_id and record.get('invocation') == meter.invocation
+                      and record.get('unit') == uid and record.get('station') == 'build' and record.get('phase') == 'edit'
+                      and record.get('attempt') == 1 and record.get('account') == 'acct-c1'
+                      and record.get('provider') == 'claude_code' and record.get('boundary') == 'initial'
+                      and record.get('outcome') == call.get('outcome')
+                      and all(record.get(k) == call.get('charge', {}).get(k) for k in ('tokens', 'messages', 'wall_seconds')))
+            check('tokens/run-record', 'unknown tokens are null and reader returns exactly three newest first',
+                  unknown[2][1].get('tokens', 'missing') is None
+                  and [r['dispatch'] for r in L.run_tokens(token_config)] == [v[0].dispatch_id for v in (unknown, capped, completed)]
+                  and len(list(token_dir.glob('*.json'))) == 3)
+            meter, call = capped[:2]
+            last = call['reports'][str(call['sequence'])]
+            mark = dict(at='stop', cause='phase_cap', lower_bound=['tokens', 'messages'], in_flight=None)
+            check('tokens/run-record', 'phase cap settles observed lower bounds',
+                  call.get('settlement') == mark and call.get('state') == 'settled' and call.get('unknown') == [])
+            def report294(label, **overrides):
+                args = dict(final=True, outcome='cancelled', receipts=last['receipts'],
+                            settlement=mark, now=time.time())
+                values = overrides.pop('usage', last['usage'])
+                args.update(overrides)
+                return reservations.report('report294/' + label, meter.invocation, call['sequence'], values, **args)
+            invalid = [('nonfinal', {'final': False}), ('outcome', {'outcome': 'completed'}),
+                       ('cause', {'settlement': dict(mark, cause='requested')}),
+                       ('duplicate', {'settlement': dict(mark, lower_bound=['tokens', 'tokens'])}),
+                       ('foreign', {'settlement': dict(mark, lower_bound=['capacity'])}),
+                       ('boolean', {'settlement': dict(mark, in_flight=True)}),
+                       ('negative', {'settlement': dict(mark, in_flight=-1)})]
+            invalid += [('missing-' + k, {'usage': {name: v for name, v in last['usage'].items() if name != k}})
+                        for k in ('tokens', 'messages', 'invocations', 'wall_seconds')]
+            for label, overrides in invalid:
+                _, error = attempt(lambda: report294(label, **overrides))
+                check('tokens/run-record', 'invalid settlement refuses ' + label + ': ' + str(error), error == 'invalid_input')
+            seq = writer.execute('SELECT max(seq) FROM journal').fetchone()[0]
+            _, error = attempt(lambda: report294('replay', **({'session': last['session']} if 'session' in last else {})))
+            check('tokens/run-record', 'marked replay adds no journal record', error is None
+                  and writer.execute('SELECT max(seq) FROM journal').fetchone()[0] == seq)
+            for label, changed in [('changed', dict(mark, in_flight=1)), ('dropped', None)]:
+                _, error = attempt(lambda: report294(label, settlement=changed))
+                check('tokens/run-record', 'marked replay conflict ' + label, error == 'report_conflict')
+            check('tokens/run-record', 'ordinary report retains its old shape', 'settlement' not in completed[1])
+            for label, kwargs in [('zero', {}), ('not-executed', {'unstarted': True}), ('committed-then-raised', {'raises': True})]:
+                value = metered(label, [c_init(), c_msg('zero', 0, 0), c_result(0, 0, 1)], **kwargs)
+                check('tokens/run-record', label + ': committed zero is recorded as zero', value[2][1].get('tokens') == 0)
+            for label, cause, deadline in [('requested', 'requested', False), ('deadline', 'phase_cap', True)]:
+                value = metered(label, [c_init()] + [c_msg(label + str(i), 3, 2) for i in range(6)], cause, deadline=deadline)
+                meter, call, (_, record), uid, proj = value
+                launch, next_record = run('acct-c1', admitted(uid + '-next', proj), 'claude', ok('claude'))
+                check('tokens/run-record', label + ': other stop remains unknown despite a crossed phase cap',
+                      meter.meter.steps() >= 5 and call.get('state') == 'unknown' and 'settlement' not in call
+                      and record.get('tokens', 'missing') is None
+                      and next_record.get('refusal') == 'missing_authority:allowance:unknown_allowance:tokens'
+                      and not engine_markers(launch.dispatch_id))
+            malformed = token_dir / 'bad-time.json'
+            malformed.write_text(json.dumps(dict(completed[2][1], ended_at='bad', invocation='bad-time')))
+            check('tokens/run-record', 'reader skips a schema-shaped record with a bad time',
+                  all(r['invocation'] != 'bad-time' for r in L.run_tokens(token_config)))
+            now294 = time.time()
+            old, kept = token_dir / 'old.json', token_dir / 'kept.json'
+            old.write_text(json.dumps(dict(completed[2][1], ended_at=now294 - 31 * 86400)))
+            kept.write_text(json.dumps(dict(completed[2][1], ended_at=now294 - 29 * 86400)))
+            os.utime(old, (now294, now294))
+            os.utime(kept, (now294 - 40 * 86400, now294 - 40 * 86400))
+            fresh = metered('prune', [c_init(), c_msg('prune', 1, 1), c_result(1, 1, 1)])
+            check('tokens/pruned', 'record time controls pruning, regardless of modification time',
+                  not old.exists() and kept.exists() and fresh[2][0].exists())
+
         def conform(value, schema, path):
             kind = schema.get('type')
             if value is None:
@@ -1732,11 +1844,11 @@ sys.exit(payload.get('code', 0))
         if not ok:
             for label, one in observed:
                 if not one:
-                    print('  VELDO-0062 %s detail: %s' % (name, label))
+                    print('  %s %s detail: %s' % (prefixes.get(name, 'VELDO-0062'), name, label))
             if not observed:
-                print('  VELDO-0062 %s detail: no check ran' % name)
+                print('  %s %s detail: no check ran' % (prefixes.get(name, 'VELDO-0062'), name))
         detail = '; '.join(label for label, one in observed if not one)
-        expect('VELDO-0062 ' + name + (': ' + detail if detail else ''), ok)
+        expect(prefixes.get(name, 'VELDO-0062') + ' ' + name + (': ' + detail if detail else ''), ok)
     for line in conform_formats.describe('0062_accounts', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0062_accounts', bool(fake_capture[1]) and not fake_capture[0])
