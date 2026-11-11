@@ -1,0 +1,113 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0291",
+ "commit": "9a1a4321442d7536dbdf3abab308b3c2fe456d36",
+ "tree": "9b1f19d706eca5a055d3f393932c562d0568bd88",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-11T03:23:33+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/offline-suite.summary.json",
+     "detail": "Passed. Row port/held-for-the-run (printed as VELDO-0291) is green in one run of suite 86 at 9a1a4321: 37 rows passed, none failed. The row asks the held socket whether it is open before reading its options, runs reserved_port() in a child from TS.__file__, holds 500 sockets bound to port 0 with the service stopped, then starts the service and connects to the API port."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step green-after: three runs of suite 86 as built, written to proof/VELDO-0291/green-after.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with reserved_port() returning the port free_port() gives and a closed socket. The row must be red on the open-socket check and on the child's plain bind, and not because its section raised. Written to proof/VELDO-0291/red-before.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step teeth: mutants port291-not-held and port291-held-without-reuse (finding 291, scripts/check_teeth_mutations.py) must turn port/held-for-the-run red. Written to proof/VELDO-0291/teeth.summary.json with the row's false labels quoted. Checked offline: each anchor occurs once and each mutated copy compiles; in a scratch child the not-held copy lets the plain bind succeed and the copy without SO_REUSEADDR refuses the ThreadingHTTPServer with errno 98."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/offline-suite.summary.json",
+     "detail": "Passed. Row start/failure-recorded is green in the same run. Refused bind leg: the API unit's record has code 1, the error text, an exit code and a log tail naming the address in use, and the next start's records all carry code 0. Late start leg: the fixture unit v291-late-start-fixture.service under a second Manager has code 1, no exit code and a log tail equal to the fixture's one line, with an earlier line already in its log. The row took 5.8 s, the 5 s readiness bound once."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step green-after: three runs of suite 86 as built, written to proof/VELDO-0291/green-after.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with Manager.start put back as the text of 646ff7c8, which keeps no record and never reads the unit log. The row must be red on both legs' record checks. Written to proof/VELDO-0291/red-before.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step teeth: mutants start291-log-tail-dropped, start291-wanted-unit-unrecorded and start291-tail-whole-log must turn start/failure-recorded red. Written to proof/VELDO-0291/teeth.summary.json. Checked offline: each anchor occurs once and each mutated suite compiles."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/offline-suite.summary.json",
+     "detail": "Passed. Row restart/adoption-start-checked is green in the same run, and row restart/adoption-signer-kill still passes with its earlier checks and the new start check. The second run of the row's body, with a recording check and the API port held during the first without_signer start, ends at the start check; its label names the API unit, code 1, the error text and the refused bind; no setup run follows; adoption_detail() holds the same record; the service runs again afterwards."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step green-after: three runs of suite 86 as built, written to proof/VELDO-0291/green-after.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step red-before: suite 86 as built in a scratch checkout of 646ff7c8 with without_signer making no check of its start. The row must be red on the check that the last recorded check is the start check. Written to proof/VELDO-0291/red-before.summary.json."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0291/heavy_runs.sh",
+     "detail": "Pending, step teeth: mutants start291-signer-start-unchecked, start291-row-continues and start291-detail-without-starts must turn restart/adoption-start-checked red. Written to proof/VELDO-0291/teeth.summary.json. Checked offline: each anchor occurs once and each mutated suite compiles."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+   "detail": "One run at 9a1a4321: 37 rows passed, none failed, 67 s (proof/VELDO-0291/offline-suite.summary.json). A partial run: it is not the gate's unit stage."
+  },
+  {
+   "name": "integration",
+   "status": "pending",
+   "command": "bash proof/VELDO-0291/heavy_runs.sh",
+   "detail": "Not run by the builder. The lead queues it through the gate lock. It writes red-before.summary.json, green-after.summary.json and teeth.summary.json under proof/VELDO-0291/."
+  },
+  {
+   "name": "personal_setup",
+   "status": "passed",
+   "command": "python3 scripts/check_personal_setup.py"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The builder does not run the gate. The lead runs ./scripts/verify.sh; scripts/check_teeth_mutations.py is a trigger in scripts/mutation_selection.json, so that gate runs the full mutation sweep."
+  }
+ ],
+ "rollback": "Revert the commit. Suite 86 again takes its port from free_port(), holds nothing, and reports start codes only. No product file, stored record or other suite depends on anything this change adds."
+}
