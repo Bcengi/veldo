@@ -216,3 +216,11 @@ wording (amendment of 2026-10-28, Telegram 37458 and 37459).
 ## Amendment, 2026-10-28: the memory claim
 
 AC1's memory claim for a worker is the larger of its measured anonymous memory peak and its unit's total memory peak (page cache included), so a short-lived unit whose anonymous allocation polling missed cannot be admitted as free memory. Anonymous memory stays measured and labelled separately. Owner approval: Telegram 37458 and 37459 ("Sure").
+
+## Superseded in part, 2026-11-11: VELDO-0290
+
+One sentence of the Design above no longer holds: "the gate never oversubscribes CPU itself, so a case's elapsed time under the gate's own load stays near its measurement." It is superseded by VELDO-0290 (specs/VELDO-0290-wall-clock-suites-run-with-cpu-headroom-in-the-gate.md).
+
+The sentence holds well enough for the case deadline, which is three times the measurement. It does not hold for a bound of a few seconds inside a row. Admission adds up each worker's average core use until the sum reaches the CPU capacity, and nothing in that sum limits how long one row waits for a CPU. VELDO-0290 adds the limit: a suite whose rows hold a wall-clock bound declares it in scripts/suites/manifest.json, and while a job of such a suite is held the ledger grants CPU only up to wall_clock_ceiling in scripts/gate_graph.json.
+
+The rest of this specification stands: measured claims, the ledger, the deadlines and the mutation floor. Acceptance criteria are unchanged. This section is appended, so the line references in proof/VELDO-0219 point at the same text as before.
