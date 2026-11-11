@@ -7,7 +7,7 @@ Run by proof/VELDO-0117/heavy_runs.sh from the repository root, under the gate l
   python3 proof/VELDO-0117/heavy_summary.py green-after --scratch <dir> [--runs 3]
   python3 proof/VELDO-0117/heavy_summary.py teeth --scratch <dir> [--jobs 3]
 
-red-before  The suite as built, run in a scratch checkout of this commit whose three product
+red-before  The suite as built, run in a scratch checkout of this commit whose four product
             modules are the base commit's. Every row must be red on the checks named below, and
             no row may be red because its section raised.
 green-after The suite as built, run in this checkout.
@@ -32,7 +32,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 SUITE = '113_veldo_0117_domain_store'
 SUITE_COMMAND = ['python3', 'scripts/selftest.py', '--suite', SUITE]
-MODULES = ('.veldo/control_store.py', '.veldo/control_client.py', '.veldo/control_enrollment.py')
+MODULES = ('.veldo/control_store.py', '.veldo/control_client.py', '.veldo/control_enrollment.py',
+           '.veldo/control_service.py')
 RAISED = 'the section ran to its end (it raised'
 ROWS = {'AC1': 'enrollment/authority-refuses-domain-store-conflict',
         'AC2': 'enrollment/one-domain-one-winner',
@@ -41,7 +42,11 @@ SCHEDULES = ['%s, %s first' % (kind, clone) for kind in ('one after the other', 
 # The checks that must be false on the base code, by the words their labels begin with.
 NAMED = {
     'AC1': ['domain equal, uuid %s, location %s is conflict' % cell
-            for cell in (('equal', 'unequal'), ('unequal', 'equal'), ('unequal', 'unequal'))],
+            for cell in (('equal', 'unequal'), ('unequal', 'equal'), ('unequal', 'unequal'))]
+           # The production path: the installed service, run as its unit runs it.
+           + ['production: %s is refused domain_store_conflict by the running service' % clone
+              for clone in ('a clone bound to another store',
+                            'a clone naming another store uuid at the committed file')],
     'AC2': ['%s: the first store is registered and the second is told domain_store_conflict' % schedule
             for schedule in SCHEDULES],
     'AC3': ['%s, restarted %s first, the conflicting store: it is told domain_store_conflict again'
@@ -123,7 +128,10 @@ def red_before(V, args):
         rows.append({
             'criterion': criterion, 'row': row, 'row_red': labels is not None, 'row_raised': raised,
             'false_checks': len(labels or []), 'named_checks_required': NAMED[criterion],
-            'named_checks_false': named, 'false_labels': [label[:400] for label in (labels or [])[:4]],
+            'named_checks_false': named,
+            'false_labels': [label[:400] for label in (labels or [])[:4]],
+            'production_false_labels': [label[:400] for label in (labels or [])
+                                        if label.startswith('production: ')][:4],
             'verdict': 'red-before' if labels is not None and not raised and named == NAMED[criterion]
                        else 'not red-before',
         })
@@ -131,7 +139,7 @@ def red_before(V, args):
         'base': base, 'built': built,
         'bound': 'for every criterion: its row is red, every check named for it is among the row\'s false labels, '
                  'and no false label of the row says its section raised',
-        'what_ran': 'the suite as built, in a scratch checkout of the built commit whose three product modules '
+        'what_ran': 'the suite as built, in a scratch checkout of the built commit whose four product modules '
                     'are the base commit\'s',
         'base_module_sha256': {name: hashlib.sha256((tree / name).read_bytes()).hexdigest() for name in MODULES},
         'authority_module_sha256': seen['report'].get('module_sha256'),
