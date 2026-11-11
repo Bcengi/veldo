@@ -37,6 +37,7 @@ REFERENCE_WORKERS = 8
 WORKER_BUDGET = 120          # floor for an unmeasured case; also bounds setup commands
 WORKER_CEILING = 1800
 WORKER_MULTIPLIER = 3.0
+UNMEASURED_MUTANT_FLOOR = 360  # A mutant can reach bounded product waits its baseline never reaches.
 CASE_TIMES = Path.home() / '.cache' / 'veldo' / 'mutation-case-seconds'
 
 def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
@@ -193,7 +194,7 @@ def case_deadlines(keys, times=CASE_TIMES):
     """Each case's worker deadline from its recorded samples, or None for a case with no live
     sample. An unmeasured case's baseline in this stage is its measurement, not a judged run
     (VELDO-0285): it is bounded only against a hang, and its noop and mutant are then held to
-    scaled_deadline of that baseline's time in the same stage."""
+    the larger of 360 seconds and scaled_deadline of that baseline's time (VELDO-0293)."""
     now = time.time()
     return {identity: case_deadline(key, times) if case_samples(key, times, now) else None
             for identity, key in keys.items()}
@@ -1458,7 +1459,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 own = [c for c in members[group] if c['identity'] in unmeasured]
                 if mode != 'baseline' or not own:
                     return
-                seconds = scaled_deadline(completed['elapsed'])
+                seconds = max(UNMEASURED_MUTANT_FLOOR, scaled_deadline(completed['elapsed']))
                 for case in own:
                     deadlines[case['identity']] = seconds
                     mutant_jobs[case['identity']]['budget_seconds'] = seconds
