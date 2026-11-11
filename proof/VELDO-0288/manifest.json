@@ -90,7 +90,7 @@
     {
       "name": "VELDO-0127_codex_live",
       "status": "passed",
-      "detail": "Retaken with the codex2 profile; no reported problems; captures.json."
+      "detail": "Retaken with the codex2 profile; no reported problems. On landing-c the run directory uid is written as UID and live.py --rejudge codex reports no problems; proof/VELDO-0127/codex-live.json sha256 2a28dceacc37d1dc8a6eebdc21def44c4187162c3e381aeb90f1db34b669ca19; captures.json."
     },
     {
       "name": "VELDO-0127_claude_live",

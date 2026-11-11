@@ -36,7 +36,9 @@ ended. The lead runs it as one lock-queue job that starts verify.sh in a clone a
 The four VELDO-0127 resource records were retaken with .veldo/qualify.py. codex-live.json was retaken
 with live.py, selecting only Codex and using CODEX_HOME set to the codex2 profile. The Codex capture
 reports no problems. captures.json gives the commands and hashes of the five records. Home paths
-are normalized in the committed records. The lead retook claude-live.json in commit 40cd9775; it
+are normalized in the committed records. On landing-c the run directory uid in codex-live.json is
+written as UID, as in claude-live.json; live.py --rejudge codex judged it again with no problems and
+captures.json has the redacted hash. The lead retook claude-live.json in commit 40cd9775; it
 reports no problems and captures.json has its hash.
 
 The selected related suites passed: 71_veldo_0130_api had 45 green rows,
