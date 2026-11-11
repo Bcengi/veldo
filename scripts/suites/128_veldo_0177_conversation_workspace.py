@@ -561,8 +561,11 @@ for raw in sys.stdin:
         owner_roles = CV._row(authority.conn, 'owner')['data']['roles']
         authority.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
                                                     'scope': ['activation-repository', 'fixture-project',
-                                                              'foreign-project', 'foreign-unbound']})
-        service = CS.Service(J.service_config(f, CS), authority.conn)
+                                                              'foreign-project', 'foreign-unbound', 'own-unbound']})
+        # The owner's own project, in scope, whose execution repository is bound nowhere here (fix round 3).
+        authority.fixture('project:own-unbound', 'project',
+                          {'name': 'own-unbound', 'owner': 'owner', 'execution_repository': 'never-bound-here-either'})
+        service =CS.Service(J.service_config(f, CS), authority.conn)
         service._conversations = conversations
 
         def owner_command(operation, parameters, who='owner'):
@@ -619,6 +622,32 @@ for raw in sys.stdin:
               unbound == {'ok': False, 'reason': 'missing_authority:project'} and reads == []
               and not (Path(CV.workspace_of(record)) / 'projects' / 'foreign-unbound').exists()
               and conversations.read('attached')['version'] == 2)
+        # Fix round 3: the same recorder, around the two other guards ahead of the read. The owner's own project
+        # with an unbound repository is attached by another project owner (the steward, every project in scope),
+        # then by the owner to a closed conversation.
+        owner_command(CV.OPEN, {'conversation': 'shut'})
+        shut = owner_command(CV.CLOSE, {'conversation': 'shut', 'version': 1}).get('conversation') or {}
+        del reads[:]
+        CV.project_source, CV.S.bound_repository = source_seen, bound_seen
+        try:
+            other = owner_command(CV.ATTACH, {'conversation': 'attached', 'version': 2, 'project': 'own-unbound'},
+                                  who='steward')
+            other_reads = list(reads)
+            del reads[:]
+            closed = owner_command(CV.ATTACH, {'conversation': 'shut', 'version': shut.get('version'),
+                                               'project': 'own-unbound'})
+            closed_reads = list(reads)
+        finally:
+            CV.project_source, CV.S.bound_repository = real_source, real_bound
+        check('AC3/scope', 'another project owner attaching the owner\'s project to the owner\'s conversation is '
+              'refused as not its owner, the repository never read [%s %s]' % (other.get('reason'), other_reads),
+              other == {'ok': False, 'reason': 'missing_authority:conversation_owner'} and other_reads == []
+              and conversations.read('attached')['version'] == 2)
+        check('AC3/scope', 'an attach on a closed conversation is refused as closed, the repository never read '
+              '[%s %s]' % (closed.get('reason'), closed_reads),
+              shut.get('status') == 'closed' and shut.get('version') == 2
+              and closed == {'ok': False, 'reason': 'stale_subject:conversation_closed'} and closed_reads == []
+              and conversations.read('shut')['version'] == 2)
         authority.admin('steward', 'change_roles', {'principal': 'owner', 'roles': owner_roles,
                                                     'scope': ['activation-repository']})
         unscoped = owner_command(CV.ATTACH, {'conversation': 'attached', 'version': 2, 'project': 'fixture-project'})
