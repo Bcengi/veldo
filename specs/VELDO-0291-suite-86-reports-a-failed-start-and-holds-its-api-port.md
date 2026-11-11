@@ -39,43 +39,49 @@ acceptance_criteria:
       cleanup, so between a stop of the service and its next start no other process can bind that
       number and the kernel gives it to no bind to port 0 and no outgoing connection, while the API's
       own bind still succeeds. Set: the port the suite holds, the fresh host's service, and one child
-      process started with the suite's child environment. Completeness: row port/held-for-the-run
-      (printed with the prefix VELDO-0291) stops the fresh host's service and then requires four
-      things. The child's bind of 127.0.0.1 at that port number, without SO_REUSEADDR, fails with
-      EADDRINUSE. The port reserved_port() returns in the child, loaded from the same file the suite
-      loaded, is a different one. 500 sockets bound to 127.0.0.1 port 0 and held open together are none
-      of them given the port. The start that follows succeeds and a connection to the port is
-      accepted. Red at 646ff7c8, where free_port() closes its socket and nothing holds the port, so the
-      child's bind succeeds.
+      process started with the suite's child environment.
+      Completeness: row port/held-for-the-run (printed with the prefix VELDO-0291) requires five things.
+      The socket the suite holds is open, bound to 127.0.0.1 at the API port, has SO_REUSEADDR set and
+      is not listening (SO_ACCEPTCONN is 0). In a child process, with reserved_port() loaded from the
+      same file the suite loaded, the port reserved_port() returns differs from the suite's; while the
+      child holds that socket, a plain bind of its port without SO_REUSEADDR fails with EADDRINUSE and
+      a ThreadingHTTPServer binds and listens on it; after the child closes both, the plain bind
+      succeeds. With the fresh host's service stopped, 500 sockets bound to 127.0.0.1 port 0 and held
+      open together are none of them given the API port. The start that follows succeeds and a
+      connection to the API port is accepted. Red at 646ff7c8, where free_port() closes its socket, so
+      nothing is held and the child's plain bind of its own port succeeds.
     falsified_by: >
       Close the held socket before reserved_port() returns. Registered mutant port291-not-held must
-      turn port/held-for-the-run red. Leave SO_REUSEADDR off the held socket. Registered mutant
-      port291-held-without-reuse must turn port/held-for-the-run red, because the API's bind then
-      fails and the start that follows does not succeed.
+      turn port/held-for-the-run red, because the suite's socket is closed and the child's plain bind
+      succeeds. Leave SO_REUSEADDR off the held socket. Registered mutant port291-held-without-reuse
+      must turn port/held-for-the-run red, because the child's ThreadingHTTPServer can't bind beside
+      it.
   - id: AC2
     text: >
       Claim: the stand-in manager records every start it makes, a wanted unit's start included, and a
       failed start's record tells a refused bind from a late start. Set: the fresh host's service,
       stopped, and one fixture unit. Completeness: row start/failure-recorded (prefix VELDO-0291) has
-      two legs. Refused bind: a socket that sets SO_REUSEADDR, binds the API port by number and listens
-      holds it while the service is started, twice, the service stopped between the two. For the
-      second start the row requires the record of the API unit's start to carry code 1, the error text
-      "the unit did not start", an exit code that is not None, and a log tail in which "Address
-      already in use" occurs exactly once, though the log file holds the first refusal too. With the
-      socket closed and the service stopped, the next start succeeds and its records all carry code 0.
-      Late start: a second Manager over a unit directory of its own under the suite's scratch
-      directory starts one Type=notify fixture unit whose process writes the line "fixture waiting" to
-      its output, never reports readiness and sleeps 30 s. The row requires code 1, the same error
-      text, no exit code (the process was still running when the wait ended) and a log tail equal to
-      "fixture waiting\n". The row then stops the fixture unit and requires its process gone. Red at
+      two legs.
+      Refused bind: a socket that sets SO_REUSEADDR, binds the API port by number and listens holds it
+      while the service is started. The row requires the record of the API unit's start to carry code
+      1, the error text "the unit did not start", an exit code that is not None, and a log tail
+      containing "Address already in use". With the socket closed and the service stopped, the next
+      start succeeds and its records all carry code 0. Late start: a second Manager over a unit
+      directory of its own under the suite's scratch directory holds one Type=notify fixture unit named
+      v291-late-start-fixture.service, whose ExecStart is /bin/sh -c "echo fixture waiting; exec sleep
+      30". Before starting it, the row writes the line "earlier output" into that unit's log file. The
+      row requires the start's record to carry code 1, the same error text, no exit code (the process
+      was still running when the wait ended) and a log tail equal to "fixture waiting\n". The row then
+      stops the fixture unit and requires its process gone. Red at
       646ff7c8, where the manager keeps no record, drops the result of a wanted unit's start (86:335)
       and never reads the unit log.
     falsified_by: >
       Record a failed start without its log tail. Registered mutant start291-log-tail-dropped must
       turn start/failure-recorded red. Leave wanted units out of the records. Registered mutant
-      start291-wanted-unit-unrecorded must turn start/failure-recorded red. Take the tail from the
-      start of the unit log. Registered mutant start291-tail-whole-log must turn
-      start/failure-recorded red.
+      start291-wanted-unit-unrecorded must turn start/failure-recorded red.
+      Take the tail from the last 800 bytes of the whole unit log. Registered mutant
+      start291-tail-whole-log must turn start/failure-recorded red, because the late start's tail then
+      holds "earlier output".
   - id: AC3
     text: >
       Claim: without_signer checks the start it makes, the row ends at a failed start, and the row's
@@ -99,9 +105,9 @@ acceptance_criteria:
       start291-detail-without-starts must turn restart/adoption-start-checked red.
 required_evidence: [unit, integration]
 rollback: >
-  Revert the commit. Suite 86 again takes its port from free_port() and holds nothing and reports
-  start codes only. No
-  product file, stored record or other suite depends on anything this change adds.
+  Revert the commit. Suite 86 again takes its port from free_port(), holds nothing, and reports
+  start codes only. No product file, stored record or other suite depends on anything this change
+  adds.
 ---
 
 ## Intent
@@ -163,10 +169,11 @@ stopped. Only a process that already knows the number can do that, and the kerne
 out. If the API ever stops setting SO_REUSEADDR, every start of it fails loudly with the address in
 use, which the start record names.
 
-Suite 86 loads the support file as ROOT / "scripts/suites/support" / "v171_tailscale.py", so a
-registered mutant of reserved_port() (dir scripts/suites/support) replaces the copy the suite runs.
-The child process in port/held-for-the-run loads the file the suite loaded, TS.__file__, so it runs
-the same copy.
+Suite 86 changes the line that loads the support file (86:143) to
+ROOT / "scripts/suites/support" / "v171_tailscale.py", the form check_teeth_mutations.py
+substitutes (13060 to 13063), so a registered mutant of reserved_port() (dir
+scripts/suites/support) replaces the copy the suite runs. The child process in
+port/held-for-the-run loads the file the suite loaded, TS.__file__, so it runs the same copy.
 
 ### Mechanisms weighed and not chosen
 
@@ -240,7 +247,7 @@ change runs the full mutation sweep.
 
 Each summary under proof/VELDO-0291/ is veldo.proof-summary/v1 with its command, environment, host load
 and discarded list. The red-before runs the built suite with each criterion's behavior put back as it
-is at 646ff7c8: the port from free_port() with nothing held, Manager.start without records and without
+is at 646ff7c8: reserved_port() returning the port free_port() gives and a closed socket, Manager.start without records and without
 reading the unit log, and without_signer without its check. Each new row must be red on the check its
 criterion names. A row red only because its section raised does not count as red-before. The new rows
 print with the prefix VELDO-0291 through a second expect helper in suite 86, so they aren't reported as
@@ -264,3 +271,4 @@ wanted unit fail the start of the unit that wants it.
 
 2026-11-11: drafted from section 4 of the landing-c flake analysis
 2026-11-11: revision 1 applies the findings of the review of 8b44659e
+2026-11-11: revision 2 applies the findings of the re-review of 18cff947
