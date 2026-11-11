@@ -46,9 +46,10 @@ observability:
     None. The phases of one build are joined by the unit and by each phase's source commit, which
     is the commit the phase before it ended on.
   error_taxonomy: >
-    Two new names. phase_cap is a stop cause of one engine run (the run reached its message cap).
+    Three new names. phase_cap is a stop cause of one engine run (the run reached its message cap).
     phase_budget:build is a refusal of Runtime.build (the build used every dispatch it is allowed
-    and the last phase is not done). No existing refusal changes its name or meaning.
+    and the last phase is not done). invalid_input:build_head is a refusal of a phase whose build
+    head is not the committed state it names (F2). No existing refusal changes its name or meaning.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -323,3 +324,5 @@ runs" in the Owner decisions section because that sentence is the review's own F
 review and left for the owner: error_taxonomy still says "two new names" although F2 adds the
 refusal invalid_input:build_head, and the three owner values are not yet answered, so status stays
 draft.
+
+2026-11-11: the lead corrected error_taxonomy to name the three new names, including invalid_input:build_head from F2.
