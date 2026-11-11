@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0292
 title: The push guard judges only the git and gh commands the shell would run, so a mention of one in a comment, or in a quoted string or heredoc body given only to plain text tools in a command that names no git or gh, is not refused, while a git command the guard cannot resolve stays protected
-status: ready
+status: draft
 risk: high
 risk_areas: [auth_security]
 owner: dmitry
@@ -29,7 +29,8 @@ observability:
     line now ends with what it found: the matched text, cut at 120 characters, and where it sits (a
     command of a list or pipeline, the argument or input of a program that is not a plain text tool
     with the program named, text in a command that also names git or gh, or text the guard does not parse with
-    the construct named, a builtin by its name and an assignment by its name). The incident's message gave the builder no way to see which
+    the reason named: the construct, a builtin by its name, an assignment by its name, a write the
+    guard reads as git configuration with its path, or a construct in text a program may run). The incident's message gave the builder no way to see which
     words had been read as a command.
   metrics: >
     None added.
@@ -65,9 +66,10 @@ acceptance_criteria:
       push given as a string to sh -c or bash -c, to eval, or on the standard input of a shell; a push
       as one command of a pipeline or list; a push held in a variable that is then run; a push inside a
       function body; a push behind a shell alias or a git alias; a push given as code to an
-      interpreter; a push stored by export, read or printf -v and run by a later shell; a git alias
-      whose text names a push, written to a configuration file by a plain text tool and used later in
-      the same command; a command that carries both a quoted mention and a real push; and a command
+      interpreter; a push stored by export, read or printf -v and run by a later shell; a git alias or
+      hook whose text names a push, written by a plain text tool to a path the guard cannot show is
+      outside git's configuration, however that path or git is spelled, and used later in the same
+      command; a command that carries both a quoted mention and a real push; and a command
       that first changes which program a name runs, by a builtin, an assignment or a copied shell
       called by a path, and then gives that name a push as a quoted string or a commit message. The
       refusal line names what the guard found and where.
@@ -83,10 +85,35 @@ acceptance_criteria:
       a BEGIN block calling system with it, and python3 reading a quoted heredoc that calls os.system with
       it. live/stored: export of a variable holding the push, then sh -c running that variable in double
       quotes; read of the push from a quoted heredoc, then the same; printf -v of the push, then the same.
-      live/config-write: printf of an alias section mapping p to !git push origin main, appended to
-      .git/config by a redirection, then git p; the same section echoed into tee -a .git/config, then
-      git p; the printf form on one line and git p on the next; the printf form, then git named by its
-      absolute path with p; the printf form, then sh -c with the quoted string git p; the printf form appended to the path written as '.g''it/config', then g\it p; the same, then sh -c with the quoted string g\it p; with x unset, the printf form piped into tee -a with the path written as .g"$x"it/config, then sh -c with the single quoted string "$x"git p; the printf form appended to the path written as .gi[t]/config, then bash -c with a single quoted string that gives bash $'g\x69t' p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
+      In the next three rows S is printf of an alias section mapping p to !git push origin main, D is a
+      directory under the fixture's temporary directory named by its absolute path, and G is printf of
+      the format %s%s p with the arguments gi and t, piped into sh.
+      live/config-write: S appended to .git/config by a redirection, then git p; the same section echoed
+      into tee -a .git/config, then git p; S on one line and git p on the next; S, then git named by its
+      absolute path with p; S, then sh -c with the quoted string git p; S appended to the path written as
+      '.g''it/config', then g\it p; the same, then sh -c with the quoted string g\it p; with x unset, S
+      piped into tee -a with the path written as .g"$x"it/config, then sh -c with the single quoted
+      string "$x"git p; S appended to the path written as .gi[t]/config, then bash -c with a single
+      quoted string that gives bash $'g\x69t' p; S appended to '.g''it/config', then sh -c with each of
+      the single quoted strings gi$(true)t p, gi followed by true in backquotes and t p, and
+      gi${x:-${y}}t p; S with the alias named t appended to '.g''it/config', then bash -c '{gi,}t'; S
+      appended to '.g''it/config', then gi, a backslash, a newline and t p; S appended to
+      '.g''it/config', then G; S piped into tee -a '.g''it/config', then G; S appended to
+      .g"$x"it/config, then G; S appended to .gi[t]/config, then G; S appended to 'D/h/.gitconfig', then
+      printf of the same format and arguments piped into env HOME=D/h sh; S written to 'D/inc', then
+      printf of the same format and arguments piped into env GIT_CONFIG_GLOBAL=D/inc sh; printf of a hook
+      script that runs git push origin main into '.g''it/hooks/post-commit', chmod +x of that path, then
+      a commit that printf builds from gi and t and pipes into sh; the same through
+      .g"$x"it/hooks/post-commit; the hook written to 'D/post-commit', made executable, moved by mv into
+      .gi[t]/hooks/, then the same commit.
+      live/config-include: S written to 'D/inc', then git -c include.path=D/inc p; the same with git
+      written g\it; the same with git named by its absolute path; S on one line and that git command on
+      the next.
+      live/construct: S written to 'D/inc', then each of: sh -c with the single quoted string
+      gi$(true)t -c include.path=D/inc p; the same with true in backquotes; the same with
+      gi${x:-${y}}t; bash -c with {gi,}t -c include.path=D/inc p; gi, a backslash, a newline and t -c
+      include.path=D/inc p; sh -c with /usr/bin/gi[t] -c include.path=D/inc p.
+      live/mixed: echo of a quoted mention followed by a real push of main after a cd.
       live/quoted-command-word: true && 'git' push origin main, and true && g\it push origin main.
       live/remap, where D is a directory under the fixture's temporary directory: hash -p /bin/sh cat,
       then cat -c with the quoted push; eval of a single quoted definition of a function cat that runs
@@ -110,13 +137,21 @@ acceptance_criteria:
       tool) turns live/shell-string and live/pipeline red; guard292-unparsed-is-data (a command outside
       the subset has its quoted strings removed anyway) turns live/outside-subset and live/stored red;
       guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter
-      red; guard292-git-list-data (text in a command that also names git counts as data) turns
-      live/config-write red; guard292-git-list-exact-word (the rule fires only on a word that is exactly
-      git or gh) turns live/config-write red; guard292-git-list-per-line (the rule keeps live only the
-      last line that names git) turns live/config-write red; guard292-git-list-quoted (the rule tests
-      the text without deleting quotes and backslashes) turns live/config-write red;
-      guard292-git-list-expansion-form-off (the second form is not tested) turns live/config-write red;
-      guard292-git-list-escape-form-off (the third form is not tested) turns live/config-write red;
+      red; guard292-config-write-off (test 1 never fires) turns live/config-write red;
+      guard292-config-site-quoted (test 1 reads a place as written, without quote removal) turns
+      live/config-write red; guard292-config-site-unread (a place with an expansion, a glob, a brace, a
+      tilde or a joined line is read after quote removal as if it were literal) turns live/config-write
+      red; guard292-config-site-word (test 1 finds git and config only as whole words) turns
+      live/config-write red; guard292-config-writer-args-off (only redirection targets are places) turns
+      live/config-write red; guard292-config-word-off (the text outside data is not searched for config)
+      turns live/config-write red; guard292-construct-off (test 2 never fires) turns live/construct red;
+      guard292-construct-command-words-only (test 2 reads only command words) turns live/construct red;
+      guard292-construct-joined-line-off (a backslash before a newline is not a construct) turns
+      live/construct red; guard292-git-list-data (text in a command that also names git counts as data)
+      turns live/config-include red; guard292-git-list-exact-word (test 3 fires only on a word that is
+      exactly git or gh) turns live/config-include red; guard292-git-list-per-line (test 3 keeps live
+      only the last line that names git) turns live/config-include red; guard292-git-list-quoted (test 3
+      reads the text without deleting quotes and backslashes) turns live/config-include red;
       guard292-list-tail-data (once a command of a list holds data, the commands after it are data too)
       turns live/mixed red; guard292-command-word-raw (the live text keeps command words as written)
       turns live/quoted-command-word red; guard292-builtin-in-subset (every builtin is read as an
@@ -294,7 +329,9 @@ touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, fal
 with a word that starts with -v, whether -v NAME or -vNAME, is not one: it may assign a variable,
 and it takes the command outside the subset. A command
 word with a slash is never a plain text tool, so a copy of a shell named cat and called by its
-path keeps its text live.
+path keeps its text live. Ten of the tools write, move or remove a file: tee, cp, mv, ln, touch,
+mkdir, chmod, rm, sort and uniq. Every argument of each is a place test 1 judges. A tool added to
+the set later counts as writing unless the guard's list of tools that do not write names it.
 
 Every other program keeps its text live: the shells and eval, the wrappers (timeout, nohup, env, xargs,
 sudo, ssh), the interpreters (python3 -c, perl -e, awk, node -e, a heredoc on an interpreter's standard
@@ -308,22 +345,45 @@ Checking the whole pipeline covers a string echoed into a shell or an interprete
 a variable and run later is still seen, because an assignment, export, read and printf -v each
 take the command outside the subset.
 
-When git or gh appears anywhere in the command outside comments and the strings that would otherwise
-be data, no quoted string or heredoc body anywhere in the command is data, except the message values
-named in the next paragraph. The test runs on three forms of that text, and git or gh found in any of them counts. The first is
-the text with every single quote, double quote and backslash deleted. The second first deletes
-every parameter expansion, meaning a `$` followed by a name, by one digit or special character, or
-by a braced `${...}`, and then deletes the quotes and backslashes. The third first replaces every
-backslash escape that `$'...'` or printf turns into a character by that character, and then deletes
-the quotes and backslashes; those escapes are `\x` with hex digits, `\u` and `\U` with hex digits,
-and a backslash with one to three octal digits. So 'g'it, "gi"t, g\it, "$x"git, .g"$x"it/config and
-$'g\x69t' count as git at any depth of quoting. Each form only adds matches, so the three together
-can only add refusals. It counts wherever no letter,
-digit or underscore stands right before or after it: as a command word, as part of a path such as
-/usr/bin/git or .git/config, as an argument, and inside a string given to a shell, a wrapper or an
-interpreter. The command is the whole text of the Bash call, across all its lines. A command that runs
-git can use a file it writes, such as a git alias appended to .git/config, a hook under .git/hooks or
-a script git runs, so nothing it writes is data, whatever path it writes to.
+Three tests then decide whether anything in the command is data at all. They run on a command the
+scanner has read inside the subset. None of them asks how a later command spells git, and each can
+only move a command toward refusal.
+
+Test 1, a write to git configuration. The places a command writes are the target of every
+redirection other than `<` and `<&`, and every argument word of a plain text tool that writes,
+which is every plain text tool except echo, printf, cat, grep, egrep, fgrep, head, tail, wc, cut,
+tr, ls, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. A place is outside git's
+configuration only when its word, as written, holds no `$`, backquote, `*`, `?`, `[`, `]`, `{`,
+`}`, `~` and no backslash before a newline, and its text after quote removal holds neither git nor
+config in any letter case anywhere, not only as a whole word. Every other place is a write to git
+configuration: .git/config, '.g''it/config', .gi[t]/config, .g"$x"it/config, a hook under
+.git/hooks, ~/.gitconfig, a path under .config/git, and any path an expansion or a glob supplies.
+The test also fires when the text outside comments and data strings, with every quote and
+backslash deleted, holds config in any letter case anywhere, as git config, the GIT_CONFIG
+variables and XDG_CONFIG_HOME do. When test 1 fires, the whole command is judged as written,
+exactly as at 646ff7c8, with no part of it read as data.
+
+Test 2, a construct in text a program may run. When the text outside comments and data strings,
+and outside the words, redirections and heredoc bodies of the commands that are plain text tools
+in a pipeline of only plain text tools, holds a `$`, a backquote, `{`, `}`, `*`, `?`, `[`, `]`,
+`~` or a backslash before a newline, the whole command is judged as written, exactly as at
+646ff7c8. So the test reads every string given to a shell, a wrapper or an interpreter, and the
+command word and arguments of every program that is not a plain text tool. A parameter expansion,
+a command substitution in either spelling, a brace expansion, nested braces, a glob, a tilde and a
+joined line all send the command there, at any depth of quoting and whatever they would spell. The
+words of a plain text tool are left out because they reach no program that runs text: they reach
+the output, or a file, and every file is a place test 1 judges.
+
+Test 3, a command that names git or gh. When the text outside comments and the strings that would
+otherwise be data, with every single quote, double quote and backslash deleted, holds git or gh in
+any letter case where no letter, digit or underscore stands right before or after it, no quoted
+string or heredoc body anywhere in the command is data, except the message values named in the
+next paragraph. It counts as a command word, as part of a path such as /usr/bin/git, as an
+argument, and inside a string given to a shell, a wrapper or an interpreter. The command is the
+whole text of the Bash call, across all its lines. A command that runs git can use a file it
+writes at any path, for example by git -c include.path, so nothing it writes is data, whatever
+path it writes to. Test 3 reads no expansion and no escape: an expansion or a joined line in text a
+program may run is test 2's, and one in a path is test 1's.
 
 Git and gh keep their text live with one exception: text they store and never run. In a simple command
 whose words after quote removal start with the bare word git, with no global option other than -C, and whose
@@ -367,15 +427,18 @@ host that text the scanner called data is text the shell did not run.
   with a plain text tool and then runs it without git, such as cat into /tmp/x.sh from a heredoc
   holding a push of main followed by bash /tmp/x.sh. A hook written in one Bash call and run by git in
   a later call is the same case. It was refused at 646ff7c8 and is allowed now, because the guard
-  does not follow a file. The owner accepts this with the approval. A git whose letters an
-  expansion supplies inside a string given to a shell is the same case: sh -c running $a$b p with a
-  and b set in the shell the command starts in, or sh -c running /usr/bin/gi[t] p, where a glob
-  supplies the t. That spelling of a push already passes the guard at 646ff7c8, and a configuration
-  written beside it is not followed, including one written through a path whose letters a glob
-  supplies, such as .gi[t]/config. Quotes, backslashes, $'...' escapes and an expansion that supplies
-  none of the letters cannot hide the name, because the test reads the three forms the Design names,
-  and an expansion in a command word takes the command outside the subset, where it is judged on its
-  whole text as at 646ff7c8.
+  does not follow a file. The owner accepts this with the approval. A configuration file
+  is recognized by where text is written, never by how a later command spells git. A write to a
+  path that names git or config in any form, or to a path the guard cannot read, sends the whole
+  command to the 646ff7c8 judgment. So does an expansion, a substitution, a brace, a glob, a tilde
+  or a joined line in text a program other than a plain text tool may run. What is left is the case
+  this bullet already names. A program that is not a plain text tool can build any name from text
+  it is given, such as printf of gi and t piped into sh, or python3 joining two strings. It can
+  then point git at a file the command wrote at a path that names neither git nor config, for
+  example with -c include.path. 646ff7c8 refuses such a command and this spec allows it, because
+  nothing in its text separates it from the incident: a plain text tool writes a file and a program
+  the guard cannot read uses it. The guard does not follow that file, and the owner accepts it with
+  the approval.
 - A command cannot rename a plain text tool, git or gh inside the subset. A builtin other than the
   nine the Design allows, an assignment, or a function definition takes the whole command
   outside it, and a plain text tool is only ever a bare name. What is left is a file PATH points
@@ -407,3 +470,5 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: revision 6 applies N1 and N2 of the fourth re-review of b6cdacaf
 
 2026-11-11: marked ready by the lead; the fourth re-review would mark it READY once N1 and N2 were applied (61098783)
+2026-11-11: amendment 2 finds a configuration write by where the text goes, not how git is spelled (build 1, AC2 not met for five spellings); status back to draft
+2026-11-11: revision 7 applies amendment 2 after the builder found five alias-write spellings that passed
