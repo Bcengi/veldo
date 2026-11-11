@@ -151,13 +151,20 @@ acceptance_criteria:
     text: >
       Claim: the Telegram report tells the owner once about every run whose settled tokens are over
       RUN_TOKENS_FLAG (15,000,000) or unknown, and says nothing about a run under it. A run settled
-      at stop (AC10) is not unknown: it is judged by its settled figure. Set: five settled invocation
-      records in suite 72's store: 8,000,000 tokens, 15,000,001 tokens, tokens unknown, and two
-      settled at stop, with 9,000,000 and with 15,000,001 tokens. Completeness: row
+      at stop (AC10) with no turn in flight is not unknown: it is judged by its settled figure. A run
+      settled at stop with a turn in flight has an unknown total, because the open turn printed no
+      usage: it is reported once whatever its figure, zero included. in_flight is the settlement's
+      count of turns open at the stop. Set: seven settled invocation records in suite 72's store:
+      8,000,000 tokens, 15,000,001 tokens, tokens unknown, and four settled at stop with tokens as a
+      lower bound: 9,000,000 with in_flight 0, 15,000,001 with in_flight 0, 0 with in_flight 1 (a
+      run stopped inside its first turn), and 9,000,000 with in_flight 1 (a completed turn and an
+      open one). Completeness: row
       report/run-over-tokens (prefix VELDO-0294) requires no report for the first; one report of
       event run_over_tokens for the second, whose text names the unit, the dispatch, the tokens, the
       messages and the threshold; one for the third, whose text says the tokens are unknown; none
-      for the fourth; one for the fifth, whose text says at least before the tokens; and a second
+      for the fourth; one for the fifth, whose text says at least before the tokens; one for the
+      sixth and one for the seventh, whose text says at least 0 and at least 9,000,000 tokens
+      recorded, that a turn was in flight and that the total is unknown; and a second
       pass over the same journal to send nothing more. Red at 6ee5bb5f, where REGISTRY
       (control_telegram_report.py:140) has no event that reads a subscription_reservation record.
     falsified_by: >
@@ -363,6 +370,8 @@ the owner one report per enabled event. REGISTRY gains run_over_tokens, read fro
 subscription_reservation records the ledger writes. Its handler reports an invocation record when its
 final report commits and its charged tokens are above RUN_TOKENS_FLAG, or its tokens are still
 unknown. A run settled at stop has a figure and is judged by it, and its report says at least. The
+exception is a run settled at stop with a turn in flight: its total is unknown, so it is reported
+once whatever the figure, as at least that many tokens recorded, a turn in flight, total unknown. The
 threshold is 15,000,000, the figure the owner's own check uses. The report goes out on
 the channel's next pass, so the owner hears about a run that used too many tokens on the reporter's
 next pass after it settles.
@@ -453,3 +462,4 @@ listed, and this unit's own note falls under proof/VELDO-0294/**.
 mutant; AC9 keeps one claim.
 2026-11-11: approved by the owner with the defaults 80 messages per phase, 6 dispatches per build and a 15,000,000 token flag (Telegram 40816; the state note written at every commit instead of a soft-limit message was explained to him in 40817). Status ready.
 2026-11-11: amended after the design's validation, with the owner's approval of the spec change (Telegram 40821 and 40822, "Yes ok"). The design's section 10 proposed S1 to S4. S2 accepted: AC3 counts steps, defined per engine, and the count at the stop is at least the cap. S3 accepted: AC2's cuts are upper limits, with the order in which more is dropped. S1 rejected as written: instead of making continuation depend on admission, a run stopped at its phase cap is settled at stop from the meter's observed figures, so a tokens or messages cap or window admits the continuation; this is the new AC10, and AC3's claim is unchanged. S4 replaced by the same decision: AC5 judges a run settled at stop by its settled figure, and a run with no figure is still reported as unknown. Footprint gains control_reservations.py and control_reservation_runtime.py with their .veldo copies. Status stays ready.
+2026-11-11: AC5 amended after the design's re-validation (design-veldo-0294-revalidation-2026-11-11.md, R1). A run settled at stop with a turn in flight is reported once, as at least N tokens recorded, a turn in flight, total unknown, also when N is zero or under the threshold. This restores the reporting of unknown usage the owner approved in Telegram 40816: the amendment of 3b6a5a0e had let a Codex run stopped inside its first turn settle 0 tokens and stay unreported. AC5 defines in_flight for its two earlier settled-at-stop records and adds two: 0 tokens with in_flight 1, and 9,000,000 tokens with in_flight 1. Continuation after a cap is still admitted (Telegram 40822). No other criterion changes. Status stays ready.
