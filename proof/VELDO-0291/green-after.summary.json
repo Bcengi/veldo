@@ -1,0 +1,105 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 proof/VELDO-0291/heavy_summary.py green-after --runs 3 --name green-after; per run: VELDO_ROW_TIMINGS=<scratch file> python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+ "deciding": {
+  "bound": "every run: suite 86 reports no failed row, and each of the three VELDO-0291 rows took time in the row timings file, so it ran. selftest --suite exits 2 by design (a partial run)",
+  "runs": [
+   {
+    "adoption_failed_starts": 0,
+    "adoption_starts": 8,
+    "api_port": 38377,
+    "red_rows": [],
+    "returncode": 2,
+    "row_seconds": {
+     "port/held-for-the-run": 0.47553539206273854,
+     "restart/adoption-start-checked": 1.2047312380746007,
+     "start/failure-recorded": 5.818472309038043
+    },
+    "run": 1,
+    "suite_failed": 0,
+    "suite_passed": 37,
+    "suite_seconds": 69.09480043803342,
+    "verdict": "green"
+   },
+   {
+    "adoption_failed_starts": 0,
+    "adoption_starts": 8,
+    "api_port": 56573,
+    "red_rows": [],
+    "returncode": 2,
+    "row_seconds": {
+     "port/held-for-the-run": 0.475693475920707,
+     "restart/adoption-start-checked": 1.158944461029023,
+     "start/failure-recorded": 5.832639553118497
+    },
+    "run": 2,
+    "suite_failed": 0,
+    "suite_passed": 37,
+    "suite_seconds": 69.02204392012209,
+    "verdict": "green"
+   },
+   {
+    "adoption_failed_starts": 0,
+    "adoption_starts": 8,
+    "api_port": 51401,
+    "red_rows": [],
+    "returncode": 2,
+    "row_seconds": {
+     "port/held-for-the-run": 0.46182690700516105,
+     "restart/adoption-start-checked": 1.163615161087364,
+     "start/failure-recorded": 5.833192324033007
+    },
+    "run": 3,
+    "suite_failed": 0,
+    "suite_passed": 37,
+    "suite_seconds": 69.5367003090214,
+    "verdict": "green"
+   }
+  ],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9400,
+   "name": "green-01.log",
+   "sha256": "d8e16d2c2b40f7ca90dd89c20e05017f361a7759623a0d4c06e274f609cee5b9"
+  },
+  {
+   "bytes": 3765,
+   "name": "green-01-rows.json",
+   "sha256": "1c1e4fa55377a76afb77b24bd30e1550da347a6cb1bf4d372848d1cf58f045a4"
+  },
+  {
+   "bytes": 9400,
+   "name": "green-02.log",
+   "sha256": "daf183c24b81ca094bb26abe3c615c6a2c286cc5b6ae9996e3aa01d7b329c4ab"
+  },
+  {
+   "bytes": 3763,
+   "name": "green-02-rows.json",
+   "sha256": "e5fc3a60983ed223c9e436cac9f69b37ad2fadbcfa5c4e822702f46ed6958489"
+  },
+  {
+   "bytes": 9400,
+   "name": "green-03.log",
+   "sha256": "2b4520885f1919fdf0daf69e3c674f995ed230500b006c5d0f8b43ff0a9e78ca"
+  },
+  {
+   "bytes": 3759,
+   "name": "green-03-rows.json",
+   "sha256": "092b1c8eb6299f363fe9457c0c549f918dc735115b7c1fa8335cb73310e23bf4"
+  }
+ ],
+ "environment": {
+  "commit": "0a5892776bb479427a3d2d204e17f132d4633a39",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   4.0625,
+   7.3681640625,
+   13.7265625
+  ],
+  "python": "3.12.3",
+  "tree": "6a4a9cd2d50066ad954a4b582b70eb75024ae599"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

@@ -1,0 +1,122 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 proof/VELDO-0291/heavy_summary.py red-before --base 646ff7c8; per criterion, in the scratch checkout: python3 scripts/selftest.py --suite 86_veldo_0189_engine_upgrade",
+ "deciding": {
+  "base": "646ff7c82fd6aec1df0fe7ffb739bcc479499bdf",
+  "bound": "for every criterion: its row is red, every check the criterion names is among the row's false labels, and no false label of the row says its section raised",
+  "variants": [
+   {
+    "criterion": "AC1",
+    "false_labels": [
+     "the socket the suite holds is open, bound to 127.0.0.1 at the API port 48547, has SO_REUSEADDR set and is not listening [closed]",
+     "while the child holds its socket, a plain bind of its port without SO_REUSEADDR fails with EADDRINUSE [errno 0]"
+    ],
+    "named_checks_false": [
+     "the socket the suite holds is open",
+     "while the child holds its socket, a plain bind of its port without SO_REUSEADDR fails"
+    ],
+    "named_checks_required": [
+     "the socket the suite holds is open",
+     "while the child holds its socket, a plain bind of its port without SO_REUSEADDR fails"
+    ],
+    "other_red_rows": [],
+    "put_back": "reserved_port() returns the port free_port() gives and a closed socket",
+    "returncode": 1,
+    "row": "port/held-for-the-run",
+    "row_raised": false,
+    "row_red": true,
+    "suite_failed": 1,
+    "suite_passed": 36,
+    "suite_sha256": "1c7ff516a49574808591abe464a8f3b6599d0791077f653c4b6ae6ebf667052f",
+    "support_sha256": "5525ec8e79a46bd5cb737cac7bf1db2ec1efaad02d5ecd35e13ee38490d2929a",
+    "verdict": "red-before"
+   },
+   {
+    "criterion": "AC2",
+    "false_labels": [
+     "refused bind: the API unit's start is recorded once with code 1, \"the unit did not start\", an exit code and a log tail naming the address in use [no record of veldo-api-e33bd82efbf770a5.service among 0]",
+     "refused bind: with the socket closed and the service stopped, the next start succeeds and its records all carry code 0 [0; []]",
+     "late start: the fixture unit's start is recorded once with code 1, \"the unit did not start\", no exit code and a log tail equal to \"fixture waiting\\n\" [1 the unit did not start; no record]"
+    ],
+    "named_checks_false": [
+     "refused bind: the API unit's start is recorded once",
+     "late start: the fixture unit's start is recorded once"
+    ],
+    "named_checks_required": [
+     "refused bind: the API unit's start is recorded once",
+     "late start: the fixture unit's start is recorded once"
+    ],
+    "other_red_rows": [
+     "restart/adoption-start-checked"
+    ],
+    "put_back": "Manager.start is the text of the base commit: no records, the unit log never read",
+    "returncode": 1,
+    "row": "start/failure-recorded",
+    "row_raised": false,
+    "row_red": true,
+    "suite_failed": 2,
+    "suite_passed": 35,
+    "suite_sha256": "2baec6650a91de617c11c45bb112eff1dde188c221a22248ca01f1cc19737ead",
+    "support_sha256": "1f097d44a4a6cc4c31ca8082ebb6944e60e99a893a08bd0e9189c386a76ae2a9",
+    "verdict": "red-before"
+   },
+   {
+    "criterion": "AC3",
+    "false_labels": [
+     "the last check the row recorded is the start check, and it is false [9 checks; the last: an adoption is accepted after the next run: the adoption signer's binding verifies under the signers the restarted servi True]",
+     "the start check's label names the API unit, code 1, \"the unit did not start\" and a log tail holding the refused bind []",
+     "no setup run was made after it [2 setup(s), 7 call(s) to the manager]",
+     "the detail the suite builds for a failed adoption row holds the same record [1 failed start(s) among 10]"
+    ],
+    "named_checks_false": [
+     "the last check the row recorded is the start check"
+    ],
+    "named_checks_required": [
+     "the last check the row recorded is the start check"
+    ],
+    "other_red_rows": [],
+    "put_back": "without_signer makes no check of its start (the edit of mutant start291-signer-start-unchecked)",
+    "returncode": 1,
+    "row": "restart/adoption-start-checked",
+    "row_raised": false,
+    "row_red": true,
+    "suite_failed": 1,
+    "suite_passed": 36,
+    "suite_sha256": "656a13b7df629b03ed42caf86d3add6d15c586344775b7a442a0d547118866d7",
+    "support_sha256": "1f097d44a4a6cc4c31ca8082ebb6944e60e99a893a08bd0e9189c386a76ae2a9",
+    "verdict": "red-before"
+   }
+  ],
+  "verdict": "pass",
+  "what_ran": "suite 86 and its support file as built, in a scratch checkout of the base commit, with the one criterion's behavior put back as it is at the base commit"
+ },
+ "discarded": [
+  {
+   "bytes": 10020,
+   "name": "red-before-AC1.log",
+   "sha256": "b253ca108bf17cfbdb880ee889d75dd329f0b791b604b537ddfcb862ae0c0e3c"
+  },
+  {
+   "bytes": 12037,
+   "name": "red-before-AC2.log",
+   "sha256": "1432189138fc6fc31dd55111faea9e122881a4d247204bb4a9b7dfce1727d7cb"
+  },
+  {
+   "bytes": 10693,
+   "name": "red-before-AC3.log",
+   "sha256": "8f6fef8ca09fd94c2764b1b3b8bd6ea88fcf7562942cc80df4acbf7de892fffe"
+  }
+ ],
+ "environment": {
+  "commit": "0a5892776bb479427a3d2d204e17f132d4633a39",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.48681640625,
+   11.17724609375,
+   16.32470703125
+  ],
+  "python": "3.12.3",
+  "tree": "6a4a9cd2d50066ad954a4b582b70eb75024ae599"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

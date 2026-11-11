@@ -1,0 +1,402 @@
+{
+ "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/check_teeth_mutations.py --finding 291 --jobs 3 --worker-log-dir <scratch> --diff-dir <scratch> --summary <scratch file>",
+ "deciding": {
+  "bound": "the stage passed, every mutant registered under finding 291 was run and killed on its target row, and each kill quotes a false label of that row",
+  "cases": [
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "port291-held-without-reuse",
+    "expected": "killed",
+    "mutant_red_rows": 5,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "the socket the suite holds is open, bound to 127.0.0.1 at the API port 55791, has SO_REUSEADDR set and is not listening [(('127.0.0.1', 55791), 0, 0)]; while the child holds its socket, a ThreadingHTTPServer binds and listens on its port [errno 98]; the start that follows succeeds, the API unit with it [0; running (True, False); unit=veldo-api-bc984b2fe970b2f6.service code=1 error=the unit did not start seconds=0.245 launched=True exit_code=1 log_tail='in/control_client_api.py\", line 376, in serve\\n    server = API.listen(opened.api, listen.get(\\'host\\'), listen.get(\\'port\\'))\\n             ^^"
+    ],
+    "target_rows": [
+     "port/held-for-the-run"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "port291-not-held",
+    "expected": "killed",
+    "mutant_red_rows": 1,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "the socket the suite holds is open, bound to 127.0.0.1 at the API port 33893, has SO_REUSEADDR set and is not listening [closed]; while the child holds its socket, a plain bind of its port without SO_REUSEADDR fails with EADDRINUSE [errno 0]; with the fresh host's service stopped, 500 sockets bound to 127.0.0.1 port 0 and held open together are none of them given the API port [500 bound, 500 distinct ports, running (False, False)]"
+    ],
+    "target_rows": [
+     "port/held-for-the-run"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "start291-detail-without-starts",
+    "expected": "killed",
+    "mutant_red_rows": 1,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "the detail the suite builds for a failed adoption row holds the same record [1 failed start(s) among 4]"
+    ],
+    "target_rows": [
+     "restart/adoption-start-checked"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "start291-log-tail-dropped",
+    "expected": "killed",
+    "mutant_red_rows": 2,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "refused bind: the API unit's start is recorded once with code 1, \"the unit did not start\", an exit code and a log tail naming the address in use [unit=veldo-api-92ede8bfeed725a3.service code=1 error=the unit did not start seconds=0.258 launched=True exit_code=1 log_tail=None]; late start: the fixture unit's start is recorded once with code 1, \"the unit did not start\", no exit code and a log tail equal to \"fixture waiting\\n\" [1 the unit did not start; unit=v291-late-start-fixture.service code=1 error=the unit did not start seconds=5.011 launched=True exit_code=None log_tail=None]"
+    ],
+    "target_rows": [
+     "start/failure-recorded"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "start291-row-continues",
+    "expected": "killed",
+    "mutant_red_rows": 1,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "the last check the row recorded is the start check, and it is false [11 checks; the last: an adoption is accepted after the next run: the adoption signer's binding verifies under the signers the restarted servi True]; no setup run was made after it [2 setup(s), 7 call(s) to the manager]"
+    ],
+    "target_rows": [
+     "restart/adoption-start-checked"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "start291-signer-start-unchecked",
+    "expected": "killed",
+    "mutant_red_rows": 1,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "the last check the row recorded is the start check, and it is false [9 checks; the last: an adoption is accepted after the next run: the adoption signer's binding verifies under the signers the restarted servi True]; the start check's label names the API unit, code 1, \"the unit did not start\" and a log tail holding the refused bind []; no setup run was made after it [2 setup(s), 7 call(s) to the manager]; the detail the suite builds for a failed adoption row holds the same record [1 failed start(s) among 10]"
+    ],
+    "target_rows": [
+     "restart/adoption-start-checked"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "start291-tail-whole-log",
+    "expected": "killed",
+    "mutant_red_rows": 1,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "late start: the fixture unit's start is recorded once with code 1, \"the unit did not start\", no exit code and a log tail equal to \"fixture waiting\\n\" [1 the unit did not start; unit=v291-late-start-fixture.service code=1 error=the unit did not start seconds=5.012 launched=True exit_code=None log_tail='earlier output\\nfixture waiting\\n']"
+    ],
+    "target_rows": [
+     "start/failure-recorded"
+    ]
+   },
+   {
+    "baseline_red_rows": [],
+    "baseline_rows": 63,
+    "case": "start291-wanted-unit-unrecorded",
+    "expected": "killed",
+    "mutant_red_rows": 2,
+    "observed": "killed",
+    "replacement_count": 1,
+    "source": "fresh",
+    "target_row_false_labels": [
+     "refused bind: the API unit's start is recorded once with code 1, \"the unit did not start\", an exit code and a log tail naming the address in use [no record of veldo-api-46f9ef8461ed94cd.service among 1]; refused bind: with the socket closed and the service stopped, the next start succeeds and its records all carry code 0 [0; [('veldo-authority-46f9ef8461ed94cd.service', 0, True)]]"
+    ],
+    "target_rows": [
+     "start/failure-recorded"
+    ]
+   }
+  ],
+  "counts": {
+   "elapsed": 358.0644870388787,
+   "executed": 8,
+   "registered": 8,
+   "rejected": 8,
+   "reused": 0,
+   "status": "passed",
+   "worker_invocations": 12
+  },
+  "registered": [
+   "port291-held-without-reuse",
+   "port291-not-held",
+   "start291-detail-without-starts",
+   "start291-log-tail-dropped",
+   "start291-row-continues",
+   "start291-signer-start-unchecked",
+   "start291-tail-whole-log",
+   "start291-wanted-unit-unrecorded"
+  ],
+  "returncode": 0,
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 149440,
+   "name": "teeth.log",
+   "sha256": "f5261f3002514b362ab4066608fb150d135d3a894ffe2e2e96819b3e8ecc0745"
+  },
+  {
+   "bytes": 2055,
+   "name": "driver.summary.json",
+   "sha256": "e70fda7593638408c07944ab3c8b15c36de300530ee1ec0dccceeee3b9a43ee2"
+  },
+  {
+   "bytes": 237,
+   "name": "diffs/port291-held-without-reuse.diff",
+   "sha256": "8060c540d3485cc2321180cc08b4bf2097a55759748d060b70d930302bd17265"
+  },
+  {
+   "bytes": 279,
+   "name": "diffs/port291-not-held.diff",
+   "sha256": "a1bec11a83ff529688a5c6b0286f1609f9e3804a1d07a9527f0054940b6fb136"
+  },
+  {
+   "bytes": 254,
+   "name": "diffs/start291-detail-without-starts.diff",
+   "sha256": "44dee0093e639f60c43a5b6bbb772878460970339299eb18a302a59504839d8a"
+  },
+  {
+   "bytes": 252,
+   "name": "diffs/start291-log-tail-dropped.diff",
+   "sha256": "7ee4261ab9a7ebdad29dddb230f49cc8fcce61125d45cedee773f5bf4c981998"
+  },
+  {
+   "bytes": 251,
+   "name": "diffs/start291-row-continues.diff",
+   "sha256": "6f1783c3022c5ab26d138365bf3fb452fc3ba768ff1c584cd8464f8d349d23a9"
+  },
+  {
+   "bytes": 371,
+   "name": "diffs/start291-signer-start-unchecked.diff",
+   "sha256": "138eabd6001c02d709aaaff2866bfded566318a70f46057abc30275c2af70129"
+  },
+  {
+   "bytes": 256,
+   "name": "diffs/start291-tail-whole-log.diff",
+   "sha256": "e163b2db946a58f87cc938a22fa87149f40733eba686a15657eeb2db12df9c64"
+  },
+  {
+   "bytes": 280,
+   "name": "diffs/start291-wanted-unit-unrecorded.diff",
+   "sha256": "c09fe8e3fad9059c8451c50c4c7c3cce40e51ddcdc2193a796535fddf1683d65"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/0-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5289,
+   "name": "workers/0-stdout",
+   "sha256": "368cf117e2a1d2c143039a581faf5acdd560d5154c1c4f63e09e9fba85beb8b7"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/1-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5289,
+   "name": "workers/1-stdout",
+   "sha256": "368cf117e2a1d2c143039a581faf5acdd560d5154c1c4f63e09e9fba85beb8b7"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/10-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5679,
+   "name": "workers/10-stdout",
+   "sha256": "74cd6d2f29537526506926f13f542473d4eda4e7dfb6809f4845177acc4a3f6e"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/11-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5495,
+   "name": "workers/11-stdout",
+   "sha256": "00bd9baeb94e2df547bb1bfe9e461ca6da49fd18fd4d0ff3646931e3670abea7"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/2-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5290,
+   "name": "workers/2-stdout",
+   "sha256": "1f2595dd450b48a7ce23cc9e8f9b3e94d048b3c17a53ef8c2f9106e0e9a1166f"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/3-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5290,
+   "name": "workers/3-stdout",
+   "sha256": "1f2595dd450b48a7ce23cc9e8f9b3e94d048b3c17a53ef8c2f9106e0e9a1166f"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/4-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5799,
+   "name": "workers/4-stdout",
+   "sha256": "c03c9cd9107ab66aec3b372650d527baa5fe6b7606a37fd2e4b95291248eee29"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/5-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 9745,
+   "name": "workers/5-stdout",
+   "sha256": "ecfaffb54deff6fcb969366336799f69e3390bac95ae6625b235cc0ff96675f1"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/6-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 6368,
+   "name": "workers/6-stdout",
+   "sha256": "7c4f024d931eec193f3804b3fcf508ed1d6f7f1fd9442c4ae0336be2f19f70af"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/7-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 6426,
+   "name": "workers/7-stdout",
+   "sha256": "3916a51f02cda73c8878360a051b8910306af0ef53d1e415a90b77187df5c85e"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/8-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5713,
+   "name": "workers/8-stdout",
+   "sha256": "87913083c84b53279d331ce2098ae14fdb27769320e10d090dfecfa65ea67fab"
+  },
+  {
+   "bytes": 0,
+   "name": "workers/9-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5907,
+   "name": "workers/9-stdout",
+   "sha256": "a7f7290b77ee7eb7d2178a51ca010f1ece2377055c1f1c533ffc681716a8f3d3"
+  },
+  {
+   "bytes": 27388,
+   "name": "workers/ownership-0.jsonl",
+   "sha256": "6b43a0aa3f2dd7ea28dc645f199f1e91d1aee4c568ecaee24c080dc5ecf53867"
+  },
+  {
+   "bytes": 27388,
+   "name": "workers/ownership-1.jsonl",
+   "sha256": "c621800c0fa34e2b867cab14b77c265cdf0936b65de4f3d68e05ed539b14c2ce"
+  },
+  {
+   "bytes": 28133,
+   "name": "workers/ownership-10.jsonl",
+   "sha256": "757072d0adcbc16311d45b37321b93909c5c64a3a270ef7562dcb8333f124aa6"
+  },
+  {
+   "bytes": 27733,
+   "name": "workers/ownership-11.jsonl",
+   "sha256": "4741c72628652ee65d14eb12c358af69ccc83128f4556cd94755079a6149b82d"
+  },
+  {
+   "bytes": 27388,
+   "name": "workers/ownership-2.jsonl",
+   "sha256": "7fd97028dca6838271ccb2d164b5ba3f18f857f70f673d7331b5358fc8df785a"
+  },
+  {
+   "bytes": 27388,
+   "name": "workers/ownership-3.jsonl",
+   "sha256": "8a0f60ab41e6e9194ac497056281cfb684b5e38e5222d4b34c574851e9522fdb"
+  },
+  {
+   "bytes": 27388,
+   "name": "workers/ownership-4.jsonl",
+   "sha256": "d9c60f6665b31e8aaa21bad679417d638b8414062a4f54bb6c178d3e28630a1b"
+  },
+  {
+   "bytes": 26993,
+   "name": "workers/ownership-5.jsonl",
+   "sha256": "48b2dbd5666e4bd217d96eeba18052040cdb2e05ec5f07e02d8044e4d7d2bfdc"
+  },
+  {
+   "bytes": 27388,
+   "name": "workers/ownership-6.jsonl",
+   "sha256": "aaef44000698f06fbf9a4c1e4279d1b219ec6613669b37086766dffd5cab7958"
+  },
+  {
+   "bytes": 27783,
+   "name": "workers/ownership-7.jsonl",
+   "sha256": "b1da670ca80a8801fb566dff7e808da8e47a410d2cb89d6f7f04ddbd31dd2a97"
+  },
+  {
+   "bytes": 27388,
+   "name": "workers/ownership-8.jsonl",
+   "sha256": "741ea71c0ef100ea70c5b50922f5b0dfefbfcc98067aac577a1f24c62c3db339"
+  },
+  {
+   "bytes": 27783,
+   "name": "workers/ownership-9.jsonl",
+   "sha256": "7f81052c103af6e8f9df14100e8866c75027428438207ab9264121a6317273e7"
+  }
+ ],
+ "environment": {
+  "commit": "0a5892776bb479427a3d2d204e17f132d4633a39",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.83447265625,
+   5.02294921875,
+   10.619140625
+  ],
+  "python": "3.12.3",
+  "tree": "6a4a9cd2d50066ad954a4b582b70eb75024ae599"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
