@@ -114,7 +114,7 @@ acceptance_criteria:
     falsified_by: >
       Never compare the meter's messages with the cap. Registered mutant phase294-cap-unenforced
       must turn phase/step-cap red. Start the next dispatch from the stopped phase's source
-      commit. Registered mutant phase294-capped-work-dropped must turn phase/step-cap red. 
+      commit. Registered mutant phase294-capped-work-dropped must turn phase/step-cap red.
   - id: AC4
     text: >
       Claim: Metering.settle writes one run token record for every subscription invocation it
