@@ -272,7 +272,7 @@ declared suites inside the mutation stage only. It doesn't count unit.unconfined
 892 s (the graph's estimate) the stage runs at 11 of the 19.4 cores it claims today, which costs at most
 about 892 x (1 - 11/19.4), roughly 390 s, more if the node runs slower under load. It also doesn't count
 suites the survey adds. The replay reports the measured cost from
-its admission record, and the first gate after landing records the stage wall time beside it.
+its admission record, and the first gate after landing records the stage wall time beside it. The survey declared 61 suites, 1,373 of 2,953 registered cases and about 55 percent of the stage's recorded mutant worker seconds (37,934 of 68,680), so the ceiling is in force for roughly the first half of each phase, not the 8.3 percent the estimate above assumed. The replay's mix is not the stage's, so its 87 s difference between arms doesn't measure the stage's cost. The first gate after landing records it.
 
 ### Proof
 
@@ -324,3 +324,5 @@ measured value is recorded here by the build.
 2026-11-11: revision 1 applies the twelve findings of the review of d65410a9
 
 2026-11-11: revision 2 applies the three findings of the re-review of 8f14619b verbatim (lead); checker marked it READY with these applied
+
+2026-11-11: Cost section amended from run check 1 of dde37745 (lead). Ceiling value: 11, held by the on arm of the dde37745 replay (proof/VELDO-0290/replay.json).
