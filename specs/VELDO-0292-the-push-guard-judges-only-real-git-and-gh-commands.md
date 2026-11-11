@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0292
 title: The push guard judges only the git and gh commands the shell would run, so a mention of one in a comment, or in a quoted string or heredoc body given only to plain text tools in a command that names no git or gh, is not refused, while a git command the guard cannot resolve stays protected
-status: draft
+status: ready
 risk: high
 risk_areas: [auth_security]
 owner: dmitry
@@ -472,3 +472,5 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: marked ready by the lead; the fourth re-review would mark it READY once N1 and N2 were applied (61098783)
 2026-11-11: amendment 2 finds a configuration write by where the text goes, not how git is spelled (build 1, AC2 not met for five spellings); status back to draft
 2026-11-11: revision 7 applies amendment 2 after the builder found five alias-write spellings that passed
+
+2026-11-11: marked ready by the lead after the fifth re-review of 4e409b0b (READY)
