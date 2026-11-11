@@ -48,8 +48,9 @@ observability:
   error_taxonomy: >
     Three new names. phase_cap is a stop cause of one engine run (the run reached its message cap).
     phase_budget:build is a refusal of Runtime.build (the build used every dispatch it is allowed
-    and the last phase is not done). invalid_input:build_head is a refusal of a phase whose build
-    head is not the committed state it names (F2). No existing refusal changes its name or meaning.
+    and the last phase is not done). invalid_input:build_head is a refusal of a capped run whose clone
+    head cannot be read as plain bytes from .git/HEAD and its ref (a link, or anything not a commit
+    id or a branch ref) (F2). No existing refusal changes its name or meaning.
 acceptance_criteria:
   - id: AC1
     text: >
