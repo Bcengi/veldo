@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0290
 title: Suites that measure wall-clock time declare it, and the gate ledger keeps CPU headroom while one of them runs
-status: draft
+status: ready
 risk: high
 owner: dmitry
 human_approval: not_required
@@ -70,17 +70,24 @@ acceptance_criteria:
       following one-core ordinary claim refused with resource wall_clock although 5 cores are free,
       the wall_clock claim granted once releases bring the total under the ceiling, and the ordinary
       claim granted after that up to the ceiling. A second leg withdraws the waiting claimant and
-      requires the ordinary claim granted. A third leg runs Workers.run with a recording ledger
-      client over an undeclared job blocked on a manager slot ahead of a declared job the ledger
-      refuses once, frees the slot, and requires both jobs granted and the run to finish. A fourth
-      leg requires a release sent for a waiting name to drop it, and a node's exit to drop its
-      waiting children. Red at 646ff7c8, where Ledger takes no ceiling and the wall_clock claim is
+      requires the ordinary claim granted. A third leg runs Workers.run with a recording ledger client over two declared suites. Job E is
+      first in the pending order and waits locally for a manager slot held by a running job. Job W,
+      of the other suite, needs no slot and is refused once by the ledger for CPU. The running job
+      then exits and frees the slot. The leg requires the next acquire after W's refusal to name W,
+      then both jobs granted and the run to finish. Row admission/wall-clock-node-withdraws (suite 114) runs scheduler.run over fixture nodes and
+      requires a release sent over a node's channel for its waiting child to be answered granted and
+      to clear the bar, and a node that exits with a waiting child to clear it too. Row
+      admission/wall-clock-graph-node (suite 114) marks one fixture node wall_clock and requires its
+      claim refused with resource wall_clock while the ledger already holds more than the ceiling,
+      and granted once the total falls under it. Red at 646ff7c8, where Ledger takes no ceiling and the wall_clock claim is
       refused as malformed; the mutant below shows the row tests the bar itself.
     falsified_by: >
       Do not record the waiting wall_clock claim. Registered mutant admission290-no-waiting-bar must
       turn admission/wall-clock-waiting-bars red. Let Workers.run select freely after a wall_clock
       refusal. Registered mutant admission290-refused-not-retried-first must turn
-      admission/wall-clock-waiting-bars red.
+      admission/wall-clock-waiting-bars red. Send a graph node's claim without its wall_clock mark.
+      Registered mutant admission290-node-mark-dropped must turn admission/wall-clock-graph-node
+      red.
   - id: AC3
     text: >
       Claim: the manifest declares the class and the mutation coordinator carries it to the ledger.
@@ -111,11 +118,11 @@ acceptance_criteria:
       the control runs, every failed row by name, the stall_seconds of every control (minimum,
       median, 95th percentile, maximum), peak workers, the stage wall time and the admission record's
       seconds under the ceiling. The replay also runs the declared suites' baseline controls alone
-      on the quiet host, at least 20 runs, as the reference. The fix is shown when the off arm has a
-      timing-row failure, or its 95th percentile stall in declared suites is at least three times
-      the on arm's and at least 2 seconds above it, and the on arm has no timing-row failure and a
-      95th percentile stall in declared suites no more than 1 second above the quiet reference's. If
-      the off arm shows neither, the
+      on the quiet host, at least 20 runs, as the reference. The fix is shown when both of these hold. The on arm has no timing-row failure, and its 95th
+      percentile stall in declared suites is no more than 1 second above the quiet reference's. The
+      off arm has a timing-row failure, or its 95th percentile stall in declared suites is at least
+      three times the on arm's and at least 2 seconds above it. If the off arm shows neither of
+      those, the
       replay did not reach the stage's load: the round says so and does not claim the fix. Row
       admission/stall-recorded (suite 115) runs WorkerMeter over a fixture cgroup tree whose
       cpu.pressure "some" total moves by a known amount in the worker cgroup and in one accounted
@@ -270,9 +277,7 @@ its admission record, and the first gate after landing records the stage wall ti
 ### Proof
 
 Every summary under proof/VELDO-0290/ is veldo.proof-summary/v1 with its command, environment, host load
-and discarded list. Raw replay output is discarded after its names, sizes and digests are recorded. The
-new rows live in suite 115 and print with the prefix VELDO-0290 admission/, through a second expect
-helper, so they aren't reported as VELDO-0219 rows.
+and discarded list. Raw replay output is discarded after its names, sizes and digests are recorded. The coordinator and ledger rows live in suite 115 and the scheduler rows in suite 114. Both print with the prefix VELDO-0290 admission/ through a second expect helper in each suite, so they aren't reported as VELDO-0219 or VELDO-0216 rows.
 
 ## Rejected alternatives
 
@@ -317,3 +322,5 @@ host (VELDO-0220, VELDO-0223). Changes to scripts/gate_unconfined.json.
 measured value is recorded here by the build.
 
 2026-11-11: revision 1 applies the twelve findings of the review of d65410a9
+
+2026-11-11: revision 2 applies the three findings of the re-review of 8f14619b verbatim (lead); checker marked it READY with these applied
