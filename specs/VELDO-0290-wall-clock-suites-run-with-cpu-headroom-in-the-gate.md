@@ -118,12 +118,19 @@ acceptance_criteria:
       the control runs, every failed row by name, the stall_seconds of every control (minimum,
       median, 95th percentile, maximum), peak workers, the stage wall time and the admission record's
       seconds under the ceiling. The replay also runs the declared suites' baseline controls alone
-      on the quiet host, at least 20 runs, as the reference. The fix is shown when both of these hold. The on arm has no timing-row failure, and its 95th
-      percentile stall in declared suites is no more than 1 second above the quiet reference's. The
-      off arm has a timing-row failure, or its 95th percentile stall in declared suites is at least
-      three times the on arm's and at least 2 seconds above it. If the off arm shows neither of
-      those, the
-      replay did not reach the stage's load: the round says so and does not claim the fix. Row
+      on the quiet host, at least 20 runs, as the reference. The off arm reached the stage's load when
+      its peak CPU granted is at least 19.4 of 20 cores and its mean busy cores at least 10.3, the
+      figures the landing-c flake analysis of 2026-11-11 recorded for the six red landing-c gates.
+      If it did not, the round says so and does not claim the fix. A control's stall fraction is its
+      stall_seconds divided by its elapsed seconds. The fix is shown when the off arm reached the
+      stage's load and both of these hold. The on arm has no timing-row failure, and its 95th
+      percentile stall fraction in declared suites is no more than 0.02 above the quiet
+      reference's. The off arm has a timing-row failure, or its 95th percentile stall fraction in
+      declared suites is at least three times the on arm's and at least 0.05 above it. If the off
+      arm reached the load and shows neither, the round says the replay found no starvation that
+      the ceiling removes and does not claim the fix. Whether the timing rows stop failing is judged
+      by the gates after landing, not by the replay, which runs each declared suite too few times to
+      see a failure rate of a few percent. Row
       admission/stall-recorded (suite 115) runs WorkerMeter over a fixture cgroup tree whose
       cpu.pressure "some" total moves by a known amount in the worker cgroup and in one accounted
       unit, and requires stall_seconds equal to the sum, each cgroup counted once, and a red control
@@ -313,7 +320,8 @@ host (VELDO-0220, VELDO-0223). Changes to scripts/gate_unconfined.json.
   asks for a refused wall_clock job again before any other, and a wall_clock claim always fits under the
   ceiling or is refused as invalid.
 - stall_seconds reaches no verdict, deadline or rerun decision.
-- The replay's off arm reached the stage's load. If it didn't, the round says the fix is not proven.
+- The replay's off arm reached the stage's load by the peak and busy-core figures. If it didn't, the
+  round says the fix is not proven.
 - The survey's decisions match the bounds it lists.
 
 ## History
@@ -326,3 +334,5 @@ measured value is recorded here by the build.
 2026-11-11: revision 2 applies the three findings of the re-review of 8f14619b verbatim (lead); checker marked it READY with these applied
 
 2026-11-11: Cost section amended from run check 1 of dde37745 (lead). Ceiling value: 11, held by the on arm of the dde37745 replay (proof/VELDO-0290/replay.json).
+
+2026-11-11: AC4's stall bar changed from absolute seconds to the stall fraction, and the load test from the stall outcome to the stage's recorded peak claim and busy cores, after the first replay (dde37745) missed the 2 s gap by 0.117 s with the off arm at 19.99 of 20 cores claimed and 11.09 busy. Owner approval: Telegram 40695, 2026-11-11.

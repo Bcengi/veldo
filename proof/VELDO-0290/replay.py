@@ -45,6 +45,10 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 PROOF = Path(__file__).resolve().parent
 MODES = ('quiet', 'off', 'on')
+# AC4: the stage's load as the landing-c flake analysis of 2026-11-11 recorded it, and the margins
+# of the stall fraction bars.
+LOAD_PEAK_CPU, LOAD_BUSY_CORES = 19.4, 10.3
+ON_MARGIN, OFF_MARGIN = 0.02, 0.05
 
 
 def load(path):
@@ -296,7 +300,8 @@ def run(mode, arguments):
 
 
 def verdict():
-    """AC4's rule over the three summaries. Writes replay.json."""
+    """AC4's rule over the three summaries, as amended 2026-11-11: load by the off arm's peak claim
+    and busy cores, stall by its share of a control's elapsed time. Writes replay.json."""
     validator = load(ROOT / '.veldo/validate.py')
     arms, missing = {}, []
     for mode in MODES:
@@ -308,35 +313,54 @@ def verdict():
     if missing:
         raise SystemExit('missing: ' + ', '.join(missing))
     part = {mode: arms[mode]['deciding'] for mode in MODES}
-    p95 = {mode: part[mode]['control_stall_seconds'].get('p95') for mode in MODES}
+    # A control's stall fraction is its stall_seconds divided by its elapsed seconds.
+    fractions = {mode: figures([c['stall_seconds'] / c['elapsed'] for c in part[mode]['controls']
+                                if c.get('stall_seconds') is not None and c.get('elapsed')])
+                 for mode in MODES}
+    p95 = {mode: fractions[mode].get('p95') for mode in MODES}
+    seconds = {mode: part[mode]['control_stall_seconds'].get('p95') for mode in MODES}
     enough = (part['off']['control_runs'] >= 150 and part['on']['control_runs'] >= 150
-              and part['quiet']['control_runs'] >= 20 and None not in p95.values())
+              and part['quiet']['control_runs'] >= 20 and None not in p95.values()
+              and all(fractions[mode]['count'] == part[mode]['control_runs'] for mode in MODES))
     complete = all(part[mode]['controls_with_result'] == part[mode]['control_runs']
                    and not part[mode]['round_errors'] for mode in MODES)
-    on_holds = (enough and not part['on']['timing_row_failure'] and p95['on'] <= p95['quiet'] + 1)
+    peak = (part['off'].get('peak_granted') or {}).get('cpu')
+    busy = part['off'].get('mean_busy_cores')
+    reached = peak is not None and busy is not None and peak >= LOAD_PEAK_CPU and busy >= LOAD_BUSY_CORES
+    on_holds = (enough and not part['on']['timing_row_failure'] and p95['on'] <= p95['quiet'] + ON_MARGIN)
     off_shows = enough and (part['off']['timing_row_failure']
-                            or (p95['off'] >= 3 * p95['on'] and p95['off'] >= p95['on'] + 2))
+                            or (p95['off'] >= 3 * p95['on'] and p95['off'] >= p95['on'] + OFF_MARGIN))
     if not enough or not complete:
-        outcome = 'incomplete: an arm has too few control runs, a control without a result or a failed round'
+        outcome = ('incomplete: an arm has too few control runs, a control without a result or a stall figure, '
+                   'or a failed round')
+    elif not reached:
+        outcome = 'the off arm did not reach the stage\'s load; the fix is not claimed'
     elif not off_shows:
-        outcome = 'the replay did not reach the stage\'s load; the fix is not claimed'
+        outcome = 'the replay found no starvation that the ceiling removes; the fix is not claimed'
     elif on_holds:
-        outcome = 'the fix is shown at this ceiling'
+        outcome = 'the off arm reached the stage\'s load; the fix is shown at this ceiling'
     else:
         outcome = 'the off arm shows the starvation and the on arm does not hold: the ceiling is not low enough'
     keep = ('arm', 'ceiling_cpu', 'control_runs', 'controls_with_result', 'failed_rows', 'timing_row_failure',
             'control_stall_seconds', 'peak_workers', 'stage_wall_seconds', 'seconds_under_ceiling',
-            'mean_busy_cores', 'bulk_runs', 'round_errors', 'worker_errors', 'claim_sources')
+            'peak_granted', 'mean_busy_cores', 'bulk_runs', 'round_errors', 'worker_errors', 'claim_sources')
     deciding = dict(
-        outcome=outcome, fix_shown=bool(enough and complete and on_holds and off_shows),
+        outcome=outcome, fix_shown=bool(enough and complete and reached and on_holds and off_shows),
         ceiling_cpu=part['on']['ceiling_cpu'],
-        rule=dict(on_arm='no timing-row failure, and its 95th percentile stall at most 1 s above the quiet reference',
-                  off_arm='a timing-row failure, or its 95th percentile stall at least 3 times the on arm\'s and at '
-                          'least 2 s above it',
+        rule=dict(load='the off arm\'s peak CPU granted at least %s of 20 cores and its mean busy cores at least %s'
+                       % (LOAD_PEAK_CPU, LOAD_BUSY_CORES),
+                  stall_fraction='a control\'s stall_seconds divided by its elapsed seconds',
+                  on_arm='no timing-row failure, and its 95th percentile stall fraction at most %s above the '
+                         'quiet reference\'s' % ON_MARGIN,
+                  off_arm='a timing-row failure, or its 95th percentile stall fraction at least 3 times the on '
+                          'arm\'s and at least %s above it' % OFF_MARGIN,
                   counts='at least 150 control runs in each arm and 20 in the quiet reference'),
-        checks=dict(enough_runs=enough, every_control_has_a_result=complete, on_arm_holds=bool(on_holds),
-                    off_arm_shows=bool(off_shows), stall_p95_seconds=p95),
-        arms={mode: {key: part[mode].get(key) for key in keep} for mode in MODES},
+        checks=dict(enough_runs=enough, every_control_has_a_result=complete, off_arm_reached_load=bool(reached),
+                    off_peak_granted_cpu=None if peak is None else round(peak, 2), off_mean_busy_cores=busy,
+                    on_arm_holds=bool(on_holds), off_arm_shows=bool(off_shows), stall_fraction_p95=p95,
+                    stall_p95_seconds=seconds),
+        arms={mode: dict({key: part[mode].get(key) for key in keep}, control_stall_fraction=fractions[mode])
+              for mode in MODES},
         sources={mode: dict(file='proof/VELDO-0290/replay-%s.summary.json' % mode,
                             command=arms[mode]['command'], commit=arms[mode]['environment'].get('commit'),
                             load=arms[mode]['environment'].get('load')) for mode in MODES})
