@@ -46,4 +46,4 @@ suite 86 passed all 28 rows, live/claude included. related-suites.json has both 
 selftest run exits 2 when nothing fails; it never exits 0.
 
 Every heavy or repeated run in fix 1 used host_heavy.sh. The fix 2 suite 86 run used a systemd scope
-with a 10G memory limit. No gate, verify.sh, policy_check.py, or push was run. Both runtime module pairs still match the hashes in mirrors.json.
+with a 10G memory limit. The builder ran no gate, verify.sh, policy_check.py, or push. The one verify.sh run in this bundle is the concurrent full gate in lock-queue job 84, run by the lead as load for AC3; its RED is not a gate verdict on this change, and the landing gate has not been run. Both runtime module pairs still match the hashes in mirrors.json.
