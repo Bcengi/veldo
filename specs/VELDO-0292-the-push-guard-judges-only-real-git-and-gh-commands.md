@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0292
 title: The push guard judges only the git and gh commands the shell would run, so a mention of one in a comment, or in a quoted string or heredoc body given only to plain text tools in a command that names no git or gh, is not refused, while a git command the guard cannot resolve stays protected
-status: ready
+status: draft
 risk: high
 risk_areas: [auth_security]
 owner: dmitry
@@ -29,7 +29,7 @@ observability:
     line now ends with what it found: the matched text, cut at 120 characters, and where it sits (a
     command of a list or pipeline, the argument or input of a program that is not a plain text tool
     with the program named, text in a command that also names git or gh, or text the guard does not parse with
-    the construct named). The incident's message gave the builder no way to see which
+    the construct named, a builtin by its name and an assignment by its name). The incident's message gave the builder no way to see which
     words had been read as a command.
   metrics: >
     None added.
@@ -67,8 +67,10 @@ acceptance_criteria:
       function body; a push behind a shell alias or a git alias; a push given as code to an
       interpreter; a push stored by export, read or printf -v and run by a later shell; a git alias
       whose text names a push, written to a configuration file by a plain text tool and used later in
-      the same command; and a command that carries
-      both a quoted mention and a real push. The refusal line names what the guard found and where.
+      the same command; a command that carries both a quoted mention and a real push; and a command
+      that first changes which program a name runs, by a builtin, an assignment or a copied shell
+      called by a path, and then gives that name a push as a quoted string or a commit message. The
+      refusal line names what the guard found and where.
     falsified_by: >
       Suite 141 rows, each requiring exit 2, the gate refusal text, the remote's main unmoved, and one
       "destination unresolved" line that quotes the matched text and names its position.
@@ -86,20 +88,41 @@ acceptance_criteria:
       git p; the printf form on one line and git p on the next; the printf form, then git named by its
       absolute path with p; the printf form, then sh -c with the quoted string git p; the printf form appended to the path written as '.g''it/config', then g\it p; the same, then sh -c with the quoted string g\it p. live/mixed: echo of a quoted mention followed by a real push of main after a cd.
       live/quoted-command-word: true && 'git' push origin main, and true && g\it push origin main.
-      At 646ff7c8 live/quoted-command-word is red because the guard exits 0. Every other row is red only
-      because the line does not yet say what was found; the exit code and gate text already hold. A git
-      alias behind a push is covered by the existing push/alias and push/alias-shell-c rows.
-      Registered mutations: guard292-runner-strings-data (a shell, eval and alias count as plain text
-      tools) turns live/shell-string and live/pipeline red; guard292-unparsed-is-data (a command outside the
-      subset has its quoted strings removed anyway) turns live/outside-subset red;
-      guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter and
-      live/stored red; guard292-git-list-data (text in a command that also names git counts as data) turns
+      live/remap, where D is a directory under the fixture's temporary directory: hash -p /bin/sh cat,
+      then cat -c with the quoted push; eval of a single quoted definition of a function cat that runs
+      sh with its arguments, then the same cat; printf of that definition into a file under D, then .
+      of that file, then the same cat; shopt -s expand_aliases and alias cat=sh on one line, the same
+      cat on the next; trap of the single quoted text eval "${BASH_COMMAND#cat }" on DEBUG, then cat sh
+      -c with the quoted push; a symbolic link D/cat to /bin/sh, then PATH=D:$PATH before the same cat;
+      the same link, then printf -v PATH '%s:%s' D "$PATH", then the same cat; BASH_CMDS[cat]=/bin/sh,
+      then the same cat; cp /bin/sh to D/cat, then D/cat -c with the quoted push; eval of a single
+      quoted definition of a function git that runs sh -c on its third argument, then git commit -m
+      with the quoted push. The row also runs each live/remap command under bash with a recording git
+      first on PATH and requires the record to hold the push, which proves bash does run it.
+      subset/builtin-list: the guard's list of builtins holds every name that bash -c 'enable -a'
+      prints on the host, read as the last word of each line.
+      At 646ff7c8 live/quoted-command-word is red because the guard exits 0, and subset/builtin-list is
+      red because the guard has no list. Every other row is red only because the line does not yet say
+      what was found; the exit code and gate text already hold. A git alias behind a push is covered by
+      the existing push/alias and push/alias-shell-c rows.
+      Registered mutations: guard292-runner-strings-data (a shell or a wrapper counts as a plain text
+      tool) turns live/shell-string and live/pipeline red; guard292-unparsed-is-data (a command outside
+      the subset has its quoted strings removed anyway) turns live/outside-subset and live/stored red;
+      guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter
+      red; guard292-git-list-data (text in a command that also names git counts as data) turns
       live/config-write red; guard292-git-list-exact-word (the rule fires only on a word that is exactly
-      git or gh) turns live/config-write red; guard292-git-list-per-line (the rule looks only at the line
-      that names git) turns live/config-write red; guard292-git-list-quoted (the rule tests the text without deleting quotes and backslashes) turns live/config-write red; guard292-list-tail-data (once a command of a list holds data, the commands
-      after it are data too) turns live/mixed red; guard292-command-word-raw (the live text keeps command
-      words as written) turns live/quoted-command-word red. Every row and registered mutation suite 141
-      carried at 646ff7c8 still passes; an anchor the change moves is pointed at the same defect again.
+      git or gh) turns live/config-write red; guard292-git-list-per-line (the rule keeps live only the
+      last line that names git) turns live/config-write red; guard292-git-list-quoted (the rule tests
+      the text without deleting quotes and backslashes) turns live/config-write red;
+      guard292-list-tail-data (once a command of a list holds data, the commands after it are data too)
+      turns live/mixed red; guard292-command-word-raw (the live text keeps command words as written)
+      turns live/quoted-command-word red; guard292-builtin-in-subset (every builtin is read as an
+      ordinary program inside the subset) turns live/remap red; guard292-assignment-in-subset (an
+      assignment stays inside the subset) turns live/remap red; guard292-tool-by-last-component (a
+      plain text tool is recognized by the last path component of its command word) turns live/remap
+      red; guard292-builtin-list-short (hash is dropped from the guard's list of builtins) turns
+      live/remap and subset/builtin-list red. Every row and registered mutation suite 141 carried at
+      646ff7c8 still passes; an anchor the change moves is pointed at the same defect again.
   - id: AC3
     text: >
       A mention of git or gh in a comment, or in a quoted string or heredoc body that the Design calls
@@ -128,8 +151,9 @@ acceptance_criteria:
       main (a # inside a word is not a comment); a comment ending in a backslash, with the push on the
       next line; echo 'a\'; git push origin main; echo '\' (a backslash inside single quotes is
       literal); cat <<EOF; git push origin main, then one body line and EOF (the rest of a heredoc's
-      command line is commands, not body); cat <<-EOF, one body line, a tab followed by EOF, then the
-      push on the next line (<<- strips leading tabs from the delimiter line). Each must exit 2 with the
+      command line is commands, not body); cat <<-EOF, one body line, a tab followed by EOF, the push
+      on the next line, then a line reading EOF (<<- strips leading tabs from the delimiter line, so a
+      scanner that reads <<- as << ends the heredoc at the last line and calls the push body). Each must exit 2 with the
       gate refusal text. The row also runs each command under bash with a recording git first on PATH
       and requires the record to hold the push, which proves bash does run it. At 646ff7c8 the row
       already passes, because the guard refuses any text with the words of a push. It holds the line
@@ -230,15 +254,25 @@ The subset is the part of the shell grammar POSIX fixes:
 - words built from unquoted text, single quotes, double quotes and backslash escapes, including a
   backslash before a newline;
 - plain `$NAME` and `${NAME}` expansions in arguments;
-- assignments before a command or on their own;
 - redirections with a word target, and heredocs (`<<` and `<<-`) with a quoted or unquoted delimiter;
 - comments.
 
 Everything else is outside it and sends the whole command to today's judgment: command substitution
 with `$(` or backticks, process substitution, arithmetic, `$'...'` strings, here-strings, subshells,
 brace groups, function definitions, the reserved words (if, for, while, until, case, select, function,
-time, coproc, `!`, `[[`), a command word that contains an expansion or a glob character, and an
-unterminated quote or heredoc.
+time, coproc, `!`, `[[`), a command word that contains an expansion or a glob character, an
+assignment word before a command or on its own whatever its name, a command whose command word
+after quote removal is a shell builtin other than echo, printf without -v, test, `[`, true, false,
+`:`, cd and pwd, and an unterminated quote or heredoc.
+
+Which program a name runs is decided by the shell's own state: its functions, aliases, hash table,
+enabled builtins, traps, options and variables such as PATH, BASH_CMDS and BASH_ALIASES. Only the
+shell process itself can change that state, and only by a function definition, a builtin or an
+assignment. All three are outside the subset, so inside it every bare command word runs the
+program it named when the command started. This is why the rule is a closed set of allowed
+builtins and not a list of dangerous ones. The guard holds the names of bash's builtins as one
+fixed list, and suite 141 fails on any host whose bash has a builtin the list lacks. A command
+word missing from the list can only be a builtin bash added later, and that row catches it.
 
 Inside the subset, text is data, and is replaced by a placeholder word, when the shell cannot execute
 it and no program it reaches can either:
@@ -249,21 +283,25 @@ it and no program it reaches can either:
   body), it is not part of an assignment's value, and every command in its pipeline is a plain text
   tool.
 
-A plain text tool is a command whose command word, after quote removal and taken by its last path
-component, is in one fixed set in the guard of programs that never execute their arguments or their
+A plain text tool is a command whose command word, after quote removal, is a bare name with no
+slash in one fixed set in the guard of programs that never execute their arguments or their
 input: echo, printf, cat, tee, grep, egrep, fgrep, head, tail, wc, sort, uniq, cut, tr, ls, mkdir,
 touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. printf
-with -v is not one, because it assigns a variable.
+with -v is not one: it assigns a variable, and it takes the command outside the subset. A command
+word with a slash is never a plain text tool, so a copy of a shell named cat and called by its
+path keeps its text live.
 
 Every other program keeps its text live: the shells and eval, the wrappers (timeout, nohup, env, xargs,
 sudo, ssh), the interpreters (python3 -c, perl -e, awk, node -e, a heredoc on an interpreter's standard
-input), sed with its e command, make reading a makefile from standard input, and the builtins that keep
-text for later (export, declare, typeset, readonly, local, read, mapfile). None of them needs to be
+input), sed with its e command, make reading a makefile from standard input, and any program called by a
+path. The builtins that keep text for later (export, declare, typeset, readonly, local, read,
+mapfile) take the command outside the subset. None of them needs to be
 named. A name missing from the set can only cause a refusal. Adding a name is a change to a protected
 path, and its reviewer checks that the program cannot run text.
 
-Checking the whole pipeline covers a string echoed into a shell or an interpreter. Assignment values
-stay live so a string stored in a variable and run later is still seen.
+Checking the whole pipeline covers a string echoed into a shell or an interpreter. A string stored in
+a variable and run later is still seen, because an assignment, export, read and printf -v each
+take the command outside the subset.
 
 When git or gh appears anywhere in the command outside comments and the strings that would otherwise
 be data, no quoted string or heredoc body anywhere in the command is data, except the message values
@@ -276,13 +314,15 @@ git can use a file it writes, such as a git alias appended to .git/config, a hoo
 a script git runs, so nothing it writes is data, whatever path it writes to.
 
 Git and gh keep their text live with one exception: text they store and never run. In a simple command
-whose words after quote removal start with git, with no global option other than -C, and whose
+whose words after quote removal start with the bare word git, with no global option other than -C, and whose
 subcommand is commit, tag, notes or stash, the value of -m and of its long spelling, message, is data.
 In git log, git show and git rev-list, the value of the grep option is data. In a simple command
-starting with gh whose next two words are issue create, issue comment, issue edit, pr create, pr
+starting with the bare word gh whose next two words are issue create, issue comment, issue edit, pr create, pr
 comment, pr edit, pr review or release create, the values of -t, -b and -n and of their long
 spellings, title, body and notes, are data. This holds for such a command standing alone or as one
 command of a longer command. Any other argument, any -c option and any alias keep the command live as today.
+The message rule trusts the word git or gh to name git or gh, which holds because a command
+that could rename either is outside the subset.
 
 The allowed rows run their command under bash with a recording git and gh, so the suite checks on each
 host that text the scanner called data is text the shell did not run.
@@ -305,6 +345,8 @@ host that text the scanner called data is text the shell did not run.
   read-only git commands through: its pattern refuses merge followed by a hyphen, and the stamp is
   read only after a protected destination is found. Core's copy changes through a core specification
   that brings it to VELDO-0268's destination step.
+- The shell state the command starts in. Aliases and functions the user's own startup files give
+  the shell are the user's choice; the guard judges the text of the command.
 
 ## What the reviewer judges
 
@@ -319,6 +361,13 @@ host that text the scanner called data is text the shell did not run.
   written beside it is not followed. Quoting alone cannot hide the name, because the test deletes
   every quote and backslash, and an expansion in a command word takes the command outside the subset,
   where it is judged on its whole text as at 646ff7c8.
+- A command cannot rename a plain text tool, git or gh inside the subset. A builtin other than the
+  nine the Design allows, an assignment, or a function definition takes the whole command
+  outside it, and a plain text tool is only ever a bare name. What is left is a file PATH points
+  to: a command that copies a shell onto a directory already on PATH under a tool's name, such as
+  a writable ~/.local/bin, and then gives that tool a push as a string. That is the stated limit,
+  the guard does not follow a file, in the same class as a script the command writes and then
+  runs, and the owner accepts it with the approval.
 - The scanner gives up rather than guessing: any construct outside the subset sends the whole text to
   today's judgment, and the judgment itself is unchanged. Inside the subset, AC4 holds the scanner to
   bash's own reading.
@@ -338,3 +387,5 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: revision 4 applies the findings of the third re-review of 20962450
 
 2026-11-11: marked ready by the lead; the third re-review found the spec buildable once RR3 was applied (bc696274)
+2026-11-11: amendment 1 closes name remapping inside the subset (build 1 stop, item 3) and records the builder's two allowed corpus fixes
+2026-11-11: revision 5 applies amendment 1 (tool-name remapping) from the checker after the builder's report
