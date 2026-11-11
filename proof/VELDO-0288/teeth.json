@@ -1,0 +1,74 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --case stop288-no-retry --case stop288-retry-any-change --case stop288-result-no-retry --case stop288-record-before-ask --case stop288-docstring-overclaims --case launch131-stop-recorded-unasked --jobs 2 --summary proof/VELDO-0288/teeth.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 90.99311744607985,
+   "executed": 6,
+   "registered": 6,
+   "rejected": 6,
+   "reused": 0,
+   "status": "passed",
+   "worker_invocations": 10
+  },
+  "results_count": 6,
+  "results_sha256": "9af6ce3eaa8830eedec25790533fcee75d8e6619bf145f57b870a965a4d69691",
+  "rows": [
+   {
+    "case": "stop288-no-retry",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "launch131-stop-recorded-unasked",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-retry-any-change",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-result-no-retry",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-record-before-ask",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "stop288-docstring-overclaims",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 139494,
+   "name": "mutation result array",
+   "sha256": "9af6ce3eaa8830eedec25790533fcee75d8e6619bf145f57b870a965a4d69691"
+  }
+ ],
+ "environment": {
+  "commit": "1fd2f48c274fd201668df009c7920c4e6049f07e",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.16845703125,
+   2.60888671875,
+   1.990234375
+  ],
+  "python": "3.12.3",
+  "tree": "3c4632e576702d6c218860c1a44e448878a49dff"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

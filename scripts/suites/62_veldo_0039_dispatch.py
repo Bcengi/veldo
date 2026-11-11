@@ -371,6 +371,10 @@ sys.exit(child.wait())
                 receiver = launch.child.poll() if launch.child is not None else 'none'
                 return state not in D.STOPPABLE or receiver is not None, {'state': state, 'receiver_exit': receiver}
             what = 'dispatch %s to reach a terminal state' % launch.dispatch_id
+            if launch.stop_requested is not True:
+                report = 'the runner never asked the receiver of %s to stop' % launch.dispatch_id
+                runner.wait(launch, timeout=0)
+                return report
             report = wait_for(ended, bound, what)
             if report is None and rec(launch.dispatch_id).get('state') in D.STOPPABLE:
                 report = 'the receiver of %s ended (exit %r) with the record still %s: nothing is left to record its end' % (
@@ -389,6 +393,109 @@ sys.exit(child.wait())
         def stopped_by_request(cause):
             return (cause['state'] == 'exited' and cause['asked'] is True and cause['deadline_stop'] is False
                     and cause['cause'] == 'requested')
+
+        # VELDO-0288: FIFO handshakes hold the actual read/commit boundary without timing guesses.
+        @contextlib.contextmanager
+        def hooks288(*specs):
+            import select
+            saved = {key: os.environ.get(key) for key in
+                     ('VELDO_CONTROL_TEST_HARNESS', 'VELDO_CONTROL_DISPATCH_HOOKS')}
+            handles = []
+            entries = []
+            for number, spec in enumerate(specs):
+                entry = dict(spec)
+                if not entry.get('raise'):
+                    stem = base / ('hook288-' + os.urandom(6).hex())
+                    entry.update(reached=str(stem) + '-reached', release=str(stem) + '-release')
+                    for key in ('reached', 'release'):
+                        os.mkfifo(entry[key])
+                    handles.append(tuple(os.open(entry[key], os.O_RDWR | os.O_NONBLOCK)
+                                         for key in ('reached', 'release')))
+                entries.append(entry)
+            os.environ['VELDO_CONTROL_TEST_HARNESS'] = '1'
+            os.environ['VELDO_CONTROL_DISPATCH_HOOKS'] = json.dumps(entries)
+
+            def reached(number=0):
+                fd = handles[number][0]
+                assert select.select([fd], [], [], 30)[0], 'dispatch hook was not reached'
+                assert os.read(fd, 1) == b'1'
+
+            def release_hook(number=0):
+                os.write(handles[number][1], b'1')
+
+            try:
+                yield reached, release_hook
+            finally:
+                for ready, release_fd in handles:
+                    os.write(release_fd, b'1')
+                for key, value in saved.items():
+                    if value is None:
+                        os.environ.pop(key, None)
+                    else:
+                        os.environ[key] = value
+                for pair in handles:
+                    for fd in pair:
+                        os.close(fd)
+
+        def threaded288(fn, principal='launch-receiver'):
+            result, observations = [], []
+
+            def run():
+                conn = S.open_store(str(db))
+                service = D.Dispatches(S, conn, domain=DOMAIN, repository=REPOSITORY, principal=principal,
+                                       signer=principal, sign=sign, observe=observations.append)
+                try:
+                    result.append(attempt(lambda: fn(service)))
+                except Exception as error:
+                    result.append(('error', repr(error)))
+                finally:
+                    conn.close()
+            thread = threading.Thread(target=run)
+            thread.start()
+            return thread, result, observations
+
+        def joined288(task):
+            thread, result, observations = task
+            thread.join(35)
+            assert not thread.is_alive(), 'dispatch hook worker did not finish'
+            return result[0], observations
+
+        def prepared288(state='prepared'):
+            serial[0] += 1
+            unit = admitted('VELDO-288-%d' % serial[0])
+            contract = runner.prepare(unit, 'build', **job())
+            sid, digest_ = contract['dispatch_id'], D.digest(contract)
+            process = L.process_identity(os.getpid())
+            if state in ('accepted', 'running'):
+                receiving.accept(sid, digest_, dict(process, principal='launch-receiver'), now=time.time())
+            if state == 'running':
+                receiving.run(sid, digest_, process, now=time.time())
+            return contract
+
+        def command288(service, contract, action, now=None):
+            sid, digest_ = contract['dispatch_id'], D.digest(contract)
+            process = L.process_identity(os.getpid())
+            now = time.time() if now is None else now
+            if action == 'accept':
+                return service.accept(sid, digest_, dict(process, principal='launch-receiver'), now=now)
+            if action == 'run':
+                return service.run(sid, digest_, process, now=now)
+            return service.exit(sid, digest_, process,
+                                dict(returncode=0, signal=None, output_digest='sha256:' + '0' * 64,
+                                     output_bytes=0, deadline_stop=False), now=now)
+
+        def request288(sid):
+            return dispatches.request_stop(sid, dispatches.version(sid), 'owner-person', now=time.time(),
+                                           request='stop288/' + sid)
+
+        def finish288(contract):
+            sid = contract['dispatch_id']
+            if rec(sid).get('state') == 'running':
+                command288(receiving, contract, 'exit')
+            elif rec(sid).get('state') in ('prepared', 'accepted'):
+                receiving.refuse(sid, D.digest(contract), 'fixture-finished', now=time.time())
+            if (rec(sid).get('stop_request') or {}).get('result', False) is None:
+                dispatches.stop_result(sid, False, now=time.time())
 
         try:
             # AC1: the complete contract before any worker; one active dispatch per unit/station
@@ -910,6 +1017,191 @@ sys.exit(child.wait())
                       and by_holder == [(oid, True)] and waited is None and stopped_by_request(cause),
                       'cause %r; wait %s; requested %r, bystander %r, still %r, holder %r'
                       % (cause, waited or 'held', asked_by, by_bystander, still, by_holder))
+
+            with region('dispatch/stop-write-commutes'):
+                results288 = []
+                for action, state in (('accept', 'prepared'), ('run', 'accepted'), ('exit', 'running')):
+                    for stop_action in ('request_stop', 'stop_result'):
+                        contract = prepared288(state)
+                        sid = contract['dispatch_id']
+                        if stop_action == 'stop_result':
+                            request288(sid)
+                        now = time.time()
+                        with hooks288(dict(point='before_execute', action=action, dispatch_id=sid)) as (held, go):
+                            task = threaded288(lambda svc: command288(svc, contract, action, now))
+                            held()
+                            if stop_action == 'request_stop':
+                                request288(sid)
+                            else:
+                                dispatches.stop_result(sid, True, now=time.time())
+                            go()
+                            result, seen = joined288(task)
+                        replay = attempt(lambda: command288(receiving, contract, action, now))
+                        results288.append(dict(action=action, stop=stop_action, result=result[0], replay=replay[0],
+                                               events=seen, state=rec(sid).get('state')))
+                        finish288(contract)
+                observed['stop288_commutes'] = results288
+                check('dispatch/stop-write-commutes', all(
+                    r['result'] == r['replay'] == 'ok' and r['state'] == D.TRANSITIONS[r['action']][1]
+                    and [(e['outcome'], e['attempt'], e.get('refusal')) for e in r['events']]
+                    == [('refused', 1, 'stale_version'), ('accepted', 2, None)]
+                    and len({e['request'] for e in r['events']}) == 1 for r in results288), repr(results288))
+
+            with region('dispatch/lifecycle-write-still-stale'):
+                contract = prepared288('running')
+                sid = contract['dispatch_id']
+                with hooks288(dict(point='before_execute', action='exit', dispatch_id=sid)) as (held, go):
+                    task = threaded288(lambda svc: command288(svc, contract, 'exit'))
+                    held()
+                    # The competing receiver is on this connection and does not use the held hook.
+                    saved_hooks = os.environ.pop('VELDO_CONTROL_DISPATCH_HOOKS')
+                    try:
+                        command288(receiving, contract, 'exit')
+                    finally:
+                        os.environ['VELDO_CONTROL_DISPATCH_HOOKS'] = saved_hooks
+                    go()
+                    result, seen = joined288(task)
+                check('dispatch/lifecycle-write-still-stale', result == ('refused', 'stale_version')
+                      and len(seen) == 1 and seen[0]['attempt'] == 1, repr((result, seen)))
+
+            with region('dispatch/stop-result-after-exit'):
+                contract = prepared288('running')
+                sid = contract['dispatch_id']
+                request288(sid)
+                with hooks288(dict(point='before_execute', action='stop_result', dispatch_id=sid)) as (held, go):
+                    task = threaded288(lambda svc: svc.stop_result(sid, True, now=time.time()), principal='runner')
+                    held()
+                    command288(receiving, contract, 'exit')
+                    go()
+                    result, seen = joined288(task)
+                check('dispatch/stop-result-after-exit', result[0] == 'ok' and rec(sid)['state'] == 'exited'
+                      and (rec(sid)['stop_request']['result'] or {}).get('asked') is True
+                      and [(e['outcome'], e['attempt']) for e in seen] == [('refused', 1), ('accepted', 2)],
+                      repr((result, seen)))
+                finish288(contract)
+
+            with region('dispatch/owner-stop-asked-is-delivered'):
+                delivered = []
+                for answer in (False, 'raise', True):
+                    contract = prepared288('running')
+                    sid = contract['dispatch_id']
+                    request288(sid)
+                    calls = []
+
+                    class ClosedReceiver:
+                        def can_stop(self):
+                            return True
+
+                        def stop(self, reason):
+                            calls.append(reason)
+                            if answer == 'raise':
+                                raise OSError('closed receiver stdin')
+                            return answer
+                    owner = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
+                    owner.launches[sid] = ClosedReceiver()
+                    swept = owner.honor_stops()
+                    actual = (rec(sid)['stop_request']['result'] or {}).get('asked')
+                    delivered.append((answer, actual, swept, calls))
+                    finish288(contract)
+                check('dispatch/owner-stop-asked-is-delivered', all(
+                    actual is (answer is True) and swept == [(swept[0][0], answer is True)] and calls == ['owner_stop']
+                    for answer, actual, swept, calls in delivered), repr(delivered))
+
+            with region('dispatch/owner-stop-crash-before-record'):
+                contract = prepared288('running')
+                sid = contract['dispatch_id']
+                request288(sid)
+                calls = []
+
+                class ReachedReceiver:
+                    def can_stop(self):
+                        return True
+
+                    def stop(self, reason):
+                        calls.append(reason)
+                        return True
+                owner = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
+                owner.launches[sid] = ReachedReceiver()
+                crashed = False
+                with hooks288(dict(point='after_stop', dispatch_id=sid, **{'raise': True})):
+                    try:
+                        owner.honor_stops()
+                    except RuntimeError:
+                        crashed = True
+                pending = rec(sid)['stop_request']['result'] is None
+                bystander = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
+                before_end = bystander.honor_stops()
+                waiting = rec(sid)['stop_request']['result'] is None
+                command288(receiving, contract, 'exit')
+                after_end = bystander.honor_stops()
+                check('dispatch/owner-stop-crash-before-record', crashed and calls == ['owner_stop']
+                      and pending and waiting and before_end == [] and after_end == [(sid, False)]
+                      and rec(sid)['stop_request']['result']['asked'] is False,
+                      repr((crashed, calls, pending, waiting, before_end, after_end)))
+
+            for natural in (False, True):
+                label = 'dispatch/stop-during-natural-end' if natural else 'dispatch/stop-during-exit'
+                with region(label):
+                    serial[0] += 1
+                    release_name = 'stop288-end-%d' % serial[0]
+                    contract = runner.prepare(admitted('VELDO-288-end-%d' % serial[0]), 'build',
+                                              **job(release=release_name, deadline=STOP_ROW_DEADLINE))
+                    sid = contract['dispatch_id']
+                    with hooks288(dict(point='before_execute', action='exit', dispatch_id=sid)) as (held, go):
+                        launch = invoke(contract)
+                        runner.launches[sid] = launch
+                        marker_for(sid)
+                        if natural:
+                            release(release_name)
+                        else:
+                            launch.stop('owner_stop')
+                        held()
+                        request288(sid)
+                        swept = runner.honor_stops()
+                        go()
+                        waited = settle_stopped(launch)
+                    cause = stop_cause(launch, rec(sid))
+                    observed[label] = dict(cause=cause, swept=swept, waited=waited, messages=launch.messages)
+                    check(label, waited is None and swept == [(sid, True)] and cause['state'] == 'exited'
+                          and cause['asked'] is True and cause['cause'] == (None if natural else 'requested')
+                          and not any(m.get('event') in ('failed', 'unknown') for m in launch.messages),
+                          repr(observed[label]))
+
+            with region('dispatch/stop-during-accept-run'):
+                outcomes = []
+                for action in ('accept', 'run'):
+                    serial[0] += 1
+                    contract = runner.prepare(admitted('VELDO-288-start-%d' % serial[0]), 'build',
+                                              **job(release='never288-%d' % serial[0], deadline=STOP_ROW_DEADLINE))
+                    sid = contract['dispatch_id']
+                    request288(sid)
+                    with hooks288(dict(point='before_execute', action=action, dispatch_id=sid)) as (held, go):
+                        # Hold the real receiver before start() returns the accepted launch to its caller.
+                        child = subprocess.Popen([sys.executable, '-B', L.RECEIVER, str(config)],
+                                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                                 stderr=subprocess.DEVNULL)
+                        launch = L.Launch(child, contract, dispatches, time.time)
+                        launches.append(launch)
+                        runner.launches[sid] = launch
+                        child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
+                        child.stdin.flush()
+                        held()
+                        swept = runner.honor_stops()
+                        go()
+                        launch.start(30)
+                    asked = swept == [(sid, True)]
+                    waited = settle_stopped(launch)
+                    cause = stop_cause(launch, rec(sid))
+                    outcomes.append(dict(action=action, asked=asked, waited=waited, cause=cause,
+                                         failed=any(m.get('event') in ('failed', 'unknown') for m in launch.messages)))
+                observed['stop288_accept_run'] = outcomes
+                check('dispatch/stop-during-accept-run', all(
+                    o['asked'] and o['waited'] is None and stopped_by_request(o['cause']) and not o['failed']
+                    for o in outcomes), repr(outcomes))
+
+            with region('dispatch/honor-stops-docstring'):
+                doc = L.Runner.honor_stops.__doc__ or ''
+                check('dispatch/honor-stops-docstring', 'never race' not in doc and 'before it makes it' not in doc)
 
             # Authority: only an active service member of this repository writes a record
             with region('dispatch/service-principals-only'):

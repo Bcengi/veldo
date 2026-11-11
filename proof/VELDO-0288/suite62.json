@@ -1,0 +1,293 @@
+{
+  "commit": "1fd2f48c274fd201668df009c7920c4e6049f07e",
+  "command": "python3 scripts/check_teeth_mutations.py --worker stop288-no-retry",
+  "mode": "baseline suite 62, no mutation",
+  "host": "dmitry-pc",
+  "load_average": [
+    2.2763671875,
+    5.638671875,
+    14.94287109375
+  ],
+  "recorded_at": "2026-11-10T08:09:05.351087+00:00",
+  "seconds": 17.613,
+  "rows": 69,
+  "failed": [],
+  "observations": [
+    [
+      "good spec accepted",
+      true
+    ],
+    [
+      "spec without criteria rejected",
+      true
+    ],
+    [
+      "unknown evidence kind rejected",
+      true
+    ],
+    [
+      "bad status rejected",
+      true
+    ],
+    [
+      "invented proof criterion rejected",
+      true
+    ],
+    [
+      "missing proof criterion rejected",
+      true
+    ],
+    [
+      "absent required evidence rejected",
+      true
+    ],
+    [
+      "passed-without-evidence rejected",
+      true
+    ],
+    [
+      "bad verdict value rejected",
+      true
+    ],
+    [
+      "good plan accepted",
+      true
+    ],
+    [
+      "plan dependency cycle rejected",
+      true
+    ],
+    [
+      "dangling dependency rejected",
+      true
+    ],
+    [
+      "unknown outcome ref rejected",
+      true
+    ],
+    [
+      "unknown feature ref rejected",
+      true
+    ],
+    [
+      "undeclared depends_on rejected",
+      true
+    ],
+    [
+      "ready without approval rejected",
+      true
+    ],
+    [
+      "decision without blocks rejected",
+      true
+    ],
+    [
+      "decision blocking unknown spec rejected",
+      true
+    ],
+    [
+      "duplicate work spec rejected",
+      true
+    ],
+    [
+      "bad release mode rejected",
+      true
+    ],
+    [
+      "mirror mismatch rejected",
+      true
+    ],
+    [
+      "correct mirror accepted",
+      true
+    ],
+    [
+      "spec binding to wrong plan rejected",
+      true
+    ],
+    [
+      "spec claiming missing work item rejected",
+      true
+    ],
+    [
+      "spec plan without work rejected",
+      true
+    ],
+    [
+      "correct spec binding accepted",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/contract-before-launch",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/one-active-per-unit-station",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/launch-results",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/deadline-after-closed-output",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/remote-stop-holds-unit",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/unknown-never-relaunched",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/transitions-from-schema",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/result-binding",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/terminal-not-completion",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/owner-stop",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/owner-stop-other-runner",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/stop-write-commutes",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/lifecycle-write-still-stale",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/stop-result-after-exit",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/owner-stop-asked-is-delivered",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/owner-stop-crash-before-record",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/stop-during-exit",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/stop-during-natural-end",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/stop-during-accept-run",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/honor-stops-docstring",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/service-principals-only",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/observations",
+      true
+    ],
+    [
+      "VELDO-0039 dispatch/installed-assets",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/contract-before-launch",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/launch-results",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/deadline-after-closed-output",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/unknown-never-relaunched",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/transitions-from-schema",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/result-binding",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/owner-stop",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/owner-stop-other-runner",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/stop-write-commutes",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/lifecycle-write-still-stale",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/stop-result-after-exit",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/owner-stop-asked-is-delivered",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/owner-stop-crash-before-record",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/stop-during-exit",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/stop-during-natural-end",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/stop-during-accept-run",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/honor-stops-docstring",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/service-principals-only",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/observations",
+      true
+    ],
+    [
+      "VELDO-0039 ran/dispatch/installed-assets",
+      true
+    ]
+  ]
+}

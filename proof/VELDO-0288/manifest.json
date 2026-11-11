@@ -1,0 +1,117 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0288",
+  "commit": "d44f4f1e639fec7dfc51200a020ef34c2f15bfe0",
+  "tree": "0efcdf1fa9148d749a0df0513fbfbd2aee56a06d",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-11T04:37:21+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "All retry mutations killed; baseline and no-op controls pass 69 rows."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "Both ask-order rows and both owner-stop rows fail under their mutations. The undelivered-stop mutation finishes in 17.34 seconds."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0288/repeated.json",
+          "detail": "Each of the three rows passes 20 of 20; all 20 suite runs pass 69 rows with no failures. gate_alive is true before and after every run. A concurrent full gate (verify.sh in a clone of c8747d46) started 600 s before the first run. The 1 minute load was 4.6 to 6.7 on 20 CPUs. The gate's own verdict was RED (mutation driver_error); it is recorded as load only."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "All three interleaving rows fail under stop288-no-retry."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/fix1-teeth-details.json",
+          "detail": "The docstring mutation is killed; its baseline and no-op controls pass."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0288/mirrors.json",
+          "detail": "Both runtime module pairs remain byte identical with these hashes."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "suite_62",
+      "status": "passed",
+      "detail": "69 of 69 rows; suite62.json."
+    },
+    {
+      "name": "six_mutation_teeth",
+      "status": "passed",
+      "detail": "6 of 6 killed in one command; all controls green. launch131-stop-recorded-unasked: 17.344 seconds; floor unchanged at 120 seconds."
+    },
+    {
+      "name": "20_consecutive_runs",
+      "status": "passed",
+      "detail": "Two sets, each 20 of 20 for every AC3 row with 69 rows passing in every run. Ungated at 1fd2f48c: repeated.json as committed in 5765a30f. Under a concurrent full gate at c8747d46: repeated.json now."
+    },
+    {
+      "name": "AC3_concurrent_gate_load",
+      "status": "passed",
+      "detail": "Lock-queue job 84, run by the lead: 20 of 20 for each of the three rows, 69 rows and no failures in every run, gate_alive true before and after every run. A concurrent full gate (verify.sh in a clone of c8747d46) started 600 s earlier. 1 minute load 4.6 to 6.7 on 20 CPUs. The gate's own verdict was RED (mutation driver_error), recorded as load only; repeated.json, gate_result."
+    },
+    {
+      "name": "VELDO-0127_resource_records",
+      "status": "passed",
+      "detail": "Four records retaken by .veldo/qualify.py; captures.json."
+    },
+    {
+      "name": "VELDO-0127_codex_live",
+      "status": "passed",
+      "detail": "Retaken with the codex2 profile; no reported problems; captures.json."
+    },
+    {
+      "name": "VELDO-0127_claude_live",
+      "status": "passed",
+      "detail": "Retaken by the lead in commit 40cd9775; no reported problems. proof/VELDO-0127/claude-live.json sha256 5f087afae1a7bc018965fdf458d8321184d86e2b648651738534d37c96b2b87f; captures.json."
+    },
+    {
+      "name": "related_suites_scoped",
+      "status": "passed",
+      "detail": "Selected suites only: 71_veldo_0130_api 45 of 45; 83_veldo_0154_factory_loop 14 of 14; 124_veldo_0131_factory_reads_commands 8 of 8. Partial run, not gate verification; related-suites.json, related_suites."
+    },
+    {
+      "name": "suite_86_scoped",
+      "status": "passed",
+      "detail": "28 of 28 rows at 9a0585ca, live/claude included; 54 checks with the shared ones, 0 failed. Partial run, not gate verification; related-suites.json, suite_86."
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "reason": "Forbidden by the build instruction."
+    }
+  ],
+  "rollback": "Revert the commit. honor_stops returns to the round 9 order (record, then ask) and lifecycle writes stop retrying, which is the interim landing-c shipped with. No stored record gains a field, so records written under this change read the same after the revert. A revert changes control_launch.py again, so the VELDO-0127 live captures and resource records are retaken with the revert."
+}

@@ -1,0 +1,360 @@
+{
+  "commit": "1fd2f48c274fd201668df009c7920c4e6049f07e",
+  "command": "python3 scripts/check_teeth_mutations.py --case stop288-no-retry --case stop288-retry-any-change --case stop288-result-no-retry --case stop288-record-before-ask --case stop288-docstring-overclaims --case launch131-stop-recorded-unasked --jobs 2 --summary proof/VELDO-0288/teeth.json",
+  "workers": [
+    {
+      "name": "62_veldo_0039_dispatch.py:control_launch.py:False:baseline",
+      "elapsed": 17.377171433065087,
+      "returncode": 0
+    },
+    {
+      "name": "62_veldo_0039_dispatch.py:control_launch.py:False:noop",
+      "elapsed": 17.388996671885252,
+      "returncode": 0
+    },
+    {
+      "name": "62_veldo_0039_dispatch.py:control_dispatch.py:False:baseline",
+      "elapsed": 17.331201609922573,
+      "returncode": 0
+    },
+    {
+      "name": "62_veldo_0039_dispatch.py:control_dispatch.py:False:noop",
+      "elapsed": 17.342839129036292,
+      "returncode": 0
+    },
+    {
+      "name": "check_teeth_mutations.py:stop288-no-retry",
+      "elapsed": 17.162195306038484,
+      "returncode": 0
+    },
+    {
+      "name": "check_teeth_mutations.py:launch131-stop-recorded-unasked",
+      "elapsed": 17.35858784383163,
+      "returncode": 0
+    },
+    {
+      "name": "check_teeth_mutations.py:stop288-retry-any-change",
+      "elapsed": 18.06538440892473,
+      "returncode": 0
+    },
+    {
+      "name": "check_teeth_mutations.py:stop288-result-no-retry",
+      "elapsed": 18.04655974218622,
+      "returncode": 0
+    },
+    {
+      "name": "check_teeth_mutations.py:stop288-record-before-ask",
+      "elapsed": 17.843412368092686,
+      "returncode": 0
+    },
+    {
+      "name": "check_teeth_mutations.py:stop288-docstring-overclaims",
+      "elapsed": 17.84105611895211,
+      "returncode": 0
+    }
+  ],
+  "rows": [
+    {
+      "case": "stop288-no-retry",
+      "seconds": 17.14846736495383,
+      "source": "fresh",
+      "baseline": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed_rows": [
+          "VELDO-0039 dispatch/stop-write-commutes",
+          "VELDO-0039 dispatch/stop-during-exit",
+          "VELDO-0039 dispatch/stop-during-natural-end",
+          "VELDO-0039 dispatch/stop-during-accept-run",
+          "VELDO-0039 dispatch/observations"
+        ],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            false
+          ],
+          "dispatch/stop-during-exit": [
+            false
+          ],
+          "dispatch/stop-during-natural-end": [
+            false
+          ],
+          "dispatch/stop-write-commutes": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "launch131-stop-recorded-unasked",
+      "seconds": 17.34437078796327,
+      "source": "fresh",
+      "baseline": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed_rows": [
+          "VELDO-0039 dispatch/owner-stop",
+          "VELDO-0039 dispatch/owner-stop-other-runner",
+          "VELDO-0039 dispatch/owner-stop-asked-is-delivered",
+          "VELDO-0039 dispatch/owner-stop-crash-before-record",
+          "VELDO-0039 dispatch/stop-during-natural-end",
+          "VELDO-0039 dispatch/stop-during-accept-run",
+          "VELDO-0039 dispatch/observations"
+        ],
+        "targets": {
+          "dispatch/owner-stop": [
+            false
+          ],
+          "dispatch/owner-stop-other-runner": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-retry-any-change",
+      "seconds": 18.050247808918357,
+      "source": "fresh",
+      "baseline": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed_rows": [
+          "VELDO-0039 dispatch/lifecycle-write-still-stale"
+        ],
+        "targets": {
+          "dispatch/lifecycle-write-still-stale": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-result-no-retry",
+      "seconds": 18.03115599602461,
+      "source": "fresh",
+      "baseline": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/stop-during-accept-run": [
+            true
+          ],
+          "dispatch/stop-during-exit": [
+            true
+          ],
+          "dispatch/stop-during-natural-end": [
+            true
+          ],
+          "dispatch/stop-write-commutes": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed_rows": [
+          "VELDO-0039 dispatch/stop-result-after-exit"
+        ],
+        "targets": {
+          "dispatch/stop-result-after-exit": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-record-before-ask",
+      "seconds": 17.829764250898734,
+      "source": "fresh",
+      "baseline": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed_rows": [
+          "VELDO-0039 dispatch/owner-stop-asked-is-delivered",
+          "VELDO-0039 dispatch/owner-stop-crash-before-record"
+        ],
+        "targets": {
+          "dispatch/owner-stop-asked-is-delivered": [
+            false
+          ],
+          "dispatch/owner-stop-crash-before-record": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "case": "stop288-docstring-overclaims",
+      "seconds": 17.82703283801675,
+      "source": "fresh",
+      "baseline": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "noop": {
+        "count": 69,
+        "failed_rows": [],
+        "targets": {
+          "dispatch/owner-stop": [
+            true
+          ],
+          "dispatch/owner-stop-other-runner": [
+            true
+          ]
+        }
+      },
+      "mutant": {
+        "count": 69,
+        "failed_rows": [
+          "VELDO-0039 dispatch/honor-stops-docstring"
+        ],
+        "targets": {
+          "dispatch/honor-stops-docstring": [
+            false
+          ]
+        }
+      }
+    }
+  ]
+}

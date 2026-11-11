@@ -722,18 +722,13 @@ class Runner:
         return self.retirements.sweep()
 
     def honor_stops(self):
-        """VELDO-0131: the existing stop mechanism, requested by the owner's committed stop command. For each
-        dispatch of this domain and repository whose stop request waits (control_dispatch.request_stop), the
-        Launch this runner holds asks its receiver to stop (Launch.stop: R44's cooperative stop, then the group's
-        escalation), and the runner records the ask before it makes it (stop_result: asked true when it holds a
-        running receiver of that dispatch with its control channel open, false when it holds none to ask), so the
-        receiver's record of the worker's end never races the runner's record of the ask. A receiver that ends
-        between the record and the ask is not reached; its end is settled as every end is. Nothing is recovered,
-        retried or restarted: the worker's end
-        is recorded by its receiver as every end is. A request for a dispatch still running that this runner does
-        not hold is left waiting: another runner on the same store may hold it and asks it on its own sweep. One
-        whose dispatch has ended is recorded not asked, since no receiver is left to ask. The [(dispatch, asked)]
-        it recorded, in order."""
+        """Ask the receiver before recording the ask. asked true means stop bytes reached it.
+        A lifecycle write displaced only by stop metadata retries at most twice; other changes
+        remain refused. A crash between the ask and its record leaves the request pending.
+        A runner without the dispatch leaves its request waiting while it runs and records asked
+        false once it has ended. The receiver records the worker's end as for every other end.
+        Return the recorded (dispatch, asked) pairs in order.
+        """
         pending = getattr(self.dispatches, 'stop_requests', None)
         if pending is None:
             return []
@@ -742,27 +737,20 @@ class Runner:
             launch = self.launches.get(dispatch_id)
             if launch is None and (self.dispatches.record(dispatch_id) or {}).get('state') in D.STOPPABLE:
                 continue
-            # The ask is recorded before it is made. The receiver writes the worker's end to this same record, and
-            # its write expects the record's version as it read it; a stop_result committed after the ask could land
-            # between that read and that write, refuse the end as stale and leave the record running, so the run
-            # was settled outcome_unknown with its unit held (VELDO-0039 dispatch/owner-stop, landing-c round 9).
             try:
-                askable = bool(launch is not None and launch.can_stop())
-            except Exception:  # noqa: BLE001 - a receiver that cannot be asked is recorded as not asked
-                askable = False
-            try:
-                self.dispatches.stop_result(dispatch_id, askable, now=self.clock())
-            except D.Refused as error:
-                self.observations.append({'operation': 'stop_result', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                          'refusal': error.code, 'asked': False})
-                continue
-            try:
-                asked = bool(askable and launch.stop(reason or 'owner_stop'))
+                asked = bool(launch is not None and launch.stop(reason or 'owner_stop'))
             except Exception:  # noqa: BLE001 - a receiver that cannot be asked is recorded as not asked
                 asked = False
+            D._test_hook('after_stop', 'stop_result', dispatch_id)
+            try:
+                self.dispatches.stop_result(dispatch_id, asked, now=self.clock())
+            except D.Refused as error:
+                self.observations.append({'operation': 'stop_result', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                          'refusal': error.code, 'asked': asked})
+                continue
             self.observations.append({'operation': 'stop_result', 'dispatch_id': dispatch_id, 'outcome': 'recorded',
-                                      'asked': askable, 'delivered': asked})
-            done.append((dispatch_id, askable))
+                                      'asked': asked, 'delivered': asked})
+            done.append((dispatch_id, asked))
         return done
 
     def _left(self, dispatch_id, group=None, process=None):
@@ -1105,7 +1093,7 @@ class Launch:
 
     def can_stop(self):
         """Whether stop() has a receiver of this dispatch to ask: one this launch owns, still running, with its
-        control channel open (Runner.honor_stops records the ask before it makes it)."""
+        control channel open."""
         child = self.child
         return bool(self.owned and child is not None and child.stdin is not None and not child.stdin.closed
                     and child.poll() is None)

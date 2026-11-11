@@ -1,0 +1,509 @@
+{
+  "commit": "c8747d4622e8ef1c4c9c04f457f47957c1e240cd",
+  "tree": "9564059ab47c99143779dbdd0004219897aa74f0",
+  "host": "dmitry-pc",
+  "started_at": "2026-11-11T02:20:28.937375+00:00",
+  "command": "lock-queue job, W is the worktree and G a fresh temporary directory: git clone -q $W $G/veldo; (cd $G/veldo && exec bash scripts/verify.sh) > $G/gate.log 2>&1 & GATE=$!; sleep 600; V0288_GATE_PID=$GATE python3 proof/VELDO-0288/repeat.py; wait $GATE",
+  "suite_command": "python3 scripts/check_teeth_mutations.py --worker stop288-no-retry",
+  "mode": "baseline; full suite 62 with no mutation",
+  "gate": "concurrent full gate, verify.sh in a clone of c8747d4622e8ef1c4c9c04f457f47957c1e240cd",
+  "gate_pid": 2258987,
+  "runs": [
+    {
+      "run": 1,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.335,
+      "load_average": [
+        5.19921875,
+        8.7177734375,
+        9.2890625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 2,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.417,
+      "load_average": [
+        4.82861328125,
+        8.40966796875,
+        9.17529296875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 3,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.801,
+      "load_average": [
+        4.583984375,
+        8.177734375,
+        9.08642578125
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 4,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.749,
+      "load_average": [
+        5.10546875,
+        8.0673828125,
+        9.03076171875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 5,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.648,
+      "load_average": [
+        5.22265625,
+        7.900390625,
+        8.95458984375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 6,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.684,
+      "load_average": [
+        4.9453125,
+        7.70849609375,
+        8.87451171875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 7,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.775,
+      "load_average": [
+        5.25146484375,
+        7.59716796875,
+        8.8125
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 8,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.735,
+      "load_average": [
+        5.47314453125,
+        7.53369140625,
+        8.77294921875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 9,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.9,
+      "load_average": [
+        5.07177734375,
+        7.3046875,
+        8.67041015625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 10,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.772,
+      "load_average": [
+        5.5537109375,
+        7.3046875,
+        8.6484375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 11,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.545,
+      "load_average": [
+        5.24951171875,
+        7.12158203125,
+        8.55908203125
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 12,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.84,
+      "load_average": [
+        5.25634765625,
+        7.0322265625,
+        8.50634765625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 13,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.937,
+      "load_average": [
+        6.69384765625,
+        7.25390625,
+        8.5478515625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 14,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.733,
+      "load_average": [
+        6.17041015625,
+        7.1103515625,
+        8.4794921875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 15,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.712,
+      "load_average": [
+        5.97314453125,
+        7.00537109375,
+        8.4150390625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 16,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.734,
+      "load_average": [
+        5.7822265625,
+        6.8916015625,
+        8.3466796875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 17,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.697,
+      "load_average": [
+        5.31298828125,
+        6.73291015625,
+        8.27099609375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 18,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.701,
+      "load_average": [
+        5.22509765625,
+        6.6201171875,
+        8.20068359375
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 19,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.857,
+      "load_average": [
+        5.11376953125,
+        6.52392578125,
+        8.1435546875
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    },
+    {
+      "run": 20,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.717,
+      "load_average": [
+        5.3173828125,
+        6.474609375,
+        8.09228515625
+      ],
+      "rows": 69,
+      "failed": [],
+      "targets": {
+        "dispatch/stop-during-exit": [
+          true
+        ],
+        "dispatch/stop-during-natural-end": [
+          true
+        ],
+        "dispatch/stop-during-accept-run": [
+          true
+        ]
+      }
+    }
+  ],
+  "passed": {
+    "dispatch/stop-during-exit": 20,
+    "dispatch/stop-during-natural-end": 20,
+    "dispatch/stop-during-accept-run": 20
+  },
+  "gate_alive_runs": 20,
+  "gate_result": {
+    "rc": 1,
+    "verdict": "GATE: RED (c8747d4622e8ef1c4c9c04f457f47957c1e240cd)",
+    "cause": "the mutation stage failed (driver_error); the gate claims no reuse",
+    "started_at": "2026-11-11T02:10:28Z",
+    "ended_at": "2026-11-11T03:22:26Z",
+    "times_source": "lock-queue runner.log, job 84; the job starts the gate and ends at wait $GATE",
+    "outcome_source": "the five tail lines of gate.log that the job kept; the job deleted gate.log with its temporary directory, unhashed",
+    "role": "load for the 20 runs only; this RED is not a gate verdict on this change"
+  }
+}
