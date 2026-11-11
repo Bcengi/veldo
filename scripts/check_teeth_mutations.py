@@ -3114,18 +3114,18 @@ def cases():
              'observations')
     # Anchored on the transition writer's event: VELDO-0131's _stop_command observes its refusals the same way.
     dispatch('dispatch-refusal-not-observed', 'control_dispatch.py',
-             "                 'request': command_id, 'accepted_versions': dict(expected)}\n"
-             "        try:\n"
-             "            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
-             "        except (Refused, self.store.StoreRefused) as error:\n"
-             "            self.counts['refused'] += 1\n"
-             "            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))\n",
-             "                 'request': command_id, 'accepted_versions': dict(expected)}\n"
-             "        try:\n"
-             "            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
-             "        except (Refused, self.store.StoreRefused) as error:\n"
-             "            self.counts['refused'] += 1\n"
-             "            pass  # defect: a refusal is not observed\n",
+             "            _test_hook('before_execute', action, dispatch_id, attempt)\n"
+             "            try:\n"
+             "                result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
+             "            except (Refused, self.store.StoreRefused) as error:\n"
+             "                self.counts['refused'] += 1\n"
+             "                self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))\n",
+             "            _test_hook('before_execute', action, dispatch_id, attempt)\n"
+             "            try:\n"
+             "                result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
+             "            except (Refused, self.store.StoreRefused) as error:\n"
+             "                self.counts['refused'] += 1\n"
+             "                pass  # defect: a refusal is not observed\n",
              'observations')
     dispatch('dispatch-receiver-not-installed', 'init_scaffold.py',
              '    ".veldo/control_launch.py",\n', '', 'installed-assets')

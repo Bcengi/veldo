@@ -540,6 +540,8 @@ print(json.dumps(results))
             def select(self, pending): return 0
             def acquire(self, name, job): pass
             def release(self, name): pass
+            def declared(self, job): return False
+            def declared_first(self, pending): return list(pending)
         def drive_ledger(body):
             (ledger_root / 'scripts/suites/fixture.py').write_text(
                 'import json, os, sys, tempfile\n' + body + 'expect("fixture target", True)\n')
