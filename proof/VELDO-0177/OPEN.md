@@ -37,6 +37,19 @@
    `v174-attach-another-owners-project` had to have their anchors re-indented (now at function level), and both
    are still killed. A reviewer should confirm this edit to another spec's registration is acceptable.
 
+## Fix round 3 (re-review 2026-11-11, proof only)
+
+5. The precheck's caller-owner and open-conversation clauses had no row that killed them. Suite 128 AC3/scope
+   now attaches the owner's own project `own-unbound` (repository bound nowhere, in the owner's scope) under the
+   same read recorder: (a) by the steward, a second project owner with every project in scope, to the owner's
+   conversation: `missing_authority:conversation_owner`, no read, version unchanged; (b) by the owner to a
+   closed conversation: `stale_subject:conversation_closed`, no read. Two cases are registered,
+   `attach177-other-caller-reads` and `attach177-closed-reads`, each removing one clause. Applied by hand
+   (`falsify.py`), each turns its own check red with both reads recorded (`round3-red-green.txt`). No production
+   file changed. OPEN: each case run alone through `scripts/check_gate_mutations.py` is NOT yet run; it is in
+   `heavy_runs.sh` for the lead's lock queue, which writes `mutation-attach177-closed-reads.txt` and
+   `mutation-attach177-other-caller-reads.txt`.
+
 ## Decisions a reviewer should see
 
 - AC2's falsifier is worded "the offered-tools row must fail on WebFetch missing from the init event". On the pinned

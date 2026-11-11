@@ -2,6 +2,8 @@
 run its suite, keep the suite's rows, and restore the module byte for byte. Run from the repository root:
 
     python3 proof/VELDO-0177/falsify.py > proof/VELDO-0177/falsifiers.txt
+
+With case names as arguments, only those cases are applied.
 """
 import importlib.util
 from pathlib import Path
@@ -12,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('teeth', ROOT / 'scripts/check_teeth_mutations.py')
 teeth = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(teeth)
-for case in [c for c in teeth.cases() if c['finding'] == 177]:
+for case in [c for c in teeth.cases() if c['finding'] == 177 and (not sys.argv[1:] or c['name'] in sys.argv[1:])]:
     path = ROOT / '.veldo' / case['module']
     before = path.read_bytes()
     print('== %s: %s, %d edit(s) (rows %s)' % (case['name'], case['module'], len(teeth.edits(case)),

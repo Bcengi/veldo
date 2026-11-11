@@ -1,0 +1,23 @@
+VELDO-0177 fix round 3 (re-review 2026-11-11): suite 128 AC3/scope, the owner's own project 'own-unbound' (execution_repository 'never-bound-here-either', in the owner's scope) attached (a) by the steward, a second project owner with every project in scope, to the owner's conversation and (b) by the owner to a closed conversation; every project_source and bound_repository call each attach makes is recorded.
+
+== RED at 213cf172: each precheck clause removed by its registered case (python3 proof/VELDO-0177/falsify.py attach177-closed-reads attach177-other-caller-reads), the module restored after each
+== attach177-closed-reads: control_conversation.py, 1 edit(s) (rows AC3/scope)
+   "if current.get('owner') != owner or current.get('status') != 'open':" -> "if current.get('owner') != owner:  # defect: a closed conversation's attach reads on"
+  VELDO-0177 detail: AC3/scope an attach on a closed conversation is refused as closed, the repository never read [missing_evidence:project_repository [('project_source', 'own-unbound'), ('bound_repository', 'never-bound-here-either')]]
+  SELFTEST FAIL: VELDO-0177 AC3/scope
+  128_veldo_0177_conversation_workspace           14 passed    3.21s
+restored: True
+== attach177-other-caller-reads: control_conversation.py, 1 edit(s) (rows AC3/scope)
+   "if current.get('owner') != owner or current.get('status') != 'open':" -> "if current.get('status') != 'open':  # defect: another caller's attach reads on"
+  VELDO-0177 detail: AC3/scope another project owner attaching the owner's project to the owner's conversation is refused as not its owner, the repository never read [missing_evidence:project_repository [('project_source', 'own-unbound'), ('bound_repository', 'never-bound-here-either')]]
+  SELFTEST FAIL: VELDO-0177 AC3/scope
+  128_veldo_0177_conversation_workspace           14 passed    3.32s
+restored: True
+
+== GREEN at 213cf172 (python3 scripts/selftest.py with the suite option, one suite a run, offline, each in a 10G memory-capped scope)
+  128_veldo_0177_conversation_workspace           15 passed    3.30s
+selftest (PARTIAL, 1 of 191 suites): 41 passed, 0 failed in 3.30s
+  123_veldo_0174_conversations                    38 passed   14.14s
+selftest (PARTIAL, 1 of 191 suites): 64 passed, 0 failed in 14.14s
+  129_veldo_0177_assistant_setup                   4 passed    3.90s
+selftest (PARTIAL, 1 of 191 suites): 30 passed, 0 failed in 3.90s

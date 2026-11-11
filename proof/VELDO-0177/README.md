@@ -31,7 +31,13 @@ Evidence files:
   names suites 128 and 129 for (see OPEN.md): baseline and no-op green, the mutant killed by its row, every one.
   `mutation-v174-*.txt`: the two VELDO-0174 attach falsifiers whose anchors moved (indentation only) into
   `attach_authority`, run the same way at 46fa5a94 (suite 123, confined leg), both killed.
-- `OPEN.md`: the items resolved in fix round 1, and decisions to review.
+- `round3-red-green.txt` (fix round 3, re-review 2026-11-11): the two new suite 128 AC3/scope checks, each red
+  with its precheck clause removed (the registered case applied by `falsify.py`, which now takes case names),
+  and suites 128 (15 of 15), 123 (38 of 38) and 129 (4 of 4) green at 213cf172.
+- `heavy_runs.sh` (fix round 3): the two new cases, each run alone through `scripts/check_gate_mutations.py`,
+  for the lead's lock queue. Not yet run: `mutation-attach177-closed-reads.txt` and
+  `mutation-attach177-other-caller-reads.txt` are written by it.
+- `OPEN.md`: the items resolved in fix rounds 1 and 2, the round 3 item, and decisions to review.
 
 ## AC1: each conversation's turns run in its own workspace, through the same Runner, containment and guards
 
@@ -127,6 +133,16 @@ and the record is empty. No clone is made and the version is unchanged. Before t
 cases edits `attach_project`. A seventh, `attach177-reads-first`, puts the read back ahead of the checks (the
 pre-fix ordering) and is killed by AC3/scope.
 
+Fix round 3 (re-review 2026-11-11, proof only, no production change): AC3/scope has two more checks under the
+same recorder, on the owner's own project `own-unbound` (in the owner's scope, its execution repository bound
+nowhere here). Attached by the steward (a second project owner, every project in scope) to the owner's
+conversation, it is refused `missing_authority:conversation_owner` with no read and the version unchanged.
+Attached by the owner to a closed conversation, it is refused `stale_subject:conversation_closed` with no read.
+Two more cases, `attach177-other-caller-reads` and `attach177-closed-reads`, each remove one clause of the
+precheck; with either applied the attach is refused `missing_evidence:project_repository` with both reads
+recorded, and AC3/scope is red (`round3-red-green.txt`). Their runs alone through the mutation gate are pending
+(`heavy_runs.sh`).
+
 Falsifier (`clone177-push-remote`: the clone gets the project's push remote): the push succeeds; AC3/no-publication
 red ("its push failed and the fixture remote's refs are unchanged [0]"), and AC3/attach-clone (the clone's config
 names the project).
@@ -146,3 +162,5 @@ names the project).
 - fix round 2 (review 2026-11-04, F1): 7818b2fd the suite 128 AC3/scope check (red); 655c9a09 the authority checks
   before the repository read; 5ff18406 mutation case `attach177-reads-first`; 46fa5a94 the two VELDO-0174 anchors
   follow the checks into `attach_authority`; then this evidence
+- fix round 3 (re-review 2026-11-11): 35546f04 the two suite 128 AC3/scope checks; 213cf172 mutation cases
+  `attach177-closed-reads` and `attach177-other-caller-reads`; then this evidence and `heavy_runs.sh`
