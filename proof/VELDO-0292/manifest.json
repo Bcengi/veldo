@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0292",
-  "commit": "d1c5da1a48e61fc21666cda13985dbf9d811d002",
-  "tree": "829cc043a6f60eadd56ad55e0cc48ba44f99d977",
+  "commit": "aeb936909cf9cc8f2800cc713b64ae9f164ed134",
+  "tree": "f2e202052c6bbe54c6b482c2aca2e29afec5e39e",
   "producer": "Claude implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-11T06:16:30+00:00",
+  "produced_at": "2026-11-11T10:54:11+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -23,23 +23,23 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0292/README.md",
-          "detail": "Quick run by the builder at d1c5da1a, a partial run that proves nothing by the gate's rules: python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs, 131 rows, 0 failed."
+          "detail": "Quick run by the builder at aeb93690, a partial run that proves nothing by the gate's rules: python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs, 140 rows, 0 failed."
         }
       ]
     },
     {
       "id": "AC2",
-      "status": "failed",
+      "status": "pending",
       "evidence": [
         {
           "type": "integration",
           "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
-          "detail": "Rows live/shell-string, live/pipeline, live/outside-subset, live/interpreter, live/stored, live/config-write, live/mixed, live/quoted-command-word, live/remap and subset/builtin-list, each as the falsifier words it; 16 mutations in 19 mutation rows. All green in the builder's quick run."
+          "detail": "Rows live/shell-string, live/pipeline, live/outside-subset, live/interpreter, live/stored, live/config-write (23 commands), live/config-include (4), live/construct (6), live/mixed, live/quoted-command-word, live/remap and subset/builtin-list, each as the falsifier of spec revision 7 words it; 23 mutations in 26 mutation rows. All green in the builder's quick run, and each of the nine new mutations and the four name test mutations lets at least one command of its row through with exit 0."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0292/unread-spellings.summary.json",
-          "detail": "The criterion's text is not met. Five commands write a git alias that pushes main to the configuration with printf and then run it through a spelling of git the Design's three forms do not read (a command substitution that prints nothing, the same in backquotes, an expansion with nested braces, a brace expansion in a string given to bash, a backslash before a newline inside the name). For each, the guard at 646ff7c8 exits 2, this tree's guard exits 0 and bash moves the remote's main. No row or mutation of the spec covers them. The build follows the Design as written; closing them needs a spec change (proof/VELDO-0292/README.md)."
+          "detail": "The five commands build 1 let through (a command substitution that prints nothing, the same in backquotes, an expansion with nested braces, a brace expansion in a string given to bash, a backslash before a newline inside the name) and their control are each refused with exit 2 by this tree's guard, as at 646ff7c8. The same run records the stated limit L1 and L2, which the spec accepts: 646ff7c8 exits 2, this tree exits 0 and bash moves the remote's main."
         },
         {
           "type": "unit",
@@ -97,7 +97,7 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0292/README.md",
-          "detail": "The message rule reads -m as its own word; a cluster such as -am stays refused, as the spec's wording has it."
+          "detail": "The message rule reads -m as its own word; a cluster such as -am stays refused. Under amendment 2 a message that holds the word config or a construct character, in a command that also mentions a push, is refused as at 646ff7c8; the README states this reading for the reviewer."
         }
       ]
     }
@@ -119,7 +119,7 @@
       "name": "teeth-292",
       "status": "pending",
       "command": "bash proof/VELDO-0292/heavy_runs.sh",
-      "detail": "Step 3, python3 scripts/check_teeth_mutations.py for finding 292 (27 cases), writes proof/VELDO-0292/teeth-292.summary.json."
+      "detail": "Step 3, python3 scripts/check_teeth_mutations.py for finding 292 (34 cases), writes proof/VELDO-0292/teeth-292.summary.json."
     },
     {
       "name": "teeth-268",
@@ -129,9 +129,9 @@
     },
     {
       "name": "unread-spellings",
-      "status": "failed",
+      "status": "passed",
       "command": "python3 proof/VELDO-0292/unread_spellings.py",
-      "detail": "Run by the builder at d1c5da1a: five commands refused at 646ff7c8 pass this tree's guard and bash moves main; the control is refused under both. proof/VELDO-0292/unread-spellings.summary.json."
+      "detail": "Run by the builder at aeb93690: the five commands of build 1 and the control are refused by this tree's guard; the two stated limit commands pass it and bash moves main, as the spec accepts. proof/VELDO-0292/unread-spellings.summary.json."
     },
     {
       "name": "gate",

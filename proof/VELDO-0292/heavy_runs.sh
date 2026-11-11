@@ -7,7 +7,7 @@
 #
 #   1. red-before.summary.json   suite 141 over the guard and policy_check as they were at 646ff7c8
 #   2. green-after.summary.json  suite 141 over this tree
-#   3. teeth-292.summary.json    the 27 mutations registered as finding 292, each killed
+#   3. teeth-292.summary.json    the 34 mutations registered as finding 292, each killed
 #   4. teeth-268.summary.json    the mutations registered as finding 268, which this change must
 #                                leave killed (their anchors sit in the file this change edits)
 #
@@ -22,7 +22,7 @@ failed=0
 
 # Step 1. The suite's own diagnostic (VELDO_0268_UNDER_TEST) runs this tree's rows over another
 # pair of files. The pair is read from the base commit into the scratch directory. Expected: the
-# 15 rows the spec calls red at 646ff7c8 and all 30 VELDO-0292 mutation rows red (their anchors are
+# 17 rows the spec calls red at 646ff7c8 and all 37 VELDO-0292 mutation rows red (their anchors are
 # absent from the old guard); live/scanner-edges and live/git-args green; every older row green.
 mkdir "$LOGS/before"
 git show "$BASE:scripts/veldo-guard.sh" > "$LOGS/before/veldo-guard.sh" || failed=1
@@ -32,7 +32,7 @@ VELDO_0268_DETAILS=1 VELDO_0268_UNDER_TEST="$LOGS/before" python3 scripts/selfte
   > "$LOGS/red-before.log" 2>&1
 python3 "$OUT/summarize.py" red-before "$?" "$LOGS/red-before.log" "$RED_CMD" || failed=1
 
-# Step 2. Expected: 131 rows, none red (84 older rows, 17 VELDO-0292 rows, 30 mutation rows).
+# Step 2. Expected: 140 rows, none red (84 older rows, 19 VELDO-0292 rows, 37 mutation rows).
 GREEN_CMD="VELDO_0268_DETAILS=1 python3 scripts/selftest.py --suite $SUITE"
 VELDO_0268_DETAILS=1 python3 scripts/selftest.py --suite "$SUITE" > "$LOGS/green-after.log" 2>&1
 python3 "$OUT/summarize.py" green-after "$?" "$LOGS/green-after.log" "$GREEN_CMD" || failed=1

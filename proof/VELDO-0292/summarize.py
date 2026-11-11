@@ -27,6 +27,8 @@ RED_BEFORE = {
     'live/interpreter': 'the line does not say what was found',
     'live/stored': 'the line does not say what was found',
     'live/config-write': 'the line does not say what was found',
+    'live/config-include': 'the line does not say what was found',
+    'live/construct': 'the line does not say what was found',
     'live/mixed': 'the line does not say what was found',
     'live/remap': 'the line does not say what was found',
     'live/quoted-command-word': 'the guard exits 0',
@@ -34,7 +36,8 @@ RED_BEFORE = {
 }
 # The VELDO-0292 rows that already hold there: the guard refuses any text with the words of a push.
 GREEN_BEFORE = ('live/scanner-edges', 'live/git-args')
-ROW = re.compile(r'^\s*(VELDO-0(?:268|292)) (\S+) (observed|detail): (.*)$')
+ROWS, MUTATION_ROWS = 19, 37  # the VELDO-0292 rows, and one mutation row per row a mutation must turn red
+ROW =re.compile(r'^\s*(VELDO-0(?:268|292)) (\S+) (observed|detail): (.*)$')
 
 
 def load(path):
@@ -64,12 +67,13 @@ def main():
                  'every VELDO-0268 row green' % (len(RED_BEFORE), ' and '.join(GREEN_BEFORE)))
     elif mode == 'green-after':
         expected = []
-        bound = 'no row red, 17 VELDO-0292 rows and 30 VELDO-0292 mutation rows present, selftest reports 0 failed'
+        bound = ('no row red, %d VELDO-0292 rows and %d VELDO-0292 mutation rows present, selftest reports 0 failed'
+                 % (ROWS, MUTATION_ROWS))
     else:
         raise SystemExit('unknown mode: ' + mode)
     tail = [line.strip() for line in raw.decode('utf-8', 'replace').splitlines()
             if line.startswith('selftest (') or '141_veldo_0268_protected_refs  ' in line][-2:]
-    complete = len(new) - len(mutations) == 17 and len(mutations) == 30 and bool(old)
+    complete = len(new) - len(mutations) == ROWS and len(mutations) == MUTATION_ROWS and bool(old)
     ok = complete and red_new == sorted(expected) and not red_old
     if mode == 'green-after':
         ok = ok and any(', 0 failed' in line for line in tail)
@@ -77,8 +81,8 @@ def main():
         'run': mode,
         'exit_code': code,
         'exit_code_note': 'a run of one suite never exits 0; 2 with 0 failed is the partial run convention',
-        'rows_veldo_0292': {'present': len(new) - len(mutations), 'bound': 17},
-        'mutation_rows_veldo_0292': {'present': len(mutations), 'bound': 30},
+        'rows_veldo_0292': {'present': len(new) - len(mutations), 'bound': ROWS},
+        'mutation_rows_veldo_0292': {'present': len(mutations), 'bound': MUTATION_ROWS},
         'rows_veldo_0268': {'present': len(old), 'red': red_old, 'bound': 'none red'},
         'red_veldo_0292': {'observed': red_new, 'expected': sorted(expected), 'bound': bound},
         'red_reasons': {name: new[name][1] for name in red_new},

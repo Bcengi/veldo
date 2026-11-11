@@ -1,48 +1,47 @@
 {
  "command": "python3 proof/VELDO-0292/unread_spellings.py",
  "deciding": {
-  "bound": "AC2: each command is refused as at the base commit, so guard_in_tree_exit is 2 wherever guard_at_base_exit is 2 and bash moves main",
-  "refused_at_base_and_passed_in_tree": [
-   "a command substitution that prints nothing",
-   "the same in backquotes",
-   "an expansion with nested braces",
-   "a brace expansion in a string given to bash",
-   "a backslash before a newline inside the name"
-  ],
+  "bound": "AC2: every command of kind refused exits 2 under this tree, as it does at the base commit. The commands of kind limit are the stated limit the spec accepts and do not decide the verdict.",
+  "refused_at_base_and_passed_in_tree": [],
   "rows": [
    {
     "bash_moves_main": true,
     "command": "printf '[alias]\\n\\tp = !git push origin main\\n' >> '.g''it/config'; sh -c 'gi$(true)t p'",
     "guard_at_base_exit": 2,
-    "guard_in_tree_exit": 0,
+    "guard_in_tree_exit": 2,
+    "kind": "refused",
     "spelling": "a command substitution that prints nothing"
    },
    {
     "bash_moves_main": true,
     "command": "printf '[alias]\\n\\tp = !git push origin main\\n' >> '.g''it/config'; sh -c 'gi`true`t p'",
     "guard_at_base_exit": 2,
-    "guard_in_tree_exit": 0,
+    "guard_in_tree_exit": 2,
+    "kind": "refused",
     "spelling": "the same in backquotes"
    },
    {
     "bash_moves_main": true,
     "command": "printf '[alias]\\n\\tp = !git push origin main\\n' >> '.g''it/config'; sh -c 'gi${x:-${y}}t p'",
     "guard_at_base_exit": 2,
-    "guard_in_tree_exit": 0,
+    "guard_in_tree_exit": 2,
+    "kind": "refused",
     "spelling": "an expansion with nested braces"
    },
    {
     "bash_moves_main": true,
     "command": "printf '[alias]\\n\\tt = !git push origin main\\n' >> '.g''it/config'; bash -c '{gi,}t'",
     "guard_at_base_exit": 2,
-    "guard_in_tree_exit": 0,
+    "guard_in_tree_exit": 2,
+    "kind": "refused",
     "spelling": "a brace expansion in a string given to bash"
    },
    {
     "bash_moves_main": true,
     "command": "printf '[alias]\\n\\tp = !git push origin main\\n' >> '.g''it/config'; gi\\\nt p",
     "guard_at_base_exit": 2,
-    "guard_in_tree_exit": 0,
+    "guard_in_tree_exit": 2,
+    "kind": "refused",
     "spelling": "a backslash before a newline inside the name"
    },
    {
@@ -50,18 +49,39 @@
     "command": "printf '[alias]\\n\\tp = !git push origin main\\n' >> '.g''it/config'; sh -c 'g\\it p'",
     "guard_at_base_exit": 2,
     "guard_in_tree_exit": 2,
-    "spelling": "control: a backslash inside the name, which the first form reads"
+    "kind": "refused",
+    "spelling": "control: a backslash inside the name"
+   },
+   {
+    "bash_moves_main": true,
+    "command": "printf '[alias]\\n\\tp = !git push origin main\\n' > '{D}/inc'; printf '%s%s -c include.path={D}/inc p\\n' gi t | sh",
+    "guard_at_base_exit": 2,
+    "guard_in_tree_exit": 0,
+    "kind": "limit",
+    "spelling": "L1: printf builds the name and pipes it into sh, with -c include.path"
+   },
+   {
+    "bash_moves_main": true,
+    "command": "printf '[alias]\\n\\tp = !git push origin main\\n' > '{D}/inc'; python3 -c 'import os; os.system(\"g\" + \"it -c include.path={D}/inc p\")'",
+    "guard_at_base_exit": 2,
+    "guard_in_tree_exit": 0,
+    "kind": "limit",
+    "spelling": "L2: python3 joins two strings into the name, with -c include.path"
    }
   ],
-  "verdict": "fail"
+  "stated_limit_refused_at_base_passed_in_tree_and_main_moved": [
+   "L1: printf builds the name and pipes it into sh, with -c include.path",
+   "L2: python3 joins two strings into the name, with -c include.path"
+  ],
+  "verdict": "pass"
  },
  "discarded": [],
  "environment": {
-  "commit": "d1c5da1a48e61fc21666cda13985dbf9d811d002",
+  "commit": "aeb936909cf9cc8f2800cc713b64ae9f164ed134",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "python": "3.12.3",
-  "tree": "829cc043a6f60eadd56ad55e0cc48ba44f99d977"
+  "tree": "f2e202052c6bbe54c6b482c2aca2e29afec5e39e"
  },
  "schema": "veldo.proof-summary/v1",
  "tools": {
