@@ -1,10 +1,17 @@
 # VELDO-0187 proof: every conversation turn fed to claude-mem's session history from its redacted record
 
-Suite: scripts/suites/138_veldo_0187_claude_mem_feed.py, 13 rows, 39 checks, run alone:
+Fix round 3 (the first independent review, 2026-11-11) changed the request model, the reader, the fixture and
+the rows: read fix-round3.md first. Where the sections below describe the build's four request kinds (start,
+prompt, observation, summary), the session-start request and an empty shipped record, fix-round3.md supersedes
+them: there is no start request, the completion is sent at the conversation's close, the version is asked before
+each pass, and the record lists claude-mem 10.6.2.
+
+Suite: scripts/suites/138_veldo_0187_claude_mem_feed.py, 18 rows (44 passed, 0 failed), run alone:
 python3 scripts/selftest.py with the suite option naming 138_veldo_0187_claude_mem_feed (needs the systemd user manager, OPEN.md item 1).
-Fixtures: proof/VELDO-0187/fixtures.py (a claude-mem plugin whose four hook scripts post to its worker, a fixture
-worker on loopback that writes claude-mem.db, an MCP stdio client) and VELDO-0183's claude-mem search server.
-No real engine, login, claude-mem store, worker or plugin is touched.
+Fixtures: proof/VELDO-0187/fixtures.py (a claude-mem plugin laid out as 10.6.2 lays its own, a fixture worker on
+loopback that writes claude-mem.db, an MCP stdio client), VELDO-0183's claude-mem search server, and a byte copy of
+10.6.2's hooks.json with byte excerpts of its bundle (claude-mem-10.6.2-*.json). No real engine, login, claude-mem
+store or worker is touched; the installed claude-mem plugin's code is read, when there is one, and nothing else of it.
 
 Receipts: red-before.txt (all 13 rows red at 2cdc1dd3, both with no feed module and with the module but none of
 the wiring), falsifiers.txt (each spec falsifier applied by hand, red, restored), mutation-*.txt (each case killed
@@ -93,5 +100,13 @@ feeds sent late.
 | feed187-held-session | control_conversation.py | the feed's observation built from the held session | AC2/redaction |
 | feed187-dropped | control_memory_feed.py | a feed the worker did not take is removed | AC3/pending |
 
-Each killed alone through `scripts/check_gate_mutations.py`, baseline and no-op green, in the unconfined leg with
-the entry OPEN.md item 1 names.
+| feed187-refusal-pending | control_memory_feed.py | a worker's refusal taken for a worker that is away | AC3/worker-refusal |
+| feed187-version-unasked | control_memory_feed.py | the running worker never asked its version | AC1/running-version |
+| attach187-check-ignored | control_conversation.py | an attach ignores the project check's refusals | AC3/project-check (suite 128) |
+| point187-check-ignored | control_conversation.py | a pointing ignores the project check's refusals | AC1/project-check (suite 136) |
+| point187-existing-as-new | control_conversation.py | a new-project pointing never finds the name exists | AC1/project-check (suite 136) |
+
+The first three were killed alone through `scripts/check_gate_mutations.py` at b6849b26 (baseline and no-op green,
+in the unconfined leg, with a temporary entry) and again at 5627f1cc (batch-fix1.md). At fix round 3's head all
+eight were killed by hand on their rows (fix-round3.md); their receipts through the gate's driver are
+heavy_runs.sh, for the lead's lock queue.
