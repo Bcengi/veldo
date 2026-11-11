@@ -11,6 +11,13 @@
      "suite_median": 2
     },
     "control_runs": 196,
+    "control_stall_fraction": {
+     "count": 196,
+     "maximum": 0.177,
+     "median": 0.025,
+     "minimum": 0.0,
+     "p95": 0.108
+    },
     "control_stall_seconds": {
      "count": 196,
      "maximum": 3.419,
@@ -21,6 +28,10 @@
     "controls_with_result": 196,
     "failed_rows": [],
     "mean_busy_cores": 11.09,
+    "peak_granted": {
+     "cpu": 19.994778189909493,
+     "memory": 10662449152
+    },
     "peak_workers": 30,
     "round_errors": [],
     "seconds_under_ceiling": 0.0,
@@ -37,6 +48,13 @@
      "suite_median": 2
     },
     "control_runs": 196,
+    "control_stall_fraction": {
+     "count": 196,
+     "maximum": 0.081,
+     "median": 0.001,
+     "minimum": 0.0,
+     "p95": 0.016
+    },
     "control_stall_seconds": {
      "count": 196,
      "maximum": 1.393,
@@ -47,6 +65,10 @@
     "controls_with_result": 196,
     "failed_rows": [],
     "mean_busy_cores": 9.71,
+    "peak_granted": {
+     "cpu": 19.996741595282035,
+     "memory": 10026614784
+    },
     "peak_workers": 29,
     "round_errors": [],
     "seconds_under_ceiling": 603.5,
@@ -63,6 +85,13 @@
      "suite_median": 1
     },
     "control_runs": 49,
+    "control_stall_fraction": {
+     "count": 49,
+     "maximum": 0.083,
+     "median": 0.001,
+     "minimum": 0.0,
+     "p95": 0.002
+    },
     "control_stall_seconds": {
      "count": 49,
      "maximum": 1.242,
@@ -73,6 +102,10 @@
     "controls_with_result": 49,
     "failed_rows": [],
     "mean_busy_cores": 0.73,
+    "peak_granted": {
+     "cpu": 1.0561376869042416,
+     "memory": 756236288
+    },
     "peak_workers": 1,
     "round_errors": [],
     "seconds_under_ceiling": 0.0,
@@ -85,20 +118,30 @@
   "checks": {
    "enough_runs": true,
    "every_control_has_a_result": true,
-   "off_arm_shows": false,
+   "off_arm_reached_load": true,
+   "off_arm_shows": true,
+   "off_mean_busy_cores": 11.09,
+   "off_peak_granted_cpu": 19.99,
    "on_arm_holds": true,
+   "stall_fraction_p95": {
+    "off": 0.108,
+    "on": 0.016,
+    "quiet": 0.002
+   },
    "stall_p95_seconds": {
     "off": 2.106,
     "on": 0.223,
     "quiet": 0.075
    }
   },
-  "fix_shown": false,
-  "outcome": "the replay did not reach the stage's load; the fix is not claimed",
+  "fix_shown": true,
+  "outcome": "the off arm reached the stage's load; the fix is shown at this ceiling",
   "rule": {
    "counts": "at least 150 control runs in each arm and 20 in the quiet reference",
-   "off_arm": "a timing-row failure, or its 95th percentile stall at least 3 times the on arm's and at least 2 s above it",
-   "on_arm": "no timing-row failure, and its 95th percentile stall at most 1 s above the quiet reference"
+   "load": "the off arm's peak CPU granted at least 19.4 of 20 cores and its mean busy cores at least 10.3",
+   "off_arm": "a timing-row failure, or its 95th percentile stall fraction at least 3 times the on arm's and at least 0.05 above it",
+   "on_arm": "no timing-row failure, and its 95th percentile stall fraction at most 0.02 above the quiet reference's",
+   "stall_fraction": "a control's stall_seconds divided by its elapsed seconds"
   },
   "sources": {
    "off": {
@@ -135,16 +178,16 @@
  },
  "discarded": [],
  "environment": {
-  "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+  "commit": "e27dd27ffbe29a250dac1cdf92d131222abcb266",
   "git": "git version 2.43.0",
   "host": "dmitry-pc",
   "load": [
-   15.35546875,
-   19.90380859375,
-   19.8525390625
+   6.9111328125,
+   8.35693359375,
+   7.1220703125
   ],
   "python": "3.12.3",
-  "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340"
+  "tree": "22fc4378c7294e13920a884564d5ee44ca4b1f62"
  },
  "schema": "veldo.proof-summary/v1"
 }

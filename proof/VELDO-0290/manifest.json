@@ -4,11 +4,11 @@
   "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
   "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340",
   "producer": "Claude implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-11T09:43:17+00:00",
+  "produced_at": "2026-11-11T12:13:38+00:00",
   "criteria": [
     {
       "id": "AC1",
-      "status": "partial",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
@@ -23,13 +23,13 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0290/teeth.summary.json",
-          "detail": "Pending: mutant admission290-ceiling-not-for-others is recorded expected killed, observed killed, source fresh, but the stage ended status failed with error driver_error (registered 7, executed 7, rejected 7). Run check 1 traces the error to the run script writing its diffs inside the checkout during the stage. The script now writes them outside; the rerun of step 3 has not happened."
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutant admission290-ceiling-not-for-others: expected killed, observed killed."
         }
       ]
     },
     {
       "id": "AC2",
-      "status": "partial",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
@@ -54,13 +54,13 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0290/teeth.summary.json",
-          "detail": "Pending: mutants admission290-no-waiting-bar, admission290-refused-not-retried-first and admission290-node-mark-dropped are each recorded expected killed, observed killed, but the stage ended status failed with error driver_error. The rerun of step 3 has not happened."
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutants admission290-no-waiting-bar, admission290-refused-not-retried-first and admission290-node-mark-dropped: each expected killed, observed killed."
         }
       ]
     },
     {
       "id": "AC3",
-      "status": "partial",
+      "status": "passed",
       "evidence": [
         {
           "type": "unit",
@@ -80,18 +80,18 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0290/teeth.summary.json",
-          "detail": "Pending: mutants admission290-declaration-not-passed and admission290-declared-not-first are each recorded expected killed, observed killed, but the stage ended status failed with error driver_error. The rerun of step 3 has not happened."
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutants admission290-declaration-not-passed and admission290-declared-not-first: each expected killed, observed killed."
         }
       ]
     },
     {
       "id": "AC4",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         {
           "type": "integration",
           "ref": "proof/VELDO-0290/replay.json",
-          "detail": "Pending. The verdict at dde37745 is fix_shown false, outcome 'the replay did not reach the stage's load; the fix is not claimed'. 196 control runs in each arm and 49 in the quiet reference, no failed row in any arm. Stall p95 in declared suites: off 2.106 s, on 0.223 s, quiet 0.075 s. The on arm holds its bar (at most 1 s above quiet). The off arm is 9.4 times the on arm's but 1.883 s above it, 0.117 s short of the 2 s gap. Run check 1 proposes an amendment to this criterion that waits for the owner; it is not applied."
+          "detail": "The verdict at e27dd27f over the three arm summaries of dde37745, by AC4 as amended 2026-11-11 (owner approval: Telegram 40695): fix_shown true, outcome 'the off arm reached the stage's load; the fix is shown at this ceiling', ceiling 11. Load reached: off arm peak CPU granted 19.99 (bar 19.4 of 20), mean busy cores 11.09 (bar 10.3). 196 control runs in each arm and 49 in the quiet reference, no failed row in any arm. Stall fraction p95 in declared suites (nearest rank): off 0.108, on 0.016, quiet 0.002. The on arm holds (0.016 at most 0.002 + 0.02). The off arm shows (0.108 at least 3 x 0.016 and at least 0.016 + 0.05). Run check 1 quoted 0.102 and 0.015, an interpolated percentile of the same data; both readings pass every bar. No arm was rerun. Stall p95 in seconds, kept beside: off 2.106, on 0.223, quiet 0.075."
         },
         {
           "type": "integration",
@@ -116,7 +116,7 @@
         {
           "type": "note",
           "ref": "proof/VELDO-0290/teeth.summary.json",
-          "detail": "Pending: mutant admission290-stall-skips-units is recorded expected killed, observed killed, but the stage ended status failed with error driver_error. The rerun of step 3 has not happened."
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutant admission290-stall-skips-units: expected killed, observed killed."
         }
       ]
     }
@@ -130,9 +130,9 @@
     },
     {
       "name": "mutation",
-      "status": "pending",
+      "status": "passed",
       "command": "python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3",
-      "detail": "teeth.summary.json: status failed, error driver_error, registered 7, executed 7, rejected 7; teeth-raw.summary.json records the 87 raw files. The lead reruns step 3 of proof/VELDO-0290/heavy_runs.sh."
+      "detail": "teeth.summary.json at e9a480c8 (lock job 91a): status passed, registered 7, executed 7, rejected 7, seven of seven killed; teeth-raw.summary.json records the raw files. Run as step 3 of proof/VELDO-0290/heavy_runs.sh."
     },
     {
       "name": "gate",
