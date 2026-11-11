@@ -12699,6 +12699,12 @@ def cases():
              ['live/outside-subset', 'live/stored'])
     guard292('guard292-data-set-any-program', '    return name in PLAIN\n',
              '    return True  # defect: every program counts as a plain text tool\n', ['live/interpreter'])
+    # The build check of 2026-11-11: sort runs its compress program, so it is not a plain text tool.
+    guard292('guard292-sort-plain',
+             'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "uniq",\n',
+             'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",'
+             '  # defect: sort is a plain text tool\n',
+             ['live/plain-runs'])
     # Test 1 (amendment 2): a write the guard cannot show is outside git's configuration.
     site292 = '        if CONSTRUCT.search(written) or CONFIGURATION.search(w.text):\n'
     guard292('guard292-config-write-off',

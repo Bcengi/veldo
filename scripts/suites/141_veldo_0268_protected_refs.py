@@ -27,8 +27,9 @@ the guard refuses each on the gate text, and where the acceptance criterion asks
 unresolved line ends with the matched text and its position. The live/config-write rows write an
 alias or a hook to a path the guard cannot show is outside git's configuration, live/config-include
 gives a git the command names a file written elsewhere, and live/construct hides that git behind a
-construct in text a program may run. The live/remap and live/scanner-edges
-rows also run each command under bash with the recording git and require the push in its record.
+construct in text a program may run. live/plain-runs feeds a push to sort, whose compress program
+option runs sh on it, so sort is not a plain text tool. The live/remap, live/plain-runs and
+live/scanner-edges rows also run each command under bash with the recording git and require the push in its record.
 subset/builtin-list compares the guard's list of builtins with what bash's enable -a prints on the
 host. These rows and their mutation rows are named VELDO-0292 in the output.
 """
@@ -1096,6 +1097,18 @@ def _v268_suite():
             ('gi\\\nt ' + INCLUDE, 'a backslash before a newline'),
             ("sh -c '/usr/bin/gi[t] %s'" % INCLUDE, 'the construct ['))], dirs=('d',))
 
+    def row_live_plain_runs(under):
+        """A program with an option that runs another program is not a plain text tool. GNU sort runs
+        its compress program on its own temporary data, so a push fed to sort as a quoted heredoc body
+        or a quoted string is text sh runs. {D}/big is 300 KB of empty lines, which with a 1K buffer
+        makes sort write temporary files. The option is given in full and abbreviated."""
+        big = "head -c 300000 /dev/zero | tr '\\0' '\\n' > {D}/big; "
+        return refused292(under, [
+            (big + "cat <<'EOF' | sort -S 1K -T {D} --compress-program=sh - {D}/big\n%s\nEOF" % PUSH,
+             RUNNER % 'sort'),
+            (big + "printf '%s\\n' | sort -S 1K -T {D} --compress-prog=sh - {D}/big" % PUSH, RUNNER % 'sort')],
+            runs=True, dirs=('d',))
+
     def row_live_mixed(under):
         return refused292(under, [("echo 'note: %s'; cd . && %s" % (PUSH, PUSH), NAMED)])
 
@@ -1160,7 +1173,7 @@ def _v268_suite():
         'live/outside-subset': row_live_outside_subset, 'live/interpreter': row_live_interpreter,
         'live/stored': row_live_stored, 'live/config-write': row_live_config_write,
         'live/config-include': row_live_config_include, 'live/construct': row_live_construct,
-        'live/mixed': row_live_mixed,
+        'live/plain-runs': row_live_plain_runs, 'live/mixed': row_live_mixed,
         'live/quoted-command-word': row_live_quoted_command_word, 'live/remap': row_live_remap,
         'subset/builtin-list': row_builtin_list, 'live/scanner-edges': row_live_scanner_edges,
         'live/git-args': row_live_git_args,
@@ -1268,6 +1281,7 @@ def _v268_suite():
 
     # VELDO-0292 anchors, shared with scripts/check_teeth_mutations.py's registration of the same defects.
     STRINGS = 'STRINGS = ("single", "double", "body")  # what can be data: a quoted string, a heredoc body\n'
+    PLAIN_START = 'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "uniq",\n'
     PLAIN_END = '         "sha256sum", "base64", "test", "[", "true", "false", ":"}\n'
     UNPARSED = '        return command, str(error)  # outside the subset: the whole command is judged as written\n'
     PLAIN_TEST = '    return name in PLAIN\n'
@@ -1317,6 +1331,10 @@ def _v268_suite():
          ['live/outside-subset', 'live/stored']),
         ('guard292-data-set-any-program', PLAIN_TEST,
          '    return True  # defect: every program counts as a plain text tool\n', ['live/interpreter']),
+        ('guard292-sort-plain', PLAIN_START,
+         'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",'
+         '  # defect: sort is a plain text tool\n',
+         ['live/plain-runs']),
         ('guard292-config-write-off', TEST_ONE,
          '    reason = None  # defect: test 1 never fires\n', ['live/config-write']),
         ('guard292-config-site-quoted', SITE,

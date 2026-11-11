@@ -66,7 +66,9 @@ acceptance_criteria:
       push given as a string to sh -c or bash -c, to eval, or on the standard input of a shell; a push
       as one command of a pipeline or list; a push held in a variable that is then run; a push inside a
       function body; a push behind a shell alias or a git alias; a push given as code to an
-      interpreter; a push stored by export, read or printf -v and run by a later shell; a git alias or
+      interpreter; a push fed as a quoted string or heredoc body to a program one of whose options
+      runs another program, as sort does with its compress program; a push stored by export, read or
+      printf -v and run by a later shell; a git alias or
       hook whose text names a push, written by a plain text tool to a path the guard cannot show is
       outside git's configuration, however that path or git is spelled, and used later in the same
       command; a command that carries both a quoted mention and a real push; and a command
@@ -83,7 +85,12 @@ acceptance_criteria:
       variable that is then the command word, and a function whose body pushes and is then called.
       live/interpreter: python3 -c calling os.system with the push, perl -e calling system with it, awk with
       a BEGIN block calling system with it, and python3 reading a quoted heredoc that calls os.system with
-      it. live/stored: export of a variable holding the push, then sh -c running that variable in double
+      it. live/plain-runs, where D is a directory under the fixture's temporary directory and each
+      command first writes 300 KB of empty lines to D/big with head and tr: cat of a quoted heredoc
+      whose body is git push origin main, piped into sort -S 1K -T D --compress-program=sh reading
+      standard input and D/big; printf of the quoted push piped into the same sort with the option
+      abbreviated to --compress-prog=sh. The row also runs each command under bash with a recording
+      git first on PATH and requires the record to hold the push. live/stored: export of a variable holding the push, then sh -c running that variable in double
       quotes; read of the push from a quoted heredoc, then the same; printf -v of the push, then the same.
       In the next three rows S is printf of an alias section mapping p to !git push origin main, D is a
       directory under the fixture's temporary directory named by its absolute path, and G is printf of
@@ -137,6 +144,7 @@ acceptance_criteria:
       tool) turns live/shell-string and live/pipeline red; guard292-unparsed-is-data (a command outside
       the subset has its quoted strings removed anyway) turns live/outside-subset and live/stored red;
       guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter
+      red; guard292-sort-plain (sort is put back in the plain text tool set) turns live/plain-runs
       red; guard292-config-write-off (test 1 never fires) turns live/config-write red;
       guard292-config-site-quoted (test 1 reads a place as written, without quote removal) turns
       live/config-write red; guard292-config-site-unread (a place with an expansion, a glob, a brace, a
@@ -324,13 +332,16 @@ it and no program it reaches can either:
 
 A plain text tool is a command whose command word, after quote removal, is a bare name with no
 slash in one fixed set in the guard of programs that never execute their arguments or their
-input: echo, printf, cat, tee, grep, egrep, fgrep, head, tail, wc, sort, uniq, cut, tr, ls, mkdir,
-touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. printf
+input: echo, printf, cat, tee, grep, egrep, fgrep, head, tail, wc, uniq, cut, tr, ls, mkdir,
+touch, rm, cp, mv, chmod, ln, diff, cmp, sha256sum, base64, test, `[`, true, false and `:`. The
+membership test: a program is in the set only if no option of this program runs another program.
+sort fails it, because its compress program option runs any program on sort's own temporary data,
+so sort is not in the set and a string or heredoc body in a pipeline with sort stays live. printf
 with a word that starts with -v, whether -v NAME or -vNAME, is not one: it may assign a variable,
 and it takes the command outside the subset. A command
 word with a slash is never a plain text tool, so a copy of a shell named cat and called by its
-path keeps its text live. Ten of the tools write, move or remove a file: tee, cp, mv, ln, touch,
-mkdir, chmod, rm, sort and uniq. Every argument of each is a place test 1 judges. A tool added to
+path keeps its text live. Nine of the tools write, move or remove a file: tee, cp, mv, ln, touch,
+mkdir, chmod, rm and uniq. Every argument of each is a place test 1 judges. A tool added to
 the set later counts as writing unless the guard's list of tools that do not write names it.
 
 Every other program keeps its text live: the shells and eval, the wrappers (timeout, nohup, env, xargs,
@@ -438,7 +449,11 @@ host that text the scanner called data is text the shell did not run.
   example with -c include.path. 646ff7c8 refuses such a command and this spec allows it, because
   nothing in its text separates it from the incident: a plain text tool writes a file and a program
   the guard cannot read uses it. The guard does not follow that file, and the owner accepts it with
-  the approval.
+  the approval. sort given a file is that case too: printf of a push into D/a, then sort with its
+  compress program set to sh reading D/a, passes and pushes, because sort is a program the guard
+  cannot read and D/a is a file a plain text tool wrote. An extended glob pattern is not a
+  construct for tests 1 and 2: with the alias section written to D/inc, bash -O extglob -c
+  '/usr/bin/@(gi)t -c include.path=D/inc p' passes the guard and pushes, where 646ff7c8 refuses it.
 - A command cannot rename a plain text tool, git or gh inside the subset. A builtin other than the
   nine the Design allows, an assignment, or a function definition takes the whole command
   outside it, and a plain text tool is only ever a bare name. What is left is a file PATH points
@@ -474,3 +489,4 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: revision 7 applies amendment 2 after the builder found five alias-write spellings that passed
 
 2026-11-11: marked ready by the lead after the fifth re-review of 4e409b0b (READY)
+2026-11-11: build check, sort removed from the plain text tools

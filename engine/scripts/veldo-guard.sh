@@ -510,14 +510,16 @@ def gh_base(rest, cwd):
 # the whole command is judged as written. Test 3, a command that names git or gh: when git or gh
 # is named anywhere outside data, nothing is data but the text git and gh store and never run.
 PLACEHOLDER = "_data_"
-# The plain text tools: programs that never execute their arguments or their input. A name missing
-# here can only cause a refusal. Adding one changes a protected path, and its reviewer checks that
-# the program cannot run text.
-PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",
+# The plain text tools: programs that never execute their arguments or their input. The membership
+# test: no option of this program runs another program. sort fails it (its compress program option
+# runs any program on sort's own temporary data), so sort is not here. A name missing here can only
+# cause a refusal. Adding one changes a protected path, and its reviewer checks that the program
+# cannot run text.
+PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "uniq",
          "cut", "tr", "ls", "mkdir", "touch", "rm", "cp", "mv", "chmod", "ln", "diff", "cmp",
          "sha256sum", "base64", "test", "[", "true", "false", ":"}
 # The plain text tools that write nothing. Every other one writes, moves or removes a file (tee, cp,
-# mv, ln, touch, mkdir, chmod, rm, sort and uniq today), and each of its arguments is a place test 1
+# mv, ln, touch, mkdir, chmod, rm and uniq today), and each of its arguments is a place test 1
 # judges. A tool added to PLAIN later counts as writing unless this list names it.
 NO_WRITE = {"echo", "printf", "cat", "grep", "egrep", "fgrep", "head", "tail", "wc", "cut", "tr", "ls",
             "diff", "cmp", "sha256sum", "base64", "test", "[", "true", "false", ":"}
