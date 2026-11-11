@@ -33,6 +33,7 @@
       "manager": "exclusive",
       "ports": [],
       "host_lock": "shared",
+      "wall_clock": true,
       "estimate": {
         "source": "2026-10-25 serial-baseline.json sha256:5fa89c0885d580410480aed29c507f2319583fb59cb248eb0a88d997c7c2400e",
         "wall_seconds": 891.6,
@@ -140,5 +141,8 @@
   "mutation_floor": {
     "cpu": 11,
     "memory": 9663676416
+  },
+  "wall_clock_ceiling": {
+    "cpu": 11
   }
 }

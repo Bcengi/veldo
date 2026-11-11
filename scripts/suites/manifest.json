@@ -13,7 +13,8 @@
   {
    "name": "02_mobile_ios_runner_b8",
    "file": "02_mobile_ios_runner_b8.py",
-   "regions": "23-32"
+   "regions": "23-32",
+   "wall_clock": "the 0.2 s window (spawn_settle_seconds: observes the spawned pid stays alive for 0.2 s) and the 2 s readiness wait (descendant_timeout_seconds: waits for the target to report its child pid); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "03_plugin_extension_loading_runner",
@@ -63,7 +64,8 @@
   {
    "name": "12_warp_1210_hardening_four",
    "file": "12_warp_1210_hardening_four.py",
-   "regions": "127-142"
+   "regions": "127-142",
+   "wall_clock": "the 1 s window (expected-hang cells on older engine: 1 s timer must fire, hung is asserted) and the 20 s deadline (each matrix CLI surface run must exit in 20 s or cell is dead); 3 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "13_warp_0623_codified_live",
@@ -284,7 +286,8 @@
    "requires": [
     "38_veldo_0025_membership"
    ],
-   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_membership.py, .veldo/control_store.py and .veldo/authority_contract.py by path (and mutated copies of them side by side under a temporary directory), opens REAL SQLite stores there, generates throwaway Ed25519 key pairs with the installed ssh-keygen and signs and verifies every envelope through it (standing down by name when ssh-keygen is absent), runs short-lived client child processes with the same interpreter (each waited on; one SIGKILLs itself after COMMIT), and writes only under that temporary directory."
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_membership.py, .veldo/control_store.py and .veldo/authority_contract.py by path (and mutated copies of them side by side under a temporary directory), opens REAL SQLite stores there, generates throwaway Ed25519 key pairs with the installed ssh-keygen and signs and verifies every envelope through it (standing down by name when ssh-keygen is absent), runs short-lived client child processes with the same interpreter (each waited on; one SIGKILLs itself after COMMIT), and writes only under that temporary directory.",
+   "wall_clock": "the 0.05 s window (sqlite busy timeout of 50 ms must expire against a held write lock) and the 0.3 s window (wait_for expiry bound of 0.3 s must run out, elapsed at least 0.3 s); 3 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "39_veldo_0026_revocation",
@@ -302,7 +305,8 @@
    "requires": [
     "40_veldo_0101_capsules"
    ],
-   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/capsule.py by path (and mutated copies of it under a temporary directory), builds capsule directories and a REAL two-commit git repository under that temporary directory with the installed git, runs the saved command as a child process of the same interpreter with a deadline (each waited on), and writes only under that temporary directory. Without git or tar the AC3 rows stand down by name."
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/capsule.py by path (and mutated copies of it under a temporary directory), builds capsule directories and a REAL two-commit git repository under that temporary directory with the installed git, runs the saved command as a child process of the same interpreter with a deadline (each waited on), and writes only under that temporary directory. Without git or tar the AC3 rows stand down by name.",
+   "wall_clock": "the 1 s window (capsule deadline timer of 1 s must stop a command sleeping 5 s) and the 1 s window (polls 1 s and expects the mutant's stray helper still alive); 8 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "41_veldo_0103_assessor",
@@ -320,7 +324,8 @@
    "requires": [
     "42_veldo_0102_fixval"
    ],
-   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_validation.py by path (and mutated copies of it, each beside a copy of .veldo/capsule.py, under a temporary directory), builds a real two-commit git repository with the suite layout under that directory (standing down by name when git or tar is absent), and produces the four results there as child processes with deadlines, one of them a capsule that outlives its deadline with a helper; it writes only under that temporary directory and checks by digest that the repository it built is unchanged."
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/fix_validation.py by path (and mutated copies of it, each beside a copy of .veldo/capsule.py, under a temporary directory), builds a real two-commit git repository with the suite layout under that directory (standing down by name when git or tar is absent), and produces the four results there as child processes with deadlines, one of them a capsule that outlives its deadline with a helper; it writes only under that temporary directory and checks by digest that the repository it built is unchanged.",
+   "wall_clock": "the 1 s window (plan deadline timer of 1 s must stop a capsule sleeping 30 s) and the 5 s window (row budget timer of 5 s must stop a fragment with a detached child); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "43_veldo_0104_proofcheck",
@@ -370,7 +375,8 @@
    "requires": [
     "47_veldo_0107_ipc"
    ],
-   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds two real git repositories there, enrolls them against two different stores, and starts TWO REAL AUTHORITY CHILD PROCESSES on real AF_UNIX sockets through scripts/suites/support/v107_authority_runner.py, each stopped by a flag file in a finally block and killed if it does not stop. It writes only under that temporary directory, and it changes the process's current directory and two environment variables for one row, restoring both in a finally block, because that row's whole point is that those things decide nothing. It stands down by name when git is absent or when the platform does not report SO_PEERCRED, and again by name if the runner script is missing."
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds two real git repositories there, enrolls them against two different stores, and starts TWO REAL AUTHORITY CHILD PROCESSES on real AF_UNIX sockets through scripts/suites/support/v107_authority_runner.py, each stopped by a flag file in a finally block and killed if it does not stop. It writes only under that temporary directory, and it changes the process's current directory and two environment variables for one row, restoring both in a finally block, because that row's whole point is that those things decide nothing. It stands down by name when git is absent or when the platform does not report SO_PEERCRED, and again by name if the runner script is missing.",
+   "wall_clock": "the 0.05 s deadline (peer thread must answer the refusal within the 0.05 s inspect timeout) and the 0.15 s window (serve_one timeout of 0.15 s must drop a stalled client); 5 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "48_veldo_0108_relay",
@@ -379,7 +385,8 @@
    "requires": [
     "48_veldo_0108_relay"
    ],
-   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_relay.py, .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the relay under a temporary directory. It runs the relay as a REAL CHILD PROCESS with the request on its standard input, which is how sshd runs it, against real authority child processes started through scripts/suites/support/v107_authority_runner.py and stopped by a flag file in a finally block. It also binds one bare echo socket of its own under the temporary directory to measure the relay's carrying promise byte for byte, and reads /proc/net/unix to show the relay opens no listener. It writes only under that temporary directory and sets environment variables only in the child it starts, never in this process. The rows that need a real repository stand down by name when git is absent; the carrying promise does not need one and runs anyway. The leg where sshd authenticates a remote principal STANDS DOWN BY NAME because no SSH server is installed on this machine, and the row says so rather than passing silently."
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_relay.py, .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the relay under a temporary directory. It runs the relay as a REAL CHILD PROCESS with the request on its standard input, which is how sshd runs it, against real authority child processes started through scripts/suites/support/v107_authority_runner.py and stopped by a flag file in a finally block. It also binds one bare echo socket of its own under the temporary directory to measure the relay's carrying promise byte for byte, and reads /proc/net/unix to show the relay opens no listener. It writes only under that temporary directory and sets environment variables only in the child it starts, never in this process. The rows that need a real repository stand down by name when git is absent; the carrying promise does not need one and runs anyway. The leg where sshd authenticates a remote principal STANDS DOWN BY NAME because no SSH server is installed on this machine, and the row says so rather than passing silently.",
+   "wall_clock": "the 0.5 s readiness wait (echo thread accept gives up after 0.5 s waiting for the relay process to connect) and the 5 s readiness wait (polls 250 x 0.02 s for the authority runner's ready flag); 3 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "49_veldo_0109_unavailable",
@@ -388,7 +395,8 @@
    "requires": [
     "49_veldo_0109_unavailable"
    ],
-   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds real git repositories there, starts a real authority child process through scripts/suites/support/v107_authority_runner.py, STOPS it, and measures what happens after. It reads /proc/net/unix to ask the kernel whether anything is bound at an address, because a process census matched by name matches the command doing the matching. One mutant binds a socket of its own under the temporary directory and the row closes it. Everything is written under that temporary directory; no environment variable and no current directory is changed. It stands down by name when git is absent or the runner script is missing."
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the client under a temporary directory. It builds real git repositories there, starts a real authority child process through scripts/suites/support/v107_authority_runner.py, STOPS it, and measures what happens after. It reads /proc/net/unix to ask the kernel whether anything is bound at an address, because a process census matched by name matches the command doing the matching. One mutant binds a socket of its own under the temporary directory and the row closes it. Everything is written under that temporary directory; no environment variable and no current directory is changed. It stands down by name when git is absent or the runner script is missing.",
+   "wall_clock": "the 5 s readiness wait (polls 250 x 0.02 s for the authority runner's ready flag) and the 10 s readiness wait (waits for the authority process to exit after its stop flag)"
   },
   {
    "name": "50_git_environment",
@@ -420,7 +428,8 @@
    "requires": [
     "53_veldo_0123_mutations"
    ],
-   "regions": "Required mutation stage, exact assertion observations, deadlines and fresh execution"
+   "regions": "Required mutation stage, exact assertion observations, deadlines and fresh execution",
+   "wall_clock": "the 2 s deadline (worker must start its tree and reach the hang inside the 2 s budget) and the 2 s readiness wait (polls 200 x 0.01 s for the killed child to free its lock); 3 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "54_veldo_0118_grammar",
@@ -447,7 +456,8 @@
     "56_veldo_0027_signing"
    ],
    "regions": "Protected signing, key lifecycle, evidence provenance and authenticated channels",
-   "requires_note": "Uses shared ROOT and expect only. Real Ed25519 keys outside a disposable repository, accepted SQLite transitions and joined child processes."
+   "requires_note": "Uses shared ROOT and expect only. Real Ed25519 keys outside a disposable repository, accepted SQLite transitions and joined child processes.",
+   "wall_clock": "the 0.15 s window (holds the store lock 0.15 s so the child must read its clock after release)"
   },
   {
    "name": "57_veldo_0120_policygrammar",
@@ -465,7 +475,8 @@
     "58_veldo_0028_effects"
    ],
    "regions": "Contract-derived protected effects, atomic handles and bound receiver outcomes",
-   "requires_note": "Uses ROOT and expect only. Installed temporary modules, real Ed25519 pipe authentication and SQLite; trusted receiver process witnesses, a real local Git publication and a Linux confined credential-read probe. Writes only temporary fixtures."
+   "requires_note": "Uses ROOT and expect only. Installed temporary modules, real Ed25519 pipe authentication and SQLite; trusted receiver process witnesses, a real local Git publication and a Linux confined credential-read probe. Writes only temporary fixtures.",
+   "wall_clock": "the 2 s window (accept window of 2 s that the 3 s receive must outlast, elapsed over 2 s) and the 5 s deadline (publication with a 3 s receive hook must finish in git_step_seconds 5)"
   },
   {
    "name": "58_veldo_0036_reservations",
@@ -492,7 +503,8 @@
     "59_veldo_0043_graph"
    ],
    "regions": "Plain-data graph adapter over the actual LangGraph runtime, no direct graph authority, tracing off and isolated stdlib enforcement",
-   "requires_note": "Uses only shared ROOT and expect. A real scaffolded installation, isolated -I -S child interpreters, a real SQLite store in the Git common directory of a real repository with a linked worktree, a stdlib interface stub runner, and the actual LangGraph runtime installed from .veldo/control_graph_lock.py (absent: the runtime rows fail by name with the install command)."
+   "requires_note": "Uses only shared ROOT and expect. A real scaffolded installation, isolated -I -S child interpreters, a real SQLite store in the Git common directory of a real repository with a linked worktree, a stdlib interface stub runner, and the actual LangGraph runtime installed from .veldo/control_graph_lock.py (absent: the runtime rows fail by name with the install command).",
+   "wall_clock": "the 0.5 s window (adapter timeout of 0.5 s must fire on a node sleeping 30 s) and the 1 s window (sleeps 1 s and expects no orphan marker written after 0.5 or 0.8 s)"
   },
   {
    "name": "59_veldo_0037_aliases",
@@ -509,7 +521,8 @@
    "requires": [
     "58_veldo_0031_claims"
    ],
-   "regions": "Authority claims: real clone race, SQLite activation, receiver generations and uncertainty stops"
+   "regions": "Authority claims: real clone race, SQLite activation, receiver generations and uncertainty stops",
+   "wall_clock": "the 0.02 s window (lander lock_timeout of 0.02 s must expire while another worker holds the lock) and the 10 s readiness wait (waits for the claim service process to bind and signal ready); 3 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "59_veldo_0031_review",
@@ -517,7 +530,8 @@
    "requires": [
     "59_veldo_0031_review"
    ],
-   "regions": "Six independent review regression scenarios for authority claims"
+   "regions": "Six independent review regression scenarios for authority claims",
+   "wall_clock": "the 0.01 s window (heartbeat interval of 0.01 s must tick during the gate step) and the 10 s readiness wait (waits for the claim service process to bind and signal ready)"
   },
   {
    "name": "60_veldo_0052_eligibility",
@@ -535,7 +549,8 @@
     "60_veldo_0053_architecture"
    ],
    "regions": "Architecture failure handling at every eligibility entry: contract states, accepted digests and the installed validator",
-   "requires_note": "Uses only shared ROOT and expect. One temporary Git repository that is also the installed .veldo copy and a clone with a stub validator; real SQLite store, real files (chmod denial, a directory, a FIFO), the installed validator as a real process and real VELDO-0036 reservation transactions."
+   "requires_note": "Uses only shared ROOT and expect. One temporary Git repository that is also the installed .veldo copy and a clone with a stub validator; real SQLite store, real files (chmod denial, a directory, a FIFO), the installed validator as a real process and real VELDO-0036 reservation transactions.",
+   "wall_clock": "the 20 s deadline (judgement over the FIFO engine must finish inside FIFO_GRACE or a reader counts as released)"
   },
   {
    "name": "58_veldo_0046_notifications",
@@ -544,7 +559,8 @@
     "58_veldo_0046_notifications"
    ],
    "regions": "Release 1 committed notifications, idle signals and journal authority",
-   "requires_note": "Uses shared ROOT and expect only; real installer, SQLite, Ed25519 signatures and joined event-loop threads."
+   "requires_note": "Uses shared ROOT and expect only; real installer, SQLite, Ed25519 signatures and joined event-loop threads.",
+   "wall_clock": "the 0.02 s window (observes 0.02 s that the idle loop has not completed or read) and the 0.15 s window (sleeps 0.15 s for the loop to park before the later event; opens counted 2 to 4); 7 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "60_veldo_0064_inbox",
@@ -553,7 +569,8 @@
     "60_veldo_0064_inbox"
    ],
    "regions": "Assignment inbox, released waiting claims, Telegram correlation and authority-only admission",
-   "requires_note": "Uses shared ROOT and expect only; real SQLite, claim receiver, Ed25519 signatures, a child worker process and loopback HTTP."
+   "requires_note": "Uses shared ROOT and expect only; real SQLite, claim receiver, Ed25519 signatures, a child worker process and loopback HTTP.",
+   "wall_clock": "the 2 s readiness wait (worker process must exit within 2 s of its last reply, row reads the exit code)"
   },
   {
    "name": "61_scope_covers",
@@ -601,7 +618,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition and real receiver and worker processes. Writes only temporary fixtures.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 2 s window (contract deadline timer of 2 s must stop a worker holding 8 s) and the 2 s window (remote wrapped engine stopped by 2 s deadline timer); 8 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "63_veldo_0040_containment",
@@ -613,7 +631,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, the owner's systemd user manager (transient scopes in slices of the run's own, stopped at its end) and real receiver, wrapper, worker and descendant processes. Writes only temporary fixtures.",
    "resources": {
     "systemd_user_manager": "exclusive"
-   }
+   },
+   "wall_clock": "the 0.5 s window (terminate must follow cooperative step by at least stop grace 0.6 s less 0.1) and the 1.2 s window (runtime cap of 1.2 s with 0.5 s kill grace must fire); 12 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "63_veldo_0066_attribution",
@@ -676,7 +695,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, four real Git repositories with per-repository object caches, real git init/fetch/checkout/gc, real confined worker and consumer processes, the installed claude and codex CLIs confined with a temporary HOME and pointed at a local listener that answers nothing (a missing CLI fails its row by name), and the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end). Writes only temporary fixtures, in the owner's runtime directory.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 10 s readiness wait (polls for launched process to enter its scope cgroup) and the 10 s readiness wait (waits for killed engine group to empty); 5 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "66_veldo_0047_authority",
@@ -688,7 +708,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real enrolled Git clones, OpenSSH enrollment, request, command and journal signatures, the configured SQLite store read through a separate connection, the owner's systemd user manager (a unit of the run's own in the runtime unit directory, uninstalled at its end), the kernel's lock and socket tables and the real claim client. Writes only temporary fixtures.",
    "resources": {
     "systemd_user_manager": "exclusive"
-   }
+   },
+   "wall_clock": "the 1.5 s window (sleeps 1.5 s and expects the unit not restarted) and the 5 s readiness wait (polls for killed service unit to leave active state); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "67_veldo_0041_heartbeat",
@@ -700,7 +721,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, a Git source repository, the eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, VELDO-0042 clones and their teardown, the owner's systemd user manager (transient scopes in a slice of the run's own, stopped at its end) and real receiver, wrapper, heartbeat, worker, model and descendant processes. Writes only temporary fixtures, in the owner's runtime directory.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 0.05 s window (stop step within 0.05 s of uncertain time) and the 0.25 s window (heartbeat every 0.25 s, graces 0.4 s); 22 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "66_veldo_0051_events",
@@ -832,7 +854,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH command, journal and decision settlement signatures, the VELDO-0064 inbox, VELDO-0036 reservations, the VELDO-0031 claim transition, the VELDO-0052 Gate and the frontier over spec files, the VELDO-0039 runner with real receiver and fixture worker processes in systemd containment groups, a real Git source repository, and a reader in another process. Writes only temporary fixtures.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 1 s window (observes one second that a pre-pause contract wrote no marker) and the 20 s readiness wait (marker_for polls for the fixture worker's marker file); 7 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "71_veldo_0138_channel_service",
@@ -841,7 +864,8 @@
     "71_veldo_0138_channel_service"
    ],
    "regions": "The installed authority service running the VELDO-0073 Telegram ingress through its own lifecycle: inert with no activation record, the owner's signed qualify, activate and stop through bin/veldo channel applied by the running service and refused by name for every other principal, the service recording the run's qualification from its gate, answers settling through the running service, a stop taking effect without a restart and keeping pending requests, and a restart keeping the edge as the owner left it",
-   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, request, enrollment and journal signatures, an enrolled Git clone and host trust, control_service.install with the channel ingress configuration, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), bin/veldo channel run as a separate process, the actual protected signer process, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block; the same guard is armed in the service process through a sitecustomize on the stand-in's PYTHONPATH. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, envelope, request, enrollment and journal signatures, an enrolled Git clone and host trust, control_service.install with the channel ingress configuration, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), bin/veldo channel run as a separate process, the actual protected signer process, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block; the same guard is armed in the service process through a sitecustomize on the stand-in's PYTHONPATH. Writes only temporary fixtures.",
+   "wall_clock": "the 15 s readiness wait (waits for n more channel passes of the running service) and the 15 s readiness wait (waits for the service to publish a request (also 585, 601, 609, 675)); 3 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "72_veldo_0077_objectives",
@@ -886,7 +910,8 @@
     "71_veldo_0130_api"
    ],
    "regions": "The authenticated API phase 1: passkey registration and sign-in verified with the standard library and OpenSSL (a stand-in browser and W3C WebAuthn test vectors), steward-signed api_credential enrollment and revocation, server-side sessions with the cookie, anti-forgery token, Origin and fetch-metadata checks, idle and absolute expiry and revocation ending sessions, the published route table, body actor fields refused, the api channel edge signing through the protected signer, the authority recheck, and messages into VELDO-0126 intake and decision answers into VELDO-0068 settlement with one ruling per request against Telegram; phase 2 read models, live events and workflow saves; phase 3 the API reaching the authority only through the installed VELDO-0047 service socket, the edge signing its requests, host-committed revocations closing open streams through the service, and the judge refused outside the authority process",
-   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, journal, possession and edge signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter, VELDO-0126 intake and VELDO-0068 settlement over a loopback Bot API, openssl-generated ES256 and Ed25519 passkey keys, and the API served on a loopback port. Phase 3: an enrolled Git clone and host trust, control_service.install with the channel ingress and API service configurations, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), and the API process constructed by control_client_api.open_api in the suite's process. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, journal, possession and edge signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter, VELDO-0126 intake and VELDO-0068 settlement over a loopback Bot API, openssl-generated ES256 and Ed25519 passkey keys, and the API served on a loopback port. Phase 3: an enrolled Git clone and host trust, control_service.install with the channel ingress and API service configurations, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), and the API process constructed by control_client_api.open_api in the suite's process. Writes only temporary fixtures.",
+   "wall_clock": "the 5 s readiness wait (serve_calls answers handed calls until the delivery thread ends) and the 5 s readiness wait (serve_until answers handed calls until predicate settles); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "73_veldo_0139_factory_setup",
@@ -895,7 +920,8 @@
     "73_veldo_0139_factory_setup"
    ],
    "regions": "veldo factory setup over an empty 0700 state root laying down the store, the owner's self-signed membership bootstrap, this host's trust, the VELDO-0029 enrollment of the named clone, the owner's chat enrollment, the VELDO-0067 edge key in the protected key directory enrolled by his signed command with its possession proof, the 0600 VELDO-0073 ingress configuration naming the account's own token file, and the VELDO-0047 service installed inert; each unusable state root, existing store, trust, host trust file or binding refused by name writing nothing; no copy of the token anywhere; and the VELDO-0138 live qualification run on the factory it laid down against a loopback stand-in",
-   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API. Real SQLite store, OpenSSH owner, edge, journal, enrollment and request signatures, a Git clone, the setup module's own command surface writing only into scratch state roots, a scratch host trust path, install root and unit directory, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (the real user manager is only read by the installer's host qualification), bin/veldo run as a separate process for a refusal with XDG_CONFIG_HOME and XDG_DATA_HOME in scratch and for the owner's channel qualify and activate, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block; the same guard is armed in the service process through a sitecustomize on the stand-in's PYTHONPATH. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API. Real SQLite store, OpenSSH owner, edge, journal, enrollment and request signatures, a Git clone, the setup module's own command surface writing only into scratch state roots, a scratch host trust path, install root and unit directory, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (the real user manager is only read by the installer's host qualification), bin/veldo run as a separate process for a refusal with XDG_CONFIG_HOME and XDG_DATA_HOME in scratch and for the owner's channel qualify and activate, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block; the same guard is armed in the service process through a sitecustomize on the stand-in's PYTHONPATH. Writes only temporary fixtures.",
+   "wall_clock": "the 15 s readiness wait (waits for n more channel passes of the running service) and the 20 s readiness wait (wait() default: polls for presented request and qualification status)"
   },
   {
    "name": "74_veldo_0140_standing_delegation",
@@ -904,7 +930,8 @@
     "74_veldo_0140_standing_delegation"
    ],
    "regions": "One standing answer delegation from the owner to the Telegram edge signing his answers to any current request version and presentation, each assertion bound by the protected signer to its exact current request, presentation and canonical evidence: answers to a request at version 1, revised to version 2, and presented a second time settle under the delegation veldo factory setup grants, while an answer to a superseded version or presentation, another channel, actor, scope or edge key, or after expiry is refused by name unsigned; the owner's own signed veldo channel delegate, applied by the running service's channel through the service router, as the only grant or renewal, superseding and never deleting the prior one; and the owner told once in his chat, through the activated edge, why an answer of his could not be signed and when his delegation is about to expire",
-   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API. Real SQLite store, OpenSSH owner, member, requester, edge, journal and answer signatures, a Git clone, veldo factory setup writing only into a scratch state root, host trust path, install root and unit directory (the worker-profile host qualification and the user manager are stand-ins, so the real systemd user manager is never read or used), the installed service configuration, the service channel constructed from the installed ingress configuration, the protected signer process, control_service.Service.apply, bin/veldo run as a separate process with HOME and XDG directories in scratch, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API. Real SQLite store, OpenSSH owner, member, requester, edge, journal and answer signatures, a Git clone, veldo factory setup writing only into a scratch state root, host trust path, install root and unit directory (the worker-profile host qualification and the user manager are stand-ins, so the real systemd user manager is never read or used), the installed service configuration, the service channel constructed from the installed ingress configuration, the protected signer process, control_service.Service.apply, bin/veldo run as a separate process with HOME and XDG directories in scratch, and a loopback Bot API. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, restored in a finally block. Writes only temporary fixtures.",
+   "wall_clock": "the 4 s window (delegation expires 4 s out; must be authorized before, then slept past)"
   },
   {
    "name": "73_veldo_0078_backlog",
@@ -922,7 +949,8 @@
     "75_veldo_0062_accounts"
    ],
    "regions": "Provider subscription logins and live usage accounting: account records at factory scope (provider, label, status, per-host profile, reported rate-limit windows) registered by the owner over profiles the local helper prepares for Claude Code and Codex; each engine invocation's environment carrying exactly the login profile of the account its accepted dispatch contract records and no paid-API credential, with a substituted contract, unit, station or expiry and an unusable account refused by name before launch; every initial, retry and follow-on invocation checked and reserved against every applicable cap and the account's reported rate-limit windows before launch, refusals launching nothing, two invocations competing for one remainder, a worker stopped when its CLI-reported usage reaches a cap and a window reopening only at its reported reset; usage settled once from the CLI's own stream reports with raw receipts kept privately and their digests in the ledger, while missing, timed-out and cancelled reports keep their reservations; and the usage screen's totals, remaining allowance and watermark per account, project and unit read from the stored ledger and compared to the stored receipts under altered ambient account labels",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with fake claude and codex executables the suite writes that print scripted lines in the CLIs' own stream formats; no real engine runs, no login and no credential. Worker launches use the wrapper without a containment group, so the systemd user manager is never touched. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with fake claude and codex executables the suite writes that print scripted lines in the CLIs' own stream formats; no real engine runs, no login and no credential. Worker launches use the wrapper without a containment group, so the systemd user manager is never touched. Writes only temporary fixtures.",
+   "wall_clock": "the 1 s window (contract deadline 1 s, sleeps 1.3 s, expects deadline_passed refusal) and the 3 s window (observes 3 s plus 0.5 s that a refused dispatch spawned nothing); 7 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "75_veldo_0150_own_message_acceptance",
@@ -958,7 +986,8 @@
     "78_veldo_0160_account_pool"
    ],
    "regions": "Every registered subscription account at once: three Claude Code accounts and one Codex account, registered once each by the owner over profiles the local helper prepares, running concurrently through the account pool the VELDO-0036 worker reservation chooses in, each invocation on exactly its own account's profile and charged to that account, with overlapping recorded start and end times; a second registration of an account, by its id or by its login under another name, refused by name; new work moved off an account whose CLI reported its window exhausted until its reported reset, the next dispatch waiting with the earliest reset named when every account is busy or at its limit; an account registered while work runs taking the next dispatch with the preparing process and every running worker keeping its process identity and start time, and admitting one run at a time until its first observation; a run whose stream reports its window exhausted or whose engine ends with its rate-limit result classified account_limit with the window and reset recorded on the account, for Claude Code and Codex, and an ordinary nonzero exit and a 429 that is not the account's limit ending as ordinary failures; the re-run-or-ask decision over fixture records naming exactly the calls to MCP tools not marked read-only; the scaffold laying down the new modules",
-   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization with control_account_pool choosing inside them, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with fake claude and codex executables the suite writes that print scripted lines in the CLIs' own stream formats (checked against proof/VELDO-0062/cli-formats.json); no real engine runs, no login and no credential. Worker launches use the wrapper without a containment group, so the systemd user manager is never touched. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization with control_account_pool choosing inside them, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with fake claude and codex executables the suite writes that print scripted lines in the CLIs' own stream formats (checked against proof/VELDO-0062/cli-formats.json); no real engine runs, no login and no credential. Worker launches use the wrapper without a containment group, so the systemd user manager is never touched. Writes only temporary fixtures.",
+   "wall_clock": "the 12 s window (account reset 12 s out; dispatches must be offered before it (row 676)) and the 15 s readiness wait (wait_until default: polls for the account's first observed window (line 746)); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "78_veldo_0060_claude_adapter",
@@ -970,7 +999,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, a VELDO-0042 clone confined with Landlock, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with a fake claude the suite writes, pins through control_engine_claude.pin and qualifies in its own installed record, printing lines in the CLI's own stream format and started with the binary's own options (proof/VELDO-0062/cli-formats.json, proof/VELDO-0060/cli-options.json); no real engine runs, no login and no credential. Most launches use the wrapper without a containment group; the contained rows run both engines in VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake Codex vendor package qualified by control_engine_codex.qualification, and the floor row uses VELDO-0049's FloorAuthority. Writes only temporary fixtures in the owner's runtime directory.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 0.4 s window (graces 0.4 s; forced stop must take 0.7 to 4.8 s (row 1418)) and the 2 s window (observes 2 s plus 0.3 s that a refused dispatch spawned nothing); 6 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "79_veldo_0061_codex_adapter",
@@ -982,7 +1012,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authority, VELDO-0052's Gate, VELDO-0031 claims, a Git source bound in the store and a VELDO-0042 clone per dispatch, the VELDO-0039 Runner and receiver processes, VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, the installed Codex vendor binary (help only) and a fake Codex vendor package. Writes only temporary fixtures.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 0.4 s window (stop and kill graces passed to product; forced-stop row measures them) and the 4.8 s window (forced stop must end within two graces plus 4 s); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "80_veldo_0155_claude_baseline",
@@ -994,7 +1025,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), with a fake claude the suite writes, pins through control_engine_claude.pin and qualifies in its own installed record, loading only what the binary's own gates allow (proof/VELDO-0155/claude-baseline.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 2 s window (login stop must land before the fake engine's 2 s turn delay ends)"
   },
   {
    "name": "81_veldo_0156_codex_baseline",
@@ -1015,7 +1047,8 @@
     "82_veldo_0144_mcp_catalog"
    ],
    "regions": "Versioned MCP catalog saves through the passkey API and host authority commands; exact immutable revisions, stale and unauthorized refusals; write-only Linux Secret Service credentials, replacement, deletion, runtime keychain resolution and no value in commands, store, journal, events, logs or proof",
-   "requires_note": "Only shared ROOT and expect. Real SQLite, OpenSSH signatures and protected signer, WebAuthn ceremonies, production API over loopback TLS with generated certificate, Service.apply and ServiceApi.call on the authority connection; a generated fake secret-tool and unreachable scratch D-Bus address ensure no real keyring is touched."
+   "requires_note": "Only shared ROOT and expect. Real SQLite, OpenSSH signatures and protected signer, WebAuthn ceremonies, production API over loopback TLS with generated certificate, Service.apply and ServiceApi.call on the authority connection; a generated fake secret-tool and unreachable scratch D-Bus address ensure no real keyring is touched.",
+   "wall_clock": "the 0.08 s window (fake secret store holds 0.08 s so the watcher thread scans during the write)"
   },
   {
    "name": "82_veldo_0141_execution_record",
@@ -1027,7 +1060,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, memberships enrolled through control_membership's signed commands, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes (one started through a driver that adds a planted resolver to control_launch.RESOLVERS), the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), the VELDO-0130 ControlApi and ApiAuthority with passkeys registered and signed in through its ceremonies using openssl, control_client_api's hint socket and service authority, with a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes (proof/VELDO-0062/cli-formats.json, proof/VELDO-0141/stream-formats.json); no real engine runs, no login and no credential. Writes only temporary fixtures in the owner's runtime directory.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 0.12 s window (fake worker paces events 0.12 s; frames must arrive before its exit) and the 0.5 s readiness wait (reader thread must drain a page within 0.5 s or the row fails); 5 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "82_veldo_0085_decomposition",
@@ -1036,7 +1070,8 @@
     "82_veldo_0085_decomposition"
    ],
    "regions": "Decomposition field validation before artifacts, one primary revision and backlog owner, fresh priority, authority aliases and source mapping, exact publication in another process, dependency eligibility and stale input refusal.",
-   "requires_note": "Uses only shared ROOT and expect. Generated OpenSSH keys, real signed store commands, SQLite, Git, enrolled publication and loopback presentation."
+   "requires_note": "Uses only shared ROOT and expect. Generated OpenSSH keys, real signed store commands, SQLite, Git, enrolled publication and loopback presentation.",
+   "wall_clock": "the 20 s readiness wait (two publisher processes must both reach the barrier within 20 s)"
   },
   {
    "name": "82_veldo_0129_worker_wiring",
@@ -1048,7 +1083,8 @@
    "requires_note": "Only shared ROOT and expect. Real contained processes, isolated Git clones, signed SQLite authority records. Fake engines use recorded binary formats. No live credentials or model calls.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the contained live review run, which waits on the product's own stop and init bounds; declared because its control has failed under the stage's load"
   },
   {
    "name": "82_veldo_0165_launch_hygiene",
@@ -1093,7 +1129,8 @@
     "83_veldo_0154_factory_loop"
    ],
    "regions": "The factory loop inside the installed authority service: the Runner instantiated in the served process, a pass on each of its three wake sources (a signed packet that advanced the journal, a run's end on the launch pipe the service loop polls, the account reset timer) offering every assigned eligible unit with its host and account and nothing of a paused project, a build's end leading to its review with no other input, a receiver killed mid-run waking one pass that records its run outcome_unknown with its usage reservation retained and frees its account slot for the next dispatch, a run ended account_limit re-dispatched on another account from the same commit or put to the project's owner as one decision request naming its calls, his yes re-running and his no stopping it, and no pass from any other timer",
-   "requires_note": "Only shared ROOT and expect. Real SQLite store, OpenSSH signatures, control_service.install and the installed service process (its ExecStart run as a child of the suite, no unit loaded into the user manager), VELDO-0076 projects, control_accounts records over prepared profiles, VELDO-0036 reservations, VELDO-0031 claims, the Runner and launch receiver processes, the trusted wrapper, execution records, the account pool, the re-run-or-ask decision and the VELDO-0064 inbox. A fake Codex vendor binary prints recorded exec JSON formats; no real engine, login or credential."
+   "requires_note": "Only shared ROOT and expect. Real SQLite store, OpenSSH signatures, control_service.install and the installed service process (its ExecStart run as a child of the suite, no unit loaded into the user manager), VELDO-0076 projects, control_accounts records over prepared profiles, VELDO-0036 reservations, VELDO-0031 claims, the Runner and launch receiver processes, the trusted wrapper, execution records, the account pool, the re-run-or-ask decision and the VELDO-0064 inbox. A fake Codex vendor binary prints recorded exec JSON formats; no real engine, login or credential.",
+   "wall_clock": "the 1.5 s window (observes 1.5 s after service boot expecting no pass) and the 2 s window (observes 2 s after receiver death, then reads the passes); 5 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "85_veldo_0158_credential_delivery",
@@ -1105,7 +1142,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, the owner enrolled through control_membership's signed command and the API edge through control_channel_enrollment's, the VELDO-0130 ControlApi and ApiAuthority with a passkey registered and signed in through its ceremonies using openssl and the API edge's generated key signing its assertions, the VELDO-0144 catalog and credential commands, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones confined with Landlock, the VELDO-0039 Runner and launch receiver processes, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), a generated fake secret-tool first on every PATH the suite and the receiver use (the real keyring is never reached), a fixture stdio MCP server, a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes; no real engine runs, no login and no real credential. Writes only temporary fixtures in the owner's runtime directory.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 20 s readiness wait (polls for the released run's process group to empty)"
   },
   {
    "name": "86_veldo_0148_re_land",
@@ -1117,7 +1155,8 @@
    "requires_note": "Only shared ROOT and expect. Real Git (a scaffolded repository with its canonical gate, a disposable bare remote with its reflog, the enrolled, builder, publication and colleague clones, a pre-push hook of the publication clone armed for one push), the SQLite store with OpenSSH signatures, VELDO-0076 projects, VELDO-0031 claims, VELDO-0036 reservations, VELDO-0039 dispatches with real child processes, VELDO-0050 proof, the VELDO-0049 floor, the VELDO-0028 effect executor, the lander, VELDO-0058's installed gate, VELDO-0057's publication and receipt, control_service.install and the installed service process (its ExecStart run as a child of the suite, no unit loaded into the user manager), the Runner and launch receiver processes, the trusted wrapper and the VELDO-0064 inbox. A fake Codex vendor binary prints recorded exec JSON formats; no real engine, login or credential.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 5.25 s window (receiver preparation held 5.25 s must not spend the heartbeat placement budget) and the 5.25 s window (wrapper delayed 5.25 s must outlast the product heartbeat timeout); 3 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "86_veldo_0127_agent_configuration",
@@ -1129,7 +1168,8 @@
    "requires_note": "Shared ROOT and expect only. Production signed store, role and MCP catalog writers, credentials, Runner, receiver and both engine adapters. Generated VELDO-0172 fake engines and temporary profiles.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 15 s window (faulted run must be refused within 15 s elapsed)"
   },
   {
    "name": "83_veldo_0166_usage_windows",
@@ -1210,7 +1250,8 @@
     "85_veldo_0171_setup_api"
    ],
    "regions": "veldo factory setup laying the VELDO-0130 API down on a fresh host: the api edge key in the protected key directory enrolled by the owner's signed command with its possession co-signature and the key projection republished; the API service configuration with the tailnet name as rp_id and origin, installed with the authority service; the 0600 API process configuration on a loopback listener; the API unit from its template bound to and wanted by the authority unit; one `tailscale serve --bg` to the API port and never Funnel, checked on the stand-in's own invocation log; the operator, HTTPS, background persistence, logged-out, absent-CLI and occupied-Serve refusals before any write; the CLI from fixed system paths only; the scrubbed capture's listed field edits; the installed API process's calls accepted and calls signed by any other key refused; its listener on loopback only; two passkeys registered with the tailnet name as Host and Origin, the one named by its fingerprint signed at the host by veldo factory passkey, signed in with and its session read, the other still pending; the content security policy on every response; a second run changing nothing; every other argument refused by name and every differing file refused, writing nothing; the host VELDO-0139 laid down with its service running, the enrollment sent through the service with no store connection opened for writing, only the API steps written, nothing restarted and the restart named, then the API unit started by setup itself",
-   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API and scripts/suites/support/v171_tailscale.py for the Tailscale stand-in replaying proof/VELDO-0171/tailscale-capture.json. Real SQLite stores, OpenSSH owner, edge, journal and possession signatures, Git clones, the setup module's own command surface writing only into scratch state roots, host trust paths, install roots and unit directories, the setup module of commit 7fefdb9a read from the repository's history through git_process for the host laid down before this change, the installed authority and API units' ExecStart run as the service and API processes by a user manager stand-in of the suite's own, openssl ES256 passkeys over HTTP to the API's loopback listener, and bin/veldo run as a separate process for one refusal. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, and the same guard is armed in every process the stand-in manager starts; an audit hook records the store connections this process opens during the running-service rerun. The host's real Tailscale is never run. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API and scripts/suites/support/v171_tailscale.py for the Tailscale stand-in replaying proof/VELDO-0171/tailscale-capture.json. Real SQLite stores, OpenSSH owner, edge, journal and possession signatures, Git clones, the setup module's own command surface writing only into scratch state roots, host trust paths, install roots and unit directories, the setup module of commit 7fefdb9a read from the repository's history through git_process for the host laid down before this change, the installed authority and API units' ExecStart run as the service and API processes by a user manager stand-in of the suite's own, openssl ES256 passkeys over HTTP to the API's loopback listener, and bin/veldo run as a separate process for one refusal. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, and the same guard is armed in every process the stand-in manager starts; an audit hook records the store connections this process opens during the running-service rerun. The host's real Tailscale is never run. Writes only temporary fixtures.",
+   "wall_clock": "the 5 s readiness wait (service start waits for READY or LISTEN; default bound in support/setup_runtime.py)"
   },
   {
    "name": "86_veldo_0189_engine_upgrade",
@@ -1219,7 +1260,8 @@
     "86_veldo_0189_engine_upgrade"
    ],
    "regions": "veldo factory setup re-run over an installation an earlier engine laid down: the whole .veldo of 8bc34e94 and of 971186ac each set up by its own setup module on its own scratch host and upgraded in place to the current engine, the upgraded engine directory, units, record and every configuration file equal to a fresh installation's after each host's scratch root and identities are substituted, apart from the fields proof/VELDO-0189/fresh-equivalence.json lists; a current installation upgraded to a fixture engine without one module, that module gone; every captured first-parent installer from 8bc34e94 on and the current installer writing the closure and template the upgrade reads; an edited engine file, an unrecorded file and a filesystem that cannot exchange directories refused by name, writing nothing; setup SIGKILLed at every write point of its step log with a complete engine installed after each kill, the installed service answering and a second run finishing; a failed restart switched back with the service answering on the previous engine; a restart that came up on the current engine and then failed, over both older hosts, switched back with the previous engine's channel and every owned command available after the current engine's own ownership restore; a restore over a file without the previous bytes refused by name, keeping the new bindings; a committed upgrade keeping no record of previous bindings; every key, trust, binding, token, store row and owner-set configuration value kept; the plain line before the first write and the engine_upgrade step; the restart rules (once through the unit, nothing outside it, nothing when stopped); a second run writing and restarting nothing; atomic host engines record with interruption at open, partial write and rename; unreadable record repaired, different record refused before writes; consistent fresh and upgrade Codex refusal; missing pins and record reported as writes; malformed runtime inventory and receiver missing store refused by path before writes",
-   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API and scripts/suites/support/v171_tailscale.py for the Tailscale stand-in replaying proof/VELDO-0171/tailscale-capture.json, and reads proof/VELDO-0189/fresh-equivalence.json. Real SQLite stores, OpenSSH keys and signatures, Git clones, the older engines of commits 8bc34e94 and 971186ac and their installer census read from digest-verified committed fixtures in proof/VELDO-0189/older, with no repository history needed, the setup modules' own command surface writing only into scratch state roots, host trust paths, install roots and unit directories, the installed authority unit's ExecStart run as the service process by a user manager stand-in of the suite's own, and setup run in a process of its own that is SIGKILLed at each write point, its systemctl calls answered by that stand-in over a UNIX socket. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, and the same guard is armed in every process the suite starts. The host's real Tailscale and systemd are never run. Writes only temporary fixtures."
+   "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API and scripts/suites/support/v171_tailscale.py for the Tailscale stand-in replaying proof/VELDO-0171/tailscale-capture.json, and reads proof/VELDO-0189/fresh-equivalence.json. Real SQLite stores, OpenSSH keys and signatures, Git clones, the older engines of commits 8bc34e94 and 971186ac and their installer census read from digest-verified committed fixtures in proof/VELDO-0189/older, with no repository history needed, the setup modules' own command surface writing only into scratch state roots, host trust paths, install roots and unit directories, the installed authority unit's ExecStart run as the service process by a user manager stand-in of the suite's own, and setup run in a process of its own that is SIGKILLed at each write point, its systemctl calls answered by that stand-in over a UNIX socket. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, and the same guard is armed in every process the suite starts. The host's real Tailscale and systemd are never run. Writes only temporary fixtures.",
+   "wall_clock": "the 5 s readiness wait (service start waits for READY or LISTEN; default bound in support/setup_runtime.py) and the 5 s readiness wait (manually started service must report READY within the 5 s default)"
   },
   {
    "name": "91_veldo_0167_setup_records",
@@ -1228,7 +1270,8 @@
     "91_veldo_0167_setup_records"
    ],
    "regions": "Installed record route, late subscribers through the service, additive setup reruns, historical engines, interrupted record writes, separate hint counts and restart answers.",
-   "requires_note": "Only ROOT and expect; isolated installed-host fixture reused from suite 171, with production record and dispatch writers. Inert CLI installation fixtures use VELDO-0172 fake_formats and report their own conform_fake teardown row."
+   "requires_note": "Only ROOT and expect; isolated installed-host fixture reused from suite 171, with production record and dispatch writers. Inert CLI installation fixtures use VELDO-0172 fake_formats and report their own conform_fake teardown row.",
+   "wall_clock": "the 4 s readiness wait (waits for each subscriber process to print the next record hint) and the 5 s readiness wait (waits for a subscriber API process to print its ready line); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "87_veldo_0170_receiver_trust",
@@ -1240,7 +1283,8 @@
    "requires_note": "Uses only ROOT and expect, generated keys, real setup and settlement writers, and loopback stand-ins.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 15 s deadline (runner.wait for a launched worker dispatch to reach its terminal record)"
   },
   {
    "name": "91_veldo_0151_specialists",
@@ -1258,7 +1302,8 @@
     "92_veldo_0088_pm_cycles"
    ],
    "regions": "Project coordination snapshots, Runner dispatch, proposal authority, production PM enrollment and bounded follow-up with surfaced faults.",
-   "requires_note": "Only ROOT and expect. Uses its own proof fixture with real signed membership, project, team and capability services."
+   "requires_note": "Only ROOT and expect. Uses its own proof fixture with real signed membership, project, team and capability services.",
+   "wall_clock": "the 1 s window (fixture worker holds 1 s so a cycle is observed still active) and the 10 s readiness wait (fixture worker polls up to 10 s for engineering-hold file removal); 8 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "93_veldo_0152_intake_routes",
@@ -1267,7 +1312,8 @@
    "requires": [
     "93_veldo_0152_intake_routes"
    ],
-   "requires_note": "Standalone fragment using shared preamble and its own signed fixture."
+   "requires_note": "Standalone fragment using shared preamble and its own signed fixture.",
+   "wall_clock": "the 15 s deadline (runner.wait for a launched dispatch to end)"
   },
   {
    "name": "94_veldo_0162_configuration_routes",
@@ -1312,7 +1358,8 @@
     "98_veldo_0204_mutation_receipts"
    ],
    "regions": "Mutation stall repair: partial receipts, worker deadlines, cleanup and planted defects.",
-   "requires_note": "Only ROOT and expect. Controlled coordinator children and manager responses; no mutation driver execution."
+   "requires_note": "Only ROOT and expect. Controlled coordinator children and manager responses; no mutation driver execution.",
+   "wall_clock": "the 5 s readiness wait (polls for the tracker child to write its ready file)"
   },
   {
    "name": "99_veldo_0205_reuse",
@@ -1330,7 +1377,8 @@
     "100_veldo_0207_case_reuse"
    ],
    "regions": "Per-case declared mutation inputs and sandbox enforcement.",
-   "requires_note": "Only ROOT, V and expect; isolated single-worker fixtures and controlled coordinator; no fan-out."
+   "requires_note": "Only ROOT, V and expect; isolated single-worker fixtures and controlled coordinator; no fan-out.",
+   "wall_clock": "the 20 s deadline (gate.Workers stage deadline for one real traced case worker)"
   },
   {
    "name": "101_veldo_0208_landing_reuse",
@@ -1348,7 +1396,8 @@
     "102_veldo_0210_agent_profile_runtime"
    ],
    "regions": "Agent profile runtime, credential write-back, kept capabilities and scratch removal.",
-   "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage."
+   "requires_note": "Only ROOT, V and expect; foreground launcher fixtures, sequential, no mutation stage.",
+   "wall_clock": "the 0.2 s window (sleeps 0.2 s then expects no hung helper left) and the 1 s window (sets NAMESPACE_START_SECONDS to 1; start wait must time out); 13 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "103_veldo_0142_git_identities",
@@ -1366,7 +1415,8 @@
     "104_veldo_0210_mutation_workers"
    ],
    "regions": "Existing mutation worker integration, split from suite 102.",
-   "requires_note": "Only ROOT and expect; sequential foreground fixtures."
+   "requires_note": "Only ROOT and expect; sequential foreground fixtures.",
+   "wall_clock": "the 5 s readiness wait (polls 500 x 0.01 s for the descendant's lock to free after launcher kill)"
   },
   {
    "name": "103_veldo_0211_borrowed_login",
@@ -1375,7 +1425,8 @@
     "103_veldo_0211_borrowed_login"
    ],
    "regions": "Borrowed login locks, atomic rotation and fail-closed admission.",
-   "requires_note": "Only ROOT and expect; sequential foreground fixtures."
+   "requires_note": "Only ROOT and expect; sequential foreground fixtures.",
+   "wall_clock": "the 20 s readiness wait (polls for the login lease to be free after the capture is killed)"
   },
   {
    "name": "104_veldo_0164_scoped_reads",
@@ -1405,7 +1456,8 @@
     "105_veldo_0182_memory"
    ],
    "regions": "Shared signed memory, profile exclusion, setup reruns and sampled loss checks over five stores.",
-   "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins."
+   "requires_note": "Only ROOT, expect and fast_temp from shared. Synthetic captured-layout stores, real signed SQLite authority, setup and Runner with foreground fake engines and local stand-ins.",
+   "wall_clock": "the 0.3 s window (copies a live WAL store at 0.12 s spacing beside a 0.05 s writer) and the 1 s window (plugin.STALL set to 1 s; no-progress stall must be reported); 9 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "107_veldo_0153_identity_push",
@@ -1451,7 +1503,8 @@
     "112_veldo_0215_case_deadlines"
    ],
    "regions": "Authority-measured mutation worker deadlines and bounded store.",
-   "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child."
+   "requires_note": "Only ROOT and expect; controlled coordinator children and scratch stores, plus a real hanging child.",
+   "wall_clock": "the 0.2 s window (real hung child given a 0.2 s budget must be killed and reaped) and the 20 s deadline (gate.Workers stage deadline around the real kill and reap)"
   },
   {
    "name": "113_veldo_0080_defects",
@@ -1469,7 +1522,8 @@
     "113_veldo_0112_registered_clients"
    ],
    "regions": "VELDO-0112 production client registration, live adapters and registry growth.",
-   "requires_note": "Only ROOT and expect. Real scratch Git enrollment, SSH signatures, SQLite and AF_UNIX. Dispatcher orchestration uses its documented external seams; durable admission uses the real Dispatches writer. No engine, real host lock or service manager is controlled."
+   "requires_note": "Only ROOT and expect. Real scratch Git enrollment, SSH signatures, SQLite and AF_UNIX. Dispatcher orchestration uses its documented external seams; durable admission uses the real Dispatches writer. No engine, real host lock or service manager is controlled.",
+   "wall_clock": "the 0.05 s deadline (serve_one request read deadline of 50 ms passed into product code)"
   },
   {
    "name": "113_veldo_0115_authority_store",
@@ -1496,7 +1550,8 @@
     "113_veldo_0220_gate_host"
    ],
    "regions": "The gate's host lock (VELDO-0220): NOT STARTED with exit 75 when another run holds the lock, release on every exit, and NOT STARTED recorded as not run by the executor, the lander and the proof store.",
-   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks; util-linux flock stands in for the core runner. The executor, lander and proof store run over a scratch Git repository and an installed fixture gate that exits 75 or 1. No systemd user manager."
+   "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks; util-linux flock stands in for the core runner. The executor, lander and proof store run over a scratch Git repository and an installed fixture gate that exits 75 or 1. No systemd user manager.",
+   "wall_clock": "the 2 s window (flock holds the lock 2 s; gate must report waiting at least 0.5 s) and the 10 s readiness wait (waits for the host lock to be released after a gate ends); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "114_veldo_0220_gate_scope",
@@ -1508,7 +1563,8 @@
    "requires_note": "Only ROOT, expect and launcher_fds. Fixture authorities hold the real verify.sh and gate_host.py with stub stage commands and scratch locks. Creates and inspects real transient scopes through the systemd user manager; the whole suite is listed unconfined.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 5 s readiness wait (waits for the SIGSTOPped keeper to show state T) and the 10 s deadline (signalled fixture gate must exit within 10 s); 4 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "114_veldo_0216_concurrent_stages",
@@ -1517,7 +1573,8 @@
     "114_veldo_0216_concurrent_stages"
    ],
    "regions": "Authority graph, ledger, verdict parity, and concurrency mechanics.",
-   "requires_note": "Only ROOT and expect. Scratch authorities, real confined launcher, controlled mutation payload, fixture cgroup meter. No host lock or user manager."
+   "requires_note": "Only ROOT and expect. Scratch authorities, real confined launcher, controlled mutation payload, fixture cgroup meter. No host lock or user manager.",
+   "wall_clock": "the 0.4 s window (three 0.4 s stages must overlap; critical path under 0.65 of summed wall)"
   },
   {
    "name": "115_veldo_0219_measured_admission",
@@ -1644,7 +1701,8 @@
     "123_veldo_0174_conversations"
    ],
    "regions": "Durable conversation records and turns, repository-free dispatches, shared account-pool priority and the installed conversation receiver.",
-   "requires_note": "Only ROOT, expect and fast_temp. Real signed SQLite authority stores, OpenSSH identities, default-team revisions, account records, VELDO-0039 dispatch preparation and real installer layout over an enrolled Git workspace. No service, socket, login, user unit or real engine starts."
+   "requires_note": "Only ROOT, expect and fast_temp. Real signed SQLite authority stores, OpenSSH identities, default-team revisions, account records, VELDO-0039 dispatch preparation and real installer layout over an enrolled Git workspace. No service, socket, login, user unit or real engine starts.",
+   "wall_clock": "the 3 s readiness wait (waits for the pumped build launch to exit and settle) and the 3 s readiness wait (cleanup waits for each line launch to exit); 7 bounds in all, listed in proof/VELDO-0290/survey.json"
   },
   {
    "name": "125_veldo_0230_engine_census",
@@ -1722,7 +1780,8 @@
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, the owner enrolled through control_membership's signed command, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository bound to the store, VELDO-0042 clones, the VELDO-0039 Runner and launch receiver processes, the VELDO-0174 conversation authority and ConversationLine with a conversation receiver process, the trusted wrapper and VELDO-0040 transient scopes under the owner's systemd user manager in a slice of the run's own, stopped at its end (no unit is installed), control_service_projects starting the repository provisioner on a fixture configuration it refuses, a generated fake secret-tool first on every PATH the suite and the receivers use (the real keyring is never reached), a fake claude pinned through control_engine_claude.pin and a fake Codex vendor package qualified by control_engine_codex.qualification, printing only the binaries' table shapes; no real engine runs, no login and no real credential. Writes only temporary fixtures in the owner's runtime directory.",
    "resources": {
     "systemd_user_manager": 1
-   }
+   },
+   "wall_clock": "the 0.4 s deadline (stop and kill grace passed to the confinement profile before escalation)"
   },
   {
    "name": "127_veldo_0259_installation",
@@ -1776,7 +1835,8 @@
     "140_veldo_0267_mutation_selection"
    ],
    "regions": "The gate's mutation selection and the nightly sweep (VELDO-0267): select/*, a fixture of three registered cases and six canaries where a changed mutated module, its engine copy, a suite file, a declared or traced covered file and a case the coverage map does not know each select exactly their case plus the canaries, and the record recomputes; changed/*, both sides of a rename and every dirty path from Git; record/*, the selection record written to the evidence path with its selection line, and the stamp's mutation block naming its digest; canary/*, an empty selection still runs and counts the canaries, a broken worker's canary refuses canary_not_killed, the declaration holds six to twelve canaries covering both drivers, both legs and a service fixture; trigger/*, every trigger group, a missing, unreadable or 37 hour old coverage map and a changed toolchain digest force the full sweep named; nightly/*, the runner waits for a fake lock holder, publishes coverage only when green, records a red sweep with one notifier call naming the case; landing/*, a landing-shaped workspace gated through the real lander and control_verification selects against the watermark the lander synced; a red latest sweep refuses nightly_red through the installed policy module until an approval valid under valid_approval_for (bound to a commit of the push, approver not the producer) names its run and case, or a later green sweep; an unbound or self-approval does not clear. falsifier/* rows apply each registered mutation to an in-memory copy of its module and require the targeted row red on it.",
-   "requires_note": "Only ROOT, expect and wait_for. Fixture Git repositories (a candidate with a rename and dirty paths, a trunk for the nightly runner), a temporary state directory, rule copy, coverage maps, sweep records and approvals, a fake lock holder process and a recording notifier; the real case registries are read for the canary declaration; the real .veldo/lander.py, control_verification.py and policy_check.py are loaded (a registered mutant beside a scratch copy of .veldo), and a fixture installed verifier runs the real verify.sh base block. Writes only temporary files and never reads the owner's state directory."
+   "requires_note": "Only ROOT, expect and wait_for. Fixture Git repositories (a candidate with a rename and dirty paths, a trunk for the nightly runner), a temporary state directory, rule copy, coverage maps, sweep records and approvals, a fake lock holder process and a recording notifier; the real case registries are read for the canary declaration; the real .veldo/lander.py, control_verification.py and policy_check.py are loaded (a registered mutant beside a scratch copy of .veldo), and a fixture installed verifier runs the real verify.sh base block. Writes only temporary files and never reads the owner's state directory.",
+   "wall_clock": "the 1 s window (row asserts measured lock wait is at least 1.0 s) and the 1.5 s window (lock holder sleeps 1.5 s; sweep must start no earlier than release)"
   },
   {
    "name": "141_veldo_0268_protected_refs",
@@ -1815,7 +1875,8 @@
    "requires_note": "Only ROOT and expect. Runs suite 86 only when the mutation stage replaces its path (AC3's case and its no-op control), in this process before slices/end-of-run, without reporting its rows. Runs the factory in child processes over the user manager's real systemctl and systemd-run, plants and stops its own slices, and stops any slice its children left. Without a user manager the five slice rows stand down by name and only slices/end-of-run runs. Exclusive on the user manager: the factory's entry sweep, and its mutation that ignores liveness, read every veldo0127 slice loaded there.",
    "resources": {
     "systemd_user_manager": "exclusive"
-   }
+   },
+   "wall_clock": "the 10 s readiness wait (polls systemctl until slice and engine units unload, row fails after)"
   },
   {
    "name": "129_veldo_0278_parked_estimation",
@@ -1832,5 +1893,5 @@
   "new_project_fixture": 2,
   "ui_browser": 4
  },
- "resource_note": "Mutation admission: positive integer slots or exclusive. Suites 63 and 66 need an undisturbed manager for notification bounds and authority service lifecycle checks. Other manager consumers share slots; unrelated suites consume none. Override capacity with --resource-capacity systemd_user_manager=N; the receipt records effective capacity and peak slots. The new-project suite admits at most two fixtures together, selected by mixed-family stage throughput rather than isolated fixture wall time."
+ "resource_note": "Mutation admission: positive integer slots or exclusive. Suites 63 and 66 need an undisturbed manager for notification bounds and authority service lifecycle checks. Other manager consumers share slots; unrelated suites consume none. Override capacity with --resource-capacity systemd_user_manager=N; the receipt records effective capacity and peak slots. The new-project suite admits at most two fixtures together, selected by mixed-family stage throughput rather than isolated fixture wall time. A suite whose rows hold a wall-clock bound under 30 s (a readiness wait, a deadline or a window) carries wall_clock, a sentence naming the bound. Every mutation job of such a suite is claimed as wall_clock, and while one is held the ledger grants CPU only up to wall_clock_ceiling in scripts/gate_graph.json (VELDO-0290)."
 }

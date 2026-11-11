@@ -1,0 +1,5 @@
+--- a/scripts/gate_schedule.py
++++ b/scripts/gate_schedule.py
+@@ -239 +239 @@
+-            if r == 'cpu' and self.ceiling_in_force() and self.ceiling < limit:
++            if r == 'cpu' and wall_clock and self.ceiling_in_force() and self.ceiling < limit:

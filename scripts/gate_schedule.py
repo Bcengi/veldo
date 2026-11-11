@@ -61,7 +61,8 @@ def read_graph(catalog, declaration=None, path=GRAPH):
     try:
         raw = Path(path).read_bytes()
         graph = json.loads(raw)
-        if not isinstance(graph, dict) or set(graph) != {'schema', 'nodes', 'reserve', 'mutation_floor'} \
+        if not isinstance(graph, dict) \
+                or set(graph) - {'wall_clock_ceiling'} != {'schema', 'nodes', 'reserve', 'mutation_floor'} \
                 or graph['schema'] != 'veldo.gate-graph/v1':
             raise Refused('invalid graph schema')
         nodes = graph['nodes']
@@ -74,7 +75,8 @@ def read_graph(catalog, declaration=None, path=GRAPH):
         for name, node in nodes.items():
             fields = {'depends_on', 'writes_candidate', 'manager', 'ports'}
             if not isinstance(node, dict) or not fields <= set(node) \
-                    or set(node) - fields - {'host_lock', 'estimate', 'coordinator'}:
+                    or set(node) - fields - {'host_lock', 'estimate', 'coordinator', 'wall_clock'} \
+                    or type(node.get('wall_clock', False)) is not bool:
                 raise Refused('invalid node ' + name)
             deps = node['depends_on']
             if not isinstance(deps, list) or any(not isinstance(d, str) or d not in nodes for d in deps) \
@@ -95,6 +97,11 @@ def read_graph(catalog, declaration=None, path=GRAPH):
             if not isinstance(graph[key], dict) or set(graph[key]) != {'cpu', 'memory'} \
                     or not all(number(v) for v in graph[key].values()):
                 raise Refused('invalid ' + key)
+        # VELDO-0290: optional. Without the key no ceiling exists and every claim is granted to capacity.
+        ceiling = graph.get('wall_clock_ceiling')
+        if 'wall_clock_ceiling' in graph and (not isinstance(ceiling, dict) or set(ceiling) != {'cpu'}
+                                              or not number(ceiling['cpu'], True)):
+            raise Refused('invalid_resource_requirement: wall_clock_ceiling')
         coordinator = nodes.get('mutation', {}).get('coordinator')
         if coordinator and any(coordinator[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
             raise Refused('coordinator consumes the entire mutation floor')
@@ -114,7 +121,9 @@ def acyclic(depends):
 
 def validate_claim(claim):
     fields = {'cpu', 'memory', 'manager', 'ports'}
-    if not isinstance(claim, dict) or not fields <= set(claim) or set(claim) - fields - {'host_lock'} \
+    if not isinstance(claim, dict) or not fields <= set(claim) \
+            or set(claim) - fields - {'host_lock', 'wall_clock'} \
+            or type(claim.get('wall_clock', False)) is not bool \
             or not number(claim['cpu']) or not number(claim['memory']) \
             or claim['manager'] not in ('none', 'shared', 'exclusive') \
             or claim.get('host_lock', 'none') not in ('none', 'shared', 'exclusive') \
@@ -125,7 +134,11 @@ def validate_claim(claim):
 
 
 class Ledger:
-    def __init__(self, capacity, floor=None):
+    """One sum of claims per resource. VELDO-0290 adds the wall-clock ceiling: while a claim marked
+    wall_clock is held or is the one being admitted, CPU is granted only up to `ceiling`, for every
+    claimant. A wall_clock claim refused for CPU is remembered as waiting, and until it is granted or
+    withdrawn no other claim gets CPU. Without a ceiling neither rule exists."""
+    def __init__(self, capacity, floor=None, ceiling=None):
         if set(capacity) != {'cpu', 'memory', 'manager'} or not all(number(v, True) for v in capacity.values()) \
                 or type(capacity['manager']) is not int:
             raise Refused('invalid_resource_requirement: capacity')
@@ -140,6 +153,30 @@ class Ledger:
         self.mutation_claimants = set()
         self.mutation_root = None
         self.blocking_resource = None
+        if ceiling is not None and (not number(ceiling, True) or ceiling > capacity['cpu']):
+            raise Refused('invalid_resource_requirement: wall_clock ceiling exceeds the CPU capacity')
+        self.ceiling = ceiling
+        self.wall_clock, self.waiting = set(), {}
+        self.admitting_wall_clock = False
+        self.ceiling_seconds, self.ceiling_since = 0., None
+
+    def ceiling_in_force(self):
+        return self.ceiling is not None and (self.admitting_wall_clock or bool(self.wall_clock))
+
+    def ceiling_state(self):
+        """The ceiling, whether a held wall_clock claim keeps it in force, and the seconds it has been."""
+        if self.ceiling is None:
+            return None
+        running = time.monotonic() - self.ceiling_since if self.ceiling_since is not None else 0.
+        return dict(cpu=self.ceiling, in_force=bool(self.wall_clock), seconds=self.ceiling_seconds + running)
+
+    def answer(self, granted, name, overhead=None):
+        """The reply to one ledger request, the same for the scheduler's channel and a direct caller."""
+        overhead = overhead or {}
+        return dict(granted=granted, resource=None if granted else self.blocking_resource,
+                    totals=self.totals(), capacities=self.capacity,
+                    floor={r: max(0, v - overhead.get(r, 0)) for r, v in self.floor.items()},
+                    waiting=name in self.waiting, wall_clock_ceiling=self.ceiling_state())
 
     def totals(self):
         return {r: sum(c[r] for c in self.held.values()) for r in self.capacity}
@@ -150,6 +187,8 @@ class Ledger:
         c['manager'] = self.capacity['manager'] if claim['manager'] == 'exclusive' else int(claim['manager'] == 'shared')
         if any(c[r] > self.capacity[r] for r in self.capacity):
             raise Refused('invalid_resource_requirement: claim exceeds capacity')
+        if claim.get('wall_clock') and self.ceiling is not None and c['cpu'] > self.ceiling:
+            raise Refused('invalid_resource_requirement: wall_clock claim exceeds the wall_clock ceiling')
         return c
 
     def event(self, action, name, resource, claim=None):
@@ -161,10 +200,12 @@ class Ledger:
         else:
             self.refusals.clear()
         totals = self.totals()
+        ceiling = self.ceiling_in_force()
         self.events.append(dict(at=time.monotonic(), action=action, claimant=name, resource=resource,
-                                claim=claim, granted=totals))
-        print('ledger %s %s resource=%s cpu=%g memory=%g manager=%g' %
-              (action, name, resource, totals['cpu'], totals['memory'], totals['manager']), flush=True)
+                                claim=claim, granted=totals, ceiling=ceiling))
+        print('ledger %s %s resource=%s cpu=%g memory=%g manager=%g ceiling=%s' %
+              (action, name, resource, totals['cpu'], totals['memory'], totals['manager'],
+               'on' if ceiling else 'off'), flush=True)
         for r in self.peak:
             self.peak[r] = max(self.peak[r], totals[r])
 
@@ -173,15 +214,35 @@ class Ledger:
         if name in self.held:
             raise Refused('invalid_resource_requirement: duplicate claimant ' + name)
         c, totals = self.demand(claim), self.totals()
+        wall_clock = bool(claim.get('wall_clock'))
+        # A claim asked for again is waiting only if this attempt is refused for CPU too.
+        self.waiting.pop(name, None)
+        self.admitting_wall_clock = wall_clock
+        try:
+            return self.admit(name, claim, c, totals, wall_clock, mutation)
+        finally:
+            self.admitting_wall_clock = False
+
+    def admit(self, name, claim, c, totals, wall_clock, mutation):
+        if self.waiting and not wall_clock and c['cpu'] > 0:
+            # A waiting wall_clock claim is served before any other claim gets CPU.
+            self.blocking_resource = 'wall_clock'
+            self.event('refuse', name, 'wall_clock', claim)
+            return False
         for r in self.capacity:
-            limit = self.capacity[r]
+            limit, resource = self.capacity[r], r
             # Cold nodes use all capacity, but cannot steal a pending mutation floor.
             if r in self.floor and self.mutation_pending and not mutation:
                 held_for_mutation = sum(self.held[n][r] for n in self.mutation_claimants)
                 limit -= max(0, self.floor[r] - held_for_mutation)
+            # The ceiling binds every claimant, beside the limits above, whichever is lower.
+            if r == 'cpu' and self.ceiling_in_force() and self.ceiling < limit:
+                limit, resource = self.ceiling, 'wall_clock'
             if totals[r] + c[r] > limit:
-                self.blocking_resource = r
-                self.event('refuse', name, r, claim)
+                if r == 'cpu' and wall_clock and self.ceiling is not None:
+                    self.waiting[name] = True
+                self.blocking_resource = resource
+                self.event('refuse', name, resource, claim)
                 return False
         lock = c.get('host_lock', 'none')
         if lock != 'none' and any(h.get('host_lock', 'none') != 'none' and
@@ -195,6 +256,10 @@ class Ledger:
             self.event('refuse', name, 'ports', claim)
             return False
         self.held[name] = c
+        if wall_clock:
+            if not self.wall_clock:
+                self.ceiling_since = time.monotonic()
+            self.wall_clock.add(name)
         if mutation:
             self.mutation_claimants.add(name)
             if self.mutation_root is None:
@@ -219,10 +284,20 @@ class Ledger:
         if name not in self.held:
             raise Refused('unknown claimant ' + name)
         del self.held[name]
+        if name in self.wall_clock:
+            self.wall_clock.discard(name)
+            if not self.wall_clock:
+                self.ceiling_seconds += time.monotonic() - self.ceiling_since
+                self.ceiling_since = None
         self.mutation_claimants.discard(name)
         if name == self.mutation_root:
             self.mutation_pending = False
         self.event('release', name, 'cpu,memory,manager,host_lock,ports')
+
+    def withdraw(self, name):
+        """A waiting wall_clock claim whose claimant no longer asks for it: the bar it set is lifted."""
+        if self.waiting.pop(name, None):
+            self.event('withdraw', name, 'wall_clock')
 
 
 class Client:
@@ -247,9 +322,11 @@ class Client:
         self.last_reply = answer
         return answer['granted']
 
-    def acquire(self, name, cpu, memory, manager='none', ports=(), host_lock='none'):
-        return self.request('acquire', name, dict(cpu=cpu, memory=memory, manager=manager,
-                                                 ports=list(ports), host_lock=host_lock))
+    def acquire(self, name, cpu, memory, manager='none', ports=(), host_lock='none', wall_clock=False):
+        claim = dict(cpu=cpu, memory=memory, manager=manager, ports=list(ports), host_lock=host_lock)
+        if wall_clock:
+            claim['wall_clock'] = True
+        return self.request('acquire', name, claim)
 
     def handoff(self):
         self.request('handoff', 'coordinator')
@@ -291,8 +368,12 @@ def node_claim(node, measured, capacity):
         source = 'no authority estimate; reserving full gate capacity'
     if 'coordinator' in node:
         demand = {r: max(demand[r], node['coordinator'][r]) for r in ('cpu', 'memory')}
-    return dict(demand, manager=node['manager'], ports=node['ports'],
-                host_lock=node.get('host_lock', 'none')), source
+    claim = dict(demand, manager=node['manager'], ports=node['ports'],
+                 host_lock=node.get('host_lock', 'none'))
+    if node.get('wall_clock'):
+        # VELDO-0290: the node runs suites that hold wall-clock bounds, so its claim sets the ceiling.
+        claim['wall_clock'] = True
+    return claim, source
 
 
 def capacities(graph, scope, manifest, cgroup_root=Path('/sys/fs/cgroup')):
@@ -470,7 +551,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     graph, digest, required = read_graph(catalog, declaration, graph_path)
     scope = os.environ.get('VELDO_GATE_SCOPE', '')
     capacity = capacity if capacity is not None else capacities(graph, scope, HERE / 'suites/manifest.json')
-    ledger = Ledger(capacity, graph['mutation_floor'])
+    ledger = Ledger(capacity, graph['mutation_floor'],
+                    ceiling=graph.get('wall_clock_ceiling', {}).get('cpu'))
     if serial:
         print('scheduler fixture serial control', flush=True)
     store = legs.LEG_TIMES if measurement_store is None else measurement_store
@@ -596,12 +678,13 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                             ledger.release(claimant)
                             item['children'].remove(claimant)
                             granted = True
+                        elif request['operation'] == 'release' and claimant in ledger.waiting:
+                            # A release for a claim that is still waiting withdraws it (VELDO-0290).
+                            ledger.withdraw(claimant)
+                            granted = True
                         else:
                             raise Refused('invalid ledger operation or foreign release')
-                        overhead = coordinator_claims.get(name, {})
-                        answer = dict(granted=granted, resource=None if granted else ledger.blocking_resource,
-                                      totals=ledger.totals(), capacities=ledger.capacity,
-                                      floor={r: max(0, v - overhead.get(r, 0)) for r, v in ledger.floor.items()})
+                        answer = ledger.answer(granted, claimant, coordinator_claims.get(name))
                         item['socket'].sendall((json.dumps(answer) + '\n').encode())
                 except (ValueError, KeyError, TypeError, OSError) as error:
                     item['error'] = 'ledger_protocol: ' + str(error)
@@ -628,6 +711,9 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     error = error + '; unreleased_ledger_claim' if error else 'unreleased_ledger_claim'
                     for claimant in item['children']:
                         ledger.release(claimant)
+                # A child the node left waiting must not bar the others after the node is gone.
+                for claimant in [w for w in ledger.waiting if w.startswith(name + '/')]:
+                    ledger.withdraw(claimant)
                 elapsed = end - item['started']
                 result = dict(start=item['started'] - started, end=end - started, wall_seconds=elapsed,
                               verdict='pass' if code == 0 and error is None else 'FAIL',

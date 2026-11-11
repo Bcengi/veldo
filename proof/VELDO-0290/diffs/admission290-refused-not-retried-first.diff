@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1016 +1016 @@
+-                            refused = name
++                            refused = None  # selects freely after a wall_clock refusal

@@ -326,6 +326,91 @@ c=m.Client(); assert c.acquire('shard',2,3000,'shared',[22345]); assert not c.ac
             and {e['claimant'] for e in channel['ledger'] if e['action']=='grant'} == {'lint','lint/shard','lint/worker'}
             and any(e['action']=='refuse' and e['claimant']=='lint/worker' for e in channel['ledger']))
 
+        # ---------------------------------------------------------------------------------
+        # VELDO-0290: the scheduler's side of the wall-clock ceiling. A graph node marked
+        # wall_clock claims under the ceiling, and a waiting claim stops barring the others when
+        # its node releases it or exits. Each row catches its own exception, so a tree whose
+        # graph reader refuses the new keys shows the row red and the suite runs on.
+        # ---------------------------------------------------------------------------------
+        def row290(name, condition):
+            expect('VELDO-0290 admission/' + name, condition)
+
+        def fixture290(stages, wall_clock=(), depends=None):
+            document = copy.deepcopy(graph)
+            document['nodes'] = {n: dict(nodes[n], depends_on=(depends or {}).get(n, [])) for n in stages}
+            for name in wall_clock:
+                document['nodes'][name]['wall_clock'] = True
+            document['wall_clock_ceiling'] = {'cpu': 2}
+            return document
+
+        def checked290(body):
+            try:
+                return bool(body())
+            except Exception as error:
+                print('VELDO-0290 row raised %s: %s' % (type(error).__name__, str(error)[:300]))
+                return False
+
+        def graph_node_row():
+            # Every fixture node claims one core. Three ordinary nodes hold 3, above the ceiling of 2,
+            # when the marked node asks; it is granted once two of them have ended.
+            stages = {'lint': 'sleep .5', 'docs': 'sleep .5', 'security': 'sleep .5', 'extra': 'sleep .1'}
+            with patch.object(scheduler, 'command_for',
+                              lambda root, stage, leg, command, *rest: ['bash', '-c', command]):
+                receipt, _, printed = run(fixture290(stages, wall_clock=['extra']), commands=stages)
+            events = receipt['ledger']
+            refusals = [e for e in events if e['action'] == 'refuse' and e['claimant'] == 'extra']
+            grant = next(e for e in events if e['action'] == 'grant' and e['claimant'] == 'extra')
+            ended_first = sum(receipt['nodes'][n]['end'] <= receipt['nodes']['extra']['start']
+                              for n in ('lint', 'docs', 'security'))
+            return (set(receipt['stages'].values()) == {'pass'}
+                    and receipt['claims']['extra'].get('wall_clock') is True
+                    and not any('wall_clock' in receipt['claims'][n] for n in ('lint', 'docs', 'security'))
+                    # The first refusal finds 3 cores held, above the ceiling. A later one may find 2
+                    # held when one node has ended: the marked node's own core would still exceed it.
+                    and bool(refusals) and refusals[0]['granted']['cpu'] > 2
+                    and all(e['resource'] == 'wall_clock' and e['granted']['cpu'] + 1 > 2 for e in refusals)
+                    and grant['granted']['cpu'] <= 2 and grant['ceiling'] is True
+                    and 'ledger refuse extra resource=wall_clock' in printed and ended_first >= 2)
+        row290('wall-clock-graph-node', checked290(graph_node_row))
+
+        def node_withdraws_row():
+            # The node's own claim is one core and its child `bulk` three, above the ceiling of 2, so
+            # its wall_clock child `timed` waits and bars `late`. A release for `timed` is answered
+            # granted and lifts the bar. The node then leaves `timed` waiting again and exits; the
+            # node after it must still be granted its core.
+            script = '''import importlib.util, os
+s = importlib.util.spec_from_file_location('schedule', os.environ['V216_SCHEDULER'])
+m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+c = m.Client()
+assert c.acquire('bulk', 3, 1000)
+assert not c.acquire('timed', 1, 1000, wall_clock=True)
+assert c.last_reply['resource'] == 'wall_clock' and c.last_reply['waiting'] is True
+assert not c.acquire('late', 1, 1000) and c.last_reply['resource'] == 'wall_clock'
+assert c.release('timed') is True
+assert c.acquire('late', 1, 1000)
+c.release('late')
+assert not c.acquire('timed', 1, 1000, wall_clock=True) and c.last_reply['waiting'] is True
+c.release('bulk')
+c.close()
+'''
+            stages = {'lint': 'a coordinator fixture on the ledger channel', 'docs': 'sleep .1'}
+            def commands290(root, stage, leg, command, *rest):
+                return [sys.executable, '-c', script] if stage == 'lint' else ['bash', '-c', command]
+            with patch.object(scheduler, 'command_for', commands290), \
+                    patch.dict(os.environ, V216_SCHEDULER=str(scripts / 'gate_schedule.py')):
+                receipt, out290, _ = run(fixture290(stages, depends={'docs': ['lint']}), commands=stages)
+            events = receipt['ledger']
+            if receipt['stages'].get('lint') != 'pass':
+                print('VELDO-0290 node fixture:', (out290 / 'lint.log').read_text()[-1500:])
+            return (receipt['stages'] == {'lint': 'pass', 'docs': 'pass'}
+                    and receipt['nodes']['lint']['error'] is None
+                    and [e['claimant'] for e in events if e['action'] == 'withdraw'] == ['lint/timed', 'lint/timed']
+                    and any(e['action'] == 'refuse' and e['claimant'] == 'lint/late'
+                            and e['resource'] == 'wall_clock' for e in events)
+                    and any(e['action'] == 'grant' and e['claimant'] == 'lint/late' for e in events)
+                    and receipt['nodes']['docs']['start'] >= receipt['nodes']['lint']['end'])
+        row290('wall-clock-node-withdraws', checked290(node_withdraws_row))
+
         # Actual short processes qualify concurrency mechanics, never the 6000s host claim.
         timed_catalog = {'lint': 'sleep .4', 'docs': 'sleep .4', 'extra': 'sleep .4'}
         timed_graph = copy.deepcopy(graph)

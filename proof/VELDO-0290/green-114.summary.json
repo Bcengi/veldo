@@ -1,0 +1,35 @@
+{
+ "command": "python3 scripts/selftest.py --suite 114_veldo_0216_concurrent_stages",
+ "deciding": {
+  "bound": "the VELDO-0290 rows that failed are exactly the expected ones, and no other row failed",
+  "copied_over_root": {},
+  "exit_status": 2,
+  "expected_red": [],
+  "observed_red": [],
+  "other_failed_rows": [],
+  "rows_failed": 0,
+  "rows_passed": 50,
+  "rows_that_raised": [],
+  "verdict": "pass"
+ },
+ "discarded": [
+  {
+   "bytes": 9371,
+   "name": "green-114.summary.json.log",
+   "sha256": "ad96aa4ffc2857de7aa4a6ba3e7372cbdbf5ba8b91d831ffb3fbac0ff9ae649d"
+  }
+ ],
+ "environment": {
+  "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   3.00244140625,
+   4.08447265625,
+   4.13330078125
+  ],
+  "python": "3.12.3",
+  "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

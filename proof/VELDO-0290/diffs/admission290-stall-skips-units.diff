@@ -1,0 +1,6 @@
+--- a/scripts/mutation_ownership.py
++++ b/scripts/mutation_ownership.py
+@@ -533,2 +533 @@
+-        for path in roots:  # stall: every disjoint root, the worker's cgroup and its units
+-            self.read_stall(path)
++        self.read_stall(self.path)

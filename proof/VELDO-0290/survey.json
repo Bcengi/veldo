@@ -1,0 +1,5094 @@
+{
+ "command": "python3 proof/VELDO-0290/survey_merge.py /tmp/v290 166312e7b4c701b4cd22ad59cfb9286d5ba7f33c 26afc7afe412d0a31b7e377a7d57cbe8c5ee9f6f",
+ "deciding": {
+  "all_named_declared": true,
+  "bounds_by_kind": {
+   "deadline": 44,
+   "hang_guard": 230,
+   "readiness_wait": 80,
+   "window": 103
+  },
+  "declared": 61,
+  "declared_suites": [
+   "02_mobile_ios_runner_b8.py",
+   "12_warp_1210_hardening_four.py",
+   "38_veldo_0025_membership.py",
+   "40_veldo_0101_capsules.py",
+   "42_veldo_0102_fixval.py",
+   "47_veldo_0107_ipc.py",
+   "48_veldo_0108_relay.py",
+   "49_veldo_0109_unavailable.py",
+   "53_veldo_0123_mutations.py",
+   "56_veldo_0027_signing.py",
+   "58_veldo_0028_effects.py",
+   "59_veldo_0043_graph.py",
+   "58_veldo_0031_claims.py",
+   "59_veldo_0031_review.py",
+   "60_veldo_0053_architecture.py",
+   "58_veldo_0046_notifications.py",
+   "60_veldo_0064_inbox.py",
+   "62_veldo_0039_dispatch.py",
+   "63_veldo_0040_containment.py",
+   "66_veldo_0042_clones.py",
+   "66_veldo_0047_authority.py",
+   "67_veldo_0041_heartbeat.py",
+   "71_veldo_0076_projects.py",
+   "71_veldo_0138_channel_service.py",
+   "71_veldo_0130_api.py",
+   "73_veldo_0139_factory_setup.py",
+   "74_veldo_0140_standing_delegation.py",
+   "75_veldo_0062_accounts.py",
+   "78_veldo_0160_account_pool.py",
+   "78_veldo_0060_claude_adapter.py",
+   "79_veldo_0061_codex_adapter.py",
+   "80_veldo_0155_claude_baseline.py",
+   "82_veldo_0144_mcp_catalog.py",
+   "82_veldo_0141_execution_record.py",
+   "82_veldo_0085_decomposition.py",
+   "82_veldo_0129_worker_wiring.py",
+   "83_veldo_0154_factory_loop.py",
+   "85_veldo_0158_credential_delivery.py",
+   "86_veldo_0148_re_land.py",
+   "86_veldo_0127_agent_configuration.py",
+   "85_veldo_0171_setup_api.py",
+   "86_veldo_0189_engine_upgrade.py",
+   "91_veldo_0167_setup_records.py",
+   "87_veldo_0170_receiver_trust.py",
+   "92_veldo_0088_pm_cycles.py",
+   "93_veldo_0152_intake_routes.py",
+   "98_veldo_0204_mutation_receipts.py",
+   "100_veldo_0207_case_reuse.py",
+   "102_veldo_0210_agent_profile_runtime.py",
+   "104_veldo_0210_mutation_workers.py",
+   "103_veldo_0211_borrowed_login.py",
+   "105_veldo_0182_memory.py",
+   "112_veldo_0215_case_deadlines.py",
+   "113_veldo_0112_registered_clients.py",
+   "113_veldo_0220_gate_host.py",
+   "114_veldo_0220_gate_scope.py",
+   "114_veldo_0216_concurrent_stages.py",
+   "123_veldo_0174_conversations.py",
+   "129_veldo_0254_canary_launch.py",
+   "140_veldo_0267_mutation_selection.py",
+   "129_veldo_0274_factory_slices.py"
+  ],
+  "gaps": [
+   "The graph node unit.confined runs the declared confined suites serially and is not marked wall_clock: it holds its claim for about 1,900 s and would keep the ceiling on for most of the stage. Left to a later spec.",
+   "Bounds inside product modules and suite helpers under scripts/suites/support are named in a suite's notes where its rows depend on one; they were not surveyed line by line.",
+   "The decision does not ask whether CPU shortage can fail the row. Some declared windows are timers that must fire and cannot fail that way; their notes say so.",
+   "The spec's cost estimate covers the seven named suites. The survey declares 61, so the time under the ceiling is larger; the replay's admission record measures it."
+  ],
+  "line_corrections": [
+   {
+    "file": "scripts/suites/114_veldo_0216_concurrent_stages.py",
+    "now": 413,
+    "read_at": 330
+   }
+  ],
+  "method": "Each part was read by hand from the scan hints in its chunk plus a search of the suite file for sleeps, clocks, timeouts, deadlines and waits. Parts 1, 2 and 4 to 8 come from the first build run. Part 3 was read again in the continuing build session, in the session itself; the first run's part 3 was set aside unread and is not an input.",
+  "named_by_spec": [
+   "62_veldo_0039_dispatch.py",
+   "63_veldo_0040_containment.py",
+   "66_veldo_0047_authority.py",
+   "82_veldo_0129_worker_wiring.py",
+   "83_veldo_0154_factory_loop.py",
+   "86_veldo_0189_engine_upgrade.py",
+   "129_veldo_0254_canary_launch.py"
+  ],
+  "not_declared": 136,
+  "rule": "declared when the suite file holds a readiness wait, a deadline or a window under 30 s, or the spec names the suite; a hang guard alone declares nothing",
+  "suites_surveyed": 197
+ },
+ "discarded": [
+  {
+   "bytes": 3825,
+   "name": "brief.md",
+   "sha256": "fe9bb198845b1e6199f0cf06b998c7df57f373171172802f2d7f69818b712d53"
+  },
+  {
+   "bytes": 1335,
+   "name": "chunk-1.json",
+   "sha256": "826ba03362e118a0c04f8f1cfe5cbc2fa31e859bb5c5ed92efca074df9a00236"
+  },
+  {
+   "bytes": 929,
+   "name": "chunk-2.json",
+   "sha256": "0386eb6b27492954b328e665feaecd1f5868b6e0408b105b5c71337c8b5128dc"
+  },
+  {
+   "bytes": 13303,
+   "name": "chunk-3.json",
+   "sha256": "f086c4a0c1b648d4c6b9923a78317d8c4c9b7c56a81e4c5f1180ff83aaaeb925"
+  },
+  {
+   "bytes": 15018,
+   "name": "chunk-4.json",
+   "sha256": "9ded1ef428fcfcb9b7c8e5a94fcfe1542ea2c1bc0336329a598740824805f922"
+  },
+  {
+   "bytes": 11641,
+   "name": "chunk-5.json",
+   "sha256": "2c50f4c02ae7a89134070c43cd90e1ea49eae0371a0d4b9d50184e22cbde1777"
+  },
+  {
+   "bytes": 13890,
+   "name": "chunk-6.json",
+   "sha256": "2399ea6c3985c74df0e10b754d9c472a091220b6fdb1fd9ec6a1439e24eaa780"
+  },
+  {
+   "bytes": 11078,
+   "name": "chunk-7.json",
+   "sha256": "eff3afaaffd7df18cbd6166a0423af1d80d0a09837282dfe35d71f0b06091209"
+  },
+  {
+   "bytes": 6015,
+   "name": "chunk-8.json",
+   "sha256": "ffbefdb512d65a0b3c4a10c39a74e6ab55307bbec5295ade1b77cd23b2e4cb5b"
+  },
+  {
+   "bytes": 3296,
+   "name": "survey-part-1.json",
+   "sha256": "7043b8fbc8d243a1655a1bb3ad0ac9da4d8c7119df3e739de7bfe63e4fe5f2e4"
+  },
+  {
+   "bytes": 1964,
+   "name": "survey-part-2.json",
+   "sha256": "217ca6646f2cf43befba7909d9ffea4822761628d523e0449de8feb7fafbb04a"
+  },
+  {
+   "bytes": 15004,
+   "name": "survey-part-3.json",
+   "sha256": "7f3f6b7772c60648d892a84449ba7acf3d8b0bd6021a87a888fb1f7ee4de5122"
+  },
+  {
+   "bytes": 15400,
+   "name": "survey-part-4.json",
+   "sha256": "905a630f48f613244d013c6c615b6f05773b4d4c748455b92068d2c70ba5ba72"
+  },
+  {
+   "bytes": 12109,
+   "name": "survey-part-5.json",
+   "sha256": "da3e25056d99a9538449c11f4466fb526ceaea882e25842761a742bcf6f52d6c"
+  },
+  {
+   "bytes": 13252,
+   "name": "survey-part-6.json",
+   "sha256": "9ad964eeb57d940e65e2a47d96054bff67ff588333b83a43dd3d2db794832e6d"
+  },
+  {
+   "bytes": 13819,
+   "name": "survey-part-7.json",
+   "sha256": "6cca56fbcb259fdbb011a8f3774611190f0bd087c4178292770e74b942c6dc6d"
+  },
+  {
+   "bytes": 7941,
+   "name": "survey-part-8.json",
+   "sha256": "07e0518b5de9c44fbe398d3dcb9bde9bb899b8cca15cd8ab4ad63d970360e5a4"
+  }
+ ],
+ "environment": {
+  "commit": "166312e7b4c701b4cd22ad59cfb9286d5ba7f33c",
+  "host": "dmitry-pc",
+  "python": "3.12.3",
+  "tree": "26afc7afe412d0a31b7e377a7d57cbe8c5ee9f6f"
+ },
+ "schema": "veldo.proof-summary/v1",
+ "suites": [
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "01_warp_0101_reviewer_notes.py",
+   "notes": "Mobile settle waiter is driven through an injected fake sleep; no real clock.",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/02_mobile_ios_runner_b8.py",
+     "kind": "deadline",
+     "line": 334,
+     "seconds": 3.0,
+     "what": "grace_seconds: spawned target must exit within 3 s of SIGTERM"
+    },
+    {
+     "file": "scripts/suites/02_mobile_ios_runner_b8.py",
+     "kind": "window",
+     "line": 334,
+     "seconds": 0.2,
+     "what": "spawn_settle_seconds: observes the spawned pid stays alive for 0.2 s"
+    },
+    {
+     "file": "scripts/suites/02_mobile_ios_runner_b8.py",
+     "kind": "readiness_wait",
+     "line": 335,
+     "seconds": 2.0,
+     "what": "descendant_timeout_seconds: waits for the target to report its child pid"
+    },
+    {
+     "file": "scripts/suites/02_mobile_ios_runner_b8.py",
+     "kind": "deadline",
+     "line": 335,
+     "seconds": 4.0,
+     "what": "kill_tree_window_seconds: all descendants must be dead within 4 s"
+    }
+   ],
+   "decision": "declared",
+   "file": "02_mobile_ios_runner_b8.py",
+   "notes": "14 real-subprocess lifecycle fixtures run 7 at a time; the two shipped fixtures under engine/scripts/runners/process/fixtures carry their own bounds (grace 3.0, settle 0.3, descendant 2.0, kill window 4.0).",
+   "part": 1,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "03_plugin_extension_loading_runner.py",
+   "notes": "",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/04_run_status_reader_veldo.py",
+     "kind": "hang_guard",
+     "line": 789,
+     "seconds": 3.0,
+     "what": "lock_timeout on an uncontended land lock that is acquired at once"
+    },
+    {
+     "file": "scripts/suites/04_run_status_reader_veldo.py",
+     "kind": "hang_guard",
+     "line": 165,
+     "seconds": 5,
+     "what": "urlopen timeout on a loopback GET to the in-thread status server"
+    },
+    {
+     "file": "scripts/suites/04_run_status_reader_veldo.py",
+     "kind": "hang_guard",
+     "line": 201,
+     "seconds": 5,
+     "what": "join on the server thread after shutdown"
+    }
+   ],
+   "decision": "not declared",
+   "file": "04_run_status_reader_veldo.py",
+   "notes": "Concurrent land row at line 771 relies on the lander default lock_timeout of 600 s in .veldo/lander.py; barrier waits have no timeout.",
+   "part": 1,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "05_tracker_routing_resolver_veldo.py",
+   "notes": "",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "06_capabilities_manifest_honesty_veldo.py",
+   "notes": "In-session waiter rows use a fake clock and fake sleep; no real waiting.",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "07_warp_1103_completion_mandatory.py",
+   "notes": "",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "08_restoration_spec_generation_veldo.py",
+   "notes": "timeout_ms values are config data and estimated durations, not measured time.",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "09_action_whitelist_warp_1205.py",
+   "notes": "Action timeout rows use a fake system with declared elapsed values, not real time.",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "10_warp_0613_anti_vacuity.py",
+   "notes": "",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "11_inbound_command_receipt_reconcile.py",
+   "notes": "",
+   "part": 1,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/12_warp_1210_hardening_four.py",
+     "kind": "deadline",
+     "line": 5367,
+     "seconds": 20,
+     "what": "each matrix CLI surface run must exit in 20 s or cell is dead"
+    },
+    {
+     "file": "scripts/suites/12_warp_1210_hardening_four.py",
+     "kind": "window",
+     "line": 5373,
+     "seconds": 1,
+     "what": "expected-hang cells on older engine: 1 s timer must fire, hung is asserted"
+    },
+    {
+     "file": "scripts/suites/12_warp_1210_hardening_four.py",
+     "kind": "deadline",
+     "line": 5374,
+     "seconds": 20,
+     "what": "must-succeed differential runs must exit in 20 s or the cell is dead"
+    }
+   ],
+   "decision": "declared",
+   "file": "12_warp_1210_hardening_four.py",
+   "notes": "Borderline deadline vs hang_guard: surfaces take 0.04-0.24 s idle but about 2 s inside the suite's own 8-10 thread pools (file comment); the 1 s hang window cannot fail from CPU shortage; tracer timeout at 5792 is 120 s, not recorded.",
+   "part": 1,
+   "reason": "3 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "13_warp_0623_codified_live.py",
+   "notes": "Hint at 5634 is fixture text; only timeout is a 30 s gate-drive ceiling (line 5001); settle waits run on a virtual clock.",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "14_warp_0717_subset_runner.py",
+   "notes": "Only timeout is a 30 s subprocess ceiling (line 438), at the cutoff so not recorded.",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "17_veldo_0001_falsification_declared.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "18_veldo_0011_release_contract.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "18_veldo_0012_behaviour_floor_contract.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "19_veldo_0002_work_state.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "20_veldo_0003_task_source.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "21_veldo_0004_promise_corpus.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "22_veldo_0005_declared_vs_shipped.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "23_veldo_0006_budget_state.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "24_veldo_0007_install_and_run.py",
+   "notes": "Timeouts are 30 s and above (Event.wait(30) at 574, join 60, subprocess 60 and 900).",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "25_veldo_0008_version.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "26_veldo_0009_install_stamp.py",
+   "notes": "Only a 300 s subprocess timeout.",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "27_veldo_0010_evidence_provenance.py",
+   "notes": "Only a 300 s subprocess timeout.",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "28_veldo_0015_clock_standdown.py",
+   "notes": "Uses time.time() only to stamp a heartbeat an hour ahead; no short bound.",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "29_veldo_0016_policy_boundaries.py",
+   "notes": "Timer values (10 s, 30 s) appear only as policy text asserted by value, not waited on.",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "30_veldo_0017_entity_lifecycle.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "31_veldo_0018_release_floor.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "32_veldo_0019_combined_graph.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "33_veldo_0020_authority.py",
+   "notes": "",
+   "part": 2,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "34_veldo_0022_admission.py",
+   "notes": "Deadlines and durations are data compared against an injected now; no real clock.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "35_veldo_0021_completion.py",
+   "notes": "timeout appears only as an outcome kind in data.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "36_veldo_0023_journal.py",
+   "notes": "Subprocess timeouts are 60 s and 120 s.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "37_veldo_0024_replica.py",
+   "notes": "Only a subprocess timeout of 100 s or more.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/38_veldo_0025_membership.py",
+     "kind": "window",
+     "line": 522,
+     "seconds": 5,
+     "what": "wait_for with a 0.3 s bound must return in under 5 s"
+    },
+    {
+     "file": "scripts/suites/38_veldo_0025_membership.py",
+     "kind": "window",
+     "line": 512,
+     "seconds": 0.3,
+     "what": "wait_for expiry bound of 0.3 s must run out, elapsed at least 0.3 s"
+    },
+    {
+     "file": "scripts/suites/38_veldo_0025_membership.py",
+     "kind": "window",
+     "line": 469,
+     "seconds": 0.05,
+     "what": "sqlite busy timeout of 50 ms must expire against a held write lock"
+    }
+   ],
+   "decision": "declared",
+   "file": "38_veldo_0025_membership.py",
+   "notes": "Racer waits are bound by the 180 s racer timeout (line 337); keygen timeouts are 60 s.",
+   "part": 3,
+   "reason": "3 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "39_veldo_0026_revocation.py",
+   "notes": "Child and keygen timeouts are 60 s and 180 s.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "window",
+     "line": 210,
+     "seconds": 1,
+     "what": "capsule deadline timer of 1 s must stop a command sleeping 5 s"
+    },
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "readiness_wait",
+     "line": 222,
+     "seconds": 3,
+     "what": "polls up to 3 s for the helper to be dead after the group kill"
+    },
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "window",
+     "line": 246,
+     "seconds": 2,
+     "what": "capsule deadline timer of 2 s must kill the process group"
+    },
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "window",
+     "line": 257,
+     "seconds": 1,
+     "what": "polls 1 s and expects the mutant's stray helper still alive"
+    },
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "window",
+     "line": 335,
+     "seconds": 2,
+     "what": "capsule deadline timer of 2 s with an escaped helper holding the pipe"
+    },
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "window",
+     "line": 353,
+     "seconds": 11,
+     "what": "runner must return within 2 s plus KILL_WAIT 5 s plus 4 s"
+    },
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "window",
+     "line": 332,
+     "seconds": 14,
+     "what": "escaped helper lives 14 s and must still be alive when the runner returns"
+    },
+    {
+     "file": "scripts/suites/40_veldo_0101_capsules.py",
+     "kind": "window",
+     "line": 354,
+     "seconds": 10,
+     "what": "mutant with unbounded wait must take over 10 s"
+    }
+   ],
+   "decision": "declared",
+   "file": "40_veldo_0101_capsules.py",
+   "notes": "Depends on capsule.KILL_WAIT (5 s) in .veldo/capsule.py; the duration bound at line 251 is 30 s; other runs use timeout=60.",
+   "part": 3,
+   "reason": "8 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "41_veldo_0103_assessor.py",
+   "notes": "Only timeout=60 on a fake harness.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/42_veldo_0102_fixval.py",
+     "kind": "window",
+     "line": 155,
+     "seconds": 1,
+     "what": "plan deadline timer of 1 s must stop a capsule sleeping 30 s"
+    },
+    {
+     "file": "scripts/suites/42_veldo_0102_fixval.py",
+     "kind": "window",
+     "line": 166,
+     "seconds": 25,
+     "what": "whole validation with the 1 s deadline must return in under 25 s"
+    },
+    {
+     "file": "scripts/suites/42_veldo_0102_fixval.py",
+     "kind": "window",
+     "line": 479,
+     "seconds": 8,
+     "what": "pipe-channel mutant must hit its 8 s row budget"
+    },
+    {
+     "file": "scripts/suites/42_veldo_0102_fixval.py",
+     "kind": "window",
+     "line": 482,
+     "seconds": 5,
+     "what": "row budget timer of 5 s must stop a fragment with a detached child"
+    }
+   ],
+   "decision": "declared",
+   "file": "42_veldo_0102_fixval.py",
+   "notes": "Depends on fix_validation.KILL_WAIT (5 s); the detached run's elapsed bound is 60 s (line 492) and the bulk row budget 30 s (line 477).",
+   "part": 3,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "43_veldo_0104_proofcheck.py",
+   "notes": "Only 60 s budgets.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "shared.py",
+   "notes": "Defines wait_for and the fork-safe flag and barrier; bounds are passed in by the calling suites.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "44_veldo_0105_startline.py",
+   "notes": "",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "45_veldo_0106_policyread.py",
+   "notes": "",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "46_veldo_0029_enrollment.py",
+   "notes": "",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "readiness_wait",
+     "line": 147,
+     "seconds": 4,
+     "what": "polls 200 x 0.02 s for the authority runner's ready flag"
+    },
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "window",
+     "line": 486,
+     "seconds": 0.15,
+     "what": "serve_one timeout of 0.15 s must drop a stalled client"
+    },
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "deadline",
+     "line": 493,
+     "seconds": 2,
+     "what": "next client's answer must arrive within 2 s, behind the 0.15 s stall"
+    },
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "deadline",
+     "line": 529,
+     "seconds": 0.05,
+     "what": "peer thread must answer the refusal within the 0.05 s inspect timeout"
+    },
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "window",
+     "line": 518,
+     "seconds": 0.15,
+     "what": "peer sleeps 0.15 s so the 0.05 s inspect timeout fires"
+    },
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "hang_guard",
+     "line": 481,
+     "seconds": 2,
+     "what": "accept timeout on a listener the suite connects to at once"
+    },
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "hang_guard",
+     "line": 498,
+     "seconds": 2,
+     "what": "join of the serving thread after both answers"
+    },
+    {
+     "file": "scripts/suites/47_veldo_0107_ipc.py",
+     "kind": "hang_guard",
+     "line": 553,
+     "seconds": 2,
+     "what": "barrier between two pool threads reaching replace"
+    }
+   ],
+   "decision": "declared",
+   "file": "47_veldo_0107_ipc.py",
+   "notes": "Stop waits of 5 s (lines 165, 168) are cleanup that kills on expiry; socket timeouts of 5 s and 10 s also seen.",
+   "part": 3,
+   "reason": "5 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/48_veldo_0108_relay.py",
+     "kind": "readiness_wait",
+     "line": 95,
+     "seconds": 0.5,
+     "what": "echo thread accept gives up after 0.5 s waiting for the relay process to connect"
+    },
+    {
+     "file": "scripts/suites/48_veldo_0108_relay.py",
+     "kind": "readiness_wait",
+     "line": 251,
+     "seconds": 5,
+     "what": "polls 250 x 0.02 s for the authority runner's ready flag"
+    },
+    {
+     "file": "scripts/suites/48_veldo_0108_relay.py",
+     "kind": "readiness_wait",
+     "line": 441,
+     "seconds": 10,
+     "what": "waits for the authority process to exit after its stop flag"
+    },
+    {
+     "file": "scripts/suites/48_veldo_0108_relay.py",
+     "kind": "hang_guard",
+     "line": 108,
+     "seconds": 2,
+     "what": "recv timeout on the echo connection from the relay"
+    },
+    {
+     "file": "scripts/suites/48_veldo_0108_relay.py",
+     "kind": "hang_guard",
+     "line": 134,
+     "seconds": 5,
+     "what": "relay subprocess run that echoes one payload"
+    },
+    {
+     "file": "scripts/suites/48_veldo_0108_relay.py",
+     "kind": "hang_guard",
+     "line": 173,
+     "seconds": 5,
+     "what": "join of the echo thread after the relay returned"
+    }
+   ],
+   "decision": "declared",
+   "file": "48_veldo_0108_relay.py",
+   "notes": "Each relay row starts a python process that must connect inside the 0.5 s accept; stop waits of 5 s (lines 279, 282) are cleanup.",
+   "part": 3,
+   "reason": "3 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/49_veldo_0109_unavailable.py",
+     "kind": "readiness_wait",
+     "line": 109,
+     "seconds": 5,
+     "what": "polls 250 x 0.02 s for the authority runner's ready flag"
+    },
+    {
+     "file": "scripts/suites/49_veldo_0109_unavailable.py",
+     "kind": "readiness_wait",
+     "line": 177,
+     "seconds": 10,
+     "what": "waits for the authority process to exit after its stop flag"
+    },
+    {
+     "file": "scripts/suites/49_veldo_0109_unavailable.py",
+     "kind": "hang_guard",
+     "line": 319,
+     "seconds": 10,
+     "what": "wait on the authority process just killed"
+    }
+   ],
+   "decision": "declared",
+   "file": "49_veldo_0109_unavailable.py",
+   "notes": "Stop waits of 5 s (lines 128, 131) are cleanup that kills on expiry.",
+   "part": 3,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "50_git_environment.py",
+   "notes": "",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "51_parser_boundary.py",
+   "notes": "",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "52_writer_boundary.py",
+   "notes": "",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/53_veldo_0123_mutations.py",
+     "kind": "deadline",
+     "line": 291,
+     "seconds": 2,
+     "what": "worker must start its tree and reach the hang inside the 2 s budget"
+    },
+    {
+     "file": "scripts/suites/53_veldo_0123_mutations.py",
+     "kind": "readiness_wait",
+     "line": 306,
+     "seconds": 2,
+     "what": "polls 200 x 0.01 s for the killed child to free its lock"
+    },
+    {
+     "file": "scripts/suites/53_veldo_0123_mutations.py",
+     "kind": "window",
+     "line": 318,
+     "seconds": 5.4,
+     "what": "budget stop and cleanup must finish in under 5.4 s"
+    },
+    {
+     "file": "scripts/suites/53_veldo_0123_mutations.py",
+     "kind": "hang_guard",
+     "line": 217,
+     "seconds": 20,
+     "what": "verify.sh run that must refuse at once without the stage script"
+    }
+   ],
+   "decision": "declared",
+   "file": "53_veldo_0123_mutations.py",
+   "notes": "The fake workers at line 678 sleep 0.3 s under a 60 s deadline; other subprocess timeouts are 30 s and 60 s.",
+   "part": 3,
+   "reason": "3 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "54_veldo_0118_grammar.py",
+   "notes": "Only measures its own suite seconds for the record.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "55_veldo_0119_agreement.py",
+   "notes": "Only measures its own suite seconds for the record.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/56_veldo_0027_signing.py",
+     "kind": "window",
+     "line": 536,
+     "seconds": 0.15,
+     "what": "holds the store lock 0.15 s so the child must read its clock after release"
+    },
+    {
+     "file": "scripts/suites/56_veldo_0027_signing.py",
+     "kind": "hang_guard",
+     "line": 588,
+     "seconds": 5,
+     "what": "join of the observer thread after its stop flag"
+    },
+    {
+     "file": "scripts/suites/56_veldo_0027_signing.py",
+     "kind": "hang_guard",
+     "line": 51,
+     "seconds": 10,
+     "what": "key generation subprocess"
+    },
+    {
+     "file": "scripts/suites/56_veldo_0027_signing.py",
+     "kind": "hang_guard",
+     "line": 483,
+     "seconds": 10,
+     "what": "transition child, already started, finishing one store command"
+    }
+   ],
+   "decision": "declared",
+   "file": "56_veldo_0027_signing.py",
+   "notes": "The 0.15 s hold cannot fail a row from CPU shortage; it only gives a wrong clock read time to show.",
+   "part": 3,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "57_veldo_0120_policygrammar.py",
+   "notes": "Only measures its own suite seconds for the record.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/58_veldo_0028_effects.py",
+     "kind": "deadline",
+     "line": 957,
+     "seconds": 5,
+     "what": "publication with a 3 s receive hook must finish in git_step_seconds 5"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0028_effects.py",
+     "kind": "window",
+     "line": 960,
+     "seconds": 2,
+     "what": "accept window of 2 s that the 3 s receive must outlast, elapsed over 2 s"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0028_effects.py",
+     "kind": "hang_guard",
+     "line": 128,
+     "seconds": 10,
+     "what": "fixture setup subprocess"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0028_effects.py",
+     "kind": "hang_guard",
+     "line": 1394,
+     "seconds": 10,
+     "what": "fixture subprocess"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0028_effects.py",
+     "kind": "hang_guard",
+     "line": 55,
+     "seconds": 20,
+     "what": "git http-backend call for the loopback fixture"
+    }
+   ],
+   "decision": "declared",
+   "file": "58_veldo_0028_effects.py",
+   "notes": "The slow fan-out row leaves 2 s of slack between the 3 s hook and the 5 s step bound; other git calls use timeout=20.",
+   "part": 3,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/58_veldo_0036_reservations.py",
+     "kind": "hang_guard",
+     "line": 128,
+     "seconds": 5,
+     "what": "barrier between two contender threads"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0036_reservations.py",
+     "kind": "hang_guard",
+     "line": 300,
+     "seconds": 5,
+     "what": "wait on a child just terminated"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0036_reservations.py",
+     "kind": "hang_guard",
+     "line": 360,
+     "seconds": 5,
+     "what": "wait on a parent that exits after printing a pid"
+    }
+   ],
+   "decision": "not declared",
+   "file": "58_veldo_0036_reservations.py",
+   "notes": "wall_seconds and now= values are data on an injected clock; contender join is 7 s (line 142).",
+   "part": 3,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/58_veldo_0035_snapshots.py",
+     "kind": "hang_guard",
+     "line": 62,
+     "seconds": 10,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0035_snapshots.py",
+     "kind": "hang_guard",
+     "line": 66,
+     "seconds": 10,
+     "what": "git fixture command with input"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0035_snapshots.py",
+     "kind": "hang_guard",
+     "line": 200,
+     "seconds": 10,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "58_veldo_0035_snapshots.py",
+   "notes": "",
+   "part": 3,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/59_veldo_0043_graph.py",
+     "kind": "window",
+     "line": 1147,
+     "seconds": 0.5,
+     "what": "adapter timeout of 0.5 s must fire on a node sleeping 30 s"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0043_graph.py",
+     "kind": "window",
+     "line": 1153,
+     "seconds": 1.0,
+     "what": "sleeps 1 s and expects no orphan marker written after 0.5 or 0.8 s"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0043_graph.py",
+     "kind": "hang_guard",
+     "line": 222,
+     "seconds": 10,
+     "what": "fixture subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "59_veldo_0043_graph.py",
+   "notes": "Neither window can fail a row from CPU shortage; a starved orphan only writes its marker later.",
+   "part": 3,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/59_veldo_0037_aliases.py",
+     "kind": "hang_guard",
+     "line": 48,
+     "seconds": 10,
+     "what": "git fixture command output"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0037_aliases.py",
+     "kind": "hang_guard",
+     "line": 70,
+     "seconds": 10,
+     "what": "git fixture check"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0037_aliases.py",
+     "kind": "hang_guard",
+     "line": 192,
+     "seconds": 10,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "59_veldo_0037_aliases.py",
+   "notes": "Child allocate and read runs use timeout=30.",
+   "part": 3,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/58_veldo_0031_claims.py",
+     "kind": "readiness_wait",
+     "line": 133,
+     "seconds": 10,
+     "what": "waits for the claim service process to bind and signal ready"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0031_claims.py",
+     "kind": "readiness_wait",
+     "line": 275,
+     "seconds": 15,
+     "what": "waits for each racing clone client process to send its answer"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0031_claims.py",
+     "kind": "window",
+     "line": 372,
+     "seconds": 0.02,
+     "what": "lander lock_timeout of 0.02 s must expire while another worker holds the lock"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0031_claims.py",
+     "kind": "hang_guard",
+     "line": 271,
+     "seconds": 5,
+     "what": "racer wait on a go flag set right after both start"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0031_claims.py",
+     "kind": "hang_guard",
+     "line": 285,
+     "seconds": 5,
+     "what": "join of a racer process after its answer"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0031_claims.py",
+     "kind": "hang_guard",
+     "line": 50,
+     "seconds": 10,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "declared",
+   "file": "58_veldo_0031_claims.py",
+   "notes": "The service loop polls accept every 0.05 s (line 117), not a bound; other subprocess timeouts are 10 s and 30 s.",
+   "part": 3,
+   "reason": "3 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/59_veldo_0031_review.py",
+     "kind": "readiness_wait",
+     "line": 148,
+     "seconds": 10,
+     "what": "waits for the claim service process to bind and signal ready"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0031_review.py",
+     "kind": "window",
+     "line": 327,
+     "seconds": 0.01,
+     "what": "heartbeat interval of 0.01 s must tick during the gate step"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0031_review.py",
+     "kind": "hang_guard",
+     "line": 157,
+     "seconds": 5,
+     "what": "join of the service process after its stop flag"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0031_review.py",
+     "kind": "hang_guard",
+     "line": 186,
+     "seconds": 10,
+     "what": "IPC send timeout, commented as bounding a hung server only"
+    },
+    {
+     "file": "scripts/suites/59_veldo_0031_review.py",
+     "kind": "hang_guard",
+     "line": 321,
+     "seconds": 10,
+     "what": "join of the heartbeat thread after it observed"
+    }
+   ],
+   "decision": "declared",
+   "file": "59_veldo_0031_review.py",
+   "notes": "The heartbeat observation itself waits 30 s (line 320), commented as a liveness bound for a loaded host.",
+   "part": 3,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "60_veldo_0052_eligibility.py",
+   "notes": "Hint at 968 is a capacity count; subprocess timeouts are 60 s and 120 s.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/60_veldo_0053_architecture.py",
+     "kind": "deadline",
+     "line": 1092,
+     "seconds": 20,
+     "what": "judgement over the FIFO engine must finish inside FIFO_GRACE or a reader counts as released"
+    },
+    {
+     "file": "scripts/suites/60_veldo_0053_architecture.py",
+     "kind": "hang_guard",
+     "line": 1115,
+     "seconds": 5,
+     "what": "join of the release helper thread after its stop flag"
+    }
+   ],
+   "decision": "declared",
+   "file": "60_veldo_0053_architecture.py",
+   "notes": "The helper polls every 0.02 s only after the 20 s grace; the suite comment says load once stretched this window.",
+   "part": 3,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "window",
+     "line": 221,
+     "seconds": 1,
+     "what": "loop's 1 s run_once wait must outlast the writer's command and wake"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "window",
+     "line": 209,
+     "seconds": 3,
+     "what": "loop thread held up to 3 s at the lock until the writer has committed"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "readiness_wait",
+     "line": 230,
+     "seconds": 3,
+     "what": "waits for the loop thread to reach the lock or the condition wait"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "window",
+     "line": 233,
+     "seconds": 0.02,
+     "what": "observes 0.02 s that the idle loop has not completed or read"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "readiness_wait",
+     "line": 236,
+     "seconds": 2,
+     "what": "waits for the loop thread to deliver the written event"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "window",
+     "line": 456,
+     "seconds": 0.15,
+     "what": "sleeps 0.15 s and expects the blocked loop to have served the later event"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "window",
+     "line": 454,
+     "seconds": 0.15,
+     "what": "sleeps 0.15 s for the loop to park before the later event; opens counted 2 to 4"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "hang_guard",
+     "line": 238,
+     "seconds": 3,
+     "what": "join of the loop thread after close"
+    },
+    {
+     "file": "scripts/suites/58_veldo_0046_notifications.py",
+     "kind": "hang_guard",
+     "line": 459,
+     "seconds": 3,
+     "what": "join of the blocking loop thread after close"
+    }
+   ],
+   "decision": "declared",
+   "file": "58_veldo_0046_notifications.py",
+   "notes": "Retry delays 0.125 to 0.5 s (lines 475 to 500) run on an injected clock; run_once(timeout=0) calls do not wait.",
+   "part": 3,
+   "reason": "7 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/60_veldo_0064_inbox.py",
+     "kind": "readiness_wait",
+     "line": 250,
+     "seconds": 2,
+     "what": "worker process must exit within 2 s of its last reply, row reads the exit code"
+    },
+    {
+     "file": "scripts/suites/60_veldo_0064_inbox.py",
+     "kind": "hang_guard",
+     "line": 718,
+     "seconds": 5,
+     "what": "join of the loopback server thread after shutdown"
+    },
+    {
+     "file": "scripts/suites/60_veldo_0064_inbox.py",
+     "kind": "hang_guard",
+     "line": 37,
+     "seconds": 10,
+     "what": "git fixture command output"
+    },
+    {
+     "file": "scripts/suites/60_veldo_0064_inbox.py",
+     "kind": "hang_guard",
+     "line": 149,
+     "seconds": 10,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "declared",
+   "file": "60_veldo_0064_inbox.py",
+   "notes": "",
+   "part": 3,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "61_scope_covers.py",
+   "notes": "",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "62_veldo_0045_runtime.py",
+   "notes": "Only a 300 s default subprocess timeout.",
+   "part": 3,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "62_veldo_0054_decisions.py",
+   "notes": "Only a 120 s keygen wait; nothing under 30 s.",
+   "part": 4,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/62_veldo_0065_presentations.py",
+     "kind": "hang_guard",
+     "line": 148,
+     "seconds": 10,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0065_presentations.py",
+     "kind": "hang_guard",
+     "line": 155,
+     "seconds": 10,
+     "what": "git fixture command output"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0065_presentations.py",
+     "kind": "hang_guard",
+     "line": 637,
+     "seconds": 10,
+     "what": "ssh-keygen signature check subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "62_veldo_0065_presentations.py",
+   "notes": "",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "deadline",
+     "line": 253,
+     "seconds": 20,
+     "what": "receiver must accept the launch within accept_seconds"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "readiness_wait",
+     "line": 282,
+     "seconds": 10,
+     "what": "polls for the worker marker of a dispatch"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "readiness_wait",
+     "line": 406,
+     "seconds": 10,
+     "what": "polls for the worker packet file to appear"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "deadline",
+     "line": 507,
+     "seconds": 20,
+     "what": "racing receivers must accept within accept_seconds"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "window",
+     "line": 638,
+     "seconds": 2,
+     "what": "contract deadline timer of 2 s must stop a worker holding 8 s"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "window",
+     "line": 650,
+     "seconds": 10,
+     "what": "worker holding 1 s must exit before its 10 s deadline timer"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "window",
+     "line": 660,
+     "seconds": 6,
+     "what": "asserts deadline stop elapsed under 6 s"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "window",
+     "line": 667,
+     "seconds": 2,
+     "what": "remote wrapped engine stopped by 2 s deadline timer"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "hang_guard",
+     "line": 165,
+     "seconds": 10,
+     "what": "sqlite read-only connect timeout"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "hang_guard",
+     "line": 711,
+     "seconds": 10,
+     "what": "wait on a receiver just killed"
+    },
+    {
+     "file": "scripts/suites/62_veldo_0039_dispatch.py",
+     "kind": "hang_guard",
+     "line": 979,
+     "seconds": 10,
+     "what": "cleanup wait on killed receiver"
+    }
+   ],
+   "decision": "declared",
+   "file": "62_veldo_0039_dispatch.py",
+   "named_by_spec": true,
+   "notes": "Owner-stop rows wait on the product end obligation (deadline 30 s plus control_launch.ACCEPT_SECONDS); barrier.wait 20 s also seen.",
+   "part": 4,
+   "reason": "8 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "window",
+     "line": 352,
+     "seconds": 1.2,
+     "what": "runtime cap of 1.2 s with 0.5 s kill grace must fire"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "deadline",
+     "line": 362,
+     "seconds": 20,
+     "what": "receiver must accept the launch within accept_seconds"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "readiness_wait",
+     "line": 389,
+     "seconds": 10,
+     "what": "polls for a worker marker file"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "window",
+     "line": 946,
+     "seconds": 1.5,
+     "what": "observes idle receiver wakes for 1.5 s"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "window",
+     "line": 1221,
+     "seconds": 2.7,
+     "what": "last beat must be within 2.7 s of scope activation"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "window",
+     "line": 1225,
+     "seconds": 1.7,
+     "what": "cap stop must begin within 1.7 s of scope activation"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "deadline",
+     "line": 1248,
+     "seconds": 4,
+     "what": "cooperative stop must finish before 4 s contract deadline"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "deadline",
+     "line": 1274,
+     "seconds": 8,
+     "what": "stop escalation must finish before 8 s contract deadline"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "window",
+     "line": 1305,
+     "seconds": 0.5,
+     "what": "terminate must follow cooperative step by at least stop grace 0.6 s less 0.1"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "window",
+     "line": 1306,
+     "seconds": 2.7,
+     "what": "descendant last beat within 2.7 s of stop request"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "readiness_wait",
+     "line": 1327,
+     "seconds": 10,
+     "what": "polls for holder process to enter its scope cgroup"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "readiness_wait",
+     "line": 1342,
+     "seconds": 10,
+     "what": "polls for killed cgroup to disappear"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "hang_guard",
+     "line": 1341,
+     "seconds": 10,
+     "what": "wait on holder after cgroup kill"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "hang_guard",
+     "line": 1389,
+     "seconds": 10,
+     "what": "cleanup wait on killed receiver"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0040_containment.py",
+     "kind": "hang_guard",
+     "line": 60,
+     "seconds": 20,
+     "what": "systemctl --user call"
+    }
+   ],
+   "decision": "declared",
+   "file": "63_veldo_0040_containment.py",
+   "named_by_spec": true,
+   "notes": "Default profile graces 0.6 s (line 321); SETTLE_SECONDS rows run on a fake clock; marker(timeout=0.05) probes not recorded.",
+   "part": 4,
+   "reason": "12 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/63_veldo_0066_attribution.py",
+     "kind": "hang_guard",
+     "line": 173,
+     "seconds": 10,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0066_attribution.py",
+     "kind": "hang_guard",
+     "line": 180,
+     "seconds": 10,
+     "what": "git fixture command output"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0066_attribution.py",
+     "kind": "hang_guard",
+     "line": 328,
+     "seconds": 10,
+     "what": "urlopen to loopback fixture server"
+    }
+   ],
+   "decision": "not declared",
+   "file": "63_veldo_0066_attribution.py",
+   "notes": "",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/63_veldo_0049_floor.py",
+     "kind": "hang_guard",
+     "line": 1048,
+     "seconds": 10,
+     "what": "cleanup wait on killed receiver"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0049_floor.py",
+     "kind": "hang_guard",
+     "line": 74,
+     "seconds": 20,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/63_veldo_0049_floor.py",
+     "kind": "hang_guard",
+     "line": 285,
+     "seconds": 20,
+     "what": "git fixture command output"
+    }
+   ],
+   "decision": "not declared",
+   "file": "63_veldo_0049_floor.py",
+   "notes": "accept_seconds=30 and 90 s dispatch deadlines are at or above 30 s.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/64_veldo_0050_proof.py",
+     "kind": "hang_guard",
+     "line": 454,
+     "seconds": 10,
+     "what": "join of gate killer watcher thread"
+    },
+    {
+     "file": "scripts/suites/64_veldo_0050_proof.py",
+     "kind": "hang_guard",
+     "line": 946,
+     "seconds": 10,
+     "what": "cleanup wait on killed receiver"
+    },
+    {
+     "file": "scripts/suites/64_veldo_0050_proof.py",
+     "kind": "hang_guard",
+     "line": 80,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "64_veldo_0050_proof.py",
+   "notes": "accept_seconds=30 and 90 s dispatch deadlines are at or above 30 s.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/65_veldo_0132_workflow.py",
+     "kind": "hang_guard",
+     "line": 103,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "65_veldo_0132_workflow.py",
+   "notes": "budget= hints are step counts, not seconds; cycle seconds only observed.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/65_veldo_0067_edges.py",
+     "kind": "hang_guard",
+     "line": 181,
+     "seconds": 10,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/65_veldo_0067_edges.py",
+     "kind": "hang_guard",
+     "line": 187,
+     "seconds": 10,
+     "what": "git fixture command output"
+    },
+    {
+     "file": "scripts/suites/65_veldo_0067_edges.py",
+     "kind": "hang_guard",
+     "line": 202,
+     "seconds": 10,
+     "what": "ssh-keygen signing subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "65_veldo_0067_edges.py",
+   "notes": "",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "readiness_wait",
+     "line": 398,
+     "seconds": 10,
+     "what": "polls for launched process to enter its scope cgroup"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "readiness_wait",
+     "line": 574,
+     "seconds": 25,
+     "what": "polls for engine to reach proxy and write state, or exit"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "readiness_wait",
+     "line": 588,
+     "seconds": 10,
+     "what": "waits for killed engine group to empty"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "readiness_wait",
+     "line": 741,
+     "seconds": 10,
+     "what": "waits for worker group to empty"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "readiness_wait",
+     "line": 786,
+     "seconds": 10,
+     "what": "waits for group to empty before retirement"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "hang_guard",
+     "line": 559,
+     "seconds": 2,
+     "what": "socket timeout on loopback proxy recv"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "hang_guard",
+     "line": 586,
+     "seconds": 10,
+     "what": "wait on killed engine process"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0042_clones.py",
+     "kind": "hang_guard",
+     "line": 836,
+     "seconds": 10,
+     "what": "cleanup wait on killed process"
+    }
+   ],
+   "decision": "declared",
+   "file": "66_veldo_0042_clones.py",
+   "notes": "Marker poll and proc.wait bounds of 30 s (lines 390, 395, 740, 770) are at the limit and not recorded.",
+   "part": 4,
+   "reason": "5 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/66_veldo_0047_authority.py",
+     "kind": "deadline",
+     "line": 669,
+     "seconds": 8,
+     "what": "second service instance must refuse the lock and exit"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0047_authority.py",
+     "kind": "readiness_wait",
+     "line": 814,
+     "seconds": 5,
+     "what": "polls for killed service unit to leave active state"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0047_authority.py",
+     "kind": "window",
+     "line": 817,
+     "seconds": 1.5,
+     "what": "sleeps 1.5 s and expects the unit not restarted"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0047_authority.py",
+     "kind": "deadline",
+     "line": 945,
+     "seconds": 20,
+     "what": "receiver must accept the launch within accept_seconds"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0047_authority.py",
+     "kind": "hang_guard",
+     "line": 676,
+     "seconds": 3,
+     "what": "wait after terminate of second instance"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0047_authority.py",
+     "kind": "hang_guard",
+     "line": 679,
+     "seconds": 5,
+     "what": "wait after kill of second instance"
+    },
+    {
+     "file": "scripts/suites/66_veldo_0047_authority.py",
+     "kind": "hang_guard",
+     "line": 1041,
+     "seconds": 5,
+     "what": "cleanup wait on killed child"
+    }
+   ],
+   "decision": "declared",
+   "file": "66_veldo_0047_authority.py",
+   "named_by_spec": true,
+   "notes": "Service calls use timeout=10 on a loopback socket (lines 338, 347, 363, 367); service start bound lives in product CS.start.",
+   "part": 4,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 51,
+     "seconds": 0.35,
+     "what": "tolerance on every measured heartbeat and stop interval"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 275,
+     "seconds": 0.25,
+     "what": "heartbeat every 0.25 s, graces 0.4 s"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 275,
+     "seconds": 1.0,
+     "what": "heartbeat lapse window of 1.0 s must fire"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 277,
+     "seconds": 1.0,
+     "what": "stop grace 1.0 s then kill grace 0.5 s timers"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 278,
+     "seconds": 0.3,
+     "what": "stop grace 0.3 s and kill grace 2.0 s timers"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "deadline",
+     "line": 290,
+     "seconds": 20,
+     "what": "receiver must accept the launch within accept_seconds"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "readiness_wait",
+     "line": 326,
+     "seconds": 10,
+     "what": "polls for a worker marker file"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "readiness_wait",
+     "line": 435,
+     "seconds": 10,
+     "what": "generic poll for heartbeats, cgroup entry or group gone"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "readiness_wait",
+     "line": 489,
+     "seconds": 15,
+     "what": "polls for the blocked model call answer marker"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 509,
+     "seconds": 1.9,
+     "what": "model call must have blocked at least 1.9 s"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 510,
+     "seconds": 0.6,
+     "what": "heartbeat gaps at most 0.25 s plus tolerance"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 548,
+     "seconds": 1.35,
+     "what": "lapse detected between 1.0 and 1.35 s"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 550,
+     "seconds": 0.05,
+     "what": "stop step within 0.05 s of uncertain time"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 603,
+     "seconds": 0.35,
+     "what": "term within tolerance of group signal"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 630,
+     "seconds": 1.0,
+     "what": "first shipped heartbeat within 1.0 s of release"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "readiness_wait",
+     "line": 646,
+     "seconds": 5,
+     "what": "polls for three beats of stubborn descendant"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 674,
+     "seconds": 1.35,
+     "what": "terminate 1.0 to 1.35 s after cooperative step"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "window",
+     "line": 675,
+     "seconds": 0.85,
+     "what": "kill 0.5 to 0.85 s after terminate"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "deadline",
+     "line": 711,
+     "seconds": 20,
+     "what": "receiver-absent launch must accept within accept_seconds"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "readiness_wait",
+     "line": 730,
+     "seconds": 5,
+     "what": "polls for three beats of lingering descendant"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "readiness_wait",
+     "line": 733,
+     "seconds": 5,
+     "what": "polls for worker death seen by pidfd watcher"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "deadline",
+     "line": 928,
+     "seconds": 5,
+     "what": "runner wait on orphaned dispatch bounded to 5 s"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "hang_guard",
+     "line": 650,
+     "seconds": 10,
+     "what": "join of death watcher thread"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "hang_guard",
+     "line": 739,
+     "seconds": 10,
+     "what": "wait on planted holder after kill"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0041_heartbeat.py",
+     "kind": "hang_guard",
+     "line": 927,
+     "seconds": 10,
+     "what": "wait on receiver just killed"
+    }
+   ],
+   "decision": "declared",
+   "file": "67_veldo_0041_heartbeat.py",
+   "notes": "Many more rows compare intervals with TOL (lines 512-684); the suite is timing sensitive throughout.",
+   "part": 4,
+   "reason": "22 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/66_veldo_0051_events.py",
+     "kind": "hang_guard",
+     "line": 194,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "66_veldo_0051_events.py",
+   "notes": "",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/67_veldo_0056_candidates.py",
+     "kind": "hang_guard",
+     "line": 110,
+     "seconds": 20,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0056_candidates.py",
+     "kind": "hang_guard",
+     "line": 266,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "67_veldo_0056_candidates.py",
+   "notes": "Other timeouts are 30 s or more.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "68_veldo_0137_policy_revision.py",
+   "notes": "",
+   "part": 4,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/68_veldo_0126_intake.py",
+     "kind": "hang_guard",
+     "line": 194,
+     "seconds": 20,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/68_veldo_0126_intake.py",
+     "kind": "hang_guard",
+     "line": 199,
+     "seconds": 20,
+     "what": "git fixture command output"
+    }
+   ],
+   "decision": "not declared",
+   "file": "68_veldo_0126_intake.py",
+   "notes": "",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/69_veldo_0058_gate_output.py",
+     "kind": "hang_guard",
+     "line": 883,
+     "seconds": 10,
+     "what": "join of watcher thread at teardown"
+    }
+   ],
+   "decision": "not declared",
+   "file": "69_veldo_0058_gate_output.py",
+   "notes": "All readiness polls and subprocess timeouts are 60 s or more.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/67_veldo_0135_offers.py",
+     "kind": "hang_guard",
+     "line": 800,
+     "seconds": 10,
+     "what": "cleanup wait on killed receiver"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0135_offers.py",
+     "kind": "hang_guard",
+     "line": 77,
+     "seconds": 20,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/67_veldo_0135_offers.py",
+     "kind": "hang_guard",
+     "line": 295,
+     "seconds": 20,
+     "what": "git fixture command output"
+    }
+   ],
+   "decision": "not declared",
+   "file": "67_veldo_0135_offers.py",
+   "notes": "accept_seconds=30 and 90 s dispatch deadlines are at or above 30 s.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/68_veldo_0136_hints.py",
+     "kind": "hang_guard",
+     "line": 123,
+     "seconds": 10,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/68_veldo_0136_hints.py",
+     "kind": "hang_guard",
+     "line": 128,
+     "seconds": 10,
+     "what": "git fixture command output"
+    }
+   ],
+   "decision": "not declared",
+   "file": "68_veldo_0136_hints.py",
+   "notes": "",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "68_veldo_0134_acceptance.py",
+   "notes": "Only 30 s subprocess timeouts.",
+   "part": 4,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/69_veldo_0068_settlement.py",
+     "kind": "hang_guard",
+     "line": 203,
+     "seconds": 10,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/69_veldo_0068_settlement.py",
+     "kind": "hang_guard",
+     "line": 208,
+     "seconds": 10,
+     "what": "git fixture command output"
+    },
+    {
+     "file": "scripts/suites/69_veldo_0068_settlement.py",
+     "kind": "hang_guard",
+     "line": 225,
+     "seconds": 10,
+     "what": "ssh-keygen signing subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "69_veldo_0068_settlement.py",
+   "notes": "Race barrier wait is 30 s, thread join 60 s.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/69_veldo_0133_dispositions.py",
+     "kind": "hang_guard",
+     "line": 359,
+     "seconds": 20,
+     "what": "wait for child process exit after its last reply"
+    },
+    {
+     "file": "scripts/suites/69_veldo_0133_dispositions.py",
+     "kind": "hang_guard",
+     "line": 143,
+     "seconds": 20,
+     "what": "fixture command output"
+    },
+    {
+     "file": "scripts/suites/69_veldo_0133_dispositions.py",
+     "kind": "hang_guard",
+     "line": 199,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "69_veldo_0133_dispositions.py",
+   "notes": "",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/70_veldo_0069_bindings.py",
+     "kind": "hang_guard",
+     "line": 147,
+     "seconds": 10,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/70_veldo_0069_bindings.py",
+     "kind": "hang_guard",
+     "line": 154,
+     "seconds": 10,
+     "what": "git fixture command output"
+    },
+    {
+     "file": "scripts/suites/70_veldo_0069_bindings.py",
+     "kind": "hang_guard",
+     "line": 173,
+     "seconds": 10,
+     "what": "signing subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "70_veldo_0069_bindings.py",
+   "notes": "accept_seconds=30 and longer dispatch bounds are at or above 30 s.",
+   "part": 4,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/70_veldo_0057_landing.py",
+     "kind": "hang_guard",
+     "line": 253,
+     "seconds": 20,
+     "what": "ssh-keygen key generation for fixture principals"
+    }
+   ],
+   "decision": "not declared",
+   "file": "70_veldo_0057_landing.py",
+   "notes": "Other timeouts are 60 s or more.",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/70_veldo_0073_activation.py",
+     "kind": "hang_guard",
+     "line": 166,
+     "seconds": 5,
+     "what": "loopback HTTP open against a redirecting stand-in origin"
+    },
+    {
+     "file": "scripts/suites/70_veldo_0073_activation.py",
+     "kind": "hang_guard",
+     "line": 416,
+     "seconds": 5,
+     "what": "loopback TLS open against a local stand-in server"
+    }
+   ],
+   "decision": "not declared",
+   "file": "70_veldo_0073_activation.py",
+   "notes": "",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "readiness_wait",
+     "line": 297,
+     "seconds": 20,
+     "what": "marker_for polls for the fixture worker's marker file"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "readiness_wait",
+     "line": 307,
+     "seconds": 20,
+     "what": "wait_state polls the dispatch record until it is running"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "deadline",
+     "line": 500,
+     "seconds": 20,
+     "what": "paused project's running dispatch must end within runner.wait"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "window",
+     "line": 509,
+     "seconds": 1,
+     "what": "observes one second that a pre-pause contract wrote no marker"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "deadline",
+     "line": 571,
+     "seconds": 20,
+     "what": "canceled project's running dispatch must end within runner.wait"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "deadline",
+     "line": 682,
+     "seconds": 20,
+     "what": "launched contract must end within runner.wait"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "deadline",
+     "line": 830,
+     "seconds": 20,
+     "what": "resumed owner's dispatch must end within runner.wait"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "hang_guard",
+     "line": 127,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "hang_guard",
+     "line": 132,
+     "seconds": 20,
+     "what": "git command in fixture setup"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0076_projects.py",
+     "kind": "hang_guard",
+     "line": 841,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "declared",
+   "file": "71_veldo_0076_projects.py",
+   "notes": "runner.wait(timeout=20) also at 743 and child.wait(20) at 946 in cleanup; pre_launch.wait(30) at 508 is out of range.",
+   "part": 5,
+   "reason": "7 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/71_veldo_0138_channel_service.py",
+     "kind": "readiness_wait",
+     "line": 88,
+     "seconds": 20,
+     "what": "wait() default: polls for a request settling or qualification status"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0138_channel_service.py",
+     "kind": "readiness_wait",
+     "line": 407,
+     "seconds": 15,
+     "what": "waits for n more channel passes of the running service"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0138_channel_service.py",
+     "kind": "readiness_wait",
+     "line": 548,
+     "seconds": 15,
+     "what": "waits for the service to publish a request (also 585, 601, 609, 675)"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0138_channel_service.py",
+     "kind": "hang_guard",
+     "line": 238,
+     "seconds": 15,
+     "what": "fixture systemctl stop waits for SIGTERMed service; kills on expiry, no row fails"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0138_channel_service.py",
+     "kind": "hang_guard",
+     "line": 241,
+     "seconds": 5,
+     "what": "reap after kill"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0138_channel_service.py",
+     "kind": "hang_guard",
+     "line": 267,
+     "seconds": 10,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "declared",
+   "file": "71_veldo_0138_channel_service.py",
+   "notes": "Suite-wide budget of 80 s caps every wait (line 86); service readiness wait is 30 s (line 225), out of range.",
+   "part": 5,
+   "reason": "3 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/72_veldo_0077_objectives.py",
+     "kind": "hang_guard",
+     "line": 179,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/72_veldo_0077_objectives.py",
+     "kind": "hang_guard",
+     "line": 184,
+     "seconds": 20,
+     "what": "git command in fixture setup"
+    },
+    {
+     "file": "scripts/suites/72_veldo_0077_objectives.py",
+     "kind": "hang_guard",
+     "line": 923,
+     "seconds": 20,
+     "what": "ssh-keygen signature verify in reader subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "72_veldo_0077_objectives.py",
+   "notes": "",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/72_veldo_0075_andon.py",
+     "kind": "hang_guard",
+     "line": 126,
+     "seconds": 10,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/72_veldo_0075_andon.py",
+     "kind": "hang_guard",
+     "line": 136,
+     "seconds": 10,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/72_veldo_0075_andon.py",
+     "kind": "hang_guard",
+     "line": 154,
+     "seconds": 10,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "not declared",
+   "file": "72_veldo_0075_andon.py",
+   "notes": "Hints at 373 (7 days) and 463 are false hits.",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/72_veldo_0128_reports.py",
+     "kind": "hang_guard",
+     "line": 198,
+     "seconds": 10,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "not declared",
+   "file": "72_veldo_0128_reports.py",
+   "notes": "Hint at 309 is a budget capacity, not time; all clocks are passed as now= values.",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/73_veldo_0089_team.py",
+     "kind": "hang_guard",
+     "line": 173,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/73_veldo_0089_team.py",
+     "kind": "hang_guard",
+     "line": 178,
+     "seconds": 20,
+     "what": "git command in fixture setup"
+    }
+   ],
+   "decision": "not declared",
+   "file": "73_veldo_0089_team.py",
+   "notes": "",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "readiness_wait",
+     "line": 2167,
+     "seconds": 5,
+     "what": "serve_calls answers handed calls until the delivery thread ends"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "readiness_wait",
+     "line": 2369,
+     "seconds": 5,
+     "what": "serve_until answers handed calls until predicate settles"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "readiness_wait",
+     "line": 3027,
+     "seconds": 10,
+     "what": "wait() default: polls live service for hint delivery, stream feed, stream close"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "readiness_wait",
+     "line": 3405,
+     "seconds": 5,
+     "what": "waits for resubscription to the new authority instance (also 3417, 3424)"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "hang_guard",
+     "line": 3015,
+     "seconds": 15,
+     "what": "fixture systemctl stop waits for SIGTERMed service; kills on expiry, no row fails"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "hang_guard",
+     "line": 2462,
+     "seconds": 5,
+     "what": "barrier between two in-process racing threads"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "hang_guard",
+     "line": 2212,
+     "seconds": 0.1,
+     "what": "join of delivery thread already seen ended by serve_calls"
+    },
+    {
+     "file": "scripts/suites/71_veldo_0130_api.py",
+     "kind": "hang_guard",
+     "line": 3018,
+     "seconds": 5,
+     "what": "reap after kill"
+    }
+   ],
+   "decision": "declared",
+   "file": "71_veldo_0130_api.py",
+   "notes": "Service readiness wait is 30 s (line 3002) and CC.send timeouts are 30 s, out of range; hints at 683 and 2604 are budgets, not time.",
+   "part": 5,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/73_veldo_0139_factory_setup.py",
+     "kind": "readiness_wait",
+     "line": 85,
+     "seconds": 20,
+     "what": "wait() default: polls for presented request and qualification status"
+    },
+    {
+     "file": "scripts/suites/73_veldo_0139_factory_setup.py",
+     "kind": "readiness_wait",
+     "line": 620,
+     "seconds": 15,
+     "what": "waits for n more channel passes of the running service"
+    },
+    {
+     "file": "scripts/suites/73_veldo_0139_factory_setup.py",
+     "kind": "hang_guard",
+     "line": 249,
+     "seconds": 15,
+     "what": "fixture systemctl stop waits for SIGTERMed service; kills on expiry, no row fails"
+    },
+    {
+     "file": "scripts/suites/73_veldo_0139_factory_setup.py",
+     "kind": "hang_guard",
+     "line": 252,
+     "seconds": 5,
+     "what": "reap after kill"
+    },
+    {
+     "file": "scripts/suites/73_veldo_0139_factory_setup.py",
+     "kind": "hang_guard",
+     "line": 264,
+     "seconds": 10,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "declared",
+   "file": "73_veldo_0139_factory_setup.py",
+   "notes": "Suite-wide budget of 90 s caps every wait (line 83); service readiness wait is 30 s (line 236), out of range.",
+   "part": 5,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/74_veldo_0140_standing_delegation.py",
+     "kind": "window",
+     "line": 584,
+     "seconds": 4,
+     "what": "delegation expires 4 s out; must be authorized before, then slept past"
+    },
+    {
+     "file": "scripts/suites/74_veldo_0140_standing_delegation.py",
+     "kind": "hang_guard",
+     "line": 150,
+     "seconds": 10,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "declared",
+   "file": "74_veldo_0140_standing_delegation.py",
+   "notes": "",
+   "part": 5,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/73_veldo_0078_backlog.py",
+     "kind": "hang_guard",
+     "line": 213,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/73_veldo_0078_backlog.py",
+     "kind": "hang_guard",
+     "line": 218,
+     "seconds": 20,
+     "what": "git command in fixture setup"
+    }
+   ],
+   "decision": "not declared",
+   "file": "73_veldo_0078_backlog.py",
+   "notes": "",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "deadline",
+     "line": 510,
+     "seconds": 5,
+     "what": "cap_stop: worker must terminate within 5 s of its cap report"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "deadline",
+     "line": 528,
+     "seconds": 5,
+     "what": "runner.wait for the stopped worker to end"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "readiness_wait",
+     "line": 553,
+     "seconds": 15,
+     "what": "marker_wait polls for the engine marker file"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "window",
+     "line": 940,
+     "seconds": 1,
+     "what": "contract deadline 1 s, sleeps 1.3 s, expects deadline_passed refusal"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "window",
+     "line": 1029,
+     "seconds": 3,
+     "what": "observes 3 s plus 0.5 s that a refused dispatch spawned nothing"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "window",
+     "line": 1109,
+     "seconds": 20,
+     "what": "asserts cap stop elapsed under 20 s"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "window",
+     "line": 1455,
+     "seconds": 3,
+     "what": "dispatch deadline 3 s against a 30 s sleep; expects timeout outcome"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "hang_guard",
+     "line": 143,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0062_accounts.py",
+     "kind": "hang_guard",
+     "line": 324,
+     "seconds": 10,
+     "what": "sqlite busy timeout in fixture engine"
+    }
+   ],
+   "decision": "declared",
+   "file": "75_veldo_0062_accounts.py",
+   "notes": "Rows depend on the product runner's stop and kill graces after the deadline or cap stop (in .veldo modules).",
+   "part": 5,
+   "reason": "7 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/75_veldo_0150_own_message_acceptance.py",
+     "kind": "hang_guard",
+     "line": 169,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/75_veldo_0150_own_message_acceptance.py",
+     "kind": "hang_guard",
+     "line": 174,
+     "seconds": 20,
+     "what": "git command in fixture setup"
+    }
+   ],
+   "decision": "not declared",
+   "file": "75_veldo_0150_own_message_acceptance.py",
+   "notes": "",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/76_veldo_0079_grooming.py",
+     "kind": "hang_guard",
+     "line": 224,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/76_veldo_0079_grooming.py",
+     "kind": "hang_guard",
+     "line": 229,
+     "seconds": 20,
+     "what": "git command in fixture setup"
+    }
+   ],
+   "decision": "not declared",
+   "file": "76_veldo_0079_grooming.py",
+   "notes": "",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/77_veldo_0149_adopted_activation.py",
+     "kind": "hang_guard",
+     "line": 174,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    },
+    {
+     "file": "scripts/suites/77_veldo_0149_adopted_activation.py",
+     "kind": "hang_guard",
+     "line": 179,
+     "seconds": 20,
+     "what": "git command in fixture setup"
+    },
+    {
+     "file": "scripts/suites/77_veldo_0149_adopted_activation.py",
+     "kind": "hang_guard",
+     "line": 195,
+     "seconds": 20,
+     "what": "short subprocess in fixture setup"
+    }
+   ],
+   "decision": "not declared",
+   "file": "77_veldo_0149_adopted_activation.py",
+   "notes": "",
+   "part": 5,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/78_veldo_0160_account_pool.py",
+     "kind": "readiness_wait",
+     "line": 448,
+     "seconds": 15,
+     "what": "wait_until default: polls for the account's first observed window (line 746)"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0160_account_pool.py",
+     "kind": "readiness_wait",
+     "line": 601,
+     "seconds": 20,
+     "what": "waits until all four engine processes wrote markers"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0160_account_pool.py",
+     "kind": "window",
+     "line": 657,
+     "seconds": 12,
+     "what": "account reset 12 s out; dispatches must be offered before it (row 676)"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0160_account_pool.py",
+     "kind": "readiness_wait",
+     "line": 696,
+     "seconds": 15,
+     "what": "waits out the reported reset plus 0.5 s"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0160_account_pool.py",
+     "kind": "hang_guard",
+     "line": 150,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "declared",
+   "file": "78_veldo_0160_account_pool.py",
+   "notes": "Fake engine's wait for a release file is 30 s (line 292), out of range.",
+   "part": 5,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "readiness_wait",
+     "line": 357,
+     "seconds": 10,
+     "what": "fake engine waits for its descendant's ready file"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "window",
+     "line": 444,
+     "seconds": 0.4,
+     "what": "graces 0.4 s; forced stop must take 0.7 to 4.8 s (row 1418)"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "readiness_wait",
+     "line": 587,
+     "seconds": 15,
+     "what": "marker_wait polls for engine marker and children list"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "window",
+     "line": 1162,
+     "seconds": 2,
+     "what": "observes 2 s plus 0.3 s that a refused dispatch spawned nothing"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "window",
+     "line": 1214,
+     "seconds": 20,
+     "what": "asserts cap stop of the worker elapsed under 20 s"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "window",
+     "line": 1411,
+     "seconds": 5,
+     "what": "cooperative stop must end the dispatch in under 5 s"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "hang_guard",
+     "line": 1675,
+     "seconds": 10,
+     "what": "cleanup wait for a stopped child"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "hang_guard",
+     "line": 281,
+     "seconds": 10,
+     "what": "sqlite busy timeout in fixture engine"
+    },
+    {
+     "file": "scripts/suites/78_veldo_0060_claude_adapter.py",
+     "kind": "hang_guard",
+     "line": 173,
+     "seconds": 20,
+     "what": "ssh-keygen key generation"
+    }
+   ],
+   "decision": "declared",
+   "file": "78_veldo_0060_claude_adapter.py",
+   "notes": "systemctl cleanup calls at 1661-1669 use timeout=20 as hang guards.",
+   "part": 5,
+   "reason": "6 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/79_veldo_0061_codex_adapter.py",
+     "kind": "window",
+     "line": 357,
+     "seconds": 0.4,
+     "what": "stop and kill graces passed to product; forced-stop row measures them"
+    },
+    {
+     "file": "scripts/suites/79_veldo_0061_codex_adapter.py",
+     "kind": "readiness_wait",
+     "line": 463,
+     "seconds": 10,
+     "what": "polls for a worker or helper marker file to appear"
+    },
+    {
+     "file": "scripts/suites/79_veldo_0061_codex_adapter.py",
+     "kind": "window",
+     "line": 938,
+     "seconds": 5,
+     "what": "cooperative stop must end the run in under 5 s"
+    },
+    {
+     "file": "scripts/suites/79_veldo_0061_codex_adapter.py",
+     "kind": "window",
+     "line": 948,
+     "seconds": 4.8,
+     "what": "forced stop must end within two graces plus 4 s"
+    },
+    {
+     "file": "scripts/suites/79_veldo_0061_codex_adapter.py",
+     "kind": "hang_guard",
+     "line": 1147,
+     "seconds": 10,
+     "what": "reaps a killed launch child at cleanup"
+    },
+    {
+     "file": "scripts/suites/79_veldo_0061_codex_adapter.py",
+     "kind": "hang_guard",
+     "line": 108,
+     "seconds": 20,
+     "what": "systemctl --user call"
+    },
+    {
+     "file": "scripts/suites/79_veldo_0061_codex_adapter.py",
+     "kind": "hang_guard",
+     "line": 148,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "declared",
+   "file": "79_veldo_0061_codex_adapter.py",
+   "notes": "Fake children poll at 0.05 s; dispatch deadline 40 s and runner wait 60 s are over the limit.",
+   "part": 6,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/80_veldo_0155_claude_baseline.py",
+     "kind": "window",
+     "line": 751,
+     "seconds": 2.0,
+     "what": "login stop must land before the fake engine's 2 s turn delay ends"
+    },
+    {
+     "file": "scripts/suites/80_veldo_0155_claude_baseline.py",
+     "kind": "hang_guard",
+     "line": 1124,
+     "seconds": 10,
+     "what": "reaps a killed launch child at cleanup"
+    },
+    {
+     "file": "scripts/suites/80_veldo_0155_claude_baseline.py",
+     "kind": "hang_guard",
+     "line": 226,
+     "seconds": 20,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/80_veldo_0155_claude_baseline.py",
+     "kind": "hang_guard",
+     "line": 1110,
+     "seconds": 20,
+     "what": "systemctl stop of the suite slice"
+    }
+   ],
+   "decision": "declared",
+   "file": "80_veldo_0155_claude_baseline.py",
+   "notes": "Stop graces of 0.4 s are passed to product (line 596) but no row measures them; init wait bound lives in product.",
+   "part": 6,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/81_veldo_0156_codex_baseline.py",
+     "kind": "hang_guard",
+     "line": 869,
+     "seconds": 10,
+     "what": "reaps a killed launch child at cleanup"
+    },
+    {
+     "file": "scripts/suites/81_veldo_0156_codex_baseline.py",
+     "kind": "hang_guard",
+     "line": 147,
+     "seconds": 20,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/81_veldo_0156_codex_baseline.py",
+     "kind": "hang_guard",
+     "line": 855,
+     "seconds": 20,
+     "what": "systemctl stop of the suite slice"
+    }
+   ],
+   "decision": "not declared",
+   "file": "81_veldo_0156_codex_baseline.py",
+   "notes": "Stop graces of 0.4 s passed to product (line 423); runs wait on the product's own bounds, dispatch deadline 40 s.",
+   "part": 6,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/82_veldo_0144_mcp_catalog.py",
+     "kind": "window",
+     "line": 161,
+     "seconds": 0.08,
+     "what": "fake secret store holds 0.08 s so the watcher thread scans during the write"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0144_mcp_catalog.py",
+     "kind": "hang_guard",
+     "line": 401,
+     "seconds": 5,
+     "what": "joins the watcher thread after its flag clears"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0144_mcp_catalog.py",
+     "kind": "hang_guard",
+     "line": 366,
+     "seconds": 15,
+     "what": "scanner subprocess over a few files"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0144_mcp_catalog.py",
+     "kind": "hang_guard",
+     "line": 75,
+     "seconds": 20,
+     "what": "short helper subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "82_veldo_0144_mcp_catalog.py",
+   "notes": "Loopback HTTPS calls use 20 s socket and 25 s join guards.",
+   "part": 6,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "window",
+     "line": 784,
+     "seconds": 1.2,
+     "what": "hint delivery ends after 1.2 s with no hint; late hints are missed"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "window",
+     "line": 914,
+     "seconds": 0.12,
+     "what": "fake worker paces events 0.12 s; frames must arrive before its exit"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "readiness_wait",
+     "line": 937,
+     "seconds": 10,
+     "what": "waits for the live stream consumer thread to see the stream close"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "window",
+     "line": 1677,
+     "seconds": 1,
+     "what": "waits up to 1 s for the second fill to queue behind the first"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "readiness_wait",
+     "line": 1918,
+     "seconds": 0.5,
+     "what": "reader thread must drain a page within 0.5 s or the row fails"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "hang_guard",
+     "line": 1674,
+     "seconds": 3,
+     "what": "thread event set at once in registration-race row"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "hang_guard",
+     "line": 1679,
+     "seconds": 3,
+     "what": "joins an in-process fill thread"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0141_execution_record.py",
+     "kind": "hang_guard",
+     "line": 1890,
+     "seconds": 3,
+     "what": "joins an in-process stream reader thread"
+    }
+   ],
+   "decision": "declared",
+   "file": "82_veldo_0141_execution_record.py",
+   "notes": "Stop graces 0.4 s passed to product (line 561); serve_hints overall bound is 90 s; other joins of 10 s are stream thread guards.",
+   "part": 6,
+   "reason": "5 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/82_veldo_0085_decomposition.py",
+     "kind": "readiness_wait",
+     "line": 809,
+     "seconds": 20,
+     "what": "two publisher processes must both reach the barrier within 20 s"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0085_decomposition.py",
+     "kind": "hang_guard",
+     "line": 831,
+     "seconds": 5,
+     "what": "joins a terminated worker process"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0085_decomposition.py",
+     "kind": "hang_guard",
+     "line": 832,
+     "seconds": 5,
+     "what": "polls a pipe for an answer already sent"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0085_decomposition.py",
+     "kind": "hang_guard",
+     "line": 506,
+     "seconds": 10,
+     "what": "short helper subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "82_veldo_0085_decomposition.py",
+   "notes": "Worker process join is 30 s.",
+   "part": 6,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/82_veldo_0129_worker_wiring.py",
+     "kind": "hang_guard",
+     "line": 141,
+     "seconds": 15,
+     "what": "git fixture command"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0129_worker_wiring.py",
+     "kind": "hang_guard",
+     "line": 732,
+     "seconds": 20,
+     "what": "systemctl stop of the suite slice"
+    }
+   ],
+   "decision": "declared",
+   "file": "82_veldo_0129_worker_wiring.py",
+   "named_by_spec": true,
+   "notes": "Stop graces 0.3 s are in a config passed to product (line 422); no row stops a run.",
+   "part": 6,
+   "reason": "named by the spec: its control has failed under the stage's load"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/82_veldo_0165_launch_hygiene.py",
+     "kind": "hang_guard",
+     "line": 250,
+     "seconds": 5,
+     "what": "short helper subprocess inside the fake engine"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0165_launch_hygiene.py",
+     "kind": "hang_guard",
+     "line": 664,
+     "seconds": 10,
+     "what": "short helper subprocess"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0165_launch_hygiene.py",
+     "kind": "hang_guard",
+     "line": 100,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "82_veldo_0165_launch_hygiene.py",
+   "notes": "Fake engine file wait is 30 s and dispatch deadline 40 s, both over the limit.",
+   "part": 6,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/82_veldo_0173_tool_registry.py",
+     "kind": "hang_guard",
+     "line": 548,
+     "seconds": 15,
+     "what": "short helper subprocess"
+    },
+    {
+     "file": "scripts/suites/82_veldo_0173_tool_registry.py",
+     "kind": "hang_guard",
+     "line": 110,
+     "seconds": 20,
+     "what": "git fixture command"
+    }
+   ],
+   "decision": "not declared",
+   "file": "82_veldo_0173_tool_registry.py",
+   "notes": "Dispatch deadline is 40 s; runner wait uses product bounds.",
+   "part": 6,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "82_veldo_0172_live_formats.py",
+   "notes": "",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/84_veldo_0169_project_handouts.py",
+     "kind": "hang_guard",
+     "line": 36,
+     "seconds": 10,
+     "what": "ssh-keygen signing call"
+    },
+    {
+     "file": "scripts/suites/84_veldo_0169_project_handouts.py",
+     "kind": "hang_guard",
+     "line": 246,
+     "seconds": 10,
+     "what": "short fixture subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "84_veldo_0169_project_handouts.py",
+   "notes": "Race row runs a flipper process against 0.02 s slowed claims; its only bound is a 60 s wait.",
+   "part": 6,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "readiness_wait",
+     "line": 111,
+     "seconds": 8.0,
+     "what": "WAIT: default bound of every wait for a service pass or dispatch state"
+    },
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "window",
+     "line": 115,
+     "seconds": 5.0,
+     "what": "LEAD: unit must be seen waiting before a reset at least 5 s out"
+    },
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "window",
+     "line": 773,
+     "seconds": 1.5,
+     "what": "observes 1.5 s after service boot expecting no pass"
+    },
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "window",
+     "line": 879,
+     "seconds": 2.0,
+     "what": "observes 2 s after receiver death, then reads the passes"
+    },
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "window",
+     "line": 1080,
+     "seconds": 8.0,
+     "what": "owner stop must end the dispatch in under WAIT seconds"
+    },
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "hang_guard",
+     "line": 440,
+     "seconds": 10,
+     "what": "sqlite read-only connection busy timeout"
+    },
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "hang_guard",
+     "line": 1181,
+     "seconds": 10,
+     "what": "joins the watcher thread after its flag is set"
+    },
+    {
+     "file": "scripts/suites/83_veldo_0154_factory_loop.py",
+     "kind": "hang_guard",
+     "line": 1192,
+     "seconds": 10,
+     "what": "reaps a killed service process"
+    }
+   ],
+   "decision": "declared",
+   "file": "83_veldo_0154_factory_loop.py",
+   "named_by_spec": true,
+   "notes": "Stop graces of 1 s are passed to product (line 264); a failed wait stalls every later wait; budgets of 45 s and 100 s are over the limit.",
+   "part": 6,
+   "reason": "5 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/85_veldo_0158_credential_delivery.py",
+     "kind": "readiness_wait",
+     "line": 1010,
+     "seconds": 20,
+     "what": "polls for the released run's process group to empty"
+    },
+    {
+     "file": "scripts/suites/85_veldo_0158_credential_delivery.py",
+     "kind": "hang_guard",
+     "line": 373,
+     "seconds": 10,
+     "what": "fake engine reaps a child after closing its stdin"
+    },
+    {
+     "file": "scripts/suites/85_veldo_0158_credential_delivery.py",
+     "kind": "hang_guard",
+     "line": 181,
+     "seconds": 10,
+     "what": "ssh-keygen signing call"
+    },
+    {
+     "file": "scripts/suites/85_veldo_0158_credential_delivery.py",
+     "kind": "hang_guard",
+     "line": 696,
+     "seconds": 10,
+     "what": "passkey helper subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "85_veldo_0158_credential_delivery.py",
+   "notes": "Marker and hold polls are 30 s; stop graces 0.4 s passed to product (line 603).",
+   "part": 6,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/86_veldo_0148_re_land.py",
+     "kind": "window",
+     "line": 1390,
+     "seconds": 5.25,
+     "what": "receiver preparation held 5.25 s must not spend the heartbeat placement budget"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0148_re_land.py",
+     "kind": "window",
+     "line": 1403,
+     "seconds": 5.25,
+     "what": "wrapper delayed 5.25 s must outlast the product heartbeat timeout"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0148_re_land.py",
+     "kind": "deadline",
+     "line": 1441,
+     "seconds": 20,
+     "what": "placement probe process, which runs 5 s or more, must answer in 20 s"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0148_re_land.py",
+     "kind": "hang_guard",
+     "line": 1429,
+     "seconds": 5,
+     "what": "probe waits for a one-line engine child"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0148_re_land.py",
+     "kind": "hang_guard",
+     "line": 1445,
+     "seconds": 5,
+     "what": "reaps a killed probe process"
+    }
+   ],
+   "decision": "declared",
+   "file": "86_veldo_0148_re_land.py",
+   "notes": "Receiver rows depend on product heartbeat placement and report timeouts in control_heartbeat; CHILD_WAIT is 600 s; stop graces 1 s (line 797).",
+   "part": 6,
+   "reason": "3 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/86_veldo_0127_agent_configuration.py",
+     "kind": "window",
+     "line": 728,
+     "seconds": 15,
+     "what": "faulted run must be refused within 15 s elapsed"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0127_agent_configuration.py",
+     "kind": "hang_guard",
+     "line": 134,
+     "seconds": 10,
+     "what": "short helper subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "86_veldo_0127_agent_configuration.py",
+   "notes": "Rows depend on the product init bound; the factory fixture deadline is 30 s (line 279).",
+   "part": 6,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "83_veldo_0166_usage_windows.py",
+   "notes": "",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "86_veldo_0168_text.py",
+   "notes": "",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "86_veldo_0186_setup_assets.py",
+   "notes": "",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "87_veldo_0127_codex_delivery.py",
+   "notes": "All work is in a delivery helper outside the suite file, run on two threads; its bounds were not surveyed.",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "88_veldo_0127_feature_defaults.py",
+   "notes": "",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "89_veldo_0127_feature_listing.py",
+   "notes": "",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "90_veldo_0127_feature_profile.py",
+   "notes": "",
+   "part": 6,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/85_veldo_0171_setup_api.py",
+     "kind": "readiness_wait",
+     "line": 309,
+     "seconds": 5,
+     "what": "service start waits for READY or LISTEN; default bound in support/setup_runtime.py"
+    },
+    {
+     "file": "scripts/suites/85_veldo_0171_setup_api.py",
+     "kind": "hang_guard",
+     "line": 546,
+     "seconds": 3,
+     "what": "HTTP socket timeout on loopback calls to the API service"
+    },
+    {
+     "file": "scripts/suites/85_veldo_0171_setup_api.py",
+     "kind": "hang_guard",
+     "line": 333,
+     "seconds": 5,
+     "what": "reaps a killed service process"
+    },
+    {
+     "file": "scripts/suites/85_veldo_0171_setup_api.py",
+     "kind": "hang_guard",
+     "line": 339,
+     "seconds": 5,
+     "what": "reaps a killed service process at close"
+    }
+   ],
+   "decision": "declared",
+   "file": "85_veldo_0171_setup_api.py",
+   "notes": "Service stop waits 15 s after SIGTERM then kills (line 330); the 3 s HTTP timeout guards every API row.",
+   "part": 6,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+     "kind": "readiness_wait",
+     "line": 326,
+     "seconds": 5,
+     "what": "service start waits for READY or LISTEN; default bound in support/setup_runtime.py"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+     "kind": "readiness_wait",
+     "line": 2058,
+     "seconds": 5,
+     "what": "manually started service must report READY within the 5 s default"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+     "kind": "hang_guard",
+     "line": 350,
+     "seconds": 5,
+     "what": "reaps a killed service process"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+     "kind": "hang_guard",
+     "line": 360,
+     "seconds": 5,
+     "what": "reaps a killed service process at close"
+    },
+    {
+     "file": "scripts/suites/86_veldo_0189_engine_upgrade.py",
+     "kind": "hang_guard",
+     "line": 450,
+     "seconds": 10,
+     "what": "short helper subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "86_veldo_0189_engine_upgrade.py",
+   "named_by_spec": true,
+   "notes": "Service stop waits 15 s after SIGTERM then kills (lines 347, 2070).",
+   "part": 6,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/91_veldo_0167_setup_records.py",
+     "kind": "readiness_wait",
+     "line": 208,
+     "seconds": 10,
+     "what": "accept blocks until the spawned worker connects to the release socket"
+    },
+    {
+     "file": "scripts/suites/91_veldo_0167_setup_records.py",
+     "kind": "readiness_wait",
+     "line": 249,
+     "seconds": 5,
+     "what": "waits for a subscriber API process to print its ready line"
+    },
+    {
+     "file": "scripts/suites/91_veldo_0167_setup_records.py",
+     "kind": "readiness_wait",
+     "line": 256,
+     "seconds": 10,
+     "what": "waits for the receiver reap thread after the worker is released"
+    },
+    {
+     "file": "scripts/suites/91_veldo_0167_setup_records.py",
+     "kind": "readiness_wait",
+     "line": 258,
+     "seconds": 4,
+     "what": "waits for each subscriber process to print the next record hint"
+    },
+    {
+     "file": "scripts/suites/91_veldo_0167_setup_records.py",
+     "kind": "hang_guard",
+     "line": 289,
+     "seconds": 5,
+     "what": "reaps a terminated worker"
+    },
+    {
+     "file": "scripts/suites/91_veldo_0167_setup_records.py",
+     "kind": "hang_guard",
+     "line": 290,
+     "seconds": 5,
+     "what": "joins the reap thread at cleanup"
+    },
+    {
+     "file": "scripts/suites/91_veldo_0167_setup_records.py",
+     "kind": "hang_guard",
+     "line": 294,
+     "seconds": 5,
+     "what": "reaps a subscriber process after closing its stdin"
+    }
+   ],
+   "decision": "declared",
+   "file": "91_veldo_0167_setup_records.py",
+   "notes": "Uses the 0171 harness and review helpers, so their service start (5 s) and HTTP (3 s) bounds apply too.",
+   "part": 6,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/87_veldo_0170_receiver_trust.py",
+     "kind": "deadline",
+     "line": 351,
+     "seconds": 15,
+     "what": "runner.wait for a launched worker dispatch to reach its terminal record"
+    }
+   ],
+   "decision": "declared",
+   "file": "87_veldo_0170_receiver_trust.py",
+   "notes": "",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/91_veldo_0151_specialists.py",
+     "kind": "hang_guard",
+     "line": 144,
+     "seconds": 20,
+     "what": "ssh-keygen style key subprocess"
+    },
+    {
+     "file": "scripts/suites/91_veldo_0151_specialists.py",
+     "kind": "hang_guard",
+     "line": 149,
+     "seconds": 20,
+     "what": "signing subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "91_veldo_0151_specialists.py",
+   "notes": "",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "deadline",
+     "line": 193,
+     "seconds": 15,
+     "what": "runner.wait for the first coordination dispatch to end"
+    },
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "deadline",
+     "line": 236,
+     "seconds": 15,
+     "what": "runner.wait for a cycle dispatch to end"
+    },
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "deadline",
+     "line": 275,
+     "seconds": 15,
+     "what": "runner.wait for the held cycle dispatch to end"
+    },
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "deadline",
+     "line": 284,
+     "seconds": 15,
+     "what": "runner.wait for follow-up dispatches to end"
+    },
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "deadline",
+     "line": 366,
+     "seconds": 15,
+     "what": "runner.wait for the active engineering dispatch to end"
+    },
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "deadline",
+     "line": 387,
+     "seconds": 15,
+     "what": "runner.wait for a launch to end"
+    },
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "readiness_wait",
+     "line": 115,
+     "seconds": 10,
+     "what": "fixture worker polls up to 10 s for engineering-hold file removal"
+    },
+    {
+     "file": "scripts/suites/92_veldo_0088_pm_cycles.py",
+     "kind": "window",
+     "line": 111,
+     "seconds": 1,
+     "what": "fixture worker holds 1 s so a cycle is observed still active"
+    }
+   ],
+   "decision": "declared",
+   "file": "92_veldo_0088_pm_cycles.py",
+   "notes": "Six runner.wait(timeout=15) calls on real worker processes; worker hold sleep is 1 s by default.",
+   "part": 7,
+   "reason": "8 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/93_veldo_0152_intake_routes.py",
+     "kind": "deadline",
+     "line": 338,
+     "seconds": 15,
+     "what": "runner.wait for a launched dispatch to end"
+    }
+   ],
+   "decision": "declared",
+   "file": "93_veldo_0152_intake_routes.py",
+   "notes": "",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/94_veldo_0162_configuration_routes.py",
+     "kind": "hang_guard",
+     "line": 332,
+     "seconds": 2,
+     "what": "unix listener accept of an already published hint"
+    },
+    {
+     "file": "scripts/suites/94_veldo_0162_configuration_routes.py",
+     "kind": "hang_guard",
+     "line": 361,
+     "seconds": 2,
+     "what": "unix listener accept of an already published hint"
+    }
+   ],
+   "decision": "not declared",
+   "file": "94_veldo_0162_configuration_routes.py",
+   "notes": "",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "95_veldo_0203_owner_revisions.py",
+   "notes": "",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "96_veldo_0204_reservation_policies.py",
+   "notes": "Hint settle(limit=8) is a pass count, not seconds.",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "97_veldo_0204_gate_resources.py",
+   "notes": "Workers run on fake processes; only a 60 s stage deadline.",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/98_veldo_0204_mutation_receipts.py",
+     "kind": "readiness_wait",
+     "line": 378,
+     "seconds": 5,
+     "what": "polls for the tracker child to write its ready file"
+    },
+    {
+     "file": "scripts/suites/98_veldo_0204_mutation_receipts.py",
+     "kind": "hang_guard",
+     "line": 385,
+     "seconds": 5,
+     "what": "wait for a SIGKILLed child to be reaped"
+    }
+   ],
+   "decision": "declared",
+   "file": "98_veldo_0204_mutation_receipts.py",
+   "notes": "Other deadline rows patch gate.time.monotonic with a fake clock.",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/99_veldo_0205_reuse.py",
+     "kind": "hang_guard",
+     "line": 531,
+     "seconds": 15,
+     "what": "sandboxed python probe subprocess"
+    },
+    {
+     "file": "scripts/suites/99_veldo_0205_reuse.py",
+     "kind": "hang_guard",
+     "line": 574,
+     "seconds": 15,
+     "what": "veldo-guard.sh bash subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "99_veldo_0205_reuse.py",
+   "notes": "",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/100_veldo_0207_case_reuse.py",
+     "kind": "deadline",
+     "line": 148,
+     "seconds": 20,
+     "what": "gate.Workers stage deadline for one real traced case worker"
+    },
+    {
+     "file": "scripts/suites/100_veldo_0207_case_reuse.py",
+     "kind": "hang_guard",
+     "line": 232,
+     "seconds": 5,
+     "what": "loopback connect to a closed port inside the sandbox"
+    },
+    {
+     "file": "scripts/suites/100_veldo_0207_case_reuse.py",
+     "kind": "hang_guard",
+     "line": 297,
+     "seconds": 15,
+     "what": "traced python startup subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "100_veldo_0207_case_reuse.py",
+   "notes": "",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/101_veldo_0208_landing_reuse.py",
+     "kind": "hang_guard",
+     "line": 124,
+     "seconds": 2,
+     "what": "loopback connect to the test listener from the confined probe"
+    },
+    {
+     "file": "scripts/suites/101_veldo_0208_landing_reuse.py",
+     "kind": "hang_guard",
+     "line": 2018,
+     "seconds": 5,
+     "what": "loopback connect to own listener"
+    },
+    {
+     "file": "scripts/suites/101_veldo_0208_landing_reuse.py",
+     "kind": "hang_guard",
+     "line": 2027,
+     "seconds": 5,
+     "what": "loopback connect to the outside listener"
+    }
+   ],
+   "decision": "not declared",
+   "file": "101_veldo_0208_landing_reuse.py",
+   "notes": "About 16 further subprocess timeouts of 20 s on confined short commands, all hang guards; the rest are 30 s or more.",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 450,
+     "seconds": 1.5,
+     "what": "sleeps 1.5 s then expects the orphaned grandchild reaped"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "readiness_wait",
+     "line": 667,
+     "seconds": 10,
+     "what": "polls for the escaped descendant to end after the agent"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1058,
+     "seconds": 1,
+     "what": "sets NAMESPACE_START_SECONDS to 1; start wait must time out"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1076,
+     "seconds": 3,
+     "what": "asserts both start waits measured between 0.9 and 3 s"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "readiness_wait",
+     "line": 1105,
+     "seconds": 20,
+     "what": "polls for the hung namespace helper to appear"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "deadline",
+     "line": 1112,
+     "seconds": 20,
+     "what": "signalled launcher with hung helper must exit"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1117,
+     "seconds": 0.2,
+     "what": "sleeps 0.2 s then expects no hung helper left"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1124,
+     "seconds": 3,
+     "what": "asserts the stop ended the hung start in under 3 s"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "hang_guard",
+     "line": 1355,
+     "seconds": 10,
+     "what": "lease holder exits on stdin close"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1905,
+     "seconds": 1,
+     "what": "GRACE_SECONDS patched to 1; term-ignoring tree killed after grace"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1907,
+     "seconds": 20,
+     "what": "asserts the kill after grace took under 20 s"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1908,
+     "seconds": 1.0,
+     "what": "sleeps 1 s then expects launcher still alive under ignored SIGINT"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "window",
+     "line": 1924,
+     "seconds": 3,
+     "what": "sleeps 3 s then expects the child never wrote its late marker"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "readiness_wait",
+     "line": 1954,
+     "seconds": 10,
+     "what": "polls for the killed launcher's agent and descendants to be gone"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "hang_guard",
+     "line": 473,
+     "seconds": 5,
+     "what": "loopback tcp connect from the confined probe"
+    },
+    {
+     "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py",
+     "kind": "hang_guard",
+     "line": 189,
+     "seconds": 15,
+     "what": "network probe of crates.io index before cargo fetch"
+    }
+   ],
+   "decision": "declared",
+   "file": "102_veldo_0210_agent_profile_runtime.py",
+   "notes": "Many further waits are 30 s or more (marker polls, communicate 60).",
+   "part": 7,
+   "reason": "13 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/103_veldo_0142_git_identities.py",
+     "kind": "hang_guard",
+     "line": 128,
+     "seconds": 20,
+     "what": "git subprocess"
+    },
+    {
+     "file": "scripts/suites/103_veldo_0142_git_identities.py",
+     "kind": "hang_guard",
+     "line": 384,
+     "seconds": 20,
+     "what": "git subprocess"
+    },
+    {
+     "file": "scripts/suites/103_veldo_0142_git_identities.py",
+     "kind": "hang_guard",
+     "line": 420,
+     "seconds": 20,
+     "what": "spawned git commit communicate"
+    }
+   ],
+   "decision": "not declared",
+   "file": "103_veldo_0142_git_identities.py",
+   "notes": "",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/104_veldo_0210_mutation_workers.py",
+     "kind": "readiness_wait",
+     "line": 166,
+     "seconds": 5,
+     "what": "polls 500 x 0.01 s for the descendant's lock to free after launcher kill"
+    }
+   ],
+   "decision": "declared",
+   "file": "104_veldo_0210_mutation_workers.py",
+   "notes": "",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/103_veldo_0211_borrowed_login.py",
+     "kind": "readiness_wait",
+     "line": 550,
+     "seconds": 20,
+     "what": "polls for the login lease to be free after the capture is killed"
+    },
+    {
+     "file": "scripts/suites/103_veldo_0211_borrowed_login.py",
+     "kind": "hang_guard",
+     "line": 109,
+     "seconds": 15,
+     "what": "fake engine python subprocess"
+    }
+   ],
+   "decision": "declared",
+   "file": "103_veldo_0211_borrowed_login.py",
+   "notes": "",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "104_veldo_0164_scoped_reads.py",
+   "notes": "",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+     "kind": "hang_guard",
+     "line": 156,
+     "seconds": 10,
+     "what": "fixture engine posts to the loopback provider"
+    },
+    {
+     "file": "scripts/suites/106_veldo_0185_dispatch_setup.py",
+     "kind": "hang_guard",
+     "line": 287,
+     "seconds": 10,
+     "what": "sqlite read-only connect busy timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "106_veldo_0185_dispatch_setup.py",
+   "notes": "A 90 s journey poll at line 785 is over the limit.",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "deadline",
+     "line": 308,
+     "seconds": 4,
+     "what": "probe subprocess cut to 4 s must time out and be stopped"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 376,
+     "seconds": 1,
+     "what": "plugin.STALL set to 1 s; no-progress stall must be reported"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 398,
+     "seconds": 5,
+     "what": "asserts the stall refusal came in under 5 s"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 392,
+     "seconds": 4,
+     "what": "four burners run 4 s so CPU progress is seen within the stall window"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 393,
+     "seconds": 3,
+     "what": "timer writes the backfill-complete log after 3 s"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 394,
+     "seconds": 2,
+     "what": "plugin.STALL set to 2 s while burners must show CPU progress"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 400,
+     "seconds": 2.5,
+     "what": "asserts the working wait lasted at least 2.5 s"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 402,
+     "seconds": 1,
+     "what": "falsifier waits 1 s for a log line and passes silently"
+    },
+    {
+     "file": "scripts/suites/105_veldo_0182_memory.py",
+     "kind": "window",
+     "line": 481,
+     "seconds": 0.3,
+     "what": "copies a live WAL store at 0.12 s spacing beside a 0.05 s writer"
+    }
+   ],
+   "decision": "declared",
+   "file": "105_veldo_0182_memory.py",
+   "notes": "worker/backfill-bounded measures CPU progress of its own processes, so it is load sensitive by design.",
+   "part": 7,
+   "reason": "9 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/107_veldo_0153_identity_push.py",
+     "kind": "hang_guard",
+     "line": 254,
+     "seconds": 1,
+     "what": "connect to a non-routable address expected denied at once by the fence"
+    }
+   ],
+   "decision": "not declared",
+   "file": "107_veldo_0153_identity_push.py",
+   "notes": "",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "108_veldo_0153_executor_profile.py",
+   "notes": "",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/109_veldo_0161_adoption.py",
+     "kind": "hang_guard",
+     "line": 661,
+     "seconds": 5,
+     "what": "join of the fixture agent thread after wake"
+    },
+    {
+     "file": "scripts/suites/109_veldo_0161_adoption.py",
+     "kind": "hang_guard",
+     "line": 1914,
+     "seconds": 10,
+     "what": "wait for a killed service process"
+    },
+    {
+     "file": "scripts/suites/109_veldo_0161_adoption.py",
+     "kind": "hang_guard",
+     "line": 489,
+     "seconds": 20,
+     "what": "signed send to the loopback service socket"
+    }
+   ],
+   "decision": "not declared",
+   "file": "109_veldo_0161_adoption.py",
+   "notes": "Readiness polls are 30 s (service socket, wait_state); the take-on-retry row depends on product CS.ADOPTION_RETRY_SECONDS (5 s).",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/110_veldo_0143_new_project.py",
+     "kind": "hang_guard",
+     "line": 1984,
+     "seconds": 5,
+     "what": "join of the fixture agent thread after wake"
+    },
+    {
+     "file": "scripts/suites/110_veldo_0143_new_project.py",
+     "kind": "hang_guard",
+     "line": 270,
+     "seconds": 20,
+     "what": "key generation subprocess"
+    },
+    {
+     "file": "scripts/suites/110_veldo_0143_new_project.py",
+     "kind": "hang_guard",
+     "line": 1365,
+     "seconds": 20,
+     "what": "key generation subprocess"
+    }
+   ],
+   "decision": "not declared",
+   "file": "110_veldo_0143_new_project.py",
+   "notes": "Provisioning polls are 120 s and runner.wait is 60 s.",
+   "part": 7,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/112_veldo_0215_case_deadlines.py",
+     "kind": "window",
+     "line": 339,
+     "seconds": 0.2,
+     "what": "real hung child given a 0.2 s budget must be killed and reaped"
+    },
+    {
+     "file": "scripts/suites/112_veldo_0215_case_deadlines.py",
+     "kind": "deadline",
+     "line": 328,
+     "seconds": 20,
+     "what": "gate.Workers stage deadline around the real kill and reap"
+    }
+   ],
+   "decision": "declared",
+   "file": "112_veldo_0215_case_deadlines.py",
+   "notes": "All other deadline rows run on a patched fake clock.",
+   "part": 7,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "113_veldo_0080_defects.py",
+   "notes": "",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/113_veldo_0112_registered_clients.py",
+     "kind": "deadline",
+     "line": 109,
+     "seconds": 0.05,
+     "what": "serve_one request read deadline of 50 ms passed into product code"
+    },
+    {
+     "file": "scripts/suites/113_veldo_0112_registered_clients.py",
+     "kind": "hang_guard",
+     "line": 73,
+     "seconds": 0.05,
+     "what": "accept poll interval of the fixture serve loop"
+    }
+   ],
+   "decision": "declared",
+   "file": "113_veldo_0112_registered_clients.py",
+   "notes": "control_client.serve_one drops a request whose bytes do not arrive within the 0.05 s given here.",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "113_veldo_0115_authority_store.py",
+   "notes": "",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "113_veldo_0121_relay_exchange.py",
+   "notes": "",
+   "part": 7,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/113_veldo_0220_gate_host.py",
+     "kind": "readiness_wait",
+     "line": 228,
+     "seconds": 10,
+     "what": "waits for the host lock to be released after a gate ends"
+    },
+    {
+     "file": "scripts/suites/113_veldo_0220_gate_host.py",
+     "kind": "readiness_wait",
+     "line": 271,
+     "seconds": 10,
+     "what": "waits for the host lock release after a killed or terminated gate"
+    },
+    {
+     "file": "scripts/suites/113_veldo_0220_gate_host.py",
+     "kind": "readiness_wait",
+     "line": 279,
+     "seconds": 10,
+     "what": "waits for the host lock release after a red gate"
+    },
+    {
+     "file": "scripts/suites/113_veldo_0220_gate_host.py",
+     "kind": "window",
+     "line": 230,
+     "seconds": 2,
+     "what": "flock holds the lock 2 s; gate must report waiting at least 0.5 s"
+    }
+   ],
+   "decision": "declared",
+   "file": "113_veldo_0220_gate_host.py",
+   "notes": "Other waits are 30 s or more (until default 60, finish 30 and 180).",
+   "part": 7,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/114_veldo_0220_gate_scope.py",
+     "kind": "readiness_wait",
+     "line": 286,
+     "seconds": 5,
+     "what": "waits for the SIGSTOPped keeper to show state T"
+    },
+    {
+     "file": "scripts/suites/114_veldo_0220_gate_scope.py",
+     "kind": "deadline",
+     "line": 290,
+     "seconds": 10,
+     "what": "signalled fixture gate must exit within 10 s"
+    },
+    {
+     "file": "scripts/suites/114_veldo_0220_gate_scope.py",
+     "kind": "readiness_wait",
+     "line": 299,
+     "seconds": 10,
+     "what": "waits for the scope lock to be released after cleanup"
+    },
+    {
+     "file": "scripts/suites/114_veldo_0220_gate_scope.py",
+     "kind": "deadline",
+     "line": 304,
+     "seconds": 10,
+     "what": "fixture gate must have exited within 10 s"
+    }
+   ],
+   "decision": "declared",
+   "file": "114_veldo_0220_gate_scope.py",
+   "notes": "Other waits use the 180 s ceiling.",
+   "part": 7,
+   "reason": "4 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/114_veldo_0216_concurrent_stages.py",
+     "kind": "window",
+     "line": 413,
+     "seconds": 0.4,
+     "what": "three 0.4 s stages must overlap; critical path under 0.65 of summed wall"
+    }
+   ],
+   "decision": "declared",
+   "file": "114_veldo_0216_concurrent_stages.py",
+   "notes": "Row critical-path-fixture compares measured wall times of real short processes.",
+   "part": 7,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "115_veldo_0219_measured_admission.py",
+   "notes": "Deadlines of 120/240 s run on a patched fake clock; no real wall-clock bound.",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/116_veldo_0188_project_lines.py",
+     "kind": "hang_guard",
+     "line": 735,
+     "seconds": 10,
+     "what": "cleanup waits for a stopped launch, exceptions suppressed"
+    }
+   ],
+   "decision": "not declared",
+   "file": "116_veldo_0188_project_lines.py",
+   "notes": "Marker-file polls at 136, 479, 550 and launch.wait at 354 are 30-60 s, not recorded.",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/113_veldo_0145_ui.py",
+     "kind": "hang_guard",
+     "line": 110,
+     "seconds": 10,
+     "what": "loopback HTTP connection timeout to in-process API"
+    },
+    {
+     "file": "scripts/suites/113_veldo_0145_ui.py",
+     "kind": "hang_guard",
+     "line": 166,
+     "seconds": 10,
+     "what": "loopback HTTP connection timeout to bare server"
+    },
+    {
+     "file": "scripts/suites/113_veldo_0145_ui.py",
+     "kind": "hang_guard",
+     "line": 251,
+     "seconds": 10,
+     "what": "loopback HTTP connection timeout to listener"
+    }
+   ],
+   "decision": "not declared",
+   "file": "113_veldo_0145_ui.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "118_veldo_0159_mcp_credential_form.py",
+   "notes": "Only long subprocess timeouts (300 s or more) for the UI test runners.",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "119_veldo_0163_role_team_form.py",
+   "notes": "Only long subprocess timeouts (300 s or more) for the UI test runners.",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "120_veldo_0131_factory_ui.py",
+   "notes": "Only long subprocess timeouts (300 s or more) for the UI test runners.",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "121_veldo_0131_factory_screens_narrow.py",
+   "notes": "Only long subprocess timeouts (300 s or more) for the UI test runners.",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "122_veldo_0131_factory_screens_wide.py",
+   "notes": "Only long subprocess timeouts (300 s or more) for the UI test runners.",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "124_veldo_0131_factory_reads_commands.py",
+   "notes": "Only long subprocess timeouts (300 s or more) for the UI test runners.",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/117_veldo_0227_ui_location.py",
+     "kind": "hang_guard",
+     "line": 81,
+     "seconds": 5,
+     "what": "loopback HTTP connection timeout to installed API"
+    }
+   ],
+   "decision": "not declared",
+   "file": "117_veldo_0227_ui_location.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "readiness_wait",
+     "line": 195,
+     "seconds": 10,
+     "what": "polls build launch pump until the fake engine run ends"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "readiness_wait",
+     "line": 196,
+     "seconds": 3,
+     "what": "waits for the pumped build launch to exit and settle"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "readiness_wait",
+     "line": 216,
+     "seconds": 10,
+     "what": "cleanup polls each line launch pump until it ends"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "readiness_wait",
+     "line": 217,
+     "seconds": 3,
+     "what": "cleanup waits for each line launch to exit"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "deadline",
+     "line": 659,
+     "seconds": 3,
+     "what": "stopped conversation receiver must exit within the wait, in finally"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "readiness_wait",
+     "line": 670,
+     "seconds": 10,
+     "what": "J.eventually default: three engine marker files must appear"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "deadline",
+     "line": 684,
+     "seconds": 3,
+     "what": "stopped parallel receivers must exit within the wait, in finally"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "hang_guard",
+     "line": 628,
+     "seconds": 5,
+     "what": "wait after kill of receiver child"
+    },
+    {
+     "file": "scripts/suites/123_veldo_0174_conversations.py",
+     "kind": "hang_guard",
+     "line": 641,
+     "seconds": 5,
+     "what": "wait after kill of receiver child"
+    }
+   ],
+   "decision": "declared",
+   "file": "123_veldo_0174_conversations.py",
+   "notes": "Uses support/v174_journey.py eventually() (default 10 s, 0.03 s poll) and drain(); more waits may sit in that helper.",
+   "part": 8,
+   "reason": "7 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "125_veldo_0230_engine_census.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "126_veldo_0230_qualify_reproduces.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/127_veldo_0234_https_port.py",
+     "kind": "hang_guard",
+     "line": 197,
+     "seconds": 5,
+     "what": "loopback HTTP connection timeout to API"
+    }
+   ],
+   "decision": "not declared",
+   "file": "127_veldo_0234_https_port.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/127_veldo_0241_unit_workflows.py",
+     "kind": "hang_guard",
+     "line": 105,
+     "seconds": 20,
+     "what": "git subprocess timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "127_veldo_0241_unit_workflows.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/128_veldo_0235_land_locally.py",
+     "kind": "hang_guard",
+     "line": 262,
+     "seconds": 20,
+     "what": "git subprocess timeout"
+    },
+    {
+     "file": "scripts/suites/128_veldo_0235_land_locally.py",
+     "kind": "hang_guard",
+     "line": 279,
+     "seconds": 20,
+     "what": "signing subprocess timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "128_veldo_0235_land_locally.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/127_veldo_0254_secret_scan.py",
+     "kind": "hang_guard",
+     "line": 370,
+     "seconds": 5,
+     "what": "probe script loopback TCP connect timeout"
+    },
+    {
+     "file": "scripts/suites/127_veldo_0254_secret_scan.py",
+     "kind": "hang_guard",
+     "line": 376,
+     "seconds": 5,
+     "what": "probe script unix socket timeout"
+    },
+    {
+     "file": "scripts/suites/127_veldo_0254_secret_scan.py",
+     "kind": "hang_guard",
+     "line": 383,
+     "seconds": 5,
+     "what": "probe script loopback urlopen timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "127_veldo_0254_secret_scan.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/128_veldo_0254_confined_runner.py",
+     "kind": "hang_guard",
+     "line": 83,
+     "seconds": 5,
+     "what": "probe script unix socket timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "128_veldo_0254_confined_runner.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/129_veldo_0254_canary_launch.py",
+     "kind": "deadline",
+     "line": 574,
+     "seconds": 0.4,
+     "what": "stop and kill grace passed to the confinement profile before escalation"
+    },
+    {
+     "file": "scripts/suites/129_veldo_0254_canary_launch.py",
+     "kind": "hang_guard",
+     "line": 171,
+     "seconds": 10,
+     "what": "ssh-keygen sign subprocess timeout"
+    },
+    {
+     "file": "scripts/suites/129_veldo_0254_canary_launch.py",
+     "kind": "hang_guard",
+     "line": 951,
+     "seconds": 10,
+     "what": "cleanup wait after kill of provisioner"
+    },
+    {
+     "file": "scripts/suites/129_veldo_0254_canary_launch.py",
+     "kind": "hang_guard",
+     "line": 967,
+     "seconds": 10,
+     "what": "cleanup wait after kill of contained child"
+    }
+   ],
+   "decision": "declared",
+   "file": "129_veldo_0254_canary_launch.py",
+   "named_by_spec": true,
+   "notes": "Pump polls at 708, 735, 766, runner.wait at 712 and accept_seconds at 612 are 30-60 s; systemctl timeouts are 20 s guards.",
+   "part": 8,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "127_veldo_0259_installation.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/128_veldo_0247_check_join.py",
+     "kind": "hang_guard",
+     "line": 101,
+     "seconds": 20,
+     "what": "git subprocess timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "128_veldo_0247_check_join.py",
+   "notes": "cycle_seconds at 567 is only reported, not asserted.",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/129_veldo_0247_line.py",
+     "kind": "hang_guard",
+     "line": 87,
+     "seconds": 20,
+     "what": "git subprocess timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "129_veldo_0247_line.py",
+   "notes": "",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "129_veldo_0239_batch_landing.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/129_veldo_0260_checkout_in_step.py",
+     "kind": "hang_guard",
+     "line": 269,
+     "seconds": 20,
+     "what": "git subprocess timeout"
+    },
+    {
+     "file": "scripts/suites/129_veldo_0260_checkout_in_step.py",
+     "kind": "hang_guard",
+     "line": 285,
+     "seconds": 20,
+     "what": "signing subprocess timeout"
+    }
+   ],
+   "decision": "not declared",
+   "file": "129_veldo_0260_checkout_in_step.py",
+   "notes": "cap=6 at 403/416 is a pass count, not seconds.",
+   "part": 8,
+   "reason": "only hang guards"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/140_veldo_0267_mutation_selection.py",
+     "kind": "window",
+     "line": 551,
+     "seconds": 1.5,
+     "what": "lock holder sleeps 1.5 s; sweep must start no earlier than release"
+    },
+    {
+     "file": "scripts/suites/140_veldo_0267_mutation_selection.py",
+     "kind": "window",
+     "line": 552,
+     "seconds": 1.0,
+     "what": "row asserts measured lock wait is at least 1.0 s"
+    }
+   ],
+   "decision": "declared",
+   "file": "140_veldo_0267_mutation_selection.py",
+   "notes": "A starved runner start eats the 0.5 s margin; wait_for at 534 is 30 s, holder.wait 60 s.",
+   "part": 8,
+   "reason": "2 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "141_veldo_0268_protected_refs.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "129_veldo_0270_small_proof.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "129_veldo_0272_approval_scope.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  },
+  {
+   "bounds": [
+    {
+     "file": "scripts/suites/129_veldo_0274_factory_slices.py",
+     "kind": "readiness_wait",
+     "line": 97,
+     "seconds": 10,
+     "what": "polls systemctl until slice and engine units unload, row fails after"
+    },
+    {
+     "file": "scripts/suites/129_veldo_0274_factory_slices.py",
+     "kind": "hang_guard",
+     "line": 57,
+     "seconds": 20,
+     "what": "systemd-run launch of fake engine timeout"
+    },
+    {
+     "file": "scripts/suites/129_veldo_0274_factory_slices.py",
+     "kind": "hang_guard",
+     "line": 59,
+     "seconds": 20,
+     "what": "systemctl query timeout"
+    },
+    {
+     "file": "scripts/suites/129_veldo_0274_factory_slices.py",
+     "kind": "hang_guard",
+     "line": 89,
+     "seconds": 20,
+     "what": "systemctl list-units timeout"
+    }
+   ],
+   "decision": "declared",
+   "file": "129_veldo_0274_factory_slices.py",
+   "notes": "process.wait after SIGTERM at 130 is 60 s, not recorded.",
+   "part": 8,
+   "reason": "1 bound(s) under 30 s that are not hang guards"
+  },
+  {
+   "bounds": [],
+   "decision": "not declared",
+   "file": "129_veldo_0278_parked_estimation.py",
+   "notes": "",
+   "part": 8,
+   "reason": "no wall-clock bound under 30 s"
+  }
+ ]
+}

@@ -11749,6 +11749,45 @@ def cases():
         ['admission/lifecycle-registration-owned'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0290: the wall-clock ceiling, the waiting bar, the coordinator's order and retry rule,
+    # the graph node's mark and the stall figure. Each mutant is the falsifier its criterion names.
+    add(290, 'admission290-ceiling-not-for-others', suite219, 'gate_schedule.py',
+        "            if r == 'cpu' and self.ceiling_in_force() and self.ceiling < limit:\n",
+        "            if r == 'cpu' and wall_clock and self.ceiling_in_force() and self.ceiling < limit:\n",
+        ['admission/wall-clock-ceiling'])
+    result[-1]['dir'] = 'scripts'
+    add(290, 'admission290-no-waiting-bar', suite219, 'gate_schedule.py',
+        "                    self.waiting[name] = True\n",
+        "                    pass  # the waiting wall_clock claim is not recorded\n",
+        ['admission/wall-clock-waiting-bars'])
+    result[-1]['dir'] = 'scripts'
+    add(290, 'admission290-refused-not-retried-first', suite219, 'check_gate_mutations.py',
+        "                            refused = name\n",
+        "                            refused = None  # selects freely after a wall_clock refusal\n",
+        ['admission/wall-clock-waiting-bars'])
+    result[-1]['dir'] = 'scripts'
+    add(290, 'admission290-node-mark-dropped', '114_veldo_0216_concurrent_stages.py', 'gate_schedule.py',
+        "    if node.get('wall_clock'):\n",
+        "    if False:  # the node's wall_clock mark is not sent\n",
+        ['admission/wall-clock-graph-node'])
+    result[-1]['dir'] = 'scripts'
+    add(290, 'admission290-declaration-not-passed', suite219, 'check_gate_mutations.py',
+        "                                          **({'wall_clock': True} if declared else {}))\n",
+        "                                          **{})\n",
+        ['admission/wall-clock-end-to-end'])
+    result[-1]['dir'] = 'scripts'
+    add(290, 'admission290-declared-not-first', suite219, 'check_gate_mutations.py',
+        "        pending = self.resources.declared_first(list(jobs.items()))\n",
+        "        pending = list(jobs.items())\n",
+        ['admission/wall-clock-end-to-end'])
+    result[-1]['dir'] = 'scripts'
+    add(290, 'admission290-stall-skips-units', suite219, 'mutation_ownership.py',
+        "        for path in roots:  # stall: every disjoint root, the worker's cgroup and its units\n"
+        "            self.read_stall(path)\n",
+        "        self.read_stall(self.path)\n",
+        ['admission/stall-recorded'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
     add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',

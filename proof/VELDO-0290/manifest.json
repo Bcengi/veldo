@@ -1,0 +1,145 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0290",
+  "commit": "dde377450df9ad1db015c6dd0a1e5952de52dd57",
+  "tree": "43d0da460a65824ee92df10c769bbf46fcb1f340",
+  "producer": "Claude implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-11T12:13:38+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Suite 115 with this checkout's suite files at 646ff7c8: row admission/wall-clock-ceiling is red (5 rows failed, exactly the expected ones, 57 passed, no other row failed)."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/green-115.summary.json",
+          "detail": "Suite 115 at dde37745: 62 rows passed, 0 failed, including admission/wall-clock-ceiling and admission/full-capacity-without-wall-clock. The recorded exit status 2 is the selftest's exit for a run of one selected suite."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutant admission290-ceiling-not-for-others: expected killed, observed killed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Row admission/wall-clock-waiting-bars is red at 646ff7c8."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/red-before-114.summary.json",
+          "detail": "Suite 114 with this checkout's suite files at 646ff7c8: rows admission/wall-clock-graph-node and admission/wall-clock-node-withdraws are red (2 failed, exactly the expected ones, 48 passed, no other row failed)."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/green-115.summary.json",
+          "detail": "Suite 115 at dde37745: 62 rows passed, 0 failed, including admission/wall-clock-waiting-bars."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/green-114.summary.json",
+          "detail": "Suite 114 at dde37745: 50 rows passed, 0 failed, including the two scheduler rows."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutants admission290-no-waiting-bar, admission290-refused-not-retried-first and admission290-node-mark-dropped: each expected killed, observed killed."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Rows admission/declared-bounds and admission/wall-clock-end-to-end are red at 646ff7c8."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/green-115.summary.json",
+          "detail": "Suite 115 at dde37745: 62 rows passed, 0 failed, including admission/declared-bounds over the real manifest and admission/wall-clock-end-to-end over Workers.run."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/survey.json",
+          "detail": "The survey of all 197 suites behind the 61 wall_clock declarations in scripts/suites/manifest.json."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutants admission290-declaration-not-passed and admission290-declared-not-first: each expected killed, observed killed."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay.json",
+          "detail": "The verdict at e27dd27f over the three arm summaries of dde37745, by AC4 as amended 2026-11-11 (owner approval: Telegram 40695): fix_shown true, outcome 'the off arm reached the stage's load; the fix is shown at this ceiling', ceiling 11. Load reached: off arm peak CPU granted 19.99 (bar 19.4 of 20), mean busy cores 11.09 (bar 10.3). 196 control runs in each arm and 49 in the quiet reference, no failed row in any arm. Stall fraction p95 in declared suites (nearest rank): off 0.108, on 0.016, quiet 0.002. The on arm holds (0.016 at most 0.002 + 0.02). The off arm shows (0.108 at least 3 x 0.016 and at least 0.016 + 0.05). Run check 1 quoted 0.102 and 0.015, an interpolated percentile of the same data; both readings pass every bar. No arm was rerun. Stall p95 in seconds, kept beside: off 2.106, on 0.223, quiet 0.075. By AC4 as written at dde37745 the round would not have claimed the fix: the off arm's p95 stall of 2.106 s was 9.4 times the on arm's 0.223 s but 0.117 s short of the 2 s gap. The load figures were fixed in advance by the flake analysis; the 0.02 and 0.05 fraction margins were chosen after the run."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay-off.summary.json",
+          "detail": "Off arm: ceiling off, 600 bulk runs, peak 30 workers, mean busy cores 11.09, stage wall 1143.0 s."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay-on.summary.json",
+          "detail": "On arm: ceiling 11, 600 bulk runs, peak 29 workers, mean busy cores 9.71, stage wall 1230.5 s, 603.5 s under the ceiling."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0290/replay-quiet.summary.json",
+          "detail": "Quiet reference: every declared control alone, 49 runs, stage wall 1027.3 s."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0290/red-before-115.summary.json",
+          "detail": "Row admission/stall-recorded is red at 646ff7c8 and green at dde37745 (proof/VELDO-0290/green-115.summary.json)."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0290/teeth.summary.json",
+          "detail": "Teeth at e9a480c8 (lock job 91a): stage status passed, registered 7, executed 7, rejected 7, every mutant fresh. Mutant admission290-stall-skips-units: expected killed, observed killed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py --suite 115_veldo_0219_measured_admission; python3 scripts/selftest.py --suite 114_veldo_0216_concurrent_stages",
+      "detail": "The two suites that carry this spec's rows, at dde37745 (green-115.summary.json, green-114.summary.json). The full unit stage has not been run."
+    },
+    {
+      "name": "mutation",
+      "status": "passed",
+      "command": "python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3",
+      "detail": "teeth.summary.json at e9a480c8 (lock job 91a): status passed, registered 7, executed 7, rejected 7, seven of seven killed; teeth-raw.summary.json records the raw files. Run as step 3 of proof/VELDO-0290/heavy_runs.sh."
+    },
+    {
+      "name": "gate",
+      "status": "pending",
+      "command": "./scripts/verify.sh",
+      "detail": "Not run on this branch."
+    }
+  ],
+  "rollback": "Remove wall_clock_ceiling from scripts/gate_graph.json and revert the commit. The ledger again grants to full capacity for every claim. The manifest's wall_clock fields and the recorded stall_seconds are inert without the ceiling, and no stored record depends on them."
+}

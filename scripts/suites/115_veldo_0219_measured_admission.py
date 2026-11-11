@@ -35,6 +35,10 @@ def _v219_checks():
     def row(name, condition):
         expect('VELDO-0219 admission/' + name, condition)
 
+    def row290(name, condition):
+        # VELDO-0290's rows live here beside the harness they drive, under their own spec's name.
+        expect('VELDO-0290 admission/' + name, condition)
+
     case = dict(identity='fixture:cpu', name='cpu', driver=gate.DRIVERS[0],
                 suite='cpu.py', module='cpu.py', rows=['target'], old='old', new='new', finding=219)
     manifest = dict(resource_capacities={'systemd_user_manager': 16, 'new_project_fixture': 2},
@@ -223,16 +227,48 @@ def _v219_checks():
         class Client:
             def __init__(self, ledger):
                 self.ledger = ledger
-            def acquire(self, name, cpu, memory, manager='none', ports=()):
-                return self.ledger.acquire(name, dict(cpu=cpu, memory=memory, manager=manager,
-                                                     ports=list(ports)), mutation=True)
+            def acquire(self, name, cpu, memory, manager='none', ports=(), wall_clock=False):
+                claim = dict(cpu=cpu, memory=memory, manager=manager, ports=list(ports))
+                if wall_clock:
+                    claim['wall_clock'] = True
+                return self.ledger.acquire(name, claim, mutation=True)
             def release(self, name):
                 self.ledger.release(name)
             def close(self):
                 pass
 
+        class Recording(Client):
+            """VELDO-0290: the same direct ledger, answering as the scheduler's channel does and
+            keeping every acquire in order with its wall_clock mark, its answer and the CPU held."""
+            def __init__(self, ledger):
+                super().__init__(ledger)
+                self.calls, self.wall_held, self.refused = [], set(), None
+            def acquire(self, name, cpu, memory, manager='none', ports=(), wall_clock=False):
+                granted = super().acquire(name, cpu, memory, manager, ports, wall_clock)
+                self.last_reply = self.ledger.answer(granted, name)
+                if granted and wall_clock:
+                    self.wall_held.add(name)
+                self.calls.append(dict(name=name, wall_clock=wall_clock, granted=granted,
+                                       resource=self.last_reply['resource'], cpu=self.ledger.totals()['cpu'],
+                                       wall_held=bool(self.wall_held)))
+                if not granted and self.refused is not None:
+                    self.refused(name)
+                return granted
+            def release(self, name):
+                if name in self.ledger.waiting:
+                    self.ledger.withdraw(name)
+                else:
+                    super().release(name)
+                self.wall_held.discard(name)
+                self.last_reply = self.ledger.answer(True, name)
+
         invocation = 0
-        def exercise(jobs, cores=40, gib=31, limit=None, floor=None, fault=None, background=False, resources_manifest=None):
+        def exercise(jobs, cores=40, gib=31, limit=None, floor=None, fault=None, background=False, resources_manifest=None,
+                     ceiling=None, client=Client, prepare=None, hold=None, deadline=100000):
+            # VELDO-0290 adds: ceiling (the ledger's wall-clock ceiling), client (the ledger client
+            # class), prepare (claims placed before the run), hold (a job kept running, or ended at
+            # once, by the row instead of the clock), deadline, and jobs as a list of phases run on
+            # one Workers, as the stage runs its controls and then its mutants.
             nonlocal invocation
             invocation += 1
             home = top / ('run-%d' % invocation)
@@ -240,7 +276,7 @@ def _v219_checks():
             clock = [1.]
             capacity = dict(cpu=cores, memory=gib * 2**30, manager=16)
             floor = floor or dict(cpu=cores, memory=gib * 2**30)
-            ledger = scheduler.Ledger(capacity, floor)
+            ledger = scheduler.Ledger(capacity, floor, **({} if ceiling is None else {'ceiling': ceiling}))
             ledger.event = lambda action, name, resource, claim=None: ledger.events.append(
                 dict(action=action, claimant=name, resource=resource, granted=ledger.totals()))
             # Keep the mutation root until every worker ends, as the graph does.
@@ -248,9 +284,11 @@ def _v219_checks():
             if background:
                 ledger.acquire('other-node', dict(cpu=cores-floor['cpu'], memory=(gib*2**30)-floor['memory'],
                                                   manager='none', ports=[]))
-            admission = gate.Admission(Client(ledger), capacity, floor)
+            if prepare is not None:
+                prepare(ledger)
+            admission = gate.Admission(client(ledger), capacity, floor)
             pool = gate.SuiteResources(resources_manifest or manifest)
-            workers = gate.Workers(100000, pool, parallel=gate.worker_count(cores) if limit is None else limit,
+            workers = gate.Workers(deadline, pool, parallel=gate.worker_count(cores) if limit is None else limit,
                                    admission=admission)
             children = []
             class Child:
@@ -266,6 +304,10 @@ def _v219_checks():
                 def poll(self):
                     if fault == 'abort' and self.job['mode'] == 'noop':
                         return None
+                    held = hold(self.job) if hold is not None else None
+                    if held is not None:
+                        self.returncode = None if held else 0
+                        return self.returncode
                     if clock[0] - self.born >= .2:
                         self.returncode = 0
                     return self.returncode
@@ -315,7 +357,13 @@ def _v219_checks():
                     patch.object(gate.time, 'monotonic', lambda: clock[0]), \
                     patch.object(gate.time, 'sleep', lambda dt: clock.__setitem__(0, clock[0] + dt)):
                 try:
-                    done = workers.run(jobs, home, ROOT)
+                    if isinstance(jobs, list):
+                        done, workers.orders = {}, []
+                        for phase in jobs:
+                            done.update(workers.run(phase, home, ROOT))
+                            workers.orders.append(list(getattr(workers, 'pending_order', [])))
+                    else:
+                        done = workers.run(jobs, home, ROOT)
                 except gate.Refused as exc:
                     error, done = exc.code, {}
             return workers, ledger, done, error, admission
@@ -422,7 +470,7 @@ def _v219_checks():
         # enforces its cap, validates verdicts and writes the scratch store.
         stage_cases = [dict(case, identity='case%d' % n, name='case%d' % n) for n in range(12)]
         stage_files = {'scripts/check_gate_mutations.py': (0o644, b'fixture')}
-        def stage_run(ceiling, fail=False):
+        def stage_run(ceiling, fail=False, stall=None):
             nonlocal invocation
             invocation += 1
             times = top / ('stage-store-%d' % invocation)
@@ -439,7 +487,8 @@ def _v219_checks():
                 def open_lifecycle(self):
                     raise AssertionError('a worker without a manager claim cannot retain units')
                 def sample(self, *a):
-                    return dict(cpu_seconds=4, peak_anon_bytes=self.peak)
+                    return dict(cpu_seconds=4, peak_anon_bytes=self.peak,
+                                **({} if stall is None else {'stall_seconds': stall}))
                 def close(self):
                     pass
             admission = gate.Admission(Client(ledger), ledger.capacity, floor, lambda n: Meter())
@@ -544,6 +593,250 @@ def _v219_checks():
         missing['mutation']['worker_outcomes'] = []
         row('qualification-capture', passed['passed'] and not qualification.check(slow)['passed']
             and not qualification.check(missing)['passed'] and not qualification.check({})['passed'])
+
+        # ---------------------------------------------------------------------------------
+        # VELDO-0290: suites that measure wall-clock time run with CPU headroom. Each row
+        # catches its own exception, so a tree without the ceiling shows the row red and the
+        # rows after it still run.
+        # ---------------------------------------------------------------------------------
+        def ledger290(cores=20, ceiling=11):
+            capacity = dict(cpu=cores, memory=64 * 2**30, manager=16)
+            try:
+                return scheduler.Ledger(capacity, None, ceiling=ceiling)
+            except TypeError:
+                # A tree whose Ledger takes no ceiling: the full-capacity row still has a ledger.
+                return scheduler.Ledger(capacity)
+
+        def claim290(cpu=1, wall_clock=False):
+            return dict(cpu=cpu, memory=2**20, manager='none', ports=[],
+                        **({'wall_clock': True} if wall_clock else {}))
+
+        def checked(body):
+            printed = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(printed):
+                    return bool(body(printed))
+            except Exception as error:
+                print('VELDO-0290 row raised %s: %s' % (type(error).__name__, str(error)[:300]))
+                return False
+
+        def ceiling_row(printed):
+            ledger = ledger290()
+            checks = [ledger.acquire('timed', claim290(wall_clock=True))]
+            checks += [ledger.acquire('other-%d' % n, claim290()) for n in range(10)]
+            checks.append(not ledger.acquire('other-10', claim290())
+                          and ledger.blocking_resource == 'wall_clock' and ledger.totals()['cpu'] == 11)
+            checks.append(ledger.events[-1]['ceiling'] is True
+                          and 'ledger refuse other-10 resource=wall_clock' in printed.getvalue()
+                          and printed.getvalue().rstrip().endswith('ceiling=on'))
+            late = ledger290()
+            checks += [late.acquire('other-%d' % n, claim290()) for n in range(15)]
+            checks.append(late.events[-1]['ceiling'] is False)
+            checks.append(not late.acquire('timed', claim290(wall_clock=True))
+                          and late.blocking_resource == 'wall_clock' and late.totals()['cpu'] == 15)
+            # The error taxonomy: a wall_clock claim above the ceiling, a ceiling above the capacity.
+            for invalid in (lambda: ledger290().acquire('wide', claim290(12, wall_clock=True)),
+                            lambda: scheduler.Ledger(dict(cpu=20, memory=2**30, manager=16), None, ceiling=21)):
+                try:
+                    invalid()
+                    checks.append(False)
+                except scheduler.Refused as error:
+                    checks.append('invalid_resource_requirement' in str(error))
+            return all(checks)
+        row290('wall-clock-ceiling', checked(ceiling_row))
+
+        def full_capacity_row(printed):
+            ledger = ledger290()
+            granted = [ledger.acquire('other-%d' % n, claim290()) for n in range(20)]
+            return (all(granted) and not ledger.acquire('other-20', claim290())
+                    and ledger.blocking_resource == 'cpu' and ledger.totals()['cpu'] == 20)
+        row290('full-capacity-without-wall-clock', checked(full_capacity_row))
+
+        manifest290 = dict(resource_capacities={'systemd_user_manager': 1},
+                           suites=[dict(file='slot.py', resources={'systemd_user_manager': 1},
+                                        wall_clock='a fixture bound: the 2 s stop deadline'),
+                                   dict(file='free.py', wall_clock='a fixture bound: the 5 s readiness wait'),
+                                   dict(file='bulk.py')])
+
+        def waiting_row(printed):
+            # Leg 1: 15 cores held by ordinary claims. The refused wall_clock claim bars the next
+            # ordinary claim although 5 cores are free, is granted once the total is under the
+            # ceiling, and the ordinary claim follows it up to the ceiling.
+            ledger = ledger290()
+            checks = [ledger.acquire('other-%d' % n, claim290()) for n in range(15)]
+            checks.append(not ledger.acquire('timed', claim290(wall_clock=True))
+                          and ledger.blocking_resource == 'wall_clock' and 'timed' in ledger.waiting)
+            checks.append(not ledger.acquire('late', claim290())
+                          and ledger.blocking_resource == 'wall_clock' and ledger.totals()['cpu'] == 15)
+            for n in range(4):
+                ledger.release('other-%d' % n)
+            checks.append(not ledger.acquire('timed', claim290(wall_clock=True)) and ledger.totals()['cpu'] == 11)
+            for n in range(4, 6):
+                ledger.release('other-%d' % n)
+            checks.append(ledger.acquire('timed', claim290(wall_clock=True)) and not ledger.waiting)
+            checks.append(ledger.acquire('late', claim290()) and ledger.totals()['cpu'] == 11)
+            checks.append(not ledger.acquire('later', claim290()) and ledger.blocking_resource == 'wall_clock')
+            # Leg 2: the waiting claimant withdraws, and the ordinary claim is granted.
+            ledger = ledger290()
+            checks += [ledger.acquire('other-%d' % n, claim290()) for n in range(15)]
+            checks.append(not ledger.acquire('timed', claim290(wall_clock=True)))
+            checks.append(not ledger.acquire('late', claim290()) and ledger.blocking_resource == 'wall_clock')
+            ledger.withdraw('timed')
+            checks.append(not ledger.waiting and ledger.acquire('late', claim290())
+                          and ledger.totals()['cpu'] == 16)
+            # Leg 3: the coordinator. `running` holds the one manager slot, so `slotted` (first in the
+            # pending order) waits locally. `timed` needs no slot and the ledger refuses it once for
+            # CPU. `running` then exits. The next acquire must name `timed` again, not `slotted`.
+            state = dict(refused=False)
+            def recording(ledger):
+                client = Recording(ledger)
+                def refused(name):
+                    state['refused'] = state['refused'] or name == 'timed'
+                client.refused = refused
+                return client
+            job = lambda suite, mode, cpu: dict(case=dict(case, suite=suite), mode=mode, budget_seconds=240,
+                                                claim=dict(base, cpu=cpu))
+            jobs = {'running': job('slot.py', 'noop', .5), 'slotted': job('slot.py', 'baseline', .5),
+                    'timed': job('free.py', 'baseline', 1.5)}
+            def bulk(ledger):
+                ledger.acquire('bulk', claim290(9.5), mutation=True)
+            workers, ledger, done, error, admission = exercise(
+                jobs, 20, 31, resources_manifest=manifest290, ceiling=11, client=recording, prepare=bulk,
+                hold=lambda j: (not state['refused']) if j['mode'] == 'noop' else None)
+            calls = admission.client.calls
+            names = [c['name'] for c in calls]
+            first = next(n for n, c in enumerate(calls) if c['name'] == 'timed' and not c['granted'])
+            checks.append(error is None and set(done) == set(jobs) and workers.pending_order == list(jobs))
+            checks.append(names[:first] == ['running'] and calls[first]['resource'] == 'wall_clock'
+                          and calls[first + 1]['name'] == 'timed' and calls[first + 1]['granted']
+                          and sum(c['name'] == 'timed' and not c['granted'] for c in calls) == 1)
+            checks.append(names.index('slotted') > first + 1 and calls[-1]['name'] == 'slotted'
+                          and calls[-1]['granted'] and not ledger.waiting and set(ledger.held) == {'root', 'bulk'})
+            # The stage stops while its wall_clock job still waits: Admission withdraws it.
+            def full(ledger):
+                ledger.acquire('bulk', claim290(11), mutation=True)
+            workers, ledger, done, error, admission = exercise(
+                {'timed': job('free.py', 'baseline', 1)}, 20, 31, resources_manifest=manifest290, ceiling=11,
+                client=recording, prepare=full, deadline=1.5)
+            checks.append(error == 'mutation_budget_exceeded' and not ledger.waiting
+                          and any(e['action'] == 'withdraw' for e in ledger.events)
+                          and set(ledger.held) == {'root', 'bulk'})
+            return all(checks)
+        row290('wall-clock-waiting-bars', checked(waiting_row))
+
+        def declared_row(printed):
+            suites = {s['name']: s for s in inventory_manifest['suites']}
+            seven = ('62_veldo_0039_dispatch', '63_veldo_0040_containment', '66_veldo_0047_authority',
+                     '82_veldo_0129_worker_wiring', '83_veldo_0154_factory_loop',
+                     '86_veldo_0189_engine_upgrade', '129_veldo_0254_canary_launch')
+            checks = [all('wall_clock' in suites[name] for name in seven)]
+            checks.append(all(isinstance(s['wall_clock'], str) and s['wall_clock'].strip()
+                              for s in inventory_manifest['suites'] if 'wall_clock' in s))
+            pool = gate.SuiteResources(inventory_manifest)
+            checks.append({name + '.py' for name in seven} <= pool.wall_clock)
+            for value in ('', '   ', 5, True, None, ['the 5 s wait']):
+                try:
+                    gate.SuiteResources(dict(resource_capacities={}, suites=[dict(file='a.py', wall_clock=value)]))
+                    checks.append(False)
+                except gate.Refused as error:
+                    checks.append(error.code == 'invalid_resource_requirement')
+            return all(checks)
+        row290('declared-bounds', checked(declared_row))
+
+        def end_to_end_row(printed):
+            three = dict(resource_capacities={'systemd_user_manager': 16},
+                         suites=[dict(file='first.py'),
+                                 dict(file='timed.py', wall_clock='a fixture bound: the 5 s readiness wait'),
+                                 dict(file='last.py')])
+            def phase(mode, tag):
+                # Per phase 4 declared jobs and 32 others, one core each: 7 others run beside the
+                # declared ones under the ceiling of 11, and the 25 left fill all 20 cores after it.
+                jobs = {}
+                for n in range(16):
+                    for suite in ('first.py', 'timed.py', 'last.py'):
+                        if suite != 'timed.py' or n < 4:
+                            jobs['%s:%s%d:%s' % (suite, tag, n, mode)] = dict(
+                                case=dict(case, suite=suite), mode=mode, budget_seconds=240,
+                                claim=dict(base, cpu=1))
+                return jobs
+            controls, mutants = phase('baseline', 'c'), phase('mutant', 'm')
+            workers, ledger, done, error, admission = exercise(
+                [controls, mutants], 20, 31, resources_manifest=three, ceiling=11, client=Recording)
+            calls = admission.client.calls
+            declared = lambda name: name.startswith('timed.py:')
+            checks = [error is None and len(done) == len(controls) + len(mutants) == 72]
+            checks.append(all(c['wall_clock'] is declared(c['name']) for c in calls)
+                          and sum(c['wall_clock'] for c in calls) >= 8)
+            under = [c for c in calls if c['granted'] and c['wall_held']]
+            checks.append(len(under) >= 8 and all(c['cpu'] <= 11 for c in under)
+                          and max(c['cpu'] for c in under) == 11
+                          and max(c['cpu'] for c in calls if c['granted']) == 20)
+            checks.append(any(c['resource'] == 'wall_clock' for c in calls if not c['granted']))
+            for given, built in zip((controls, mutants), workers.orders):
+                marks = [declared(name) for name in built]
+                checks.append(sorted(built) == sorted(given) and marks == sorted(marks, reverse=True)
+                              and sum(marks) == 4
+                              and [n for n in built if not declared(n)] == [n for n in given if not declared(n)])
+            checks.append(len(workers.orders) == 2)
+            events = {e['name']: e for e in admission.events}
+            checks.append(all(e['wall_clock'] is declared(n) for n, e in events.items())
+                          and all(e['ceiling_in_force'] for n, e in events.items() if declared(n))
+                          and not all(e['ceiling_in_force'] for e in events.values()))
+            state = admission.ceiling
+            checks.append(state['cpu'] == 11 and state['in_force'] is False and state['seconds'] >= 0)
+            return all(checks)
+        row290('wall-clock-end-to-end', checked(end_to_end_row))
+
+        def stall_row(printed):
+            import shutil
+            tree = top / 'cgroups290'
+            (tree / 'scope').mkdir(parents=True)
+            meter = ownership.WorkerMeter('/scope', 'stalled', tree)
+            unit = tree / 'other/veldo-authority-cd.service'
+            nested = meter.path / 'nested'
+            def pressure(path, some):
+                (path / 'cpu.pressure').write_text(
+                    'some avg10=0.00 avg60=0.00 avg300=0.00 total=%d\n'
+                    'full avg10=0.00 avg60=0.00 avg300=0.00 total=%d\n' % (some, some // 2))
+            for path in (meter.path, unit, nested):
+                counters(path, 1, 2**20)
+                pressure(path, 0)
+            meter.paths['unit'], meter.paths['nested'] = unit, nested
+            checks = [meter.sample()['stall_seconds'] == 0]
+            # The worker's cgroup stalls 3 s and the unit outside it 1.5 s. The nested unit's 2 s is
+            # inside the worker cgroup's own total, so it is counted once, there.
+            pressure(meter.path, 3000000)
+            pressure(unit, 1500000)
+            pressure(nested, 2000000)
+            checks.append(meter.sample()['stall_seconds'] == 4.5)
+            # A unit that is gone keeps its largest total; a later smaller reading never lowers one.
+            shutil.rmtree(unit)
+            pressure(meter.path, 2500000)
+            checks.append(meter.sample()['stall_seconds'] == 4.5)
+            # No pressure file at all (a kernel without it): the meter still answers, with no stall.
+            plain = ownership.WorkerMeter('/scope', 'plain', tree)
+            counters(plain.path, 1, 2**20)
+            checks.append(plain.sample()['stall_seconds'] == 0)
+            # A red control that stalled for 900 s is still red, and nothing runs again for it.
+            red, _ = stage_run(8, True)
+            red_stalled, _ = stage_run(8, True, stall=900)
+            green_stalled, kept = stage_run(8, stall=900)
+            fields = ('status', 'error', 'registered', 'executed', 'reused', 'rejected', 'worker_invocations',
+                      'budget_seconds')
+            checks.append(red_stalled['status'] == 'failed' and red_stalled['error'] == 'invalid_baseline'
+                          and all(red_stalled[k] == red[k] for k in fields)
+                          and red_stalled['worker_invocations'] == 14)
+            checks.append(all(o['stall_seconds'] == 900 and 'stall_seconds' not in o['measurement']
+                              and o['budget_seconds'] == 240 for o in red_stalled['worker_outcomes'])
+                          and len(red_stalled['worker_outcomes']) == 14)
+            checks.append(green_stalled['status'] == 'passed'
+                          and all({k: green_stalled.get(k) for k in fields if k != 'error'}
+                                  == {k: r.get(k) for k in fields if k != 'error'} for r, _t in stage_runs[1:2])
+                          and all('stall_seconds' not in run
+                                  for path in kept.glob('*.json')
+                                  for run in json.loads(path.read_text())['resource_runs']))
+            return all(checks)
+        row290('stall-recorded', checked(stall_row))
 
 
 _v219_checks()

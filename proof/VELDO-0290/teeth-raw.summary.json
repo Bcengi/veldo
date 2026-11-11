@@ -1,0 +1,457 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --finding 290 --jobs 3 --worker-log-dir <work>/teeth-workers --diff-dir <work>/diffs --summary proof/VELDO-0290/teeth.summary.json",
+ "deciding": {
+  "exit_status": 0,
+  "raw_files": 87
+ },
+ "discarded": [
+  {
+   "bytes": 133257,
+   "name": "teeth.log",
+   "sha256": "3a2f99f01a72e57b0d9c5117eb1440e0f6f3db2415c08ac97c19f6cd0767f920"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/0/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 449,
+   "name": "teeth-workers/0/job.json",
+   "sha256": "f1ab757da7298b5ec3689b5b7d082bc10c860c66992fe1e92e9a37868e2d9397"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/0-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 4841,
+   "name": "teeth-workers/0-stdout",
+   "sha256": "9407f6be143144105eb16d394a4bb4c68909c266673c3683ac8804ffee3e8f50"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/1/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 42467,
+   "name": "teeth-workers/1/gate_schedule.py",
+   "sha256": "107e001258e4ee6333f7603565e8be3794d1f4dafd8d591d38a24355a55d6565"
+  },
+  {
+   "bytes": 445,
+   "name": "teeth-workers/1/job.json",
+   "sha256": "9d03f47d2f312a810bc44ddb8a95af286f3c6de4fca9c47cb00a05c5eefe381c"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/1-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 4841,
+   "name": "teeth-workers/1-stdout",
+   "sha256": "9407f6be143144105eb16d394a4bb4c68909c266673c3683ac8804ffee3e8f50"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/10/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 42494,
+   "name": "teeth-workers/10/gate_schedule.py",
+   "sha256": "ed1539b497c8706a4a48419816ef55971389e67cf8465cb0a9e76783d75e9bd4"
+  },
+  {
+   "bytes": 475,
+   "name": "teeth-workers/10/job.json",
+   "sha256": "70c4b9dd1dfbfabf1c7772dbba5299cd0d2d4fe8e85b32c84c32c097490dad6b"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/10-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5883,
+   "name": "teeth-workers/10-stdout",
+   "sha256": "de7b29740840b0334e23f1c62f9c17f834bc6b88aa170a18bd71db66556fe30c"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/11/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 93157,
+   "name": "teeth-workers/11/check_gate_mutations.py",
+   "sha256": "bbaf7e4d7479f7999851f87fe409d0c371658a1e1d28929229f1bfae9224b7af"
+  },
+  {
+   "bytes": 516,
+   "name": "teeth-workers/11/job.json",
+   "sha256": "7fad8d358a4c7446ea291ebe0864493f149e61271b252675844ed15280e79f37"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/11-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5883,
+   "name": "teeth-workers/11-stdout",
+   "sha256": "9bb5ce6fcbfddde0257bcff6e8d1bfaf4117f381b0d5db00e17ba41ba29c0e53"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/12/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 93072,
+   "name": "teeth-workers/12/check_gate_mutations.py",
+   "sha256": "05dbde2c9e35b2732e5d9b2b730c2bfa6417cd54f9e481c70cd7cc8862afd02f"
+  },
+  {
+   "bytes": 513,
+   "name": "teeth-workers/12/job.json",
+   "sha256": "bd0129b2990fe8496d663c940bb91f7c2317181d7e2b9e2d7cba2c90e9bed261"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/12-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5928,
+   "name": "teeth-workers/12-stdout",
+   "sha256": "42641e91c670defffa87d27e7d425fe360f20673001b9e6852919c1f2bca3cb2"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/13/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 93081,
+   "name": "teeth-workers/13/check_gate_mutations.py",
+   "sha256": "698545c261d5e8963de3b8ed3f1eb63d5a46af14b70f77610f15b80f833f2325"
+  },
+  {
+   "bytes": 474,
+   "name": "teeth-workers/13/job.json",
+   "sha256": "c450413c9b9cd3dd911d047098dc9672b83dde4850793844af8d5cdee496b765"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/13-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5879,
+   "name": "teeth-workers/13-stdout",
+   "sha256": "b515f3f7d43228d959b80ae07f6e95352613b8fd36ddde69b161bbd0ae6773eb"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/14/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 520,
+   "name": "teeth-workers/14/job.json",
+   "sha256": "3c35d40e8dcef6553149a3a78879f18933c052ceb6d53ea1fa9f0e4ab3ed0868"
+  },
+  {
+   "bytes": 28427,
+   "name": "teeth-workers/14/mutation_ownership.py",
+   "sha256": "4f40f86732b98daa191dadb3f88d24ca66e8fcdee2b571b06ea2a8abc5c9cf2c"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/14-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5865,
+   "name": "teeth-workers/14-stdout",
+   "sha256": "4d8887d3b7a382b26f84cf35f7870ff743fdb9dac0b97da01e0ecb79f4a532b5"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/2/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 545,
+   "name": "teeth-workers/2/job.json",
+   "sha256": "3e827f3985b4ded9d206af8709db6a278dfc13561fb417c2f49dbfad2fb8fd95"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/2-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5830,
+   "name": "teeth-workers/2-stdout",
+   "sha256": "d13ef07f3db47e05d266c19dee214c2ba08fe8d1e5c1250d19fb88c42b2a0784"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/3/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 42467,
+   "name": "teeth-workers/3/gate_schedule.py",
+   "sha256": "107e001258e4ee6333f7603565e8be3794d1f4dafd8d591d38a24355a55d6565"
+  },
+  {
+   "bytes": 540,
+   "name": "teeth-workers/3/job.json",
+   "sha256": "e81a64fdb6676cd447120a5ebd347cccf8cac0a853ec8cf74612a95e5f756f89"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/3-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5830,
+   "name": "teeth-workers/3-stdout",
+   "sha256": "d13ef07f3db47e05d266c19dee214c2ba08fe8d1e5c1250d19fb88c42b2a0784"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/4/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 519,
+   "name": "teeth-workers/4/job.json",
+   "sha256": "fe1e3a25556a7ccb64c68a1933dde7caf29c39adfe86d1b043bb91b92cb647df"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/4-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5835,
+   "name": "teeth-workers/4-stdout",
+   "sha256": "f27710a937a91332d1e43e5108fb76596a5fb08c81504f9d83822b72eb050e76"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/5/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 93112,
+   "name": "teeth-workers/5/check_gate_mutations.py",
+   "sha256": "33bc8b41b69625e06696d19e91fddcd4566b9eeea3856f36972685b56b1a35d0"
+  },
+  {
+   "bytes": 514,
+   "name": "teeth-workers/5/job.json",
+   "sha256": "ac851dbcc4853ecc929f74dcd34adf563b02d4fb4538569498c54c2c0c3ecdd5"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/5-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5835,
+   "name": "teeth-workers/5-stdout",
+   "sha256": "f27710a937a91332d1e43e5108fb76596a5fb08c81504f9d83822b72eb050e76"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/6/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 523,
+   "name": "teeth-workers/6/job.json",
+   "sha256": "26f264792c01d6e5c8df4280e067a03d7dd3f67306362abeba048c868f167e8b"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/6-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5826,
+   "name": "teeth-workers/6-stdout",
+   "sha256": "599cec6f385e583d7d335d13a6c558a078724c66815cd1dacaddc389064e8c45"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/7/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 519,
+   "name": "teeth-workers/7/job.json",
+   "sha256": "b57505f36f9812e798d0bcdf7d6a4810f27f4933f7c92391b4959a0a5f4e9165"
+  },
+  {
+   "bytes": 28518,
+   "name": "teeth-workers/7/mutation_ownership.py",
+   "sha256": "bf8faa84e967373f49be1b43bb7782c1e18a975f6cd986407689f36b7d999bc4"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/7-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5826,
+   "name": "teeth-workers/7-stdout",
+   "sha256": "599cec6f385e583d7d335d13a6c558a078724c66815cd1dacaddc389064e8c45"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/8/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 42492,
+   "name": "teeth-workers/8/gate_schedule.py",
+   "sha256": "98e3bd1a25c869fd14acd846d56ff07d70f5448a0d6c6c67c9fbb817789e6ff0"
+  },
+  {
+   "bytes": 446,
+   "name": "teeth-workers/8/job.json",
+   "sha256": "d4492fc4d716fd17e3d11107c6d0ee9a4cd598d721e57c27b4a98ffcb50ab978"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/8-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 4887,
+   "name": "teeth-workers/8-stdout",
+   "sha256": "1ec065c9eabf1d313c477e35e792fa435b152a8772b0f487f928407e9ec147fc"
+  },
+  {
+   "bytes": 8020928,
+   "name": "teeth-workers/9/bin/python3",
+   "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+  },
+  {
+   "bytes": 42482,
+   "name": "teeth-workers/9/gate_schedule.py",
+   "sha256": "d716da93616b7679ec897d7ed1a55b75f9e51ddf544fb4d407b26bd635aee355"
+  },
+  {
+   "bytes": 542,
+   "name": "teeth-workers/9/job.json",
+   "sha256": "4b51c6931cdf5a02e918dc35c704a920a864ef03d32ef01237fb9b514d1bed18"
+  },
+  {
+   "bytes": 0,
+   "name": "teeth-workers/9-stderr",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 5969,
+   "name": "teeth-workers/9-stdout",
+   "sha256": "c9ae6d8891ce95be47a2aa86cdd72d99a2e71edf563e766edee179d064d0ef34"
+  },
+  {
+   "bytes": 206,
+   "name": "teeth-workers/ownership-0.jsonl",
+   "sha256": "2316b2199a18b8d35065c54a33621654279834824e09984d8c565ba0420b8ddd"
+  },
+  {
+   "bytes": 206,
+   "name": "teeth-workers/ownership-1.jsonl",
+   "sha256": "7add278d42efa91ea2b5186b3619e130f3b1c217b1499abf05e68b95f9fc04a5"
+  },
+  {
+   "bytes": 1657,
+   "name": "teeth-workers/ownership-10.jsonl",
+   "sha256": "b8538ed3a812397a770967e5c15841ede69168000e77b60dc25a13b92a94f106"
+  },
+  {
+   "bytes": 1657,
+   "name": "teeth-workers/ownership-11.jsonl",
+   "sha256": "13d98b97e1326e00fb470fcb489ba4058b409dc21729168a7bda1b50caea685f"
+  },
+  {
+   "bytes": 1657,
+   "name": "teeth-workers/ownership-12.jsonl",
+   "sha256": "bc360d74d74b0ccc9af7469e32f432ff0ca72240b442a5934ba94cd644f76e9f"
+  },
+  {
+   "bytes": 1657,
+   "name": "teeth-workers/ownership-13.jsonl",
+   "sha256": "8b6f2eb9fcdb7381087f36bb41aeb412f2d9132a8ebf9d624120d18b80a12daf"
+  },
+  {
+   "bytes": 1657,
+   "name": "teeth-workers/ownership-14.jsonl",
+   "sha256": "08f541df42c5764699d50a17bd51458b53ec54f1a7cfd92d426b9acef57666e6"
+  },
+  {
+   "bytes": 1636,
+   "name": "teeth-workers/ownership-2.jsonl",
+   "sha256": "3854ccd4d80177c9db47f819e185bcb3588477eddd1b54d56c600dd99580131f"
+  },
+  {
+   "bytes": 1636,
+   "name": "teeth-workers/ownership-3.jsonl",
+   "sha256": "6753d6060fe0d166548a84e93225941f696fefbdc05483a81e3e8e4c70f17332"
+  },
+  {
+   "bytes": 1636,
+   "name": "teeth-workers/ownership-4.jsonl",
+   "sha256": "fb040939bba833511d7c72b8de1be5835ad966d1dc1c00a98837b3be4def5d98"
+  },
+  {
+   "bytes": 1636,
+   "name": "teeth-workers/ownership-5.jsonl",
+   "sha256": "f6bcfa764d88e04b39844cfdc8a6935cf0a9c13a4a31a0cad7432379b4b613bf"
+  },
+  {
+   "bytes": 1636,
+   "name": "teeth-workers/ownership-6.jsonl",
+   "sha256": "440a874289fcf77f58be0c0137bc03a2ccab0c5a7d75abe91bbf5539f4ac2d59"
+  },
+  {
+   "bytes": 1636,
+   "name": "teeth-workers/ownership-7.jsonl",
+   "sha256": "cebfab8f9c8f9f014b82da9d23816eb9e1352c63c02654516a8bcd70388ce32c"
+  },
+  {
+   "bytes": 206,
+   "name": "teeth-workers/ownership-8.jsonl",
+   "sha256": "e0f95105e222de16220f85600063789b6aaa5b5184f5e349fdab7eed2faff9d9"
+  },
+  {
+   "bytes": 1636,
+   "name": "teeth-workers/ownership-9.jsonl",
+   "sha256": "ab814228a756004e23cabbee2e6bb67481e60a83c642726cd6febe1395f0b590"
+  }
+ ],
+ "environment": {
+  "commit": "e9a480c829d8fe7ff535cca4252beca8e3b3439c",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   14.23291015625,
+   28.64599609375,
+   25.21875
+  ],
+  "python": "3.12.3",
+  "tree": "494db46d3fade419031cc814c53ec5e8dc24f4bc"
+ },
+ "schema": "veldo.proof-summary/v1"
+}
