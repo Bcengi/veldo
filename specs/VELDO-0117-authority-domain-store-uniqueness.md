@@ -25,6 +25,8 @@ footprint:
   - "specs/VELDO-0117-authority-domain-store-uniqueness.md"
   - "specs/index.md"
   - "proof/VELDO-0117/*"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_service.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -86,3 +88,5 @@ This is planned work, not implementation evidence. All named rows below this con
 ## History
 
 2026-11-11: the builder added scripts/check_teeth_mutations.py to the footprint, only to register the mutants of this spec's falsifiers (finding 117).
+
+2026-11-11: footprint amended by the lead: .veldo/control_service.py and its engine copy, so the production authority is given the domain registry (the builder stopped short of wiring it).
