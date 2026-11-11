@@ -34,7 +34,7 @@ observability:
   metrics: >
     Each worker outcome carries stall_seconds, the time its cgroup and the units it accounts spent with
     a task waiting for a CPU. Each admission event carries the ceiling state it was granted under. The
-    receipt carries the ceiling value and the seconds the stage spent under it.
+    receipt carries the ceiling value and the seconds the ledger held a wall_clock claim up to the stage's last ledger reply, unit.unconfined's hold included.
   traces: >
     A worker's stall_seconds sits in the same outcome as its cpu_seconds and elapsed, so a red control
     is read beside its own starvation figure.
