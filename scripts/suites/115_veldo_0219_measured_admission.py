@@ -291,6 +291,16 @@ def _v219_checks():
             workers = gate.Workers(deadline, pool, parallel=gate.worker_count(cores) if limit is None else limit,
                                    admission=admission)
             children = []
+            last_sample = [False]
+            check_worker = workers.check_worker
+            def checked_deadline(name, started):
+                try:
+                    check_worker(name, started)
+                except gate.Refused as error:
+                    admission.deadline_error = error
+                    last_sample[0] = True
+                    raise
+            workers.check_worker = checked_deadline
             class Child:
                 def __init__(self, argv, **kwargs):
                     self.job = json.loads(Path(argv[-1]).read_text())
@@ -302,6 +312,8 @@ def _v219_checks():
                     kwargs['stdout'].write(json.dumps(dict(observation=obs, replacement_count=1,
                         old_digest='a', new_digest='b' if not ok else 'a')).encode())
                 def poll(self):
+                    if fault == 'deadline-sample':
+                        return None
                     if fault == 'abort' and self.job['mode'] == 'noop':
                         return None
                     held = hold(self.job) if hold is not None else None
@@ -310,6 +322,8 @@ def _v219_checks():
                         return self.returncode
                     if clock[0] - self.born >= .2:
                         self.returncode = 0
+                        if fault == 'final-sample':
+                            last_sample[0] = True
                     return self.returncode
                 def wait(self, timeout=None):
                     self.returncode = 0 if self.returncode is not None else -9
@@ -321,8 +335,9 @@ def _v219_checks():
                     return types.SimpleNamespace(cleanup=lambda *a, **k: reap[0](*a, **k))
                 return loader(path)
             error = None
-            if fault == 'lifecycle':
+            if fault in ('lifecycle', 'deadline-sample', 'final-sample'):
                 admission.opened = []
+                admission.samples = []
                 class Meter:
                     peak = 1024
                     fd = None
@@ -336,6 +351,9 @@ def _v219_checks():
                         os.close(self.fd)
                         self.fd = None
                     def sample(self, *args):
+                        admission.samples.append(last_sample[0])
+                        if last_sample[0]:
+                            raise RuntimeError('planted last sample failure')
                         return dict(cpu_seconds=1, peak_anon_bytes=1024)
                     def close(self):
                         if self.fd is not None:
@@ -365,6 +383,7 @@ def _v219_checks():
                     else:
                         done = workers.run(jobs, home, ROOT)
                 except gate.Refused as exc:
+                    admission.raised = exc
                     error, done = exc.code, {}
             return workers, ledger, done, error, admission
 
@@ -388,6 +407,26 @@ def _v219_checks():
         workers, ledger, done, error, _ = exercise({'bad': jobs['j0']}, fault='meter')
         row('cgroup-launch-refused', error == 'worker_launch_error' and not workers.active
             and set(ledger.held) == {'root'} and not workers.resources.held)
+
+        sample_checks = []
+        for fault in ('deadline-sample', 'final-sample'):
+            workers, ledger, done, error, admission = exercise(
+                {'late': dict(jobs['j0'], budget_seconds=2)}, fault=fault)
+            outcome = workers.outcomes[0]
+            wanted = 'mutation_budget_exceeded' if fault == 'deadline-sample' else 'worker_measurement_error'
+            sample_checks.append(error == outcome.get('error') == wanted and not done
+                and admission.samples[-1] is True and not any(admission.samples[:-1])
+                and len(admission.samples) > 1 and not workers.active and not workers.resources.held
+                and set(ledger.held) == {'root'} and 'cleanup_error' not in outcome)
+            if fault == 'deadline-sample':
+                sample_checks.append(admission.raised is admission.deadline_error
+                    and 'worker deadline' in outcome.get('detail', '')
+                    and outcome['detail'] == admission.deadline_error.detail
+                    and outcome.get('measurement_error') == 'planted last sample failure')
+            else:
+                sample_checks.append('planted last sample failure' in outcome.get('detail', '')
+                    and 'measurement_error' not in outcome)
+        expect('VELDO-0289 admission/deadline-then-sample-failure', all(sample_checks))
 
         # Batch 2026-10-29 row 18: an aborted run releases every ledger grant, a cancelled
         # worker's and a cleanup-failed worker's included; the failed one keeps its local slot.

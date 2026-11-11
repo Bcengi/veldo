@@ -1,0 +1,75 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0289",
+  "commit": "3c9ea17e669395993e2168f633ea83272a4ab582",
+  "tree": "0f2f6a82cfd47a381a401cb6f656fe2fca4edb89",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-10T08:11:37.019362+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0289/teeth.json",
+          "detail": "Fresh baseline and no-op controls pass. cleanup289-replaces-first-error reds suite 98 receipts/deadline-then-cleanup-failure; measure289-replaces-first-error reds suite 115 admission/deadline-then-sample-failure. Both named mutants are killed."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/98_veldo_0204_mutation_receipts.py",
+          "detail": "The passing controls cover both cleanup steps, their ordered combined text, first error and detail, the raised error, grant retention before stage abort, clean-worker failures, and the re-anchored release-failed-cleanup falsifier."
+        },
+        {
+          "type": "unit",
+          "ref": "scripts/suites/115_veldo_0219_measured_admission.py",
+          "detail": "The final sample fails only after check_worker reports the deadline. The same error object is raised and its detail retained. A second case keeps worker_measurement_error when no error was handed to finish."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0289/integration.json",
+          "detail": "The actual suite 101 function is red on 852f133b and under the registered cleanup mutation, then green on the current coordinator. All three workers record their own /dev/shm directory, run unconfined without a meter, exceed budget_seconds 2, and are killed. Cleanup refuses the directory under the unchanged guard. The current outcome and raised error remain mutation_budget_exceeded. The fixture removes only its own empty directory."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "mutation",
+      "status": "passed",
+      "ref": "proof/VELDO-0289/teeth.json",
+      "detail": "Finding 289: registered 2, executed 2, rejected 2, reused 0, worker invocations 6."
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "ref": "proof/VELDO-0289/integration.json",
+      "detail": "Three executions of the new suite 101 row: two expected reds and one green. Other suite 101 functions were not run."
+    },
+    {
+      "name": "selected_suites",
+      "status": "passed",
+      "ref": "proof/VELDO-0289/unit.json",
+      "detail": "Partial diagnostics only. Suite 98: 46 rows passed. Suite 115: 31 rows passed. Zero failures; both selftest exits are 2. This is not aggregate unit verification."
+    },
+    {
+      "name": "static",
+      "status": "passed",
+      "detail": "Python syntax and mutation anchors pass. Coordinator copies are byte identical. Both ownership guard files match 852f133b. The diff has no whitespace errors."
+    }
+  ],
+  "invariants": {
+    "coordinator_sha256": "119e93d17b298e0d6faa09cf59eef0ae5838b9e74213ea35ce5c587bea18b99e",
+    "ownership_sha256": "b6dddb8a128eb1ad0ade4022a9c6060874175ddf0826e38081bd9cde6c8aa17c",
+    "baseline": "852f133b",
+    "gate_run": false,
+    "policy_check_run": false
+  },
+  "rollback": "Revert the implementation commits. Cleanup and final sample failures replace the earlier error again. The ownership guard was not changed."
+}

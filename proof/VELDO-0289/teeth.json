@@ -1,0 +1,50 @@
+{
+ "command": "python3 scripts/check_teeth_mutations.py --finding 289 --summary proof/VELDO-0289/teeth.json",
+ "deciding": {
+  "counts": {
+   "elapsed": 14.506862367969006,
+   "executed": 2,
+   "registered": 2,
+   "rejected": 2,
+   "reused": 0,
+   "status": "passed",
+   "worker_invocations": 6
+  },
+  "results_count": 2,
+  "results_sha256": "827dccda5a6d2251236061a648bab7e77a76717f6efde1edd5b3372c8d812fa8",
+  "rows": [
+   {
+    "case": "cleanup289-replaces-first-error",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   },
+   {
+    "case": "measure289-replaces-first-error",
+    "expected": "killed",
+    "observed": "killed",
+    "source": "fresh"
+   }
+  ]
+ },
+ "discarded": [
+  {
+   "bytes": 36262,
+   "name": "mutation result array",
+   "sha256": "827dccda5a6d2251236061a648bab7e77a76717f6efde1edd5b3372c8d812fa8"
+  }
+ ],
+ "environment": {
+  "commit": "3c9ea17e669395993e2168f633ea83272a4ab582",
+  "git": "git version 2.43.0",
+  "host": "dmitry-pc",
+  "load": [
+   2.73095703125,
+   2.83056640625,
+   2.326171875
+  ],
+  "python": "3.12.3",
+  "tree": "0f2f6a82cfd47a381a401cb6f656fe2fca4edb89"
+ },
+ "schema": "veldo.proof-summary/v1"
+}

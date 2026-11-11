@@ -1,0 +1,79 @@
+{
+  "commit": "160c338e4e7f9bada7a273d0540c23388985b3cb",
+  "coordinator_sha256": "119e93d17b298e0d6faa09cf59eef0ae5838b9e74213ea35ce5c587bea18b99e",
+  "passed": true,
+  "results": [
+    {
+      "expected": false,
+      "mode": "852f133b",
+      "observed": {
+        "directory_survived": true,
+        "ledger_named": true,
+        "outcome": {
+          "cleanup_error": null,
+          "detail": "late: ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v289-killed-mvi91xcr\"]",
+          "error": "worker_cleanup_error",
+          "leg": "unconfined",
+          "returncode": -9
+        },
+        "raised": "worker_cleanup_error",
+        "resources_held": true
+      },
+      "passed": true,
+      "rows": [
+        [
+          "VELDO-0289 ownership/timeout-then-cleanup-failure",
+          false
+        ]
+      ]
+    },
+    {
+      "expected": false,
+      "mode": "cleanup289-replaces-first-error",
+      "observed": {
+        "directory_survived": true,
+        "ledger_named": true,
+        "outcome": {
+          "cleanup_error": "ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v289-killed-xn4vlt18\"]",
+          "detail": "late: ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v289-killed-xn4vlt18\"]",
+          "error": "worker_cleanup_error",
+          "leg": "unconfined",
+          "returncode": -9
+        },
+        "raised": "worker_cleanup_error",
+        "resources_held": true
+      },
+      "passed": true,
+      "rows": [
+        [
+          "VELDO-0289 ownership/timeout-then-cleanup-failure",
+          false
+        ]
+      ]
+    },
+    {
+      "expected": true,
+      "mode": "current",
+      "observed": {
+        "directory_survived": true,
+        "ledger_named": true,
+        "outcome": {
+          "cleanup_error": "ownership ledger names resources outside this worker: [\"directory\", \"/dev/shm/v289-killed-eynbk4yb\"]",
+          "detail": "late: worker deadline (2s)",
+          "error": "mutation_budget_exceeded",
+          "leg": "unconfined",
+          "returncode": -9
+        },
+        "raised": "mutation_budget_exceeded",
+        "resources_held": true
+      },
+      "passed": true,
+      "rows": [
+        [
+          "VELDO-0289 ownership/timeout-then-cleanup-failure",
+          true
+        ]
+      ]
+    }
+  ]
+}
