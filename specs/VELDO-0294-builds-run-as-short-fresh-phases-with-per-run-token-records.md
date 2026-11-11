@@ -85,7 +85,7 @@ acceptance_criteria:
       messages), source.commit equal to the contract's source commit, done (one entry per ended
       phase dispatch: phase, commit and a note), remains (the list the phase before returned),
       reading equal to READING_RULE, and output naming what this phase returns. It requires the
-      payload without its spec text to be at most 4,096 bytes of JSON, for the oversized result
+      payload without its spec text and its state note to be at most 4,096 bytes of JSON, for the oversized result
       too, where remains is cut to 10 lines of 200 characters and each done note to 200
       characters, with five done entries whose notes are 2,000 characters each. And it requires no
       payload to hold
@@ -180,6 +180,21 @@ acceptance_criteria:
       Follow a symlinked .git/HEAD. Registered mutant phase294-head-symlink-followed must turn
       phase/head-read red. Follow a symlinked ref file. Registered mutant
       phase294-ref-symlink-followed must turn phase/head-read red.
+  - id: AC9
+    text: >
+      Claim: the brief of every build dispatch after the first carries, in full, the phase state note
+      found at proof/<unit>/phase-state.md in the commit the dispatch before it ended on. Set: suite
+      82's stand-in in the mode of AC3, with phase.messages 15, in four variants of the commit it
+      makes before it is stopped: a note of 6,000 bytes, a note of 8,193 bytes, no note, and a
+      symlink at the note's path. Completeness: row phase/state-note (prefix VELDO-0294) requires
+      every payload to carry note equal to NOTE_RULE and phase.soft equal to 5; the second
+      dispatch's payload to carry state.note equal, byte for byte, to the 6,000-byte note in the
+      first variant; and in the other three to carry no state.note and state.missing equal to
+      oversize, absent and not_a_file, in that order. Red at 6ee5bb5f, where the build payload has
+      no state, note or phase field (control_launch_work.py:242 to 246).
+    falsified_by: >
+      Build the next payload without reading the note. Registered mutant
+      phase294-state-note-not-carried must turn phase/state-note red.
 required_evidence: [unit, integration]
 rollback: >
   Revert the commit. Runtime.build again runs a build as one dispatch, no run has a message cap of
@@ -218,7 +233,36 @@ The brief is the dispatch payload. Besides the spec text and the fields it has t
 phase (name, index, of, messages), the source commit, a done list with one entry per phase dispatch
 that has ended, the remains list the phase before returned, and READING_RULE, a constant in
 control_launch_work.py: read only the parts of a large file you need, by search and line range,
-and never a whole large file. Without the spec text the payload is at most 4,096 bytes.
+and never a whole large file. Without the spec text and the state note the payload is at most
+4,096 bytes.
+
+The phase state note is how a phase tells the next one what it knows. The owner asked (Telegram
+40812) whether a new session loses the context and makes mistakes afterwards. It keeps only what is
+written down: the commits, the spec and this note. The note is the file proof/<unit>/phase-state.md
+in the builder's clone, at most 8,192 bytes of UTF-8 text, with four headings: done, left, decisions
+made, and approaches tried and rejected.
+
+The request was to tell the running builder once, 10 messages before the cap, to commit and write
+the note. Nothing can deliver that message today. The receiver writes a run's input once and then
+closes it: the feed thread in Receiver._reap (control_launch.py:2258 to 2275) closes the worker's
+input after the prompt. Codex takes its one prompt from that input and reads nothing after it
+(control_engine_codex.py:966). The Claude Code engine holds its input open only until the prompt,
+which is its last write (control_engine_claude.py:1709). The only thing the receiver can send a
+running engine is a stop.
+
+So the phase writes the note at commit time. NOTE_RULE, a constant in control_launch_work.py that
+every payload carries as note, tells the builder to bring the note up to date in every commit it
+makes, and to stop new work once it has used phase.soft messages, then commit and finish the note.
+phase.soft is phase.messages minus 10, and never below 1: 70 of the default 80. The builder counts
+its own messages, and nothing checks that it does. That is why the note goes into every commit: a
+run stopped at the hard cap still leaves the note of its last commit. The hard cap is unchanged.
+
+Runtime.build reads the note from the commit a dispatch ended on, after that commit is imported
+into the authority's repository, with P.blob. The path must be a regular file in the commit's tree
+and at most 8,192 bytes. The next payload then carries it whole as state.note. Otherwise the payload
+carries state.missing with absent, oversize or not_a_file, and no note text. A missing note refuses
+nothing. The proof phase deletes the note in the commit that adds the manifest, because the note is
+working state and not evidence.
 
 A phase ends in one of two ways. The engine returns its JSON answer with commit, done and remains,
 and _collect (line 183) imports that commit as it does today. Or the run reaches the phase's message
@@ -281,7 +325,8 @@ spec does not become ready until he has answered.
 Messages per phase, default 80. A turn in this repository re-reads a context of a few hundred thousand
 tokens, so 80 turns of a fresh session come to roughly 8M, the most any phased run used on
 2026-11-11. The 217-turn build that used 70M would have been stopped well before a quarter of its
-length. A lower cap stops more phases mid-work and costs a continuation dispatch each time.
+length. A lower cap stops more phases mid-work and costs a continuation dispatch each time. The soft
+limit is the cap minus 10, so 70 at the default.
 
 Dispatches per build, default 6. That is the three phases plus one continuation each. A build that
 needs more than that is larger than one spec should be, and is refused rather than left to run.
@@ -337,3 +382,8 @@ draft.
 
 2026-11-11: error_taxonomy corrected to name the three new names, including invalid_input:build_head.
 2026-11-11: re-review N1 to N3 applied: the head-read refusal is its own criterion, AC8.
+2026-11-11: owner concern (Telegram 40812, answered in 40813) applied: the phase state note. Added AC9
+and the note's design. No running engine can be sent a message, so the note is written at commit
+time and the soft limit (the cap minus 10) is given in the brief. AC2's 4,096-byte bound now excludes
+the state note. No new footprint path: the code, the suite and the mutant registry are already
+listed, and this unit's own note falls under proof/VELDO-0294/**.
