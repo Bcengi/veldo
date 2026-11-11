@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0292
 title: The push guard judges only the git and gh commands the shell would run, so a mention of one in a comment, or in a quoted string or heredoc body given only to plain text tools in a command that names no git or gh, is not refused, while a git command the guard cannot resolve stays protected
-status: draft
+status: ready
 risk: high
 risk_areas: [auth_security]
 owner: dmitry
@@ -405,3 +405,5 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: amendment 1 closes name remapping inside the subset (build 1 stop, item 3) and records the builder's two allowed corpus fixes
 2026-11-11: revision 5 applies amendment 1 (tool-name remapping) from the checker after the builder's report
 2026-11-11: revision 6 applies N1 and N2 of the fourth re-review of b6cdacaf
+
+2026-11-11: marked ready by the lead; the fourth re-review would mark it READY once N1 and N2 were applied (61098783)
