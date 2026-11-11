@@ -1,0 +1,23 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0294",
+  "commit": "f0434486df1741a70a7b6797401ca1193e0ce808",
+  "producer": "Codex implementation agent",
+  "criteria": [
+    {"id": "AC1", "status": "pending", "evidence": []},
+    {"id": "AC2", "status": "pending", "evidence": []},
+    {"id": "AC3", "status": "pending", "evidence": []},
+    {"id": "AC4", "status": "pending", "evidence": []},
+    {"id": "AC5", "status": "pending", "evidence": []},
+    {"id": "AC6", "status": "pending", "evidence": []},
+    {"id": "AC7", "status": "pending", "evidence": []},
+    {"id": "AC8", "status": "pending", "evidence": []},
+    {"id": "AC9", "status": "pending", "evidence": []},
+    {"id": "AC10", "status": "pending", "evidence": []}
+  ],
+  "checks": [
+    {"name": "unit", "status": "pending", "ref": "proof/VELDO-0294/heavy-pending.summary.json"},
+    {"name": "integration", "status": "pending", "ref": "proof/VELDO-0294/heavy-pending.summary.json"}
+  ],
+  "rollback": "Revert the implementation commits, then refresh the VELDO-0127 qualification records and live captures."
+}
