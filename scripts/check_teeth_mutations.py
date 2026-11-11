@@ -13090,6 +13090,66 @@ def cases():
              "        shown = dict(observation)\n",
              "        shown = dict(observation, starts=[])  # defect: the detail leaves the start records out\n",
              'restart/adoption-start-checked')
+
+    # VELDO-0117: one domain has one store, decided by the authority over its domain registry. Each
+    # criterion's declared falsifier, and the guards beside it. The suite copies the three modules into
+    # the directory its authority processes run from, so the mutated file is what an authority runs;
+    # the clones are driven by this checkout's unmutated modules.
+    s117 = '113_veldo_0117_domain_store.py'
+    refuses117 = 'enrollment/authority-refuses-domain-store-conflict'
+    winner117 = 'enrollment/one-domain-one-winner'
+    restart117 = 'enrollment/domain-binding-survives-restart'
+    # AC1: the authority's comparison removed, at each of the three places it is made. A request's
+    # binding is not compared with the committed store.
+    add(117, 'v117-binding-comparison-removed', s117, 'control_enrollment.py',
+        "    conflict = None if committed_store is None else store_conflict(binding, committed_store)\n",
+        "    conflict = None  # defect: a binding is not compared with the committed store\n",
+        [refuses117])
+    # AC1: a store proposed at registration is not compared with the committed one.
+    add(117, 'v117-registration-comparison-removed', s117, 'control_store.py',
+        '    differing = [field for field in ("store_uuid", "store_path") if committed[field] != proposed[field]]\n',
+        "    differing = []  # defect: a proposed store is not compared with the committed one\n",
+        [refuses117])
+    # AC1: the authority judges a request without asking its registry.
+    add(117, 'v117-judgment-skips-registry', s117, 'control_client.py',
+        "        if self.registry is not None:\n"
+        "            refusal, committed = self._domain_store_refusal(request)\n",
+        "        if False:  # defect: a request is not held to the committed store\n"
+        "            refusal, committed = self._domain_store_refusal(request)\n",
+        [refuses117])
+    # AC1: a domain with no committed store is served, so the first command stands in for a registration.
+    add(117, 'v117-unregistered-domain-served', s117, 'control_client.py',
+        "        if committed is None:\n"
+        '            return self._no("coordinate_not_served",\n'
+        '                            "domain %s has no committed store in the domain registry: a store is "\n',
+        "        if False:  # defect: a domain without a committed store is served\n"
+        '            return self._no("coordinate_not_served",\n'
+        '                            "domain %s has no committed store in the domain registry: a store is "\n',
+        [refuses117])
+    # AC2: the read and the insert are separate statements with no transaction around them.
+    add(117, 'v117-registration-not-atomic', s117, 'control_store.py',
+        '    _begin(conn, "this handle cannot register a domain\'s store (%s)")\n',
+        "    pass  # defect: the read and the insert are separate statements, each its own transaction\n",
+        [winner117],
+        also=[('            decision = "matching" if detail is None else "domain_store_conflict"\n'
+               '        conn.execute("COMMIT")\n',
+               '            decision = "matching" if detail is None else "domain_store_conflict"\n')])
+    # AC3: an authority that starts begins from an empty map, not from the committed record.
+    add(117, 'v117-registry-empty-at-start', s117, 'control_store.py',
+        "    conn.execute(_DOMAIN_STORES_DDL)\n",
+        "    conn.execute(_DOMAIN_STORES_DDL)\n"
+        '    conn.execute("DELETE FROM domain_stores")  # defect: every start begins from an empty map\n',
+        [restart117])
+    # AC3: another spelling of the committed file is taken for another store, in the binding comparison
+    # and in the authority's own check of the store a request resolves to.
+    add(117, 'v117-binding-path-spelling-conflicts', s117, 'control_enrollment.py',
+        '        ("store_path", os.path.realpath(binding["store_path"]), os.path.realpath(committed_store["store_path"])))\n',
+        '        ("store_path", binding["store_path"], committed_store["store_path"]))  # defect: spellings compared\n',
+        [restart117])
+    add(117, 'v117-judge-path-spelling-refused', s117, 'control_client.py',
+        "        if (os.path.realpath(store) != self.store_path or request[\"store_uuid\"] != self.store_uuid\n",
+        "        if (store != self.store_path or request[\"store_uuid\"] != self.store_uuid\n",
+        [restart117])
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
     return result

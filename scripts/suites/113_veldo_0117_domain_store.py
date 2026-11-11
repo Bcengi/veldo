@@ -351,6 +351,20 @@ def _v117_product(world, checks, records):
         records.append({"case": cell, "committed": held, "proposed": proposed, "admission": admitted,
                         "registration": registered, "command": outcome, "transactions": list(delta),
                         "passed": bool(ok and kept)})
+    # The record gone from the registry, as after a lost file: the authority still running must not
+    # serve the domain, and a clone's command must not put the record back.
+    if _v117_committed(registry, domain) is not None:
+        lost = _v117_sqlite3.connect(str(registry))
+        lost.execute("DELETE FROM domain_stores WHERE domain_uuid=?", (domain,))
+        lost.commit()
+        lost.close()
+    commands = _v117_commands(first.path)
+    outcome, _ = _v117_send(fx, first, "record removed")
+    checks.append(("with the domain's record removed from the registry, its own clone's command is refused, is not "
+                   "applied and registers nothing [%s; %d transaction(s); record %s]"
+                   % (outcome, _v117_commands(first.path) - commands, _v117_committed(registry, domain)),
+                   outcome == "refused:coordinate_not_served" and _v117_commands(first.path) == commands
+                   and _v117_committed(registry, domain) is None))
     stopped = one.stop() or {}
     counts = stopped.get("counts") or {}
     # 17 accepted commands named the committed store: 16 from its own clone and the one matching

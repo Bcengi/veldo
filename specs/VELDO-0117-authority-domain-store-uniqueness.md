@@ -21,6 +21,7 @@ footprint:
   - "scripts/suites/*_veldo_0117_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0117-authority-domain-store-uniqueness.md"
   - "specs/index.md"
   - "proof/VELDO-0117/*"
@@ -81,3 +82,7 @@ Store migration or administrative rebinding, multi-authority consensus, transpor
 The operator-configured authority registration boundary owns the durable domain-to-store map; a clone cannot create or overwrite it by presenting a signature. The first binding is established only through authorized registration, not first arbitrary mutation. A second authority instance must consult the same authoritative domain registration or refuse to serve that domain; isolated writable maps cannot satisfy this contract. Same canonical store aliases are not conflicts, but two distinct database files with one UUID are. VELDO-0115 supplies process/store setup and independent readback.
 
 This is planned work, not implementation evidence. All named rows below this contract are obligations for a future ready implementation. For each declared falsifier, retain the applied diff, require the named row to become false in an otherwise completed run, and revert the mutation. A crash, missing row or timeout is an invalid drive, not a detected falsifier.
+
+## History
+
+2026-11-11: the builder added scripts/check_teeth_mutations.py to the footprint, only to register the mutants of this spec's falsifiers (finding 117).
