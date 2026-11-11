@@ -1,12 +1,18 @@
 # VELDO-0178 proof: the authenticated API serves the owner's conversations and their turns, and every turn's execution record is kept and served live only to the conversation's owner
 
-Producer: the Claude implementation agent (not an independent reviewer). Branch agent/claude/veldo-0178, on top of
-b153dea1 (VELDO-0230, VELDO-0231, VELDO-0177, VELDO-0176 and VELDO-0175, not yet on main). Fake engines only: no real
+Producer: the Claude implementation agent (not an independent reviewer). Branch agent/claude/veldo-0178, built on top of
+b153dea1 (VELDO-0230, VELDO-0231, VELDO-0177, VELDO-0176 and VELDO-0175, not yet on main) and since rebased onto
+800a34d6. Fake engines only: no real
 Claude Code or Codex run, no login, no real Telegram or bot token. The full gate was not run (the lead runs it);
 single suites only.
 
-One part of AC2 needs a path outside the footprint (the launch receiver's header, `control_launch.py`): see OPEN.md
-item 1. Until that diff is applied, suite 133's AC2/header row is red.
+One part of AC2 needed a path outside the footprint (the launch receiver's header, `control_launch.py`): OPEN.md
+item 1, resolved. The lead widened the footprint and applied the header binding (a98dc5b8), so suite 133 is 16 of 16
+as committed.
+
+The branch was rebased onto 800a34d6 (VELDO-0175 fix round 2) after fix round 1. Commits named in the evidence from
+before that (6f27a5b5, 1b51fa3d, 5c9f2fd2, 9f891de4, a724a689, 110221f7, bc93cb9b) are not ancestors of the branch;
+what was retaken on the branch, at 12435969, is named under Fix round 2.
 
 Test: suite 133 (`scripts/suites/133_veldo_0178_conversation_api.py`, 16 rows, registered in manifest.json and
 requires.json). A real signed SQLite authority (VELDO-0073's support) with the owner (scope: one project) and a
@@ -22,14 +28,21 @@ a socket of the suite's own and are handed to the API, as its hint socket hands 
 Evidence files:
 - `red-at-b153dea1.txt`: suite 133 against the base's eight modules: 14 of 16 rows red. AC1/message-field
   (VELDO-0175's field) and AC2/neither (the base already refused a run with no project to every member) hold there.
-- `suites.txt`: suite 133 (15 of 16 as committed, 16 of 16 with the launch diff applied for the run), and suites 71,
-  123, 127, 128, 129, 130, 131, 132, 86, plus 104, 82, 94, 113 and 124, each run alone.
-- `falsify.py`, `falsifiers.txt`: each spec falsifier and the guard (the finding 178 mutation cases) applied to the
-  checkout's module, suite 133 run, the module restored byte for byte (`restored: True` each).
-- `finding1-red-green.txt`: fix round 1's AC1/events check, red before the fix and green after.
-- `mutation-*.txt`: each of the four registered cases run alone through `scripts/check_gate_mutations.py` with its case option,
-  confined leg: baseline and no-op green, the mutant killed at its row.
-- `control_launch-header.diff`: the change outside the footprint (OPEN.md item 1).
+- `suites.txt`: suite 133 (16 of 16 as committed) and the suites its change touches, each run alone; the last block
+  is the run on the branch at 12435969 (133, 104, 96, 131, 123, 132, 71, 124, 82, 94, all green). The two earlier
+  blocks are from before the rebase and are kept as history (suites 127, 128, 129, 130, 86 and 113 are only there).
+- `falsify.py`, `falsifiers.txt`: each spec falsifier and the guard (the five finding 178 mutation cases) applied to
+  the checkout's module, suite 133 run, the module restored byte for byte (`restored: True` each). Retaken at 12435969.
+- `finding1-red-green.txt`: fix round 1's AC1/events check, red before the fix and green after (taken before the
+  rebase).
+- `findingA-red-green.txt`: fix round 2's AC1/events check, red at de3e5256's modules, green with the fix, and the
+  new mutant applied by hand.
+- `mutation-*.txt`: four of the five registered cases, each run alone through `scripts/check_gate_mutations.py` with
+  its case option, confined leg: baseline and no-op green, the mutant killed at its row. Taken at 1b51fa3d, before
+  the rebase. There is no such receipt yet for `account178-window-source-served`.
+- `heavy_runs.sh`: for the lead's lock queue. Runs all five cases alone through the gate's driver at the head it is
+  run on and writes each `mutation-<case>.txt` (the new case first, the four earlier ones retaken). Not run yet.
+- `control_launch-header.diff`: the change that was outside the footprint (OPEN.md item 1), now in the tree.
 - `OPEN.md`: the open item, and decisions to review.
 
 ## Fix round 1 (review-2026-11-04, finding 1)
@@ -54,7 +67,37 @@ while the turn runs and again after it ended and the conversation closed. `findi
 
 Mutation case `index178-released-by-dispatch-id` (a released turn index decided again by its cleared dispatch id)
 kills at AC1/events alone; it and the three earlier cases were rerun alone through the gate's driver at 1b51fa3d,
-baseline and no-op green (`mutation-*.txt`), and `falsifiers.txt` was retaken with all four.
+baseline and no-op green (`mutation-*.txt`), and `falsifiers.txt` was retaken with all four. 6f27a5b5 and 1b51fa3d
+are from before the rebase (see the top); the re-review of 2026-11-11 reran the suites and this mutant at de3e5256.
+
+## Fix round 2 (re-review 2026-11-11, findings A and B)
+
+Finding A: a universal-scope colleague was still served the owner's conversation id and the turn's dispatch id
+through the shared account record's usage windows: on the feed, the `command_id` of the two window observations
+(`window/dispatch/<conversation>/<dispatch>/<receipt>/<window>`), and on the spend read, the account's
+`windows.<window>.source_dispatch`.
+
+Fix (both copies of each module): `control_api_models_scope.ReaderScope.project_data` serves an `account` through
+`account_data`, each window's `source_dispatch` that is a conversation turn's dispatch null to anyone but the
+conversation's owner; `control_api_authority._feed` serves an entry's command id through `ReaderScope.command`, null
+when it names such a dispatch. Both are decided from the dispatch record the store holds, not from the id's shape,
+for a universal-scope reader too.
+
+Test: suite 133's AC1/events now also matches the owner's conversation id, the turn's dispatch id and the turn's
+intake source against each served event's `command_id` and the whole served JSON of every read-model item, running
+and ended, and requires a window observed on the turn's dispatch to be served the colleague with no source.
+`findingA-red-green.txt`: red at de3e5256's modules (the two window command ids and the two spend windows), green
+with the fix (16 of 16).
+
+Mutation case `account178-window-source-served` (the account shaping turned off) is registered and kills at
+AC1/events alone when applied by hand (`findingA-red-green.txt`) and through `falsify.py` (`falsifiers.txt`, retaken
+at 12435969 with all five cases, each red at its row, each module restored). Its run through the gate's driver is
+not done: it is in `heavy_runs.sh` for the lead's lock queue, which also retakes the four earlier receipts at the
+head. The suites the change touches were rerun alone at 12435969, all green (`suites.txt`, last block). The full gate
+was not run.
+
+Finding B: the two stale lines on suite 133's AC2/header are restated above (16 of 16 as committed), and the commits
+from before the rebase are named as such.
 
 ## AC1: the API lists the owner's conversations, serves each one's turns and replies, and sends his commands, only for the conversation's owner
 
@@ -124,8 +167,8 @@ run ends: the receiver's hints fill the owner's stream to the committed last lin
 reads the rest from his cursor with the committed count; the colleague is still refused. Every line the engine
 printed is kept in order, each exactly as printed but for the token (replaced, kind subscription_token) and the
 handshake's account email (replaced by VELDO-0141's account rule); the error line is kept on the error stream; the
-token is nowhere in the file, whose size is the committed one; the header names the conversation and turn 1 (red
-until the launch diff is applied). A run with neither project nor conversation is refused to the owner and the
+token is nowhere in the file, whose size is the committed one; the header names the conversation and turn 1 (green
+as committed, the launch header binding being in the tree). A run with neither project nor conversation is refused to the owner and the
 universal colleague. Each read is observed, joined to the conversation, and the colleague's refusals counted.
 
 Falsifier (`record178-project-alone`: decide a turn's record read by project alone, a run with no project readable by

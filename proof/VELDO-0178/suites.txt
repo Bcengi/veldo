@@ -38,3 +38,21 @@ gate was not run.
   94_veldo_0162_configuration_routes              26 passed    9.12s
   124_veldo_0131_factory_reads_commands            8 passed   33.97s
 113_veldo_0145_ui (ui/route-trace, VELDO-0175's known red) was not rerun.
+
+Fix round 2 (re-review 2026-11-11 finding A), on the tree of 12435969 (the fix, the strengthened suite 133 and the
+new mutation case), each suite run alone (python3 scripts/selftest.py with the suite option, each in a transient
+user scope with MemoryMax=10G). The full gate was not run.
+  133_veldo_0178_conversation_api                 16 passed    3.13s
+  104_veldo_0164_scoped_reads                     19 passed    2.54s
+  96_veldo_0204_reservation_policies              20 passed   20.26s
+  131_veldo_0175_conversation_replies             16 passed    3.85s
+  123_veldo_0174_conversations                    38 passed   11.72s
+  132_veldo_0175_conversation_routes              19 passed   22.69s
+  71_veldo_0130_api                               45 passed   27.18s
+  124_veldo_0131_factory_reads_commands            8 passed   46.29s
+  82_veldo_0141_execution_record                  40 passed   21.31s
+  94_veldo_0162_configuration_routes              26 passed   10.79s
+Note on the two blocks above (re-review finding B): the commits they name (9f891de4, a724a689, 110221f7, 5c9f2fd2,
+bc93cb9b) are from before the branch was rebased onto 800a34d6 (VELDO-0175 fix round 2) and are not ancestors of the
+branch. The first block's suite 133 result (15 of 16, AC2/header red) is historical: the launch header binding is
+in the tree since a98dc5b8 and suite 133 is 16 of 16 as committed. This block is the one taken on the branch.
