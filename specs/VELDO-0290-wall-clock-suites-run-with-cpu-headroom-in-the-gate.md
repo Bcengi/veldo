@@ -49,12 +49,14 @@ acceptance_criteria:
       only up to wall_clock_ceiling.cpu from scripts/gate_graph.json, and the refusal names resource
       wall_clock. With no wall_clock claim held or waiting, the ledger grants to its full capacity as
       it does today. Set: a Ledger of 20 cores with a ceiling of 11, driven with one-core claims.
-      Completeness: row admission/wall-clock-ceiling (suite 115, or the ledger's suite 114) holds one
+      Completeness: row admission/wall-clock-ceiling (suite 115) holds one
       wall_clock claim of 1 core and requires ten more one-core claims granted, the eleventh refused
       with resource wall_clock, and a wall_clock claim arriving with 15 cores held refused the same
       way. Row admission/full-capacity-without-wall-clock requires twenty one-core claims granted and
-      the twenty-first refused naming cpu. The first row is red at 646ff7c8, where all claims are
-      granted to 20; the second is green before and after and guards throughput.
+      the twenty-first refused naming cpu. The first row is red at 646ff7c8, where Ledger takes no
+      ceiling and validate_claim refuses the wall_clock field as a malformed claim; the mutant below
+      shows the row tests the ceiling itself; the second is green before and after and guards
+      throughput.
     falsified_by: >
       Apply the ceiling only to wall_clock claims, so other claims are granted beside a held one up to
       capacity. Registered mutant admission290-ceiling-not-for-others must turn
@@ -68,26 +70,36 @@ acceptance_criteria:
       following one-core ordinary claim refused with resource wall_clock although 5 cores are free,
       the wall_clock claim granted once releases bring the total under the ceiling, and the ordinary
       claim granted after that up to the ceiling. A second leg withdraws the waiting claimant and
-      requires the ordinary claim granted. Red at 646ff7c8, where the ordinary claim is granted at once.
+      requires the ordinary claim granted. A third leg runs Workers.run with a recording ledger
+      client over an undeclared job blocked on a manager slot ahead of a declared job the ledger
+      refuses once, frees the slot, and requires both jobs granted and the run to finish. A fourth
+      leg requires a release sent for a waiting name to drop it, and a node's exit to drop its
+      waiting children. Red at 646ff7c8, where Ledger takes no ceiling and the wall_clock claim is
+      refused as malformed; the mutant below shows the row tests the bar itself.
     falsified_by: >
       Do not record the waiting wall_clock claim. Registered mutant admission290-no-waiting-bar must
-      turn admission/wall-clock-waiting-bars red.
+      turn admission/wall-clock-waiting-bars red. Let Workers.run select freely after a wall_clock
+      refusal. Registered mutant admission290-refused-not-retried-first must turn
+      admission/wall-clock-waiting-bars red.
   - id: AC3
     text: >
       Claim: the manifest declares the class and the mutation coordinator carries it to the ledger.
       Every suite in scripts/suites/manifest.json with a wall_clock field names a non-empty bound in
       it; the seven suites that have failed a control this way are declared; every job of a declared
-      suite, baseline, noop and mutant, is claimed as wall_clock; and the declared suites' jobs are
-      adjacent in the pending order. Set: the real manifest, and Workers.run over a fixture inventory
+      suite, baseline, noop and mutant, is claimed as wall_clock; and inside each Workers.run call
+      the declared suites' jobs come first in the pending order. Set: the real manifest, and Workers.run over a fixture inventory
       with a recording ledger client and a manifest that declares one of three suites.
       Completeness: row admission/declared-bounds requires the seven named suites declared and no
       empty or non-string value. Row admission/wall-clock-end-to-end requires every acquire for the
       declared suite sent with wall_clock true and none for the others, every admission granted
-      while one of that suite's jobs was held at or under the ceiling, and no undeclared job between
-      the first and last declared job in the order submitted. Both rows are red at 646ff7c8.
+      while one of that suite's jobs was held at or under the ceiling, and, in each of two
+      Workers.run calls (controls, then mutants), every declared job placed ahead of every undeclared
+      job in the pending order Workers.run builds. Both rows are red at 646ff7c8.
     falsified_by: >
       Stop passing the declaration from SuiteResources to the ledger client. Registered mutant
-      admission290-declaration-not-passed must turn admission/wall-clock-end-to-end red.
+      admission290-declaration-not-passed must turn admission/wall-clock-end-to-end red. Leave the
+      pending order as given. Registered mutant admission290-declared-not-first must turn
+      admission/wall-clock-end-to-end red.
   - id: AC4
     text: >
       Claim: with the ceiling on, the declared suites' controls stop losing their CPU under the
@@ -98,9 +110,12 @@ acceptance_criteria:
       arm has at least 150 control runs. Completeness: proof/VELDO-0290/replay.json records, per arm,
       the control runs, every failed row by name, the stall_seconds of every control (minimum,
       median, 95th percentile, maximum), peak workers, the stage wall time and the admission record's
-      seconds under the ceiling. The fix is shown when the off arm has a timing-row failure or
-      clearly higher stall_seconds in declared suites, and the on arm has no timing-row failure and
-      a 95th percentile stall in declared suites under 1 second. If the off arm shows neither, the
+      seconds under the ceiling. The replay also runs the declared suites' baseline controls alone
+      on the quiet host, at least 20 runs, as the reference. The fix is shown when the off arm has a
+      timing-row failure, or its 95th percentile stall in declared suites is at least three times
+      the on arm's and at least 2 seconds above it, and the on arm has no timing-row failure and a
+      95th percentile stall in declared suites no more than 1 second above the quiet reference's. If
+      the off arm shows neither, the
       replay did not reach the stage's load: the round says so and does not claim the fix. Row
       admission/stall-recorded (suite 115) runs WorkerMeter over a fixture cgroup tree whose
       cpu.pressure "some" total moves by a known amount in the worker cgroup and in one accounted
@@ -141,12 +156,15 @@ killed when that row fails, whatever made it fail.
 VELDO-0219's Design says: "the gate never oversubscribes CPU itself, so a case's elapsed time under the
 gate's own load stays near its measurement." That claim is superseded here. It holds well enough for the
 case deadline, which is three times the measurement. It doesn't hold for a bound of a few seconds inside a
-row: admitting by average use up to all 20 cores, 12 of them slower efficient cores, keeps the average
-honest and leaves the delay a single row can see unbounded. The same controls burned about the same CPU
+row. Admission adds up each worker's average core use until the sum reaches all 20 cores, 12 of which are
+the slower efficient cores. The averages stay correct, but nothing limits how long one row waits for a
+CPU. The same controls burned about the same CPU
 before and after measured claims, and their wall time rose 35 to 140 percent.
 
 The rest of VELDO-0219 stands: measured claims, the ledger, the deadlines and the mutation floor. The
-build adds a dated note under VELDO-0219's Design that points here.
+build appends a dated section at the end of VELDO-0219, after its last amendment, that names the
+superseded sentence and points here. Appending keeps the line references in proof/VELDO-0219 pointing at
+the same text.
 
 ## Design
 
@@ -169,9 +187,11 @@ Declared from the start, because each has failed a control this way:
 - 86_veldo_0189_engine_upgrade
 - 129_veldo_0254_canary_launch
 
-The build then surveys the other suites on the unconfined list (scripts/gate_unconfined.json, read only,
-49 entries at 646ff7c8) for a readiness wait, deadline or window under 30 s, and declares each suite that
-has one. proof/VELDO-0290/survey.json lists every suite surveyed, the bounds found with file and line, and
+The build then surveys every other suite in the manifest for a readiness wait, deadline or window under
+30 s, and declares each suite that has one, confined or unconfined. A declared confined suite gets the
+ceiling for its mutation jobs. The node unit.confined isn't marked: it holds its claim for about 1,900 s
+and would put the ceiling on most of the stage. That gap is recorded in survey.json and left to a later
+spec. proof/VELDO-0290/survey.json lists every suite surveyed, the bounds found with file and line, and
 the decision. The manifest's resource_note gains a sentence describing the class.
 
 ### Ledger
@@ -185,11 +205,19 @@ In engine/scripts/gate_schedule.py and its copy in scripts/:
 - Ledger.acquire limits the CPU total to the ceiling whenever the claim being admitted is wall_clock or a
   wall_clock claim is held. The limit applies to every claimant, the mutation stage and the other graph
   nodes alike, and it is taken together with the existing limits, whichever is lower. Memory, manager,
-  ports and the host lock are unchanged.
+  ports and the host lock are unchanged. The mutation floor is still reserved against the full capacity,
+  not against the ceiling. While the ceiling is in force, CPU held by other graph nodes counts against
+  the same 11 cores, so the mutation stage can hold less than its floor for that stretch. The floor's
+  guarantee that other nodes can't take the stage's share of the whole host is unchanged.
 - A wall_clock claim refused for CPU is remembered as waiting. Until it is granted, no claim that is not
   wall_clock gets CPU. This is the rule SuiteResources already applies to a waiting exclusive job. The
-  waiting entry is dropped when the claim is granted, when the claimant releases or withdraws, and when
-  its channel closes, so a claimant that never retries cannot stall the gate.
+  waiting entry is dropped when the claim is granted; when its node sends release for the waiting name,
+  which the server accepts as a withdrawal; and when the node that asked for it exits, where the
+  scheduler already releases that node's held children. The scheduler retries a wall_clock graph node's
+  own claim on every pass, so that entry can't go stale.
+- In the coordinator, once the ledger refuses a wall_clock job, Workers.run asks for that job again
+  before it selects any other, until the job is granted or the stage stops, and Admission withdraws it
+  when the stage stops. The job still fits locally, because nothing else is admitted while it waits.
 - A refusal caused by the ceiling or by a waiting wall_clock claim names resource wall_clock.
 - A graph node may carry wall_clock: true. The node unit.unconfined is marked, because it runs the same
   suites serially beside the mutation stage.
@@ -200,17 +228,22 @@ In engine/scripts/check_gate_mutations.py and its copy: SuiteResources reads the
 Admission.acquire passes wall_clock for every job of a declared suite. Controls and mutants are treated
 alike, since a starved mutant is a false kill.
 
-Pending jobs are ordered so that a declared suite's controls and mutants are adjacent, and the declared
-suites follow one another. The ceiling then holds for one stretch of the stage instead of being switched
-on and off across all of it. The existing rules still decide inside that order: slots, exclusive holds and
-the waiting bar of SuiteResources apply first, and the ledger decides last.
+The stage admits in two Workers.run calls, the controls and then the mutants, because a mutant's deadline
+and observations come from its group's baseline. Inside each call, Workers.run orders the pending jobs so
+the declared suites' jobs come first, grouped by suite, and the undeclared jobs follow in their existing
+order. The ceiling then holds for one stretch at the start of each phase instead of being switched on and
+off across it. The existing rules still decide inside that order: slots, exclusive holds and the waiting
+bar of SuiteResources apply first, and the ledger decides last.
 
 ### Measurement
 
 mutation_ownership.WorkerMeter reads cpu.pressure from the worker cgroup and from the cgroups of the units
-it accounts, at start and at the end, before cleanup. The change in the "some" total, in seconds, is
-recorded as stall_seconds in the worker outcome. Disjoint roots are counted once, as for CPU. Each
-admission event records whether the ceiling was in force.
+it accounts at every poll, as it reads cpu.stat, and keeps the largest "some" total seen for each disjoint
+root. The worker cgroup and the retained slices are new for each worker, so their totals start at zero.
+The last reading is taken before cleanup. The change in the "some" total, in seconds, is recorded as
+stall_seconds in the worker outcome. Disjoint roots are counted once, as for CPU. Stall in two roots at
+the same moment is counted twice, so stall_seconds can exceed elapsed; it's a diagnostic figure, not a
+share of wall time. Each admission event records whether the ceiling was in force.
 
 This is diagnostic only. stall_seconds never excuses a red control, never causes a rerun and enters no
 verdict. Its purpose is that the next red control carries its own starvation figure, where today the
@@ -228,14 +261,18 @@ averages.
 
 The analysis estimates under 2,000 s added to a stage of about 7,200 s, because the declared suites take
 8.3 percent of the stage's worker time (10,655 of 128,680 worker seconds). That estimate covers the
-declared suites inside the mutation stage only. It doesn't count the time unit.unconfined holds its claim
-(about 890 s by the graph's estimate) or suites the survey adds. The replay reports the measured cost from
+declared suites inside the mutation stage only. It doesn't count unit.unconfined's hold. For that node's
+892 s (the graph's estimate) the stage runs at 11 of the 19.4 cores it claims today, which costs at most
+about 892 x (1 - 11/19.4), roughly 390 s, more if the node runs slower under load. It also doesn't count
+suites the survey adds. The replay reports the measured cost from
 its admission record, and the first gate after landing records the stage wall time beside it.
 
 ### Proof
 
 Every summary under proof/VELDO-0290/ is veldo.proof-summary/v1 with its command, environment, host load
-and discarded list. Raw replay output is discarded after its names, sizes and digests are recorded.
+and discarded list. Raw replay output is discarded after its names, sizes and digests are recorded. The
+new rows live in suite 115 and print with the prefix VELDO-0290 admission/, through a second expect
+helper, so they aren't reported as VELDO-0219 rows.
 
 ## Rejected alternatives
 
@@ -249,7 +286,7 @@ off the efficient cores and doesn't cover the unit stage. It could be added late
 ## Related, separate
 
 The analysis found two defects in suite 86_veldo_0189_engine_upgrade, row restart/adoption-signer-kill.
-They are a second small item with its own spec and are not built here.
+They need a separate small spec, not yet written, and aren't built here.
 
 - without_signer doesn't check the result of its service start. The row should check it and put the tail
   of the stand-in's unit log in the check's detail, so a late start and a failed bind can be told apart.
@@ -267,8 +304,9 @@ host (VELDO-0220, VELDO-0223). Changes to scripts/gate_unconfined.json.
 
 - The ceiling binds every claimant while a wall_clock claim is held, and nothing binds when none is held
   or waiting.
-- The waiting bar cannot deadlock: a claimant that leaves frees it, and a wall_clock claim always fits
-  under the ceiling or is refused as invalid.
+- The waiting bar can't stop admission: a claimant that leaves or withdraws frees it, the coordinator
+  asks for a refused wall_clock job again before any other, and a wall_clock claim always fits under the
+  ceiling or is refused as invalid.
 - stall_seconds reaches no verdict, deadline or rerun decision.
 - The replay's off arm reached the stage's load. If it didn't, the round says the fix is not proven.
 - The survey's decisions match the bounds it lists.
@@ -277,3 +315,5 @@ host (VELDO-0220, VELDO-0223). Changes to scripts/gate_unconfined.json.
 
 2026-11-10: drafted from section 3 of the landing-c flake analysis. Ceiling value: 11 to start; the
 measured value is recorded here by the build.
+
+2026-11-11: revision 1 applies the twelve findings of the review of d65410a9
