@@ -1,0 +1,144 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0292",
+  "commit": "d1c5da1a48e61fc21666cda13985dbf9d811d002",
+  "tree": "829cc043a6f60eadd56ad55e0cc48ba44f99d977",
+  "producer": "Claude implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-11T06:16:30+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
+          "detail": "Row text/incident: the three line command (cat with a quoted heredoc writing a Python file under the fixture's temporary directory, python3 running it, rm deleting it) passes the guard on a red stamp with no destination line, and bash then calls neither the recording git nor the recording gh. Mutation row guard292-heredoc-body-live turns it red."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0292/heavy_runs.sh",
+          "detail": "Pending under the gate lock: red-before.summary.json (the row red over the guard at 646ff7c8), green-after.summary.json (the row green over this tree) and teeth-292.summary.json (guard292-heredoc-body-live killed)."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0292/README.md",
+          "detail": "Quick run by the builder at d1c5da1a, a partial run that proves nothing by the gate's rules: python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs, 131 rows, 0 failed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "failed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
+          "detail": "Rows live/shell-string, live/pipeline, live/outside-subset, live/interpreter, live/stored, live/config-write, live/mixed, live/quoted-command-word, live/remap and subset/builtin-list, each as the falsifier words it; 16 mutations in 19 mutation rows. All green in the builder's quick run."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0292/unread-spellings.summary.json",
+          "detail": "The criterion's text is not met. Five commands write a git alias that pushes main to the configuration with printf and then run it through a spelling of git the Design's three forms do not read (a command substitution that prints nothing, the same in backquotes, an expansion with nested braces, a brace expansion in a string given to bash, a backslash before a newline inside the name). For each, the guard at 646ff7c8 exits 2, this tree's guard exits 0 and bash moves the remote's main. No row or mutation of the spec covers them. The build follows the Design as written; closing them needs a spec change (proof/VELDO-0292/README.md)."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0292/heavy_runs.sh",
+          "detail": "Pending under the gate lock: red-before.summary.json, green-after.summary.json, teeth-292.summary.json and teeth-268.summary.json (every mutation suite 141 carried at 646ff7c8 still killed)."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
+          "detail": "Rows text/quoted, text/heredoc-stdin and text/comment: each command passes the guard on a red stamp with no destination line, and bash then calls neither the recording git nor the recording gh. Mutation rows guard292-quoted-live and guard292-comment-live turn text/quoted and text/comment red."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0292/heavy_runs.sh",
+          "detail": "Pending under the gate lock: red-before.summary.json, green-after.summary.json and teeth-292.summary.json."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
+          "detail": "Row live/scanner-edges: the five corpus commands are each refused on the gate text, and bash run with a recording git records the push for each. Five mutation rows, one per scanner mistake, each turn the row red."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0292/heavy_runs.sh",
+          "detail": "Pending under the gate lock: red-before.summary.json (the row already green at 646ff7c8, as the spec says), green-after.summary.json and teeth-292.summary.json (the five mutations killed)."
+        }
+      ]
+    },
+    {
+      "id": "AC5",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "scripts/suites/141_veldo_0268_protected_refs.py",
+          "detail": "Row text/message: the six commands pass the guard on a red stamp and the recording git and gh record no push or merge. Row live/git-args: the three commands are refused on the gate text. Mutation rows guard292-message-not-data, guard292-message-not-data-in-list and guard292-git-args-data."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0292/heavy_runs.sh",
+          "detail": "Pending under the gate lock: red-before.summary.json, green-after.summary.json and teeth-292.summary.json."
+        },
+        {
+          "type": "note",
+          "ref": "proof/VELDO-0292/README.md",
+          "detail": "The message rule reads -m as its own word; a cluster such as -am stays refused, as the spec's wording has it."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "suite-141-red-before",
+      "status": "pending",
+      "command": "bash proof/VELDO-0292/heavy_runs.sh",
+      "detail": "Step 1, writes proof/VELDO-0292/red-before.summary.json."
+    },
+    {
+      "name": "suite-141-green-after",
+      "status": "pending",
+      "command": "bash proof/VELDO-0292/heavy_runs.sh",
+      "detail": "Step 2, writes proof/VELDO-0292/green-after.summary.json."
+    },
+    {
+      "name": "teeth-292",
+      "status": "pending",
+      "command": "bash proof/VELDO-0292/heavy_runs.sh",
+      "detail": "Step 3, python3 scripts/check_teeth_mutations.py for finding 292 (27 cases), writes proof/VELDO-0292/teeth-292.summary.json."
+    },
+    {
+      "name": "teeth-268",
+      "status": "pending",
+      "command": "bash proof/VELDO-0292/heavy_runs.sh",
+      "detail": "Step 4, python3 scripts/check_teeth_mutations.py for finding 268, writes proof/VELDO-0292/teeth-268.summary.json."
+    },
+    {
+      "name": "unread-spellings",
+      "status": "failed",
+      "command": "python3 proof/VELDO-0292/unread_spellings.py",
+      "detail": "Run by the builder at d1c5da1a: five commands refused at 646ff7c8 pass this tree's guard and bash moves main; the control is refused under both. proof/VELDO-0292/unread-spellings.summary.json."
+    },
+    {
+      "name": "gate",
+      "status": "pending",
+      "command": "./scripts/verify.sh",
+      "detail": "Not run by the builder."
+    }
+  ],
+  "rollback": "Revert the commit. The guard again refuses any command whose text contains a push or merge phrase, as at 646ff7c8. Nothing stored changes shape, so nothing needs migrating."
+}
