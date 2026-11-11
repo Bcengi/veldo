@@ -12117,6 +12117,14 @@ def cases():
         "        if current is not None and _text(project) and type(version) is int"
         " and version == current.get('version'):  # defect: the repository is read before authority\n"
         "            try:\n                repository, path = project_source(", ['AC3/scope'])
+    add(177, 'attach177-closed-reads', suite177, 'control_conversation.py',
+        "                if current.get('owner') != owner or current.get('status') != 'open':\n",
+        "                if current.get('owner') != owner:  # defect: a closed conversation's attach reads on\n",
+        ['AC3/scope'])
+    add(177, 'attach177-other-caller-reads', suite177, 'control_conversation.py',
+        "                if current.get('owner') != owner or current.get('status') != 'open':\n",
+        "                if current.get('status') != 'open':  # defect: another caller's attach reads on\n",
+        ['AC3/scope'])
     add(177, 'tools177-no-role-revision', suite177, 'control_launch.py',
         "            bound = {'role_revision': accepted,\n",
         "            bound = {  # defect: no role revision bound\n", ['AC2/offered-tools'])
