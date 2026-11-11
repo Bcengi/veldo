@@ -1291,7 +1291,6 @@ def _v268_suite():
 
     # VELDO-0292 anchors, shared with scripts/check_teeth_mutations.py's registration of the same defects.
     STRINGS = 'STRINGS = ("single", "double", "body")  # what can be data: a quoted string, a heredoc body\n'
-    PLAIN_START = 'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "uniq",\n'
     PLAIN_END = '         "sha256sum", "base64", "test", "[", "true", "false", ":"}\n'
     UNPARSED = '        return command, str(error)  # outside the subset: the whole command is judged as written\n'
     PLAIN_TEST = '    return name in PLAIN\n'
@@ -1343,10 +1342,6 @@ def _v268_suite():
          ['live/outside-subset', 'live/stored']),
         ('guard292-data-set-any-program', PLAIN_TEST,
          '    return True  # defect: every program counts as a plain text tool\n', ['live/interpreter']),
-        ('guard292-sort-plain', PLAIN_START,
-         'PLAIN = {"echo", "printf", "cat", "tee", "grep", "egrep", "fgrep", "head", "tail", "wc", "sort", "uniq",'
-         '  # defect: sort is a plain text tool\n',
-         ['live/plain-runs']),
         ('guard292-sort-runs-off', RUNS_RETURN,
          '                    return None  # defect: an option that runs a program is not read\n',
          ['live/plain-runs']),

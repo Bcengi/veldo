@@ -152,7 +152,6 @@ acceptance_criteria:
       tool) turns live/shell-string and live/pipeline red; guard292-unparsed-is-data (a command outside
       the subset has its quoted strings removed anyway) turns live/outside-subset and live/stored red;
       guard292-data-set-any-program (every program counts as a plain text tool) turns live/interpreter
-      red; guard292-sort-plain (sort is put back in the plain text tool set) turns live/plain-runs
       red; guard292-sort-runs-off (an option that runs a program is not read) turns live/plain-runs
       red; guard292-config-write-off (test 1 never fires) turns live/config-write red;
       guard292-config-site-quoted (test 1 reads a place as written, without quote removal) turns
@@ -502,3 +501,4 @@ host that text the scanner called data is text the shell did not run.
 2026-11-11: build check, sort removed from the plain text tools
 2026-11-11: fix check, S1 refused
 2026-11-11: blocker recorded by the builder: with the option test first, guard292-sort-plain no longer turns live/plain-runs red (proof/VELDO-0292/README.md); the lead decides
+2026-11-11: guard292-sort-plain dropped; the compress-program test supersedes it, lead decision

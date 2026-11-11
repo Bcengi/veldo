@@ -37,7 +37,7 @@ RED_BEFORE = {
 }
 # The VELDO-0292 rows that already hold there: the guard refuses any text with the words of a push.
 GREEN_BEFORE = ('live/scanner-edges', 'live/git-args')
-ROWS, MUTATION_ROWS = 20, 39  # the VELDO-0292 rows, and one mutation row per row a mutation must turn red
+ROWS, MUTATION_ROWS = 20, 38  # the VELDO-0292 rows, and one mutation row per row a mutation must turn red
 ROW =re.compile(r'^\s*(VELDO-0(?:268|292)) (\S+) (observed|detail): (.*)$')
 
 
