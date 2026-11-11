@@ -1,20 +1,23 @@
 {
-  "commit": "1fd2f48c274fd201668df009c7920c4e6049f07e",
-  "tree": "3c4632e576702d6c218860c1a44e448878a49dff",
+  "commit": "c8747d4622e8ef1c4c9c04f457f47957c1e240cd",
+  "tree": "9564059ab47c99143779dbdd0004219897aa74f0",
   "host": "dmitry-pc",
-  "started_at": "2026-11-10T10:47:18.516603+00:00",
-  "command": "bash $HOST_HEAVY python3 proof/VELDO-0288/repeat.py",
+  "started_at": "2026-11-11T02:20:28.937375+00:00",
+  "command": "lock-queue job, W is the worktree and G a fresh temporary directory: git clone -q $W $G/veldo; (cd $G/veldo && exec bash scripts/verify.sh) > $G/gate.log 2>&1 & GATE=$!; sleep 600; V0288_GATE_PID=$GATE python3 proof/VELDO-0288/repeat.py; wait $GATE",
   "suite_command": "python3 scripts/check_teeth_mutations.py --worker stop288-no-retry",
   "mode": "baseline; full suite 62 with no mutation",
-  "gate": "not run, as instructed; host load sampled for every run",
+  "gate": "concurrent full gate, verify.sh in a clone of c8747d4622e8ef1c4c9c04f457f47957c1e240cd",
+  "gate_pid": 2258987,
   "runs": [
     {
       "run": 1,
-      "seconds": 16.943,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.335,
       "load_average": [
-        3.16845703125,
-        2.60888671875,
-        1.990234375
+        5.19921875,
+        8.7177734375,
+        9.2890625
       ],
       "rows": 69,
       "failed": [],
@@ -32,11 +35,13 @@
     },
     {
       "run": 2,
-      "seconds": 17.879,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.417,
       "load_average": [
-        2.84130859375,
-        2.5625,
-        1.98583984375
+        4.82861328125,
+        8.40966796875,
+        9.17529296875
       ],
       "rows": 69,
       "failed": [],
@@ -54,11 +59,13 @@
     },
     {
       "run": 3,
-      "seconds": 17.596,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.801,
       "load_average": [
-        2.9365234375,
-        2.60595703125,
-        2.01220703125
+        4.583984375,
+        8.177734375,
+        9.08642578125
       ],
       "rows": 69,
       "failed": [],
@@ -76,11 +83,13 @@
     },
     {
       "run": 4,
-      "seconds": 17.651,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.749,
       "load_average": [
-        2.59375,
-        2.5439453125,
-        2.0009765625
+        5.10546875,
+        8.0673828125,
+        9.03076171875
       ],
       "rows": 69,
       "failed": [],
@@ -98,11 +107,13 @@
     },
     {
       "run": 5,
-      "seconds": 17.169,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.648,
       "load_average": [
-        2.5,
-        2.525390625,
-        2.00537109375
+        5.22265625,
+        7.900390625,
+        8.95458984375
       ],
       "rows": 69,
       "failed": [],
@@ -120,11 +131,13 @@
     },
     {
       "run": 6,
-      "seconds": 17.601,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.684,
       "load_average": [
-        2.31494140625,
-        2.48291015625,
-        1.99951171875
+        4.9453125,
+        7.70849609375,
+        8.87451171875
       ],
       "rows": 69,
       "failed": [],
@@ -142,11 +155,13 @@
     },
     {
       "run": 7,
-      "seconds": 17.213,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.775,
       "load_average": [
-        2.80029296875,
-        2.58251953125,
-        2.04248046875
+        5.25146484375,
+        7.59716796875,
+        8.8125
       ],
       "rows": 69,
       "failed": [],
@@ -164,11 +179,13 @@
     },
     {
       "run": 8,
-      "seconds": 16.771,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.735,
       "load_average": [
-        2.39501953125,
-        2.50390625,
-        2.02490234375
+        5.47314453125,
+        7.53369140625,
+        8.77294921875
       ],
       "rows": 69,
       "failed": [],
@@ -186,11 +203,13 @@
     },
     {
       "run": 9,
-      "seconds": 17.473,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.9,
       "load_average": [
-        2.091796875,
-        2.4296875,
-        2.00732421875
+        5.07177734375,
+        7.3046875,
+        8.67041015625
       ],
       "rows": 69,
       "failed": [],
@@ -208,11 +227,13 @@
     },
     {
       "run": 10,
-      "seconds": 17.18,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.772,
       "load_average": [
-        2.50732421875,
-        2.5,
-        2.03857421875
+        5.5537109375,
+        7.3046875,
+        8.6484375
       ],
       "rows": 69,
       "failed": [],
@@ -230,11 +251,13 @@
     },
     {
       "run": 11,
-      "seconds": 17.476,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.545,
       "load_average": [
-        2.77734375,
-        2.55810546875,
-        2.0654296875
+        5.24951171875,
+        7.12158203125,
+        8.55908203125
       ],
       "rows": 69,
       "failed": [],
@@ -252,11 +275,13 @@
     },
     {
       "run": 12,
-      "seconds": 17.573,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.84,
       "load_average": [
-        2.6787109375,
-        2.5400390625,
-        2.0693359375
+        5.25634765625,
+        7.0322265625,
+        8.50634765625
       ],
       "rows": 69,
       "failed": [],
@@ -274,11 +299,13 @@
     },
     {
       "run": 13,
-      "seconds": 16.926,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.937,
       "load_average": [
-        2.58984375,
-        2.52880859375,
-        2.07373046875
+        6.69384765625,
+        7.25390625,
+        8.5478515625
       ],
       "rows": 69,
       "failed": [],
@@ -296,11 +323,13 @@
     },
     {
       "run": 14,
-      "seconds": 16.818,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.733,
       "load_average": [
-        1.99658203125,
-        2.396484375,
-        2.03955078125
+        6.17041015625,
+        7.1103515625,
+        8.4794921875
       ],
       "rows": 69,
       "failed": [],
@@ -318,11 +347,13 @@
     },
     {
       "run": 15,
-      "seconds": 16.809,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.712,
       "load_average": [
-        1.78173828125,
-        2.32763671875,
-        2.02197265625
+        5.97314453125,
+        7.00537109375,
+        8.4150390625
       ],
       "rows": 69,
       "failed": [],
@@ -340,11 +371,13 @@
     },
     {
       "run": 16,
-      "seconds": 16.835,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.734,
       "load_average": [
-        1.60791015625,
-        2.26171875,
-        2.00439453125
+        5.7822265625,
+        6.8916015625,
+        8.3466796875
       ],
       "rows": 69,
       "failed": [],
@@ -362,11 +395,13 @@
     },
     {
       "run": 17,
-      "seconds": 18.151,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.697,
       "load_average": [
-        1.447265625,
-        2.1796875,
-        1.98291015625
+        5.31298828125,
+        6.73291015625,
+        8.27099609375
       ],
       "rows": 69,
       "failed": [],
@@ -384,11 +419,13 @@
     },
     {
       "run": 18,
-      "seconds": 17.921,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.701,
       "load_average": [
-        2.63916015625,
-        2.4013671875,
-        2.05859375
+        5.22509765625,
+        6.6201171875,
+        8.20068359375
       ],
       "rows": 69,
       "failed": [],
@@ -406,11 +443,13 @@
     },
     {
       "run": 19,
-      "seconds": 17.886,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.857,
       "load_average": [
-        3.083984375,
-        2.52099609375,
-        2.1064453125
+        5.11376953125,
+        6.52392578125,
+        8.1435546875
       ],
       "rows": 69,
       "failed": [],
@@ -428,11 +467,13 @@
     },
     {
       "run": 20,
-      "seconds": 17.911,
+      "gate_alive": true,
+      "gate_alive_after": true,
+      "seconds": 17.717,
       "load_average": [
-        3.84033203125,
-        2.7314453125,
-        2.18505859375
+        5.3173828125,
+        6.474609375,
+        8.09228515625
       ],
       "rows": 69,
       "failed": [],
@@ -453,5 +494,16 @@
     "dispatch/stop-during-exit": 20,
     "dispatch/stop-during-natural-end": 20,
     "dispatch/stop-during-accept-run": 20
+  },
+  "gate_alive_runs": 20,
+  "gate_result": {
+    "rc": 1,
+    "verdict": "GATE: RED (c8747d4622e8ef1c4c9c04f457f47957c1e240cd)",
+    "cause": "the mutation stage failed (driver_error); the gate claims no reuse",
+    "started_at": "2026-11-11T02:10:28Z",
+    "ended_at": "2026-11-11T03:22:26Z",
+    "times_source": "lock-queue runner.log, job 84; the job starts the gate and ends at wait $GATE",
+    "outcome_source": "the five tail lines of gate.log that the job kept; the job deleted gate.log with its temporary directory, unhashed",
+    "role": "load for the 20 runs only; this RED is not a gate verdict on this change"
   }
 }
