@@ -1,0 +1,52 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0293",
+  "commit": "2acce09ef6de9d7abe6ed790ad05f36a34a06f1c",
+  "tree": "5e0aa0cc55663e60334918b84a439684c53b7357",
+  "producer": "Codex implementation agent; independent review pending",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0293/heavy_runs.sh",
+          "detail": "Pending lead execution: new suite 112 row at 6ee5bb5f in a scratch clone, green suites 112 and 62, and floor293-removed through the teeth CLI. Each run writes a small summary. No heavy result is claimed."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0293/heavy_runs.sh",
+          "detail": "Pending one measurement of dispatch-receiver-store-only-gate and dispatch-spawn-before-contract. The teeth CLI reads an empty scratch timing store and forces fresh workers. The summary records each mutant's elapsed seconds and verdict. A persisted attempt prevents a retry, and a red stops the script for the lead."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "offline",
+      "status": "passed",
+      "command": "See proof/VELDO-0293/offline.summary.json",
+      "detail": "Compilation, the permitted partial suite, and personal setup checks passed. This is not a gate result."
+    },
+    {
+      "name": "unit",
+      "status": "pending",
+      "command": "bash proof/VELDO-0293/heavy_runs.sh",
+      "detail": "Lead queues the script while holding the gate lock. The script never acquires or waits for the lock."
+    },
+    {
+      "name": "integration",
+      "status": "pending",
+      "command": "bash proof/VELDO-0293/heavy_runs.sh",
+      "detail": "The teeth run and AC2 measurement have not run. No loaded, repeated, or gate run was performed."
+    }
+  ],
+  "rollback": "Revert the implementation commit to restore the prior floor for unmeasured mutants and noops."
+}
