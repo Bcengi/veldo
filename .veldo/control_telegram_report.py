@@ -134,6 +134,7 @@ FLOOR_RESULTS = ('accept_build', 'record_review', 'handoff')          # dispatch
 UNIT_KIND = 'execution_unit'                                          # entity_contract R13
 STOP_KIND, STOPPED = 'andon_stop', 'stopped'                          # control_andon (VELDO-0075)
 NEW_PROJECT_KIND = 'new_project'                                      # control_project_proposal.KIND (VELDO-0143)
+RUN_TOKENS_FLAG = 15000000
 
 # The declared event set: (event, source entity kinds, handler). The completion handler reads VELDO-0051's
 # journal projection instead of one entity kind.
@@ -145,6 +146,7 @@ REGISTRY = (
     ('gate_result', (OBSERVATION_KIND, FLOOR_KIND), '_gate'),
     ('stop', (STOP_KIND,), '_stop'),
     ('project_ready', (NEW_PROJECT_KIND,), '_new_project'),
+    ('run_over_tokens', ('subscription_reservation',), '_run_tokens'),
     ('completion', None, '_completions'),
 )
 
@@ -451,6 +453,37 @@ class Reporter:
                 'fact': '%s: %s. %s' % (eid, route['route'], route['reason']),
                 'next': 'Answer the project question.' if route['route'] == 'unclear' else 'Follow the proposal.',
                 'evidence': 'PM dispatch %s' % route.get('dispatch')}
+
+    def _run_tokens(self, eid, entry, prior, state):
+        data, before = self._data(entry), self._data(prior)
+        finals = [report for report in data.get('reports', {}).values() if report.get('final')]
+        if (data.get('type') != 'invocation' or not finals
+                or any(report.get('final') for report in before.get('reports', {}).values())):
+            return None
+        final = max(finals, key=lambda report: report['sequence'])
+        if final.get('outcome') == 'not_executed':
+            return None
+        charge = data.get('charge', {})
+        tokens, messages = charge.get('tokens'), charge.get('messages')
+        settlement = data.get('settlement') or {}
+        in_flight = (type(settlement.get('in_flight')) is int and settlement['in_flight'] >= 1
+                     and 'tokens' in settlement.get('lower_bound', []))
+        unknown = 'tokens' in data.get('unknown', []) or in_flight
+        if not unknown and (tokens is None or tokens <= RUN_TOKENS_FLAG):
+            return None
+        if in_flight:
+            amount = 'at least {:,} tokens recorded; turn in flight; total unknown'.format(tokens)
+        elif unknown:
+            amount = 'tokens unknown' + ('; at least {:,} tokens recorded'.format(tokens) if tokens is not None else '')
+        else:
+            amount = ('at least ' if settlement else '') + '{:,} tokens'.format(tokens)
+        context = data.get('context', {})
+        return dict(unit=context.get('unit'), run=data.get('dispatch'), project=context.get('project'),
+                    headline='Run token usage',
+                    fact='Unit %s, dispatch %s: %s; %s messages; threshold %s tokens.' % (
+                        context.get('unit'), data.get('dispatch'), amount,
+                        format(messages, ',') if messages is not None else 'unknown', format(RUN_TOKENS_FLAG, ',')),
+                    next='Review the run and its phase budget.', evidence=None)
 
     def _objective(self, eid, entry, prior, state):
         data, before = self._data(entry), self._data(prior)

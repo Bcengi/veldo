@@ -323,6 +323,7 @@ class Meter:
         self.turns = 0
         self.tokens = 0
         self.stated = set()
+        self.completed_items = set()
         self.limited = None
 
     def feed(self, chunk):
@@ -345,6 +346,14 @@ class Meter:
 
     def final(self):
         return self.cumulative() if self.turns and not self.open and not self.incomplete else {}
+
+    def steps(self):
+        return len(self.completed_items)
+
+    def observed(self):
+        return {'usage': self.cumulative(),
+                'lower_bound': [unit for unit in ('tokens', 'messages') if unit not in self.final()],
+                'in_flight': int(self.open)}
 
     def session(self):
         """{provider, id, tokens, charged}: the thread this invocation ran, its conclusive sum (None when it
@@ -388,6 +397,12 @@ class Meter:
         seen = {'line': line, 'receipt': receipt(line)}
         found = []
         kind = event.get('type')
+        if kind == 'item.completed':
+            item = event.get('item')
+            if (isinstance(item, dict) and isinstance(item.get('id'), str) and item['id']
+                    and item.get('type') in ('agent_message', 'command_execution', 'file_change',
+                                             'mcp_tool_call', 'web_search', 'collab_tool_call')):
+                self.completed_items.add(item['id'])
         if kind == 'thread.started' and isinstance(event.get('thread_id'), str) and event['thread_id']:
             self.thread = event['thread_id']
         elif kind == 'turn.started':
@@ -471,7 +486,7 @@ def undelivered_grants(record=None):
 
 ARTIFACT_SCHEMA = 'veldo.engine_artifact/v1'
 # The stop causes the receiver records (control_launch): an invocation stopped for one is never complete.
-STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api')
+STOPS = ('requested', 'usage_cap', 'phase_cap', 'heartbeat_missing', 'paid_api')
 PACKAGE = '@openai/codex'
 # The adapter registration (control_launch.ENGINE_PROTOCOL).
 REGISTRATION = {

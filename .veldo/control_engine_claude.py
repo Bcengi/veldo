@@ -1106,6 +1106,14 @@ class Meter:
             del total['tokens']  # No modelUsage: the tokens stay unknown.
         return total
 
+    def steps(self):
+        return len(self.messages)
+
+    def observed(self):
+        return {'usage': self.cumulative(),
+                'lower_bound': [unit for unit in ('tokens', 'messages') if unit not in self.final()],
+                'in_flight': None}
+
     def line(self, line):
         try:
             event = json.loads(line)
@@ -1212,7 +1220,7 @@ REGISTRATION = {
     },
 }
 VERSION_TEXT = re.compile(r'[0-9]+(?:\.[0-9]+){1,3}')
-STOPS = ('requested', 'usage_cap', 'heartbeat_missing', 'paid_api', 'configuration_stop')
+STOPS = ('requested', 'usage_cap', 'phase_cap', 'heartbeat_missing', 'paid_api', 'configuration_stop')
 
 
 class Refused(Exception):

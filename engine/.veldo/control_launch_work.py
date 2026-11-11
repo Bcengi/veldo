@@ -12,12 +12,32 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
+import subprocess
 import tempfile
 import time
 
 OPT = '-' * 2
+PHASES = ('edit', 'test', 'proof')
+PHASE_MESSAGES, PHASE_DISPATCHES, SOFT_MARGIN = 80, 6, 10
+NOTE_PATH = 'proof/{unit}/phase-state.md'
+NOTE_BYTES, BRIEF_BYTES = 8192, 4096
+REMAINS_LINES, LINE_CHARS = 10, 200
+READING_RULE = 'Read only needed parts of large files, by search and line range; never a whole large file.'
+NOTE_RULE = ('Keep proof/<unit>/phase-state.md current in every commit: done, left, decisions made, '
+             'approaches tried and rejected. At phase.soft steps stop new work, commit and finish the note.')
+CAPPED_NOTE = 'Stopped at the phase cap. Uncommitted work is lost.'
+OUTPUT = (
+    'Edit and commit the change. Return JSON: commit (last or source), done (boolean), note (one line), '
+    'remains (list of lines). Do not change the specification.',
+    'Test and fix the change. Return JSON: commit (last or source), done (boolean), note (one line), '
+    'remains (list of lines). Do not change the specification.',
+    'Commit evidence first. Then commit proof/{unit}/manifest.json: veldo.proof/v1, spec_revision, producer, '
+    'criteria with type/path/digest evidence, checks, rollback. Delete proof/{unit}/phase-state.md '
+    '(overrides note rule). Return JSON: commit, proof, done:true, note, remains. Do not change the spec.',
+)
 
 
 def organ(name):
@@ -38,6 +58,51 @@ class Refused(EL.Refused):
     pass
 
 
+def _brief_size(payload):
+    measured = {key: value for key, value in payload.items() if key != 'spec'}
+    if 'state' in measured:
+        measured['state'] = {key: value for key, value in measured['state'].items() if key != 'note'}
+    return len(P.canonical(measured))
+
+
+def brief(spec, spec_text, role, phase, limits, source, done, remains, state):
+    payload = dict(operation='build', spec=spec_text, spec_revision=spec['revision'], producer=role['identity'],
+                   phase=dict(name=PHASES[phase], index=phase + 1, of=len(PHASES),
+                              messages=limits['messages'], soft=limits['soft']),
+                   source={'commit': source},
+                   done=[dict(entry, note=entry['note'][:LINE_CHARS]) for entry in done],
+                   remains=[line[:LINE_CHARS] for line in remains[:REMAINS_LINES]],
+                   reading=READING_RULE, note=NOTE_RULE, output=OUTPUT[phase].format(unit=spec['id']))
+    if state is not None:
+        payload['state'] = dict(state)
+    while _brief_size(payload) > BRIEF_BYTES:
+        oldest = next((entry for entry in payload['done'] if entry['note']), None)
+        if oldest is not None:
+            oldest['note'] = ''
+        elif payload['remains']:
+            payload['remains'].pop()
+        else:
+            raise Refused('missing_authority:worker_configuration/build', 'brief_bytes')
+    return payload
+
+
+def _head_file(path, limit):
+    """Read one entire regular file without following a link."""
+    try:
+        if not stat.S_ISREG(path.lstat().st_mode):
+            raise ValueError('not_regular')
+        with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as handle:
+            info = os.fstat(handle.fileno())
+            if not stat.S_ISREG(info.st_mode) or info.st_size > limit:
+                raise ValueError('not_regular_or_oversize')
+            data = handle.read(limit + 1)
+        if len(data) > limit:
+            raise ValueError('oversize')
+        return data
+    except (OSError, ValueError) as error:
+        raise Refused('invalid_input:build_head', str(error)) from error
+
+
 def answer(document):
     """Only the final answer of the declared engine, never an exit code."""
     if document.get('engine') == 'claude_code':
@@ -49,7 +114,15 @@ def answer(document):
     return None
 
 
-def artifact(record, reference):
+def stopped_by(document):
+    if document.get('engine') == 'claude_code':
+        return (document.get('exit') or {}).get('cause')
+    if document.get('engine') == 'codex':
+        return document.get('cause')
+    return None
+
+
+def bound(record, reference):
     """Resolve exactly the receiver document bound into the dispatch's exit."""
     missing = 'missing_evidence:build_artifact' if record.get('contract', {}).get('station') == 'build' else 'missing_evidence:engine_artifact'
     try:
@@ -60,6 +133,11 @@ def artifact(record, reference):
     if (P.digest(raw) != (record.get('artifact') or {}).get('digest')
             or document.get('dispatch_id') != record.get('dispatch_id')):
         raise Refused(missing if record.get('contract', {}).get('station') == 'build' else 'binding_mismatch:engine_artifact')
+    return document
+
+
+def artifact(record, reference):
+    document = bound(record, reference)
     if not L.D.completed(record):
         raise Refused('unknown_outcome:engine/' + str(document.get('verdict')))
     return document
@@ -163,6 +241,15 @@ class Runtime:
             record = launch.wait()
             self.last = {'record': record, 'artifact': launch.artifact, 'messages': launch.messages}
             if not L.D.completed(record) or not record.get('artifact'):
+                if station == 'build' and record.get('state') == 'exited' and record.get('artifact'):
+                    doc = bound(record, launch.artifact)
+                    if stopped_by(doc) == 'phase_cap':
+                        gitdir = self._gitdir(handles[launch.dispatch_id])
+                        commit = self._head(gitdir)
+                        if commit != revision:
+                            self._import(gitdir, commit, revision)
+                        return None, {'dispatch': launch.dispatch_id, 'artifact': launch.artifact,
+                                      'commit': commit}, 'phase_cap'
                 raise Refused((record or {}).get('refusal') or 'unknown_outcome:engine')
             doc = artifact(record, launch.artifact)
             text = answer(doc)
@@ -173,15 +260,17 @@ class Runtime:
             if not isinstance(result, dict):
                 raise Refused('missing_evidence:' + station + '_result')
             if station == 'build':
+                if type(result.get('done')) is not bool:
+                    raise Refused('missing_evidence:build_result')
                 self._collect(handles[launch.dispatch_id], result, revision)
             self.events.append({'operation': station, 'unit': unit, 'dispatch': launch.dispatch_id,
                                 'identity': role['identity'], 'outcome': 'artifact'})
-            return result, {'dispatch': launch.dispatch_id, 'artifact': launch.artifact}
+            return result, {'dispatch': launch.dispatch_id, 'artifact': launch.artifact,
+                            'commit': result.get('commit')}, 'returned'
         finally:
             runner.wait(launch)
 
-    def _collect(self, handle, result, revision):
-        """Import object bytes only; Git never opens worker-owned metadata or configuration."""
+    def _gitdir(self, handle):
         work = Path(self.clones._paths(handle)['work'])
         gitdir = work / '.git'
         # Check directory entries before any Git call, including dangling links.
@@ -192,9 +281,107 @@ class Runtime:
         for name in ('commondir', 'objects/info/alternates', 'objects/info/http-alternates'):
             if os.path.lexists(gitdir / name):
                 raise Refused('invalid_input:build_gitdir/' + name.rsplit('/', 1)[-1])
+        return gitdir
+
+    def _head(self, gitdir):
+        raw = _head_file(gitdir / 'HEAD', 1024)
+        try:
+            head = raw.decode('ascii').removesuffix('\n')
+            if re.fullmatch('[0-9a-f]{40}', head):
+                return head
+            if not head.startswith('ref: refs/heads/'):
+                raise ValueError('head')
+            name = head[len('ref: refs/heads/'):]
+            parts = name.split('/')
+            if (len(name) > 255 or any(not re.fullmatch('[A-Za-z0-9_.-]+', part)
+                                     or part.startswith('.') or part.endswith('.lock') for part in parts)):
+                raise ValueError('ref_name')
+            parent = gitdir
+            for part in ['refs', 'heads', *parts[:-1]]:
+                parent = parent / part
+                if os.path.lexists(parent) and not stat.S_ISDIR(parent.lstat().st_mode):
+                    raise ValueError('ref_directory')
+            ref = gitdir / 'refs' / 'heads' / name
+            if os.path.lexists(ref):
+                raw = _head_file(ref, 1024)
+                commit = raw.decode('ascii').removesuffix('\n')
+                if re.fullmatch('[0-9a-f]{40}', commit):
+                    return commit
+                raise ValueError('ref_commit')
+            packed = _head_file(gitdir / 'packed-refs', 1024 * 1024).decode('ascii')
+            matches = []
+            for line in packed.splitlines():
+                if line.startswith(('#', '^')):
+                    continue
+                fields = line.split()
+                if fields and fields[-1] == 'refs/heads/' + name:
+                    if len(fields) != 2 or not re.fullmatch('[0-9a-f]{40}', fields[0]):
+                        raise ValueError('packed_commit')
+                    matches.append(fields[0])
+            if len(matches) != 1:
+                raise ValueError('packed_matches')
+            return matches[0]
+        except (OSError, ValueError) as error:
+            raise Refused('invalid_input:build_head', str(error)) from error
+
+    def _state(self, commit, unit):
+        path = NOTE_PATH.format(unit=unit)
+
+        def read(*args):
+            result = P._git(self.root, *args)
+            if result.returncode:
+                raise ValueError('git')
+            return result.stdout
+
+        try:
+            entry = read('ls-tree', '-z', commit, OPT, path)
+            if not entry:
+                return {'missing': 'absent'}
+            fields, found = entry.rstrip(b'\0').split(b'\t', 1)
+            mode, kind, oid = fields.split()
+            if found != path.encode() or mode not in (b'100644', b'100755') or kind != b'blob':
+                return {'missing': 'not_a_file'}
+            size = int(read('cat-file', '-s', oid.decode('ascii')))
+            if size < 0:
+                raise ValueError('size')
+            if size > NOTE_BYTES:
+                return {'missing': 'oversize'}
+            raw = read('cat-file', 'blob', oid.decode('ascii'))
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            raise Refused('binding_mismatch:build_commit', 'state_note') from error
+        try:
+            return {'note': raw.decode('utf-8')}
+        except UnicodeDecodeError:
+            return {'missing': 'not_a_file'}
+
+    def limits(self, spec, role):
+        phase = role.get('phase', {})
+        refusal = 'missing_authority:worker_configuration/build'
+        if not isinstance(phase, dict):
+            raise Refused(refusal, 'phase')
+        limits = dict(messages=phase.get('messages', PHASE_MESSAGES),
+                      dispatches=phase.get('dispatches', PHASE_DISPATCHES))
+        for key, minimum in (('messages', 1), ('dispatches', len(PHASES))):
+            if type(limits[key]) is not int or limits[key] < minimum:
+                raise Refused(refusal, key)
+        limits['soft'] = max(1, limits['messages'] - SOFT_MARGIN)
+        # Even empty entries cost bytes. Avoid allocating an unbounded override.
+        if limits['dispatches'] - 1 > BRIEF_BYTES // len(P.canonical(dict(phase='proof', commit='0' * 40, note=''))):
+            raise Refused(refusal, 'brief_bytes')
+        done = [dict(phase='proof', commit='0' * 40, note='') for _ in range(limits['dispatches'] - 1)]
+        for index in range(len(PHASES)):
+            brief(spec, '', role, index, limits, spec['base'], done, [], {'missing': 'not_a_file'})
+        return limits
+
+    def _collect(self, handle, result, revision):
+        """Import object bytes only; Git never opens worker-owned metadata or configuration."""
+        gitdir = self._gitdir(handle)
         commit = result.get('commit')
         if not P._hex(commit):
             raise Refused('missing_evidence:build_commit')
+        self._import(gitdir, commit, revision)
+
+    def _import(self, gitdir, commit, revision):
         with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:
             source, collected = Path(directory) / 'source.git', Path(directory) / 'collected.git'
             for repo in (source, collected):
@@ -238,13 +425,31 @@ class Runtime:
     def build(self, spec, calls=None):
         role = self.role('build')
         context = dict(getattr(calls, 'context', {}) or {}, holder=role['identity'])
-        source = P.blob(self.root, spec['base'], spec['spec_path'])
-        payload = {'operation': 'build', 'spec': source.decode(), 'spec_revision': spec['revision'],
-                   'producer': role['identity'], 'output': 'Return JSON with final commit and proof. Commit implementation and evidence first, then '
-                   'Proof uses veldo.proof/v1, spec_revision, producer, criteria with type/path/digest evidence, '
-                   'checks and rollback. Commit that manifest at proof/' + spec['id'] + '/manifest.json in a second '
-                   'commit, then return that final commit. Do not change the specification.'}
-        result, reference = self._run(spec['id'], 'build', role, spec['base'], payload, context)
+        spec_text = P.blob(self.root, spec['base'], spec['spec_path']).decode()
+        limits = self.limits(spec, role)
+        phase, count, source = 0, 0, spec['base']
+        done, remains, state = [], [], None
+        while phase < len(PHASES):
+            if count >= limits['dispatches']:
+                raise Refused('phase_budget:build', PHASES[phase])
+            payload = brief(spec, spec_text, role, phase, limits, source, done, remains, state)
+            result, reference, ended = self._run(spec['id'], 'build', role, source, payload, context)
+            self.events.append(dict(operation='phase', unit=spec['id'], phase=PHASES[phase], index=phase + 1,
+                                    dispatch=reference['dispatch'], identity=role['identity'], source=source,
+                                    commit=reference['commit'], ended=ended))
+            if ended == 'phase_cap':
+                note = CAPPED_NOTE
+                source = reference['commit']
+            else:
+                note = result.get('note') if isinstance(result.get('note'), str) else ''
+                remains = [line for line in result.get('remains', []) if isinstance(line, str)] if isinstance(
+                    result.get('remains'), list) else []
+                source = result['commit']
+            done.append(dict(phase=PHASES[phase], commit=source, note=note))
+            state = self._state(source, spec['id'])
+            count += 1
+            if ended == 'returned' and result['done']:
+                phase += 1
         proof = result.get('proof')
         if not isinstance(proof, dict) or proof.get('spec_revision') != spec['revision']:
             raise Refused('missing_evidence:build_proof')
@@ -273,7 +478,7 @@ class Runtime:
             assignment = supplied or self.floor.assign_review(unit, role['identity'])
             context = dict(getattr(calls, 'context', {}) or {}, reviewer=role['identity'])
             context.setdefault('holder', (self.floor.record(unit) or {}).get('builder'))
-            body, reference = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)
+            body, reference, _ended = self._run(unit, 'review', role, assignment['source']['commit'], assignment, context)
             required = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment['assignment'], 'unit': unit,
                         'reviewer': role['identity'], 'source': assignment['source']['commit'],
                         'proof': assignment['proof']['digest']}

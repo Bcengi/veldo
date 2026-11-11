@@ -252,6 +252,9 @@ NEVER_CONFIGURED = frozenset().union(*(getattr(engine, 'BASELINE', {}).get('stri
 ENGINE_PROTOCOL = ('PROVIDER', 'CREDENTIALS', 'SETTINGS', 'REGISTRATION', 'Meter', 'Refused', 'bind', 'command',
                    'environment', 'Terminal', 'baseline', 'profile_problem', 'login_problem', 'Guard')
 RECEIPTS_SCHEMA = 'veldo.usage_receipts/v1'
+RUN_TOKENS_SCHEMA = 'veldo.run_tokens/v1'
+RUN_TOKENS_BYTES = 2048
+RUN_TOKENS_DAYS = 30
 ARTIFACT_REPORT = ('path', 'digest', 'verdict', 'complete')
 RECEIVER = str(Path(__file__).resolve())
 JOURNAL_NAMESPACE = 'veldo-journal'
@@ -1623,7 +1626,7 @@ class Receiver:
                                     expected_state='running', execution_record=self.committed)
             report_end(self, contract, {'event': 'unknown', 'supervision': supervision, 'record': self._ended()})
             return
-        if remote and supervision['cause'] in ('requested', 'usage_cap'):
+        if remote and supervision['cause'] in ('requested', 'usage_cap', 'phase_cap'):
             # Nor does stopping it on request or at its usage cap: the unit and station stay held.
             self.dispatches.unknown(dispatch_id, contract_digest, 'remote_stop_unconfirmed', now=time.time(),
                                     expected_state='running', execution_record=self.committed)
@@ -2319,7 +2322,7 @@ class Receiver:
             if metering is not None and metering.guarded(chunk):
                 begin('configuration_stop' if metering.login_stop.startswith('configuration_stop:') else 'paid_api')
             if metering is not None and metering.feed(chunk):
-                begin('usage_cap')
+                begin(metering.stop_cause())
             if login is not None and cause is None and code is None:
                 prompt = login.release()
                 if prompt is not None:
@@ -2548,6 +2551,10 @@ class Metering:
         # invocation settled it, or settled it without one), so only the difference is charged, and only
         # when the CLI reports that same session (the meter decides; another session is charged whole).
         payload = (contract.get('input') or {}).get('payload')
+        phase = payload.get('phase') if isinstance(payload, dict) else None
+        messages = phase.get('messages') if isinstance(phase, dict) else None
+        self.cap = messages if contract.get('station') == 'build' and type(messages) is int and messages >= 1 else None
+        self.capped = False
         self.resumes = str(payload['resume']) if isinstance(payload, dict) and payload.get('resume') else None
         settled = reservations.session(self.engine.PROVIDER, self.resumes) if self.resumes else None
         self.meter = self.engine.Meter(zone=receiver.login.get('zone'), resumes=self.resumes,
@@ -2617,7 +2624,12 @@ class Metering:
                     break
         for observation in self.meter.feed(chunk):
             self._observe(observation)
-        return self.stop
+        if self.cap is not None and self.meter.steps() >= self.cap:
+            self.capped = True
+        return self.stop or self.capped
+
+    def stop_cause(self):
+        return 'usage_cap' if self.stop else 'phase_cap'
 
     def _keep(self, line):
         if self.file is not None:
@@ -2688,18 +2700,17 @@ class Metering:
         self.settled = True
         now = time.time()
         limit = None
+        settlement = None
         if termination is None:
             usage, outcome = {}, 'not_executed'
         else:
             for observation in self.meter.close():
                 self._observe(observation)
-            usage = dict(self.meter.final(), invocations=1,
-                         wall_seconds=round(time.monotonic() - (self.start or time.monotonic()), 6))
             if termination.get('deadline_stop'):
                 outcome = 'timeout'
             elif cause in ('paid_api', 'configuration_stop'):
                 outcome = 'cancelled'
-            elif cause in ('requested', 'usage_cap', 'heartbeat_missing'):
+            elif cause in ('requested', 'usage_cap', 'phase_cap', 'heartbeat_missing'):
                 outcome = 'cancelled'
             else:
                 outcome = 'completed' if termination.get('returncode') == 0 else 'failed'
@@ -2708,17 +2719,118 @@ class Metering:
                 outcome = 'failed'  # a zero exit is a completion only with its terminal record (THE ENGINE PROTOCOL)
             # VELDO-0160: a run its account's limit stopped ends account_limit, with the window and reset.
             outcome, limit = ACC.classify(outcome, self.meter.limit())
+            figures = self.meter.final()
+            if cause == 'phase_cap' and outcome == 'cancelled':
+                observed = self.meter.observed()
+                figures = observed['usage']
+                settlement = dict(at='stop', cause=cause, lower_bound=observed['lower_bound'],
+                                  in_flight=observed['in_flight'])
+            usage = dict(figures, invocations=1,
+                         wall_seconds=round(time.monotonic() - (self.start or time.monotonic()), 6))
         self.sequence += 1
         session = self.meter.session() if termination is not None else None
         try:
             self.guard.observe('usage/%s/%d' % (self.dispatch_id, self.sequence), self.invocation, self.sequence,
                                usage, now=now, final=True, outcome=outcome, receipts=self.receipts, session=session,
-                               limit=limit)
+                               limit=limit, **({'settlement': settlement} if settlement is not None else {}))
         except (D.RES.Refused, ACC.Refused, S.StoreRefused) as error:
             self.errors.append(error.code)
         finally:
             if self.file is not None:
                 self.file.close()
+        try:
+            record = next(r for r in self.reservations._records().values()
+                          if r.get('type') == 'invocation' and r.get('invocation') == self.invocation
+                          and r['context']['domain'] == self.reservations.domain)
+            final = record.get('reports', {}).get(str(self.sequence), {})
+            if final.get('final') is not True:
+                self.errors.append('run_tokens:unsettled')
+            else:
+                self._record(record, final['outcome'], now)
+        except Exception:
+            self.errors.append('run_tokens:unsettled')
+        self._prune(now)
+
+    def _record(self, record, outcome, now):
+        payload = (self.contract.get('input') or {}).get('payload')
+        phase = payload.get('phase') if isinstance(payload, dict) else None
+        phase = phase.get('name') if isinstance(phase, dict) else None
+        charge = record['charge']
+        data = dict(schema=RUN_TOKENS_SCHEMA, dispatch=self.dispatch_id, invocation=self.invocation,
+                    unit=self.contract['unit'], station=self.contract['station'],
+                    phase=phase if isinstance(phase, str) else None, attempt=self.contract['attempt'],
+                    account=self.account, provider=self.engine.PROVIDER, boundary=self.boundary,
+                    tokens=charge.get('tokens'), messages=charge.get('messages'),
+                    wall_seconds=charge.get('wall_seconds'), outcome=outcome, ended_at=now)
+        raw = (json.dumps(data, sort_keys=True, separators=(',', ':')) + '\n').encode()
+        if len(raw) > RUN_TOKENS_BYTES:
+            self.errors.append('run_tokens:oversize')
+            return
+        temporary = None
+        try:
+            directory = run_tokens_directory(self.receiver.config)
+            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+            name = hashlib.sha256(self.invocation.encode()).hexdigest()
+            temporary = directory / (name + '.' + uuid.uuid4().hex + '.tmp')
+            with os.fdopen(os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as handle:
+                handle.write(raw)
+            os.replace(temporary, directory / (name + '.json'))
+        except OSError:
+            self.errors.append('run_tokens:write')
+        finally:
+            if temporary is not None:
+                with contextlib.suppress(OSError):
+                    temporary.unlink(missing_ok=True)
+
+    def _prune(self, now):
+        directory = run_tokens_directory(self.receiver.config)
+        try:
+            paths = list(directory.iterdir()) if directory.exists() else []
+        except OSError:
+            self.errors.append('run_tokens:prune')
+            return
+        for path in paths:
+            try:
+                record = _run_token_record(path)
+                ended = record['ended_at'] if record is not None else path.stat().st_mtime
+                if now - ended > RUN_TOKENS_DAYS * 86400:
+                    path.unlink()
+            except OSError:
+                self.errors.append('run_tokens:prune')
+
+
+def run_tokens_directory(config):
+    return Path(config.get('run_tokens') or Path(config['store']).parent / 'run_tokens')
+
+
+def _run_token_record(path):
+    def number(value):
+        return (isinstance(value, (int, float)) and not isinstance(value, bool)
+                and math.isfinite(value) and value >= 0)
+
+    try:
+        with path.open('rb') as handle:
+            raw = handle.read(RUN_TOKENS_BYTES + 1)
+        if len(raw) > RUN_TOKENS_BYTES:
+            return None
+        record = json.loads(raw)
+        if (isinstance(record, dict) and record.get('schema') == RUN_TOKENS_SCHEMA
+                and number(record.get('ended_at')) and isinstance(record.get('invocation'), str)
+                and all(unit in record and (record[unit] is None or number(record[unit]))
+                        for unit in ('tokens', 'messages'))):
+            return record
+    except (OSError, ValueError, TypeError, OverflowError):
+        pass
+    return None
+
+
+def run_tokens(config):
+    try:
+        paths = list(run_tokens_directory(config).iterdir())
+    except OSError:
+        return []
+    records = [record for path in paths if (record := _run_token_record(path)) is not None]
+    return sorted(records, key=lambda record: (-record['ended_at'], record['invocation']))
 
 
 def wrap(argv):
