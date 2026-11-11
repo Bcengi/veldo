@@ -1540,8 +1540,8 @@
    "requires": [
     "113_veldo_0117_domain_store"
    ],
-   "regions": "VELDO-0117 one store per domain: the equality product of domain, store uuid and canonical location refused or accepted by the authority, two stores racing for an unbound domain with one winner, and the committed identity kept across authority restarts.",
-   "requires_note": "Only ROOT and expect. Uses scripts/fixtures/authority_store.py for real git clones, Ed25519 signatures and SQLite stores, and starts its own child authorities over a shared domain registry from a runner it writes to its scratch directory. No service installation or host lock manipulation.",
+   "regions": "VELDO-0117 one store per domain: the equality product of domain, store uuid and canonical location refused or accepted by the authority, two stores racing for an unbound domain with one winner, and the committed identity kept across authority restarts; and two instances of one domain laid down by the production installer and run as their units run them, the one bound to another store refusing by name and writing nothing.",
+   "requires_note": "Only ROOT and expect. Uses scripts/fixtures/authority_store.py for real git clones, Ed25519 signatures and SQLite stores, and starts its own child authorities over a shared domain registry from a runner it writes to its scratch directory. The production installer lays two instances down in the suite's scratch directory with a recording systemctl, and the suite runs each installed executable itself: no unit is written where systemd reads, none is started, and no host lock is touched.",
    "wall_clock": "the 3 s overlap window (a second registration is watched for 3 s for getting past the first one's open transaction; code that lets it through must do so inside the window)"
   },
   {

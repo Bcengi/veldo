@@ -62,6 +62,20 @@ coordinates; a repository this instance does not serve is refused. Then, by the 
       (control_store.canonical_bytes). control_store.execute then commits it on the CONFIGURED store,
       and the answer is the committed receipt with the store's own watermark.
 
+ONE DOMAIN, ONE STORE (VELDO-0117). Which store a domain writes to is decided in the domain registry
+(control_store.DomainRegistry): one database shared by the instances of a host, at the path the
+installation's record names as `domain_registry`, or, when the record names none, DOMAIN_REGISTRY in
+the install root the operator laid the installations down in (domain_registry_path). Instances laid
+down in different install roots are given one registry by naming it in each record. `serve`
+registers this instance's configured store there under the lock, before the store is rebound, read
+for adoptions or attached to anything, and hands the registry to control_client.Authority, which
+reads the committed store again on every request and refuses a valid binding of this domain naming
+another store, domain_store_conflict, before anything is applied. An instance whose configured
+store is not the one its domain is committed to writes nothing: it rebinds nothing, takes on
+nothing, opens no channel, API or factory loop, and only answers its socket with the refusal
+(serve_refusing), so a clone bound to that store is told why. The registration and every refusal
+are observations naming the domain, the committed store and the proposed one.
+
 THE TELEGRAM CHANNEL (VELDO-0138). An installation given --channel-ingress copies that VELDO-0073
 host configuration (veldo.telegram_ingress/v1, this account's own 0600 file naming THIS authority's
 store, identities, generation, a served repository and the service's own journal principal and key;
@@ -317,6 +331,8 @@ ACCEPT_SECONDS = 0.25
 ADOPTION_RETRY_SECONDS = 5.0
 TEMPLATE = HERE / 'services' / 'veldo-authority.service'
 LOCK_NAME = 'authority.lock'
+# VELDO-0117: the domain registry's file in the install root, shared by the installations laid down there.
+DOMAIN_REGISTRY = 'domains.sqlite3'
 # VELDO-0189: the previous engine an upgrade keeps beside `bin` until its restart succeeded
 # (control_factory_setup_upgrade.STAGE), and the one request that commits its ownership record.
 PREVIOUS_ENGINE = 'bin.upgrade'
@@ -352,6 +368,7 @@ NAMED = {
     'unowned': 'stale_subject', 'not_owner': 'missing_authority', 'stale_generation': 'stale_subject',
     'capability': 'missing_authority', 'parked': 'stale_subject', 'ownership_uncertain': 'unknown_outcome',
     'ownership_restore_differs': 'stale_subject',
+    'domain_store_conflict': 'invalid_input',
 }
 
 
@@ -1947,9 +1964,13 @@ class Service:
     def observe_response(self, response):
         """A request the Authority refused before apply: observed here, with its named reason."""
         if isinstance(response, dict) and response.get('accepted') is False:
-            self._count({'at': time.time(), 'domain_uuid': self.domain, 'operation': 'request', 'outcome': 'refused',
-                         'refusal': response.get('reason'), 'taxonomy': taxonomy(response.get('reason')),
-                         'watermark': self.watermark()})
+            observation = {'at': time.time(), 'domain_uuid': self.domain, 'operation': 'request', 'outcome': 'refused',
+                           'refusal': response.get('reason'), 'taxonomy': taxonomy(response.get('reason')),
+                           'watermark': self.watermark()}
+            if response.get('reason') == 'domain_store_conflict':
+                # VELDO-0117: the store the domain is committed to and the one the binding named.
+                observation.update(committed=response.get('committed'), proposed=response.get('proposed'))
+            self._count(observation)
 
     def _tally(self, observation):
         if observation.get('kind') in ('channel', 'api', 'loop', 'land', 'ownership', 'adoption'):
@@ -3409,6 +3430,82 @@ def restore_owners(config_path):
     return {'restored': len(restored)}
 
 
+def domain_registry_path(config):
+    """Where this installation's domain registry is (VELDO-0117): the path its record names as
+    `domain_registry`, else DOMAIN_REGISTRY in the install root, which is the directory holding this
+    installation's home (its observations are in <install root>/<service>/state)."""
+    named = config.get('domain_registry')
+    if named is not None:
+        if not isinstance(named, str) or not os.path.isabs(named):
+            raise Refused('invalid_input:config:domain_registry', str(named),
+                          'name the domain registry by its absolute path')
+        return named
+    home = os.path.dirname(os.path.dirname(os.path.abspath(config['observations'])))
+    return os.path.join(os.path.dirname(home), DOMAIN_REGISTRY)
+
+
+def register_domain_store(config):
+    """This instance's configured store registered for its domain (VELDO-0117): the open registry and
+    the registry's decision, which is observed with the committed and the proposed identity. A
+    registry that cannot be opened refuses the start by the store's own name for it."""
+    path = domain_registry_path(config)
+    try:
+        registry = S.DomainRegistry(path)
+        standing = registry.register(config['domain_uuid'], config['store_uuid'], config['store_path'])
+    except S.StoreRefused as error:
+        raise Refused(error.code, error.detail, 'the domain registry of this installation is %s' % path)
+    append_observation(config, {'kind': 'domain_store', 'operation': 'register', 'at': time.time(),
+                                'domain_uuid': config['domain_uuid'], 'decision': standing['decision'],
+                                'committed': standing['committed'], 'proposed': standing['proposed'],
+                                'detail': standing['detail']})
+    return registry, standing
+
+
+def authority_for(config, service, registry):
+    """The judgment of every request on this instance's socket, held to the domain registry."""
+    return CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,
+                        service.verify, config['host_identity'], service.apply,
+                        watermark=service.watermark,
+                        minimum_generation=config['authority_generation'], context=True, registry=registry)
+
+
+def serve_refusing(config, conn, registry):
+    """What an instance does whose configured store is not the one its domain is committed to
+    (VELDO-0117): it answers its socket until SIGTERM and does nothing else. Every valid binding of the
+    domain is refused by the authority's own judgment (one naming this store, domain_store_conflict;
+    one naming the committed store is not this instance's to serve), each refusal is observed, and
+    the store is not written."""
+    service = Service(config, conn)
+    authority = authority_for(config, service, registry)
+    stopping = []
+    signal.signal(signal.SIGTERM, lambda signum, frame: stopping.append(signum))
+    signal.signal(signal.SIGINT, lambda signum, frame: stopping.append(signum))
+    listener = CC.bind(config['socket'])
+    inode = os.stat(config['socket']).st_ino
+    listener.settimeout(ACCEPT_SECONDS)
+    notify('READY=1\nSTATUS=refusing %s: domain_store_conflict' % config['unit'])
+    try:
+        while not stopping:
+            if listener not in select.select([listener], [], [], ACCEPT_SECONDS)[0]:
+                continue
+            try:
+                response = CC.serve_one(listener, authority)
+            except socket.timeout:
+                continue
+            except OSError:
+                if stopping:
+                    break
+                raise
+            if response is not None:
+                service.observe_response(response)
+    finally:
+        notify('STOPPING=1')
+        listener.close()
+        with contextlib.suppress(OSError):
+            if os.stat(config['socket']).st_ino == inode:
+                os.unlink(config['socket'])
+
+
 def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""
@@ -3417,6 +3514,12 @@ def serve(config_path):
     try:
         conn = S.open_store(config['store_path'])
         try:
+            # VELDO-0117: the domain registry decides whether this store is its domain's, before anything
+            # below writes it. An instance configured with another store only refuses.
+            registry, standing = register_domain_store(config)
+            if standing['decision'] == 'domain_store_conflict':
+                serve_refusing(config, conn, registry)
+                return
             # VELDO-0189: an upgraded engine's owning modules carry the store's ownership declarations
             # to their installed bytes before anything attaches, recording the previous bindings while the
             # previous engine is still installed beside this one (a switch back restores them), and a record
@@ -3434,10 +3537,7 @@ def serve(config_path):
             service.channel, service.channel_refusal = CH.open_channel(config.get('channel_ingress'))
             service.api, service.api_refusal = SA.open_api(config.get('api_service'), service.channel, lock,
                                                            os.path.dirname(config['observations']))
-            authority = CC.Authority(config['store_uuid'], config['domain_uuid'], config['store_path'], E,
-                                     service.verify, config['host_identity'], service.apply,
-                                     watermark=service.watermark,
-                                     minimum_generation=config['authority_generation'], context=True)
+            authority = authority_for(config, service, registry)
             authority = SA.RecordHints(authority, service)
             stopping = []
             signal.signal(signal.SIGTERM, lambda signum, frame: stopping.append(signum))

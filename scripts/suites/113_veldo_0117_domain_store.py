@@ -5,11 +5,19 @@ Only ROOT and expect come from the suite harness:
   python3 scripts/selftest.py --suite 113_veldo_0117_domain_store
 
 WHAT IS UNDER TEST. The domain registry in .veldo/control_store.py, the authority's use of it in
-.veldo/control_client.py and the binding comparison in .veldo/control_enrollment.py. The three
-modules are copied into a runtime directory and every authority here is a child process running
-that copy, so a mutation of any one of them is what the authority runs. The clones are driven by
-the unmutated modules of this checkout: a clone has no registry, and no row may pass because of
-something a clone decided.
+.veldo/control_client.py, the binding comparison in .veldo/control_enrollment.py and the service
+that runs the authority in production, .veldo/control_service.py. The four modules are copied
+into a runtime directory and every authority here is a child process running that copy, so a
+mutation of any one of them is what the authority runs. The clones are driven by the unmutated
+modules of this checkout: a clone has no registry, and no row may pass because of something a
+clone decided.
+
+THE PRODUCTION PATH. The first row also installs two instances of one domain with the production
+installer (control_service.install, into one install root, no unit started) and runs each
+installed executable as its unit would: `control_service.py serve <service.json>`. Nothing in
+this suite hands those processes a registry; they find it as an installation does. Signed
+commands reach them through the production client, under the installed enrollment signers and
+the stores' own keyrings.
 
 HOW. scripts/fixtures/authority_store.py (VELDO-0115) builds real clones, an Ed25519 signer and
 SQLite stores. This suite enrolls the clones with the store identities each case needs, starts
@@ -49,11 +57,13 @@ _v117_spec = _v117_import.spec_from_file_location(
 _v117_FX = _v117_import.module_from_spec(_v117_spec)
 _v117_spec.loader.exec_module(_v117_FX)
 
-# The three modules an authority runs. The mutation driver replaces one of these paths.
+# The modules an authority runs: three for the child authorities of this suite, and the service
+# for the installed ones. The mutation driver replaces one of these paths.
 _v117_SOURCES = {
     "control_store.py": ROOT / ".veldo" / "control_store.py",
     "control_client.py": ROOT / ".veldo" / "control_client.py",
     "control_enrollment.py": ROOT / ".veldo" / "control_enrollment.py",
+    "control_service.py": ROOT / ".veldo" / "control_service.py",
 }
 _v117_ROWS = ("enrollment/authority-refuses-domain-store-conflict",
               "enrollment/one-domain-one-winner",
@@ -375,6 +385,273 @@ def _v117_product(world, checks, records):
 
 
 # ---------------------------------------------------------------------------------------------
+# AC1 on the production path: installed instances, run as their units run them
+# ---------------------------------------------------------------------------------------------
+
+class _v117_Fake:
+    """The installer's systemctl: records the calls and starts nothing."""
+
+    def __init__(self):
+        self.calls = []
+
+    def run(self, args):
+        self.calls.append(list(args))
+        return 0, "", ""
+
+
+class _v117_Served:
+    """One installed instance run as its unit runs it: <python> -B <bin>/control_service.py serve <config>."""
+
+    def __init__(self, world, report, name):
+        self.config = _v117_json.loads(_v117_Path(report["config"]).read_text())
+        self.errors = _v117_Path(report["home"]) / "state" / ("serve-%d-%s.stderr" % (len(world["processes"]), name))
+        env = dict(_v117_os.environ, PYTHONDONTWRITEBYTECODE="1")
+        for key in ("VELDO_CONTROL_TEST_HARNESS", "VELDO_CONTROL_KILL_AT", "NOTIFY_SOCKET"):
+            env.pop(key, None)
+        with open(self.errors, "wb") as errors:
+            self.process = _v117_sp.Popen(
+                [_v117_os.path.realpath(_v117_sys.executable), "-B", report["executable"], "serve", report["config"]],
+                stdin=_v117_sp.DEVNULL, stdout=_v117_sp.DEVNULL, stderr=errors, env=env)
+        world["processes"].append(self)
+
+    def listening(self, bound=_v117_START):
+        """Whether the instance bound its socket within the bound; False when it ended first."""
+        deadline = _v117_time.monotonic() + bound[0]
+        while _v117_time.monotonic() < deadline:
+            if _v117_os.path.exists(self.config["socket"]):
+                return True
+            if self.process.poll() is not None:
+                return False
+            _v117_time.sleep(0.05)
+        return False
+
+    def said(self):
+        try:
+            return self.errors.read_text()[-300:].strip()
+        except OSError:
+            return ""
+
+    def observations(self, kind):
+        try:
+            lines = _v117_Path(self.config["observations"]).read_text().splitlines()
+        except OSError:
+            return []
+        found = []
+        for line in lines:
+            try:
+                record = _v117_json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(record, dict) and (record.get("kind") == kind or record.get("refusal") == kind):
+                found.append(record)
+        return found
+
+    def stop(self):
+        if self.process.poll() is None:
+            self.process.terminate()
+            try:
+                self.process.wait(timeout=_v117_START[0])
+            except _v117_sp.TimeoutExpired:
+                self.process.kill()
+                self.process.wait()
+        return self.process.returncode
+
+
+def _v117_production(world, checks, records):
+    base = world["scratch"] / "production"
+    mods = base / "src" / ".veldo"
+    (mods / "services").mkdir(parents=True)
+    _v117_shutil.copytree(ROOT / ".veldo" / "runtime", mods / "runtime")
+    for source in sorted((ROOT / ".veldo").glob("*.py")):
+        _v117_shutil.copyfile(source, mods / source.name)
+    _v117_shutil.copyfile(ROOT / ".veldo" / "services" / "veldo-authority.service",
+                          mods / "services" / "veldo-authority.service")
+    # The four modules under test, as the runtime directory holds them (a mutant's copy among them).
+    for name in _v117_SOURCES:
+        _v117_shutil.copyfile(world["runtime"] / name, mods / name)
+    service = _v117_FX.load(mods / "control_service.py")
+    # The clone's side: this checkout's unmutated modules.
+    client, enrollment, store = (_v117_FX.load(ROOT / ".veldo" / name) for name in _v117_FX.MODULES[:3])
+    contract = _v117_FX.load(ROOT / ".veldo" / "authority_contract.py")
+    eligibility = _v117_FX.load(ROOT / ".veldo" / "control_eligibility.py")
+    host = "host-117"
+
+    private = base / "private"
+    private.mkdir(mode=0o700)
+    public = {}
+    for who in ("owner", "member"):
+        _v117_sp.run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(private / who)], check=True,
+                     capture_output=True, timeout=20, stdin=_v117_sp.DEVNULL)
+        public[who] = (private / (who + ".pub")).read_text().strip()
+
+    def signer(who, namespace):
+        def sign(data):
+            return _v117_sp.run(["ssh-keygen", "-Y", "sign", "-f", str(private / who), "-n", namespace],
+                                input=data, capture_output=True, check=True, timeout=20).stdout.decode()
+        return sign
+
+    trust = base / "trust"
+    trust.mkdir(mode=0o700)
+    signers = trust / "enrollment_signers"
+    signers.write_text(contract.allowed_signers_line("owner", public["owner"], eligibility.ENROLLMENT_NAMESPACE) + "\n")
+    trust_file = trust / "host_trust.json"
+    trust_file.write_text(_v117_json.dumps({"schema": eligibility.HOST_TRUST_SCHEMA, "host_identity": host,
+                                            "enrollment_signers": str(signers)}))
+    enroll_sign = signer("owner", eligibility.ENROLLMENT_NAMESPACE)
+    journal_sign = signer("owner", "veldo-journal")
+    member_sign = signer("member", contract.SIGNATURE_NAMESPACE)
+
+    def clone(name):
+        path = base / name
+        _v117_FX.Fixture.git(base, "init", "-q", str(path))
+        (path / "README").write_text(name + "\n")
+        _v117_FX.Fixture.git(path, "add", "README")
+        _v117_FX.Fixture.git(path, "-c", "user.name=Veldo Fixture", "-c", "user.email=fixture@veldo.invalid",
+                             "-c", "commit.gpgsign=false", "commit", "-q", "-m", name)
+        return path
+
+    run = _v117_os.urandom(4).hex()
+    domain = "dom117" + run
+    sides = {}
+    for name in ("a", "b"):
+        path = base / ("store-" + name) / "control.sqlite3"
+        sides[name] = {"workspace": clone("clone-" + name), "store_uuid": "store117%s%s" % (name, run),
+                       "repository": "repo117%s%s" % (name, run), "path": path,
+                       "identity": _v117_identity(domain, "store117%s%s" % (name, run), path)}
+    serial = [0]
+
+    def enroll(side, store_uuid, store_path):
+        return enrollment.enroll(str(side["workspace"]), domain, store_uuid, str(store_path), host, 1, enroll_sign,
+                                 "owner", "2026-11-11T00:00:00Z", repository_uuid=side["repository"])
+
+    def member(path):
+        """The owner's setup of a store before its installation: one member and the member's key."""
+        conn = store.open_store(str(path))
+        try:
+            for identity, kind, data in (
+                    ("member", "membership", {"principal_type": "person", "roles": [], "scope": "*"}),
+                    ("key:member:1", "verification_key", {"principal": "member", "public_key": public["member"],
+                                                          "effective_at": 0})):
+                serial[0] += 1
+                store.execute(conn, {"command_id": "setup-%d" % serial[0], "principal": "owner",
+                                     "operation": "upsert_entity", "nonce": "setup-%d" % serial[0],
+                                     "artifact_digests": [], "expected_versions": {identity: 0},
+                                     "parameters": {"entity_id": identity, "kind": kind, "data": data}},
+                              "owner", journal_sign, 1)
+        finally:
+            conn.close()
+
+    def send(side, store_uuid, tag):
+        """One signed command from this clone through the production client: (outcome, answer)."""
+        serial[0] += 1
+        entity = "note:%s:%d" % (run, serial[0])
+        body = {"command_id": "cmd-%s-%d" % (run, serial[0]), "principal": "member", "operation": "upsert_entity",
+                "nonce": "nonce-%s-%d" % (run, serial[0]), "artifact_digests": [], "expected_versions": {entity: 0},
+                "parameters": {"entity_id": entity, "kind": "note", "data": {"tag": tag}},
+                "domain_uuid": domain, "store_uuid": store_uuid, "repository_uuid": side["repository"]}
+        packet = {"command": body, "signature": member_sign(store.canonical_bytes(body))}
+        verify = eligibility.HostTrust(host, str(signers)).verifier("owner", str(side["workspace"]))
+        try:
+            answer = client.send(str(side["workspace"]), packet, enrollment, verify, member_sign, host, timeout=10)
+        except client.RoutingRefused as refused:
+            return "routing:" + refused.reason, {}
+        if answer.get("accepted"):
+            result = answer.get("result") or {}
+            return ("accepted" if result.get("ok") is not False else "result:%s" % result.get("reason")), answer
+        return "refused:%s" % answer.get("reason"), answer
+
+    install_root = base / "install"
+    registry = install_root / "domains.sqlite3"
+    profile = {"kind": "linux-systemd", "slice": "v117%s.slice" % run, "lock": str(base / "workers.lock"),
+               "concurrency": 2, "runtime_seconds": 600, "memory_bytes": 256 << 20, "cpu_percent": 100,
+               "file_bytes": 64 << 20, "tasks_max": 256, "stop_grace_seconds": 1, "kill_grace_seconds": 1}
+    for name, side in sides.items():
+        enroll(side, side["store_uuid"], side["path"])
+        member(side["path"])
+        keys = base / "keys" / name
+        keys.mkdir(parents=True, mode=0o700)
+        _v117_os.chmod(str(keys), 0o700)
+        side["report"] = service.install(
+            [str(side["workspace"])], host_trust=str(trust_file), key_directory=str(keys),
+            install_root=str(install_root), unit_dir=str(base / "units"), profile=profile, adapters={},
+            writable=[str(base / "work")], runner=_v117_Fake())
+        side["installed"] = _v117_json.loads(_v117_Path(side["report"]["config"]).read_text())
+    a, b = sides["a"], sides["b"]
+    held = a["identity"]
+    checks.append(("production: the installer hands neither instance a registry of its own, and both are laid "
+                   "down in one install root [%s]" % sorted(p.name for p in install_root.iterdir()),
+                   all("domain_registry" not in side["installed"] for side in sides.values())
+                   and len({_v117_os.path.dirname(side["report"]["home"]) for side in sides.values()}) == 1))
+
+    def started(side, name, label):
+        process = _v117_Served(world, side["report"], name)
+        up = process.listening()
+        checks.append(("production: %s is running and answers its socket [%s]"
+                       % (label, "listening" if up else "not listening: " + process.said()), up))
+        return process
+
+    def refused_whole(label, side, sent_uuid, proposed, reader, reader_side):
+        """A command of `side`, whose binding names `proposed`, sent and judged: it must be refused
+        domain_store_conflict naming the committed and the proposed store, and written nowhere."""
+        before = {name: _v117_FX.snapshot(each["path"]) for name, each in sides.items()}
+        outcome, answer = send(side, sent_uuid, label)
+        unchanged = all(_v117_FX.snapshot(each["path"]) == before[name] for name, each in sides.items())
+        seen = [r for r in reader.observations("domain_store_conflict") if r.get("proposed") == proposed]
+        checks.append(("production: %s is refused domain_store_conflict by the running service, naming the "
+                       "committed and the proposed store, and neither store changes [%s; committed %s; stores "
+                       "unchanged %s]" % (label, outcome, answer.get("committed"), unchanged),
+                       outcome == "refused:domain_store_conflict" and answer.get("committed") == held
+                       and answer.get("proposed") == proposed and unchanged))
+        checks.append(("production: the refusal of %s is in the observations of %s's instance with the domain, "
+                       "the committed and the proposed store [%d found]" % (label, reader_side, len(seen)),
+                       bool(seen) and all(r.get("domain_uuid") == domain and r.get("committed") == held
+                                          and r.get("outcome") == "refused" for r in seen)))
+        records.append({"case": "production: " + label, "committed": held, "proposed": proposed,
+                        "command": outcome, "stores_unchanged": unchanged,
+                        "passed": outcome == "refused:domain_store_conflict" and unchanged})
+
+    def accepted_once(label, side):
+        commands = _v117_commands(side["path"])
+        outcome, answer = send(side, side["store_uuid"], label)
+        written = _v117_commands(side["path"]) - commands
+        checks.append(("production: %s is accepted into the committed store [%s; %d transaction(s); %s]"
+                       % (label, outcome, written, answer.get("domain_store")),
+                       outcome == "accepted" and written == 1 and answer.get("domain_store") == held))
+
+    for order in (("a", "b"), ("b", "a")):
+        again = "" if order == ("a", "b") else ", after both were stopped and started again, the conflicting one first"
+        running = {}
+        for name in order:
+            label = ("the committed store's instance" if name == "a" else "the instance of another store") + again
+            running[name] = started(sides[name], name, label)
+            if name == "a" and order == ("a", "b"):
+                checks.append(("production: the first instance of the domain registers its configured store in the "
+                               "install root's registry [%s]" % _v117_registry_rows(registry),
+                               _v117_registry_rows(registry) == [held]))
+        decisions = [r.get("decision") for r in running["b"].observations("domain_store")]
+        checks.append(("production: the instance of another store is told domain_store_conflict at its start and "
+                       "the registry holds the committed store alone%s [%s; %s]"
+                       % (again, decisions, _v117_registry_rows(registry)),
+                       decisions[-1:] == ["domain_store_conflict"] and _v117_registry_rows(registry) == [held]))
+        accepted_once("the committed store's own clone" + again, a)
+        refused_whole("a clone bound to another store" + again, b, b["store_uuid"], b["identity"], running["b"], "b")
+        accepted_once("the committed store's own clone, after the refusal" + again, a)
+        if order == ("a", "b"):
+            # The second clone bound to the committed file under another store uuid: the committed
+            # store's own instance answers, and its comparison is the registry's.
+            other = "store117x" + run
+            enroll(b, other, a["path"])
+            refused_whole("a clone naming another store uuid at the committed file", b, other,
+                          _v117_identity(domain, other, a["path"]), running["a"], "a")
+            enroll(b, b["store_uuid"], b["path"])
+        codes = [running[name].stop() for name in order]
+        checks.append(("production: both instances stop on SIGTERM with exit 0%s [%s]" % (again, codes),
+                       codes == [0, 0]))
+    checks.append(("production: the registry holds the committed store alone at the end [%s]"
+                   % _v117_registry_rows(registry), _v117_registry_rows(registry) == [held]))
+
+
+# ---------------------------------------------------------------------------------------------
 # AC2 and AC3: the race, then the restart
 # ---------------------------------------------------------------------------------------------
 
@@ -558,6 +835,7 @@ def _v117_run():
                  "enrollment": _v117_FX.load(runtime / "control_enrollment.py")}
         sections = (
             (_v117_ROWS[:1], lambda: _v117_product(world, results[_v117_ROWS[0]], records[_v117_ROWS[0]])),
+            (_v117_ROWS[:1], lambda: _v117_production(world, results[_v117_ROWS[0]], records[_v117_ROWS[0]])),
             (_v117_ROWS[1:], lambda: _v117_schedules(world, results[_v117_ROWS[1]], results[_v117_ROWS[2]],
                                                      records)),
         )
@@ -585,7 +863,7 @@ for _v117_row in _v117_ROWS:
             print("VELDO-0117 %s detail: %s" % (_v117_row, _v117_words))
     expect("VELDO-0117 " + _v117_row, _v117_verdicts[_v117_row])
 if _v117_os.environ.get("VELDO_0117_REPORT"):
-    # Each result with what produced it: the digests of the three modules the authorities ran and
+    # Each result with what produced it: the digests of the four modules the authorities ran and
     # the fixture's version, beside every case's input identities.
     _v117_Path(_v117_os.environ["VELDO_0117_REPORT"]).write_text(_v117_json.dumps({
         "fixture_version": _v117_FX.VERSION, "module_sha256": _v117_digests, "rows": _v117_verdicts,

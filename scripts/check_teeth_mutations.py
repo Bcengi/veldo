@@ -13092,7 +13092,7 @@ def cases():
              'restart/adoption-start-checked')
 
     # VELDO-0117: one domain has one store, decided by the authority over its domain registry. Each
-    # criterion's declared falsifier, and the guards beside it. The suite copies the three modules into
+    # criterion's declared falsifier, and the guards beside it. The suite copies the four modules into
     # the directory its authority processes run from, so the mutated file is what an authority runs;
     # the clones are driven by this checkout's unmutated modules.
     s117 = '113_veldo_0117_domain_store.py'
@@ -13150,6 +13150,19 @@ def cases():
         "        if (os.path.realpath(store) != self.store_path or request[\"store_uuid\"] != self.store_uuid\n",
         "        if (store != self.store_path or request[\"store_uuid\"] != self.store_uuid\n",
         [restart117])
+    # AC1 on the production path: the suite installs two instances of one domain with the production
+    # installer and runs each installed control_service.py as its unit does. The service builds its
+    # authority without the registry, so the instance of another store serves it on its own word; and
+    # each installation keeps a registry of its own, so both stores are registered.
+    add(117, 'v117-service-passes-no-registry', s117, 'control_service.py',
+        "                        minimum_generation=config['authority_generation'], context=True, registry=registry)\n",
+        "                        minimum_generation=config['authority_generation'], context=True)"
+        "  # defect: the production authority is given no registry\n",
+        [refuses117])
+    add(117, 'v117-service-registry-per-installation', s117, 'control_service.py',
+        "    return os.path.join(os.path.dirname(home), DOMAIN_REGISTRY)\n",
+        "    return os.path.join(home, DOMAIN_REGISTRY)  # defect: every installation has a map of its own\n",
+        [refuses117])
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
     return result
