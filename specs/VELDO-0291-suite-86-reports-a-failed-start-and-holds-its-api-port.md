@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0291
 title: Suite 86 reports every failed service start with its log, and holds its API port bound for the whole run
-status: draft
+status: ready
 risk: standard
 owner: dmitry
 human_approval: not_required
@@ -272,3 +272,5 @@ wanted unit fail the start of the unit that wants it.
 2026-11-11: drafted from section 4 of the landing-c flake analysis
 2026-11-11: revision 1 applies the findings of the review of 8b44659e
 2026-11-11: revision 2 applies the findings of the re-review of 18cff947
+
+2026-11-11: marked ready by the lead after the second re-review of 6512de83 (READY)
