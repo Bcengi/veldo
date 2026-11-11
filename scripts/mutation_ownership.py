@@ -398,6 +398,9 @@ class WorkerMeter:
     the unconfined leg) is admitted and tracked once the kernel shows it was
     born after this meter started, before the worker was spawned; the reaper
     (cleanup with born_after=started) removes exactly what this rule admits.
+    VELDO-0290: stall_seconds is the time those same disjoint roots spent with a
+    task waiting for a CPU (cpu.pressure, the "some" total). It is a diagnostic
+    figure: two roots stalled at one moment count twice, and no verdict reads it.
     """
     def __init__(self, scope, name, cgroup_root=Path('/sys/fs/cgroup')):
         import time
@@ -417,6 +420,7 @@ class WorkerMeter:
         self.started = birth_clock()
         self.directories = set()
         self.paths, self.counters = {}, {}
+        self.stalls = {}
         self.peak, self.last_discovery = 0, float('-inf')
         self.lifecycle = self.peer = None
         self.retained, self.dropins = {}, []
@@ -526,6 +530,10 @@ class WorkerMeter:
                 if path == self.path or not vanished(error):
                     raise
         self.counters.update(retained_values)
+        for path in roots:  # stall: every disjoint root, the worker's cgroup and its units
+            self.read_stall(path)
+        self.stalls = {p: v for p, v in self.stalls.items()
+                       if not any(other != p and other in p.parents for other in self.stalls)}
         # Sum per-root peaks conservatively. Removed units retain their counters.
         # Remove nested entries if a parent became visible in a later poll.
         self.counters = {p: v for p, v in self.counters.items()
@@ -540,7 +548,22 @@ class WorkerMeter:
         return dict(cpu_seconds=sum(v[0] for v in self.counters.values()), peak_anon_bytes=self.peak,
                     peak_memory_bytes=max(self.peak, memory_bound),
                     metrics_source='cgroup-v2-anon-sampled-20ms-with-final-unit-accounting',
-                    cgroups=sorted(str(p) for p in self.counters))
+                    cgroups=sorted(str(p) for p in self.counters),
+                    stall_seconds=sum(self.stalls.values()) / 1e6)
+
+    def read_stall(self, path):
+        """Keep the largest cpu.pressure "some" total seen for `path`, in microseconds. The cgroup is
+        new for this worker, so the total starts at zero and the largest one seen is the stall. A
+        cgroup that is gone, or a kernel without pressure accounting, leaves the figure as it was:
+        this reading is a diagnostic and never fails a worker."""
+        try:
+            for line in (path / 'cpu.pressure').read_text().splitlines():
+                fields = line.split()
+                if fields and fields[0] == 'some':
+                    total = int(dict(f.split('=', 1) for f in fields[1:])['total'])
+                    self.stalls[path] = max(self.stalls.get(path, 0), total)
+        except (OSError, ValueError, KeyError):
+            pass
 
     def close(self):
         import time

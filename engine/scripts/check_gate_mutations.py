@@ -359,6 +359,10 @@ class Admission:
         self.held, self.events, self.waiting = {}, [], {}
         self.peak = dict(cpu=0, memory=0)
         self.blocked = {}
+        # VELDO-0290: the ledger's last word on its wall-clock ceiling, and the wall_clock jobs it
+        # holds as waiting for CPU, which bar other claims until granted or withdrawn.
+        self.ceiling = None
+        self.ledger_waiting = set()
 
     @classmethod
     def authority(cls):
@@ -392,19 +396,28 @@ class Admission:
         manager = ('exclusive' if slots and slots == resources.capacity['systemd_user_manager']
                    else 'shared' if slots else 'none')
         began = self.waiting.setdefault(name, time.monotonic())
+        # Every job of a suite that declares a wall-clock bound is claimed as wall_clock.
+        declared = resources.declared(job)
         try:
-            granted = self.client.acquire(name, claim['cpu'], claim['memory'], manager)
+            granted = self.client.acquire(name, claim['cpu'], claim['memory'], manager,
+                                          **({'wall_clock': True} if declared else {}))
         except ValueError as error:
             raise Refused('invalid_resource_requirement', str(error)) from error
         reply = getattr(self.client, 'last_reply', {})
+        self.ceiling = reply.get('wall_clock_ceiling', self.ceiling)
+        self.ledger_waiting.discard(name)
         if not granted:
             self.blocked.setdefault(name, set()).add(reply.get('resource', 'unknown'))
+            if reply.get('waiting'):
+                self.ledger_waiting.add(name)
             return False
         self.held[name] = claim
         totals = {r: sum(c[r] for c in self.held.values()) for r in ('cpu', 'memory')}
         self.events.append(dict(name=name, claim=claim, waited_seconds=time.monotonic() - began,
                                 resource=sorted(self.blocked.pop(name, set())),
-                                granted=reply.get('totals', totals), capacities=self.capacity))
+                                granted=reply.get('totals', totals), capacities=self.capacity,
+                                wall_clock=declared,
+                                ceiling_in_force=bool((reply.get('wall_clock_ceiling') or {}).get('in_force'))))
         self.waiting.pop(name)
         for r in self.peak:
             self.peak[r] = max(self.peak[r], totals[r])
@@ -414,6 +427,17 @@ class Admission:
         if name in self.held:
             self.client.release(name)
             del self.held[name]
+            self.ceiling = getattr(self.client, 'last_reply', {}).get('wall_clock_ceiling', self.ceiling)
+
+    def withdraw(self):
+        """The stage stopped asking: a wall_clock job the ledger still holds as waiting is withdrawn,
+        so it bars nobody after this run."""
+        for name in sorted(self.ledger_waiting):
+            try:
+                self.client.release(name)
+            except (ValueError, OSError):
+                pass  # The ledger drops a waiting claim itself when its node exits.
+        self.ledger_waiting.clear()
 
     def close(self):
         self.client.close()
@@ -660,10 +684,16 @@ class SuiteResources:
                for name, slots in self.capacity.items()):
             raise Refused('invalid_resource_requirement', 'capacities must be positive integers')
         self.requirements = {}
+        # VELDO-0290: suites whose rows hold a wall-clock bound; the value names the bound.
+        self.wall_clock = set()
         for suite in manifest['suites']:
             name = suite['file']
             if name in self.requirements:
                 raise Refused('invalid_resource_requirement', 'duplicate suite: ' + name)
+            if 'wall_clock' in suite:
+                if not isinstance(suite['wall_clock'], str) or not suite['wall_clock'].strip():
+                    raise Refused('invalid_resource_requirement', name + ': wall_clock must name the bound')
+                self.wall_clock.add(name)
             demand = suite.get('resources', {})
             if not isinstance(demand, dict):
                 raise Refused('invalid_resource_requirement', name + ': resources must be an object')
@@ -690,6 +720,20 @@ class SuiteResources:
         if suite not in self.requirements:
             raise Refused('invalid_resource_requirement', 'undeclared suite: ' + suite)
         return self.requirements[suite]
+
+    def declared(self, job):
+        return job['case']['suite'] in self.wall_clock
+
+    def declared_first(self, pending):
+        """The declared suites' jobs first, grouped by suite in the order each suite first appears;
+        the other jobs follow in the order given. The wall-clock ceiling then holds for one stretch
+        at the start of a run and is not switched on and off across it."""
+        suites = {}
+        for item in pending:
+            if self.declared(item[1]):
+                suites.setdefault(item[1]['case']['suite'], []).append(item)
+        return ([item for group in suites.values() for item in group]
+                + [item for item in pending if not self.declared(item[1])])
 
     def select(self, pending):
         barred = set()
@@ -792,6 +836,8 @@ class Workers:
         # records the repository files each case's baseline read. None: no tracing (every gate).
         self.coverage = None
         self.coverage_traces = {}
+        # VELDO-0290: the pending order of the latest run, declared suites first.
+        self.pending_order = []
 
     boundary = None
 
@@ -855,6 +901,11 @@ class Workers:
                       output_directory=str(home),
                       stdout_bytes=len(stdout), stderr_bytes=len(stderr))
         if measurement is not None:
+            # VELDO-0290: stall_seconds is a diagnostic beside cpu_seconds and elapsed. It is kept out
+            # of the measurement the resource store records, and no verdict or deadline reads it.
+            measurement = dict(measurement)
+            if 'stall_seconds' in measurement:
+                record['stall_seconds'] = measurement.pop('stall_seconds')
             record['measurement'] = measurement
         result = None
         if name in self.coverage_traces:
@@ -939,7 +990,10 @@ class Workers:
             self.resources = SuiteResources.from_root(root)
         jobs = {name: dict(job) for name, job in jobs.items()}
         self.jobs.update(jobs)
-        pending = list(jobs.items())
+        pending = self.resources.declared_first(list(jobs.items()))
+        self.pending_order = [name for name, _job in pending]
+        # A wall_clock job the ledger refused is asked for again before any other job (VELDO-0290).
+        refused = None
         # Validate every job before launching any, including ones behind blocked jobs.
         for _name, job in pending:
             self.resources.demand(job)
@@ -950,12 +1004,18 @@ class Workers:
             while pending or self.active:
                 self.check()
                 while pending and len(self.active) < self.parallel:
-                    index = self.resources.select(pending)
+                    if refused is None:
+                        index = self.resources.select(pending)
+                    else:
+                        index = [name for name, _job in pending].index(refused)
                     if index is None:
                         break
                     name, job = pending[index]
                     if self.admission and not self.admission.acquire(name, job, self.resources):
+                        if self.resources.declared(job):
+                            refused = name
                         break
+                    refused = None
                     pending.pop(index)
                     self.budgets[name] = job.get('budget_seconds', WORKER_BUDGET)
                     home = directory / str(self.invocations)
@@ -1081,6 +1141,7 @@ class Workers:
                 if self.admission:
                     for name in list(self.admission.held):
                         self.admission.release(name)
+                    self.admission.withdraw()
 
 
 def traceable(worker_root, case, leg):
@@ -1536,6 +1597,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             receipt['admissions'] = admission.events
             receipt['peak_granted'] = admission.peak
             receipt['ledger_capacities'] = admission.capacity
+            # VELDO-0290: the ceiling's value and the seconds it was in force, as the ledger last said.
+            receipt['wall_clock_ceiling'] = getattr(admission, 'ceiling', None)
             receipt['peak_anon_bytes'] = workers.peak_memory
             receipt['mean_busy_cores'] = sum(o.get('measurement', {}).get('cpu_seconds', 0)
                 for o in workers.outcomes) / max(.000001, time.monotonic() - started)
