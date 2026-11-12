@@ -294,6 +294,20 @@ After the lead's decision to drop guard292-sort-plain, on the working tree that 
   under it: S2 and S3 are still refused, "in the argument or input of sort, which is not a plain
   text tool", and S1 exits 0.
 
+## The filler of live/plain-runs inside the mutation worker
+
+The heavy run 99f-v0292-heavy2 refused every teeth case as invalid_baseline: in the mutation worker
+the row live/plain-runs had the guard exit 2 and the right reason, but bash did not reach the
+recorded command. Cause: the row built its 300 KB of empty lines from /dev/zero, and the worker's
+Landlock rules grant no /dev/zero, so the filler was empty, sort wrote no temporary file and never
+ran its compress program. A test defect; the guard is not touched. The filler is now
+`printf '%300000s' '' | tr ' ' '\n'`, which reads no device.
+
+- `VELDO_0268_DETAILS=1 systemd-run --user --scope -q -p MemoryMax=10G -p MemorySwapMax=0
+  -p IPAddressDeny=any python3 scripts/selftest.py --suite 141_veldo_0268_protected_refs`:
+  142 rows, 0 failed, 104 s; live/plain-runs green with bash reaching the recorded command in all
+  four cases. A partial run outside the worker; the two teeth runs under the lock prove the worker.
+
 ## Pending under the gate lock
 
 `bash proof/VELDO-0292/heavy_runs.sh` runs four steps and writes one summary each:

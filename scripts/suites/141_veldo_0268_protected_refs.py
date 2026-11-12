@@ -1106,7 +1106,7 @@ def _v268_suite():
         fourth (S1 and S1b of the fix check) give sort the push through a file a plain text tool
         wrote: a command that names sort with that option is judged as written, behind a wrapper
         too. That test runs first, so it names the option in the first two as well."""
-        big = "head -c 300000 /dev/zero | tr '\\0' '\\n' > {D}/big; "
+        big = "printf '%300000s' '' | tr ' ' '\\n' > {D}/big; "
         named = PARSE % 'sort with its option %s, which runs a program on its data'
         return refused292(under, [
             (big + "cat <<'EOF' | sort -S 1K -T {D} --compress-program=sh - {D}/big\n%s\nEOF" % PUSH,
