@@ -1,6 +1,7 @@
 """VELDO-0215: coordinator deadlines and authority measurements, with scratch stores only.
 VELDO-0285: an unmeasured case's baseline is bounded by the ceiling, and its noop and mutant by
-WORKER_MULTIPLIER times that baseline as measured in the same stage."""
+WORKER_MULTIPLIER times that baseline as measured in the same stage.
+VELDO-0293: the unmeasured noop and mutant have a 360 second floor."""
 
 
 def _v215_case_deadlines():
@@ -134,7 +135,8 @@ def _v215_case_deadlines():
         maximums.extend([record_at(1, 80) == 900, record_at(31, 90) == 270])
         row('rolling-maximum', all(maximums))
 
-        def exercise(duration=150, fault=None, reuse_hit=False, measure=True, measured=True, parallel=1):
+        def exercise(duration=150, fault=None, reuse_hit=False, measure=True, measured=True, parallel=1,
+                     control_duration=None):
             runroot = scratch / ('run-' + str(len(list(scratch.glob('run-*')))))
             runroot.mkdir()
             times = runroot / 'times'
@@ -172,7 +174,8 @@ def _v215_case_deadlines():
                         old_digest='a', new_digest='b' if mode == 'mutant' else 'a')).encode())
                 def poll(self):
                     clock[0] += 30
-                    if fault != 'hang-' + self.job['mode'] and clock[0] - self.born >= duration:
+                    bound = duration if self.job['mode'] == 'mutant' or control_duration is None else control_duration
+                    if fault != 'hang-' + self.job['mode'] and clock[0] - self.born >= bound:
                         self.returncode = 0
                     return self.returncode
                 def wait(self, timeout=None):
@@ -234,6 +237,19 @@ def _v215_case_deadlines():
         def outcome(receipt, mode):
             # A mode that never launched (its stage stopped first) is an empty outcome, a red row.
             return next((o for o in receipt['worker_outcomes'] if o['mode'] == mode), {'elapsed': 0})
+        # Keep the noop short here so the old rule reaches the mutant and cuts it off at 120.
+        fast, _, _, _, _, _ = exercise(measured=False, control_duration=30)
+        fast_base, fast_noop, fast_mutant = (outcome(fast, mode) for mode in ('baseline', 'noop', 'mutant'))
+        expect('VELDO-0293 case-deadlines/unmeasured-mutant-floor',
+               fast['status'] == 'passed' and fast['rejected'] == 1
+               and fast.get('unmeasured_cases') == [case['identity']]
+               and 0 < fast_base['elapsed'] < 120
+               and fast.get('case_deadlines') == {case['identity']: 360}
+               and fast_mutant.get('budget_seconds') == 360 and fast_mutant['elapsed'] == 150
+               and fast_noop.get('budget_seconds', 0) >= 360)
+        print('VELDO-0293: ' + json.dumps(dict(status=fast['status'], error=fast.get('error'),
+              baseline_elapsed=fast_base['elapsed'], noop_budget=fast_noop.get('budget_seconds'),
+              mutant_budget=fast_mutant.get('budget_seconds'), mutant_elapsed=fast_mutant['elapsed'])))
         slow, _, _, _, slow_times, slow_alarms = exercise(measured=False)
         base = outcome(slow, 'baseline')
         derived = gate.WORKER_MULTIPLIER * base['elapsed']

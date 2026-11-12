@@ -1,0 +1,49 @@
+{
+  "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 112_veldo_0215_case_deadlines",
+  "deciding": {
+    "elapsed_seconds": 0.369,
+    "exit_status": 1,
+    "expected_red": [
+      "VELDO-0293 case-deadlines/unmeasured-mutant-floor"
+    ],
+    "failed_rows": [
+      "VELDO-0293 case-deadlines/unmeasured-mutant-floor"
+    ],
+    "floor_row": [
+      {
+        "baseline_elapsed": 30.0,
+        "error": "mutation_budget_exceeded",
+        "mutant_budget": 120,
+        "mutant_elapsed": 120.0,
+        "noop_budget": 120,
+        "status": "failed"
+      }
+    ],
+    "rows_failed": 1,
+    "rows_passed": 43,
+    "scope": "Partial suite only; no gate or landing claim",
+    "verdict": "pass"
+  },
+  "discarded": [
+    {
+      "bytes": 9819,
+      "name": "red-before.summary.json.stdout",
+      "sha256": "e11090f2e8017eadd21f9b43036e9a1658687b072a754eba9ff8fed2a6fd1729"
+    }
+  ],
+  "environment": {
+    "commit": "6ee5bb5f7cffc7c893a173f1c8748cf8707ae500",
+    "copied_files_sha256": {
+      "scripts/suites/112_veldo_0215_case_deadlines.py": "b0a03ccc31df6a4a1256d9224102b97290e1a1ec815f92acc903461941542315"
+    },
+    "host": "dmitry-pc",
+    "load": [
+      2.35107421875,
+      2.7705078125,
+      9.77001953125
+    ],
+    "python": "3.12.3",
+    "tree": "77b4ba643ac62190c5fda35d010eafe941eed124"
+  },
+  "schema": "veldo.proof-summary/v1"
+}

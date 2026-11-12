@@ -1,0 +1,47 @@
+{
+  "schema": "veldo.proof-summary/v1",
+  "command": "Quick offline checks listed in deciding.commands, each run separately",
+  "environment": {
+    "commit": "2acce09ef6de9d7abe6ed790ad05f36a34a06f1c",
+    "tree": "5e0aa0cc55663e60334918b84a439684c53b7357",
+    "scope": "Implementation files as committed; checks ran locally before the proof commit"
+  },
+  "discarded": [],
+  "deciding": {
+    "verdict": "pass",
+    "commands": [
+      {
+        "command": "python3 -m py_compile engine/scripts/check_gate_mutations.py scripts/check_gate_mutations.py scripts/check_teeth_mutations.py scripts/suites/112_veldo_0215_case_deadlines.py",
+        "exit_status": 0
+      },
+      {
+        "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 112_veldo_0215_case_deadlines",
+        "exit_status": 2,
+        "rows_passed": 44,
+        "rows_failed": 0,
+        "scope": "Partial suite; no gate or landing claim",
+        "floor_row": {
+          "status": "passed",
+          "baseline_elapsed": 30.0,
+          "noop_budget": 360,
+          "mutant_budget": 360,
+          "mutant_elapsed": 150.0
+        }
+      },
+      {
+        "command": "python3 scripts/check_personal_setup.py",
+        "exit_status": 0,
+        "findings": 0,
+        "scope": "No installation found; built-in shapes only"
+      },
+      {
+        "command": "python3 .veldo/validate.py proof-files",
+        "exit_status": 0
+      },
+      {
+        "command": "python3 .veldo/validate.py proof proof/VELDO-0293/manifest.json",
+        "exit_status": 0
+      }
+    ]
+  }
+}

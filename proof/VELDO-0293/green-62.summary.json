@@ -1,0 +1,33 @@
+{
+  "command": "systemd-run --user --scope -p MemoryMax=10G python3 scripts/selftest.py --suite 62_veldo_0039_dispatch",
+  "deciding": {
+    "elapsed_seconds": 11.3,
+    "exit_status": 2,
+    "expected_red": [],
+    "failed_rows": [],
+    "floor_row": [],
+    "rows_failed": 0,
+    "rows_passed": 69,
+    "scope": "Partial suite only; no gate or landing claim",
+    "verdict": "pass"
+  },
+  "discarded": [
+    {
+      "bytes": 9471,
+      "name": "green-62.summary.json.stdout",
+      "sha256": "14fd47c63c69ef34aa4a4a1916073e11227a7c6c36ad55d4e700331a1992a568"
+    }
+  ],
+  "environment": {
+    "commit": "e5fbfd274bcd175e8b54dd6383403e6432d951ee",
+    "host": "dmitry-pc",
+    "load": [
+      2.22998046875,
+      2.72900390625,
+      9.68115234375
+    ],
+    "python": "3.12.3",
+    "tree": "0cf1dad9cb4601dcf3bba030bf8820c08b291c5f"
+  },
+  "schema": "veldo.proof-summary/v1"
+}

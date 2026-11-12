@@ -1,0 +1,67 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0293",
+  "commit": "e5fbfd274bcd175e8b54dd6383403e6432d951ee",
+  "tree": "0cf1dad9cb4601dcf3bba030bf8820c08b291c5f",
+  "producer": "Codex implementation agent; heavy job 97r run by the lead; independent review pending",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0293/red-before.summary.json",
+          "detail": "Red before: suite 112 with the new row at 6ee5bb5f in a scratch clone, exit 1, 43 rows passed, 1 failed. The only red row is VELDO-0293 case-deadlines/unmeasured-mutant-floor, the expected one: mutant cut off at 120.0 s with mutation_budget_exceeded, mutant and noop budget 120."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0293/green-112.summary.json",
+          "detail": "Green at e5fbfd27: suite 112, 44 rows passed, 0 failed. Floor row passed: baseline 30.0 s, mutant 150.0 s judged with budget 360, noop budget 360. Exit 2 is the selftest's partial-run code. Partial suite only; no gate or landing claim."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0293/green-62.summary.json",
+          "detail": "Green at e5fbfd27: suite 62, 69 rows passed, 0 failed. Exit 2 is the selftest's partial-run code. Partial suite only; no gate or landing claim."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0293/teeth.summary.json",
+          "detail": "Falsifier: floor293-removed through the teeth CLI with an empty scratch case-time store, executed 1, reused 0, expected killed, observed killed, budget 360, 0.79 s, stage passed, exit 0."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0293/ac2-measurement.summary.json",
+          "detail": "One measurement at e5fbfd27, not a gate: both cases unmeasured (empty scratch case-time store, owner store untouched), executed 2, reused 0. dispatch-receiver-store-only-gate killed in 208.16 s and dispatch-spawn-before-contract killed in 214.43 s, each under its 360 s budget. Stage passed, exit 0, 459.137 s in all."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "offline",
+      "status": "passed",
+      "command": "See proof/VELDO-0293/offline.summary.json",
+      "detail": "Compilation, the permitted partial suite, and personal setup checks passed. This is not a gate result."
+    },
+    {
+      "name": "unit",
+      "status": "passed",
+      "command": "bash proof/VELDO-0293/heavy_runs.sh",
+      "detail": "Heavy job 97r. Red-before: exit 1, 43 passed, only the expected floor row red. Suite 112: 44 passed, 0 failed. Suite 62: 69 passed, 0 failed. Both green runs exit 2, the selftest's partial-run code. See red-before, green-112 and green-62 summaries. Partial suites; not a gate result."
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "command": "bash proof/VELDO-0293/heavy_runs.sh",
+      "detail": "Heavy job 97r. Teeth: floor293-removed killed (teeth.summary.json). AC2 measured once: both suite 62 mutants killed under 360 s with no case measured (ac2-measurement.summary.json). No loaded, repeated, or gate run was performed."
+    }
+  ],
+  "rollback": "Revert the implementation commit to restore the prior floor for unmeasured mutants and noops."
+}

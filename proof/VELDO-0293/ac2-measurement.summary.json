@@ -1,0 +1,52 @@
+{
+  "command": "systemd-run --user --scope -p MemoryMax=10G bash proof/VELDO-0293/heavy_runs.sh mutation-worker <empty-scratch-store> dispatch-receiver-store-only-gate dispatch-spawn-before-contract",
+  "deciding": {
+    "case_time_store": "empty scratch directory; owner store untouched",
+    "elapsed_seconds": 459.137,
+    "error": null,
+    "executed": 2,
+    "exit_status": 0,
+    "reused": 0,
+    "rows": [
+      {
+        "budget_seconds": 360,
+        "case": "dispatch-receiver-store-only-gate",
+        "elapsed_seconds": 208.16387004684657,
+        "expected": "killed",
+        "observed": "killed"
+      },
+      {
+        "budget_seconds": 360,
+        "case": "dispatch-spawn-before-contract",
+        "elapsed_seconds": 214.4340722123161,
+        "expected": "killed",
+        "observed": "killed"
+      }
+    ],
+    "stage_status": "passed",
+    "unmeasured_cases": [
+      "check_teeth_mutations.py:dispatch-receiver-store-only-gate",
+      "check_teeth_mutations.py:dispatch-spawn-before-contract"
+    ],
+    "verdict": "pass"
+  },
+  "discarded": [
+    {
+      "bytes": 51828,
+      "name": "ac2-measurement.summary.json.stdout",
+      "sha256": "95dc025b00c91ecf8d82c6e28718803de5f8a3bb061652e656dfb50769dd5d7d"
+    }
+  ],
+  "environment": {
+    "commit": "e5fbfd274bcd175e8b54dd6383403e6432d951ee",
+    "host": "dmitry-pc",
+    "load": [
+      0.24658203125,
+      1.03564453125,
+      6.111328125
+    ],
+    "python": "3.12.3",
+    "tree": "0cf1dad9cb4601dcf3bba030bf8820c08b291c5f"
+  },
+  "schema": "veldo.proof-summary/v1"
+}

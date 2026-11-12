@@ -11704,6 +11704,12 @@ def cases():
         ['case-deadlines/unmeasured-mutant-deadline'])
     result[-1]['dir'] = 'scripts'
 
+    add(293, 'floor293-removed', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        "                seconds = max(UNMEASURED_MUTANT_FLOOR, scaled_deadline(completed['elapsed']))\n",
+        "                seconds = scaled_deadline(completed['elapsed'])\n",
+        ['case-deadlines/unmeasured-mutant-floor'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0219: measured admission and conservative guaranteed parallelism.
     suite219 = '115_veldo_0219_measured_admission.py'
     add(219, 'admission219-slowest-rate', suite219, 'check_gate_mutations.py',
