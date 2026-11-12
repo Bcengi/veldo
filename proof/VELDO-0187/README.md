@@ -108,5 +108,8 @@ feeds sent late.
 
 The first three were killed alone through `scripts/check_gate_mutations.py` at b6849b26 (baseline and no-op green,
 in the unconfined leg, with a temporary entry) and again at 5627f1cc (batch-fix1.md). At fix round 3's head all
-eight were killed by hand on their rows (fix-round3.md); their receipts through the gate's driver are
-heavy_runs.sh, for the lead's lock queue.
+eight were killed by hand on their rows (fix-round3.md). Heavy job 99k then ran heavy_runs.sh at 578007eb: all
+eight cases, each alone through `scripts/check_gate_mutations.py` with the committed scripts/gate_unconfined.json,
+exit 0, stage passed, executed 1, reused 0, baseline and no-op green, the mutant red on its target row. The six
+suite 138 and 128 cases ran in the unconfined leg, the two suite 136 cases in the confined leg. The receipts are
+mutation-<case>.txt, one per case; the three taken at b6849b26 are replaced by these.

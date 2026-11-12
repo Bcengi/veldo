@@ -67,6 +67,7 @@
 
 7. Not run in fix round 3: scripts/verify.sh, the gate, the teeth stage, scripts/check_gate_mutations.py and the
    aggregate selftest. The eight finding 187 mutation cases were each applied by hand and killed on their rows
-   (fix-round3.md); their receipts through the gate's driver are proof/VELDO-0187/heavy_runs.sh, for the lead's
-   lock queue. The three committed mutation-feed187-*.txt files are still the ones taken at b6849b26 until that
-   script rewrites them.
+   (fix-round3.md). Since then, resolved for the mutation cases only: heavy job 99k ran
+   proof/VELDO-0187/heavy_runs.sh at 578007eb and all eight cases were killed through the gate's driver, exit 0
+   each; the eight mutation-*.txt files are that run's receipts, and the three taken at b6849b26 are replaced.
+   scripts/verify.sh, the gate, the teeth stage and the aggregate selftest remain not run.
