@@ -87,8 +87,10 @@ def run(name, command, cwd, revision, rows=(), red=False, extra_red=(), display=
                 counts = tuple(map(int, match.groups()))
         if line.startswith('SELFTEST FAIL: '):
             failed.add(line[len('SELFTEST FAIL: '):].split(':', 1)[0])
-        if ('VELDO-0294' in line or 'selftest (PARTIAL,' in line or line.startswith('mutations:')):
-            if len(deciding) < 100:
+        # Keep every failed row and its detail, so an unexpected old red names its own cause.
+        if ('VELDO-0294' in line or 'selftest (PARTIAL,' in line or line.startswith('mutations:')
+                or ' detail: ' in line or line.startswith('SELFTEST FAIL: ')):
+            if len(deciding) < 150:
                 deciding.append(clean(line)[:1000])
     code = process.wait()
     if rows:

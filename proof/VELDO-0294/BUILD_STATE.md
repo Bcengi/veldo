@@ -93,3 +93,17 @@ summaries before updating the pending manifest. The script has not run here.
 
 The four resource records and two live captures remain stale until the script
 runs. All ten criteria and both required evidence kinds remain pending.
+
+## Heavy run 97k diagnosis (2026-11-11)
+
+The red-before run of suite 82 at 6ee5bb5f also failed VELDO-0129 build/handoff and
+review/loop rows with missing_authority:claim. Cause: the capped phase runs sat
+between the shared builds and their review, and on the old product they outlast the
+90 s claim staleness window (claim.py STALE_AFTER_SECONDS), so the builder claim
+was stale at review. This is suite ordering, not new behavior the old rows need.
+Fix: the capped runs now follow the handoff rows, and the dispatch payload helper
+is named sent() because the review loop binds a local named payload. Local checks
+under systemd-run MemoryMax=10G, no gate lock: red-before at 6ee5bb5f in a scratch
+clone gives 55 passed, 7 failed (exactly the seven phase rows); head gives 62
+passed, 0 failed. heavy_runs.sh now keeps every failed row and its detail lines.
+The lead command above is unchanged.

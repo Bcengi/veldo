@@ -633,7 +633,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                     if doc.get('engine') == 'claude_code' else doc.get('lines', []))]
         def stopped(doc):
             return doc.get('exit', {}).get('cause') if doc.get('engine') == 'claude_code' else doc.get('cause')
-        def payload(record):
+        def sent(record):
             return record['contract']['input']['payload']
         def usage(doc):
             events = lines(doc)
@@ -652,7 +652,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                   len(records) == 3 and len({r['dispatch_id'] for r in records}) == 3
                   and len({m.get('cwd') for m in observations}) == 3
                   and len({m.get('session') for m in observations}) == 3
-                  and all('resume' not in payload(r) and W.L.RTM.boundary(r['contract']) != 'follow_on' for r in records))
+                  and all('resume' not in sent(r) and W.L.RTM.boundary(r['contract']) != 'follow_on' for r in records))
             check('phase/fresh-dispatches', engine + ': source chain and newest floor dispatch',
                   len(records) == 3 and contracts[0]['source']['commit'] == built[5]['base']
                   and all(contracts[i]['source']['commit'] == observations[i - 1]['answer']['commit'] for i in (1, 2))
@@ -661,7 +661,7 @@ sys.exit(7 if mode == 'nonzero' else 0)
                   and DSP._build_dispatch(writer, dict(domain=domain, repository=repository, unit=built[0]),
                                           'builder', built[1])['dispatch_id'] == built[6]['dispatch'])
             for index, record in enumerate(records):
-                p = payload(record)
+                p = sent(record)
                 check('phase/brief', engine + ': fields and prior answer exclusion ' + str(index),
                       p.get('phase') == dict(name=('edit', 'test', 'proof')[min(index, 2)], index=index + 1,
                                             of=3, messages=80, soft=70)
@@ -721,122 +721,6 @@ sys.exit(7 if mode == 'nonzero' else 0)
                   refused == ('missing_authority:worker_configuration/build', 'brief_bytes'))
         else:
             check('phase/brief', 'brief and preflight are available', False)
-        def capped_checks(built, row, engine, expected_flight=None):
-            records = dispatches(built)
-            first = records[0] if records else {}
-            doc = document(first) if first else {}
-            call = invocation(first) if first else {}
-            observed = marker(first) if first else {}
-            steps = len({e['message']['id'] for e in lines(doc) if e.get('type') == 'assistant'
-                         and e.get('message', {}).get('usage')}) if engine == 'claude' else len({
-                             e['item']['id'] for e in lines(doc) if e.get('type') == 'item.completed'
-                             and e.get('item', {}).get('type') in ('agent_message', 'command_execution',
-                                 'file_change', 'mcp_tool_call', 'web_search', 'collab_tool_call')})
-            check(row, engine + ': capped artifact and cancelled outcome: ' + str(built[7]),
-                  stopped(doc) == 'phase_cap' and doc.get('verdict') == 'stopped' and steps >= 5
-                  and call.get('outcome') == 'cancelled')
-            second = records[1] if len(records) > 1 else {}
-            p = payload(second) if second else {}
-            commit_ = observed.get('commits', [None])[0]
-            check(row, engine + ': continuation imports the stopped commit and starts',
-                  commit_ != built[5]['base'] and p.get('phase', {}).get('name') == 'edit'
-                  and second.get('contract', {}).get('source', {}).get('commit') == commit_
-                  and any(d.get('commit') == commit_ for d in p.get('done', []))
-                  and second.get('state') != 'refused' and bool(invocation(second)) and bool(marker(second)))
-            if row == 'phase/settled-at-stop':
-                tokens_, messages_ = usage(doc)
-                check(row, engine + ': settled figures equal independently summed artifact usage',
-                      call.get('state') == 'settled' and call.get('unknown') == []
-                      and call.get('charge', {}).get('tokens') == tokens_
-                      and call.get('charge', {}).get('messages') == messages_
-                      and call.get('settlement') == dict(at='stop', cause='phase_cap',
-                          lower_bound=['tokens', 'messages'], in_flight=expected_flight))
-            return records
-        for engine in ('claude', 'codex'):
-            built = build(engine, 'cap-once', phase=dict(messages=5, dispatches=4))
-            capped_checks(built, 'phase/step-cap', engine)
-            control = build(engine, 'under-cap', phase=dict(messages=5, dispatches=4))
-            check('phase/step-cap', engine + ': four steps finish normally: ' + str(control[7]),
-                  control[6] and len(dispatches(control)) == 3 and all(
-                      L.D.completed(r) and stopped(document(r)) is None for r in dispatches(control)))
-        for mode in ('head-link', 'ref-link', 'ref-outside', 'heads-link', 'packed'):
-            built = build('claude', 'cap-' + mode, phase=dict(messages=5, dispatches=4))
-            records = dispatches(built)
-            if mode == 'packed':
-                capped_checks(built, 'phase/head-read', 'claude')
-            else:
-                check('phase/head-read', mode + ': exact refusal without continuation: ' + str(built[7]),
-                      built[7] == 'invalid_input:build_head' and len(records) == 1)
-        for mode, missing in [('note6000', None), ('note8193', 'oversize'),
-                              ('note-absent', 'absent'), ('note-link', 'not_a_file')]:
-            built = build('claude', 'cap-' + mode, phase=dict(messages=15, dispatches=4))
-            records = dispatches(built)
-            state_ = payload(records[1]).get('state', {}) if len(records) > 1 else {}
-            check('phase/state-note', mode + ': second payload carries bytes or missing reason: ' + str(built[7]),
-                  state_.get('note', '').encode() == ('\u00e9\r\nx\n' * 1000).encode() if missing is None
-                  else state_.get('missing') == missing and 'note' not in state_)
-        budget = build('claude', 'cap-always', phase=dict(messages=5, dispatches=4), prepare=lambda unit:
-                       res.configure('budget/' + unit, 'project', unit, dict(ceiling, invocations=5), now=time.time()))
-        check('phase/budget', 'four dispatches and named budget refusal: ' + str(budget[7]),
-              budget[7] == 'phase_budget:build' and len(dispatches(budget)) == 4
-              and getattr(budget[3], 'fixture_error_detail', None) == 'edit'
-              and all(payload(r).get('phase', {}).get('name') == 'edit' for r in dispatches(budget)))
-        # Policy variants have separate projects. Window watermarks exclude earlier settled calls.
-        for engine in ('claude', 'codex'):
-            account = 'account-' + ('claude_code' if engine == 'claude' else engine)
-            for variant in ('cap-only', 'window-only', 'combined', 'first-turn'):
-                if variant == 'first-turn' and engine != 'codex': continue
-                def prepare(unit):
-                    caps = dict(ceiling)
-                    if variant != 'window-only': caps.update(tokens=100000, messages=10000)
-                    res.configure('phase-policy/' + unit, 'project', unit, caps, now=time.time())
-                    if variant in ('window-only', 'combined', 'first-turn'):
-                        res.window('phase-window/' + unit, account, 'tokens', 100000, time.time() + 600,
-                                   counter[0] + 1000, now=time.time())
-                built = build(engine, 'cap-first-turn' if variant == 'first-turn' else 'cap-once',
-                              phase=dict(messages=5, dispatches=4), prepare=prepare)
-                records = capped_checks(built, 'phase/settled-at-stop', engine, 1 if engine == 'codex' else None)
-                if records and variant == 'first-turn':
-                    check('phase/settled-at-stop', 'first turn settles zero observed usage',
-                          usage(document(records[0])) == (0, 0))
-                elif records and engine == 'codex':
-                    check('phase/settled-at-stop', 'completed turn contributes nonzero usage',
-                          usage(document(records[0])) == (5, 1))
-            res.window('expire-phase-window/' + engine, account, 'invocations', 100000, time.time() - 1,
-                       counter[0] + 2000, now=time.time())
-        # The allowance is exhausted only after SIGTERM, with phase_cap already latched.
-        for engine in ('claude', 'codex'):
-            account = 'account-' + ('claude_code' if engine == 'claude' else engine)
-            for exhausted in ('cap', 'window'):
-                def prepare(unit):
-                    caps = dict(ceiling, tokens=200) if exhausted == 'cap' else dict(ceiling)
-                    res.configure('drain-policy/' + unit, 'project', unit, caps, now=time.time())
-                    if exhausted == 'window':
-                        res.window('drain-window/' + unit, account, 'tokens', 200, time.time() + 600,
-                                   counter[0] + 3000, now=time.time())
-                built = build(engine, 'cap-drain', phase=dict(messages=5, dispatches=4), prepare=prepare)
-                records = dispatches(built)
-                first = records[0] if records else {}
-                doc, call = (document(first), invocation(first)) if first else ({}, {})
-                tokens_, messages_ = usage(doc)
-                mark = dict(at='stop', cause='phase_cap', lower_bound=['tokens', 'messages'],
-                            in_flight=1 if engine == 'codex' else None)
-                check('phase/settled-at-stop', engine + '/' + exhausted + ': drain retains phase_cap and settles usage',
-                      stopped(doc) == 'phase_cap' and marker(first).get('drained') is True
-                      and doc.get('verdict') == 'stopped' and call.get('state') == 'settled'
-                      and call.get('unknown') == [] and call.get('outcome') == 'cancelled'
-                      and call.get('settlement') == mark and tokens_ >= 200
-                      and call.get('charge', {}).get('tokens') == tokens_
-                      and call.get('charge', {}).get('messages') == messages_
-                      and (engine != 'codex' or (tokens_, messages_) == (205, 2)))
-                expected = 'missing_authority:allowance:' + (
-                    'usage_cap:project:tokens' if exhausted == 'cap' else 'window_exhausted')
-                check('phase/settled-at-stop', engine + '/' + exhausted + ': continuation refused on settled figures: ' + str(built[7]),
-                      built[7] in (expected, expected.removeprefix('missing_authority:allowance:'))
-                      and all(not marker(r) and not invocation(r) for r in records[1:])
-                      and any(e.get('ended') == 'phase_cap' for e in built[3].events))
-            res.window('expire-drain-window/' + engine, account, 'invocations', 100000, time.time() - 1,
-                       counter[0] + 4000, now=time.time())
         # Exercise both binding boundaries with valid artifacts and three substitutions.
         for engine, built in builds.items():
             unit, generation, loop, run, path, spec, result, error = built
@@ -908,6 +792,124 @@ sys.exit(7 if mode == 'nonzero' else 0)
             check('build/handoff', 'handoff transition: ' + str(error), bool(value))
         check('build/handoff', 'normal build and review reach the handoff',
               all((b[3].floor.record(b[0]) or {}).get('state') == 'handoff' for b in builds.values()))
+        # The capped runs are slow. They follow the handoff so the shared builds reach review
+        # inside the claim staleness window (90 s) on any product revision.
+        def capped_checks(built, row, engine, expected_flight=None):
+            records = dispatches(built)
+            first = records[0] if records else {}
+            doc = document(first) if first else {}
+            call = invocation(first) if first else {}
+            observed = marker(first) if first else {}
+            steps = len({e['message']['id'] for e in lines(doc) if e.get('type') == 'assistant'
+                         and e.get('message', {}).get('usage')}) if engine == 'claude' else len({
+                             e['item']['id'] for e in lines(doc) if e.get('type') == 'item.completed'
+                             and e.get('item', {}).get('type') in ('agent_message', 'command_execution',
+                                 'file_change', 'mcp_tool_call', 'web_search', 'collab_tool_call')})
+            check(row, engine + ': capped artifact and cancelled outcome: ' + str(built[7]),
+                  stopped(doc) == 'phase_cap' and doc.get('verdict') == 'stopped' and steps >= 5
+                  and call.get('outcome') == 'cancelled')
+            second = records[1] if len(records) > 1 else {}
+            p = sent(second) if second else {}
+            commit_ = observed.get('commits', [None])[0]
+            check(row, engine + ': continuation imports the stopped commit and starts',
+                  commit_ != built[5]['base'] and p.get('phase', {}).get('name') == 'edit'
+                  and second.get('contract', {}).get('source', {}).get('commit') == commit_
+                  and any(d.get('commit') == commit_ for d in p.get('done', []))
+                  and second.get('state') != 'refused' and bool(invocation(second)) and bool(marker(second)))
+            if row == 'phase/settled-at-stop':
+                tokens_, messages_ = usage(doc)
+                check(row, engine + ': settled figures equal independently summed artifact usage',
+                      call.get('state') == 'settled' and call.get('unknown') == []
+                      and call.get('charge', {}).get('tokens') == tokens_
+                      and call.get('charge', {}).get('messages') == messages_
+                      and call.get('settlement') == dict(at='stop', cause='phase_cap',
+                          lower_bound=['tokens', 'messages'], in_flight=expected_flight))
+            return records
+        for engine in ('claude', 'codex'):
+            built = build(engine, 'cap-once', phase=dict(messages=5, dispatches=4))
+            capped_checks(built, 'phase/step-cap', engine)
+            control = build(engine, 'under-cap', phase=dict(messages=5, dispatches=4))
+            check('phase/step-cap', engine + ': four steps finish normally: ' + str(control[7]),
+                  control[6] and len(dispatches(control)) == 3 and all(
+                      L.D.completed(r) and stopped(document(r)) is None for r in dispatches(control)))
+        for mode in ('head-link', 'ref-link', 'ref-outside', 'heads-link', 'packed'):
+            built = build('claude', 'cap-' + mode, phase=dict(messages=5, dispatches=4))
+            records = dispatches(built)
+            if mode == 'packed':
+                capped_checks(built, 'phase/head-read', 'claude')
+            else:
+                check('phase/head-read', mode + ': exact refusal without continuation: ' + str(built[7]),
+                      built[7] == 'invalid_input:build_head' and len(records) == 1)
+        for mode, missing in [('note6000', None), ('note8193', 'oversize'),
+                              ('note-absent', 'absent'), ('note-link', 'not_a_file')]:
+            built = build('claude', 'cap-' + mode, phase=dict(messages=15, dispatches=4))
+            records = dispatches(built)
+            state_ = sent(records[1]).get('state', {}) if len(records) > 1 else {}
+            check('phase/state-note', mode + ': second payload carries bytes or missing reason: ' + str(built[7]),
+                  state_.get('note', '').encode() == ('\u00e9\r\nx\n' * 1000).encode() if missing is None
+                  else state_.get('missing') == missing and 'note' not in state_)
+        budget = build('claude', 'cap-always', phase=dict(messages=5, dispatches=4), prepare=lambda unit:
+                       res.configure('budget/' + unit, 'project', unit, dict(ceiling, invocations=5), now=time.time()))
+        check('phase/budget', 'four dispatches and named budget refusal: ' + str(budget[7]),
+              budget[7] == 'phase_budget:build' and len(dispatches(budget)) == 4
+              and getattr(budget[3], 'fixture_error_detail', None) == 'edit'
+              and all(sent(r).get('phase', {}).get('name') == 'edit' for r in dispatches(budget)))
+        # Policy variants have separate projects. Window watermarks exclude earlier settled calls.
+        for engine in ('claude', 'codex'):
+            account = 'account-' + ('claude_code' if engine == 'claude' else engine)
+            for variant in ('cap-only', 'window-only', 'combined', 'first-turn'):
+                if variant == 'first-turn' and engine != 'codex': continue
+                def prepare(unit):
+                    caps = dict(ceiling)
+                    if variant != 'window-only': caps.update(tokens=100000, messages=10000)
+                    res.configure('phase-policy/' + unit, 'project', unit, caps, now=time.time())
+                    if variant in ('window-only', 'combined', 'first-turn'):
+                        res.window('phase-window/' + unit, account, 'tokens', 100000, time.time() + 600,
+                                   counter[0] + 1000, now=time.time())
+                built = build(engine, 'cap-first-turn' if variant == 'first-turn' else 'cap-once',
+                              phase=dict(messages=5, dispatches=4), prepare=prepare)
+                records = capped_checks(built, 'phase/settled-at-stop', engine, 1 if engine == 'codex' else None)
+                if records and variant == 'first-turn':
+                    check('phase/settled-at-stop', 'first turn settles zero observed usage',
+                          usage(document(records[0])) == (0, 0))
+                elif records and engine == 'codex':
+                    check('phase/settled-at-stop', 'completed turn contributes nonzero usage',
+                          usage(document(records[0])) == (5, 1))
+            res.window('expire-phase-window/' + engine, account, 'invocations', 100000, time.time() - 1,
+                       counter[0] + 2000, now=time.time())
+        # The allowance is exhausted only after SIGTERM, with phase_cap already latched.
+        for engine in ('claude', 'codex'):
+            account = 'account-' + ('claude_code' if engine == 'claude' else engine)
+            for exhausted in ('cap', 'window'):
+                def prepare(unit):
+                    caps = dict(ceiling, tokens=200) if exhausted == 'cap' else dict(ceiling)
+                    res.configure('drain-policy/' + unit, 'project', unit, caps, now=time.time())
+                    if exhausted == 'window':
+                        res.window('drain-window/' + unit, account, 'tokens', 200, time.time() + 600,
+                                   counter[0] + 3000, now=time.time())
+                built = build(engine, 'cap-drain', phase=dict(messages=5, dispatches=4), prepare=prepare)
+                records = dispatches(built)
+                first = records[0] if records else {}
+                doc, call = (document(first), invocation(first)) if first else ({}, {})
+                tokens_, messages_ = usage(doc)
+                mark = dict(at='stop', cause='phase_cap', lower_bound=['tokens', 'messages'],
+                            in_flight=1 if engine == 'codex' else None)
+                check('phase/settled-at-stop', engine + '/' + exhausted + ': drain retains phase_cap and settles usage',
+                      stopped(doc) == 'phase_cap' and marker(first).get('drained') is True
+                      and doc.get('verdict') == 'stopped' and call.get('state') == 'settled'
+                      and call.get('unknown') == [] and call.get('outcome') == 'cancelled'
+                      and call.get('settlement') == mark and tokens_ >= 200
+                      and call.get('charge', {}).get('tokens') == tokens_
+                      and call.get('charge', {}).get('messages') == messages_
+                      and (engine != 'codex' or (tokens_, messages_) == (205, 2)))
+                expected = 'missing_authority:allowance:' + (
+                    'usage_cap:project:tokens' if exhausted == 'cap' else 'window_exhausted')
+                check('phase/settled-at-stop', engine + '/' + exhausted + ': continuation refused on settled figures: ' + str(built[7]),
+                      built[7] in (expected, expected.removeprefix('missing_authority:allowance:'))
+                      and all(not marker(r) and not invocation(r) for r in records[1:])
+                      and any(e.get('ended') == 'phase_cap' for e in built[3].events))
+            res.window('expire-drain-window/' + engine, account, 'invocations', 100000, time.time() - 1,
+                       counter[0] + 4000, now=time.time())
         built = build('claude', risk='critical')
         accepted, error = accept(built)
         unit, generation, loop, run, path, spec, result, error = built
