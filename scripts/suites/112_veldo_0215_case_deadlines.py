@@ -240,7 +240,7 @@ def _v215_case_deadlines():
         # Keep the noop short here so the old rule reaches the mutant and cuts it off at 120.
         fast, _, _, _, _, _ = exercise(measured=False, control_duration=30)
         fast_base, fast_noop, fast_mutant = (outcome(fast, mode) for mode in ('baseline', 'noop', 'mutant'))
-        expect('VELDO-0293: case-deadlines/unmeasured-mutant-floor',
+        expect('VELDO-0293 case-deadlines/unmeasured-mutant-floor',
                fast['status'] == 'passed' and fast['rejected'] == 1
                and fast.get('unmeasured_cases') == [case['identity']]
                and 0 < fast_base['elapsed'] < 120

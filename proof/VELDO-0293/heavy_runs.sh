@@ -19,7 +19,7 @@ script = Path(sys.argv[1]).resolve()
 root = script.parents[2]
 out = script.parent
 suite_file = 'scripts/suites/112_veldo_0215_case_deadlines.py'
-row = 'VELDO-0293: case-deadlines/unmeasured-mutant-floor'
+row = 'VELDO-0293 case-deadlines/unmeasured-mutant-floor'
 scope = ['systemd-run', '--user', '--scope', '-p', 'MemoryMax=10G']
 
 if len(sys.argv) > 2:
