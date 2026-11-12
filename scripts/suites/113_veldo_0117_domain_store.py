@@ -119,7 +119,9 @@ def main():
     except Exception as exc:
         error = "%s: %s" % (type(exc).__name__, str(exc)[:300])
     say("ready", registry=supported, decision=getattr(authority, "domain_store", None), error=error)
-    address = client.socket_path_for({"store_path": cfg["store_path"]})
+    # The socket's own directory, however the operator spelled the store: the gate's mutation
+    # worker refuses a bind through a symlinked directory (EACCES), and the file is the same one.
+    address = client.socket_path_for({"store_path": os.path.realpath(cfg["store_path"])})
     listener = None
     try:
         if authority is not None:
@@ -565,6 +567,17 @@ def _v117_production(world, checks, records):
     profile = {"kind": "linux-systemd", "slice": "v117%s.slice" % run, "lock": str(base / "workers.lock"),
                "concurrency": 2, "runtime_seconds": 600, "memory_bytes": 256 << 20, "cpu_percent": 100,
                "file_bytes": 64 << 20, "tasks_max": 256, "stop_grace_seconds": 1, "kill_grace_seconds": 1}
+    # The installer qualifies the worker profile against this host's user manager, which the gate's
+    # mutation worker does not reach. These instances launch no worker, so where the profile does
+    # not qualify the installation proceeds on a qualification answered qualified (as suite 109 does).
+    real_qualify = service.C.qualify
+    qualification = real_qualify(profile)
+    if not qualification.get("qualified"):
+        print("  VELDO-0117 production: the worker profile does not qualify here (%s): installing with the "
+              "containment qualification answered qualified; the instances under test launch no worker"
+              % qualification.get("refusal"))
+        service.C.qualify = lambda value, environment=None: dict(
+            real_qualify(value, environment), qualified=True, refusal=None, problems=[])
     for name, side in sides.items():
         enroll(side, side["store_uuid"], side["path"])
         member(side["path"])
@@ -686,7 +699,8 @@ def _v117_schedules(world, race_checks, restart_checks, records):
     schedules = [(order, overlap) for overlap in (False, True) for order in ((0, 1), (1, 0))]
     for number, (order, overlap) in enumerate(schedules):
         label = "%s, %s first" % ("overlapped" if overlap else "one after the other", "ab"[order[0]])
-        directory = world["scratch"] / ("schedule-%d" % number)
+        # A short name: every socket of the schedule lies under it, in a worker home that is long already.
+        directory = world["scratch"] / ("s%d" % number)
         fx = world["fx"] = _v117_FX.Fixture(ROOT, directory, runtime=world["runtime"])
         if number == 2:
             # The positive control, before the clones are bound to one domain: the fixture's own
@@ -759,12 +773,17 @@ def _v117_restart(world, registry, winning, losing, earlier, label, checks, reco
     """Both authorities stopped; new processes started in both orders over the same registry and stores."""
     fx = world["fx"]
     (winner, won), (loser, lost) = winning, losing
-    # Another spelling of the winning store's file: in the operator's configuration of the restarted
-    # authority, and in the winning clone's binding, signed over that spelling.
+    # Two other spellings of the winning store's file. The operator's configuration of the restarted
+    # authority names it through a symlinked directory. The winning clone's binding, signed over its
+    # spelling, names it through a "." step and no link: the client dials the socket beside the
+    # path its binding spells, and the gate's mutation worker refuses a connect through a symlinked
+    # directory (EACCES), which reddened this row in every baseline there. The step is two bytes,
+    # because the worker's home already brings that socket path near the 107 byte limit.
     alias = world["scratch"] / ("alias-%d" % len(world["processes"]))
     alias.symlink_to(winner.path.parent, target_is_directory=True)
     spelled = str(alias / winner.path.name)
-    binding = dict(fx.enrollment.read_binding(winner.workspace), store_path=spelled)
+    stepped = _v117_os.path.join(str(winner.path.parent), ".", winner.path.name)
+    binding = dict(fx.enrollment.read_binding(winner.workspace), store_path=stepped)
     binding["signature"] = fx.signer.sign(fx.enrollment.binding_signed_bytes(binding))
     binding["binding_digest"] = fx.enrollment.binding_digest(binding)
     _v117_Path(fx.enrollment.binding_path(winner.workspace)).write_text(_v117_json.dumps(binding, sort_keys=True))
@@ -861,7 +880,14 @@ for _v117_row in _v117_ROWS:
     for _v117_words, _v117_ok in _v117_checks:
         if not _v117_ok:
             print("VELDO-0117 %s detail: %s" % (_v117_row, _v117_words))
-    expect("VELDO-0117 " + _v117_row, _v117_verdicts[_v117_row])
+    # The gate's mutation worker keeps of a false row only the words after the colon of its name
+    # (scripts/mutation_observer.py; the printed detail lines are not read there), so a false row
+    # says what it saw in its name: a raised section first, then its first false checks.
+    _v117_false = sorted((_v117_words for _v117_words, _v117_ok in _v117_checks if not _v117_ok),
+                         key=lambda words: "it raised" not in words)
+    expect("VELDO-0117 " + _v117_row + ("" if _v117_verdicts[_v117_row] else ": " + (
+        " | ".join(words[:300] for words in _v117_false[:3]) or "no check was made")),
+        _v117_verdicts[_v117_row])
 if _v117_os.environ.get("VELDO_0117_REPORT"):
     # Each result with what produced it: the digests of the four modules the authorities ran and
     # the fixture's version, beside every case's input identities.
