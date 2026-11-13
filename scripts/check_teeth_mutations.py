@@ -12299,7 +12299,8 @@ def cases():
 
     # VELDO-0296: the falsifier of each acceptance criterion of the installation's space section. AC1 an
     # installation without the section refused; AC2 a missing floor given a built-in value; AC3 one entry
-    # removed from what the reader returns; AC4 a mode key accepted and ignored.
+    # removed from what the reader returns; AC4 a mode key accepted and ignored. Review finding 1: an
+    # engines list naming none accepted, which leaves the protect list in force on no engine.
     space296 = '130_veldo_0296_space_section.py'
     add(296, 'space296-no-section-refused', space296, 'control_space_config.py',
         "    if section is None:\n        return off()\n",
@@ -12322,6 +12323,11 @@ def cases():
         "    section = {name: value for name, value in section.items() if name != 'mode'} "
         "if isinstance(section, dict) else section\n    _closed(section, SECTION, KEYS)\n",
         ['ac4/mode-refused'])
+    result[-1]['siblings'] = True
+    add(296, 'space296-empty-engines-accepted', space296, 'control_space_config.py',
+        "    out = _names(value, key)\n    if not out:\n",
+        "    out = _names(value, key)\n    if False:\n",
+        ['ac3/empty-engines'])
     result[-1]['siblings'] = True
 
     # VELDO-0338: the falsifier of each acceptance criterion of the project's space file. AC1 the file

@@ -29,7 +29,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/130_veldo_0296_space_section.py",
-     "detail": "Rows ac2/missing-by-name (each of the nine keys and seven nested keys left out, refused installation_missing:space.<key>; an empty section refused), ac2/missing-floor (the floor key left out of a pool, from disk and from a given section), ac2/malformed-by-name (28 malformed values and 5 unknown keys refused installation_invalid:<key>), ac2/logged (one line with key and reason missing, malformed or unknown; never the value)."
+     "detail": "Rows ac2/missing-by-name (each of the nine keys and seven nested keys left out, refused installation_missing:space.<key>; an empty section refused), ac2/missing-floor (the floor key left out of a pool, from disk and from a given section), ac2/malformed-by-name (29 malformed values, an empty engines list among them, and 5 unknown keys refused installation_invalid:<key>), ac2/logged (one line with key and reason missing, malformed or unknown; never the value; a section that is not a mapping, space: on, read from disk gets the section's own line, refused space (malformed), once)."
     },
     {
      "type": "integration",
@@ -39,7 +39,7 @@
     {
      "type": "unit",
      "ref": "proof/VELDO-0296/falsifiers.json",
-     "detail": "Falsifier space296-floor-built-in (a missing floor given the value 0): ac2/missing-floor red (ac2/logged and ac2/malformed-by-name red with it); noop green."
+     "detail": "Falsifier space296-floor-built-in (a missing floor given the value 0): ac2/missing-floor red (ac2/logged and ac2/malformed-by-name red with it); noop green. Review finding 2: review-space-on-line-not-written (the space: on refusal line not written): ac2/logged red, alone; noop green."
     }
    ]
   },
@@ -50,12 +50,12 @@
     {
      "type": "integration",
      "ref": "scripts/suites/130_veldo_0296_space_section.py",
-     "detail": "Ten rows, one per entry of the fixture's protect list read back from disk, each checked on both engine contexts (default and desktop-linux): ac3/engine-image-folder, ac3/repository-folder, ac3/volume-pattern, ac3/container-pattern, ac3/image-pattern, ac3/network-pattern, ac3/compose-project-one, ac3/compose-project-two, ac3/image-name-one, ac3/image-name-two; ac3/whole-list (ten entries per context and nothing else)."
+     "detail": "Ten rows, one per entry of the fixture's protect list read back from disk, each checked on both engine contexts (default and desktop-linux): ac3/engine-image-folder, ac3/repository-folder, ac3/volume-pattern, ac3/container-pattern, ac3/image-pattern, ac3/network-pattern, ac3/compose-project-one, ac3/compose-project-two, ac3/image-name-one, ac3/image-name-two; ac3/whole-list (ten entries per context and nothing else, no entry without an engine); ac3/empty-engines (review finding 1: engines naming none refused installation_invalid:space.engines from a given section and from disk, logged malformed, so the protect list is never in force on no engine)."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0296/falsifiers.json",
-     "detail": "Each of the ten entries removed in turn from what the reader returns: that entry's row red every time (with ac3/whole-list and reader/full-section), no other entry row red. The network case is registered as space296-protect-entry-removed; noop green."
+     "detail": "Each of the ten entries removed in turn from what the reader returns: that entry's row red every time (with ac3/whole-list and reader/full-section), no other entry row red. The network case is registered as space296-protect-entry-removed; noop green. Review finding 1: registered falsifier space296-empty-engines-accepted (an empty engines list accepted): ac3/empty-engines red (ac2/malformed-by-name with it); noop green. The ten per-entry runs were made at the build commit and not repeated for the review fix."
     }
    ]
   },
@@ -85,7 +85,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 130_veldo_0296_space_section (21 rows) and --suite 127_veldo_0259_installation (20 rows; the installation reader gained the space key)"
+   "command": "python3 scripts/selftest.py --suite 130_veldo_0296_space_section (22 rows, 48 checks) and --suite 127_veldo_0259_installation (20 rows; the installation reader gained the space key)"
   },
   {
    "name": "integration",
@@ -95,12 +95,12 @@
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec"
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec. After the review fix: template sync, docs, validate, and suites 130, 131 (VELDO-0338, built on this reader) and 127 rerun green."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the registered teeth cases (finding 296) were run here through the driver's own materialize() and worker(), not through the teeth run."
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the registered teeth cases (finding 296, five with the review fix) were run here through the driver's own materialize() and worker(), not through the teeth run."
   }
  ],
  "assumptions": [
@@ -109,5 +109,6 @@
   "docs/installation.md does not yet describe the space section: it is outside this ticket's footprint (documents are VELDO-0322).",
   "Name patterns and image names are returned as written; matching them against Docker objects is VELDO-0341."
  ],
+ "review_fix": "Review verdict FIX, two findings, fixed in the commit that carries this manifest (the commit field names the build commit). 1: an engines list naming none is refused as installation_invalid:space.engines. 2: the refusal of a section that is not a mapping writes the space section's own log line.",
  "rollback": "Revert the change. No installation is read for a space section, which is the same as space management off."
 }

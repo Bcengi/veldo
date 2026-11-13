@@ -50,6 +50,29 @@
   "red_as_expected": true
  },
  {
+  "falsifier": "space296-empty-engines-accepted",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/empty-engines"
+  ],
+  "red_rows": [
+   "ac2/malformed-by-name",
+   "ac3/empty-engines"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "review-space-on-line-not-written",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/logged"
+  ],
+  "red_rows": [
+   "ac2/logged"
+  ],
+  "red_as_expected": true
+ },
+ {
   "falsifier": "ac3-entry-removed-engine-image-folder",
   "criterion": "AC3",
   "expected_red": [

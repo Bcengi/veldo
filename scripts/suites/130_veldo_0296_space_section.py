@@ -18,7 +18,9 @@ value), ac2/logged (one line naming the key and the reason, never the value).
 AC3 rows, one per entry of the fixture's protect list, each asked on both engine contexts:
 ac3/engine-image-folder, ac3/repository-folder, ac3/volume-pattern, ac3/container-pattern,
 ac3/image-pattern, ac3/network-pattern, ac3/compose-project-one, ac3/compose-project-two,
-ac3/image-name-one, ac3/image-name-two; and ac3/whole-list (ten entries, nothing else).
+ac3/image-name-one, ac3/image-name-two; ac3/whole-list (ten entries, nothing else, none without an engine);
+and ac3/empty-engines (an engines list naming none is refused by name, from disk and from a given section,
+so no protect list is ever in force on no engine).
 
 AC4 rows: ac4/no-mode-key (the reader's key list and its answer carry no mode), ac4/mode-refused (mode: act
 written into the section is refused as unknown by name, from disk and from a given section).
@@ -46,7 +48,7 @@ def _v296_space_section_suite():
                   'ac3/image-name-two')
     ROWS = ('ac1/no-section', 'ac1/no-installation', 'ac2/missing-by-name', 'ac2/missing-floor',
             'ac2/malformed-by-name', 'ac2/logged') + ENTRY_ROWS + (
-            'ac3/whole-list', 'ac4/no-mode-key', 'ac4/mode-refused', 'reader/full-section',
+            'ac3/whole-list', 'ac3/empty-engines', 'ac4/no-mode-key', 'ac4/mode-refused', 'reader/full-section',
             'reader/one-opener')
     rows = {name: [] for name in ROWS}
 
@@ -229,7 +231,7 @@ def _v296_space_section_suite():
             (['enabled'], 'yes'), (['enabled'], 1), (['time_zone'], 'Nowhere/Never'), (['time_zone'], 7),
             (['pools'], ['host']), (['pools', 'host'], 'large'), (['pools', 'host', 'floor'], -1),
             (['pools', 'host', 'floor'], '20GB'), (['pools', 'host', 'needs'], 4000),
-            (['pools', 'host', 'needs', 'build'], 'much'), (['engines'], 'default'),
+            (['pools', 'host', 'needs', 'build'], 'much'), (['engines'], 'default'), (['engines'], []),
             (['engines'], ['default', 'default']), (['engines'], ['default', '']),
             (['scratch_roots'], [str(temp)]), (['scratch_roots', 'roots'], ['relative/scratch']),
             (['scratch_roots', 'session_pattern'], 'sessions/{other}/{session_id}'),
@@ -259,6 +261,10 @@ def _v296_space_section_suite():
         config, code, log = on_disk(raw=YAML.dump(BASE) + 'space: on\n')
         check('ac2/malformed-by-name', 'a section that is not a mapping is refused by its name [%s]' % code,
               code == 'installation_invalid:space')
+        check('ac2/logged', 'a section that is not a mapping is logged with the section line [%s]'
+              % log.strip().splitlines()[-1:],
+              log.strip().splitlines()[-1:] == ['veldo space section: refused space (malformed)']
+              and log.count('veldo space section:') == 1)
 
         # ---- AC2: the log line ---------------------------------------------------------------------------
         config, code, log = given(without(['pools', 'host', 'floor']))
@@ -293,6 +299,19 @@ def _v296_space_section_suite():
                   got == wanted)
         check('ac3/whole-list', 'a context the installation does not name gets none',
               CFG.protect_for(config, 'elsewhere') == [])
+        check('ac3/whole-list', 'no entry of the accepted section is without an engine',
+              bool(config.get('protect')) and all(entry['engines'] for entry in config['protect']))
+
+        # An engines list naming none would leave every entry, host paths included, in force nowhere.
+        empty_config, code, log = given(changed(['engines'], []))
+        check('ac3/empty-engines', 'a given section with engines naming none is refused by name [%s]' % code,
+              empty_config is None and code == 'installation_invalid:space.engines')
+        check('ac3/empty-engines', 'and logged as malformed [%s]' % log.strip(),
+              log.strip() == 'veldo space section: refused space.engines (malformed)')
+        empty_config, code, log = on_disk(changed(['engines'], []))
+        check('ac3/empty-engines', 'from disk, engines naming none is refused, with no protect list returned [%s %s]'
+              % (code, (empty_config or {}).get('protect')),
+              empty_config is None and code == 'installation_invalid:space.engines')
 
         # ---- AC4: mode is not a key ----------------------------------------------------------------------
         check('ac4/no-mode-key', 'the reader has no mode key [%s]' % (CFG.KEYS,), 'mode' not in CFG.KEYS)

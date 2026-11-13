@@ -179,6 +179,15 @@ def _names(value, key):
     return out
 
 
+def _engines(value, key):
+    """The engine contexts, at least one. A protect entry is in force on the engines named here and on no
+    other, so a list naming none would leave the whole protect list in force nowhere: it is refused."""
+    out = _names(value, key)
+    if not out:
+        raise _malformed(key, 'a list naming at least one engine context')
+    return out
+
+
 def _path(value, key):
     """An absolute folder path, or one under the home folder written with a leading tilde."""
     if not isinstance(value, str) or not (value.startswith('/') or value == '~' or value.startswith('~/')):
@@ -257,7 +266,7 @@ def _protect(value, key, engines):
 def check(section):
     """The checked section as the reader returns it. Raises _Refusal on the first refused key."""
     _closed(section, SECTION, KEYS)
-    engines = _names(section['engines'], SECTION + '.engines')
+    engines = _engines(section['engines'], SECTION + '.engines')
     return {
         'present': True,
         'enabled': _enabled(section['enabled'], SECTION + '.enabled'),
@@ -285,13 +294,20 @@ def read(installation=None, environ=None, stream=None):
     reader = _installation()
     if installation is None:
         installation = reader.load(environ, stream)
-    section = installation.space()
+    out = sys.stderr if stream is None else stream
+    try:
+        section = installation.space()
+    except reader.InstallationError as error:
+        # A section that is not a mapping is refused by the installation reader; it is this section's
+        # refusal all the same, so it gets this section's line.
+        if error.code == 'installation_invalid:' + SECTION:
+            out.write('veldo space section: refused %s (malformed)\n' % SECTION)
+        raise
     if section is None:
         return off()
     try:
         return check(section)
     except _Refusal as refusal:
-        out = sys.stderr if stream is None else stream
         out.write('veldo space section: refused %s (%s)\n' % (refusal.key, refusal.reason))
         code = 'installation_missing:' if refusal.reason == 'missing' else 'installation_invalid:'
         raise reader.InstallationError(code + refusal.key, refusal.detail) from None
