@@ -1,0 +1,119 @@
+[
+ {
+  "falsifier": "space299-working-directory-only",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/open-file-beneath"
+  ],
+  "red_rows": [
+   "ac1/mapped-file",
+   "ac1/open-file-beneath",
+   "ac1/seam"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 ac1/open-file-beneath",
+    "an open file beneath the path is use [[]]"
+   ],
+   [
+    "VELDO-0299 ac1/mapped-file",
+    "a mapped file beneath the path is use [[]]"
+   ],
+   [
+    "VELDO-0299 ac1/seam",
+    "the seam is called with the facts of each call, in order"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-own-branch-counted",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/case-5-unlanded-commit"
+  ],
+  "red_rows": [
+   "ac2/case-4-operation",
+   "ac2/case-5-unlanded-commit",
+   "ac2/held-by-another-ref",
+   "ac2/squash-landing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 ac2/case-4-operation",
+    "and is not once the merge is given up"
+   ],
+   [
+    "VELDO-0299 ac2/case-5-unlanded-commit",
+    "a commit only the worktree's own branch holds is unique work [{'cases': [], 'unlanded': None, 'held_by': ['refs/heads/work']}]"
+   ],
+   [
+    "VELDO-0299 ac2/squash-landing",
+    "with no receipt read the branch is still unique work"
+   ],
+   [
+    "VELDO-0299 ac2/held-by-another-ref",
+    "a clean worktree whose tip the trunk holds has no unique work [{'path': '/tmp/veldo-0299-tyosb_cu/worktree', 'read': True, 'branch': 'refs/heads/work', 'commit': '80f0dfa3c4beb974d87b5b9367d7e2d9629a9b44', 'modified': [], 'staged': [], 'untracked': [], 'more': {'modified': 0, 'staged': 0, 'untracked': 0}, 'operation': None, 'unlanded': None, 'held_by': ['refs/heads/main', 'refs/heads/work'], 'landed_by': None, 'compared': '/tmp/veldo-0299-tyosb_cu/worktree', 'cases': [], 'unique_work': False}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-agent-repository-only",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/branch-not-brought-across"
+  ],
+  "red_rows": [
+   "ac2/unreadable",
+   "ac3/branch-not-brought-across",
+   "ac3/brought-across",
+   "ac3/moved-on"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 ac2/unreadable",
+    "a worktree whose shared repository cannot be read is unread"
+   ],
+   [
+    "VELDO-0299 ac3/branch-not-brought-across",
+    "the agent's worktree has unique work [{'cases': [], 'unlanded': None, 'held_by': ['refs/heads/agent/a1/n1']}]"
+   ],
+   [
+    "VELDO-0299 ac3/brought-across",
+    "an agent worktree still on its start commit has none [['refs/heads/agent/a1/n1']]"
+   ],
+   [
+    "VELDO-0299 ac3/moved-on",
+    "a further commit is unique work again, in the worktree and the repository"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-lock-only",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/login-unsettled"
+  ],
+  "red_rows": [
+   "ac4/journal-root",
+   "ac4/login-unsettled"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 ac4/login-unsettled",
+    "with the lock free and the borrowed login not settled the scratch is in use [{'path': '/tmp/veldo-0299-9tcv9fvu/veldo-agent-fixture1', 'lock_held': False, 'login_unsettled': True, 'journal': '/tmp/veldo-0299-9tcv9fvu/borrowed-logins/veldo-agent-fixture1', 'in_use': False}]"
+   ],
+   [
+    "VELDO-0299 ac4/journal-root",
+    "with no root given the journal is looked for under the launcher's state folder"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

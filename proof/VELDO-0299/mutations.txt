@@ -1,0 +1,9 @@
+# VELDO-0299 registered mutation cases (scripts/check_teeth_mutations.py, finding 299), run through its own materialize() and worker(): noop copy then mutant copy, target rows.
+space299-working-directory-only noop rows 55 targets {"ac1/open-file-beneath": [true]} failed []
+space299-working-directory-only mutant rows 55 targets {"ac1/open-file-beneath": [false]} failed ['VELDO-0299 ac1/open-file-beneath', 'VELDO-0299 ac1/mapped-file', 'VELDO-0299 ac1/seam']
+space299-own-branch-counted noop rows 55 targets {"ac2/case-5-unlanded-commit": [true]} failed []
+space299-own-branch-counted mutant rows 55 targets {"ac2/case-5-unlanded-commit": [false]} failed ['VELDO-0299 ac2/case-4-operation', 'VELDO-0299 ac2/case-5-unlanded-commit', 'VELDO-0299 ac2/squash-landing', 'VELDO-0299 ac2/held-by-another-ref']
+space299-agent-repository-only noop rows 55 targets {"ac3/branch-not-brought-across": [true]} failed []
+space299-agent-repository-only mutant rows 55 targets {"ac3/branch-not-brought-across": [false]} failed ['VELDO-0299 ac2/unreadable', 'VELDO-0299 ac3/branch-not-brought-across', 'VELDO-0299 ac3/brought-across', 'VELDO-0299 ac3/moved-on']
+space299-lock-only noop rows 55 targets {"ac4/login-unsettled": [true]} failed []
+space299-lock-only mutant rows 55 targets {"ac4/login-unsettled": [false]} failed ['VELDO-0299 ac4/login-unsettled', 'VELDO-0299 ac4/journal-root']

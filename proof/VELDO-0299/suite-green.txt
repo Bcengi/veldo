@@ -1,0 +1,4 @@
+  selector    --suite 136_veldo_0299_space_probe
+  running     1 of 206 suites: 136_veldo_0299_space_probe
+  136_veldo_0299_space_probe                      29 passed    2.43s
+selftest (PARTIAL, 1 of 206 suites): 55 passed, 0 failed in 2.43s

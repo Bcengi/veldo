@@ -1,0 +1,128 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0299",
+ "commit": "8a5618274954dfbfbe4fda61fd53f9b10931bad9",
+ "tree": "e9d6e126a4ed33412843a8802d4a1116ea7ed219",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T22:37:24.041512+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Rows ac1/open-file-beneath (a process whose working directory is elsewhere holds an open file beneath the path: in use, the process and the file named as an open file), ac1/working-directory (at the path and beneath it; a working directory above a path is not use of it), ac1/mapped-file (a mapped file beneath the path), ac1/command-line-is-not-use (a live process whose command line names the path and a file in it: not in use), ac1/container-bind-mount (a running container with a bind mount at the path and a stopped one with a bind mount beneath it are use; a named volume, a bind mount of another path and a neighbour path are not; an engine that cannot be read is named in unread and the others are still read), ac1/clear (not in use before and after; a neighbour whose name starts the same never), ac1/helper-not-counted, ac1/git-lock (git's index lock file and git's worktree lock), ac1/seam (the test seam VELDO-0300 AC1 needs), ac1/process (the kernel's start time of a live process, nothing for an ended one). Green: proof/VELDO-0299/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "The rows read the real kernel process table of this host and real child processes the suite starts and ends; the container row runs the module's own client runner against a stand-in docker program first on PATH, answering the two container commands from a fixture file. No container engine was asked anything."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-working-directory-only (the working directory only): ac1/open-file-beneath red, the path with an open file beneath it read not in use (ac1/mapped-file and ac1/seam red with it); noop copy green. proof/VELDO-0299/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Rows ac2/case-1-modified, ac2/case-2-staged (a staged new file; a staged rename named once), ac2/case-3-untracked (a file and a folder git does not ignore; a file it ignores is not), ac2/case-4-operation (a merge, a rebase and a cherry-pick, each stopped on a conflict, and none once given up), ac2/case-5-unlanded-commit (a commit only the worktree's own branch holds: cases [5], held by no other ref), ac2/squash-landing (after a real squash landing the trunk does not reach the tip; with no receipt it is unique work, with the receipt whose source commit is the tip it is not, another landing's receipt does not cover it, a tip that is an ancestor of the source commit is covered, a commit made after the landing is unique again, a source that is no commit id is not read), ac2/held-by-another-ref (the trunk, a tag), ac2/detached (tested on its checked-out commit against every ref), ac2/names-only (names come back, contents do not; the index and the git folder are as they were after the probe), ac2/unreadable (a folder that is no worktree, a folder inside one, an unreadable shared repository: read False and unique_work None, never no unique work). Green: proof/VELDO-0299/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "The rows run the real git on repositories and worktrees the suite makes: a real squash landing on the trunk, real stopped operations (each on a real conflict), a real detached worktree."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-own-branch-counted (the worktree's own branch counted among the refs that hold the commit): ac2/case-5-unlanded-commit red, the unlanded commit read no unique work (ac2/case-4-operation, ac2/squash-landing and ac2/held-by-another-ref red with it); noop green. proof/VELDO-0299/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Rows ac3/branch-not-brought-across (the shared repository does not hold the agent's commit: the agent's worktree reads cases [5] and the agent repository names the branch in not_across; a tag and a second branch in the agent repository that hold the commit change nothing; the shared repository named by its work tree reads the same; cases 1 to 4 are read in the agent's worktree), ac3/brought-across (after the fetch neither has unique work, and the worktree's tip is held by the same-named branch of the shared repository), ac3/moved-on (a further commit is unique again in both while the shared repository holds the older one under the same name; a branch the shared repository holds only under another name is not across; after a second fetch neither has any). Green: proof/VELDO-0299/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "The rows make an agent repository the way the sandbox's prepare does (bare, the shared store as its alternate, a linked worktree on refs/heads/agent/a1/n1) and bring the branch across the way its integrate does (a fetch of the agent's branches into the shared repository), with the real git."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-agent-repository-only (the comparison made inside the agent repository only): ac3/branch-not-brought-across red, the worktree with a branch not yet brought across read no unique work (ac3/brought-across, ac3/moved-on and ac2/unreadable red with it); noop green. proof/VELDO-0299/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Rows ac4/lock-held (another process holds the scratch lock: in use; the probe gave the lock back, a second launcher lock is still granted; lock held and login unsettled are both named), ac4/login-unsettled (lock free, borrow.json present and no recovery.json: in use), ac4/both-clear (lock free and journal gone, or settled into a recovery, or never borrowed: not in use; a folder that is gone or is a link is held by no lock), ac4/journal-root (with no root given the journal is looked for under XDG_STATE_HOME/veldo/borrowed-logins, the launcher's own place). Green: proof/VELDO-0299/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "The lock row's holder is a real child process that takes the shared lock on the scratch folder exactly as the launcher does (agent_sandbox.py:2208-2209); the journal is real files in a fixture journal root shaped as the launcher's (borrow.json, recovery.json)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-lock-only (the lock only): ac4/login-unsettled red, the scratch with a free lock and an unsettled login read not in use (ac4/journal-root red with it); noop green. proof/VELDO-0299/mutations.txt."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 136_veldo_0299_space_probe (29 rows, 55 checks; run eight times, green each time after the row ac1/seam was corrected, see assumptions)."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec on the spec."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran the single suite and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the four registered teeth cases (finding 299) were run here through the driver's own materialize() and worker(), not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "The probes are functions of engine/.veldo/control_space_probe.py: process, processes, containers, git_lock, in_use, scratch, unique_work, agent_repository. Each returns facts; none defers or removes. Nothing calls them yet: the rules that read them are VELDO-0330 and the removers are VELDO-0300.",
+  "Not directly proven against a real container engine: the docker client's answers are a stand-in program's (container ls with all, quiet and no-trunc; container inspect with Id, Name, State.Status and Mounts of Type, Source, Destination). The design leaves the check of both engines to the Docker tickets (0306, 0307). A desktop engine that reports a bind source under another prefix than the host path would not match; not measured here.",
+  "A process this user may not read (another user's, a kernel thread) cannot be a known user: it is counted in unread.processes and does not set in_use. An engine the client cannot read is named in unread.engines and does not set in_use. What a rule does with unread is the rule's decision (VELDO-0330).",
+  "The file-sharing helper is recognised by its command name, HELPERS = ('virtiofsd',), the helper seen on this host's desktop engine; the list is a parameter. Whether other desktop engines need other names is not measured.",
+  "git holds a lock on the worktree is read as: a lock file (index.lock, HEAD.lock, config.lock, shallow.lock) in the worktree's own git folder, or git's worktree lock. The design does not say which; both are returned apart. No acceptance criterion names it; the row ac1/git-lock covers it.",
+  "unique_work takes the landed source commits as an argument (landed): the caller reads the completion receipts' source field (control_landing.py SUBJECT_FIELDS) and this module opens no store. The row's receipts are fixture records of that shape. A source that is not a full commit id is not read.",
+  "Case 5 tests the checked-out commit, as the design allows (the branch tip is the checked-out commit). For a worktree of the shared repository every ref of that repository other than the worktree's own branch counts, remote-tracking refs and tags included: the design says no ref other than that branch itself. The trunk is one of those refs and is not named apart.",
+  "For an agent's worktree only the shared repository's refs and the landed source commits count; refs of the agent repository never do. For the agent repository a branch is across when the shared repository's branch of the same name reaches its commit.",
+  "Case 3 lists an untracked folder as one name, as git's normal untracked listing does, and each case names at most 20 paths with the rest counted in more. The review-scratch exception of case 3 is the rule's: the probe returns cases and the rule leaves 3 out for a review worktree.",
+  "The operations of case 4 are the three the design names and two more of the same family that git marks the same way: a revert and a stopped sequence of picks.",
+  "The scratch lock is tested as the launcher's own stale pass tests it (agent_sandbox.py:2101): an exclusive lock asked for without waiting and given back at once. For that instant a launcher that asked for its shared lock on the same folder would be refused; the launcher locks a folder it has just made, which no item names yet. The unsettled test is the launcher's pending_borrow (agent_sandbox.py:1986-1990), copied and not imported, since the launcher is a protected script and this module is standard library only.",
+  "SEAM['after_in_use'] is the probe's test seam that VELDO-0300 AC1 names. process(pid) is the fact rule 3 needs for a session's recorded process (id and start time, design 4.1); the rest of rule 3 reads the store and is not a probe.",
+  "The first falsifier pass showed one row of this suite, ac1/seam, red on an unchanged copy: it compared whole fact records, which hold the count of unreadable processes on the host, and that count moved between two calls. The row now compares what it is about. The four falsifiers were then run again from the start; the recorded run is the second.",
+  "The spec's own History and specs/index.md are not changed, as in VELDO-0298. docs are not changed: documents for space management are VELDO-0322."
+ ],
+ "rollback": "Revert the change. Nothing is removed by this ticket, so nothing on disk changes."
+}
