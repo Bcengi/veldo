@@ -1,0 +1,7 @@
+# VELDO-0338 registered mutation cases (scripts/check_teeth_mutations.py, finding 338), run through its own materialize() and worker(): noop copy then mutant copy, target rows.
+space338-file-required noop rows 39 targets {"ac1/no-file": [true]} failed []
+space338-file-required mutant rows 39 targets {"ac1/no-file": [false]} failed ['ac1/every-default', 'ac1/no-file']
+space338-unknown-key-ignored noop rows 39 targets {"ac2/misspelled-keep": [true]} failed []
+space338-unknown-key-ignored mutant rows 39 targets {"ac2/misspelled-keep": [false]} failed ['ac2/logged', 'ac2/misspelled-keep', 'ac2/unknown-by-name']
+space338-project-list-replaces noop rows 39 targets {"ac3/installation-volume-kept": [true]} failed []
+space338-project-list-replaces mutant rows 39 targets {"ac3/installation-volume-kept": [false]} failed ['ac3/adds', 'ac3/cannot-remove', 'ac3/every-installation-entry-kept', 'ac3/installation-volume-kept']

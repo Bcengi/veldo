@@ -1,0 +1,95 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0338",
+ "commit": "b33d905592c4ece28304b4d3375a056c3da606ec",
+ "tree": "7f2b1dd0952c01f1000990b156aa2943dbba0421",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T19:17:09.415324+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/131_veldo_0338_project_space_file.py",
+     "detail": "Rows ac1/no-file (a fixture repository folder on disk with no .veldo/space.yaml, and one with no .veldo folder: not refused, present false, nothing logged), ac1/every-default (one check per key of 6.8: the worktree root beside the repository with the suffix -worktrees, the agent branch pattern, no landing refs, build output, build variables, keep or evidence caches, no declared needs, the installation's six protect entries; the same with space management off) and ac1/default-per-key (a file giving one key, an empty file, a key with nothing under it). Green: proof/VELDO-0338/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0338/falsifiers.json",
+     "detail": "Falsifier space338-file-required (the file required): ac1/no-file red, the fixture project without a file refused (ac1/every-default red with it); noop copy green. proof/VELDO-0338/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/131_veldo_0338_project_space_file.py",
+     "detail": "Rows ac2/unknown-by-name (five unknown top-level keys, one under protect, one station under needs, each refused space_file_invalid:<key> from disk), ac2/misspelled-keep (a file spelling keep as kep is refused by that name and no declarations come back; the same file spelled right keeps data/models), ac2/logged (one line with the project, the key and the reason, never a value), ac2/malformed-by-name (27 malformed values refused by key name; a list, an unparseable file and a folder in the file's place refused)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/131_veldo_0338_project_space_file.py",
+     "detail": "ac2/unknown-by-name: check_project given a parsed file with an unknown key refuses unknown:colour."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0338/falsifiers.json",
+     "detail": "Falsifier space338-unknown-key-ignored (unknown keys ignored): ac2/misspelled-keep red, the kep file accepted with an empty keep list, which is the reading in which the census would record the folder (ac2/unknown-by-name and ac2/logged red with it); noop green."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/131_veldo_0338_project_space_file.py",
+     "detail": "The installation's list is read from a fixture installation.yaml through the one installation reader. Rows ac3/adds (three project entries added after the six installation entries, each on both engine contexts), ac3/installation-volume-kept (a project listing its own volumes: atlas_pg_* still in the result and in force on both contexts), ac3/every-installation-entry-kept (all six stay whatever the project lists), ac3/cannot-remove (protect.remove, protect.unprotect and protect.except refused; six empty lists and a repeated entry change nothing; the given installation config is not altered)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0338/falsifiers.json",
+     "detail": "Falsifier space338-project-list-replaces (the project list replaces the installation list): ac3/installation-volume-kept red, atlas_pg_* gone from the result (ac3/adds, ac3/every-installation-entry-kept and ac3/cannot-remove red with it); noop green."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 131_veldo_0338_project_space_file (13 rows) and --suite 130_veldo_0296_space_section (21 rows; the same module, unchanged behavior)"
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 131_veldo_0338_project_space_file: the rows read fixture .veldo/space.yaml files and a fixture installation.yaml from disk"
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the registered teeth cases (finding 338) were run here through the driver's own materialize() and worker(), not through the teeth run. The four VELDO-0296 cases were rerun the same way against the changed module and are still red on their rows."
+  }
+ ],
+ "assumptions": [
+  "read_project is GIVEN the document reader's read function by its caller and does not load it itself. Reason: VELDO-0296's row reader/one-opener (suite 130, outside this ticket's footprint) asserts that control_space_config.py holds no file opener and no document reader. The module keeps that property; every later caller of read_project passes the read function. If the lead prefers the module to load the document reader itself, the 0296 row has to be narrowed first.",
+  "Key spellings (worktree_root, branch_pattern, landing_refs, build_output, build_variables, keep, evidence_caches, needs, protect) and refusal codes (space_file_invalid:<key>, space_file_unreadable, raised as ProjectSpaceError) are this ticket's reading of design 6.8, which names the keys in words.",
+  "The default branch pattern is agent/{agent}/{ticket}, from the agent branches Veldo creates (refs/heads/agent/<agent>/<name>, engine/scripts/agent_sandbox.py). How a matched name gives a ticket id is the hook's and reconcile's work in later tickets.",
+  "The default of needs is nothing declared per station. Measuring after five runs and falling back to the pool default belong to the admission tickets; pool names under needs are not checked against the installation's pools.",
+  "A key written with nothing under it gets its default, so a laid file with every key present and commented is accepted. A relative worktree root or protect path is resolved against the repository; keep and evidence cache paths must stay inside their folder.",
+  "A malformed value and an unparseable file are refused too; the spec's taxonomy names only the unknown key. Nothing calls read_project yet: the census, init and the ledger are later tickets, so AC2's census clause is shown as no declarations returned for the misspelled file.",
+  "docs are not changed: documents for space management are VELDO-0322."
+ ],
+ "rollback": "Revert the change. Project space files stay in their repositories and are not read."
+}

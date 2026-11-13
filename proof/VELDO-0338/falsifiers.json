@@ -1,0 +1,62 @@
+[
+ {
+  "falsifier": "space338-file-required",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/no-file"
+  ],
+  "red_rows": [
+   "ac1/every-default",
+   "ac1/no-file"
+  ],
+  "red_details": [
+   [
+    "VELDO-0338 ac1/no-file",
+    "a fixture project with no space file is not refused [space_file_invalid:.veldo/space.yaml]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space338-unknown-key-ignored",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/misspelled-keep"
+  ],
+  "red_rows": [
+   "ac2/logged",
+   "ac2/misspelled-keep",
+   "ac2/unknown-by-name"
+  ],
+  "red_details": [
+   [
+    "VELDO-0338 ac2/misspelled-keep",
+    "a file that spells keep as kep is refused by that name [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space338-project-list-replaces",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/installation-volume-kept"
+  ],
+  "red_rows": [
+   "ac3/adds",
+   "ac3/cannot-remove",
+   "ac3/every-installation-entry-kept",
+   "ac3/installation-volume-kept"
+  ],
+  "red_details": [
+   [
+    "VELDO-0338 ac3/installation-volume-kept",
+    "a project that lists its own volumes still has the installation volume pattern atlas_pg_* [['orchard_db_*']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]
