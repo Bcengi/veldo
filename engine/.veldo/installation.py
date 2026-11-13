@@ -207,6 +207,9 @@ SETTINGS = {
     'ports': lambda v, k: _named(v, k, _port),
     'trackers': lambda v, k: _named(v, k, _flat),
     'publisher': _identity,
+    # The space section (VELDO-0296). Optional as a whole; its keys are checked by its one reader,
+    # control_space_config.py.
+    'space': _mapping,
 }
 
 
@@ -270,6 +273,15 @@ class Installation:
         if name not in entry or entry[name] is None:
             raise _missing(key + '.' + name)
         return entry[name]
+
+    def space(self):
+        """The space section as written, or None when the installation has none: space management is
+        off. A section written with nothing under it is a present, empty section. Its keys are checked by
+        control_space_config.py, never here."""
+        settings = self.settings()
+        if 'space' not in settings:
+            return None
+        return {} if settings['space'] is None else settings['space']
 
     def owner(self):
         """{display_name, role_id}: the person an action that needs one resolves to."""

@@ -12297,6 +12297,33 @@ def cases():
         "        (here / name).write_text(home_as_tilde(content))\n", "        (here / name).write_text(content)\n",
         ['writers/home-as-tilde'])
 
+    # VELDO-0296: the falsifier of each acceptance criterion of the installation's space section. AC1 an
+    # installation without the section refused; AC2 a missing floor given a built-in value; AC3 one entry
+    # removed from what the reader returns; AC4 a mode key accepted and ignored.
+    space296 = '130_veldo_0296_space_section.py'
+    add(296, 'space296-no-section-refused', space296, 'control_space_config.py',
+        "    if section is None:\n        return off()\n",
+        "    if section is None:\n        raise reader.InstallationError('installation_missing:space')\n",
+        ['ac1/no-section', 'ac1/no-installation'])
+    result[-1]['siblings'] = True
+    add(296, 'space296-floor-built-in', space296, 'control_space_config.py',
+        "        _closed(pool, where, ('floor', 'needs'))\n",
+        "        pool = dict({'floor': 0}, **pool)\n        _closed(pool, where, ('floor', 'needs'))\n",
+        ['ac2/missing-floor'])
+    result[-1]['siblings'] = True
+    add(296, 'space296-protect-entry-removed', space296, 'control_space_config.py',
+        "        values = _paths(value[name], where) if kind == 'path' else _names(value[name], where)\n",
+        "        values = _paths(value[name], where) if kind == 'path' else _names(value[name], where)\n"
+        "        values = values[:-1] if kind == 'network' else values\n",
+        ['ac3/network-pattern'])
+    result[-1]['siblings'] = True
+    add(296, 'space296-mode-accepted-ignored', space296, 'control_space_config.py',
+        "    _closed(section, SECTION, KEYS)\n",
+        "    section = {name: value for name, value in section.items() if name != 'mode'} "
+        "if isinstance(section, dict) else section\n    _closed(section, SECTION, KEYS)\n",
+        ['ac4/mode-refused'])
+    result[-1]['siblings'] = True
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip

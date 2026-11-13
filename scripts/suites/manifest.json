@@ -1840,6 +1840,15 @@
    ],
    "regions": "A local landing keeping every working tree that has the trunk checked out in step with the trunk (VELDO-0260): the set read from the repository's own working-tree list (the main tree holding main, a linked tree holding main, a detached HEAD at the tip, another branch and a bare repository), a clean tree moved with the trunk by a two-tree merge with its untracked and ignored files byte for byte unchanged, a lost swap restoring the moved tree to the old tip, an edited and a staged tracked file, a merge in progress and a locked index refusing as trunk_checkout_dirty or trunk_checkout_unmovable before the swap with the ref and files unchanged and re-landed under VELDO-0148 once clean, a main tree on another branch never read or written, and the publication events and counts by working-tree outcome.",
    "requires_note": "Only ROOT, expect and launcher_fds. Real Git (small repositories with linked and bare clones for the unit rows; a scaffolded seed and its own gate and the caller's repository with its main and a linked working tree for the integration rows), the SQLite store with OpenSSH signatures, the VELDO-0076 project service, the land station, the lander, VELDO-0058's installed gate and VELDO-0057's Landing. Fixture units, floor handoffs and candidate policy. Writes only temporary files."
+  },
+  {
+   "name": "130_veldo_0296_space_section",
+   "file": "130_veldo_0296_space_section.py",
+   "requires": [
+    "130_veldo_0296_space_section"
+   ],
+   "regions": "The declarations reader for the installation's space section (VELDO-0296): no section and no installation read as space management off and are not refused; each of the nine keys and nested keys left out refused as installation_missing by name, a pool's floor left out included; malformed and unknown keys refused as installation_invalid by name; one log line with the key and the reason and never the value; the fixture's ten protect entries (two folders, name patterns for a volume, a container, an image and a network, two compose project names, two image names) each returned for both engine contexts; mode refused as an unknown key.",
+   "requires_note": "Only ROOT and expect. Writes fixture installation folders with invented values into a temporary folder and reads them through the one installation reader with an environment of their own; loads the declarations reader and yamlish by path. Never reads a real installation."
   }
  ],
  "resource_capacities": {
