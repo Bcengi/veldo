@@ -1,6 +1,6 @@
 # VELDO-0295 design: space management
 
-Revision 2, 2026-11-13. Design for the spec at
+Revision 3, 2026-11-13. Design for the spec at
 specs/VELDO-0295-veldo-records-what-it-creates-and-removes-it-at-the-event-that-ends-it.md. It answers
 the owner's request (Telegram 41152): "for veldo we need to introduce space management - with all of the
 projects, worktrees and tmp growing, veldo needs to clean things up after itself. this should happen not
@@ -11,18 +11,29 @@ The design in one paragraph: Veldo keeps a ledger in its control store. Every th
 on disk or in Docker is written to the ledger before it is made, with its owner and the events that end
 it. Things made by processes Veldo does not start (a worktree someone adds with git, a gate run from a
 shell, a lead session, a builder started by a script) are recorded by a hook or a wrapper that runs inside
-that process. When an ending event happens, the process that emits it asks the ledger which things are now
-due and removes them on the spot, each through a fixed set of safety rules. A thing a rule refuses stays,
-is marked deferred with the rule's name, and is tried again at its next event. A run states the space it
-needs and waits when the pool cannot cover it. At service start, and when asked, Veldo compares the disk
-and Docker with the ledger. There is no timer anywhere in it.
+that process. When an ending event happens, the things it ends are removed at once, each through a fixed
+set of safety rules: by the emitting process itself when that process is a run, a gate or a landing
+station, and by the authority service when the event came from a git hook or a session hook, which only
+record and return. A thing a rule refuses stays, is marked deferred with the rule's name, and is tried
+again at its next event. A run states the space it needs and waits when the pool cannot cover it. At
+service start, and when asked, Veldo compares the disk and Docker with the ledger. There is no timer
+anywhere in it.
 
-Revision 2 follows the validation of 2026-11-13 (verdict CHANGES, B1 to B6 and M1 to M9) and the lead's
-decisions on the four open questions. Section 14 answers each point. The main change: revision 1 wired
-events into the receiver, the gate host, the landing station and the authority service, and on the
-measured host those four create almost none of the disk use. Section 6.9 adds the event sources that do.
+Revision 2 followed the first validation of 2026-11-13 (B1 to B6, M1 to M9). Revision 3 follows the
+second (verdict CHANGES, R1 to R4 and S1 to S11) and carries the lead's decisions exactly. Section 14
+answers every point of both. What changed in revision 3:
 
-Five things the lead must know before reading on:
+- A hand landing removes nothing inside the git command. The hook records the landing and returns; the
+  authority service consumes the record and removes the contained worktrees right after (6.9, 8.4).
+  Session hooks work the same way.
+- The data model has a third owner value, no project, for a session started outside every project (4.1).
+- An existing project's gate script is that project's own file and is not changed by a change to the
+  engine's. Each bound project's gate gets the three space steps by its own change, reconcile reports a
+  gate that lacks them, and until then the run wrapper covers the gate (8.2, section 11, VELDO-0325).
+- The table of existing removal paths gains the batch clone, the sandbox's scratch removers and four
+  reviewed-list entries (6.10).
+
+Six things the lead must know before reading on:
 
 1. Things an agent's own commands create inside a run (a build folder, a container its tests start)
    cannot be recorded before they exist, because Veldo does not run those commands. They are recorded at
@@ -36,8 +47,11 @@ Five things the lead must know before reading on:
    judged inside it (section 4.2).
 4. The first reconcile on an existing host removes nothing. It lists what is due, and the owner confirms
    per project and kind (section 11). In report mode admission only advises.
-5. Two of the tickets change protected files: the gate script (VELDO-0309) and the sandbox (VELDO-0302).
-   Each needs the owner's recorded approval.
+5. Three of the tickets change protected files: the gate script (VELDO-0309) and the sandbox (VELDO-0302
+   and VELDO-0324). Each needs the owner's recorded approval. VELDO-0325 changes the gate script of each
+   bound project, which is protected in that project and needs the owner's approval there.
+6. Removals that follow a hook's event need the authority service running. The measured host runs none
+   today; migration step 1 starts it. Until it runs, hook events wait in a spool and nothing is lost.
 
 ## 1. What was measured
 
@@ -47,6 +61,7 @@ carry none of these names.
 | What | Measured |
 | :- | :- |
 | Filesystem | One filesystem of 915 GB holding the home folder and the temporary folder. 29 GB free when revision 1 was written, 61 GB free when revision 2 was written |
+| Gate scripts of the bound projects | Each project's scripts/verify.sh is its own file: 485 lines in core, 159 to 251 in the seven others read. None calls the gate host, and no project has a gate_host.json |
 | Worktree roots | 13 folders named after a repository with the suffix -worktrees. Nine repositories run Veldo; the rest are plain git repositories |
 | core worktrees | 102 in git's list, 157 GB under the worktree root |
 | Build folders in them | 8 folders, 89 GB together; the largest 35 GB, then 21 GB and 9 GB; two are named target-veldo1810, not target |
@@ -91,7 +106,8 @@ cannot be pulled again are kept (2026-11-13); the desktop engine's disk image is
 | Item | One thing on disk or in Docker that the ledger has a record for |
 | Kind | What an item is: worktree, branch, agent repository, build output, scratch, evidence, container, volume, network, image tag |
 | Agent repository | The private git repository the sandbox makes for one agent. The agent's worktree belongs to it, and its commits reach the shared repository only when the runner brings them across |
-| Owner | Who an item belongs to: always a project or a plain repository; where they apply, a ticket, a run, a gate, a lane and a session |
+| Owner | Who an item belongs to. The first part is always one of three: a project, a plain repository, or no project. Where they apply, a ticket, a run, a gate, a lane and a session are added |
+| No project | The owner value for scratch of a session whose working folder is inside no bound project and no plain repository. It belongs to the installation. Only session scratch can have it |
 | Plain repository | A git repository the installation names that does not run Veldo. It has no tickets and no gate; its worktrees are still recorded |
 | Pool | One body of storage whose free space is one number: a filesystem, or a container engine that keeps its data in its own disk image |
 | Ending event | An event in the item's lifecycle at which the table in section 5 says to act |
@@ -102,12 +118,21 @@ cannot be pulled again are kept (2026-11-13); the desktop engine's disk image is
 | Census | Reading what a run left behind (its worktree's untracked folders, its scratch root, its labelled Docker objects) and recording it |
 | Protect list | Paths and Docker names that are never recorded, adopted or removed |
 | Start commit | The commit a branch pointed at when its item was recorded |
+| Space worker | A short-lived child process of the authority service that carries out the removals an event made due, so the service keeps answering while a large folder is deleted |
+| Host principal | A signing identity that belongs to the host and not to a person. The service and the receiver each have one today; this design adds two |
 
 ## 3. Components
 
 engine/ is the canon. Every file under engine/.veldo has a synced copy under .veldo, and
-engine/scripts/agent_sandbox.py, gate_host.py and verify.sh have copies under scripts/; the copies change
-with the canon and the gate's template-sync check fails if they drift.
+engine/scripts/agent_sandbox.py and gate_host.py have copies under scripts/; the copies change with the
+canon and the gate's template-sync check fails if they drift.
+
+The gate script is the exception. engine/scripts/verify.sh is the template init lays into a new
+repository, only when the repository has none (init_scaffold.py:889-904 never overwrites). From then on
+scripts/verify.sh is the repository's own file: the template-sync check excepts it
+(scripts/check_template_sync.sh:30, "every repository declares which checks it runs"), and this
+repository's copy already differs from the template. So a change to the engine's gate script reaches
+repositories initialized after it and no others. Existing projects are covered by VELDO-0325.
 
 | Component | File | New or changed | Responsibility |
 | :- | :- | :- | :- |
@@ -121,45 +146,60 @@ with the canon and the gate's template-sync check fails if they drift.
 | Reconciler | engine/.veldo/control_space_reconcile.py | New | Snapshot of roots and engines, comparison with the ledger, adoption rules, the report |
 | Admission | engine/.veldo/control_space_admission.py | New | Pools, needs, holds, the wake-up of waiting units, the no-space classification |
 | Event spool | engine/.veldo/control_space_spool.py | New | Keeps an event that a hook or the CLI could not deliver because the authority was not reachable, and replays it in order |
+| Event consumer | engine/.veldo/control_space_consumer.py, called from the authority service | New | Reads event records the hooks left, works out what each one ends, and hands the removals to the space worker |
+| Space worker | engine/.veldo/control_space_worker.py | New | The child process the service starts to run Signal for one event. Its output pipe is in the service loop's poll set |
 | Clone provisioner | engine/.veldo/control_clone.py | Changed | Declares the clone root, work tree and scratch folder before making them; teardown and failed-provision cleanup go through Signal |
 | Fleet worktrees | engine/.veldo/fleet.py | Changed | Declares the worktree before git adds it; removal goes through Signal, without git's force option |
-| Sandbox | engine/scripts/agent_sandbox.py, prepare and integrate (protected, policy.yaml:22 and 35) | Changed | Declares the agent repository, the worktree and the branch before making them; integrate reports what it brought across |
+| Batch | engine/.veldo/control_batch.py | Changed | Declares the batch clone and the observation folder before making them (:530, :721); discard goes through Signal (:944-951) |
+| Sandbox | engine/scripts/agent_sandbox.py, prepare, integrate and the launcher's scratch (protected, policy.yaml:22 and 35) | Changed | Declares the agent repository, the worktree and the branch before making them; integrate reports what it brought across. Under a recorded run it declares its scratch and leaves the removal to the run's event |
+| Settlement journey | engine/.veldo/control_request_settlement.py | Changed | Gains one request touchpoint, space disposition, with the rulings save, keep and discard (section 7) |
 | Receiver | engine/.veldo/control_launch.py | Changed | Declares run folders (the run directory, artifacts, receipts, token records); sets the run's label and space environment; runs the census and sends run finished; classifies a no-space end. Its two direct removals of run directories go through Signal |
 | Landing line | engine/.veldo/lander.py, control_launch_work.py | Changed | Candidate workspaces are declared as scratch and removed through Signal |
 | Retirement | engine/.veldo/control_retirement.py | Changed | When a pending retirement's obligation completes and the retirement is carried out, the dispatch's deferred items are retried in the same call |
 | Runner | engine/.veldo/control_launch.py, Runner.prepare | Changed | Asks Admission after its sweep and before it reserves anything; a wait leaves the unit waiting with no dispatch record |
 | Dispatch contract | engine/.veldo/control_dispatch.py | Changed | The contract gains the field space (the hold and the needs) |
 | Landing | engine/.veldo/control_landing.py and control_landing_station.py | Changed | After the completion receipt is recorded, sends landed for the unit |
-| Gate script | engine/scripts/verify.sh (protected, policy.yaml:83 and 86) | Changed | Calls the gate space helper at three points: before the first check, before the stamp, after the stamp |
+| Gate script template | engine/scripts/verify.sh (protected, policy.yaml:83 and 86) | Changed | Calls the gate space helper at three points: before the first check, before the stamp, after the stamp. Reaches new repositories only |
+| Each bound project's gate script | scripts/verify.sh in that project (protected there) | Changed, by that project's own spec | The same three calls at the same three points (VELDO-0325) |
 | Gate space helper | engine/scripts/gate_space.py, added to the protected paths | New | The gate's need check, the no-space classification and the verdict recorded event. Read from the authority checkout, never from the candidate, as gate_host.py is |
-| Authority service | engine/.veldo/control_service.py | Changed | At start: replay the spool, snapshot, subscribe, reconcile. Sends ticket ended and project ended after it commits those transitions. Gains the wake source space for waiting units. The Docker event streams are pipes in its poll set |
-| Git hooks | engine/hooks/post-checkout and engine/hooks/reference-transaction, installed into each bound repository | New | Record a worktree made by any git command, and report a change of the trunk or a landing ref |
-| Session hooks | packs/claude/hooks/hooks.json and packs/claude/scripts | Changed | SessionStart records the session and its scratch; SessionEnd ends it |
+| Authority service | engine/.veldo/control_service.py | Changed | At start: replay the spool, snapshot, subscribe, reconcile. After a packet that advanced the journal it runs the event consumer. Sends ticket ended and project ended after it commits those transitions. Gains the wake source space for waiting units. The Docker event streams and the space worker's pipe are in its poll set |
+| Git hooks | engine/hooks/post-checkout and engine/hooks/reference-transaction, installed into each bound repository | New | Record a worktree made by any git command and a branch switch inside a recorded worktree, and record a change of the trunk or a landing ref. They record and return; they remove nothing |
+| Session hooks | packs/claude/hooks/hooks.json and packs/claude/scripts | Changed | SessionStart records the session and its scratch; SessionEnd records that it ended. They record and return; they remove nothing |
+| Host principals | engine/.veldo/control_service.py (the install), engine/bin/veldo | Changed | Two new host principals with their own keys: one for hooks, one for the gate helper and the run wrapper (6.11) |
 | API | engine/.veldo/control_api.py and engine/ui/src/api/routes.json | Changed | The space reads and the owner actions of section 6.6 |
 | Console | engine/ui/src/features/space, engine/ui/src/views/SpaceView.vue, engine/ui/src/app/navigation.ts | New and changed | The Space screen, the run view's space panel, the wait reason on the runs list |
-| CLI | engine/bin/veldo | Changed | The verb space with status, reconcile, record, event, admit, run and covers |
+| CLI | engine/bin/veldo | Changed | The verb space with status, reconcile, record, event, admit, run, covers and gate-check |
 | Boundary check | scripts/check_space_boundary.py, called from scripts/verify.sh | New | Refuses a creation primitive outside the ledger's seam and a removal primitive outside the removers |
 | Scaffold | engine/.veldo/init_scaffold.py | Changed | Lays .veldo/space.yaml in a new project |
 
 ### Component view
 
 ```
-  PROCESSES THAT EMIT EVENTS                        THE SPACE LIBRARY (runs inside the emitter)
+  PROCESSES THAT REMOVE AT THEIR OWN EVENT          THE SPACE LIBRARY (runs inside the remover)
 
   Receiver (one per dispatch)     - run finished -+
   Run wrapper (CLI, outside run)  - run finished -+
-  Gate script (every gate)        - verdict  - - -+     +=============================+
-  Landing station                 - landed  - - - +- -> | Signal                      |
-  Git ref hook (any git command)  - contained - - +     |  1 ledger: which items due  |
-  Session hooks                   - session ended +     |  2 kind registry: action    |
-  Authority service               - ticket ended, +     |  3 probes: facts            |
-                                    project ended,      |  4 rules: remove or defer   |
-                                    abandoned           |  5 remover: owning tool     |
-                                                        |  6 ledger: outcome          |
-  CREATORS                                              +==============+==============+
-  Clones, Fleet, Sandbox, Receiver, - declare, - - - -> |              |
-  Docker adapter, git checkout hook,  confirm                          |
-  session start hook, run wrapper                                      |
+  Gate script (a gate with the    - verdict  - - -+     +=============================+
+    space steps)                                  +- -> | Signal                      |
+  Landing station                 - landed  - - - +     |  1 ledger: which items due  |
+  Space worker (child of the      - contained,    +     |  2 kind registry: action    |
+    authority service)              session ended,      |  3 probes: facts            |
+                                    ticket ended,       |  4 rules: remove or defer   |
+                                    project ended,      |  5 remover: owning tool     |
+                                    abandoned           |  6 ledger: outcome          |
+                                                        +==============+==============+
+  HOOKS THAT ONLY RECORD                                               |
+  Git ref hook     - landing event record - +                          |
+  Session hooks    - session started,       +- > journal advance       |
+                     session ended records       wakes the event       |
+                                                 consumer, which       |
+                                                 starts the worker     |
+                                                                       |
+  CREATORS                                                             |
+  Clones, Fleet, Batch, Sandbox,    - declare, - - - - - - - - - - - > |
+  Receiver, Docker adapter, git       confirm                          |
+  checkout hook, session start                                         |
+  hook, run wrapper                                                    |
                                                                        |
   Runner.prepare, gate script, run wrapper - admit - > Admission - - > |
                                                                        v
@@ -170,7 +210,9 @@ with the canon and the gate's template-sync check fails if they drift.
 ```
 
 The library is not a daemon. It has no loop and no clock. It runs when a process calls it with an event
-or a creation, and returns.
+or a creation, and returns. The event consumer is not a loop either: it is one function the service calls
+after a packet has advanced the journal, the same moment the service already uses to wake the factory
+loop (control_service.py:1588-1596).
 
 ## 4. Data model
 
@@ -188,10 +230,11 @@ Identity: space:item: followed by a new identifier. One record per thing.
 | pool | The pool its bytes count against |
 | locator | For a disk kind: the absolute path. For a branch: repository and ref name. For a Docker kind: engine context, object id and name |
 | parent | The item this one lives inside, when there is one (a build folder's worktree, a worktree's agent repository) |
-| owner | project or plain repository (always one of the two); ticket, run, gate, lane, session where they apply |
+| owner | scope: one of project, plain repository, or no project (always exactly one of the three), with the project's or repository's identity for the first two. Then ticket, run, gate, lane and session where they apply. No project is accepted only for the kind scratch with a session |
 | creator | The component that declared it: a seam, a hook, the run wrapper, census, or reconcile |
 | adopted | True when reconcile created the record for a thing that already existed |
-| start | For a branch and a worktree: the start commit. For an adopted one, the first entry of the branch's own log; absent when the branch has no log |
+| branch | For a worktree: the branch checked out in it, or none when detached. Updated when the branch is switched (6.9) |
+| start | For a branch and a worktree: the start commit. For an adopted one, the first entry of the branch's own log; absent when the branch has no log. An item with no start commit is never contained (section 5) |
 | process | For a session's item: the session's process id and its start time, as the kernel reports them |
 | state | declared, present, due, deferred, removing, removed, gone, kept |
 | ends_on | The events of section 5 that apply to this item, copied from the kind registry at declaration with the registry's version |
@@ -262,12 +305,28 @@ Identity: space:reconcile: followed by a new identifier. It holds what started i
 CLI), the roots and engines read, and the counts: matched, adopted, reported, gone, completed. The findings
 themselves are item records.
 
-### 4.5 Spooled event
+### 4.5 Event record
+
+Identity: space:event: followed by a new identifier. One record per event a hook reported. A hook cannot
+remove anything, so what it saw has to be a record the service can act on.
+
+| Field | Content |
+| :- | :- |
+| type | ref changed, session started, or session ended |
+| subject | For ref changed: the repository, the ref name, the old commit and the new commit. For the session events: the session id, its working folder, its process id and process start time |
+| emitter | The hook, and the host it ran on |
+| state | received, consumed |
+| result | Written when consumed: the items the event made due, or "none" |
+
+The record is written by the Ledger's event command. Writing it advances the journal, and that advance is
+what wakes the consumer (6.9). A record is consumed once; a consumer that finds it already consumed does
+nothing.
+
+### 4.6 Spooled event
 
 Not a store record. One file per event in a spool folder under the state root, written whole and then
-renamed into place, holding the event, its subject, the emitter and the time. The spool exists because a
-git hook must never fail or wait on a service that is down. Section 6.9 says when it is written and
-replayed.
+renamed into place, holding what the event record would hold. The spool exists because a git hook must
+never fail or wait on a service that is down. Section 6.9 says when it is written and replayed.
 
 ## 5. Kinds and lifecycle
 
@@ -296,14 +355,20 @@ The events, the existing thing that makes each true, and who emits it:
 | Run finished | The dispatch record is conclusive and the kernel says its containment group is empty (the VELDO-0041 conditions). For a wrapped run: the command and its containment group have ended | The receiver of that dispatch; the run wrapper |
 | Verdict recorded | A gate's stamp is written, or a review's verdict is recorded | The gate script through the gate space helper; the review's receiver |
 | Landed | The VELDO-0057 completion receipt for the unit is recorded | The landing station |
-| Contained | A branch has moved past its start commit, and its tip is reachable from the trunk, from a landing ref the project declares, from the source commit of a completed landing, or from another recorded branch | The git ref hook when the trunk or a landing ref changes; the landing station at each landing; reconcile |
+| Contained | A branch has moved past its start commit, and its tip is reachable from the trunk, from a landing ref the project declares, from the source commit of a completed landing, or from another recorded branch | The event consumer, for a ref changed record whose ref is the trunk or a declared landing ref; the landing station at each landing; reconcile |
 | Ticket ended | The authority commits one of four existing transitions: the backlog item's complete (ACTIVE to DONE) or cancel, the unit's dispose_unit (to CANCELED) (control_backlog.py:71-80, 178), or the assignment's dispose with the ruling close, the VELDO-0133 close (control_assignment.py:122, 529) | The authority service, after the command commits |
 | Project ended | The authority commits the project's cancel or complete (control_project.py:141, 758) | The authority service, after the command commits |
 | Worktree abandoned | The ticket's next run is provisioned in another worktree, or the owner presses Abandon on the console | The provisioner, or the API action |
-| Session ended | The client's SessionEnd hook runs; or a later session starts on the same project and the kernel no longer shows the recorded process of an earlier one | The session hooks |
+| Session ended | A session ended record is consumed; or a session started record is consumed and the kernel no longer shows the recorded process of an earlier session on the host | The event consumer |
 
-There is no "superseded" transition in the authority today, so no event of that name. If one is added
-later, mapping it to ticket ended is one row in this table and its own ticket.
+Every transition in this table exists in the code today. There is no "superseded" transition in the
+authority, so there is no event of that name, and this design adds no transition. If one is added later,
+mapping it to ticket ended is one row in this table and its own ticket.
+
+Who computes contained against what. The ref hook reports only changes of the trunk and of declared
+landing refs, so the consumer tests recorded branches against those refs alone. "Contained in another
+recorded branch" is computed by the landing station at a landing and by reconcile, and by nothing else: a
+commit on an ordinary branch fires no contained event.
 
 Three rules complete the table.
 
@@ -317,6 +382,14 @@ on Abandon.
 
 A branch that has not moved past its start commit is never contained. A worktree made a minute ago sits on
 a branch whose tip is the trunk's tip; without this rule the next landing would remove it.
+
+An item with no start commit is never contained either. That is an adopted worktree whose branch has no
+log, and a detached one. It ends on landed, on project ended and on Abandon.
+
+A worktree follows the branch that is checked out in it now. When someone switches a recorded worktree
+from branch X to branch Y, the item's branch becomes Y and its start commit becomes the commit Y pointed
+at when it was switched to. A later landing that contains X then marks the branch X contained and leaves
+the worktree alone.
 
 "Worktree abandoned" is an event, not an age. A worktree nobody has touched for a month is not abandoned
 until one of the two things in the table happens.
@@ -341,6 +414,9 @@ Each is a registered command of the control store, journaled and signed like eve
 | adopt | what reconcile found, the rule that proved the owner | Creates an item in state present with adopted true | The same refusals as declare |
 | report | what reconcile found, and a proposed owner when a rule gives one | Creates or refreshes a report record; never an owner | |
 | gone | item | present, declared, due or deferred to gone | |
+| rebranch | worktree item, new branch, new start commit | Writes the item's branch and start; declares a branch item for the new branch when it has none | An item that is not a worktree, or is not present, kept or deferred |
+| event | type, subject, emitter | Creates an event record in state received | An unknown type; a ref changed event for a repository that is neither bound nor plain |
+| consumed | event record, result | received to consumed | A record already consumed |
 | hold, admit, release | See 6.7 | | |
 
 Known roots are the roots the declarations name: each project's and plain repository's worktree root, the
@@ -433,11 +509,14 @@ Images. An image tag a run built is an item and is removed with its ticket. An i
 an item: it is recorded once per engine as kept, with no ending event, because nothing in Veldo can prove
 it can be pulled again. The protect list names the images known not to be.
 
+Order at an event. Containers are stopped and removed first, then networks, then volumes. A volume a
+container still uses is deferred by the engine's own refusal.
+
 ### 6.5 Removers
 
 | Action | Method | It refuses by itself when |
 | :- | :- | :- |
-| Remove a disk folder | Rename it to a marked name beside itself, run the in-use probe again on the new name, then delete it; if the second probe finds a user, rename it back and defer | The folder is a mount point, or is not on the item's pool |
+| Remove a disk folder | Rename it to a marked name beside itself, run the in-use probe again on the new name, then delete it; if the second probe finds a user, rename it back and defer. Before the delete it opens up directories a confined process left unreadable or unwritable, through descriptors and without following a link, as the sandbox's own remove_tree does today (agent_sandbox.py:2052-2071) | The folder is a mount point, or is not on the item's pool |
 | Remove a worktree | git's worktree remove, without the force option | git finds a modified tracked file or an untracked file |
 | Remove an agent repository | The folder remover, after the unique work rule has compared its branches with the shared repository | |
 | Remove an image tag | The engine's image remove, without the force option, on the tag | A container uses the image |
@@ -449,8 +528,9 @@ it can be pulled again. The protect list names the images known not to be.
 | Discard a worktree | git's worktree remove with the force option, on one worktree named by a settled owner decision | The decision is not settled, names another worktree, or the worktree's list of changed files differs from the list the owner was shown |
 
 No remover calls a prune command. No remover passes a force option, with the one exception in the last
-row, which runs only on the owner's signed answer (section 7). Each remover returns the bytes it measured
-just before, and the pool's free space before and after.
+row. Discard is the one forced removal, and it is allowed only after the owner's discard answer (section
+7). Discard removes the worktree and never the branch, so work that was committed survives it. Each
+remover returns the bytes it measured just before, and the pool's free space before and after.
 
 ### 6.6 API and console actions
 
@@ -459,10 +539,10 @@ Reads, all from ledger records, live through the existing record stream:
 | Route name | Returns |
 | :- | :- |
 | space.pools | Each pool: capacity, free, floor, held, and the waiting and advised holds with their numbers |
-| space.usage | Bytes and item counts grouped by project, by ticket and by kind; filters for each |
+| space.usage | Bytes and item counts grouped by project, by ticket and by kind; filters for each. Plain repositories are rows beside the projects, and "no project" is a row of its own |
 | space.pending | Due and deferred items: owner, kind, locator, size, reason, the event that retries it, the decision request when there is one |
 | space.removed | Removed items, newest first: owner, kind, locator, event, emitter, size, free before and after |
-| space.reports | What reconcile found and could not adopt, with the proposed owner when a rule gives one; repositories whose hooks are missing |
+| space.reports | What reconcile found and could not adopt, with the proposed owner when a rule gives one; repositories whose hooks are missing; bound projects whose gate script lacks the space steps |
 | space.protected | The protect list in force and where each entry comes from |
 
 Owner actions, each a signed command through the API like every other owner action:
@@ -474,8 +554,8 @@ Owner actions, each a signed command through the API like every other owner acti
 | space.abandon | Emits worktree abandoned for one worktree |
 | space.confirm | Confirms a migration batch (section 11) |
 
-The answers to a unique-work decision request are not new routes. They go through the existing decision
-request path.
+The answers to a unique-work decision request are not new routes. They go through the existing request
+settlement path (section 7).
 
 ### 6.7 Admission
 
@@ -489,9 +569,10 @@ Why before prepare. A prepared dispatch holds its account slot and reservation, 
 the same unit and station, and is refused once its deadline has passed (control_dispatch.py:134, 476-495,
 520-521). A dispatch that waited an hour for space would die on its deadline while holding a slot. So the
 question is asked before any of that exists. When the answer is wait, prepare refuses with
-space_wait:<pool>, the factory loop lists the unit as waiting with the numbers, the way it already lists a
-unit that has no account (control_service.py:2642-2644), and no dispatch record, slot, reservation or
-deadline is made.
+space_wait:<pool>, and no dispatch record, slot, reservation or deadline is made. The factory loop today
+lists a refused offer as waiting only when the refusal starts with no_account; every other refusal goes
+to its refused list (control_service.py:2640-2646). That branch changes: a refusal that starts with
+space_wait joins the waiting list, with the numbers.
 
 The dispatch contract gains one field, space, holding the hold's identity and the needs per pool. It joins
 the contract's field list (control_dispatch.py:137-138), so it is covered by the contract digest of every
@@ -570,27 +651,61 @@ instruction an agent has to remember.
 
 | Process | What it creates or ends | Mechanism | Why it cannot be skipped |
 | :- | :- | :- | :- |
-| Any git command that adds a worktree | A worktree and usually a branch | The post-checkout hook in the repository. git runs it at the end of worktree add, in the new worktree. It records the worktree and its branch as present, with the start commit and the owner the branch pattern gives | git runs the hook itself. The person or script typing the command does nothing extra |
-| Any git command that moves the trunk or a landing ref | Landed or contained | The reference-transaction hook. git runs it for every ref change; in its committed state the hook reports changes to the trunk and the declared landing refs, and Signal runs contained for the project | The same. A hand-made landing commit, a fast-forward and a fetch all pass through it |
-| Every gate | Build output, verdict | The gate script calls the gate space helper before its first check, before the stamp and after it (section 8.2). It does this with or without a gate_host.json | The steps are in the gate script that writes the stamp. A gate that skips them is not the gate |
-| A lead session | Session scratch | The client's SessionStart and SessionEnd hooks, installed in every client account folder the installation names | The client runs them. A crashed session is caught by the next session start on the same project |
+| Any git command that adds a worktree | A worktree and usually a branch | The post-checkout hook in the repository. git runs it at the end of worktree add, in the new worktree, with the null commit as the previous HEAD. It records the worktree and its branch as present, with the start commit and the owner the branch pattern gives | git runs the hook itself. The person or script typing the command does nothing extra |
+| Any git command that switches the branch of a recorded worktree | The worktree's branch | The same post-checkout hook. On a branch checkout (its flag is 1) with a previous HEAD that is not the null commit, inside a recorded worktree, it sends rebranch with the new branch and its commit | The same |
+| Any git command that moves the trunk or a landing ref | Landed or contained | The reference-transaction hook. git runs it for every ref change; in its committed state the hook sends one event record for each changed trunk or declared landing ref (repository, ref, old commit, new commit) and returns. It computes nothing and removes nothing. The service's event consumer does the rest (below) | The same. A hand-made landing commit, a fast-forward and a fetch all pass through it |
+| A gate whose script has the space steps | Build output, verdict | The gate script calls the gate space helper before its first check, before the stamp and after it (section 8.2). It does this with or without a gate_host.json | The steps are in the gate script that writes the stamp. A gate that skips them is not the gate |
+| A gate whose script does not have the steps yet (every existing project until its own change, VELDO-0325) | Build output | The run wrapper around the gate command, in the host's gate launcher. It gives admission before the gate, and the census and run finished after it, which removes the build output. It cannot give NOT JUDGED, because the gate script has written its stamp by then | The launcher is the one place gates start on the host. Reconcile lists every bound project whose gate lacks the steps under space.reports, so an uncovered gate is visible and not silent |
+| A lead session | Session scratch | The client's SessionStart and SessionEnd hooks, installed in every client account folder the installation names. Each sends one event record and returns | The client runs them. A crashed session is caught when the next session starts anywhere on the host |
 | A builder or any heavy command started outside the receiver | Scratch, build output, containers | The run wrapper, the CLI's space run: hold and admit, declare the run with its scratch root, label and compose project name, start the command in its own containment group, then census, run finished and release | The host's launch scripts start their client through it (section 11). For a client that has session hooks, the hooks still record the run when someone bypasses the launch script |
 | A command queued on the host lock | Whatever it builds | The same wrapper, placed inside the lock, so admission is judged when the command's turn comes and not when it joined the queue | The lock script is the one place such commands start |
+
+The event consumer. A hook's packet reaches the authority over the existing local socket
+(control_client.py). The Ledger's event command writes the event record, which advances the journal. The
+service already acts on that advance: after a packet that advanced the journal it wakes the factory loop
+with the source journal (control_service.py:1588-1596, and the loop's wake at :3227). The consumer is
+called at the same place, and does not depend on a factory loop being configured. For each event record
+in state received, oldest first, it does this:
+
+| Event record | What the consumer does |
+| :- | :- |
+| ref changed, on the trunk or a declared landing ref | For each recorded branch of that repository that has a start commit and has moved past it, test whether its tip is reachable from the recorded new commit. For each that is, the worktree on that branch, its build output and its agent repository become due with the event contained. If the recorded new commit no longer exists, nothing is contained by this record |
+| session started | For every session recorded on this host whose recorded process (id and start time) the kernel no longer shows, the session's scratch becomes due with session ended. This covers sessions of every project and of no project |
+| session ended | That session's scratch becomes due with session ended |
+
+Then it starts the space worker for the due items and marks the record consumed with the result. The
+worker is a child process that runs Signal: rules, removers, outcomes. Its output pipe is in the service
+loop's poll set beside the launch pipes and the provisioner pipes (control_service.py:1889-1895,
+3490-3493), so the service answers other packets while a large folder is being deleted. One worker runs
+at a time. Records that arrive while it runs stay received and are taken, in order, when its pipe closes.
+The authority service uses the same worker for the events it emits itself (ticket ended, project ended,
+Abandon, a confirmed migration group), for the same reason.
+
+This is an event and a subscription inside one process. Nothing reads a clock, nothing polls, and the
+git command or the session never waits for a removal.
 
 What each mechanism does when the authority is not reachable. A Veldo creator refuses its creation. A hook
 or the wrapper must not fail the git command, session or build it rides on, so it writes the record or
 event to the spool and returns. The spool is replayed, in order, the next time any CLI call or hook
-reaches the authority, and at service start before reconcile. A spooled contained event is judged against
-the refs as they are at replay.
+reaches the authority, and at service start before reconcile. So removals that follow a hook need the
+service running. Migration step 1 starts it; while it is down nothing is removed and nothing is lost.
 
-Three limits, stated so nobody assumes more.
+Four limits, stated so nobody assumes more.
 
-Veldo's own guarded git runs with hooks switched off (candidate_git.py:74 and 83, agent_sandbox.py:772,
-git_process.py:144), and so does the host's sandbox script. Worktrees made that way are Veldo's own
-creations and are recorded by the seam of 6.2, not by the hook.
+Veldo's own guarded git runs with the repository's hooks out of play. Some calls point the hooks folder
+at nothing (candidate_git.py:74 and 83, agent_sandbox.py:772, and the host's sandbox script). The
+transport commands point it at a private folder (git_process.py:144). Either way the installed hooks do
+not run. Worktrees made that way are Veldo's own creations and are recorded by the seam of 6.2, not by the
+hook.
 
-A person can switch a repository's hooks off for one command. That worktree is then found by the next
-reconcile and adopted. Reconcile also reports a bound repository whose hooks are missing.
+A person can switch a repository's hooks off for one command, and git's worktree add with its no-checkout
+option runs no post-checkout hook. That worktree is then found by the next reconcile and adopted.
+Reconcile also reports a bound repository whose hooks are missing.
+
+Loose files that a session's own commands write straight into the session scratch root, outside the
+session's folder, have no provable owner. They stay reported, with their total size on the Reports
+section, and Veldo never removes them. A wrapped run does not add to them: its temporary folder is its
+own scratch root, and its log goes where the launch script puts it.
 
 Removing a worktree by hand fires no hook. Nothing needs removing then; the item is marked gone at its
 next event.
@@ -599,13 +714,14 @@ Hook installation. When a repository is bound, and for each plain repository the
 puts the two hooks in the repository's shared hooks folder, which every linked worktree of it uses. Where a
 hook file already exists, one marked line is added to it and the rest is left. Where the repository
 configures its own hooks folder, the hooks go there. The hook starts the CLI with git's own environment
-variables cleared, so the removals it causes act on the worktrees they name and not on the repository the
-hook fired in.
+variables cleared, so nothing the CLI does is aimed by accident at the repository the hook fired in.
 
 ### 6.10 Existing removal paths
 
 Every place in the engine that removes a folder or a worktree today, and what happens to it. Line numbers
-are the engine canon at the design commit.
+are the engine canon at the design commit. The list was made by searching the engine for the recursive
+folder delete, git's worktree remove and the shell's recursive remove, and it was checked again against
+the second validation's list. The boundary check of VELDO-0304 is what keeps it complete from then on.
 
 Replaced. After the change none of these calls a delete itself:
 
@@ -618,17 +734,34 @@ Replaced. After the change none of these calls a delete itself:
 | control_launch.py:1389-1397, _remove_run | The receiver deletes its run directory before it reports its end | The same item, removed by the receiver's Signal at run finished |
 | control_launch_work.py:105-107 | Deletes the landing line's candidate folders at close | Candidate folders are scratch items; removed through Signal at close |
 | lander.py:534-541, discard | Deletes the candidate workspace and observation folder | The same |
+| control_batch.py:944-951, discard | Deletes the batch clone (made at :530 under the workspace root) and its observation folder (made at :721), ignoring errors | Both are declared as scratch items owned by the batch's project and gate before they are made. discard calls Signal with run finished for the batch's items; a refusal is a deferral, not an ignored error |
+| engine/scripts/agent_sandbox.py:2223, the launcher's own scratch at the end of a run, through remove_tree at :2052-2071 | Deletes the scratch folder the launcher made at :2207 | Under a recorded run (the run's space label is in the environment) the launcher declares its scratch as a child of the run's scratch root and removes nothing; the run's run finished removes it through the rules. Rule 4 counts a held scratch lock and an unsettled borrowed login (VELDO-0211) as use, so the copy the launcher keeps today is still kept |
+| engine/scripts/agent_sandbox.py:2106, remove_stale_scratch, called at :2202 | Deletes scratch folders of killed launchers that are untouched for more than a day and whose lock is free. This is a cleanup by age | Under a recorded run it does not run. A killed launcher's scratch is an item of its run and goes at that run's run finished, or at reconcile when the run is long over |
+
+The two sandbox rows keep their code for one case only: a repository with no central installation, where
+there is no ledger and things are created and removed as today (6.1). That branch is on the reviewed list
+below, with that reason.
 
 Stay, on the boundary check's reviewed list. Each makes a folder with a fresh temporary name, hands it to
 nobody outside the call, and removes it before the call returns or as one step of an install that replaces
 a folder it has just built. None can hold a worktree, build output or another run's files:
 control_repository_provisioner.py:241, fix_validation.py:672, control_memory_check.py:133, 149 and 230,
 control_graph.py:602-607, control_graph_install.py:83-86 and 116, init_scaffold.py:835-849,
-engine/scripts/agent_sandbox.py:1846, 2041, 2071 and
-2759, engine/scripts/runners/process/process_runner.py:351, engine/scripts/mutation_ownership.py:200,
-engine/scripts/check_gate_mutations.py:814 and 1115, scripts/gate_schedule.py:436, and the gate script's
-own schedule folder (engine/scripts/verify.sh:160-163). The list names each function and its reason. A
-removal primitive anywhere else fails the gate.
+engine/scripts/agent_sandbox.py:1846 (a borrow journal), 2041 (a recovery folder after its content is
+restored) and 2759 (the self-test's own worktree), engine/scripts/runners/process/process_runner.py:351,
+engine/scripts/runners/plugin/plugin_load_runner.py:308-309 (the plugin load check's two temporary
+folders), engine/scripts/mutation_ownership.py:200, engine/scripts/check_gate_mutations.py:814 and 1115,
+scripts/gate_schedule.py:436, and the gate script's own schedule folder (engine/scripts/verify.sh:160-163).
+
+Three more entries stay for a different reason, each named with it:
+
+| Path | Why it stays |
+| :- | :- |
+| control_service.py:894-898, _remove_tree, called at :1006 | Rolls back a failed install of the service: it removes only the folders that same install call created |
+| control_service.py:894-898, _remove_tree, called at :1204 | Removes the service's own home at uninstall, on the owner's uninstall command. The ledger lives in that service; it cannot remove its own host through itself |
+| engine/scripts/agent_sandbox.py:2052-2071, 2106 and 2223 | Run only when no space environment is present (no central installation). With one, the rows above apply |
+
+The list names each function and its reason. A removal primitive anywhere else fails the gate.
 
 Outside the repository, on the measured host (provenance; changed when the installation is set up, section
 11):
@@ -636,10 +769,29 @@ Outside the repository, on the measured host (provenance; changed when the insta
 | Path today | What it does | Replacement |
 | :- | :- | :- |
 | myday/scripts/nightly_build_cleanup.sh:92, on the user schedule | Recursive delete by age | Retired by the check of section 11. Until then it asks the ledger and skips what the ledger says to keep |
-| myday/scripts/gate_core_cand.sh:41 | Deletes the worktree's build folder after every gate | Removed from the script. The gate script's verdict recorded event removes the build folder through the rules |
-| myday/scripts/gate_core_cand.sh:32-37 | Refuses a gate under 60 GB free | Removed. The gate's need check does it |
+| myday/scripts/gate_core_cand.sh:41 | Deletes the worktree's build folder after every gate | Kept until the gate command runs through the run wrapper and the installation is in act mode, because in report mode Signal removes nothing. Removed then (section 11, step 8): the wrapper's run finished removes the build folder through the rules, and after core's own gate change (VELDO-0325) the gate's verdict recorded does |
+| myday/scripts/gate_core_cand.sh:32-37 | Refuses a gate under 60 GB free | Kept until the same point, because in report mode admission only advises. Removed in the same step |
 | myday/scripts/codex_review.sh:51 | Forced worktree remove of the review worktree at exit | The run wrapper's run finished removes the worktree without force |
 | myday/scripts/agent_sandbox.sh:246 and 476 | Recursive delete of an agent worktree and its private repository | The CLI's event verb with worktree abandoned; the agent repository rule of section 7 decides |
+
+### 6.11 Who signs a space command
+
+A command to the authority needs two things: a peer the kernel vouches for, and a signature the authority
+can verify (control_client.py:10-23). The CLI's existing commands are signed by the owner's enrolled key.
+A git hook runs in any shell and must not hold that key. The service and the receiver already have host
+principals of their own, authority and launch-receiver (control_service.py:951-952). This design adds two
+more, each with its own key made at install and kept in the installation folder.
+
+| Principal | Used by | Commands it may sign | Refused |
+| :- | :- | :- | :- |
+| space-observer | The git hooks and the session hooks | declare and confirm for a worktree, a branch and session scratch; rebranch; event; the read behind covers | Everything else |
+| space-runner | The gate space helper and the run wrapper | What space-observer may, and for the run or gate it started: declare, confirm, measure, hold, admit, release, signal and outcome | Every owner action |
+| launch-receiver (exists) | The receiver | The same run commands, for its own dispatch | As today |
+| authority (exists) | The service, the event consumer, the space worker, reconcile | Every ledger command | |
+| The owner | Console and CLI | Adopt, Abandon, Confirm, Reconcile, changes to the protect list, and the answers to a decision request | |
+
+An observation can make something due; it can never stand in for an owner's answer. Discard, Save and Keep
+are accepted only as a settled request signed by the owner.
 
 ## 7. Safety rules
 
@@ -651,7 +803,7 @@ the probes' facts at the moment of the attempt; no fact is carried over from an 
 | 1 | Ledger | The thing at the locator is not the item recorded (another object id, another repository, a path that now resolves elsewhere through a link) | not_in_ledger |
 | 2 | Protect | The locator, or anything beneath it, matches the protect list | protected |
 | 3 | Owner live | The item's owning run is not conclusive, or its containment group is not empty; or the owning session's recorded process is still the same live process | in_use |
-| 4 | Process use | Any process has its working directory, an open file or a mapped file at or beneath the path; or a container on any named engine, running or stopped, has a bind mount at or beneath it; or git holds a lock on the worktree | in_use |
+| 4 | Process use | Any process has its working directory, an open file or a mapped file at or beneath the path; or a container on any named engine, running or stopped, has a bind mount at or beneath it; or git holds a lock on the worktree; or, for a sandbox launcher's scratch, its scratch lock is held or its borrowed login is not settled | in_use |
 | 5 | Unique work | See below | unique_work |
 | 6 | Children | An item inside this one is present, due or deferred | in_use |
 | 7 | Tool | The owning tool's non-forced remove refuses | remove_refused |
@@ -693,19 +845,33 @@ bound to the obligation completing. A sweep that finds the obligation unchanged 
 so the number of sweep calls, some of which follow a timer-woken pass, does not matter.
 
 Unique work at the end of a ticket. A worktree deferred for unique work at ticket ended or project ended
-has no further event of its own. So Signal raises one decision request in the owner's inbox, through the
-existing decision request path and its disposition touchpoint (control_backlog.py:185). The request shows
-the worktree, its branch and the list of changed and untracked files, and has three answers:
+has no further event of its own. So Signal raises one decision request in the owner's inbox.
+
+Which touchpoint. In the request vocabulary this is a decision choice (request.py:74-77), and its Discard
+answer carries the irreversible impact, which that vocabulary raises to the critical tier (request.py:92,
+236). In the control store, requests are settled by the settlement service, whose journey has five
+touchpoints today: grooming, admission, priority, finding disposition and decision disposition
+(control_request_settlement.py:106-127). Each of the five has the same three rulings: approve, reject,
+return for elaboration. None of them can carry Save, Keep and Discard, and the decision disposition
+touchpoint of control_backlog.py:185 approves an alternative outcome for a unit, which is a different
+question. So the journey gains one touchpoint, space disposition: presented as a decision, answered by the
+project owner, with the rulings save, keep and discard, each producing a typed effect the Ledger applies.
+It is a new touchpoint and has its own ticket (VELDO-0327). Everything else is the existing path: signed
+terms, one presentation, one settlement, one winner.
+
+The request shows the worktree, its branch and the list of changed and untracked files, and has three
+answers:
 
 | Answer | What happens |
 | :- | :- |
 | Save | The changes are committed on a kept branch named for the ticket, authored as the owner's configured git identity. Then the worktree is removed by git's non-forced remove. When the tree is clean and only unlanded commits made the work unique, nothing is committed: the branch already holds them, it is kept, and the worktree is removed |
 | Keep | The item's state becomes kept. Nothing retries it and no second request is raised. Abandon on the console ends that |
-| Discard | The discard remover runs: git's worktree remove with the force option on that one worktree. Rules 1, 2, 3, 4 and 6 still apply, and the remover refuses if the list of files differs from the list the owner was shown |
+| Discard | The discard remover runs: git's worktree remove with the force option on that one worktree. Rules 1, 2, 3, 4 and 6 still apply, and the remover refuses if the list of files differs from the list the owner was shown. The branch is kept, so every commit on it survives; what is lost is the uncommitted and untracked files the owner was shown |
 
 Veldo never commits on its own. The commit in Save exists only because the owner's signed answer asked for
-it. One request per worktree: later events for the same deferred item find the open request and add
-nothing.
+it. Discard is the one forced removal in Veldo, and it is allowed only after the owner's discard answer.
+One request per worktree: later events for the same deferred item find the open request and add nothing.
+For a worktree in a plain repository the request goes to the installation's owner.
 
 The protect list is also read at declare and at adopt, so a protected thing never gets an item record. It
 appears under space.protected, and that is all. Nothing on it is ever removed by Veldo, whatever its size
@@ -747,7 +913,7 @@ script again as a child and exits with its status, and it runs only where a gate
 3. The gate runs its checks. The gate script keeps a copy of its own output for the run in the gate's
    output folder.
 4. Before the stamp, when a check failed, the gate script calls the helper's classify step with that
-   copy. Section 8.6 says what it answers. On a no-space answer the gate script writes no stamp and no
+   copy. Section 8.9 says what it answers. On a no-space answer the gate script writes no stamp and no
    event, prints GATE: NOT JUDGED with the reason, and exits 75. NOT JUDGED is a new answer; nothing in
    the code has it today.
 5. Otherwise the stamp is written. That is the verdict; nothing before this step removes anything.
@@ -760,6 +926,23 @@ runs as it does today.
 
 The gate script and the helper are protected paths. The ticket that changes them needs the owner's
 recorded approval bound to the commit and proof.
+
+Which gates this reaches. The change to engine/scripts/verify.sh reaches repositories initialized after
+it. An existing project's scripts/verify.sh is its own catalog (section 3), so each bound project gets the
+three calls by a change of its own, at its own first check and its own stamp point: for core that is its
+485-line script, whose stamp is written near its end. The helper is the same file for all of them, read
+from the authority checkout. Each such change is a spec in that project and touches a path protected
+there, so each needs the owner's approval in that project. Three things make this more than an
+instruction:
+
+1. The CLI's space gate-check verb reads a project's gate script and says whether the three calls are
+   there, each before or after the stamp as required.
+2. Reconcile runs the same check for every bound project and lists the ones that fail under
+   space.reports.
+3. Until a project's gate has the steps, its gates are started through the run wrapper (6.9), which gives
+   admission and removes the build output at run finished. What such a gate lacks is NOT JUDGED: a gate
+   that dies on a full disk still stamps red. The wrapper records that end as an environment failure in
+   the ledger and says so in the gate's output, which is what tells the reader the red is not evidence.
 
 ### 8.3 A landing by the landing station
 
@@ -774,20 +957,32 @@ recorded approval bound to the commit and proof.
 
 1. Someone commits on a landing branch, or moves the trunk, with any git command.
 2. git runs the reference-transaction hook. In the committed state the hook sees that a trunk or landing
-   ref changed and starts the CLI's event verb with contained for the project.
-3. The CLI computes, for each recorded branch of the project, whether it has moved past its start commit
-   and its tip is now reachable from the changed ref. For each that is, Signal runs: build output first,
-   then the worktree by git's non-forced remove, then the agent repository; the branch is marked
-   contained and kept.
-4. The CLI returns and the git command ends. If the authority was not reachable, step 3 happens at replay.
+   ref changed. It sends one packet to the authority, signed as space-observer: the repository, the ref,
+   the old commit and the new commit. If the authority is not reachable it writes the same thing to the
+   spool. Then it returns, and the git command ends. Nothing has been computed or removed.
+3. The authority writes the event record. The journal has advanced, so the service calls the event
+   consumer when it has answered the packet.
+4. The consumer tests each recorded branch of that repository that has moved past its start commit
+   against the recorded new commit. For each branch that commit contains, the worktree on it becomes
+   due with the event contained.
+5. The consumer starts the space worker. For each due worktree the worker runs Signal: build output
+   first, then the worktree by git's non-forced remove, then the agent repository; the branch is marked
+   contained and kept. The record is marked consumed.
 
-### 8.5 A hand-made worktree
+Between step 2 and step 5 there is no wait on a clock. With the service running, the removal starts as
+soon as the service has answered the hook's packet. With the service down, it starts when the service
+next starts and replays the spool.
+
+### 8.5 A hand-made worktree, and a branch switch in it
 
 1. Someone runs git's worktree add in a bound or plain repository.
 2. git runs the post-checkout hook in the new worktree. The hook records the worktree and its branch,
    with the start commit, the owner the branch pattern gives, and the creator "hook".
 3. From then on the worktree has the events of section 5. A gate run in it removes its build output at
    the verdict. A landing that contains its branch removes it.
+4. Later someone switches that worktree to another branch. git runs the same hook, this time with a real
+   previous HEAD. The hook sends rebranch: the item now names the new branch and that branch's commit as
+   its start. A landing that contains the old branch no longer touches this worktree.
 
 ### 8.6 A deferral and its retry
 
@@ -798,16 +993,21 @@ recorded approval bound to the commit and proof.
 
 ### 8.7 A lead session
 
-1. The client starts a session. Its SessionStart hook records the session (its id, working folder,
-   process id and process start time) and declares the session's scratch folder, owned by the session
-   and by the project its working folder belongs to, or by the installation when it belongs to none.
-2. The same hook then looks at earlier sessions recorded for that project. For each whose recorded
-   process the kernel no longer shows, it sends session ended.
+1. The client starts a session. Its SessionStart hook sends one session started event (the session id,
+   working folder, process id and process start time) and declares the session's scratch folder. The
+   owner is the session, with the project or plain repository its working folder is inside. When the
+   working folder is inside none, the owner is the session with no project. The scratch is recorded
+   either way.
+2. The service consumes the session started record. It looks at every session recorded on the host,
+   whatever its project and including those with no project. For each whose recorded process the kernel
+   no longer shows, the scratch becomes due with session ended, and the space worker removes it.
 3. The session runs. Worktrees it adds are recorded by the git hook, not by the session.
-4. The client ends the session. Its SessionEnd hook sends session ended. The scratch is removed through
-   the rules before the hook returns.
-5. A session that crashes runs no SessionEnd hook. Its scratch stays until step 2 of the next session on
-   that project, or a reconcile.
+4. The client ends the session. Its SessionEnd hook sends one session ended event and returns. The
+   client gives a hook a short time limit (the pack's existing hook has 15 seconds) and the session is
+   on its way out, so the hook removes nothing. The service consumes the record and the space worker
+   removes the scratch through the rules.
+5. A session that crashes runs no SessionEnd hook. Its scratch stays until step 2 of the next session
+   started anywhere on the host, or a reconcile.
 
 A hook that fails or cannot reach the authority spools and returns; it never blocks the session.
 
@@ -815,7 +1015,8 @@ A hook that fails or cannot reach the authority spools and returns; it never blo
 
 1. Replay the spool.
 2. Snapshot. For each bound and plain repository, git's own list of worktrees and branches, and whether
-   its hooks are in place. For each agent repository found under a worktree root, its own list of
+   its hooks are in place. For each bound project, whether its gate script has the space steps. For each
+   agent repository found under a worktree root, its own list of
    worktrees and branches, because the shared repository's list does not show an agent's worktree. For
    each worktree root, scratch root, build root and the state root, the entries one level down. For each
    worktree found, the census of section 6.3. For each engine, the adapter's snapshot.
@@ -836,7 +1037,11 @@ A hook that fails or cannot reach the authority spools and returns; it never blo
 | Folder directly under a declared build root whose name is the name of a worktree item | None | Adopted as build output, parent that worktree |
 | Clone folder with a valid manifest under the state root | None | Adopted, owner the manifest's dispatch |
 | Run directory under the runs root named for a dispatch the store holds | None | Adopted as scratch, owner that dispatch |
-| Session scratch folder matching the installation's pattern | None | Adopted as scratch, owner the session id in its name |
+| Session scratch folder matching the installation's pattern | None | Adopted as scratch, owner the session id in its name, with the project or plain repository the folder's name gives; when the name gives none, no project |
+| Batch clone or observation folder under the workspace root, named by a batch record the store holds | None | Adopted as scratch, owner that batch |
+| Sandbox launcher scratch inside a recorded run's scratch root | None | Adopted as scratch, child of that scratch root |
+| Recorded worktree whose checked-out branch differs from the item's branch | Item present | The item's branch and start commit are updated, as rebranch does |
+| Bound project whose gate script lacks the space steps | | Reported by name under space.reports |
 | Docker object with a Veldo run label or a run's compose project name | None | Adopted, owner that run |
 | Docker object whose compose working folder, configuration file or bind source is inside a recorded worktree | None | Mode report: reported with that worktree as the proposed owner. Mode act: adopted, parent that worktree |
 | Anything on the protect list | None | Listed as protected; no item |
@@ -847,7 +1052,12 @@ A hook that fails or cannot reach the authority spools and returns; it never blo
    go through Signal at once. In mode report they wait for the owner's confirmation.
 
 Entries in the temporary folder outside the scratch roots the installation names stay reported and are
-never adopted or removed. Nothing proves who made them.
+never adopted or removed. Nothing proves who made them. The same holds for loose files directly under a
+scratch root.
+
+Build folders under a session scratch root or a build root are adopted only when the folder's name is the
+name of a worktree item. Others are reported until the owner adopts them. The measured host has none
+today.
 
 Reconcile is the only place where an action follows from a state instead of from an event as it happens.
 It runs at service start and when asked, and never on a schedule.
@@ -881,27 +1091,35 @@ nothing and blocks nothing; it only stops a full disk from being recorded as a r
   |    control store  <- - - - - - - - - - -   control.sqlite3 (ledger records live here)   |
   |    spool replay, then Reconciler            clones/ caches/ artifacts/ receipts/ runs/  |
   |      at start                               space-spool/                                |
-  |    Docker adapter: one event pipe                                                       |
-  |      per engine context, in the           Installation folder                           |
-  |      loop's poll set                        installation.yaml (space section)           |
-  |    wake source "space"                                                                  |
-  |                                           Project A repository        Project B ...     |
-  |  API process  -> console in the browser     .veldo/space.yaml                           |
-  |                                             hooks: post-checkout, reference-transaction |
-  |  Receiver (one per dispatch)                worktree root                               |
-  |    space library, in line                     worktree, build output                    |
+  |    event consumer, called after a                                                       |
+  |      packet advanced the journal          Installation folder                           |
+  |    Docker adapter: one event pipe           installation.yaml (space section)           |
+  |      per engine context, in the             keys of space-observer and space-runner     |
+  |      loop's poll set                                                                    |
+  |    wake source "space"                    Project A repository        Project B ...     |
+  |       |                                     .veldo/space.yaml                           |
+  |       v  starts, pipe in the poll set       scripts/verify.sh with the space steps      |
+  |  Space worker (child, one at a time)        hooks: post-checkout, reference-transaction |
+  |    space library: removes for hook          worktree root                               |
+  |    events and the service's own events        worktree, build output                    |
   |                                               agent repositories                        |
-  |  Gate script + gate space helper                                                        |
-  |    (one per gate), in line                Plain repository (no Veldo in it)             |
-  |                                             the same two hooks, its worktree root       |
-  |  Landing station                                                                        |
-  |    space library, in line                 Scratch roots                                 |
-  |                                             run scratch, session scratch                |
-  |  CLI started by a git hook, a session                                                   |
-  |    hook, or as the run wrapper            Build roots                                   |
+  |  API process  -> console in the browser                                                 |
+  |                                           Plain repository (no Veldo in it)             |
+  |  Receiver (one per dispatch)                the same two hooks, its worktree root       |
   |    space library, in line                                                               |
-  |                                           Client account folders                        |
+  |                                           Scratch roots                                 |
+  |  Gate script + gate space helper            run scratch, session scratch                |
+  |    (one per gate), in line                                                              |
+  |                                           Build roots                                   |
+  |  Landing station                                                                        |
+  |    space library, in line                 Client account folders                        |
   |                                             SessionStart and SessionEnd hooks           |
+  |  CLI as the run wrapper                                                                 |
+  |    space library, in line                                                               |
+  |                                                                                         |
+  |  CLI started by a git hook or a                                                         |
+  |    session hook: sends one packet or                                                    |
+  |    writes one spool file, then exits                                                    |
   |                                                                                         |
   |                                           Container engine 1: data root on the          |
   |                                             filesystem (same pool as the filesystem)    |
@@ -914,9 +1132,11 @@ Who may write what:
 
 | Process | Writes the ledger | Removes things |
 | :- | :- | :- |
-| Authority service | Directly; it is the store's writer | Reconcile's completions, ticket ended and project ended |
+| Authority service | Directly; it is the store's writer | Nothing itself. Its event consumer decides what a hook's event made due |
+| Space worker (child of the service) | Through the authority, as the authority principal | Contained from a ref hook, session ended, ticket ended, project ended, Abandon, a confirmed group, and reconcile's completions |
 | Receiver, gate helper, landing station | Through the authority, as signed commands | Yes, in line, at their own events |
-| CLI (from a hook, or as the run wrapper) | Through the authority; to the spool when it is not reachable | Only what Signal does for the event it was given |
+| CLI as the run wrapper | Through the authority as space-runner; to the spool when it is not reachable | Only what Signal does for its own run's run finished |
+| CLI from a git hook or a session hook | One record or event, as space-observer; to the spool when the authority is not reachable | Never |
 | Worker (the agent) | Never. It has no store connection | Whatever its own commands do inside its worktree, as today |
 | API | Owner actions, through the authority | No. Abandon and Confirm make the authority act |
 
@@ -925,8 +1145,9 @@ another host becomes due and is carried out by that host's receiver or service a
 reconcile. This design builds and proves one host. The second host is covered by the same records and is
 not exercised until a ticket asks for it.
 
-Order of start: the authority service opens the store, attaches the Ledger, replays the spool, then runs
-reconcile (snapshot, subscribe, compare) before it accepts a dispatch. A reconcile that fails is reported
+Order of start: the authority service opens the store, attaches the Ledger, replays the spool, consumes
+the event records that replay left, then runs reconcile (snapshot, subscribe, compare) before it accepts a
+dispatch. A reconcile that fails is reported
 by name and the service serves everything else; admission then uses the last known holds and the live free
 space.
 
@@ -937,10 +1158,10 @@ One new screen, Space, in the factory group of the navigation.
 | Section | Shows |
 | :- | :- |
 | Pools | One row per pool: capacity, free, floor, held; under it the waiting runs, and in report mode the runs that would have waited, with need, free, held and floor |
-| Usage | A table that groups by project, then ticket, then kind, with bytes and counts; each size names the event it was measured at |
+| Usage | A table that groups by project, then ticket, then kind, with bytes and counts; each size names the event it was measured at. Each plain repository is a row beside the projects, and "No project" is one row holding the scratch of sessions started outside every project |
 | Pending removal | Due and deferred items with the reason in words (in use by process 4412; uncommitted changes in 3 files; protected by the installation), the event that will retry, and the open decision request when there is one |
 | Removed | The removal history: what, whose, which event, how much, free space before and after; for an engine pool the note that the host figure did not change |
-| Reports | Things found with no owner, each with Adopt and with the proposed owner when a rule gives one; Docker objects no run could be named for; repositories whose hooks are missing |
+| Reports | Things found with no owner, each with Adopt and with the proposed owner when a rule gives one; Docker objects no run could be named for; loose files under a scratch root with their total size; repositories whose hooks are missing; projects whose gate script lacks the space steps |
 | Protected | The list in force |
 
 Elsewhere: the run view gains a space panel (the run's items, their sizes, what was removed at its end);
@@ -954,16 +1175,28 @@ group.
 Order on an existing host:
 
 1. Set up the installation folder and start the authority service. The measured host has neither today,
-   and nothing in this design works without them.
-2. Write the space section with mode report, and bind the repositories. Binding installs the git hooks.
-   Name the plain repositories and the client account folders; the hooks go in.
-3. The service starts, reconciles, adopts and reports. Nothing is removed. Admission advises.
+   and nothing in this design works without them. The service has to stay running from here on: it is
+   what consumes the hooks' events.
+2. Write the space section with mode report and the protect list below, and bind the repositories.
+   Binding installs the git hooks. Name the plain repositories and the client account folders; the hooks
+   go in.
+3. The service starts, reconciles, adopts and reports. Nothing is removed. Admission advises. Reports
+   lists every bound project whose gate script lacks the space steps; on the measured host that is all
+   of them.
 4. The owner reads Reports and Protected, and adds what is missing to the protect list.
-5. The host's launch scripts are changed to use the mechanisms (table below).
+5. The host's launch scripts are changed to use the mechanisms (table below). The gate launcher starts
+   the gate through the run wrapper and keeps its own 60 GB refusal and its own build folder delete for
+   now.
 6. The owner confirms pending groups, one project and kind at a time. Each confirmation runs Signal for
    that group through all seven rules.
 7. Set mode act. From here removals happen at events and admission blocks.
-8. Retire the nightly script, by the check below.
+8. Remove the gate launcher's 60 GB refusal and its build folder delete (gate_core_cand.sh:32-37 and 41).
+   Not before step 7: in report mode nothing else refuses a gate or removes its build folder.
+9. Each bound project's gate script gets the three space steps, by that project's own spec and the
+   owner's approval there (VELDO-0325), the largest project first. A project leaves the Reports list when
+   its gate passes the check. This step can start any time after step 3 and does not hold up the others,
+   because the wrapper covers a gate that lacks the steps.
+10. Retire the nightly script, by the check below.
 
 Values for the measured host (provenance; the lead's decisions of 2026-11-13):
 
@@ -977,11 +1210,12 @@ Values for the measured host (provenance; the lead's decisions of 2026-11-13):
 | Report mode | Admission shows "would wait" and does not block |
 
 The protect list for the measured host, written into the installation before the first reconcile. Nothing
-on it is ever removed by Veldo:
+on it is ever removed by Veldo, by any event, any rule or any owner action in this design; taking an
+entry off the list is an edit of the installation by the owner.
 
 | Entry | What it is |
 | :- | :- |
-| ~/.docker/desktop/vms/0/data and the file Docker.raw in it | The desktop engine's disk image and its folder |
+| The file Docker.raw and its folder, ~/.docker/desktop/vms/0/data | The desktop engine's disk image and its folder |
 | The volume places_pg_places, on both engine contexts | The places database |
 | ~/projects/places/backups | The places backups |
 | The images minio/minio and minio/mc, on both engine contexts | Images that cannot be pulled again |
@@ -996,7 +1230,8 @@ Host wiring (provenance). Each row replaces a place where a script acts alone to
 | myday/scripts/codex_work.sh:130-132, codex_review.sh:55 | No change needed for recording: these call plain git, so the hook records the worktree. The review run is started through the run wrapper; codex_review.sh:51 loses its forced remove |
 | myday/scripts/agent_sandbox.sh:257-266 | The private repository and worktree are made by the engine's sandbox prepare, which declares them; the script's own fallback calls the CLI's record verb, because its guarded git runs with hooks off |
 | myday/scripts/agent_sandbox.sh:246 and 476 | The recursive deletes become the CLI's event verb with worktree abandoned |
-| myday/scripts/gate_core_cand.sh:32-37 and 41 | The free-space refusal and the build folder delete are removed; the gate script does both |
+| myday/scripts/gate_core_cand.sh:37, the gate command | Started through the run wrapper, inside the lock (step 5) |
+| myday/scripts/gate_core_cand.sh:32-37 and 41 | The free-space refusal and the build folder delete stay through steps 5 to 7 and are removed at step 8. core's gate script has no space steps of its own until step 9; the wrapper covers it from step 5 |
 | myday/scripts/host_heavy.sh:9 | The command is started through the run wrapper, inside the lock |
 | The gate lock's log folder | Named as a scratch root; gate logs are evidence items of their gate |
 
@@ -1021,18 +1256,25 @@ the file. If the check lists a path the ledger does not hold, that path's class 
 stays. The check can pass honestly only after steps 2 and 5, because those are what make the host's own
 creators event sources.
 
+Two of the script's classes are adopted only by name: a build folder under the session scratch root or
+under the cache folder becomes an item when its name is the name of a worktree item, and is reported
+otherwise. The host has no such folder today. If one appears, the check fails on it until the owner
+adopts it, which is the right answer for a folder nobody can name an owner for.
+
 ## 12. Tickets
 
-Each ticket is one concern and becomes its own spec. The numbers VELDO-0296 to VELDO-0322 are reserved by
-this design; on 2026-11-13 no spec file and no commit on any ref held a number above VELDO-0295 except
-this design's own commits. "Row" is a row of a suite; each falsifier is the one change that must turn its
-row red.
+Each ticket is one concern and becomes its own spec. The numbers VELDO-0296 to VELDO-0330 are reserved by
+this design, thirty-five tickets. On 2026-11-13 no spec file on any ref or in any worktree, and no commit
+on any ref, held a number above VELDO-0295 except this design's own commits. Revision 3 keeps the numbers
+of revision 2 and adds 0323 to 0330, so nothing that already cites a number changes meaning. "Row" is a
+row of a suite; each falsifier is the one change that must turn its row red.
 
-Build order: 0296, 0297, then 0298, 0299 and 0300 together, 0301, then 0302 to 0314 in any order, 0315,
-0316, 0317, 0318, 0319, 0320, 0321, 0322.
+Build order: 0296, 0297, 0326, then 0298, 0299, 0330 and 0300 together, 0301, then 0302 to 0314 with
+0323, 0324, 0328 and 0329 in any order, then 0315, 0316, 0317, 0327, 0318, 0319, 0320, 0325, 0321, 0322.
 
-Tickets that touch protected paths and need the owner's recorded approval: 0302 (the sandbox) and 0309
-(the gate script, and the new helper added to the protected list).
+Tickets that touch protected paths and need the owner's recorded approval: 0302 and 0324 (the sandbox),
+0309 (the gate script template, and the new helper added to the protected list). 0325 produces a change
+to the gate script of each bound project, approved by the owner in that project.
 
 ### VELDO-0296 Declarations: the installation's space section and the project's space file
 
@@ -1069,16 +1311,16 @@ ticket has a queued run on the same worktree is a fact the caller passes in.
 | AC3 | Build output at run finished passes to a queued run of the same ticket on the same worktree when the caller says one exists, and is removed when it says none does | Remove whenever the owning run is finished; the row with the queued-run fact set loses the folder and fails |
 | AC4 | An item keeps the table version it was declared under, and a registry change does not alter what an existing item ends on | Read ends_on from the current registry; after a fixture registry change the old item's events differ and the row fails |
 
-### VELDO-0299 The safety rules and their probes
+### VELDO-0299 The probes: in use and unique work
 
-Components: Probes, and the rule order of section 7.
+Components: Probes. The rule order, the ledger rule and the protect rule are VELDO-0330.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | A path is in use when a live process has its working directory, an open file or a mapped file at or beneath it, or a running or stopped container has a bind mount there; a command line naming it is not use | Check the working directory only; the row with an open file beneath the path reads not in use and fails |
 | AC2 | A worktree has unique work in each of the five cases of rule 5. A branch with a commit that only its own ref holds is unique work; the same branch after a squash landing whose receipt names its tip is not | Count the worktree's own branch among the refs that contain the commit; the row with an unlanded commit reads no unique work and fails |
 | AC3 | For an agent's worktree and an agent repository the comparison is against the shared repository's refs: a branch the runner has not brought across is unique work, and after it is brought across it is not | Compare inside the agent repository only; the row with a branch not yet brought across reads no unique work and fails |
-| AC4 | The rules run in the order of section 7, the first refusal names the deferral, and a locator at or above a protect entry, or with one beneath it, is protected | Run unique work before protect; the protected worktree with an edit is deferred as unique_work and the row fails |
+| AC4 | A sandbox launcher's scratch is in use while its scratch lock is held or its borrowed login is not settled, and not in use once both are clear | Read the lock only; the row with a free lock and an unsettled login reads not in use and fails |
 
 ### VELDO-0300 The removers
 
@@ -1095,7 +1337,7 @@ The builder verifies with a test what git's non-forced worktree remove does with
 records the result in the proof. The design does not depend on the answer, because build output is removed
 before the worktree.
 
-### VELDO-0301 Signal: an event removes what is due, in the emitter's process
+### VELDO-0301 Signal: an event removes what is due, in the calling process
 
 Components: Signal. Depends on 0297, 0298, 0299, 0300.
 
@@ -1108,17 +1350,19 @@ Components: Signal. Depends on 0297, 0298, 0299, 0300.
 
 ### VELDO-0302 Veldo's own creators declare before they create
 
-Components: Clone provisioner, Fleet worktrees, Sandbox (protected), Receiver's run folders, Landing line.
+Components: Clone provisioner, Fleet worktrees, Batch, Sandbox (protected), Receiver's run folders,
+Landing line.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
-| AC1 | Each creator's thing has a declared item before it exists and a present item after, with project, ticket, run and lane as owner; the rows cover the clone, the fleet worktree, the run directory and the candidate workspace | Declare after creating; the row that kills the creator between the two finds a folder with no item and fails |
+| AC1 | Each creator's thing has a declared item before it exists and a present item after, with project, ticket, run and lane as owner; the rows cover the clone, the fleet worktree, the run directory, the candidate workspace, the batch clone and the batch's observation folder | Declare after creating; the row that kills the creator between the two finds a folder with no item and fails |
 | AC2 | The sandbox's prepare leaves three items: the agent repository, its worktree as the repository's child, and the branch with its start commit | Declare the worktree only; the row finds the agent repository with no item and fails |
 | AC3 | A creator that cannot reach the ledger creates nothing and refuses unavailable_service:space_ledger; with no central installation it creates as today | Create anyway on a refused declare; the row finds the folder and fails |
 
 ### VELDO-0303 The existing removal paths go through the safety rules
 
-Components: Fleet worktrees, Clone provisioner, Receiver, Landing line. The table of 6.10 is the list.
+Components: Fleet worktrees, Clone provisioner, Receiver, Landing line. The first seven rows of the table
+of 6.10 are the list; the batch and sandbox rows are VELDO-0324.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
@@ -1157,7 +1401,7 @@ integration row runs against a real one with objects the row itself creates.
 | :- | :- | :- |
 | AC1 | An object carrying the run's label or compose project name is an item owned by that run, on the context it was created on | Read one context only; the object on the second context has no item and fails |
 | AC2 | An object with no label, no compose project name of a run and no path inside a recorded worktree is a report, is never an item, and is never removed | Attribute it to the only live run; the row with two live runs gives it an owner and fails |
-| AC3 | At run finished the run's containers are stopped and removed, then its networks and volumes, each by the engine's non-forced remove; a volume a container still uses is deferred; a pulled image is kept with no ending event | Remove volumes first; the engine refuses, the item is deferred, and the row that expects it gone fails |
+| AC3 | At run finished the run's containers are stopped and removed, then its networks and volumes, each by the engine's non-forced remove; a volume a container of another run still uses is deferred | Remove volumes first; the engine refuses, the item is deferred, and the row that expects it gone fails |
 | AC4 | The engine's event stream is a pipe in the service loop's poll set: an engine event is handled with the fixture clock stopped, and end of file on the pipe causes a new snapshot before a new subscription | Read the stream on an interval; with the clock stopped the row's event is never handled and the row fails |
 
 ### VELDO-0307 Docker ownership by compose's working folder and by bind source
@@ -1182,8 +1426,10 @@ Components: Receiver, Retirement.
 
 ### VELDO-0309 The gate's space steps
 
-Components: Gate script, Gate space helper. Both protected: the owner's recorded approval is required, and
-the helper is added to the protected paths in the same change.
+Components: Gate script template, Gate space helper. Both protected: the owner's recorded approval is
+required, and the helper is added to the protected paths in the same change. This ticket changes
+engine/scripts/verify.sh and this repository's own scripts/verify.sh. Other existing repositories are
+VELDO-0325.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
@@ -1204,14 +1450,15 @@ Components: Landing.
 
 ### VELDO-0311 Git hooks: worktrees and landings made with plain git
 
-Components: Git hooks, Event spool, CLI.
+Components: Git hooks, Event spool, CLI. The hooks record and return. What follows a landing event is
+VELDO-0323; installing the hooks is VELDO-0329.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | A worktree added with plain git in a bound or plain repository has an item, with its branch, start commit and the owner its branch pattern gives, when the git command returns | Record only through the CLI's record verb; the row that uses plain git finds no item and fails |
-| AC2 | A committed change of the trunk or a declared landing ref, made with plain git, runs contained: a recorded branch that moved past its start commit and is now reachable has its worktree removed before the git command returns | Watch the trunk only; the row that commits on a declared landing ref finds the worktree still present and fails |
-| AC3 | With the authority not reachable the git command's result is unchanged, the record or event is in the spool, and it is replayed in order at the next CLI call that reaches the authority and at service start before reconcile | Drop the event when the authority is down; after service start the row finds the worktree with no item and fails |
-| AC4 | Binding installs both hooks in the repository's shared hooks folder, keeps an existing hook's own lines, and reconcile reports a repository whose hook is missing | Overwrite an existing hook file; the fixture's own hook line is gone and the row fails |
+| AC2 | Switching a recorded worktree from branch X to branch Y with plain git updates the item's branch to Y and its start commit to Y's commit; a later landing that contains X leaves the worktree in place | Record at worktree add only; the row lands X after the switch, finds the worktree due, and fails |
+| AC3 | A committed change of the trunk or of a declared landing ref, made with plain git, leaves one event record with the repository, the ref, the old and the new commit, and the git command returns with nothing removed. The row holds every remover on a fixture latch and the git command still returns | Remove inside the hook; with the remover held on the latch the row finds the git command still waiting and fails |
+| AC4 | With the authority not reachable the git command's result is unchanged, the record or event is in the spool, and it is replayed in order at the next CLI call that reaches the authority and at service start before reconcile | Drop the event when the authority is down; after service start the row finds the worktree with no item and fails |
 
 ### VELDO-0312 Ticket ended, project ended and worktree abandoned
 
@@ -1237,14 +1484,15 @@ Components: CLI.
 
 ### VELDO-0314 Session hooks
 
-Components: Session hooks.
+Components: Session hooks. The hooks record and return. The removal that follows is VELDO-0323; installing
+the hooks is VELDO-0329.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
-| AC1 | The SessionStart hook leaves a scratch item owned by the session id and the project of its working folder, with the session's process id and start time | Record at SessionEnd only; the row for a session that never ends finds no item and fails |
-| AC2 | The SessionEnd hook removes the session's scratch through the rules before it returns | Mark it due and return; the row that reads the disk as the hook returns finds the folder and fails |
-| AC3 | A session whose recorded process is gone has its scratch removed at the next SessionStart on the same project; a session whose process is alive is left, however old | Treat every earlier session as ended; the live session's scratch is removed and the row fails |
-| AC4 | The hooks are installed in every client account folder the installation names, and a hook that fails or cannot reach the authority spools and lets the session go on | Install in the first account folder only; the row that starts a session under the second finds no item and fails |
+| AC1 | The SessionStart hook leaves a session started event and a scratch item owned by the session id and the project or plain repository of its working folder, with the session's process id and start time | Record at SessionEnd only; the row for a session that never ends finds no item and fails |
+| AC2 | A session started in a folder inside no project and no plain repository leaves the same item with the owner no project, and the ledger refuses that owner for any kind but session scratch | Drop the record when no project matches; the row finds no item and fails |
+| AC3 | The SessionEnd hook leaves one session ended event and returns with nothing removed, inside the client's hook time limit. The row holds every remover on a fixture latch and the hook still returns | Remove inside the hook; with the remover held on the latch the row finds the hook still running at its time limit and fails |
+| AC4 | A hook that fails or cannot reach the authority spools its record and the session starts or ends as it would without the hook | Let the hook's failure reach the client; the row with the authority down finds the session refused and fails |
 
 ### VELDO-0315 Reconcile at start and on demand
 
@@ -1264,7 +1512,7 @@ Components: Admission, Runner, Dispatch contract, Authority service (the wake so
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | A run is admitted only when free space minus what others hold is at least its need plus the floor; the rows are the boundary values on both sides | Ignore the floor; the row between need and need plus floor is admitted and fails |
-| AC2 | In mode act a unit that must wait has no dispatch record, no slot, no reservation and no deadline; it is listed as waiting with its numbers, and is prepared without any other action when a removal or a release frees enough | Ask admission at acceptance; the row finds a prepared dispatch holding a slot while it waits and fails |
+| AC2 | In mode act a unit that must wait has no dispatch record, no slot, no reservation and no deadline; the factory loop's pass lists it under waiting with its numbers and not under refused; and it is prepared without any other action when a removal or a release frees enough | Ask admission at acceptance; the row finds a prepared dispatch holding a slot while it waits and fails |
 | AC3 | In mode report the same unit is prepared and started, and its hold is recorded as advised with the numbers | Block in mode report; the row's unit is left waiting and the row fails |
 | AC4 | The need comes from the project's space file, else from the last five finished runs of the project and station once there are five, else from the pool default; the contract's space field carries it and is covered by the contract digest | Use measured sizes after one run; the row with a single small run is admitted too early and fails |
 
@@ -1281,13 +1529,14 @@ Components: Receiver, Admission. The gate's half is VELDO-0309 AC2.
 
 ### VELDO-0318 The owner decides what becomes of unique work at a ticket's end
 
-Components: Signal, Removers (discard), the existing decision request path.
+Components: Signal, Removers (discard), Ledger (the effects). Depends on 0327 for the touchpoint.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
-| AC1 | A worktree deferred for unique work at ticket ended or project ended raises one decision request with the three answers and the list of files; a later event for the same item raises no second one | Raise a request at every event; the row counts two requests and fails |
+| AC1 | A worktree deferred for unique work at ticket ended or project ended raises one request on the space disposition touchpoint with the three answers and the list of files; a later event for the same item raises no second one | Raise a request at every event; the row counts two requests and fails |
 | AC2 | Save commits the changes on a kept branch named for the ticket, authored as the owner's configured identity, and then removes the worktree without force. Without a settled Save answer Veldo makes no commit | Commit at the deferral; the row finds a commit with no settled answer and fails |
-| AC3 | Keep sets the item to kept and nothing retries it. Discard removes that one worktree with git's force option, only while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass | Skip the list comparison; the row that adds a file after the request was shown loses it and fails |
+| AC3 | Discard removes that one worktree with git's force option, only on a settled discard answer, only while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass; the branch and its commits are still there afterwards | Skip the list comparison; the row that adds a file after the request was shown loses it and fails |
+| AC4 | Keep sets the item to kept; no later event retries it and no second request is raised until the owner presses Abandon | Leave a kept item deferred; the next event's row raises a second request and fails |
 
 ### VELDO-0319 The console's Space screen
 
@@ -1295,7 +1544,7 @@ Components: API, Console.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
-| AC1 | The usage table's figures per project, ticket and kind equal the sums of the fixture's item records | Sum only present items and leave out deferred ones; the totals row fails |
+| AC1 | The usage table's figures per project, ticket and kind equal the sums of the fixture's item records, with each plain repository and "No project" as rows of their own | Sum only present items and leave out deferred ones; the totals row fails |
 | AC2 | Pending removal lists every due and deferred item with its reason in words, its retry event and its open decision request; Removed lists every removal with its event, size and free space before and after | Hide deferred items; the row that expects the in-use folder finds nothing and fails |
 | AC3 | Reconcile, Adopt, Abandon and Confirm are signed owner commands; a session without the owner's passkey is refused each | Accept Abandon as a plain read route; the unsigned row succeeds and fails |
 | AC4 | A waiting run, and in report mode a run that would have waited, shows need, free, held and floor on the runs list and the Pools section, and the screen updates from the record stream without a reload | Poll on an interval; the row that stops the fixture clock sees no update and fails |
@@ -1330,21 +1579,114 @@ Components: Scaffold, documents.
 | AC2 | docs/setup.md and docs/installation.md describe the space section, the project file, the hooks and the run wrapper, and pass the docs check | Write a project name into either document; the docs check row fails |
 | AC3 | docs/runbook.md gains the situations "the disk is full or a run is waiting for space" and "a worktree is waiting for the owner's answer", and passes the docs check | Name the measured host's project in the runbook; the docs check row fails |
 
+### VELDO-0323 Hook events: the event record, the consumer and the space worker
+
+Components: Ledger (event, consumed), Event consumer, Space worker, Authority service. Depends on 0301
+and 0311.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | A ref changed record for the trunk or a declared landing ref is consumed on the journal advance that wrote it: with the fixture clock stopped, the worktree of a recorded branch that moved past its start commit and that the recorded new commit contains is removed, build output first, and its branch is kept and marked contained | Consume on an interval; with the clock stopped the worktree stays and the row fails |
+| AC2 | The removal runs in the space worker, a child process whose pipe is in the service's poll set: while a remover is held on a fixture latch the service answers another packet | Run Signal inside the service loop; with the remover held the second packet gets no answer and the row fails |
+| AC3 | Records are consumed oldest first, one worker at a time, each exactly once; spooled records are consumed at service start before reconcile | Consume without marking; after a restart the row counts two Signal calls for one record and fails |
+| AC4 | A session ended record removes that session's scratch. A session started record removes the scratch of every session recorded on the host whose recorded process is gone, in any project and in none, and leaves a session whose process is alive, however old | Look only at sessions of the same project; the crashed no-project session's scratch stays and the row fails |
+
+### VELDO-0324 The batch clone and the sandbox launcher's scratch go through the safety rules
+
+Components: Batch, Sandbox (protected, the owner's recorded approval is required), Removers. Depends on
+0302.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | A batch's discard removes its clone and its observation folder through Signal; a refusal is a deferral on the record and never an ignored error | Leave the direct delete in place; the row with a process holding an open file in the clone finds the folder gone and fails |
+| AC2 | Under a recorded run the sandbox launcher declares its scratch as a child of the run's scratch root and deletes nothing itself; the scratch is removed at the run's run finished, including directories the confined process left unreadable | Leave the launcher's own delete in place; the scratch folder is gone while its item is still present, and the row fails |
+| AC3 | Under a recorded run the launcher's removal of stale scratch by age does not run: a scratch folder untouched for two fixture days whose run is not finished stays | Leave the stale pass on; the row finds the two-day-old folder gone and fails |
+| AC4 | With no space environment the launcher behaves exactly as before the change | Require the ledger; the adopter fixture with no installation fails to start its run and the row fails |
+
+### VELDO-0325 The space steps in an existing project's gate script
+
+Components: CLI (space gate-check), Reconciler, documents. The change to each project's own gate script is
+that project's spec, made from the recipe this ticket writes, and is approved by the owner there.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | space gate-check says, for a project's gate script, whether the need call is before the first check, the classify call before the stamp and the verdict call after it; a fixture script laid before the change fails the check by naming the missing calls | Look for the helper's name anywhere in the file; the fixture with the verdict call placed before the stamp passes and the row fails |
+| AC2 | Reconcile lists every bound project whose gate script fails the check under space.reports, and a project leaves the list when its script passes | Check the engine's template only; the adopter fixture whose gate script predates the change is not listed and the row fails |
+| AC3 | A gate script that predates the change, run through the run wrapper, is admitted before it starts and has its build output removed at run finished | Skip the census for a wrapped gate; the row finds the build folder present after the gate and fails |
+| AC4 | docs/setup.md holds the recipe for adding the three calls to an existing gate script, names no project, and passes the docs check | Name the measured host's project in the recipe; the docs check row fails |
+
+### VELDO-0326 Host principals for space commands
+
+Components: Host principals, Ledger, CLI. Depends on 0297.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | Installing the service makes the keys of space-observer and space-runner and enrolls both; a hook's command signed as space-observer is accepted without the owner's key being readable by the hook | Sign hook commands with the owner's key; the row that runs the hook with the owner's key unreadable finds no record and fails |
+| AC2 | space-observer may sign declare and confirm for a worktree, a branch and session scratch, rebranch, event and the read behind covers, and is refused every other ledger command by name | Accept signal from space-observer; the row that sends it gets items marked due and fails |
+| AC3 | space-runner may also sign measure, hold, admit, release, signal and outcome, only for the run or gate it declared | Let it signal for any owner; the row that signals for another run's items gets them due and fails |
+| AC4 | Adopt, Abandon, Confirm, Reconcile, a protect list change and an answer to a space disposition request are refused from both host principals | Accept Abandon from space-runner; the row that sends it finds the worktree due and fails |
+
+### VELDO-0327 The space disposition touchpoint
+
+Components: Settlement journey. It adds one touchpoint to the journey configuration of
+control_request_settlement.py and changes none of the five that exist.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | The journey has a touchpoint space disposition, presented as a decision, answered by the project owner, whose rulings are save, keep and discard, each with its own typed effect; the five existing touchpoints and their rulings are unchanged | Reuse decision disposition with approve and reject; the row that answers keep finds no such ruling and fails |
+| AC2 | A request on this touchpoint whose offered answers include discard is presented in the critical tier, as the request vocabulary requires of an irreversible impact | Present it in the standard tier; the tier row fails |
+| AC3 | The effect of a ruling is applied once, in the settlement's own transaction, and an answer that does not bind the current presentation settles nothing | Apply the effect when the answer is accepted and before it is settled; the row that sends a second, conflicting answer finds two effects and fails |
+
+### VELDO-0328 Images: built tags are removed, pulled images are kept
+
+Components: Docker adapter.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | An image tag a run built is an item owned by that run's ticket and is removed at landed and at ticket ended by the engine's non-forced remove on the tag; a tag a container still uses is deferred | Remove by image id; the row whose image carries a second tag of another ticket loses that tag and fails |
+| AC2 | An image a run pulled is recorded once per engine as kept, has no ending event, and is still present after its run's ticket ended | Record a pulled image as an item of the run that pulled it; the row finds it removed at ticket ended and fails |
+| AC3 | An image whose name is on the protect list gets no item on either engine context, even when a run tags a build with that name | Check the protect list on the first context only; the row on the second context gets an item and fails |
+
+### VELDO-0329 Installing the git hooks and the session hooks
+
+Components: Git hooks, Session hooks, Reconciler.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | Binding a repository, and naming a plain repository, installs both git hooks in the repository's shared hooks folder, or in the hooks folder the repository configures, and keeps an existing hook's own lines | Overwrite an existing hook file; the fixture's own hook line is gone and the row fails |
+| AC2 | The session hooks are installed in every client account folder the installation names | Install in the first account folder only; the row that starts a session under the second finds no item and fails |
+| AC3 | Reconcile reports a bound or plain repository whose hook is missing, and a named account folder whose session hooks are missing | Report nothing for a missing hook; the row that deletes the fixture's hook finds an empty report and fails |
+
+### VELDO-0330 The rule order, the ledger rule and the protect rule
+
+Components: the rule order of section 7. Depends on 0299.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | The rules run in the order of section 7 and the first refusal names the deferral | Run unique work before protect; the protected worktree with an edit is deferred as unique_work and the row fails |
+| AC2 | Rule 1 refuses a thing that is not the item recorded: a path that now resolves elsewhere through a link, a folder replaced by another repository's worktree, a Docker name now held by another object id | Compare the locator's text only; the row replaces the folder with a link, finds the link's target removed, and fails |
+| AC3 | A locator at or above a protect entry, or with one beneath it, is protected, and no event, no Confirm and no Discard removes it | Skip the protect rule in the discard remover; the row's protected worktree is removed on a discard answer and fails |
+
 ## 13. Decisions taken in this design
 
 | Decision | Why |
 | :- | :- |
 | The ledger is records in the existing control store, not a new database | One writer, one journal, one place the console already reads. The volume is hundreds of records a day |
-| The library runs inside the emitting process; there is no space daemon | The owner asked for cleanup as part of the process. A daemon would need to learn about events after the fact, which is polling |
+| The library runs inside the process that removes; there is no space daemon | The owner asked for cleanup as part of the process. A run, a gate and a landing station remove at their own events. For hook events the remover is the authority service's worker, started by the event's own record |
 | Outside creators are covered by hooks git and the client run themselves, by the gate script, and by one wrapper | An instruction to call the CLI is the builder brief again. A hook runs whether or not anyone remembers it |
-| The git hook is the event source for hand landings, not a watch in the service loop | No service runs on the measured host during most of the day's work, and a watch sees a change only at its next loop pass. The hook runs in the git command that made the change |
+| The git hook is the event source for hand landings, and it only records | The lead's decision: a hand landing never removes worktrees inside the git command. The hook writes one record and returns; the service consumes it right after. A landing command that took minutes, or failed halfway through a removal, would be worse than a removal that starts a moment later. The price is that the service must be running, which migration step 1 makes true and which every other part of Veldo already needs |
+| The service removes through a child worker, not in its own loop | Deleting a 30 GB build folder takes long enough that a service doing it in line would stop answering packets |
+| Session hooks only record too | The client gives a hook a short time limit and the session is exiting. Same pattern as the git hook |
+| An existing project's gate gets the steps by its own change | The gate script is each project's own catalog and a protected path there. Veldo reports a gate that lacks the steps and covers it with the wrapper; it does not rewrite another repository's protected file |
+| Hooks sign as a host principal, never as the owner | A git hook runs in any shell. It may record what it saw; it may not answer for the owner |
 | A hook never fails or waits on the service; it spools | A landing or a session must not break because the authority is down |
 | Admission is asked before a dispatch is prepared | A prepared dispatch holds a slot and has a deadline |
 | Admission double counts on purpose | Free space already reflects what running runs have written, and their unspent hold is subtracted as well. The error is on the safe side and shrinks at each measurement |
 | Branches are kept | The owner's request names keeping the branch. A contained branch costs almost nothing, and deleting one is not undone by a rebuild |
 | Pulled images are never removed | Nothing in Veldo can prove an image can be pulled again, and one that could not cost a whole run on 2026-11-13 |
 | Unlabelled Docker objects are reported, not guessed, in the first release | A wrong guess removes another run's database |
-| The one forced removal is the owner's Discard | Everywhere else the tool's own refusal is the last safety check. Here the owner has seen the file list and signed the loss |
+| The one forced removal is the owner's Discard, allowed only after the owner's discard answer | The lead's decision. Everywhere else the tool's own refusal is the last safety check. Here the owner has seen the file list and signed the loss, and the branch is kept |
+| Scratch of a session outside every project is recorded under the owner no project | The lead's decision. Leaving it unrecorded would leave the growth the owner named with no owner and no ending event |
 | Reconcile may act on a past event | Otherwise an adopted worktree whose ticket landed last month would never be removed. It is bounded to service start and an explicit request |
 
 Left out, each a later ticket if wanted: a second host; build caches shared between worktrees; shrinking a
@@ -1353,27 +1695,56 @@ transition; removal of unlabelled Docker objects.
 
 ## 14. Validation response
 
-The validation of 2026-11-13 (research/codex-reviews/design-veldo-0295-validation-2026-11-13.md in the
-owner's notes repository) asked for six blocking and nine smaller changes. Each was checked against the
-code before it was taken. All are taken; the table says where, and notes the four places where the code
-led somewhere a little different from what was asked.
+Two validations, both of 2026-11-13, both in the owner's notes repository under research/codex-reviews.
+Every point was checked against the code before it was taken.
+
+### 14.1 The second validation (design-veldo-0295-validation2-2026-11-13.md)
+
+Four required changes and eleven smaller ones. All fifteen are taken. On one, S2, the code led somewhere
+a little different from what was asked, and the row says how.
+
+| Point | Checked against the code | Where it is fixed |
+| :- | :- | :- |
+| R1 hand landing removes inside the git command | True of revision 2, and against the lead's decision. The machinery named exists: the local socket client (control_client.py), the journal advance that wakes the loop (control_service.py:1588-1596, 3227). One addition: hint_after wakes the loop only when a factory loop is configured (the test at :1595), so the consumer is called beside that wake and does not depend on it. And a removal inside the service loop would stop the service answering, so the consumer hands it to a child worker on the poll set | 4.5, 6.1, 6.9, 8.4, section 9, section 13; ticket 0311 AC3 (the hook returns with nothing removed) and ticket 0323 (the consumer and the worker). The old open question is gone |
+| R2 existing projects' gates | True. scripts/check_template_sync.sh:30 excepts scripts/verify.sh; init_scaffold.py:889-904 never overwrites. Read on the host: core's gate script has 485 lines, seven other bound projects have 159 to 251, none mentions the gate host | Section 3 corrected; 6.9 (two gate rows); 8.2 "Which gates this reaches"; 8.8; section 11 steps 5, 8 and 9; ticket 0325. The validation asked for an AC on 0309; it is 0325 AC2, because 0309 is the template and 0325 is the existing repositories |
+| R2 (c) keep the launcher's guard | Taken, and tied to act mode as well: in report mode Signal removes nothing and admission only advises, so the launcher's refusal and delete stay until act mode whatever the gate script holds | 6.10 host table; section 11 steps 5 and 8 |
+| R3 no-project owner | True: 4.1 and section 2 allowed two owner values while 8.7 recorded a third | Section 2, 4.1, 6.6, 8.7, 8.8, section 10; ticket 0314 AC2, ticket 0323 AC4, ticket 0319 AC1. The catch-up rule is the simplest one offered: every session started looks at every recorded session on the host. The old open question is gone |
+| R4 missing removal paths | True, all four. control_batch.py:944-951 with the creators at :530 and :721; agent_sandbox.py:2052-2071 called at :2106 and :2223; control_service.py:894-898 called at :1006 and :1204; plugin_load_runner.py:308-309. Revision 2 had put agent_sandbox.py:2071 on the reviewed list as a same-call temporary folder, which was wrong. One more thing the code shows: the stale scratch pass at :2106 removes by age (more than a day), which is the kind of cleanup this design replaces | 6.10; rule 4; 8.8; ticket 0302 AC1 (batch creators), ticket 0324 (batch discard and the launcher's scratch), ticket 0299 AC4 |
+| S1 branch switch | True: post-checkout also runs on a checkout, and revision 2 recorded worktree add only | 4.1 (branch field), section 5, 6.1 (rebranch), 6.9, 8.5, 8.8; ticket 0311 AC2 |
+| S2 the decision touchpoint | Partly. control_backlog.py:185 is the wrong touchpoint, as the validation says, and request.py:74-77 has decision choice with the irreversible rule at :92 and :236. But request.py is the vocabulary of request records in a repository. Requests in the owner's inbox are settled by control_request_settlement.py, whose journey (:106-127) has five touchpoints, each with the rulings approve, reject and return for elaboration; no control module names decision choice. So a three-answer request needs a new journey touchpoint | Section 7 "Which touchpoint"; ticket 0327 (the touchpoint, critical tier), ticket 0318 |
+| S3 signing principal | True (control_client.py:10-23). The service and the receiver already have host principals (control_service.py:951-952) | 6.11; ticket 0326 |
+| S4 SessionEnd removes in the hook | True: the pack's hook has a 15 second limit (packs/claude/hooks/hooks.json) | 6.9, 8.7; ticket 0314 AC3, ticket 0323 AC4 |
+| S5 space_wait listing | True (control_service.py:2640-2646) | 6.7; ticket 0316 AC2 |
+| S6 loose files in the scratch root | Read on the host: the launch scripts write their logs to the owner's notes repository (claude_run.sh:38, codex_run.sh:27-34), not to the scratch root. The loose files there come from sessions' own commands. Nothing proves their owner | 6.9 (the limits), 8.8, section 10: they stay reported with their total size, and Veldo does not remove them |
+| S7 who computes contained by another branch | Taken | Section 5, after the event table |
+| S8 adopted worktree with no start commit | Taken as recommended | 4.1, section 5 |
+| S9 ticket rows | Taken. 0299 was at four ACs, so the rule 1 row went into a new ticket with the rule order and the protect rule (0330). The pulled image has its own ticket with the built tags (0328) | Tickets 0306 AC3, 0328, 0330 |
+| S10 git_process.py:144 | True: it points the hooks folder at a private folder | 6.9, first limit |
+| S11 nine records | True: the row lists eight things | The spec's AC1 says eight |
+| Check 3, Discard keeps the branch | Taken | 6.5, section 7; ticket 0318 AC3 |
+| Check 6, build folders adopted by name only | Taken | 8.8, section 11 |
+
+### 14.2 The first validation (design-veldo-0295-validation-2026-11-13.md)
+
+Six blocking and nine smaller changes, all taken in revision 2. The table is revision 2's, with the rows
+revision 3 changed brought up to date.
 
 | Point | Checked | Where it is fixed |
 | :- | :- | :- |
-| B1 external creators | True. The launch scripts call plain git and the clients directly; no service runs. One thing the validation did not have: Veldo's guarded git and the host's sandbox script run with hooks off (candidate_git.py:74, agent_sandbox.py:772), so a git hook cannot cover those and the seam must | 6.9, 8.4, 8.5, 8.7; tickets 0311, 0313, 0314. The validation offered a service-loop watch or a hook for ref changes; the hook was chosen because no service runs here while people land by hand |
+| B1 external creators | True. The launch scripts call plain git and the clients directly; no service runs. One thing the validation did not have: Veldo's guarded git and the host's sandbox script run with hooks off (candidate_git.py:74, agent_sandbox.py:772), so a git hook cannot cover those and the seam must | 6.9, 8.4, 8.5, 8.7; tickets 0311, 0313, 0314, 0323, 0329. The validation offered a service-loop watch or a hook for ref changes. The hook is the source, because it sees the change in the command that made it and loses nothing while the service is down; since revision 3 the service is the remover. Every creator the lead named is a row of 6.9: gates outside gate_host.json, hand-made worktrees, manual landings, lead sessions, builder runs through the launch scripts, the lock queue |
 | B1 (a) "record before worktree add" | A CLI call a script must make first is an instruction. The post-checkout hook records in the same git command instead, a moment after creation and not before it | 6.9. The CLI's record verb remains for scripts whose git runs with hooks off |
-| B2 gate | True. The gate host runs only with a host file (engine/scripts/verify.sh:108), and the gate script writes the stamp (:352-382) | 8.2, ticket 0309. The need is read from the project's space file, so gate_host.json does not change |
-| B3 removal paths | True for the four named. The search found more: control_clone.py:606, control_launch.py:1397, control_launch_work.py:107, lander.py:538, and a set of same-call temporary folders | 6.10, tickets 0303 and 0304. The same-call temporary folders stay, on a reviewed list the gate enforces, because none can hold a worktree, build output or another run's files; routing them through a ledger would record things that live for one function call |
+| B2 gate | True. The gate host runs only with a host file (engine/scripts/verify.sh:108), and the gate script writes the stamp (:352-382) | 8.2, tickets 0309 and 0325. The need is read from the project's space file, so gate_host.json does not change. Revision 2 fixed this for new repositories only; revision 3 covers the existing ones |
+| B3 removal paths | True for the four named. The search found more: control_clone.py:606, control_launch.py:1397, control_launch_work.py:107, lander.py:538, and a set of same-call temporary folders | 6.10, tickets 0303, 0304 and 0324. Every path is listed with its file and line and its replacement. The same-call temporary folders stay, on a reviewed list the gate enforces, because none can hold a worktree, build output or another run's files; routing them through a ledger would record things that live for one function call |
 | B4 rule 5 and agent repositories | True. A worktree's branch always reaches its own tip; prepare makes a private repository the shared one does not list (agent_sandbox.py:779-793) | Section 7 rule 5, the agent repository kind in sections 2, 5, 6.5 and 8.8, ticket 0299 AC2 and AC3, ticket 0302 AC2 |
 | B5 waiting dispatch | True (control_dispatch.py:134, 476-495, 520-521) | 6.7, 8.1, ticket 0316 |
-| B6 transitions | True. No superseded transition exists. The VELDO-0133 close is the assignment's dispose with ruling close (control_assignment.py:122, 529) | Section 5 event table, ticket 0312. Superseded is dropped, not added |
+| B6 transitions | True. No superseded transition exists. The VELDO-0133 close is the assignment's dispose with ruling close (control_assignment.py:122, 529) | Section 5 event table, ticket 0312. Superseded is dropped, not added. The design uses only transitions that exist. The one new thing of that sort is the settlement touchpoint of S2, and it is a separate ticket (0327) |
 | M1 other roots | 13 roots on the host | 6.8 plain repositories, 8.8 |
 | M2 build roots | Taken | 6.8, 8.8 |
 | M3 rebuild cost | Taken | Section 5, last paragraph |
 | M4 retry and sweep | True (control_launch.py:714-722; control_retirement.py:53-56) | Section 7 Retry, ticket 0308 AC3 |
 | M5 Docker stream | Taken | 6.4, ticket 0306 AC4 |
 | M6 declare_owners | True; the reservation service does not call it | Section 3, Ledger row |
-| M7 canon paths | True | Section 3 |
+| M7 canon paths | True. Revision 2 added a false claim here, that the gate script has a synced copy; corrected in revision 3 | Section 3 |
 | M8 five classes | True; the script has five find lines | Section 11 and the spec's AC8 |
 | M9 absent section | Taken as recommended | 6.8, ticket 0296 AC1 |
 | Check 3 additions | Mapped files and stopped containers' bind mounts added; the protect list is explicit | Section 7 rule 4, section 11, ticket 0296 AC4 |
@@ -1385,16 +1756,24 @@ One thing found while fixing B1 that neither revision 1 nor the validation had: 
 moved past its start commit is reachable from the trunk the moment it is made. Without the start commit
 rule of section 5, the first landing after a worktree is added would remove it.
 
-One claim not checked: that compose writes its working folder and configuration file labels on both of
-this host's engines. No Docker command was run for this revision. Ticket 0307 has the builder check it.
+Two claims not checked. That compose writes its working folder and configuration file labels on both of
+this host's engines: no Docker command was run for any revision, and ticket 0307 has the builder check
+it. That the client runs its SessionEnd hook on every ordinary exit: the pack has only a PreToolUse hook
+today, and ticket 0314's rows are where it is proved; a session whose end hook does not run is caught at
+the next session start, like a crash.
 
 ## 15. Open questions for the lead
 
-1. Discard uses git's force option on one worktree, on the owner's signed answer. It is the only forced
-   removal in the design. If no forced removal at all is wanted, Discard becomes "the owner cleans the
-   worktree by hand and presses Abandon".
-2. A hand landing now removes contained worktrees inside the git command that lands. With many large
-   worktrees that command can take minutes. The alternative is for the hook to spool always and let the
-   service carry it out, which needs the service running.
-3. Session scratch for a session started outside every project is owned by the installation. Say if those
-   should be left unrecorded instead.
+The three questions of revision 2 are decided and carried. Three new ones came out of this revision.
+
+1. The unique-work request needs a new settlement touchpoint, space disposition (section 7, VELDO-0327).
+   The validation named decision choice, which the control store's settlement service does not have. Say
+   if a new touchpoint is acceptable, or if the request should be squeezed into decision disposition as
+   three separate yes or no requests.
+2. An existing project's gate lacks NOT JUDGED until that project's own gate change lands (VELDO-0325,
+   migration step 9). Until then a core gate that dies on a full disk still stamps red, and only the
+   wrapper's line in the output says it is not evidence. Say which project goes first, and whether core's
+   change should be made before act mode.
+3. The sandbox launcher keeps its remove-by-age pass for stale scratch in a repository with no central
+   installation (6.10). That is outside this design's reach by its own rule that everything stands down
+   without an installation. Say if that pass should go everywhere.
