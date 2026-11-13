@@ -1,6 +1,6 @@
 # VELDO-0295 design: space management
 
-Revision 5, 2026-11-13. Design for the spec at
+Revision 6, 2026-11-13. Design for the spec at
 specs/VELDO-0295-veldo-records-what-it-creates-and-removes-it-at-the-event-that-ends-it.md. It answers
 the owner's request (Telegram 41152): "for veldo we need to introduce space management - with all of the
 projects, worktrees and tmp growing, veldo needs to clean things up after itself. this should happen not
@@ -20,9 +20,20 @@ service start, and when asked, Veldo compares the disk and Docker with the ledge
 anywhere in it, and nothing in Veldo is removed because of its age.
 
 Revision 2 followed the first validation of 2026-11-13 (B1 to B6, M1 to M9). Revision 3 followed the
-second (R1 to R4, S1 to S11). Revision 4 followed the third (C1 to C6 and D1 to D7). Revision 5 follows
-the fourth (verdict CHANGES, E1 to E3 and F1 to F6) and carries the lead's decisions exactly. Section 14
-answers every point of all four. What changed in revision 5:
+second (R1 to R4, S1 to S11). Revision 4 followed the third (C1 to C6 and D1 to D7). Revision 5 followed
+the fourth (E1 to E3 and F1 to F6). Revision 6 follows the fifth (verdict CHANGES, G1 to G4) and carries
+the lead's decisions (f), (g) and (h) exactly. Section 14 answers the points of all five. What changed in
+revision 6:
+
+- One answer still covers a day's whole review group, and the request now also offers an answer for one
+  worktree of the group (4.9, section 7, VELDO-0342).
+- Discard never loses a commit. A detached worktree's commits are put on a kept branch before the
+  worktree goes, and only uncommitted changes are discarded (6.5, section 7, VELDO-0343).
+- The volumes seoeng_cms-postgres-data and docker_minio_data are rows of the protect list (section 11).
+- A review group is keyed by scope, day and a sequence number. A group closes when it is answered, and
+  a deferral later that day opens a new one (4.9, section 7, VELDO-0342).
+
+What changed in revision 5:
 
 - The switch to act is also refused while the scope has a pending group the owner has neither confirmed
   nor marked wrong, and, for a bound project, while its gate script lacks the space steps (6.1, section
@@ -287,7 +298,7 @@ Identity: space:item: followed by a new identifier. One record per thing.
 | ends_on | The events of section 5 that apply to this item, copied from the kind registry at declaration with the registry's version |
 | size | Bytes at the last measurement and the event it was measured at |
 | confirmed | For an item made due in report mode: the owner's Confirm command that covered it. It stands until the item is removed or the owner marks it wrong |
-| deferral | The rule that refused, the event it was refused at, the event that retries it, the number of attempts, and the decision request when one was raised, or the day's review group when the item is in one |
+| deferral | The rule that refused, the event it was refused at, the event that retries it, the number of attempts, and the decision request when one was raised, or the review group when the item is in one |
 | removal | The event, the emitting process, the method, bytes just before, pool free before and after, and for an engine pool the host figure apart |
 | report | For an item reconcile could not give an owner: what was found, why no rule adopted it, and the owner a rule proposes when one does |
 
@@ -412,15 +423,18 @@ not propose it for that object again.
 
 ### 4.9 Review group record
 
-Identity: space:group: followed by the scope and a calendar day. One record per scope and day on which a
-review worktree was deferred for unique work other than review scratch (section 7).
+Identity: space:group: followed by the scope, a calendar day and a sequence number, 1 for the day's
+first group. A record is written when a review worktree is deferred for unique work other than review
+scratch and its scope has no open group for that day (section 7). A scope has at most one open group per
+day. A closed group is never reopened and never added to.
 
 | Field | Content |
 | :- | :- |
 | day | The calendar day of the deferral event that opened the group, in the installation's time zone |
-| members | The worktree items in the group. Each has a short index (1, 2, 3) in the order it joined, the review run that owned it, and the list of files and commits the owner is shown for it |
-| request | The one decision request raised for the group, and its current version |
-| state | open, settled |
+| sequence | The group's number within its scope and day, counted from 1 |
+| members | The worktree items in the group. Each has a short index (1, 2, 3) in the order it joined, the review run that owned it, the list of files the owner is shown for it and, for a detached worktree with commits no ref holds, the name of the kept branch they go to (6.5). A member answered by a member pick has left the group and is recorded with that answer |
+| request | The group's current decision request and its version. A member pick settles that request; the Ledger raises a new one for the members left and writes it here |
+| state | open, closed. A group closes when a group pick is applied, or when its last member leaves by a member pick |
 
 ## 5. Kinds and lifecycle
 
@@ -660,13 +674,36 @@ container still uses is deferred by the engine's own refusal.
 | Drop caches in an evidence folder | Remove the sub-folders the project declares as caches; nothing else | |
 | Mark a branch contained | A ledger write; git is not called | |
 | Remove review scratch | For a review worktree only. Asks git for the worktree's untracked paths that it does not ignore and removes each one: a folder by the folder remover's rename, second probe and delete, a file by a plain delete, a link by deleting the link and never what it points at. Each path passes rules 1, 2, 3, 4 and 6 first. No force option and no clean command of git is used | A path resolves outside the worktree, is on the protect list, or is in use |
-| Discard a worktree | git's worktree remove with the force option, on a worktree named by a settled owner decision: the one worktree of its request, or each worktree of a day's review group | The decision is not settled, does not name that worktree, or the worktree's list of changed files and commits differs from the list the owner was shown |
+| Discard a worktree | git's worktree remove with the force option, on a worktree named by a settled owner decision: the one worktree of its request, each worktree of a review group, or the one member a member pick names. For a detached worktree whose checked-out commit no ref holds, the Ledger first creates a kept branch at that commit, and the remove runs only after that | The decision is not settled, does not name that worktree, the worktree's list of changed files differs from the list the owner was shown, or the kept branch could not be created |
 
 No remover calls a prune command. No remover passes a force option, with the one exception in the last
 row. Discard is the one forced removal, and it is allowed only after the owner's discard answer (section
 7). Discard removes the worktree and never the branch, so work that was committed on a branch survives
-it. A detached worktree has no branch; commits made in it are listed in the request as part of what
-Discard loses. The review scratch remover is not a forced removal: it deletes, one by one, files that git
+it.
+
+Discard never loses a commit (the lead's decision (g)). A detached worktree has no branch, so a commit
+made in it can be reachable from no ref (rule 5, case 5). Before the discard remover runs on such a
+worktree, the Ledger creates a kept branch at the commit checked out at that moment and records it as a
+branch item in state kept. The branch is named as Save names one: the ticket's kept-branch name for a
+ticket's worktree, otherwise the prefix space-saved, then the run's label. Every character of the label
+that git refuses in a ref name is replaced by '-', and git checks the name before the write. Only then is
+the worktree removed with the force option. What Discard loses is uncommitted work only: tracked edits,
+staged changes and untracked files.
+
+The order has one failure. When the branch cannot be created, because the name is taken by a branch
+that does not hold the commit or because git refuses the ref, the discard does not run and the worktree
+is deferred as remove_refused with everything in it. Discard never proceeds without the branch.
+
+Creating the branch is a ref write. It is not a removal, so Discard stays the one forced removal. It is
+not a commit, so "Veldo never commits on its own" still holds. git runs the reference-transaction hook
+for it, and the hook sends nothing, because the ref is neither the trunk nor a declared landing ref
+(6.9).
+
+An agent's worktree needs no new branch. Its commits are on its branch in the agent repository, which
+rule 5 keeps until the runner's integrate has brought them across. Discard of an agent's worktree
+removes the worktree and leaves the agent repository and its branch in place, kept.
+
+The review scratch remover is not a forced removal: it deletes, one by one, files that git
 itself calls untracked, and the worktree then goes by the same non-forced remove as any other. Each
 remover returns the bytes it measured just before, and the pool's free space before and after.
 
@@ -678,7 +715,7 @@ Reads, all from ledger records, live through the existing record stream:
 | :- | :- |
 | space.pools | Each pool: capacity, free, floor, held, and the waiting and advised holds with their numbers |
 | space.usage | Bytes and item counts grouped by project, by ticket and by kind; filters for each. Plain repositories are rows beside the projects, and "no project" is a row of its own |
-| space.pending | Due and deferred items: owner, kind, locator, size, reason, the event that retries it, and the decision request when there is one. The review worktrees of one day share one request |
+| space.pending | Due and deferred items: owner, kind, locator, size, reason, the event that retries it, and the decision request when there is one. The review worktrees of one group share one request, and each is shown with the index its member picks use |
 | space.removed | Removed items, newest first: owner, kind, locator, event, emitter, size, free before and after |
 | space.reports | What reconcile found and could not adopt, with the proposed owner when a rule gives one; repositories whose hooks are missing; bound projects whose gate script lacks the space steps |
 | space.protected | The protect list in force, where each entry comes from, and the objects each entry matches on each engine. A protected thing appears here and in no other read |
@@ -1039,9 +1076,10 @@ decision and answered by the project owner. The lead has accepted this touchpoin
 
 The settlement and the channel have no tier: neither file holds the word. So the request cannot be
 "presented as critical" on the control path. What that path does carry is the request's terms. They
-state that Discard cannot be undone, and they list, for each worktree, the files and commits Discard
-would lose; the presentation shows both, and the Ledger raises no request that offers discard without
-that list (VELDO-0327).
+state that Discard cannot be undone, and they list, for each worktree, the files Discard would lose
+and, for a detached worktree with commits no ref holds, the kept branch those commits go to; the
+presentation shows both, and the Ledger raises no request that offers discard without that list
+(VELDO-0327).
 
 How three answers fit a closed set of rulings. The set of rulings is closed in three places:
 authority_contract.py:379 allows approve, reject and return for elaboration, and :414 refuses any other
@@ -1051,12 +1089,13 @@ the choice against its ruling (control_request_settlement.py:509, 571) and takes
 ruling (:670). Save, keep and discard as rulings would need all three places widened.
 
 The design does not widen them. The channel already has a pick: the word accept followed by named values,
-whose ruling is approve (control_channel_presentation.py:176-180, 254-265). The request offers exactly
-three choices, accept save, accept keep and accept discard. Each is a pick, each maps to approve, and an
+whose ruling is approve (control_channel_presentation.py:176-180, 254-265). A request for one
+worktree offers exactly three choices, accept save, accept keep and accept discard. Each is a pick, each maps to approve, and an
 answer that names none of the three is refused as unmatched_choice by the existing check. The journey
 entry for space disposition names one effect, for approve. The effect record already carries the choice
 beside the ruling (:670), and the Ledger reads the choice from it to know which of the three to apply.
-Reject and return for elaboration are not offered; Keep is the answer that changes nothing.
+Reject and return for elaboration are not offered; Keep is the answer that changes nothing. A review
+group's request offers more picks of the same form (below).
 
 So the change is one new entry in the journey configuration of control_request_settlement.py and the
 Ledger's reading of the effect. authority_contract.py and the choice map are not touched, and the five
@@ -1070,7 +1109,7 @@ answers:
 | :- | :- |
 | Save | The changes are committed on a kept branch named for the ticket, authored as the owner's configured git identity. A worktree with no ticket gets a kept branch named for the run that owned it: the prefix space-saved, then the run's label. Then the worktree is removed by git's non-forced remove. When the tree is clean and only unlanded commits made the work unique, nothing is committed: the branch already holds them, it is kept, and the worktree is removed |
 | Keep | The item's state becomes kept. Nothing retries it and no second request is raised. Abandon on the console ends that |
-| Discard | The discard remover runs: git's worktree remove with the force option on that one worktree. Rules 1, 2, 3, 4 and 6 still apply, and the remover refuses if the list of files differs from the list the owner was shown. The branch is kept, so every commit on it survives; what is lost is the uncommitted and untracked files the owner was shown, and for a detached worktree the commits made in it, which the request lists |
+| Discard | The discard remover runs: git's worktree remove with the force option on that one worktree. Rules 1, 2, 3, 4 and 6 still apply, and the remover refuses if the list of files differs from the list the owner was shown. No commit is lost. The branch is kept, so every commit on it survives. A detached worktree whose commits no ref holds gets a kept branch at its checked-out commit before the remove, and when that branch cannot be created the discard does not run (6.5). What is lost is the uncommitted and untracked files the owner was shown |
 
 Veldo never commits on its own. The commit in Save exists only because the owner's signed answer asked for
 it. Discard is the one forced removal in Veldo, and it is allowed only after the owner's discard answer.
@@ -1100,34 +1139,53 @@ that day:
 
 1. The day is the calendar day of the deferral event, in the installation's time zone. It is a key and
    not a schedule: nothing opens, closes or sends a request because the clock moved.
-2. The first such deferral of a day writes the day's review group record (4.9) and raises one request on
-   the space disposition touchpoint. Each later deferral of that day adds its worktree to the group and
-   publishes a new version of the same request. An answer bound to an older presentation settles
+2. A deferral joins the open group of its scope and day when there is one: it adds its worktree and
+   publishes a new version of that group's request. An answer bound to an older presentation settles
    nothing: the settlement already refuses it as stale_presentation
-   (control_request_settlement.py:507-508).
+   (control_request_settlement.py:507-508). When there is no open group, because the deferral is the
+   first of the day or because the owner has answered the day's earlier group, it writes a new review
+   group record (4.9) with the day's next sequence number and raises a new request on the space
+   disposition touchpoint. A scope has at most one open group per day. So the owner gets one request
+   per day in the normal case, and a second one that day only when a worktree is deferred after the
+   first was answered. The deferral event opens it; the clock still opens nothing.
 3. A deferral on a later day opens that day's own request, whether or not an earlier day's request is
    still open. An earlier request is never added to and never closed by a later day. It waits for the
    owner's answer as it stands.
-4. One answer covers the whole group. The request offers the same three picks, accept save, accept keep
-   and accept discard, and the Ledger applies the answer to every member. An answer must be one of the
-   choices the presentation lists (control_request_settlement.py:509), so a separate pick for each
-   worktree would mean listing every combination. The request's text names its worktrees by the short
-   index of the group record. No item identity is ever a pick value; it holds a colon, and a pick value
-   is a word of letters, digits, '_', '.' and '-' (control_channel_presentation.py:176-180). An owner who
-   wants one worktree treated differently answers keep and then presses Abandon on that worktree, which
-   defers it into the group of that day.
+4. One answer covers the whole group, and the request also offers an answer for one worktree (the
+   lead's decision (f)). The request lists the three group picks, accept save, accept keep and accept
+   discard, and for each member three member picks that add the letter w and the member's short index:
+   accept save w2, accept keep w2, accept discard w2. The request's text names each worktree beside its
+   index. No item identity is ever a pick value; it holds a colon, and a pick value is a word of
+   letters, digits, '_', '.' and '-' (control_channel_presentation.py:176-181), which w2 is. The channel
+   does not change: a pick is accept and one or more values (:255-259), every pick has the ruling
+   approve (:262-265), and the presenter checks a request's choices only for a ruling each and for
+   being distinct (:866-879).
+   - A group pick applies to every member still in the group, and the group closes.
+   - A member pick applies to that member only. The member leaves the group, its answer is applied,
+     and the request is settled like any other. When members are left, the Ledger raises a new request
+     for them on the same group record and writes it in the record's request field; their indexes do
+     not change. It is a new request and not a new version of the settled one, because the settlement
+     refuses any answer to a closed request (request_closed, :166). When the last member leaves, the
+     group closes.
+   - The choices and the answer instruction must fit one message part, or the presenter refuses to
+     render (:377-379). When the group picks and three picks for every member do not fit, the request
+     offers the group picks and the member picks of as many members as fit, lowest index first, and its
+     text names the members that have no pick of their own in this request. Each member pick makes the
+     next request shorter, so it reaches the members after them.
 5. Save commits each worktree's changes on a kept branch named for the review run that owned it: the
    prefix space-saved, then the run's label. A worktree whose only unique work is a commit on its
    detached HEAD gets that branch at its HEAD and no new commit.
-6. Discard compares each worktree's list of files and commits with the list the group record holds for
-   it. A worktree whose list has changed is not discarded. That refusal defers it again, into the group
-   of the day of the refusal. The others go.
+6. Discard compares each worktree's list of files with the list the group record holds for it. A
+   worktree whose list has changed is not discarded; the others go. A detached member whose commits no
+   ref holds gets its kept branch first, as in 6.5. A refused worktree is deferred again and placed as
+   item 2 places any deferral of that day. After a group pick its group is closed, so it opens a new
+   group with its own request.
 
 How often this can happen on the measured host. The review script has a tests mode whose brief tells the
 reviewer to write failing tests into the worktree (codex_review.sh:116-124). A new test file is review
 scratch and goes with no request, which is what the script's forced remove does to it today. A test
 added to an existing test file is a tracked modification, so a tests-mode review can put a worktree into
-the day's request on any day it runs. However many do, the owner gets one request that day.
+the day's request on any day it runs. However many do, the owner has one open request for that day at a time.
 
 In report mode none of this happens until the owner confirms the group of due review worktrees, and the
 host's review script keeps its own forced remove until core is in act mode (section 11).
@@ -1458,7 +1516,7 @@ One new screen, Space, in the factory group of the navigation.
 | Pools | One row per pool: capacity, free, floor, held; under it the waiting runs, and in report mode the runs that would have waited, with need, free, held and floor |
 | Usage | A table that groups by project, then ticket, then kind, with bytes and counts; each size names the event it was measured at. Each plain repository is a row beside the projects, and "No project" is one row holding the scratch of sessions started outside every project |
 | Modes | One row per project, per plain repository and for no project: report or act and since when. For a row in report mode: the last three calendar days, each marked clean or not with the reason (no event that day; a proposal marked wrong), the wrong-proposal records, and the Act button. Beside the button the row names what still blocks the switch: a day that is not clean, each unconfirmed pending group by kind with its count, a gate script without the space steps. The Ledger accepts the switch only when nothing is left. For a row in act mode: Back to report |
-| Pending removal | Due and deferred items with the reason in words (in use by process 4412; uncommitted changes in 3 files), the event that will retry, and the open decision request when there is one. The review worktrees of one day are listed under their one request |
+| Pending removal | Due and deferred items with the reason in words (in use by process 4412; uncommitted changes in 3 files), the event that will retry, and the open decision request when there is one. The review worktrees of one group are listed under their one request, each with its index and the three answers for it alone |
 | Removed | The removal history: what, whose, which event, how much, free space before and after; for an engine pool the note that the host figure did not change |
 | Reports | Things found with no owner, each with Adopt and with the proposed owner when a rule gives one; Docker objects no run could be named for; loose files under a scratch root with their total size; repositories whose hooks are missing; projects whose gate script lacks the space steps |
 | Protected | The list in force, and what each entry matches on each engine. Nothing in this section has an action |
@@ -1561,6 +1619,8 @@ read on the host on 2026-11-13 with read-only listings of volumes, containers an
 | The travelbot database volume | Volume travelbot_pgdata, and names that start with travelbot_ | Compose project travelbot | Both contexts |
 | The viraestetika database volume | Volume viraestetika_pgdata, and names that start with viraestetika_ | Compose project viraestetika | Both contexts |
 | The seo-engine database volume | Volume seo-engine_seo-engine-postgres-data, and names that start with seo-engine_ | Compose project seo-engine | default |
+| The seoeng cms database volume | Volume seoeng_cms-postgres-data, by exact name | None; the compose project name seoeng is not protected | default |
+| The MinIO data volume | Volume docker_minio_data, by exact name | None; the compose project name docker is not protected | Both contexts |
 | Images that cannot be pulled again | Image names minio/minio and minio/mc, any tag | None; an image carries no compose label | Both contexts |
 | Any other project's database volumes | The patterns the project adds in its space file | The compose project names it adds | |
 | The integration checkout and the gate's own checkout | Their paths | | The host filesystem. Their caches are reused by every full check; the nightly script's keep list today |
@@ -1570,10 +1630,12 @@ too, and not the database alone. That is on purpose: the owner's rule is that da
 no Veldo run uses these project names, because a run's compose project name comes from its own label
 (6.3).
 
-The listing showed two more volumes that look like real data and are not on the lead's list:
+The listing showed two more volumes that hold real data and were not on the lead's first list:
 seoeng_cms-postgres-data (compose project seoeng, on default) and docker_minio_data (the MinIO data
-volume, on both contexts). This design adds both by exact name, which is the safe direction; the lead
-strikes them if they are not wanted (section 15).
+volume, on both contexts). The lead confirmed both on 2026-11-13 (decision (h)), and they are rows of
+the table, each by exact name. Their compose project names, seoeng and docker, are not protected. The
+lead did not ask for that, and docker is the name compose gives a project started in any folder called
+docker, which is too broad to protect by label.
 
 The owner's own scripts rotate the places backups (his order of 2026-11-07). They are outside Veldo and
 are not changed. Veldo itself never removes a file under the places folder.
@@ -1622,15 +1684,16 @@ adopts it, which is the right answer for a folder nobody can name an owner for.
 
 ## 12. Tickets
 
-Each ticket is one concern and becomes its own spec. The numbers VELDO-0296 to VELDO-0341 are reserved by
-this design, forty-six tickets. On 2026-11-13 no spec file on any of the repository's 508 refs or in
+Each ticket is one concern and becomes its own spec. The numbers VELDO-0296 to VELDO-0343 are reserved by
+this design, forty-eight tickets. On 2026-11-13 no spec file on any of the repository's 508 refs or in
 any worktree, and no commit on any ref, held a number above VELDO-0295 except this design's own commits.
-Revision 5 keeps the numbers of revision 4 and adds 0339 to 0341, so nothing that already cites a number
+Revision 5 kept the numbers of revision 4 and added 0339 to 0341. Revision 6 keeps them and adds 0342
+and 0343, which no spec file and no commit on any ref held, so nothing that already cites a number
 changes meaning. "Row" is a row of a suite; each falsifier is the one change that must turn its row red.
 
 Build order: 0296, 0338, 0297, 0326, 0331, then 0298, 0299, 0330 and 0300 together, 0301, then 0302,
 0303 and 0305 to 0314 with 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341 in any order, then
-0304, then 0315, 0316, 0334, 0317, 0327, 0318, 0340, 0319, 0320, 0332, 0325, 0339, 0321, 0322.
+0304, then 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0320, 0332, 0325, 0339, 0321, 0322.
 
 0304, the boundary check, comes after 0302, 0303, 0324 and 0333 on purpose. Until those four have landed,
 the paths in the Replaced table of 6.10 still hold removal primitives and the two removals by age, none
@@ -1899,13 +1962,14 @@ Components: Receiver, Admission. The gate's half is VELDO-0309 AC2.
 ### VELDO-0318 The owner decides what becomes of unique work at a ticket's end
 
 Components: Signal, Removers (discard), Ledger (the effects). Depends on 0327 for the touchpoint. Review
-worktrees are VELDO-0336 and VELDO-0340.
+worktrees are VELDO-0336, VELDO-0340 and VELDO-0342. The kept branch Discard makes for a detached worktree
+is VELDO-0343.
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | A worktree deferred for unique work at ticket ended, project ended, worktree abandoned or released by its creator, and a worktree owned by a run that is not a review deferred at run finished, raises one request on the space disposition touchpoint with the three answers and the list of files; a later event for the same item raises no second one | Raise a request at every event; the row counts two requests and fails |
 | AC2 | Save commits the changes on a kept branch named for the ticket, or for the owning run when the worktree has no ticket, authored as the owner's configured identity, and then removes the worktree without force. Without a settled Save answer Veldo makes no commit | Commit at the deferral; the row finds a commit with no settled answer and fails |
-| AC3 | Discard removes that one worktree with git's force option, only on a settled discard answer, only while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass; the branch and its commits are still there afterwards | Skip the list comparison; the row that adds a file after the request was shown loses it and fails |
+| AC3 | Discard removes that one worktree with git's force option, only on a settled discard answer, only while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass; the branch and its commits are still there afterwards, and no commit is lost (VELDO-0343) | Skip the list comparison; the row that adds a file after the request was shown loses it and fails |
 | AC4 | Keep sets the item to kept; no later event retries it and no second request is raised until the owner presses Abandon | Leave a kept item deferred; the next event's row raises a second request and fails |
 
 ### VELDO-0319 The console's Space screen
@@ -2006,8 +2070,8 @@ ruling set of authority_contract.py nor the choice map of control_channel_presen
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
-| AC1 | The journey has a touchpoint space disposition, presented as a decision and answered by the project owner. Its request offers exactly three choices, the picks accept save, accept keep and accept discard; each settles with the ruling approve, and the effect record carries the choice | Offer the bare words save, keep and discard; none maps to a ruling, the channel does not present the request, and the row that waits for the presentation fails |
-| AC2 | The request's terms state that Discard cannot be undone and hold, for each worktree, the list of files and commits it would lose. The presentation shows both, and the Ledger raises no request that offers the discard pick without that list. The control path has no tier field and none is added | Raise the request with an empty list; the row that reads the presentation finds discard offered with nothing listed and fails |
+| AC1 | The journey has a touchpoint space disposition, presented as a decision and answered by the project owner. Its request for one worktree offers exactly three choices, the picks accept save, accept keep and accept discard (a review group's request adds the member picks of VELDO-0342); each settles with the ruling approve, and the effect record carries the choice | Offer the bare words save, keep and discard; none maps to a ruling, the channel does not present the request, and the row that waits for the presentation fails |
+| AC2 | The request's terms state that Discard cannot be undone and hold, for each worktree, the list of files it would lose and, for a detached worktree with commits no ref holds, the name of the kept branch those commits go to. The presentation shows both, and the Ledger raises no request that offers the discard pick without that list. The control path has no tier field and none is added | Raise the request with an empty list; the row that reads the presentation finds discard offered with nothing listed and fails |
 | AC3 | The effect is applied once, in the settlement's own transaction, from the recorded choice; an answer naming a choice that was not offered is refused as unmatched_choice, and an answer that does not bind the current presentation settles nothing | Read the ruling and not the choice; the row that answers accept keep finds the worktree saved or discarded and fails |
 | AC4 | The five existing touchpoints, their rulings and their effects are unchanged, and authority_contract's ruling set still has three members | Add save, keep and discard to the ruling set; the row that reads the set finds six and fails |
 
@@ -2146,7 +2210,7 @@ Components: Ledger (the review group record), Signal, Removers (discard). Depend
 | :- | :- | :- |
 | AC1 | Two review worktrees with tracked edits deferred on one day raise one request; a third on the next day raises a second, and the first day's request is unchanged | Raise one request per worktree; the row counts two on day 1 and fails |
 | AC2 | A later deferral of the same day publishes a new version of the day's request, and an answer bound to the earlier presentation settles nothing. The clock opens and sends nothing: with the fixture clock moved a day and no deferral there is no new request | Add the worktree without a new version; the row's answer to the old presentation settles the group, the worktree the owner never saw included, and the row fails |
-| AC3 | One answer applies to every member. Save commits each worktree's changes on a kept branch named space-saved and the review run's label and removes it without force; Keep sets each to kept; Discard removes each member whose list equals the list shown and defers a changed one into the group of that day | Skip the comparison per worktree; the row adds a file to one member after the request was shown, loses it and fails |
+| AC3 | A group pick applies to every member still in the group and closes the group. Save commits each worktree's changes on a kept branch named space-saved and the review run's label and removes it without force; Keep sets each to kept; Discard removes each member whose file list equals the list shown and defers a changed one again, into a new group (VELDO-0342 AC3) | Skip the comparison per worktree; the row adds a file to one member after the request was shown, loses it and fails |
 | AC4 | Only a review run's worktree is treated this way: a detached worktree owned by a run of another station keeps its untracked file at run finished and raises a request of its own | Treat every run-owned worktree as a review worktree; the builder's untracked file is deleted and the row fails |
 
 ### VELDO-0341 Protected Docker objects, by name and by compose label
@@ -2158,6 +2222,27 @@ Components: Probes (the protect list), Docker adapter, Reconciler. Depends on 02
 | AC1 | An object is protected when its name matches a pattern or its compose project label equals a protected project name, either one, on every engine the installation names; the rows are a volume matched by name with no label and a container matched by label under another name, each on two contexts | Test the name only; the row's container named otherwise gets an item and fails |
 | AC2 | A container that mounts a protected volume or path is protected, and so are the image it was made from and the networks it is attached to; a container that only runs an image whose name is protected is not | Protect every container of a protected image; the row's run container made from that image is still there after run finished and the row fails |
 | AC3 | A protected object has no item, no proposed owner and no Adopt action, and is in no pending group and no decision request, in report mode and in act mode; a Confirm, a discard answer and a released record that would reach one remove nothing | Read the list at removal only; the row's protected volume shows under Reports with a proposed owner and fails |
+
+### VELDO-0342 Review groups: an answer for one worktree, and a second group on the same day
+
+Components: Ledger (the review group record), Signal. Depends on 0340.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | A group's request offers the three group picks and, for each member, the three member picks with its index. In a group of three the answer accept discard w2 discards only member 2 and settles the request, and the Ledger raises a new request for members 1 and 3 on the same group record; an answer to the settled request is refused as request_closed | Apply a member pick to the whole group; the row finds member 1 discarded and fails |
+| AC2 | When the group picks and the member picks of every member do not fit one message part, the request offers the group picks and the member picks of the lowest indexes that fit, and its text names the members without a pick; after a member pick the next request offers picks to the members after them | Offer every member pick whatever the size; the presenter refuses to render and the row that waits for the presentation fails |
+| AC3 | A scope has at most one open group per day: while one is open a deferral joins it. After the day's group is closed by an answer, a deferral the same day opens a new group with the next sequence number and its own request | Reuse the day key; the row's command is refused as a duplicate entity and the worktree has no request |
+
+### VELDO-0343 Discard keeps every commit
+
+Components: Removers (discard), Ledger. Depends on 0318; the group answers are 0340 and 0342.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | Discard of a detached worktree whose checked-out commit no ref holds first creates a kept branch at that commit, named as Save names one, and records it as a branch item in state kept; afterwards the commit is reachable from that branch and the worktree's uncommitted file is gone | Discard without creating the branch; the row finds the commit unreachable and fails |
+| AC2 | When the kept branch cannot be created, because the name is taken by a branch that does not hold the commit or git refuses the ref, the discard does not run: the worktree and its files are still there, deferred as remove_refused | Run the remove after the failed branch write; the row finds the worktree gone and the commit unreachable and fails |
+| AC3 | Discard of an agent's worktree leaves the agent repository and its branch in place, kept, with every commit on that branch | Remove the agent repository with the worktree; the row finds the branch's commit in no repository and fails |
+| AC4 | Creating the kept branch makes no commit and sends no landing event: the row counts the same commit objects and the same event records before and after | Commit the worktree's files in Discard as Save does; the row finds a new commit and fails |
 
 ## 13. Decisions taken in this design
 
@@ -2178,7 +2263,10 @@ Components: Probes (the protect list), Docker adapter, Reconciler. Depends on 02
 | A script gives up its own things with released, not with Abandon | Abandon is an owner action and no host principal may send it. Released is accepted only for things the same kind of script recorded, and goes through all seven rules |
 | A detached worktree made inside a wrapped run belongs to the run | A review's checkout has no branch and no ticket. Owned by the project alone it would never end |
 | A review worktree's stray untracked files are review scratch, removed at the review's end with no request. Its tracked modifications go into one grouped request per day | The lead's decision (e). A review worktree is tied to a run whose station is review, so a builder's detached worktree keeps its files. The scratch is deleted path by path under the rules, never by a force option, so Discard stays the one forced removal. The day is the day of the deferral event; no clock opens or sends the request |
-| One answer covers a day's review group | An answer must be one of the choices the presentation lists, so an answer per worktree would mean listing every combination or changing the channel. Keep followed by Abandon handles the one worktree that needs another answer |
+| One answer covers a day's review group, and the request also offers an answer for one worktree | The lead's decision (f). A group pick answers every member. A member pick, accept with the answer and the member's index, answers one and leaves the rest under a new request. The channel already takes it: a pick names one or more values and a request's choices are any distinct list. When the picks do not all fit one message part, the request offers the group picks and the member picks that fit, lowest index first |
+| Discard never loses a commit | The lead's decision (g). A detached worktree's commits are put on a kept branch before the worktree goes, and a discard that cannot make the branch does not run. Only uncommitted changes are discarded. The branch is a ref write, not a removal and not a commit |
+| seoeng_cms-postgres-data and docker_minio_data stay on the protect list | The lead's decision (h). Each is protected by exact name. Their compose project names are not added, because docker as a project name is too broad |
+| A review group is keyed by scope, day and a sequence number | With the day alone as the key, a worktree deferred after the owner answered that day's group had no group to join and could get no request. One open group per scope and day; an answered group closes and the next deferral that day opens a new one. The day stays a key of the deferral event, and no clock is added |
 | Hooks sign as a host principal, never as the owner | A git hook runs in any shell. It may record what it saw; it may not answer for the owner |
 | A hook never fails or waits on the service; it spools | A landing or a session must not break because the authority is down |
 | Admission is asked before a dispatch is prepared | A prepared dispatch holds a slot and has a deadline |
@@ -2187,7 +2275,7 @@ Components: Probes (the protect list), Docker adapter, Reconciler. Depends on 02
 | Pulled images are never removed | Nothing in Veldo can prove an image can be pulled again, and one that could not cost a whole run on 2026-11-13 |
 | The protect list is matched by name and by compose label, on every engine, and a protected thing is never proposed | The lead's list, complete, and the owner's rule for the places project: not removed and not offered. Two tests because a hand-made object has no label and a renamed one has no matching name. A container is not protected for running a protected image alone, or every gate database made from a common image would stay forever |
 | Unlabelled Docker objects are reported, not guessed, in the first release | A wrong guess removes another run's database |
-| The one forced removal is the owner's Discard, allowed only after the owner's discard answer | The lead's decision. Everywhere else the tool's own refusal is the last safety check. Here the owner has seen the file list and signed the loss, and the branch is kept |
+| The one forced removal is the owner's Discard, allowed only after the owner's discard answer | The lead's decision. Everywhere else the tool's own refusal is the last safety check. Here the owner has seen the file list and signed the loss, and every commit is kept |
 | Scratch of a session outside every project is recorded under the owner no project | The lead's decision. Leaving it unrecorded would leave the growth the owner named with no owner and no ending event |
 | Reconcile may act on a past event | Otherwise an adopted worktree whose ticket landed last month would never be removed. It is bounded to service start and an explicit request |
 
@@ -2197,8 +2285,9 @@ transition; removal of unlabelled Docker objects.
 
 ## 14. Validation response
 
-Four validations, all of 2026-11-13, all in the owner's notes repository under research/codex-reviews.
-Every point was checked against the code before it was taken.
+Five validations, all of 2026-11-13, all in the owner's notes repository under research/codex-reviews.
+Every point was checked against the code before it was taken. The newest is in 14.5; 14.1 to 14.4 run
+from the fourth back to the first and keep their numbers, because other sections cite them.
 
 ### 14.1 The fourth validation (design-veldo-0295-validation4-2026-11-13.md)
 
@@ -2251,6 +2340,9 @@ Where each of the lead's decisions is carried:
 | (c) no removal by age anywhere in Veldo | Section 5, 6.2, 6.10; tickets 0324, 0333, 0304 AC4, 0301 AC4 |
 | (d) the switch to act also requires no unconfirmed pending group | Section 2, 4.1, 4.7, 6.1, 6.6, section 10, section 11; tickets 0339, 0320 AC4 |
 | (e) a review worktree's stray untracked files are review scratch, removed at the review's end with no request; tracked modifications go into one grouped request per day | Section 2, 4.9, section 5, 6.5, section 7, 8.5; tickets 0336 AC3 and AC4, 0340 |
+| (f) one answer covers a day's whole review group, and the request also allows a per-worktree exception | 4.9, 6.6, section 7 item 4, section 10, section 13; tickets 0342 AC1 and AC2, 0340 AC3, 0327 AC1; the spec's AC3 |
+| (g) Discard never loses commits: a detached worktree's commits are kept on a kept branch before the worktree goes, and only uncommitted changes are discarded | 4.9, 6.5, section 7 ("Which touchpoint", the Discard row, item 6), section 13; tickets 0343, 0318 AC3, 0327 AC2; the spec's AC3 |
+| (h) seoeng_cms-postgres-data and docker_minio_data stay on the protect list | Section 11 (two table rows and the paragraph under the table), section 13 |
 | Admission retries are woken by the event that frees space, never by a timer pass | 4.3, 6.7; ticket 0334 |
 | Discard is the one forced removal, only after the owner's discard answer | 6.5, section 7; tickets 0300 AC3, 0318 AC3, 0330 AC3 |
 | A hand landing removes nothing inside the git command | 6.9, 8.4, section 9; tickets 0311 AC3 and 0323 |
@@ -2338,16 +2430,18 @@ SessionEnd hook on every ordinary exit: the pack has only a PreToolUse hook toda
 rows are where it is proved; a session whose end hook does not run is caught at the next session start,
 like a crash.
 
+### 14.5 The fifth validation (design-veldo-0295-validation5-2026-11-13.md)
+
+Four required changes, G1 to G4, all taken. The four smaller points, H1 to H4, are not taken in this
+revision: the lead limited revision 6 to decisions (f), (g) and (h) and the group key.
+
+| Point | Checked against the code | Where it is fixed |
+| :- | :- | :- |
+| G1 decision (f) half carried | True, and revision 5's reason was wrong. Read in control_channel_presentation.py: a pick is accept and one or more value words (:176-181), every pick has the ruling approve (:255-265), and the presenter checks a request's choices only for a ruling each and for being distinct (:866-879). So member picks need no channel change. The size limit is real (:377-379). Of the two ways offered for a request that does not fit, neither is taken as written: the request keeps the group picks and offers the member picks that fit, which adds no console route and keeps one open group per day. "Keep, then Abandon" is deleted | 4.9, 6.6, section 7 item 4, section 10, section 13; ticket 0342 AC1 and AC2, ticket 0340 AC3, ticket 0327 AC1; the spec's AC3 |
+| G2 decision (g) not carried | True: 6.5 and section 7 said Discard loses a detached worktree's commits. Taken as written. It has a ticket of its own, because 0318 is at four ACs | 4.9, 6.5, section 7 ("Which touchpoint", the Discard row, item 6), section 13; ticket 0343, ticket 0318 AC3, ticket 0327 AC2; the spec's AC3 |
+| G3 decision (h) not in the table | True: the two volumes were named in a paragraph and were not rows. They were not listed again on the engines for this revision; the names are those of revision 5's listing | Section 11 (the table and the paragraph under it), section 13 |
+| G4 no second group on one day | True: one record per scope and day could not be reopened and could not be written twice. The key is now scope, day and sequence number, and a deferral joins the open group or opens a new one. The day stays a key and no clock is added | 4.9, section 7 items 2 and 6, section 13; ticket 0342 AC3, ticket 0340 AC3; the spec's AC3 |
+
 ## 15. Open questions for the lead
 
-Every earlier question is decided and carried (section 13), (d) and (e) included. Three came out of this
-revision.
-
-1. One answer covers a day's whole review group, because an answer must be one of the choices the
-   request lists. Say if an answer per worktree is wanted; that needs a change to the channel, which is
-   shared code.
-2. Discard on a detached review worktree loses the commits made in it, which the request lists. Say if
-   Veldo should instead always leave such commits on a space-saved branch, so that Discard can only lose
-   files.
-3. Two volumes were added to the protect list beyond the lead's list, from the host listing:
-   seoeng_cms-postgres-data and docker_minio_data. Confirm them or strike them.
+None. Every question is decided and carried (section 13), (f), (g) and (h) included.
