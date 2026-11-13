@@ -323,6 +323,13 @@ PREVIOUS_ENGINE = 'bin.upgrade'
 OWNERSHIP_COMMIT = 'ownership_commit'
 DEFAULT_KEY_ROOT = '/var/lib/veldo/keys'
 JOURNAL_KEY = 'journal'
+# VELDO-0326: the two host principals a hook and a gate helper sign space commands as, the one named scope
+# both are enrolled with (it covers no repository, so the store's generic commands stay refused for both),
+# and where their keys are kept in the installation folder. The space ledger (control_space.py) holds the
+# same names and the rule for what each may sign.
+SPACE_PRINCIPALS = ('space-observer', 'space-runner')
+SPACE_SCOPE = 'space'
+SPACE_KEYS = 'keys'
 EXIT_LOCK_HELD = 75
 EXIT_REFUSED = 78
 # The kernel's limit on a local socket path (sun_path), terminator included.
@@ -947,14 +954,55 @@ def installable_work(path, repositories, adapters):
     return data
 
 
+def space_key_paths(installation):
+    """{principal: key file} for the host principals of the space ledger in the installation folder
+    `installation`, checked and nothing written: the folder must be there, and a key file already in it
+    must be this account's own regular file nobody else can read."""
+    folder = os.path.abspath(str(installation))
+    if not os.path.isdir(folder):
+        raise Refused('invalid_input:installation:absent', folder,
+                      'name the installation folder the space keys are kept in')
+    paths = {name: os.path.join(folder, SPACE_KEYS, name) for name in SPACE_PRINCIPALS}
+    for path in paths.values():
+        if os.path.lexists(path):
+            info = os.lstat(path)
+            if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) & 0o077:
+                raise Refused('invalid_input:space_key:mode', path, 'chmod 0600 %s' % path)
+    return paths
+
+
+def enroll_space_principals(paths, enroll):
+    """Enroll each host principal of the space ledger through `enroll`, the owner's signed
+    enroll_principal (enroll(operation, parameters, enrollee=sign), as factory setup's own admin is
+    called): a service of the one space scope with no role, its key's possession proven by the key's own
+    co-signature. The membership organ judges the owner's signature and the policy; nothing here writes
+    the store. Returns the principals enrolled."""
+    for name in SPACE_PRINCIPALS:
+        key = paths[name]
+        enroll('enroll_principal', {'principal': name, 'principal_type': 'service', 'roles': [],
+                                    'public_key': Path(key + '.pub').read_text().strip(),
+                                    'independence_group': name, 'scope': [SPACE_SCOPE]},
+               enrollee=lambda data, key=key: SIG.sign_bytes(key, data, AC.SIGNATURE_NAMESPACE))
+    return list(SPACE_PRINCIPALS)
+
+
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
             profile=None, adapters=None, writable=None, principal='authority',
             receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None, api_service=None,
-            work=None, state_root=None):
+            work=None, state_root=None, installation=None, enroll=None):
     """Lay down one authority instance for the enrolled `workspaces` of one domain. Starts nothing.
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
-    Returns what it laid down."""
+    Returns what it laid down.
+
+    VELDO-0326: given the installation folder `installation`, it makes the keys of space-observer and
+    space-runner under keys/ there (a key already there is kept), and given `enroll`, the owner's signed
+    enroll_principal, it enrolls both. Without `enroll` the keys are made and nothing is enrolled, so a
+    command signed with them is refused until the owner enrolls them; the answer names both as due."""
     runner = runner or Systemctl()
+    space = space_key_paths(installation) if installation is not None else None
+    if enroll is not None and space is None:
+        raise Refused('invalid_input:installation:absent', 'no installation folder was named',
+                      'name the installation folder the space keys are kept in')
     laid = layout(workspaces, host_trust=host_trust, key_directory=key_directory, install_root=install_root,
                   unit_dir=unit_dir, profile=profile, adapters=adapters, writable=writable, principal=principal,
                   receiver_principal=receiver_principal, python=python, channel_ingress=channel_ingress,
@@ -965,7 +1013,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     fixed, text, values, repositories = laid['fixed'], laid['text'], laid['values'], laid['repositories']
     ingress, api, lines = laid['ingress'], laid['api'], laid['lines']
 
-    created, generated = [], False
+    created, generated, space_generated, space_enrolled = [], False, [], []
     try:
         os.makedirs(os.path.dirname(first['store_path']), mode=0o700, exist_ok=True)
         os.makedirs(root, exist_ok=True)
@@ -999,7 +1047,22 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         os.makedirs(unit_dir, exist_ok=True)
         _write(unit_path, text, 0o644)
         created.append(unit_path)
+        if space is not None:
+            os.makedirs(os.path.join(os.path.abspath(str(installation)), SPACE_KEYS), mode=0o700, exist_ok=True)
+            for name in SPACE_PRINCIPALS:
+                if not os.path.lexists(space[name]):
+                    space_generated.append(space[name])
+                    subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-' + name,
+                                    '-f', space[name]], check=True, capture_output=True, timeout=30,
+                                   stdin=subprocess.DEVNULL)
+                    os.chmod(space[name], 0o600)
+            if enroll is not None:
+                space_enrolled = enroll_space_principals(space, enroll)
     except BaseException:
+        for path in space_generated:
+            for one in (path, path + '.pub'):
+                with contextlib.suppress(OSError):
+                    os.unlink(one)
         for path in reversed(created):
             with contextlib.suppress(OSError):
                 if os.path.isdir(path):
@@ -1018,7 +1081,11 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
             'socket': config['socket'], 'lock': config['lock'], 'repositories': repositories,
             'channel_ingress': config['channel_ingress'], 'api_service': config['api_service'], 'work': config['work'],
             'runtime_assets': config['runtime_assets'], 'runtime_assets_installed': len(laid['assets']),
-            'daemon_reload_rc': reload_rc, 'started': False}
+            'daemon_reload_rc': reload_rc, 'started': False,
+            'space_principals': None if space is None else {
+                'keys': space, 'generated': [name for name in SPACE_PRINCIPALS if space[name] in space_generated],
+                'enrolled': space_enrolled, 'due': [name for name in SPACE_PRINCIPALS if name not in space_enrolled],
+                'scope': SPACE_SCOPE}}
 
 
 # The installer's modes: the fixed executable's entry points run, every other module is only read, and
@@ -3554,6 +3621,8 @@ def main(argv=None):
         ins.add_argument('--channel-ingress', help='the VELDO-0073 Telegram ingress configuration this instance runs')
         ins.add_argument('--api-service', help='the VELDO-0130 API service configuration this instance runs')
         ins.add_argument('--work', help='the VELDO-0154 work configuration its factory loop dispatches')
+        ins.add_argument('--installation', help='the installation folder the keys of space-observer and '
+                                                'space-runner are made in (VELDO-0326)')
         for name in ('start', 'stop', 'status', 'uninstall'):
             one = sub.add_parser(name)
             one.add_argument('unit')
@@ -3566,7 +3635,8 @@ def main(argv=None):
                              install_root=args.install_root, unit_dir=args.unit_dir,
                              profile=json.loads(Path(args.profile).read_text()) if args.profile else None,
                              adapters=json.loads(Path(args.adapters).read_text()) if args.adapters else None,
-                             channel_ingress=args.channel_ingress, api_service=args.api_service, work=args.work)
+                             channel_ingress=args.channel_ingress, api_service=args.api_service, work=args.work,
+                             installation=args.installation)
         elif args.cmd == 'uninstall':
             report = uninstall(args.unit, install_root=args.install_root, unit_dir=args.unit_dir)
         else:

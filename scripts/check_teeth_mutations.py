@@ -12385,6 +12385,34 @@ def cases():
         ['ac4/rebuilt-size'])
     result[-1]['siblings'] = True
 
+    # VELDO-0326: the falsifier of each acceptance criterion of the host principals for space commands.
+    # AC1 hook commands signed with the owner's key; AC2 signal accepted from space-observer; AC3
+    # space-runner signalling for any owner; AC4 Abandon accepted from space-runner.
+    space326 = '133_veldo_0326_space_principals.py'
+    add(326, 'space326-owner-key-signs', space326, 'control_space.py',
+        "    return os.path.join(folder, KEYS_FOLDER, principal)\n",
+        "    return os.path.join(folder, KEYS_FOLDER, 'owner')\n",
+        ['ac1/hook-signs-as-observer'])
+    result[-1]['siblings'] = True
+    add(326, 'space326-observer-signals', space326, 'control_space.py',
+        "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+        "        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == SIGNAL):\n"
+        "            return\n        parameters = ",
+        ['ac2/observer-signal'])
+    result[-1]['siblings'] = True
+    add(326, 'space326-runner-signals-any-owner', space326, 'control_space.py',
+        "                    and own(list(subject.values()))):\n",
+        "                    or True):\n",
+        ['ac3/runner-other-run-signal'])
+    result[-1]['siblings'] = True
+    add(326, 'space326-runner-abandons', space326, 'control_space.py',
+        "        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ",
+        "        if principal not in HOST_PRINCIPALS or (principal == RUNNER and operation == SIGNAL\n"
+        "                                                and (parameters or {}).get('event') == ABANDON_EVENT):\n"
+        "            return\n        parameters = ",
+        ['ac4/abandon'])
+    result[-1]['siblings'] = True
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip

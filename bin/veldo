@@ -29,6 +29,9 @@ this file and see only argument routing plus wiring.
                             it and adds the API behind Tailscale Serve, VELDO-0171)
     veldo factory passkey    -> the same module (lists the API's pending passkey registrations, and
                             signs the one the owner names by its fingerprint, VELDO-0171)
+    veldo space sign --as P  -> .veldo/control_space.py (signs one space command as a host
+                            principal, space-observer or space-runner, with that principal's
+                            own key from the installation folder; never the owner's, VELDO-0326)
     veldo jira init          -> .veldo/tracker_jira_init.py (bootstrap a
                             company-managed Jira project into the live board -
                             detect + provision the lifecycle statuses/workflow
@@ -62,7 +65,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # The subcommands and which module surface each routes to (documentation the
 # dispatcher below keys off; the actual call sites cite the same modules).
 KNOWN_SUBCOMMANDS = ("work", "fleet", "supervisor", "mirror", "jira", "status", "watch", "account",
-                     "answer", "steer", "abort", "channel", "factory", "memory")
+                     "answer", "steer", "abort", "channel", "factory", "memory", "space")
 
 _MODS = {}
 
@@ -380,6 +383,10 @@ def route(argv):
             return _channel().main(rest)
         if cmd == "memory":
             return _mod("veldo_cli_memory", ".veldo/control_factory_setup_memory.py").main(rest)
+        if cmd == "space":
+            # forward verbatim to the space ledger's own command surface (VELDO-0326): a hook or a helper
+            # signs as its host principal with that principal's key, never the owner's.
+            return _mod("veldo_cli_space", ".veldo/control_space.py").main(rest)
         if cmd == "factory":
             # forward verbatim to the setup module's own command surface (VELDO-0139): the owner's
             # one setup of a real factory on this host, ordering and checking the existing pieces, and
