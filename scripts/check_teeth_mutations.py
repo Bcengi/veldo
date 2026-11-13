@@ -12466,6 +12466,46 @@ def cases():
         "    space_due = []\n",
         ['ac1/factory-rerun-enrolls'])
 
+    # VELDO-0331: mode per project. The declared falsifier of each acceptance criterion: AC1 one mode
+    # kept for the installation; AC2 advised holds left out of what is held; AC3 the switch back to
+    # report refused. Then one case for each reader AC2 names (Signal, admission, reconcile's adoption
+    # rule) reading no mode, and the mode command accepted with a signature that is not the owner's.
+    space331 = '134_veldo_0331_space_mode.py'
+    add(331, 'space331-one-mode-for-installation', space331, 'control_space.py',
+        "    return MODE_PREFIX + scope['type'] + (':' + scope['id'] if 'id' in scope else '')\n",
+        "    return MODE_PREFIX + 'installation'\n",
+        ['ac1/act-beside-report'])
+    result[-1]['siblings'] = True
+    add(331, 'space331-advised-not-held', space331, 'control_space_admission.py',
+        "COUNTED = ('admitted', 'advised')\n",
+        "COUNTED = ('admitted',)\n",
+        ['ac2/advised-counts-as-held'])
+    add(331, 'space331-switch-back-refused', space331, 'control_space.py',
+        "        if old == new:\n            return self._observed({'ok': True, 'seq': None, 'replayed': False, 'changed': False,",
+        "        if new == REPORTING and old == ACTING:\n"
+        "            return self._refuse(MODE, Refused('space_mode_locked', 'a scope in act stays in act'), about,\n"
+        "                                principal)\n"
+        "        if old == new:\n            return self._observed({'ok': True, 'seq': None, 'replayed': False, 'changed': False,",
+        ['ac3/switch-back-accepted'])
+    result[-1]['siblings'] = True
+    add(331, 'space331-signal-reads-no-mode', space331, 'control_space_signal.py',
+        "        if record.get('state') == 'due' and ledger.acts((record.get('owner') or {}).get('scope')):\n",
+        "        if record.get('state') == 'due':\n",
+        ['ac2/signal-by-scope'])
+    add(331, 'space331-admission-reads-no-mode', space331, 'control_space_admission.py',
+        "'waiting' if ledger.acts(scope) else 'advised'",
+        "'waiting'",
+        ['ac2/admission-by-scope'])
+    add(331, 'space331-adopts-in-report', space331, 'control_space_reconcile.py',
+        "    if ledger.acts(owner.get('scope')):\n",
+        "    if owner:\n",
+        ['ac2/adoption-by-scope'])
+    add(331, 'space331-mode-signature-unchecked', space331, 'control_space.py',
+        "                raise Refused('not_authorized', 'the command signature is not the owner\\'s')\n",
+        "                pass\n",
+        ['ac1/owner-signs'])
+    result[-1]['siblings'] = True
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip

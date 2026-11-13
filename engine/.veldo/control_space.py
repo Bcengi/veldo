@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""The space ledger: the item, pool, hold and reconcile records in the control store (VELDO-0297).
+"""The space ledger: the item, pool, hold, reconcile and mode records in the control store (VELDO-0297,
+VELDO-0331).
 
 WHAT THIS MODULE IS. The one record of what Veldo has on disk and in Docker, kept as entities of the
 existing control store, and the only writer of them. Every write is one registered command of the store:
 one transaction, one signed journal record, no second database. The journal record holds the whole item
 (its kind, owner, locator and state), so paths and object names are recorded and file contents never are.
 
-THE RECORDS, each an entity kind this module owns (design 4.1 to 4.4):
+THE RECORDS, each an entity kind this module owns (design 4.1 to 4.4 and 4.7):
 
   space_item       space:item:<new id>. One per thing. kind, host, pool, locator, parent, owner, creator,
                    adopted, branch, start, process, state, ends_on, size, confirmed, deferral, removal, report.
@@ -14,8 +15,9 @@ THE RECORDS, each an entity kind this module owns (design 4.1 to 4.4):
                    returns_space, backing.
   space_hold       space:hold:<identity>. needs and source per pool, state, reason, used, retry_asked, freed.
   space_reconcile  space:reconcile:<new id>. What started it, the roots and engines read, and the counts.
+  space_mode       space:mode:<scope>. scope, mode (report or act), since, history.
 
-ONLY THIS MODULE WRITES THEM. Attaching declares the four kinds and their id prefixes with the store's
+ONLY THIS MODULE WRITES THEM. Attaching declares the five kinds and their id prefixes with the store's
 declare_owners, bound to this file's bytes. From then on the store's generic entity command is refused
 entity_owned for them on every connection, and so is any other command.
 
@@ -80,8 +82,33 @@ pool when the engine has one, else against the pool its caller names.
 
 WHAT IS NOT HERE. The lifecycle table is the kind registry's (VELDO-0298); this module is given it as
 plain data and copies an item's events from it at declaration, with its version. Rules, probes and
-removers, the judgement behind admit, and the event, mode, wrong-proposal and review group records are
-later tickets. No clock is read anywhere in this module: accept is given the time.
+removers, and the event, wrong-proposal and review group records are later tickets. No clock is read
+anywhere in this module: accept and set_mode are given the time.
+
+MODE (VELDO-0331, design 2, 4.7 and 6.1). Report or act is one value per scope: each project, each plain
+repository, and no project. It is a record of this store and of nothing else: space:mode:project:<id>,
+space:mode:plain_repository:<its repository> and space:mode:no_project. A scope with no record is in
+report mode, which is not an error. There is no mode of the installation and no file holds one.
+
+The only writer is set_mode, and it takes the owner's signed command and nothing less: the packet
+{command, signature} whose command names the principal, the operation space_mode, the scope and the new
+mode, its own command id and its nonce. The signature is verified against the principal's active key in
+this store's keyring, and the principal must be an active person member holding project_owner whose scope
+covers the space scope. Anyone else is refused not_authorized, a host principal by the rule above as
+space_not_permitted:space_mode, and a scope the declarations do not name as space_unknown_scope, each
+with nothing written. The command commits against the versions of the membership and the key it was
+checked with, and consumes the owner's nonce, so a packet sent again writes nothing.
+
+A switch is one journal record. The mode record holds the scope, the mode, since (when the current mode
+began and the owner's signed command that set it) and history: every switch, the current one last, each
+with from, to, when and the owner's command with its signature. A switch back to report is accepted at
+once, whatever the scope's state. What a switch to act requires (three clean report days, no unconfirmed
+pending group, the gate's space steps) is VELDO-0332 and VELDO-0339; this ticket accepts the owner's
+command as it is. A command for the mode the scope is already in is accepted and writes nothing.
+
+WHO READS THE MODE. mode_of and acts answer for one scope. Signal (control_space_signal.py), admission
+(control_space_admission.py) and reconcile's adoption rule (control_space_reconcile.py) each ask for the
+scope the item or the run belongs to, never for the installation.
 
 WHO SIGNS A COMMAND (VELDO-0326, design 6.11). A git hook and a gate helper write to the ledger without
 the owner's key. Two host principals exist for that, each with its own key, made when the service is
@@ -128,6 +155,12 @@ OWNER = 'space_ledger'
 ITEM_KIND, POOL_KIND, HOLD_KIND, RECONCILE_KIND = 'space_item', 'space_pool', 'space_hold', 'space_reconcile'
 ITEM_PREFIX, POOL_PREFIX, HOLD_PREFIX, RECONCILE_PREFIX = ('space:item:', 'space:pool:', 'space:hold:',
                                                            'space:reconcile:')
+MODE_KIND, MODE_PREFIX = 'space_mode', 'space:mode:'
+# Mode per scope (design 4.7). A scope with no record is in report mode.
+REPORTING, ACTING = 'report', 'act'
+MODES = (REPORTING, ACTING)
+# Who signs the mode switch: the owner, a person member holding this role.
+MODE_SIGNER_TYPE, MODE_SIGNER_ROLE = 'person', 'project_owner'
 
 DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence')
 DOCKER_KINDS = ('container', 'volume', 'network', 'image_tag')
@@ -445,6 +478,26 @@ def hold_id(identity):
     return HOLD_PREFIX + identity
 
 
+def checked_scope(scope):
+    """A scope in its recorded form: exactly one of project, plain repository and no project, with an
+    identity for the first two. A plain repository is named by its repository, in the canonical form."""
+    if not isinstance(scope, dict) or scope.get('type') not in SCOPES:
+        raise _invalid('scope', 'exactly one of project, plain_repository and no_project')
+    if scope['type'] == 'no_project':
+        if set(scope) != {'type'}:
+            raise _invalid('scope', 'no project has no identity')
+        return {'type': 'no_project'}
+    if set(scope) != {'type', 'id'} or not _is_str(scope['id']):
+        raise _invalid('scope', 'a project or plain repository scope names its identity')
+    identity = canonical_path(scope['id']) if scope['type'] == 'plain_repository' else scope['id']
+    return {'type': scope['type'], 'id': identity}
+
+
+def mode_id(scope):
+    """The identity of a scope's mode record. `scope` is in its recorded form."""
+    return MODE_PREFIX + scope['type'] + (':' + scope['id'] if 'id' in scope else '')
+
+
 # ---------------------------------------------------------------------------------------------
 # The Ledger.
 # ---------------------------------------------------------------------------------------------
@@ -486,14 +539,17 @@ class Ledger:
                        SIGNAL: self._t_signal, OUTCOME: self._t_outcome, ADOPT: self._t_adopt,
                        REPORT: self._t_report, GONE: self._t_gone, REBRANCH: self._t_rebranch,
                        POOL: self._t_pool, HOLD: self._t_hold, ADMIT: self._t_admit, RELEASE: self._t_release,
-                       RECONCILE: self._t_reconcile}
-        for operation in OPERATIONS:
+                       RECONCILE: self._t_reconcile, MODE: self._t_mode}
+        # The mode switch is the owner's action and not one of OPERATIONS, the commands the authority sends.
+        for operation in OPERATIONS + (MODE,):
             conn.command_registry[operation] = {'transaction_transition': transitions[operation], 'writes': WRITES}
         store.declare_owners(conn, OWNER,
                              kinds={ITEM_KIND: ITEM_OPERATIONS, POOL_KIND: (POOL,),
-                                    HOLD_KIND: (HOLD, ADMIT, RELEASE), RECONCILE_KIND: (RECONCILE,)},
+                                    HOLD_KIND: (HOLD, ADMIT, RELEASE), RECONCILE_KIND: (RECONCILE,),
+                                    MODE_KIND: (MODE,)},
                              prefixes={ITEM_PREFIX: ITEM_OPERATIONS, POOL_PREFIX: (POOL,),
-                                       HOLD_PREFIX: (HOLD, ADMIT, RELEASE), RECONCILE_PREFIX: (RECONCILE,)},
+                                       HOLD_PREFIX: (HOLD, ADMIT, RELEASE), RECONCILE_PREFIX: (RECONCILE,),
+                                       MODE_PREFIX: (MODE,)},
                              module=__file__)
 
     # Reads.
@@ -515,6 +571,33 @@ class Ledger:
 
     def reconcile_record(self, identity):
         return self._row(identity, RECONCILE_KIND)[1] if _is_str(identity) else None
+
+    def holds(self):
+        """Every hold as {identity: record}, the identity as place_hold was given it."""
+        return {row[0][len(HOLD_PREFIX):]: json.loads(row[1]) for row in self.conn.execute(
+            'SELECT id, data FROM entities WHERE kind=? ORDER BY id', (HOLD_KIND,))}
+
+    def mode_record(self, scope):
+        """The mode record of one scope, or None when the scope has none."""
+        try:
+            return self._row(mode_id(checked_scope(scope)), MODE_KIND)[1]
+        except Refused:
+            return None
+
+    def mode_of(self, scope):
+        """report or act: the mode of this one scope. A scope with no record is in report mode, and so
+        is anything that is not a scope (a report record has no owner)."""
+        record = self.mode_record(scope)
+        return record['mode'] if record else REPORTING
+
+    def acts(self, scope):
+        """Whether this one scope is in act mode."""
+        return self.mode_of(scope) == ACTING
+
+    def modes(self):
+        """Every mode record as {identity: record}. A scope that is not here is in report mode."""
+        return {row[0]: json.loads(row[1]) for row in self.conn.execute(
+            'SELECT id, data FROM entities WHERE kind=? ORDER BY id', (MODE_KIND,))}
 
     def items(self):
         """Every item as {identity: record}."""
@@ -547,11 +630,11 @@ class Ledger:
 
     # The command path.
 
-    def _send(self, operation, parameters, versions, principal, command_id, about):
+    def _send(self, operation, parameters, versions, principal, command_id, about, nonce=None):
         command = {'command_id': command_id or 'space:' + uuid.uuid4().hex,
                    'principal': principal or self.journal_signer, 'operation': operation,
                    'parameters': parameters, 'expected_versions': versions, 'artifact_digests': [],
-                   'nonce': uuid.uuid4().hex}
+                   'nonce': nonce or uuid.uuid4().hex}
         observation = dict(about, schema=SCHEMA, operation=operation, command_id=command['command_id'],
                            principal=command['principal'])
         try:
@@ -774,6 +857,78 @@ class Ledger:
                             command_id, {'item': None, 'reconcile': identity})
         if result['ok']:
             result['reconcile'] = identity
+        return result
+
+    # Mode per scope (design 4.7 and 6.1).
+
+    def _known_scope(self, scope):
+        """The scope in its recorded form, when the declarations name it: a bound project, a plain
+        repository of the installation, or no project."""
+        scope = checked_scope(scope)
+        if scope['type'] == 'project' and not any(project.get('project') == scope['id']
+                                                  for project in self.projects):
+            raise Refused('space_unknown_scope', 'no bound project has this identity')
+        if scope['type'] == 'plain_repository' and scope['id'] not in [
+                canonical_path(plain['repository']) for plain in self.config['plain_repositories']]:
+            raise Refused('space_unknown_scope', 'the installation names no such plain repository')
+        return scope
+
+    def set_mode(self, packet, membership, now):
+        """Switch one scope to act or back to report, by the owner's signed command and by nothing else.
+        `packet` is {command, signature}; the command holds principal, operation space_mode, parameters
+        {scope, mode}, its own command_id and its nonce. `membership` is the control_membership module;
+        `now` is the time the caller read. A switch back to report is accepted at once."""
+        command = packet.get('command') if isinstance(packet, dict) else None
+        signature = packet.get('signature') if isinstance(packet, dict) else None
+        command = command if isinstance(command, dict) else {}
+        principal, parameters = command.get('principal'), command.get('parameters')
+        parameters = parameters if isinstance(parameters, dict) else {}
+        about = {'item': None, 'scope': parameters.get('scope'), 'from': None, 'to': parameters.get('mode')}
+        contract = membership.AC
+        try:
+            if not command or not isinstance(signature, str) or not signature.isascii():
+                raise _invalid('packet', 'a command mapping and its ASCII signature')
+            self.permit(principal, MODE, parameters)
+            if (command.get('operation') != MODE or set(parameters) != {'scope', 'mode'}
+                    or not all(_is_str(command.get(field)) for field in ('principal', 'command_id', 'nonce'))):
+                raise _invalid('command', 'the mode command: a principal, a scope and a mode, a command id and a nonce')
+            if isinstance(now, bool) or not isinstance(now, (int, float)):
+                raise _invalid('now', 'the time the caller read')
+            state = membership.authority_state(self.store, self.conn)
+            member = contract.membership_entry(state['membership'], principal)
+            active, why = contract.active_member(member, now)
+            key = contract.active_key(state['keyring'], principal, now) if active else None
+            if (not active or key is None or member.get('principal_type') != MODE_SIGNER_TYPE
+                    or MODE_SIGNER_ROLE not in (member.get('roles') or [])
+                    or not membership.scope_covers(member.get('scope'), SCOPE)):
+                raise Refused('not_authorized', why or 'the mode switch is the owner\'s signed command')
+            if not contract.ssh_keygen_verify(
+                    self.store.canonical_bytes(command), signature,
+                    contract.allowed_signers_line(principal, key['public_key'], NAMESPACE), principal, NAMESPACE)[0]:
+                raise Refused('not_authorized', 'the command signature is not the owner\'s')
+            scope = self._known_scope(parameters['scope'])
+            if parameters['mode'] not in MODES:
+                raise _invalid('mode', 'one of ' + ', '.join(MODES))
+        except Refused as refusal:
+            return self._refuse(MODE, refusal, about, principal if _is_str(principal) else None)
+        entity = mode_id(scope)
+        version, record = self._row(entity, MODE_KIND)
+        old, new = (record['mode'] if record else REPORTING), parameters['mode']
+        about.update(scope=scope, **{'from': old})
+        if old == new:
+            return self._observed({'ok': True, 'seq': None, 'replayed': False, 'changed': False, 'scope': scope,
+                                   'mode': old},
+                                  dict(about, schema=SCHEMA, operation=MODE, command_id=command['command_id'],
+                                       principal=principal))
+        key_entity = key.get('key_id')
+        versions = {entity: version, principal: member.get('entity_version', 0),
+                    key_entity: (state['entities'].get(key_entity) or {}).get('version', 0)}
+        result = self._send(MODE, {'mode_record': entity, 'scope': scope, 'from': old, 'to': new, 'at': now,
+                                   'command': {'command': command, 'signature': signature}},
+                            versions, principal, command['command_id'], about, command['nonce'])
+        if result['ok']:
+            # What the store holds now: a packet sent again is answered from the first commit.
+            result.update(changed=not result['replayed'], scope=scope, mode=self.mode_of(scope))
         return result
 
     # Who signs a command (design 6.11).
@@ -1274,6 +1429,34 @@ class Ledger:
         return {identity: {'kind': RECONCILE_KIND, 'data': {
             'started_by': params['started_by'], 'roots': list(params['roots']), 'engines': list(params['engines']),
             'counts': dict(counts)}}}
+
+    def _t_mode(self, conn, params, before):
+        scope = self._known_scope(params.get('scope'))
+        entity, old, new, at, packet = (params.get('mode_record'), params.get('from'), params.get('to'),
+                                        params.get('at'), params.get('command'))
+        if entity != mode_id(scope):
+            raise _invalid('mode_record', 'the mode record of this scope')
+        prior = before.get(entity)
+        if prior is not None and prior['kind'] != MODE_KIND:
+            raise _invalid('mode_record', 'the mode record of this scope')
+        if new not in MODES or isinstance(at, bool) or not isinstance(at, (int, float)):
+            raise _invalid('mode', 'one of %s, and when' % ', '.join(MODES))
+        signed_command = packet.get('command') if isinstance(packet, dict) else None
+        if (not isinstance(signed_command, dict) or not _is_str(packet.get('signature'))
+                or signed_command.get('operation') != MODE or not isinstance(signed_command.get('parameters'), dict)
+                or signed_command['parameters'].get('mode') != new
+                or checked_scope(signed_command['parameters'].get('scope')) != scope):
+            raise _invalid('command', 'the owner\'s signed command for this scope and mode')
+        current = prior['data']['mode'] if prior else REPORTING
+        if old != current:
+            raise Refused('space_mode_moved:' + current, 'the scope is no longer in the mode the switch was read from')
+        if new == current:
+            raise Refused('space_mode_unchanged:' + current, 'the scope is in this mode already')
+        switch = {'from': old, 'to': new, 'at': at, 'command': dict(packet)}
+        history = list(prior['data']['history']) if prior else []
+        return {entity: {'kind': MODE_KIND, 'data': {
+            'scope': scope, 'mode': new, 'since': {'at': at, 'command': dict(packet)},
+            'history': history + [switch]}}}
 
 
 # ---------------------------------------------------------------------------------------------
