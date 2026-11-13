@@ -7,7 +7,7 @@ risk: high
 owner: dmitry
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0036, VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0057, VELDO-0133, VELDO-0145, VELDO-0158, VELDO-0220]
+depends_on: [VELDO-0036, VELDO-0039, VELDO-0041, VELDO-0042, VELDO-0057, VELDO-0068, VELDO-0107, VELDO-0133, VELDO-0145, VELDO-0158, VELDO-0220]
 placement: [engine, loop]
 protected_paths: []
 footprint:
@@ -46,33 +46,41 @@ acceptance_criteria:
       lead session, a builder started by a script) is recorded by a hook or a wrapper that runs inside
       that process, never by an instruction someone has to remember. Set: the kinds are worktree, branch,
       agent repository (the private repository the sandbox makes for one agent), build output (a folder
-      of any name), scratch folder, log and evidence folder, container, volume, network and image tag. Each record names its owner (project, and the
-      ticket, run, gate and lane that apply), its kind, its path or object id, its pool, and the events
-      that end it. The set of creation points in Veldo's own code is complete by a gate check that
+      of any name), scratch folder, log and evidence folder, container, volume, network and image tag.
+      Each record names its owner, its kind, its path or object id, its pool, and the events that end
+      it. The owner is a project, a plain repository the installation names, or no project for the
+      scratch of a session started outside every project; the ticket, run, gate, lane and session are
+      added where they apply. The set of creation points in Veldo's own code is complete by a gate check that
       refuses a creation primitive outside the ledger's seam. Rows: one run that makes a worktree, a
       branch, a build folder with an unusual name, a scratch folder, a container, a volume, a network and
-      an image tag leaves nine records with the right owner and kind; a worktree added with plain git has
-      a record when the git command returns; a creator inside Veldo that cannot reach the ledger creates
-      nothing.
+      an image tag leaves eight records with the right owner and kind; a worktree added with plain git has
+      a record when the git command returns; a session started in a folder that belongs to no project
+      has its scratch recorded under the owner no project; a creator inside Veldo that cannot reach the
+      ledger creates nothing.
     falsified_by: >
       Record build output by the folder name "target" only; the row's unusually named build folder has no
       record and the row fails.
   - id: AC2
     text: >
-      Claim: each kind has a lifecycle table, and removal happens at the event, in the process that emits
-      the event, before that process reports itself finished. Set: the events are run finished, verdict
+      Claim: each kind has a lifecycle table, and removal happens at the event. A run, a gate and a
+      landing station remove in their own process before they report themselves finished. A git hook and
+      a session hook only record their event and return; the authority service consumes the record as
+      soon as it is written and removes what it ended. Set: the events are run finished, verdict
       recorded, branch landed, branch contained in the trunk, a landing ref or another branch, ticket
       ended (the authority's existing transitions: the item's complete or cancel, the unit's disposal,
       the VELDO-0133 close), project ended (the project's cancel or complete), worktree abandoned and
-      session ended. A landing made by hand with plain git emits contained through a git hook. A branch
-      that has not moved past the commit it started at is never contained. Build output and scratch go when their run finishes or its verdict is recorded;
+      session ended. A landing made by hand with plain git is recorded by a git hook, and the hook
+      removes nothing inside the git command. A branch that has not moved past the commit it started at
+      is never contained, and a worktree follows the branch checked out in it now. Build output and
+      scratch go when their run finishes or its verdict is recorded;
       a worktree goes by git's own non-forced remove when its branch has landed or is contained; evidence
       is kept and only its caches are dropped; a branch is kept. No timer, schedule or age threshold
       triggers a removal. Rows: after a gate records its verdict its build folder is gone and its evidence
       folder is present before the gate process exits; after a landing the worktree is gone and the branch
-      is present; after a commit made by hand on a declared landing ref, the worktree of a branch that
-      commit contains is gone when the git command returns; with the clock moved forward 30 days and no
-      event, nothing is removed.
+      is present; after a commit made by hand on a declared landing ref, the git command returns with
+      the landing recorded and nothing removed, and the worktree of a branch that commit contains is
+      gone after the service consumes the record, with the clock stopped and no timer; with the clock
+      moved forward 30 days and no event, nothing is removed.
     falsified_by: >
       Remove build output from a pass that runs on a schedule; the row that checks the folder is gone
       before the gate process exits finds it present and fails.
@@ -88,8 +96,10 @@ acceptance_criteria:
       the console. No removal passes a tool's force option, and every removal path that exists today goes
       through these rules. A worktree with unique work at its ticket's end raises one decision request
       to the owner with three answers: save as a commit on a kept branch, keep, or discard. Veldo never
-      commits on its own, and discard is the one removal that may use force, on the owner's signed
-      answer. Rows: a build folder with a process's working directory inside it, a worktree with an
+      commits on its own. Discard is the one forced removal, allowed only after the owner's discard
+      answer, and it keeps the branch. The protect list always holds the container engine's disk image
+      and its folder, database volumes with real data and images that cannot be pulled again, and
+      nothing on it is removed by any event or any answer. Rows: a build folder with a process's working directory inside it, a worktree with an
       uncommitted edit, a worktree whose branch has a commit nothing else contains, a folder with no
       ledger record and a protected volume each survive their ending event, each with its own reason; the
       build folder is removed at the next event after the process exits.
@@ -117,8 +127,11 @@ acceptance_criteria:
       covers that need, the needs already held by admitted runs, and the pool's floor. Otherwise it waits,
       with the numbers that refused it shown, and is looked at again when a removal or a finished run
       frees space. A dispatch is asked before it is prepared, so a waiting unit holds no slot and has no
-      deadline. A gate is asked by the gate script itself, in every repository, with or without a host
-      configuration. In report mode admission advises ("would wait") and does not block; it blocks only
+      deadline. A gate is asked by the gate script itself, with or without a host
+      configuration. A repository initialized after the change has the steps from the template; an
+      existing project's gate script is its own file and gets them by its own change, reconcile reports
+      a project whose gate lacks them, and until then its gates run through the run wrapper, which
+      admits them and removes their build output. In report mode admission advises ("would wait") and does not block; it blocks only
       in act mode. A run or gate that ends on a full pool is recorded as an environment failure and is
       queued again behind admission; it never records a red verdict. Rows: with free space under need plus
       floor the run waits and the console shows need, free, held and floor; after a removal frees enough
@@ -191,7 +204,7 @@ space it needs and waits when the disk cannot cover it.
 
 - The design is docs/design/VELDO-0295-design.md. It holds the components, the data model, the lifecycle
   table, the event sources outside the service, the table of existing removal paths, the flows, the
-  deployment view and the twenty-seven build tickets, VELDO-0296 to VELDO-0322.
+  deployment view and the thirty-five build tickets, VELDO-0296 to VELDO-0330.
 - VELDO-0042 already retires a worker clone only after every user of it has ended, read from the kernel.
   VELDO-0041 already retries a refused retirement when the obligation it waits on completes. Space
   management uses the same two ideas for every kind.
@@ -199,6 +212,10 @@ space it needs and waits when the disk cannot cover it.
   no-space failure use it.
 - VELDO-0036 reserves capacity and usage in the store before a run starts. A space hold is a record of
   the same store and is checked just before that reservation is made.
+- VELDO-0068 already settles a request to the owner once, with a typed effect per answer. The owner's
+  answer on a worktree with unique work is one more touchpoint of that service.
+- VELDO-0107 already gives a local process an authenticated way to reach the authority. The hooks use
+  it, signed by a host principal and never by the owner's key.
 - VELDO-0158 already removes a run's own directory once the kernel shows the run gone. That removal moves
   behind the safety rules with every other one.
 - The protect list always holds the container engine's disk image and its folder, database volumes with
@@ -232,3 +249,12 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   unique work. AC4: agent repositories and plain repositories among the roots. AC5: admission before a
   dispatch is prepared, in the gate script for every repository, advising only in report mode. AC8: five
   classes, not four. Tickets renumbered VELDO-0296 to VELDO-0322. Still a draft.
+- 2026-11-13: amended from design revision 3, which follows the second validation of the same day
+  (verdict CHANGES, R1 to R4 and S1 to S11) and carries the lead's decisions. AC1: the owner may be no
+  project for a session outside every project; the row leaves eight records, not nine. AC2: a hand
+  landing is recorded by the git hook and removed by the authority service right after, never inside
+  the git command; a worktree follows the branch checked out in it. AC3: discard is the one forced
+  removal, only after the owner's discard answer, and keeps the branch; the protect list's standing
+  entries. AC5: an existing project's gate gets the space steps by its own change, is reported until
+  then, and is covered by the run wrapper. Tickets VELDO-0323 to VELDO-0330 added, so the range is
+  VELDO-0296 to VELDO-0330. Still a draft.
