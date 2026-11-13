@@ -12351,6 +12351,34 @@ def cases():
         ['ac3/installation-volume-kept'])
     result[-1]['siblings'] = True
 
+    # VELDO-0297: the falsifier of each acceptance criterion of the space ledger. AC1 outcome accepted
+    # for a present item; AC2 the kinds left undeclared; AC3 locators compared as raw text; AC4 sizes
+    # kept in a side table outside the journal.
+    space297 = '132_veldo_0297_space_ledger.py'
+    add(297, 'space297-outcome-on-present', space297, 'control_space.py',
+        "        if record['state'] not in ('due', 'removing'):\n",
+        "        if record['state'] not in ('due', 'removing', 'present'):\n",
+        ['ac1/outcome-needs-signal'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-kinds-undeclared', space297, 'control_space.py',
+        "        store.declare_owners(conn, OWNER,\n",
+        "        (lambda *given, **named: None)(conn, OWNER,\n",
+        ['ac2/generic-refused'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-locator-raw-text', space297, 'control_space.py',
+        "    return os.path.normpath(path)\n",
+        "    return path\n",
+        ['ac3/trailing-separator'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-size-side-table', space297, 'control_space.py',
+        "        record['size'] = {'bytes': params['bytes'], 'event': params['event']}\n",
+        "        conn.execute('CREATE TABLE IF NOT EXISTS space_sizes (item TEXT PRIMARY KEY, bytes INTEGER, '\n"
+        "                     'event TEXT)')\n"
+        "        conn.execute('INSERT OR REPLACE INTO space_sizes VALUES (?,?,?)',\n"
+        "                     (identity, params['bytes'], params['event']))\n",
+        ['ac4/rebuilt-size'])
+    result[-1]['siblings'] = True
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip
