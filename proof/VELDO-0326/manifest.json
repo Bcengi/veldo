@@ -1,0 +1,131 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0326",
+ "commit": "2e8c02a90912b29646c9a480765faeed55ce29a6",
+ "tree": "682493aa8969d4791535cef36b11ac28ee4fbb8b",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T19:50:56.060436+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Against a real control store (SQLite) in a temporary folder, real OpenSSH keys and real signature checks. Rows ac1/install-makes-keys (control_service.install, given the installation folder, makes the keys of space-observer and space-runner under keys/ there, 0600, each its own; a second installation keeps them), ac1/install-enrolls (given the owner's signed enroll_principal it enrolls both: two journal records signed by the owner, each a service member of the one scope space with no role, the keyring holding the key the installer made, the scope covering no repository), ac1/hook-signs-as-observer (the signer runs as a child process with the owner's key file unreadable, the Ledger accepts its packet, the record is there and its journal record names space-observer), ac1/cli-route (veldo space sign reaches the same signer). Green: proof/VELDO-0326/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Rows ac1/signature-checked (a command changed after signing, the observer's signature under the runner's name, an intruder's key and the owner's key under space-observer's name, a principal that is not a host principal, an unsigned packet: each refused with nothing written and logged with the principal and the command's name; a packet sent twice writes once) and ac1/install-without-owner (without the owner's enrollment the keys are made, both named due, and a command signed with them is refused; an absent installation folder refuses the installation and leaves nothing; a refused enrollment leaves no key; an enrollment the owner did not sign is refused by the membership organ)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0326/falsifiers.json",
+     "detail": "Falsifier space326-owner-key-signs (the signer reaches for the owner's key): ac1/hook-signs-as-observer red, the hook signed nothing and the row finds no record; noop copy green. proof/VELDO-0326/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Rows ac2/observer-may (declare and confirm for a worktree, a branch, an agent repository and a session's scratch, and rebranch, each through the signed-command entry and committed to the store as space-observer; event and the covers read pass the rule) and ac2/observer-signal (signal from space-observer refused, the other run's items still present)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Row ac2/observer-refused-by-name: measure, signal, outcome, hold, admit, release, adopt, report, gone, pool, reconcile and a generic store command, each refused space_not_permitted:<its name> with the principal and the name in the observation and no journal record; declare for build output, for scratch no session owns and for a container, and confirm for an item a hook does not record, refused; the Ledger's own method calls refuse the same."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0326/falsifiers.json",
+     "detail": "Falsifier space326-observer-signals (signal accepted from space-observer): ac2/observer-signal red, the row that sends it gets the items marked due; noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Row ac3/runner-own-run: hold, declare, confirm, measure, admit, signal run finished, outcome removing and removed, and release for the run it started, and hold, declare and verdict recorded for a gate; measure for a worktree a hook recorded inside its run; twelve journal records naming space-runner. The run is the runner's by the principal of the journal record that first named it."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Rows ac3/runner-other-run-signal (a signal for a run the authority started is refused and its items stay present) and ac3/runner-other-run-commands (measure, outcome, confirm, hold, admit, release and declare for another principal's run, declare for no run, signal by ticket, by scope, for its run plus a ticket, and landed and ticket ended for its own run: each refused by the command's name, nothing written)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0326/falsifiers.json",
+     "detail": "Falsifier space326-runner-signals-any-owner (the subject is not checked against the runs it started): ac3/runner-other-run-signal red, the other run's items become due; noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Row ac4/abandon: worktree abandoned sent by space-runner for a worktree of its own run, and by space-observer, is refused space_not_permitted:space_abandon and the worktree stays present; the authority's own worktree abandoned marks it due."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Row ac4/owner-actions-refused: adopt, abandon, confirm of a group, reconcile, marking a proposal wrong, the mode switch, a protect list change and a space disposition answer, each from both host principals, refused by its name with the principal logged and no journal record; adopt and reconcile through the Ledger's own calls refused the same; the authority still writes both."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0326/falsifiers.json",
+     "detail": "Falsifier space326-runner-abandons (Abandon accepted from space-runner): ac4/abandon red, the row finds the worktree due; noop copy green."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 133_veldo_0326_space_principals (15 rows)"
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 133_veldo_0326_space_principals: the rows run the installer, the membership organ and the ledger on a real control store file with real OpenSSH keys, and the signer as a child process"
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py all; suites 130_veldo_0296_space_section, 132_veldo_0297_space_ledger, 06_capabilities_manifest_honesty_veldo, 21_veldo_0004_promise_corpus and 53_veldo_0123_mutations still green; every registered mutation anchor in control_service.py, control_space.py and bin/veldo still matches once"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the four registered teeth cases (finding 326) were run here through the driver's own materialize() and worker(), not through the teeth run. The suites that install and start the service under the user manager were not run here."
+  }
+ ],
+ "assumptions": [
+  "NOT WIRED, outside this footprint: factory setup (engine/.veldo/control_factory_setup.py) calls control_service.install without the two new arguments. Until it passes installation=<the installation folder> and enroll=<its own admin>, a factory set up by veldo factory setup has no space keys and no enrolled host principal, and every command signed as one is refused. install() makes the keys and enrolls both only when given both arguments; the suite gives it the owner's signed admin as factory setup's is called. The one-line wiring needs its own footprint.",
+  "Enrollment uses the existing mechanism only: the owner's signed enroll_principal through control_membership.admit, with the enrollee key's possession co-signature. The installer holds no owner key, so it cannot enroll by itself; without the owner's enrollment it reports both principals as due. No trust root was added to the service.",
+  "Both principals are enrolled as principal_type service with scope [space], a named scope that covers no repository, so control_service.mutate (scope_covers(member scope, repository)) refuses the store's generic commands from both, before and after a revert of this change.",
+  "The running service does not route space packets to the Ledger yet: it has no Ledger until the kind registry (0298) and the service start (0315, 0323) exist. Accepted here means accepted by Ledger.accept, which verifies the signature against the principal's active key in the store's membership and keyring exactly as control_service.mutate does, then applies the rule. The service branch that calls it, and its check of the packet's domain, store and repository coordinates, come with the ticket that gives the service its Ledger.",
+  "The CLI piece built here is veldo space sign, which prints the signed packet. Sending it, the spool, and the record, event and run verbs are VELDO-0313; the hooks themselves are 0311 and 0314.",
+  "The keys are kept at <installation folder>/keys/<principal>. control_service.install takes the folder as an explicit argument and the CLI as --installation; neither falls back to the ambient installation folder, so no existing caller or suite writes into a real one.",
+  "The rule follows the table of 6.11, which adds an agent repository to the three things AC2 names for declare and confirm. event and the covers read are named in the rule and pass it for both principals; the commands themselves are 0323 and 0321, so the Ledger answers space_no_command for them today. Released accepted only for items a hook or the record verb declared is the event command's own refusal (0335).",
+  "The run or gate it declared is read from the journal: a run or gate is the runner's when the earliest journal record that made its hold or an item it owns has space-runner as its principal. A run nothing names yet may be started by the runner. A run the authority or a receiver named first is never the runner's. The lookup scans the journal by entity id; an index is a later optimization.",
+  "space-runner signals run finished and verdict recorded only, with a subject that is exactly one run or one gate it started. Worktree abandoned sent as a signal is refused under the name space_abandon. The event names are the design's section 5 names as the fixture lifecycle spells them; the kind registry (0298) fixes the spelling.",
+  "A signed command names its own command id; the same packet sent again is refused by the store as a command content conflict and writes nothing. A packet with no command id is refused.",
+  "launch-receiver and the owner are not judged by this rule: the receiver's run commands and the owner's actions are accepted where later tickets route them. The rule returns for every principal that is not one of the two host principals, and Ledger.accept and Ledger.apply refuse every principal but the two.",
+  "The host worker profile's qualification is a stand-in answer in the suite, so the installer runs whole inside the gate's confinement; nothing the rows prove depends on the user manager."
+ ],
+ "rollback": "Revert the change. The two keys stay in the installation folder, and commands signed with them are refused: a reverted Ledger has no accept, and the two memberships carry the scope space, which covers no repository, so the service's generic command path refuses them."
+}

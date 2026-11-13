@@ -1,0 +1,82 @@
+[
+ {
+  "falsifier": "space326-owner-key-signs",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/hook-signs-as-observer"
+  ],
+  "red_rows": [
+   "ac1/hook-signs-as-observer",
+   "ac1/install-without-owner",
+   "ac1/signature-checked"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/hook-signs-as-observer",
+    "the hook's command, signed with the owner's key unreadable, left its record [the hook signed nothing]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-observer-signals",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/observer-signal"
+  ],
+  "red_rows": [
+   "ac2/observer-refused-by-name",
+   "ac2/observer-signal",
+   "ac3/runner-other-run-commands",
+   "ac3/runner-other-run-signal",
+   "ac3/runner-own-run",
+   "ac4/abandon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac2/observer-signal",
+    "signal from space-observer is refused and the items stay present [None] ['due', 'due']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-runner-signals-any-owner",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/runner-other-run-signal"
+  ],
+  "red_rows": [
+   "ac3/runner-other-run-commands",
+   "ac3/runner-other-run-signal"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac3/runner-other-run-signal",
+    "a signal for another run's items is refused and they stay present [None] ['due', 'due']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-runner-abandons",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/abandon"
+  ],
+  "red_rows": [
+   "ac4/abandon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac4/abandon",
+    "Abandon from space-runner is refused by name and the worktree stays present [None] due"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]
