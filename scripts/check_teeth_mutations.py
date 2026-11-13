@@ -12646,6 +12646,23 @@ def cases():
         "            'in_use': held}\n",
         ['ac4/login-unsettled'])
 
+    # VELDO-0330: the rule order, the ledger rule and the protect rule. The declared falsifier of each
+    # acceptance criterion: AC1 unique work runs before protect; AC2 rule 1 compares the locator's text
+    # only; AC3 the discard remover's rules skip the protect rule.
+    space330 = '137_veldo_0330_space_rules.py'
+    add(330, 'space330-unique-work-before-protect', space330, 'control_space_signal.py',
+        "ORDER = ('ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children', 'tool')\n",
+        "ORDER = ('ledger', 'unique_work', 'protect', 'owner_live', 'process_use', 'children', 'tool')\n",
+        ['ac1/protect-before-unique-work'])
+    add(330, 'space330-locator-text-only', space330, 'control_space_signal.py',
+        "    at = facts['resolved'] if facts['exists'] and not facts['link'] else None\n",
+        "    at = facts['path']\n",
+        ['ac2/link-replaces-folder'])
+    add(330, 'space330-discard-skips-protect', space330, 'control_space_signal.py',
+        "    DISCARD: ('ledger', 'protect', 'owner_live', 'process_use', 'children', 'tool'),\n",
+        "    DISCARD: ('ledger', 'owner_live', 'process_use', 'children', 'tool'),\n",
+        ['ac3/no-discard-removes'])
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip

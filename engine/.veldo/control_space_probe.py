@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""The probes: the observers the safety rules read (design section 7, rules 3, 4 and 5; VELDO-0299).
+"""The probes: the observers the safety rules read (design section 7; VELDO-0299, and for rules 1 and
+2 VELDO-0330).
 
 WHAT IS HERE. Functions that look at the host and return facts. None of them decides, defers, removes
 or writes: a rule reads the facts and the rule decides (VELDO-0330). Every call looks again; no fact is
 kept from an earlier call.
 
+  located(kind, locator)       rule 1: what is at an item's locator now: where its path leads, the
+                               repository a worktree there belongs to, the object id a Docker name has
+  repository(path)             rule 1: the repository a path belongs to, as its common git folder
+  protected(kind, locator, protect)
+                               rule 2: the protect entry that covers a locator, and how
   process(pid)                 rule 3: the start time the kernel reports for a process, or None when the
                                kernel no longer shows it
   processes(path)              rule 4: the processes with their working directory, an open file or a
@@ -18,6 +24,21 @@ kept from an earlier call.
   unique_work(path, ...)       rule 5: the five cases, read in the worktree
   agent_repository(path, ...)  rule 5: the branches of an agent repository the shared repository does
                                not hold under the same name
+
+WHAT IS AT A LOCATOR (rule 1). For a path: whether anything is there, whether the path itself is a link,
+and where the path leads with every link in it followed. A path that leads somewhere else than its own
+text goes through a link. For a worktree also the repository the folder is a worktree of now, as that
+repository's common git folder; None when the folder is not the top of a worktree. For a Docker object
+the id the engine gives the name now: read is False when the engine could not be asked, and id is None
+when the engine holds no object of that name or its record carries no id.
+
+THE PROTECT LIST (rule 2). The list is the declarations' (the installation's entries, then each
+project's); this module is given it and says whether an entry covers a locator. A path is protected
+when it is at an entry, above one (an entry lies beneath it) or beneath one, read as written and where
+it leads, against each entry as written and where it leads. A Docker object is protected when, on an
+engine the entry names, its name matches a pattern for its type or the compose project its locator
+records is a protected one. What an engine itself says of an object (its label, its mounts, its image
+and networks) is VELDO-0341.
 
 PROCESS USE is read from the kernel's process table: for each process its cwd link, the links under fd
 and the paths in maps. A command line that names the path is not read at all, so it is not use. A
@@ -59,6 +80,7 @@ False and what git said; it is never reported as having no unique work.
 Standard library only.
 """
 import fcntl
+import fnmatch
 import json
 import os
 import re
@@ -76,6 +98,9 @@ LOCK_FILES = ('index.lock', 'HEAD.lock', 'config.lock', 'shallow.lock')
 OPERATIONS = (('merge', 'MERGE_HEAD'), ('rebase', 'rebase-merge'), ('rebase', 'rebase-apply'),
               ('cherry-pick', 'CHERRY_PICK_HEAD'), ('revert', 'REVERT_HEAD'), ('sequence', 'sequencer'))
 COMMIT = re.compile(r'[0-9a-f]{40}([0-9a-f]{24})?')
+
+# The engine's word for each Docker kind, which is also the type of its protect entries.
+DOCKER_TYPE = {'container': 'container', 'volume': 'volume', 'network': 'network', 'image_tag': 'image'}
 
 SEAM = {'after_in_use': None}
 
@@ -101,6 +126,80 @@ def _git(run, repository, *argv):
 
 def _beneath(candidate, root):
     return candidate == root or candidate.startswith(root.rstrip('/') + '/')
+
+
+# What is at a locator, and the protect list.
+
+def repository(path, run=None):
+    """The repository `path` belongs to, as its common git folder with every link followed: the same
+    for a repository, for each of its worktrees and for a bare one. None when git reads none there."""
+    run = run or _run
+    code, folder = _git(run, path, 'rev-parse', '--path-format=absolute', '--git-common-dir')
+    return os.path.realpath(folder.rstrip('\n')) if code == 0 and folder.strip() else None
+
+
+def located(kind, locator, run=None):
+    """Rule 1's facts: what is at the locator of an item of `kind` now.
+
+    A path (a branch is read at its repository): {path, exists, link, resolved}, and for a worktree
+    repository, the common git folder of the repository the folder is a worktree of, None when it is
+    not the top of one. A Docker object: {engine, name, type, read, id, said}."""
+    run = run or _run
+    if kind in DOCKER_TYPE:
+        facts = {'kind': kind, 'engine': locator.get('engine'), 'name': locator.get('name'),
+                 'type': DOCKER_TYPE[kind], 'read': False, 'id': None, 'said': None}
+        code, out = run(['docker', '--context', str(facts['engine']), facts['type'], 'inspect', str(facts['name'])])
+        if code == 0:
+            try:
+                records = json.loads(out)
+            except ValueError:
+                records = None
+            if isinstance(records, list) and len(records) == 1 and isinstance(records[0], dict):
+                found = records[0].get('Id')
+                facts.update(read=True, id=found if isinstance(found, str) and found else None)
+            else:
+                facts['said'] = 'the inspect record is not one JSON record'
+        elif code is not None and 'no such' in str(out).lower():
+            facts.update(read=True, said=str(out)[:300])
+        else:
+            facts['said'] = str(out)[:300]
+        return facts
+    path = locator.get('path') or locator.get('repository')
+    facts = {'kind': kind, 'path': path, 'exists': os.path.lexists(path), 'link': os.path.islink(path),
+             'resolved': os.path.realpath(path)}
+    if kind == 'worktree':
+        facts['repository'] = repository(path, run) if _git_folder(run, path) else None
+    return facts
+
+
+def protected(kind, locator, protect):
+    """Rule 2's facts: {protected, entry, how}. entry is the covering protect entry as type:value and
+    how is at, above or beneath for a path, name or compose_project for a Docker object. `protect` is
+    the protect list in force: [{type, value, engines}]."""
+    if kind in DOCKER_TYPE:
+        for entry in protect:
+            if locator.get('engine') not in entry.get('engines', ()):
+                continue
+            how = None
+            if entry['type'] == DOCKER_TYPE[kind] and fnmatch.fnmatchcase(str(locator.get('name')), entry['value']):
+                how = 'name'
+            elif entry['type'] == 'compose_project' and locator.get('compose_project') == entry['value']:
+                how = 'compose_project'
+            if how:
+                return {'protected': True, 'entry': entry['type'] + ':' + entry['value'], 'how': how}
+        return {'protected': False, 'entry': None, 'how': None}
+    path = os.path.normpath(locator.get('path') or locator.get('repository'))
+    for entry in protect:
+        if entry['type'] != 'path':
+            continue
+        value = os.path.normpath(entry['value'])
+        for mine in (path, os.path.realpath(path)):
+            for theirs in (value, os.path.realpath(value)):
+                how = ('at' if mine == theirs else 'above' if _beneath(theirs, mine)
+                       else 'beneath' if _beneath(mine, theirs) else None)
+                if how:
+                    return {'protected': True, 'entry': 'path:' + entry['value'], 'how': how}
+    return {'protected': False, 'entry': None, 'how': None}
 
 
 # Process use.
