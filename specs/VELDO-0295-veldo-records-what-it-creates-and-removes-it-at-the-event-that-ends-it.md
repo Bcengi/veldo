@@ -106,9 +106,13 @@ acceptance_criteria:
       to the owner with three answers: save as a commit on a kept branch, keep, or discard. Veldo never
       commits on its own. The three answers are offered as picks of the existing settlement path, so its
       set of rulings does not change. Discard is the one forced removal, allowed only after the owner's
-      discard answer, and it keeps the branch. Review worktrees with tracked modifications never raise
+      discard answer, and it keeps every commit: the branch stays, and a detached worktree's commits are
+      put on a new kept branch at its HEAD before the worktree goes, so only uncommitted changes are
+      lost. Review worktrees with tracked modifications never raise
       a request each: they share one grouped decision request per day, keyed by the day of the deferral
-      and never opened or sent by the clock. The protect list always holds the container engine's disk
+      and never opened or sent by the clock. One answer covers the whole group, and the request also
+      allows a per-worktree answer. An answered group closes, and a deferral later that day opens a new
+      group with its own request. The protect list always holds the container engine's disk
       image and its folder, every database volume with real data, a protected project's containers and
       images, and images that cannot be pulled again. A Docker object is matched by its name or by its
       compose project label, either one, on every engine the installation names. Nothing on the list is
@@ -117,7 +121,9 @@ acceptance_criteria:
       uncommitted edit, a worktree whose branch has a commit nothing else contains, a folder with no
       ledger record and a protected volume each survive their ending event, each with its own reason; the
       build folder is removed at the next event after the process exits; two review worktrees with
-      tracked edits on one day raise one request; a protected container matched only by its compose
+      tracked edits on one day raise one request; in a group of three the answer accept discard w2
+      discards only member 2; a worktree deferred after the day's group was answered gets a new
+      request; a detached worktree's commit is on a kept branch after Discard; a protected container matched only by its compose
       label has no record and no proposal on either engine.
     falsified_by: >
       Check the working directory only and not open files; the row whose process holds an open file in the
@@ -236,7 +242,7 @@ space it needs and waits when the disk cannot cover it.
 
 - The design is docs/design/VELDO-0295-design.md. It holds the components, the data model, the lifecycle
   table, the event sources outside the service, the table of existing removal paths, the flows, the
-  deployment view and the forty-six build tickets, VELDO-0296 to VELDO-0341.
+  deployment view and the forty-eight build tickets, VELDO-0296 to VELDO-0343.
 - VELDO-0042 already retires a worker clone only after every user of it has ended, read from the kernel.
   VELDO-0041 already retries a refused retirement when the obligation it waits on completes. Space
   management uses the same two ideas for every kind.
@@ -314,3 +320,9 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   removed in any mode. AC8: the switch to act is also refused while a pending group is unconfirmed and
   while the project's gate script lacks the space steps. Tickets VELDO-0339 to VELDO-0341 added, so the
   range is VELDO-0296 to VELDO-0341. Still a draft.
+- 2026-11-13: amended from design revision 6, which follows the fifth validation of the same day
+  (verdict CHANGES, G1 to G4) and carries the lead's decisions (f), (g) and (h). AC3: one answer covers
+  a day's review group and the request also allows a per-worktree answer; an answered group closes and
+  a deferral later that day opens a new one; Discard keeps every commit, a detached worktree's on a new
+  kept branch at its HEAD, and loses only uncommitted changes. Tickets VELDO-0342 and VELDO-0343 added,
+  so the range is VELDO-0296 to VELDO-0343. Still a draft.
