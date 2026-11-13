@@ -214,6 +214,24 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0311 | Git hooks: worktrees and landings made with plain git | ready | high | dmitry | required | VELDO-0311-git-hooks-worktrees-and-landings-made-with-plain-git.md |
 | VELDO-0312 | Ticket ended, project ended and worktree abandoned | ready | high | dmitry | required | VELDO-0312-ticket-ended-project-ended-and-worktree-abandoned.md |
 | VELDO-0313 | The CLI's space verb and the run wrapper | ready | high | dmitry | required | VELDO-0313-the-clis-space-verb-and-the-run-wrapper.md |
+| VELDO-0314 | Session hooks | ready | high | dmitry | required | VELDO-0314-session-hooks.md |
+| VELDO-0315 | Reconcile at start and on demand | ready | high | dmitry | required | VELDO-0315-reconcile-at-start-and-on-demand.md |
+| VELDO-0316 | Admission by pool, need, hold and floor | ready | high | dmitry | required | VELDO-0316-admission-by-pool-need-hold-and-floor.md |
+| VELDO-0317 | A dispatch that ends on a full pool is an environment failure | ready | high | dmitry | required | VELDO-0317-a-dispatch-that-ends-on-a-full-pool-is-an-environment-failure.md |
+| VELDO-0318 | The owner decides what becomes of unique work at a ticket's end | ready | high | dmitry | required | VELDO-0318-the-owner-decides-what-becomes-of-unique-work-at-a-tickets-end.md |
+| VELDO-0319 | The console's Space screen | ready | high | dmitry | required | VELDO-0319-the-consoles-space-screen.md |
+| VELDO-0320 | Migration: report mode and Confirm | ready | high | dmitry | required | VELDO-0320-migration-report-mode-and-confirm.md |
+| VELDO-0321 | The ledger answers an outside cleaner, and the retirement check | ready | high | dmitry | required | VELDO-0321-the-ledger-answers-an-outside-cleaner-and-the-retirement-check.md |
+| VELDO-0322 | Scaffold and documents | ready | high | dmitry | required | VELDO-0322-scaffold-and-documents.md |
+| VELDO-0323 | Hook events: the event record, the consumer and the space worker | ready | high | dmitry | required | VELDO-0323-hook-events-the-event-record-the-consumer-and-the-space-worker.md |
+| VELDO-0324 | The batch clone and the sandbox launcher's scratch go through the safety rules | ready | high | dmitry | required | VELDO-0324-the-batch-clone-and-the-sandbox-launchers-scratch-go-through-the-safety-rules.md |
+| VELDO-0325 | The space steps in an existing project's gate script | ready | high | dmitry | required | VELDO-0325-the-space-steps-in-an-existing-projects-gate-script.md |
+| VELDO-0326 | Host principals for space commands | ready | high | dmitry | required | VELDO-0326-host-principals-for-space-commands.md |
+| VELDO-0327 | The space disposition touchpoint | ready | high | dmitry | required | VELDO-0327-the-space-disposition-touchpoint.md |
+| VELDO-0328 | Images: built tags are removed, pulled images are kept | ready | high | dmitry | required | VELDO-0328-images-built-tags-are-removed-pulled-images-are-kept.md |
+| VELDO-0329 | Installing the git hooks and the session hooks | ready | high | dmitry | required | VELDO-0329-installing-the-git-hooks-and-the-session-hooks.md |
+| VELDO-0330 | The rule order, the ledger rule and the protect rule | ready | high | dmitry | required | VELDO-0330-the-rule-order-the-ledger-rule-and-the-protect-rule.md |
+| VELDO-0331 | Mode per project | ready | high | dmitry | required | VELDO-0331-mode-per-project.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a human decision must arrive as an attested record and never as an answer typed at a prompt | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning method just as unreachable as an instance one and neither wired site refuses it, the function that catches it already sits in the file wired to nothing, and wiring it also removes both known false positives (hardening of WARP-0623, from its own review's ranked notes) | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to read 9,096 - compute each derivation ONCE, with every optimized value asserted equal to the naive one | ready | high | dmitry | not_required | WARP-0714-compute-once.md |
