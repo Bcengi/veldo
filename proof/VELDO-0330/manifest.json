@@ -1,0 +1,111 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0330",
+ "commit": "15ef34b6635beb038290d09a45953cd8224c34c0",
+ "tree": "ee425898072ff0e751f696aa2cb141ea70e8ce7f",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T22:48:31.739042+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "Rows ac1/order (ORDER, the deferral each rule names and the rules each purpose passes, as data), ac1/protect-before-unique-work (a protected worktree with an edit is deferred as protected, order 2, with only the ledger rule passed; the same edit in a worktree that is not protected is unique_work, order 5), ac1/first-refusal-names (one worktree every rule would refuse, cleared one rule at a time: not_in_ledger, protected, in_use by owner live, in_use by process use, unique_work, in_use by children, remove_refused by the tool, then all seven passed; the tool is not called before the six others pass), ac1/unread-is-in-use, ac1/session-process, ac1/scratch-lock, ac1/review-scratch, ac1/children, ac1/agent-repository, ac1/discard-skips-unique-work, ac1/deferral-record (the deferral facts written by the ledger's own outcome command: the deferral, the rule that refused, the event, the events that retry it, attempts counted). Green: proof/VELDO-0330/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "The rows run Signal's rules against a real Ledger on a real control store, real git repositories, worktrees and an agent repository made with plain git, a real child process read from the kernel's process table (ac1/session-process), a real file lock (ac1/scratch-lock) and the real probes of VELDO-0299. The docker client and the process table of the other rows are stand-ins (see assumptions)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0330/falsifiers.json",
+     "detail": "Falsifier space330-unique-work-before-protect (unique work run before protect): ac1/protect-before-unique-work red, the protected worktree with an edit deferred as unique_work (ac1/order, ac1/first-refusal-names, ac1/deferral-record, ac3/no-event-removes and ac3/no-confirm-removes red with it); noop copy green. proof/VELDO-0330/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "Rows ac2/link-replaces-folder (the folder replaced by a link: refused not_in_ledger, the remover not called, the link's target still there with its file; a path whose parent folder became a link; a path with nothing at it, named missing), ac2/other-repository-worktree (the folder is now another repository's worktree: refused, naming both repositories; a plain folder where the worktree was; a recorded repository git cannot read; the item's own worktree passes), ac2/docker-other-id (a container name now held by another object id, an image tag that now names another image, a name the engine no longer holds, an engine that cannot be asked, a locator with no recorded id: each refused not_in_ledger; the recorded id passes). Green: proof/VELDO-0330/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "The link and worktree rows use real folders, real links and real git worktrees of two real repositories, read by the probes' own git runner. The Docker row's engine answers are a stand-in's (see assumptions)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0330/falsifiers.json",
+     "detail": "Falsifier space330-locator-text-only (rule 1 compares the locator's text only): ac2/link-replaces-folder red, the removal of the link passed and the row's remover deleted the link's target (the rows after it red with it, the fixture having lost a folder); noop green. proof/VELDO-0330/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "Rows ac3/at-above-beneath (a locator at a protect entry, above one and beneath one: each refused protected, naming the entry and how; a neighbour whose name starts the same is not; an entry that is a link protects where it leads; a Docker name by its pattern and by its recorded compose project, on the entry's engines only; the list is read at every call), ac3/no-event-removes (the item due by its event: refused protected, the remover not called, the worktree on disk), ac3/no-confirm-removes (the same for an item that carries the owner's confirmation), ac3/no-discard-removes (the discard purpose with a forced git worktree remove as its tool: refused protected, the forced remove not run, the worktree on disk with its untracked file; the same remover removes a worktree that is not protected). Green: proof/VELDO-0330/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "The rows run against the real Ledger's protect list and real git worktrees; the discard row's tool is git's own worktree remove with the force option."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0330/falsifiers.json",
+     "detail": "Falsifier space330-discard-skips-protect (the discard purpose skips the protect rule): ac3/no-discard-removes red, the protected worktree removed on the discard (ac1/order and ac1/discard-skips-unique-work red with it); noop green. proof/VELDO-0330/mutations.txt."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 137_veldo_0330_space_rules (20 rows, 46 checks with the shared preamble). Also green after the change: --suite 136_veldo_0299_space_probe and --suite 134_veldo_0331_space_mode, whose modules this ticket edits."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, git and kernel process table, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec on the spec."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran the single suite and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the three registered teeth cases (finding 330) were run here through the driver's own materialize() and worker(), not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "The rules are control_space_signal.rules(ledger, probe, identity, record, purpose, tool, owner_live, landed, run, proc, borrow_root), with ORDER, DEFERRAL and APPLIES as data. Nothing calls it yet: Signal's carry out, the outcome it writes and the retry are VELDO-0301 and the removers VELDO-0300. rules writes nothing; deferral() only builds the facts of the deferral record.",
+  "LEAD RULE, as built: what a probe could not read refuses. One process whose table this user may not read (unread.processes above zero) or one unreadable engine defers a disk item as in_use even with no known user. On a host where Veldo runs as an ordinary user the kernel's own table always holds such processes (other users', kernel threads), so there every disk item is deferred in_use by rule 4 until the process probe is given a way to tell them apart or Veldo can read them. Not measured further here; it is the consequence of the rule as stated and the lead should know it before VELDO-0301.",
+  "Because of that, the suite's rows read a fixture process table (a folder shaped as the kernel's) instead of this host's, except ac1/session-process, which reads the real one for rule 3. The docker client is a stand-in function given as the client runner (container ls, container inspect, <type> inspect <name>); no container engine was asked anything.",
+  "Rule 1 for a path: something is at the path, the path itself is no link, and it leads to its own text. For a worktree also: the folder is the top of a worktree whose common git folder is that of the recorded repository (the parent agent repository, else the scope's declared repository). A folder replaced by another folder of the same repository, or a scratch folder replaced by another plain folder, is not detected: the item record holds no inode or other identity of a folder.",
+  "Rule 1 for a Docker object compares the Id of the engine's inspect record with locator.id. A locator with no recorded id, or an object whose record has no Id (a volume has none), is not proven and refuses. Which id a volume records is left to the Docker tickets (VELDO-0306); until then a volume item never passes rule 1.",
+  "A thing that is missing refuses as not_in_ledger with missing true in what was found. Marking it gone is VELDO-0301 AC2.",
+  "Rule 2 reads ledger.protect at every call, through control_space_probe.protected. For Docker it tests the name pattern and the compose project the locator records; what the engine itself says (label, mounts, image, networks) is VELDO-0341. control_space.protected_by is not in this ticket's footprint and is unchanged; the probe's function repeats its path and name tests and adds how.",
+  "Rule 3 for a run or gate owner asks the caller's owner_live(owner) for {conclusive, group_empty}; with no reader or any other answer it refuses. Who reads the dispatch record and the containment group is the caller's (VELDO-0301, 0308). A session's item with no recorded process passes the process half of rule 3.",
+  "Rule 4 runs the scratch probe (lock, borrowed login) on every item of kind scratch: the record does not say which scratch is a sandbox launcher's.",
+  "Rule 6 holds a parent for a child that is present, due or deferred, as section 7 says and as the kind registry's HOLDING_STATES. A child that is declared, removing or kept does not hold its parent. A kept worktree inside an agent repository is still covered by rule 5 only while a branch is not across. Flagged for review, not changed.",
+  "Purposes: remove passes all seven, discard rules 1, 2, 3, 4, 6 and the tool, review_scratch rules 1, 2, 3, 4 and 6. The review scratch remover's own per-path checks (a path that resolves outside the worktree) and the discard remover's own refusals are VELDO-0300.",
+  "The deferral facts hold retry as the item's own ending events (ends_on), since a deferred item is made due again by its next ending event; admission and reconcile also retry and are not listed.",
+  "The spec's own History and specs/index.md are not changed, as in VELDO-0298 and 0299. docs are not changed: documents for space management are VELDO-0322."
+ ],
+ "rollback": "Revert the change. Nothing is removed by this ticket and nothing calls the rules yet, so nothing on disk changes."
+}

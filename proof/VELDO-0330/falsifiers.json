@@ -1,0 +1,109 @@
+[
+ {
+  "falsifier": "space330-unique-work-before-protect",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/protect-before-unique-work"
+  ],
+  "red_rows": [
+   "ac1/deferral-record",
+   "ac1/first-refusal-names",
+   "ac1/order",
+   "ac1/protect-before-unique-work",
+   "ac3/no-confirm-removes",
+   "ac3/no-event-removes"
+  ],
+  "red_details": [
+   [
+    "VELDO-0330 ac1/order",
+    "the seven rules in the order of section 7 [('ledger', 'unique_work', 'protect', 'owner_live', 'process_use', 'children', 'tool')]"
+   ],
+   [
+    "VELDO-0330 ac1/protect-before-unique-work",
+    "the protected worktree with an edit is deferred as protected [(False, 'unique_work', 'unique_work')]"
+   ],
+   [
+    "VELDO-0330 ac1/first-refusal-names",
+    "put back, it is protected [(False, 'unique_work', 'unique_work')]"
+   ],
+   [
+    "VELDO-0330 ac1/deferral-record",
+    "the facts name the deferral, the rule that refused, the event and the events that retry it [{'rule': 'unique_work', 'refused_by': 'unique_work', 'order': 2, 'event': 'ticket_ended', 'retry': ['run_finished', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']}]"
+   ],
+   [
+    "VELDO-0330 ac3/no-event-removes",
+    "the item is due by its event and the removal is refused protected [due (False, 'unique_work', 'unique_work')]"
+   ],
+   [
+    "VELDO-0330 ac3/no-confirm-removes",
+    "an item that carries the owner's confirmation is refused protected all the same [(False, 'unique_work', 'unique_work')]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space330-locator-text-only",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/link-replaces-folder"
+  ],
+  "red_rows": [
+   "ac1/first-refusal-names",
+   "ac1/order",
+   "ac2/docker-other-id",
+   "ac2/link-replaces-folder",
+   "ac2/other-repository-worktree",
+   "ac3/at-above-beneath",
+   "ac3/no-confirm-removes",
+   "ac3/no-discard-removes",
+   "ac3/no-event-removes",
+   "rules/canon",
+   "rules/write-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0330 ac1/order",
+    "raised FileNotFoundError: [Errno 2] No such file or directory: '/tmp/veldo-0330-9q03obyj/scratch/vanished'     orig_st = os.lstat(path, dir_fd=dir_fd)"
+   ],
+   [
+    "VELDO-0330 ac1/first-refusal-names",
+    "every rule would refuse; with the folder replaced by a link it is not_in_ledger [(False, 'protect', 'protected')]"
+   ],
+   [
+    "VELDO-0330 ac2/link-replaces-folder",
+    "the folder is now a link: the removal is refused not_in_ledger [(True, None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space330-discard-skips-protect",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/no-discard-removes"
+  ],
+  "red_rows": [
+   "ac1/discard-skips-unique-work",
+   "ac1/order",
+   "ac3/no-discard-removes"
+  ],
+  "red_details": [
+   [
+    "VELDO-0330 ac1/order",
+    "a removal passes all seven; a discard and review scratch pass rules 1, 2, 3, 4 and 6"
+   ],
+   [
+    "VELDO-0330 ac1/discard-skips-unique-work",
+    "a discard passes no unique work rule: the edited worktree passes rules 1, 2, 3, 4 and 6 [['ledger', 'owner_live', 'process_use', 'children']]"
+   ],
+   [
+    "VELDO-0330 ac3/no-discard-removes",
+    "the discard answer's removal of the protected worktree is refused protected [(True, None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

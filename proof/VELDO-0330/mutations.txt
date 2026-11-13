@@ -1,0 +1,7 @@
+# VELDO-0330 registered mutation cases (scripts/check_teeth_mutations.py, finding 330), run through its own materialize() and worker(): noop copy then mutant copy, target rows.
+space330-unique-work-before-protect noop rows 46 targets {"ac1/protect-before-unique-work": [true]} failed []
+space330-unique-work-before-protect mutant rows 46 targets {"ac1/protect-before-unique-work": [false]} failed ['VELDO-0330 ac1/order', 'VELDO-0330 ac1/protect-before-unique-work', 'VELDO-0330 ac1/first-refusal-names', 'VELDO-0330 ac1/deferral-record', 'VELDO-0330 ac3/no-event-removes', 'VELDO-0330 ac3/no-confirm-removes']
+space330-locator-text-only noop rows 46 targets {"ac2/link-replaces-folder": [true]} failed []
+space330-locator-text-only mutant rows 46 targets {"ac2/link-replaces-folder": [false]} failed ['VELDO-0330 ac1/order', 'VELDO-0330 ac1/first-refusal-names', 'VELDO-0330 ac2/link-replaces-folder', 'VELDO-0330 ac2/other-repository-worktree', 'VELDO-0330 ac2/docker-other-id', 'VELDO-0330 ac3/at-above-beneath', 'VELDO-0330 ac3/no-event-removes', 'VELDO-0330 ac3/no-confirm-removes', 'VELDO-0330 ac3/no-discard-removes', 'VELDO-0330 rules/write-nothing', 'VELDO-0330 rules/canon']
+space330-discard-skips-protect noop rows 46 targets {"ac3/no-discard-removes": [true]} failed []
+space330-discard-skips-protect mutant rows 46 targets {"ac3/no-discard-removes": [false]} failed ['VELDO-0330 ac1/order', 'VELDO-0330 ac1/discard-skips-unique-work', 'VELDO-0330 ac3/no-discard-removes']
