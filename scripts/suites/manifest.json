@@ -1894,6 +1894,15 @@
    ],
    "regions": "The kind registry and the lifecycle table (VELDO-0298): the table of design section 5 as data, cell by cell, twelve rows (the ten kinds, a worktree owned by a review run and a worktree owned by a run of another station) by nine events (the five columns with landed and contained and ticket ended and project ended apart, released by its creator and session ended), and the one pure function that reads it. Which row a worktree reads. Due items coming back children first, a worktree and an agent repository coming back with wait while an item inside is present, deferred, or due without being removed. Build output at run finished passing to a queued run when the caller says one exists. An item reading the table version on its own record, so a registry change alters neither the events nor the actions of an item declared before it. The Ledger's checked_lifecycle accepting the registry's LIFECYCLE.",
    "requires_note": "Only ROOT and expect. Loads the registry by path and gives it item records written as plain data; one row loads the Ledger's module by path for checked_lifecycle, with no store. Nothing is written to disk and no process is started."
+  },
+  {
+   "name": "136_veldo_0299_space_probe",
+   "file": "136_veldo_0299_space_probe.py",
+   "requires": [
+    "136_veldo_0299_space_probe"
+   ],
+   "regions": "The probes (VELDO-0299): the observers the safety rules read, each returning facts and deciding nothing. Process use of a path from the kernel's process table (working directory, open files, mapped files; a command line naming the path is not use; the file-sharing helper not counted), containers running or stopped with a bind mount at or beneath the path on each named engine context, git's lock files and worktree lock, the test seam and a process's start time. Unique work of a worktree in the five cases of rule 5 (modified, staged, untracked and not ignored, an operation in progress, a commit no other ref and no completed landing's source commit holds), the squash landing covered by its receipt's source commit, a detached worktree tested against every ref. An agent's worktree and an agent repository compared against the shared repository's refs, before and after the branch is brought across. A sandbox launcher's scratch in use while its scratch lock is held or its borrowed login is not settled.",
+   "requires_note": "Only ROOT and expect. Loads the probe module by path. Starts real child processes (python, each ending when its input closes) and reads the real kernel process table; makes real git repositories, worktrees and an agent repository with plain git under one temporary folder; takes real file locks there. The docker client is a stand-in program first on PATH for its rows, answering from a fixture file: no container engine is asked anything. Sets and restores PATH and XDG_STATE_HOME in its own process."
   }
  ],
  "resource_capacities": {

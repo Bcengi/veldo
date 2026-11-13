@@ -12625,6 +12625,27 @@ def cases():
         ['ac4/keeps-its-version'])
     result[-1]['siblings'] = True
 
+    # VELDO-0299: the probes. The declared falsifier of each acceptance criterion: AC1 only the working
+    # directory is checked; AC2 the worktree's own branch counts among the refs that hold its tip; AC3 the
+    # comparison is made inside the agent repository only; AC4 only the scratch lock is read.
+    space299 = '136_veldo_0299_space_probe.py'
+    add(299, 'space299-working-directory-only', space299, 'control_space_probe.py',
+        "        for how in USES:\n",
+        "        for how in USES[:1]:\n",
+        ['ac1/open-file-beneath'])
+    add(299, 'space299-own-branch-counted', space299, 'control_space_probe.py',
+        "            refs = [ref for ref in refs if ref != branch]\n",
+        "            refs = list(refs)\n",
+        ['ac2/case-5-unlanded-commit'])
+    add(299, 'space299-agent-repository-only', space299, 'control_space_probe.py',
+        "    return own if shared is None else shared\n",
+        "    return own\n",
+        ['ac3/branch-not-brought-across'])
+    add(299, 'space299-lock-only', space299, 'control_space_probe.py',
+        "            'in_use': held or unsettled}\n",
+        "            'in_use': held}\n",
+        ['ac4/login-unsettled'])
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip
