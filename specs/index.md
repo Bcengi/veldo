@@ -232,6 +232,18 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0329 | Installing the git hooks and the session hooks | ready | high | dmitry | required | VELDO-0329-installing-the-git-hooks-and-the-session-hooks.md |
 | VELDO-0330 | The rule order, the ledger rule and the protect rule | ready | high | dmitry | required | VELDO-0330-the-rule-order-the-ledger-rule-and-the-protect-rule.md |
 | VELDO-0331 | Mode per project | ready | high | dmitry | required | VELDO-0331-mode-per-project.md |
+| VELDO-0332 | Wrong proposals and the switch to act | ready | high | dmitry | required | VELDO-0332-wrong-proposals-and-the-switch-to-act.md |
+| VELDO-0333 | The gate's leg-time store loses its removal by age | ready | high | dmitry | required | VELDO-0333-the-gates-leg-time-store-loses-its-removal-by-age.md |
+| VELDO-0334 | A unit waiting for space is judged again only after space was freed | ready | high | dmitry | required | VELDO-0334-a-unit-waiting-for-space-is-judged-again-only-after-space-was-freed.md |
+| VELDO-0335 | Released by its creator | ready | high | dmitry | required | VELDO-0335-released-by-its-creator.md |
+| VELDO-0336 | A worktree a run owns | ready | high | dmitry | required | VELDO-0336-a-worktree-a-run-owns.md |
+| VELDO-0337 | A review's verdict recorded | ready | high | dmitry | required | VELDO-0337-a-reviews-verdict-recorded.md |
+| VELDO-0338 | Declarations: the project's space file | ready | high | dmitry | required | VELDO-0338-declarations-the-projects-space-file.md |
+| VELDO-0339 | What else the switch to act requires | ready | high | dmitry | required | VELDO-0339-what-else-the-switch-to-act-requires.md |
+| VELDO-0340 | Unique work in review worktrees: one request per day | ready | high | dmitry | required | VELDO-0340-unique-work-in-review-worktrees-one-request-per-day.md |
+| VELDO-0341 | Protected Docker objects, by name and by compose label | ready | high | dmitry | required | VELDO-0341-protected-docker-objects-by-name-and-by-compose-label.md |
+| VELDO-0342 | Review groups: an answer for one worktree, and a second group on the same day | ready | high | dmitry | required | VELDO-0342-review-groups-an-answer-for-one-worktree-and-a-second-group-on-the-same-day.md |
+| VELDO-0343 | Discard keeps every commit | ready | high | dmitry | required | VELDO-0343-discard-keeps-every-commit.md |
 | WARP-0622 | The structural no-bypass proof, the end-to-end conformance suite, and PLAN-0016's release - a human decision must arrive as an attested record and never as an answer typed at a prompt | ready | standard | dmitry | not_required | WARP-0622-conformance-no-bypass-release.md |
 | WARP-0626 | Make the shadow check cover the CLASS it claims to - a class-level attribute makes a provisioning method just as unreachable as an instance one and neither wired site refuses it, the function that catches it already sits in the file wired to nothing, and wiring it also removes both known false positives (hardening of WARP-0623, from its own review's ranked notes) | ready | standard | dmitry | not_required | WARP-0626-shadow-check-covers-the-class.md |
 | WARP-0714 | The suite parses 86 source files 4,460 times, walks 21 million AST nodes and opens 112,451 files to read 9,096 - compute each derivation ONCE, with every optimized value asserted equal to the naive one | ready | high | dmitry | not_required | WARP-0714-compute-once.md |

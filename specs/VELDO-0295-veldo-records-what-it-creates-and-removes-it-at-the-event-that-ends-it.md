@@ -277,6 +277,31 @@ space it needs and waits when the disk cannot cover it.
 - No deletion of branches. A contained branch is marked and kept.
 - No build in this spec. It is the design's contract; each build ticket becomes its own spec.
 
+## Build order
+
+The order of section 12 of the design. Each ticket is its own spec, specs/VELDO-0296 to
+specs/VELDO-0343.
+
+1. 0296, 0338, 0297, 0326, 0331.
+2. 0298, 0299, 0330 and 0300 together.
+3. 0301.
+4. 0302, 0303 and 0305 to 0314 with 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341, in any
+   order.
+5. 0304.
+6. 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0320, 0332, 0325, 0339, 0321, 0322.
+
+0304, the boundary check, comes after 0302, 0303, 0324 and 0333 on purpose. Until those four have landed,
+the paths in the Replaced table of section 6.10 still hold removal primitives and the two removals by
+age, and the check would turn the gate red on its first run.
+
+Tickets that touch protected paths and need the owner's recorded approval: 0302 and 0324 (the sandbox),
+0309 (the gate script template, and the new helper added to the protected list), 0304 (its check is
+called from scripts/verify.sh) and 0333 (the gate's leg timing). 0325 produces a change to the gate
+script of each bound project, approved by the owner in that project.
+
+A ticket's depends_on holds the dependencies the design states for it. Where the design states none, it
+holds the step before the ticket in this order, so that a ticket cannot be claimed ahead of the order.
+
 ## What the reviewer judges
 
 Whether the design can be built from the document alone, whether every removal path passes through the
@@ -326,3 +351,7 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   a deferral later that day opens a new one; Discard keeps every commit, a detached worktree's on a new
   kept branch at its HEAD, and loses only uncommitted changes. Tickets VELDO-0342 and VELDO-0343 added,
   so the range is VELDO-0296 to VELDO-0343. Still a draft.
+- 2026-11-13: the sixth validation of the design returned VALID. The forty-eight ticket specs,
+  VELDO-0296 to VELDO-0343, were written from design revision 6, and the build order of section 12 was
+  added here. One citation in section 7 of the design was corrected from that validation's note N2.
+  Still a draft.
