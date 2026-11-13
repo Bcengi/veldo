@@ -26,6 +26,7 @@
   ],
   "red_rows": [
    "ac1/declare-to-removed",
+   "ac1/rebranch-linked-repository",
    "ac2/every-connection",
    "ac2/foreign-code",
    "ac2/generic-refused",
@@ -130,7 +131,7 @@
   "red_details": [
    [
     "VELDO-0297 ac3/link-to-protected",
-    "a link to a protected path, declared as scratch is refused by name [accepted as space:item:630b69b4c48c4d61ba83a254a1390bd1]"
+    "a link to a protected path, declared as scratch is refused by name [accepted as space:item:d6a7136a3a904641b1fad23dcc0d221c]"
    ]
   ],
   "noop_red_rows": [],
@@ -163,6 +164,7 @@
    "ac3/link-out-of-roots"
   ],
   "red_rows": [
+   "ac1/rebranch-linked-repository",
    "ac3/link-out-of-roots"
   ],
   "red_details": [
@@ -182,6 +184,7 @@
   ],
   "red_rows": [
    "ac1/declare-to-removed",
+   "ac1/rebranch-linked-repository",
    "ac3/pool-by-device",
    "ac3/two-links-one-folder",
    "ac4/rebuilt-pools-holds",
@@ -192,7 +195,7 @@
   "red_details": [
    [
     "VELDO-0297 ac3/two-links-one-folder",
-    "the first link to a folder is refused by name [accepted as space:item:66b5a3948ae643efafe67776d2123de9]"
+    "the first link to a folder is refused by name [accepted as space:item:740da05df4d9427d9e1ef1bd37c92dab]"
    ]
   ],
   "noop_red_rows": [],
@@ -212,6 +215,24 @@
    [
     "VELDO-0297 ac1/removing-is-final",
     "kept for a removing item is refused by the state [accepted]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-linked-repository-declared",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/rebranch-linked-repository"
+  ],
+  "red_rows": [
+   "ac1/rebranch-linked-repository"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac1/rebranch-linked-repository",
+    "a worktree of a repository declared through a link is refused at declare by name [accepted]"
    ]
   ],
   "noop_red_rows": [],

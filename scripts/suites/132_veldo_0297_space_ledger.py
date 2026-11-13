@@ -37,6 +37,11 @@ link to a protected path), ac3/link-beneath-protected (a path beneath such a lin
 out of every known root, and a path beneath it), ac3/two-links-one-folder (two links to one folder and the
 folder itself are one live item at most).
 
+AC1 row from the re-review (finding N1): ac1/rebranch-linked-repository (a worktree of a project whose
+repository is declared through a link is refused at declare and adopt by name, never accepted and then
+refused at rebranch; the same repository declared by its resolved path declares and rebranches, its
+branch item is recorded under the resolved repository, and a second rebranch finds that item).
+
 AC4 rows: ac4/rebuilt-same (the state rebuilt from the exported journal holds the same item, pool, hold
 and reconcile records as the live store, and the same state digest), ac4/rebuilt-size (the rebuilt item
 has the size that was measured), ac4/rebuilt-pools-holds.
@@ -63,7 +68,7 @@ def _v297_space_ledger_suite():
             'ac3/protect-list', 'ac3/free-after-end', 'ac3/refusals-counted', 'ac3/pool-by-device',
             'ac1/removing-is-final', 'ac3/parent-segment', 'ac3/link-to-protected',
             'ac3/link-beneath-protected', 'ac3/link-protect-entry', 'ac3/link-out-of-roots',
-            'ac3/two-links-one-folder',
+            'ac3/two-links-one-folder', 'ac1/rebranch-linked-repository',
             'ac4/rebuilt-same', 'ac4/rebuilt-size', 'ac4/rebuilt-pools-holds', 'ledger/canon')
     rows = {name: [] for name in ROWS}
 
@@ -773,6 +778,61 @@ def _v297_space_ledger_suite():
         counted = L.metrics()['refused_declares']
         check('ac3/refusals-counted', 'the .. and link refusals are counted by their names %s' % sorted(counted),
               counted.get('space_locator_parent') == len(CLIMBS) + 1 and counted.get('space_locator_link') >= 6)
+
+        # ---- AC1: rebranch follows declare's resolved-path rule (re-review finding N1) ---------------
+        GROVE = temp / 'real-projects' / 'grove'
+        (GROVE / '.veldo').mkdir(parents=True)
+        (GROVE / '.veldo' / 'space.yaml').write_text(YAML.dump({'protect': {'volumes': ['grove_db_*']}}))
+        (temp / 'via').symlink_to(temp / 'real-projects')
+
+        def grove(repository, store):
+            project = dict(CFG.read_project(str(repository), YAML.read, config=CONFIG, stream=io.StringIO()),
+                           repository=str(repository))
+            other = opened(store)
+            made_ledger = SP.Ledger(S, other, 'authority', sign, config=CONFIG, projects=[project],
+                                    state_root=str(STATE), lifecycle=LIFECYCLE, host='fixture-host', device=device)
+            made_ledger.set_pool('host', 'filesystem', device='dev-host')
+            who = {'scope': {'type': 'project', 'id': project['project']}, 'ticket': 'VELDO-9007'}
+            tree = {'path': str(Path(SP.resolved_path(project['worktree_root'])) / 'tree')}
+            return made_ledger, other, who, tree
+
+        def branches(of):
+            return {key: value for key, value in of.items().items() if value['kind'] == 'branch'}
+
+        row = 'ac1/rebranch-linked-repository'
+        LL, other, who, tree = grove(temp / 'via' / 'grove', 'store-linked')
+        length = other.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+        step = LL.declare('worktree', tree, who, 'seam')
+        check(row, 'a worktree of a repository declared through a link is refused at declare by name [%s]'
+              % (step.get('reason') or 'accepted'), step['ok'] is False and step.get('reason') == 'space_locator_link'
+              and 'resolved path' in str(step.get('detail')))
+        if step['ok']:
+            LL.confirm(step['item'])
+            late = LL.rebranch(step['item'], 'topic-x', 'abc123')
+            check(row, 'never accepted at declare and refused at rebranch [%s]' % late.get('reason'), late['ok'])
+        step = LL.adopt('worktree', tree, who, 'branch_pattern')
+        check(row, 'the same worktree adopted is refused the same way [%s]' % (step.get('reason') or 'accepted'),
+              step['ok'] is False and step.get('reason') == 'space_locator_link')
+        check(row, 'nothing is written for the refused worktree',
+              other.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == length and LL.items() == {})
+        LR, other, who, tree = grove(GROVE, 'store-resolved')
+        step = LR.declare('worktree', tree, who, 'seam')
+        check(row, 'the same repository declared by its resolved path: the worktree is declared [%s]'
+              % step.get('reason'), step['ok'])
+        grove_tree = step.get('item')
+        LR.confirm(grove_tree)
+        step = LR.rebranch(grove_tree, 'topic-x', 'abc123')
+        after = LR.item(grove_tree) or {}
+        check(row, 'and rebranches: the branch and the start commit are written [%s]' % step.get('reason'),
+              step['ok'] and after.get('branch') == 'topic-x' and after.get('start') == 'abc123')
+        branch = LR.item(step.get('branch_item')) or {}
+        check(row, 'its branch item is recorded under the resolved repository %s' % branch.get('locator'),
+              branch.get('locator') == {'repository': str(GROVE), 'ref': 'topic-x'}
+              and SP.resolved_path(str(GROVE)) == str(GROVE))
+        step = LR.rebranch(grove_tree, 'topic-x', 'abc124')
+        check(row, 'a second rebranch to the same branch finds that item [%s]' % step.get('reason'),
+              step['ok'] and step.get('branch_item') is None and len(branches(LR)) == 1
+              and (LR.item(grove_tree) or {}).get('start') == 'abc124')
 
         on_host = L.item(L.declare('scratch', scratch(), owner(), 'seam')['item'])['pool']
         on_tree = L.item(L.declare('worktree', {'path': str(WORKTREES / 'device-tree')}, owner(), 'seam')['item'])['pool']

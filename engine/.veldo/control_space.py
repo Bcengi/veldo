@@ -63,6 +63,13 @@ So a protected thing gets no item record through a link (design section 7), the 
 resolved one, and two locators that resolve to one folder are never two live items. The ledger rule at
 removal (design section 7 rule 1) reads the same thing again, for a link made after the declaration.
 
+CALLERS PASS RESOLVED PATHS. A path named through a linked root is refused, never recorded under where
+it leads, and the same rule holds for the repository a worktree's branches are in (its project's or plain
+repository's declared repository): a worktree whose repository is declared through a link is refused at
+declare and adopt as space_locator_link, so rebranch never meets a repository it would have to refuse.
+Declared by its resolved path, the repository is the one its branch items are recorded under. The roots
+are resolved once, when the ledger is built: a root that becomes a link later is seen by a new ledger.
+
 KNOWN ROOTS are the roots the declarations name: each project's and each plain repository's worktree
 root, the state root, the scratch roots and the build roots. They come from what the declarations reader
 returned (control_space_config.read and read_project); this module opens no declaration itself.
@@ -1022,6 +1029,11 @@ class Ledger:
         if parent is not None and (self.item(parent) or {}).get('state') not in LIVE:
             raise _invalid('parent', 'a live item')
         key = self._admissible(kind, canonical, params.get('item') if adopted else None)
+        if kind == 'worktree':
+            repository = self._repository_of({'parent': parent, 'owner': owner})
+            if repository is not None and resolved_path(repository) != repository:
+                raise Refused('space_locator_link', 'the repository of this worktree is declared through a link: '
+                                                    'declare the repository by its resolved path')
         return {'kind': kind, 'host': params['host'], 'pool': self._pool_for(kind, canonical, params.get('device'),
                                                                              params.get('pool')),
                 'locator': canonical, 'key': key, 'parent': parent, 'owner': owner, 'creator': params['creator'],

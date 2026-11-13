@@ -18,12 +18,12 @@
     {
      "type": "unit",
      "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
-     "detail": "Rows ac1/confirm-only-from-declared (confirm against an item in each of the eight states: accepted from declared, refused space_item_state:<state> with nothing written from the other seven), ac1/outcome-only-from-due-or-removing (removed, deferred and kept against each of the eight states; from removing only removed is accepted), ac1/moves-table (confirm, outcome removing, gone and signal against each of the eight states: the move of 4.1 or a refusal by the state's name, journal length unchanged) and ac1/outcome-needs-signal. Review finding 3: row ac1/removing-is-final (kept for a removing item refused space_item_state:removing with nothing written; deferred as in_use, unique_work, protected and not_in_ledger refused the same way; removing not written twice; deferred as remove_refused accepted with its deferral; controls: removed from removing, kept from due)."
+     "detail": "Rows ac1/confirm-only-from-declared (confirm against an item in each of the eight states: accepted from declared, refused space_item_state:<state> with nothing written from the other seven), ac1/outcome-only-from-due-or-removing (removed, deferred and kept against each of the eight states; from removing only removed is accepted), ac1/moves-table (confirm, outcome removing, gone and signal against each of the eight states: the move of 4.1 or a refusal by the state's name, journal length unchanged) and ac1/outcome-needs-signal. Review finding 3: row ac1/removing-is-final (kept for a removing item refused space_item_state:removing with nothing written; deferred as in_use, unique_work, protected and not_in_ledger refused the same way; removing not written twice; deferred as remove_refused accepted with its deferral; controls: removed from removing, kept from due). Re-review finding N1: row ac1/rebranch-linked-repository (a worktree of a project whose repository is declared through a link is refused space_locator_link at declare and at adopt, with the reason naming the resolved path and nothing written; the same repository declared by its resolved path declares and rebranches, its branch item is recorded under the resolved repository, and a second rebranch to the same branch finds that item)."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0297/falsifiers.json",
-     "detail": "Falsifier space297-outcome-on-present (outcome accepted for a present item): ac1/outcome-needs-signal red, the row that sends outcome removed without a signal sees it accepted (ac1/outcome-only-from-due-or-removing red with it); noop copy green. proof/VELDO-0297/mutations.txt. Review finding 3: registered falsifier space297-removing-kept (kept accepted for a removing item): ac1/removing-is-final red (ac1/outcome-only-from-due-or-removing red with it); noop green."
+     "detail": "Falsifier space297-outcome-on-present (outcome accepted for a present item): ac1/outcome-needs-signal red, the row that sends outcome removed without a signal sees it accepted (ac1/outcome-only-from-due-or-removing red with it); noop copy green. proof/VELDO-0297/mutations.txt. Review finding 3: registered falsifier space297-removing-kept (kept accepted for a removing item): ac1/removing-is-final red (ac1/outcome-only-from-due-or-removing red with it); noop green. Re-review finding N1: registered falsifier space297-linked-repository-declared (the repository check at declare never made): ac1/rebranch-linked-repository red, the worktree is accepted at declare; noop green."
     }
    ]
   },
@@ -95,7 +95,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 132_veldo_0297_space_ledger (30 rows, 56 checks)"
+   "command": "python3 scripts/selftest.py --suite 132_veldo_0297_space_ledger (31 rows, 57 checks)"
   },
   {
    "name": "integration",
@@ -110,7 +110,7 @@
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the ten registered teeth cases (finding 297) were run here through the driver's own materialize() and worker(), not through the teeth run."
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the eleven registered teeth cases (finding 297) were run here through the driver's own materialize() and worker(), not through the teeth run."
   }
  ],
  "assumptions": [
@@ -126,7 +126,8 @@
   "The state root is passed to the Ledger by its caller: the space section does not name it. Nothing attaches the Ledger to the service yet; the seams and the service are later tickets.",
   "Refusals beyond the three the spec names: space_no_pool, when no recorded pool has the device a path is on, because declare must fill in the pool; and from the review space_locator_parent and space_locator_link.",
   "docs are not changed: documents for space management are VELDO-0322.",
-  "Review fix: this bundle's commit and tree name the implementation commit; the review fix is the commit after it, and its green suite, the ten falsifier runs (falsifiers.json, mutations.txt) and the fast checks were run on the fixed tree. Full ./scripts/verify.sh was not run for the fix either."
+  "Review fix: this bundle's commit and tree name the implementation commit; the review fix is the commit after it, and its green suite, the ten falsifier runs (falsifiers.json, mutations.txt) and the fast checks were run on the fixed tree. Full ./scripts/verify.sh was not run for the fix either.",
+  "Re-review fix (finding N1): rebranch follows declare's rule that a linked root is given as its resolved path. A worktree whose repository (its project's or plain repository's declared repository) goes through a link is refused space_locator_link at declare and adopt, so it is never accepted at declare and refused at rebranch; declared by its resolved path, the repository is the one its branch items are recorded under. A repository that becomes a link after the worktree was declared still fails closed at rebranch. This fix is the commit after the review fix; its green suite and the eleven falsifier runs are in this bundle (suite-green.txt, mutations.txt, falsifiers.json)."
  ],
  "rollback": "Revert the change. The records already written stay in the journal and nothing reads them. Nothing on disk outside the store is touched."
 }

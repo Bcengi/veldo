@@ -106,3 +106,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   (space_locator_link), and a path that resolves at, above or beneath a protected path or outside every
   known root is refused by those names, so a protected thing gets no item record through a link
   (section 7) and two locators that resolve to one folder are never two live items.
+- 2026-11-13: re-review (verdict FIX, narrow). rebranch follows the same rule as declare: a worktree
+  whose repository is declared through a link is refused at declare and adopt (space_locator_link, the
+  reason asks for the resolved path), never accepted there and refused at rebranch. A repository
+  declared by its resolved path rebranches, and its branch items are recorded under that path.

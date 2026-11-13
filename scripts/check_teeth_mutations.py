@@ -12417,6 +12417,12 @@ def cases():
         "        if record['state'] == 'removing' and (False or (\n",
         ['ac1/removing-is-final'])
     result[-1]['siblings'] = True
+    # VELDO-0297 re-review (N1): a worktree of a repository declared through a link accepted at declare.
+    add(297, 'space297-linked-repository-declared', space297, 'control_space.py',
+        "            if repository is not None and resolved_path(repository) != repository:\n",
+        "            if False:\n",
+        ['ac1/rebranch-linked-repository'])
+    result[-1]['siblings'] = True
 
     # VELDO-0326: the falsifier of each acceptance criterion of the host principals for space commands.
     # AC1 hook commands signed with the owner's key; AC2 signal accepted from space-observer; AC3
