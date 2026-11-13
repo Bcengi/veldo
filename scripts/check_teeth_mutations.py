@@ -12559,9 +12559,32 @@ def cases():
         "    if owner:\n",
         ['ac2/adoption-by-scope'])
     add(331, 'space331-mode-signature-unchecked', space331, 'control_space.py',
-        "                raise Refused('not_authorized', 'the command signature is not the owner\\'s')\n",
-        "                pass\n",
+        "            raise Refused('not_authorized', 'the command signature is not the owner\\'s')\n",
+        "            pass\n",
         ['ac1/owner-signs'])
+    result[-1]['siblings'] = True
+    # The review of VELDO-0331. The transition checks the mode command itself: the signature and the
+    # owner not read in the transition; whoever sent the command not read in it. A hold's answer not
+    # checked against the mode of its scope. Act accepted with no check of 0332 and 0339 built.
+    add(331, 'space331-transition-trusts-signature', space331, 'control_space.py',
+        "        self._mode_signer(signed_command, packet.get('signature'), at, self._membership())\n",
+        "        pass\n",
+        ['ac1/ledger-checks-signature'])
+    result[-1]['siblings'] = True
+    add(331, 'space331-transition-trusts-sender', space331, 'control_space.py',
+        "            raise Refused('not_authorized', 'the mode command is sent by the owner who signed it, as that command')\n",
+        "            pass\n",
+        ['ac1/ledger-checks-sender'])
+    result[-1]['siblings'] = True
+    add(331, 'space331-advised-for-act-hold', space331, 'control_space.py',
+        "        if answer == 'advised' and self.acts(record.get('scope') or NO_PROJECT):\n",
+        "        if False:\n",
+        ['ac2/hold-keeps-its-scope'])
+    result[-1]['siblings'] = True
+    add(331, 'space331-act-with-no-check-built', space331, 'control_space.py',
+        "        unbuilt = [ticket for condition, ticket in ACT_CONDITIONS if not callable(self.act_checks.get(condition))]\n",
+        "        return None\n",
+        ['ac1/act-refused-until-built'])
     result[-1]['siblings'] = True
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.

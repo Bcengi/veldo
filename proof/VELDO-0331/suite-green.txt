@@ -1,4 +1,4 @@
   selector    --suite 134_veldo_0331_space_mode
   running     1 of 204 suites: 134_veldo_0331_space_mode
-  134_veldo_0331_space_mode                       12 passed    0.68s
-selftest (PARTIAL, 1 of 204 suites): 38 passed, 0 failed in 0.68s
+  134_veldo_0331_space_mode                       16 passed    0.94s
+selftest (PARTIAL, 1 of 204 suites): 42 passed, 0 failed in 0.94s

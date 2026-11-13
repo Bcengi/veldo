@@ -90,3 +90,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: review (verdict FIX), three lead decisions. (1) The ledger checks the owner's signature
+  and the sender inside the mode transition itself and trusts no caller: a space_mode command from the
+  authority with a signature that is not the owner's is refused. (2) A hold records the scope it was
+  placed under (the scope its run was issued with, before any other), and admit refuses the answer
+  advised for a hold of a scope in act mode. (3) Act is refused outright, as
+  space_act_unbuilt:VELDO-0332,VELDO-0339, until the checks of VELDO-0332 (three clean report days) and
+  VELDO-0339 (no unconfirmed pending group) exist; each of those tickets removes its part when it lands,
+  and its spec says so. No acceptance criterion changed.

@@ -8,12 +8,15 @@
   "red_rows": [
    "ac1/act-beside-report",
    "ac1/history",
+   "ac1/ledger-checks-sender",
+   "ac1/ledger-checks-signature",
    "ac1/no-record-is-report",
    "ac1/own-record-per-scope",
    "ac1/owner-signs",
    "ac2/admission-by-scope",
    "ac2/adoption-by-scope",
    "ac2/advised-counts-as-held",
+   "ac2/hold-keeps-its-scope",
    "ac2/signal-by-scope",
    "ac3/switch-back-accepted",
    "ac3/then-due-and-nothing-removed",
@@ -55,11 +58,14 @@
   ],
   "red_rows": [
    "ac1/history",
+   "ac1/ledger-checks-sender",
+   "ac1/ledger-checks-signature",
    "ac1/own-record-per-scope",
    "ac1/owner-signs",
    "ac2/admission-by-scope",
    "ac2/adoption-by-scope",
    "ac2/advised-counts-as-held",
+   "ac2/hold-keeps-its-scope",
    "ac2/signal-by-scope",
    "ac3/switch-back-accepted",
    "ac3/then-due-and-nothing-removed"
@@ -139,16 +145,89 @@
    "ac1/owner-signs"
   ],
   "red_rows": [
-   "ac1/owner-signs",
-   "ac2/admission-by-scope",
-   "ac2/adoption-by-scope",
-   "ac2/advised-counts-as-held",
-   "ac2/signal-by-scope"
+   "ac1/ledger-checks-sender",
+   "ac1/ledger-checks-signature",
+   "ac1/owner-signs"
   ],
   "red_details": [
    [
     "VELDO-0331 ac1/owner-signs",
     "the owner's name signed with an intruder's key is refused not_authorized with nothing written [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-transition-trusts-signature",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/ledger-checks-signature"
+  ],
+  "red_rows": [
+   "ac1/ledger-checks-sender",
+   "ac1/ledger-checks-signature"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac1/ledger-checks-signature",
+    "the owner's name and command through the Ledger's command path, signed with an intruder's key is refused not_authorized with nothing written [written]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-transition-trusts-sender",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/ledger-checks-sender"
+  ],
+  "red_rows": [
+   "ac1/ledger-checks-sender"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac1/ledger-checks-sender",
+    "the owner's real signed command given to the store as the authority is refused not_authorized with nothing written [written]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-advised-for-act-hold",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/hold-keeps-its-scope"
+  ],
+  "red_rows": [
+   "ac2/hold-keeps-its-scope"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac2/hold-keeps-its-scope",
+    "the runner's answer advised for the hold of an act-mode scope is refused [None advised]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-act-with-no-check-built",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/act-refused-until-built"
+  ],
+  "red_rows": [
+   "ac1/act-refused-until-built",
+   "ac1/own-record-per-scope",
+   "ac3/switch-back-accepted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac1/act-refused-until-built",
+    "the owner's signed act command for a project is refused, naming both tickets [None]"
    ]
   ],
   "noop_red_rows": [],

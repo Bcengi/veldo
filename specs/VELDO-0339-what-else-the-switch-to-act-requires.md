@@ -92,7 +92,16 @@ Build order. It is in the closing sequence 0315, 0316, 0334, 0317, 0327, 0318, 0
 Footprint. The files are the ones the design's component table (section 3) gives for this ticket's
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
+The refusal this ticket lifts. Since the review of VELDO-0331 the ledger refuses every switch to act as
+space_act_unbuilt, naming VELDO-0332 and VELDO-0339, until the check of each exists. When this ticket lands
+it installs the check of the condition no_unconfirmed_pending_group (ACT_CONDITIONS in control_space.py,
+the Ledger's act_checks) and so removes its part of that refusal, the last one: from then a switch to act
+is refused only by a check that fails.
+
 ## History
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: after the review of VELDO-0331 (lead decision): act is refused outright until
+  VELDO-0332's check and this ticket's exist. Added to Design that this ticket removes its part of the
+  space_act_unbuilt refusal when it lands. No acceptance criterion changed.

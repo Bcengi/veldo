@@ -17,9 +17,11 @@ When a pool is short, admit asks for the mode of the scope the run belongs to:
   act      waiting, with the reason as numbers: the run does not start
   report   advised, with the same numbers: the run would have waited and is started anyway
 
-The scope is the caller's to name: the project of the unit or of the gated repository, and for a wrapped
-run the project or plain repository its working folder is inside, else no project (design 6.7). Two
-projects on one pool can be in different modes; the numbers are the same for both.
+The scope is the hold's own, never the caller's: the ledger recorded it when the hold was placed (the
+project of the unit or of the gated repository, and for a wrapped run the project or plain repository its
+working folder is inside, else no project; design 6.7). The ledger checks the answer against that scope
+again when it writes it, and refuses advised for a hold of a scope in act mode. Two projects on one pool
+can be in different modes; the numbers are the same for both.
 
 WHAT IS NOT HERE. Where a need comes from, reading free space from a filesystem or an engine, the one
 admission requested event, the freed mark that lets a waiting hold be judged again, the Runner and the
@@ -58,13 +60,14 @@ def judge(ledger, identity, free):
     return None
 
 
-def admit(ledger, identity, scope, free, principal=None, command_id=None):
+def admit(ledger, identity, free, principal=None, command_id=None):
     """Judge a waiting hold and write the answer: admitted, or with the reason waiting for a run of a
-    scope in act mode and advised for a run of a scope in report mode. Returns the ledger's answer with
-    the answer and the reason added."""
+    scope in act mode and advised for a run of a scope in report mode. The scope is the one the hold
+    records. Returns the ledger's answer with the answer and the reason added."""
     hold = ledger.hold(identity)
     if hold is None:
         return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
+    scope = hold.get('scope')
     reason = judge(ledger, identity, free)
     answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'
     result = ledger.admit(identity, answer, reason, principal=principal, command_id=command_id)

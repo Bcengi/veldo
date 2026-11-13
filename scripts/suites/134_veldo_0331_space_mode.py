@@ -23,12 +23,25 @@ the history holds each with from, to, when and the owner's command, whose signat
 switch is one journal record signed for the owner), ac1/owner-signs (refused with nothing written: an
 intruder's key under the owner's name, a command changed after signing, no signature, a host principal,
 a person without project_owner, an owner of one repository only, an unknown scope, an unknown mode, a
-packet sent again after the switch back, and the store's generic command writing a mode record).
+packet sent again after the switch back, and the store's generic command writing a mode record),
+ac1/ledger-checks-signature (the transition itself refuses, with nothing written: a space_mode command
+given to the store as the authority with a signature that is no signature, and one sent through the
+Ledger's own command path under the owner's name with an intruder's signature, or by a person who is not
+the owner), ac1/ledger-checks-sender (the owner's real signed command is refused when the store is given
+it directly, as the authority or under the owner's name, when the Ledger sends it as the journal signer,
+and under another command id; the same packet through set_mode is then accepted),
+ac1/act-refused-until-built (with no check installed the owner's act command is refused
+space_act_unbuilt:VELDO-0332,VELDO-0339 and nothing is written; with one check installed the refusal
+names the other ticket; a check that refuses is space_act_refused; report is never refused). Every later
+row runs with two fixture checks that allow act, standing in for VELDO-0332 and VELDO-0339.
 
 AC2 rows: ac2/admission-by-scope (on one pool, with the same need and the same free space, the run of
 the report-mode project is advised and the run of the act-mode project waits, each with the numbers),
 ac2/advised-counts-as-held (the declared falsifier row: a smaller act-mode run that fits only if the
 advised run's promise is ignored waits; once the advised hold is released the same need is admitted),
+ac2/hold-keeps-its-scope (a hold records the scope it was placed under, the scope its run was issued with
+before any other; a host principal's command names no scope; the answer advised for a hold of an act-mode
+scope is refused from the runner and from the authority, and admission makes that run wait),
 ac2/signal-by-scope (Signal carries out the items of an act-mode scope and leaves those of a report-mode
 scope due, for a project, a plain repository and no project), ac2/adoption-by-scope (a container inside
 a recorded worktree is adopted with the worktree as parent for the act-mode project and is a report with
@@ -58,8 +71,10 @@ def _v331_space_mode_suite():
         'control_space_admission.py': ROOT / ".veldo" / "control_space_admission.py",
         'control_space_reconcile.py': ROOT / ".veldo" / "control_space_reconcile.py",
     }
-    ROWS = ('ac1/no-record-is-report', 'ac1/own-record-per-scope', 'ac1/act-beside-report', 'ac1/history',
-            'ac1/owner-signs', 'ac2/admission-by-scope', 'ac2/advised-counts-as-held', 'ac2/signal-by-scope',
+    ROWS = ('ac1/no-record-is-report', 'ac1/act-refused-until-built', 'ac1/own-record-per-scope',
+            'ac1/act-beside-report', 'ac1/history', 'ac1/owner-signs', 'ac1/ledger-checks-signature',
+            'ac1/ledger-checks-sender', 'ac2/admission-by-scope', 'ac2/advised-counts-as-held',
+            'ac2/hold-keeps-its-scope', 'ac2/signal-by-scope',
             'ac2/adoption-by-scope', 'ac3/switch-back-accepted', 'ac3/then-due-and-nothing-removed',
             'mode/canon')
     rows = {name: [] for name in ROWS}
@@ -250,6 +265,48 @@ def _v331_space_mode_suite():
               L.mode_of({'type': 'project', 'id': 'nobody'}) == 'report' and L.mode_of(None) == 'report')
         check(ROW, 'the installation\'s space section holds no mode', 'mode' not in CONFIG)
 
+        # ---- AC1: act is refused until the checks of VELDO-0332 and VELDO-0339 exist ----------------------
+        ROW = 'ac1/act-refused-until-built'
+        UNBUILT = 'space_act_unbuilt:VELDO-0332,VELDO-0339'
+
+        def allow(scope):
+            return None
+
+        check(ROW, 'the ledger names the two conditions and the ticket that builds each',
+              SP.ACT_CONDITIONS == (('clean_report_days', 'VELDO-0332'),
+                                    ('no_unconfirmed_pending_group', 'VELDO-0339')) and L.act_checks == {})
+        for label, scope in (('a project', A), ('a plain repository', P), ('no project', N)):
+            length = journal_length()
+            step = switch(scope, 'act')
+            check(ROW, 'the owner\'s signed act command for %s is refused, naming both tickets [%s]'
+                  % (label, step.get('reason')),
+                  step.get('ok') is False and step.get('reason') == UNBUILT and L.mode_of(scope) == 'report'
+                  and journal_length() == length and mode_rows() == 0)
+        check(ROW, 'the refusal is in the observations with the scope and the owner',
+              L.observations[-1].get('refusal') == UNBUILT and L.observations[-1].get('operation') == 'space_mode'
+              and L.observations[-1].get('principal') == 'owner' and L.observations[-1].get('scope') == N)
+        quiet = switch(A, 'report')
+        check(ROW, 'a report command is never refused for it [%s]' % quiet.get('reason'),
+              quiet.get('ok') is True and quiet.get('changed') is False)
+        L.act_checks = {'clean_report_days': allow}
+        step = switch(A, 'act')
+        check(ROW, 'with the check of VELDO-0332 alone the refusal names VELDO-0339 [%s]' % step.get('reason'),
+              step.get('reason') == 'space_act_unbuilt:VELDO-0339' and L.mode_of(A) == 'report')
+        L.act_checks = {'no_unconfirmed_pending_group': allow}
+        step = switch(A, 'act')
+        check(ROW, 'with the check of VELDO-0339 alone the refusal names VELDO-0332 [%s]' % step.get('reason'),
+              step.get('reason') == 'space_act_unbuilt:VELDO-0332' and L.mode_of(A) == 'report')
+        asked = []
+        L.act_checks = {'clean_report_days': allow,
+                        'no_unconfirmed_pending_group': lambda scope: asked.append(scope) or 'a group is open'}
+        step = switch(A, 'act')
+        check(ROW, 'a built check that refuses is the refusal, by its condition, for the scope asked [%s]'
+              % step.get('reason'),
+              step.get('reason') == 'space_act_refused:no_unconfirmed_pending_group' and asked == [A]
+              and L.mode_of(A) == 'report' and mode_rows() == 0)
+        # The fixture for every row below: two checks that allow act, standing in for 0332 and 0339.
+        L.act_checks = {'clean_report_days': allow, 'no_unconfirmed_pending_group': allow}
+
         # ---- AC1: each scope has its own record ----------------------------------------------------------
         ROW = 'ac1/own-record-per-scope'
         before = journal_length()
@@ -395,6 +452,95 @@ def _v331_space_mode_suite():
         check(ROW, 'the ledger has no mode command a host principal can send',
               'space_mode' not in SP.COMMAND_PARAMETERS and 'space_mode' in SP.OWNER_ACTIONS)
 
+        # ---- AC1: the transition checks the signature itself, whoever calls it ---------------------------
+        ROW = 'ac1/ledger-checks-signature'
+        MEADOW_MODE = 'space:mode:project:meadow'
+        probes = [0]
+
+        def raw(inner, signature, principal, via, command_id=None, nonce=None):
+            """One space_mode command that did not come through set_mode: given to the store directly
+            (via 'store') or sent through the Ledger's own command path (via 'ledger'). Returns the
+            refusal's name, or 'written'."""
+            probes[0] += 1
+            version = conn.execute('SELECT version FROM entities WHERE id=?', (MEADOW_MODE,)).fetchone()[0]
+            parameters = {'mode_record': MEADOW_MODE, 'scope': B, 'from': 'report', 'to': 'act', 'at': NOW + 55,
+                          'command': {'command': inner, 'signature': signature}}
+            command_id, nonce = command_id or 'probe-%d' % probes[0], nonce or 'probe-nonce-%d' % probes[0]
+            if via == 'ledger':
+                answer = L._send('space_mode', parameters, {MEADOW_MODE: version}, principal, command_id,
+                                 {'item': None}, nonce)
+                return 'written' if answer.get('ok') else answer.get('reason')
+            try:
+                S.execute(conn, {'command_id': command_id, 'principal': principal, 'operation': 'space_mode',
+                                 'parameters': parameters, 'expected_versions': {MEADOW_MODE: version},
+                                 'artifact_digests': [], 'nonce': nonce}, 'authority', journal_sign, 1)
+                return 'written'
+            except (S.StoreRefused, SP.Refused) as refusal:
+                return refusal.code
+
+        def probe(row, label, *given, **named):
+            length, held = journal_length(), L.mode_record(B)
+            code = raw(*given, **named)
+            check(row, '%s is refused not_authorized with nothing written [%s]' % (label, code),
+                  code == 'not_authorized' and journal_length() == length and L.mode_record(B) == held
+                  and L.mode_of(B) == 'report')
+
+        check(ROW, 'meadow is in report and act is not refused for a missing check',
+              L.mode_of(B) == 'report' and L._act_refusal(B) is None)
+        fake = {'principal': 'nobody', 'operation': 'space_mode', 'parameters': {'scope': B, 'mode': 'act'},
+                'command_id': 'fake-1', 'nonce': 'fake-nonce-1'}
+        probe(ROW, 'a space_mode command given to the store as the authority, with a signature that is none',
+              fake, 'not-a-signature', 'authority', 'store')
+        probe(ROW, 'the same sent through the Ledger\'s command path as the journal signer',
+              fake, 'not-a-signature', None, 'ledger')
+        forged = packet(B, 'act', key='intruder')
+        probe(ROW, 'the owner\'s name and command through the Ledger\'s command path, signed with an intruder\'s key',
+              forged['command'], forged['signature'], 'owner', 'ledger',
+              command_id=forged['command']['command_id'], nonce=forged['command']['nonce'])
+        altered = packet(B, 'report')
+        probe(ROW, 'the owner\'s signed report command with its mode changed to act',
+              dict(altered['command'], parameters={'scope': B, 'mode': 'act'}), altered['signature'], 'owner',
+              'ledger', command_id=altered['command']['command_id'], nonce=altered['command']['nonce'])
+        guest = packet(B, 'act', principal='guest')
+        probe(ROW, 'a person who is not the owner, with that person\'s real signature',
+              guest['command'], guest['signature'], 'guest', 'ledger',
+              command_id=guest['command']['command_id'], nonce=guest['command']['nonce'])
+        for host in SP.HOST_PRINCIPALS:
+            hosted = packet(B, 'act', principal=host, key='intruder')
+            length = journal_length()
+            code = raw(hosted['command'], hosted['signature'], host, 'ledger',
+                       command_id=hosted['command']['command_id'], nonce=hosted['command']['nonce'])
+            check(ROW, 'a host principal (%s) through the Ledger\'s command path is refused [%s]' % (host, code),
+                  code == 'space_not_permitted:space_mode' and journal_length() == length and L.mode_of(B) == 'report')
+
+        # ---- AC1: and the sender: the owner's real command, sent by anyone but the owner ------------------
+        ROW = 'ac1/ledger-checks-sender'
+        real = packet(B, 'act')
+        own = dict(command_id=real['command']['command_id'], nonce=real['command']['nonce'])
+        probe(ROW, 'the owner\'s real signed command given to the store as the authority',
+              real['command'], real['signature'], 'authority', 'store')
+        probe(ROW, 'the same given to the store under the owner\'s name, id and nonce',
+              real['command'], real['signature'], 'owner', 'store', **own)
+        probe(ROW, 'the same sent by the Ledger as the journal signer',
+              real['command'], real['signature'], None, 'ledger', **own)
+        probe(ROW, 'the same sent under the owner\'s name with another command id',
+              real['command'], real['signature'], 'owner', 'ledger', nonce=own['nonce'])
+        probe(ROW, 'the same sent under the owner\'s name with another nonce',
+              real['command'], real['signature'], 'owner', 'ledger', command_id=own['command_id'])
+        length = journal_length()
+        taken = L.set_mode(real, CM, NOW + 56)
+        last = S.export_journal(conn)[-1]
+        check(ROW, 'that packet through set_mode is accepted, the owner on its journal record [%s]' % taken.get('reason'),
+              taken.get('ok') is True and taken.get('changed') is True and L.mode_of(B) == 'act'
+              and journal_length() == length + 1 and last['principal'] == 'owner'
+              and last['command_id'] == own['command_id'] and last['nonce'] == own['nonce'])
+        length = journal_length()
+        code = raw(real['command'], real['signature'], 'owner', 'ledger', **own)
+        check(ROW, 'and sent again it writes nothing [%s]' % code, journal_length() == length)
+        back = switch(B, 'report', NOW + 57)
+        check(ROW, 'meadow goes back to report for the rows below [%s]' % back.get('reason'),
+              back.get('ok') is True and L.mode_of(B) == 'report')
+
         # ---- AC2: admission reads the mode of the run's scope -------------------------------------------
         ROW = 'ac2/admission-by-scope'
         FLOOR = 20000 * MEGABYTE
@@ -404,8 +550,8 @@ def _v331_space_mode_suite():
             return FREE[0]
 
         def ask(identity, scope, need):
-            L.place_hold(identity, {'host': need}, {'host': 'declared'})
-            return ADM.admit(L, identity, scope, free)
+            L.place_hold(identity, {'host': need}, {'host': 'declared'}, scope=scope)
+            return ADM.admit(L, identity, free)
 
         check(ROW, 'orchard is in act and meadow in report, on the one pool',
               L.mode_of(A) == 'act' and L.mode_of(B) == 'report' and (L.pool('host') or {}).get('floor') == FLOOR)
@@ -450,6 +596,67 @@ def _v331_space_mode_suite():
         check(ROW, 'a report-mode run that fits is admitted, not advised, and the admitted hold is counted [%s]'
               % fits.get('answer'), fits.get('answer') == 'admitted' and ADM.held(L, 'host') == SMALL + 1000 * MEGABYTE)
         for identity in ('run-orchard-3', 'run-meadow-2'):
+            L.release(identity)
+
+        # ---- AC2: a hold keeps the scope it was placed under, and admit answers by that scope's mode -------
+        ROW = 'ac2/hold-keeps-its-scope'
+        check(ROW, 'each hold records the scope it was placed under',
+              [(L.hold(identity) or {}).get('scope') for identity in
+               ('run-orchard-1', 'run-meadow-1', 'run-plain-1', 'run-nobody-1')] == [A, B, P, N])
+        L.place_hold('run-unnamed', {'host': SMALL}, {'host': 'declared'})
+        check(ROW, 'a hold placed with no scope is of no project',
+              (L.hold('run-unnamed') or {}).get('scope') == N)
+        nowhere = L.place_hold('run-nowhere', {'host': SMALL}, {'host': 'declared'},
+                               scope={'type': 'project', 'id': 'nobody'})
+        check(ROW, 'a hold for a scope the declarations do not name is refused [%s]' % nowhere.get('reason'),
+              nowhere.get('reason') == 'space_unknown_scope' and L.hold('run-nowhere') is None)
+        unknown_run = L.issue('space-runner', 'run-nowhere', scope={'type': 'project', 'id': 'nobody'})
+        check(ROW, 'and so is a run issued with one [%s]' % unknown_run.get('reason'),
+              unknown_run.get('reason') == 'space_unknown_scope')
+        ISSUED = L.issue('space-runner', 'run-issued', scope=A).get('run')
+        other = L.place_hold(ISSUED, {'host': SMALL}, {'host': 'declared'}, scope=B)
+        check(ROW, 'a hold naming another scope than its run was issued with is refused [%s]' % other.get('reason'),
+              other.get('reason') == 'space_hold_scope' and L.hold(ISSUED) is None)
+        BIG = NEED + FREE[0]
+        named = L.apply({'principal': 'space-runner', 'operation': 'space_hold', 'command_id': 'runner-hold-1',
+                         'parameters': {'hold': ISSUED, 'needs': {'host': BIG}, 'source': {'host': 'declared'},
+                                        'scope': B}})
+        check(ROW, 'the runner\'s hold command naming a scope is refused: it has no such parameter [%s]'
+              % named.get('reason'), named.get('reason') == 'invalid_input:parameters' and L.hold(ISSUED) is None)
+        placed = L.apply({'principal': 'space-runner', 'operation': 'space_hold', 'command_id': 'runner-hold-2',
+                          'parameters': {'hold': ISSUED, 'needs': {'host': BIG}, 'source': {'host': 'declared'}}})
+        check(ROW, 'the runner\'s hold takes the scope its run was issued with [%s]' % placed.get('reason'),
+              placed.get('ok') is True and (L.hold(ISSUED) or {}).get('scope') == A and L.mode_of(A) == 'act')
+        numbers = {'pool': 'host', 'need': BIG, 'free': FREE[0], 'held': 0, 'floor': FLOOR}
+        length = journal_length()
+        advice = L.apply({'principal': 'space-runner', 'operation': 'space_admit', 'command_id': 'runner-admit-1',
+                          'parameters': {'hold': ISSUED, 'answer': 'advised', 'reason': numbers}})
+        check(ROW, 'the runner\'s answer advised for the hold of an act-mode scope is refused [%s %s]'
+              % (advice.get('reason'), (L.hold(ISSUED) or {}).get('state')),
+              advice.get('ok') is False and advice.get('reason') == 'space_answer_mode:act'
+              and (L.hold(ISSUED) or {}).get('state') == 'waiting' and journal_length() == length)
+        advice = L.admit(ISSUED, 'advised', numbers)
+        check(ROW, 'and so is the authority\'s own [%s]' % advice.get('reason'),
+              advice.get('reason') == 'space_answer_mode:act' and (L.hold(ISSUED) or {}).get('state') == 'waiting'
+              and journal_length() == length)
+        waits = ADM.admit(L, ISSUED, free)
+        check(ROW, 'admission, given no scope, makes that run wait [%s]' % waits.get('answer'),
+              waits.get('ok') is True and waits.get('answer') == 'waiting'
+              and (L.hold(ISSUED) or {}).get('state') == 'waiting')
+        # The mode is read when the answer is written: a hold placed in report, answered after the switch.
+        L.place_hold('run-meadow-3', {'host': BIG}, {'host': 'declared'}, scope=B)
+        moved = switch(B, 'act', NOW + 61)
+        late = L.admit('run-meadow-3', 'advised', numbers)
+        check(ROW, 'a hold placed in report mode is not advised once its scope is in act [%s %s]'
+              % (moved.get('reason'), late.get('reason')),
+              moved.get('ok') is True and late.get('reason') == 'space_answer_mode:act'
+              and ADM.admit(L, 'run-meadow-3', free).get('answer') == 'waiting')
+        back = switch(B, 'report', NOW + 62)
+        eased = L.admit('run-meadow-3', 'advised', numbers)
+        check(ROW, 'and is advised again after the switch back [%s %s]' % (back.get('reason'), eased.get('reason')),
+              back.get('ok') is True and eased.get('ok') is True
+              and (L.hold('run-meadow-3') or {}).get('state') == 'advised')
+        for identity in (ISSUED, 'run-meadow-3', 'run-unnamed'):
             L.release(identity)
 
         # ---- AC2: Signal reads the mode of the item's scope ----------------------------------------------
