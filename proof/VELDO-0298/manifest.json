@@ -1,0 +1,104 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0298",
+ "commit": "f3bebe867d9ef81c2ac8f81db3d934ebe3b7ad92",
+ "tree": "64aec5ebee8eca059a0ca9e0516d4bd95c8a1da0",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T22:27:16.426396+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/135_veldo_0298_space_kinds.py",
+     "detail": "Rows ac1/<row>/<event>, 108 of them: twelve table rows (the ten kinds, worktree_review_run, worktree_station_run) by nine events (run_finished, verdict_recorded, landed, contained, ticket_ended, project_ended, worktree_abandoned, released, session_ended). Each gives the function one due item of that row and compares the answer with the suite's own transcription of design section 5: the action and its qualifiers, or nothing for an empty cell. ac1/whole-table: the registry holds exactly those rows and events, released equals worktree abandoned for every row, session ended holds a cell for scratch only and does nothing to a scratch no session owns, which worktree reads which row, and an item that is not due, ends on nothing or meets an unknown event gets nothing. Green: proof/VELDO-0298/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0298/falsifiers.json",
+     "detail": "Falsifier space298-worktree-removed-at-run-finished (worktree given remove at run finished): ac1/worktree/run_finished red, the cell came back remove where the table says measure (ac1/whole-table red with it); noop copy green. proof/VELDO-0298/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/135_veldo_0298_space_kinds.py",
+     "detail": "Rows ac2/deferred-build-folder-first (a worktree and, declared after it, a build folder that was deferred and is due again: folder first, then the worktree naming it in after_items), ac2/child-holds-worktree (a present, a deferred and a due-but-kept child each make the worktree come back with wait and held_by, never with a removal; a removed, gone, kept, declared or removing child does not), ac2/agent-repository-after-worktree (folder, worktree, agent repository; a held, present or deferred worktree makes the agent repository wait), ac2/children-first (nine items in a mixed ledger order and in its reverse: every item after every item inside it, network and volume after the container). Green: proof/VELDO-0298/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0298/falsifiers.json",
+     "detail": "Falsifier space298-ledger-order (items returned in ledger order): ac2/deferred-build-folder-first red, the worktree came back before its build folder (seven more rows that read the order red with it); noop green. proof/VELDO-0298/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/135_veldo_0298_space_kinds.py",
+     "detail": "Rows ac3/passes-to-queued-run (with the queued-run fact set for the folder, build output at run finished comes back with pass and the run, and holds its worktree), ac3/removed-without (no fact, an empty fact, a fact about another item: removed), ac3/run-finished-only (at the seven other events of the row the fact changes nothing; the fact passes no other kind). Green: proof/VELDO-0298/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0298/falsifiers.json",
+     "detail": "Falsifier space298-queued-run-ignored (removed whenever the owning run is finished): ac3/passes-to-queued-run red, the folder came back with remove; noop green. proof/VELDO-0298/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/135_veldo_0298_space_kinds.py",
+     "detail": "Rows ac4/keeps-its-version (a fixture registry with a second table in which scratch no longer ends on run finished: an item declared under table 1 is still removed at run finished and answers with version 1, an item declared under table 2 is not; an event table 2 adds for image tags reaches only the item declared under it), ac4/action-of-its-version (where table 2 changes evidence at run finished from measure to keep, the old item is measured and the new one kept; an item of a version the registry does not hold waits and holds its worktree), ac4/registry-untouched (calls and what a caller does to an answer change neither the registry nor the records). Green: proof/VELDO-0298/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0298/falsifiers.json",
+     "detail": "Falsifier space298-ends-on-from-current-registry (ends_on read from the current registry): ac4/keeps-its-version red, after the fixture change the old item got nothing at run finished (ac1/whole-table red with it: an item whose record ends on nothing was answered); noop green. proof/VELDO-0298/mutations.txt."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 135_veldo_0298_space_kinds (122 rows, 148 checks). Suites 132_veldo_0297_space_ledger (57 checks) and 134_veldo_0331_space_mode (42 checks) rerun green; their modules are unchanged."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec, ready and shape-review on the spec."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the four registered teeth cases (finding 298) were run here through the driver's own materialize() and worker(), not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "The function is due(event, items, queued=None, registry=REGISTRY). items are (identity, record) pairs in ledger order: the due items with the items inside them and the items they are inside. Nothing calls it yet; Signal (VELDO-0301) is its caller.",
+  "A worktree with a due child that is being removed is returned, after that child, with the child in after_items; whether the child was in fact removed before the worktree is carried out is the caller's to check (VELDO-0301). A worktree with a child that is present, deferred, or due with an action that leaves it there (keep, measure, pass, wait) comes back with the action wait and never with a removal. wait and pass are answers of the function and not cells of the table.",
+  "The states that hold are the three the design names: present, due, deferred. A kept, declared or removing child does not hold its parent. So evidence inside a worktree holds it until the evidence is kept.",
+  "A worktree reads a run row only when its owner has a run, it has no ticket and it has no branch (design 5: added detached inside a run, no branch to follow and no ticket). Every other worktree reads the row worktree, which only measures at run finished. Review is the station review; build and gate are another station.",
+  "Cell qualifiers (method, first, after, unique_work, requires, otherwise) and action names are this ticket's reading of the cells' words. Landed and contained share cells, as do ticket ended and project ended; released has the cells of worktree abandoned. Event names follow the Ledger's (run_finished, verdict_recorded, worktree_abandoned).",
+  "Network and volume come back after containers among items of the same depth; the table says so only at run finished and the order is kept at every event. No holding is applied between them: only parent links hold.",
+  "The registry keeps every table it issued, keyed by version; an item of a version it does not hold gets wait with the reason table_version_unknown. The version is the string 1.",
+  "Session ended applies to a scratch whose owner names a session; which session ended is the Ledger's subject match, not this function's.",
+  "How an item is identified, which safety rules apply and which remover carries out each action (the rest of the component's row in design section 3) are not built here: they are VELDO-0330 and VELDO-0300. The Ledger is not changed and is not yet given LIFECYCLE by any caller; the row kinds/ledger-accepts shows its checked_lifecycle accepts it.",
+  "docs are not changed: documents for space management are VELDO-0322."
+ ],
+ "rollback": "Revert the change. Items already declared keep the table version they carry."
+}

@@ -1,0 +1,9 @@
+# VELDO-0298 registered mutation cases (scripts/check_teeth_mutations.py, finding 298), run through its own materialize() and worker(): noop copy then mutant copy, target rows.
+space298-worktree-removed-at-run-finished noop rows 148 targets {"ac1/worktree/run_finished": [true]} failed []
+space298-worktree-removed-at-run-finished mutant rows 148 targets {"ac1/worktree/run_finished": [false]} failed ['VELDO-0298 ac1/worktree/run_finished', 'VELDO-0298 ac1/whole-table']
+space298-ledger-order noop rows 148 targets {"ac2/deferred-build-folder-first": [true]} failed []
+space298-ledger-order mutant rows 148 targets {"ac2/deferred-build-folder-first": [false]} failed ['VELDO-0298 ac2/deferred-build-folder-first', 'VELDO-0298 ac2/child-holds-worktree', 'VELDO-0298 ac2/agent-repository-after-worktree', 'VELDO-0298 ac2/children-first', 'VELDO-0298 ac3/passes-to-queued-run', 'VELDO-0298 ac3/removed-without', 'VELDO-0298 ac4/action-of-its-version', 'VELDO-0298 ac4/registry-untouched']
+space298-queued-run-ignored noop rows 148 targets {"ac3/passes-to-queued-run": [true]} failed []
+space298-queued-run-ignored mutant rows 148 targets {"ac3/passes-to-queued-run": [false]} failed ['VELDO-0298 ac3/passes-to-queued-run']
+space298-ends-on-from-current-registry noop rows 148 targets {"ac4/keeps-its-version": [true]} failed []
+space298-ends-on-from-current-registry mutant rows 148 targets {"ac4/keeps-its-version": [false]} failed ['VELDO-0298 ac1/whole-table', 'VELDO-0298 ac4/keeps-its-version']

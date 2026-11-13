@@ -1,0 +1,4 @@
+  selector    --suite 135_veldo_0298_space_kinds
+  running     1 of 205 suites: 135_veldo_0298_space_kinds
+  135_veldo_0298_space_kinds                     122 passed    0.01s
+selftest (PARTIAL, 1 of 205 suites): 148 passed, 0 failed in 0.01s

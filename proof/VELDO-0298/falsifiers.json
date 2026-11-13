@@ -1,0 +1,83 @@
+[
+ {
+  "falsifier": "space298-worktree-removed-at-run-finished",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/worktree/run_finished"
+  ],
+  "red_rows": [
+   "ac1/whole-table",
+   "ac1/worktree/run_finished"
+  ],
+  "red_details": [
+   [
+    "VELDO-0298 ac1/worktree/run_finished",
+    "the cell is {'action': 'measure'} [[{'action': 'remove', 'item': 'space:item:1', 'row': 'worktree', 'version': '1', 'after_items': []}]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space298-ledger-order",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/deferred-build-folder-first"
+  ],
+  "red_rows": [
+   "ac2/agent-repository-after-worktree",
+   "ac2/child-holds-worktree",
+   "ac2/children-first",
+   "ac2/deferred-build-folder-first",
+   "ac3/passes-to-queued-run",
+   "ac3/removed-without",
+   "ac4/action-of-its-version",
+   "ac4/registry-untouched"
+  ],
+  "red_details": [
+   [
+    "VELDO-0298 ac2/deferred-build-folder-first",
+    "the build folder comes back before its worktree [[('space:item:w', 'remove'), ('space:item:b', 'remove')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space298-queued-run-ignored",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/passes-to-queued-run"
+  ],
+  "red_rows": [
+   "ac3/passes-to-queued-run"
+  ],
+  "red_details": [
+   [
+    "VELDO-0298 ac3/passes-to-queued-run",
+    "with a queued run the folder passes to it and is not removed [[('space:item:b', 'remove'), ('space:item:w', 'remove')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space298-ends-on-from-current-registry",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/keeps-its-version"
+  ],
+  "red_rows": [
+   "ac1/whole-table",
+   "ac4/keeps-its-version"
+  ],
+  "red_details": [
+   [
+    "VELDO-0298 ac4/keeps-its-version",
+    "after the change the old item still ends on run finished [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]
