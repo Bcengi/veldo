@@ -39,6 +39,25 @@
   "red_as_expected": true
  },
  {
+  "falsifier": "space338-unknown-pool-accepted",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/unknown-pool"
+  ],
+  "red_rows": [
+   "ac2/unknown-by-name",
+   "ac2/unknown-pool"
+  ],
+  "red_details": [
+   [
+    "VELDO-0338 ac2/unknown-pool",
+    "a misspelled pool (hots for host) is refused by station and pool [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
   "falsifier": "space338-project-list-replaces",
   "criterion": "AC3",
   "expected_red": [

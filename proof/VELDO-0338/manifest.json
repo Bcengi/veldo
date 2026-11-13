@@ -29,7 +29,7 @@
     {
      "type": "integration",
      "ref": "scripts/suites/131_veldo_0338_project_space_file.py",
-     "detail": "Rows ac2/unknown-by-name (five unknown top-level keys, one under protect, one station under needs, each refused space_file_invalid:<key> from disk), ac2/misspelled-keep (a file spelling keep as kep is refused by that name and no declarations come back; the same file spelled right keeps data/models), ac2/logged (one line with the project, the key and the reason, never a value), ac2/malformed-by-name (27 malformed values refused by key name; a list, an unparseable file and a folder in the file's place refused)."
+     "detail": "Rows ac2/unknown-by-name (five unknown top-level keys, one under protect, one station under needs, each refused space_file_invalid:<key> from disk; review finding 1: a pool under needs the installation does not name, needs.build.hots), ac2/unknown-pool (review finding 1: against a fixture installation with the pools host and engine, hots and desktop are refused space_file_invalid:needs.<station>.<pool> and logged with the project, the key and the reason; host and engine are accepted; with space management off there are no pools to check and the file is accepted), ac2/misspelled-keep (a file spelling keep as kep is refused by that name and no declarations come back; the same file spelled right keeps data/models), ac2/logged (one line with the project, the key and the reason, never a value), ac2/malformed-by-name (27 malformed values refused by key name; a list, an unparseable file and a folder in the file's place refused)."
     },
     {
      "type": "unit",
@@ -39,7 +39,7 @@
     {
      "type": "unit",
      "ref": "proof/VELDO-0338/falsifiers.json",
-     "detail": "Falsifier space338-unknown-key-ignored (unknown keys ignored): ac2/misspelled-keep red, the kep file accepted with an empty keep list, which is the reading in which the census would record the folder (ac2/unknown-by-name and ac2/logged red with it); noop green."
+     "detail": "Falsifier space338-unknown-key-ignored (unknown keys ignored): ac2/misspelled-keep red, the kep file accepted with an empty keep list, which is the reading in which the census would record the folder (ac2/unknown-by-name and ac2/logged red with it); noop green. Review finding 1: registered falsifier space338-unknown-pool-accepted (the pool check never made): ac2/unknown-pool red, the hots file accepted (ac2/unknown-by-name red with it); noop green."
     }
    ]
   },
@@ -64,7 +64,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 131_veldo_0338_project_space_file (13 rows) and --suite 130_veldo_0296_space_section (21 rows; the same module, unchanged behavior)"
+   "command": "python3 scripts/selftest.py --suite 131_veldo_0338_project_space_file (14 rows, 40 checks) and --suite 130_veldo_0296_space_section (22 rows, 48 checks; the same module, unchanged behavior)"
   },
   {
    "name": "integration",
@@ -74,22 +74,23 @@
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec"
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec. After the review fix: template sync, docs, validate spec, ready and shape-review, and suites 130, 131 and 132 (VELDO-0297, built on this reader) rerun green; check_generated, check_lint and check_personal_setup were not rerun."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the registered teeth cases (finding 338) were run here through the driver's own materialize() and worker(), not through the teeth run. The four VELDO-0296 cases were rerun the same way against the changed module and are still red on their rows."
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the registered teeth cases (finding 338, four with the review fix) were run here through the driver's own materialize() and worker(), not through the teeth run. The four VELDO-0296 cases were rerun the same way against the changed module at the build commit and were still red on their rows; they were not repeated for the review fix."
   }
  ],
  "assumptions": [
   "read_project is GIVEN the document reader's read function by its caller and does not load it itself. Reason: VELDO-0296's row reader/one-opener (suite 130, outside this ticket's footprint) asserts that control_space_config.py holds no file opener and no document reader. The module keeps that property; every later caller of read_project passes the read function. If the lead prefers the module to load the document reader itself, the 0296 row has to be narrowed first.",
   "Key spellings (worktree_root, branch_pattern, landing_refs, build_output, build_variables, keep, evidence_caches, needs, protect) and refusal codes (space_file_invalid:<key>, space_file_unreadable, raised as ProjectSpaceError) are this ticket's reading of design 6.8, which names the keys in words.",
   "The default branch pattern is agent/{agent}/{ticket}, from the agent branches Veldo creates (refs/heads/agent/<agent>/<name>, engine/scripts/agent_sandbox.py). How a matched name gives a ticket id is the hook's and reconcile's work in later tickets.",
-  "The default of needs is nothing declared per station. Measuring after five runs and falling back to the pool default belong to the admission tickets; pool names under needs are not checked against the installation's pools.",
+  "The default of needs is nothing declared per station. Measuring after five runs and falling back to the pool default belong to the admission tickets. A pool name under needs is checked against the installation's pools when the installation names any (review finding 1); with space management off it is accepted as written.",
   "A key written with nothing under it gets its default, so a laid file with every key present and commented is accepted. A relative worktree root or protect path is resolved against the repository; keep and evidence cache paths must stay inside their folder.",
   "A malformed value and an unparseable file are refused too; the spec's taxonomy names only the unknown key. Nothing calls read_project yet: the census, init and the ledger are later tickets, so AC2's census clause is shown as no declarations returned for the misspelled file.",
   "docs are not changed: documents for space management are VELDO-0322."
  ],
+ "review_fix": "Review verdict FIX, one finding, fixed in the commit that carries this manifest (the commit field names the build commit). 1: a pool under needs that the installation does not name is refused as space_file_invalid:needs.<station>.<pool>; the suite fixture installation gained a second pool, engine, in place of the unknown pool desktop.",
  "rollback": "Revert the change. Project space files stay in their repositories and are not read."
 }

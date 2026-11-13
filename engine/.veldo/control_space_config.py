@@ -375,8 +375,9 @@ def _branch_pattern(value, key):
     return value
 
 
-def _project_needs(value, key):
-    """{station: {pool: bytes}} for the three stations; a station left out has nothing declared."""
+def _project_needs(value, key, known=None):
+    """{station: {pool: bytes}} for the three stations; a station left out has nothing declared. `known`
+    is the installation's pool names: when it names any, a pool it does not have is refused."""
     if not isinstance(value, dict):
         raise _malformed(key, 'a mapping of station to bytes per pool')
     for name in value:
@@ -388,8 +389,11 @@ def _project_needs(value, key):
         where = key + '.' + station
         if pools is not None and not isinstance(pools, dict):
             raise _malformed(where, 'a mapping of pool name to bytes')
-        out[station] = {str(_name(pool, where)): _bytes(size, where + '.' + str(pool))
-                        for pool, size in (pools or {}).items()}
+        out[station] = {}
+        for pool, size in (pools or {}).items():
+            if known and _name(pool, where) not in known:
+                raise _unknown(where + '.' + pool, 'not a pool of the installation')
+            out[station][str(_name(pool, where))] = _bytes(size, where + '.' + str(pool))
     return out
 
 
@@ -449,7 +453,8 @@ def check_project(document, root, config=None, project=None):
         'build_variables': given('build_variables', lambda value, key: _listed(value, key, _variable), []),
         'keep': given('keep', lambda value, key: _listed(value, key, _inside), []),
         'evidence_caches': given('evidence_caches', lambda value, key: _listed(value, key, _inside), []),
-        'needs': given('needs', _project_needs, {station: {} for station in STATIONS}),
+        'needs': given('needs', lambda value, key: _project_needs(value, key, config.get('pools')),
+                       {station: {} for station in STATIONS}),
         'protect': _with_additions(config.get('protect', ()), additions, config.get('engines', ())),
     }
 

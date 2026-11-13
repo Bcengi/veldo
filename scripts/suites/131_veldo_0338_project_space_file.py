@@ -13,7 +13,9 @@ ac1/every-default (each of the nine defaults of 6.8, one check per key), ac1/def
 gives one key gets the default for every other; an empty file and a key with nothing under it too).
 
 AC2 rows: ac2/unknown-by-name (an unknown key at the top, under protect and under needs, refused as
-space_file_invalid:<key>), ac2/misspelled-keep (a file that spells keep wrongly is refused by that name
+space_file_invalid:<key>), ac2/unknown-pool (a pool under needs that the installation does not name is
+refused as space_file_invalid:needs.<station>.<pool>; a pool it names is accepted; with space management
+off there are no pools to check), ac2/misspelled-keep (a file that spells keep wrongly is refused by that name
 and no declarations come back, so nothing can read it as a project that keeps nothing; the same file
 spelled right keeps the folder), ac2/logged (one line with the project, the key and the reason, never a
 value), ac2/malformed-by-name (a malformed value refused by its key's name; an unparseable file refused).
@@ -42,7 +44,7 @@ def _v338_project_space_file_suite():
         'control_space_config.py': ROOT / ".veldo" / "control_space_config.py",
     }
     ROWS = ('ac1/no-file', 'ac1/every-default', 'ac1/default-per-key', 'ac2/unknown-by-name',
-            'ac2/misspelled-keep', 'ac2/logged', 'ac2/malformed-by-name', 'ac3/adds',
+            'ac2/unknown-pool', 'ac2/misspelled-keep', 'ac2/logged', 'ac2/malformed-by-name', 'ac3/adds',
             'ac3/installation-volume-kept', 'ac3/every-installation-entry-kept', 'ac3/cannot-remove',
             'reader/full-file', 'reader/canon')
     rows = {name: [] for name in ROWS}
@@ -69,7 +71,10 @@ def _v338_project_space_file_suite():
             'time_zone': 'Europe/Lisbon',
             'pools': {'host': {'floor': 20000 * MEGABYTE,
                                'needs': {'build': 4000 * MEGABYTE, 'review': 1000 * MEGABYTE,
-                                         'gate': 6000 * MEGABYTE}}},
+                                         'gate': 6000 * MEGABYTE}},
+                      'engine': {'floor': 10000 * MEGABYTE,
+                                 'needs': {'build': 2000 * MEGABYTE, 'review': 500 * MEGABYTE,
+                                           'gate': 3000 * MEGABYTE}}},
             'engines': list(ENGINES),
             'scratch_roots': {'roots': [str(temp / 'scratch')],
                               'session_pattern': 'sessions/{working_folder}/{session_id}'},
@@ -167,7 +172,7 @@ def _v338_project_space_file_suite():
             'build_variables': ['CARGO_TARGET_DIR', 'ORCHARD_BUILD_DIR'],
             'keep': ['data/models', 'vendor/licensed'],
             'evidence_caches': ['cache', 'downloads/tmp'],
-            'needs': {'build': {'host': 3000 * MEGABYTE}, 'gate': {'host': 5000 * MEGABYTE, 'desktop': 0}},
+            'needs': {'build': {'host': 3000 * MEGABYTE}, 'gate': {'host': 5000 * MEGABYTE, 'engine': 0}},
             'protect': {'paths': ['fixtures/golden'], 'volumes': ['orchard_db_*'],
                         'compose_projects': ['orchard']},
         }
@@ -204,7 +209,7 @@ def _v338_project_space_file_suite():
             check('reader/full-file', '%s as written [%s]' % (key, full.get(key)), full.get(key) == GIVEN[key])
         check('reader/full-file', 'needs per station, bytes per pool, a station left out empty [%s]' % full.get('needs'),
               full.get('needs') == {'build': {'host': 3000 * MEGABYTE}, 'review': {},
-                                    'gate': {'host': 5000 * MEGABYTE, 'desktop': 0}})
+                                    'gate': {'host': 5000 * MEGABYTE, 'engine': 0}})
         named, code, log = read(project(YAML.dump(GIVEN)), project='orchard-main')
         check('reader/full-file', 'the caller may name the project [%s]' % (named or {}).get('project'),
               named is not None and named['project'] == 'orchard-main')
@@ -232,6 +237,25 @@ def _v338_project_space_file_suite():
             unit = getattr(error, 'reason', '') + ':' + getattr(error, 'key', type(error).__name__)
         check('ac2/unknown-by-name', 'a parsed file given directly is refused the same way [%s]' % unit,
               unit == 'unknown:colour')
+
+        # ---- AC2: a pool under needs the installation does not name ------------------------------------
+        config, code, log = on_disk({'needs': {'build': {'hots': 1}}})
+        check('ac2/unknown-by-name', 'an unknown pool under needs is refused by its name [%s]' % code,
+              config is None and code == 'space_file_invalid:needs.build.hots')
+        config, code, log = on_disk({'needs': {'build': {'hots': 3000 * MEGABYTE}}}, project='orchard-main')
+        check('ac2/unknown-pool', 'a misspelled pool (hots for host) is refused by station and pool [%s]' % code,
+              config is None and code == 'space_file_invalid:needs.build.hots')
+        check('ac2/unknown-pool', 'and logged with the project, the key and the reason [%s]' % log.strip(),
+              log.strip() == 'veldo space file: project orchard-main refused needs.build.hots (unknown)')
+        config, code, log = on_disk({'needs': {'build': {'host': 1}, 'gate': {'host': 1, 'desktop': 0}}})
+        check('ac2/unknown-pool', 'an unknown pool beside known ones is refused too [%s]' % code,
+              config is None and code == 'space_file_invalid:needs.gate.desktop')
+        config, code, log = on_disk({'needs': {'build': {'host': 1}, 'review': {'engine': 2}}})
+        check('ac2/unknown-pool', 'each pool the installation names is accepted [%s]' % code,
+              code is None and config['needs'] == {'build': {'host': 1}, 'review': {'engine': 2}, 'gate': {}})
+        config, code, log = on_disk({'needs': {'build': {'hots': 1}}}, config=CFG.off())
+        check('ac2/unknown-pool', 'with space management off there are no pools to check: accepted [%s]' % code,
+              code is None and config['needs']['build'] == {'hots': 1})
 
         # ---- AC2: the misspelled keep key --------------------------------------------------------------
         misspelled = project('kep:\n  - data/models\n')

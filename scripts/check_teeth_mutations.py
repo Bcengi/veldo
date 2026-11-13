@@ -12331,7 +12331,8 @@ def cases():
     result[-1]['siblings'] = True
 
     # VELDO-0338: the falsifier of each acceptance criterion of the project's space file. AC1 the file
-    # required; AC2 unknown keys ignored, so a misspelled keep key is accepted with nothing kept; AC3 the
+    # required; AC2 unknown keys ignored, so a misspelled keep key is accepted with nothing kept, and a
+    # pool under needs the installation does not name accepted; AC3 the
     # project's protect list replacing the installation's.
     space338 = '131_veldo_0338_project_space_file.py'
     add(338, 'space338-file-required', space338, 'control_space_config.py',
@@ -12344,6 +12345,11 @@ def cases():
         "            raise _unknown(str(name), 'not a key of ' + PROJECT_FILE)\n",
         "    document = {name: value for name, value in document.items() if name in PROJECT_KEYS}\n",
         ['ac2/misspelled-keep'])
+    result[-1]['siblings'] = True
+    add(338, 'space338-unknown-pool-accepted', space338, 'control_space_config.py',
+        "            if known and _name(pool, where) not in known:\n",
+        "            if False:\n",
+        ['ac2/unknown-pool'])
     result[-1]['siblings'] = True
     add(338, 'space338-project-list-replaces', space338, 'control_space_config.py',
         "    entries = [dict(entry, engines=list(entry['engines'])) for entry in installed]\n",
