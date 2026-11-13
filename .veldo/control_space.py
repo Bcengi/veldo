@@ -26,8 +26,10 @@ AN ITEM'S STATES AND THE ONLY MOVES (design 4.1):
   signal             present, kept or deferred to due
   outcome removing   due to removing (the rules passed; the decision to remove is recorded)
   outcome removed    due or removing to removed
-  outcome deferred   due or removing to deferred
-  outcome kept       due or removing to kept
+  outcome deferred   due to deferred; removing to deferred only when the rule that refused is the owning
+                     tool's own refusal (remove_refused, design section 7 rule 7), which is read while the
+                     remover runs
+  outcome kept       due to kept. A removing item is removed to the end: the decision was recorded
   gone               declared, present, due or deferred to gone
   adopt              nothing (or a report record) to present, adopted
   measure, rebranch  write fields and move nothing
@@ -43,11 +45,23 @@ DECLARE REFUSES, each by name, with nothing written:
                             or a Docker object on an engine the installation does not name.
   space_locator_taken:<id>  a second live item at the same locator. Live is every state but removed and
                             gone.
+  space_locator_parent      the path has a .. segment. It is never collapsed as text: behind a link the
+                            folder it names is not the one the text names.
+  space_locator_link        the path goes through a link: resolved, it is not the text that would be
+                            recorded.
 
 LOCATORS ARE COMPARED IN ONE CANONICAL FORM, never as the text a caller wrote: a path is normalized
 (a trailing separator, a doubled one and a dot segment change nothing), so two spellings of one path are
-one locator. The form is lexical. Whether a path resolves elsewhere through a link is read at removal by
-the ledger rule (design section 7), not here.
+one locator. Only those three are normalized as text.
+
+A PATH IS RESOLVED BEFORE IT GETS A RECORD. declare, adopt and report resolve the path (the part of it
+that exists; the rest is kept as written) and read the resolved path against the protect list and the
+known roots, whose own paths are resolved the same way when the ledger is built. A path that resolves at,
+above or beneath a protected path is space_protected; one that resolves outside every known root is
+space_outside_roots; any other path that resolves to something else than its text is space_locator_link.
+So a protected thing gets no item record through a link (design section 7), the recorded path is the
+resolved one, and two locators that resolve to one folder are never two live items. The ledger rule at
+removal (design section 7 rule 1) reads the same thing again, for a link made after the declaration.
 
 KNOWN ROOTS are the roots the declarations name: each project's and each plain repository's worktree
 root, the state root, the scratch roots and the build roots. They come from what the declarations reader
@@ -118,6 +132,8 @@ STATES = ('declared', 'present', 'due', 'deferred', 'removing', 'removed', 'gone
 LIVE = ('declared', 'present', 'due', 'deferred', 'removing', 'kept')
 SIGNALLED = ('present', 'kept', 'deferred')
 OUTCOMES = ('removing', 'removed', 'deferred', 'kept')
+# The one deferral a removing item can still get: the owning tool's refusal (design section 7, rule 7).
+TOOL_REFUSAL = 'remove_refused'
 GONE_FROM = ('present', 'declared', 'due', 'deferred')
 REBRANCHED = ('present', 'kept', 'deferred')
 
@@ -202,9 +218,17 @@ def canonical_path(path):
     return os.path.normpath(path)
 
 
+def resolved_path(path):
+    """Where a path leads: every link in the part of it that exists is followed, and the part that does
+    not exist yet is kept as written."""
+    return os.path.realpath(path)
+
+
 def _absolute(value, field):
     if not _is_str(value) or not value.startswith('/'):
         raise _invalid(field, 'an absolute path')
+    if '..' in value.split('/'):
+        raise Refused('space_locator_parent', 'a locator has no .. segment: %s' % field)
     return canonical_path(value)
 
 
@@ -271,8 +295,9 @@ def protect_list(config, projects):
     return entries
 
 
-def protected_by(kind, locator, protect):
-    """The protect entry that covers a canonical locator, as type:value, or None."""
+def protected_by(kind, locator, protect, resolve=None):
+    """The protect entry that covers a canonical locator, as type:value, or None. With `resolve`, each
+    protected path is read where it leads (for a locator that was resolved the same way)."""
     if kind in DOCKER_KINDS:
         for entry in protect:
             if locator['engine'] not in entry['engines']:
@@ -287,6 +312,7 @@ def protected_by(kind, locator, protect):
         if entry['type'] != 'path':
             continue
         value = canonical_path(entry['value'])
+        value = resolve(value) if resolve else value
         if path == value or beneath(path, value) or beneath(value, path):
             return 'path:' + entry['value']
     return None
@@ -439,6 +465,8 @@ class Ledger:
         self.journal_signer, self.sign, self.authority_generation = journal_signer, sign, authority_generation
         self.config, self.projects, self.host = config, [dict(project) for project in projects], host
         self.roots = known_roots(config, self.projects, state_root)
+        self.resolved_roots = {part: sorted({resolved_path(path) for path in paths})
+                               for part, paths in self.roots.items()}
         self.engines = list(config['engines'])
         self.protect = protect_list(config, self.projects)
         self.lifecycle = checked_lifecycle(lifecycle)
@@ -622,7 +650,8 @@ class Ledger:
 
     def outcome(self, item, outcome, facts=None, principal=None, command_id=None):
         """Write what became of a due or removing item: removing, removed, deferred or kept, with the
-        facts (the removal fields for removed, the deferral fields for deferred)."""
+        facts (the removal fields for removed, the deferral fields for deferred). A removing item is
+        removed, or deferred as remove_refused; nothing else."""
         return self._item_command(OUTCOME, item, {'outcome': outcome, 'facts': facts or {}}, principal, command_id)
 
     def gone(self, item, principal=None, command_id=None):
@@ -951,13 +980,24 @@ class Ledger:
                 return pool['name']
         raise Refused('space_no_pool', 'no filesystem pool has the device this path is on')
 
+    def _resolved(self, kind, canonical):
+        """The canonical locator with its path where it leads. A Docker locator has no path."""
+        field = 'path' if kind in DISK_KINDS else 'repository' if kind == 'branch' else None
+        return canonical if field is None else dict(canonical, **{field: resolved_path(canonical[field])})
+
     def _admissible(self, kind, canonical, identity=None):
-        """The refusals of declare, in the order protect list, known roots, second live item."""
+        """The refusals of declare, in the order protect list, known roots, link, second live item.
+        The protect list and the roots are read against the locator as written and as resolved."""
+        resolved = self._resolved(kind, canonical)
         entry = protected_by(kind, canonical, self.protect)
+        if entry is None and kind not in DOCKER_KINDS:
+            entry = protected_by(kind, resolved, self.protect, resolved_path)
         if entry is not None:
             raise Refused('space_protected:' + entry, 'the locator is on the protect list')
-        if not inside_roots(kind, canonical, self.roots, self.engines):
+        if not inside_roots(kind, resolved, self.resolved_roots, self.engines):
             raise Refused('space_outside_roots', 'the locator is outside every known root')
+        if resolved != canonical:
+            raise Refused('space_locator_link', 'the path goes through a link: it resolves elsewhere')
         key = locator_key(kind, canonical)
         held = self._at(key)
         if held is not None and held[0] != identity:
@@ -1079,6 +1119,10 @@ class Ledger:
             raise Refused('space_item_state:' + record['state'], 'outcome is written for an item that is due or removing')
         if outcome == 'removing' and record['state'] != 'due':
             raise Refused('space_item_state:' + record['state'], 'removing follows due')
+        if record['state'] == 'removing' and (outcome == 'kept' or (
+                outcome == 'deferred' and facts.get('rule') != TOOL_REFUSAL)):
+            raise Refused('space_item_state:removing', 'a removing item is removed to the end; it is deferred '
+                          'only when the owning tool refuses the remove')
         if outcome == 'deferred':
             if not _is_str(facts.get('rule')):
                 raise _invalid('facts.rule', 'the rule that refused')

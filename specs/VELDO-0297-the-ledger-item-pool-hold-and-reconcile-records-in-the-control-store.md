@@ -95,3 +95,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: review (verdict FIX), three decisions recorded here because later tickets build on them.
+  (1) outcome takes a fourth value, removing, accepted from due only: 6.1 lists removed, deferred and
+  kept, but 4.1 has the state and records the decision to remove before the remover runs, so a command
+  must write it. (2) A removing item is removed to the end, as 4.1 says: kept is refused for it
+  (space_item_state:removing), and deferred is accepted for it only when the rule that refused is the
+  owning tool's refusal, remove_refused (section 7 rule 7), which is read while the remover runs; 4.1
+  does not draw that move. (3) AC3's refusals read the path as resolved, not as text: a locator with a
+  .. segment is refused (space_locator_parent), a path that goes through a link is refused
+  (space_locator_link), and a path that resolves at, above or beneath a protected path or outside every
+  known root is refused by those names, so a protected thing gets no item record through a link
+  (section 7) and two locators that resolve to one folder are never two live items.

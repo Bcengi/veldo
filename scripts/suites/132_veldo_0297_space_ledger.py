@@ -6,7 +6,8 @@ Only shared ROOT and expect are consumed. The store is a REAL control store (SQL
 the installation and the project are FIXTURE folders with invented values, read from disk through the
 declarations reader (installation.yaml through the one installation reader, .veldo/space.yaml through
 read_project). Nothing is created or removed on disk by the ledger: every path a row declares is a name
-under the temporary folder. The journal signer is a stub whose signature is a function of the bytes, so
+under the temporary folder. The link rows make their own folders and symbolic links there, since the
+ledger resolves a path before it records it. The journal signer is a stub whose signature is a function of the bytes, so
 the replay's chain checks bind. The lifecycle table is a fixture, as plain data.
 
 AC1 rows: ac1/declare-to-removed (the whole path, state by state), ac1/confirm-only-from-declared,
@@ -15,7 +16,8 @@ item is still present), ac1/outcome-only-from-due-or-removing, ac1/moves-table (
 item in every one of the eight states: accepted exactly where 4.1 has the move, refused by the state's name
 and nothing written everywhere else), ac1/signal (owner and event decide what becomes due; an unknown
 event is refused), ac1/deferred-and-kept, ac1/adopt-report-rebranch, ac1/one-journal-record (each command
-is one journal record holding the item, its kind, owner, locator and state).
+is one journal record holding the item, its kind, owner, locator and state), ac1/removing-is-final (a
+removing item is not kept and is deferred only as remove_refused; review finding 3).
 
 AC2 rows: ac2/generic-refused (the store's generic entity command is refused entity_owned for an item, a
 pool, a hold and a reconcile record, by kind and by id prefix, and for retiring an item),
@@ -27,6 +29,13 @@ with a trailing separator, a doubled separator and a dot segment), ac3/outside-r
 (at, beneath and above a protected path; a Docker name pattern on both engine contexts; a compose project;
 a project's own addition), ac3/free-after-end (the locator of a removed or gone item can be declared
 again), ac3/refusals-counted, ac3/pool-by-device.
+
+AC3 rows from the review (findings 1 and 2): ac3/parent-segment (a locator with a .. segment is refused by
+name, also behind a link, where the text collapsed would name another folder), ac3/link-to-protected (a
+link to a protected path), ac3/link-beneath-protected (a path beneath such a link), ac3/link-protect-entry
+(a protected path that is itself a link protects the folder it leads to), ac3/link-out-of-roots (a link
+out of every known root, and a path beneath it), ac3/two-links-one-folder (two links to one folder and the
+folder itself are one live item at most).
 
 AC4 rows: ac4/rebuilt-same (the state rebuilt from the exported journal holds the same item, pool, hold
 and reconcile records as the live store, and the same state digest), ac4/rebuilt-size (the rebuilt item
@@ -52,6 +61,9 @@ def _v297_space_ledger_suite():
             'ac1/adopt-report-rebranch', 'ac1/one-journal-record', 'ac2/generic-refused', 'ac2/every-connection',
             'ac2/foreign-code', 'ac3/second-live-item', 'ac3/trailing-separator', 'ac3/outside-roots',
             'ac3/protect-list', 'ac3/free-after-end', 'ac3/refusals-counted', 'ac3/pool-by-device',
+            'ac1/removing-is-final', 'ac3/parent-segment', 'ac3/link-to-protected',
+            'ac3/link-beneath-protected', 'ac3/link-protect-entry', 'ac3/link-out-of-roots',
+            'ac3/two-links-one-folder',
             'ac4/rebuilt-same', 'ac4/rebuilt-size', 'ac4/rebuilt-pools-holds', 'ledger/canon')
     rows = {name: [] for name in ROWS}
 
@@ -64,7 +76,7 @@ def _v297_space_ledger_suite():
         spec.loader.exec_module(module)
         return module
 
-    temp = Path(tempfile.mkdtemp(prefix='v297-'))
+    temp = Path(tempfile.mkdtemp(prefix='v297-')).resolve()
     connections = []
     try:
         SP = load('v297_control_space', PRODUCTION['control_space.py'])
@@ -78,6 +90,11 @@ def _v297_space_ledger_suite():
         ENGINES = ['default', 'desktop-linux']
         MEGABYTE = 1024 * 1024
         PROTECTED = str(temp / 'state' / 'vms' / '0' / 'data')
+        # A protected path that is itself a link: it leads to a folder under the scratch root.
+        VAULT_LINK, VAULT = temp / 'state' / 'links' / 'vault', temp / 'scratch' / 'vault-real'
+        for made_folder in (Path(PROTECTED), VAULT_LINK.parent, VAULT, temp / 'elsewhere' / 'deep'):
+            made_folder.mkdir(parents=True)
+        VAULT_LINK.symlink_to(VAULT)
         folder = temp / 'installation'
         folder.mkdir()
         (folder / 'installation.yaml').write_text(YAML.dump({
@@ -99,7 +116,7 @@ def _v297_space_ledger_suite():
                 'plain_repositories': [{'repository': str(temp / 'projects' / 'plain'),
                                         'worktree_root': str(temp / 'projects' / 'plain-worktrees')}],
                 'client_accounts': [str(temp / 'client-a')],
-                'protect': {'paths': [PROTECTED], 'volumes': ['atlas_pg_*'], 'containers': ['atlas-*'],
+                'protect': {'paths': [PROTECTED, str(VAULT_LINK)], 'volumes': ['atlas_pg_*'], 'containers': ['atlas-*'],
                             'images': ['store/objects'], 'networks': ['atlas_*'],
                             'compose_projects': ['ledgerdb']},
             }}))
@@ -253,13 +270,44 @@ def _v297_space_ledger_suite():
                 identity, run = made(state)
                 before = L.item(identity)
                 step = L.outcome(identity, outcome, {'rule': 'in_use', 'event': 'run_finished'})
-                if state in ('due', 'removing'):
+                if state == 'due' or (state == 'removing' and outcome == 'removed'):
                     check('ac1/outcome-only-from-due-or-removing', 'outcome %s from %s is accepted [%s]'
                           % (outcome, state, step.get('reason')), step['ok'] and state_of(identity) == outcome)
                 else:
                     check('ac1/outcome-only-from-due-or-removing', 'outcome %s from %s is refused [%s]'
                           % (outcome, state, step.get('reason') or 'accepted'), step['ok'] is False
                           and step.get('reason') == 'space_item_state:' + state and L.item(identity) == before)
+
+        # ---- AC1: a removing item is removed to the end (review finding 3) -----------------------------
+        identity, run = made('removing')
+        before, length = L.item(identity), journal_length()
+        step = L.outcome(identity, 'kept')
+        check('ac1/removing-is-final', 'kept for a removing item is refused by the state [%s]'
+              % (step.get('reason') or 'accepted'), step['ok'] is False
+              and step.get('reason') == 'space_item_state:removing')
+        check('ac1/removing-is-final', 'and the item is still removing, nothing written [%s]' % state_of(identity),
+              L.item(identity) == before and journal_length() == length)
+        for rule in ('in_use', 'unique_work', 'protected', 'not_in_ledger'):
+            step = L.outcome(identity, 'deferred', {'rule': rule, 'event': 'run_finished'})
+            check('ac1/removing-is-final', 'deferred as %s for a removing item is refused by the state [%s]'
+                  % (rule, step.get('reason') or 'accepted'), step['ok'] is False
+                  and step.get('reason') == 'space_item_state:removing' and L.item(identity) == before
+                  and journal_length() == length)
+        step = L.outcome(identity, 'removing', {'event': 'run_finished'})
+        check('ac1/removing-is-final', 'removing is not written twice [%s]' % step.get('reason'),
+              step['ok'] is False and step.get('reason') == 'space_item_state:removing')
+        step = L.outcome(identity, 'deferred', {'rule': 'remove_refused', 'event': 'run_finished'})
+        check('ac1/removing-is-final', 'the tool\'s refusal defers a removing item [%s]' % step.get('reason'),
+              step['ok'] and state_of(identity) == 'deferred'
+              and L.item(identity)['deferral'] == {'rule': 'remove_refused', 'event': 'run_finished', 'attempts': 1})
+        identity, run = made('removing')
+        step = L.outcome(identity, 'removed', {'event': 'run_finished', 'bytes': 1})
+        check('ac1/removing-is-final', 'control: a removing item is removed [%s]' % step.get('reason'),
+              step['ok'] and state_of(identity) == 'removed')
+        identity, run = made('due')
+        step = L.outcome(identity, 'kept')
+        check('ac1/removing-is-final', 'control: kept is written from due [%s]' % step.get('reason'),
+              step['ok'] and state_of(identity) == 'kept')
 
         # ---- AC1: every command against every state ---------------------------------------------------
         MOVES = {
@@ -522,9 +570,8 @@ def _v297_space_ledger_suite():
         OUTSIDE = (
             ('a folder outside every root', 'scratch', {'path': str(temp / 'elsewhere' / 'folder')}),
             ('the temporary folder itself', 'scratch', {'path': '/tmp/v297-not-a-root'}),
-            ('a root itself', 'scratch', {'path': str(temp / 'scratch')}),
+            ('a root itself', 'scratch', {'path': str(temp / 'build')}),
             ('a folder whose name only begins like a root', 'scratch', {'path': str(temp / 'scratch-other' / 'x')}),
-            ('a path that climbs out of a root', 'scratch', {'path': str(temp / 'scratch' / '..' / 'out' / 'x')}),
             ('the project repository itself', 'worktree', {'path': str(REPOSITORY / 'sub')}),
             ('a branch of a repository nobody declared', 'branch',
              {'repository': str(temp / 'projects' / 'stranger'), 'ref': 'main'}),
@@ -609,6 +656,123 @@ def _v297_space_ledger_suite():
               % (unknown.get('reason'), nobody.get('reason'), session.get('reason')),
               unknown.get('reason') == 'invalid_input:kind' and nobody.get('reason') == 'invalid_input:owner.scope'
               and session['ok'])
+
+        # ---- AC3: a .. segment is refused, never collapsed as text (review finding 1) ------------------
+        def at(path):
+            return [key for key, value in L.items().items()
+                    if value['state'] in SP.LIVE and (value['locator'].get('path') == str(path)
+                                                      or value['locator'].get('repository') == str(path))]
+
+        (temp / 'scratch' / 'link').symlink_to(temp / 'elsewhere' / 'deep')
+        CLIMBS = (
+            ('a path that climbs out of a root', 'scratch', {'path': str(temp / 'scratch') + '/../out/x'}),
+            ('a path that climbs and stays in its root', 'scratch', {'path': str(temp / 'scratch') + '/a/../b'}),
+            ('a path that climbs back from a link', 'scratch', {'path': str(temp / 'scratch') + '/link/../victim'}),
+            ('a path that ends in ..', 'scratch', {'path': str(temp / 'scratch') + '/a/b/..'}),
+            ('a branch whose repository climbs', 'branch',
+             {'repository': str(temp / 'projects') + '/x/../orchard', 'ref': 'topic-climb'}),
+        )
+        for label, kind, locator in CLIMBS:
+            length = journal_length()
+            step = L.declare(kind, locator, owner(), 'seam')
+            check('ac3/parent-segment', '%s is refused by name [%s]' % (label, step.get('reason') or 'accepted'),
+                  step['ok'] is False and step.get('reason') == 'space_locator_parent' and journal_length() == length)
+        check('ac3/parent-segment', 'no item is recorded at the folder the text would collapse to %s'
+              % at(temp / 'scratch' / 'victim'), at(temp / 'scratch' / 'victim') == [] and at(temp / 'scratch' / 'b') == [])
+        step = L.adopt('scratch', {'path': str(temp / 'scratch') + '/link/../victim'}, owner(), 'run_label')
+        again = L.report('scratch', {'path': str(temp / 'scratch') + '/link/../victim'}, {'what': 'folder'})
+        check('ac3/parent-segment', 'adopt and report refuse it too [%s, %s]' % (step.get('reason'), again.get('reason')),
+              step.get('reason') == 'space_locator_parent' and again.get('reason') == 'space_locator_parent')
+        step = L.declare('scratch', {'path': str(temp / 'scratch' / 'dots..in..a..name')}, owner(), 'seam')
+        check('ac3/parent-segment', 'control: a name that only contains dots is accepted [%s]' % step.get('reason'),
+              step['ok'])
+
+        # ---- AC3: a link does not get a protected or foreign thing a record (review finding 2) --------
+        def refused(row, label, kind, path, reason, send='declare'):
+            length = journal_length()
+            if send == 'declare':
+                step = L.declare(kind, {'path': str(path)}, owner(), 'seam')
+            elif send == 'adopt':
+                step = L.adopt(kind, {'path': str(path)}, owner(), 'run_label')
+            else:
+                step = L.report(kind, {'path': str(path)}, {'what': 'folder'})
+            check(row, '%s is refused by name [%s]' % (label, step.get('reason') or 'accepted as ' + str(step.get('item'))),
+                  step['ok'] is False and step.get('reason') == reason and journal_length() == length
+                  and at(path) == [])
+
+        alias = temp / 'scratch' / 'alias'
+        alias.symlink_to(PROTECTED)
+        guarded = 'space_protected:path:' + PROTECTED
+        refused('ac3/link-to-protected', 'a link to a protected path, declared as scratch', 'scratch', alias, guarded)
+        refused('ac3/link-to-protected', 'the same link adopted', 'scratch', alias, guarded, 'adopt')
+        refused('ac3/link-to-protected', 'the same link reported', 'scratch', alias, guarded, 'report')
+        (temp / 'scratch' / 'above').symlink_to(STATE / 'vms')
+        refused('ac3/link-to-protected', 'a link to a folder above a protected path', 'scratch',
+                temp / 'scratch' / 'above', guarded)
+
+        refused('ac3/link-beneath-protected', 'a path beneath a link to a protected path', 'scratch',
+                alias / 'sub', guarded)
+        refused('ac3/link-beneath-protected', 'a deeper path beneath it, not there yet', 'build_output',
+                alias / 'disk' / 'part' / 'x', guarded)
+        refused('ac3/link-beneath-protected', 'the same path reported', 'scratch', alias / 'sub', guarded, 'report')
+
+        entry = 'space_protected:path:' + str(VAULT_LINK)
+        refused('ac3/link-protect-entry', 'the folder a protected link leads to', 'scratch', VAULT, entry)
+        refused('ac3/link-protect-entry', 'a path beneath that folder', 'scratch', VAULT / 'inner', entry)
+        refused('ac3/link-protect-entry', 'the protected link itself', 'scratch', VAULT_LINK, entry)
+
+        (temp / 'scratch' / 'out').symlink_to(temp / 'elsewhere')
+        refused('ac3/link-out-of-roots', 'a link out of every known root', 'scratch', temp / 'scratch' / 'out',
+                'space_outside_roots')
+        refused('ac3/link-out-of-roots', 'a path beneath a link out of every known root', 'scratch',
+                temp / 'scratch' / 'out' / 'x', 'space_outside_roots')
+        refused('ac3/link-out-of-roots', 'the same path adopted', 'scratch', temp / 'scratch' / 'out' / 'x',
+                'space_outside_roots', 'adopt')
+        (WORKTREES / 'far').parent.mkdir(parents=True, exist_ok=True)
+        (WORKTREES / 'far').symlink_to('/')
+        refused('ac3/link-out-of-roots', 'a worktree path through a link to the top folder', 'worktree',
+                WORKTREES / 'far' / 'usr', 'space_outside_roots')
+        (temp / 'projects' / 'stranger').mkdir()
+        (temp / 'projects' / 'plain').symlink_to(temp / 'projects' / 'stranger')
+        length = journal_length()
+        step = L.declare('branch', {'repository': str(temp / 'projects' / 'plain'), 'ref': 'through-link'}, owner(), 'seam')
+        check('ac3/link-out-of-roots', 'a branch of a declared repository that is now a link elsewhere is refused [%s]'
+              % (step.get('reason') or 'accepted'), step['ok'] is False
+              and step.get('reason') in ('space_outside_roots', 'space_locator_link') and journal_length() == length)
+
+        real = temp / 'scratch' / 'real'
+        real.mkdir()
+        (temp / 'scratch' / 'twin-a').symlink_to(real)
+        (temp / 'scratch' / 'twin-b').symlink_to('real')
+        (temp / 'scratch' / 'hop').symlink_to(temp / 'scratch')
+        refused('ac3/two-links-one-folder', 'the first link to a folder', 'scratch', temp / 'scratch' / 'twin-a',
+                'space_locator_link')
+        refused('ac3/two-links-one-folder', 'the second link to the same folder', 'scratch', temp / 'scratch' / 'twin-b',
+                'space_locator_link')
+        first = L.declare('scratch', {'path': str(real)}, owner(), 'seam')
+        check('ac3/two-links-one-folder', 'the folder itself, by its own path, is declared [%s]' % first.get('reason'),
+              first['ok'] and L.item(first['item'])['locator'] == {'path': str(real)})
+        refused('ac3/two-links-one-folder', 'a link to the folder once it has an item', 'scratch',
+                temp / 'scratch' / 'twin-a', 'space_locator_link')
+        refused('ac3/two-links-one-folder', 'the folder through a link in the middle of the path', 'scratch',
+                temp / 'scratch' / 'hop' / 'real', 'space_locator_link')
+        refused('ac3/two-links-one-folder', 'a link to the folder, adopted', 'scratch', temp / 'scratch' / 'twin-b',
+                'space_locator_link', 'adopt')
+        refused('ac3/two-links-one-folder', 'a path beneath a link, not there yet', 'scratch',
+                temp / 'scratch' / 'twin-a' / 'new', 'space_locator_link')
+        live = [key for key, value in L.items().items() if value['state'] in SP.LIVE
+                and 'path' in value['locator'] and SP.resolved_path(value['locator']['path']) == str(real)]
+        check('ac3/two-links-one-folder', 'one live item resolves to that folder %s' % live,
+              first['ok'] and live == [first['item']])
+        every = [value['locator']['path'] for value in L.items().values() if 'path' in value['locator']]
+        check('ac3/two-links-one-folder', 'every recorded path of a disk item is the path it resolves to',
+              every and all(SP.resolved_path(path) == path for path in every))
+        step = L.declare('scratch', {'path': str(real / 'inner' / 'new')}, owner(), 'seam')
+        check('ac3/two-links-one-folder', 'control: a path with no link in it, not there yet, is accepted [%s]'
+              % step.get('reason'), step['ok'])
+        counted = L.metrics()['refused_declares']
+        check('ac3/refusals-counted', 'the .. and link refusals are counted by their names %s' % sorted(counted),
+              counted.get('space_locator_parent') == len(CLIMBS) + 1 and counted.get('space_locator_link') >= 6)
 
         on_host = L.item(L.declare('scratch', scratch(), owner(), 'seam')['item'])['pool']
         on_tree = L.item(L.declare('worktree', {'path': str(WORKTREES / 'device-tree')}, owner(), 'seam')['item'])['pool']

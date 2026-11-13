@@ -12384,6 +12384,39 @@ def cases():
         "                     (identity, params['bytes'], params['event']))\n",
         ['ac4/rebuilt-size'])
     result[-1]['siblings'] = True
+    # VELDO-0297 review: the falsifier of each row the review asked for. A .. segment collapsed as
+    # text; a link as the last segment not followed; the resolved path not read against the protect
+    # list; not read against the roots; a path through a link recorded; a removing item kept.
+    add(297, 'space297-parent-collapsed', space297, 'control_space.py',
+        "    if '..' in value.split('/'):\n",
+        "    if False:\n",
+        ['ac3/parent-segment'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-last-link-not-followed', space297, 'control_space.py',
+        "    return os.path.realpath(path)\n",
+        "    return os.path.join(os.path.realpath(os.path.dirname(path)), os.path.basename(path))\n",
+        ['ac3/link-to-protected'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-resolved-not-protected', space297, 'control_space.py',
+        "        if entry is None and kind not in DOCKER_KINDS:\n",
+        "        if False:\n",
+        ['ac3/link-beneath-protected'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-resolved-not-in-roots', space297, 'control_space.py',
+        "        if not inside_roots(kind, resolved, self.resolved_roots, self.engines):\n",
+        "        if not inside_roots(kind, canonical, self.roots, self.engines):\n",
+        ['ac3/link-out-of-roots'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-link-recorded', space297, 'control_space.py',
+        "        if resolved != canonical:\n",
+        "        if False:\n",
+        ['ac3/two-links-one-folder'])
+    result[-1]['siblings'] = True
+    add(297, 'space297-removing-kept', space297, 'control_space.py',
+        "        if record['state'] == 'removing' and (outcome == 'kept' or (\n",
+        "        if record['state'] == 'removing' and (False or (\n",
+        ['ac1/removing-is-final'])
+    result[-1]['siblings'] = True
 
     # VELDO-0326: the falsifier of each acceptance criterion of the host principals for space commands.
     # AC1 hook commands signed with the owner's key; AC2 signal accepted from space-observer; AC3

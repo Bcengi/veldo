@@ -30,12 +30,18 @@
    "ac2/foreign-code",
    "ac2/generic-refused",
    "ac3/free-after-end",
+   "ac3/link-beneath-protected",
+   "ac3/link-out-of-roots",
+   "ac3/link-protect-entry",
+   "ac3/link-to-protected",
    "ac3/outside-roots",
+   "ac3/parent-segment",
    "ac3/pool-by-device",
    "ac3/protect-list",
    "ac3/refusals-counted",
    "ac3/second-live-item",
    "ac3/trailing-separator",
+   "ac3/two-links-one-folder",
    "ac4/rebuilt-pools-holds",
    "ac4/rebuilt-same",
    "ac4/rebuilt-size",
@@ -57,14 +63,13 @@
    "ac3/trailing-separator"
   ],
   "red_rows": [
-   "ac3/outside-roots",
    "ac3/refusals-counted",
    "ac3/trailing-separator"
   ],
   "red_details": [
    [
     "VELDO-0297 ac3/trailing-separator",
-    "a second declare through the path with a trailing separator is refused [accepted as space:item:95dfd5e75b324d50ab3a04de17c8eb41]"
+    "a second declare through the path with a trailing separator is refused [space_locator_link]"
    ]
   ],
   "noop_red_rows": [],
@@ -85,6 +90,128 @@
    [
     "VELDO-0297 ac4/rebuilt-size",
     "the rebuilt store's item has the size that was measured [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-parent-collapsed",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/parent-segment"
+  ],
+  "red_rows": [
+   "ac3/parent-segment",
+   "ac3/refusals-counted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac3/parent-segment",
+    "a path that climbs out of a root is refused by name [space_outside_roots]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-last-link-not-followed",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/link-to-protected"
+  ],
+  "red_rows": [
+   "ac3/link-out-of-roots",
+   "ac3/link-protect-entry",
+   "ac3/link-to-protected",
+   "ac3/refusals-counted",
+   "ac3/two-links-one-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac3/link-to-protected",
+    "a link to a protected path, declared as scratch is refused by name [accepted as space:item:630b69b4c48c4d61ba83a254a1390bd1]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-resolved-not-protected",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/link-beneath-protected"
+  ],
+  "red_rows": [
+   "ac3/link-beneath-protected",
+   "ac3/link-protect-entry",
+   "ac3/link-to-protected"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac3/link-beneath-protected",
+    "a path beneath a link to a protected path is refused by name [space_locator_link]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-resolved-not-in-roots",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/link-out-of-roots"
+  ],
+  "red_rows": [
+   "ac3/link-out-of-roots"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac3/link-out-of-roots",
+    "a link out of every known root is refused by name [space_locator_link]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-link-recorded",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/two-links-one-folder"
+  ],
+  "red_rows": [
+   "ac1/declare-to-removed",
+   "ac3/pool-by-device",
+   "ac3/two-links-one-folder",
+   "ac4/rebuilt-pools-holds",
+   "ac4/rebuilt-same",
+   "ac4/rebuilt-size",
+   "ledger/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac3/two-links-one-folder",
+    "the first link to a folder is refused by name [accepted as space:item:66b5a3948ae643efafe67776d2123de9]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-removing-kept",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/removing-is-final"
+  ],
+  "red_rows": [
+   "ac1/outcome-only-from-due-or-removing",
+   "ac1/removing-is-final"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac1/removing-is-final",
+    "kept for a removing item is refused by the state [accepted]"
    ]
   ],
   "noop_red_rows": [],

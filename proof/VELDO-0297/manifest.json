@@ -18,12 +18,12 @@
     {
      "type": "unit",
      "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
-     "detail": "Rows ac1/confirm-only-from-declared (confirm against an item in each of the eight states: accepted from declared, refused space_item_state:<state> with nothing written from the other seven), ac1/outcome-only-from-due-or-removing (removed, deferred and kept against each of the eight states), ac1/moves-table (confirm, outcome removing, gone and signal against each of the eight states: the move of 4.1 or a refusal by the state's name, journal length unchanged) and ac1/outcome-needs-signal."
+     "detail": "Rows ac1/confirm-only-from-declared (confirm against an item in each of the eight states: accepted from declared, refused space_item_state:<state> with nothing written from the other seven), ac1/outcome-only-from-due-or-removing (removed, deferred and kept against each of the eight states; from removing only removed is accepted), ac1/moves-table (confirm, outcome removing, gone and signal against each of the eight states: the move of 4.1 or a refusal by the state's name, journal length unchanged) and ac1/outcome-needs-signal. Review finding 3: row ac1/removing-is-final (kept for a removing item refused space_item_state:removing with nothing written; deferred as in_use, unique_work, protected and not_in_ledger refused the same way; removing not written twice; deferred as remove_refused accepted with its deferral; controls: removed from removing, kept from due)."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0297/falsifiers.json",
-     "detail": "Falsifier space297-outcome-on-present (outcome accepted for a present item): ac1/outcome-needs-signal red, the row that sends outcome removed without a signal sees it accepted (ac1/outcome-only-from-due-or-removing red with it); noop copy green. proof/VELDO-0297/mutations.txt."
+     "detail": "Falsifier space297-outcome-on-present (outcome accepted for a present item): ac1/outcome-needs-signal red, the row that sends outcome removed without a signal sees it accepted (ac1/outcome-only-from-due-or-removing red with it); noop copy green. proof/VELDO-0297/mutations.txt. Review finding 3: registered falsifier space297-removing-kept (kept accepted for a removing item): ac1/removing-is-final red (ac1/outcome-only-from-due-or-removing red with it); noop green."
     }
    ]
   },
@@ -55,7 +55,7 @@
     {
      "type": "integration",
      "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
-     "detail": "Rows ac3/second-live-item (same path, another kind at the path, while declared and while present; a Docker object by engine and name), ac3/outside-roots (eight locators outside, among them a root itself, a sibling whose name begins like a root, a path that climbs out with .., a branch of an undeclared repository, an engine the installation does not name; seven controls inside each kind of root), ac3/protect-list (at, beneath and above a protected path; a volume pattern on both engine contexts; container, network and image patterns; a compose project; the project file's own addition; adopt and report refused too), ac3/free-after-end, ac3/pool-by-device. The roots and the protect list come from installation.yaml and .veldo/space.yaml on disk through the declarations reader."
+     "detail": "Rows ac3/second-live-item (same path, another kind at the path, while declared and while present; a Docker object by engine and name), ac3/outside-roots (seven locators outside, among them a root itself, a sibling whose name begins like a root, a branch of an undeclared repository, an engine the installation does not name; seven controls inside each kind of root), ac3/protect-list (at, beneath and above a protected path; a volume pattern on both engine contexts; container, network and image patterns; a compose project; the project file's own addition; adopt and report refused too), ac3/free-after-end, ac3/pool-by-device. The roots and the protect list come from installation.yaml and .veldo/space.yaml on disk through the declarations reader. Review findings 1 and 2, against real folders and symbolic links made in the temporary folder: ac3/parent-segment (five locators with a .. segment refused space_locator_parent, among them scratch/link/../victim where link leads elsewhere, the review's probe; adopt and report too; no item at the collapsed path; a name that only contains dots accepted), ac3/link-to-protected (a link to a protected path declared, adopted and reported, and a link to a folder above one, refused space_protected:<entry>), ac3/link-beneath-protected (paths beneath such a link, one not there yet), ac3/link-protect-entry (a protected path that is itself a link: the folder it leads to, a path beneath it and the link refused by the entry's name), ac3/link-out-of-roots (a link out of every root, a path beneath it, a worktree path through a link to the top folder, refused space_outside_roots; a branch of a declared repository that became a link refused), ac3/two-links-one-folder (two links to one folder refused space_locator_link before and after the folder has its item, a link in the middle of a path, adopt, a path beneath a link not there yet; one live item resolves to the folder; every recorded disk path is the path it resolves to)."
     },
     {
      "type": "unit",
@@ -65,7 +65,7 @@
     {
      "type": "unit",
      "ref": "proof/VELDO-0297/falsifiers.json",
-     "detail": "Falsifier space297-locator-raw-text (canonical_path returns the text as written): ac3/trailing-separator red, the second declare through the trailing separator is accepted as a new item (ac3/outside-roots and ac3/refusals-counted red with it); noop green."
+     "detail": "Falsifier space297-locator-raw-text (canonical_path returns the text as written): ac3/trailing-separator red, the second declare through the trailing separator is accepted as a new item (ac3/refusals-counted red with it); noop green. Review findings 1 and 2, one registered falsifier per row, each seen red with its noop copy green: space297-parent-collapsed (the .. refusal never made) reds ac3/parent-segment, the probe is accepted; space297-last-link-not-followed (only the folder a path is in is resolved) reds ac3/link-to-protected, the link is accepted; space297-resolved-not-protected (the resolved path not read against the protect list) reds ac3/link-beneath-protected; space297-resolved-not-in-roots (the roots read against the text) reds ac3/link-out-of-roots; space297-link-recorded (a path through a link not refused) reds ac3/two-links-one-folder, a second live item for one folder. The other rows each turns red are listed in falsifiers.json."
     }
    ]
   },
@@ -95,7 +95,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 132_veldo_0297_space_ledger (23 rows)"
+   "command": "python3 scripts/selftest.py --suite 132_veldo_0297_space_ledger (30 rows, 56 checks)"
   },
   {
    "name": "integration",
@@ -105,18 +105,18 @@
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec; suite 130_veldo_0296_space_section still green"
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 .veldo/validate.py all, spec and proof; suites 130_veldo_0296_space_section, 131_veldo_0338_project_space_file and 133_veldo_0326_space_principals still green after the review fix"
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the four registered teeth cases (finding 297) were run here through the driver's own materialize() and worker(), not through the teeth run."
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the ten registered teeth cases (finding 297) were run here through the driver's own materialize() and worker(), not through the teeth run."
   }
  ],
  "assumptions": [
   "Commands built here are the ones 6.1 gives the Ledger that no later ticket names for it: declare, confirm, measure, signal, outcome, adopt, report, gone, rebranch, hold, admit, release, and one writer each for the pool and reconcile records. Not built: event and consumed (0323), reject and mode (0331, 0332), confirm group (0320), the freed mark (0334), the review group record (0340).",
-  "outcome accepts a fourth value, removing, from due only. The table of 6.1 lists removed, deferred and kept, but 4.1 has the state removing between due and removed and says the decision to remove is recorded before the remover runs, so some command must write it. removed, deferred and kept are accepted from due and from removing, as the table says.",
-  "A locator is compared in a lexical canonical form (os.path.normpath). Links are not resolved at declare: whether a path now resolves elsewhere is the ledger rule read at removal (section 7, VELDO-0330).",
+  "outcome accepts a fourth value, removing, from due only. The table of 6.1 lists removed, deferred and kept, but 4.1 has the state removing between due and removed and says the decision to remove is recorded before the remover runs, so some command must write it. After the review: from removing only removed is accepted, and deferred when the rule is remove_refused (section 7 rule 7, the owning tool's refusal, read while the remover runs); kept and every other deferral are refused space_item_state:removing, because 4.1 removes a removing item to the end. Both decisions are in the spec's History.",
+  "After the review (findings 1 and 2): a locator with a .. segment is refused space_locator_parent; only a trailing separator, a doubled one and a dot segment are normalized as text. declare, adopt and report resolve the path (os.path.realpath: the existing part is resolved, the rest kept as written) inside the command's transaction, and read the resolved path against the protect list and the known roots, whose own paths are resolved the same way; a path that resolves to something else than its text is refused space_locator_link. So a caller records the resolved path, and a root or a path under a link is declared by where it leads. A link made after the declaration is still the ledger rule's to see at removal (section 7 rule 1, VELDO-0330).",
   "The lifecycle table is given to the Ledger as plain data (version, events, events per kind) because the kind registry is VELDO-0298. signal marks items due by owner and event and returns them ordered by identity; removal order (children first) and the per-owner rows of section 5 are 0298. An unknown event is one the given table does not list.",
   "Who may sign which command is VELDO-0326. Every command here names its principal and is journaled and signed by the store as every other command; no principal is refused yet.",
   "admit records the answer it is given (admitted, advised or waiting with the reason as numbers); the judgement is Admission, VELDO-0316. A hold is judged only from waiting.",
@@ -124,8 +124,9 @@
   "rebranch records the branch item in state present, because the branch exists when the hook reports it; a declared item is never signalled.",
   "A Docker object is located by engine context and name; its id and compose project are carried when the caller knows them. The protect list is matched here by name pattern and by compose project name; protection by mount, by image of a protected container and by network needs Docker facts and is VELDO-0306 and 0341. A Docker item on an engine with no image pool counts against the pool its caller names.",
   "The state root is passed to the Ledger by its caller: the space section does not name it. Nothing attaches the Ledger to the service yet; the seams and the service are later tickets.",
-  "One refusal beyond the three the spec names: space_no_pool, when no recorded pool has the device a path is on, because declare must fill in the pool.",
-  "docs are not changed: documents for space management are VELDO-0322."
+  "Refusals beyond the three the spec names: space_no_pool, when no recorded pool has the device a path is on, because declare must fill in the pool; and from the review space_locator_parent and space_locator_link.",
+  "docs are not changed: documents for space management are VELDO-0322.",
+  "Review fix: this bundle's commit and tree name the implementation commit; the review fix is the commit after it, and its green suite, the ten falsifier runs (falsifiers.json, mutations.txt) and the fast checks were run on the fixed tree. Full ./scripts/verify.sh was not run for the fix either."
  ],
  "rollback": "Revert the change. The records already written stay in the journal and nothing reads them. Nothing on disk outside the store is touched."
 }

@@ -1,4 +1,4 @@
   selector    --suite 132_veldo_0297_space_ledger
-  running     1 of 202 suites: 132_veldo_0297_space_ledger
-  132_veldo_0297_space_ledger                     23 passed    1.10s
-selftest (PARTIAL, 1 of 202 suites): 49 passed, 0 failed in 1.10s
+  running     1 of 203 suites: 132_veldo_0297_space_ledger
+  132_veldo_0297_space_ledger                     30 passed    1.17s
+selftest (PARTIAL, 1 of 203 suites): 56 passed, 0 failed in 1.17s
