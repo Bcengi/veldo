@@ -1165,8 +1165,8 @@ that day:
      and the request is settled like any other. When members are left, the Ledger raises a new request
      for them on the same group record and writes it in the record's request field; their indexes do
      not change. It is a new request and not a new version of the settled one, because the settlement
-     refuses any answer to a closed request (request_closed, :166). When the last member leaves, the
-     group closes.
+     refuses any answer to a closed request (request_closed, control_request_settlement.py:495). When
+     the last member leaves, the group closes.
    - The choices and the answer instruction must fit one message part, or the presenter refuses to
      render (:377-379). When the group picks and three picks for every member do not fit, the request
      offers the group picks and the member picks of as many members as fit, lowest index first, and its
