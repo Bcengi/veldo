@@ -1,0 +1,93 @@
+---
+schema: veldo.spec/v1
+id: VELDO-0304
+title: "The boundary check"
+status: ready
+risk: high
+owner: dmitry
+human_approval: required
+lane: standalone
+parent: VELDO-0295
+depends_on: [VELDO-0302, VELDO-0303, VELDO-0324, VELDO-0333]
+placement: [enforcement]
+protected_paths: ["scripts/verify.sh"]
+footprint:
+  - "scripts/check_space_boundary.py"
+  - "scripts/verify.sh"
+  - "scripts/suites/*_veldo_0304_*.py"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
+  - "specs/VELDO-0304-the-boundary-check.md"
+  - "specs/index.md"
+  - "proof/VELDO-0304/**"
+behavior_bearing: true
+observability:
+  logs: >
+    The check prints each refusal with the file, the function and the primitive it found, and each
+    reviewed-list entry that matches nothing.
+  error_taxonomy: >
+    The gate is red with the function named, for one of four causes: a creation primitive outside the
+    seam's list, a removal primitive outside the removers and the reviewed list, a stale entry of the
+    reviewed list, or a delete decided by age.
+acceptance_criteria:
+  - id: AC1
+    text: >
+      The check refuses a creation primitive outside the seam's list
+    falsified_by: >
+      Add a worktree add in a new function not on the list; the check stays green and its mutation row
+      fails
+  - id: AC2
+    text: >
+      The check refuses a removal primitive outside the removers and the reviewed list of 6.10
+    falsified_by: >
+      Restore the forced remove in the fleet module; the check stays green and its mutation row fails
+  - id: AC3
+    text: >
+      Every entry of the reviewed list names a function and a reason, and an entry whose function no
+      longer holds a removal primitive fails the check
+    falsified_by: >
+      Accept a list entry that matches nothing; the stale-entry row fails
+  - id: AC4
+    text: >
+      The check refuses any function that deletes a folder, a single file or calls a remover and also
+      reads a file's time or compares the clock with a threshold; this rule has no reviewed list
+    falsified_by: >
+      Restore the 30-day branch in prune_times; the check stays green and its mutation row fails
+required_evidence: [unit, integration]
+rollback: >
+  Revert the change. The gate no longer checks the lists; the seams and the removers are unchanged.
+---
+
+## Intent
+
+The lists of creators and removers stay complete only if the gate checks them. This ticket adds a gate
+check that refuses a creation primitive outside the seam's list, a removal primitive outside the removers
+and the reviewed list, and any function that deletes by a file's age or by the clock.
+
+## Design
+
+This is one of the forty-eight build tickets of VELDO-0295. The design is
+docs/design/VELDO-0295-design.md. Design sections this ticket builds: 6.2 (the boundary check and its rule
+for removal by age) and 6.10 (the reviewed list). Section 12 of the design holds the ticket itself; its
+acceptance criteria and falsifiers are copied here word for word.
+
+What section 12 says about this ticket:
+
+> Components: Boundary check. It is called from scripts/verify.sh, a protected path (policy.yaml:83), so
+> the owner's recorded approval is required. It lands after 0302, 0303, 0324 and 0333 (see the build
+> order).
+
+Build order. It is built after 0302, 0303, 0324 and 0333, on purpose, and before 0315. depends_on holds
+the dependencies the design states for this ticket.
+
+Footprint. The files are the ones the design's component table (section 3) gives for this ticket's
+components, each engine file with its synced copy, and the ticket's suite, proof and spec.
+
+The check is called from scripts/verify.sh, a protected path (policy.yaml:83). The owner's recorded
+approval, bound to the commit and the proof, is required.
+
+## History
+
+- 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
+  VALID). Status ready.

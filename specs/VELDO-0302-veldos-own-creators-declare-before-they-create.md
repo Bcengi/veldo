@@ -1,0 +1,103 @@
+---
+schema: veldo.spec/v1
+id: VELDO-0302
+title: "Veldo's own creators declare before they create"
+status: ready
+risk: high
+owner: dmitry
+human_approval: required
+lane: standalone
+parent: VELDO-0295
+depends_on: [VELDO-0301]
+placement: [engine, loop]
+protected_paths: ["engine/scripts/agent_sandbox.py", "scripts/agent_sandbox.py"]
+footprint:
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
+  - "engine/.veldo/fleet.py"
+  - ".veldo/fleet.py"
+  - "engine/.veldo/control_batch.py"
+  - ".veldo/control_batch.py"
+  - "engine/scripts/agent_sandbox.py"
+  - "scripts/agent_sandbox.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
+  - "engine/.veldo/lander.py"
+  - ".veldo/lander.py"
+  - "engine/.veldo/control_launch_work.py"
+  - ".veldo/control_launch_work.py"
+  - "scripts/suites/*_veldo_0302_*.py"
+  - "scripts/suites/manifest.json"
+  - "scripts/suites/requires.json"
+  - "scripts/check_teeth_mutations.py"
+  - "specs/VELDO-0302-veldos-own-creators-declare-before-they-create.md"
+  - "specs/index.md"
+  - "proof/VELDO-0302/**"
+behavior_bearing: true
+observability:
+  logs: >
+    Each creation is two journal records, declared and present, with project, ticket, run and lane as
+    owner and the creator's name. A creation that fails is marked gone.
+  error_taxonomy: >
+    unavailable_service:space_ledger when a creator cannot reach the ledger; it then creates nothing. With
+    no central installation the seam stands down and things are created as today.
+acceptance_criteria:
+  - id: AC1
+    text: >
+      Each creator's thing has a declared item before it exists and a present item after, with project,
+      ticket, run and lane as owner; the rows cover the clone, the fleet worktree, the run directory, the
+      candidate workspace, the batch clone and the batch's observation folder
+    falsified_by: >
+      Declare after creating; the row that kills the creator between the two finds a folder with no item
+      and fails
+  - id: AC2
+    text: >
+      The sandbox's prepare leaves three items: the agent repository, its worktree as the repository's
+      child, and the branch with its start commit
+    falsified_by: >
+      Declare the worktree only; the row finds the agent repository with no item and fails
+  - id: AC3
+    text: >
+      A creator that cannot reach the ledger creates nothing and refuses unavailable_service:space_ledger;
+      with no central installation it creates as today
+    falsified_by: >
+      Create anyway on a refused declare; the row finds the folder and fails
+required_evidence: [unit, integration]
+rollback: >
+  Revert the change. Creators create without declaring, as before. Items already recorded stay in the
+  ledger.
+---
+
+## Intent
+
+Everything Veldo itself creates gets a ledger record before it exists. This ticket puts the declare and
+confirm calls around each creator: the clone provisioner, the fleet's worktrees, the batch, the sandbox's
+prepare, the receiver's run folders and the landing line's candidate workspaces. A creator that cannot
+reach the ledger creates nothing.
+
+## Design
+
+This is one of the forty-eight build tickets of VELDO-0295. The design is
+docs/design/VELDO-0295-design.md. Design sections this ticket builds: 3 (components), 6.1 (declare,
+confirm, gone), 6.2 (the seam a creator calls) and 8.1 (steps 3 and 4). Section 12 of the design holds the
+ticket itself; its acceptance criteria and falsifiers are copied here word for word.
+
+What section 12 says about this ticket:
+
+> Components: Clone provisioner, Fleet worktrees, Batch, Sandbox (protected), Receiver's run folders,
+> Landing line.
+
+Build order. It is built after 0301, in any order with the other tickets of that step (0302, 0303, 0305 to
+0314, 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341). The design states no dependency for this
+ticket, so depends_on holds the step before it in the build order.
+
+Footprint. The files are the ones the design's component table (section 3) gives for this ticket's
+components, each engine file with its synced copy, and the ticket's suite, proof and spec.
+
+The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected path, policy.yaml:22 and
+35. The owner's recorded approval, bound to the commit and the proof, is required.
+
+## History
+
+- 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
+  VALID). Status ready.
