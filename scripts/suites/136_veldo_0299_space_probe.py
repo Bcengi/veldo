@@ -18,9 +18,10 @@ command line names the path, and nothing else of it, is not use), ac1/container-
 and a stopped container with a bind mount at and beneath the path are use on the engine that holds them;
 a named volume, a bind mount of another path and a path that only shares the prefix are not; an engine
 the client cannot read is named in unread), ac1/clear (after the processes end the path is not in use;
-a neighbour whose name starts the same never was), ac1/helper-not-counted (a process named as the
-file-sharing helper is not counted), ac1/git-lock (a lock file of git's in the worktree's git folder,
-and git's worktree lock), ac1/seam (the test seam is called with the facts of each call),
+a neighbour whose name starts the same never was), ac1/helper-not-counted (a live process is left out
+as a helper only when an entry pins its name, its unit and its program; a live process that names
+itself virtiofsd and holds a file beneath the path is counted), ac1/git-lock (a lock file of git's in
+the worktree's git folder, and git's worktree lock), ac1/seam (the test seam is called with the facts of each call),
 ac1/process (the kernel's start time of a live process; nothing for one that ended).
 
 AC2 rows: ac2/case-1-modified, ac2/case-2-staged, ac2/case-3-untracked (a file git ignores is not),
@@ -57,19 +58,34 @@ scratch folder that cannot be opened reads as locked and a journal that cannot b
 settled), closed/unnamed-process-counts (a process whose name cannot be read is listed and the path is in
 use; one whose entry is gone is not), closed/unread-names-pids-and-uids (unread is a list of process id,
 uid, name and reach, in the fixture table and in the host's own), closed/hidden-table (a process table
-mounted with hidepid, or whose mounts cannot be read, makes the path in use).
+mounted with hidepid, or whose mounts cannot be read, makes the path in use), closed/helper-pinned (the
+re-review: the helper is pinned by name, uid, unit and program; a process of that name with its working
+directory in the item, in another unit, of another uid or run from another program, is counted),
+closed/kernel-thread-left-out (the re-review: an entry whose stat carries PF_KTHREAD is left out; one
+without the flag, or with no stat, is listed; the host's own kthreadd is not listed).
 
 REACH rows (the lead's decision, bounded fail closed: an unread process counts only if it could reach
 the path), on a fixture process table whose entries cannot be read (their cwd is no link) and whose
 status files give the uid, the groups and the parent. reach/other-uid-shut-out-excluded (a process of
 another uid that the path's own permissions shut out is listed with reach None and the path is not in
-use; so is a root-owned one, judged by the mode), reach/other-uid-let-through-counted (the same process
+use; so is a root-owned one no login started, judged by the mode), reach/other-uid-let-through-counted (the same process
 on a path whose directories let it through, by the other bits or by its group, counts),
 reach/root-with-container-mount-counted (a root-owned process the permissions shut out counts once a
 container has a bind mount above the path, or an engine cannot be read; a mount of another path changes
 nothing), reach/same-uid-and-inherited (a process of the probing uid, one whose parent or parent's
 parent could reach and one with no readable status count; one that is shut out, under a parent that is
 shut out, does not).
+
+RE-REVIEW rows (root is not judged by the mode when a login started it). reach/root-login-counted (a
+root-owned process whose loginuid is set, shut out by the mode and under a parent that is shut out,
+counts: this user's through sudo, a cron job of root's, and one whose loginuid cannot be read; one no
+login started does not), reach/capability-counted (a process that is not root and holds
+CAP_DAC_READ_SEARCH or CAP_DAC_OVERRIDE counts the same way, and so does one whose capabilities cannot
+be read; one with another capability, and a capable one no login started, do not),
+reach/container-by-its-mounts (an unread process whose cgroup names a container is judged by that
+container's mounts: with this user's uid number and a container that mounts nothing of the path it does
+not count; it counts when no engine read holds its container, when its container mounts the path, and
+when its cgroup cannot be read).
 
 probe/facts-only (the module calls nothing that removes, renames or writes), probe/canon (the engine
 canon equals this repository copy).
@@ -110,8 +126,10 @@ def _v299_space_probe_suite():
             'closed/stash-hides-unlanded-commit', 'closed/no-shared-repository',
             'closed/git-unreadable-is-locked', 'closed/scratch-unopenable-is-locked',
             'closed/unnamed-process-counts', 'closed/unread-names-pids-and-uids', 'closed/hidden-table',
+            'closed/helper-pinned', 'closed/kernel-thread-left-out',
             'reach/other-uid-shut-out-excluded', 'reach/other-uid-let-through-counted',
             'reach/root-with-container-mount-counted', 'reach/same-uid-and-inherited',
+            'reach/root-login-counted', 'reach/capability-counted', 'reach/container-by-its-mounts',
             'probe/facts-only', 'probe/canon')
     rows = {name: [] for name in ROWS}
 
@@ -197,10 +215,34 @@ def _v299_space_probe_suite():
               not users(facts, 'cwd'))
         check('ac1/clear', 'a neighbour whose name starts the same is not in use',
               P.in_use(neighbour)['found'] is False)
-        check('ac1/helper-not-counted', 'a process named as the file-sharing helper is not counted',
-              P.in_use(used, helpers=tuple(user['command'] for user in facts['processes']))['found'] is False)
-        check('ac1/helper-not-counted', 'the default helper list names the file-sharing helper and not this one',
-              'virtiofsd' in P.HELPERS and all(user['command'] not in P.HELPERS for user in facts['processes']))
+        with open('/proc/%d/cgroup' % holder.pid) as cgroup:
+            unit = [line.strip()[len('0::'):] for line in cgroup if line.startswith('0::')]
+        with open('/proc/%d/comm' % holder.pid) as comm:
+            own_name = comm.read().strip()
+        pinned = {'name': own_name, 'exe': os.readlink('/proc/%d/exe' % holder.pid),
+                  'cgroup': unit[0] if unit else None}
+        if unit and '{uid}' not in unit[0]:
+            check('ac1/helper-not-counted', 'a live process an entry pins by name, unit and program is left out [%s]'
+                  % pinned, P.in_use(used, helpers=(pinned,))['found'] is False)
+            check('ac1/helper-not-counted', 'the same name in another unit is counted',
+                  P.in_use(used, helpers=(dict(pinned, cgroup=unit[0] + '-other'),))['found'] is True)
+            check('ac1/helper-not-counted', 'the same name and unit run from another program is counted',
+                  P.in_use(used, helpers=(dict(pinned, exe=pinned['exe'] + '-other'),))['found'] is True)
+        check('ac1/helper-not-counted', 'a name alone is no entry: the process is counted',
+              P.in_use(used, helpers=(pinned['name'],))['found'] is True
+              and P.in_use(used, helpers=({'name': pinned['name']},))['found'] is True)
+        check('ac1/helper-not-counted', 'every default entry pins a name, a program and a unit of the user manager '
+              '[%s]' % (P.HELPERS,), [entry['name'] for entry in P.HELPERS] == ['virtiofsd']
+              and all(set(entry) == {'name', 'exe', 'cgroup'} and os.path.isabs(entry['exe'])
+                      and entry['cgroup'].startswith('/user.slice/user-{uid}.slice/user@{uid}.service/')
+                      for entry in P.HELPERS))
+        namesake = child('import sys\nheld = open(sys.argv[1])\nopen("/proc/self/comm", "w").write("virtiofsd")',
+                         used / 'inner' / 'held.txt', cwd=elsewhere)
+        named = P.in_use(used)
+        check('ac1/helper-not-counted', 'a live process that names itself virtiofsd and holds a file beneath the '
+              'path is counted [%s]' % [(user['pid'], user['command']) for user in named['processes']],
+              (namesake.pid, 'virtiofsd') in [(user['pid'], user['command']) for user in named['processes']])
+        stop(namesake)
         seen = []
         P.SEAM['after_in_use'] = seen.append
         try:
@@ -702,9 +744,16 @@ def _v299_space_probe_suite():
         OTHER = ME + 4242           # a uid that is neither the probing one nor root
         OWNED_BY_ROOT = 0 if ME else OTHER + 1  # run as root, the row's root-owned process is another uid
 
-        def entry(pid, uid=None, gids=None, parent=0, comm='holder', sealed=True):
+        FULL, UNSET, HOST_UNIT = 0x000001ffffffffff, 4294967295, '0::/system.slice/holder.service'
+
+        def entry(pid, uid=None, gids=None, parent=0, comm='holder', sealed=True, caps=None, login=UNSET,
+                  cgroup=HOST_UNIT, flags=None, exe=None, cwd=None):
             """One entry of the fixture process table. Sealed, its cwd is a file and no link, so the
-            probe cannot read where the process is; its status gives who it is."""
+            probe cannot read where the process is; its status gives who it is. `caps` are its
+            effective capabilities (all of them for the root-owned uid, none for any other; False
+            leaves the line out), `login` its loginuid (unset; False leaves the file out), `cgroup`
+            the text of its cgroup file (None leaves it out), `flags` the flags of its stat file
+            (None leaves it out), `exe` where its exe link leads."""
             base = table / str(pid)
             (base / 'fd').mkdir(parents=True)
             if comm is None:
@@ -715,13 +764,26 @@ def _v299_space_probe_suite():
             if sealed:
                 (base / 'cwd').write_text('')
             else:
-                (base / 'cwd').symlink_to(elsewhere)
+                (base / 'cwd').symlink_to(cwd or elsewhere)
             if uid is not None:
                 groups = [uid] if gids is None else gids
+                if caps is None:
+                    caps = FULL if uid == OWNED_BY_ROOT else 0
+                held = '' if caps is False else 'CapEff:\t%016x\n' % caps
                 (base / 'status').write_text('Name:\t%s\nPPid:\t%d\nUid:\t%d\t%d\t%d\t%d\nGid:\t%d\t%d\t%d\t%d\n'
-                                             'Groups:\t%s\n' % ((comm or 'holder', parent) + (uid,) * 4
-                                                                + (groups[0],) * 4
-                                                                + (' '.join(str(group) for group in groups[1:]),)))
+                                             'Groups:\t%s\n%s' % ((comm or 'holder', parent) + (uid,) * 4
+                                                                  + (groups[0],) * 4
+                                                                  + (' '.join(str(group) for group in groups[1:]),
+                                                                     held)))
+            if login is not False:
+                (base / 'loginuid').write_text(str(login))
+            if cgroup is not None:
+                (base / 'cgroup').write_text(cgroup + '\n')
+            if flags is not None:
+                (base / 'stat').write_text('%d (%s) S %d %d %d 0 -1 %d 0 0 0 0 0 0 0 0 20 0 1 0 100 0 0\n'
+                                           % (pid, comm or 'holder', parent, pid, pid, flags))
+            if exe is not None:
+                (base / 'exe').symlink_to(exe)
             return base
 
         def fresh():
@@ -865,7 +927,7 @@ def _v299_space_probe_suite():
               facts['in_use'] is False and facts['unknown'] is False and P.reach(item, OTHER, [OTHER]) is None)
         entry(32, uid=OWNED_BY_ROOT)
         facts = P.in_use(item, proc=str(table))
-        check(ROW, 'a root-owned process is judged by the mode, not by its privilege: shut out too [%s]'
+        check(ROW, 'a root-owned process no login started is judged by the mode: shut out too [%s]'
               % unread_of(facts), unread_of(facts) == [(31, OTHER, None), (32, OWNED_BY_ROOT, None)]
               and facts['in_use'] is False)
         item.chmod(0o777)
@@ -970,6 +1032,156 @@ def _v299_space_probe_suite():
         entry(60, uid=OTHER, parent=55)
         check(ROW, 'with only the two that are shut out the path is not in use',
               P.in_use(item, proc=str(table))['in_use'] is False)
+
+        # ---- RE-REVIEW: root by loginuid and capability, kernel threads, containers, the helper ---------
+        def reaches(facts):
+            return dict((pid, why) for pid, _, why in unread_of(facts))
+
+        ROW = 'reach/root-login-counted'
+        fresh()
+        entry(1, uid=OWNED_BY_ROOT)                        # the first process: root, no login started it
+        entry(61, uid=OWNED_BY_ROOT, parent=1)             # a system daemon
+        entry(62, uid=OWNED_BY_ROOT, parent=1, login=ME)   # this user's, through sudo, its shell ended
+        entry(63, uid=OWNED_BY_ROOT, parent=1, login=OWNED_BY_ROOT)  # a cron job of root's
+        entry(64, uid=OWNED_BY_ROOT, parent=1, login=False)  # a loginuid that cannot be read
+        entry(65, uid=OTHER, parent=1, login=ME)           # no privilege: the mode still decides
+        facts = P.in_use(item, proc=str(table))
+        got = reaches(facts)
+        check(ROW, 'the way to the item is closed to every other user, and root is shut out by the mode',
+              temporary.stat().st_mode & 0o077 == 0 and P.reach(item, OWNED_BY_ROOT, [OWNED_BY_ROOT]) is None)
+        check(ROW, 'a root-owned process this user started through sudo, left under the first process, counts '
+              '[%s]' % got, got.get(62) == 'privileged_login' and got.get(1) is None and facts['in_use'] is True)
+        check(ROW, "so does a cron job of root's, whose loginuid is root's", got.get(63) == 'privileged_login')
+        check(ROW, 'and one whose loginuid cannot be read', got.get(64) == 'privileged_login')
+        check(ROW, 'a root-owned process no login started is still judged by the mode: shut out',
+              61 in got and got[61] is None)
+        check(ROW, 'a process without privilege is judged by the mode whatever its loginuid',
+              65 in got and got[65] is None)
+        fresh()
+        entry(1, uid=OWNED_BY_ROOT)
+        entry(61, uid=OWNED_BY_ROOT, parent=1)
+        entry(65, uid=OTHER, parent=1, login=ME)
+        check(ROW, 'with only those two the path is not in use', P.in_use(item, proc=str(table))['in_use'] is False)
+        entry(62, uid=OWNED_BY_ROOT, parent=1, login=ME)
+        check(ROW, 'and with the one a login started it is', P.in_use(item, proc=str(table))['in_use'] is True)
+
+        ROW = 'reach/capability-counted'
+        fresh()
+        OVERRIDE, READ_SEARCH, KILL = 1 << 1, 1 << 2, 1 << 5
+        entry(71, uid=OTHER, caps=READ_SEARCH, login=ME)
+        entry(72, uid=OTHER, caps=OVERRIDE, login=OTHER)
+        entry(73, uid=OTHER, caps=OVERRIDE | READ_SEARCH)   # a capable daemon no login started
+        entry(74, uid=OTHER, caps=KILL, login=ME)           # a capability that passes no mode check
+        entry(75, uid=OTHER, caps=False, login=ME)          # capabilities that cannot be read
+        got = reaches(P.in_use(item, proc=str(table)))
+        check(ROW, 'the mode shuts that uid out', P.reach(item, OTHER, [OTHER]) is None)
+        check(ROW, 'a process that is not root and holds CAP_DAC_READ_SEARCH, started by a login, counts [%s]' % got,
+              got.get(71) == 'privileged_login')
+        check(ROW, 'so does one that holds CAP_DAC_OVERRIDE', got.get(72) == 'privileged_login')
+        check(ROW, 'and one whose capabilities cannot be read', got.get(75) == 'privileged_login')
+        check(ROW, 'a capable process no login started is judged by the mode: shut out', 73 in got and got[73] is None)
+        check(ROW, 'a capability that passes no mode check changes nothing', 74 in got and got[74] is None)
+        check(ROW, 'the two capabilities are the ones under which the kernel checks no mode [%s]' % P.PASSES_MODE,
+              P.PASSES_MODE == OVERRIDE | READ_SEARCH and P.NO_LOGIN == UNSET)
+
+        ROW = 'closed/kernel-thread-left-out'
+        fresh()
+        entry(81, uid=ME, comm='kworker/0:1', flags=0x00208040)
+        entry(82, uid=ME, flags=0x00400040)
+        entry(83, uid=ME)
+        facts = P.in_use(item, proc=str(table))
+        check(ROW, 'an entry whose stat carries PF_KTHREAD is left out; one without the flag, and one with no '
+              'stat, are listed [%s]' % unread_of(facts),
+              unread_of(facts) == [(82, ME, 'same_uid'), (83, ME, 'same_uid')])
+        fresh()
+        entry(81, uid=ME, comm='kworker/0:1', flags=0x00208040)
+        check(ROW, 'with the kernel thread alone the path is not in use',
+              P.in_use(item, proc=str(table))['in_use'] is False)
+        entry(84, uid=ME, comm='kworker/0:1', flags=0x00008040)
+        check(ROW, 'a process of that name without the flag counts: the flag decides, not the name',
+              unread_of(P.in_use(item, proc=str(table))) == [(84, ME, 'same_uid')])
+        try:
+            with open('/proc/2/comm') as comm:
+                second = comm.read().strip()
+        except OSError:
+            second = None
+        if second == 'kthreadd':
+            real = P.processes(item)
+            check(ROW, "the host's kthreadd carries the flag and is not listed; this process does not carry it",
+                  P._kernel_thread('/proc/2') is True and P._kernel_thread('/proc/%d' % os.getpid()) is False
+                  and 2 not in [found['pid'] for found in real['unread']])
+
+        ROW = 'reach/container-by-its-mounts'
+        fresh()
+
+        def scope(identity):
+            return '0::/system.slice/docker-%s.scope' % (identity * 64)
+
+        entry(91, uid=ME, cgroup=scope('1'))                    # a container's process, the user's uid number
+        entry(92, uid=OWNED_BY_ROOT, login=ME, cgroup='0::/docker/' + '1' * 64)  # the other cgroup driver
+        fixture.write_text(json.dumps({
+            'system': [container('1', 'mounts-elsewhere', 'running', ('bind', str(elsewhere), '/else'))],
+            'desktop': [container('2', 'mounts-above', 'running', ('bind', str(temporary), '/host'))],
+            'empty': []}))
+        os.environ['PATH'] = str(bin_folder) + os.pathsep + path_before
+        try:
+            facts = P.in_use(item, engines=('system',), proc=str(table))
+            check(ROW, "a process of a container that mounts nothing of the path does not count, though its uid "
+                  "is this user's number [%s]" % unread_of(facts),
+                  unread_of(facts) == [(91, ME, None), (92, OWNED_BY_ROOT, None)] and facts['in_use'] is False)
+            facts = P.in_use(item, engines=('empty',), proc=str(table))
+            check(ROW, 'when no engine that was read holds its container, its mounts are not known: it counts [%s]'
+                  % unread_of(facts), unread_of(facts) == [(91, ME, 'container'), (92, OWNED_BY_ROOT, 'container')]
+                  and facts['in_use'] is True)
+            facts = P.in_use(item, proc=str(table))
+            check(ROW, 'with no engine named it counts as well', reaches(facts) == {91: 'container', 92: 'container'})
+            entry(93, uid=OTHER, cgroup=scope('2'))
+            facts = P.in_use(item, engines=('system', 'desktop'), proc=str(table))
+            check(ROW, 'a process of a container that mounts a folder above the path counts [%s]' % reaches(facts),
+                  reaches(facts).get(93) == 'container_mount' and facts['in_use'] is True)
+            fresh()
+            entry(94, uid=OTHER, cgroup=None)
+            facts = P.in_use(item, engines=('system',), proc=str(table))
+            check(ROW, 'a process whose cgroup cannot be read cannot be told from one in a container: it counts',
+                  unread_of(facts) == [(94, OTHER, 'unknown_identity')] and facts['in_use'] is True)
+            check(ROW, 'the engine probe names every container of the engines it read',
+                  P.containers(item, ('system', 'desktop'))['known'] == ['1' * 64, '2' * 64])
+        finally:
+            os.environ['PATH'] = path_before
+
+        ROW = 'closed/helper-pinned'
+        fresh()
+        HELPER = P.HELPERS[0]
+        unit = '0::' + HELPER['cgroup'].replace('{uid}', str(ME))
+        entry(101, uid=ME, comm='virtiofsd', sealed=False, cwd=item, cgroup=unit, exe=HELPER['exe'])
+        facts = P.in_use(item, proc=str(table))
+        check(ROW, "the helper, in its own unit of this user's manager and run from its own program, is not "
+              'counted though it holds the path [%s]' % facts['processes'],
+              facts['in_use'] is False and facts['processes'] == [] and facts['unread']['processes'] == [])
+        check(ROW, 'a process of another name with the same identity is counted',
+              [user['pid'] for user in P.in_use(item, proc=str(table), helpers=(dict(HELPER, name='other'),))
+               ['processes']] == [101])
+        for label, changed in (
+                ('in a session of the user, not in that unit',
+                 {'cgroup': '0::/user.slice/user-%d.slice/session-3.scope' % ME}),
+                ("in that unit of another user's manager",
+                 {'cgroup': '0::' + HELPER['cgroup'].replace('{uid}', str(OTHER))}),
+                ('in a unit beneath that one', {'cgroup': unit + '/inner.scope'}),
+                ('whose cgroup cannot be read', {'cgroup': None}),
+                ('of another uid', {'uid': OTHER}),
+                ('run from another program', {'exe': str(elsewhere / 'virtiofsd')})):
+            fresh()
+            entry(102, **dict({'uid': ME, 'comm': 'virtiofsd', 'sealed': False, 'cwd': item, 'cgroup': unit,
+                               'exe': HELPER['exe']}, **changed))
+            facts = P.in_use(item, proc=str(table))
+            check(ROW, 'a process named virtiofsd with its working directory in the item, %s, is counted [%s]'
+                  % (label, [(user['pid'], user['command']) for user in facts['processes']]),
+                  facts['in_use'] is True and [(user['pid'], user['command']) for user in facts['processes']]
+                  == [(102, 'virtiofsd')])
+        fresh()
+        entry(103, uid=ME, comm='virtiofsd', cgroup='0::/user.slice/user-%d.slice/session-3.scope' % ME)
+        check(ROW, 'one that cannot be read, named virtiofsd outside that unit, is unread and counts',
+              unread_of(P.in_use(item, proc=str(table))) == [(103, ME, 'same_uid')])
 
         source = PRODUCTION['control_space_probe.py'].read_text()
         called = set()

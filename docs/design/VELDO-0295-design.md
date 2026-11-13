@@ -35,6 +35,17 @@ parent", in rules 4, 5 and 6 of its table, and in the children rule of section 5
 - A kept, declared or removing child holds its parent. The review removed an agent repository with a
   kept worktree, and its uncommitted files, inside it.
 
+Amended again 2026-11-13, after the re-review (VELDO-0298 accepted; FIX for VELDO-0299 and VELDO-0330),
+in the same places of section 7:
+
+- A privileged process (root, or one whose capabilities pass every mode check) that a login started
+  counts for every item, read from its loginuid. Only a system daemon is judged by the mode, and that
+  is a stated policy. A kernel thread is left out by its flag, a container's process is judged by its
+  container's mounts, and the file-sharing helper is pinned by its identity.
+- A git repository on disk beneath a worktree or an agent repository holds it. The re-review deleted
+  one, with its only commit, through an ignored folder.
+- The "nine processes" measurement is corrected: one of the six was a container's, not the user's.
+
 What changed in revision 6:
 
 - One answer still covers a day's whole review group, and the request now also offers an answer for one
@@ -1066,6 +1077,12 @@ Notes on the probes:
   kernel's process table. A command line that mentions the path is not use: that test also matches the
   shell doing the check. The file-sharing helper of a desktop container engine holds descriptors on every
   path a container ever mounted and is not counted; the containers' own mount lists are read instead.
+  The helper is pinned by its identity and not by its name, which any process may take (amended
+  2026-11-13, re-review): its command name, the uid of the installation's owner, the exact unit of that
+  user's manager its cgroup file names, and the program its exe link leads to when that can be read.
+  Every other process of that name is read and counted. A kernel thread is left out by the PF_KTHREAD
+  flag in its stat file: it holds no working directory, descriptor or map of a user's path, and that is
+  a fact of the kernel, not a judgement.
 - The folder remover's rename closes the gap between probe and delete. A process that opens the folder
   after the first probe either fails to find it, or holds a file that the second probe sees under the new
   name.
@@ -1104,45 +1121,80 @@ it can read without root:
   directory shuts it out, it cannot have opened anything at or beneath the item, and it is excluded. A
   directory that owner, group and mode do not describe (it cannot be read, or it carries an access
   list) cannot be judged, and the process counts.
-- A root-owned process is judged the same way, by the mode and not by its privilege. Root can enter any
-  directory, so "could root reach it" is always yes and bounds nothing. What the rule asks instead is
-  whether a root-owned process has a way of its own to the item, and there are two: the directories let
-  uid 0 or its groups through as they would any user (a path under a world-readable folder, a
-  root-owned folder), or a container engine mounts the path. So a root-owned process is excluded only
-  when the mode shuts uid 0 out as it shuts out any other user, and no container has a bind mount at,
-  beneath or above the path. The engine probe's mount list is where that is read: it covers what
-  dockerd and containerd bind. Otherwise it counts.
+- A privileged process is not judged by the mode when a login started it (amended 2026-11-13, after
+  the re-review, which found the first wording, "root judged by the mode", wrong as a fact). Root, and
+  any process that holds CAP_DAC_OVERRIDE or CAP_DAC_READ_SEARCH in its effective capabilities, passes
+  every mode check, so the mode says nothing of where such a process is. The status file gives the
+  capabilities to every user. What tells a system daemon from a person's command is the loginuid, in
+  /proc/<pid>/loginuid, which every user may read: the kernel sets it at login, it is kept across
+  fork, exec and sudo, and it cannot be changed once set. A daemon started by the system has it unset.
+  So a privileged process whose loginuid is set counts for every item: a command the user ran through
+  sudo is the user's, also after the shell that started it has ended and it hangs under the first
+  process; so is a cron job of root's. A loginuid or capabilities that cannot be read count the same
+  way.
+- A privileged process no login started, a system daemon, is judged by the mode like any other uid.
+  That is a stated policy, not a reading of the kernel: the kernel would let it in, and the policy is
+  that a daemon nobody logged in to start does not go into a user's folder it was not given. Such a
+  process has two ways of its own to the item: the directories let its uid or its groups through as
+  they would any user (a path under a world-readable folder, a root-owned folder), or a container
+  engine mounts the path. So it is excluded only when the mode shuts its uid out and no container has
+  a bind mount at, beneath or above the path. The engine probe's mount list is where that is read: it
+  covers what dockerd and containerd bind. Otherwise it counts.
 - A container mount is a way in for every unread process, not only root's. A process inside a
   container reaches a bound folder through the mount, whatever the host's directories say of its uid.
   So when any container, running or stopped, has a bind mount at, beneath or above the path, or an
   engine cannot be read, every unread process counts. (A mount at or beneath the path is use in its own
   right, by rule 4's first words. A mount above it is not use; it only ends the bound.)
+- A container's process is judged by its container's mounts and by nothing of the host. Its cgroup
+  file, which every user may read, names the container (an id of 64 hexadecimal digits). Its uid is a
+  number of the container's own: a process there with the owner's uid number is not the owner's, and
+  root there is not a login's. When an engine the probe read holds that container, the process has no
+  reach of its own and counts only through the rule above, when a mount is a way to the path. When no
+  engine that was read holds it (no engine is named, or the container is another engine's), its mounts
+  are not known and it counts. A process whose cgroup file cannot be read cannot be told from one in a
+  container, and counts.
 - A child counts when a parent could reach. A process keeps the working directory and the descriptors
   it was started with, so a command the user runs through sudo or su is another uid, or root, sitting
   in the user's folder. The probe follows the parents in the status files, and a process any of whose
   parents counts, or cannot be judged, counts.
 
-What this bound does not see: a process of another uid that kept a working directory or a descriptor
-from a parent that could reach the item, after every such parent has ended. Its parent is then a
-process that is shut out, and nothing the probe may read ties it to the item. The folder remover's
-rename (below) is what limits the harm: such a process keeps its files under the new name until the
-delete, and the delete of a file a process holds open does not take the data from that process.
+What this bound does not see. First, a process of another uid, without privilege, that kept a working
+directory or a descriptor from a parent that could reach the item, after every such parent has ended.
+Its parent is then a process that is shut out, and nothing the probe may read ties it to the item.
+Second, a system service no login started (its loginuid is unset) that was configured to work in the
+path: a unit with a working directory there, or a daemon told to write there. The policy above
+excludes it where the mode shuts its uid out. The folder remover's rename (below) is what limits the
+harm in both: such a process keeps its files under the new name until the delete, and the delete of a
+file a process holds open does not take the data from that process.
 
-What the probe needs, and how it gets it without root: read access to the status file of every process
-(the kernel gives that to every user), os.stat on the item's directories (the owner of the item has it),
-and a process table that shows every process. Under hidepid the table shows only the user's own, the
+What the probe needs, and how it gets it without root: read access to the status, stat, cgroup and
+loginuid files of every process (the kernel gives that to every user; a kernel built without audit has
+no loginuid file, and there every privileged process counts), os.stat on the item's directories (the
+owner of the item has it), and a process table that shows every process. Under hidepid the table shows only the user's own, the
 probe cannot list what it must judge, and rule 4 refuses every removal until the table is mounted to
 show them or the service is given the capability to read them (CAP_SYS_PTRACE, which also makes every
 process readable and the bound unneeded). The deferral names each process that counted, by process id,
 uid and the reason, so the owner can see why.
 
 Measured on this host, 2026-11-13, for an item under the owner's home folder (mode 750): of 536 unread
-processes 527 are excluded and 9 count. Six are the user's own and not dumpable: the systemd user
-manager and its PAM helper, two processes of the desktop container engine's backend, ssh-agent and one
-short-lived command. Three are let through by the home folder's group: a root-owned session worker and
-a root-owned mount helper that carry the user's group, and a container's process whose group id is the
+processes 527 are excluded and 9 count. Six run under the user's uid number and are not readable. Five
+of them are the user's own and not dumpable: the systemd user manager and its PAM helper, two processes
+of the desktop container engine's backend and ssh-agent. The sixth is not the user's (corrected after
+the re-review, which this paragraph first counted as "one short-lived command" of the user's): it is a
+container's health check, in a container's cgroup, whose uid inside the container happens to be the
+same number. Three are let through by the home folder's group: a root-owned session worker and a
+root-owned mount helper that carry the user's group, and a container's process whose group id is the
 same number. So on this host rule 4 still defers every item under the home folder, naming nine
-processes where it named 617. The user's own undumpable processes are the open point. A systemd user
+processes where it named 617.
+
+Measured again the same day with the re-review's rules, both engines named: 355 unread processes are
+listed (the kernel threads are left out), 347 are excluded and 8 count. Five are the user's own, the
+ones above. Three are root-owned and a login started them (the session worker and two mount helpers,
+whose loginuid is the user's): they count as the user's, by the loginuid and no longer by the group.
+The 169 processes in containers, the health check and the group's namesake among them, are judged by
+their containers' mounts, none of which is a way to the item, and do not count. With no engine named
+those 169 count, because their mounts are not known. The user's own undumpable processes are the open
+point. A systemd user
 manager is there on every host with a user session, nothing short of CAP_SYS_PTRACE reads it, and the
 decision above says it counts. Whether the service is given that capability, or such processes are
 bounded another way, is the lead's to decide; nothing is removed on this host until it is.
@@ -1163,6 +1215,18 @@ parent and by its path, in whatever state; and, for an agent repository, at the 
 folder registers that are on disk. A registered worktree on disk that no live item records holds the
 repository, and so does a repository git cannot list. The function refuses a call whose list does not
 hold every child the look finds, in the state it finds it.
+
+A nested repository holds its worktree (amended 2026-11-13, re-review). The look read the disk only
+for an agent repository's registered worktrees; for a worktree it read the ledger alone. The re-review
+reproduced the loss that leaves: a git repository with a commit of its own, in a folder of a worktree
+that git ignores, is no case of unique work (an ignored file is none), no item records it, and git's
+non-forced worktree remove, the tool of rule 7, deletes it with its commit. So the look also walks the
+folder of a worktree and of an agent repository, ignored or not, following no link, and names every
+git repository beneath it: a folder that holds a .git entry, as a folder or as a file, or that is
+itself a git folder. One that no live item records holds the item as unrecorded, and a folder that
+cannot be listed makes the item's inside unread, which holds it too. A recorded item's folder is not
+walked into: that item holds its parent by its state. A worktree with a submodule is held this way
+until the submodule is recorded or gone, which is also what git's own remove says of it.
 
 Retry. A deferred item is made due again by its next ending event, by admission requested on its pool
 (sent once per hold, 6.7), and by reconcile. One more: when a pending retirement's obligation completes

@@ -119,3 +119,26 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   is still in use here; the design records it as the lead's open point. Not changed: the review's low
   findings 8a to 8d (the helper matched by name, the exclusive lock test against a starting launcher,
   the calling process not excluded, volumes with a bind option). No acceptance criterion changed.
+- 2026-11-13: re-review (verdict FIX, small). "Root judged by the mode" was wrong as a fact: root, and
+  any process holding CAP_DAC_OVERRIDE or CAP_DAC_READ_SEARCH, passes every mode check. Each change is
+  a row with its falsifier. (1) reach/root-login-counted: a root-owned process whose loginuid is set
+  (this user's through sudo, left under the first process; a cron job of root's) counts for every item
+  as privileged_login, and so does one whose loginuid cannot be read; only one no login started is
+  still judged by the mode, which the docstring now calls a stated policy for system daemons.
+  (2) reach/capability-counted: a process that is not root and holds one of the two capabilities in
+  CapEff is judged the same way; capabilities that cannot be read count. (3)
+  closed/kernel-thread-left-out: a process whose stat carries PF_KTHREAD is left out of users and of
+  unread. (4) reach/container-by-its-mounts: an unread process whose cgroup names a container is judged
+  by that container's mounts and not by its uid or the host's modes; containers returns known, the ids
+  of every container of the engines read; a process of a container no engine read holds counts
+  (container), and one whose cgroup cannot be read counts (unknown_identity). (5) closed/helper-pinned
+  and ac1/helper-not-counted: HELPERS is a list of identities (name, exe, cgroup with {uid}), and a
+  process is a helper only by its name, the probing uid, that exact unit and, when the link can be
+  read, that program; the row that asserted a name alone leaves a process out is corrected to assert
+  the opposite. Added for VELDO-0330's rule 6: nested(path, skip), the git repositories on disk beneath
+  a path. Residual, named in design section 7: a system service no login started that is configured to
+  work in the path. Not built here, by the lead's instruction: the owner-approved list of process
+  names and the capability reader; the lead decides between them with the owner, so the user's own
+  undumpable processes still count. Measured on this host with both engines named: 355 unread listed,
+  8 count (five of the user's own, three root-owned that a login started). Still open from the first
+  review: 8b to 8d. No acceptance criterion changed.

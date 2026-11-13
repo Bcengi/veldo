@@ -63,7 +63,11 @@ this one, by its parent and by its path, in whatever state, and for an agent rep
 its own git folder registers and that are on disk. A child that is declared, present, due, deferred,
 removing or kept holds its parent: removing an agent repository would take a kept worktree and its
 uncommitted files with it. So does a registered worktree on disk that no live item records, and a
-repository git cannot list. `inside` is also the look the kind registry's due is given.
+repository git cannot list. It also looks on disk beneath a worktree and beneath an agent repository
+for git repositories nobody recorded (the probe's nested): one in a folder git ignores is no case of
+unique work, git's non-forced worktree remove takes it, and its commits exist nowhere else. Each holds
+the item, and so does a folder that could not be listed. `inside` is also the look the kind registry's
+due is given.
 
 THE TOOL (rule 7) is the callable `tool(identity, record)` the caller gives: the remover. It is called
 only after every other rule of the removal has passed, and anything but {ok: True} is its refusal. With
@@ -116,6 +120,7 @@ APPLIES = {
 }
 
 DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence')
+HOLDS_REPOSITORIES = ('worktree', 'agent_repository')  # the kinds a nested repository is looked for in
 NOT_HOLDING_STATES = ('removed', 'gone')
 REVIEW_SCRATCH_CASE = 3  # an untracked file git does not ignore: not unique work in a review worktree
 
@@ -247,7 +252,10 @@ def inside(ledger, probe, identity, record, run=None):
     repository, each worktree its own git folder registers that is on disk and that no item which is
     neither removed nor gone records, under the name path:<its path> with the state unrecorded
     (on_disk when it cannot be said whether the folder is there). A repository git cannot list is
-    there under path:<its path> with the state unread. This is rule 6's reading and the look the kind
+    there under path:<its path> with the state unread. For a worktree and for an agent repository,
+    also each git repository on disk beneath it that no such item records, ignored by git or not,
+    under path:<its path> with the state unrecorded; when a folder beneath it cannot be listed, the
+    item itself is there with the state unread. This is rule 6's reading and the look the kind
     registry's due is given: look=lambda identity, record: inside(ledger, probe, identity, record)."""
     path = (record.get('locator') or {}).get('path') if record.get('kind') in DISK_KINDS else None
     found, recorded = {}, set()
@@ -265,6 +273,12 @@ def inside(ledger, probe, identity, record, run=None):
         for tree in listed['worktrees']:
             if tree['there'] is not False and tree['path'] not in recorded:
                 found['path:' + tree['path']] = 'unrecorded' if tree['there'] else 'on_disk'
+    if record.get('kind') in HOLDS_REPOSITORIES and path:
+        beneath = probe.nested(path, recorded)
+        if not beneath['read']:
+            found['path:' + path] = 'unread'
+        for where in beneath['repositories']:
+            found.setdefault('path:' + where, 'unrecorded')
     return found
 
 

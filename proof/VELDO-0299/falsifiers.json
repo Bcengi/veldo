@@ -6,6 +6,7 @@
    "ac1/open-file-beneath"
   ],
   "red_rows": [
+   "ac1/helper-not-counted",
    "ac1/mapped-file",
    "ac1/open-file-beneath"
   ],
@@ -75,7 +76,7 @@
   "red_details": [
    [
     "VELDO-0299 ac4/login-unsettled",
-    "with the lock free and the borrowed login not settled the scratch is in use [{'path': '/tmp/veldo-0299-2lspr5v4/veldo-agent-fixture1', 'read': True, 'said': None, 'lock_held': False, 'login_unsettled': True, 'journal': '/tmp/veldo-0299-2lspr5v4/borrowed-logins/veldo-agent-fixture1', 'in_use': False}]"
+    "with the lock free and the borrowed login not settled the scratch is in use [{'path': '/tmp/veldo-0299-tfdepas8/veldo-agent-fixture1', 'read': True, 'said': None, 'lock_held': False, 'login_unsettled': True, 'journal': '/tmp/veldo-0299-tfdepas8/borrowed-logins/veldo-agent-fixture1', 'in_use': False}]"
    ]
   ],
   "noop_red_rows": [],
@@ -111,7 +112,7 @@
   "red_details": [
    [
     "VELDO-0299 closed/no-shared-repository",
-    "given no shared repository it is unread and its unique work unknown, never none [{'path': '/tmp/veldo-0299-fvl2lw7v/agent.git', 'read': True, 'shared': '/tmp/veldo-0299-fvl2lw7v/agent.git', 'branches': [{'ref': 'refs/heads/agent/a1/n1', 'commit': '396b79ccead6b6439cf772b3364a7bc475ea57a2', 'held': True}, {'ref': 'refs/heads/agent/a1/n2', 'commit': 'b9f5cd15bb6f72d37ba19850e44936fa9a1274ae', 'held': True}], 'not_across': [], 'more': 0, 'refs': [], 'stashes': 0, 'unique_work': False}]"
+    "given no shared repository it is unread and its unique work unknown, never none [{'path': '/tmp/veldo-0299-hdt54ff8/agent.git', 'read': True, 'shared': '/tmp/veldo-0299-hdt54ff8/agent.git', 'branches': [{'ref': 'refs/heads/agent/a1/n1', 'commit': '607fd9539be390a6dc15bb4988997c58bda679f0', 'held': True}, {'ref': 'refs/heads/agent/a1/n2', 'commit': '7dac4537a6e7d9af98c34c722c7a18ac17bcf151', 'held': True}], 'not_across': [], 'more': 0, 'refs': [], 'stashes': 0, 'unique_work': False}]"
    ]
   ],
   "noop_red_rows": [],
@@ -129,7 +130,7 @@
   "red_details": [
    [
     "VELDO-0299 closed/git-unreadable-is-locked",
-    "a worktree git refuses to read is locked, and unread [{'read': False, 'said': \"fatal: detected dubious ownership in repository at '/tmp/veldo-0299-2ku_ml9p/worktree'\", 'files': [], 'worktree_locked': False, 'locked': False}]"
+    "a worktree git refuses to read is locked, and unread [{'read': False, 'said': \"fatal: detected dubious ownership in repository at '/tmp/veldo-0299-s53wh55j/worktree'\", 'files': [], 'worktree_locked': False, 'locked': False}]"
    ]
   ],
   "noop_red_rows": [],
@@ -147,7 +148,7 @@
   "red_details": [
    [
     "VELDO-0299 closed/scratch-unopenable-is-locked",
-    "a scratch folder the probe cannot open reads as locked, and unread [the journal /tmp/veldo-0299-sewef7ht/borrowed-logins/veldo-agent-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx cannot be looked into]"
+    "a scratch folder the probe cannot open reads as locked, and unread [the journal /tmp/veldo-0299-9014yxe6/borrowed-logins/veldo-agent-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx cannot be looked into]"
    ]
   ],
   "noop_red_rows": [],
@@ -179,8 +180,10 @@
   ],
   "red_rows": [
    "closed/unread-names-pids-and-uids",
+   "reach/capability-counted",
    "reach/other-uid-let-through-counted",
    "reach/other-uid-shut-out-excluded",
+   "reach/root-login-counted",
    "reach/root-with-container-mount-counted",
    "reach/same-uid-and-inherited"
   ],
@@ -218,12 +221,105 @@
    "reach/root-with-container-mount-counted"
   ],
   "red_rows": [
+   "reach/container-by-its-mounts",
    "reach/root-with-container-mount-counted"
   ],
   "red_details": [
    [
     "VELDO-0299 reach/root-with-container-mount-counted",
     "with that mount the root-owned process counts: the path is in use [[(41, 0, None)]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-loginuid-ignored",
+  "criterion": "AC1",
+  "expected_red": [
+   "reach/root-login-counted"
+  ],
+  "red_rows": [
+   "reach/capability-counted",
+   "reach/root-login-counted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 reach/root-login-counted",
+    "a root-owned process this user started through sudo, left under the first process, counts [{1: None, 61: None, 62: None, 63: None, 64: None, 65: None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-capability-ignored",
+  "criterion": "AC1",
+  "expected_red": [
+   "reach/capability-counted"
+  ],
+  "red_rows": [
+   "reach/capability-counted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 reach/capability-counted",
+    "a process that is not root and holds CAP_DAC_READ_SEARCH, started by a login, counts [{71: None, 72: None, 73: None, 74: None, 75: None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-kernel-thread-listed",
+  "criterion": "AC1",
+  "expected_red": [
+   "closed/kernel-thread-left-out"
+  ],
+  "red_rows": [
+   "closed/kernel-thread-left-out"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 closed/kernel-thread-left-out",
+    "an entry whose stat carries PF_KTHREAD is left out; one without the flag, and one with no stat, are listed [[(81, 1000, 'same_uid'), (82, 1000, 'same_uid'), (83, 1000, 'same_uid')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-container-process-judged-as-host",
+  "criterion": "AC1",
+  "expected_red": [
+   "reach/container-by-its-mounts"
+  ],
+  "red_rows": [
+   "reach/container-by-its-mounts"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 reach/container-by-its-mounts",
+    "a process of a container that mounts nothing of the path does not count, though its uid is this user's number [[(91, 1000, 'same_uid'), (92, 0, 'privileged_login')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-helper-by-name-alone",
+  "criterion": "AC1",
+  "expected_red": [
+   "closed/helper-pinned"
+  ],
+  "red_rows": [
+   "ac1/helper-not-counted",
+   "closed/helper-pinned"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 closed/helper-pinned",
+    "a process named virtiofsd with its working directory in the item, in a session of the user, not in that unit, is counted [[]]"
    ]
   ],
   "noop_red_rows": [],

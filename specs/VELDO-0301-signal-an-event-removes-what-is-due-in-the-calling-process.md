@@ -92,3 +92,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: from the re-review of VELDO-0298 and VELDO-0330. The kind registry's due is free of I/O
+  and trusts the look it is given: with no look every worktree and agent repository waits, and with a
+  look that answers {} it returns them for removal. So this ticket's call of due must pass
+  look=signal.inside (lambda identity, record: inside(ledger, probe, identity, record, run)), the same
+  reading rule 6 makes, and no other look. It must have a row for it: an agent repository due at an
+  event, with a kept worktree inside it, is not carried out and its files are still on disk when the
+  call returns. Falsifier: pass a stub look that returns {}; the row finds the agent repository handed
+  to the remover and fails. No acceptance criterion changed.

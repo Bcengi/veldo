@@ -4,7 +4,7 @@
  "commit": "15ef34b6635beb038290d09a45953cd8224c34c0",
  "tree": "ee425898072ff0e751f696aa2cb141ea70e8ce7f",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-13T23:13:21.655754+00:00",
+ "produced_at": "2026-11-13T23:38:52.549618+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -34,6 +34,21 @@
      "type": "unit",
      "ref": "proof/VELDO-0330/falsifiers.json",
      "detail": "Falsifiers: space330-kept-child-does-not-hold (kept added to the states that do not hold): ac1/kept-child-holds-parent red (ac1/children red with it). space330-every-unread-process-refuses (every unread process refuses, reach or not): ac1/unread-process-reach red. Noop copies green. proof/VELDO-0330/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "Re-review (verdict FIX), 2026-11-13, finding 0330-1. Row ac1/nested-repository-holds-worktree is the reviewer's reproduction: a clean worktree of the project with a git repository in build/, a folder git ignores, holding a commit the project's repository does not have. unique_work reads no case and no untracked file. The removal is refused in_use by children after rules 1 to 5 passed, naming path:<the repository> unrecorded; the tool, git's non-forced worktree remove, is not called, and the repository, its file and its commit are still there. A discard answer, whose remove is forced, is refused the same way. The kind registry's due, given look=inside, returns the worktree with wait and held_by the repository. A linked worktree of another repository (.git as a file) and a bare repository deeper in the ignored folder hold it too; a link to a repository elsewhere does not; a folder the caller names as recorded is not walked into; a folder that cannot be listed makes the worktree's inside unread, which holds it. A repository on disk beneath an agent repository holds that the same way. With the nested repositories moved out, git's non-forced remove takes the worktree and the moved repository still has its commit. Row ac1/unread-process-reach has one more check: an unread root-owned process a login started refuses, named with reach privileged_login."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "The nested-repository row runs on the real ledger and store, real git repositories and worktrees and git's own worktree remove as the tool; the folders are read from the real disk."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0330/falsifiers.json",
+     "detail": "Re-review falsifier space330-nested-repository-not-looked-for (inside skips the look on disk): ac1/nested-repository-holds-worktree red: the rules pass, git's non-forced remove deletes the worktree and the nested repository with its only commit. Noop copy green. All six cases of finding 330 were rerun: proof/VELDO-0330/mutations.txt."
     }
    ]
   },
@@ -84,7 +99,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 137_veldo_0330_space_rules (22 rows, 48 checks), rerun green after the review of VELDO-0298 and VELDO-0299 with suites 130 to 136, each on its own."
+   "command": "python3 scripts/selftest.py --suite 137_veldo_0330_space_rules (23 rows, 49 checks), rerun green after the re-review's fix with suites 130 to 136, each on its own."
   },
   {
    "name": "integration",
@@ -94,12 +109,12 @@
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec on the spec."
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py; python3 .veldo/validate.py spec on the spec and on VELDO-0301's, and all, exit 0."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran the single suite and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the three registered teeth cases (finding 330) were run here through the driver's own materialize() and worker(), not through the teeth run."
+   "reason": "The build and both review fixes ran the single suite and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the six registered teeth cases (finding 330) were run here through the driver's own materialize() and worker(), not through the teeth run."
   }
  ],
  "assumptions": [
@@ -112,11 +127,15 @@
   "Rule 2 reads ledger.protect at every call, through control_space_probe.protected. For Docker it tests the name pattern and the compose project the locator records; what the engine itself says (label, mounts, image, networks) is VELDO-0341. control_space.protected_by is not in this ticket's footprint and is unchanged; the probe's function repeats its path and name tests and adds how.",
   "Rule 3 for a run or gate owner asks the caller's owner_live(owner) for {conclusive, group_empty}; with no reader or any other answer it refuses. Who reads the dispatch record and the containment group is the caller's (VELDO-0301, 0308). A session's item with no recorded process passes the process half of rule 3.",
   "Rule 4 runs the scratch probe (lock, borrowed login) on every item of kind scratch: the record does not say which scratch is a sandbox launcher's.",
-  "Rule 6 holds a parent for a child that is present, due or deferred, as section 7 says and as the kind registry's HOLDING_STATES. A child that is declared, removing or kept does not hold its parent. A kept worktree inside an agent repository is still covered by rule 5 only while a branch is not across. Flagged for review, not changed.",
+  "[Superseded by the review and the re-review of 2026-11-13; see the last assumptions.] Rule 6 holds a parent for a child that is present, due or deferred, as section 7 says and as the kind registry's HOLDING_STATES. A child that is declared, removing or kept does not hold its parent. A kept worktree inside an agent repository is still covered by rule 5 only while a branch is not across. Flagged for review, not changed.",
   "Purposes: remove passes all seven, discard rules 1, 2, 3, 4, 6 and the tool, review_scratch rules 1, 2, 3, 4 and 6. The review scratch remover's own per-path checks (a path that resolves outside the worktree) and the discard remover's own refusals are VELDO-0300.",
   "The deferral facts hold retry as the item's own ending events (ends_on), since a deferred item is made due again by its next ending event; admission and reconcile also retry and are not listed.",
   "The spec's own History and specs/index.md are not changed, as in VELDO-0298 and 0299. docs are not changed: documents for space management are VELDO-0322.",
-  "After the review of VELDO-0298 and VELDO-0299 (2026-11-13): rule 4 reads the probe's in_use and, apart from it, every unread fact; rule 5 refuses unless read is True and unique_work is False; rule 6 reads inside(), which is also the look given to the kind registry's due. The five registered teeth cases (finding 330) were run again through the driver's own materialize() and worker(). The spec's History states what the probe needs to read and the bounded rule for unread processes; no acceptance criterion changed."
+  "After the review of VELDO-0298 and VELDO-0299 (2026-11-13): rule 4 reads the probe's in_use and, apart from it, every unread fact; rule 5 refuses unless read is True and unique_work is False; rule 6 reads inside(), which is also the look given to the kind registry's due. The five registered teeth cases (finding 330) were run again through the driver's own materialize() and worker(). The spec's History states what the probe needs to read and the bounded rule for unread processes; no acceptance criterion changed.",
+  "Re-review, 2026-11-13, finding 0330-1. inside asks control_space_probe.nested for every git repository on disk beneath an item of kind worktree or agent_repository: a folder that holds a .git entry (a folder or a file) or is itself a git folder (HEAD, objects and refs), ignored by git or not, no link followed, nothing looked for inside one that was found, inside the item's own .git folder or inside the folder of an item that is neither removed nor gone (that item holds its parent by its state). Each is returned as path:<its path> unrecorded, and a folder that cannot be listed as path:<the item's path> unread; both hold the item, in rule 6 and in the kind registry's due.",
+  "Consequences of that look, for the lead: a worktree with a submodule, or with a vendored checkout nobody recorded, is deferred in_use by children until the repository is recorded or gone (git's own worktree remove refuses a worktree with a submodule as well). The walk reads every folder of the worktree at each attempt, build output included when no item records it; its cost on a large worktree is not measured (0.02 s on this repository's own worktree). Only the kinds worktree and agent_repository are walked, as the re-review states; a repository inside a scratch or a build output folder is not looked for.",
+  "Rule 4 reads the re-review's reach of VELDO-0299 unchanged in code: any unread process with a reach refuses, and privileged_login and container are two more reasons the probe gives. The suite's fixture process table now writes CapEff, loginuid and cgroup for each entry, as the kernel does.",
+  "VELDO-0301's spec History says its call of the kind registry's due must pass look=signal.inside and have a row whose falsifier is a stub look returning {}. Nothing in the engine calls due yet. The spec's History has the re-review's line; specs/index.md regenerated with no change."
  ],
  "rollback": "Revert the change. Nothing is removed by this ticket and nothing calls the rules yet, so nothing on disk changes."
 }

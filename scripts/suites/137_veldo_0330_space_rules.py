@@ -25,8 +25,9 @@ cannot read, a process table that hides processes, a worktree whose locks git ca
 folder that cannot be opened, a run nobody answers for, a run not conclusive, a group not empty, a
 worktree git cannot read, unique work that is unknown: each refuses), ac1/unread-process-reach (the
 lead's decision, bounded fail closed: an unread process of another uid that the path's own permissions
-shut out does not refuse; one that runs as this user, and a root-owned one once a container has a bind
-mount above the path, do, and the refusal names the process id, the uid and the reach),
+shut out does not refuse; one that runs as this user, a root-owned one once a container has a bind
+mount above the path, and a root-owned one a login started, do, and the refusal names the process id,
+the uid and the reach),
 ac1/session-process (a session's scratch is in use while its recorded process is the same live process,
 not once it ended and not for another start time), ac1/scratch-lock (a launcher's scratch whose lock is
 held or whose borrowed login is not settled), ac1/review-scratch (an untracked file in a review worktree
@@ -38,6 +39,13 @@ repository whose branch is across, with a worktree the owner answered Keep for a
 inside it, is refused in_use by children, the remover is not called and the file is still there; the
 kind registry's due, given the same look, returns it with wait; a registered worktree on disk that the
 ledger says is gone holds it too),
+ac1/nested-repository-holds-worktree (the re-review's reproduction on real git: a clean worktree with a
+git repository in a folder git ignores, holding a commit that exists nowhere else, is no unique work
+and is refused in_use by children, naming the repository; git's non-forced worktree remove is not
+called and the commit is still there; the kind registry's due, given the same look, returns the
+worktree with wait; a linked worktree of another repository and a bare repository in the ignored folder
+hold it too, and so does a folder that cannot be listed; a link to a repository elsewhere does not; the
+same holds beneath an agent repository; with the nested repositories moved out the worktree is removed),
 ac1/agent-repository (a branch the shared repository does not hold is unique work of the agent
 repository and of the agent's worktree; rule 1 reads the agent's worktree against its agent repository),
 ac1/discard-skips-unique-work (the purposes: discard and review scratch pass no unique work rule, and an
@@ -94,7 +102,7 @@ def _v330_space_rules_suite():
 
     ROWS = ('ac1/order', 'ac1/protect-before-unique-work', 'ac1/first-refusal-names', 'ac1/unread-is-in-use',
             'ac1/unread-process-reach', 'ac1/session-process', 'ac1/scratch-lock', 'ac1/review-scratch',
-            'ac1/children', 'ac1/kept-child-holds-parent',
+            'ac1/children', 'ac1/kept-child-holds-parent', 'ac1/nested-repository-holds-worktree',
             'ac1/agent-repository', 'ac1/discard-skips-unique-work', 'ac1/deferral-record',
             'ac2/link-replaces-folder', 'ac2/other-repository-worktree', 'ac2/docker-other-id',
             'ac3/at-above-beneath', 'ac3/no-event-removes', 'ac3/no-confirm-removes', 'ac3/no-discard-removes',
@@ -231,10 +239,11 @@ def _v330_space_rules_suite():
         PROC = temp / 'proc'
         PROC.mkdir()
 
-        def process_entry(pid, cwd, uid=None):
+        def process_entry(pid, cwd, uid=None, login=4294967295):
             """One entry of the fixture process table: a process whose working directory is `cwd`, or,
             with no `cwd`, one the probe cannot read (its cwd is a file and no link). `uid` writes its
-            status file."""
+            status file, with every capability for uid 0 and none for another. `login` is its
+            loginuid, unset unless given. It is in a unit of the host, in no container."""
             base = PROC / str(pid)
             (base / 'fd').mkdir(parents=True)
             (base / 'comm').write_text('holder\n')
@@ -245,7 +254,10 @@ def _v330_space_rules_suite():
                 (base / 'cwd').symlink_to(cwd)
             if uid is not None:
                 (base / 'status').write_text('Name:\tholder\nPPid:\t0\nUid:\t%d\t%d\t%d\t%d\nGid:\t%d\t%d\t%d\t%d\n'
-                                             'Groups:\t\n' % ((uid,) * 8))
+                                             'Groups:\t\nCapEff:\t%016x\n'
+                                             % ((uid,) * 8 + (0 if uid else 0x000001ffffffffff,)))
+            (base / 'loginuid').write_text(str(login))
+            (base / 'cgroup').write_text('0::/system.slice/holder.service\n')
             return base
 
         calls = []
@@ -550,6 +562,15 @@ def _v330_space_rules_suite():
               == [{'pid': 83, 'uid': OWNED_BY_ROOT, 'command': 'holder', 'reach': 'container_mount'}]
               and (answer.get('found') or {}).get('containers') == [])
         shutil.rmtree(rooted)
+        if ME:
+            sudoed = process_entry(84, None, uid=0, login=ME)
+            answer = judge(reach)
+            shutil.rmtree(sudoed)
+            check(ROW, 'an unread root-owned process a login started, with no container mount: in_use, named '
+                  'with its reach [%s]' % (answer.get('found') or {}).get('unread', {}).get('processes'),
+                  named(answer) == (False, 'process_use', 'in_use')
+                  and (answer.get('found') or {}).get('unread', {}).get('processes')
+                  == [{'pid': 84, 'uid': 0, 'command': 'holder', 'reach': 'privileged_login'}])
         check(ROW, 'with the processes gone the item passes', judge(reach).get('ok') is True)
 
         # AC1: a session's recorded process
@@ -779,6 +800,90 @@ def _v330_space_rules_suite():
         check(ROW, 'with the worktree off the disk the agent repository goes [%s %s]' % (got, named(answer)),
               len(got) == 1 and got[0]['action'] == 'remove' and answer.get('ok') is True
               and calls == [('removes', home)] and not home_path.exists())
+
+        # AC1: the re-review's reproduction: a git repository in an ignored folder of a worktree
+        ROW = 'ac1/nested-repository-holds-worktree'
+        del calls[:]
+        outer, outer_path = worktree('outer', owner={'scope': A, 'ticket': 'VELDO-9006'})
+        nested_path = repository(outer_path / 'build' / 'nested')
+        only = commit(nested_path, 'only-here.txt', 'a commit that exists nowhere else\n', 'only here')
+        work = P.unique_work(str(outer_path))
+        check(ROW, 'a repository in a folder git ignores is no case of unique work: the worktree reads clean [%s]'
+              % {key: work.get(key) for key in ('cases', 'untracked')},
+              work['read'] is True and work['cases'] == [] and work['untracked'] == []
+              and git(REPOSITORY, 'cat-file', '-e', only + '^{commit}', ok=False) != 0)
+        answer = judge(outer, tool=worktree_remove(False))
+        check(ROW, 'the removal is refused in_use by children, naming the repository on disk [%s %s]'
+              % (named(answer), (answer.get('found') or {}).get('states')),
+              named(answer) == (False, 'children', 'in_use')
+              and (answer.get('found') or {}).get('states') == {'path:' + str(nested_path): 'unrecorded'}
+              and answer.get('passed') == ['ledger', 'protect', 'owner_live', 'process_use', 'unique_work'])
+        check(ROW, "git's non-forced remove was not called; the worktree, the repository and its commit are there [%s]"
+              % calls, calls == [] and outer_path.is_dir()
+              and git(nested_path, 'rev-parse', 'HEAD') == only
+              and (nested_path / 'only-here.txt').is_file())
+        # The rest of the row needs the worktree: a look that missed the repository has let it go.
+        if nested_path.is_dir():
+            answer = judge(outer, purpose='discard', tool=worktree_remove(True))
+            check(ROW, 'a discard answer, whose remove is forced, is refused the same way',
+                  named(answer) == (False, 'children', 'in_use') and calls == [] and nested_path.is_dir())
+            L.signal('ticket_ended', {'ticket': 'VELDO-9006'})
+            got = K.due('ticket_ended', [(outer, L.item(outer))], look=look)
+            check(ROW, "the kind registry's due, given this look, returns the worktree with wait [%s]" % got,
+                  state_of(outer) == 'due' and len(got) == 1 and got[0]['action'] == 'wait'
+                  and got[0].get('held_by') == ['path:' + str(nested_path)])
+            found = P.nested(str(outer_path))
+            check(ROW, 'the probe names it, and reads the folder itself whatever git ignores [%s]' % found,
+                  found == {'read': True, 'said': None, 'repositories': [str(nested_path)]})
+            linked = outer_path / 'build' / 'linked'
+            git(OTHER, 'worktree', 'add', '-q', '--detach', str(linked), 'main')
+            bare = outer_path / 'build' / 'deep' / 'bare.git'
+            bare.parent.mkdir()
+            git(temp, 'init', '-q', '--bare', str(bare))
+            (outer_path / 'build' / 'pointer').symlink_to(OTHER)
+            answer = judge(outer, tool=worktree_remove(False))
+            check(ROW, "a linked worktree of another repository and a bare repository there hold it too; a link to a "
+                  'repository elsewhere does not [%s]' % sorted((answer.get('found') or {}).get('states', ())),
+                  named(answer) == (False, 'children', 'in_use')
+                  and (answer.get('found') or {}).get('states')
+                  == {'path:' + str(where): 'unrecorded' for where in (nested_path, linked, bare)} and calls == [])
+            check(ROW, 'a folder the caller says is recorded is not looked into',
+                  P.nested(str(outer_path), {str(outer_path / 'build')})['repositories'] == [])
+            aside_root = temp / 'moved-out'
+            aside_root.mkdir()
+            git(OTHER, 'worktree', 'remove', '--force', str(linked))
+            shutil.move(str(bare), str(aside_root / 'bare.git'))
+            shutil.move(str(nested_path), str(aside_root / 'nested'))
+            (outer_path / 'build' / 'pointer').unlink()
+            if os.geteuid() != 0:
+                (outer_path / 'build' / 'deep').chmod(0)
+                answer = judge(outer, tool=worktree_remove(False))
+                (outer_path / 'build' / 'deep').chmod(0o700)
+                check(ROW, 'a folder beneath it that cannot be listed: its inside is unread, and it is held [%s %s]'
+                      % (named(answer), (answer.get('found') or {}).get('states')),
+                      named(answer) == (False, 'children', 'in_use')
+                      and (answer.get('found') or {}).get('states') == {'path:' + str(outer_path): 'unread'}
+                      and calls == [])
+            nest_home = WORKTREES / 'agents' / 'a3.git'
+            subprocess.run(['git', 'clone', '-q', '--bare', str(REPOSITORY), str(nest_home)], env=ENVIRONMENT,
+                           check=True, capture_output=True, timeout=120)
+            nest = L.declare('agent_repository', {'path': str(nest_home)}, {'scope': A, 'ticket': 'VELDO-9007'},
+                             'seam')['item']
+            L.confirm(nest)
+            check(ROW, 'an agent repository with nothing nested in it passes [%s]' % (named(judge(nest)),),
+                  judge(nest).get('ok') is True)
+            inner_repository = repository(nest_home / 'cache' / 'nested')
+            answer = judge(nest)
+            check(ROW, 'a repository on disk beneath an agent repository holds it the same way [%s %s]'
+                  % (named(answer), (answer.get('found') or {}).get('states')),
+                  named(answer) == (False, 'children', 'in_use')
+                  and (answer.get('found') or {}).get('states') == {'path:' + str(inner_repository): 'unrecorded'})
+            shutil.rmtree(nest_home / 'cache')
+            check(ROW, 'and with it off the disk the agent repository passes again', judge(nest).get('ok') is True)
+            answer = judge(outer, tool=worktree_remove(False))
+            check(ROW, "with the nested repositories moved out, git's non-forced remove takes the worktree [%s %s]"
+                  % (named(answer), calls), answer.get('ok') is True and calls == [('non-forced', outer)]
+                  and not outer_path.exists() and git(aside_root / 'nested', 'rev-parse', 'HEAD') == only)
 
         # AC1: the purposes
         ROW = 'ac1/discard-skips-unique-work'

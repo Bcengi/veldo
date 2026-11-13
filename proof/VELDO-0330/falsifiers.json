@@ -8,6 +8,7 @@
   "red_rows": [
    "ac1/deferral-record",
    "ac1/first-refusal-names",
+   "ac1/nested-repository-holds-worktree",
    "ac1/order",
    "ac1/protect-before-unique-work",
    "ac3/no-confirm-removes",
@@ -74,7 +75,7 @@
   "red_details": [
    [
     "VELDO-0330 ac1/kept-child-holds-parent",
-    "the removal of the agent repository is refused in_use by children, naming the kept worktree [(False, 'children', 'in_use') {'path:/tmp/veldo-0330-5bvchwvb/projects/orchard-worktrees/agents/a2-tree': 'unrecorded'}]"
+    "the removal of the agent repository is refused in_use by children, naming the kept worktree [(False, 'children', 'in_use') {'path:/tmp/veldo-0330-duty6frb/projects/orchard-worktrees/agents/a2-tree': 'unrecorded'}]"
    ]
   ],
   "noop_red_rows": [],
@@ -93,6 +94,24 @@
    [
     "VELDO-0330 ac1/unread-process-reach",
     "an unread process of another uid, shut out by the path's own permissions, does not refuse [(False, 'process_use', 'in_use')]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space330-nested-repository-not-looked-for",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/nested-repository-holds-worktree"
+  ],
+  "red_rows": [
+   "ac1/nested-repository-holds-worktree"
+  ],
+  "red_details": [
+   [
+    "VELDO-0330 ac1/nested-repository-holds-worktree",
+    "the removal is refused in_use by children, naming the repository on disk [(True, None, None) None]"
    ]
   ],
   "noop_red_rows": [],

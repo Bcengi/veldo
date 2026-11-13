@@ -12698,6 +12698,31 @@ def cases():
         "    way_in = 'container_mount' if mounted['users'] or mounted['above'] or mounted['unread'] else None\n",
         "    way_in = None\n",
         ['reach/root-with-container-mount-counted'])
+    # The re-review of VELDO-0299. Root judged by the mode whatever its loginuid; a capability that passes
+    # every mode check not read; a kernel thread listed like a process; a container's process judged as
+    # a process of the host; the helper matched by its name alone.
+    add(299, 'space299-loginuid-ignored', space299, 'control_space_probe.py',
+        "    elif who['privileged'] and _login_started(base):\n",
+        "    elif False:\n",
+        ['reach/root-login-counted'])
+    add(299, 'space299-capability-ignored', space299, 'control_space_probe.py',
+        "        who['privileged'] = who['uid'] == 0 or bool(int(fields[b'CapEff'].strip(), 16) & PASSES_MODE)\n",
+        "        who['privileged'] = who['uid'] == 0\n",
+        ['reach/capability-counted'])
+    add(299, 'space299-kernel-thread-listed', space299, 'control_space_probe.py',
+        "        if _kernel_thread(base) or _helper(base, command, helpers, me):\n",
+        "        if _helper(base, command, helpers, me):\n",
+        ['closed/kernel-thread-left-out'])
+    add(299, 'space299-container-process-judged-as-host', space299, 'control_space_probe.py',
+        "    elif CONTAINER.search(group):\n",
+        "    elif False:\n",
+        ['reach/container-by-its-mounts'])
+    add(299, 'space299-helper-by-name-alone', space299, 'control_space_probe.py',
+        "        who, group = _identity(base), _cgroup(base)\n"
+        "        if who is None or who['uid'] != me or group is None:\n"
+        "            continue\n",
+        "        return True\n",
+        ['closed/helper-pinned'])
 
     # VELDO-0330: the rule order, the ledger rule and the protect rule. The declared falsifier of each
     # acceptance criterion: AC1 unique work runs before protect; AC2 rule 1 compares the locator's text
@@ -12725,6 +12750,11 @@ def cases():
         "    reaching = [entry for entry in unread['processes'] if entry.get('reach') is not None]\n",
         "    reaching = list(unread['processes'])\n",
         ['ac1/unread-process-reach'])
+    # The re-review of VELDO-0330: rule 6's look does not look on disk for a nested repository.
+    add(330, 'space330-nested-repository-not-looked-for', space330, 'control_space_signal.py',
+        "    if record.get('kind') in HOLDS_REPOSITORIES and path:\n",
+        "    if False:\n",
+        ['ac1/nested-repository-holds-worktree'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'

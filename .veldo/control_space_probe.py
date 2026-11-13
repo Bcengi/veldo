@@ -21,6 +21,7 @@ kept from an earlier call.
   git_lock(path)               rule 4: the lock files git holds on a worktree
   in_use(path, engines)        rule 4: the three above together
   worktrees(path)              rule 6: the worktrees a repository's own git folder registers
+  nested(path, skip)           rule 6: the git repositories on disk beneath a path
   scratch(path)                rule 4, a sandbox launcher's scratch: its scratch lock and its borrowed
                                login
   unique_work(path, ...)       rule 5: the five cases, read in the worktree
@@ -50,25 +51,47 @@ comes back named (read False, or an entry of unread), and in_use or unique_work 
 
 PROCESS USE is read from the kernel's process table: for each process its cwd link, the links under fd
 and the paths in maps. A command line that names the path is not read at all, so it is not use. A
-process whose command name is in HELPERS (the file-sharing helper of a desktop container engine, which
-holds descriptors on every path a container ever mounted) is not counted: the containers' own mount
-lists are read instead. A process whose entry is gone when it is read ended meanwhile. Every other
-process the probe could not read in full (its name, its working directory, its descriptors or its
-maps) is listed in unread, by its process id and uid, never as a count.
+process whose entry is gone when it is read ended meanwhile. A kernel thread (the PF_KTHREAD flag in
+its stat file, which every user may read) holds no working directory, descriptor or map of a user's
+path, and is left out: that is a fact of the kernel, not a judgement. Every other process the probe
+could not read in full (its name, its working directory, its descriptors or its maps) is listed in
+unread, by its process id and uid, never as a count.
+
+A HELPER is not counted: the file-sharing helper of a desktop container engine holds descriptors on
+every path a container ever mounted, and the containers' own mount lists are read instead. A name alone
+does not make a process a helper, since any process may take any name. Each entry of HELPERS pins an
+identity, and a process is that helper only when all of it holds: its command name, the probing user's
+uid, the exact unit of that user's manager its cgroup file names (`{uid}` stands for the uid), and,
+when the link can be read, the program its exe link leads to. Any other process of that name is read
+and counted like every process.
 
 WHICH UNREAD PROCESS COUNTS (design section 7, bounded fail closed). An unread process counts as use of
 a path only when it could reach that path; its entry in unread carries reach, the reason it could, or
 None when it could not. The uid, the groups and the parent of a process come from its status file,
 which every user may read without root. It counts when:
 
-  unknown_identity  its status cannot be read
+  unknown_identity  its status or its cgroup file cannot be read
+  container         its cgroup file names a container (an id of 64 hexadecimal digits) that no engine
+                    the probe read holds: its mounts are not known. A process of a container an engine
+                    does hold is judged by that container's mounts and by nothing of the host: not by
+                    its uid, which is a number of the container's own, and not by the host's modes. It
+                    has no reach of its own, and container_mount below is what counts it
   same_uid          it runs as the probing user: such a process is readable, and one that is not
                     (it made itself not dumpable) can still be anywhere that user can
+  privileged_login  it is root, or holds CAP_DAC_OVERRIDE or CAP_DAC_READ_SEARCH in the effective
+                    capabilities its status file gives (or they cannot be read), and a login started
+                    it: its loginuid file, which every user may read, holds a uid, or cannot be read.
+                    The kernel checks no mode for such a process, so the mode says nothing of where it
+                    is, and the loginuid, set at login and kept across fork, exec and sudo, says a
+                    person or a cron job started it: a command this user ran through sudo counts as
+                    this user's, also after the shell that started it has ended
   permissions       the path's own permissions let it through: search permission, for its uid and
                     groups, on every directory from / down, and any permission on the path itself.
-                    Owner, group and mode are read with os.stat. Root is judged the same way, by the
-                    mode and not by its privilege: a root-owned service has no way of its own to a
-                    directory closed to it
+                    Owner, group and mode are read with os.stat. A root-owned or capable process whose
+                    loginuid is unset, a system daemon, is judged this way too. That is a stated
+                    policy and not a reading: the kernel would let such a process into a directory
+                    closed to it, and the policy is that a daemon no login started does not go into a
+                    user's folder it was not given. The design names what the policy does not see
   special           a directory of the way cannot be judged by owner, group and mode: it cannot be
                     read, or it carries an access list. A directory that plainly shuts the process
                     out decides before that
@@ -78,16 +101,26 @@ which every user may read without root. It counts when:
   container_mount   a container, running or stopped, has a bind mount at, beneath or above the path,
                     or an engine could not be read: a mount is a way to the path that the path's own
                     permissions do not describe, and the engine's own processes and the container's
-                    come through it. in_use adds this one, for every unread process
+                    come through it. in_use adds this one, for every unread process with no reach of
+                    its own
 
 A process table mounted with hidepid shows only some processes: it is reported in table, and the path
-is in use. What this bound does not see is said in the design: a process of another uid that outlived
-every parent that could reach the path and kept a working directory or a descriptor from it.
+is in use. What this bound does not see is said in the design: a process of another uid, without
+privilege, that outlived every parent that could reach the path and kept a working directory or a
+descriptor from it; and a system service no login started that was configured to work in the path.
 
 CONTAINERS are read through the docker client: the list of all containers of a context, then their
 inspect records. A bind mount whose host source is at or beneath the path is use, whatever the
 container's state. One whose source is above the path is returned in above: it is not use of the path,
 and it is a way to it. An engine that cannot be read is named in unread with what the client said.
+known holds the id of every container of the engines that were read, whatever it mounts.
+
+NESTED REPOSITORIES. A git repository on disk beneath a worktree or an agent repository goes with it
+when it is removed, with every commit only it holds, and git's status says nothing of one in an ignored
+folder. nested walks the folder itself, ignored or not, following no link, and names every folder
+beneath the path that holds a .git entry (a folder or a file) or is itself a git folder (HEAD, objects
+and refs). It does not look inside one it found, inside the path's own .git folder, or inside a folder
+of `skip`. A folder it cannot list makes read False.
 
 GIT'S LOCKS are read in the git folder of the worktree whose top the path is, or of the repository
 whose own folder it is. A path with no git at all, or inside a worktree and not its top, has none.
@@ -148,7 +181,9 @@ SCHEMA = 'veldo.control_space_probe/v1'
 PROC = '/proc'
 SECONDS = 60
 USES = ('cwd', 'open', 'mapped')
-HELPERS = ('virtiofsd',)
+# The identity of each helper: every field must hold. {uid} is the probing user's uid.
+HELPERS = ({'name': 'virtiofsd', 'exe': '/opt/docker-desktop/bin/virtiofsd',
+            'cgroup': '/user.slice/user-{uid}.slice/user@{uid}.service/app.slice/docker-desktop.service'},)
 NAMED = 20  # the most paths, refs or files named for one process or one case
 
 LOCK_FILES = ('index.lock', 'HEAD.lock', 'config.lock', 'shallow.lock')
@@ -165,6 +200,11 @@ GONE = (FileNotFoundError, ProcessLookupError)
 HOLDING_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/')
 ACCESS_LIST = 'system.posix_acl_access'
 SHOWN = (None, '0', 'off')  # the hidepid values under which the table shows every process
+KERNEL_THREAD = 0x00200000  # PF_KTHREAD, in the flags of a process's stat file
+PASSES_MODE = (1 << 1) | (1 << 2)  # CAP_DAC_OVERRIDE and CAP_DAC_READ_SEARCH: no mode is checked
+NO_LOGIN = 4294967295  # the loginuid of a process no login started
+CONTAINER = re.compile(r'[0-9a-f]{64}')  # a container's id, in the cgroup a process is in
+GIT_FOLDER = frozenset(('HEAD', 'objects', 'refs'))
 
 SEAM = {'after_in_use': None}
 
@@ -323,15 +363,73 @@ def process(pid, proc=PROC):
 
 def _identity(base):
     """Who the process at `base` is, from its status file, which every user may read: the uid and the
-    groups the kernel checks a path against, and its parent. None when it cannot be read."""
+    groups the kernel checks a path against, its parent, and privileged: it is root, or its effective
+    capabilities pass every mode check, or they cannot be read. None when the status cannot be read."""
     try:
         with open(os.path.join(base, 'status'), 'rb') as status:
             fields = dict(line.split(b':', 1) for line in status.read().split(b'\n') if b':' in line)
-        return {'uid': int(fields[b'Uid'].split()[3]),
-                'gids': [int(fields[b'Gid'].split()[3])] + [int(group) for group in fields[b'Groups'].split()],
-                'parent': int(fields[b'PPid'])}
+        who = {'uid': int(fields[b'Uid'].split()[3]),
+               'gids': [int(fields[b'Gid'].split()[3])] + [int(group) for group in fields[b'Groups'].split()],
+               'parent': int(fields[b'PPid'])}
     except (OSError, ValueError, KeyError, IndexError):
         return None
+    try:
+        who['privileged'] = who['uid'] == 0 or bool(int(fields[b'CapEff'].strip(), 16) & PASSES_MODE)
+    except (ValueError, KeyError):
+        who['privileged'] = True  # capabilities that cannot be read are capabilities
+    return who
+
+
+def _cgroup(base):
+    """The text of the cgroup file of the process at `base`, which every user may read; None when it
+    cannot be read."""
+    try:
+        with open(os.path.join(base, 'cgroup'), 'rb') as cgroup:
+            return cgroup.read().decode('utf-8', 'replace')
+    except OSError:
+        return None
+
+
+def _login_started(base):
+    """Whether a login started the process at `base`: its loginuid file holds a uid. True as well when
+    the file cannot be read; False only when it reads as unset."""
+    try:
+        with open(os.path.join(base, 'loginuid'), 'rb') as loginuid:
+            return int(loginuid.read().strip()) != NO_LOGIN
+    except (OSError, ValueError):
+        return True
+
+
+def _kernel_thread(base):
+    """Whether the process at `base` is a kernel thread: the PF_KTHREAD flag in its stat file. False
+    when the file cannot be read: only the flag, read, leaves a process out."""
+    try:
+        with open(os.path.join(base, 'stat'), 'rb') as stat:
+            return bool(int(stat.read().rsplit(b')', 1)[1].split()[6]) & KERNEL_THREAD)
+    except (OSError, ValueError, IndexError):
+        return False
+
+
+def _helper(base, command, helpers, me):
+    """Whether the process at `base`, named `command`, is one of `helpers`, by its whole identity: the
+    name, the probing user's uid, the exact unit its cgroup file names and, when its exe link can be
+    read, the program it leads to."""
+    for helper in helpers:
+        if not isinstance(helper, dict) or command != helper.get('name'):
+            continue
+        who, group = _identity(base), _cgroup(base)
+        if who is None or who['uid'] != me or group is None:
+            continue
+        units = [line[len('0::'):] for line in group.split('\n') if line.startswith('0::')]
+        if units != [str(helper.get('cgroup')).replace('{uid}', str(me))]:
+            continue
+        try:
+            if os.readlink(os.path.join(base, 'exe')) != helper.get('exe'):
+                continue
+        except OSError:
+            pass  # a link that cannot be read is not another program
+        return True
+    return False
 
 
 def _lets_through(where, uid, gids, last):
@@ -371,25 +469,31 @@ def reach(path, uid, gids=()):
     return answer
 
 
-def _could_hold(proc, pid, root, me, known):
+def _could_hold(proc, pid, root, me, known, containers=()):
     """Why the unread process `pid` could hold `root`, or None when it could not (WHICH UNREAD PROCESS
-    COUNTS). `known` keeps what this call has already worked out."""
+    COUNTS). `known` keeps what this call has already worked out; `containers` holds the ids of the
+    containers whose mounts the caller read."""
     if pid in known:
         return known[pid]
     known[pid] = 'unknown_identity'  # until decided, and for a chain of parents that leads back here
     base = os.path.join(proc, str(pid))
-    who = _identity(base)
+    who, group = _identity(base), _cgroup(base)
     why = None
-    if who is None:
+    if who is None or group is None:
         why = 'unknown_identity'
+    elif CONTAINER.search(group):
+        # Judged by its container's mounts, which in_use reads, and by nothing of the host.
+        why = None if CONTAINER.findall(group)[-1] in containers else 'container'
     elif who['uid'] == me:
         why = 'same_uid'
+    elif who['privileged'] and _login_started(base):
+        why = 'privileged_login'
     else:
         key = (who['uid'], tuple(who['gids']))
         if key not in known:
             known[key] = reach(root, who['uid'], who['gids'])
         why = known[key]
-        if why is None and who['parent'] > 0 and _could_hold(proc, who['parent'], root, me, known):
+        if why is None and who['parent'] > 0 and _could_hold(proc, who['parent'], root, me, known, containers):
             why = 'inherited'
     known[pid] = why
     return why
@@ -422,12 +526,14 @@ def _table(proc, mountinfo=None):
     return {'read': True, 'hidden': hidden, 'said': None}
 
 
-def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None):
+def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None, containers=()):
     """The processes that use `path`: {users: [{pid, command, uses: [{how, path}], more}], unread:
     [{pid, uid, command, reach}], table: {read, hidden, said}}. how is cwd, open or mapped. unread
     lists every process the probe could not read in full: its uid (None when its status cannot be
     read either), its name (None when that cannot be read) and reach, why it could hold the path, or
-    None when it could not. table says whether the table shows every process."""
+    None when it could not. table says whether the table shows every process. `containers` holds the
+    ids of the containers whose mounts the caller read: an unread process of any other container
+    counts. A kernel thread and a helper (HELPERS) are left out."""
     root = os.path.realpath(path)
     me, known = os.geteuid(), {}
     table = _table(proc, mountinfo)
@@ -447,7 +553,7 @@ def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None):
             continue  # ended meanwhile
         except OSError:
             denied = True  # a process whose name cannot be read is a process all the same
-        if command in helpers:
+        if _kernel_thread(base) or _helper(base, command, helpers, me):
             continue
         uses = []
         for how in USES:
@@ -464,17 +570,18 @@ def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None):
         if denied:
             who = _identity(base)
             unread.append({'pid': int(name), 'uid': who['uid'] if who else None, 'command': command,
-                           'reach': _could_hold(proc, int(name), root, me, known)})
+                           'reach': _could_hold(proc, int(name), root, me, known, containers)})
     return {'users': users, 'unread': unread, 'table': table}
 
 
 def containers(path, engines=(), run=None):
     """The containers with a bind mount at or beneath `path`, on each engine context named:
     {users: [{engine, id, name, state, source, destination}], above: [the same, for a bind mount whose
-    source is above the path], unread: [{engine, said}]}."""
+    source is above the path], unread: [{engine, said}], known: [the id of every container of the
+    engines that were read]}."""
     run = run or _run
     root = os.path.realpath(path)
-    users, above, unread = [], [], []
+    users, above, unread, known = [], [], [], []
     for engine in engines:
         client = ['docker', '--context', str(engine), 'container']
         code, listed = run(client + ['ls', '--all', '--quiet', '--no-trunc'])
@@ -489,6 +596,7 @@ def containers(path, engines=(), run=None):
             unread.append({'engine': engine, 'said': str(listed)[:300] or 'the client gave no answer'})
             continue
         for record in records:
+            known.append(record.get('Id'))
             for mount in record.get('Mounts') or ():
                 source = mount.get('Source') or ''
                 if mount.get('Type') != 'bind' or not source.startswith('/'):
@@ -502,7 +610,7 @@ def containers(path, engines=(), run=None):
                     users.append(found)
                 elif any(_beneath(root, where) for where in sources):
                     above.append(found)
-    return {'users': users, 'above': above, 'unread': unread}
+    return {'users': users, 'above': above, 'unread': unread, 'known': known}
 
 
 def git_lock(path, run=None):
@@ -560,6 +668,32 @@ def worktrees(path, run=None):
                           if os.path.realpath(where) != own]}
 
 
+def nested(path, skip=()):
+    """The git repositories on disk beneath `path`, other than `path` itself: {read, said,
+    repositories: [their folders]}. A folder is one when it holds a .git entry or is itself a git
+    folder (NESTED REPOSITORIES). Nothing is looked for inside one that was found, inside the path's
+    own .git folder or inside a folder of `skip`; no link is followed. read is False, with the first
+    folder that could not be listed, when the walk could not finish."""
+    top, found, said = str(path), [], None
+    waiting = [top]
+    while waiting:
+        folder = waiting.pop()
+        try:
+            with os.scandir(folder) as listed:
+                entries = sorted(listed, key=lambda entry: entry.name)
+            inner = [entry.path for entry in entries
+                     if entry.is_dir(follow_symlinks=False) and not (folder == top and entry.name == '.git')]
+        except OSError as error:
+            said = said or 'the folder %s cannot be listed: %s' % (folder, _said(error))
+            continue
+        names = set(entry.name for entry in entries)
+        if folder != top and ('.git' in names or GIT_FOLDER <= names):
+            found.append(folder)
+            continue
+        waiting.extend(where for where in reversed(inner) if where not in skip)
+    return {'read': said is None, 'said': said, 'repositories': found}
+
+
 def in_use(path, engines=(), proc=PROC, helpers=HELPERS, run=None, mountinfo=None):
     """Rule 4's facts for a path: the processes, the containers and the git locks that use it, and
     what could not be read. found is true when a user was seen. unknown is true when something that
@@ -567,8 +701,10 @@ def in_use(path, engines=(), proc=PROC, helpers=HELPERS, run=None, mountinfo=Non
     hides processes, an engine or a worktree that cannot be read. in_use is true when either is: what
     cannot be read is in use. unread names all of it: every unread process with its uid and its reach
     (container_mount added here, when a container mount is a way to the path or an engine is unread),
-    the table, the engines and what git said."""
-    found, mounted, lock = processes(path, proc, helpers, mountinfo), containers(path, engines, run), git_lock(path, run)
+    the table, the engines and what git said. The containers are read first: an unread process of a
+    container they hold is judged by the mounts alone."""
+    mounted, lock = containers(path, engines, run), git_lock(path, run)
+    found = processes(path, proc, helpers, mountinfo, mounted['known'])
     way_in = 'container_mount' if mounted['users'] or mounted['above'] or mounted['unread'] else None
     unread = {'processes': [dict(entry, reach=entry['reach'] or way_in) for entry in found['unread']],
               'table': found['table']['said'], 'engines': mounted['unread'], 'git': lock['said']}

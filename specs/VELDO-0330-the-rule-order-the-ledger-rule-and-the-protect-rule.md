@@ -122,3 +122,17 @@ the rules, and Probes, which holds the protect list.
   worktrees its git folder registers that are on disk; one that no live item records holds it. inside
   is also the look VELDO-0298's due is given. Rows ac1/children, ac1/kept-child-holds-parent,
   ac1/unread-process-reach, ac1/unread-is-in-use.
+- 2026-11-13: re-review (verdict FIX). Finding 0330-1, a deletion the reviewer reproduced: rule 6's look
+  read the disk only for an agent repository's registered worktrees, so a git repository in a folder
+  of a worktree that git ignores, with a commit that exists nowhere else, passed every rule and went
+  with git's non-forced worktree remove. inside now also asks the probe's nested for every git
+  repository on disk beneath a worktree or an agent repository (a .git folder or file, or a bare git
+  folder; ignored or not; no link followed; a recorded live item's folder not walked into). Each one
+  no live item records holds the item as path:<its path> unrecorded, and a folder that cannot be
+  listed holds it as unread. Row ac1/nested-repository-holds-worktree is the reproduction, refused
+  in_use by children with the commit still there; its falsifier skips the look, and the row's remover
+  then deletes the repository. Rule 4 reads the re-review's reach of VELDO-0299 (a root-owned process a
+  login started refuses as privileged_login; row ac1/unread-process-reach). Design section 7 is amended
+  for both, and its measurement paragraph is corrected: of the six unread processes with the user's uid
+  number, five are the user's own and one is a container's. VELDO-0301's History now says it must pass
+  look=signal.inside to the kind registry's due, with a falsifier. No acceptance criterion changed.
