@@ -1,4 +1,4 @@
   selector    --suite 137_veldo_0330_space_rules
   running     1 of 207 suites: 137_veldo_0330_space_rules
-  137_veldo_0330_space_rules                      20 passed    1.16s
-selftest (PARTIAL, 1 of 207 suites): 46 passed, 0 failed in 1.16s
+  137_veldo_0330_space_rules                      22 passed    1.63s
+selftest (PARTIAL, 1 of 207 suites): 48 passed, 0 failed in 1.63s

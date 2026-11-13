@@ -14,7 +14,8 @@ AC1 rows: ac1/<row>/<event>, one per cell: twelve rows (the ten kinds, a worktre
 and a worktree owned by a run of another station) by nine events (run finished, verdict recorded,
 landed, contained, ticket ended, project ended, worktree abandoned, released by its creator, session
 ended), 108 rows. Each gives the function one due item of that row and compares what comes back with
-the cell: the action and its qualifiers, or nothing for an empty cell. ac1/worktree/run_finished is the
+the cell: the action and its qualifiers, or nothing for an empty cell. Every row but ac2/looks-for-children
+gives the function, as its look, the list itself read as a ledger: what the list records inside an item. ac1/worktree/run_finished is the
 declared falsifier row. ac1/whole-table (the registry's rows and events are exactly the twelve and the
 nine, released equals worktree abandoned for every row, session ended holds a cell for scratch only and
 a scratch no session owns is not removed by it; which worktree reads which row; an item that is not due
@@ -23,8 +24,17 @@ gets nothing).
 AC2 rows: ac2/deferred-build-folder-first (the declared falsifier row: a worktree and, declared after
 it, a build folder that was deferred and is due again at the event; the folder comes back first and the
 worktree after it, naming it), ac2/child-holds-worktree (a worktree with a child that is present, one
-that is deferred, and one that is due but not removed, comes back with wait and the child, never with a
-removal; a child that is removed, gone or kept does not hold it), ac2/agent-repository-after-worktree
+that is deferred, one that is kept, declared or removing, one in a state the registry does not know, and
+one that is due but not removed, comes back with wait and the child, never with a removal; only a child
+that is removed or gone does not hold it), ac2/kept-child-holds-parent (the review's reproduction: an
+agent repository due at ticket ended whose worktree the owner answered Keep for, with its uncommitted
+files, is refused, with wait and the worktree, and so is a worktree with kept evidence inside it, at
+every event that would remove them), ac2/looks-for-children (the function asks the look for what is
+inside each worktree and agent repository it would remove and does not trust the list: with no look, or
+a look that cannot answer, it refuses with children_not_read; a child the look finds and the list does
+not hold, or holds in another state, or something on disk no item records, refuses with
+children_not_passed and names it; a child the look finds by its path holds, or goes first, whatever its
+parent says; one the look finds removed or gone does not hold), ac2/agent-repository-after-worktree
 (an agent repository comes back after its worktree and its worktree's build folder; with its worktree
 held, present or deferred it comes back with wait), ac2/children-first (in a mixed ledger order every
 item comes back after every item inside it, and a network and a volume after the containers).
@@ -127,7 +137,7 @@ def _v298_space_kinds_suite():
 
     ROWS = (tuple('ac1/%s/%s' % (row, event) for row in TABLE_ROWS for event in EVENTS)
             + ('ac1/whole-table', 'ac2/deferred-build-folder-first', 'ac2/child-holds-worktree',
-               'ac2/agent-repository-after-worktree', 'ac2/children-first', 'ac3/passes-to-queued-run',
+               'ac2/kept-child-holds-parent', 'ac2/looks-for-children', 'ac2/agent-repository-after-worktree', 'ac2/children-first', 'ac3/passes-to-queued-run',
                'ac3/removed-without', 'ac3/run-finished-only', 'ac4/keeps-its-version',
                'ac4/action-of-its-version', 'ac4/registry-untouched', 'kinds/ledger-accepts', 'kinds/pure',
                'kinds/canon'))
@@ -166,6 +176,17 @@ def _v298_space_kinds_suite():
                 record = item(row, state)
             return record
 
+        def ledger_look(items):
+            """The look a ledger holding exactly `items` gives: what it records inside an item."""
+            def look(identity, record):
+                return {child: other.get('state') for child, other in items if other.get('parent') == identity}
+            return look
+
+        def due(event, items, **given):
+            """The registry's function, given the list itself as the ledger it looks in."""
+            given.setdefault('look', ledger_look(items))
+            return K.due(event, items, **given)
+
         def cell(entries):
             """What came back for the one item given, without the fields that name the item and the read."""
             if len(entries) != 1:
@@ -179,7 +200,7 @@ def _v298_space_kinds_suite():
         # ---- AC1: the whole table, cell by cell ---------------------------------------------------------
         for row in TABLE_ROWS:
             for event in EVENTS:
-                got = K.due(event, [('space:item:1', of_row(row))])
+                got = due(event, [('space:item:1', of_row(row))])
                 want = EXPECTED[row][event]
                 check('ac1/%s/%s' % (row, event), 'the cell is %s [%s]' % (want, got), cell(got) == want
                       and (want is None or (got[0]['item'], got[0]['row'], got[0]['version'])
@@ -197,45 +218,45 @@ def _v298_space_kinds_suite():
                   for row in TABLE_ROWS))
         check('ac1/whole-table', 'session ended holds a cell for scratch and for no other row',
               [row for row in TABLE_ROWS if 'session_ended' in table['rows'][row]] == ['scratch'])
-        got = K.due('session_ended', [('space:item:1', item('scratch'))])
+        got = due('session_ended', [('space:item:1', item('scratch'))])
         check('ac1/whole-table', 'session ended does nothing to a scratch no session owns [%s]' % got, got == [])
-        got = K.due('run_finished', [('space:item:1', item('scratch'))])
+        got = due('run_finished', [('space:item:1', item('scratch'))])
         check('ac1/whole-table', 'run finished removes that scratch [%s]' % got, cell(got) == remove)
         # Which worktree reads which row.
         ticketed = item('worktree', owner={'run': {'id': 'run-9', 'station': 'review'}})
-        got = K.due('run_finished', [('space:item:1', ticketed)])
+        got = due('run_finished', [('space:item:1', ticketed)])
         check('ac1/whole-table', 'a worktree on a branch with a ticket reads the row worktree, run or not [%s]' % got,
               cell(got) == {'action': 'measure'} and got[0]['row'] == 'worktree')
         on_branch = of_row('worktree_review_run')
         on_branch['branch'] = 'review/x'
-        got = K.due('run_finished', [('space:item:1', on_branch)])
+        got = due('run_finished', [('space:item:1', on_branch)])
         check('ac1/whole-table', 'a run-owned worktree on a branch reads the row worktree [%s]' % got,
               cell(got) == {'action': 'measure'})
         with_ticket = of_row('worktree_review_run')
         with_ticket['owner']['ticket'] = 'T-1'
-        got = K.due('run_finished', [('space:item:1', with_ticket)])
+        got = due('run_finished', [('space:item:1', with_ticket)])
         check('ac1/whole-table', 'a detached run-owned worktree with a ticket reads the row worktree [%s]' % got,
               cell(got) == {'action': 'measure'})
         gate = of_row('worktree_station_run')
         gate['owner']['run']['station'] = 'gate'
-        got = K.due('run_finished', [('space:item:1', gate)])
+        got = due('run_finished', [('space:item:1', gate)])
         check('ac1/whole-table', 'a detached worktree of a gate run reads the other-station row [%s]' % got,
               bool(got) and got[0]['row'] == 'worktree_station_run')
         for state in ('declared', 'present', 'deferred', 'removing', 'removed', 'gone', 'kept'):
-            got = K.due('landed', [('space:item:1', of_row('scratch', state))])
+            got = due('landed', [('space:item:1', of_row('scratch', state))])
             check('ac1/whole-table', 'an item in state %s gets nothing [%s]' % (state, got), got == [])
         reported = item('worktree')
         reported['ends_on']['events'] = []
-        got = K.due('landed', [('space:item:1', reported)])
+        got = due('landed', [('space:item:1', reported)])
         check('ac1/whole-table', 'an item whose record ends on nothing gets nothing [%s]' % got, got == [])
-        got = K.due('superseded', [('space:item:1', item('scratch'))])
+        got = due('superseded', [('space:item:1', item('scratch'))])
         check('ac1/whole-table', 'an event the table does not hold gets nothing [%s]' % got, got == [])
 
         # ---- AC2: children first, and what holds a worktree ---------------------------------------------
         W, B, A = 'space:item:w', 'space:item:b', 'space:item:a'
         deferral = {'rule': 'in_use', 'event': 'run_finished', 'retry': 'landed', 'attempts': 1}
         ledger = [(W, item('worktree')), (B, item('build_output', parent=W, deferral=deferral))]
-        got = K.due('landed', ledger)
+        got = due('landed', ledger)
         check('ac2/deferred-build-folder-first', 'the build folder comes back before its worktree [%s]' % order(got),
               order(got) == [(B, 'remove'), (W, 'remove')])
         check('ac2/deferred-build-folder-first', 'the worktree names the folder that goes first [%s]'
@@ -243,39 +264,126 @@ def _v298_space_kinds_suite():
               len(got) == 2 and got[1].get('after_items') == [B] and 'after_items' not in got[0])
 
         for state in ('present', 'deferred'):
-            got = K.due('landed', [(W, item('worktree')), (B, item('build_output', state, parent=W))])
+            got = due('landed', [(W, item('worktree')), (B, item('build_output', state, parent=W))])
             check('ac2/child-holds-worktree', 'a %s build folder holds its worktree [%s]' % (state, got),
                   len(got) == 1 and got[0]['item'] == W and got[0]['action'] == 'wait'
                   and got[0].get('held_by') == [B])
-        got = K.due('landed', [(W, item('worktree')), (B, item('evidence', parent=W))])
+        got = due('landed', [(W, item('worktree')), (B, item('evidence', parent=W))])
         check('ac2/child-holds-worktree', 'a due child that is kept, not removed, holds it [%s]' % order(got),
               order(got) == [(B, 'keep'), (W, 'wait')] and got[1].get('held_by') == [B])
-        got = K.due('landed', [(W, item('worktree')), (B, item('build_output', parent=W)),
+        got = due('landed', [(W, item('worktree')), (B, item('build_output', parent=W)),
                                ('space:item:c', item('scratch', 'deferred', parent=W))])
         check('ac2/child-holds-worktree', 'one deferred child among two holds it; the due one still goes [%s]'
               % order(got), order(got) == [(B, 'remove'), (W, 'wait')] and got[1].get('held_by') == ['space:item:c'])
-        for state in ('removed', 'gone', 'kept', 'declared', 'removing'):
-            got = K.due('landed', [(W, item('worktree')), (B, item('build_output', state, parent=W))])
+        for state in ('kept', 'declared', 'removing', 'a state the registry does not know'):
+            got = due('landed', [(W, item('worktree')), (B, item('build_output', state, parent=W))])
+            check('ac2/child-holds-worktree', 'a child that is %s holds its worktree [%s]' % (state, got),
+                  len(got) == 1 and got[0]['item'] == W and got[0]['action'] == 'wait'
+                  and got[0].get('held_by') == [B])
+        for state in ('removed', 'gone'):
+            got = due('landed', [(W, item('worktree')), (B, item('build_output', state, parent=W))])
             check('ac2/child-holds-worktree', 'a %s child does not hold it [%s]' % (state, order(got)),
                   order(got) == [(W, 'remove')] and got[0].get('after_items') == [])
-        held = K.due('landed', [(W, item('worktree')), (B, item('build_output', 'deferred', parent=W))])
+        check('ac2/child-holds-worktree', 'the only states that do not hold are removed and gone [%s]'
+              % (K.NOT_HOLDING_STATES,), tuple(K.NOT_HOLDING_STATES) == ('removed', 'gone'))
+        held = due('landed', [(W, item('worktree')), (B, item('build_output', 'deferred', parent=W))])
         check('ac2/child-holds-worktree', 'a held worktree is never returned with a removal',
               all(entry['action'] not in K.REMOVALS for entry in held if entry['item'] == W))
 
+        # The review's reproduction: the owner answered Keep for a worktree with uncommitted files, and
+        # the agent repository it lives in is due.
+        ROW = 'ac2/kept-child-holds-parent'
+        kept_tree = item('worktree', 'kept', parent=A, uncommitted=['notes.txt', 'draft.py'])
+        for event in ('landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'):
+            got = due(event, [(A, item('agent_repository')), (W, kept_tree)])
+            check(ROW, 'at %s an agent repository with a kept worktree inside it is refused [%s]' % (event, got),
+                  len(got) == 1 and got[0]['item'] == A and got[0]['action'] == 'wait'
+                  and got[0].get('held_by') == [W] and 'after_items' not in got[0])
+            got = due(event, [(W, item('worktree')), (B, item('evidence', 'kept', parent=W))])
+            check(ROW, 'at %s a worktree with kept evidence inside it is refused [%s]' % (event, got),
+                  len(got) == 1 and got[0]['item'] == W and got[0]['action'] == 'wait'
+                  and got[0].get('held_by') == [B])
+        for state in ('declared', 'removing'):
+            got = due('ticket_ended', [(A, item('agent_repository')), (W, item('worktree', state, parent=A))])
+            check(ROW, 'so is one with a worktree that is %s [%s]' % (state, order(got)),
+                  order(got) == [(A, 'wait')] and got[0].get('held_by') == [W])
+        got = due('ticket_ended', [(A, item('agent_repository')), (W, kept_tree),
+                                   (B, item('build_output', parent=W))])
+        check(ROW, 'the kept worktree itself is not returned, and what is due inside it still goes [%s]' % order(got),
+              order(got) == [(B, 'remove'), (A, 'wait')])
+        got = due('ticket_ended', [(A, item('agent_repository')), (W, item('worktree', 'gone', parent=A))])
+        check(ROW, 'with that worktree gone the agent repository goes [%s]' % order(got),
+              order(got) == [(A, 'remove')])
+
+        # The function looks for the children itself.
+        ROW = 'ac2/looks-for-children'
+        alone = [(W, item('worktree'))]
+        got = K.due('landed', alone)
+        check(ROW, 'with no look a worktree is not returned for removal: children_not_read [%s]' % got,
+              len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('reason') == 'children_not_read')
+        got = K.due('landed', [(A, item('agent_repository'))], look=lambda identity, record: None)
+        check(ROW, 'nor is an agent repository whose inside the look could not read [%s]' % got,
+              len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('reason') == 'children_not_read')
+        got = K.due('landed', alone, look=lambda identity, record: {})
+        check(ROW, 'a look that finds nothing inside it lets it go [%s]' % order(got), order(got) == [(W, 'remove')])
+        for state in ('kept', 'present', 'declared', 'removing', 'deferred', 'due'):
+            got = K.due('landed', alone, look=lambda identity, record, state=state: {B: state})
+            check(ROW, 'a %s child the look finds and the list does not hold refuses the call [%s]' % (state, got),
+                  len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('reason') == 'children_not_passed'
+                  and got[0].get('held_by') == [B])
+        for state in ('removed', 'gone'):
+            got = K.due('landed', alone, look=lambda identity, record, state=state: {B: state})
+            check(ROW, 'a %s child the list does not hold does not [%s]' % (state, order(got)),
+                  order(got) == [(W, 'remove')])
+        got = K.due('landed', [(W, item('worktree')), (B, item('build_output', 'removed', parent=W))],
+                    look=lambda identity, record: {B: 'kept'})
+        check(ROW, 'a child the list holds as removed and the look finds kept refuses it [%s]' % got,
+              len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('reason') == 'children_not_passed'
+              and got[0].get('held_by') == [B])
+        got = K.due('landed', [(A, item('agent_repository'))],
+                    look=lambda identity, record: {'path:/work/agents/a1-tree': 'unrecorded'})
+        check(ROW, 'something on disk inside it that no item records refuses it [%s]' % got,
+              len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('reason') == 'children_not_passed'
+              and got[0].get('held_by') == ['path:/work/agents/a1-tree'])
+        stray = [(A, item('agent_repository')), (W, item('worktree', 'kept'))]
+        got = K.due('ticket_ended', stray, look=lambda identity, record: {W: 'kept'} if identity == A else {})
+        check(ROW, 'a kept worktree the look finds inside it holds it, whatever its parent says [%s]' % got,
+              len(got) == 1 and got[0]['item'] == A and got[0]['action'] == 'wait' and got[0].get('held_by') == [W])
+        stray = [(A, item('agent_repository')), (W, item('worktree'))]
+        got = K.due('ticket_ended', stray, look=lambda identity, record: {W: 'due'} if identity == A else {})
+        check(ROW, 'a due worktree the look finds inside it goes first [%s]' % order(got),
+              order(got) == [(W, 'remove'), (A, 'remove')] and got[1].get('after_items') == [W])
+        asked = []
+        mixed_kinds = [(A, item('agent_repository')), (W, item('worktree', parent=A)),
+                       (B, item('build_output', parent=W)), ('space:item:s', item('scratch')),
+                       ('space:item:e', item('evidence'))]
+
+        def recording(identity, record):
+            asked.append((identity, record['kind']))
+            return ledger_look(mixed_kinds)(identity, record)
+
+        got = K.due('ticket_ended', mixed_kinds, look=recording)
+        check(ROW, 'the look is asked once for each worktree and agent repository it would remove, and for '
+              'nothing else [%s]' % asked, sorted(asked) == [(A, 'agent_repository'), (W, 'worktree')]
+              and len(got) == 5)
+        asked[:] = []
+        K.due('run_finished', mixed_kinds, look=recording)
+        check(ROW, 'and not where the table removes neither [%s]' % asked, asked == [])
+
         ledger = [(A, item('agent_repository')), (W, item('worktree', parent=A)),
                   (B, item('build_output', parent=W))]
-        got = K.due('landed', ledger)
+        got = due('landed', ledger)
         check('ac2/agent-repository-after-worktree', 'folder, worktree, agent repository [%s]' % order(got),
               order(got) == [(B, 'remove'), (W, 'remove'), (A, 'remove')] and got[2].get('after_items') == [W])
-        got = K.due('landed', [(A, item('agent_repository')), (W, item('worktree', parent=A)),
+        got = due('landed', [(A, item('agent_repository')), (W, item('worktree', parent=A)),
                                (B, item('build_output', 'deferred', parent=W))])
         check('ac2/agent-repository-after-worktree', 'a held worktree holds its agent repository [%s]' % order(got),
               order(got) == [(W, 'wait'), (A, 'wait')] and got[1].get('held_by') == [W])
         for state in ('present', 'deferred'):
-            got = K.due('landed', [(A, item('agent_repository')), (W, item('worktree', state, parent=A))])
+            got = due('landed', [(A, item('agent_repository')), (W, item('worktree', state, parent=A))])
             check('ac2/agent-repository-after-worktree', 'a %s worktree holds it [%s]' % (state, order(got)),
                   order(got) == [(A, 'wait')] and got[0].get('held_by') == [W])
-        got = K.due('landed', [(A, item('agent_repository')), (W, item('worktree', 'removed', parent=A))])
+        got = due('landed', [(A, item('agent_repository')), (W, item('worktree', 'removed', parent=A))])
         check('ac2/agent-repository-after-worktree', 'with its worktree removed it goes [%s]' % order(got),
               order(got) == [(A, 'remove')])
 
@@ -288,7 +396,7 @@ def _v298_space_kinds_suite():
                  ('i:build-2', item('build_output', parent='i:tree-2')),
                  ('i:build-1', item('build_output', parent='i:tree-1')),
                  ('i:scratch', item('scratch'))]
-        got = K.due('ticket_ended', mixed)
+        got = due('ticket_ended', mixed)
         names = [entry['item'] for entry in got]
         parents = {identity: record['parent'] for identity, record in mixed}
         check('ac2/children-first', 'all nine come back, each with a removal [%s]' % order(got),
@@ -302,33 +410,33 @@ def _v298_space_kinds_suite():
               len(names) == 9 and names[-1] == 'i:agent')
         check('ac2/children-first', 'the same items in another ledger order come back children first too',
               all(names2.index(child) < names2.index(parent) for names2 in
-                  [[entry['item'] for entry in K.due('ticket_ended', list(reversed(mixed)))]]
+                  [[entry['item'] for entry in due('ticket_ended', list(reversed(mixed)))]]
                   for child, parent in parents.items() if parent))
 
         # ---- AC3: build output at run finished ----------------------------------------------------------
         QUEUED = {'id': 'run-12', 'station': 'build'}
         ledger = [(W, of_row('worktree_station_run')), (B, item('build_output', parent=W))]
-        got = K.due('run_finished', ledger, queued={B: QUEUED})
+        got = due('run_finished', ledger, queued={B: QUEUED})
         passed = [entry for entry in got if entry['item'] == B]
         check('ac3/passes-to-queued-run', 'with a queued run the folder passes to it and is not removed [%s]'
               % order(got), len(passed) == 1 and passed[0]['action'] == 'pass' and passed[0].get('to') == QUEUED)
         check('ac3/passes-to-queued-run', 'the folder that stays holds its worktree [%s]' % order(got),
               order(got) == [(B, 'pass'), (W, 'wait')] and got[1].get('held_by') == [B])
-        got = K.due('run_finished', ledger)
+        got = due('run_finished', ledger)
         check('ac3/removed-without', 'with no fact the folder is removed, then its worktree [%s]' % order(got),
               order(got) == [(B, 'remove'), (W, 'remove')] and 'to' not in got[0] and 'queued_run' not in got[0])
-        got = K.due('run_finished', ledger, queued={})
+        got = due('run_finished', ledger, queued={})
         check('ac3/removed-without', 'with an empty fact it is removed [%s]' % order(got),
               order(got)[:1] == [(B, 'remove')])
-        got = K.due('run_finished', ledger, queued={'space:item:other': QUEUED})
+        got = due('run_finished', ledger, queued={'space:item:other': QUEUED})
         check('ac3/removed-without', 'a fact about another item does not keep it [%s]' % order(got),
               order(got)[:1] == [(B, 'remove')])
         for event in EVENTS:
             if event not in ('run_finished', 'session_ended'):
-                got = K.due(event, [(B, item('build_output'))], queued={B: QUEUED})
+                got = due(event, [(B, item('build_output'))], queued={B: QUEUED})
                 check('ac3/run-finished-only', 'at %s the fact changes nothing [%s]' % (event, order(got)),
                       order(got) == [(B, 'remove')])
-        got = K.due('run_finished', [(B, item('scratch', owner={'session': 's'}))], queued={B: QUEUED})
+        got = due('run_finished', [(B, item('scratch', owner={'session': 's'}))], queued={B: QUEUED})
         check('ac3/run-finished-only', 'the fact passes build output and no other kind [%s]' % order(got),
               order(got) == [(B, 'remove')])
 
@@ -349,27 +457,27 @@ def _v298_space_kinds_suite():
         new = item('scratch', lifecycle=SECOND)
         check('ac4/keeps-its-version', 'the old item carries version 1 and run finished [%s]' % old['ends_on'],
               old['ends_on']['version'] == '1' and 'run_finished' in old['ends_on']['events'])
-        got = K.due('run_finished', [('i:old', old)], registry=CHANGED)
+        got = due('run_finished', [('i:old', old)], registry=CHANGED)
         check('ac4/keeps-its-version', 'after the change the old item still ends on run finished [%s]' % got,
               cell(got) == remove and got[0]['version'] == '1')
-        got = K.due('run_finished', [('i:new', new)], registry=CHANGED)
+        got = due('run_finished', [('i:new', new)], registry=CHANGED)
         check('ac4/keeps-its-version', 'an item declared under the second table does not [%s]' % got, got == [])
-        got = K.due('run_finished', [('i:old', item('image_tag'))], registry=CHANGED)
+        got = due('run_finished', [('i:old', item('image_tag'))], registry=CHANGED)
         check('ac4/keeps-its-version', 'an event the second table adds does not reach the old item [%s]' % got,
               got == [])
-        got = K.due('run_finished', [('i:new', item('image_tag', lifecycle=SECOND))], registry=CHANGED)
+        got = due('run_finished', [('i:new', item('image_tag', lifecycle=SECOND))], registry=CHANGED)
         check('ac4/keeps-its-version', 'it reaches an item declared under the second table [%s]' % got,
               cell(got) == tag and got[0]['version'] == '2')
 
-        got = K.due('run_finished', [('i:old', item('evidence'))], registry=CHANGED)
+        got = due('run_finished', [('i:old', item('evidence'))], registry=CHANGED)
         check('ac4/action-of-its-version', 'the old evidence item is measured, as its table says [%s]' % got,
               cell(got) == {'action': 'measure'})
-        got = K.due('run_finished', [('i:new', item('evidence', lifecycle=SECOND))], registry=CHANGED)
+        got = due('run_finished', [('i:new', item('evidence', lifecycle=SECOND))], registry=CHANGED)
         check('ac4/action-of-its-version', 'the new evidence item is kept, as the second table says [%s]' % got,
               cell(got) == {'action': 'keep'})
         unknown = item('scratch')
         unknown['ends_on']['version'] = '0'
-        got = K.due('landed', [(W, item('worktree')), ('i:unknown', dict(unknown, parent=W))])
+        got = due('landed', [(W, item('worktree')), ('i:unknown', dict(unknown, parent=W))])
         check('ac4/action-of-its-version', 'an item of a version the registry does not hold waits, and holds '
               'its worktree [%s]' % order(got),
               order(got) == [('i:unknown', 'wait'), (W, 'wait')]
@@ -377,11 +485,11 @@ def _v298_space_kinds_suite():
 
         records = [(W, item('worktree')), (B, item('build_output', parent=W))]
         snapshot = copy.deepcopy(records)
-        first = K.due('landed', records, queued={B: QUEUED})
+        first = due('landed', records, queued={B: QUEUED})
         for entry in first:
             entry['action'] = 'changed by the caller'
             entry.get('after', []).append('changed by the caller')
-        again = K.due('landed', records)
+        again = due('landed', records)
         check('ac4/registry-untouched', 'a call leaves the registry as it was', K.REGISTRY == before)
         check('ac4/registry-untouched', 'a call leaves the records as they were', records == snapshot)
         check('ac4/registry-untouched', 'what a caller does to an answer does not reach the next one [%s]'
@@ -415,6 +523,9 @@ def _v298_space_kinds_suite():
                   if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)}
         check('kinds/pure', 'the module imports nothing [%d]' % len(imports), not imports)
         check('kinds/pure', 'it defines one function at its top [%s]' % functions, functions == ['due'])
+        check('kinds/pure', 'without a look it returns no worktree and no agent repository for removal',
+              all(entry['action'] == 'wait' for entry in K.due('ticket_ended', mixed)
+                  if entry['item'] in ('i:agent', 'i:tree-1', 'i:tree-2')))
         check('kinds/pure', 'it calls no opener, runner or loader [%s]' % sorted(called),
               not called & {'open', 'exec', 'eval', '__import__', 'compile', 'input', 'print'})
 

@@ -2,8 +2,9 @@
 """The kind registry: the lifecycle table as data, and the one function that reads it (design section 5,
 VELDO-0298).
 
-WHAT IS HERE. Plain data and one pure function. Nothing in this module opens a file, starts a process,
-reads a clock or touches a store.
+WHAT IS HERE. Plain data and one function. Nothing in this module opens a file, starts a process,
+reads a clock or touches a store. What is inside a worktree or an agent repository the function asks of
+the look it is given (below), and with no look it returns neither for removal.
 
 THE TABLE. For each row and each event, one cell: the action the table of section 5 gives, with the
 words of the cell that qualify it. A cell that is not there means the event does nothing to that row.
@@ -29,8 +30,9 @@ and two that no cell holds, which the function gives:
 
   pass              build output at run finished, when the caller says the same ticket has a queued run
                     on the same worktree: ownership passes to that run, and nothing is removed
-  wait              a worktree or an agent repository that an item inside it holds, or an item whose
-                    table version this registry does not hold: nothing is removed
+  wait              a worktree or an agent repository that an item inside it holds, or whose inside
+                    could not be looked at, or an item whose table version this registry does not hold:
+                    nothing is removed
 
 What qualifies a cell: method (git_worktree_remove is git's non-forced worktree remove), first (what is
 removed before the item itself: a review worktree's review scratch), after (the kinds that go before
@@ -48,6 +50,22 @@ version beside the old one.
 LIFECYCLE is the current table in the form the Ledger is given (control_space.checked_lifecycle): the
 version, the events, and for each of the ten kinds the events an item of that kind ends on. A worktree's
 events are those of its three rows together.
+
+WHAT HOLDS A WORKTREE OR AN AGENT REPOSITORY. Every item inside it that is not removed and not gone:
+one that is declared, present, deferred, removing or kept, and one that is due and stays (its action is
+no removal). A kept item is a present item the owner or the table keeps, and removing its parent would
+take it away: the review of this ticket removed an agent repository with a kept worktree, and its
+uncommitted files, inside it. A state this module does not know holds too. Only an item that is due and
+is itself removed at this event goes before its parent instead of holding it.
+
+THE LOOK. The caller's list is not trusted to hold every child. For each worktree or agent repository
+it would return for removal, the function calls `look(identity, record)`, which answers with what is
+inside that item now, as {identity: state}: the items the ledger records inside it, by their parent and
+by their path, and what is on disk inside it that the ledger does not record (control_space_signal.inside
+is that look). The call is refused for that item, with the action wait, when no look was given or the
+look could not answer (reason children_not_read), and when the look finds something that is neither
+removed nor gone and that the list does not hold in that same state (reason children_not_passed, the
+missing ones in held_by).
 
 WHICH ROW A WORKTREE READS. A worktree whose owner has a run, no ticket, and which has no branch (it was
 added detached inside a run, design 6.9) reads worktree_review_run when the run's station is review and
@@ -77,9 +95,9 @@ COLUMNS = (('run_finished',), ('verdict_recorded',), ('landed', 'contained'),
 # before the worktree; with any other action it stays, and holds it.
 REMOVALS = ('remove', 'stop_then_remove', 'remove_tag')
 
-# The kinds that are never removed while an item inside them is present, due or deferred.
+# The kinds that are never removed while an item inside them is there in any state but these two.
 WAITS_FOR_CHILDREN = ('worktree', 'agent_repository')
-HOLDING_STATES = ('present', 'due', 'deferred')
+NOT_HOLDING_STATES = ('removed', 'gone')
 
 # Among items none of which is inside another, the order they come back in: what the table says goes
 # after its containers, after its build output and after its worktree comes after them.
@@ -143,20 +161,23 @@ LIFECYCLE = {'version': REGISTRY['version'],
                          for kind, events in REGISTRY['tables'][REGISTRY['version']]['ends_on'].items()}}
 
 
-def due(event, items, queued=None, registry=REGISTRY):
+def due(event, items, queued=None, registry=REGISTRY, look=None):
     """What the table gives each due item at `event`, in the order to carry it out: children first.
 
     `items` is a list of (identity, record) pairs in ledger order: the due items, and with them every
     item inside one of them and every item one of them is inside, in whatever state it is. A record is
     the Ledger's item record: kind, state, parent, owner, branch and ends_on are read. `queued` maps the
     identity of a build output item to the queued run of the same ticket on the same worktree, when the
-    caller says there is one. `registry` is the registry to read; the default is this module's.
+    caller says there is one. `registry` is the registry to read; the default is this module's. `look`
+    is look(identity, record) -> {identity: state}, what is inside an item now, or None when that could
+    not be read (THE LOOK, above).
 
     Returns one entry per item that is due, whose own ends_on lists the event and whose row has a cell
     for it: the item, the row and the table version read, the action and the cell's qualifiers. An
     entry with a removal names in after_items the due items inside it that go first. A worktree or an
-    agent repository with an item inside it that is present, deferred, or due without being removed
-    comes back with the action wait and those items in held_by, never with a removal."""
+    agent repository with an item inside it that is not removed and not gone, and is not itself removed
+    at this event, comes back with the action wait and those items in held_by, never with a removal. So
+    does one whose inside the look could not read, or holds more than the list does."""
     queued = queued or {}
     records = dict(items)
     position = {identity: index for index, (identity, _) in enumerate(items)}
@@ -202,16 +223,30 @@ def due(event, items, queued=None, registry=REGISTRY):
                 if cell:
                     entry = dict(cell, item=identity, row=row, version=ends_on['version'])
         if entry and entry['action'] in REMOVALS and record['kind'] in WAITS_FOR_CHILDREN:
+            found = look(identity, record) if look is not None else None
+            if isinstance(found, dict):
+                # What the look finds inside it, and the list holds, is inside it whatever its parent says.
+                children.setdefault(identity, []).extend(
+                    child for child in found
+                    if child in records and child != identity and child not in children.get(identity, ()))
             inside = [child for child in children.get(identity, ()) if child not in above]
             going = [child for child in inside
                      if (answer(child, above + (identity,)) or {}).get('action') in REMOVALS]
             held_by = [child for child in inside
-                       if child not in going and records[child].get('state') in HOLDING_STATES]
+                       if child not in going and records[child].get('state') not in NOT_HOLDING_STATES]
+            waits = {'item': identity, 'row': entry['row'], 'version': entry['version'], 'action': 'wait'}
             if held_by:
-                entry = {'item': identity, 'row': entry['row'], 'version': entry['version'],
-                         'action': 'wait', 'held_by': held_by}
+                entry = dict(waits, held_by=held_by)
+            elif not isinstance(found, dict):
+                entry = dict(waits, reason='children_not_read')
             else:
-                entry['after_items'] = going
+                missing = [child for child, state in found.items()
+                           if child != identity and state not in NOT_HOLDING_STATES
+                           and (child not in records or records[child].get('state') != state)]
+                if missing:
+                    entry = dict(waits, reason='children_not_passed', held_by=missing)
+                else:
+                    entry['after_items'] = going
         answers[identity] = entry
         return entry
 

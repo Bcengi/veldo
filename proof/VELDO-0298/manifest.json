@@ -4,7 +4,7 @@
  "commit": "f3bebe867d9ef81c2ac8f81db3d934ebe3b7ad92",
  "tree": "64aec5ebee8eca059a0ca9e0516d4bd95c8a1da0",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-13T22:27:16.426396+00:00",
+ "produced_at": "2026-11-13T23:13:21.655754+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -29,12 +29,27 @@
     {
      "type": "unit",
      "ref": "scripts/suites/135_veldo_0298_space_kinds.py",
-     "detail": "Rows ac2/deferred-build-folder-first (a worktree and, declared after it, a build folder that was deferred and is due again: folder first, then the worktree naming it in after_items), ac2/child-holds-worktree (a present, a deferred and a due-but-kept child each make the worktree come back with wait and held_by, never with a removal; a removed, gone, kept, declared or removing child does not), ac2/agent-repository-after-worktree (folder, worktree, agent repository; a held, present or deferred worktree makes the agent repository wait), ac2/children-first (nine items in a mixed ledger order and in its reverse: every item after every item inside it, network and volume after the container). Green: proof/VELDO-0298/suite-green.txt."
+     "detail": "Rows ac2/deferred-build-folder-first (a worktree and, declared after it, a build folder that was deferred and is due again: folder first, then the worktree naming it in after_items), ac2/child-holds-worktree (a present, a deferred, a kept, a declared and a removing child, one in a state the registry does not know, and a due-but-kept child each make the worktree come back with wait and held_by, never with a removal; only a removed or gone child does not hold; corrected by the review, which found this row asserting that a kept, declared or removing child does not hold), ac2/agent-repository-after-worktree (folder, worktree, agent repository; a held, present or deferred worktree makes the agent repository wait), ac2/children-first (nine items in a mixed ledger order and in its reverse: every item after every item inside it, network and volume after the container). Green: proof/VELDO-0298/suite-green.txt."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0298/falsifiers.json",
      "detail": "Falsifier space298-ledger-order (items returned in ledger order): ac2/deferred-build-folder-first red, the worktree came back before its build folder (seven more rows that read the order red with it); noop green. proof/VELDO-0298/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/135_veldo_0298_space_kinds.py",
+     "detail": "Review, finding 1 (the reproduction). Row ac2/kept-child-holds-parent: an agent repository due at each of the six events that would remove it, with a worktree the owner answered Keep for (state kept, uncommitted files) inside it, comes back with wait and the worktree in held_by and never with a removal; so does a worktree with kept evidence inside it, and an agent repository whose worktree is declared or removing; what is due inside the kept worktree still goes; with the worktree gone the agent repository goes. The same reproduction on a real ledger with real git is VELDO-0330's row ac1/kept-child-holds-parent (scripts/suites/137_veldo_0330_space_rules.py)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/135_veldo_0298_space_kinds.py",
+     "detail": "Review, finding 2. Row ac2/looks-for-children: with no look, or a look that cannot answer, a worktree and an agent repository come back with wait and the reason children_not_read; a kept, present, declared, removing, deferred or due child the look finds and the list does not hold refuses the call with children_not_passed and names the child; so does a child the list holds as removed and the look finds kept, and something on disk no item records; a removed or gone child the list does not hold does not; a child the look finds by its path holds, or goes first, whatever its record's parent says; the look is asked once for each worktree and agent repository the function would remove and for nothing else."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0298/falsifiers.json",
+     "detail": "Falsifiers of the review's fixes: space298-kept-child-does-not-hold (kept added to the states that do not hold): ac2/kept-child-holds-parent red (ac2/child-holds-worktree and ac2/looks-for-children red with it). space298-trusts-the-callers-list (the look not asked, nothing found): ac2/looks-for-children red (kinds/pure red with it). Noop copies green. proof/VELDO-0298/mutations.txt."
     }
    ]
   },
@@ -75,30 +90,33 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 135_veldo_0298_space_kinds (122 rows, 148 checks). Suites 132_veldo_0297_space_ledger (57 checks) and 134_veldo_0331_space_mode (42 checks) rerun green; their modules are unchanged."
+   "command": "python3 scripts/selftest.py --suite 135_veldo_0298_space_kinds (124 rows, 150 checks). After the review's fix every space suite was rerun green, each on its own: 130 (48 checks), 131 (40), 132 (57), 133 (56), 134 (42), 135 (150), 136 (66), 137 (48)."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec, ready and shape-review on the spec."
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py; python3 .veldo/validate.py spec on the spec and all, exit 0."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the four registered teeth cases (finding 298) were run here through the driver's own materialize() and worker(), not through the teeth run."
+   "reason": "The build and the review fix ran single suites and fast checks only, as instructed. The lead runs ./scripts/verify.sh through the gate lock; the six registered teeth cases (finding 298) were run here through the driver's own materialize() and worker(), not through the teeth run."
   }
  ],
  "assumptions": [
-  "The function is due(event, items, queued=None, registry=REGISTRY). items are (identity, record) pairs in ledger order: the due items with the items inside them and the items they are inside. Nothing calls it yet; Signal (VELDO-0301) is its caller.",
+  "The function is due(event, items, queued=None, registry=REGISTRY, look=None). items are (identity, record) pairs in ledger order: the due items with the items inside them and the items they are inside. Nothing calls it yet; Signal (VELDO-0301) is its caller, and gives it look=lambda identity, record: control_space_signal.inside(ledger, probe, identity, record).",
   "A worktree with a due child that is being removed is returned, after that child, with the child in after_items; whether the child was in fact removed before the worktree is carried out is the caller's to check (VELDO-0301). A worktree with a child that is present, deferred, or due with an action that leaves it there (keep, measure, pass, wait) comes back with the action wait and never with a removal. wait and pass are answers of the function and not cells of the table.",
-  "The states that hold are the three the design names: present, due, deferred. A kept, declared or removing child does not hold its parent. So evidence inside a worktree holds it until the evidence is kept.",
   "A worktree reads a run row only when its owner has a run, it has no ticket and it has no branch (design 5: added detached inside a run, no branch to follow and no ticket). Every other worktree reads the row worktree, which only measures at run finished. Review is the station review; build and gate are another station.",
   "Cell qualifiers (method, first, after, unique_work, requires, otherwise) and action names are this ticket's reading of the cells' words. Landed and contained share cells, as do ticket ended and project ended; released has the cells of worktree abandoned. Event names follow the Ledger's (run_finished, verdict_recorded, worktree_abandoned).",
   "Network and volume come back after containers among items of the same depth; the table says so only at run finished and the order is kept at every event. No holding is applied between them: only parent links hold.",
   "The registry keeps every table it issued, keyed by version; an item of a version it does not hold gets wait with the reason table_version_unknown. The version is the string 1.",
   "Session ended applies to a scratch whose owner names a session; which session ended is the Ledger's subject match, not this function's.",
   "How an item is identified, which safety rules apply and which remover carries out each action (the rest of the component's row in design section 3) are not built here: they are VELDO-0330 and VELDO-0300. The Ledger is not changed and is not yet given LIFECYCLE by any caller; the row kinds/ledger-accepts shows its checked_lifecycle accepts it.",
-  "docs are not changed: documents for space management are VELDO-0322."
+  "docs are not changed: documents for space management are VELDO-0322.",
+  "Review (verdict FIX), 2026-11-13. A child holds its parent in every state but removed and gone (NOT_HOLDING_STATES); a state the registry does not know holds. Only a child that is due and is itself removed at the event goes before its parent. Design sections 5 and 7 are amended to say so.",
+  "The lead's instruction was that the function looks itself and does not trust the caller's list. It is built as a look the function is given and calls itself for every worktree and agent repository it would remove: the module still imports nothing and opens no file and no store, as design section 12 requires of it, and with no look it returns no worktree and no agent repository for removal. What looks at the ledger and the disk is control_space_signal.inside (VELDO-0330's module, rule 6's own reading). A refusal is the item returned with the action wait and a reason, not an exception: nothing in the answer can be carried out as a removal. This reading of the instruction is the builder's and is for the lead to confirm.",
+  "The look answers {identity: state}. A child found by the look and passed in the list is treated as inside the item whatever its record's parent says. The states compared are the list's own records against the look's: a difference refuses the call.",
+  "Not changed: the review's finding 3 (low): which row a worktree reads is still taken from the item's current branch and owner, not from a fact fixed at declaration."
  ],
  "rollback": "Revert the change. Items already declared keep the table version they carry."
 }

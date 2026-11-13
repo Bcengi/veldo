@@ -7,7 +7,8 @@
   ],
   "red_rows": [
    "ac1/whole-table",
-   "ac1/worktree/run_finished"
+   "ac1/worktree/run_finished",
+   "ac2/looks-for-children"
   ],
   "red_details": [
    [
@@ -29,6 +30,8 @@
    "ac2/child-holds-worktree",
    "ac2/children-first",
    "ac2/deferred-build-folder-first",
+   "ac2/kept-child-holds-parent",
+   "ac2/looks-for-children",
    "ac3/passes-to-queued-run",
    "ac3/removed-without",
    "ac4/action-of-its-version",
@@ -75,6 +78,45 @@
    [
     "VELDO-0298 ac4/keeps-its-version",
     "after the change the old item still ends on run finished [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space298-kept-child-does-not-hold",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/kept-child-holds-parent"
+  ],
+  "red_rows": [
+   "ac2/child-holds-worktree",
+   "ac2/kept-child-holds-parent",
+   "ac2/looks-for-children"
+  ],
+  "red_details": [
+   [
+    "VELDO-0298 ac2/kept-child-holds-parent",
+    "at landed an agent repository with a kept worktree inside it is refused [[{'action': 'remove', 'after': ['worktree'], 'requires': 'branches_in_shared_repository', 'item': 'space:item:a', 'row': 'agent_repository', 'version': '1', 'after_items': []}]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space298-trusts-the-callers-list",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/looks-for-children"
+  ],
+  "red_rows": [
+   "ac2/looks-for-children",
+   "kinds/pure"
+  ],
+  "red_details": [
+   [
+    "VELDO-0298 ac2/looks-for-children",
+    "with no look a worktree is not returned for removal: children_not_read [[{'action': 'remove', 'method': 'git_worktree_remove', 'after': ['build_output'], 'item': 'space:item:w', 'row': 'worktree', 'version': '1', 'after_items': []}]]"
    ]
   ],
   "noop_red_rows": [],

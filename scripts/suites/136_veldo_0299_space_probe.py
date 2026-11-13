@@ -45,6 +45,32 @@ falsifier row: the lock is free and the borrow journal is not settled), ac4/both
 journal gone, or settled into a recovery; a scratch that never borrowed), ac4/journal-root (with no
 root given the journal is looked for where the launcher keeps it).
 
+FAIL CLOSED rows (the review of this ticket: what a probe cannot read or decide is in use, or unique
+work, never free). closed/stash-hides-unlanded-commit (a stash made in a worktree reaches its checked-out
+commit; the commit is unique work all the same, detached and on a branch, and so under a per-worktree
+ref), closed/no-shared-repository (an agent repository given no shared repository is unread, unique work
+unknown, where it used to compare with itself; a stash entry and a tag the shared repository does not
+hold are unique work of it), closed/git-unreadable-is-locked (git refusing to read the worktree, a
+missing client and a worktree whose git folder is broken read as locked and unread, and the path is in
+use; a plain folder and a repository's own folder are read), closed/scratch-unopenable-is-locked (a
+scratch folder that cannot be opened reads as locked and a journal that cannot be looked into as not
+settled), closed/unnamed-process-counts (a process whose name cannot be read is listed and the path is in
+use; one whose entry is gone is not), closed/unread-names-pids-and-uids (unread is a list of process id,
+uid, name and reach, in the fixture table and in the host's own), closed/hidden-table (a process table
+mounted with hidepid, or whose mounts cannot be read, makes the path in use).
+
+REACH rows (the lead's decision, bounded fail closed: an unread process counts only if it could reach
+the path), on a fixture process table whose entries cannot be read (their cwd is no link) and whose
+status files give the uid, the groups and the parent. reach/other-uid-shut-out-excluded (a process of
+another uid that the path's own permissions shut out is listed with reach None and the path is not in
+use; so is a root-owned one, judged by the mode), reach/other-uid-let-through-counted (the same process
+on a path whose directories let it through, by the other bits or by its group, counts),
+reach/root-with-container-mount-counted (a root-owned process the permissions shut out counts once a
+container has a bind mount above the path, or an engine cannot be read; a mount of another path changes
+nothing), reach/same-uid-and-inherited (a process of the probing uid, one whose parent or parent's
+parent could reach and one with no readable status count; one that is shut out, under a parent that is
+shut out, does not).
+
 probe/facts-only (the module calls nothing that removes, renames or writes), probe/canon (the engine
 canon equals this repository copy).
 """
@@ -81,6 +107,11 @@ def _v299_space_probe_suite():
             'ac2/names-only', 'ac2/unreadable',
             'ac3/branch-not-brought-across', 'ac3/brought-across', 'ac3/moved-on',
             'ac4/lock-held', 'ac4/login-unsettled', 'ac4/both-clear', 'ac4/journal-root',
+            'closed/stash-hides-unlanded-commit', 'closed/no-shared-repository',
+            'closed/git-unreadable-is-locked', 'closed/scratch-unopenable-is-locked',
+            'closed/unnamed-process-counts', 'closed/unread-names-pids-and-uids', 'closed/hidden-table',
+            'reach/other-uid-shut-out-excluded', 'reach/other-uid-let-through-counted',
+            'reach/root-with-container-mount-counted', 'reach/same-uid-and-inherited',
             'probe/facts-only', 'probe/canon')
     rows = {name: [] for name in ROWS}
 
@@ -133,6 +164,7 @@ def _v299_space_probe_suite():
         process.stdout.close()
 
     temporary = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0299-')))
+    opened = []  # folders made outside it, where every user may pass
     path_before = os.environ.get('PATH', '')
     state_before = os.environ.get('XDG_STATE_HOME')
     try:
@@ -153,7 +185,7 @@ def _v299_space_probe_suite():
                     if use['how'] == how]
 
         check('ac1/clear', 'before any process the path is not in use',
-              P.in_use(used)['in_use'] is False and P.in_use(used)['processes'] == [])
+              P.in_use(used)['found'] is False and P.in_use(used)['processes'] == [])
 
         holder = child('import sys\nheld = open(sys.argv[1])', used / 'inner' / 'held.txt', cwd=elsewhere)
         facts = P.in_use(used)
@@ -164,9 +196,9 @@ def _v299_space_probe_suite():
         check('ac1/open-file-beneath', 'its working directory is not what was found',
               not users(facts, 'cwd'))
         check('ac1/clear', 'a neighbour whose name starts the same is not in use',
-              P.in_use(neighbour)['in_use'] is False)
+              P.in_use(neighbour)['found'] is False)
         check('ac1/helper-not-counted', 'a process named as the file-sharing helper is not counted',
-              P.in_use(used, helpers=tuple(user['command'] for user in facts['processes']))['in_use'] is False)
+              P.in_use(used, helpers=tuple(user['command'] for user in facts['processes']))['found'] is False)
         check('ac1/helper-not-counted', 'the default helper list names the file-sharing helper and not this one',
               'virtiofsd' in P.HELPERS and all(user['command'] not in P.HELPERS for user in facts['processes']))
         seen = []
@@ -177,11 +209,11 @@ def _v299_space_probe_suite():
             P.SEAM['after_in_use'] = None
         check('ac1/seam', 'the seam is called with the facts of each call, in order',
               len(seen) == 2 and seen[0] is first and seen[1] is second and first['in_use'] is True
-              and first['resolved'] == str(used) and second['in_use'] is False)
+              and first['resolved'] == str(used) and second['found'] is False)
         check('ac1/seam', 'with no seam set nothing is called',
               P.in_use(used)['in_use'] is True and len(seen) == 2)
         stop(holder)
-        check('ac1/clear', 'after the process ends the path is not in use', P.in_use(used)['in_use'] is False)
+        check('ac1/clear', 'after the process ends the path is not in use', P.in_use(used)['found'] is False)
 
         at, beneath = child('', cwd=used), child('', cwd=used / 'inner')
         facts = P.in_use(used)
@@ -209,7 +241,7 @@ def _v299_space_probe_suite():
         facts = P.in_use(used)
         check('ac1/command-line-is-not-use', 'the command line names the path', named)
         check('ac1/command-line-is-not-use', 'and the path is not in use [%s]' % facts['processes'],
-              facts['in_use'] is False and facts['processes'] == [])
+              facts['found'] is False and facts['processes'] == [])
         stop(namer)
 
         # AC1. Containers, through a stand-in docker client.
@@ -258,13 +290,13 @@ def _v299_space_probe_suite():
                       ('stopped-beneath', 'exited', str(used / 'inner'), 'system')])
             check('ac1/container-bind-mount', 'every named engine was read', facts['unread']['engines'] == [])
             check('ac1/container-bind-mount', 'a named volume and a bind mount of another path are not use',
-                  P.in_use(elsewhere, engines=('desktop', 'empty'))['in_use'] is False
+                  P.in_use(elsewhere, engines=('desktop', 'empty'))['found'] is False
                   and [user['name'] for user in P.in_use(elsewhere, engines=('system',))['containers']]
                   == ['other-path'])
             check('ac1/container-bind-mount', 'an engine that holds no such mount does not make it in use',
-                  P.in_use(used, engines=('desktop', 'empty'))['in_use'] is False)
+                  P.in_use(used, engines=('desktop', 'empty'))['found'] is False)
             check('ac1/container-bind-mount', 'with no engine named no client is run',
-                  P.in_use(used)['containers'] == [] and P.in_use(used)['in_use'] is False)
+                  P.in_use(used)['containers'] == [] and P.in_use(used)['found'] is False)
             unread = P.in_use(used, engines=('missing', 'system'))
             check('ac1/container-bind-mount', 'an engine the client cannot read is named in unread, and the '
                   'others are still read [%s]' % unread['unread'],
@@ -274,7 +306,7 @@ def _v299_space_probe_suite():
         finally:
             os.environ['PATH'] = path_before
         check('ac1/clear', 'with the processes ended and no engine named the path is not in use',
-              P.in_use(used)['in_use'] is False)
+              P.in_use(used)['found'] is False)
 
         own = P.process(os.getpid())
         with open('/proc/self/stat', 'rb') as stat:
@@ -304,7 +336,7 @@ def _v299_space_probe_suite():
 
         folder = Path(git(tree, 'rev-parse', '--absolute-git-dir'))
         check('ac1/git-lock', 'a worktree with no lock is not in use',
-              P.git_lock(tree)['locked'] is False and P.in_use(tree)['in_use'] is False)
+              P.git_lock(tree)['locked'] is False and P.in_use(tree)['found'] is False)
         (folder / 'index.lock').write_text('')
         facts = P.in_use(tree)
         check('ac1/git-lock', "git's lock file on the index makes the worktree in use [%s]" % facts['git'],
@@ -540,8 +572,8 @@ def _v299_space_probe_suite():
 
         clear = P.scratch(scratch, borrow_root=journals)
         check('ac4/both-clear', 'a scratch nobody locks, that never borrowed, is not in use [%s]' % clear,
-              clear == {'path': str(scratch), 'lock_held': False, 'login_unsettled': False,
-                        'journal': str(journal), 'in_use': False})
+              clear == {'path': str(scratch), 'read': True, 'said': None, 'lock_held': False,
+                        'login_unsettled': False, 'journal': str(journal), 'in_use': False})
         launcher = child('import fcntl, os, sys\n'
                          'lock = os.open(sys.argv[1], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)\n'
                          'fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)', scratch, cwd=elsewhere)
@@ -596,6 +628,349 @@ def _v299_space_probe_suite():
               and os.symlink(str(scratch), str(temporary / 'veldo-agent-link')) is None
               and P.scratch(temporary / 'veldo-agent-link', borrow_root=journals)['lock_held'] is False)
 
+        # ---- FAIL CLOSED: what a probe cannot read or decide is in use, or unique work ------------------
+        ROW = 'closed/stash-hides-unlanded-commit'
+        stashed = temporary / 'stashed'
+        git(repo, 'worktree', 'add', '-q', '--detach', str(stashed), 'main')
+        lost = commit(stashed, 'only-here.txt', 'one\n', 'a commit no ref holds')
+        before = P.unique_work(stashed)
+        (stashed / 'only-here.txt').write_text('two\n')
+        git(stashed, 'stash', '-q')
+        facts = P.unique_work(stashed)
+        check(ROW, 'before the stash the detached commit is unique work [%s]' % before['cases'],
+              before['cases'] == [5] and before['stashes'] == 0)
+        check(ROW, 'the stash entry made in the worktree reaches that commit',
+              git(repo, 'for-each-ref', '--format=%(refname)', '--contains', lost).split() == ['refs/stash'])
+        check(ROW, 'and the commit is unique work all the same: a stash holds nothing [%s]'
+              % {key: facts[key] for key in ('cases', 'unlanded', 'held_by', 'stashes')},
+              facts['unique_work'] is True and facts['cases'] == [5] and facts['unlanded'] == lost
+              and facts['held_by'] == [] and facts['stashes'] == 1)
+        git(stashed, 'update-ref', 'refs/worktree/keep', lost)
+        facts = P.unique_work(stashed)
+        check(ROW, 'a ref of the worktree itself does not hold it either [%s]' % facts['held_by'],
+              facts['cases'] == [5] and facts['held_by'] == [])
+        branched = temporary / 'stashed-branch'
+        git(repo, 'worktree', 'add', '-q', '-b', 'stashed-work', str(branched), 'main')
+        tipped = commit(branched, 'only-here.txt', 'one\n', 'a commit only this branch holds')
+        (branched / 'only-here.txt').write_text('two\n')
+        git(branched, 'stash', '-q')
+        facts = P.unique_work(branched)
+        check(ROW, 'the tip of a branch that a stash reaches is unique work too [%s]' % facts['cases'],
+              facts['cases'] == [5] and facts['unlanded'] == tipped and facts['held_by'] == []
+              and facts['stashes'] == 2)
+        git(repo, 'branch', 'holds-stashed', lost)
+        facts = P.unique_work(stashed)
+        check(ROW, 'a branch at the commit does hold it [%s]' % facts['held_by'],
+              facts['cases'] == [] and facts['held_by'] == ['refs/heads/holds-stashed'])
+        check(ROW, 'only a branch, a tag and a remote-tracking ref hold a commit [%s]' % (P.HOLDING_REFS,),
+              tuple(P.HOLDING_REFS) == ('refs/heads/', 'refs/tags/', 'refs/remotes/'))
+
+        ROW = 'closed/no-shared-repository'
+        only = commit(agent_tree, 'agent.txt', 'three\n', 'a commit only the agent repository holds')
+        alone = P.agent_repository(private, None)
+        check(ROW, 'the agent repository holds a commit the shared repository does not', not shared_has(only))
+        check(ROW, 'given no shared repository it is unread and its unique work unknown, never none [%s]' % alone,
+              alone['read'] is False and alone['unique_work'] is None
+              and 'no shared repository' in alone['said'])
+        check(ROW, 'given the shared repository the branch is named',
+              P.agent_repository(private, shared)['not_across'] == [branch])
+        git(private, 'tag', 'only-here', only)
+        whole = P.agent_repository(private, shared)
+        check(ROW, 'a tag at a commit the shared repository does not hold is named among its refs [%s]'
+              % whole['refs'], whole['refs'] == ['refs/tags/only-here'] and whole['unique_work'] is True)
+        across()
+        whole = P.agent_repository(private, shared)
+        check(ROW, 'with the branch brought across the tag is held and nothing is unique [%s]' % whole['refs'],
+              whole['refs'] == [] and whole['not_across'] == [] and whole['stashes'] == 0
+              and whole['unique_work'] is False)
+        (agent_tree / 'agent.txt').write_text('four, not committed\n')
+        git(agent_tree, 'stash', '-q')
+        whole = P.agent_repository(private, shared)
+        check(ROW, 'a stash entry of the agent repository is unique work: it goes with the repository [%s]'
+              % {key: whole[key] for key in ('refs', 'stashes', 'not_across')},
+              whole['unique_work'] is True and whole['stashes'] == 1 and whole['refs'] == ['refs/stash']
+              and whole['not_across'] == [])
+        check(ROW, "the agent's worktree reports the stash entries as a fact",
+              P.unique_work(agent_tree, shared=shared)['stashes'] == 1)
+        git(agent_tree, 'stash', 'drop', '-q')
+        check(ROW, 'with the stash dropped it has none',
+              P.agent_repository(private, shared)['unique_work'] is False)
+
+        table = temporary / 'table'
+        table.mkdir()
+        ME = os.geteuid()
+        OTHER = ME + 4242           # a uid that is neither the probing one nor root
+        OWNED_BY_ROOT = 0 if ME else OTHER + 1  # run as root, the row's root-owned process is another uid
+
+        def entry(pid, uid=None, gids=None, parent=0, comm='holder', sealed=True):
+            """One entry of the fixture process table. Sealed, its cwd is a file and no link, so the
+            probe cannot read where the process is; its status gives who it is."""
+            base = table / str(pid)
+            (base / 'fd').mkdir(parents=True)
+            if comm is None:
+                (base / 'comm').mkdir()  # a name that cannot be read
+            else:
+                (base / 'comm').write_text(comm + '\n')
+            (base / 'maps').write_text('')
+            if sealed:
+                (base / 'cwd').write_text('')
+            else:
+                (base / 'cwd').symlink_to(elsewhere)
+            if uid is not None:
+                groups = [uid] if gids is None else gids
+                (base / 'status').write_text('Name:\t%s\nPPid:\t%d\nUid:\t%d\t%d\t%d\t%d\nGid:\t%d\t%d\t%d\t%d\n'
+                                             'Groups:\t%s\n' % ((comm or 'holder', parent) + (uid,) * 4
+                                                                + (groups[0],) * 4
+                                                                + (' '.join(str(group) for group in groups[1:]),)))
+            return base
+
+        def fresh():
+            shutil.rmtree(table)
+            table.mkdir()
+
+        def unread_of(facts):
+            return [(found['pid'], found['uid'], found['reach']) for found in facts['unread']['processes']]
+
+        item = temporary / 'item'
+        item.mkdir()
+
+        ROW = 'closed/git-unreadable-is-locked'
+
+        def refusing_git(argv, cwd=None):
+            return 128, "fatal: detected dubious ownership in repository at '%s'" % tree
+
+        lock = P.git_lock(tree, run=refusing_git)
+        check(ROW, 'a worktree git refuses to read is locked, and unread [%s]' % lock,
+              lock['read'] is False and lock['locked'] is True and lock['files'] == []
+              and 'dubious ownership' in lock['said'])
+        facts = P.in_use(tree, proc=str(table), run=refusing_git)
+        check(ROW, 'and the path is in use, with what git said in unread [%s]' % facts['unread']['git'],
+              facts['in_use'] is True and facts['found'] is False and facts['unknown'] is True
+              and 'dubious ownership' in facts['unread']['git'])
+        lock = P.git_lock(tree, run=lambda argv, cwd=None: (None, 'FileNotFoundError: git'))
+        check(ROW, 'a git client that cannot be run reads the same', lock['read'] is False and lock['locked'] is True)
+        broken = temporary / 'broken'
+        git(repo, 'worktree', 'add', '-q', '--detach', str(broken), 'main')
+        (broken / '.git').write_text('gitdir: %s\n' % (temporary / 'no-such-git-folder'))
+        lock = P.git_lock(broken)
+        check(ROW, 'a worktree whose git folder is broken is locked, read by the real git [%s]' % lock['said'],
+              lock['read'] is False and lock['locked'] is True
+              and P.in_use(broken, proc=str(table))['in_use'] is True)
+        check(ROW, 'a folder with no git at all is read, and has no lock [%s]' % P.git_lock(item),
+              P.git_lock(item) == {'read': True, 'said': None, 'files': [], 'worktree_locked': False,
+                                   'locked': False})
+        facts = P.in_use(tree, proc=str(table))
+        check(ROW, 'the worktree, read, with no lock and an empty process table, is not in use',
+              facts['in_use'] is False and facts['git']['read'] is True and facts['unread']['git'] is None)
+        (private / 'config.lock').write_text('')
+        lock = P.git_lock(private)
+        (private / 'config.lock').unlink()
+        check(ROW, "a repository's own folder is read for git's lock files too [%s]" % lock['files'],
+              lock['read'] is True and lock['files'] == ['config.lock'] and lock['locked'] is True
+              and P.git_lock(private)['locked'] is False)
+
+        ROW = 'closed/scratch-unopenable-is-locked'
+        unopenable = temporary / ('veldo-agent-' + 'x' * 300)  # a name too long for any folder to be opened
+        facts = P.scratch(unopenable, borrow_root=journals)
+        check(ROW, 'a scratch folder the probe cannot open reads as locked, and unread [%s]' % facts['said'],
+              facts['lock_held'] is True and facts['read'] is False and facts['in_use'] is True
+              and 'cannot be opened' in facts['said'])
+        facts = P.scratch(scratch, borrow_root=temporary / ('j' * 300))
+        check(ROW, 'a journal the probe cannot look into reads as not settled [%s]' % facts['said'],
+              facts['lock_held'] is False and facts['login_unsettled'] is True and facts['read'] is False
+              and facts['in_use'] is True and 'cannot be looked into' in facts['said'])
+        if ME:
+            sealed_scratch = temporary / 'veldo-agent-sealed'
+            sealed_scratch.mkdir()
+            sealed_scratch.chmod(0)
+            facts = P.scratch(sealed_scratch, borrow_root=journals)
+            sealed_scratch.chmod(0o700)
+            check(ROW, 'a scratch folder with no permission for this user reads as locked [%s]' % facts['said'],
+                  facts['lock_held'] is True and facts['read'] is False and facts['in_use'] is True)
+        facts = P.scratch(scratch, borrow_root=journals)
+        check(ROW, 'the scratch that can be opened, with no lock and no journal, is read and not in use',
+              facts['read'] is True and facts['in_use'] is False)
+
+        ROW = 'closed/unnamed-process-counts'
+        entry(11, uid=ME, comm=None, sealed=False)
+        (table / '13').mkdir()  # an entry that ended meanwhile: no name, and nothing else
+        got = P.processes(item, proc=str(table))
+        check(ROW, 'a process whose name cannot be read is listed, with its uid [%s]' % got['unread'],
+              got['unread'] == [{'pid': 11, 'uid': ME, 'command': None, 'reach': 'same_uid'}] and got['users'] == [])
+        facts = P.in_use(item, proc=str(table))
+        check(ROW, 'and the path is in use', facts['in_use'] is True and facts['found'] is False
+              and facts['unknown'] is True)
+        if ME:
+            denied = entry(12, uid=ME, sealed=False)
+            (denied / 'comm').chmod(0)
+            got = P.processes(item, proc=str(table))
+            (denied / 'comm').chmod(0o600)
+            check(ROW, 'so is one whose name this user has no permission to read [%s]' % got['unread'],
+                  [(found['pid'], found['command']) for found in got['unread']] == [(11, None), (12, None)])
+        fresh()
+        (table / '13').mkdir()
+        facts = P.in_use(item, proc=str(table))
+        check(ROW, 'an entry that is gone when it is read is neither a user nor unread',
+              facts['in_use'] is False and facts['unread']['processes'] == [])
+
+        ROW = 'closed/unread-names-pids-and-uids'
+        fresh()
+        entry(21, uid=OTHER)
+        entry(22)
+        got = P.processes(item, proc=str(table))
+        check(ROW, 'unread lists each process by id and uid, with its name and its reach [%s]' % got['unread'],
+              got['unread'] == [{'pid': 21, 'uid': OTHER, 'command': 'holder', 'reach': None},
+                                {'pid': 22, 'uid': None, 'command': 'holder', 'reach': 'unknown_identity'}])
+        facts = P.in_use(item, proc=str(table))
+        check(ROW, 'in_use carries the same list, and a process that cannot be told apart makes it in use',
+              facts['unread']['processes'] == got['unread'] and facts['in_use'] is True)
+        real = P.in_use(item)
+        check(ROW, "the host's own table gives a list of the same shape, never a count [%d unread]"
+              % len(real['unread']['processes']),
+              isinstance(real['unread']['processes'], list)
+              and all(set(found) == {'pid', 'uid', 'command', 'reach'} and isinstance(found['pid'], int)
+                      for found in real['unread']['processes'])
+              and isinstance(real['unread']['engines'], list))
+
+        ROW = 'closed/hidden-table'
+        fresh()
+        mounts = temporary / 'mountinfo'
+        for option, hides in (('hidepid=2', True), ('hidepid=invisible', True), ('hidepid=1', True),
+                              ('hidepid=0', False), ('hidepid=off', False), ('relatime', False)):
+            mounts.write_text('24 30 0:22 / /sys rw,relatime shared:7 - sysfs sysfs rw\n'
+                              '29 33 0:26 / %s rw,nosuid,relatime shared:13 - proc proc rw,%s\n' % (table, option))
+            facts = P.in_use(item, proc=str(table), mountinfo=str(mounts))
+            check(ROW, 'a table mounted %s %s [%s]' % (option, 'hides processes: in use' if hides else 'shows them',
+                                                       facts['table']),
+                  facts['in_use'] is hides and facts['table']['read'] is (not hides)
+                  and (facts['unread']['table'] is not None) is hides)
+        facts = P.in_use(item, proc=str(table), mountinfo=str(temporary / 'no-such-mounts'))
+        check(ROW, 'mounts that cannot be read: in use [%s]' % facts['unread']['table'],
+              facts['in_use'] is True and facts['table']['read'] is False)
+        mounts.write_text('24 30 0:22 / /sys rw,relatime shared:7 - sysfs sysfs rw\n')
+        check(ROW, "the kernel's own table that the mounts do not name: in use",
+              P.processes(item, mountinfo=str(mounts))['table']['read'] is False)
+        check(ROW, 'a folder that is no mount of the process file system hides nothing',
+              P.processes(item, proc=str(table))['table'] == {'read': True, 'hidden': None, 'said': None})
+
+        # ---- REACH: an unread process counts only if it could reach the path ---------------------------
+        ROW = 'reach/other-uid-shut-out-excluded'
+        fresh()
+        entry(31, uid=OTHER)
+        facts = P.in_use(item, proc=str(table))
+        check(ROW, 'the way to the path is closed to every other user', temporary.stat().st_mode & 0o077 == 0)
+        check(ROW, 'a process of another uid that cannot be read is listed [%s]' % unread_of(facts),
+              unread_of(facts) == [(31, OTHER, None)])
+        check(ROW, "and, shut out by the path's own permissions, it does not make the path in use",
+              facts['in_use'] is False and facts['unknown'] is False and P.reach(item, OTHER, [OTHER]) is None)
+        entry(32, uid=OWNED_BY_ROOT)
+        facts = P.in_use(item, proc=str(table))
+        check(ROW, 'a root-owned process is judged by the mode, not by its privilege: shut out too [%s]'
+              % unread_of(facts), unread_of(facts) == [(31, OTHER, None), (32, OWNED_BY_ROOT, None)]
+              and facts['in_use'] is False)
+        item.chmod(0o777)
+        check(ROW, 'the item open to all inside a closed folder is still out of reach',
+              P.in_use(item, proc=str(table))['in_use'] is False)
+        item.chmod(0o755)
+
+        ROW = 'reach/other-uid-let-through-counted'
+
+        def passable(folder):
+            way = [Path(folder)] + list(Path(folder).parents)
+            return all(os.stat(str(step)).st_mode & 0o001 for step in way) and os.access(str(folder), os.W_OK)
+
+        places = [place for place in dict.fromkeys(os.path.realpath(place) for place in (
+            tempfile.gettempdir(), '/tmp', '/dev/shm', '/var/tmp')) if os.path.isdir(place) and passable(place)]
+        check(ROW, 'this host has a temporary place every user may pass through [%s]' % places, bool(places))
+        if places:
+            reached = Path(tempfile.mkdtemp(prefix='veldo-0299-open-', dir=places[0]))
+            opened.append(reached)
+            reached.chmod(0o755)
+            facts = P.in_use(reached, proc=str(table))
+            check(ROW, 'the same process, on a path whose directories let every user through, counts [%s]'
+                  % unread_of(facts), unread_of(facts)[0] == (31, OTHER, 'permissions')
+                  and facts['in_use'] is True and facts['found'] is False and facts['unknown'] is True)
+            check(ROW, 'the root-owned one counts there as well', unread_of(facts)[1] == (32, OWNED_BY_ROOT, 'permissions'))
+            reached.chmod(0o750)
+            group = reached.stat().st_gid
+            check(ROW, 'closed to other users and open to its group, it lets a process of that group through',
+                  P.reach(reached, OTHER, [OTHER, group]) == 'permissions' and P.reach(reached, OTHER, [OTHER]) is None)
+            fresh()
+            entry(33, uid=OTHER, gids=[OTHER, group])
+            entry(34, uid=OTHER, gids=[OTHER])
+            facts = P.in_use(reached, proc=str(table))
+            check(ROW, 'so the unread process in that group counts and the one outside it does not [%s]'
+                  % unread_of(facts), unread_of(facts) == [(33, OTHER, 'permissions'), (34, OTHER, None)]
+                  and facts['in_use'] is True)
+            reached.chmod(0o707)
+            check(ROW, 'the owner class decides for the owner and the group class for its group',
+                  P.reach(reached, reached.stat().st_uid, []) == 'permissions'
+                  and P.reach(reached, OTHER, [group]) is None and P.reach(reached, OTHER, []) == 'permissions')
+            reached.chmod(0o755)
+            check(ROW, 'a path that is not there cannot be judged, and counts',
+                  P.reach(reached / 'gone', OTHER, []) == 'special')
+
+        ROW = 'reach/root-with-container-mount-counted'
+        fresh()
+        entry(41, uid=OWNED_BY_ROOT)
+        check(ROW, 'a root-owned process the permissions shut out, with no engine named: not in use',
+              P.in_use(item, proc=str(table))['in_use'] is False)
+        fixture.write_text(json.dumps({
+            'system': [container('f', 'mounts-above', 'running', ('bind', str(temporary), '/host'))],
+            'desktop': [container('g', 'mounts-elsewhere', 'exited', ('bind', str(elsewhere), '/else'))]}))
+        os.environ['PATH'] = str(bin_folder) + os.pathsep + path_before
+        try:
+            facts = P.in_use(item, engines=('desktop',), proc=str(table))
+            check(ROW, 'a container that mounts another path changes nothing [%s]' % unread_of(facts),
+                  facts['in_use'] is False and facts['mounted_above'] == [] and unread_of(facts) == [(41, OWNED_BY_ROOT, None)])
+            facts = P.in_use(item, engines=('system', 'desktop'), proc=str(table))
+            check(ROW, 'a container with a bind mount above the path is named, and is not use of the path [%s]'
+                  % [(found['name'], found['source']) for found in facts['mounted_above']],
+                  [(found['name'], found['source']) for found in facts['mounted_above']]
+                  == [('mounts-above', str(temporary))] and facts['containers'] == [] and facts['found'] is False)
+            check(ROW, 'with that mount the root-owned process counts: the path is in use [%s]' % unread_of(facts),
+                  unread_of(facts) == [(41, OWNED_BY_ROOT, 'container_mount')] and facts['in_use'] is True
+                  and facts['unknown'] is True)
+            entry(42, uid=OTHER)
+            facts = P.in_use(item, engines=('system',), proc=str(table))
+            check(ROW, 'so does a process of another uid: a mount is a way in the permissions do not describe',
+                  unread_of(facts) == [(41, OWNED_BY_ROOT, 'container_mount'), (42, OTHER, 'container_mount')])
+            facts = P.in_use(item, engines=('missing',), proc=str(table))
+            check(ROW, 'an engine that cannot be read is a way in that cannot be ruled out [%s]' % unread_of(facts),
+                  facts['in_use'] is True and [reach for _, _, reach in unread_of(facts)] == ['container_mount'] * 2)
+            fresh()
+            facts = P.in_use(item, engines=('system',), proc=str(table))
+            check(ROW, 'the mount above alone, with no unread process, is not use',
+                  facts['in_use'] is False and len(facts['mounted_above']) == 1)
+        finally:
+            os.environ['PATH'] = path_before
+
+        ROW = 'reach/same-uid-and-inherited'
+        fresh()
+        entry(51, uid=ME)
+        entry(52, uid=OTHER, parent=51)
+        entry(53, uid=OTHER, parent=52)
+        entry(55, uid=OTHER)
+        entry(56, uid=OTHER, parent=999)
+        entry(57)
+        entry(58, uid=OTHER, parent=59)
+        entry(59, uid=OTHER, parent=58)
+        entry(60, uid=OTHER, parent=55)
+        got = dict((pid, reach) for pid, _, reach in unread_of(P.in_use(item, proc=str(table))))
+        check(ROW, 'a process of the probing uid that cannot be read counts [%s]' % got, got.get(51) == 'same_uid')
+        check(ROW, "a process whose parent, or parent's parent, could reach the path counts",
+              got.get(52) == 'inherited' and got.get(53) == 'inherited')
+        check(ROW, 'one that is shut out, and one under a parent that is shut out, do not',
+              55 in got and got[55] is None and 60 in got and got[60] is None)
+        check(ROW, 'a parent the table does not show, a status that cannot be read and parents that lead back '
+              'to themselves cannot be judged, and count', got.get(56) == 'inherited'
+              and got.get(57) == 'unknown_identity' and got.get(58) and got.get(59))
+        fresh()
+        entry(55, uid=OTHER)
+        entry(60, uid=OTHER, parent=55)
+        check(ROW, 'with only the two that are shut out the path is not in use',
+              P.in_use(item, proc=str(table))['in_use'] is False)
+
         source = PRODUCTION['control_space_probe.py'].read_text()
         called = set()
         for node in ast.walk(ast.parse(source)):
@@ -626,6 +1001,8 @@ def _v299_space_probe_suite():
                 process.kill()
                 process.wait()
         shutil.rmtree(temporary, ignore_errors=True)
+        for made in opened:
+            shutil.rmtree(made, ignore_errors=True)
 
     for row, values in rows.items():
         failed = [label for label, ok in values if not ok]

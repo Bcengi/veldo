@@ -7,21 +7,12 @@
   ],
   "red_rows": [
    "ac1/mapped-file",
-   "ac1/open-file-beneath",
-   "ac1/seam"
+   "ac1/open-file-beneath"
   ],
   "red_details": [
    [
     "VELDO-0299 ac1/open-file-beneath",
-    "an open file beneath the path is use [[]]"
-   ],
-   [
-    "VELDO-0299 ac1/mapped-file",
-    "a mapped file beneath the path is use [[]]"
-   ],
-   [
-    "VELDO-0299 ac1/seam",
-    "the seam is called with the facts of each call, in order"
+    "the process and the file are named, as an open file"
    ]
   ],
   "noop_red_rows": [],
@@ -37,24 +28,13 @@
    "ac2/case-4-operation",
    "ac2/case-5-unlanded-commit",
    "ac2/held-by-another-ref",
-   "ac2/squash-landing"
+   "ac2/squash-landing",
+   "closed/stash-hides-unlanded-commit"
   ],
   "red_details": [
    [
-    "VELDO-0299 ac2/case-4-operation",
-    "and is not once the merge is given up"
-   ],
-   [
     "VELDO-0299 ac2/case-5-unlanded-commit",
     "a commit only the worktree's own branch holds is unique work [{'cases': [], 'unlanded': None, 'held_by': ['refs/heads/work']}]"
-   ],
-   [
-    "VELDO-0299 ac2/squash-landing",
-    "with no receipt read the branch is still unique work"
-   ],
-   [
-    "VELDO-0299 ac2/held-by-another-ref",
-    "a clean worktree whose tip the trunk holds has no unique work [{'path': '/tmp/veldo-0299-tyosb_cu/worktree', 'read': True, 'branch': 'refs/heads/work', 'commit': '80f0dfa3c4beb974d87b5b9367d7e2d9629a9b44', 'modified': [], 'staged': [], 'untracked': [], 'more': {'modified': 0, 'staged': 0, 'untracked': 0}, 'operation': None, 'unlanded': None, 'held_by': ['refs/heads/main', 'refs/heads/work'], 'landed_by': None, 'compared': '/tmp/veldo-0299-tyosb_cu/worktree', 'cases': [], 'unique_work': False}]"
    ]
   ],
   "noop_red_rows": [],
@@ -74,20 +54,8 @@
   ],
   "red_details": [
    [
-    "VELDO-0299 ac2/unreadable",
-    "a worktree whose shared repository cannot be read is unread"
-   ],
-   [
     "VELDO-0299 ac3/branch-not-brought-across",
     "the agent's worktree has unique work [{'cases': [], 'unlanded': None, 'held_by': ['refs/heads/agent/a1/n1']}]"
-   ],
-   [
-    "VELDO-0299 ac3/brought-across",
-    "an agent worktree still on its start commit has none [['refs/heads/agent/a1/n1']]"
-   ],
-   [
-    "VELDO-0299 ac3/moved-on",
-    "a further commit is unique work again, in the worktree and the repository"
    ]
   ],
   "noop_red_rows": [],
@@ -101,16 +69,161 @@
   ],
   "red_rows": [
    "ac4/journal-root",
-   "ac4/login-unsettled"
+   "ac4/login-unsettled",
+   "closed/scratch-unopenable-is-locked"
   ],
   "red_details": [
    [
     "VELDO-0299 ac4/login-unsettled",
-    "with the lock free and the borrowed login not settled the scratch is in use [{'path': '/tmp/veldo-0299-9tcv9fvu/veldo-agent-fixture1', 'lock_held': False, 'login_unsettled': True, 'journal': '/tmp/veldo-0299-9tcv9fvu/borrowed-logins/veldo-agent-fixture1', 'in_use': False}]"
-   ],
+    "with the lock free and the borrowed login not settled the scratch is in use [{'path': '/tmp/veldo-0299-2lspr5v4/veldo-agent-fixture1', 'read': True, 'said': None, 'lock_held': False, 'login_unsettled': True, 'journal': '/tmp/veldo-0299-2lspr5v4/borrowed-logins/veldo-agent-fixture1', 'in_use': False}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-stash-holds-a-commit",
+  "criterion": "AC2",
+  "expected_red": [
+   "closed/stash-hides-unlanded-commit"
+  ],
+  "red_rows": [
+   "closed/stash-hides-unlanded-commit"
+  ],
+  "red_details": [
    [
-    "VELDO-0299 ac4/journal-root",
-    "with no root given the journal is looked for under the launcher's state folder"
+    "VELDO-0299 closed/stash-hides-unlanded-commit",
+    "and the commit is unique work all the same: a stash holds nothing [{'cases': [], 'unlanded': None, 'held_by': ['refs/stash'], 'stashes': 1}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-agent-repository-compares-with-itself",
+  "criterion": "AC3",
+  "expected_red": [
+   "closed/no-shared-repository"
+  ],
+  "red_rows": [
+   "closed/no-shared-repository"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 closed/no-shared-repository",
+    "given no shared repository it is unread and its unique work unknown, never none [{'path': '/tmp/veldo-0299-fvl2lw7v/agent.git', 'read': True, 'shared': '/tmp/veldo-0299-fvl2lw7v/agent.git', 'branches': [{'ref': 'refs/heads/agent/a1/n1', 'commit': '396b79ccead6b6439cf772b3364a7bc475ea57a2', 'held': True}, {'ref': 'refs/heads/agent/a1/n2', 'commit': 'b9f5cd15bb6f72d37ba19850e44936fa9a1274ae', 'held': True}], 'not_across': [], 'more': 0, 'refs': [], 'stashes': 0, 'unique_work': False}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-unread-git-is-unlocked",
+  "criterion": "AC1",
+  "expected_red": [
+   "closed/git-unreadable-is-locked"
+  ],
+  "red_rows": [
+   "closed/git-unreadable-is-locked"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 closed/git-unreadable-is-locked",
+    "a worktree git refuses to read is locked, and unread [{'read': False, 'said': \"fatal: detected dubious ownership in repository at '/tmp/veldo-0299-2ku_ml9p/worktree'\", 'files': [], 'worktree_locked': False, 'locked': False}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-unopenable-scratch-is-unlocked",
+  "criterion": "AC4",
+  "expected_red": [
+   "closed/scratch-unopenable-is-locked"
+  ],
+  "red_rows": [
+   "closed/scratch-unopenable-is-locked"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 closed/scratch-unopenable-is-locked",
+    "a scratch folder the probe cannot open reads as locked, and unread [the journal /tmp/veldo-0299-sewef7ht/borrowed-logins/veldo-agent-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx cannot be looked into]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-unnamed-process-skipped",
+  "criterion": "AC1",
+  "expected_red": [
+   "closed/unnamed-process-counts"
+  ],
+  "red_rows": [
+   "closed/unnamed-process-counts"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 closed/unnamed-process-counts",
+    "a process whose name cannot be read is listed, with its uid [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-every-unread-process-counts",
+  "criterion": "AC1",
+  "expected_red": [
+   "reach/other-uid-shut-out-excluded"
+  ],
+  "red_rows": [
+   "closed/unread-names-pids-and-uids",
+   "reach/other-uid-let-through-counted",
+   "reach/other-uid-shut-out-excluded",
+   "reach/root-with-container-mount-counted",
+   "reach/same-uid-and-inherited"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 reach/other-uid-shut-out-excluded",
+    "a process of another uid that cannot be read is listed [[(31, 5242, 'permissions')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-no-unread-process-counts",
+  "criterion": "AC1",
+  "expected_red": [
+   "reach/other-uid-let-through-counted"
+  ],
+  "red_rows": [
+   "reach/other-uid-let-through-counted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 reach/other-uid-let-through-counted",
+    "the same process, on a path whose directories let every user through, counts [[(31, 5242, None), (32, 0, None)]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space299-container-mount-is-no-way-in",
+  "criterion": "AC1",
+  "expected_red": [
+   "reach/root-with-container-mount-counted"
+  ],
+  "red_rows": [
+   "reach/root-with-container-mount-counted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0299 reach/root-with-container-mount-counted",
+    "with that mount the root-owned process counts: the path is in use [[(41, 0, None)]]"
    ]
   ],
   "noop_red_rows": [],

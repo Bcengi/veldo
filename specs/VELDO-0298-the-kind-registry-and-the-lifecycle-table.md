@@ -89,3 +89,21 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: review (verdict FIX), two lead decisions. (1) A worktree or an agent repository is never
+  returned for removal while an item inside it is there in any state but removed or gone: kept,
+  declared, removing, present, deferred, or due and staying. The review reproduced the loss the earlier
+  rule allowed: an agent repository due at ticket ended came back for removal with a worktree the owner
+  had answered Keep for, and its uncommitted files, inside it. The suite row that asserted the opposite
+  (a kept, declared or removing child does not hold) is corrected, and the reproduction is the row
+  ac2/kept-child-holds-parent. Design section 7 and section 5 are amended to say so, and rule 6 of
+  VELDO-0330 follows. (2) The function does not trust the caller's list. For each worktree and agent
+  repository it would return for removal it calls the look it is given, look(identity, record), which
+  answers with what is inside that item now (control_space_signal.inside: the ledger's items inside it
+  by parent and by path, and what is on disk inside it that no live item records). With no look, or a
+  look that cannot answer, the item comes back with wait and the reason children_not_read; when the
+  look finds a child that is neither removed nor gone and that the list does not hold in that state,
+  with wait, the reason children_not_passed and the missing children. The module still opens no file
+  and no store itself: the look is given to it, and without one it returns no worktree and no agent
+  repository for removal. Row ac2/looks-for-children. Not changed: the review's low finding 3 (the row
+  of a worktree is read from fields that can change later) is left for the lead. No acceptance
+  criterion changed; AC2's words are still true and the function now does more than they ask.

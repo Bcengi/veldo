@@ -20,13 +20,24 @@ it is not_in_ledger; put back it is protected; off the list it is in_use by owne
 ended and its group empty it is in_use by process use; with the process gone it is unique_work; with
 the edit undone it is in_use by children; with the child gone the tool's refusal is remove_refused; and
 then it passes all seven. The tool is not called before the six others pass),
-ac1/unread-is-in-use (a process the probe may not read, an engine the client cannot read, a run nobody
-answers for, a run not conclusive, a group not empty, a worktree git cannot read: each refuses),
+ac1/unread-is-in-use (a process the probe may not read and cannot tell apart, an engine the client
+cannot read, a process table that hides processes, a worktree whose locks git cannot read, a scratch
+folder that cannot be opened, a run nobody answers for, a run not conclusive, a group not empty, a
+worktree git cannot read, unique work that is unknown: each refuses), ac1/unread-process-reach (the
+lead's decision, bounded fail closed: an unread process of another uid that the path's own permissions
+shut out does not refuse; one that runs as this user, and a root-owned one once a container has a bind
+mount above the path, do, and the refusal names the process id, the uid and the reach),
 ac1/session-process (a session's scratch is in use while its recorded process is the same live process,
 not once it ended and not for another start time), ac1/scratch-lock (a launcher's scratch whose lock is
 held or whose borrowed login is not settled), ac1/review-scratch (an untracked file in a review worktree
 is not unique work; a tracked edit there is; an untracked file in any other worktree is),
-ac1/children (a child that is present, due or deferred holds its parent; one that is gone does not),
+ac1/children (a child that is declared, present, due, deferred, removing or kept holds its parent;
+one that is gone does not; an item at a path inside it holds it whatever its parent says),
+ac1/kept-child-holds-parent (the review's reproduction on a real ledger and real git: an agent
+repository whose branch is across, with a worktree the owner answered Keep for and its uncommitted file
+inside it, is refused in_use by children, the remover is not called and the file is still there; the
+kind registry's due, given the same look, returns it with wait; a registered worktree on disk that the
+ledger says is gone holds it too),
 ac1/agent-repository (a branch the shared repository does not hold is unique work of the agent
 repository and of the agent's worktree; rule 1 reads the agent's worktree against its agent repository),
 ac1/discard-skips-unique-work (the purposes: discard and review scratch pass no unique work rule, and an
@@ -82,7 +93,8 @@ def _v330_space_rules_suite():
         return module
 
     ROWS = ('ac1/order', 'ac1/protect-before-unique-work', 'ac1/first-refusal-names', 'ac1/unread-is-in-use',
-            'ac1/session-process', 'ac1/scratch-lock', 'ac1/review-scratch', 'ac1/children',
+            'ac1/unread-process-reach', 'ac1/session-process', 'ac1/scratch-lock', 'ac1/review-scratch',
+            'ac1/children', 'ac1/kept-child-holds-parent',
             'ac1/agent-repository', 'ac1/discard-skips-unique-work', 'ac1/deferral-record',
             'ac2/link-replaces-folder', 'ac2/other-repository-worktree', 'ac2/docker-other-id',
             'ac3/at-above-beneath', 'ac3/no-event-removes', 'ac3/no-confirm-removes', 'ac3/no-discard-removes',
@@ -219,13 +231,21 @@ def _v330_space_rules_suite():
         PROC = temp / 'proc'
         PROC.mkdir()
 
-        def process_entry(pid, cwd):
-            """One entry of the fixture process table: a process whose working directory is `cwd`."""
+        def process_entry(pid, cwd, uid=None):
+            """One entry of the fixture process table: a process whose working directory is `cwd`, or,
+            with no `cwd`, one the probe cannot read (its cwd is a file and no link). `uid` writes its
+            status file."""
             base = PROC / str(pid)
             (base / 'fd').mkdir(parents=True)
             (base / 'comm').write_text('holder\n')
             (base / 'maps').write_text('')
-            (base / 'cwd').symlink_to(cwd)
+            if cwd is None:
+                (base / 'cwd').write_text('')
+            else:
+                (base / 'cwd').symlink_to(cwd)
+            if uid is not None:
+                (base / 'status').write_text('Name:\tholder\nPPid:\t0\nUid:\t%d\t%d\t%d\t%d\nGid:\t%d\t%d\t%d\t%d\n'
+                                             'Groups:\t\n' % ((uid,) * 8))
             return base
 
         calls = []
@@ -392,26 +412,58 @@ def _v330_space_rules_suite():
         quiet, quiet_path = scratch('quiet')
         check(ROW, 'a scratch folder nothing uses passes [%s]' % (named(judge(quiet)),), judge(quiet).get('ok') is True)
 
-        def unread_process(path, engines=(), **reads):
-            facts = P.in_use(path, engines, **reads)
-            facts['unread'] = dict(facts['unread'], processes=1)
-            return facts
+        UNTOLD = {'pid': 4343, 'uid': None, 'command': None, 'reach': 'unknown_identity'}
 
-        shim = type('Probe', (), dict(vars(P), in_use=staticmethod(unread_process)))
-        answer = SIG.rules(L, shim, quiet, L.item(quiet), run=client, proc=str(PROC))
-        check(ROW, 'one process the probe may not read, and no known user: in_use [%s]' % (named(answer),),
-              named(answer) == (False, 'process_use', 'in_use')
-              and (answer.get('found') or {}).get('unread', {}).get('processes') == 1
+        def shimmed(**changed):
+            """The probes, with in_use's facts changed after they are read and its own conclusion left as
+            it was: what the rule itself makes of an unread fact."""
+            def in_use(path, engines=(), **reads):
+                facts = P.in_use(path, engines, **reads)
+                facts['unread'] = dict(facts['unread'], **changed)
+                return facts
+            return type('Probe', (), dict(vars(P), in_use=staticmethod(in_use)))
+
+        answer = SIG.rules(L, shimmed(processes=[UNTOLD]), quiet, L.item(quiet), run=client, proc=str(PROC))
+        check(ROW, 'one process the probe may not read and cannot tell apart, and no known user: in_use [%s]'
+              % (named(answer),), named(answer) == (False, 'process_use', 'in_use')
+              and (answer.get('found') or {}).get('unread', {}).get('processes') == [UNTOLD]
               and (answer.get('found') or {}).get('processes') == [])
+        answer = SIG.rules(L, shimmed(table='the process table is mounted hidepid=2'), quiet, L.item(quiet),
+                           run=client, proc=str(PROC))
+        check(ROW, 'a process table that hides processes: in_use [%s]' % (named(answer),),
+              named(answer) == (False, 'process_use', 'in_use'))
+        answer = SIG.rules(L, shimmed(git='fatal: detected dubious ownership'), quiet, L.item(quiet),
+                           run=client, proc=str(PROC))
+        check(ROW, 'a worktree whose locks git cannot read: in_use [%s]' % (named(answer),),
+              named(answer) == (False, 'process_use', 'in_use'))
+        sealed = process_entry(77, None)
+        answer = judge(quiet)
+        shutil.rmtree(sealed)
+        check(ROW, 'a process table entry that cannot be read, read by the probe itself: in_use [%s %s]'
+              % (named(answer), (answer.get('found') or {}).get('unread', {}).get('processes')),
+              named(answer) == (False, 'process_use', 'in_use')
+              and (answer.get('found') or {}).get('unread', {}).get('processes')
+              == [{'pid': 77, 'uid': None, 'command': 'holder', 'reach': 'unknown_identity'}])
         if os.geteuid() != 0:
-            sealed = process_entry(77, temp)
+            sealed = process_entry(78, temp)
             (sealed / 'fd').chmod(0)
             answer = judge(quiet)
             (sealed / 'fd').chmod(0o700)
             shutil.rmtree(sealed)
-            check(ROW, 'a process table entry this user may not read, read by the probe itself: in_use [%s]'
-                  % (named(answer),), named(answer) == (False, 'process_use', 'in_use')
-                  and (answer.get('found') or {}).get('unread', {}).get('processes') == 1)
+            check(ROW, 'one this user has no permission to read: in_use [%s]' % (named(answer),),
+                  named(answer) == (False, 'process_use', 'in_use')
+                  and [entry['pid'] for entry in (answer.get('found') or {}).get('unread', {}).get('processes', ())]
+                  == [78])
+
+        def unopened(path, borrow_root=None):
+            return dict(P.scratch(path, borrow_root), read=False, said='the scratch folder cannot be opened',
+                        in_use=False)
+
+        shim = type('Probe', (), dict(vars(P), scratch=staticmethod(unopened)))
+        answer = SIG.rules(L, shim, quiet, L.item(quiet), run=client, proc=str(PROC))
+        check(ROW, 'a scratch folder that cannot be opened: in_use [%s]' % (named(answer),),
+              named(answer) == (False, 'process_use', 'in_use')
+              and ((answer.get('found') or {}).get('scratch') or {}).get('read') is False)
         DOCKER['unreadable'] = True
         answer = judge(quiet)
         DOCKER['unreadable'] = False
@@ -445,12 +497,60 @@ def _v330_space_rules_suite():
         check(ROW, 'a worktree whose git state cannot be read: unique_work, never free [%s]' % (named(answer),),
               named(answer) == (False, 'unique_work', 'unique_work')
               and (answer.get('found') or {}).get('unread') == 'git cannot read it')
+
+        def unknown_work(path, landed=(), shared=None, run=None):
+            return dict(P.unique_work(path, landed, shared, run), unique_work=None)
+
+        shim = type('Probe', (), dict(vars(P), unique_work=staticmethod(unknown_work)))
+        answer = SIG.rules(L, shim, clean, L.item(clean), run=client, proc=str(PROC))
+        check(ROW, 'unique work that is unknown, though the probe says it read: unique_work [%s]' % (named(answer),),
+              named(answer) == (False, 'unique_work', 'unique_work'))
         check(ROW, 'the same worktree, read, passes', judge(clean).get('ok') is True)
         (PROC / '9').mkdir()
         (PROC / '9' / 'comm').write_text('elsewhere\n')
         check(ROW, 'a process whose entry ended meanwhile is neither a user nor unread',
               judge(clean).get('ok') is True)
         shutil.rmtree(PROC / '9')
+
+        # AC1: an unread process counts only if it could reach the item
+        ROW = 'ac1/unread-process-reach'
+        ME = os.geteuid()
+        STRANGER = ME + 4242
+        OWNED_BY_ROOT = 0 if ME else STRANGER + 1
+        reach, reach_path = scratch('reach')
+        check(ROW, 'the way to the item is closed to every other user', temp.stat().st_mode & 0o077 == 0)
+        stranger = process_entry(81, None, uid=STRANGER)
+        answer = judge(reach)
+        check(ROW, "an unread process of another uid, shut out by the path's own permissions, does not refuse [%s]"
+              % (named(answer),), answer.get('ok') is True)
+        facts = P.in_use(str(reach_path), L.engines, run=client, proc=str(PROC))
+        check(ROW, 'the probe lists it all the same, with no reach [%s]' % facts['unread']['processes'],
+              facts['unread']['processes'] == [{'pid': 81, 'uid': STRANGER, 'command': 'holder', 'reach': None}]
+              and facts['in_use'] is False)
+        own = process_entry(82, None, uid=ME)
+        answer = judge(reach)
+        shutil.rmtree(own)
+        check(ROW, 'an unread process of this user does: in_use, named by process id, uid and reach [%s]'
+              % (answer.get('found') or {}).get('unread', {}).get('processes'),
+              named(answer) == (False, 'process_use', 'in_use')
+              and (answer.get('found') or {}).get('unread', {}).get('processes')
+              == [{'pid': 82, 'uid': ME, 'command': 'holder', 'reach': 'same_uid'}])
+        shutil.rmtree(stranger)
+        rooted = process_entry(83, None, uid=OWNED_BY_ROOT)
+        check(ROW, 'an unread root-owned process, shut out by the mode, with no container mount: passes',
+              judge(reach).get('ok') is True)
+        DOCKER['containers'] = [{'Id': 'm' * 64, 'Name': '/mounts-above', 'State': {'Status': 'exited'},
+                                 'Mounts': [{'Type': 'bind', 'Source': str(SCRATCH), 'Destination': '/host'}]}]
+        answer = judge(reach)
+        DOCKER['containers'] = []
+        check(ROW, 'the same process once a container has a bind mount above the item: in_use [%s]'
+              % (answer.get('found') or {}).get('unread', {}).get('processes'),
+              named(answer) == (False, 'process_use', 'in_use')
+              and (answer.get('found') or {}).get('unread', {}).get('processes')
+              == [{'pid': 83, 'uid': OWNED_BY_ROOT, 'command': 'holder', 'reach': 'container_mount'}]
+              and (answer.get('found') or {}).get('containers') == [])
+        shutil.rmtree(rooted)
+        check(ROW, 'with the processes gone the item passes', judge(reach).get('ok') is True)
 
         # AC1: a session's recorded process
         ROW = 'ac1/session-process'
@@ -528,20 +628,35 @@ def _v330_space_rules_suite():
         kid = L.declare('build_output', {'path': str(parent_path / 'build')},
                         {'scope': A, 'ticket': 'VELDO-9003', 'run': {'id': 'run-kid', 'station': 'build'}},
                         'seam', parent=parent)['item']
-        check(ROW, 'a child that is only declared does not hold its parent [%s]' % state_of(kid),
-              state_of(kid) == 'declared' and judge(parent).get('ok') is True)
-        L.confirm(kid)
-        for state in ('present', 'due', 'deferred'):
-            if state == 'due':
+        for state in ('declared', 'present', 'due', 'removing', 'deferred', 'due again', 'kept'):
+            if state == 'present':
+                L.confirm(kid)
+            elif state.startswith('due'):
                 L.signal('run_finished', {'run': 'run-kid'})
-            elif state == 'deferred':
-                L.outcome(kid, 'deferred', {'rule': 'in_use', 'event': 'run_finished'})
+            elif state != 'declared':
+                L.outcome(kid, state, {'rule': 'remove_refused' if state == 'deferred' else 'in_use',
+                                       'event': 'run_finished'})
             answer = judge(parent)
             check(ROW, 'a child that is %s holds its parent: in_use by children [%s %s]'
-                  % (state, state_of(kid), named(answer)), state_of(kid) == state
-                  and named(answer) == (False, 'children', 'in_use') and answer['found'] == {'items': [kid]})
+                  % (state, state_of(kid), named(answer)), state_of(kid) == state.split()[0]
+                  and named(answer) == (False, 'children', 'in_use') and answer['found']['items'] == [kid]
+                  and answer['found']['states'] == {kid: state.split()[0]})
+        L.signal('run_finished', {'run': 'run-kid'})
         L.gone(kid)
-        check(ROW, 'a child that is gone does not', judge(parent).get('ok') is True)
+        check(ROW, 'a child that is gone does not [%s]' % state_of(kid), state_of(kid) == 'gone'
+              and judge(parent).get('ok') is True)
+        (parent_path / 'cache').mkdir()
+        loose = L.declare('build_output', {'path': str(parent_path / 'cache')},
+                          {'scope': A, 'ticket': 'VELDO-9003'}, 'seam')['item']
+        L.confirm(loose)
+        answer = judge(parent)
+        check(ROW, 'an item at a path inside it holds it, though its record names no parent [%s %s]'
+              % ((L.item(loose) or {}).get('parent'), named(answer)), (L.item(loose) or {}).get('parent') is None
+              and named(answer) == (False, 'children', 'in_use') and answer['found']['items'] == [loose])
+        L.gone(loose)
+        check(ROW, 'and gone, it does not', judge(parent).get('ok') is True)
+        check(ROW, 'the only states that do not hold are removed and gone [%s]' % (SIG.NOT_HOLDING_STATES,),
+              tuple(SIG.NOT_HOLDING_STATES) == ('removed', 'gone'))
 
         # AC1: an agent repository and its worktree
         ROW = 'ac1/agent-repository'
@@ -565,6 +680,9 @@ def _v330_space_rules_suite():
         check(ROW, 'a commit the shared repository does not hold is unique work of the agent\'s worktree [%s]'
               % (answer.get('found') or {}).get('cases'),
               named(answer) == (False, 'unique_work', 'unique_work') and (answer.get('found') or {}).get('cases') == [5])
+        answer = judge(agent, purpose='discard')
+        check(ROW, 'the agent repository is held by its worktree [%s]' % (named(answer),),
+              named(answer) == (False, 'children', 'in_use') and answer['found']['items'] == [tree])
         L.gone(tree)
         answer = judge(agent)
         check(ROW, 'and of the agent repository, which names the branch not brought across [%s]'
@@ -572,8 +690,95 @@ def _v330_space_rules_suite():
               named(answer) == (False, 'unique_work', 'unique_work')
               and (answer.get('found') or {}).get('not_across') == ['refs/heads/agent/a1/n1'])
         git(REPOSITORY, 'fetch', '-q', str(agent_path), 'refs/heads/agent/*:refs/heads/agent/*')
-        check(ROW, 'once the branch is brought across the agent repository passes [%s]' % (named(judge(agent)),),
+        answer = judge(agent)
+        check(ROW, 'the branch brought across, the worktree the ledger calls gone is still on disk and holds it [%s %s]'
+              % (named(answer), (answer.get('found') or {}).get('states')),
+              named(answer) == (False, 'children', 'in_use')
+              and answer['found']['states'] == {'path:' + str(agent_tree): 'unrecorded'})
+        git(agent_path, 'worktree', 'remove', str(agent_tree))
+        check(ROW, 'once that worktree is off the disk the agent repository passes [%s]' % (named(judge(agent)),),
               judge(agent).get('ok') is True)
+        L.projects[0]['repository'] = None
+        answer = judge(agent)
+        L.projects[0]['repository'] = str(REPOSITORY)
+        check(ROW, 'an agent repository with no shared repository to compare with is unique_work, never free [%s]'
+              % (named(answer),), named(answer) == (False, 'unique_work', 'unique_work')
+              and 'unread' in (answer.get('found') or {}))
+        answer = SIG.rules(L, type('Probe', (), dict(vars(P), agent_repository=staticmethod(
+            lambda path, shared, run=None: P.agent_repository(path, None, run)))), agent, L.item(agent),
+            run=client, proc=str(PROC))
+        check(ROW, 'and the probe, given none, says unknown, which the rule reads as unique work [%s]'
+              % (answer.get('found') or {}).get('unread'), named(answer) == (False, 'unique_work', 'unique_work')
+              and 'no shared repository' in str((answer.get('found') or {}).get('unread')))
+
+        # AC1: the review's reproduction: a kept worktree inside an agent repository
+        ROW = 'ac1/kept-child-holds-parent'
+        del calls[:]
+        home_path = WORKTREES / 'agents' / 'a2.git'
+        subprocess.run(['git', 'clone', '-q', '--bare', str(REPOSITORY), str(home_path)], env=ENVIRONMENT,
+                       check=True, capture_output=True, timeout=120)
+        ticket = {'scope': A, 'ticket': 'VELDO-9005'}
+        home = L.declare('agent_repository', {'path': str(home_path)}, ticket, 'seam')['item']
+        L.confirm(home)
+        kept_tree = WORKTREES / 'agents' / 'a2-tree'
+        git(home_path, 'worktree', 'add', '-q', '-b', 'agent/a2/n1', str(kept_tree), 'main')
+        inner = L.declare('worktree', {'path': str(kept_tree)}, ticket, 'seam', parent=home, branch='agent/a2/n1',
+                          start=git(kept_tree, 'rev-parse', 'HEAD'))['item']
+        L.confirm(inner)
+        git(REPOSITORY, 'fetch', '-q', str(home_path), 'refs/heads/agent/a2/*:refs/heads/agent/a2/*')
+        (kept_tree / 'uncommitted.txt').write_text('work the owner chose to keep\n')
+        L.signal('ticket_ended', {'ticket': 'VELDO-9005'})
+        L.outcome(inner, 'kept', {'answer': 'keep'})
+
+        def removing_folder(identity, record):
+            calls.append(('removes', identity))
+            shutil.rmtree(record['locator']['path'])
+            return {'ok': True}
+
+        check(ROW, 'the owner answered Keep: the worktree is kept, and its agent repository is due [%s %s]'
+              % (state_of(inner), state_of(home)), state_of(inner) == 'kept' and state_of(home) == 'due')
+        whole = P.agent_repository(str(home_path), str(REPOSITORY), client)
+        check(ROW, 'every branch of the agent repository is across: the unique work rule would not catch it [%s]'
+              % whole.get('not_across'), whole['read'] is True and whole['unique_work'] is False)
+        answer = judge(home, tool=removing_folder)
+        check(ROW, 'the removal of the agent repository is refused in_use by children, naming the kept worktree [%s %s]'
+              % (named(answer), (answer.get('found') or {}).get('states')),
+              named(answer) == (False, 'children', 'in_use') and answer['found']['items'] == [inner]
+              and answer['found']['states'] == {inner: 'kept'})
+        check(ROW, 'the remover was not called; the repository, the worktree and its uncommitted file are there [%s]'
+              % calls, calls == [] and home_path.is_dir()
+              and (kept_tree / 'uncommitted.txt').read_text() == 'work the owner chose to keep\n')
+        answer = judge(home, purpose='discard', tool=removing_folder)
+        check(ROW, 'a discard answer for the agent repository is refused the same way',
+              named(answer) == (False, 'children', 'in_use') and calls == [])
+
+        def look(identity, record):
+            return SIG.inside(L, P, identity, record, client)
+
+        listed = [(home, L.item(home))]
+        got = K.due('ticket_ended', listed, look=look)
+        check(ROW, "the kind registry's due, given the agent repository alone and this look, returns it with wait [%s]"
+              % got, len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('reason') == 'children_not_passed'
+              and got[0].get('held_by') == [inner])
+        got = K.due('ticket_ended', listed + [(inner, L.item(inner))], look=look)
+        check(ROW, 'and given the kept worktree too, with wait and the worktree in held_by [%s]' % got,
+              len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('held_by') == [inner])
+        L.signal('ticket_ended', {'ticket': 'VELDO-9005'})
+        L.gone(inner)
+        answer = judge(home, tool=removing_folder)
+        got = K.due('ticket_ended', listed, look=look)
+        check(ROW, 'the ledger told the worktree is gone while it is on disk: still refused, by what is on disk [%s %s]'
+              % (state_of(inner), (answer.get('found') or {}).get('states')), state_of(inner) == 'gone' and
+              named(answer) == (False, 'children', 'in_use')
+              and answer['found']['states'] == {'path:' + str(kept_tree): 'unrecorded'} and calls == []
+              and len(got) == 1 and got[0]['action'] == 'wait' and got[0].get('held_by') == ['path:' + str(kept_tree)])
+        (kept_tree / 'uncommitted.txt').unlink()
+        git(home_path, 'worktree', 'remove', str(kept_tree))
+        got = K.due('ticket_ended', listed, look=look)
+        answer = judge(home, tool=removing_folder)
+        check(ROW, 'with the worktree off the disk the agent repository goes [%s %s]' % (got, named(answer)),
+              len(got) == 1 and got[0]['action'] == 'remove' and answer.get('ok') is True
+              and calls == [('removes', home)] and not home_path.exists())
 
         # AC1: the purposes
         ROW = 'ac1/discard-skips-unique-work'

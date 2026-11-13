@@ -89,3 +89,36 @@ the rules, and Probes, which holds the protect list.
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: after the review of VELDO-0298 and VELDO-0299 (verdict FIX for both), on which this
+  ticket is built. What the rules read changed, and no acceptance criterion did.
+  (1) Unread or None is in use or unique work. Rule 4 refuses when the probe says in use, and also on
+  its own reading of what could not be read: an unread process that could reach the item, an unread
+  engine, a process table that hides processes, a worktree whose locks git cannot read, a scratch
+  folder that cannot be opened or a journal that cannot be looked into. Rule 5 refuses unless the
+  probe read the worktree or the repository and says unique work is False: read False and unique_work
+  None are unique work, and so is an agent repository with no shared repository to compare with.
+  (2) What the probe needs. It needs read access to /proc of the processes it judges. Without root it
+  has the status file of every process (uid, groups, parent), which the kernel gives every user, and
+  os.stat on the item's directories; it does not have the working directory, descriptors or maps of
+  another user's process, of a root-owned one, or of one of its own that is not dumpable. So removal is
+  refused while any process it could not read could hold the item, and the refusal names each by
+  process id, uid and reason. Under hidepid it cannot list what it must judge, and every removal is
+  refused until the table shows every process or the service has CAP_SYS_PTRACE.
+  (3) Bounded fail closed (the lead's decision; this ticket's first report: 617 unread processes on
+  this host, so every item deferred as in_use). An unread process counts for an item only if it could
+  reach that item. A process of another uid that cannot traverse the item's path by the path's own
+  permissions (owner, group and mode of every directory from / to the item, read with os.stat) cannot
+  hold it and is excluded. A root-owned process is judged by the mode and not by its privilege, and is
+  excluded only where the mode shuts uid 0 out and no container has a bind mount at, beneath or above
+  the path (the engine probe's mount list, which covers dockerd and containerd binds); with such a
+  mount, or an unread engine, every unread process counts. A process of the same uid always counts when
+  it cannot be read. A process whose parent could reach counts (a command run through sudo keeps the
+  folder it was started in). The reasoning, and what the bound does not see, is design section 7.
+  Measured here for an item under the home folder: 9 of 536 unread processes count, six of them the
+  user's own undumpable ones, so rule 4 still defers such an item on this host; open for the lead.
+  (4) Rule 6 follows the amended design: a child holds its parent in every state but removed and gone
+  (declared, present, due, deferred, removing, kept). It reads the children itself at the attempt
+  (inside): the ledger's items inside this one by parent and by path, and for an agent repository the
+  worktrees its git folder registers that are on disk; one that no live item records holds it. inside
+  is also the look VELDO-0298's due is given. Rows ac1/children, ac1/kept-child-holds-parent,
+  ac1/unread-process-reach, ac1/unread-is-in-use.

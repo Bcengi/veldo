@@ -22,8 +22,20 @@ anywhere in it, and nothing in Veldo is removed because of its age.
 Revision 2 followed the first validation of 2026-11-13 (B1 to B6, M1 to M9). Revision 3 followed the
 second (R1 to R4, S1 to S11). Revision 4 followed the third (C1 to C6 and D1 to D7). Revision 5 followed
 the fourth (E1 to E3 and F1 to F6). Revision 6 follows the fifth (verdict CHANGES, G1 to G4) and carries
-the lead's decisions (f), (g) and (h) exactly. Section 14 answers the points of all five. What changed in
-revision 6:
+the lead's decisions (f), (g) and (h) exactly. Section 14 answers the points of all five.
+
+Amended 2026-11-13, after the review of VELDO-0298 and VELDO-0299 (verdict FIX for both), by the lead's
+decisions. The amendment is in section 7, under "What a probe cannot read" and "A child holds its
+parent", in rules 4, 5 and 6 of its table, and in the children rule of section 5:
+
+- Every probe fails closed. What it cannot read or cannot decide is in use, or is unique work, never
+  free.
+- A process the probe may not read counts as use of an item only when it could reach that item (bounded
+  fail closed).
+- A kept, declared or removing child holds its parent. The review removed an agent repository with a
+  kept worktree, and its uncommitted files, inside it.
+
+What changed in revision 6:
 
 - One answer still covers a day's whole review group, and the request now also offers an answer for one
   worktree of the group (4.9, section 7, VELDO-0342).
@@ -491,9 +503,10 @@ commit on an ordinary branch fires no contained event.
 
 Three rules complete the table.
 
-A worktree is never removed while an item inside it is present, due or deferred, so the build output goes
-first and a deferred build folder holds its worktree. An agent repository waits for its worktree in the
-same way.
+A worktree is never removed while an item inside it is there in any state but removed or gone: declared,
+present, due, deferred, removing or kept. So the build output goes first, a deferred build folder holds
+its worktree, and kept evidence or a kept worktree holds what it is inside (section 7, "A child holds its
+parent"). An agent repository waits for its worktree in the same way.
 
 An item that has no ticket (a gate on a batch, a worktree on a branch no pattern maps to a ticket, a
 worktree in a plain repository) ends on its run's or its gate's events, on contained, on project ended and
@@ -1014,9 +1027,9 @@ the probes' facts at the moment of the attempt; no fact is carried over from an 
 | 1 | Ledger | The thing at the locator is not the item recorded (another object id, another repository, a path that now resolves elsewhere through a link) | not_in_ledger |
 | 2 | Protect | The locator, or anything beneath it, matches the protect list | protected |
 | 3 | Owner live | The item's owning run is not conclusive, or its containment group is not empty; or the owning session's recorded process is still the same live process | in_use |
-| 4 | Process use | Any process has its working directory, an open file or a mapped file at or beneath the path; or a container on any named engine, running or stopped, has a bind mount at or beneath it; or git holds a lock on the worktree; or, for a sandbox launcher's scratch, its scratch lock is held or its borrowed login is not settled | in_use |
-| 5 | Unique work | See below | unique_work |
-| 6 | Children | An item inside this one is present, due or deferred | in_use |
+| 4 | Process use | Any process has its working directory, an open file or a mapped file at or beneath the path; or a container on any named engine, running or stopped, has a bind mount at or beneath it; or git holds a lock on the worktree; or, for a sandbox launcher's scratch, its scratch lock is held or its borrowed login is not settled; or any of these could not be read and could hold the path (below, "What a probe cannot read") | in_use |
+| 5 | Unique work | See below. Unique work that could not be read is unique work | unique_work |
+| 6 | Children | An item inside this one is in any state but removed or gone (declared, present, due, deferred, removing or kept); or something on disk inside it is not recorded, or its inside cannot be read (below, "A child holds its parent") | in_use |
 | 7 | Tool | The owning tool's non-forced remove refuses | remove_refused |
 
 Rule 5, unique work. For a worktree it refuses in any of these cases:
@@ -1029,7 +1042,10 @@ Rule 5, unique work. For a worktree it refuses in any of these cases:
    completed landing's source commit and not from the trunk. The test covers every commit on the branch.
    The branch tip is the checked-out commit, so testing the tip against the other refs is enough, but the
    rule is about the branch and not about what happens to be checked out. A detached worktree is tested
-   on its checked-out commit against every ref.
+   on its checked-out commit against every ref. A ref here is a branch, a tag or a remote-tracking ref.
+   A stash is not one: the stash entry made in a worktree has the checked-out commit as its parent, so
+   git lists refs/stash among the refs that reach it, and once the worktree is removed and the stash
+   dropped the commit is lost. Git's per-worktree refs do not count either.
 
 Case 3 has one exception, by name: review scratch. In a review worktree an untracked file that git does
 not ignore is not unique work (below).
@@ -1038,7 +1054,11 @@ For an agent's worktree the same five cases are read in the agent repository, an
 the shared repository's refs: a commit on the agent's branch that the shared repository does not yet hold
 is unique. For an agent repository itself the rule refuses while any branch in it points at a commit the
 shared repository does not hold under the same name. So an agent repository is removed only after the
-runner's integrate has brought every branch across, and after its worktree has gone.
+runner's integrate has brought every branch across, and after its worktree has gone. Its stash entries
+and its other refs go with it, so a stash entry in it, or a tag at a commit the shared repository does
+not hold, is unique work too. An agent repository that the declarations give no shared repository to
+compare with has unknown unique work, which is unique work: compared with itself, every branch would
+hold itself.
 
 Notes on the probes:
 
@@ -1051,6 +1071,98 @@ Notes on the probes:
   name.
 - Unique work for a squash landing: the branch tip is not an ancestor of the trunk, but it is the source
   commit the completion receipt names, or an ancestor of it. That is why rule 5 reads the receipts.
+
+What a probe cannot read (amended 2026-11-13). Every probe fails closed: what it cannot read or cannot
+decide is in use, or is unique work, never free. The review of VELDO-0299 found five places where the
+probes said "free" because they could not look, and each now says the opposite:
+
+| What could not be read | What the probe says |
+| :- | :- |
+| A worktree git cannot read (for example a repository owned by another user, which git refuses) | Its locks are unknown: locked, and the path is in use. Its unique work is unknown: unique work |
+| A scratch folder the probe cannot open, or a borrow journal it cannot look into | Locked, or not settled: in use |
+| An agent repository with no shared repository to compare with | Unique work unknown: unique work |
+| A process whose name, working directory, descriptors or maps cannot be read | Listed by process id and uid, and judged by the rule below |
+| An engine the client cannot read | Named, and the path is in use |
+| A process table mounted so that it hides other users' processes (hidepid) | The path is in use |
+
+Unread processes: bounded fail closed (the lead's decision, 2026-11-13). The probe runs as the user who
+owns the installation and has no root. On the measured host the kernel will not show it the working
+directory, the descriptors or the maps of 536 processes: every root-owned process and kernel thread,
+every other user's, and a few of its own. If each of them counted as use, every item on the host would
+be deferred as in_use for ever, and that is what VELDO-0330 first reported (617 at that count). If none
+counted, the probe would be blind to another user's process sitting in the folder. So an unread process
+counts as use of an item only when it could reach that item, and the probe proves "could not" from facts
+it can read without root:
+
+- Who the process is. Its uid, its groups and its parent are in its status file, which every user may
+  read. A process whose status cannot be read counts.
+- The same uid counts. A process of the probing user is readable; one that is not (it made itself not
+  dumpable) can be anywhere that user can be, so it counts for every item.
+- Another uid is judged by the path's own permissions: the owner, the group and the mode of every
+  directory from / down to the item, read with os.stat. A process counts when each directory gives its
+  uid or one of its groups search permission and the item itself gives it any permission. When one
+  directory shuts it out, it cannot have opened anything at or beneath the item, and it is excluded. A
+  directory that owner, group and mode do not describe (it cannot be read, or it carries an access
+  list) cannot be judged, and the process counts.
+- A root-owned process is judged the same way, by the mode and not by its privilege. Root can enter any
+  directory, so "could root reach it" is always yes and bounds nothing. What the rule asks instead is
+  whether a root-owned process has a way of its own to the item, and there are two: the directories let
+  uid 0 or its groups through as they would any user (a path under a world-readable folder, a
+  root-owned folder), or a container engine mounts the path. So a root-owned process is excluded only
+  when the mode shuts uid 0 out as it shuts out any other user, and no container has a bind mount at,
+  beneath or above the path. The engine probe's mount list is where that is read: it covers what
+  dockerd and containerd bind. Otherwise it counts.
+- A container mount is a way in for every unread process, not only root's. A process inside a
+  container reaches a bound folder through the mount, whatever the host's directories say of its uid.
+  So when any container, running or stopped, has a bind mount at, beneath or above the path, or an
+  engine cannot be read, every unread process counts. (A mount at or beneath the path is use in its own
+  right, by rule 4's first words. A mount above it is not use; it only ends the bound.)
+- A child counts when a parent could reach. A process keeps the working directory and the descriptors
+  it was started with, so a command the user runs through sudo or su is another uid, or root, sitting
+  in the user's folder. The probe follows the parents in the status files, and a process any of whose
+  parents counts, or cannot be judged, counts.
+
+What this bound does not see: a process of another uid that kept a working directory or a descriptor
+from a parent that could reach the item, after every such parent has ended. Its parent is then a
+process that is shut out, and nothing the probe may read ties it to the item. The folder remover's
+rename (below) is what limits the harm: such a process keeps its files under the new name until the
+delete, and the delete of a file a process holds open does not take the data from that process.
+
+What the probe needs, and how it gets it without root: read access to the status file of every process
+(the kernel gives that to every user), os.stat on the item's directories (the owner of the item has it),
+and a process table that shows every process. Under hidepid the table shows only the user's own, the
+probe cannot list what it must judge, and rule 4 refuses every removal until the table is mounted to
+show them or the service is given the capability to read them (CAP_SYS_PTRACE, which also makes every
+process readable and the bound unneeded). The deferral names each process that counted, by process id,
+uid and the reason, so the owner can see why.
+
+Measured on this host, 2026-11-13, for an item under the owner's home folder (mode 750): of 536 unread
+processes 527 are excluded and 9 count. Six are the user's own and not dumpable: the systemd user
+manager and its PAM helper, two processes of the desktop container engine's backend, ssh-agent and one
+short-lived command. Three are let through by the home folder's group: a root-owned session worker and
+a root-owned mount helper that carry the user's group, and a container's process whose group id is the
+same number. So on this host rule 4 still defers every item under the home folder, naming nine
+processes where it named 617. The user's own undumpable processes are the open point. A systemd user
+manager is there on every host with a user session, nothing short of CAP_SYS_PTRACE reads it, and the
+decision above says it counts. Whether the service is given that capability, or such processes are
+bounded another way, is the lead's to decide; nothing is removed on this host until it is.
+
+A child holds its parent (amended 2026-11-13). Rule 6 was written as "present, due or deferred". The
+review of VELDO-0298 reproduced the data loss that wording allows: an agent repository due at ticket
+ended, whose worktree the owner had answered Keep for, came back for removal, and removing it takes the
+kept worktree and the uncommitted files the owner chose to keep. The unique work rule does not catch
+it: the branch was already across, and only the uncommitted files were unique. The same holds for kept
+evidence inside a worktree (git's worktree remove takes it), for a declared child (being made right
+now) and for a removing one (half removed). So a child holds its parent in every state but removed and
+gone. Only a child that is due and is itself removed at the same event goes before its parent instead
+of holding it. This is what 4.1 already says of kept: a present item that is kept.
+
+Neither the kind registry's function nor rule 6 trusts a list of children it is handed. Each looks
+for itself, at the moment of the attempt: at every item the ledger records inside this one, by its
+parent and by its path, in whatever state; and, for an agent repository, at the worktrees its own git
+folder registers that are on disk. A registered worktree on disk that no live item records holds the
+repository, and so does a repository git cannot list. The function refuses a call whose list does not
+hold every child the look finds, in the state it finds it.
 
 Retry. A deferred item is made due again by its next ending event, by admission requested on its pool
 (sent once per hold, 6.7), and by reconcile. One more: when a pending retirement's obligation completes

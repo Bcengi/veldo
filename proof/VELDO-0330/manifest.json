@@ -4,7 +4,7 @@
  "commit": "15ef34b6635beb038290d09a45953cd8224c34c0",
  "tree": "ee425898072ff0e751f696aa2cb141ea70e8ce7f",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-13T22:48:31.739042+00:00",
+ "produced_at": "2026-11-13T23:13:21.655754+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -24,6 +24,16 @@
      "type": "unit",
      "ref": "proof/VELDO-0330/falsifiers.json",
      "detail": "Falsifier space330-unique-work-before-protect (unique work run before protect): ac1/protect-before-unique-work red, the protected worktree with an edit deferred as unique_work (ac1/order, ac1/first-refusal-names, ac1/deferral-record, ac3/no-event-removes and ac3/no-confirm-removes red with it); noop copy green. proof/VELDO-0330/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/137_veldo_0330_space_rules.py",
+     "detail": "After the review of VELDO-0298 and VELDO-0299. Rows ac1/unread-is-in-use (an unread process that cannot be told apart, a process table that hides processes, a worktree whose locks git cannot read, a scratch folder that cannot be opened and unique work that is unknown each refuse, by the rule's own reading of the facts), ac1/unread-process-reach (an unread process of another uid that the path's permissions shut out does not refuse and is listed with no reach; one of this user refuses, named by process id, uid and reach; a root-owned one passes with no container mount and refuses once a container has a bind mount above the item), ac1/children (a child that is declared, present, due, removing, deferred or kept holds its parent, each state reached through the ledger's own commands; an item at a path inside it holds it though its record names no parent), ac1/kept-child-holds-parent (the review's reproduction on a real ledger and real git: an agent repository whose branch is across, with a kept worktree and its uncommitted file inside it, is refused in_use by children for a removal and for a discard, the remover is not called and the file is still there; the kind registry's due, given inside as its look, returns it with wait; told the worktree is gone while it is on disk, both still refuse; with the worktree off the disk it goes), ac1/agent-repository (an agent repository with no shared repository is unique_work)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0330/falsifiers.json",
+     "detail": "Falsifiers: space330-kept-child-does-not-hold (kept added to the states that do not hold): ac1/kept-child-holds-parent red (ac1/children red with it). space330-every-unread-process-refuses (every unread process refuses, reach or not): ac1/unread-process-reach red. Noop copies green. proof/VELDO-0330/mutations.txt."
     }
    ]
   },
@@ -74,7 +84,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 137_veldo_0330_space_rules (20 rows, 46 checks with the shared preamble). Also green after the change: --suite 136_veldo_0299_space_probe and --suite 134_veldo_0331_space_mode, whose modules this ticket edits."
+   "command": "python3 scripts/selftest.py --suite 137_veldo_0330_space_rules (22 rows, 48 checks), rerun green after the review of VELDO-0298 and VELDO-0299 with suites 130 to 136, each on its own."
   },
   {
    "name": "integration",
@@ -105,7 +115,8 @@
   "Rule 6 holds a parent for a child that is present, due or deferred, as section 7 says and as the kind registry's HOLDING_STATES. A child that is declared, removing or kept does not hold its parent. A kept worktree inside an agent repository is still covered by rule 5 only while a branch is not across. Flagged for review, not changed.",
   "Purposes: remove passes all seven, discard rules 1, 2, 3, 4, 6 and the tool, review_scratch rules 1, 2, 3, 4 and 6. The review scratch remover's own per-path checks (a path that resolves outside the worktree) and the discard remover's own refusals are VELDO-0300.",
   "The deferral facts hold retry as the item's own ending events (ends_on), since a deferred item is made due again by its next ending event; admission and reconcile also retry and are not listed.",
-  "The spec's own History and specs/index.md are not changed, as in VELDO-0298 and 0299. docs are not changed: documents for space management are VELDO-0322."
+  "The spec's own History and specs/index.md are not changed, as in VELDO-0298 and 0299. docs are not changed: documents for space management are VELDO-0322.",
+  "After the review of VELDO-0298 and VELDO-0299 (2026-11-13): rule 4 reads the probe's in_use and, apart from it, every unread fact; rule 5 refuses unless read is True and unique_work is False; rule 6 reads inside(), which is also the look given to the kind registry's due. The five registered teeth cases (finding 330) were run again through the driver's own materialize() and worker(). The spec's History states what the probe needs to read and the bounded rule for unread processes; no acceptance criterion changed."
  ],
  "rollback": "Revert the change. Nothing is removed by this ticket and nothing calls the rules yet, so nothing on disk changes."
 }

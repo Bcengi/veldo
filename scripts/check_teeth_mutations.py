@@ -12625,6 +12625,19 @@ def cases():
         ['ac4/keeps-its-version'])
     result[-1]['siblings'] = True
 
+    # The review of VELDO-0298. A kept child does not hold its parent (the review removed an agent
+    # repository with a kept worktree inside it); the function trusts the caller's list and asks no look.
+    add(298, 'space298-kept-child-does-not-hold', space298, 'control_space_kinds.py',
+        "NOT_HOLDING_STATES = ('removed', 'gone')\n",
+        "NOT_HOLDING_STATES = ('removed', 'gone', 'kept')\n",
+        ['ac2/kept-child-holds-parent'])
+    result[-1]['siblings'] = True
+    add(298, 'space298-trusts-the-callers-list', space298, 'control_space_kinds.py',
+        "            found = look(identity, record) if look is not None else None\n",
+        "            found = {}\n",
+        ['ac2/looks-for-children'])
+    result[-1]['siblings'] = True
+
     # VELDO-0299: the probes. The declared falsifier of each acceptance criterion: AC1 only the working
     # directory is checked; AC2 the worktree's own branch counts among the refs that hold its tip; AC3 the
     # comparison is made inside the agent repository only; AC4 only the scratch lock is read.
@@ -12646,6 +12659,46 @@ def cases():
         "            'in_use': held}\n",
         ['ac4/login-unsettled'])
 
+    # The review of VELDO-0299: the five paths that failed open. A stash counted among the refs that
+    # hold a commit; an agent repository given no shared repository compared with itself; a worktree git
+    # cannot read reported unlocked; a scratch folder that cannot be opened reported unlocked; a process
+    # whose name cannot be read skipped.
+    add(299, 'space299-stash-holds-a-commit', space299, 'control_space_probe.py',
+        "    return [ref for ref in out.split('\\n')[:-1] if ref.startswith(HOLDING_REFS)] if code == 0 else None\n",
+        "    return out.split('\\n')[:-1] if code == 0 else None\n",
+        ['closed/stash-hides-unlanded-commit'])
+    add(299, 'space299-agent-repository-compares-with-itself', space299, 'control_space_probe.py',
+        "    if shared is None:\n        return _unread(path, 'no shared repository given')\n",
+        "    if shared is None:\n        shared = path\n",
+        ['closed/no-shared-repository'])
+    add(299, 'space299-unread-git-is-unlocked', space299, 'control_space_probe.py',
+        "                'locked': bool(files) or locked or said is not None}\n",
+        "                'locked': bool(files) or locked}\n",
+        ['closed/git-unreadable-is-locked'])
+    add(299, 'space299-unopenable-scratch-is-unlocked', space299, 'control_space_probe.py',
+        "        return None, 'the scratch folder cannot be opened: ' + _said(error)\n",
+        "        return False, None\n",
+        ['closed/scratch-unopenable-is-locked'])
+    add(299, 'space299-unnamed-process-skipped', space299, 'control_space_probe.py',
+        "        except OSError:\n            denied = True  # a process whose name cannot be read is a process all the same\n",
+        "        except OSError:\n            continue\n",
+        ['closed/unnamed-process-counts'])
+    # The lead's decision, bounded fail closed: an unread process counts only if it could reach the path.
+    # Every unread process counted, whatever the path's permissions; no unread process of another uid
+    # counted; a container mount above the path not read as a way to it.
+    add(299, 'space299-every-unread-process-counts', space299, 'control_space_probe.py',
+        "        why = known[key]\n",
+        "        why = known[key] or 'permissions'\n",
+        ['reach/other-uid-shut-out-excluded'])
+    add(299, 'space299-no-unread-process-counts', space299, 'control_space_probe.py',
+        "            known[key] = reach(root, who['uid'], who['gids'])\n",
+        "            known[key] = None\n",
+        ['reach/other-uid-let-through-counted'])
+    add(299, 'space299-container-mount-is-no-way-in', space299, 'control_space_probe.py',
+        "    way_in = 'container_mount' if mounted['users'] or mounted['above'] or mounted['unread'] else None\n",
+        "    way_in = None\n",
+        ['reach/root-with-container-mount-counted'])
+
     # VELDO-0330: the rule order, the ledger rule and the protect rule. The declared falsifier of each
     # acceptance criterion: AC1 unique work runs before protect; AC2 rule 1 compares the locator's text
     # only; AC3 the discard remover's rules skip the protect rule.
@@ -12662,6 +12715,16 @@ def cases():
         "    DISCARD: ('ledger', 'protect', 'owner_live', 'process_use', 'children', 'tool'),\n",
         "    DISCARD: ('ledger', 'owner_live', 'process_use', 'children', 'tool'),\n",
         ['ac3/no-discard-removes'])
+    # The review of VELDO-0298 and VELDO-0299, as rule 6 and rule 4 read it. A kept child does not hold
+    # its parent; every unread process refuses, whether or not it could reach the item.
+    add(330, 'space330-kept-child-does-not-hold', space330, 'control_space_signal.py',
+        "NOT_HOLDING_STATES = ('removed', 'gone')\n",
+        "NOT_HOLDING_STATES = ('removed', 'gone', 'kept')\n",
+        ['ac1/kept-child-holds-parent'])
+    add(330, 'space330-every-unread-process-refuses', space330, 'control_space_signal.py',
+        "    reaching = [entry for entry in unread['processes'] if entry.get('reach') is not None]\n",
+        "    reaching = list(unread['processes'])\n",
+        ['ac1/unread-process-reach'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'

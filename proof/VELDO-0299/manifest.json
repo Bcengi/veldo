@@ -4,7 +4,7 @@
  "commit": "8a5618274954dfbfbe4fda61fd53f9b10931bad9",
  "tree": "e9d6e126a4ed33412843a8802d4a1116ea7ed219",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-13T22:37:24.041512+00:00",
+ "produced_at": "2026-11-13T23:13:21.655754+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -24,6 +24,21 @@
      "type": "unit",
      "ref": "proof/VELDO-0299/falsifiers.json",
      "detail": "Falsifier space299-working-directory-only (the working directory only): ac1/open-file-beneath red, the path with an open file beneath it read not in use (ac1/mapped-file and ac1/seam red with it); noop copy green. proof/VELDO-0299/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Review, fail closed. Rows closed/git-unreadable-is-locked (git refusing the worktree as dubious ownership, a client that cannot be run and a worktree whose git folder is broken, read by the real git, each give read False and locked True, and in_use is true with what git said in unread.git; a plain folder and a repository's own folder are read), closed/unnamed-process-counts (a fixture process table entry whose name cannot be read is listed in unread with its uid and the path is in use; an entry that is gone when it is read is neither a user nor unread), closed/unread-names-pids-and-uids (unread.processes is a list of {pid, uid, command, reach} in the fixture table and in this host's own table, never a count), closed/hidden-table (a table mounted hidepid=1, 2 or invisible, mounts that cannot be read and a kernel table the mounts do not name make the path in use; hidepid=0, off and no option do not)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "The lead's decision, bounded fail closed. Rows reach/other-uid-shut-out-excluded (an unread process of another uid, on a path whose temporary folder is mode 700, is listed with reach None and the path is not in use; a root-owned one is judged by the mode and shut out too; the item open to all inside a closed folder is still out of reach), reach/other-uid-let-through-counted (the same processes on a folder made in a temporary place every user may pass through count, reach permissions, and the path is in use; closed to others and open to its group, a process of that group counts and one outside it does not; the owner class and the group class each decide for their own), reach/root-with-container-mount-counted (a root-owned process the mode shuts out does not count with no engine named or with a container that mounts another path; with a container whose bind mount is above the path it counts, reach container_mount, the mount is named in mounted_above and is not use by itself; so does a process of another uid, and so do both when an engine cannot be read), reach/same-uid-and-inherited (an unread process of the probing uid, one whose parent or parent's parent could reach, one whose parent the table does not show, one with no readable status and parents that lead back to themselves count; one that is shut out under a parent that is shut out does not)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifiers: space299-unread-git-is-unlocked (locked no longer true when git cannot read): closed/git-unreadable-is-locked red. space299-unnamed-process-skipped (a process whose name cannot be read skipped): closed/unnamed-process-counts red. space299-every-unread-process-counts: reach/other-uid-shut-out-excluded red. space299-no-unread-process-counts: reach/other-uid-let-through-counted red. space299-container-mount-is-no-way-in: reach/root-with-container-mount-counted red. Noop copies green. proof/VELDO-0299/mutations.txt."
     }
    ]
   },
@@ -45,6 +60,16 @@
      "type": "unit",
      "ref": "proof/VELDO-0299/falsifiers.json",
      "detail": "Falsifier space299-own-branch-counted (the worktree's own branch counted among the refs that hold the commit): ac2/case-5-unlanded-commit red, the unlanded commit read no unique work (ac2/case-4-operation, ac2/squash-landing and ac2/held-by-another-ref red with it); noop green. proof/VELDO-0299/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Review, fail closed. Row closed/stash-hides-unlanded-commit: a detached worktree with a commit no ref holds reads cases [5]; after a real git stash in that worktree refs/stash reaches the commit (the review's reproduction, where the probe then read no unique work) and the probe still reads cases [5], held_by empty, stashes 1; a per-worktree ref does not hold it either; the tip of a branch that a stash reaches is unique work too; a branch at the commit does hold it."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-stash-holds-a-commit (every ref that reaches the commit counted, as before the review): closed/stash-hides-unlanded-commit red; noop green. proof/VELDO-0299/mutations.txt."
     }
    ]
   },
@@ -66,6 +91,16 @@
      "type": "unit",
      "ref": "proof/VELDO-0299/falsifiers.json",
      "detail": "Falsifier space299-agent-repository-only (the comparison made inside the agent repository only): ac3/branch-not-brought-across red, the worktree with a branch not yet brought across read no unique work (ac3/brought-across, ac3/moved-on and ac2/unreadable red with it); noop green. proof/VELDO-0299/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Review, fail closed. Row closed/no-shared-repository: an agent repository holding a commit the shared repository does not, given no shared repository, is read False with unique_work None and says so (it used to compare with itself and read no unique work); a tag at a commit the shared repository does not hold is named in refs and is unique work until the branch is brought across; a stash entry of the agent repository is unique work (refs names refs/stash, stashes 1) until it is dropped, and the agent's worktree reports the stash count as a fact."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-agent-repository-compares-with-itself (given no shared repository, the repository compared with itself): closed/no-shared-repository red; noop green. proof/VELDO-0299/mutations.txt."
     }
    ]
   },
@@ -87,6 +122,16 @@
      "type": "unit",
      "ref": "proof/VELDO-0299/falsifiers.json",
      "detail": "Falsifier space299-lock-only (the lock only): ac4/login-unsettled red, the scratch with a free lock and an unsettled login read not in use (ac4/journal-root red with it); noop green. proof/VELDO-0299/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "Review, fail closed. Row closed/scratch-unopenable-is-locked: a scratch folder that cannot be opened (a name no folder can have, and, run as a user other than root, a folder of mode 000) reads lock_held True, read False, in use; a journal that cannot be looked into reads login_unsettled True, read False, in use; the scratch that can be opened is read and not in use."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-unopenable-scratch-is-unlocked (a folder that cannot be opened read as not locked): closed/scratch-unopenable-is-locked red; noop green. proof/VELDO-0299/mutations.txt."
     }
    ]
   }
@@ -95,23 +140,22 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 136_veldo_0299_space_probe (29 rows, 55 checks; run eight times, green each time after the row ac1/seam was corrected, see assumptions)."
+   "command": "python3 scripts/selftest.py --suite 136_veldo_0299_space_probe (40 rows, 66 checks). After the review's fix every space suite was rerun green, each on its own: 130 (48 checks), 131 (40), 132 (57), 133 (56), 134 (42), 135 (150), 136 (66), 137 (48)."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec on the spec."
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py; python3 .veldo/validate.py spec on the spec and all, exit 0."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran the single suite and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the four registered teeth cases (finding 299) were run here through the driver's own materialize() and worker(), not through the teeth run."
+   "reason": "The build and the review fix ran single suites and fast checks only, as instructed. The lead runs ./scripts/verify.sh through the gate lock; the twelve registered teeth cases (finding 299) were run here through the driver's own materialize() and worker(), not through the teeth run."
   }
  ],
  "assumptions": [
-  "The probes are functions of engine/.veldo/control_space_probe.py: process, processes, containers, git_lock, in_use, scratch, unique_work, agent_repository. Each returns facts; none defers or removes. Nothing calls them yet: the rules that read them are VELDO-0330 and the removers are VELDO-0300.",
+  "The probes are functions of engine/.veldo/control_space_probe.py: process, processes, reach, containers, git_lock, worktrees, in_use, scratch, unique_work, agent_repository (and located, repository, protected from VELDO-0330). Each returns facts; none defers or removes. The rules that read them are VELDO-0330; the removers are VELDO-0300.",
   "Not directly proven against a real container engine: the docker client's answers are a stand-in program's (container ls with all, quiet and no-trunc; container inspect with Id, Name, State.Status and Mounts of Type, Source, Destination). The design leaves the check of both engines to the Docker tickets (0306, 0307). A desktop engine that reports a bind source under another prefix than the host path would not match; not measured here.",
-  "A process this user may not read (another user's, a kernel thread) cannot be a known user: it is counted in unread.processes and does not set in_use. An engine the client cannot read is named in unread.engines and does not set in_use. What a rule does with unread is the rule's decision (VELDO-0330).",
   "The file-sharing helper is recognised by its command name, HELPERS = ('virtiofsd',), the helper seen on this host's desktop engine; the list is a parameter. Whether other desktop engines need other names is not measured.",
   "git holds a lock on the worktree is read as: a lock file (index.lock, HEAD.lock, config.lock, shallow.lock) in the worktree's own git folder, or git's worktree lock. The design does not say which; both are returned apart. No acceptance criterion names it; the row ac1/git-lock covers it.",
   "unique_work takes the landed source commits as an argument (landed): the caller reads the completion receipts' source field (control_landing.py SUBJECT_FIELDS) and this module opens no store. The row's receipts are fixture records of that shape. A source that is not a full commit id is not read.",
@@ -121,8 +165,15 @@
   "The operations of case 4 are the three the design names and two more of the same family that git marks the same way: a revert and a stopped sequence of picks.",
   "The scratch lock is tested as the launcher's own stale pass tests it (agent_sandbox.py:2101): an exclusive lock asked for without waiting and given back at once. For that instant a launcher that asked for its shared lock on the same folder would be refused; the launcher locks a folder it has just made, which no item names yet. The unsettled test is the launcher's pending_borrow (agent_sandbox.py:1986-1990), copied and not imported, since the launcher is a protected script and this module is standard library only.",
   "SEAM['after_in_use'] is the probe's test seam that VELDO-0300 AC1 names. process(pid) is the fact rule 3 needs for a session's recorded process (id and start time, design 4.1); the rest of rule 3 reads the store and is not a probe.",
-  "The first falsifier pass showed one row of this suite, ac1/seam, red on an unchanged copy: it compared whole fact records, which hold the count of unreadable processes on the host, and that count moved between two calls. The row now compares what it is about. The four falsifiers were then run again from the start; the recorded run is the second.",
-  "The spec's own History and specs/index.md are not changed, as in VELDO-0298. docs are not changed: documents for space management are VELDO-0322."
+  "The spec's own History and specs/index.md are not changed, as in VELDO-0298. docs are not changed: documents for space management are VELDO-0322.",
+  "Review (verdict FIX), 2026-11-13, the lead's rule: every probe fails closed. in_use is now true when a user was seen (found) or when something unread could hold the path (unknown): an unread process with a reach, a hidden process table, an unread engine, a worktree git cannot read. The AC1 rows that read the host's own process table assert found, not in_use, because on this host unreadable processes of the probing user make in_use true for every path.",
+  "Only a branch, a tag and a remote-tracking ref hold a commit (HOLDING_REFS). A stash, git's per-worktree refs and every other ref do not. stashes is reported by unique_work as a fact and is no case of rule 5: a stash of the shared repository outlives the worktree. For an agent repository a stash entry is unique work, because the repository's stashes go with it; that reading is the builder's, from the lead's rule that what cannot be decided is unique work.",
+  "git_lock tells apart no git at all (git says not a git repository and the folder holds no .git entry: read, no lock), inside a worktree and not its top (read, no lock), a worktree's top or a repository's own folder (its lock files are looked for), and everything else (read False, locked True).",
+  "Bounded fail closed is the lead's decision as recorded in design section 7. Two things in it are the builder's reading and are for the lead to confirm. (1) A root-owned process is judged by the owner, group and mode of the directories like any other uid, never by its privilege, and is excluded only where the mode shuts uid 0 out and no container has a bind mount at, beneath or above the path; the lead's words were that root is excluded only for paths no container mounts and only when the path's directories deny root nothing special. (2) A container mount at, beneath or above the path, or an unread engine, makes every unread process count, not only root's, and a process whose parent could reach counts; both go further than the lead's words, in the closed direction.",
+  "Not seen by the bound: a process of another uid that kept a working directory or a descriptor from a parent that could reach the path, after every such parent ended. A directory with an access list is not judged and counts as special; no row makes a real access list, because the suite has no tool to set one.",
+  "Measured on this host, 2026-11-13, for an item under the owner's home folder (mode 750), both engines named: 536 unread processes, 527 excluded, 9 counted: six of the probing user's own that are not dumpable (the systemd user manager, its PAM helper, two of the desktop engine's backend, ssh-agent, one short-lived command) and three that the home folder's group lets through. So such an item still reads in use here. Not a test: a measurement, recorded in the design as the lead's open point.",
+  "Not changed: the review's low findings 8a (the helper is matched by its command name), 8b (the exclusive lock test can refuse a launcher starting at that instant), 8c (the calling process is not excluded) and 8d (volumes with a bind option). No row runs against a real container engine; the review read both of this host's engines by hand.",
+  "The spec's History has the review's lines; specs/index.md regenerated with no change."
  ],
  "rollback": "Revert the change. Nothing is removed by this ticket, so nothing on disk changes."
 }

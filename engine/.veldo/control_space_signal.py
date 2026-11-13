@@ -23,7 +23,8 @@ order of ORDER, and the first that refuses ends the run and names the deferral:
   4 process_use   in_use          a process, a container or git uses the path; a launcher's scratch
                                   whose lock is held or whose borrowed login is not settled
   5 unique_work   unique_work     the five cases of a worktree; an agent repository's branches
-  6 children      in_use          an item inside this one is present, due or deferred
+  6 children      in_use          an item inside this one is there in any state but removed or gone,
+                                  or something on disk inside it is not recorded, or cannot be read
   7 tool          remove_refused  the owning tool's remove refuses
 
 The answer is {ok: True, passed} or {ok: False, reason: space_deferred:<deferral>, rule, order,
@@ -43,10 +44,26 @@ worktree's folder must also be a worktree of the repository the item's branches 
 agent repository when it lives inside one, else its project's or plain repository's). A Docker name
 must be held by the object id the locator records.
 
-WHAT CANNOT BE READ IS NOT FREE. A process whose table this user may not read, an engine the client
-cannot read, a worktree or a repository git cannot read, a run nobody answers for, an engine that
-cannot say what id a name has: each refuses, by the rule that could not read. Anything uncertain is
-deferred, never removed.
+WHAT CANNOT BE READ IS NOT FREE. An engine the client cannot read, a worktree or a repository git
+cannot read, a process table that hides processes, a scratch folder that cannot be opened, a run nobody
+answers for, an engine that cannot say what id a name has, an agent repository with no shared
+repository to compare with: each refuses, by the rule that could not read. A probe's unread, its read
+False and its None are in use or unique work, never free. Anything uncertain is deferred, never removed.
+
+A PROCESS THE PROBE MAY NOT READ refuses only when it could reach the item (design section 7, bounded
+fail closed). The probe lists every such process by process id and uid, with reach, the reason it could
+hold the path: it runs as this user, the path's own permissions let it through, a parent could reach
+it, a container mount is a way to the path, or it cannot be judged. A process of another uid that the path's permissions shut out, with none of the rest, has reach
+None and does not refuse. The probe reads owner, group and mode with os.stat and each process's uid,
+groups and parent from its status file, which every user may read, so it needs no root. It does need
+the kernel's process table to show every process: under hidepid the rule refuses.
+
+RULE 6 looks for itself. `inside` reads, at the moment of the call, every item the ledger records inside
+this one, by its parent and by its path, in whatever state, and for an agent repository the worktrees
+its own git folder registers and that are on disk. A child that is declared, present, due, deferred,
+removing or kept holds its parent: removing an agent repository would take a kept worktree and its
+uncommitted files with it. So does a registered worktree on disk that no live item records, and a
+repository git cannot list. `inside` is also the look the kind registry's due is given.
 
 THE TOOL (rule 7) is the callable `tool(identity, record)` the caller gives: the remover. It is called
 only after every other rule of the removal has passed, and anything but {ok: True} is its refusal. With
@@ -99,7 +116,7 @@ APPLIES = {
 }
 
 DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence')
-HOLDING_STATES = ('present', 'due', 'deferred')
+NOT_HOLDING_STATES = ('removed', 'gone')
 REVIEW_SCRATCH_CASE = 3  # an untracked file git does not ignore: not unique work in a review worktree
 
 
@@ -181,12 +198,14 @@ def _rule_process_use(ledger, probe, identity, record, given):
         reads['proc'] = given['proc']
     facts = probe.in_use(path, ledger.engines, **reads)
     unread = facts['unread']
-    if facts['in_use'] or unread['processes'] or unread['engines']:
+    reaching = [entry for entry in unread['processes'] if entry.get('reach') is not None]
+    if (facts['in_use'] or reaching or unread['engines'] or unread['table'] is not None
+            or unread['git'] is not None or not facts['git']['read']):
         return {'processes': facts['processes'], 'containers': facts['containers'], 'git': facts['git'],
-                'unread': unread}
+                'unread': dict(unread, processes=reaching)}
     if record['kind'] == 'scratch':
         held = probe.scratch(path, given['borrow_root'])
-        if held['in_use']:
+        if held['in_use'] or not held['read']:
             return {'scratch': held}
     return None
 
@@ -204,12 +223,15 @@ def _rule_unique_work(ledger, probe, identity, record, given):
         shared = None
     if kind == 'agent_repository':
         facts = probe.agent_repository(path, shared, given['run'])
-        if not facts['read']:
-            return {'unread': facts['said']}
-        return {'not_across': facts['not_across'], 'more': facts['more']} if facts['unique_work'] else None
+        if facts['read'] is not True or facts['unique_work'] is None:
+            return {'unread': facts.get('said')}
+        if facts['unique_work'] is not False:
+            return {'not_across': facts['not_across'], 'more': facts['more'], 'refs': facts['refs'],
+                    'stashes': facts['stashes']}
+        return None
     facts = probe.unique_work(path, given['landed'], shared, given['run'])
-    if not facts['read']:
-        return {'unread': facts['said']}
+    if facts['read'] is not True or facts['unique_work'] is None:
+        return {'unread': facts.get('said')}
     cases = [case for case in facts['cases']
              if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record))]
     if cases:
@@ -219,10 +241,37 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     return None
 
 
+def inside(ledger, probe, identity, record, run=None):
+    """What is inside the item `identity` now, as {identity: state}: every item the ledger records
+    with this one as its parent, or at a path beneath this one's, in whatever state; and, for an agent
+    repository, each worktree its own git folder registers that is on disk and that no item which is
+    neither removed nor gone records, under the name path:<its path> with the state unrecorded
+    (on_disk when it cannot be said whether the folder is there). A repository git cannot list is
+    there under path:<its path> with the state unread. This is rule 6's reading and the look the kind
+    registry's due is given: look=lambda identity, record: inside(ledger, probe, identity, record)."""
+    path = (record.get('locator') or {}).get('path') if record.get('kind') in DISK_KINDS else None
+    found, recorded = {}, set()
+    for child, other in ledger.items().items():
+        where = (other.get('locator') or {}).get('path') if other.get('kind') in DISK_KINDS else None
+        if where and other.get('state') not in NOT_HOLDING_STATES:
+            recorded.add(where)
+        if child != identity and (other.get('parent') == identity or (
+                path and where and where != path and where.startswith(path.rstrip('/') + '/'))):
+            found[child] = other.get('state')
+    if record.get('kind') == 'agent_repository' and path:
+        listed = probe.worktrees(path, run)
+        if not listed['read']:
+            found['path:' + path] = 'unread'
+        for tree in listed['worktrees']:
+            if tree['there'] is not False and tree['path'] not in recorded:
+                found['path:' + tree['path']] = 'unrecorded' if tree['there'] else 'on_disk'
+    return found
+
+
 def _rule_children(ledger, probe, identity, record, given):
-    inside = [child for child, other in ledger.items().items()
-              if other.get('parent') == identity and other.get('state') in HOLDING_STATES]
-    return {'items': inside} if inside else None
+    held_by = {child: state for child, state in inside(ledger, probe, identity, record, given['run']).items()
+               if state not in NOT_HOLDING_STATES}
+    return {'items': sorted(held_by), 'states': held_by} if held_by else None
 
 
 def _rule_tool(ledger, probe, identity, record, given):
