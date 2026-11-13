@@ -75,7 +75,9 @@ acceptance_criteria:
       scratch go when their run finishes or its verdict is recorded;
       a worktree goes by git's own non-forced remove when its branch has landed or is contained; evidence
       is kept and only its caches are dropped; a branch is kept. A detached worktree added inside a
-      wrapped run belongs to that run and goes at its run finished. No timer, schedule or age threshold
+      wrapped run belongs to that run and goes at its run finished. When that run is a review, the
+      untracked files git does not ignore in the worktree are review scratch and go with it, with no
+      decision request and no force option. No timer, schedule or age threshold
       triggers a removal: nothing in Veldo removes by age, with a central installation or without one,
       the sandbox's stale scratch pass and the gate's leg-time store included. Rows: after a gate records
       its verdict its build folder is gone and its evidence
@@ -84,7 +86,9 @@ acceptance_criteria:
       the landing recorded and nothing removed, and the worktree of a branch that commit contains is
       gone after the service consumes the record, with the clock stopped and no timer; with the clock
       moved forward 30 days and no event, nothing is removed; a sandbox scratch folder two days old
-      whose lock is free is still there after a launcher starts, with an installation and without one.
+      whose lock is free is still there after a launcher starts, with an installation and without one;
+      a review worktree with a stray untracked file is gone after the review's run finished, and no
+      request was raised for it.
     falsified_by: >
       Remove build output from a pass that runs on a schedule; the row that checks the folder is gone
       before the gate process exits finds it present and fails.
@@ -102,12 +106,19 @@ acceptance_criteria:
       to the owner with three answers: save as a commit on a kept branch, keep, or discard. Veldo never
       commits on its own. The three answers are offered as picks of the existing settlement path, so its
       set of rulings does not change. Discard is the one forced removal, allowed only after the owner's
-      discard answer, and it keeps the branch. The protect list always holds the container engine's disk image
-      and its folder, database volumes with real data and images that cannot be pulled again, and
-      nothing on it is removed by any event or any answer. Rows: a build folder with a process's working directory inside it, a worktree with an
+      discard answer, and it keeps the branch. Review worktrees with tracked modifications never raise
+      a request each: they share one grouped decision request per day, keyed by the day of the deferral
+      and never opened or sent by the clock. The protect list always holds the container engine's disk
+      image and its folder, every database volume with real data, a protected project's containers and
+      images, and images that cannot be pulled again. A Docker object is matched by its name or by its
+      compose project label, either one, on every engine the installation names. Nothing on the list is
+      removed in any mode, by any event or any answer, and nothing on it is ever proposed for removal.
+      Rows: a build folder with a process's working directory inside it, a worktree with an
       uncommitted edit, a worktree whose branch has a commit nothing else contains, a folder with no
       ledger record and a protected volume each survive their ending event, each with its own reason; the
-      build folder is removed at the next event after the process exits.
+      build folder is removed at the next event after the process exits; two review worktrees with
+      tracked edits on one day raise one request; a protected container matched only by its compose
+      label has no record and no proposal on either engine.
     falsified_by: >
       Check the working directory only and not open files; the row whose process holds an open file in the
       build folder finds the folder removed and fails.
@@ -180,7 +191,9 @@ acceptance_criteria:
       after the owner confirms it per project and kind, and the owner can mark a proposal wrong. A
       project goes to act mode by the owner's signed command, which the ledger refuses until that
       project has three consecutive report-mode days, each with activity and with no proposal marked
-      wrong; a mark starts the count again. The order is core first: core's gate script gets the space
+      wrong; a mark starts the count again. The ledger also refuses the command while the project has
+      a pending group the owner has neither confirmed nor marked wrong, and while the project's gate
+      script lacks the space steps. The order is core first: core's gate script gets the space
       steps while core is in report mode, core goes to act after its three clean days, and each other
       project follows the same way. The three days are read from the records when the owner acts; no
       timer counts them. The nightly script's five candidate
@@ -191,7 +204,9 @@ acceptance_criteria:
       nothing the ledger does not already hold. Rows: a
       first reconcile over a fixture with 20 worktrees removes nothing and lists the due items; after the
       owner's confirmation exactly those are removed; the switch to act is refused for a project with a
-      proposal marked wrong on the second of its three days; the retirement check fails while one
+      proposal marked wrong on the second of its three days; it is refused for a project with three
+      clean days and one unconfirmed group, and accepted after that group is confirmed; the retirement
+      check fails while one
       candidate class has no ledger kind.
     falsified_by: >
       Let the first reconcile act on what it finds due; the row that expects nothing removed before the
@@ -221,7 +236,7 @@ space it needs and waits when the disk cannot cover it.
 
 - The design is docs/design/VELDO-0295-design.md. It holds the components, the data model, the lifecycle
   table, the event sources outside the service, the table of existing removal paths, the flows, the
-  deployment view and the forty-three build tickets, VELDO-0296 to VELDO-0338.
+  deployment view and the forty-six build tickets, VELDO-0296 to VELDO-0341.
 - VELDO-0042 already retires a worker clone only after every user of it has ended, read from the kernel.
   VELDO-0041 already retries a refused retirement when the obligation it waits on completes. Space
   management uses the same two ideas for every kind.
@@ -240,7 +255,9 @@ space it needs and waits when the disk cannot cover it.
   (engine/scripts/agent_sandbox.py) and the 30-day branch of the gate's leg-time store
   (engine/scripts/gate_legs.py). Both go.
 - The protect list always holds the container engine's disk image and its folder, database volumes with
-  real data, and images that cannot be pulled again. Nothing on it is ever removed by Veldo.
+  real data, a protected project's containers and images, and images that cannot be pulled again. An
+  object is matched by name or by compose project label on every engine. Nothing on it is ever proposed
+  or removed by Veldo, in any mode.
 
 ## Out of scope
 
@@ -288,3 +305,12 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   is per project. AC8: per-project report then act, the three clean days, core first; the retirement
   check runs with the script's age and size tests off. Tickets VELDO-0331 to VELDO-0338 added, so the
   range is VELDO-0296 to VELDO-0338. Still a draft.
+- 2026-11-13: amended from design revision 5, which follows the fourth validation of the same day
+  (verdict CHANGES, E1 to E3 and F1 to F6) and carries the lead's decisions (d) and (e) and the complete
+  protect list. AC2: a review worktree's stray untracked files are review scratch and go with it at the
+  review's end, with no request and no force option. AC3: tracked modifications in review worktrees
+  share one grouped decision request per day; the protect list names a protected project's containers
+  and images, matches by name or by compose label on every engine, and nothing on it is proposed or
+  removed in any mode. AC8: the switch to act is also refused while a pending group is unconfirmed and
+  while the project's gate script lacks the space steps. Tickets VELDO-0339 to VELDO-0341 added, so the
+  range is VELDO-0296 to VELDO-0341. Still a draft.
