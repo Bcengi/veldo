@@ -954,14 +954,34 @@ def installable_work(path, repositories, adapters):
     return data
 
 
+def space_keys_folder(keys):
+    """Refuse a keys folder that is there and is not this account's own private folder: a link, a file,
+    another account's folder, or one its group or anyone else can enter. Whoever can write it can swap
+    or delete a key file, and whoever can read it sees which keys there are. Nothing is written."""
+    if not os.path.lexists(keys):
+        return
+    info = os.lstat(keys)
+    if not stat.S_ISDIR(info.st_mode):
+        raise Refused('invalid_input:space_keys:not_a_folder', keys,
+                      'move %s away: it must be a real folder, never a link or a file' % keys)
+    if info.st_uid != os.getuid():
+        raise Refused('invalid_input:space_keys:owner', keys,
+                      'the keys folder must belong to the account that runs setup (uid %d): move %s away '
+                      'and run setup again' % (os.getuid(), keys))
+    if stat.S_IMODE(info.st_mode) & 0o077:
+        raise Refused('invalid_input:space_keys:mode', keys, 'chmod 0700 %s' % keys)
+
+
 def space_key_paths(installation):
     """{principal: key file} for the host principals of the space ledger in the installation folder
-    `installation`, checked and nothing written: the folder must be there, and a key file already in it
-    must be this account's own regular file nobody else can read."""
+    `installation`, checked and nothing written: the folder must be there, a keys folder already in it
+    must be this account's own real folder nobody else can enter (space_keys_folder), and a key file
+    already in it must be this account's own regular file nobody else can read."""
     folder = os.path.abspath(str(installation))
     if not os.path.isdir(folder):
         raise Refused('invalid_input:installation:absent', folder,
                       'name the installation folder the space keys are kept in')
+    space_keys_folder(os.path.join(folder, SPACE_KEYS))
     paths = {name: os.path.join(folder, SPACE_KEYS, name) for name in SPACE_PRINCIPALS}
     for path in paths.values():
         if os.path.lexists(path):
@@ -976,8 +996,13 @@ def make_space_keys(paths):
     space_key_paths answered), 0600 under a 0700 keys folder; a key that is there is kept. Returns the
     key files made, each appended before its key is, so a caller can take back exactly what it made."""
     made = []
+    keys = os.path.dirname(paths[SPACE_PRINCIPALS[0]])
+    # The folder is judged again here, right before the first write into it.
+    space_keys_folder(keys)
     try:
-        os.makedirs(os.path.dirname(paths[SPACE_PRINCIPALS[0]]), mode=0o700, exist_ok=True)
+        if not os.path.lexists(keys):
+            os.mkdir(keys, 0o700)
+            os.chmod(keys, 0o700)
         for name in SPACE_PRINCIPALS:
             if not os.path.lexists(paths[name]):
                 made.append(paths[name])
@@ -991,42 +1016,66 @@ def make_space_keys(paths):
     return made
 
 
-def drop_space_keys(made):
-    """Take back the key files make_space_keys made, each with its public half."""
+def drop_space_keys(made, held=()):
+    """Take back the key files make_space_keys made, each with its public half. `held` names the
+    principals the store has a record of: a key the store holds is never deleted, whoever made it."""
     for path in made:
+        if os.path.basename(path) in held:
+            continue
         for one in (path, path + '.pub'):
             with contextlib.suppress(OSError):
                 os.unlink(one)
 
 
-def enroll_space_principals(paths, enroll, names=SPACE_PRINCIPALS):
+def enroll_space_principals(paths, enroll, names=SPACE_PRINCIPALS, clock=time.time):
     """Enroll each host principal of the space ledger in `names` through `enroll`, the owner's signed
-    enroll_principal (enroll(operation, parameters, enrollee=sign), as factory setup's own admin is
+    administrative command (enroll(operation, parameters, enrollee=sign), as factory setup's own admin is
     called): a service of the one space scope with no role, its key's possession proven by the key's own
     co-signature. The membership organ judges the owner's signature and the policy; nothing here writes
-    the store. Returns the principals enrolled."""
+    the store. Returns the principals enrolled.
+
+    ALL OR NOTHING. Every key is read and proven to sign before the first enrollment is sent. The store
+    commits each enrollment on its own, so when one fails after another committed, each one sent is
+    taken back by the owner's signed revoke_membership before the failure is raised: no principal is
+    left enrolled by a run that did not enroll all of `names`. A revocation that cannot be sent leaves
+    that principal enrolled with its key, and the next run enrolls the rest."""
     names = [name for name in SPACE_PRINCIPALS if name in names]
+    public = {name: Path(paths[name] + '.pub').read_text().strip() for name in names}
     for name in names:
-        key = paths[name]
-        enroll('enroll_principal', {'principal': name, 'principal_type': 'service', 'roles': [],
-                                    'public_key': Path(key + '.pub').read_text().strip(),
-                                    'independence_group': name, 'scope': [SPACE_SCOPE]},
-               enrollee=lambda data, key=key: SIG.sign_bytes(key, data, AC.SIGNATURE_NAMESPACE))
+        SIG.sign_bytes(paths[name], b'veldo space key possession', AC.SIGNATURE_NAMESPACE)
+    sent = []
+    try:
+        for name in names:
+            key = paths[name]
+            sent.append(name)
+            enroll('enroll_principal', {'principal': name, 'principal_type': 'service', 'roles': [],
+                                        'public_key': public[name],
+                                        'independence_group': name, 'scope': [SPACE_SCOPE]},
+                   enrollee=lambda data, key=key: SIG.sign_bytes(key, data, AC.SIGNATURE_NAMESPACE))
+    except BaseException:
+        for name in reversed(sent):
+            # One whose enrollment never committed has nothing to revoke: the store refuses that.
+            with contextlib.suppress(Exception):
+                enroll('revoke_membership', {'principal': name, 'revoked_at': clock()})
+        raise
     return names
 
 
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
             profile=None, adapters=None, writable=None, principal='authority',
             receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None, api_service=None,
-            work=None, state_root=None, installation=None, enroll=None):
+            work=None, state_root=None, installation=None, enroll=None, enrolled=None):
     """Lay down one authority instance for the enrolled `workspaces` of one domain. Starts nothing.
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down.
 
     VELDO-0326: given the installation folder `installation`, it makes the keys of space-observer and
     space-runner under keys/ there (a key already there is kept), and given `enroll`, the owner's signed
-    enroll_principal, it enrolls both. Without `enroll` the keys are made and nothing is enrolled, so a
-    command signed with them is refused until the owner enrolls them; the answer names both as due."""
+    enroll_principal, it enrolls both or neither (enroll_space_principals). Without `enroll` the keys are
+    made and nothing is enrolled, so a command signed with them is refused until the owner enrolls them;
+    the answer names both as due. `enrolled()` answers the principals the store has a record of: when the
+    installation fails, a key this run made is taken back only when the store has no record of its
+    principal. Without `enrolled`, a key made by a run that sent an enrollment is never taken back."""
     runner = runner or Systemctl()
     space = space_key_paths(installation) if installation is not None else None
     if enroll is not None and space is None:
@@ -1042,7 +1091,7 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     fixed, text, values, repositories = laid['fixed'], laid['text'], laid['values'], laid['repositories']
     ingress, api, lines = laid['ingress'], laid['api'], laid['lines']
 
-    created, generated, space_generated, space_enrolled = [], False, [], []
+    created, generated, space_generated, space_enrolled, space_sent = [], False, [], [], False
     try:
         os.makedirs(os.path.dirname(first['store_path']), mode=0o700, exist_ok=True)
         os.makedirs(root, exist_ok=True)
@@ -1079,9 +1128,16 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         if space is not None:
             space_generated.extend(make_space_keys(space))
             if enroll is not None:
+                space_sent = True
                 space_enrolled = enroll_space_principals(space, enroll)
     except BaseException:
-        drop_space_keys(space_generated)
+        # Never a key the store holds: what the store has a record of is asked, and when nobody can
+        # answer, a key whose enrollment may have been sent stays.
+        held = SPACE_PRINCIPALS if space_sent else ()
+        if enrolled is not None:
+            with contextlib.suppress(Exception):
+                held = tuple(enrolled())
+        drop_space_keys(space_generated, held)
         for path in reversed(created):
             with contextlib.suppress(OSError):
                 if os.path.isdir(path):

@@ -6,11 +6,31 @@
    "ac1/hook-signs-as-observer"
   ],
   "red_rows": [
+   "ac1/cleanup-keeps-held-key",
+   "ac1/enroll-both-or-neither",
    "ac1/factory-rerun-enrolls",
+   "ac1/factory-rerun-repairs",
    "ac1/factory-setup-enrolls",
    "ac1/hook-signs-as-observer",
+   "ac1/install-makes-keys",
    "ac1/install-without-owner",
-   "ac1/signature-checked"
+   "ac1/keys-folder-checked",
+   "ac1/packet-replayed",
+   "ac1/packet-retry",
+   "ac1/rerun-stop-service-remedy",
+   "ac1/setup-never-ambient",
+   "ac1/signature-checked",
+   "ac2/observer-may",
+   "ac2/observer-refused-by-name",
+   "ac2/observer-signal",
+   "ac3/observer-names-run-first",
+   "ac3/runner-other-run-commands",
+   "ac3/runner-other-run-signal",
+   "ac3/runner-own-run",
+   "ac3/runner-takes-over-refused",
+   "ac4/abandon",
+   "ac4/owner-actions-refused",
+   "principals/canon"
   ],
   "red_details": [
    [
@@ -52,7 +72,8 @@
   ],
   "red_rows": [
    "ac3/runner-other-run-commands",
-   "ac3/runner-other-run-signal"
+   "ac3/runner-other-run-signal",
+   "ac3/runner-takes-over-refused"
   ],
   "red_details": [
    [
@@ -107,7 +128,9 @@
   ],
   "red_rows": [
    "ac1/factory-rerun-enrolls",
-   "ac1/factory-setup-enrolls"
+   "ac1/factory-rerun-repairs",
+   "ac1/factory-setup-enrolls",
+   "ac1/rerun-stop-service-remedy"
   ],
   "red_details": [
    [
@@ -125,12 +148,256 @@
    "ac1/factory-rerun-enrolls"
   ],
   "red_rows": [
-   "ac1/factory-rerun-enrolls"
+   "ac1/factory-rerun-enrolls",
+   "ac1/factory-rerun-repairs",
+   "ac1/rerun-stop-service-remedy"
   ],
   "red_details": [
    [
     "VELDO-0326 ac1/factory-rerun-enrolls",
-    "setup run again with the folder enrolls both [invalid_input:state_root:differs:<temp>/later-installation/keys/space-observer {}]"
+    "setup run again with the folder enrolls both [None {'enrolled': [], 'installation': '/tmp/v326-okg0zfkb/later-installation', 'outcome': 'already_done'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-runner-takes-unissued-run",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/runner-takes-over-refused"
+  ],
+  "red_rows": [
+   "ac3/observer-names-run-first",
+   "ac3/runner-other-run-commands",
+   "ac3/runner-other-run-signal",
+   "ac3/runner-own-run",
+   "ac3/runner-takes-over-refused"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac3/runner-takes-over-refused",
+    "a hold for a dispatch identity nobody issued to the runner is refused by name [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-packet-never-expires",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac1/packet-expired"
+  ],
+  "red_rows": [
+   "ac1/packet-expired"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/packet-expired",
+    "a packet one second past the bound is refused by name, nothing written [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-refused-nonce-not-kept",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac1/packet-replayed"
+  ],
+  "red_rows": [
+   "ac1/packet-replayed",
+   "ac1/packet-retry"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/packet-replayed",
+    "a packet for a hold that is not there yet is refused, and the ledger keeps its nonce [space_no_hold] None"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-retry-not-answered",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac1/packet-retry"
+  ],
+  "red_rows": [
+   "ac1/packet-retry",
+   "ac1/signature-checked"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/packet-retry",
+    "an accepted declare sent again gets the original answer, replayed, and writes nothing [space_packet_replayed] ['detail', 'ok', 'reason']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-partial-enrollment-left",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac1/enroll-both-or-neither"
+  ],
+  "red_rows": [
+   "ac1/enroll-both-or-neither",
+   "ac1/factory-rerun-enrolls",
+   "ac1/factory-rerun-repairs",
+   "ac1/factory-setup-enrolls",
+   "ac1/install-makes-keys",
+   "ac1/keys-folder-checked",
+   "ac1/rerun-stop-service-remedy",
+   "ac1/setup-never-ambient",
+   "ac2/observer-may",
+   "ac2/observer-refused-by-name",
+   "ac2/observer-signal",
+   "ac3/observer-names-run-first",
+   "ac3/runner-other-run-commands",
+   "ac3/runner-other-run-signal",
+   "ac3/runner-own-run",
+   "ac3/runner-takes-over-refused",
+   "ac4/abandon",
+   "ac4/owner-actions-refused",
+   "principals/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/enroll-both-or-neither",
+    "an installation whose second enrollment fails is refused and leaves neither enrolled [missing_authority:owner] ['space-observer']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-cleanup-drops-held-key",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac1/cleanup-keeps-held-key"
+  ],
+  "red_rows": [
+   "ac1/cleanup-keeps-held-key",
+   "ac1/enroll-both-or-neither",
+   "ac1/factory-rerun-enrolls",
+   "ac1/factory-rerun-repairs",
+   "ac1/factory-setup-enrolls",
+   "ac1/install-makes-keys",
+   "ac1/keys-folder-checked",
+   "ac1/rerun-stop-service-remedy",
+   "ac1/setup-never-ambient",
+   "ac2/observer-may",
+   "ac2/observer-refused-by-name",
+   "ac2/observer-signal",
+   "ac3/observer-names-run-first",
+   "ac3/runner-other-run-commands",
+   "ac3/runner-other-run-signal",
+   "ac3/runner-own-run",
+   "ac3/runner-takes-over-refused",
+   "ac4/abandon",
+   "ac4/owner-actions-refused",
+   "principals/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/cleanup-keeps-held-key",
+    "the key of the principal the store has a record of is kept, the other is taken back ['keys']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-rerun-repairs-nothing",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac1/factory-rerun-repairs"
+  ],
+  "red_rows": [
+   "ac1/factory-rerun-repairs"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/factory-rerun-repairs",
+    "a re-run over a store that holds a principal whose key is gone repairs it [None {'enrolled': [], 'installation': '/tmp/v326-rg_e25ct/later-installation', 'outcome': 'already_done'}] None"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-keys-folder-unchecked",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac1/keys-folder-checked"
+  ],
+  "red_rows": [
+   "ac1/factory-rerun-enrolls",
+   "ac1/factory-rerun-repairs",
+   "ac1/factory-setup-enrolls",
+   "ac1/install-makes-keys",
+   "ac1/keys-folder-checked",
+   "ac1/rerun-stop-service-remedy",
+   "ac1/setup-never-ambient",
+   "ac2/observer-may",
+   "ac2/observer-refused-by-name",
+   "ac2/observer-signal",
+   "ac3/observer-names-run-first",
+   "ac3/runner-other-run-commands",
+   "ac3/runner-other-run-signal",
+   "ac3/runner-own-run",
+   "ac3/runner-takes-over-refused",
+   "ac4/abandon",
+   "ac4/owner-actions-refused",
+   "principals/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/keys-folder-checked",
+    "a keys folder its group or anyone can enter is refused before the first write [None] ['keys', 'keys/space-observer', 'keys/space-observer.pub', 'keys/space-runner', 'keys/space-runner.pub']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-setup-writes-ambient-folder",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac1/setup-never-ambient"
+  ],
+  "red_rows": [
+   "ac1/factory-rerun-enrolls",
+   "ac1/rerun-stop-service-remedy",
+   "ac1/setup-never-ambient"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/setup-never-ambient",
+    "and wrote nothing into it: no key was made there and nothing enrolled ['keys', 'keys/space-observer', 'keys/space-observer.pub', 'keys/space-runner', 'keys/space-runner.pub']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-refusal-names-no-remedy",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac1/rerun-stop-service-remedy"
+  ],
+  "red_rows": [
+   "ac1/rerun-stop-service-remedy"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/rerun-stop-service-remedy",
+    "the refusal says how to fix it: stop the unit, run setup again, start it [the running service takes no command for this store write]"
    ]
   ],
   "noop_red_rows": [],

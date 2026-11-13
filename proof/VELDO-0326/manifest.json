@@ -4,7 +4,7 @@
  "commit": "2e8c02a90912b29646c9a480765faeed55ce29a6",
  "tree": "682493aa8969d4791535cef36b11ac28ee4fbb8b",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-13T19:50:56.060436+00:00",
+ "produced_at": "2026-11-13T21:30:06.583163+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -18,12 +18,12 @@
     {
      "type": "integration",
      "ref": "scripts/suites/133_veldo_0326_space_principals.py",
-     "detail": "Factory setup wired (footprint extended to control_factory_setup.py, spec History 2026-11-13). The rows run veldo factory setup through its own command surface on the VELDO-0171 setup fixture (the real setup module into scratch, that fixture's user manager stand-in, loopback Bot API and Tailscale stand-in; the host's worker profile a stand-in answer), with the installation folder its reader resolves. ac1/factory-setup-enrolls: setup makes both keys in the folder, 0600; the factory's store holds space-observer and space-runner as service members of the space scope with those keys; every enroll_principal is the owner's signed command; a declare each principal's own process signs, finding the folder as a hook does, is accepted by the ledger on that store with the principal on its journal record. ac1/factory-rerun-enrolls: a factory laid down with no installation folder names the step deferred, holds neither principal and refuses the command; setup run again with the folder makes the keys and enrolls both, and the command is accepted; a third run enrolls nothing and keeps the keys; a later run with no folder leaves both enrolled."
+     "detail": "Factory setup wired (footprint extended to control_factory_setup.py, spec History 2026-11-13). The rows run veldo factory setup through its own command surface on the VELDO-0171 setup fixture (the real setup module into scratch, that fixture's user manager stand-in, loopback Bot API and Tailscale stand-in; the host's worker profile a stand-in answer), with the installation folder named by --installation. ac1/factory-setup-enrolls: setup makes both keys in the folder, 0600; the factory's store holds space-observer and space-runner as service members of the space scope with those keys; every enroll_principal is the owner's signed command; a declare each principal's own process signs, finding the folder as a hook does, is accepted by the ledger on that store with the principal on its journal record. ac1/factory-rerun-enrolls: a factory laid down with no installation folder names the step deferred, holds neither principal and refuses the command; setup run again with the folder makes the keys and enrolls both, and the command is accepted; a third run enrolls nothing and keeps the keys; a later run with no folder leaves both enrolled."
     },
     {
      "type": "unit",
      "ref": "scripts/suites/133_veldo_0326_space_principals.py",
-     "detail": "Rows ac1/signature-checked (a command changed after signing, the observer's signature under the runner's name, an intruder's key and the owner's key under space-observer's name, a principal that is not a host principal, an unsigned packet: each refused with nothing written and logged with the principal and the command's name; a packet sent twice writes once) and ac1/install-without-owner (without the owner's enrollment the keys are made, both named due, and a command signed with them is refused; an absent installation folder refuses the installation and leaves nothing; a refused enrollment leaves no key; an enrollment the owner did not sign is refused by the membership organ)."
+     "detail": "Rows ac1/signature-checked (a command changed after signing, the observer's signature under the runner's name, an intruder's key and the owner's key under space-observer's name, a principal that is not a host principal, an unsigned packet: each refused with nothing written and logged with the principal and the command's name; a packet sent twice writes once and is answered from its record) and ac1/install-without-owner (without the owner's enrollment the keys are made, both named due, and a command signed with them is refused; an absent installation folder refuses the installation and leaves nothing; a refused enrollment leaves no key the store has no record of; an enrollment the owner did not sign is refused by the membership organ)."
     },
     {
      "type": "unit",
@@ -60,7 +60,12 @@
     {
      "type": "integration",
      "ref": "scripts/suites/133_veldo_0326_space_principals.py",
-     "detail": "Row ac3/runner-own-run: hold, declare, confirm, measure, admit, signal run finished, outcome removing and removed, and release for the run it started, and hold, declare and verdict recorded for a gate; measure for a worktree a hook recorded inside its run; twelve journal records naming space-runner. The run is the runner's by the principal of the journal record that first named it."
+     "detail": "Row ac3/runner-own-run: the authority issues the run to space-runner (the identity is the label and a part the Ledger makes that nobody can predict; the record space:run:<identity> names the principal and its journal record is the authority's), then hold, declare, confirm, measure, admit, signal run finished, outcome removing and removed, and release for that run, and hold, declare and verdict recorded for an issued gate; measure for a worktree a hook recorded inside its run; twelve journal records naming space-runner."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Review finding 1, rows ac3/runner-takes-over-refused and ac3/observer-names-run-first. The review's attempt as a refused row: a hold by space-runner for the dispatch identity unit-7:station-2:attempt-3, which nobody issued to it, is refused space_not_permitted:space_hold through the Ledger's command and as a signed packet, with nothing written; the authority then declares and confirms two items for that run and places its hold, and the runner's run finished for it is refused both ways and the items stay present; admit, release, declare and measure for it are refused by name; issue is refused by name from both host principals, through apply and through the Ledger's own call; a run issued to another principal is not the runner's. An item space-observer declares into a run nobody issued makes nobody its owner, and space-observer naming the runner's issued run first locks the runner out of nothing."
     },
     {
      "type": "unit",
@@ -70,7 +75,7 @@
     {
      "type": "unit",
      "ref": "proof/VELDO-0326/falsifiers.json",
-     "detail": "Falsifier space326-runner-signals-any-owner (the subject is not checked against the runs it started): ac3/runner-other-run-signal red, the other run's items become due; noop copy green."
+     "detail": "Falsifier space326-runner-signals-any-owner (the subject is not checked against the runs it started): ac3/runner-other-run-signal red, the other run's items become due; noop copy green. Review falsifier space326-runner-takes-unissued-run (a run nobody issued read as the runner's, as it was when the first principal to name a run owned it): ac3/runner-takes-over-refused red, the hold is accepted and the authority's items become due; noop copy green."
     }
    ]
   },
@@ -94,13 +99,50 @@
      "detail": "Falsifier space326-runner-abandons (Abandon accepted from space-runner): ac4/abandon red, the row finds the worktree due; noop copy green."
     }
    ]
+  },
+  {
+   "id": "AC5",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Against the real control store, with real signatures made by control_space.signed at a given issue time. Row ac1/packet-expired: the bound is 300 seconds and 60 ahead; a packet one second past the bound is refused space_packet_expired with nothing written and logged with its principal; the same packet at the bound is accepted; one issued more than 60 seconds ahead of the Ledger's clock is space_packet_ahead; a signed packet with no issue time is refused; the review's case, a packet nobody delivered and sent 30 days later after its hold was placed, is refused and the hold stays waiting. Row ac1/packet-replayed: a packet for a hold that is not there yet is refused and the Ledger keeps its nonce (one journal record, the authority's); sent again after the hold was placed it is space_packet_replayed and the hold stays waiting; a packet signed anew is accepted; another command under the nonce of an accepted packet is refused. Row ac1/packet-retry: an accepted declare, hold, admit, signal with nothing to mark and release, each sent again, gets the original answer with replayed true and writes nothing, never command_content_conflict; the store consumed the accepted packet's nonce with its command. Row ac1/signature-checked: the hook's packet sent twice writes once and is answered."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0326/falsifiers.json",
+     "detail": "Three registered falsifiers, each red on its row with its noop copy green: space326-packet-never-expires (the age test dropped) reds ac1/packet-expired, the 30 day old packet admits the hold; space326-refused-nonce-not-kept (a refused packet leaves no record) reds ac1/packet-replayed, the refused packet is accepted after the hold was placed; space326-retry-not-answered (no retry answered from the record) reds ac1/packet-retry. proof/VELDO-0326/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC6",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "veldo factory setup run whole on the VELDO-0171 fixture, in this process, with --installation. Row ac1/factory-rerun-repairs: on a third factory a run whose second enrollment the fixture owner refuses is refused, leaves neither principal an active member (space-observer revoked by the owner's signed command, space-runner absent) and keeps only the key of the principal the store has a record of; a run where the revocation is refused too leaves space-observer enrolled with the same key; the next run enrolls space-runner alone and a command each signs is accepted on that store. On the second factory, the key files of an enrolled space-runner are deleted (what the first version's cleanup could leave): the next run names it repaired, revokes it, makes a new key and enrolls it, space-observer keeps its key, and a command each signs is accepted. Row ac1/setup-never-ambient: with VELDO_INSTALLATION naming a scratch folder, setup driven in-process reads it for its answer and writes nothing into it, no key and no enrollment. Row ac1/rerun-stop-service-remedy: with the store's lock held as the running service holds it, a re-run that would enroll is refused invalid_input:state_root:service_running:space_principals, its detail names systemctl --user stop <unit>, veldo factory setup and systemctl --user start <unit> in that order, and it made no key."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/133_veldo_0326_space_principals.py",
+     "detail": "Against a second real store through control_service.install. Row ac1/enroll-both-or-neither: an installation whose second enrollment fails is refused, the first is revoked by the owner's signed revoke_membership, neither is an active member and a command signed with the revoked key is refused not_authorized; the half state is repaired by enrolling the one the store lacks, and a command each signs is accepted. Row ac1/cleanup-keeps-held-key: the key of the principal the store has a record of is kept and the other taken back; when the revocation cannot be sent either, the principal that stays enrolled keeps its key bytes; with nobody to ask what the store holds, a key whose enrollment was sent is never taken back. Row ac1/keys-folder-checked: a keys folder open to group or others, a link (nothing written where it leads), a file, and another account's folder (os.getuid answered as another account's) are each refused by name before anything is laid down; the step that writes the keys judges the folder again; a private folder is accepted."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0326/falsifiers.json",
+     "detail": "Six registered falsifiers, each red on its row with its noop copy green: space326-partial-enrollment-left (no revocation) reds ac1/enroll-both-or-neither; space326-cleanup-drops-held-key reds ac1/cleanup-keeps-held-key; space326-rerun-repairs-nothing (a re-run enrolls only what the store has no record of) reds ac1/factory-rerun-repairs; space326-keys-folder-unchecked reds ac1/keys-folder-checked; space326-setup-writes-ambient-folder reds ac1/setup-never-ambient; space326-refusal-names-no-remedy reds ac1/rerun-stop-service-remedy. The two earlier setup falsifiers were registered again on the changed lines (space326-setup-folder-not-passed, space326-rerun-enroll-dropped) and are red."
+    }
+   ]
   }
  ],
  "checks": [
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 133_veldo_0326_space_principals (17 rows)"
+   "command": "python3 scripts/selftest.py --suite 133_veldo_0326_space_principals (28 rows, 54 checks)"
   },
   {
    "name": "integration",
@@ -110,12 +152,12 @@
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py all; suites 130_veldo_0296_space_section, 131_veldo_0338_project_space_file, 132_veldo_0297_space_ledger, 06_capabilities_manifest_honesty_veldo, 21_veldo_0004_promise_corpus and 53_veldo_0123_mutations still green; the setup suites sharing the changed module still green: 73_veldo_0139_factory_setup, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 103_veldo_0142_git_identities, 106_veldo_0185_dispatch_setup, 127_veldo_0234_https_port, 127_veldo_0259_installation; every registered mutation anchor in control_factory_setup.py, control_service.py and control_space.py (174 cases) still matches once"
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 .veldo/validate.py all; the other space suites still green: 130_veldo_0296_space_section, 131_veldo_0338_project_space_file, 132_veldo_0297_space_ledger, 134_veldo_0331_space_mode; the suites that drive the changed setup module still green: 73_veldo_0139_factory_setup, 85_veldo_0171_setup_api, 86_veldo_0186_setup_assets, 86_veldo_0189_engine_upgrade, 103_veldo_0142_git_identities, 105_veldo_0182_memory, 106_veldo_0185_dispatch_setup, 117_veldo_0227_ui_location, 127_veldo_0234_https_port, 127_veldo_0259_installation; 53_veldo_0123_mutations green. 125_veldo_0230_engine_census has one red row, setup/engines-record (missing_evidence:engine_source:claude_code), which is red with the same reason on an untouched copy of the commit before this fix: it is this host's engine evidence, not this change"
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the seven registered teeth cases (finding 326) were run here through the driver's own materialize() and worker(), not through the teeth run. The suites that install and start the service under the user manager were not run here."
+   "reason": "The fix instruction ran single suites and fast checks only, and said not to run ./scripts/verify.sh. The lead runs it through the gate lock; the seventeen registered teeth cases (finding 326) were run here through the driver's own materialize() and worker(), not through the teeth run. The suites that install and start the service under the user manager were not run here."
   }
  ],
  "assumptions": [
@@ -126,13 +168,17 @@
   "The CLI piece built here is veldo space sign, which prints the signed packet. Sending it, the spool, and the record, event and run verbs are VELDO-0313; the hooks themselves are 0311 and 0314.",
   "The keys are kept at <installation folder>/keys/<principal>. control_service.install takes the folder as an explicit argument and the CLI as --installation; neither falls back to the ambient installation folder, so no existing caller or suite writes into a real one.",
   "The rule follows the table of 6.11, which adds an agent repository to the three things AC2 names for declare and confirm. event and the covers read are named in the rule and pass it for both principals; the commands themselves are 0323 and 0321, so the Ledger answers space_no_command for them today. Released accepted only for items a hook or the record verb declared is the event command's own refusal (0335).",
-  "The run or gate it declared is read from the journal: a run or gate is the runner's when the earliest journal record that made its hold or an item it owns has space-runner as its principal. A run nothing names yet may be started by the runner. A run the authority or a receiver named first is never the runner's. The lookup scans the journal by entity id; an index is a later optimization.",
+  "REVIEW FIX 1. The run or gate of AC3 is the one the authority issued: Ledger.issue writes space:run:<identity> naming the principal, the identity being a label and then a part the Ledger makes (new_id, a random 128 bit value by default). The rule reads that record and nothing else. No host principal signs issue. How the gate helper and the run wrapper ask the authority for their identity is not built here: it comes with the ticket that routes space packets in the service, and until then only the authority's in-process call issues one.",
   "space-runner signals run finished and verdict recorded only, with a subject that is exactly one run or one gate it started. Worktree abandoned sent as a signal is refused under the name space_abandon. The event names are the design's section 5 names as the fixture lifecycle spells them; the kind registry (0298) fixes the spelling.",
-  "A signed command names its own command id; the same packet sent again is refused by the store as a command content conflict and writes nothing. A packet with no command id is refused.",
+  "REVIEW FIX 2. A signed packet carries issued_at and nonce. The bound is PACKET_AGE 300 seconds, PACKET_SKEW 60. The packet record is kept for good, so a nonce is refused beyond the bound too. A packet that failed its signature, its shape or its time leaves no record (nothing verified names its nonce); every other packet does. When the store cannot take the record of a refused packet the refusal stands and nothing is recorded. Consequence for VELDO-0313: a spooled packet older than five minutes is refused, so the spool signs again when it replays.",
   "launch-receiver and the owner are not judged by this rule: the receiver's run commands and the owner's actions are accepted where later tickets route them. The rule returns for every principal that is not one of the two host principals, and Ledger.accept and Ledger.apply refuse every principal but the two.",
   "The host worker profile's qualification is a stand-in answer in the suite, so the installer runs whole inside the gate's confinement; nothing the rows prove depends on the user manager.",
-  "Known and not changed here, outside this footprint: the setup suites that call the command surface (73, 85 and the suites reusing their fixture) resolve the installation folder from the ambient environment. On a host that has one they would make the two keys in it. This host has none.",
-  "The bundle's commit and tree name the first implementation commit; the factory setup change, its rows and falsifiers are in the commit that carries this revision of the bundle, as the VELDO-0297 review commit did."
+  "REVIEW FIX 3, the item left for the lead: closed inside the footprint. Setup's command surface, driven in-process with overrides (which every setup suite does), makes keys only in a folder named by --installation or the installation override, never in the folder the process environment names; the command line's own run still uses the folder the reader resolved. No setup suite outside this ticket was edited.",
+  "The bundle's commit and tree name the first implementation commit; the factory setup change and this review fix are later commits, and the green suite, the seventeen falsifier runs (falsifiers.json, mutations.txt) and the fast checks of this revision were run on the fixed tree. Full ./scripts/verify.sh was not run for the fix.",
+  "REVIEW FIX 3, both or neither. The membership organ commits each enroll_principal on its own and the journal only grows, and that organ is outside this footprint, so the two enrollments are not one transaction. Both or neither is kept by taking back: when one fails after another committed, the committed one is revoked by the owner's signed revoke_membership. Neither is then an enrolled member; the journal keeps the enrollment and the revocation. If the lead wants neither to appear in the journal at all, that needs a two-enrollment command in control_membership.py.",
+  "A re-run repairs: a principal the store has no record of, one whose membership was revoked, and one the store holds whose key file is gone (revoked, a new key made, enrolled again; the membership organ revokes the old key at the new enrollment). A key file that is there but is not the store's key for that principal is not looked for, as before this fix.",
+  "The keys folder's owner test is proven with os.getuid answered as another account's, not by a second account: no row runs as another user.",
+  "Refusal details of the other service_running refusals of a re-run that share the line (the first missing base step, the dispatch steps, git_identities) now carry the same remedy; their names are unchanged."
  ],
  "rollback": "Revert the change. The two keys stay in the installation folder, and commands signed with them are refused: a reverted Ledger has no accept, and the two memberships carry the scope space, which covers no repository, so the service's generic command path refuses them."
 }

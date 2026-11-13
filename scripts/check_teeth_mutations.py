@@ -12458,13 +12458,71 @@ def cases():
         "        if False:\n            with step('space_principals'):\n",
         ['ac1/factory-setup-enrolls'])
     add(326, 'space326-setup-folder-not-passed', space326, 'control_factory_setup.py',
-        "        overrides.setdefault('installation', installation.get('folder'))\n",
-        "        overrides.setdefault('installation', None)\n",
+        "            overrides['installation'] = args.installation\n",
+        "            overrides['installation'] = None\n",
         ['ac1/factory-setup-enrolls'])
     add(326, 'space326-rerun-enroll-dropped', space326, 'control_factory_setup.py',
-        "    space_due = [name for name in (space or ()) if AC.membership_entry(state['membership'], name) is None]\n",
-        "    space_due = []\n",
+        "    space_due, space_stranded = space_enrollments_due(space, state['membership'], AC)\n",
+        "    space_due, space_stranded = [], []\n",
         ['ac1/factory-rerun-enrolls'])
+    # VELDO-0326 review. Finding 1, the runner takes over a run it was not issued: a run nobody issued
+    # read as the runner's, as it was when the first principal to name a run owned it.
+    add(326, 'space326-runner-takes-unissued-run', space326, 'control_space.py',
+        "        return record['principal'] if record else None\n",
+        "        return record['principal'] if record else RUNNER\n",
+        ['ac3/runner-takes-over-refused'])
+    result[-1]['siblings'] = True
+    # Finding 2, signed packets: no age bound; a refused packet's nonce not kept; a retry of an accepted
+    # packet not answered from its record.
+    add(326, 'space326-packet-never-expires', space326, 'control_space.py',
+        "            if now - issued_at > PACKET_AGE:\n",
+        "            if False:\n",
+        ['ac1/packet-expired'])
+    result[-1]['siblings'] = True
+    add(326, 'space326-refused-nonce-not-kept', space326, 'control_space.py',
+        "        if self.packet(principal, nonce) is None:\n            self._remember(pending, result)\n",
+        "        if False:\n            self._remember(pending, result)\n",
+        ['ac1/packet-replayed'])
+    result[-1]['siblings'] = True
+    add(326, 'space326-retry-not-answered', space326, 'control_space.py',
+        "            if seen['digest'] == digest and seen['outcome'] == 'accepted':\n",
+        "            if False:\n",
+        ['ac1/packet-retry'])
+    result[-1]['siblings'] = True
+    # Finding 3, setup: a first enrollment left when the second fails; cleanup deleting a key the store
+    # holds; a re-run that enrolls only what the store has no record of, so a half state stays.
+    add(326, 'space326-partial-enrollment-left', space326, 'control_service.py',
+        "        for name in reversed(sent):\n",
+        "        for name in ():\n",
+        ['ac1/enroll-both-or-neither'])
+    result[-1]['siblings'] = True
+    add(326, 'space326-cleanup-drops-held-key', space326, 'control_service.py',
+        "        if os.path.basename(path) in held:\n            continue\n",
+        "        if False:\n            continue\n",
+        ['ac1/cleanup-keeps-held-key'])
+    result[-1]['siblings'] = True
+    add(326, 'space326-rerun-repairs-nothing', space326, 'control_factory_setup.py',
+        "        if entry is None or entry.get('revoked_at') is not None or gone:\n",
+        "        if entry is None:\n",
+        ['ac1/factory-rerun-repairs'])
+    # Finding 4: a keys folder that is there taken as it is.
+    add(326, 'space326-keys-folder-unchecked', space326, 'control_service.py',
+        "    if not os.path.lexists(keys):\n        return\n    info = os.lstat(keys)\n",
+        "    if True:\n        return\n    info = os.lstat(keys)\n",
+        ['ac1/keys-folder-checked'])
+    result[-1]['siblings'] = True
+    # Finding 5: setup driven in-process making the keys in the folder the environment names.
+    add(326, 'space326-setup-writes-ambient-folder', space326, 'control_factory_setup.py',
+        "        elif not in_process:\n",
+        "        else:\n",
+        ['ac1/setup-never-ambient'])
+    # Finding 6: the service_running refusal naming no remedy.
+    add(326, 'space326-refusal-names-no-remedy', space326, 'control_factory_setup.py',
+        "            raise Refused('invalid_input:state_root:service_running:space_principals', "
+        "stop_first(authority_unit))\n",
+        "            raise Refused('invalid_input:state_root:service_running:space_principals',\n"
+        "                          'the running service takes no command for this store write')\n",
+        ['ac1/rerun-stop-service-remedy'])
 
     # VELDO-0331: mode per project. The declared falsifier of each acceptance criterion: AC1 one mode
     # kept for the installation; AC2 advised holds left out of what is held; AC3 the switch back to

@@ -16,8 +16,12 @@ THE RECORDS, each an entity kind this module owns (design 4.1 to 4.4 and 4.7):
   space_hold       space:hold:<identity>. needs and source per pool, state, reason, used, retry_asked, freed.
   space_reconcile  space:reconcile:<new id>. What started it, the roots and engines read, and the counts.
   space_mode       space:mode:<scope>. scope, mode (report or act), since, history.
+  space_run        space:run:<identity>. The run or gate identity the authority issued, and the principal
+                   it was issued to (VELDO-0326).
+  space_packet     space:packet:<principal>:<nonce>. One signed packet a host principal sent: its digest,
+                   when it was issued and seen, and what became of it (VELDO-0326).
 
-ONLY THIS MODULE WRITES THEM. Attaching declares the five kinds and their id prefixes with the store's
+ONLY THIS MODULE WRITES THEM. Attaching declares the seven kinds and their id prefixes with the store's
 declare_owners, bound to this file's bytes. From then on the store's generic entity command is refused
 entity_owned for them on every connection, and so is any other command.
 
@@ -82,8 +86,9 @@ pool when the engine has one, else against the pool its caller names.
 
 WHAT IS NOT HERE. The lifecycle table is the kind registry's (VELDO-0298); this module is given it as
 plain data and copies an item's events from it at declaration, with its version. Rules, probes and
-removers, and the event, wrong-proposal and review group records are later tickets. No clock is read
-anywhere in this module: accept and set_mode are given the time.
+removers, and the event, wrong-proposal and review group records are later tickets. The Ledger reads no
+clock: accept and set_mode are given the time. The sending side stamps a packet with the time its caller
+gives it; only the command line entry reads a clock, once, for that.
 
 MODE (VELDO-0331, design 2, 4.7 and 6.1). Report or act is one value per scope: each project, each plain
 repository, and no project. It is a record of this store and of nothing else: space:mode:project:<id>,
@@ -119,13 +124,16 @@ the store's generic commands stay refused for both):
   space-observer   the hooks. It may sign declare and confirm for a worktree, a branch, an agent
                    repository and a session's scratch; rebranch; event; and the read behind covers.
   space-runner     the gate space helper and the run wrapper. What space-observer may, and for the run or
-                   gate it started: declare, confirm, measure, hold, admit, release, signal and outcome.
+                   gate issued to it: declare, confirm, measure, hold, admit, release, signal and outcome.
                    It signals only run finished and verdict recorded, and only for exactly that run or
                    gate.
 
-A run or gate is the runner's when the first journal record that named it (its hold, or the first item
-declared for it) was signed as space-runner. The journal's own principal column is the evidence; nothing
-the caller says is.
+A RUN OR GATE IS THE RUNNER'S ONLY WHEN THE AUTHORITY ISSUED IT TO THE RUNNER. issue() is the authority's
+command: it makes the identity (a label the caller may give, then a part nobody can predict) and writes
+the record space:run:<identity> naming the principal it is issued to. No host principal signs issue. The
+rule reads that record and nothing else, so who names a run first decides nothing: space-runner is
+refused a hold, a declare and a signal for an identity nobody issued to it (a dispatch's unit, station and
+attempt, however predictable), and an item space-observer declares into a run makes nobody its owner.
 
 Every other command is refused from both as space_not_permitted:<the command's name>, with nothing
 written, and so is every owner action: adopt, abandon (worktree abandoned sent as a signal is
@@ -136,7 +144,19 @@ command a later ticket adds is refused until this list names it.
 accept() takes the packet a hook or helper sent: it verifies the signature against the principal's active
 key in the store's own membership and keyring, then applies the rule, then runs the command with the
 principal recorded on the journal record. Each refusal is in the observations with the principal and the
-command's name. A signed command names its own command id, so a packet sent twice writes once.
+command's name.
+
+A PACKET EXPIRES AND IS TAKEN ONCE. The signed command carries issued_at, the time it was signed, and its
+nonce. accept refuses a packet whose issued_at is more than PACKET_AGE (300 seconds, five minutes) behind
+the time it is given as space_packet_expired, and one more than PACKET_SKEW (60 seconds) ahead of it as
+space_packet_ahead. Every packet whose signature verified and whose time is inside the bound leaves the
+record space:packet:<principal>:<nonce>, whatever became of it: an accepted command writes it in its own
+transaction (and the store's nonces table consumes the packet's nonce), a refused one and an accepted one
+that wrote nothing are recorded by the Ledger's own command. A nonce that has a record is refused as
+space_packet_replayed, so a packet that was refused is never accepted later, whatever changed since.
+The one exception is the honest retry: the same signed command, sent again after it was accepted, is
+answered with the original answer and replayed true, and writes nothing. The record is kept, so the nonce
+is refused for good, not only inside the bound; the bound is what stops a packet nobody delivered in time.
 
 Standard library only. The store is the control_store module the caller passes in, and accept is given the
 control_membership module the same way.
@@ -156,6 +176,14 @@ ITEM_KIND, POOL_KIND, HOLD_KIND, RECONCILE_KIND = 'space_item', 'space_pool', 's
 ITEM_PREFIX, POOL_PREFIX, HOLD_PREFIX, RECONCILE_PREFIX = ('space:item:', 'space:pool:', 'space:hold:',
                                                            'space:reconcile:')
 MODE_KIND, MODE_PREFIX = 'space_mode', 'space:mode:'
+# VELDO-0326: the run or gate identity the authority issued to a principal, and the record of a signed
+# packet a host principal sent.
+RUN_KIND, RUN_PREFIX = 'space_run', 'space:run:'
+PACKET_KIND, PACKET_PREFIX = 'space_packet', 'space:packet:'
+# A signed packet is refused when it was issued more than PACKET_AGE seconds before the time accept is
+# given (five minutes), or more than PACKET_SKEW seconds after it.
+PACKET_AGE, PACKET_SKEW = 300, 60
+PACKET_OUTCOMES = ('accepted', 'refused')
 # Mode per scope (design 4.7). A scope with no record is in report mode.
 REPORTING, ACTING = 'report', 'act'
 MODES = (REPORTING, ACTING)
@@ -196,7 +224,11 @@ DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH = (
 POOL, HOLD, ADMIT, RELEASE, RECONCILE = ('space_pool', 'space_hold', 'space_admit', 'space_release',
                                          'space_reconcile')
 ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH)
-OPERATIONS = ITEM_OPERATIONS + (POOL, HOLD, ADMIT, RELEASE, RECONCILE)
+# Issue is the authority's: the run or gate identity a principal may then hold, declare for and signal.
+ISSUE = 'space_issue'
+OPERATIONS = ITEM_OPERATIONS + (POOL, HOLD, ADMIT, RELEASE, RECONCILE, ISSUE)
+# The Ledger's own record of a packet that was refused, or accepted and wrote nothing. Nobody sends it.
+PACKET = 'space_packet'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 
 # Who signs a space command (design 6.11). The two host principals, the one scope both are enrolled
@@ -243,6 +275,12 @@ def _is_str(value):
 
 def _is_bytes(value):
     return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _is_time(value):
+    """A time: a finite number. Not-a-number compares false with every bound, so it is refused here."""
+    return (isinstance(value, (int, float)) and not isinstance(value, bool)
+            and value == value and value not in (float('inf'), float('-inf')))
 
 
 def _invalid(field, detail):
@@ -478,6 +516,16 @@ def hold_id(identity):
     return HOLD_PREFIX + identity
 
 
+def run_id(identity):
+    """The identity of the record of an issued run or gate."""
+    return RUN_PREFIX + identity
+
+
+def packet_id(principal, nonce):
+    """The identity of the record of one signed packet: its principal and its nonce."""
+    return PACKET_PREFIX + principal + ':' + nonce
+
+
 def checked_scope(scope):
     """A scope in its recorded form: exactly one of project, plain repository and no project, with an
     identity for the first two. A plain repository is named by its repository, in the canonical form."""
@@ -535,21 +583,29 @@ class Ledger:
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
         self.refused_declares = {}
+        # The packet accept is running, when it is: _send writes its record with the command.
+        self._packet = None
         transitions = {DECLARE: self._t_declare, CONFIRM: self._t_confirm, MEASURE: self._t_measure,
                        SIGNAL: self._t_signal, OUTCOME: self._t_outcome, ADOPT: self._t_adopt,
                        REPORT: self._t_report, GONE: self._t_gone, REBRANCH: self._t_rebranch,
                        POOL: self._t_pool, HOLD: self._t_hold, ADMIT: self._t_admit, RELEASE: self._t_release,
-                       RECONCILE: self._t_reconcile, MODE: self._t_mode}
+                       RECONCILE: self._t_reconcile, MODE: self._t_mode, ISSUE: self._t_issue,
+                       PACKET: self._t_packet}
+        # A command a host principal may send writes the record of its packet in its own transaction.
+        for operation in COMMAND_PARAMETERS:
+            transitions[operation] = self._with_packet(transitions[operation])
         # The mode switch is the owner's action and not one of OPERATIONS, the commands the authority sends.
-        for operation in OPERATIONS + (MODE,):
+        for operation in OPERATIONS + (MODE, PACKET):
             conn.command_registry[operation] = {'transaction_transition': transitions[operation], 'writes': WRITES}
         store.declare_owners(conn, OWNER,
                              kinds={ITEM_KIND: ITEM_OPERATIONS, POOL_KIND: (POOL,),
                                     HOLD_KIND: (HOLD, ADMIT, RELEASE), RECONCILE_KIND: (RECONCILE,),
-                                    MODE_KIND: (MODE,)},
+                                    MODE_KIND: (MODE,), RUN_KIND: (ISSUE,),
+                                    PACKET_KIND: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              prefixes={ITEM_PREFIX: ITEM_OPERATIONS, POOL_PREFIX: (POOL,),
                                        HOLD_PREFIX: (HOLD, ADMIT, RELEASE), RECONCILE_PREFIX: (RECONCILE,),
-                                       MODE_PREFIX: (MODE,)},
+                                       MODE_PREFIX: (MODE,), RUN_PREFIX: (ISSUE,),
+                                       PACKET_PREFIX: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              module=__file__)
 
     # Reads.
@@ -571,6 +627,21 @@ class Ledger:
 
     def reconcile_record(self, identity):
         return self._row(identity, RECONCILE_KIND)[1] if _is_str(identity) else None
+
+    def issued(self, identity):
+        """The record of a run or gate identity the authority issued, or None."""
+        return self._row(run_id(identity), RUN_KIND)[1] if _is_str(identity) else None
+
+    def issued_to(self, identity):
+        """The principal a run or gate identity was issued to. None when nobody issued it."""
+        record = self.issued(identity)
+        return record['principal'] if record else None
+
+    def packet(self, principal, nonce):
+        """The record of the packet a principal sent with this nonce, or None."""
+        if not _is_str(principal) or not _is_str(nonce):
+            return None
+        return self._row(packet_id(principal, nonce), PACKET_KIND)[1]
 
     def holds(self):
         """Every hold as {identity: record}, the identity as place_hold was given it."""
@@ -631,6 +702,13 @@ class Ledger:
     # The command path.
 
     def _send(self, operation, parameters, versions, principal, command_id, about, nonce=None):
+        packet = self._packet
+        if packet is not None and principal == packet['principal'] and operation == packet['operation']:
+            # The command of a signed packet: its record is written in this transaction, against the
+            # version of a nonce nobody has seen, and the store consumes the packet's own nonce.
+            parameters = dict(parameters, packet=dict(packet))
+            versions = dict(versions, **{packet_id(packet['principal'], packet['nonce']): 0})
+            nonce = packet['nonce']
         command = {'command_id': command_id or 'space:' + uuid.uuid4().hex,
                    'principal': principal or self.journal_signer, 'operation': operation,
                    'parameters': parameters, 'expected_versions': versions, 'artifact_digests': [],
@@ -849,6 +927,22 @@ class Ledger:
             result['state'] = self.hold(identity)['state']
         return result
 
+    def issue(self, to, label=None, principal=None, command_id=None):
+        """Issue a run or gate identity to the principal `to`: the authority's command, and the only way
+        a host principal comes to have a run. The identity is `label` (what the run is, when the caller
+        names it) and then a part this Ledger makes that nobody can predict. Returns it under run."""
+        about = {'item': None, 'issued_to': to, 'label': label}
+        if not _is_str(to) or (label is not None and not _is_str(label)):
+            return self._refuse(ISSUE, _invalid('issue', 'the principal it is issued to, and a label or none'),
+                                about, principal)
+        identity = '%s:%s' % (label or 'run', self.new_id())
+        result = self._send(ISSUE, {'run': run_id(identity), 'identity': identity, 'principal': to, 'label': label,
+                                    'issued_by': principal or self.journal_signer},
+                            {run_id(identity): 0}, principal, command_id, dict(about, run=identity))
+        if result['ok']:
+            result['run'] = identity
+        return result
+
     def reconcile(self, started_by, roots, engines, counts, principal=None, command_id=None):
         """Write one reconcile record: what started it, the roots and engines read, and the counts."""
         identity = RECONCILE_PREFIX + self.new_id()
@@ -933,27 +1027,6 @@ class Ledger:
 
     # Who signs a command (design 6.11).
 
-    def _starter(self, run):
-        """The principal whose command first named a run or gate: the signer of the earliest journal
-        record that made its hold or an item it owns. None when nothing names it yet."""
-        if not _is_str(run):
-            return None
-        named = {hold_id(run)} if self.hold(run) is not None else set()
-        for identity, record in self.items().items():
-            owner = record.get('owner') or {}
-            if (owner.get('run') or {}).get('id') == run or owner.get('gate') == run:
-                named.add(identity)
-        first = None
-        for identity in named:
-            for seq, principal, after in self.conn.execute(
-                    'SELECT seq, principal, after_versions FROM journal WHERE instr(after_versions, ?) > 0 '
-                    'ORDER BY seq', (json.dumps(identity),)):
-                if json.loads(after).get(identity) == 1:
-                    if first is None or seq < first[0]:
-                        first = (seq, principal)
-                    break
-        return first[1] if first else None
-
     def _runs_of(self, owner):
         """The run and the gate an owner names."""
         owner = owner if isinstance(owner, dict) else {}
@@ -983,37 +1056,32 @@ class Ledger:
         runner = principal == RUNNER
 
         def own(runs):
-            return runner and bool(runs) and all(self._starter(run) == RUNNER for run in runs)
+            # A run or gate is the runner's only by the record the authority issued it with.
+            return runner and bool(runs) and all(self.issued_to(run) == RUNNER for run in runs)
         if operation == DECLARE:
             owner = parameters.get('owner')
             if self._observed_thing(parameters.get('kind'), owner):
                 return
-            runs = self._runs_of(owner)
-            if not (runner and runs and all(self._starter(run) in (None, RUNNER) for run in runs)):
-                raise refuse('the thing is neither one a hook records nor of a run or gate it started')
+            if not own(self._runs_of(owner)):
+                raise refuse('the thing is neither one a hook records nor of a run or gate issued to it')
         elif operation in (CONFIRM, REBRANCH, MEASURE, OUTCOME):
             record = self.item(parameters.get('item')) or {}
             if operation in (CONFIRM, REBRANCH) and self._observed_thing(record.get('kind'), record.get('owner')):
                 return
             if not own(self._runs_of(record.get('owner'))):
-                raise refuse('the item is not of a run or gate it started')
-        elif operation == HOLD:
-            identity = parameters.get('hold')
-            run = identity[len(HOLD_PREFIX):] if _is_str(identity) and identity.startswith(HOLD_PREFIX) else None
-            if not (runner and self._starter(run) in (None, RUNNER)):
-                raise refuse('the hold is of a run or gate another principal started')
-        elif operation in (ADMIT, RELEASE):
+                raise refuse('the item is not of a run or gate issued to it')
+        elif operation in (HOLD, ADMIT, RELEASE):
             identity = parameters.get('hold')
             run = identity[len(HOLD_PREFIX):] if _is_str(identity) and identity.startswith(HOLD_PREFIX) else None
             if not own([run] if run else []):
-                raise refuse('the hold is not of a run or gate it started')
+                raise refuse('the hold is not of a run or gate the authority issued to it')
         elif operation == SIGNAL:
             subject = parameters.get('subject')
             if parameters.get('event') not in RUNNER_EVENTS:
                 raise refuse('it signals only ' + ' and '.join(RUNNER_EVENTS))
             if not (isinstance(subject, dict) and len(subject) == 1 and set(subject) <= {'run', 'gate'}
                     and own(list(subject.values()))):
-                raise refuse('the subject is not exactly a run or gate it started')
+                raise refuse('the subject is not exactly a run or gate issued to it')
 
     def apply(self, command):
         """Run one command a host principal signed: the rule by the command's name first, then the
@@ -1065,8 +1133,14 @@ class Ledger:
     def accept(self, packet, membership, now):
         """Accept or refuse the packet a hook or a helper sent: {command, signature}. The signature must
         be the command's principal's, under its active key in this store's keyring, and the principal an
-        active service member whose scope covers the space scope; then the rule, then the command.
-        `membership` is the control_membership module; `now` is the time the caller read."""
+        active service member whose scope covers the space scope; then the packet's time and its nonce;
+        then the rule, then the command. `membership` is the control_membership module; `now` is the
+        time the caller read, on the store's own clock.
+
+        The command carries issued_at and nonce. One issued more than PACKET_AGE seconds before `now`
+        is space_packet_expired, one more than PACKET_SKEW ahead of it space_packet_ahead. A nonce this
+        store has a record of is space_packet_replayed, except the same command sent again after it was
+        accepted: that is answered with the original answer, replayed true, and writes nothing."""
         command = packet.get('command') if isinstance(packet, dict) else None
         signature = packet.get('signature') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
@@ -1089,10 +1163,97 @@ class Ledger:
                     self.store.canonical_bytes(command), signature,
                     contract.allowed_signers_line(principal, key['public_key'], NAMESPACE), principal, NAMESPACE)[0]:
                 raise Refused('not_authorized', 'the command signature is not the principal\'s')
+            issued_at, nonce = command.get('issued_at'), command.get('nonce')
+            if (not _is_str(operation) or not _is_str(command.get('command_id')) or not _is_str(nonce)
+                    or any(c.isspace() for c in nonce) or not _is_time(issued_at)):
+                raise _invalid('command', 'an operation, a command id, a nonce and the time it was issued')
+            if not _is_time(now):
+                raise _invalid('now', 'the time the caller read')
+            if now - issued_at > PACKET_AGE:
+                raise Refused('space_packet_expired', 'issued more than %d seconds ago: sign it again' % PACKET_AGE)
+            if issued_at - now > PACKET_SKEW:
+                raise Refused('space_packet_ahead', 'issued more than %d seconds ahead of this clock' % PACKET_SKEW)
         except Refused as refusal:
             return self._refuse(operation if _is_str(operation) else None, refusal, {'item': None},
                                 principal if _is_str(principal) else None)
-        return self.apply(command)
+        digest = self.store.digest_of(command)
+        seen = self.packet(principal, nonce)
+        if seen is not None:
+            if seen['digest'] == digest and seen['outcome'] == 'accepted':
+                # The honest retry of a packet that was accepted: the original answer, nothing written.
+                return self._observed(dict(self._original(seen, command), replayed=True),
+                                      {'item': None, 'schema': SCHEMA, 'operation': operation,
+                                       'command_id': command['command_id'], 'principal': principal})
+            return self._refuse(operation, Refused('space_packet_replayed', 'this nonce was seen: sign a new packet'),
+                                {'item': None}, principal)
+        pending = {'principal': principal, 'nonce': nonce, 'digest': digest, 'command_id': command['command_id'],
+                   'operation': operation, 'issued_at': issued_at, 'seen': now}
+        self._packet = pending
+        try:
+            result = self.apply(command)
+        finally:
+            self._packet = None
+        if self.packet(principal, nonce) is None:
+            self._remember(pending, result)
+        return result
+
+    def _remember(self, pending, result):
+        """Record a packet whose command committed nothing: one that was refused, or accepted with
+        nothing to write. The record is the Ledger's own command; when the store cannot take it the
+        answer stands and nothing is recorded."""
+        record = dict(pending, outcome='accepted' if result['ok'] else 'refused', refusal=result.get('reason'),
+                      answer={key: value for key, value in result.items() if key != 'replayed'} if result['ok']
+                      else None, wrote=None)
+        entity = packet_id(pending['principal'], pending['nonce'])
+        try:
+            self.store.execute(self.conn, {
+                'command_id': 'space:packet:' + uuid.uuid4().hex, 'principal': self.journal_signer,
+                'operation': PACKET, 'parameters': {'packet': entity, 'record': record},
+                'expected_versions': {entity: 0}, 'artifact_digests': [], 'nonce': uuid.uuid4().hex},
+                self.journal_signer, self.sign, self.authority_generation)
+        except (self.store.StoreRefused, sqlite3.Error):
+            pass
+
+    def _original(self, seen, command):
+        """The answer an accepted packet was given, from its record: the answer itself when its command
+        wrote nothing, else rebuilt from what its transaction wrote."""
+        if seen.get('answer') is not None:
+            return dict(seen['answer'])
+        row = self.conn.execute('SELECT seq FROM commands WHERE command_id=?', (seen['command_id'],)).fetchone()
+        answer = {'ok': True, 'seq': row[0] if row else None}
+        wrote, operation = seen.get('wrote') or {}, seen['operation']
+        parameters = command.get('parameters') if isinstance(command.get('parameters'), dict) else {}
+        items = sorted(identity for identity in wrote if identity.startswith(ITEM_PREFIX))
+        if operation == SIGNAL:
+            answer['items'] = items
+        elif operation in (ADMIT, RELEASE):
+            answer['state'] = next((value['state'] for identity, value in wrote.items()
+                                    if identity.startswith(HOLD_PREFIX)), None)
+        elif operation != HOLD:
+            item = parameters.get('item') if operation != DECLARE else (items[0] if items else None)
+            answer.update(item=item, state=(wrote.get(item) or {}).get('state'))
+            if operation == DECLARE:
+                answer['pool'] = (wrote.get(item) or {}).get('pool')
+            if operation == REBRANCH:
+                answer['branch_item'] = next((identity for identity in items if identity != item), None)
+        return answer
+
+    def _with_packet(self, transition):
+        """The transition of a command a host principal may send, writing the record of the packet it
+        came in with in the same transaction. A command that came in no packet is run as it is."""
+        def run(conn, params, before):
+            changes = transition(conn, params, before)
+            packet = params.get('packet')
+            if packet is None:
+                return changes
+            entity = packet_id(packet['principal'], packet['nonce'])
+            if entity in before:
+                raise Refused('space_packet_replayed', 'this nonce was seen: sign a new packet')
+            wrote = {identity: {'state': change['data'].get('state'), 'pool': change['data'].get('pool')}
+                     for identity, change in changes.items()}
+            return dict(changes, **{entity: {'kind': PACKET_KIND, 'data': dict(
+                packet, outcome='accepted', refusal=None, answer=None, wrote=wrote)}})
+        return run
 
     # Transitions. Each runs inside the command's own transaction and returns the entities it writes.
 
@@ -1430,6 +1591,27 @@ class Ledger:
             'started_by': params['started_by'], 'roots': list(params['roots']), 'engines': list(params['engines']),
             'counts': dict(counts)}}}
 
+    def _t_issue(self, conn, params, before):
+        entity, identity, principal = params.get('run'), params.get('identity'), params.get('principal')
+        if not _is_str(identity) or entity != run_id(identity) or entity in before:
+            raise _invalid('run', 'a new run or gate identity')
+        if not _is_str(principal) or not _is_str(params.get('issued_by')):
+            raise _invalid('issue', 'the principal it is issued to and the one that issued it')
+        if params['issued_by'] in HOST_PRINCIPALS:
+            raise Refused('space_not_permitted:' + ISSUE, 'no host principal issues a run')
+        return {entity: {'kind': RUN_KIND, 'data': {'run': identity, 'principal': principal,
+                                                    'label': params.get('label'), 'issued_by': params['issued_by']}}}
+
+    def _t_packet(self, conn, params, before):
+        entity, record = params.get('packet'), params.get('record')
+        if (not isinstance(record, dict) or not _is_str(record.get('principal')) or not _is_str(record.get('nonce'))
+                or entity != packet_id(record['principal'], record['nonce'])
+                or record.get('outcome') not in PACKET_OUTCOMES):
+            raise _invalid('packet', 'the record of one packet, under its principal and nonce')
+        if entity in before:
+            raise Refused('space_packet_replayed', 'this nonce was seen')
+        return {entity: {'kind': PACKET_KIND, 'data': dict(record)}}
+
     def _t_mode(self, conn, params, before):
         scope = self._known_scope(params.get('scope'))
         entity, old, new, at, packet = (params.get('mode_record'), params.get('from'), params.get('to'),
@@ -1468,18 +1650,22 @@ def key_path(principal, folder):
     return os.path.join(folder, KEYS_FOLDER, principal)
 
 
-def signed(principal, operation, parameters, folder, canonical, command_id=None):
+def signed(principal, operation, parameters, folder, canonical, issued_at, command_id=None):
     """The packet {command, signature} for one command, signed with the host principal's own key from
     the installation folder `folder`. `canonical` gives the bytes a command is signed over (the store's
-    canonical_bytes). Refused by name when the principal is not a host principal or its key does not
-    sign; the owner's key is never read."""
+    canonical_bytes); `issued_at` is the time the caller read, which the Ledger bounds the packet's age
+    by. Each packet has a nonce of its own. Refused by name when the principal is not a host principal
+    or its key does not sign; the owner's key is never read."""
     if principal not in HOST_PRINCIPALS:
         raise Refused('not_authorized', 'not a host principal of the space ledger')
     if not _is_str(operation) or not isinstance(parameters, dict):
         raise _invalid('command', 'an operation and a mapping of parameters')
+    if not _is_time(issued_at):
+        raise _invalid('issued_at', 'the time the packet is signed at')
     key = key_path(principal, folder)
     command = {'principal': principal, 'operation': operation, 'parameters': parameters,
-               'command_id': command_id or 'space:' + uuid.uuid4().hex, 'nonce': uuid.uuid4().hex}
+               'command_id': command_id or 'space:' + uuid.uuid4().hex, 'nonce': uuid.uuid4().hex,
+               'issued_at': issued_at}
     try:
         done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', key, '-n', NAMESPACE], input=canonical(command),
                               capture_output=True, timeout=30,
@@ -1503,10 +1689,12 @@ def _sibling(name):
 
 def main(argv=None, stdin=None, stdout=None, stderr=None):
     """veldo space sign --as <host principal> [--installation <folder>]: read one command
-    {operation, parameters} on standard input and print the packet signed as that host principal. The
-    installation folder is the one the installation reader resolves. Exit 1 with the refusal's name when
-    there is no installation, no key, or the principal is not a host principal."""
+    {operation, parameters} on standard input and print the packet signed as that host principal, stamped
+    with the time it is signed at. The Ledger refuses it once it is older than PACKET_AGE seconds, so it
+    is sent at once. The installation folder is the one the installation reader resolves. Exit 1 with the
+    refusal's name when there is no installation, no key, or the principal is not a host principal."""
     import argparse
+    import time
     stdin, stdout, stderr = stdin or sys.stdin, stdout or sys.stdout, stderr or sys.stderr
     parser = argparse.ArgumentParser(prog='veldo space')
     verbs = parser.add_subparsers(dest='verb', required=True)
@@ -1528,7 +1716,7 @@ def main(argv=None, stdin=None, stdout=None, stderr=None):
         if not isinstance(command, dict):
             raise _invalid('command', 'one JSON command on standard input')
         packet = signed(args.principal, command.get('operation'), command.get('parameters'), folder,
-                        _sibling('control_store').canonical_bytes, command.get('command_id'))
+                        _sibling('control_store').canonical_bytes, time.time(), command.get('command_id'))
     except Refused as refusal:
         stderr.write('veldo space: refused %s\n' % refusal.code)
         return 1

@@ -492,8 +492,9 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     `https_port` the tailnet HTTPS port Serve maps to it (VELDO-0234: 443, 8443 or 10000; 443 when not
     given on a fresh host, the port it was laid down with on a re-run). `installation` is the installation
     folder (VELDO-0326): given it, the keys of space-observer and space-runner are made under keys/ there
-    and both are enrolled by the owner's signed enroll_principal; a re-run enrolls the ones the store does
-    not hold. Without it no key is made and the answer names the step deferred."""
+    and both are enrolled by the owner's signed enroll_principal, both or neither; a re-run enrolls the
+    ones the store does not hold and repairs what an earlier run left half done (space_enrollments_due).
+    Without it no key is made and the answer names the step deferred."""
     EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
     # VELDO-0234: the option is judged before anything else, so a value Serve does not offer writes nothing.
     requested = _api(lambda: API.https_port_option(https_port))
@@ -774,6 +775,14 @@ SPACE_DEFERRED = {'outcome': 'deferred', 'installation': None,
                           'both'}
 
 
+def stop_first(unit):
+    """The detail of a re-run's service_running refusal: what the owner does, step by step. The store is
+    written only by the one process that holds its lock, and while the service runs that is the service."""
+    return ('the running service takes no command for this store write. Stop the service, run setup again '
+            'with the same arguments, then start it: systemctl --user stop %s ; veldo factory setup ... ; '
+            'systemctl --user start %s' % (unit, unit))
+
+
 def space_paths(installation):
     """VELDO-0326: {principal: key file} of the space ledger's two host principals in the installation folder
     `installation`, read only; None when no folder was named. A folder that is not there, or a key file in it
@@ -787,16 +796,54 @@ def space_paths(installation):
         raise Refused(error.code, error.detail) from None
 
 
-def enroll_space(space, due, admin, S, K, conn, projection):
+def space_enrollments_due(space, membership, AC):
+    """VELDO-0326, read only: (due, stranded) for the host principals of the space ledger whose key files
+    are `space` ({principal: key file}; None when no installation folder was named), against the store's
+    `membership`. Due is every principal this run enrolls: one the store has no record of, one whose
+    membership was revoked (an earlier run that could not enroll both took its enrollment back), and one
+    the store holds whose key file is gone. Stranded is that last kind: an earlier run deleted the key of
+    a principal the store had enrolled, so nothing can sign as it. Its membership is revoked by the
+    owner's signed command, a new key is made, and it is enrolled again; the old key verifies nothing
+    from then on."""
+    due, stranded = [], []
+    for name in (space or ()):
+        entry = AC.membership_entry(membership, name)
+        gone = not os.path.isfile(space[name]) or not os.path.isfile(space[name] + '.pub')
+        if entry is not None and entry.get('revoked_at') is None and gone:
+            stranded.append(name)
+        if entry is None or entry.get('revoked_at') is not None or gone:
+            due.append(name)
+    return due, stranded
+
+
+def enroll_space(space, due, admin, S, K, conn, projection, stranded=(), clock=time.time):
     """VELDO-0326: the owner's signed enroll_principal of each host principal of the space ledger in `due`
     (space-observer, space-runner), a service of the one space scope with no role, co-signed by its own key
     from the installation folder (`space`, {principal: key file}), on this run's own connection under its
-    lock; the projection is republished. Returns the step's details."""
-    CS = organ('control_service')
-    enrolled = CS.enroll_space_principals(space, admin, due)
-    K.publish(S, conn, projection)
-    os.chmod(projection, 0o600)
-    return {'principals': enrolled, 'scope': CS.SPACE_SCOPE, 'keys': {name: space[name] for name in enrolled}}
+    lock; the projection is republished. Returns the step's details.
+
+    Both or neither (control_service.enroll_space_principals). A principal in `stranded` is revoked first,
+    and a key that is not there is made. When the step fails, a key this run made is taken back only when
+    the store has no record of its principal: a key the store holds is never deleted."""
+    CS, CM = organ('control_service'), organ('control_claim').CM
+    for name in stranded:
+        admin('revoke_membership', {'principal': name, 'revoked_at': clock()})
+    for name in stranded:
+        # The half of a stranded key that is still there goes with it: the new key is made whole.
+        for one in (space[name], space[name] + '.pub'):
+            if os.path.lexists(one):
+                os.unlink(one)
+    made = CS.make_space_keys(space)
+    try:
+        enrolled = CS.enroll_space_principals(space, admin, due, clock=clock)
+        K.publish(S, conn, projection)
+        os.chmod(projection, 0o600)
+    except BaseException:
+        held = [name for name in space if CM.AC.membership_entry(CM.authority_state(S, conn)['membership'], name)]
+        CS.drop_space_keys(made, held)
+        raise
+    return {'principals': enrolled, 'scope': CS.SPACE_SCOPE, 'keys': {name: space[name] for name in enrolled},
+            'repaired': list(stranded)}
 
 
 def space_report(installation, details):
@@ -1001,7 +1048,8 @@ def enroll_offline(plan, ids, clock, enroll=None):
                        request_revision=1, nonce='nonce-' + command['command_id'], expires_at=clock() + 600,
                        membership_version=now['membership_version'], delegation_version=now['delegation_version'],
                        command_digest=AC.canonical_command_digest(command))
-            cosigned = enrollee(AC.canonical_envelope_bytes(dict(env, principal=params['principal'])))
+            cosigned = None if enrollee is None else enrollee(
+                AC.canonical_envelope_bytes(dict(env, principal=params['principal'])))
             return CM.admit(S, writer, env, command, owner_sign(AC.canonical_envelope_bytes(env)), ids, clock(),
                             enrollee_signature=cosigned, journal_signer=journal)
         projection = os.path.join(plan['root'], HOST_DIR, 'allowed_signers')
@@ -1358,13 +1406,10 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                  os.path.join(keys, REQUESTER_KEY), os.path.join(root, EDGE_DIR, CONNECTION_KEY)):
         if not os.path.isfile(path):
             raise _differs(path)
-    # VELDO-0326: the host principals of the space ledger the store does not hold yet, read only. One the
-    # store holds keeps its key: a key file that is gone is refused by name and never made again.
+    # VELDO-0326: the host principals of the space ledger this run enrolls, read only: the ones the store
+    # does not hold, and the ones an earlier run left half done.
     space = space_paths(installation)
-    space_due = [name for name in (space or ()) if AC.membership_entry(state['membership'], name) is None]
-    for name in (space or ()):
-        if name not in space_due and not os.path.isfile(space[name]):
-            raise _differs(space[name])
+    space_due, space_stranded = space_enrollments_due(space, state['membership'], AC)
     # The files the earlier steps wrote: equal ones are left alone, absent ones written, none overwritten.
     settlement_public = API.derived(os.path.join(keys, SETTLEMENT_KEY))
     # VELDO-0161: the adoption signer a factory laid down before it existed lacks is laid by the engine upgrade
@@ -1423,22 +1468,18 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     try:
         if missing:
             if running:
-                raise Refused('invalid_input:state_root:service_running:' + missing[0],
-                              'the running service takes no command for this store write')
+                raise Refused('invalid_input:state_root:service_running:' + missing[0], stop_first(authority_unit))
             raise Refused('invalid_input:state_root:holds_store', 'a store setup did not complete (%s)' % missing[0])
         blocked = [name for name in ('reservation_principals', 'factory_project', 'account_registration')
                    if running and pending is not None and name in pending['missing']]
         if blocked:
-            raise Refused('invalid_input:state_root:service_running:' + blocked[0],
-                          'the running service takes no command for this store write')
+            raise Refused('invalid_input:state_root:service_running:' + blocked[0], stop_first(authority_unit))
         if running and space_due:
-            raise Refused('invalid_input:state_root:service_running:space_principals',
-                          'the running service takes no command for this store write')
+            raise Refused('invalid_input:state_root:service_running:space_principals', stop_first(authority_unit))
         # The identity records are a direct store write, so they are written only while this run is the
         # store's one writer: never while the service runs, nor after an upgrade that restarts it.
         if identities_due and (running or engine['restart_due']):
-            raise Refused('invalid_input:state_root:service_running:git_identities',
-                          'the running service takes no command for this store write')
+            raise Refused('invalid_input:state_root:service_running:git_identities', stop_first(authority_unit))
         # VELDO-0189: an earlier engine is replaced by the current one before any other step writes.
         released = lock is not None and lock != -1 and engine['restart_due']
         if released:
@@ -1496,14 +1537,13 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                     lock = take_lock(root)
                     if lock is None:
                         raise Refused('invalid_input:state_root:service_running:space_principals',
-                                      'the authority service started during this run')
-                made = CS.make_space_keys(space)
-                try:
-                    space_details = enroll_offline(plan, ids, clock, enroll=lambda admin, *store: enroll_space(
-                        space, space_due, admin, *store))
-                except BaseException:
-                    CS.drop_space_keys(made)
-                    raise
+                                      'the authority service started during this run. '
+                                      + stop_first(authority_unit))
+                space_details = enroll_offline(plan, ids, clock, enroll=lambda admin, *store: enroll_space(
+                    space, space_due, admin, *store, stranded=space_stranded, clock=clock))
+            else:
+                # An earlier run that enrolled both and then failed left the projection behind the store.
+                API.republish(S, CM, K, plan['store'], os.path.join(host, 'allowed_signers'))
             mark('space_principals', bool(space_due), **(space_details or {}))
         outcomes.append(dict(receiver_trust.apply(trust_step, API), installation=home))
         if edge == 'absent':
@@ -1766,6 +1806,7 @@ def main(argv=None, **overrides):
     import argparse
     import sys
     argv = list(sys.argv[1:] if argv is None else argv)
+    in_process = bool(overrides)
     if argv[:1] == ['passkey']:
         # veldo factory passkey (VELDO-0171): the owner signs the one pending registration he names.
         return organ('control_factory_setup_api').passkey_main(argv[1:])
@@ -1783,6 +1824,8 @@ def main(argv=None, **overrides):
     parser.add_argument('--workspace-identity', help='the explicit identity id for this repository')
     parser.add_argument('--https-port', help='the tailnet HTTPS port Serve maps to the API: 443 (the default), 8443 '
                         'or 10000; a re-run keeps the port the factory was laid down with')
+    parser.add_argument('--installation', help='the installation folder the keys of space-observer and '
+                        'space-runner are made in (default: the folder the installation line names)')
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -1806,8 +1849,14 @@ def main(argv=None, **overrides):
             overrides['workspace_identity'] = args.workspace_identity
         if args.https_port is not None:
             overrides['https_port'] = args.https_port
-        # VELDO-0326: the installation folder the reader resolved is where the space keys are made.
-        overrides.setdefault('installation', installation.get('folder'))
+        # VELDO-0326: where the space keys are made. The command line's own run makes them in the folder the
+        # reader resolved. A caller that drives setup in this process (it hands overrides, as every suite
+        # does) reaches a folder only by naming it: the folder of the process environment is never
+        # written by such a run, so no suite makes or enrolls a key in a real installation.
+        if args.installation is not None:
+            overrides['installation'] = args.installation
+        elif not in_process:
+            overrides.setdefault('installation', installation.get('folder'))
         report = setup(args.state_root, args.owner, args.owner_key, args.workspace, args.chat, args.token_file,
                        memory=args.memory, **overrides)
     except Refused as exc:
