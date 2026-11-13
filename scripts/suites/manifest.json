@@ -1849,6 +1849,15 @@
    ],
    "regions": "The declarations reader for the installation's space section (VELDO-0296): no section and no installation read as space management off and are not refused; each of the nine keys and nested keys left out refused as installation_missing by name, a pool's floor left out included; malformed and unknown keys refused as installation_invalid by name; one log line with the key and the reason and never the value; the fixture's ten protect entries (two folders, name patterns for a volume, a container, an image and a network, two compose project names, two image names) each returned for both engine contexts; mode refused as an unknown key.",
    "requires_note": "Only ROOT and expect. Writes fixture installation folders with invented values into a temporary folder and reads them through the one installation reader with an environment of their own; loads the declarations reader and yamlish by path. Never reads a real installation."
+  },
+  {
+   "name": "131_veldo_0338_project_space_file",
+   "file": "131_veldo_0338_project_space_file.py",
+   "requires": [
+    "131_veldo_0338_project_space_file"
+   ],
+   "regions": "The declarations reader for a project's space file (VELDO-0338): a project with no .veldo/space.yaml is not refused and gets each of the nine defaults (the worktree root beside the repository, the agent branch pattern, no landing refs, build output, build variables, keep or evidence caches, no declared needs, the installation's protect list); a key left out, an empty file and a key with nothing under it get the default; an unknown key at the top, under protect and under needs refused as space_file_invalid by name, a misspelled keep key included; a malformed value refused by its key's name and an unparseable file as space_file_unreadable; one log line with the project, the key and the reason and never a value; a project's protect entries added after the installation's on every engine, the installation's volume pattern and its other entries never removed.",
+   "requires_note": "Only ROOT and expect. Writes fixture repository folders and one fixture installation folder with invented values into a temporary folder; reads the installation through the one installation reader with an environment of its own and each project file through the declarations reader, given yamlish's read. Never reads a real project file or a real installation."
   }
  ],
  "resource_capacities": {

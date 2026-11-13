@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""The declarations reader for space management (VELDO-0296): the installation's space section.
+"""The declarations reader for space management: the installation's space section (VELDO-0296) and a
+project's space file (VELDO-0338).
 
 The installation says whether space management is on and with what. This module is the one reader of
 that section. It opens nothing itself: the section comes from the one installation reader
@@ -34,9 +35,42 @@ list of engine contexts, and protect_for gives the entries in force on one conte
 
 A refused section is logged in one line with the key and the reason (missing, malformed or unknown). Key
 names only; no value is logged.
+
+A PROJECT'S SPACE FILE is .veldo/space.yaml in the project's repository. It is the project's file, not the
+installation's, so it has defaults: a project with no file gets every default and is not refused, and a
+key left out of a file, or written with nothing under it, gets its default.
+
+  worktree_root    where the project's worktrees live. Default: the folder beside the repository, named
+                   after it with the suffix -worktrees.
+  branch_pattern   how a branch name gives a ticket: patterns over {agent} and {ticket}, each naming
+                   {ticket}. Default: the agent branch pattern Veldo itself creates, agent/{agent}/{ticket}.
+  landing_refs     refs besides the trunk whose change means work was landed. Default: none.
+  build_output     extra folder name patterns, for adopted worktrees and for folders git does not ignore.
+                   Default: none.
+  build_variables  environment variables to point at the run's build root. Default: none.
+  keep             ignored paths the census must leave alone, relative to the worktree. Default: none.
+  evidence_caches  sub-folders of an evidence folder that are caches. Default: none.
+  needs            per station (build, review, gate): bytes per pool. Default: nothing declared, so the
+                   measured need applies, and until then the pool default.
+  protect          additions to the installation's protect list, under the same six keys. Default: none.
+
+AN UNKNOWN KEY IS REFUSED BY NAME, as space_file_invalid:<key>, and so is a malformed one. A misspelled
+keep key is therefore never read as a file that keeps nothing. A file that cannot be parsed, or that is
+not a regular file, is refused as space_file_unreadable and is not read further.
+
+A PROJECT ADDS PROTECTION AND CANNOT REMOVE ANY. What read_project returns as protect is every entry of
+the installation's list, unchanged, followed by the project's additions. The file has no way to name an
+installation entry for removal.
+
+THE PROJECT FILE IS PARSED BY THE CALLER'S DOCUMENT READER. This module still opens and parses nothing
+itself: read_project is given the one document reader's read function and calls it on the file's path.
+
+A refused file is logged in one line with the project, the key and the reason (malformed, unknown or
+unreadable). Names only; no value is logged.
 """
 import importlib.util
 import os
+import re
 import string
 import sys
 import zoneinfo
@@ -50,6 +84,14 @@ KEYS = ('enabled', 'time_zone', 'pools', 'engines', 'scratch_roots', 'build_root
 PROTECT_KEYS = (('paths', 'path'), ('volumes', 'volume'), ('containers', 'container'), ('images', 'image'),
                 ('networks', 'network'), ('compose_projects', 'compose_project'))
 SESSION_FIELDS = ('session_id', 'working_folder')
+
+PROJECT_FILE = '.veldo/space.yaml'
+PROJECT_KEYS = ('worktree_root', 'branch_pattern', 'landing_refs', 'build_output', 'build_variables', 'keep',
+                'evidence_caches', 'needs', 'protect')
+BRANCH_FIELDS = ('agent', 'ticket')
+# The agent branches Veldo itself creates are refs/heads/agent/<agent>/<name>.
+BRANCH_PATTERNS = ('agent/{agent}/{ticket}',)
+_VARIABLE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*\Z')
 
 _INSTALLATION = None
 
@@ -259,6 +301,169 @@ def protect_for(config, engine):
     """The protect entries in force on one engine context: [{type, value}]."""
     return [{'type': entry['type'], 'value': entry['value']} for entry in config.get('protect', ())
             if engine in entry['engines']]
+
+
+class ProjectSpaceError(ValueError):
+    """A project's space file refused: `code` is space_file_invalid:<key> or space_file_unreadable."""
+
+    def __init__(self, code, project, detail=''):
+        self.code, self.project, self.detail = code, project, detail
+        super().__init__(code + (': ' + detail if detail else ''))
+
+
+def _project_path(value, key, root):
+    """A folder path: absolute, under the home folder with a leading tilde, or relative to the repository."""
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise _malformed(key, 'a path')
+    if value.startswith('/') or value == '~' or value.startswith('~/'):
+        return _path(value, key)
+    if value.startswith('~'):
+        raise _malformed(key, 'a path; a home folder is written ~/')
+    return os.path.normpath(os.path.join(root, value))
+
+
+def _listed(value, key, each):
+    if not isinstance(value, list):
+        raise _malformed(key, 'a list')
+    out = [each(item, '%s[%d]' % (key, index)) for index, item in enumerate(value)]
+    if len(set(out)) != len(out):
+        raise _malformed(key, 'no entry twice')
+    return out
+
+
+def _inside(value, key):
+    """A path inside a folder, written relative to it: never absolute and never leading out of it."""
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise _malformed(key, 'a relative path')
+    path = os.path.normpath(value)
+    if value.startswith(('/', '~')) or path == '.' or path == '..' or path.startswith('../'):
+        raise _malformed(key, 'a relative path that stays inside the folder')
+    return path
+
+
+def _variable(value, key):
+    if not isinstance(value, str) or not _VARIABLE.match(value):
+        raise _malformed(key, 'an environment variable name')
+    return value
+
+
+def _branch_pattern(value, key):
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise _malformed(key, 'a pattern')
+    try:
+        fields = [field for _, field, _, _ in string.Formatter().parse(value) if field is not None]
+    except ValueError:
+        raise _malformed(key, 'a pattern with balanced braces') from None
+    if any(field not in BRANCH_FIELDS for field in fields) or fields.count('ticket') != 1:
+        raise _malformed(key, 'a pattern over {agent} and {ticket} that names {ticket} once')
+    return value
+
+
+def _project_needs(value, key):
+    """{station: {pool: bytes}} for the three stations; a station left out has nothing declared."""
+    if not isinstance(value, dict):
+        raise _malformed(key, 'a mapping of station to bytes per pool')
+    for name in value:
+        if name not in STATIONS:
+            raise _unknown(key + '.' + str(name), 'not a station')
+    out = {}
+    for station in STATIONS:
+        pools = value.get(station)
+        where = key + '.' + station
+        if pools is not None and not isinstance(pools, dict):
+            raise _malformed(where, 'a mapping of pool name to bytes')
+        out[station] = {str(_name(pool, where)): _bytes(size, where + '.' + str(pool))
+                        for pool, size in (pools or {}).items()}
+    return out
+
+
+def _project_protect(value, key, root):
+    """[(type, value)]: the project's additions, in the order of the six protect keys."""
+    if not isinstance(value, dict):
+        raise _malformed(key, 'a mapping')
+    for name in value:
+        if name not in dict(PROTECT_KEYS):
+            raise _unknown(key + '.' + str(name), 'not a key of ' + key)
+    out = []
+    for name, kind in PROTECT_KEYS:
+        where = key + '.' + name
+        if value.get(name) is None:
+            continue
+        each = (lambda item, at: _project_path(item, at, root)) if kind == 'path' else _name
+        out.extend((kind, item) for item in _listed(value[name], where, each))
+    return out
+
+
+def _with_additions(installed, additions, engines):
+    """The installation's protect entries, every one, then the project's additions that are not already
+    there. A project adds; nothing here takes an installation entry out."""
+    entries = [dict(entry, engines=list(entry['engines'])) for entry in installed]
+    have = {(entry['type'], entry['value']) for entry in entries}
+    for kind, item in additions:
+        if (kind, item) not in have:
+            have.add((kind, item))
+            entries.append({'type': kind, 'value': item, 'engines': list(engines)})
+    return entries
+
+
+def check_project(document, root, config=None, project=None):
+    """The checked project declarations from a parsed space file ({} for a project that has none). `root`
+    is the project's repository, `config` what read() gave for the installation. Raises _Refusal on the
+    first refused key."""
+    root = os.path.normpath(str(root))
+    config = off() if config is None else config
+    if not isinstance(document, dict):
+        raise _malformed(PROJECT_FILE, 'a mapping')
+    for name in document:
+        if name not in PROJECT_KEYS:
+            raise _unknown(str(name), 'not a key of ' + PROJECT_FILE)
+
+    def given(key, read, default):
+        return default if document.get(key) is None else read(document[key], key)
+
+    additions = given('protect', lambda value, key: _project_protect(value, key, root), [])
+    return {
+        'project': os.path.basename(root) if project is None else project,
+        'worktree_root': given('worktree_root', lambda value, key: _project_path(value, key, root),
+                               os.path.join(os.path.dirname(root), os.path.basename(root) + '-worktrees')),
+        'branch_pattern': given('branch_pattern', lambda value, key: _listed(value, key, _branch_pattern),
+                                list(BRANCH_PATTERNS)),
+        'landing_refs': given('landing_refs', _names, []),
+        'build_output': given('build_output', _names, []),
+        'build_variables': given('build_variables', lambda value, key: _listed(value, key, _variable), []),
+        'keep': given('keep', lambda value, key: _listed(value, key, _inside), []),
+        'evidence_caches': given('evidence_caches', lambda value, key: _listed(value, key, _inside), []),
+        'needs': given('needs', _project_needs, {station: {} for station in STATIONS}),
+        'protect': _with_additions(config.get('protect', ()), additions, config.get('engines', ())),
+    }
+
+
+def read_project(root, load, config=None, project=None, stream=None):
+    """A project's space declarations: its .veldo/space.yaml checked, or every default when the project
+    has no such file. `root` is the project's repository; `load` is the one document reader's read
+    function, called on the file's path; `config` is what read() gave for the installation (read here
+    when not given). The answer says whether the file was present. A refused file is logged in one line
+    to `stream` (standard error by default) with the project, the key and the reason, and raised as
+    ProjectSpaceError: space_file_invalid:<key>, or space_file_unreadable."""
+    root = os.path.normpath(str(root))
+    project = os.path.basename(root) if project is None else project
+    config = read(stream=stream) if config is None else config
+    path = os.path.join(root, *PROJECT_FILE.split('/'))
+    try:
+        if not os.path.lexists(path):
+            return dict(check_project({}, root, config, project), present=False)
+        if not os.path.isfile(path):
+            raise _Refusal('unreadable', PROJECT_FILE, 'not a regular file')
+        try:
+            document = load(path)
+        except (ValueError, OSError) as error:
+            raise _Refusal('unreadable', PROJECT_FILE, str(error)) from None
+        return dict(check_project(document, root, config, project), present=True)
+    except _Refusal as refusal:
+        out = sys.stderr if stream is None else stream
+        out.write('veldo space file: project %s refused %s (%s)\n' % (project, refusal.key, refusal.reason))
+        code = 'space_file_unreadable' if refusal.reason == 'unreadable' else 'space_file_invalid:' + refusal.key
+        raise ProjectSpaceError(code, project, refusal.detail) from None
 
 
 if __name__ == '__main__':

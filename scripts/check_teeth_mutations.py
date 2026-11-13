@@ -12324,6 +12324,27 @@ def cases():
         ['ac4/mode-refused'])
     result[-1]['siblings'] = True
 
+    # VELDO-0338: the falsifier of each acceptance criterion of the project's space file. AC1 the file
+    # required; AC2 unknown keys ignored, so a misspelled keep key is accepted with nothing kept; AC3 the
+    # project's protect list replacing the installation's.
+    space338 = '131_veldo_0338_project_space_file.py'
+    add(338, 'space338-file-required', space338, 'control_space_config.py',
+        "            return dict(check_project({}, root, config, project), present=False)\n",
+        "            raise _Refusal('missing', PROJECT_FILE, 'the project has no space file')\n",
+        ['ac1/no-file'])
+    result[-1]['siblings'] = True
+    add(338, 'space338-unknown-key-ignored', space338, 'control_space_config.py',
+        "    for name in document:\n        if name not in PROJECT_KEYS:\n"
+        "            raise _unknown(str(name), 'not a key of ' + PROJECT_FILE)\n",
+        "    document = {name: value for name, value in document.items() if name in PROJECT_KEYS}\n",
+        ['ac2/misspelled-keep'])
+    result[-1]['siblings'] = True
+    add(338, 'space338-project-list-replaces', space338, 'control_space_config.py',
+        "    entries = [dict(entry, engines=list(entry['engines'])) for entry in installed]\n",
+        "    entries = [dict(entry, engines=list(entry['engines'])) for entry in installed if not additions]\n",
+        ['ac3/installation-volume-kept'])
+    result[-1]['siblings'] = True
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip
