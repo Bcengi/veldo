@@ -1,0 +1,9 @@
+# VELDO-0296 registered mutation cases (scripts/check_teeth_mutations.py, finding 296), run through its own materialize() and worker(): noop copy then mutant copy, target rows.
+space296-no-section-refused noop rows 47 targets {"ac1/no-installation": [true], "ac1/no-section": [true]} failed []
+space296-no-section-refused mutant rows 47 targets {"ac1/no-installation": [false], "ac1/no-section": [false]} failed ['ac1/no-installation', 'ac1/no-section']
+space296-floor-built-in noop rows 47 targets {"ac2/missing-floor": [true]} failed []
+space296-floor-built-in mutant rows 47 targets {"ac2/missing-floor": [false]} failed ['ac2/logged', 'ac2/malformed-by-name', 'ac2/missing-floor']
+space296-protect-entry-removed noop rows 47 targets {"ac3/network-pattern": [true]} failed []
+space296-protect-entry-removed mutant rows 47 targets {"ac3/network-pattern": [false]} failed ['ac3/network-pattern', 'ac3/whole-list', 'reader/full-section']
+space296-mode-accepted-ignored noop rows 47 targets {"ac4/mode-refused": [true]} failed []
+space296-mode-accepted-ignored mutant rows 47 targets {"ac4/mode-refused": [false]} failed ['ac4/mode-refused']

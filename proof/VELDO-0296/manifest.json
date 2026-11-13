@@ -1,0 +1,113 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0296",
+ "commit": "a19c73eff8581b42fa232ffd407bddf617016fac",
+ "tree": "d0bcb514064d822f6fea0a67cf140562d6bca7f5",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T19:10:59.291004+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/130_veldo_0296_space_section.py",
+     "detail": "Rows ac1/no-section (a fixture installation folder on disk with settings and no space section, read through the one installation reader: not refused, reads {present: false, enabled: false}, no refusal line) and ac1/no-installation (no folder at all reads the same). Green: proof/VELDO-0296/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0296/falsifiers.json",
+     "detail": "Falsifier space296-no-section-refused (an installation without the section refused): ac1/no-section and ac1/no-installation red; noop copy green. proof/VELDO-0296/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/130_veldo_0296_space_section.py",
+     "detail": "Rows ac2/missing-by-name (each of the nine keys and seven nested keys left out, refused installation_missing:space.<key>; an empty section refused), ac2/missing-floor (the floor key left out of a pool, from disk and from a given section), ac2/malformed-by-name (28 malformed values and 5 unknown keys refused installation_invalid:<key>), ac2/logged (one line with key and reason missing, malformed or unknown; never the value)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/130_veldo_0296_space_section.py",
+     "detail": "The from-disk checks of ac2/missing-by-name, ac2/missing-floor and ac2/malformed-by-name, and reader/full-section (the whole fixture section read back from installation.yaml)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0296/falsifiers.json",
+     "detail": "Falsifier space296-floor-built-in (a missing floor given the value 0): ac2/missing-floor red (ac2/logged and ac2/malformed-by-name red with it); noop green."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/130_veldo_0296_space_section.py",
+     "detail": "Ten rows, one per entry of the fixture's protect list read back from disk, each checked on both engine contexts (default and desktop-linux): ac3/engine-image-folder, ac3/repository-folder, ac3/volume-pattern, ac3/container-pattern, ac3/image-pattern, ac3/network-pattern, ac3/compose-project-one, ac3/compose-project-two, ac3/image-name-one, ac3/image-name-two; ac3/whole-list (ten entries per context and nothing else)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0296/falsifiers.json",
+     "detail": "Each of the ten entries removed in turn from what the reader returns: that entry's row red every time (with ac3/whole-list and reader/full-section), no other entry row red. The network case is registered as space296-protect-entry-removed; noop green."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/130_veldo_0296_space_section.py",
+     "detail": "Rows ac4/no-mode-key (the reader's key list and its answer carry no mode) and ac4/mode-refused (mode: act and mode: report in a given section refused installation_invalid:space.mode, logged as unknown)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/130_veldo_0296_space_section.py",
+     "detail": "ac4/mode-refused from disk: installation.yaml with mode: act in the space section is refused by name."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0296/falsifiers.json",
+     "detail": "Falsifier space296-mode-accepted-ignored (a mode key accepted and ignored): ac4/mode-refused red, alone; noop green."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 130_veldo_0296_space_section (21 rows) and --suite 127_veldo_0259_installation (20 rows; the installation reader gained the space key)"
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 130_veldo_0296_space_section: the from-disk rows read fixture installation folders through installation.load"
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the registered teeth cases (finding 296) were run here through the driver's own materialize() and worker(), not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "Key spellings (time_zone, scratch_roots with roots and session_pattern, build_roots, plain_repositories with repository and worktree_root, client_accounts, protect with paths, volumes, containers, images, networks, compose_projects; pools with floor and needs per station build, review, gate) are this ticket's reading of design 6.8, which names the keys in words.",
+  "An unknown key is refused as installation_invalid:<key>, as the installation reader already refuses an unknown top-level key.",
+  "docs/installation.md does not yet describe the space section: it is outside this ticket's footprint (documents are VELDO-0322).",
+  "Name patterns and image names are returned as written; matching them against Docker objects is VELDO-0341."
+ ],
+ "rollback": "Revert the change. No installation is read for a space section, which is the same as space management off."
+}

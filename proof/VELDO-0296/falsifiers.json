@@ -1,0 +1,182 @@
+[
+ {
+  "falsifier": "space296-no-section-refused",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/no-section",
+   "ac1/no-installation"
+  ],
+  "red_rows": [
+   "ac1/no-installation",
+   "ac1/no-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space296-floor-built-in",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/missing-floor"
+  ],
+  "red_rows": [
+   "ac2/logged",
+   "ac2/malformed-by-name",
+   "ac2/missing-floor"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space296-protect-entry-removed",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/network-pattern"
+  ],
+  "red_rows": [
+   "ac3/network-pattern",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space296-mode-accepted-ignored",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/mode-refused"
+  ],
+  "red_rows": [
+   "ac4/mode-refused"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-engine-image-folder",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/engine-image-folder"
+  ],
+  "red_rows": [
+   "ac3/engine-image-folder",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-repository-folder",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/repository-folder"
+  ],
+  "red_rows": [
+   "ac3/repository-folder",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-volume-pattern",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/volume-pattern"
+  ],
+  "red_rows": [
+   "ac3/volume-pattern",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-container-pattern",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/container-pattern"
+  ],
+  "red_rows": [
+   "ac3/container-pattern",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-image-pattern",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/image-pattern"
+  ],
+  "red_rows": [
+   "ac3/image-pattern",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-network-pattern",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/network-pattern"
+  ],
+  "red_rows": [
+   "ac3/network-pattern",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-compose-project-one",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/compose-project-one"
+  ],
+  "red_rows": [
+   "ac3/compose-project-one",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-compose-project-two",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/compose-project-two"
+  ],
+  "red_rows": [
+   "ac3/compose-project-two",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-image-name-one",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/image-name-one"
+  ],
+  "red_rows": [
+   "ac3/image-name-one",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "ac3-entry-removed-image-name-two",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/image-name-two"
+  ],
+  "red_rows": [
+   "ac3/image-name-two",
+   "ac3/whole-list",
+   "reader/full-section"
+  ],
+  "red_as_expected": true
+ }
+]

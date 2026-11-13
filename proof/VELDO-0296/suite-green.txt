@@ -1,0 +1,4 @@
+  selector    --suite 130_veldo_0296_space_section
+  running     1 of 200 suites: 130_veldo_0296_space_section
+  130_veldo_0296_space_section                    21 passed    0.02s
+selftest (PARTIAL, 1 of 200 suites): 47 passed, 0 failed in 0.02s
