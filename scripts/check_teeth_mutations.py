@@ -12598,6 +12598,33 @@ def cases():
         ['ac1/act-refused-until-built'])
     result[-1]['siblings'] = True
 
+    # VELDO-0298: the kind registry and the lifecycle table. The declared falsifier of each acceptance
+    # criterion: AC1 worktree given the action remove at run finished; AC2 due items returned in ledger
+    # order; AC3 build output removed whenever its run is finished, the queued-run fact ignored; AC4 the
+    # events an item ends on read from the current registry and not from the item's record.
+    space298 = '135_veldo_0298_space_kinds.py'
+    add(298, 'space298-worktree-removed-at-run-finished', space298, 'control_space_kinds.py',
+        "    'worktree': (MEASURE, NOTHING, WORKTREE, WORKTREE_ASK, WORKTREE_ASK),\n",
+        "    'worktree': (REMOVE, NOTHING, WORKTREE, WORKTREE_ASK, WORKTREE_ASK),\n",
+        ['ac1/worktree/run_finished'])
+    result[-1]['siblings'] = True
+    add(298, 'space298-ledger-order', space298, 'control_space_kinds.py',
+        "    return sorted(found, key=lambda entry: (height(entry['item']), ORDER.index(records[entry['item']]['kind']),\n"
+        "                                            position[entry['item']]))\n",
+        "    return sorted(found, key=lambda entry: position[entry['item']])\n",
+        ['ac2/deferred-build-folder-first'])
+    result[-1]['siblings'] = True
+    add(298, 'space298-queued-run-ignored', space298, 'control_space_kinds.py',
+        "                if cell.pop('queued_run', None) == 'pass' and queued.get(identity):\n",
+        "                if cell.pop('queued_run', None) == 'pass' and False:\n",
+        ['ac3/passes-to-queued-run'])
+    result[-1]['siblings'] = True
+    add(298, 'space298-ends-on-from-current-registry', space298, 'control_space_kinds.py',
+        "        if record.get('state') == 'due' and event in (ends_on.get('events') or ()):\n",
+        "        if record.get('state') == 'due' and event in registry['tables'][registry['version']]['ends_on'][record['kind']]:\n",
+        ['ac4/keeps-its-version'])
+    result[-1]['siblings'] = True
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip
