@@ -74,13 +74,17 @@ acceptance_criteria:
       is never contained, and a worktree follows the branch checked out in it now. Build output and
       scratch go when their run finishes or its verdict is recorded;
       a worktree goes by git's own non-forced remove when its branch has landed or is contained; evidence
-      is kept and only its caches are dropped; a branch is kept. No timer, schedule or age threshold
-      triggers a removal. Rows: after a gate records its verdict its build folder is gone and its evidence
+      is kept and only its caches are dropped; a branch is kept. A detached worktree added inside a
+      wrapped run belongs to that run and goes at its run finished. No timer, schedule or age threshold
+      triggers a removal: nothing in Veldo removes by age, with a central installation or without one,
+      the sandbox's stale scratch pass and the gate's leg-time store included. Rows: after a gate records
+      its verdict its build folder is gone and its evidence
       folder is present before the gate process exits; after a landing the worktree is gone and the branch
       is present; after a commit made by hand on a declared landing ref, the git command returns with
       the landing recorded and nothing removed, and the worktree of a branch that commit contains is
       gone after the service consumes the record, with the clock stopped and no timer; with the clock
-      moved forward 30 days and no event, nothing is removed.
+      moved forward 30 days and no event, nothing is removed; a sandbox scratch folder two days old
+      whose lock is free is still there after a launcher starts, with an installation and without one.
     falsified_by: >
       Remove build output from a pass that runs on a schedule; the row that checks the folder is gone
       before the gate process exits finds it present and fails.
@@ -96,8 +100,9 @@ acceptance_criteria:
       the console. No removal passes a tool's force option, and every removal path that exists today goes
       through these rules. A worktree with unique work at its ticket's end raises one decision request
       to the owner with three answers: save as a commit on a kept branch, keep, or discard. Veldo never
-      commits on its own. Discard is the one forced removal, allowed only after the owner's discard
-      answer, and it keeps the branch. The protect list always holds the container engine's disk image
+      commits on its own. The three answers are offered as picks of the existing settlement path, so its
+      set of rulings does not change. Discard is the one forced removal, allowed only after the owner's
+      discard answer, and it keeps the branch. The protect list always holds the container engine's disk image
       and its folder, database volumes with real data and images that cannot be pulled again, and
       nothing on it is removed by any event or any answer. Rows: a build folder with a process's working directory inside it, a worktree with an
       uncommitted edit, a worktree whose branch has a commit nothing else contains, a folder with no
@@ -125,18 +130,22 @@ acceptance_criteria:
     text: >
       Claim: a run or gate states the space it needs per pool and starts only when the pool's free space
       covers that need, the needs already held by admitted runs, and the pool's floor. Otherwise it waits,
-      with the numbers that refused it shown, and is looked at again when a removal or a finished run
-      frees space. A dispatch is asked before it is prepared, so a waiting unit holds no slot and has no
+      with the numbers that refused it shown, and is judged again only after a write that frees space:
+      a removal that finished, or a run that ended and gave back its hold. A pass woken by a timer does
+      nothing for it. A dispatch is asked before it is prepared, so a waiting unit holds no slot and has no
       deadline. A gate is asked by the gate script itself, with or without a host
       configuration. A repository initialized after the change has the steps from the template; an
       existing project's gate script is its own file and gets them by its own change, reconcile reports
       a project whose gate lacks them, and until then its gates run through the run wrapper, which
-      admits them and removes their build output. In report mode admission advises ("would wait") and does not block; it blocks only
-      in act mode. A run or gate that ends on a full pool is recorded as an environment failure and is
+      admits them and removes their build output. Report or act is set per project. In report mode
+      admission advises ("would wait") and does not block; it blocks only in act mode. A run or gate that
+      ends on a full pool is recorded as an environment failure and is
       queued again behind admission; it never records a red verdict. Rows: with free space under need plus
       floor the run waits and the console shows need, free, held and floor; after a removal frees enough
       it starts with no other action; a gate whose build fails with the system's no-space error on a pool
-      under its floor records environment_failure:no_space and no verdict.
+      under its floor records environment_failure:no_space and no verdict; a waiting unit offered on
+      three passes, one of them woken by the account-reset timer, causes one retry of the pool's
+      deferred items.
     falsified_by: >
       Compare free space with the need alone and ignore the floor; the row with free space between need
       and need plus floor starts the run and fails.
@@ -166,16 +175,24 @@ acceptance_criteria:
   - id: AC8
     text: >
       Claim: the things that exist today are adopted into the ledger without removing anything, and the
-      nightly cleanup script is retired only after the events cover each of its cases. Set: the first
-      reconcile of an installation runs in report mode; what it would remove is listed as pending and is
-      removed only after the owner confirms it per project and kind. The nightly script's five candidate
+      nightly cleanup script is retired only after the events cover each of its cases. Set: every
+      project starts in report mode; what Veldo would remove is listed as pending and is removed only
+      after the owner confirms it per project and kind, and the owner can mark a proposal wrong. A
+      project goes to act mode by the owner's signed command, which the ledger refuses until that
+      project has three consecutive report-mode days, each with activity and with no proposal marked
+      wrong; a mark starts the count again. The order is core first: core's gate script gets the space
+      steps while core is in report mode, core goes to act after its three clean days, and each other
+      project follows the same way. The three days are read from the records when the owner acts; no
+      timer counts them. The nightly script's five candidate
       classes (build folders in worktrees, named build folders, build folders under the session scratch
       root, per-session scratch folders, build caches under the user's cache folder) each map to a kind
       and an event; while both run the script asks the ledger and skips what a safety rule kept; and the script's schedule entry is removed
-      only when a dry run of it on the live host lists nothing the ledger does not already hold. Rows: a
+      only when a listing of its candidates on the live host, with its age and size tests off, holds
+      nothing the ledger does not already hold. Rows: a
       first reconcile over a fixture with 20 worktrees removes nothing and lists the due items; after the
-      owner's confirmation exactly those are removed; the retirement check fails while one candidate class
-      has no ledger kind.
+      owner's confirmation exactly those are removed; the switch to act is refused for a project with a
+      proposal marked wrong on the second of its three days; the retirement check fails while one
+      candidate class has no ledger kind.
     falsified_by: >
       Let the first reconcile act on what it finds due; the row that expects nothing removed before the
       owner's confirmation fails.
@@ -204,7 +221,7 @@ space it needs and waits when the disk cannot cover it.
 
 - The design is docs/design/VELDO-0295-design.md. It holds the components, the data model, the lifecycle
   table, the event sources outside the service, the table of existing removal paths, the flows, the
-  deployment view and the thirty-five build tickets, VELDO-0296 to VELDO-0330.
+  deployment view and the forty-three build tickets, VELDO-0296 to VELDO-0338.
 - VELDO-0042 already retires a worker clone only after every user of it has ended, read from the kernel.
   VELDO-0041 already retries a refused retirement when the obligation it waits on completes. Space
   management uses the same two ideas for every kind.
@@ -213,11 +230,15 @@ space it needs and waits when the disk cannot cover it.
 - VELDO-0036 reserves capacity and usage in the store before a run starts. A space hold is a record of
   the same store and is checked just before that reservation is made.
 - VELDO-0068 already settles a request to the owner once, with a typed effect per answer. The owner's
-  answer on a worktree with unique work is one more touchpoint of that service.
+  answer on a worktree with unique work is one more touchpoint of that service, and its three answers
+  use the pick form that service already has.
 - VELDO-0107 already gives a local process an authenticated way to reach the authority. The hooks use
   it, signed by a host principal and never by the owner's key.
 - VELDO-0158 already removes a run's own directory once the kernel shows the run gone. That removal moves
   behind the safety rules with every other one.
+- Two places in the engine remove by age today: the sandbox's pass over stale scratch
+  (engine/scripts/agent_sandbox.py) and the 30-day branch of the gate's leg-time store
+  (engine/scripts/gate_legs.py). Both go.
 - The protect list always holds the container engine's disk image and its folder, database volumes with
   real data, and images that cannot be pulled again. Nothing on it is ever removed by Veldo.
 
@@ -226,6 +247,7 @@ space it needs and waits when the disk cannot cover it.
 - No removal of anything Veldo did not create or adopt. Databases, data volumes and images that cannot be
   pulled again are never candidates, whatever their size.
 - No pruning command of any tool. Every removal names one recorded thing.
+- No removal by age anywhere in Veldo, with or without a central installation.
 - No removal of unlabelled Docker objects in the first release. They are reported.
 - No "superseded" transition. The authority has none today; the events use the transitions that exist.
 - No action on a container engine's own disk image file.
@@ -258,3 +280,11 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   entries. AC5: an existing project's gate gets the space steps by its own change, is reported until
   then, and is covered by the run wrapper. Tickets VELDO-0323 to VELDO-0330 added, so the range is
   VELDO-0296 to VELDO-0330. Still a draft.
+- 2026-11-13: amended from design revision 4, which follows the third validation of the same day
+  (verdict CHANGES, C1 to C6 and D1 to D7) and carries the lead's decisions. AC2: no removal by age
+  anywhere in Veldo, with or without an installation; a detached worktree made inside a wrapped run
+  belongs to the run. AC3: the three answers are picks of the existing settlement path. AC5: a waiting
+  unit is judged again only after a write that frees space, never on a timer-woken pass; report or act
+  is per project. AC8: per-project report then act, the three clean days, core first; the retirement
+  check runs with the script's age and size tests off. Tickets VELDO-0331 to VELDO-0338 added, so the
+  range is VELDO-0296 to VELDO-0338. Still a draft.
