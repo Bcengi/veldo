@@ -1,0 +1,110 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0331",
+ "commit": "1b64b27853898ccf0a88584127345e16aa087ce8",
+ "tree": "14c93cc8de354dca7f6d3600ed8ab7fcc9eb6818",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T20:38:13.028340+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/134_veldo_0331_space_mode.py",
+     "detail": "Against a real control store (SQLite) in a temporary folder, real OpenSSH keys and real signature checks, with the owner bootstrapped through control_membership.admit. Rows ac1/no-record-is-report (with no command sent a project, a second project, a plain repository and no project each read report and the store holds no mode record), ac1/own-record-per-scope (the owner's signed command puts orchard in act as one journal record and one record space:mode:project:orchard; the plain repository and no project get records of their own; meadow stays in report throughout; a second spelling of the plain repository is the same scope), ac1/act-beside-report (one event ends a fixture folder of orchard, in act, and one of meadow, in report: orchard's is removed in the same call, meadow's is due and still on disk), ac1/history (three switches of one scope: the history holds each with from, to, when and the owner's packet, each recorded signature still verifies against the owner's key, since names the current one, each switch is one journal record with the owner as principal holding the scope, the old and new mode and the command). Green: proof/VELDO-0331/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/134_veldo_0331_space_mode.py",
+     "detail": "Row ac1/owner-signs, each refused with nothing written: the owner's name signed with an intruder's key, a command changed after signing, no signature, no packet, a person without project_owner, a project_owner scoped to one repository, an unknown principal (all not_authorized); both host principals (space_not_permitted:space_mode, logged with principal and command name); a project nobody bound and an unnamed plain repository (space_unknown_scope); a mode that is neither report nor act; the owner's earlier act packet sent again after the switch back, and the same command under a new id with the old signature; the store's generic entity command writing a mode record (entity_owned)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0331/falsifiers.json",
+     "detail": "Declared falsifier space331-one-mode-for-installation (one mode record for the installation): ac1/act-beside-report red, meadow's due folder is removed; noop copy green. Also space331-mode-signature-unchecked (the signature check dropped): ac1/owner-signs red. proof/VELDO-0331/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/134_veldo_0331_space_mode.py",
+     "detail": "Rows ac2/admission-by-scope (one pool, floor 20000 MB, free 30000 MB, need 15000 MB for both: the run of the report-mode project is advised and the run of the act-mode project waits, each with pool, need, free, held and floor; the waiting run's held is the advised run's need; the plain repository and no project are judged by their own modes), ac2/advised-counts-as-held (an act-mode run needing 5000 MB, which fits the free space alone and not beside the advised run, waits; after the advised hold is released the same need is admitted; a report-mode run that fits is admitted), ac2/signal-by-scope (Signal carries out the item of an act-mode project, plain repository and no project before it returns, and leaves the item of a report-mode project due with its folder on disk), ac2/adoption-by-scope (a container inside a recorded worktree is adopted with the worktree as parent and owner for the act-mode project, and is a report record with the proposed owner and no owner for the report-mode project; after that project's switch to act the same call adopts it and the report record is the item)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/134_veldo_0331_space_mode.py",
+     "detail": "The same rows read the three callers as units: control_space_admission.judge, held and admit; control_space_signal.signal; control_space_reconcile.adopt_inside_worktree. Each asks Ledger.acts for one scope."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0331/falsifiers.json",
+     "detail": "Declared falsifier space331-advised-not-held (advised holds left out of what is held): ac2/advised-counts-as-held red, the act-mode run is admitted into space the advised run was promised; noop copy green. One further case per reader, each red with its noop copy green: space331-signal-reads-no-mode, space331-admission-reads-no-mode, space331-adopts-in-report."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/134_veldo_0331_space_mode.py",
+     "detail": "Rows ac3/switch-back-accepted (orchard in act with a due item and a waiting hold open: the owner's report command is accepted at once, by one journal record; the record holds the switch back; scopes nobody switched stay in act) and ac3/then-due-and-nothing-removed (the project's next event writes due, its folder and file stay on disk and nothing is carried out; the item due before the switch is still due and on disk; a run that would wait is advised; a container inside its worktree is reported, not adopted)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/134_veldo_0331_space_mode.py",
+     "detail": "Ledger.set_mode accepts report for a scope in act with no condition read; a command for the mode the scope is already in is accepted and writes nothing (row ac1/own-record-per-scope)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0331/falsifiers.json",
+     "detail": "Declared falsifier space331-switch-back-refused (the switch back refused): ac3/switch-back-accepted red, the row that sends it gets space_mode_locked and the scope stays in act; noop copy green."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 134_veldo_0331_space_mode (12 rows)"
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 134_veldo_0331_space_mode: the rows run the ledger, the membership organ and the three readers on a real control store file with real OpenSSH keys and real fixture folders on disk"
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py all; suites 130_veldo_0296_space_section, 131_veldo_0338_project_space_file, 132_veldo_0297_space_ledger, 133_veldo_0326_space_principals, 06_capabilities_manifest_honesty_veldo, 21_veldo_0004_promise_corpus and 53_veldo_0123_mutations still green; every registered mutation anchor in control_space.py and the three new modules (22 cases) still matches once"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the seven registered teeth cases (finding 331) were run here through the driver's own materialize() and worker(), not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "THE SWITCH TO ACT HAS NO CONDITION YET. The spec gives the conditions to VELDO-0332 (three clean report days, no wrong mark today) and VELDO-0339 (no unconfirmed pending group, the gate's space steps). This ticket accepts the owner's signed act command as it is. Until those two land, nothing but the owner's signature stands between a scope and act mode; nothing in production calls Signal, admission or reconcile yet, so no removal follows from it today. The lead's decision that act starts only after three clean days and with no unconfirmed group is not enforced by this ticket.",
+  "The owner is read as an active person member holding project_owner whose scope covers the named scope space (the universal scope does). A project_owner scoped to single repositories is refused. The command is the same packet shape a host principal sends ({command, signature}, namespace veldo-command), verified against the principal's active key in the store's keyring; the store command commits against the versions of that membership and key and consumes the owner's nonce.",
+  "The history holds every switch including the current one, last; since repeats the current one's time and command. Design 4.7 words history as each earlier switch; the AC words it as every switch, and the superset serves both. The history entry has from, to, at and command. What was checked for a switch to act is added by 0332 and 0339.",
+  "The time on a switch is the number the caller read; no clock is read in the ledger. Days in the installation's time zone are 0332's.",
+  "A command for the mode the scope is already in is accepted and writes nothing. The owner's packet sent again writes nothing: the store answers a command id it holds with a content conflict or the first result.",
+  "The mode command is refused for a scope the declarations do not name (space_unknown_scope). A read of an unknown scope, or of no scope (a report record has no owner), answers report.",
+  "space_mode is registered beside OPERATIONS and not in it, so the VELDO-0326 row that lists the authority's commands is unchanged; the 0326 suite already proves both host principals are refused the mode switch.",
+  "Signal, admission and reconcile do not exist yet (0301, 0316, 0315). This ticket creates the three files with only the part that reads the mode. control_space_signal.signal is given the carrying out of a due item as a callable (rules and removers are 0299 to 0301); the suite's callable deletes a fixture folder and writes the outcome removed. In report mode it leaves every item due; removing an item that carries the owner's confirmation is 0301 and 0320.",
+  "control_space_admission holds the per-pool rule in its smallest form because AC2 cannot be shown without it: free minus what admitted and advised holds still hold, against need plus floor. Free space is given by the caller. The scope of the run is named by the caller, since a hold record has no scope field (design 4.3). Needs, the admission requested event, the freed mark and the Runner are 0316 and 0334.",
+  "Reconcile's adoption rule is read as the one row of 8.8 whose result depends on the mode: a Docker object with no run label inside a recorded worktree (design 6.4). Every other adoption row adopts in both modes (0320 AC1). Finding the object and its worktree is 0307; control_space_reconcile.adopt_inside_worktree is given both.",
+  "No CLI verb, API action or console control sends the mode command yet (0313, 0319); the suite signs the owner's packet with ssh-keygen as the CLI will.",
+  "The bundle's commit and tree name the implementation commit; the bundle itself is in the next commit, as the earlier space tickets did."
+ ],
+ "rollback": "Switch every scope back to report, then revert the change. Mode records stay in the journal; a reverted Ledger does not declare the kind and reads no mode."
+}

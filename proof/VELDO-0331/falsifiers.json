@@ -1,0 +1,157 @@
+[
+ {
+  "falsifier": "space331-one-mode-for-installation",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/act-beside-report"
+  ],
+  "red_rows": [
+   "ac1/act-beside-report",
+   "ac1/history",
+   "ac1/no-record-is-report",
+   "ac1/own-record-per-scope",
+   "ac1/owner-signs",
+   "ac2/admission-by-scope",
+   "ac2/adoption-by-scope",
+   "ac2/advised-counts-as-held",
+   "ac2/signal-by-scope",
+   "ac3/switch-back-accepted",
+   "ac3/then-due-and-nothing-removed",
+   "mode/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac1/act-beside-report",
+    "meadow's due folder is still on disk [removed, on disk: False]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-advised-not-held",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/advised-counts-as-held"
+  ],
+  "red_rows": [
+   "ac2/admission-by-scope",
+   "ac2/advised-counts-as-held"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac2/advised-counts-as-held",
+    "the act-mode run is not admitted into space the advised run was promised [admitted]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-switch-back-refused",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/switch-back-accepted"
+  ],
+  "red_rows": [
+   "ac1/history",
+   "ac1/own-record-per-scope",
+   "ac1/owner-signs",
+   "ac2/admission-by-scope",
+   "ac2/adoption-by-scope",
+   "ac2/advised-counts-as-held",
+   "ac2/signal-by-scope",
+   "ac3/switch-back-accepted",
+   "ac3/then-due-and-nothing-removed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac3/switch-back-accepted",
+    "the owner's report command is accepted at once [space_mode_locked]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-signal-reads-no-mode",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/signal-by-scope"
+  ],
+  "red_rows": [
+   "ac1/act-beside-report",
+   "ac2/signal-by-scope",
+   "ac3/then-due-and-nothing-removed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac2/signal-by-scope",
+    "the item of a report-mode project is left due and its folder stays [removed]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-admission-reads-no-mode",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/admission-by-scope"
+  ],
+  "red_rows": [
+   "ac2/admission-by-scope",
+   "ac2/advised-counts-as-held",
+   "ac3/then-due-and-nothing-removed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac2/admission-by-scope",
+    "the run of the report-mode project is advised [waiting {'pool': 'host', 'need': 15728640000, 'free': 31457280000, 'held': 0, 'floor': 20971520000}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-adopts-in-report",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/adoption-by-scope"
+  ],
+  "red_rows": [
+   "ac2/adoption-by-scope",
+   "ac3/then-due-and-nothing-removed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac2/adoption-by-scope",
+    "in the report-mode project it is a report and not an item with an owner [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-mode-signature-unchecked",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/owner-signs"
+  ],
+  "red_rows": [
+   "ac1/owner-signs",
+   "ac2/admission-by-scope",
+   "ac2/adoption-by-scope",
+   "ac2/advised-counts-as-held",
+   "ac2/signal-by-scope"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac1/owner-signs",
+    "the owner's name signed with an intruder's key is refused not_authorized with nothing written [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]
