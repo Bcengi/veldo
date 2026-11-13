@@ -971,19 +971,48 @@ def space_key_paths(installation):
     return paths
 
 
-def enroll_space_principals(paths, enroll):
-    """Enroll each host principal of the space ledger through `enroll`, the owner's signed
+def make_space_keys(paths):
+    """Make the key of each host principal of the space ledger that is not there yet (`paths` is what
+    space_key_paths answered), 0600 under a 0700 keys folder; a key that is there is kept. Returns the
+    key files made, each appended before its key is, so a caller can take back exactly what it made."""
+    made = []
+    try:
+        os.makedirs(os.path.dirname(paths[SPACE_PRINCIPALS[0]]), mode=0o700, exist_ok=True)
+        for name in SPACE_PRINCIPALS:
+            if not os.path.lexists(paths[name]):
+                made.append(paths[name])
+                subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-' + name,
+                                '-f', paths[name]], check=True, capture_output=True, timeout=30,
+                               stdin=subprocess.DEVNULL)
+                os.chmod(paths[name], 0o600)
+    except BaseException:
+        drop_space_keys(made)
+        raise
+    return made
+
+
+def drop_space_keys(made):
+    """Take back the key files make_space_keys made, each with its public half."""
+    for path in made:
+        for one in (path, path + '.pub'):
+            with contextlib.suppress(OSError):
+                os.unlink(one)
+
+
+def enroll_space_principals(paths, enroll, names=SPACE_PRINCIPALS):
+    """Enroll each host principal of the space ledger in `names` through `enroll`, the owner's signed
     enroll_principal (enroll(operation, parameters, enrollee=sign), as factory setup's own admin is
     called): a service of the one space scope with no role, its key's possession proven by the key's own
     co-signature. The membership organ judges the owner's signature and the policy; nothing here writes
     the store. Returns the principals enrolled."""
-    for name in SPACE_PRINCIPALS:
+    names = [name for name in SPACE_PRINCIPALS if name in names]
+    for name in names:
         key = paths[name]
         enroll('enroll_principal', {'principal': name, 'principal_type': 'service', 'roles': [],
                                     'public_key': Path(key + '.pub').read_text().strip(),
                                     'independence_group': name, 'scope': [SPACE_SCOPE]},
                enrollee=lambda data, key=key: SIG.sign_bytes(key, data, AC.SIGNATURE_NAMESPACE))
-    return list(SPACE_PRINCIPALS)
+    return names
 
 
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
@@ -1048,21 +1077,11 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         _write(unit_path, text, 0o644)
         created.append(unit_path)
         if space is not None:
-            os.makedirs(os.path.join(os.path.abspath(str(installation)), SPACE_KEYS), mode=0o700, exist_ok=True)
-            for name in SPACE_PRINCIPALS:
-                if not os.path.lexists(space[name]):
-                    space_generated.append(space[name])
-                    subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'veldo-' + name,
-                                    '-f', space[name]], check=True, capture_output=True, timeout=30,
-                                   stdin=subprocess.DEVNULL)
-                    os.chmod(space[name], 0o600)
+            space_generated.extend(make_space_keys(space))
             if enroll is not None:
                 space_enrolled = enroll_space_principals(space, enroll)
     except BaseException:
-        for path in space_generated:
-            for one in (path, path + '.pub'):
-                with contextlib.suppress(OSError):
-                    os.unlink(one)
+        drop_space_keys(space_generated)
         for path in reversed(created):
             with contextlib.suppress(OSError):
                 if os.path.isdir(path):

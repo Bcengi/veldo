@@ -6,6 +6,8 @@
    "ac1/hook-signs-as-observer"
   ],
   "red_rows": [
+   "ac1/factory-rerun-enrolls",
+   "ac1/factory-setup-enrolls",
    "ac1/hook-signs-as-observer",
    "ac1/install-without-owner",
    "ac1/signature-checked"
@@ -74,6 +76,61 @@
    [
     "VELDO-0326 ac4/abandon",
     "Abandon from space-runner is refused by name and the worktree stays present [None] due"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-setup-enroll-dropped",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/factory-setup-enrolls"
+  ],
+  "red_rows": [
+   "ac1/factory-setup-enrolls"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/factory-setup-enrolls",
+    "a command signed as space-observer on the factory setup laid down is accepted [not_authorized authority]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-setup-folder-not-passed",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/factory-setup-enrolls"
+  ],
+  "red_rows": [
+   "ac1/factory-rerun-enrolls",
+   "ac1/factory-setup-enrolls"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/factory-setup-enrolls",
+    "setup made both keys in the installation folder, 0600 []"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-rerun-enroll-dropped",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/factory-rerun-enrolls"
+  ],
+  "red_rows": [
+   "ac1/factory-rerun-enrolls"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/factory-rerun-enrolls",
+    "setup run again with the folder enrolls both [invalid_input:state_root:differs:<temp>/later-installation/keys/space-observer {}]"
    ]
   ],
   "noop_red_rows": [],

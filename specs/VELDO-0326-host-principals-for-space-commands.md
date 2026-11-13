@@ -18,6 +18,8 @@ footprint:
   - "bin/veldo"
   - "engine/.veldo/control_space.py"
   - ".veldo/control_space.py"
+  - "engine/.veldo/control_factory_setup.py"
+  - ".veldo/control_factory_setup.py"
   - "scripts/suites/*_veldo_0326_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -92,3 +94,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: footprint extended to control_factory_setup.py and its engine copy, by the lead's decision.
+  The installer made and enrolled the two keys only when it was handed the installation folder and the
+  owner's enrollment, and veldo factory setup handed it neither, so on a real factory neither principal
+  was ever enrolled and every space command was refused. Setup now takes the installation folder its
+  reader resolved, has the installer make both keys there, and enrolls both through the owner's signed
+  enroll_principal on its own connection; a re-run over a factory laid down before enrolls the ones the
+  store does not hold, only while the service is stopped. With no installation folder no key is made and
+  the answer names the step deferred. Acceptance criteria and falsifiers are unchanged; suite 133 gains
+  two rows that run factory setup on the fixture and sign a command as each principal. Known and left
+  for the lead: the setup suites that call the command surface resolve the installation folder from the
+  ambient environment, so on a host that has one they would make the two keys there.

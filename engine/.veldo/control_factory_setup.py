@@ -485,12 +485,15 @@ class _Step:
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
           tailscale=None, api_port=None, git_identities=None, workspace_identity=None, accounts_root=None,
-          memory=None, https_port=None):
+          memory=None, https_port=None, installation=None):
     """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
     system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port,
     `https_port` the tailnet HTTPS port Serve maps to it (VELDO-0234: 443, 8443 or 10000; 443 when not
-    given on a fresh host, the port it was laid down with on a re-run)."""
+    given on a fresh host, the port it was laid down with on a re-run). `installation` is the installation
+    folder (VELDO-0326): given it, the keys of space-observer and space-runner are made under keys/ there
+    and both are enrolled by the owner's signed enroll_principal; a re-run enrolls the ones the store does
+    not hold. Without it no key is made and the answer names the step deferred."""
     EL, API = organ('control_eligibility'), organ('control_factory_setup_api')
     # VELDO-0234: the option is judged before anything else, so a value Serve does not offer writes nothing.
     requested = _api(lambda: API.https_port_option(https_port))
@@ -501,9 +504,12 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     if state_root_problems(state_root) == ['invalid_input:state_root:holds_store']:
         return rerun(state_root, owner, owner_key, workspace, chat, token_file, runner=runner, clock=clock,
                      tailscale=tailscale, port=port, git_identities=git_identities,
-                     workspace_identity=workspace_identity, memory=memory, https_port=requested, **options)
+                     workspace_identity=workspace_identity, memory=memory, https_port=requested,
+                     installation=installation, **options)
     https_port = API.HTTPS_PORT if requested is None else requested
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
+    # VELDO-0326: the installation folder and the key files in it are judged before the first write.
+    space_paths(installation)
     identity_options(git_identities, workspace_identity)
     memory_plan = _memory(lambda: organ('control_factory_setup_memory').prepare(memory))
     if memory_plan is not None:
@@ -685,7 +691,14 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                                    install_root=plan['install_root'], unit_dir=plan['unit_dir'], profile=plan['profile'],
                                    writable=plan['writable'], runner=runner, channel_ingress=ingress,
                                    api_service=api_service, adapters=dispatch['adapters'] if dispatch else None,
+                                   installation=installation,
                                    work=work)
+        if installation is not None:
+            with step('space_principals'):
+                # VELDO-0326: the installer made the two keys; the owner enrolls both, here, on this run's
+                # own connection under its lock, so a hook's command is accepted on this factory.
+                space = installed['space_principals']['keys']
+                details['space_principals'] = enroll_space(space, list(space), admin, S, K, conn, projection)
         with step('record_configuration'):
             record_steps = organ('control_factory_setup_records').fresh(installed['config'], root, _differs)
         with step('engine_pins'):
@@ -732,6 +745,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'pins_made': organ('control_factory_setup_engines').count_pins(root, engines),
             'home': installed['home'], 'started': False, 'qualification_requester': REQUESTER,
             'adoption_signer': {'principal': ADOPTION_PRINCIPAL, 'key': os.path.join(keys, ADOPTION_KEY)},
+            'space_principals': space_report(installation, details.get('space_principals')),
             'steps': [name if isinstance(name, dict) else dict({'step': name, 'outcome': 'done'}, **details.get(name, {}))
                       for name in done]
             + [details[name] for name in ('account_login', 'dispatch') if name in details]
@@ -751,6 +765,48 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
 DEFERRED = {'step': 'dispatch', 'outcome': 'deferred',
             'next': 'register the accounts (veldo account add NAME --provider claude_code or codex), log in to each '
                     'once, then run setup again'}
+
+
+# VELDO-0326: what the answer holds when no installation folder was named, so no space key was made.
+SPACE_DEFERRED = {'outcome': 'deferred', 'installation': None,
+                  'next': 'make the installation folder where the installation line above looked for it, then run '
+                          'setup again: it makes the keys of space-observer and space-runner there and enrolls '
+                          'both'}
+
+
+def space_paths(installation):
+    """VELDO-0326: {principal: key file} of the space ledger's two host principals in the installation folder
+    `installation`, read only; None when no folder was named. A folder that is not there, or a key file in it
+    that is not this account's own private file, is refused by the installer's name for it."""
+    if installation is None:
+        return None
+    CS = organ('control_service')
+    try:
+        return CS.space_key_paths(installation)
+    except CS.Refused as error:
+        raise Refused(error.code, error.detail) from None
+
+
+def enroll_space(space, due, admin, S, K, conn, projection):
+    """VELDO-0326: the owner's signed enroll_principal of each host principal of the space ledger in `due`
+    (space-observer, space-runner), a service of the one space scope with no role, co-signed by its own key
+    from the installation folder (`space`, {principal: key file}), on this run's own connection under its
+    lock; the projection is republished. Returns the step's details."""
+    CS = organ('control_service')
+    enrolled = CS.enroll_space_principals(space, admin, due)
+    K.publish(S, conn, projection)
+    os.chmod(projection, 0o600)
+    return {'principals': enrolled, 'scope': CS.SPACE_SCOPE, 'keys': {name: space[name] for name in enrolled}}
+
+
+def space_report(installation, details):
+    """The answer's space_principals: deferred without an installation folder, else the folder and the
+    principals this run enrolled (none on a run that found both enrolled)."""
+    if installation is None:
+        return dict(SPACE_DEFERRED)
+    enrolled = (details or {}).get('principals') or []
+    return {'outcome': 'done' if enrolled else 'already_done', 'installation': os.path.abspath(str(installation)),
+            'enrolled': enrolled}
 
 
 def enroll_reservation(plan, admin, S, K, conn, projection):
@@ -924,8 +980,9 @@ def dispatch_rerun(plan, pending, ids, home, api, lock, running, outcomes, mark,
     return lock, configured
 
 
-def enroll_offline(plan, ids, clock):
-    """AC2 on a re-run: the two reservation enrollments on a writing connection of this run's own, under its lock."""
+def enroll_offline(plan, ids, clock, enroll=None):
+    """AC2 on a re-run: the two reservation enrollments on a writing connection of this run's own, under its lock.
+    Given `enroll` (VELDO-0326), that enrollment instead, called as enroll(admin, S, K, connection, projection)."""
     claims, K, IN = organ('control_claim'), organ('control_keys'), organ('control_channel_ingress')
     S, CM, AC, ACT = claims.S, claims.CM, claims.AC, organ('control_channel_activation')
     owner_sign = ACT.ssh_signer(plan['owner_key'])
@@ -947,7 +1004,10 @@ def enroll_offline(plan, ids, clock):
             cosigned = enrollee(AC.canonical_envelope_bytes(dict(env, principal=params['principal'])))
             return CM.admit(S, writer, env, command, owner_sign(AC.canonical_envelope_bytes(env)), ids, clock(),
                             enrollee_signature=cosigned, journal_signer=journal)
-        return enroll_reservation(plan, admin, S, K, writer, os.path.join(plan['root'], HOST_DIR, 'allowed_signers'))
+        projection = os.path.join(plan['root'], HOST_DIR, 'allowed_signers')
+        if enroll is not None:
+            return enroll(admin, S, K, writer, projection)
+        return enroll_reservation(plan, admin, S, K, writer, projection)
     finally:
         writer.close()
 
@@ -1198,7 +1258,7 @@ def scan_projects_reporting(plan):
 
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
           writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None,
-          accounts_root=None, memory=None, https_port=None):
+          accounts_root=None, memory=None, https_port=None, installation=None):
     """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
     the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
     before the first write: an earlier step is reported already done, a missing one is run, and an existing
@@ -1298,6 +1358,13 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                  os.path.join(keys, REQUESTER_KEY), os.path.join(root, EDGE_DIR, CONNECTION_KEY)):
         if not os.path.isfile(path):
             raise _differs(path)
+    # VELDO-0326: the host principals of the space ledger the store does not hold yet, read only. One the
+    # store holds keeps its key: a key file that is gone is refused by name and never made again.
+    space = space_paths(installation)
+    space_due = [name for name in (space or ()) if AC.membership_entry(state['membership'], name) is None]
+    for name in (space or ()):
+        if name not in space_due and not os.path.isfile(space[name]):
+            raise _differs(space[name])
     # The files the earlier steps wrote: equal ones are left alone, absent ones written, none overwritten.
     settlement_public = API.derived(os.path.join(keys, SETTLEMENT_KEY))
     # VELDO-0161: the adoption signer a factory laid down before it existed lacks is laid by the engine upgrade
@@ -1364,6 +1431,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         if blocked:
             raise Refused('invalid_input:state_root:service_running:' + blocked[0],
                           'the running service takes no command for this store write')
+        if running and space_due:
+            raise Refused('invalid_input:state_root:service_running:space_principals',
+                          'the running service takes no command for this store write')
         # The identity records are a direct store write, so they are written only while this run is the
         # store's one writer: never while the service runs, nor after an upgrade that restarts it.
         if identities_due and (running or engine['restart_due']):
@@ -1417,6 +1487,24 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 writer.close()
         if git_identities is not None:
             mark('git_identities', identities_due)
+        space_details = None
+        if space is not None:
+            # VELDO-0326: the keys that are not there are made and the principals the store lacks are
+            # enrolled by the owner, only while this run is the store's one writer.
+            if space_due:
+                if lock == -1:
+                    lock = take_lock(root)
+                    if lock is None:
+                        raise Refused('invalid_input:state_root:service_running:space_principals',
+                                      'the authority service started during this run')
+                made = CS.make_space_keys(space)
+                try:
+                    space_details = enroll_offline(plan, ids, clock, enroll=lambda admin, *store: enroll_space(
+                        space, space_due, admin, *store))
+                except BaseException:
+                    CS.drop_space_keys(made)
+                    raise
+            mark('space_principals', bool(space_due), **(space_details or {}))
         outcomes.append(dict(receiver_trust.apply(trust_step, API), installation=home))
         if edge == 'absent':
             API.generate_keys(api['key'], api['connection_key'])
@@ -1556,6 +1644,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             'workspace': workspace, 'ingress': os.path.join(host, 'ingress.json'), 'token_file': plan['token_file'],
             'unit': authority_unit, 'unit_path': os.path.join(unit_dir, authority_unit), 'home': home,
             'started': started, 'service_running': running, 'steps': outcomes,
+            'space_principals': space_report(installation, space_details),
             'pins_made': upgraded.get('pins_made', 0), 'engines': upgraded.get('engines', {}),
             'engines_record': upgraded.get('engines_record'),
             'api': api_report(name, port, api, through, plan['workspace'], https_port, transport), 'next': next_step or upgraded.get('next'),
@@ -1717,6 +1806,8 @@ def main(argv=None, **overrides):
             overrides['workspace_identity'] = args.workspace_identity
         if args.https_port is not None:
             overrides['https_port'] = args.https_port
+        # VELDO-0326: the installation folder the reader resolved is where the space keys are made.
+        overrides.setdefault('installation', installation.get('folder'))
         report = setup(args.state_root, args.owner, args.owner_key, args.workspace, args.chat, args.token_file,
                        memory=args.memory, **overrides)
     except Refused as exc:

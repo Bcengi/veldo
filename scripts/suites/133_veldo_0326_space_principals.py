@@ -20,7 +20,17 @@ leaves nothing; with no installation folder no key is made), ac1/hook-signs-as-o
 process signs with the owner's key unreadable, and the ledger holds the record with space-observer on its
 journal record), ac1/signature-checked (a changed command, another principal's name, the owner's key
 under a host principal's name, an unsigned packet and a packet sent twice), ac1/cli-route (veldo space
-sign routes to the same signer).
+sign routes to the same signer), ac1/factory-setup-enrolls (veldo factory setup, through its own command
+surface with the installation folder resolved from VELDO_INSTALLATION, makes both keys there and enrolls
+both by the owner's signed enroll_principal; a command each principal's own process then signs is accepted
+by the ledger on that factory's store), ac1/factory-rerun-enrolls (a factory laid down with no installation
+folder names the step deferred and refuses the command; setup run again with the folder enrolls both and
+the command is accepted; a third run changes nothing).
+
+The two factory rows run VELDO-0171's setup preamble (scripts/suites/85_veldo_0171_setup_api.py, reused as
+VELDO-0234 reuses it: its preamble and its cleanup, never its behavior rows) with this suite's production
+copies: the real setup module into scratch, that fixture's user manager stand-in, its loopback Bot API and
+the Tailscale stand-in. The host's worker profile is the same stand-in answer as above.
 
 AC2 rows: ac2/observer-may (declare and confirm for a worktree, a branch, an agent repository and a
 session's scratch; rebranch; event and the read behind covers pass the rule), ac2/observer-refused-by-name
@@ -42,6 +52,7 @@ principals/canon: each engine canon equals this repository copy.
 
 
 def _v326_space_principals_suite():
+    import ast
     import importlib.util
     import io
     import json
@@ -56,9 +67,12 @@ def _v326_space_principals_suite():
     # Literal anchors: the registered mutation driver substitutes the production copy here.
     PRODUCTION = {
         'control_space.py': ROOT / ".veldo" / "control_space.py",
+        'control_factory_setup.py': ROOT / ".veldo" / "control_factory_setup.py",
+        'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     ROWS = ('ac1/install-makes-keys', 'ac1/install-enrolls', 'ac1/install-without-owner',
-            'ac1/hook-signs-as-observer', 'ac1/signature-checked', 'ac1/cli-route', 'ac2/observer-may',
+            'ac1/hook-signs-as-observer', 'ac1/signature-checked', 'ac1/cli-route',
+            'ac1/factory-setup-enrolls', 'ac1/factory-rerun-enrolls', 'ac2/observer-may',
             'ac2/observer-refused-by-name', 'ac2/observer-signal', 'ac3/runner-own-run',
             'ac3/runner-other-run-signal', 'ac3/runner-other-run-commands', 'ac4/owner-actions-refused',
             'ac4/abandon', 'principals/canon')
@@ -688,9 +702,223 @@ def _v326_space_principals_suite():
         check('ac4/abandon', 'the authority\'s own worktree abandoned marks it due',
               answer.get('ok') is True and state_of(worktree.get('item')) == 'due')
 
+        # AC1 on a factory: veldo factory setup makes the two keys and the owner enrolls both
+        FS, FR = 'ac1/factory-setup-enrolls', 'ac1/factory-rerun-enrolls'
+
+        def fixture(exercise):
+            """Run VELDO-0171's setup preamble with this suite's production copies, then `exercise`, then
+            its cleanup."""
+            source = (ROOT / 'scripts/suites/85_veldo_0171_setup_api.py').read_text()
+            prefix = source[:source.index('    try:\n        takes =')]
+            function = next(n for n in ast.parse(prefix).body if isinstance(n, ast.FunctionDef))
+            assignment = next(n for n in function.body if isinstance(n, ast.Assign)
+                              and any(isinstance(t, ast.Name) and t.id == 'PRODUCTION' for t in n.targets))
+            lines = prefix.splitlines(keepends=True)
+            lines[assignment.lineno - 1:assignment.end_lineno] = ['    PRODUCTION = __production__\n']
+            cleanup = source[source.index('    finally:\n        close_runtime()'):
+                             source.index('    if profiler is not None:')]
+            body = '    try:\n        __exercise__(dict(locals(), ROOT=ROOT))\n' + cleanup
+            ns = dict(ROOT=ROOT, __production__=PRODUCTION, __exercise__=exercise)
+            exec(compile(''.join(lines) + body + '\n_v171_suite()\n', __file__, 'exec'), ns)
+
+        def factory(h):
+            F, base, mods = h['F'], h['base'], h['mods']
+            FSP = load('v326_factory_space', mods / 'control_space.py')
+            FS_, FCM, FIN = h['S'], h['CM'], h['IN']
+            FCM.attach(FS_)
+            # The host's worker profile is not what these rows prove: its qualification is a stand-in
+            # answer on the installer every setup run loads.
+            real_organ = F.organ
+
+            def organ(name):
+                module = real_organ(name)
+                if name == 'control_service':
+                    module.C.qualify = lambda profile, environment=None: {'qualified': True, 'refusal': None}
+                return module
+            F.organ = organ
+
+            def host(suffix):
+                root, workspace = h['fresh_root']('state-' + suffix), h['clone']('clone-' + suffix)
+                units = base / ('units-' + suffix)
+                manager = h['Manager'](units)
+                h['managers'].append(manager)
+                return (root, workspace, base / ('trust-' + suffix) / 'host.json', base / ('install-' + suffix),
+                        units, manager)
+
+            def run(args, installation):
+                """veldo factory setup with the installation folder its reader resolves: (code, answer)."""
+                saved = os.environ.get('VELDO_INSTALLATION')
+                os.environ['VELDO_INSTALLATION'] = str(installation)
+                try:
+                    with __import__('contextlib').redirect_stderr(io.StringIO()):
+                        return h['setup'](*args)
+                finally:
+                    if saved is None:
+                        os.environ.pop('VELDO_INSTALLATION', None)
+                    else:
+                        os.environ['VELDO_INSTALLATION'] = saved
+
+            def steps_of(report):
+                return {s.get('step'): s.get('outcome') for s in report.get('steps') or [] if isinstance(s, dict)}
+
+            def signs(principal, installation, name):
+                """One declare signed by the principal's own process, which finds the installation folder
+                as a hook does (VELDO_INSTALLATION) and holds no path to the owner's key."""
+                parameters = {'kind': 'worktree', 'locator': place(WORKTREES, name), 'owner': project_owner(),
+                              'creator': 'hook', 'start': 'c0ffee', 'branch': 'agent/' + name}
+                done = subprocess.run(
+                    [sys.executable, '-B', str(mods / 'control_space.py'), 'sign', '--as', principal],
+                    input=json.dumps({'operation': 'space_declare', 'parameters': parameters}).encode(),
+                    capture_output=True, timeout=60,
+                    env={'PATH': os.environ.get('PATH', ''), 'HOME': str(temp / 'home'),
+                         'VELDO_INSTALLATION': str(installation)})
+                try:
+                    return json.loads(done.stdout.decode()) if done.returncode == 0 else None
+                except ValueError:
+                    return None
+
+            def sent(report, installation, tag):
+                """{principal: (the ledger's answer, the journal record's principal)} for one command each
+                principal signs, accepted or refused by the ledger on this factory's own store."""
+                state_root = Path(report['state_root'])
+                store = FS_.open_store(report['store'])
+                try:
+                    signer = FIN.journal_signer({'principal': F.JOURNAL_PRINCIPAL,
+                                                 'key': str(state_root / F.KEYS_DIR / F.JOURNAL_KEY)})
+                    ledger = FSP.Ledger(FS_, store, signer[0], signer[1], config=CONFIG, projects=[PROJECT],
+                                        state_root=str(temp / ('factory-state-' + tag)), lifecycle=LIFECYCLE,
+                                        host='fixture-host', device=lambda path: 'dev-host')
+                    ledger.set_pool('host', 'filesystem', device='dev-host')
+                    answers = {}
+                    for principal in FSP.HOST_PRINCIPALS:
+                        packet = signs(principal, installation, '%s-%s' % (tag, principal))
+                        answer = (ledger.accept(packet, FCM, __import__('time').time()) if packet
+                                  else {'ok': False, 'reason': 'the principal signed nothing'})
+                        last = store.execute('SELECT principal FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
+                        answers[principal] = (answer, last[0] if last else None)
+                    return answers
+                finally:
+                    store.close()
+
+            def members(report):
+                store = FS_.open_store(report['store'], mode='r')
+                try:
+                    state = FCM.authority_state(FS_, store)
+                    return {name: (h['AC'].membership_entry(state['membership'], name),
+                                   h['AC'].active_key(state['keyring'], name, __import__('time').time()))
+                            for name in FSP.HOST_PRINCIPALS}
+                finally:
+                    store.close()
+
+            def enrolled_with(report, installation):
+                found = members(report)
+                return all(entry is not None and entry.get('principal_type') == 'service' and entry.get('roles') == []
+                           and entry.get('scope') == ['space'] and key is not None
+                           and key['public_key'].split()[1]
+                           == Path(installation, 'keys', name + '.pub').read_text().split()[1]
+                           for name, (entry, key) in found.items())
+
+            def accepted(answers):
+                return all(answer.get('ok') is True and signed_as == principal
+                           for principal, (answer, signed_as) in answers.items())
+
+            # ---- a fresh factory, set up with the installation folder -----------------------------------
+            first = temp / 'factory-installation'
+            first.mkdir(mode=0o700)
+            shutil.copyfile(str(folder / 'installation.yaml'), str(first / 'installation.yaml'))
+            args = host('space')
+            code, report = run(args, first)
+            if code != 0:
+                check(FS, 'factory setup with the installation folder completed [%s]'
+                      % {k: report.get(k) for k in ('outcome', 'reason', 'detail', 'unparsed')}, False)
+            else:
+                space = report.get('space_principals') or {}
+                check(FS, 'setup made both keys in the installation folder, 0600 %s' % tree(first / 'keys'),
+                      all((first / 'keys' / name).is_file()
+                          and stat.S_IMODE((first / 'keys' / name).stat().st_mode) == 0o600
+                          and (first / 'keys' / (name + '.pub')).is_file() for name in FSP.HOST_PRINCIPALS))
+                answers = sent(report, first, 'fresh')
+                for principal, (answer, signed_as) in answers.items():
+                    check(FS, 'a command signed as %s on the factory setup laid down is accepted [%s %s]'
+                          % (principal, answer.get('reason'), signed_as),
+                          answer.get('ok') is True and signed_as == principal)
+                check(FS, 'the answer names the step done and both principals enrolled %s' % space,
+                      steps_of(report).get('space_principals') == 'done' and space.get('outcome') == 'done'
+                      and space.get('enrolled') == list(FSP.HOST_PRINCIPALS)
+                      and space.get('installation') == str(first))
+                check(FS, 'the factory\'s store holds both as service members of the space scope, each with '
+                          'the key setup made', enrolled_with(report, first))
+                store = FS_.open_store(report['store'], mode='r')
+                try:
+                    signers = [row[0] for row in store.execute(
+                        "SELECT principal FROM journal WHERE command_id LIKE 'setup-enroll_principal-%' "
+                        'ORDER BY seq')]
+                finally:
+                    store.close()
+                check(FS, 'every enrollment setup sent is the owner\'s signed command %s' % signers,
+                      len(signers) >= 3 and set(signers) == {h['owner']})
+
+            # ---- a factory laid down with no installation folder, then run again with one ---------------
+            none = temp / 'no-installation'
+            later = temp / 'later-installation'
+            args = host('later')
+            code, bare = run(args, none)
+            if code != 0:
+                check(FR, 'factory setup with no installation folder completed [%s]'
+                      % {k: bare.get(k) for k in ('outcome', 'reason', 'detail', 'unparsed')}, False)
+                return
+            check(FR, 'with no installation folder the answer names the step deferred and no step ran %s'
+                  % (bare.get('space_principals'),),
+                  (bare.get('space_principals') or {}).get('outcome') == 'deferred'
+                  and 'space_principals' not in steps_of(bare) and not none.exists())
+            check(FR, 'and the store holds neither principal',
+                  all(entry is None for entry, _key in members(bare).values()))
+            later.mkdir(mode=0o700)
+            before = FS_.open_store(bare['store'], mode='r')
+            try:
+                length = before.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+            finally:
+                before.close()
+            answers = sent(bare, later, 'unenrolled')
+            check(FR, 'a command signed as either principal is refused before the owner enrolls them %s'
+                  % {p: a.get('reason') for p, (a, _s) in answers.items()},
+                  all(answer is not None and answer.get('ok') is False for answer, _s in answers.values()))
+            code, again = run(args, later)
+            space = again.get('space_principals') or {}
+            check(FR, 'setup run again with the folder enrolls both [%s %s]' % (again.get('reason'), space),
+                  code == 0 and again.get('outcome') == 'set_up'
+                  and steps_of(again).get('space_principals') == 'done'
+                  and space.get('enrolled') == list(FSP.HOST_PRINCIPALS))
+            if code == 0 and steps_of(again).get('space_principals') == 'done':
+                check(FR, 'the store holds both with the keys the re-run made', enrolled_with(again, later))
+                answers = sent(again, later, 'rerun')
+                for principal, (answer, signed_as) in answers.items():
+                    check(FR, 'a command signed as %s after the re-run is accepted [%s %s]'
+                          % (principal, answer.get('reason'), signed_as),
+                          answer.get('ok') is True and signed_as == principal)
+                kept = {name: (later / 'keys' / name).read_bytes() for name in FSP.HOST_PRINCIPALS}
+                code, third = run(args, later)
+                space = third.get('space_principals') or {}
+                check(FR, 'a third run enrolls nothing and keeps the keys [%s %s]' % (third.get('reason'), space),
+                      code == 0 and steps_of(third).get('space_principals') == 'already_done'
+                      and space.get('enrolled') == []
+                      and {name: (later / 'keys' / name).read_bytes() for name in FSP.HOST_PRINCIPALS} == kept)
+                gone = temp / 'gone-installation'
+                code, refused_run = run(args, gone)
+                check(FR, 'a re-run naming no folder leaves both enrolled and names the step deferred [%s]'
+                      % refused_run.get('reason'),
+                      code == 0 and (refused_run.get('space_principals') or {}).get('outcome') == 'deferred'
+                      and enrolled_with(refused_run, later))
+
+        fixture(factory)
+        for row in (FS, FR):
+            if not rows[row]:
+                check(row, 'the factory fixture reached this row', False)
+
         # the canon
         for copy, canon in (('.veldo/control_space.py', 'engine/.veldo/control_space.py'),
                             ('.veldo/control_service.py', 'engine/.veldo/control_service.py'),
+                            ('.veldo/control_factory_setup.py', 'engine/.veldo/control_factory_setup.py'),
                             ('bin/veldo', 'engine/bin/veldo')):
             check('principals/canon', 'the engine canon %s equals this repository copy' % canon,
                   (ROOT / canon).is_file() and (ROOT / canon).read_bytes() == (ROOT / copy).read_bytes())

@@ -12445,6 +12445,20 @@ def cases():
         "            return\n        parameters = ",
         ['ac4/abandon'])
     result[-1]['siblings'] = True
+    # AC1 on a factory: veldo factory setup makes the two keys and the owner enrolls both. The enrollment
+    # step dropped, the installation folder never handed to setup, and a re-run that finds nothing due.
+    add(326, 'space326-setup-enroll-dropped', space326, 'control_factory_setup.py',
+        "        if installation is not None:\n            with step('space_principals'):\n",
+        "        if False:\n            with step('space_principals'):\n",
+        ['ac1/factory-setup-enrolls'])
+    add(326, 'space326-setup-folder-not-passed', space326, 'control_factory_setup.py',
+        "        overrides.setdefault('installation', installation.get('folder'))\n",
+        "        overrides.setdefault('installation', None)\n",
+        ['ac1/factory-setup-enrolls'])
+    add(326, 'space326-rerun-enroll-dropped', space326, 'control_factory_setup.py',
+        "    space_due = [name for name in (space or ()) if AC.membership_entry(state['membership'], name) is None]\n",
+        "    space_due = []\n",
+        ['ac1/factory-rerun-enrolls'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
