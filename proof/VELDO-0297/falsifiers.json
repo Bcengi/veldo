@@ -1,0 +1,93 @@
+[
+ {
+  "falsifier": "space297-outcome-on-present",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/outcome-needs-signal"
+  ],
+  "red_rows": [
+   "ac1/outcome-needs-signal",
+   "ac1/outcome-only-from-due-or-removing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac1/outcome-needs-signal",
+    "outcome removed for a present item, with no signal, is refused [accepted]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-kinds-undeclared",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/generic-refused"
+  ],
+  "red_rows": [
+   "ac1/declare-to-removed",
+   "ac2/every-connection",
+   "ac2/foreign-code",
+   "ac2/generic-refused",
+   "ac3/free-after-end",
+   "ac3/outside-roots",
+   "ac3/pool-by-device",
+   "ac3/protect-list",
+   "ac3/refusals-counted",
+   "ac3/second-live-item",
+   "ac3/trailing-separator",
+   "ac4/rebuilt-pools-holds",
+   "ac4/rebuilt-same",
+   "ac4/rebuilt-size",
+   "ledger/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac2/generic-refused",
+    "the generic entity command writing an item is refused entity_owned [written]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-locator-raw-text",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/trailing-separator"
+  ],
+  "red_rows": [
+   "ac3/outside-roots",
+   "ac3/refusals-counted",
+   "ac3/trailing-separator"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac3/trailing-separator",
+    "a second declare through the path with a trailing separator is refused [accepted as space:item:95dfd5e75b324d50ab3a04de17c8eb41]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space297-size-side-table",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/rebuilt-size"
+  ],
+  "red_rows": [
+   "ac1/declare-to-removed",
+   "ac4/rebuilt-same",
+   "ac4/rebuilt-size"
+  ],
+  "red_details": [
+   [
+    "VELDO-0297 ac4/rebuilt-size",
+    "the rebuilt store's item has the size that was measured [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

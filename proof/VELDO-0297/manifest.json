@@ -1,0 +1,131 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0297",
+ "commit": "4dcbf64604f130bb339557380c97fc187e862d23",
+ "tree": "48bb37dfbeab7c9f61bd37c1e8982bfd189d3cf7",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-13T19:30:28.593623+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "Against a real control store (SQLite) in a temporary folder, with the installation and the project read from fixture files on disk. Rows ac1/declare-to-removed (declare, confirm, measure, signal, outcome removing, outcome removed, state by state, with pool and ends_on filled in), ac1/signal (owner and event decide what becomes due; an unknown event and an empty subject refused), ac1/deferred-and-kept, ac1/adopt-report-rebranch, ac1/one-journal-record (declare and confirm are one signed journal record each, holding the item's kind, owner, locator and state). Green: proof/VELDO-0297/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "Rows ac1/confirm-only-from-declared (confirm against an item in each of the eight states: accepted from declared, refused space_item_state:<state> with nothing written from the other seven), ac1/outcome-only-from-due-or-removing (removed, deferred and kept against each of the eight states), ac1/moves-table (confirm, outcome removing, gone and signal against each of the eight states: the move of 4.1 or a refusal by the state's name, journal length unchanged) and ac1/outcome-needs-signal."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0297/falsifiers.json",
+     "detail": "Falsifier space297-outcome-on-present (outcome accepted for a present item): ac1/outcome-needs-signal red, the row that sends outcome removed without a signal sees it accepted (ac1/outcome-only-from-due-or-removing red with it); noop copy green. proof/VELDO-0297/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "Rows ac2/generic-refused (the store's upsert_entity refused entity_owned for an item, an item under another id, another kind at an item id, a pool, a hold and a reconcile record; for rewriting a real item's state; retire_entity on an item refused; a kind nobody owns still written), ac2/every-connection (a second connection to the same store file, with no ledger attached, refuses the same writes)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "ac2/foreign-code: the ledger's command name registered on another connection from other code is refused foreign_transition and the item is unchanged. ac2/generic-refused also reads the declaration back: the four kinds and four id prefixes belong to space_ledger."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0297/falsifiers.json",
+     "detail": "Falsifier space297-kinds-undeclared (the declare_owners call made a no-op): ac2/generic-refused red, the generic command writes an item. The forged records then break later reads, so further rows are red with it (listed in falsifiers.json); noop green."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "Rows ac3/second-live-item (same path, another kind at the path, while declared and while present; a Docker object by engine and name), ac3/outside-roots (eight locators outside, among them a root itself, a sibling whose name begins like a root, a path that climbs out with .., a branch of an undeclared repository, an engine the installation does not name; seven controls inside each kind of root), ac3/protect-list (at, beneath and above a protected path; a volume pattern on both engine contexts; container, network and image patterns; a compose project; the project file's own addition; adopt and report refused too), ac3/free-after-end, ac3/pool-by-device. The roots and the protect list come from installation.yaml and .veldo/space.yaml on disk through the declarations reader."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "ac3/trailing-separator: a second declare through the same path written with a trailing separator, a doubled separator and a dot segment is refused space_locator_taken:<the first item>. ac3/refusals-counted: refused declares counted by reason, items by kind and state."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0297/falsifiers.json",
+     "detail": "Falsifier space297-locator-raw-text (canonical_path returns the text as written): ac3/trailing-separator red, the second declare through the trailing separator is accepted as a new item (ac3/outside-roots and ac3/refusals-counted red with it); noop green."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "Row ac4/rebuilt-same: the journal exported from the live store and replayed by control_replay gives the same space_item, space_pool, space_hold and space_reconcile records as the live store, items in all eight states among them, and the same state digest; the store file has no table beyond the store's own. Row ac4/rebuilt-pools-holds: the rebuilt holds (admitted with its retry mark, released with what it used), pool and reconcile record field by field."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/132_veldo_0297_space_ledger.py",
+     "detail": "ac4/rebuilt-size: an item measured at 123456789 bytes has that size and its event in the rebuilt state."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0297/falsifiers.json",
+     "detail": "Falsifier space297-size-side-table (measure writes the size into a table outside the journal): ac4/rebuilt-size red, the rebuilt item's size is None (ac4/rebuilt-same and ac1/declare-to-removed red with it); noop green."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 132_veldo_0297_space_ledger (23 rows)"
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 132_veldo_0297_space_ledger: the rows run the ledger on a real control store file and read a fixture installation.yaml and .veldo/space.yaml from disk"
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 .veldo/validate.py spec and ready on the spec; suite 130_veldo_0296_space_section still green"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build instruction ran single suites and fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the four registered teeth cases (finding 297) were run here through the driver's own materialize() and worker(), not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "Commands built here are the ones 6.1 gives the Ledger that no later ticket names for it: declare, confirm, measure, signal, outcome, adopt, report, gone, rebranch, hold, admit, release, and one writer each for the pool and reconcile records. Not built: event and consumed (0323), reject and mode (0331, 0332), confirm group (0320), the freed mark (0334), the review group record (0340).",
+  "outcome accepts a fourth value, removing, from due only. The table of 6.1 lists removed, deferred and kept, but 4.1 has the state removing between due and removed and says the decision to remove is recorded before the remover runs, so some command must write it. removed, deferred and kept are accepted from due and from removing, as the table says.",
+  "A locator is compared in a lexical canonical form (os.path.normpath). Links are not resolved at declare: whether a path now resolves elsewhere is the ledger rule read at removal (section 7, VELDO-0330).",
+  "The lifecycle table is given to the Ledger as plain data (version, events, events per kind) because the kind registry is VELDO-0298. signal marks items due by owner and event and returns them ordered by identity; removal order (children first) and the per-owner rows of section 5 are 0298. An unknown event is one the given table does not list.",
+  "Who may sign which command is VELDO-0326. Every command here names its principal and is journaled and signed by the store as every other command; no principal is refused yet.",
+  "admit records the answer it is given (admitted, advised or waiting with the reason as numbers); the judgement is Admission, VELDO-0316. A hold is judged only from waiting.",
+  "A report is an item record with no owner and the report field, in state present with no ending events (4.8 says an undone adoption loses its owner and becomes a report). adopt at a reported locator gives that record its owner.",
+  "rebranch records the branch item in state present, because the branch exists when the hook reports it; a declared item is never signalled.",
+  "A Docker object is located by engine context and name; its id and compose project are carried when the caller knows them. The protect list is matched here by name pattern and by compose project name; protection by mount, by image of a protected container and by network needs Docker facts and is VELDO-0306 and 0341. A Docker item on an engine with no image pool counts against the pool its caller names.",
+  "The state root is passed to the Ledger by its caller: the space section does not name it. Nothing attaches the Ledger to the service yet; the seams and the service are later tickets.",
+  "One refusal beyond the three the spec names: space_no_pool, when no recorded pool has the device a path is on, because declare must fill in the pool.",
+  "docs are not changed: documents for space management are VELDO-0322."
+ ],
+ "rollback": "Revert the change. The records already written stay in the journal and nothing reads them. Nothing on disk outside the store is touched."
+}
