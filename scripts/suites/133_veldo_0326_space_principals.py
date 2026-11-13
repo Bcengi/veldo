@@ -89,7 +89,8 @@ def _v326_space_principals_suite():
     }
     ROWS = ('ac1/install-makes-keys', 'ac1/install-enrolls', 'ac1/install-without-owner',
             'ac1/hook-signs-as-observer', 'ac1/signature-checked', 'ac1/cli-route',
-            'ac1/packet-expired', 'ac1/packet-replayed', 'ac1/packet-retry',
+            'ac1/packet-expired', 'ac1/packet-replayed', 'ac1/packet-retry', 'ac1/packet-resent',
+            'ac1/revoked-key-final',
             'ac1/enroll-both-or-neither', 'ac1/cleanup-keeps-held-key', 'ac1/keys-folder-checked',
             'ac1/factory-setup-enrolls', 'ac1/factory-rerun-enrolls', 'ac1/setup-never-ambient',
             'ac1/rerun-stop-service-remedy', 'ac1/factory-rerun-repairs', 'ac2/observer-may',
@@ -265,6 +266,12 @@ def _v326_space_principals_suite():
         def journal_length():
             return conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
 
+        def revoked_in(connection):
+            """The host principals whose membership the store holds revoked, as the installer asks."""
+            state = CM.authority_state(S, connection)
+            return [name for name in SP.HOST_PRINCIPALS
+                    if (AC.membership_entry(state['membership'], name) or {}).get('revoked_at') is not None]
+
         def member(principal):
             state = CM.authority_state(S, conn)
             return (AC.membership_entry(state['membership'], principal),
@@ -276,7 +283,7 @@ def _v326_space_principals_suite():
               and SP.SCOPE == CS.SPACE_SCOPE and SP.KEYS_FOLDER == CS.SPACE_KEYS
               and SP.NAMESPACE == AC.SIGNATURE_NAMESPACE)
         before = journal_length()
-        report, refusal = install('one', installation=str(folder), enroll=admin)
+        report, refusal = install('one', installation=str(folder), enroll=admin, revoked=lambda: revoked_in(conn))
         space = (report or {}).get('space_principals') or {}
         check('ac1/install-makes-keys', 'the installation is laid down [%s]' % refusal, report is not None)
         made = {name: folder / 'keys' / name for name in SP.HOST_PRINCIPALS}
@@ -456,7 +463,8 @@ def _v326_space_principals_suite():
             raise CS.Refused('missing_authority:owner', 'the owner did not sign')
         fresh = temp / 'installation-fresh'
         fresh.mkdir()
-        report, refusal = install('seven', installation=str(fresh), enroll=failing, enrolled=lambda: [])
+        report, refusal = install('seven', installation=str(fresh), enroll=failing, enrolled=lambda: [],
+                                  revoked=lambda: [])
         check('ac1/install-without-owner', 'an installation whose enrollment is refused leaves no key behind [%s] %s'
               % (refusal, tree(fresh)), report is None and refusal == 'missing_authority:owner'
               and tree(fresh) == ['keys'] and tree(temp / 'seven' / 'install') == [])
@@ -604,6 +612,83 @@ def _v326_space_principals_suite():
                                  (packet['command']['nonce'],)).fetchone() or ())
               == (packet['command']['command_id'],))
 
+        # A sender that lost the reply through an outage longer than the bound sends its packet again: the
+        # same nonce and content, signed again at the time it is sent (re-review finding B).
+        PR = 'ac1/packet-resent'
+        OUTAGE = T + 2 * SP.PACKET_AGE
+
+        def again_at(packet, at, **changed):
+            """The packet signed again under its own nonce and command id at `at`."""
+            c = dict(packet['command'], **changed)
+            return SP.signed(c['principal'], c['operation'], c['parameters'], str(folder), S.canonical_bytes, at,
+                             c['command_id'], c['nonce'])
+        where = place(WORKTREES, 'spooled')
+        packet = signed_at('space-observer', SP.DECLARE, dict(declare, locator=where), T)
+        first = L.accept(packet, CM, T)
+        before = journal_length()
+        resent = again_at(packet, OUTAGE)
+        answer = L.accept(resent, CM, OUTAGE)
+        check(PR, 'the resend is the same packet signed at another time: same nonce, command id and content',
+              resent['command']['nonce'] == packet['command']['nonce']
+              and resent['command']['issued_at'] != packet['command']['issued_at']
+              and SP.packet_content(resent['command']) == SP.packet_content(packet['command'])
+              and resent['signature'] != packet['signature'])
+        check(PR, 'an accepted declare sent again after an outage gets its first answer, replayed, and writes '
+              'nothing [%s] %s' % (answer.get('reason'), sorted(answer)),
+              first.get('ok') is True and answer.get('replayed') is True and answered(answer) == answered(first)
+              and journal_length() == before and at_locator(where) == [first.get('item')])
+        check(PR, 'the resend is neither a command content conflict nor a replay, and it is logged as accepted',
+              answer.get('reason') not in ('command_content_conflict', 'space_packet_replayed')
+              and L.observations[-1]['outcome'] == 'accepted'
+              and L.observations[-1]['principal'] == 'space-observer')
+        answer = L.accept(packet, CM, OUTAGE)
+        check(PR, 'the first answer is given inside the expiry window only: the old bytes are expired [%s]'
+              % answer.get('reason'), answer.get('reason') == 'space_packet_expired' and journal_length() == before)
+        spooled = L.issue(MINE, 'run-spooled')['run']
+        for label, operation, parameters in (
+                ('hold', SP.HOLD, dict(needs(), hold=spooled)),
+                ('admit', SP.ADMIT, {'hold': spooled, 'answer': 'admitted'}),
+                ('signal with nothing to mark', SP.SIGNAL, {'event': 'run_finished', 'subject': {'run': spooled}}),
+                ('release', SP.RELEASE, {'hold': spooled, 'used': {'host': 1}})):
+            packet = signed_at(MINE, operation, parameters, T)
+            first = L.accept(packet, CM, T)
+            before = journal_length()
+            answer = L.accept(again_at(packet, OUTAGE), CM, OUTAGE)
+            check(PR, 'an accepted %s sent again after an outage gets its first answer [%s %s]'
+                  % (label, first.get('reason'), answer.get('reason')),
+                  first.get('ok') is True and answer.get('replayed') is True
+                  and answered(answer) == answered(first) and journal_length() == before)
+        answer = L.accept(again_at(packet, OUTAGE, parameters={'hold': spooled, 'used': {'host': 2}}), CM, OUTAGE)
+        check(PR, 'other content under the nonce of an accepted packet is refused as a replay [%s]'
+              % answer.get('reason'), answer.get('reason') == 'space_packet_replayed' and journal_length() == before)
+        answer = L.accept(again_at(packet, OUTAGE, command_id='resent-other-id'), CM, OUTAGE)
+        check(PR, 'and so is another command id under it [%s]' % answer.get('reason'),
+              answer.get('reason') == 'space_packet_replayed' and journal_length() == before)
+        never = L.issue(MINE, 'run-never-held')['run']
+        packet = signed_at(MINE, SP.ADMIT, {'hold': never, 'answer': 'admitted'}, T)
+        first = L.accept(packet, CM, T)
+        L.place_hold(never, **needs())
+        answer = L.accept(again_at(packet, OUTAGE), CM, OUTAGE)
+        check(PR, 'a refused packet signed again under its nonce stays refused and the hold is as it was [%s %s] %s'
+              % (first.get('reason'), answer.get('reason'), (L.hold(never) or {}).get('state')),
+              first.get('reason') == 'space_no_hold' and answer.get('reason') == 'space_packet_replayed'
+              and (L.hold(never) or {}).get('state') == 'waiting')
+        done = subprocess.run(
+            [sys.executable, '-B', str(beside), 'sign', '--as', 'space-observer', '--installation', str(folder)],
+            input=json.dumps({'operation': SP.DECLARE, 'parameters': dict(declare, locator=where),
+                              'command_id': resent['command']['command_id'],
+                              'nonce': resent['command']['nonce']}).encode(),
+            capture_output=True, timeout=60, env={'PATH': os.environ.get('PATH', ''), 'HOME': str(temp / 'home')})
+        by_cli = json.loads(done.stdout.decode()) if done.returncode == 0 else {}
+        check(PR, 'veldo space sign signs a packet again under the nonce and command id it is given',
+              SP.packet_content(by_cli.get('command') or {}) == SP.packet_content(resent['command']))
+        try:
+            SP.signed('space-observer', SP.DECLARE, declare, str(folder), S.canonical_bytes, T, None, 'two words')
+            outcome = 'signed'
+        except SP.Refused as error:
+            outcome = error.code
+        check(PR, 'the signer takes no nonce that is not one word [%s]' % outcome, outcome == 'invalid_input:nonce')
+
         # Setup enrolls both principals or neither, and never deletes a key the store holds (finding 3).
         BN, CK, KF = 'ac1/enroll-both-or-neither', 'ac1/cleanup-keeps-held-key', 'ac1/keys-folder-checked'
         second_path = temp / 'authority-2' / 'control.sqlite3'
@@ -638,6 +723,7 @@ def _v326_space_principals_suite():
         half = temp / 'installation-half'
         half.mkdir()
         report, refusal = install('eight', installation=str(half), enrolled=recorded,
+                                  revoked=lambda: revoked_in(second),
                                   enroll=breaking(('enroll_principal', 'space-runner')))
         entries = entries_of()
         check(BN, 'an installation whose second enrollment fails is refused and leaves neither enrolled [%s] %s'
@@ -662,15 +748,44 @@ def _v326_space_principals_suite():
         check(CK, 'the key of the principal the store has a record of is kept, the other is taken back %s'
               % tree(half), tree(half) == ['keys', 'keys/space-observer', 'keys/space-observer.pub']
               and tree(temp / 'eight' / 'install') == [])
-        kept_key = (half / 'keys' / 'space-observer').read_bytes()
+        RF = 'ac1/revoked-key-final'
+        # The key of the enrollment that was taken back, as whoever copied it before the revocation has it.
+        leaked = temp / 'installation-leaked'
+        shutil.copytree(str(half), str(leaked))
+        revoked_key = (half / 'keys' / 'space-observer').read_bytes()
+        report, refusal = install('nine-unasked', installation=str(half), enrolled=recorded,
+                                  enroll=breaking(('enroll_principal', 'space-runner')))
+        check(RF, 'the installer enrolls nobody when it is not told which memberships are revoked [%s] %s'
+              % (refusal, active()), report is None
+              and refusal == 'invalid_input:space_enrollment:revoked_unknown' and active() == []
+              and tree(temp / 'nine-unasked') == []
+              and (half / 'keys' / 'space-observer').read_bytes() == revoked_key)
         report, refusal = install('nine', installation=str(half), enrolled=recorded,
+                                  revoked=lambda: revoked_in(second),
                                   enroll=breaking(('enroll_principal', 'space-runner'),
                                                   ('revoke_membership', 'space-observer')))
-        check(CK, 'when the revocation cannot be sent either, the principal that stays enrolled keeps its key '
-              '[%s] %s %s' % (refusal, active(), tree(half)),
+
+        def enrolled_key(name):
+            key = AC.active_key(CM.authority_state(S, second)['keyring'], name, time.time() + 1)
+            return key['public_key'].split()[1] if key else None
+
+        def folder_key(root, name):
+            path = Path(root) / 'keys' / (name + '.pub')
+            return path.read_text().split()[1] if path.is_file() else None
+        kept_key = (half / 'keys' / 'space-observer').read_bytes()
+        check(CK, 'when the revocation cannot be sent either, the principal that stays enrolled keeps the key '
+              'it is enrolled with [%s] %s %s' % (refusal, active(), tree(half)),
               report is None and active() == ['space-observer']
               and tree(half) == ['keys', 'keys/space-observer', 'keys/space-observer.pub']
-              and (half / 'keys' / 'space-observer').read_bytes() == kept_key)
+              and enrolled_key('space-observer') == folder_key(half, 'space-observer'))
+        check(RF, 'the installer enrolls a revoked principal again with a new key, never the revoked one',
+              active() == ['space-observer'] and kept_key != revoked_key
+              and enrolled_key('space-observer') not in (None, folder_key(leaked, 'space-observer')))
+        old_packet = SP.signed('space-observer', SP.DECLARE, dict(declare, locator=place(WORKTREES, 'leaked')),
+                               str(leaked), S.canonical_bytes, real)
+        answer = L2.accept(old_packet, CM, real + 1)
+        check(RF, 'a command signed with the revoked key stays refused after the principal is enrolled again [%s]'
+              % answer.get('reason'), answer.get('reason') == 'not_authorized')
         made_now = CS.make_space_keys(CS.space_key_paths(str(half)))
         CS.enroll_space_principals(CS.space_key_paths(str(half)), breaking(), names=['space-runner'])
         check(BN, 'the half state is repaired by enrolling the one the store lacks: both are enrolled %s' % active(),
@@ -683,7 +798,7 @@ def _v326_space_principals_suite():
               all(a.get('ok') is True for a in answers))
         unknown = temp / 'installation-unknown'
         unknown.mkdir()
-        report, refusal = install('ten', installation=str(unknown),
+        report, refusal = install('ten', installation=str(unknown), revoked=lambda: [],
                                   enroll=breaking(('enroll_principal', 'space-observer')))
         check(CK, 'with nobody to ask what the store holds, a key whose enrollment was sent is never taken back '
               '[%s] %s' % (refusal, tree(unknown)),
@@ -1148,7 +1263,7 @@ def _v326_space_principals_suite():
                 except ValueError:
                     return None
 
-            def sent(report, installation, tag):
+            def sent(report, installation, tag, principals=None):
                 """{principal: (the ledger's answer, the journal record's principal)} for one command each
                 principal signs, accepted or refused by the ledger on this factory's own store."""
                 state_root = Path(report['state_root'])
@@ -1161,13 +1276,42 @@ def _v326_space_principals_suite():
                                         host='fixture-host', device=lambda path: 'dev-host')
                     ledger.set_pool('host', 'filesystem', device='dev-host')
                     answers = {}
-                    for principal in FSP.HOST_PRINCIPALS:
+                    for principal in principals or FSP.HOST_PRINCIPALS:
                         packet = signs(principal, installation, '%s-%s' % (tag, principal))
                         answer = (ledger.accept(packet, FCM, __import__('time').time()) if packet
                                   else {'ok': False, 'reason': 'the principal signed nothing'})
                         last = store.execute('SELECT principal FROM journal ORDER BY seq DESC LIMIT 1').fetchone()
                         answers[principal] = (answer, last[0] if last else None)
                     return answers
+                finally:
+                    store.close()
+
+            def owner_revokes(report, principal):
+                """The owner's signed revoke_membership of one principal on this factory's store, sent as
+                setup's own admin sends an owner command. Returns the membership organ's refusal, or None."""
+                ids = {k: report['authority_ids'][k] for k in ('domain_uuid', 'repository_uuid', 'store_uuid')}
+                state_root = Path(report['state_root'])
+                store = FS_.open_store(report['store'])
+                try:
+                    command = {'command_id': 'v326-owner-revokes-' + principal, 'operation': 'revoke_membership',
+                               'target': 'authority', 'artifact_digests': [], 'expected_versions': {},
+                               'parameters': {'principal': principal, 'revoked_at': __import__('time').time()}}
+                    now = FCM.authority_state(FS_, store)
+                    env = dict(ids, schema=h['AC'].ENVELOPE_SCHEMA, command_id=command['command_id'],
+                               principal=h['owner'], request_revision=1, nonce='nonce-' + command['command_id'],
+                               expires_at=__import__('time').time() + 600,
+                               membership_version=now['membership_version'],
+                               delegation_version=now['delegation_version'],
+                               command_digest=h['AC'].canonical_command_digest(command))
+                    FCM.admit(FS_, store, env, command,
+                              h['sign_with'](h['owner_key'], h['AC'].canonical_envelope_bytes(env)), ids,
+                              __import__('time').time(),
+                              journal_signer=FIN.journal_signer({
+                                  'principal': F.JOURNAL_PRINCIPAL,
+                                  'key': str(state_root / F.KEYS_DIR / F.JOURNAL_KEY)}))
+                    return None
+                except Exception as error:
+                    return '%s: %s' % (type(error).__name__, error)
                 finally:
                     store.close()
 
@@ -1338,6 +1482,44 @@ def _v326_space_principals_suite():
                     check(RR, 'and a command each signs is accepted %s'
                           % {p: a.get('reason') for p, (a, _s) in answers.items()}, accepted(answers))
 
+                    # REVOCATION IS FINAL (re-review finding A). The owner revokes space-observer, say
+                    # because its key leaked; whoever copied the key still has it. Setup runs again.
+                    stolen = temp / 'stolen-installation'
+                    shutil.copytree(str(later), str(stolen))
+                    before_keys = {name: (later / 'keys' / name).read_bytes() for name in FSP.HOST_PRINCIPALS}
+                    problem = owner_revokes(bare, 'space-observer')
+                    check(RF, 'the owner revokes space-observer by a signed owner command [%s] %s'
+                          % (problem, active_in(healed)), problem is None and active_in(healed) == ['space-runner'])
+                    answers = sent(healed, stolen, 'revoked', ['space-observer'])
+                    check(RF, 'a command signed with the revoked key is refused %s'
+                          % {p: a.get('reason') for p, (a, _s) in answers.items()},
+                          answers['space-observer'][0].get('reason') == 'not_authorized')
+                    code, renewed = run(args, later)
+                    space = renewed.get('space_principals') or {}
+                    check(RF, 'setup run again enrolls the revoked principal and says it has a new key [%s %s]'
+                          % (renewed.get('reason'), space),
+                          code == 0 and space.get('enrolled') == ['space-observer']
+                          and space.get('rekeyed') == ['space-observer'] and space.get('repaired') == []
+                          and active_in(healed) == list(FSP.HOST_PRINCIPALS))
+                    check(RF, 'the key it is enrolled with is a new one; the other principal keeps its own',
+                          code == 0 and (later / 'keys' / 'space-observer').is_file()
+                          and (later / 'keys' / 'space-observer').read_bytes() != before_keys['space-observer']
+                          and (later / 'keys' / 'space-runner').read_bytes() == before_keys['space-runner']
+                          and (stolen / 'keys' / 'space-observer').read_bytes() == before_keys['space-observer']
+                          and enrolled_with(renewed, later))
+                    answers = sent(healed, stolen, 'stolen', ['space-observer'])
+                    check(RF, 'after the re-run a command signed with the revoked key stays refused %s'
+                          % {p: a.get('reason') for p, (a, _s) in answers.items()},
+                          answers['space-observer'][0].get('reason') == 'not_authorized')
+                    answers = sent(healed, later, 'renewed')
+                    check(RF, 'and a command each signs with the keys in the folder is accepted %s'
+                          % {p: a.get('reason') for p, (a, _s) in answers.items()}, accepted(answers))
+                    code, quiet = run(args, later)
+                    space = quiet.get('space_principals') or {}
+                    check(RF, 'the run after that enrolls nothing and makes no key [%s %s]' % (quiet.get('reason'), space),
+                          code == 0 and space.get('enrolled') == [] and space.get('rekeyed') == []
+                          and enrolled_with(quiet, later))
+
             # ---- an enrollment that fails half way, on a third factory ----------------------------------
             half_folder = temp / 'half-installation'
             half_folder.mkdir(mode=0o700)
@@ -1367,11 +1549,16 @@ def _v326_space_principals_suite():
                 code, broken = run(args, half_folder)
             finally:
                 fail['mode'] = None
+            held_public = (members(laid)['space-observer'][1] or {}).get('public_key', ' ').split()[1]
             check(RR, 'when the revocation fails too, the half state keeps the key the store holds [%s] %s %s'
                   % (code, active_in(laid), tree(half_folder)),
                   code != 0 and active_in(laid) == ['space-observer']
                   and tree(half_folder) == ['keys', 'keys/space-observer', 'keys/space-observer.pub']
-                  and (half_folder / 'keys' / 'space-observer').read_bytes() == first_key)
+                  and (half_folder / 'keys' / 'space-observer.pub').read_text().split()[1] == held_public)
+            check(RF, 'an enrollment an earlier run took back is revoked for good too: the principal is enrolled '
+                  'again with a new key', first_key is not None
+                  and (half_folder / 'keys' / 'space-observer').read_bytes() != first_key)
+            first_key = (half_folder / 'keys' / 'space-observer').read_bytes()
             code, mended = run(args, half_folder)
             space = mended.get('space_principals') or {}
             check(RR, 'the next run repairs the half state: it enrolls the one the store lacks [%s %s]'
@@ -1386,7 +1573,7 @@ def _v326_space_principals_suite():
                       % {p: a.get('reason') for p, (a, _s) in answers.items()}, accepted(answers))
 
         fixture(factory)
-        for row in (FS, FR, NA, SR, RR):
+        for row in (FS, FR, NA, SR, RR, RF):
             if not rows[row]:
                 check(row, 'the factory fixture reached this row', False)
 

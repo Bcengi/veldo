@@ -1016,6 +1016,21 @@ def make_space_keys(paths):
     return made
 
 
+def renew_space_keys(paths, names):
+    """REVOCATION IS FINAL. Remove the key files of the host principals in `names`, each with its public
+    half, so make_space_keys makes each a new key: the principals whose membership the store holds
+    revoked, whoever revoked it and why. A revoked key is never enrolled again. Returns the principals
+    whose key was removed."""
+    renewed = []
+    for name in SPACE_PRINCIPALS:
+        if name in names:
+            for one in (paths[name], paths[name] + '.pub'):
+                if os.path.lexists(one):
+                    os.unlink(one)
+            renewed.append(name)
+    return renewed
+
+
 def drop_space_keys(made, held=()):
     """Take back the key files make_space_keys made, each with its public half. `held` names the
     principals the store has a record of: a key the store holds is never deleted, whoever made it."""
@@ -1064,7 +1079,7 @@ def enroll_space_principals(paths, enroll, names=SPACE_PRINCIPALS, clock=time.ti
 def install(workspaces, *, host_trust=None, key_directory=None, install_root=None, unit_dir=None,
             profile=None, adapters=None, writable=None, principal='authority',
             receiver_principal='launch-receiver', runner=None, python=None, channel_ingress=None, api_service=None,
-            work=None, state_root=None, installation=None, enroll=None, enrolled=None):
+            work=None, state_root=None, installation=None, enroll=None, enrolled=None, revoked=None):
     """Lay down one authority instance for the enrolled `workspaces` of one domain. Starts nothing.
     Every check runs before anything is written; a refusal raises Refused and leaves nothing behind.
     Returns what it laid down.
@@ -1075,12 +1090,18 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
     made and nothing is enrolled, so a command signed with them is refused until the owner enrolls them;
     the answer names both as due. `enrolled()` answers the principals the store has a record of: when the
     installation fails, a key this run made is taken back only when the store has no record of its
-    principal. Without `enrolled`, a key made by a run that sent an enrollment is never taken back."""
+    principal. Without `enrolled`, a key made by a run that sent an enrollment is never taken back.
+    `revoked()` answers the principals whose membership the store holds revoked: revocation is final, so
+    each gets a new key before anything is enrolled and its old key is never enrolled again
+    (renew_space_keys). An enrollment needs it: `enroll` without `revoked` is refused."""
     runner = runner or Systemctl()
     space = space_key_paths(installation) if installation is not None else None
     if enroll is not None and space is None:
         raise Refused('invalid_input:installation:absent', 'no installation folder was named',
                       'name the installation folder the space keys are kept in')
+    if enroll is not None and revoked is None:
+        raise Refused('invalid_input:space_enrollment:revoked_unknown', 'nobody answers which memberships the '
+                      'store holds revoked', 'pass revoked: a revoked key is never enrolled again')
     laid = layout(workspaces, host_trust=host_trust, key_directory=key_directory, install_root=install_root,
                   unit_dir=unit_dir, profile=profile, adapters=adapters, writable=writable, principal=principal,
                   receiver_principal=receiver_principal, python=python, channel_ingress=channel_ingress,
@@ -1126,6 +1147,8 @@ def install(workspaces, *, host_trust=None, key_directory=None, install_root=Non
         _write(unit_path, text, 0o644)
         created.append(unit_path)
         if space is not None:
+            if enroll is not None:
+                renew_space_keys(space, tuple(revoked()))
             space_generated.extend(make_space_keys(space))
             if enroll is not None:
                 space_sent = True

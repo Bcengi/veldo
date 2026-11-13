@@ -178,9 +178,14 @@ record space:packet:<principal>:<nonce>, whatever became of it: an accepted comm
 transaction (and the store's nonces table consumes the packet's nonce), a refused one and an accepted one
 that wrote nothing are recorded by the Ledger's own command. A nonce that has a record is refused as
 space_packet_replayed, so a packet that was refused is never accepted later, whatever changed since.
-The one exception is the honest retry: the same signed command, sent again after it was accepted, is
-answered with the original answer and replayed true, and writes nothing. The record is kept, so the nonce
-is refused for good, not only inside the bound; the bound is what stops a packet nobody delivered in time.
+The one exception is the honest resend: the same packet, sent again after it was accepted, is answered
+with the original answer and replayed true, and writes nothing. The same packet is the same nonce and the
+same content (principal, operation, parameters and command id); the time it was signed at is not part of
+that, so a sender that kept a packet through an outage signs it again under its nonce and learns what
+became of it. The resend is bounded like every packet: bytes older than the bound are
+space_packet_expired, whatever the record says. The record is kept, so the nonce is refused for good to
+every other command, not only inside the bound; the bound is what stops a packet nobody delivered in
+time.
 
 Standard library only. The store is the control_store module the caller passes in, and accept is given the
 control_membership module the same way.
@@ -547,6 +552,12 @@ def hold_id(identity):
 def run_id(identity):
     """The identity of the record of an issued run or gate."""
     return RUN_PREFIX + identity
+
+
+def packet_content(command):
+    """What makes a packet the same packet when it is sent again: its command without the time it was
+    signed at. The nonce, the principal, the operation, the parameters and the command id are all in it."""
+    return {key: value for key, value in command.items() if key != 'issued_at'}
 
 
 def packet_id(principal, nonce):
@@ -1222,8 +1233,9 @@ class Ledger:
 
         The command carries issued_at and nonce. One issued more than PACKET_AGE seconds before `now`
         is space_packet_expired, one more than PACKET_SKEW ahead of it space_packet_ahead. A nonce this
-        store has a record of is space_packet_replayed, except the same command sent again after it was
-        accepted: that is answered with the original answer, replayed true, and writes nothing."""
+        store has a record of is space_packet_replayed, except the same packet sent again after it was
+        accepted: the same nonce and the same content (packet_content), signed at any time inside the
+        bound. That is answered with the original answer, replayed true, and writes nothing."""
         command = packet.get('command') if isinstance(packet, dict) else None
         signature = packet.get('signature') if isinstance(packet, dict) else None
         command = command if isinstance(command, dict) else {}
@@ -1259,17 +1271,19 @@ class Ledger:
         except Refused as refusal:
             return self._refuse(operation if _is_str(operation) else None, refusal, {'item': None},
                                 principal if _is_str(principal) else None)
-        digest = self.store.digest_of(command)
+        digest, content = self.store.digest_of(command), self.store.digest_of(packet_content(command))
         seen = self.packet(principal, nonce)
         if seen is not None:
-            if seen['digest'] == digest and seen['outcome'] == 'accepted':
-                # The honest retry of a packet that was accepted: the original answer, nothing written.
+            if seen['outcome'] == 'accepted' and (seen['digest'] == digest or seen.get('content') == content):
+                # The resend of a packet that was accepted, the same bytes or signed again under its
+                # nonce: the original answer, nothing written.
                 return self._observed(dict(self._original(seen, command), replayed=True),
                                       {'item': None, 'schema': SCHEMA, 'operation': operation,
                                        'command_id': command['command_id'], 'principal': principal})
             return self._refuse(operation, Refused('space_packet_replayed', 'this nonce was seen: sign a new packet'),
                                 {'item': None}, principal)
-        pending = {'principal': principal, 'nonce': nonce, 'digest': digest, 'command_id': command['command_id'],
+        pending = {'principal': principal, 'nonce': nonce, 'digest': digest, 'content': content,
+                   'command_id': command['command_id'],
                    'operation': operation, 'issued_at': issued_at, 'seen': now}
         self._packet = pending
         try:
@@ -1757,21 +1771,25 @@ def key_path(principal, folder):
     return os.path.join(folder, KEYS_FOLDER, principal)
 
 
-def signed(principal, operation, parameters, folder, canonical, issued_at, command_id=None):
+def signed(principal, operation, parameters, folder, canonical, issued_at, command_id=None, nonce=None):
     """The packet {command, signature} for one command, signed with the host principal's own key from
     the installation folder `folder`. `canonical` gives the bytes a command is signed over (the store's
     canonical_bytes); `issued_at` is the time the caller read, which the Ledger bounds the packet's age
-    by. Each packet has a nonce of its own. Refused by name when the principal is not a host principal
-    or its key does not sign; the owner's key is never read."""
+    by. Each packet has a nonce of its own. A sender that sends a packet again after its age bound
+    signs it again with the packet's own `nonce` and `command_id`: the Ledger answers that with the
+    original answer. Refused by name when the principal is not a host principal or its key does not
+    sign; the owner's key is never read."""
     if principal not in HOST_PRINCIPALS:
         raise Refused('not_authorized', 'not a host principal of the space ledger')
     if not _is_str(operation) or not isinstance(parameters, dict):
         raise _invalid('command', 'an operation and a mapping of parameters')
     if not _is_time(issued_at):
         raise _invalid('issued_at', 'the time the packet is signed at')
+    if nonce is not None and (not _is_str(nonce) or any(c.isspace() for c in nonce)):
+        raise _invalid('nonce', 'the nonce of the packet that is sent again')
     key = key_path(principal, folder)
     command = {'principal': principal, 'operation': operation, 'parameters': parameters,
-               'command_id': command_id or 'space:' + uuid.uuid4().hex, 'nonce': uuid.uuid4().hex,
+               'command_id': command_id or 'space:' + uuid.uuid4().hex, 'nonce': nonce or uuid.uuid4().hex,
                'issued_at': issued_at}
     try:
         done = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', key, '-n', NAMESPACE], input=canonical(command),
@@ -1798,7 +1816,8 @@ def main(argv=None, stdin=None, stdout=None, stderr=None):
     """veldo space sign --as <host principal> [--installation <folder>]: read one command
     {operation, parameters} on standard input and print the packet signed as that host principal, stamped
     with the time it is signed at. The Ledger refuses it once it is older than PACKET_AGE seconds, so it
-    is sent at once. The installation folder is the one the installation reader resolves. Exit 1 with the
+    is sent at once. A command that carries the command_id and nonce of a packet signed before is that
+    packet signed again: the Ledger answers it with the original answer. The installation folder is the one the installation reader resolves. Exit 1 with the
     refusal's name when there is no installation, no key, or the principal is not a host principal."""
     import argparse
     import time
@@ -1823,7 +1842,8 @@ def main(argv=None, stdin=None, stdout=None, stderr=None):
         if not isinstance(command, dict):
             raise _invalid('command', 'one JSON command on standard input')
         packet = signed(args.principal, command.get('operation'), command.get('parameters'), folder,
-                        _sibling('control_store').canonical_bytes, time.time(), command.get('command_id'))
+                        _sibling('control_store').canonical_bytes, time.time(), command.get('command_id'),
+                        command.get('nonce'))
     except Refused as refusal:
         stderr.write('veldo space: refused %s\n' % refusal.code)
         return 1

@@ -800,11 +800,12 @@ def space_enrollments_due(space, membership, AC):
     """VELDO-0326, read only: (due, stranded) for the host principals of the space ledger whose key files
     are `space` ({principal: key file}; None when no installation folder was named), against the store's
     `membership`. Due is every principal this run enrolls: one the store has no record of, one whose
-    membership was revoked (an earlier run that could not enroll both took its enrollment back), and one
-    the store holds whose key file is gone. Stranded is that last kind: an earlier run deleted the key of
-    a principal the store had enrolled, so nothing can sign as it. Its membership is revoked by the
-    owner's signed command, a new key is made, and it is enrolled again; the old key verifies nothing
-    from then on."""
+    membership was revoked (by the owner, or by an earlier run that could not enroll both and took its
+    enrollment back), and one the store holds whose key file is gone. Stranded is that last kind: an
+    earlier run deleted the key of a principal the store had enrolled, so nothing can sign as it. Its
+    membership is revoked by the owner's signed command, a new key is made, and it is enrolled again;
+    the old key verifies nothing from then on. A revoked principal is enrolled with a new key too
+    (enroll_space): revocation is final."""
     due, stranded = [], []
     for name in (space or ()):
         entry = AC.membership_entry(membership, name)
@@ -824,15 +825,20 @@ def enroll_space(space, due, admin, S, K, conn, projection, stranded=(), clock=t
 
     Both or neither (control_service.enroll_space_principals). A principal in `stranded` is revoked first,
     and a key that is not there is made. When the step fails, a key this run made is taken back only when
-    the store has no record of its principal: a key the store holds is never deleted."""
+    the store has no record of its principal: a key the store holds is never deleted.
+
+    REVOCATION IS FINAL. A principal in `due` whose membership this store holds revoked, read here from
+    the store itself, is never enrolled with the key it had: its key files are removed and a new key is
+    made, so the revoked key verifies nothing again, whoever revoked it and why. The details name it
+    under `rekeyed`."""
     CS, CM = organ('control_service'), organ('control_claim').CM
     for name in stranded:
         admin('revoke_membership', {'principal': name, 'revoked_at': clock()})
-    for name in stranded:
-        # The half of a stranded key that is still there goes with it: the new key is made whole.
-        for one in (space[name], space[name] + '.pub'):
-            if os.path.lexists(one):
-                os.unlink(one)
+    membership = CM.authority_state(S, conn)['membership']
+    revoked = [name for name in due
+               if (CM.AC.membership_entry(membership, name) or {}).get('revoked_at') is not None]
+    # A stranded principal is revoked by now, so the half of its key that is still there goes too.
+    rekeyed = [name for name in CS.renew_space_keys(space, revoked) if name not in stranded]
     made = CS.make_space_keys(space)
     try:
         enrolled = CS.enroll_space_principals(space, admin, due, clock=clock)
@@ -843,17 +849,20 @@ def enroll_space(space, due, admin, S, K, conn, projection, stranded=(), clock=t
         CS.drop_space_keys(made, held)
         raise
     return {'principals': enrolled, 'scope': CS.SPACE_SCOPE, 'keys': {name: space[name] for name in enrolled},
-            'repaired': list(stranded)}
+            'repaired': list(stranded), 'rekeyed': rekeyed}
 
 
 def space_report(installation, details):
     """The answer's space_principals: deferred without an installation folder, else the folder and the
-    principals this run enrolled (none on a run that found both enrolled)."""
+    principals this run enrolled (none on a run that found both enrolled). Of those, `repaired` names the
+    ones whose key file was gone and `rekeyed` the ones whose membership was revoked: each was enrolled
+    with a new key, and the key it had is refused for good."""
     if installation is None:
         return dict(SPACE_DEFERRED)
     enrolled = (details or {}).get('principals') or []
     return {'outcome': 'done' if enrolled else 'already_done', 'installation': os.path.abspath(str(installation)),
-            'enrolled': enrolled}
+            'enrolled': enrolled, 'repaired': list((details or {}).get('repaired') or []),
+            'rekeyed': list((details or {}).get('rekeyed') or [])}
 
 
 def enroll_reservation(plan, admin, S, K, conn, projection):

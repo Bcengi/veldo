@@ -16,8 +16,10 @@
    "ac1/install-without-owner",
    "ac1/keys-folder-checked",
    "ac1/packet-replayed",
+   "ac1/packet-resent",
    "ac1/packet-retry",
    "ac1/rerun-stop-service-remedy",
+   "ac1/revoked-key-final",
    "ac1/setup-never-ambient",
    "ac1/signature-checked",
    "ac2/observer-may",
@@ -130,7 +132,9 @@
    "ac1/factory-rerun-enrolls",
    "ac1/factory-rerun-repairs",
    "ac1/factory-setup-enrolls",
-   "ac1/rerun-stop-service-remedy"
+   "ac1/install-makes-keys",
+   "ac1/rerun-stop-service-remedy",
+   "principals/canon"
   ],
   "red_details": [
    [
@@ -150,12 +154,14 @@
   "red_rows": [
    "ac1/factory-rerun-enrolls",
    "ac1/factory-rerun-repairs",
-   "ac1/rerun-stop-service-remedy"
+   "ac1/install-makes-keys",
+   "ac1/rerun-stop-service-remedy",
+   "principals/canon"
   ],
   "red_details": [
    [
     "VELDO-0326 ac1/factory-rerun-enrolls",
-    "setup run again with the folder enrolls both [None {'enrolled': [], 'installation': '/tmp/v326-okg0zfkb/later-installation', 'outcome': 'already_done'}]"
+    "setup run again with the folder enrolls both [None {'enrolled': [], 'installation': '/tmp/v326-cx9dd8sw/later-installation', 'outcome': 'already_done', 'rekeyed': [], 'repaired': []}]"
    ]
   ],
   "noop_red_rows": [],
@@ -190,7 +196,8 @@
    "ac1/packet-expired"
   ],
   "red_rows": [
-   "ac1/packet-expired"
+   "ac1/packet-expired",
+   "ac1/packet-resent"
   ],
   "red_details": [
    [
@@ -209,6 +216,7 @@
   ],
   "red_rows": [
    "ac1/packet-replayed",
+   "ac1/packet-resent",
    "ac1/packet-retry"
   ],
   "red_details": [
@@ -227,6 +235,7 @@
    "ac1/packet-retry"
   ],
   "red_rows": [
+   "ac1/packet-resent",
    "ac1/packet-retry",
    "ac1/signature-checked"
   ],
@@ -234,6 +243,42 @@
    [
     "VELDO-0326 ac1/packet-retry",
     "an accepted declare sent again gets the original answer, replayed, and writes nothing [space_packet_replayed] ['detail', 'ok', 'reason']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-resend-not-answered",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac1/packet-resent"
+  ],
+  "red_rows": [
+   "ac1/packet-resent"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/packet-resent",
+    "an accepted declare sent again after an outage gets its first answer, replayed, and writes nothing [space_packet_replayed] ['detail', 'ok', 'reason']"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space326-revoked-key-reenrolled",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac1/revoked-key-final"
+  ],
+  "red_rows": [
+   "ac1/revoked-key-final"
+  ],
+  "red_details": [
+   [
+    "VELDO-0326 ac1/revoked-key-final",
+    "setup run again enrolls the revoked principal and says it has a new key [None {'enrolled': ['space-observer'], 'installation': '/tmp/v326-0_duytw6/later-installation', 'outcome': 'done', 'rekeyed': [], 'repaired': []}]"
    ]
   ],
   "noop_red_rows": [],
@@ -253,6 +298,7 @@
    "ac1/install-makes-keys",
    "ac1/keys-folder-checked",
    "ac1/rerun-stop-service-remedy",
+   "ac1/revoked-key-final",
    "ac1/setup-never-ambient",
    "ac2/observer-may",
    "ac2/observer-refused-by-name",
@@ -290,6 +336,7 @@
    "ac1/install-makes-keys",
    "ac1/keys-folder-checked",
    "ac1/rerun-stop-service-remedy",
+   "ac1/revoked-key-final",
    "ac1/setup-never-ambient",
    "ac2/observer-may",
    "ac2/observer-refused-by-name",
@@ -319,12 +366,14 @@
    "ac1/factory-rerun-repairs"
   ],
   "red_rows": [
-   "ac1/factory-rerun-repairs"
+   "ac1/factory-rerun-repairs",
+   "ac1/install-makes-keys",
+   "principals/canon"
   ],
   "red_details": [
    [
     "VELDO-0326 ac1/factory-rerun-repairs",
-    "a re-run over a store that holds a principal whose key is gone repairs it [None {'enrolled': [], 'installation': '/tmp/v326-rg_e25ct/later-installation', 'outcome': 'already_done'}] None"
+    "a re-run over a store that holds a principal whose key is gone repairs it [None {'enrolled': [], 'installation': '/tmp/v326-46a3tzjf/later-installation', 'outcome': 'already_done', 'rekeyed': [], 'repaired': []}] None"
    ]
   ],
   "noop_red_rows": [],

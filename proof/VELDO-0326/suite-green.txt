@@ -1,4 +1,4 @@
   selector    --suite 133_veldo_0326_space_principals
   running     1 of 204 suites: 133_veldo_0326_space_principals
-  133_veldo_0326_space_principals                 28 passed   23.26s
-selftest (PARTIAL, 1 of 204 suites): 54 passed, 0 failed in 23.26s
+  133_veldo_0326_space_principals                 30 passed   23.19s
+selftest (PARTIAL, 1 of 204 suites): 56 passed, 0 failed in 23.19s

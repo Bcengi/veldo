@@ -74,16 +74,21 @@ acceptance_criteria:
       than 300 seconds (five minutes) before its own clock, and one more than 60 seconds ahead of it; it
       keeps a record of every nonce it has seen and refuses a nonce it has a record of, so a refused
       packet is never accepted later; the same packet sent again after it was accepted is answered with
-      the original answer and writes nothing, never command_content_conflict
+      the original answer and writes nothing, never command_content_conflict. The same packet is the same
+      nonce and content (principal, operation, parameters, command id): the same bytes, or the packet
+      signed again under its nonce, and either is answered only inside the expiry window
     falsified_by: >
       Drop the age test; the row that delivers a packet 30 days after it was signed finds the hold
       admitted and fails. Keep no record of a refused packet; the row that sends it again after the hold
       was placed finds it admitted and fails. Answer no retry from the record; the row that sends an
-      accepted packet twice is refused and fails
+      accepted packet twice is refused and fails. Answer a resend only when its bytes are the same; the
+      row that signs an accepted packet again under its nonce after an outage is refused and fails
   - id: AC6
     text: >
       Factory setup enrolls both host principals or leaves neither enrolled; its cleanup never deletes a
-      key the store has a record of; the next run repairs a half state an earlier run left; a keys folder
+      key the store has a record of; the next run repairs a half state an earlier run left; revocation is
+      final, so a run that enrolls a principal whose membership is revoked makes and enrolls a new key
+      and never enrolls the revoked one again; a keys folder
       that is already there must be a real folder of this account that nobody else can enter; setup driven
       in-process never writes the installation folder the environment names; and the refusal of a re-run
       while the service runs names the steps that fix it
@@ -91,7 +96,9 @@ acceptance_criteria:
       Leave the first enrollment when the second fails; the row finds space-observer enrolled alone and
       fails. Delete every key the failed run made; the row finds the key of the principal the store holds
       gone and fails. Enroll only what the store has no record of; the row that runs setup after a half
-      state finds one principal still missing and fails
+      state finds one principal still missing and fails. Enroll a revoked principal with the key it had;
+      the row that revokes space-observer, runs setup again and signs with the revoked key finds the
+      command accepted and fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. The two keys stay in the installation folder, and commands signed with them are
@@ -163,3 +170,26 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   driven in-process (every suite) it makes keys only in a folder it is told, never the one the
   environment names, which closes the item left for the lead above. The service_running refusal names
   the three steps. Footprint unchanged.
+- 2026-11-13: amended from the re-review (verdict FIX; take-over and replay closed), by the lead's two
+  decisions. AC5 and AC6 are extended, each with a falsifier; nothing is removed.
+  (A) Revocation is final (AC6). A setup re-run enrolled a revoked principal with the key file it found,
+  so a key the owner revoked because it leaked verified again. Now every principal a run enrolls whose
+  membership the store holds revoked, whoever revoked it and why, gets a new key first: its key files
+  are removed and made again, and the answer names it under rekeyed (and a principal whose key file was
+  gone under repaired; both are in the answer's space_principals now, not only in the step). The
+  installer does the same and refuses an enrollment when nobody tells it which memberships are revoked.
+  This also covers the enrollment an earlier half-done run took back: the next run enrolls that
+  principal with a new key. Row ac1/revoked-key-final. Not changed here, and outside this footprint: the
+  membership organ itself still accepts an enroll_principal that names a revoked key, so the rule is
+  kept by setup and the installer, the only code that enrolls these two principals.
+  (B) A resent packet gets its first answer (AC5). The same packet is the same nonce and content; the
+  time it was signed at is not part of that. The record of a packet keeps the digest of that content, so
+  a packet signed again under its nonce after it was accepted is answered with the original answer and
+  writes nothing. The resend is bounded like every packet: bytes older than five minutes stay
+  space_packet_expired, and other content or another command id under the nonce stays
+  space_packet_replayed, as does a resend of a packet that was refused. The signer and veldo space sign
+  take the nonce and command id of the packet to sign again. Row ac1/packet-resent. Consequence for
+  VELDO-0313, replacing the one above: the spool keeps each packet's nonce and command id, and when it
+  replays after more than five minutes it signs the same command again under them; a new nonce for a
+  command that already landed is still refused (command_content_conflict or space_locator_taken),
+  because the Ledger cannot tell it from a second command.

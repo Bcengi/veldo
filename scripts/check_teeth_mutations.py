@@ -12485,10 +12485,21 @@ def cases():
         ['ac1/packet-replayed'])
     result[-1]['siblings'] = True
     add(326, 'space326-retry-not-answered', space326, 'control_space.py',
-        "            if seen['digest'] == digest and seen['outcome'] == 'accepted':\n",
+        "            if seen['outcome'] == 'accepted' and (seen['digest'] == digest or seen.get('content') == content):\n",
         "            if False:\n",
         ['ac1/packet-retry'])
     result[-1]['siblings'] = True
+    # Re-review finding B: a packet signed again under its nonce answered only when its bytes are the same.
+    add(326, 'space326-resend-not-answered', space326, 'control_space.py',
+        "            if seen['outcome'] == 'accepted' and (seen['digest'] == digest or seen.get('content') == content):\n",
+        "            if seen['outcome'] == 'accepted' and seen['digest'] == digest:\n",
+        ['ac1/packet-resent'])
+    result[-1]['siblings'] = True
+    # Re-review finding A: a re-run enrolling a revoked principal with the key it had.
+    add(326, 'space326-revoked-key-reenrolled', space326, 'control_factory_setup.py',
+        "    rekeyed = [name for name in CS.renew_space_keys(space, revoked) if name not in stranded]\n",
+        "    rekeyed = [name for name in CS.renew_space_keys(space, stranded) if name not in stranded]\n",
+        ['ac1/revoked-key-final'])
     # Finding 3, setup: a first enrollment left when the second fails; cleanup deleting a key the store
     # holds; a re-run that enrolls only what the store has no record of, so a half state stays.
     add(326, 'space326-partial-enrollment-left', space326, 'control_service.py',
