@@ -1,7 +1,20 @@
-# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 76e82376. Partial runs: none is the gate. 144 was run with VELDO_MUTATION_DRIVER=1 in its environment, so its real-engine row printed its SKIP line and no real engine was asked anything.
-134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 215 suites): 42 passed, 0 failed in 1.07s
-144_veldo_0306_space_docker: selftest (PARTIAL, 1 of 215 suites): 54 passed, 0 failed in 2.52s
-145_veldo_0307_space_docker_ownership: selftest (PARTIAL, 1 of 215 suites): 40 passed, 0 failed in 0.53s
-# 145: 14 rows. Fast checks, green: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; python3 scripts/check_git_boundary.py.
-# The earlier registered cases whose module this build changed (18 of finding 306 in control_space_docker.py, 1 of finding 331 in control_space_reconcile.py) were each applied once in mutant mode against their own suite: 19 of 19 turn their target row red. One of them, space306-compose-project-not-in-the-locator, needed a second edit (see the manifest).
-# NOT RUN in this build: every other suite (86_veldo_0127 among them, left as it is), ./scripts/verify.sh and the full mutation stages, by the lead's instruction.
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 0023e86f. Partial runs: none is the gate. 144 was run with VELDO_MUTATION_DRIVER=1 in its environment, so its real-engine row printed its SKIP line and no real engine was asked anything. 141 printed its SKIP line for ac6/installed: the process reader is not installed on this host.
+130_veldo_0296_space_section: selftest (PARTIAL, 1 of 215 suites): 48 passed, 0 failed in 0.02s
+131_veldo_0338_project_space_file: selftest (PARTIAL, 1 of 215 suites): 40 passed, 0 failed in 0.03s
+132_veldo_0297_space_ledger: selftest (PARTIAL, 1 of 215 suites): 57 passed, 0 failed in 2.25s
+133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 215 suites): 56 passed, 0 failed in 26.83s
+134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 215 suites): 42 passed, 0 failed in 1.31s
+135_veldo_0298_space_kinds: selftest (PARTIAL, 1 of 215 suites): 150 passed, 0 failed in 0.01s
+136_veldo_0299_space_probe: selftest (PARTIAL, 1 of 215 suites): 72 passed, 0 failed in 5.89s
+137_veldo_0330_space_rules: selftest (PARTIAL, 1 of 215 suites): 49 passed, 0 failed in 2.15s
+138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 215 suites): 65 passed, 0 failed in 2.65s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 215 suites): 44 passed, 0 failed in 1.56s
+140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 215 suites): 57 passed, 0 failed in 5.69s
+141_veldo_0344_process_reader: selftest (PARTIAL, 1 of 215 suites): 85 passed, 0 failed in 22.13s
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 215 suites): 57 passed, 0 failed in 3.30s
+143_veldo_0305_space_census: selftest (PARTIAL, 1 of 215 suites): 52 passed, 0 failed in 2.68s
+144_veldo_0306_space_docker: selftest (PARTIAL, 1 of 215 suites): 54 passed, 0 failed in 3.04s
+145_veldo_0307_space_docker_ownership: selftest (PARTIAL, 1 of 215 suites): 42 passed, 0 failed in 1.04s
+# 145: 16 rows. Fast checks, green: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh (320 pairs); python3 scripts/check_git_boundary.py.
+# The earlier registered cases whose module the fix changed (control_space.py: 11 of finding 297, 9 of 326, 7 of 331, 7 of 345; control_space_probe.py: 18 of 299, 1 of 301, 1 of 306, 20 of 344; control_space_signal.py: 12 of 301, 4 of 306, 6 of 330, 1 of 331, 1 of 345) were each applied once in mutant mode against their own suite: 98 of 98 turn their target rows red.
+# NOT RUN: every other suite (86_veldo_0127 among them, left as it is), ./scripts/verify.sh and the full mutation stages, by the lead's instruction.

@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0307",
- "commit": "76e82376638a1ce4e14d57ad64476c50df042bc8",
- "tree": "b52a85efc3fd595ee63e5a80dfa844aff17c5297",
- "producer": "Claude implementation agent (build); not an independent reviewer",
- "produced_at": "2026-11-14T10:42:48.959609+00:00",
+ "commit": "0023e86fc43482d47ecfe6ad2aa4dd76b52504ca",
+ "tree": "6e5943522370ef4e74e996a6ba06f9f464e0f69d",
+ "producer": "Claude implementation agent (build, and the fix of the two protect-list defects the build left for the lead); not an independent reviewer",
+ "produced_at": "2026-11-14T11:12:17.874397+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -66,6 +66,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0307/falsifiers.json",
      "detail": "space307-adoption-before-the-protect-list (the declared falsifier: where the adoption rule finds a worktree the protect list is not read): ac3/protected-container red, the protected container gets an item in the act-mode project and a proposed owner in the report-mode one; loss/nothing-of-theirs-touched red too, because the protected container was then stopped and removed at the ticket's end. Further cases, each red on its row: space307-labelled-path-not-protected, space307-compose-project-not-protected, space307-image-known-by-its-tag-alone, space307-covered-report-stays. proof/VELDO-0307/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "The fix of the two protect-list defects. Row protect/image-pattern-every-tag: the patterns minio/minio and minio/mc, which name no tag and no digest, cover that repository's :latest, another tag, a digest and the repository with no tag, on both contexts: the Ledger's declare, adopt and report each refuse it as space_protected:image:<pattern> with nothing written, and rule 2 at removal (control_space_probe.protected) names the same entry; a repository whose name only begins the same, another repository of the same owner and the same repository on another registry are not covered; a pattern that names a tag covers that tag and neither another tag, a digest nor the bare repository; a volume and a container are matched by the name in full as before. Row protect/covered-after-adoption: in the act-mode project three containers (by compose working folder, by the second configuration file, by bind source), a volume and a network are adopted to a recorded worktree while nothing covers them, and rule 2 passes each; the three folders are then added to the protect list; rule 2 refuses each removal as space_deferred:protected with the entry and the path its labels or its mount name now; at the ticket's end through the real Signal and removers none of the five is named to a stop or a remove, each is there (the containers running, the volume with its data) and its item is deferred as protected, while the container nothing covers is stopped and removed, which shows the removal is live; labels the engine does not show at rule 2 refuse the removal (labels_unread)."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0307/falsifiers.json",
+     "detail": "Ten cases for the two rows, each noop green then mutant red on its row. protect/image-pattern-every-tag: space307-ledger-image-pattern-by-the-full-tag (the defect as it was: the Ledger matches the tag in full), space307-ledger-digest-read-as-a-tag, space307-ledger-tagged-pattern-covers-every-tag, space307-rule-2-image-pattern-by-the-full-tag, space307-rule-2-tagged-pattern-covers-every-tag. protect/covered-after-adoption: space307-rule-2-reads-no-labelled-path (the defect as it was: rule 2 does not read a labelled path), space307-rule-2-unread-labels-pass, space307-rule-2-labelled-paths-not-read, space307-rule-2-configuration-files-not-split, space307-rule-2-labelled-path-beneath-only. proof/VELDO-0307/mutations.txt."
     }
    ]
   }
@@ -74,7 +84,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 145_veldo_0307_space_docker_ownership (14 rows). Each on its own, green: 134_veldo_0331_space_mode, 144_veldo_0306_space_docker, 145 (proof/VELDO-0307/suite-green.txt, which also names what was not run)."
+   "command": "python3 scripts/selftest.py --suite 145_veldo_0307_space_docker_ownership (16 rows). Each on its own, green: the sixteen suites 130 to 145, 144 with its real-engine row skipped (proof/VELDO-0307/suite-green.txt, which also names what was not run)."
   },
   {
    "name": "integration",
@@ -84,7 +94,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The 16 registered cases of finding 307 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop then mutant: 16 of 16 red on their target rows, no noop red (proof/VELDO-0307/falsifiers.json, mutations.txt). The 19 earlier cases of findings 306 and 331 in the two modules this build changed, each applied once in mutant mode: 19 of 19 red."
+   "command": "The 26 registered cases of finding 307 in scripts/check_teeth_mutations.py (16 of the build, 10 of the fix), each applied once through the driver's own materialize() and worker(), noop then mutant: 26 of 26 red on their target rows, no noop red (proof/VELDO-0307/falsifiers.json, mutations.txt). The 98 earlier registered cases in the three modules the fix changed (control_space.py, control_space_probe.py, control_space_signal.py; findings 297, 299, 301, 306, 326, 330, 331, 344, 345), each applied once in mutant mode against its own suite on the tree of this commit: 98 of 98 red on their target rows. The 19 earlier cases in the two modules the build changed were run at the build (19 of 19 red) and those modules are unchanged since."
   },
   {
    "name": "fast checks",
@@ -94,16 +104,17 @@
   {
    "name": "gate",
    "status": "not_run",
-   "command": "./scripts/verify.sh was not run by the builder, by the lead's instruction: the lead runs it through the gate lock. Suite 86_veldo_0127 is known 52 of 54 on this branch until the lead recaptures its live captures; it was not run and not touched."
+   "command": "./scripts/verify.sh was not run by the builder, at the build or at the fix, by the lead's instruction: the lead runs it through the gate lock. Suite 86_veldo_0127 is known 52 of 54 on this branch until the lead recaptures its live captures; it was not run and not touched."
   }
  ],
  "assumptions": [
   "1. THE ENGINE OF THE ROWS IS A STAND-IN, a class in the suite that holds containers, networks, volumes and images for two contexts and refuses as an engine does without a force option. No row asks a real engine. That its records have the shape of a real engine's (the two compose labels on a container as absolute paths, a bind mount as Type bind with a host Source, an image's RepoTags, RepoDigests and Config.Labels) rests on the measurement in compose-labels.json for the container, and for an image on the engine's documented inspect record, which was not measured in this build.",
   "2. ON THE MEASURED ENGINES A NETWORK AND A VOLUME CARRY NEITHER LABEL, so this rule gives them no proposal there. The rows for a volume and a network with the labels prove the code path for an engine that writes them; no such engine was seen.",
   "3. NOTHING SETS Service.space_docker YET, as in VELDO-0306, so no adapter runs in a service and nothing passes it the reconciler in production. Without the reconciler the adapter behaves as VELDO-0306 left it, apart from the protect check coming first.",
-  "4. RULE 2 AT REMOVAL DOES NOT READ A LABELLED PATH (control_space_signal is outside this ticket's footprint). A container adopted while nothing covered it, whose compose folder a later edit of the protect list covers, is listed as protected from the adapter's next snapshot on, but its item stays and rule 2 would not refuse it by that path. The spec's History says so for the lead; VELDO-0341 or 0330 owns rule 2. Act mode is refused until VELDO-0332 and 0339.",
+  "4. RULE 2 AT REMOVAL NOW READS A LABELLED PATH (fixed after the build, by the lead's instruction; the footprint is extended in the spec's History). It reads the object's labels from the engine again at every judged removal, one more inspect per Docker item, and refuses when they cannot be read. A bind source is read as before by control_space_probe.mounts. Act mode is refused until VELDO-0332 and 0339.",
   "5. A BIND SOURCE IS READ AS A PATH OF THIS HOST. An engine context that reaches an engine on another host would report that host's paths; the installation's two contexts are local sockets.",
-  "6. ONE EARLIER CASE MOVED WITH THE CODE: space306-compose-project-not-in-the-locator now carries a second edit, because the adapter reads the compose project label against the protect list itself before the ledger does, and the defect needs both readings gone. With both, its row ac1/protected is red as before."
+  "6. ONE EARLIER CASE MOVED WITH THE CODE: space306-compose-project-not-in-the-locator now carries a second edit, because the adapter reads the compose project label against the protect list itself before the ledger does, and the defect needs both readings gone. With both, its row ac1/protected is red as before.",
+  "7. AN IMAGE NAME IS READ AS WRITTEN. The Ledger and rule 2 take the repository as the name without its tag (what follows the last colon when no / comes after it) and without its digest (what follows @). A registry host or the library/ prefix an engine may leave out or add is not made the same: minio/minio does not cover registry.example:5000/minio/minio. The adapter's listing of protected images (image_names) is unchanged: it knows an image by each tag in full and by each repository, so a pattern that names a digest is matched by the Ledger and rule 2 and not by that listing."
  ],
  "rollback": "Revert the change. Objects without a run label stay reports with no proposed owner."
 }

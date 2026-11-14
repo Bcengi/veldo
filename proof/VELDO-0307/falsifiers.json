@@ -58,7 +58,7 @@
    ],
    [
     "VELDO-0307 ac2/report-mode",
-    "in report mode the container meadow-web-1 is a report and not an item: no owner, no parent, not adopted, ending on no event [owner {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent space:item:b59f7283dfe84d5f92c676377d6d96fb, adopted True, ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']]"
+    "in report mode the container meadow-web-1 is a report and not an item: no owner, no parent, not adopted, ending on no event [owner {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent space:item:76898d1e18e34adb9f5ee666073d7a14, adopted True, ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']]"
    ],
    [
     "VELDO-0307 ac2/report-then-act",
@@ -82,8 +82,7 @@
   "red_rows": [
    "ac3/covered-later",
    "ac3/protected-container",
-   "ac3/protected-volume",
-   "loss/nothing-of-theirs-touched"
+   "ac3/protected-volume"
   ],
   "red_details": [
    [
@@ -97,10 +96,6 @@
    [
     "VELDO-0307 ac3/covered-later",
     "once a protected path is beneath its working folder it is listed as protected [None]"
-   ],
-   [
-    "VELDO-0307 loss/nothing-of-theirs-touched",
-    "the protected container quiet-db-1 was asked nothing and is there with what it holds"
    ]
   ],
   "noop_red_rows": [],
@@ -241,7 +236,8 @@
    "ac1/inside-a-recorded-worktree",
    "ac1/no-proposal-when-undecided",
    "ac2/act-mode",
-   "ac2/report-mode"
+   "ac2/report-mode",
+   "protect/covered-after-adoption"
   ],
   "red_details": [
    [
@@ -259,6 +255,10 @@
    [
     "VELDO-0307 ac2/act-mode",
     "in act mode the container orchard-bind-1 is adopted with the worktree as parent [owner None, parent None, rule None]"
+   ],
+   [
+    "VELDO-0307 protect/covered-after-adoption",
+    "while nothing covers it the container late-bind-1 is adopted to the worktree, and rule 2 passes it [None None ['ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children']]"
    ]
   ],
   "noop_red_rows": [],
@@ -277,7 +277,7 @@
    "ac2/report-mode",
    "ac3/protected-container",
    "ac3/protected-image",
-   "loss/nothing-of-theirs-touched"
+   "protect/covered-after-adoption"
   ],
   "red_details": [
    [
@@ -301,8 +301,8 @@
     "the image tools/packer on default is listed as protected, by its compose_config_file [None None]"
    ],
    [
-    "VELDO-0307 loss/nothing-of-theirs-touched",
-    "the protected container quiet-db-1 was asked nothing and is there with what it holds"
+    "VELDO-0307 protect/covered-after-adoption",
+    "while nothing covers it the container late-cf-1 is adopted to the worktree, and rule 2 passes it [None None ['ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children']]"
    ]
   ],
   "noop_red_rows": [],
@@ -321,8 +321,7 @@
    "ac3/covered-later",
    "ac3/protected-container",
    "ac3/protected-image",
-   "ac3/protected-volume",
-   "loss/nothing-of-theirs-touched"
+   "ac3/protected-volume"
   ],
   "red_details": [
    [
@@ -340,10 +339,6 @@
    [
     "VELDO-0307 ac3/covered-later",
     "once a protected path is beneath its working folder it is listed as protected [None]"
-   ],
-   [
-    "VELDO-0307 loss/nothing-of-theirs-touched",
-    "the protected container quiet-db-1 was asked nothing and is there with what it holds"
    ]
   ],
   "noop_red_rows": [],
@@ -430,6 +425,196 @@
    [
     "VELDO-0307 ac2/report-then-act",
     "after meadow's switch to act the next snapshot adopts it: the report record is the item, with the worktree as parent [None None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-ledger-image-pattern-by-the-full-tag",
+  "criterion": "AC3",
+  "module": "control_space.py",
+  "expected_red": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_rows": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/image-pattern-every-tag",
+    "the pattern minio/minio covers the tag latest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:e88bf058f8774cfea78c5c9dd964005c', 'space_locator_taken:space:item:e88bf058f8774cfea78c5c9dd964005c']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-ledger-digest-read-as-a-tag",
+  "criterion": "AC3",
+  "module": "control_space.py",
+  "expected_red": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_rows": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/image-pattern-every-tag",
+    "the pattern minio/minio covers a digest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:8f283aba56ad4ae4b9c32776ddb6233e', 'space_locator_taken:space:item:8f283aba56ad4ae4b9c32776ddb6233e']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-ledger-tagged-pattern-covers-every-tag",
+  "criterion": "AC3",
+  "module": "control_space.py",
+  "expected_red": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_rows": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/image-pattern-every-tag",
+    "another tag of a tagged pattern: the ledger and rule 2 both say None [image:registry.example:5000/tools/pinned:1.2 None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-rule-2-image-pattern-by-the-full-tag",
+  "criterion": "AC3",
+  "module": "control_space_probe.py",
+  "expected_red": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_rows": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/image-pattern-every-tag",
+    "and rule 2 at removal names the same entry for the tag latest of minio/minio on default [{'protected': False, 'entry': None, 'how': None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-rule-2-tagged-pattern-covers-every-tag",
+  "criterion": "AC3",
+  "module": "control_space_probe.py",
+  "expected_red": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_rows": [
+   "protect/image-pattern-every-tag"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/image-pattern-every-tag",
+    "another tag of a tagged pattern: the ledger and rule 2 both say None [None image:registry.example:5000/tools/pinned:1.2]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-rule-2-reads-no-labelled-path",
+  "criterion": "AC3",
+  "module": "control_space_signal.py",
+  "expected_red": [
+   "protect/covered-after-adoption"
+  ],
+  "red_rows": [
+   "protect/covered-after-adoption"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/covered-after-adoption",
+    "once the folder is on the protect list rule 2 refuses the removal of the container late-web-1, by the path it names now [None None None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-rule-2-unread-labels-pass",
+  "criterion": "AC3",
+  "module": "control_space_signal.py",
+  "expected_red": [
+   "protect/covered-after-adoption"
+  ],
+  "red_rows": [
+   "protect/covered-after-adoption"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/covered-after-adoption",
+    "labels the engine does not show at rule 2 refuse the removal [None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-rule-2-labelled-paths-not-read",
+  "criterion": "AC3",
+  "module": "control_space_probe.py",
+  "expected_red": [
+   "protect/covered-after-adoption"
+  ],
+  "red_rows": [
+   "protect/covered-after-adoption"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/covered-after-adoption",
+    "once the folder is on the protect list rule 2 refuses the removal of the container late-web-1, by the path it names now [None None None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-rule-2-configuration-files-not-split",
+  "criterion": "AC3",
+  "module": "control_space_probe.py",
+  "expected_red": [
+   "protect/covered-after-adoption"
+  ],
+  "red_rows": [
+   "protect/covered-after-adoption"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/covered-after-adoption",
+    "once the folder is on the protect list rule 2 refuses the removal of the container late-cf-1, by the path it names now [None None None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-rule-2-labelled-path-beneath-only",
+  "criterion": "AC3",
+  "module": "control_space_probe.py",
+  "expected_red": [
+   "protect/covered-after-adoption"
+  ],
+  "red_rows": [
+   "protect/covered-after-adoption"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 protect/covered-after-adoption",
+    "once the folder is on the protect list rule 2 refuses the removal of the container late-cf-1, by the path it names now [None None None None]"
    ]
   ],
   "noop_red_rows": [],
