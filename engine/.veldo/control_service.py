@@ -1535,8 +1535,10 @@ class Service:
         # set by whoever builds that ledger for this instance. Its event pipes are in the poll set.
         self.space_docker = None
         # VELDO-0312: the installation's space ledger and what Signal is given, set by whoever builds that ledger
-        # for this instance (None: nothing is sent), and the last journal record space_pass has read.
-        self.space, self.space_seen = None, self.watermark()
+        # for this instance (None: nothing is sent), and the last journal record space_pass has read. That
+        # record is read when the ledger is wired in (the `space` property below) or on the first pass, never
+        # here: an instance built with no store (one that only judges signatures) reads no journal.
+        self._space, self.space_seen = None, None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1549,6 +1551,18 @@ class Service:
 
     def watermark(self):
         return self.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0]
+
+    @property
+    def space(self):
+        return self._space
+
+    @space.setter
+    def space(self, wired):
+        # Wiring a ledger in marks where its reading starts: what the journal held before is not sent to it.
+        # With no store, or inside a transaction (whose records are not committed), the first pass marks it.
+        if wired is not None and self.space_seen is None and self.conn is not None and not self.conn.in_transaction:
+            self.space_seen = self.watermark()
+        self._space = wired
 
     # -- signatures --------------------------------------------------------------------------
 
@@ -2253,7 +2267,9 @@ class Service:
         and it never raises: a fault is logged by name and ends neither the packet nor the service."""
         sent = []
         try:
-            if getattr(self, 'space', None) is None or self.conn.in_transaction:
+            if self.conn is None:
+                return sent  # no store: there is no journal to read and nothing to send
+            if getattr(self, 'space', None) is None or self.space_seen is None or self.conn.in_transaction:
                 if not self.conn.in_transaction:
                     self.space_seen = self.watermark()
                 return sent

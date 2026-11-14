@@ -145,6 +145,7 @@ def _v312_suite():
             'f3/route-refusals', 'f3/unique-work-needs-discard', 'f5/agent-worktree',
             'r2/ledger-checks-the-owner', 'r2/by-is-the-verified-principal', 'r2/kept-beneath-abandoned-worktree',
             'r2/runner-names-no-items', 'r2/abandon-names-its-cause',
+            'r3/service-with-no-store',
             'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
@@ -1611,6 +1612,47 @@ def _v312_suite():
               % (named_cause.get('sent'), named_cause.get('reason')),
               named_cause.get('sent') is True and named_cause.get('transition') == 'owner_abandon'
               and (L.item(causeless['worktree']) or {}).get('owner_keep') is None)
+
+        # Fix 3: a Service built with no store (one that only judges signatures) reads no journal: the last
+        # record read is marked where the ledger is wired in, or on the first pass.
+        R = 'r3/service-with-no-store'
+        (base / 'signers-r3').write_text('olga %s\n' % public['olga'])
+        bare_config = dict(service.config, enrollment_signers=str(base / 'signers-r3'),
+                           observations=str(base / 'observations-r3.jsonl'))
+        bare, raised = None, None
+        try:
+            bare = SVC.Service(bare_config, None)
+        except Exception as error:  # noqa: BLE001 - the row says what the constructor raised
+            raised = '%s: %s' % (type(error).__name__, str(error)[:120])
+        check(R, 'a service is built with no store: its constructor reads no journal [%s]' % raised,
+              bare is not None and bare.space is None and bare.space_seen is None)
+        if bare is not None:
+            binding = json.dumps({'schema': SVC.E.BINDING_SCHEMA, 'enrolled_by': 'olga', 'workspace': str(base),
+                                  'store_path': str(db)}, sort_keys=True).encode()
+            quiet = {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
+            signed = subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(private / 'olga'), '-n',
+                                     SVC.EL.ENROLLMENT_NAMESPACE], input=binding, capture_output=True, check=True,
+                                    timeout=20, env=quiet).stdout.decode()
+            judged = (bare.verify(binding, signed), bare.verify(binding + b' ', signed))
+            check(R, 'it judges an enrollment binding with no store: the signed bytes verify, changed bytes do not '
+                     '[%s %s]' % judged, judged == (True, False))
+            passed = bare.space_pass()
+            bare.space = space()
+            check(R, 'its pass, also with a ledger wired in, sends nothing, reads nothing, logs nothing and raises '
+                     'nothing [%s %s %s]' % (passed, bare.space_seen, (base / 'observations-r3.jsonl').exists()),
+                  passed == [] and bare.space_pass() == [] and bare.space_seen is None
+                  and not (base / 'observations-r3.jsonl').exists())
+        stored = SVC.Service(bare_config, conn)
+        unread = stored.space_seen
+        stored.space = space()
+        check(R, 'a service on a store has read no journal when built; wiring the ledger in marks the last record '
+                 'committed, so nothing committed before it is sent [%s %s of %s]' % (unread, stored.space_seen, journal_head()),
+              unread is None and journal_head() > 0 and stored.space_seen == journal_head()
+              and stored.space_pass() == [] and stored.space_seen == journal_head())
+        first = SVC.Service(bare_config, conn)
+        passed = first.space_pass()
+        check(R, 'with no ledger the first pass marks it [%s %s]' % (passed, first.space_seen),
+              passed == [] and first.space_seen == journal_head() and not (base / 'observations-r3.jsonl').exists())
 
         R = 'ac1/other-ticket-untouched'
         check(R, 'after every row the ticket nothing ended has its worktree, its build output and its scratch',

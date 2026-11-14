@@ -12,3 +12,6 @@
 139_veldo_0301_space_signal: 18 rows passed; selftest 44 passed, 0 failed
 # Not run in fix round 2 (run in the first fix round, on 70198635218b): 66_veldo_0042_clones, 66_veldo_0047_authority, 66_veldo_0051_events, 144_veldo_0306_space_docker, 83_veldo_0154_factory_loop, 83_veldo_0166_usage_windows, 113_veldo_0145_ui.
 # 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is).
+# FIX 3, 2026-11-14 (the triage of suite 86_veldo_0189_engine_upgrade: red since e4678ecf). Each suite on its own with python3 scripts/selftest.py --suite, on the tree of 66b943b2 with this fix, before the commit, with a stub engine that was never called (a docker first on PATH that logs and exits 1, DOCKER_HOST at a missing socket; its log is empty).
+149_veldo_0312_ticket_ended: 41 rows; selftest 67 passed, 0 failed
+86_veldo_0189_engine_upgrade: selftest 60 passed, 0 failed (restart/adoption-signer-kill and restart/rules green again)

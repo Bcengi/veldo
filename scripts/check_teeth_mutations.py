@@ -14686,7 +14686,17 @@ def cases():
              "    def space_abandon(self, item, version=None, by=None, cause=SPACE_OWNER_ABANDON):\n",
              ['r2/abandon-names-its-cause'])
 
-    # VELDO-0350: the write that records a dispatch's end, and the receiver's exit status. The declared
+    # VELDO-0312 fix 3 (the triage of suite 86_veldo_0189_engine_upgrade). A Service built with no store
+    # reads no journal: the constructor reads it again; wiring the ledger in marks no record.
+    ended312('space312-constructor-reads-the-journal',
+             "        self._space, self.space_seen = None, None\n",
+             "        self._space, self.space_seen = None, self.watermark()  # defect: read with or without a store\n",
+             ['r3/service-with-no-store'])
+    ended312('space312-wiring-marks-no-record',
+             "            self.space_seen = self.watermark()\n        self._space = wired\n",
+             "            pass  # defect: the ledger is wired in without marking the last record\n        self._space = wired\n",
+             ['r3/service-with-no-store'])
+
     # falsifier of each acceptance criterion. AC1: the end write is refused stale_version as it was,
     # with no second read. AC2: the write is sent again whatever the record shows, also over an end
     # another writer recorded. AC3: a receiver that failed exits 0 as it did. And the steps beside

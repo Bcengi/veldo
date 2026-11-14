@@ -257,3 +257,20 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     (space312-abandon-by-anyone-signed-in) was still refused, by the ledger, under the same name. Row
     f3/route-refusals now also sees that the API authority refuses a person who is not the owner before
     the service is asked: no event is logged. Both guards have their falsifier red again.
+- 2026-11-14: fix 3, after the triage of suite 86_veldo_0189_engine_upgrade
+  (review-veldo-0350-and-suites.md, part B: red since e4678ecf, the commit that built this ticket). No
+  acceptance criterion changed. Nothing here removes anything.
+  - The defect: Service.__init__ read the journal (the last record space_pass has read), so a Service
+    built with no store raised AttributeError. Suite 0189 builds exactly that to judge an enrollment
+    binding's signature (verify needs no store); its section died midway and the next one failed after it.
+  - The fix, in control_service.py: the constructor reads no journal. The last record read is marked
+    where the ledger is wired in (Service.space is now a property; setting a ledger on an instance that
+    has a store, outside a transaction, marks the journal's head) or else on the first pass. A pass of an
+    instance with no store sends nothing and reads nothing. What a ledger is sent is unchanged for an
+    installation that passes after every packet: nothing committed before the ledger was wired in.
+  - Row r3/service-with-no-store (suite 149, 41 rows): a Service is built with no store, judges a real
+    enrollment binding's signature, and its pass sends, reads and logs nothing, also with a ledger wired
+    in; a Service on a store has read no journal when built, wiring the ledger marks the head, and with
+    no ledger the first pass marks it. Two falsifiers under finding 312 (32 now), each applied once and
+    red on the row: space312-constructor-reads-the-journal, space312-wiring-marks-no-record.
+  - Suite 86_veldo_0189_engine_upgrade is green again; the bundle holds the runs.

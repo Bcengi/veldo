@@ -60,3 +60,10 @@ space312-host-principal-signs-a-signal-that-names-items mutant rows 66 targets {
 space312-abandon-defaults-to-the-owners noop rows 66 targets {"r2/abandon-names-its-cause": [true]} failed []
 space312-abandon-defaults-to-the-owners mutant rows 66 targets {"r2/abandon-names-its-cause": [false]} failed ['VELDO-0312 r2/abandon-names-its-cause']
 # THE REGISTERED FALSIFIER SET WAS RUN, 2026-11-14 (no code of this ticket changed since its last fix round; control_launch.py and control_clone.py changed under VELDO-0308 fix 4). python3 scripts/check_teeth_mutations.py --finding 312, run under nice -n 10 on the tree of commit 353a60eb (clean), with a stub engine that was never called and no cargo involved: mutations: passed registered=30 executed=30 reused=0 rejected=30.
+# FIX 3, 2026-11-14. Two cases added under finding 312 (32 now), each applied once before the commit by the registry's own materialize and worker: a no-op copy, then the mutant copy, with a stub engine that was never called.
+space312-constructor-reads-the-journal noop rows 67 targets {"r3/service-with-no-store": [true]} failed []
+space312-constructor-reads-the-journal mutant rows 67 targets {"r3/service-with-no-store": [false]} failed ['VELDO-0312 r3/service-with-no-store']
+space312-wiring-marks-no-record noop rows 67 targets {"r3/service-with-no-store": [true]} failed []
+space312-wiring-marks-no-record mutant rows 67 targets {"r3/service-with-no-store": [false]} failed ['VELDO-0312 r3/service-with-no-store']
+# What each red row saw. space312-constructor-reads-the-journal: "a service is built with no store: its constructor reads no journal [AttributeError: 'NoneType' object has no attribute 'execute']". space312-wiring-marks-no-record: "wiring the ledger in marks the last record committed, so nothing committed before it is sent [None None of 481]".
+# Not run for fix 3: the registered driver (check_teeth_mutations.py --finding 312) and ./scripts/verify.sh. The manifest and falsifiers.json of this bundle are of 6fbd5a03 and do not cover fix 3.
