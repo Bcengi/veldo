@@ -12857,6 +12857,32 @@ def cases():
         "            done = subprocess.run([str(word) for word in argv], **given)\n",
         ['work/probes-through-the-boundary'])
     result[-1]['siblings'] = True
+    # The re-review of VELDO-0300 (findings A to D). Each case loses the work its row plants: the files
+    # git was told not to look at are not read, so an edit hidden by the assume-unchanged or the
+    # skip-worktree bit goes with the worktree or the agent repository; an agent repository goes with
+    # the index of a worktree linked to it; an adopted worktree's committed ignore files are trusted, so
+    # a hand-written file in such a folder goes as build output; a Docker object is removed without
+    # comparing it with the item's record, so a volume made again under the same name goes with its data.
+    add(300, 'space300-hidden-edits-not-read', space300, 'control_space_remove.py',
+        "    work.extend(_hidden(commands, read, where))\n",
+        "    work.extend([])\n",
+        ['work/hidden-edits'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-linked-worktrees-removed', space300, 'control_space_remove.py',
+        "            if linked:\n",
+        "            if False:\n",
+        ['work/linked-worktrees'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-adopted-ignore-files-trusted', space300, 'control_space_remove.py',
+        "        if record.get('adopted'):\n",
+        "        if False:\n",
+        ['work/adopted-build-output'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-docker-object-not-compared', space300, 'control_space_remove.py',
+        "        if other is not None:\n",
+        "        if False:\n",
+        ['work/docker-object-made-again'])
+    result[-1]['siblings'] = True
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'

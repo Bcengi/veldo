@@ -79,6 +79,24 @@ character have two marked names, the id is read back from the name, and left fin
 removal left under it), work/probes-through-the-boundary (the probes' git reads that the remover's own
 runner is handed go through the Git boundary: a personal global excludes file hides nothing).
 
+THE RE-REVIEW (review2-veldo-0300.md, findings A to D), the same way: work/hidden-edits (a tracked file
+with the assume-unchanged bit and one with the skip-worktree bit, edited, in a worktree and in an agent
+repository: git's status is empty, rules 1 to 6 pass, the remover refuses keep_failed and names the
+file, the edit is there byte for byte; a hidden file that cannot be read refuses too; a hidden file
+with the index's content holds nothing back; with a snapshot that holds the edit the worktree goes),
+work/linked-worktrees (an agent repository that is the main repository of a worktree outside its
+folder, with a staged file that is in no commit: the rules refuse it, and the remover called by itself
+refuses keep_failed, so the line does not rest on rule 6 alone; the outside worktree still reads its
+staged file and its HEAD; the same when the linked worktree's folder is gone and git would clear its
+record away, and for a bare repository; with no linked worktree it goes), work/adopted-build-output
+(a worktree reconcile adopted, with a hand-written file in a folder a committed ignore file covers:
+keep_failed, the file byte for byte; the same file in a worktree recorded when it was made is build
+output; a folder a declared pattern covers is build output in both; with a snapshot the adopted one
+goes), work/docker-object-made-again (a volume removed and made again under the item's name, with
+another Id, with no compose project label or with another project's, and one the engine cannot show:
+remove_refused, the engine is not asked to remove anything and the volume is still there; the volume
+the item recorded goes).
+
 remove/writes-nothing (a removal writes no journal record), remove/canon (the engine canon equals this
 repository copy).
 """
@@ -118,6 +136,8 @@ def _v300_space_remove_suite():
             'work/ignored-files', 'work/commit-in-the-gap', 'work/worktree-second-probe', 'work/agent-repository-files',
             'work/repository-in-a-folder', 'work/link-and-dotdot', 'work/marked-name',
             'work/probes-through-the-boundary',
+            'work/hidden-edits', 'work/linked-worktrees', 'work/adopted-build-output',
+            'work/docker-object-made-again',
             'remove/writes-nothing', 'remove/canon')
     rows = {name: [] for name in ROWS}
 
@@ -207,7 +227,7 @@ def _v300_space_remove_suite():
         commit(REPOSITORY, 'tracked.txt', 'base\n', 'base')
         (REPOSITORY / '.veldo').mkdir()
         (REPOSITORY / '.veldo' / 'space.yaml').write_text(YAML.dump({
-            'evidence_caches': ['cache', 'downloads/tmp', 'linked']}))
+            'evidence_caches': ['cache', 'downloads/tmp', 'linked'], 'build_output': ['generated']}))
         PROJECT = dict(CFG.read_project(str(REPOSITORY), YAML.read, config=CONFIG, stream=io.StringIO()),
                        repository=str(REPOSITORY))
         WORKTREES = Path(PROJECT['worktree_root'])
@@ -913,6 +933,141 @@ def _v300_space_remove_suite():
               and (answer.get('found') or {}).get('untracked') == ['personal.txt']
               and text_of(path / 'personal.txt') == 'work a personal ignore rule hides\n')
 
+        # The re-review: three more kinds of planted work, each through the whole rule chain.
+        ROW = 'work/hidden-edits'
+        EDIT = 'an edit git was told not to look at\n'
+        for bit in ('--assume-unchanged', '--skip-worktree'):
+            item, path = worktree('hidden' + bit.replace('-', '_'))
+            mark = RM.marked(str(path), item)
+            git(path, 'update-index', bit, 'tracked.txt')
+            (path / 'tracked.txt').write_text(EDIT)
+            check(ROW, 'worktree, %s: git sees a clean worktree [%r]' % (bit, git(path, 'status', '--porcelain')),
+                  git(path, 'status', '--porcelain') == '' and git(path, 'diff', '--name-only') == '')
+            answer, said = refused_by_tool(through(item, keeper([])))
+            check(ROW, 'worktree, %s: rules 1 to 6 pass, the remover refuses keep_failed and names the file [%s %s]'
+                  % (bit, answer, said.get('unsaved')), answer == (False, 'tool', 6, 'keep_failed')
+                  and said.get('unsaved') == ['tracked.txt'])
+            check(ROW, 'worktree, %s: the edit is still there, byte for byte, in the worktree at its own path' % bit,
+                  text_of(path / 'tracked.txt') == EDIT and listed(path) and not os.path.lexists(mark))
+            hidden_agent = WORKTREES / 'agents' / ('hidden' + bit.replace('-', '_'))
+            subprocess.run(['git', 'clone', '-q', str(REPOSITORY), str(hidden_agent)], env=ENVIRONMENT,
+                           check=True, capture_output=True, timeout=120)
+            agent = declared('agent_repository', {'path': str(hidden_agent)})
+            git(hidden_agent, 'update-index', bit, 'tracked.txt')
+            (hidden_agent / 'tracked.txt').write_text(EDIT)
+            check(ROW, 'agent repository, %s: git sees a clean repository' % bit,
+                  git(hidden_agent, 'status', '--porcelain') == '')
+            answer, said = refused_by_tool(through(agent, keeper([])))
+            check(ROW, 'agent repository, %s: rules 1 to 6 pass, the remover refuses keep_failed and names the file [%s %s]'
+                  % (bit, answer, said.get('unsaved')), answer == (False, 'tool', 6, 'keep_failed')
+                  and said.get('unsaved') == ['tracked.txt'])
+            check(ROW, 'agent repository, %s: the edit is still there, byte for byte, in the repository at its path' % bit,
+                  text_of(hidden_agent / 'tracked.txt') == EDIT
+                  and not os.path.lexists(RM.marked(str(hidden_agent), agent)))
+        # `item` and `path` are the worktree with the skip-worktree bit, `agent` the repository with it
+        (hidden_agent / 'tracked.txt').write_text('base\n')  # the index's content again
+        (hidden_agent / 'tracked.txt').chmod(0)
+        answer = drive(agent, keep=keeper([]))
+        check(ROW, 'a hidden file that cannot be read is unsaved work too [%s %s]' % (named(answer)[:2], answer.get('unsaved')),
+              os.geteuid() == 0 or (named(answer)[:2] == (False, 'keep_failed') and answer.get('unsaved') == ['tracked.txt']
+                                    and (hidden_agent / 'tracked.txt').exists()))
+        (hidden_agent / 'tracked.txt').chmod(0o644)
+        answer = drive(agent, keep=keeper([]))
+        check(ROW, 'a hidden file with the index\'s content holds nothing back: the repository goes [%s]' % (named(answer)[:2],),
+              answer.get('ok') is True and not hidden_agent.exists())
+        answer = through(item, keeper([], snapshot=saved(path, 'tracked.txt')))
+        check(ROW, 'with a snapshot that holds the edit as it is, the worktree goes [%s]' % (answer.get('passed'),),
+              answer.get('ok') is True and not path.exists() and not listed(path))
+
+        ROW = 'work/linked-worktrees'
+        linking = WORKTREES / 'agents' / 'linking'
+        subprocess.run(['git', 'clone', '-q', str(REPOSITORY), str(linking)], env=ENVIRONMENT,
+                       check=True, capture_output=True, timeout=120)
+        agent = declared('agent_repository', {'path': str(linking)})
+        side = temp / 'elsewhere' / 'side-tree'
+        side.parent.mkdir()
+        git(linking, 'worktree', 'add', '-q', '--detach', str(side), 'main')  # no branch of its own: rule 5 passes
+        (side / 'staged.txt').write_text('staged in a linked worktree and in no commit\n')
+        git(side, 'add', 'staged.txt')
+        blob = git(side, 'rev-parse', ':staged.txt')
+        check(ROW, 'the agent repository itself is clean [%r]' % git(linking, 'status', '--porcelain'),
+              git(linking, 'status', '--porcelain') == '')
+        result = through(agent, keeper([]))
+        check(ROW, 'through the rules it is refused and whole [rule %s]' % (result.get('rule'),),
+              result.get('ok') is False and linking.is_dir() and git(side, 'status', '--porcelain') == 'A  staged.txt')
+        answer = drive(agent, keep=keeper([]))
+        check(ROW, 'an agent repository with a worktree outside its folder: the remover, called by itself, refuses '
+              'keep_failed and names it [%s %s]' % (named(answer), answer.get('linked')),
+              named(answer) == (False, 'keep_failed', 'space_deferred:keep_failed')
+              and answer.get('linked') == [str(side)])
+        check(ROW, 'the repository is back at its path and the outside worktree reads its staged file and its HEAD',
+              linking.is_dir() and not os.path.lexists(RM.marked(str(linking), agent))
+              and git(side, 'status', '--porcelain') == 'A  staged.txt'
+              and git(side, 'cat-file', '-p', blob) == 'staged in a linked worktree and in no commit'
+              and git(side, 'rev-parse', 'HEAD') == git(linking, 'rev-parse', 'main'))
+        shutil.rmtree(side)
+        answer = drive(agent, keep=keeper([]))
+        check(ROW, 'a linked worktree whose folder is gone, which git would clear away, refuses the same way [%s %s]'
+              % (named(answer)[:2], answer.get('linked')), named(answer)[:2] == (False, 'keep_failed')
+              and answer.get('linked') == [str(side)] and git(linking, 'cat-file', '-t', blob) == 'blob'
+              and (linking / '.git' / 'worktrees' / 'side-tree' / 'index').is_file())
+        bare_linking = WORKTREES / 'agents' / 'bare-linking.git'
+        subprocess.run(['git', 'clone', '-q', '--bare', str(REPOSITORY), str(bare_linking)], env=ENVIRONMENT,
+                       check=True, capture_output=True, timeout=120)
+        agent = declared('agent_repository', {'path': str(bare_linking)})
+        side = temp / 'elsewhere' / 'bare-side'
+        git(bare_linking, 'worktree', 'add', '-q', '-b', 'side', str(side), 'main')
+        (side / 'staged.txt').write_text('staged beside a bare repository\n')
+        git(side, 'add', 'staged.txt')
+        answer = drive(agent, keep=keeper([]))
+        check(ROW, 'a bare agent repository with a linked worktree refuses the same way [%s %s]'
+              % (named(answer)[:2], answer.get('linked')), named(answer)[:2] == (False, 'keep_failed')
+              and answer.get('linked') == [str(side)] and bare_linking.is_dir()
+              and git(side, 'status', '--porcelain') == 'A  staged.txt')
+        git(side, 'rm', '-q', '--cached', 'staged.txt')
+        (side / 'staged.txt').unlink()
+        git(bare_linking, 'worktree', 'remove', str(side))
+        answer = drive(agent, keep=keeper([]))
+        check(ROW, 'with no linked worktree left the same repository goes [%s]' % (named(answer)[:2],),
+              answer.get('ok') is True and not bare_linking.exists())
+
+        ROW = 'work/adopted-build-output'
+        NOTES = 'hand-written notes in a folder a committed ignore file covers\n'
+        with open(exclude, 'a') as rules_file:
+            rules_file.write('generated/\n')
+
+        def planted(path):
+            (path / 'build').mkdir()
+            (path / 'build' / 'NOTES.md').write_text(NOTES)
+            (path / 'generated').mkdir()
+            (path / 'generated' / 'out.bin').write_bytes(b'g' * 100)
+
+        path = WORKTREES / 'adopted-tree'
+        git(REPOSITORY, 'worktree', 'add', '-q', '-b', 'adopted-1', str(path), 'main')
+        made = L.adopt('worktree', {'path': str(path)}, OWNER, 'branch_pattern', start=git(path, 'rev-parse', 'HEAD'),
+                       branch='adopted-1')
+        item = made.get('item')
+        planted(path)
+        check(ROW, 'the worktree is an item reconcile adopted, and git sees it as clean [%s]' % (made.get('reason'),),
+              made.get('ok') is True and L.item(item)['adopted'] is True and git(path, 'status', '--porcelain') == '')
+        result = through(item, keeper([]))
+        answer, said = refused_by_tool(result)
+        check(ROW, 'adopted: the remover refuses keep_failed and names the file in the committed-ignore folder, '
+              'not the declared build output [%s %s %s]' % (result.get('rule'), answer, said.get('unsaved')),
+              answer == (False, 'tool', 6, 'keep_failed') and said.get('unsaved') == ['build/NOTES.md'])
+        check(ROW, 'the file is still there, byte for byte, in the worktree at its own path',
+              text_of(path / 'build' / 'NOTES.md') == NOTES and listed(path)
+              and not os.path.lexists(RM.marked(str(path), item)))
+        answer = through(item, keeper([], snapshot=saved(path, 'build/NOTES.md')))
+        check(ROW, 'with a snapshot that holds the file the adopted worktree goes, its declared build output with it [%s]'
+              % (answer.get('passed'),), answer.get('ok') is True and not path.exists() and not listed(path))
+        item, path = worktree('recorded-tree')
+        planted(path)
+        answer = through(item, keeper([]))
+        check(ROW, 'in a worktree recorded when it was made the same folder is build output (design 6.3) [%s]'
+              % (answer.get('passed'),), L.item(item)['adopted'] is False and answer.get('ok') is True
+              and not path.exists())
+
         # AC3: every command every remover ran
         ROW = 'ac3/commands'
         pg = STATE / 'volumes' / 'run7_data'
@@ -1166,6 +1321,39 @@ def _v300_space_remove_suite():
         answer = drive(fourth['image_tag'], action='remove_tag')
         check(ROW, 'with neither, bytes is unknown and not a guess [%s]' % (answer.get('bytes'),),
               answer.get('ok') is True and answer.get('bytes') is None and answer.get('bytes_source') is None)
+
+        ROW = 'work/docker-object-made-again'
+        LABEL = 'com.docker.compose.project'
+        volume = declared('volume', {'engine': 'default', 'name': 'run9_data', 'id': 'volume-first',
+                                     'compose_project': 'run9'}, pool='host')
+
+        def made_again(**fields):
+            del ENGINE['volume'][:]
+            ENGINE['volume'].append(dict({'_engine': 'default', '_bytes': 100, 'Name': 'run9_data',
+                                          'Mountpoint': '/var/lib/docker/volumes/z/_data'}, **fields))
+
+        for label, fields in (
+                ('with another Id and no label', {'Id': 'volume-second'}),
+                ('with the Id and no label', {'Id': 'volume-first', 'Labels': None}),
+                ('with the Id and another project\'s label', {'Id': 'volume-first', 'Labels': {LABEL: 'atlas'}}),
+                ('with the label and another Id', {'Id': 'volume-second', 'Labels': {LABEL: 'run9'}}),
+                ('with the label and no Id', {'Labels': {LABEL: 'run9'}})):
+            made_again(**fields)
+            del ran[:]
+            answer = drive(volume)
+            check(ROW, 'a volume made again under the item\'s name %s is remove_refused, the engine is not asked '
+                  'to remove it and it is still there [%s]' % (label, answer.get('said')),
+                  named(answer)[:2] == (False, 'remove_refused') and len(held('volume', 'default', 'run9_data')) == 1
+                  and ran and not [argv for argv in ran if argv[4] != 'inspect'])
+        ENGINE['unreadable'] = True
+        answer = drive(volume)
+        ENGINE['unreadable'] = False
+        check(ROW, 'a volume the engine cannot show is remove_refused and still there [%s]' % (answer.get('said'),),
+              named(answer)[:2] == (False, 'remove_refused') and len(held('volume', 'default', 'run9_data')) == 1)
+        made_again(Id='volume-first', Labels={LABEL: 'run9'})
+        answer = drive(volume)
+        check(ROW, 'the volume the item recorded, by its Id and its label, goes [%s]' % (named(answer)[:2],),
+              answer.get('ok') is True and not held('volume', 'default', 'run9_data'))
 
         check('remove/canon', 'the engine canon engine/.veldo/control_space_remove.py equals this repository copy',
               (ROOT / 'engine' / '.veldo' / 'control_space_remove.py').is_file()

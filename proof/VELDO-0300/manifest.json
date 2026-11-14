@@ -4,7 +4,7 @@
  "commit": "c29021001a404d3122d32f6922645ac317d21669",
  "tree": "badad0ad6d4a53d0ec10084e600070410a3155b5",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-14T03:44:17.357144+00:00",
+ "produced_at": "2026-11-14T04:01:43.540806+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -70,6 +70,21 @@
      "type": "unit",
      "ref": "proof/VELDO-0300/falsifiers.json",
      "detail": "Review falsifiers, each losing the work its row plants: space300-ignored-work-not-compared (the ignored files that are work not compared with the snapshot): work/ignored-files red, the rules answer ok and both files are gone with the worktree. space300-tips-not-read-again: work/commit-in-the-gap red, the worktree is removed and the commit is on no ref. space300-agent-repository-files-not-read: work/agent-repository-files red, the repository is deleted with the draft and the edit. space300-worktree-no-second-probe: work/worktree-second-probe red. space300-probe-reads-outside-the-boundary (the remover's runner runs the probes' git as a plain subprocess): work/probes-through-the-boundary red, rule 5 passes the hidden file. Existing cases re-anchored and still red: space300-worktree-forced, space300-removes-with-no-keep-step (now a keep answer made up with no keeper), space300-removes-after-a-failed-keep. Runs: proof/VELDO-0300/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Re-review (verdict FIX, review2-veldo-0300.md), findings A, B and C. Each row plants the work the reviewer lost with a keep step that answers ok. work/hidden-edits (A): a tracked file with the assume-unchanged bit and one with the skip-worktree bit, edited, in a worktree and in an agent repository (four cases). git's status is empty in each; through control_space_signal.rules rules 1 to 6 pass and the remover refuses keep_failed naming tracked.txt; the edit is there byte for byte, the worktree or repository at its own path, nothing under the marked name. A hidden file of mode 000 with the index's content is unsaved too (checked when the suite does not run as root). A hidden file with the index's content holds nothing back: that repository goes. With a snapshot that holds the edit with its mode and digest the worktree goes. work/linked-worktrees (B): an agent repository that is the main repository of a detached worktree outside its folder, with a staged file in no commit. The rule chain refuses it (rule 6), and the remover called by itself refuses keep_failed and names the linked worktree; the repository is back at its path, the outside worktree still reads its staged file, the blob and its HEAD. The same refusal after the linked worktree's folder is deleted (git would clear the record away; its index file is still in the repository) and for a bare agent repository; with the linked worktree removed by git, the bare one goes. work/adopted-build-output (C): a worktree made present by the ledger's adopt (adopted true) with a hand-written build/NOTES.md, build/ covered by the committed .gitignore, and generated/out.bin, generated matching the project's declared build_output pattern: rules 1 to 6 pass, the remover refuses keep_failed and names build/NOTES.md and not generated/; the file is there byte for byte. With a snapshot holding it the adopted worktree goes. The same two folders in a worktree recorded when it was made are build output and it goes (design 6.3)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "The same three rows: the real ledger (declare, confirm, adopt), the real rules and probes, real git 2.43.0 through the one Git boundary (update-index bits set by the fixture; the remover's ls-files -v -s -z, hash-object, worktree list --porcelain -z), real linked worktrees and real deletes under one temporary folder."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Re-review falsifiers, each losing the work its row plants: space300-hidden-edits-not-read (the read of the hidden files is skipped): work/hidden-edits red, the rules answer ok and the worktree with the hidden edit is gone. space300-linked-worktrees-removed (the worktree list is not acted on): work/linked-worktrees red, the remover answers ok and the repository is gone with the linked worktree's index. space300-adopted-ignore-files-trusted (the adopted field is not read): work/adopted-build-output red, the rules answer ok and build/NOTES.md is gone. Each applied once through the registered teeth case's own materialize() and worker(): noop green, mutant red (mutations.txt)."
     }
    ]
   },
@@ -91,6 +106,16 @@
      "type": "unit",
      "ref": "proof/VELDO-0300/falsifiers.json",
      "detail": "Falsifier space300-volume-prune (the engine's volume prune for volumes): ac3/commands red, the other volume is gone and a prune command is in the record. Applied once through the registered teeth case (scripts/check_teeth_mutations.py, finding 300) with the driver's own materialize() and worker(): the unchanged copy is green, the mutant turns the named row red. Runs: proof/VELDO-0300/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Re-review, finding D (the first review's finding 9, fixed in code). Row work/docker-object-made-again: a volume item whose locator holds an id and a compose project. A volume made again under the item's name with another Id and no label, with the Id and no label, with the Id and another project's label, with the label and another Id, and with the label and no Id: each remove_refused, the stand-in engine was asked to show the volume and nothing else, and the volume is still there. A volume the engine cannot show is remove_refused. The volume with the recorded Id and label goes. The four Docker removers now show the object first (the network remover too), and rows ac3/commands, ac3/engine-refusal, ac4/engine-image-pool and ac4/docker-bytes are green with it."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Re-review falsifier space300-docker-object-not-compared (the comparison with the item's record is skipped): work/docker-object-made-again red, the volume made again under the same name is removed. Applied once through the registered teeth case: noop green, mutant red (mutations.txt)."
     }
    ]
   },
@@ -120,7 +145,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 138_veldo_0300_space_remove (29 rows, 55 checks counted with the shared preamble). After the review fix every space suite was rerun green, each on its own: 130 (48 checks), 131 (40), 132 (57), 133 (56), 134 (42), 135 (150), 136 (72), 137 (49), 138 (55)."
+   "command": "python3 scripts/selftest.py --suite 138_veldo_0300_space_remove (33 rows, 59 checks counted with the shared preamble; proof/VELDO-0300/suite-green.txt). After the re-review fix every space suite was rerun green, each on its own: 130 (22 rows), 131 (14), 132 (31), 133 (30), 134 (16), 135 (124), 136 (46), 137 (23), 138 (33)."
   },
   {
    "name": "integration",
@@ -130,24 +155,24 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "Fifteen registered cases, finding 300 (seven from the build, eight from the review), each applied once after the review fix: noop green, mutant red on its row (proof/VELDO-0300/falsifiers.json, mutations.txt)."
+   "command": "Nineteen registered cases, finding 300 (seven from the build, eight from the review, four from the re-review), each applied once after the re-review fix: noop green, mutant red on its row (proof/VELDO-0300/falsifiers.json, mutations.txt)."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "After the review fix: bash scripts/check_template_sync.sh (314 pairs); bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py (no change); python3 .veldo/validate.py spec specs/VELDO-0300-the-removers.md; python3 .veldo/validate.py all; each exit 0. python3 scripts/check_git_boundary.py: pass, for the whole tree (it failed on the probe module before this fix)."
+   "command": "After the re-review fix: bash scripts/check_template_sync.sh (314 pairs); bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (no change); python3 .veldo/validate.py spec on the specs of VELDO-0300, VELDO-0301 and VELDO-0345; python3 .veldo/validate.py all; each exit 0."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build and the review fix ran single suites and the fast checks only, as instructed. The lead runs ./scripts/verify.sh through the gate lock. The teeth cases were run here through the driver's own functions, not through the teeth run."
+   "reason": "The build, the review fix and the re-review fix ran single suites and the fast checks only, as instructed. The lead runs ./scripts/verify.sh through the gate lock. The teeth cases were run here through the driver's own functions, not through the teeth run."
   }
  ],
  "assumptions": [
   "The removers are control_space_remove.remove(ledger, probe, identity, record, action, free, keep, run, proc) and tool(...), which gives the same in the form rule 7 calls. Nothing calls them yet: Signal's carry out and the outcome it writes are VELDO-0301. A remover writes nothing to the ledger.",
   "NO WORK LOST, as built here. The spec's History says the keep step is added inside the worktree and private repository removers by VELDO-0345. Until then those two removers do not run without it: keep(identity, record) is a parameter, and with none, or any answer but {ok: True}, the item is deferred keep_failed and nothing is touched. This is beyond the four criteria and is built so that no path of this module can remove commits unrecorded; it has its own row and two falsifiers. What the keeper does and the check of the keep record are VELDO-0345.",
   "Not built here, because each saves first and belongs to a later ticket: the discard remover (VELDO-0318, the one forced removal), the review scratch remover (VELDO-0336) and the removal of evidence files a copy holds (remove_held). So AC3's exception for the discard remover has nothing to except yet: no command of this module carries a force option. Mark a branch contained is a ledger write and is not a remover.",
-  "A refusal reaches Signal as rule 7's found.said. The rules name every tool refusal remove_refused (control_space_signal.DEFERRAL, not in this ticket's footprint); the remover's own answer names the deferral it means (remove_refused, in_use, keep_failed) in said.deferral and said.reason. Review finding 6: VELDO-0301's spec did not say Signal passes that through, so it is recorded in VELDO-0301's History with the row and the falsifier it must have; no code of Signal was changed.",
+  "A refusal reaches Signal as rule 7's found.said. The rules name every tool refusal remove_refused (control_space_signal.DEFERRAL, not in this ticket's footprint); the remover's own answer names the deferral it means (remove_refused, in_use, keep_failed) in said.deferral and said.reason. Review finding 6: no code of Signal or of the ledger was changed. Since the re-review it is bound by criteria and not by a History note: VELDO-0301 AC5 (the remover's deferral passed through; an answer with left_at keeps the item removing) and VELDO-0345 AC6 (the ledger accepts the three deferrals for a removing item). Until both are built a keep_failed or in_use refusal of a removing item would be recorded as remove_refused; nothing calls the removers yet.",
   "REVIEW FIX, finding 4. The folder remover now holds the line by itself: the walk that measures the folder before the first delete stops on any folder that is a git repository or holds one, and the folder is put back. An agent repository and a worktree may hold their own and no other. The clean clone exception of design 0.1 and rule 6's own-folder look are still VELDO-0347 (its History says the remover refuses until then).",
   "free(pool record) is given, as admission is given it; reading free space from a filesystem or an engine is VELDO-0316. With no reader, or a reading that fails before the removal, nothing is removed. In the suite the reader is a stand-in: the host pool answers a fixed capacity minus the measured size of the fixture folders, the engine image pool answers the stand-in engine's figure, so freed can be compared exactly.",
   "The container engine is a stand-in function given as the client runner: it keeps containers, images, volumes and networks in memory and refuses what an engine refuses. No container engine was asked anything, so the engines' real refusal texts and the real effect of image rm on a last tag (the engine deletes the image with it) are not measured here; they are VELDO-0306's to check on both engines.",
@@ -164,8 +189,11 @@
   "REVIEW FIX, deferrals chosen where the review left a choice: work the keep step did not save, and a tip it did not record, are keep_failed; a user under the marked name is in_use; a repository in the folder, a link or .. in the path and git's own refusals are remove_refused.",
   "What the last look does not close (design 0.9 names it): a process that finds the marked name and writes there between the last look and git's one remove command. The rename has no no-replace flag from the standard library: an EMPTY folder that appears at the marked name between the check and the rename is replaced.",
   "A worktree on a branch with no commit yet, or whose log git cannot walk, is deferred keep_failed (the tips cannot be read) and stays. A worktree removal killed between git's move and git's remove leaves the whole worktree under its marked name with git's record pointing there; finding it is reconcile's (VELDO-0315 AC2, whose History names left, marked and unmarked). Nothing calls left yet.",
-  "NOT FIXED, review finding 9 (low): the Docker removers do not read the object's id and label again at the remove; a volume removed and made again under the same name in the gap would be taken. It is VELDO-0341's reading of what an engine says of an object, and it is open.",
-  "The design text is not edited by the review fix. Its 6.5 row for a worktree moves it to a marked name only after a Save; the remover now does so at every worktree removal. The spec's History says it. commit and tree above still name the build commit c2902100; the review fix is the commit that carries this bundle."
+  "RE-REVIEW FIX, finding D (the first review's finding 9), fixed in code and no longer pointed at VELDO-0341. Each Docker remover has the engine show the object and compares it with the item's record before it asks for any remove: the Id when the locator holds id, and the label com.docker.compose.project when the locator holds compose_project (read from Labels, or from Config.Labels for a container or an image). What this cannot see: an engine gives a volume no Id of its own, so a volume recorded by name alone, with no compose project, has nothing to compare, and the run's own label is not in the item's record. The row uses the stand-in engine, which is given an Id for the volume. The engine has no remove conditional on an Id, so a volume swapped between the show and the remove is not seen.",
+  "The design text is not edited by the review fix. Its 6.5 row for a worktree moves it to a marked name only after a Save; the remover now does so at every worktree removal. The spec's History says it. commit and tree above still name the build commit c2902100; the review fix is the commit that carries this bundle.",
+  "RE-REVIEW FIX, finding A, a choice made here. The review says a hidden changed file is unsaved (keep_failed) for both kinds and never left to git. For an agent repository it always refuses. For a worktree it is held as an ignored file that is work is held: it refuses unless the keep step's snapshot holds the file with the same mode and digest, in which case it is saved and the worktree goes. A hidden file that is not on disk is not work (nothing of it is only there). A hidden file of another type than the index says, and a gitlink, count as changed. Content is compared by git's own hash-object, so the repository's clean filters apply; the executable bit alone is not compared. One hash-object process is run per hidden file that is on disk.",
+  "RE-REVIEW FIX, finding B. Any entry of git worktree list besides the first refuses an agent repository, bare or not, with no exception: no keep step saves a linked worktree's index yet (VELDO-0345's History names it). Through the rule chain rule 6 already refuses such a repository before the remover is reached; the row therefore proves the remover's own refusal by calling it by itself, as the reviewer's repro did. Finding C: adopted is the ledger's own field of the item's record; the row's item is made by the ledger's adopt.",
+  "The re-review's last table row is not a finding and is not changed: in a worktree recorded when it was made, a folder a committed rule such as *.local or .vscode/ covers is build output and goes with the worktree (design 0.1, 6.3). The spec's History tells the owner. The residual windows the re-review accepts (a write after the last look by a process that found the marked name) are unchanged. commit and tree above still name the build commit c2902100; the re-review fix is the commit that carries this bundle."
  ],
  "rollback": "Revert the change. Removers are called only through Signal, and nothing calls them yet, so without them nothing is removed."
 }

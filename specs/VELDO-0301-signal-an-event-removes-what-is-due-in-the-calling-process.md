@@ -60,6 +60,19 @@ acceptance_criteria:
       changes
     falsified_by: >
       Add an age rule for scratch; the clock row finds scratch removed and fails
+  - id: AC5
+    text: >
+      When rule 7 refuses, the outcome is written with the remover's own deferral, one of remove_refused,
+      in_use and keep_failed, and with remove_refused when the remover names none of the three. When the
+      remover's answer holds left_at, the item's thing is under its marked name and not at its locator:
+      the outcome keeps the item removing, records left_at, and never marks it gone. The rows are a
+      worktree with an ignored file that is work, due at an event, deferred as keep_failed and still on
+      disk, and a folder the remover could not put back, still removing with its marked name recorded
+    falsified_by: >
+      Each of these turns a row of its own red. Name every tool refusal remove_refused: the row finds the
+      worktree deferred as remove_refused and fails. Write the outcome of an answer with left_at as any
+      other deferral: the row finds the item no longer removing, or marked gone with its folder whole
+      under the marked name, and fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. No event removes anything, and items stay as recorded.
@@ -122,3 +135,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   the remover's answer holds left_at, the item's thing is under its marked name and not at its locator;
   the outcome keeps the item removing and never gone (design 8.8), and
   control_space_remove.left(path, id) is the look.
+- 2026-11-14: from the re-review of VELDO-0300 (review2-veldo-0300.md, finding D). The note above said
+  no acceptance criterion changed while it asked for a row and a falsifier, and a History note that
+  changes no criterion binds nobody. It is now AC5: the remover's own deferral (remove_refused, in_use,
+  keep_failed) is passed through to the outcome, and an answer that holds left_at keeps the item
+  removing, with the marked name recorded, and never gone. AC5 has two falsifiers. The ledger's part,
+  accepting those three deferrals for a removing item, is VELDO-0345 AC6. Four criteria became five. AC5
+  is not in section 12 of the design, whose text this change does not edit; the criteria of AC1 to AC4
+  are still the design's word for word.

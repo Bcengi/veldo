@@ -78,10 +78,14 @@ tracked file, an untracked file, a lock and a submodule, and it deletes ignored 
      (a locked worktree, a submodule) is remove_refused with the worktree at its path;
   2. the in-use probe is run again there; a user moves it back, in_use;
   3. git's status is read there with every ignored path. An ignored folder that a committed ignore
-     file of the worktree or a build output pattern the project declares covers is build output. Every
-     other ignored path is work (design 0.1): a file only info/exclude ignores, a loose ignored file
-     such as a local settings file, whatever rule covers it. Each such file must be in the keep
-     step's snapshot with the same mode and digest, or the worktree is moved back, keep_failed;
+     file of the worktree or a build output pattern the project declares covers is build output; in
+     a worktree reconcile adopted, whose history nobody saw, only the declared patterns count (design
+     6.3). Every other ignored path is work (design 0.1): a file only info/exclude ignores, a loose
+     ignored file such as a local settings file, whatever rule covers it. So is a tracked file git
+     was told not to look at (the assume-unchanged or the skip-worktree bit) whose content on disk is
+     not the index's or cannot be read: git's status and git's own remove are blind to it, so it is
+     never left to git. Each such file must be in the keep step's snapshot with the same mode and
+     digest, or the worktree is moved back, keep_failed;
   4. the tips are read again and compared with the keep step's;
   5. git's worktree remove is run on the marked name, with no force option. Its refusal moves the
      worktree back and is remove_refused.
@@ -92,14 +96,22 @@ system or global configuration reaches it, so a file only a personal excludes fi
 untracked file to it. The probes' git reads go through the same boundary.
 
 THE AGENT REPOSITORY REMOVER makes its last look under the marked name too, after the second probe:
-a repository with a work tree is refused, keep_failed, on any modified, staged or untracked entry and
-on any ignored path that is work, because nothing has saved them (the snapshot of a worker clone and
-its file by file comparison are VELDO-0347); then the tips are compared.
+a repository with a work tree is refused, keep_failed, on any modified, staged or untracked entry, on
+any ignored path that is work and on any tracked file hidden from git's status whose content is not
+the index's, because nothing has saved them (the snapshot of a worker clone and its file by file
+comparison are VELDO-0347); then the tips are compared. A repository that has linked worktrees, any
+entry of git's worktree list besides its own, one git could clear away included, is refused,
+keep_failed, whether it is bare or not: the index, the HEAD and git's record of each linked worktree
+are files inside the repository's folder, and no keep step saves a linked worktree's index yet.
 
 THE DOCKER REMOVERS name one object to the engine, on the item's engine context: a container by its
-id, an image by its tag, a volume by its name, a network by its id. The engine's refusal (a container
-uses the image or the volume, an endpoint is attached) is remove_refused. A container that does not
-stop is not removed.
+id, an image by its tag, a volume by its name, a network by its id. Each first has the engine show
+the object and compares it with the item's record: the Id, when the locator holds one, and the compose
+project label, when the locator holds one. An object the engine cannot show, one with another Id and
+one without that label is not the object the item recorded (a volume removed and made again under the
+same name, with data), and is remove_refused with nothing asked of the engine. The engine's refusal (a
+container uses the image or the volume, an endpoint is attached) is remove_refused. A container that
+does not stop is not removed.
 
 WHAT EACH ANSWER HOLDS (design 4.1, removal). bytes: the item's bytes measured just before, with
 bytes_source (measured; last_measurement when the engine gives no figure and the ledger's last
@@ -572,11 +584,41 @@ def _digest(path):
     return {'mode': found.st_mode, 'sha256': digest.hexdigest()}
 
 
+def _hidden(commands, read, where):
+    """The tracked files git was told not to look at, by the assume-unchanged or the skip-worktree bit,
+    that are on disk with content that is not the index's, or that cannot be read. git's status names
+    none of them and git's worktree remove takes them without a word."""
+    hidden = []
+    for entry in read('ls-files', '-v', '-s', '-z').split('\0')[:-1]:
+        head, _, name = entry.partition('\t')
+        tag, mode, blob = (head.split(' ') + ['', ''])[:3]
+        if not (tag.islower() or tag.upper() == 'S'):
+            continue  # neither bit: git's status reads this file
+        full = os.path.join(where, name)
+        try:
+            found = os.lstat(full)
+        except (FileNotFoundError, NotADirectoryError):
+            continue  # not on disk: nothing of it is only here
+        except OSError:
+            hidden.append(name)
+            continue
+        code, out = None, ''
+        if stat.S_ISLNK(found.st_mode) and mode == '120000':
+            code, out = _git(commands, '-C', where, 'hash-object', '--stdin', feed=os.fsencode(os.readlink(full)))
+        elif stat.S_ISREG(found.st_mode) and mode.startswith('100'):
+            code, out = _git(commands, '-C', where, 'hash-object', '--', name)
+        if code != 0 or out.strip() != blob:
+            hidden.append(name)  # other content, another type, or a file that cannot be read
+    return hidden
+
+
 def _looked(ctx, record, where):
     """The work tree at `where` as git reads it now, every ignored path included: (changed, work).
     changed names the modified, staged and untracked entries. work names every ignored file that is
     work: all but what lies in an ignored folder that a committed ignore file of this work tree or a
-    build output pattern the project declares covers (design 0.1). Raises _Stop when git cannot say."""
+    build output pattern the project declares covers (design 0.1); for a worktree reconcile adopted
+    only the declared patterns count (design 6.3). work also names every tracked file hidden from
+    git's status whose content is not the index's (_hidden). Raises _Stop when git cannot say."""
     commands = ctx['commands']
 
     def read(*argv, feed=None):
@@ -595,6 +637,7 @@ def _looked(ctx, record, where):
         (ignored if state == '!!' else changed).append(name)
     folders = [name for name in ignored if name.endswith('/')]
     work = [name for name in ignored if not name.endswith('/')]  # a loose ignored file is work
+    work.extend(_hidden(commands, read, where))
     if folders:
         rules = read('check-ignore', '-v', '-z', '--stdin',
                      feed=b''.join(os.fsencode(name) + b'\0' for name in folders)).split('\0')[:-1]
@@ -602,6 +645,8 @@ def _looked(ctx, record, where):
         named = sorted(set(found for found in source.values()
                            if not os.path.isabs(found) and os.path.basename(found) == '.gitignore'))
         committed = set(read('ls-files', '-z', '--', *named).split('\0')[:-1]) if named else set()
+        if record.get('adopted'):
+            committed = set()  # nobody saw what was made in it: its ignore files prove nothing (design 6.3)
         patterns = _declared(ctx, record, 'build_output')
         for folder in folders:
             base = os.path.basename(folder.rstrip('/'))
@@ -611,7 +656,7 @@ def _looked(ctx, record, where):
             for at, _, files in os.walk(top, onerror=_raise):
                 inside.extend(os.path.relpath(os.path.join(at, name), where) for name in files)
             work.extend(inside)  # an empty folder holds no work
-    return changed, sorted(work)
+    return changed, sorted(set(work))
 
 
 def _raise(error):
@@ -627,6 +672,16 @@ def _unsaved(where, work, snapshot):
             or {key: files[name].get(key) for key in ('mode', 'sha256')} != _digest(os.path.join(where, name))]
 
 
+def _linked(ctx, where):
+    """The linked worktrees of the repository at `where`: every entry of git's worktree list besides
+    the first, which is the repository itself, one git could clear away included."""
+    code, out = _git(ctx['commands'], '-C', where, 'worktree', 'list', '--porcelain', '-z')
+    entries = [field[len('worktree '):] for field in str(out).split('\0') if field.startswith('worktree ')]
+    if code != 0 or not entries:
+        raise _Stop('git could not list the worktrees of the repository: ' + str(out)[:200])
+    return entries[1:]
+
+
 def _last_look(ctx, record, kept, where):
     """The last look at a worktree or an agent repository under its marked name `where`, after the
     in-use probe: the work nothing saved, then the tips against the keep step's. Raises the refusal."""
@@ -638,6 +693,11 @@ def _last_look(ctx, record, kept, where):
             if code != 0:
                 raise _Stop('git could not read the repository: ' + str(out)[:200])
             bare = out.strip() == 'true'
+            linked = _linked(ctx, where)
+            if linked:
+                raise _Refusal(KEEP_FAILED, 'the repository has linked worktrees, and no keep step saves the '
+                               'index of one: ' + ', '.join(linked[:3]), linked=linked[:NAMED],
+                               more=max(0, len(linked) - NAMED))
         changed, work = ([], []) if bare else _looked(ctx, record, where)
         # git's own remove refuses a worktree's changed entries; nothing refuses a repository's.
         unsaved = (changed + work) if private else _unsaved(where, work, kept.get('snapshot'))
@@ -766,33 +826,53 @@ def _figure(value):
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
 
 
-def _size_container(ctx, locator):
-    return _figure((_inspected(ctx, locator, 'container', 'inspect', '--size', locator['id']) or {}).get('SizeRw'))
+def _size_container(shown):
+    return _figure(shown.get('SizeRw'))
 
 
-def _size_image(ctx, locator):
-    return _figure((_inspected(ctx, locator, 'image', 'inspect', locator['name']) or {}).get('Size'))
+def _size_image(shown):
+    return _figure(shown.get('Size'))
 
 
-def _size_volume(ctx, locator):
-    where = (_inspected(ctx, locator, 'volume', 'inspect', locator['name']) or {}).get('Mountpoint')
+def _size_volume(shown):
+    where = shown.get('Mountpoint')
     try:
         return measure(where) if isinstance(where, str) and where.startswith('/') else None
     except (OSError, RecursionError, _Stop):
         return None
 
 
-def _size_network(ctx, locator):
+def _size_network(shown):
     return 0
 
 
-def _docker(method, needs, size, steps):
+COMPOSE_PROJECT = 'com.docker.compose.project'
+
+
+def _recorded(locator, shown):
+    """Why the object the engine shows is not the one the item recorded, or None: the Id, when the
+    locator holds one, and the compose project label, when the locator holds one."""
+    if shown is None:
+        return 'the engine could not show the object'
+    if 'id' in locator and shown.get('Id') != locator['id']:
+        return 'the object has another Id than the item recorded'
+    labels = shown.get('Labels') if isinstance(shown.get('Labels'), dict) else (shown.get('Config') or {}).get('Labels')
+    if 'compose_project' in locator and (labels or {}).get(COMPOSE_PROJECT) != locator['compose_project']:
+        return 'the object does not carry the compose project label the item recorded'
+    return None
+
+
+def _docker(method, needs, show, size, steps):
     def remover(ctx, identity, record, answer):
         answer['method'] = method
         locator = record.get('locator') or {}
         if not all(isinstance(locator.get(field), str) and locator[field] for field in ('engine',) + needs):
             raise _Refusal(REFUSED, 'the locator does not name the object: ' + ', '.join(('engine',) + needs))
-        measured = size(ctx, locator)
+        shown = _inspected(ctx, locator, *[locator[word[1:]] if word.startswith('$') else word for word in show])
+        other = _recorded(locator, shown)
+        if other is not None:
+            raise _Refusal(REFUSED, other + ': it is not removed')
+        measured = size(shown)
         if measured is not None:
             answer['bytes'], answer['bytes_source'] = measured, 'measured'
         elif isinstance(record.get('size'), dict) and _figure(record['size'].get('bytes')) is not None:
@@ -808,11 +888,14 @@ def _docker(method, needs, size, steps):
     return remover
 
 
-_r_container = _docker('engine_stop_then_remove', ('id',), _size_container,
+_r_container = _docker('engine_stop_then_remove', ('id',), ('container', 'inspect', '--size', '$id'), _size_container,
                        (('container', 'stop', '$id'), ('container', 'rm', '$id')))
-_r_image_tag = _docker('engine_image_remove', ('name',), _size_image, (('image', 'rm', '$name'),))
-_r_volume = _docker('engine_volume_remove', ('name',), _size_volume, (('volume', 'rm', '$name'),))
-_r_network = _docker('engine_network_remove', ('id',), _size_network, (('network', 'rm', '$id'),))
+_r_image_tag = _docker('engine_image_remove', ('name',), ('image', 'inspect', '$name'), _size_image,
+                       (('image', 'rm', '$name'),))
+_r_volume = _docker('engine_volume_remove', ('name',), ('volume', 'inspect', '$name'), _size_volume,
+                    (('volume', 'rm', '$name'),))
+_r_network = _docker('engine_network_remove', ('id',), ('network', 'inspect', '$id'), _size_network,
+                     (('network', 'rm', '$id'),))
 
 
 # ---------------------------------------------------------------------------------------------

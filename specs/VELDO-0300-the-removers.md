@@ -144,3 +144,39 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   snapshot where the design's 6.5 row asks for one only after a Save. The design text is not edited by
   this change. Outside the footprint above, on the lead's instruction: .veldo/control_space_probe.py
   with its engine copy, scripts/check_git_boundary.py, suite 136 and proof/VELDO-0299.
+- 2026-11-14: fixed after the re-review (verdict FIX; review2-veldo-0300.md), under the owner's rule that
+  no work is ever lost (Telegram 41209). No acceptance criterion changed. The nine findings of the first
+  review were found resolved or recorded; the reviewer planted three new kinds of work and lost each with
+  a keep step that answered ok. Each now has a row that plants that work and a registered falsifier that
+  loses it:
+  - A, an edit git was told not to look at. A tracked file with the assume-unchanged or the skip-worktree
+    bit shows in no status, so neither the last look nor git's own remove saw its edit. The last look now
+    lists the index with its bits, and for each such file that is on disk compares git's hash of the
+    file with the index's; another content, another type or a file that cannot be read is work. It is
+    never left to git: an agent repository is refused keep_failed, and a worktree is refused keep_failed
+    unless the keep step's snapshot holds the file with the same mode and digest, as for an ignored file
+    that is work. Row work/hidden-edits, both bits in both kinds; falsifier: the read is skipped.
+  - B, an agent repository with linked worktrees. The index, the HEAD and git's record of a linked
+    worktree are files inside the repository's folder, so staged content in no commit went with it and
+    the outside worktree was left orphaned. For a private repository, bare or not, the last look reads
+    git's worktree list; any entry besides the repository's own, one whose folder is gone included, is
+    keep_failed with the repository put back. This holds until a keep step saves each linked worktree's
+    index, which is VELDO-0345's to add; nothing here removes such a repository. Rule 6 refuses the same
+    thing earlier in the chain; the remover does not rest on it. Row work/linked-worktrees; falsifier: the
+    list is not acted on.
+  - C, an adopted worktree. Design 6.3 lets a committed ignore file name build output only in a worktree
+    recorded when it was made; in one reconcile adopted only the project's declared build output
+    patterns count. The last look now reads the item's adopted field and, when it is set, counts no
+    committed ignore file as a source. Row work/adopted-build-output; falsifier: the field is not read.
+  - D, the two findings recorded where nothing bound them. Finding 6 is now VELDO-0301 AC5 (the
+    remover's deferral passed through; left_at keeps the item removing) and the ledger's part of it is
+    VELDO-0345 AC6. Finding 9 is fixed here in code and is no longer pointed at VELDO-0341: each Docker
+    remover has the engine show the object first and compares it with the item's record, the Id when
+    the locator holds one and the compose project label when the locator holds one; an object the
+    engine cannot show, one with another Id and one without that label is remove_refused and the engine
+    is asked to remove nothing. Row work/docker-object-made-again, on a volume; falsifier: the
+    comparison is skipped. What it cannot see: an engine gives a volume no Id of its own, so a volume
+    recorded by its name alone, with no compose project, has nothing to be compared with.
+  Not a finding, for the owner to know (the re-review's last table row): in a worktree recorded when it
+  was made, a folder a committed rule such as *.local or .vscode/ covers is build output by design 0.1
+  and 6.3 and goes with the worktree; a project keeps such a folder by its keep list.

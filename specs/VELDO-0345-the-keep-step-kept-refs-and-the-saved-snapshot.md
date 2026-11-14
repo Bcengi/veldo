@@ -112,6 +112,17 @@ acceptance_criteria:
       changes a file after the kill, and finds the new content neither in place nor restored. Keep only
       the newest attempt on the record: the row stops a review scratch removal after its first delete,
       retries, restores, and finds the first deleted file missing while restore said success
+  - id: AC6
+    text: >
+      The ledger accepts the outcome deferred for a removing item with each of the three deferrals a
+      remover names, remove_refused, in_use and keep_failed, records the one it was given, and refuses
+      every other deferral and the outcome kept for a removing item as before. So an item whose remover
+      put it back because it was in use, or because the last look found work the keep step did not
+      save, is recorded as that and is not completed to the end by reconcile
+    falsified_by: >
+      Accept remove_refused alone, as control_space.TOOL_REFUSAL does today; the row writes the outcome
+      deferred with keep_failed for a removing worktree that is back at its path with an unsaved file,
+      finds the outcome refused and the item still removing, and fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. Removers then run without the keep step, as before this ticket. Kept refs already
@@ -198,3 +209,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   (a commit made after the keep step). An answer with no tips is keep_failed. snapshot, when the step
   saved files, is {files: {path relative to the item: {mode: the st_mode, sha256}}}; the worktree
   remover refuses while any ignored file that is work is not in it with the same mode and digest.
+- 2026-11-14: from the re-review of VELDO-0300 (review2-veldo-0300.md, finding D; the first review's
+  finding 6). New AC6: the ledger's refusal of any deferral but remove_refused for a removing item
+  (control_space.TOOL_REFUSAL) has to accept the three deferrals a remover names, remove_refused, in_use
+  and keep_failed. It was a sentence in VELDO-0301's History and bound nobody; control_space.py is in
+  this ticket's footprint. Signal's part, passing the remover's deferral through, is VELDO-0301 AC5.
+  Until both are built a keep_failed or in_use refusal of a removing item is recorded as remove_refused.
+  Five criteria became six. AC6 is not in section 12 of the design, whose text this change does not
+  edit. Also from that re-review (finding B): the removers refuse, keep_failed, an agent repository
+  that has any linked worktree, because the index of a linked worktree lives inside the repository's
+  folder and nothing saves it. Removing such a repository needs a keep step that saves each linked
+  worktree's index; until this ticket or a later one adds it, such a repository waits.

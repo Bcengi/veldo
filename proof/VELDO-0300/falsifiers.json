@@ -25,10 +25,14 @@
    "ac4/folder-figures",
    "ac4/free-unread",
    "remove/canon",
+   "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-object-made-again",
+   "work/hidden-edits",
    "work/ignored-files",
    "work/link-and-dotdot",
+   "work/linked-worktrees",
    "work/marked-name",
    "work/probes-through-the-boundary",
    "work/repository-in-a-folder",
@@ -64,10 +68,14 @@
    "ac4/folder-figures",
    "ac4/free-unread",
    "remove/canon",
+   "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-object-made-again",
+   "work/hidden-edits",
    "work/ignored-files",
    "work/link-and-dotdot",
+   "work/linked-worktrees",
    "work/marked-name",
    "work/probes-through-the-boundary",
    "work/repository-in-a-folder",
@@ -179,9 +187,13 @@
    "ac4/folder-figures",
    "ac4/free-unread",
    "remove/canon",
+   "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-object-made-again",
+   "work/hidden-edits",
    "work/link-and-dotdot",
+   "work/linked-worktrees",
    "work/marked-name",
    "work/probes-through-the-boundary",
    "work/repository-in-a-folder"
@@ -211,10 +223,14 @@
    "ac4/folder-figures",
    "ac4/free-unread",
    "remove/canon",
+   "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-object-made-again",
+   "work/hidden-edits",
    "work/ignored-files",
    "work/link-and-dotdot",
+   "work/linked-worktrees",
    "work/marked-name",
    "work/probes-through-the-boundary",
    "work/repository-in-a-folder",
@@ -263,8 +279,12 @@
    "ac4/folder-figures",
    "ac4/free-unread",
    "remove/canon",
+   "work/adopted-build-output",
    "work/agent-repository-files",
+   "work/docker-object-made-again",
+   "work/hidden-edits",
    "work/link-and-dotdot",
+   "work/linked-worktrees",
    "work/marked-name",
    "work/probes-through-the-boundary",
    "work/repository-in-a-folder"
@@ -294,7 +314,11 @@
    "ac4/folder-figures",
    "ac4/free-unread",
    "remove/canon",
+   "work/adopted-build-output",
+   "work/docker-object-made-again",
+   "work/hidden-edits",
    "work/link-and-dotdot",
+   "work/linked-worktrees",
    "work/marked-name",
    "work/probes-through-the-boundary",
    "work/repository-in-a-folder"
@@ -375,6 +399,112 @@
    [
     "VELDO-0300 work/probes-through-the-boundary",
     "rule 5, read through the remover's runner, sees the file as untracked work and refuses [tool None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-hidden-edits-not-read",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/hidden-edits"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon",
+   "work/adopted-build-output",
+   "work/docker-object-made-again",
+   "work/hidden-edits",
+   "work/linked-worktrees"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/hidden-edits",
+    "worktree, --assume-unchanged: rules 1 to 6 pass, the remover refuses keep_failed and names the file [(True, None, 7, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-linked-worktrees-removed",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/linked-worktrees"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon",
+   "work/adopted-build-output",
+   "work/docker-object-made-again",
+   "work/linked-worktrees"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/linked-worktrees",
+    "an agent repository with a worktree outside its folder: the remover, called by itself, refuses keep_failed and names it [(True, None, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-adopted-ignore-files-trusted",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/adopted-build-output"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon",
+   "work/adopted-build-output",
+   "work/docker-object-made-again"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/adopted-build-output",
+    "adopted: the remover refuses keep_failed and names the file in the committed-ignore folder, not the declared build output [None (True, None, 7, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-object-not-compared",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-object-made-again"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "remove/canon",
+   "work/docker-object-made-again"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-object-made-again",
+    "a volume made again under the item's name with another Id and no label is remove_refused, the engine is not asked to remove it and it is still there [None]"
    ]
   ],
   "red_as_expected": true

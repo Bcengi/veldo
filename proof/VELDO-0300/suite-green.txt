@@ -1,4 +1,4 @@
   selector    --suite 138_veldo_0300_space_remove
   running     1 of 208 suites: 138_veldo_0300_space_remove
-  138_veldo_0300_space_remove                     29 passed    1.78s
-selftest (PARTIAL, 1 of 208 suites): 55 passed, 0 failed in 1.78s
+  138_veldo_0300_space_remove                     33 passed    2.40s
+selftest (PARTIAL, 1 of 208 suites): 59 passed, 0 failed in 2.40s
