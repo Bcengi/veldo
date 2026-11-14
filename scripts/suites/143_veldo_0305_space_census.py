@@ -63,7 +63,16 @@ byte for byte; an ignore file the run changed covers nothing at all; a worktree 
 start commit gets declared patterns only), review/negation-keeps-folder (out/ beside !out/keep.txt,
 and a pattern without a slash that reaches three levels into a folder: git reports each folder whole,
 the census names each as work, every file is byte for byte after run finished, and a folder no
-negation reaches is still build output and goes), review/local-excludes-file (a repository-local
+negation reaches is still build output and goes), review/negation-in-info-exclude (the re-review,
+finding 2-b: out/ committed as ignored and !out/keep.txt, with a negation without a slash, in the
+exclude file of a linked worktree's common directory: git reports each folder whole, the census names
+each as work, every file is byte for byte after run finished, the folder no negation reaches goes;
+an exclude file that cannot be read records nothing new), review/negation-in-nested-ignore-file (the
+re-review, finding 2-b: an untracked .gitignore inside build/ with !keep.txt, one two levels down in
+target/ with a path of its own directory, and a tracked one beside the reported folder: each folder
+is work and every file is byte for byte after run finished; a nested ignore file with no negation
+keeps nothing and its folder goes; one that cannot be read makes its folder work),
+review/local-excludes-file (a repository-local
 core.excludesFile naming a committed tools/.gitignore: the folder at the top is untracked work, and
 when git is made to apply the file anyway the folder still gets no item, while the folder inside
 tools, which that file does cover, is an item), review/refusal-names-the-folder (a folder there with
@@ -117,7 +126,8 @@ def _v305_space_census_suite():
             'ac3/declared-before-worker', 'ac3/engine-strip', 'ac3/refused-not-pointed', 'ac3/nothing-given',
             'ac3/spawn-order', 'ac3/run-end',
             'ac4/adopted-patterns-only', 'ac4/not-recorded',
-            'review/run-commits-ignore-rule', 'review/negation-keeps-folder', 'review/local-excludes-file',
+            'review/run-commits-ignore-rule', 'review/negation-keeps-folder',
+            'review/negation-in-info-exclude', 'review/negation-in-nested-ignore-file', 'review/local-excludes-file',
             'review/refusal-names-the-folder', 'review/scratch-apart-from-run-directory',
             'paths/nothing-deleted', 'paths/canon')
     rows = {name: [] for name in ROWS}
@@ -1029,6 +1039,112 @@ def _v305_space_census_suite():
                        '[%s %s]' % (census.get('refusal'), census['work']),
                   str(sealed) not in items_at(path) and (census['refusal'] == 'census_failed' or os.getuid() == 0
                                                          or 'data/' in census['work']))
+
+            row = 'review/negation-in-info-exclude'
+            path, item, ticket, run = worktree()
+            EXCLUDE = Path(git(path, 'rev-parse', '--git-path', 'info/exclude'))
+            EXCLUDE = EXCLUDE if EXCLUDE.is_absolute() else path / EXCLUDE
+            exclude_before = text_of(EXCLUDE)
+            KEPT = plant(path / 'out' / 'keep.txt', 'the file the owner said to keep, in info/exclude\n')
+            BESIDE = plant(path / 'out' / 'app.bin', 'beside the kept file\n')
+            DEEP = plant(path / 'generated' / 'a' / 'b' / 'tuned.kept', 'three levels down, kept by name\n')
+            plant(path / 'build' / 'app.o', 'no negation reaches this\n')
+            try:
+                plant(EXCLUDE, (exclude_before or '') + '!out/keep.txt\n!*.kept\n')
+                check(row, 'the fixture is real: the worktree is a linked one, its exclude file is the common '
+                           'directory\'s, and git reports each folder whole, the kept file with it [%s %s]'
+                      % (EXCLUDE, reported(path)),
+                      str(EXCLUDE) == str(REPOSITORY / '.git' / 'info' / 'exclude') and (path / '.git').is_file()
+                      and reported(path) == ['!! build/', '!! generated/', '!! out/'])
+                with drive(row):
+                    census = LA.space_census(space(), str(path), 'run_finished', owner=run)
+                found = items_at(path)
+                check(row, 'the folder a negation of info/exclude reaches into gets no item and is named as work '
+                           '[%s %s]' % (sorted(found), census['work']),
+                      str(path / 'out') not in found and 'out/' in census['work'])
+                check(row, 'the folder a negation of info/exclude without a slash reaches three levels into gets '
+                           'no item [%s]' % (census['work'],),
+                      str(path / 'generated') not in found and 'generated/' in census['work'])
+                check(row, 'the folder no negation reaches is still a build output item [%s]' % sorted(census['items']),
+                      list(census['items']) == [str(path / 'build')] and census['work'] == ['generated/', 'out/'])
+                finished(run)
+                check(row, 'after run finished the kept files and what is beside them are byte for byte, and the '
+                           'build output is gone',
+                      text_of(path / 'out' / 'keep.txt') == KEPT and text_of(path / 'out' / 'app.bin') == BESIDE
+                      and text_of(path / 'generated' / 'a' / 'b' / 'tuned.kept') == DEEP
+                      and not os.path.lexists(path / 'build'))
+                plant(path / 'target' / 'debug' / 'app', 'covered by the committed rule\n')
+                os.chmod(EXCLUDE, 0)
+                try:
+                    with drive(row):
+                        census = LA.space_census(space(), str(path), 'verdict_recorded', owner=run)
+                finally:
+                    os.chmod(EXCLUDE, 0o644)
+                check(row, 'an exclude file that cannot be read shows no folder to be build output: nothing new is '
+                           'recorded [%s %s]' % (census.get('refusal'), census.get('work')),
+                      str(path / 'target') not in items_at(path)
+                      and (census.get('refusal') == 'census_failed' or os.getuid() == 0
+                           or 'target/' in census['work']))
+            finally:
+                if exclude_before is None:
+                    EXCLUDE.unlink()
+                else:
+                    plant(EXCLUDE, exclude_before)
+
+            row = 'review/negation-in-nested-ignore-file'
+            path, item, ticket, run = worktree()
+            # build/: an ignore file a tool wrote inside the folder, in no commit and not in the index
+            plant(path / 'build' / '.gitignore', '*\n!keep.txt\n')
+            KEPT = plant(path / 'build' / 'keep.txt', 'the file the nested ignore file said to keep\n')
+            OBJECT = plant(path / 'build' / 'app.o', 'beside the kept file\n')
+            # target/: the ignore file two levels down, its pattern relative to its own directory
+            plant(path / 'target' / 'debug' / '.gitignore', '!golden/expected.txt\n')
+            GOLDEN = plant(path / 'target' / 'debug' / 'golden' / 'expected.txt', 'kept from two levels down\n')
+            # generated/: the ignore file is tracked (in the index), the folder git reports is beside it
+            plant(path / 'generated' / '.gitignore', '!deep/keep.txt\n')
+            git(path, 'add', '-f', 'generated/.gitignore')
+            TRACKED = plant(path / 'generated' / 'deep' / 'keep.txt', 'kept by a tracked nested ignore file\n')
+            # out/: a nested ignore file with no negation keeps nothing
+            plant(path / 'out' / '.gitignore', '*\n')
+            plant(path / 'out' / 'app.bin', 'no negation reaches this\n')
+            seen = reported(path)
+            check(row, 'the fixture is real: git reports build, target and out whole, the kept files with them, and '
+                       'the folder beside the tracked ignore file whole [%s]' % (seen,),
+                  seen == ['A  generated/.gitignore', '!! build/', '!! generated/deep/', '!! out/', '!! target/'])
+            with drive(row):
+                census = LA.space_census(space(), str(path), 'run_finished', owner=run)
+            found = items_at(path)
+            check(row, 'the folder with an untracked ignore file inside it that negates a file gets no item and is '
+                       'named as work [%s %s]' % (sorted(found), census['work']),
+                  str(path / 'build') not in found and 'build/' in census['work'])
+            check(row, 'the folder whose ignore file two levels down negates a path gets no item [%s]'
+                  % (census['work'],), str(path / 'target') not in found and 'target/' in census['work'])
+            check(row, 'the folder a tracked ignore file inside the ignored folder reaches into gets no item [%s]'
+                  % (census['work'],),
+                  str(path / 'generated' / 'deep') not in found and 'generated/deep/' in census['work'])
+            check(row, 'the folder whose nested ignore file holds no negation is still a build output item [%s]'
+                  % sorted(census['items']),
+                  list(census['items']) == [str(path / 'out')]
+                  and census['work'] == ['build/', 'generated/deep/', 'target/'])
+            finished(run)
+            check(row, 'after run finished every kept file and what is beside it is byte for byte, and the build '
+                       'output is gone',
+                  text_of(path / 'build' / 'keep.txt') == KEPT and text_of(path / 'build' / 'app.o') == OBJECT
+                  and text_of(path / 'target' / 'debug' / 'golden' / 'expected.txt') == GOLDEN
+                  and text_of(path / 'generated' / 'deep' / 'keep.txt') == TRACKED
+                  and not os.path.lexists(path / 'out'))
+            plant(path / 'data' / '.gitignore', '!keep.txt\n')
+            plant(path / 'data' / 'set.bin', 'beside an ignore file nobody can read\n')
+            os.chmod(path / 'data' / '.gitignore', 0)
+            try:
+                with drive(row):
+                    census = LA.space_census(space(), str(path), 'verdict_recorded', owner=run)
+            finally:
+                os.chmod(path / 'data' / '.gitignore', 0o644)
+            check(row, 'a nested ignore file that cannot be read makes its folder work, or nothing is recorded at '
+                       'all [%s %s]' % (census.get('refusal'), census.get('work')),
+                  str(path / 'data') not in items_at(path)
+                  and (census.get('refusal') == 'census_failed' or os.getuid() == 0 or 'data/' in census['work']))
 
             row = 'review/local-excludes-file'
             path, item, ticket, run = worktree(at='kept-lines')

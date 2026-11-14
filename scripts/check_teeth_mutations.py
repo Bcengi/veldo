@@ -13661,6 +13661,19 @@ def cases():
               "SPACE_RUN_SCRATCH = 'runs'\n", ['review/scratch-apart-from-run-directory'])
     census305('space305-review-run-directory-not-looked-at',
               "            if run:\n", "            if False:\n", ['review/scratch-apart-from-run-directory'])
+    # The re-review of VELDO-0305 (finding 2-b): a negation the owner wrote where git itself never
+    # looks once the folder is excluded: the repository's exclude file, read from the worktree's own
+    # git directory instead of the common one, or not read at all, and an ignore file inside the folder.
+    census305('space305-review2-info-exclude-not-read',
+              "    if personal is not None and negations(personal, ''):\n",
+              "    if False:\n", ['review/negation-in-info-exclude'])
+    census305('space305-review2-info-exclude-of-the-worktree-only',
+              "        personal = os.path.join(top, _census_git(where, 'rev-parse', '--git-path', 'info/exclude').rstrip('\\n'))\n",
+              "        personal = os.path.join(_census_git(where, 'rev-parse', '--absolute-git-dir').rstrip('\\n'), 'info', 'exclude')\n",
+              ['review/negation-in-info-exclude'])
+    census305('space305-review2-nested-ignore-file-not-read',
+              "        if '.gitignore' in folders + files and negations(os.path.join(found, '.gitignore'), inside):\n",
+              "        if False:\n", ['review/negation-in-nested-ignore-file'])
 
     # VELDO-0306: Docker objects: label, snapshot, events, removal. The declared falsifier of each
     # acceptance criterion. AC1: read one context only. AC2: attribute an object with no label to a

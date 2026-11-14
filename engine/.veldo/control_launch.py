@@ -704,26 +704,29 @@ def _census_git(where, *argv, feed=None, absent=False):
     return done.stdout.decode('utf-8', 'surrogateescape')
 
 
-def _census_negations(top, folder):
-    """Whether a negation pattern (`!keep.txt`) of an ignore file above `folder`, a folder of the
-    worktree `top` named relative to it, could match the folder or anything inside it. Git never
-    re-includes a path under a folder it excludes, so it reports `out/` whole beside `!out/keep.txt`;
-    but the file says that path is not to be ignored, and so the folder is not shown to be build
-    output. Every .gitignore on disk from the folder's own directory up to the top is read,
-    committed or not: a negation only ever keeps. The match is wider than git's (a star crosses a
-    slash, a pattern with a backslash matches everything), and wider is the safe side. Raises OSError
-    when an ignore file or the folder cannot be read; the caller takes that for work."""
-    above = os.path.dirname(folder)
-    places = [above]
-    while places[-1]:
-        places.append(os.path.dirname(places[-1]))
+def _census_negations(top, folder, personal=None):
+    """Whether a negation pattern (`!keep.txt`) of an ignore file could match `folder`, a folder of
+    the worktree `top` named relative to it, or anything inside it. Git never re-includes a path
+    under a folder it excludes, and never reads an ignore file inside one, so it reports `out/`
+    whole beside `!out/keep.txt`; but the file says that path is not to be ignored, and so the
+    folder is not shown to be build output. Three places are read, committed or not, tracked or not,
+    because a negation only ever keeps: every .gitignore on disk from the folder's own directory up
+    to the top, the repository's own exclude file `personal` (info/exclude, whose patterns are
+    relative to the top), and every .gitignore inside the folder at any depth. The match is wider
+    than git's (a star crosses a slash, a pattern with a backslash matches everything, a pattern
+    with no slash is tried on every name in the folder wherever its file lies), and wider is the
+    safe side. Raises OSError when an ignore file or the folder cannot be read; the caller takes
+    that for work."""
     names, anchored = [], []
-    for place in places:
+
+    def negations(file, place):
+        # the negation patterns of one ignore file whose patterns are relative to `place`; True
+        # when one of them is an escape this reader does not follow, which could name anything
         try:
-            with open(os.path.join(top, place, '.gitignore'), 'rb') as handle:
+            with open(file, 'rb') as handle:
                 lines = handle.read().decode('utf-8', 'surrogateescape').splitlines()
         except (FileNotFoundError, NotADirectoryError):
-            continue
+            return False
         for line in lines:
             if not line.startswith('!'):
                 continue
@@ -731,7 +734,7 @@ def _census_negations(top, folder):
             if not pattern:
                 continue
             if '\\' in pattern:
-                return True  # an escape this reader does not follow: it could name anything
+                return True
             if '/' not in pattern:
                 names.append(pattern)
                 continue
@@ -740,23 +743,27 @@ def _census_negations(top, folder):
             fixed = re.split(r'[*?\[]', pattern, maxsplit=1)[0]
             if fixed.startswith(folder + '/') or (folder + '/').startswith(fixed) or fixed == folder:
                 anchored.append(pattern)
-    if not names and not anchored:
         return False
-
-    def matched(path):
-        return (any(fnmatch.fnmatchcase(os.path.basename(path), pattern) for pattern in names)
-                or any(fnmatch.fnmatchcase(path, pattern) for pattern in anchored))
 
     def unread(error):
         raise error
 
-    if matched(folder):
+    places = [os.path.dirname(folder)]
+    while places[-1]:
+        places.append(os.path.dirname(places[-1]))
+    for place in places:
+        if negations(os.path.join(top, place, '.gitignore'), place):
+            return True
+    if personal is not None and negations(personal, ''):
         return True
+    paths = [folder]
     for found, folders, files in os.walk(os.path.join(top, folder), onerror=unread):
         inside = os.path.relpath(found, top)
-        if any(matched(os.path.join(inside, name)) for name in folders + files):
+        paths.extend(os.path.join(inside, name) for name in folders + files)
+        if '.gitignore' in folders + files and negations(os.path.join(found, '.gitignore'), inside):
             return True
-    return False
+    return any(fnmatch.fnmatchcase(os.path.basename(path), pattern) for path in paths for pattern in names) \
+        or any(fnmatch.fnmatchcase(path, pattern) for path in paths for pattern in anchored)
 
 
 def census_read(where, adopted=False, patterns=(), keep=(), start=None):
@@ -771,8 +778,9 @@ def census_read(where, adopted=False, patterns=(), keep=(), start=None):
     folder does not turn it into build output. A worktree with no recorded start commit gets the
     declared patterns only. A per-directory ignore file covers only what lies in its own directory:
     a file git applied from anywhere else (a personal excludes file that happens to be committed)
-    covers nothing. And a folder that a negation pattern of an ignore file above it could reach
-    into is work, whole (_census_negations). In a worktree reconcile adopted,
+    covers nothing. And a folder that a negation pattern could reach into is work, whole, whether
+    the pattern is in an ignore file above the folder, in info/exclude or in an ignore file inside
+    the folder (_census_negations). In a worktree reconcile adopted,
     whose history nobody saw, the ignore files prove nothing and only the declared patterns count.
     kept names the folders a keep entry of the project holds: the entry itself, anything inside it,
     and a folder the entry lies in. They are left out.
@@ -800,8 +808,10 @@ def census_read(where, adopted=False, patterns=(), keep=(), start=None):
     folders = [name for name in ignored if name.endswith('/')]
     work = untracked + [name for name in ignored if not name.endswith('/')]  # a loose ignored file is work
     build, kept = [], []
-    source, committed = {}, set()
+    source, committed, personal = {}, set(), None
     if folders:
+        # the repository's own exclude file; a linked worktree reads the one of the common directory
+        personal = os.path.join(top, _census_git(where, 'rev-parse', '--git-path', 'info/exclude').rstrip('\n'))
         rules = _census_git(where, 'check-ignore', '-v', '-z', '--stdin',
                             feed=b''.join(os.fsencode(name) + b'\0' for name in folders)).split('\0')[:-1]
         source = {rules[at + 3]: rules[at] for at in range(0, len(rules) - 3, 4)}
@@ -826,7 +836,7 @@ def census_read(where, adopted=False, patterns=(), keep=(), start=None):
         elif placed or any(
                 fnmatch.fnmatchcase(os.path.basename(inside), pattern) for pattern in patterns):
             try:
-                negated = _census_negations(top, inside)
+                negated = _census_negations(top, inside, personal)
             except (OSError, ValueError):
                 negated = True  # what could not be read is not shown to be build output
             if negated:

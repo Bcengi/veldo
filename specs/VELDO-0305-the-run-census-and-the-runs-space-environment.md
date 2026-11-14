@@ -164,3 +164,22 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     owner; build output, so no work is lost), the remover's last look, which has finding 1's hole
     and is VELDO-0347's, and a build output item declared before a run changed the ignore file,
     which stays an item.
+- 2026-11-14: fixed from the re-review (verdict FIX, finding 2-b). No acceptance criterion changed.
+  - A negation keeps the folder wherever its owner wrote it. Beside every .gitignore from the
+    folder's directory up to the top, the census now reads the negation patterns of the
+    repository's own exclude file (resolved with git rev-parse --git-path info/exclude, so a
+    linked worktree reads the common directory's) and of every .gitignore inside the folder, at
+    any depth, tracked or not. Git reads neither once the folder is excluded; the census does,
+    because a negation only ever keeps. A pattern that could match the folder or a path inside
+    it, or a file that cannot be read, makes the folder work, whole. A positive rule in either
+    place still covers nothing. The folder is now always walked, where before it was walked only
+    when a negation above it was found. Rows review/negation-in-info-exclude and
+    review/negation-in-nested-ignore-file, with three registered falsifiers.
+  - The re-review's finding 7 (the first fix commit carried four files of VELDO-0306 without
+    their canon) was closed by VELDO-0306's own commits: the template sync check passes and
+    suites 133 to 141 have no red canon row on this tree. The proof's suite list is taken again
+    from the committed tree.
+  - Still open: finding 6, as recorded above. A negation in a personal excludes file that
+    core.excludesFile names is not read, as that file is never read at all. And the re-review's
+    note 1: the recorded start commit must be a commit the project landed, never the tip of a
+    run's branch, which the writer of those records (VELDO-0302, VELDO-0347) has to keep.
