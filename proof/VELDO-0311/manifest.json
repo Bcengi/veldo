@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0311",
- "commit": "90cc1fc8ffd41613e2591d974cbb6a2047ad4712",
- "tree": "3de9bcf58eeefa0553f9770c0d5a5a13f9140c49",
- "producer": "Claude implementation agent (build, and the fix round after the review); not an independent reviewer",
- "produced_at": "2026-11-14T16:28:02.344985+00:00",
+ "commit": "7ef741cdfb33040f37ac5130e1c3b59f094d6f41",
+ "tree": "83ebb89c208f1b5fdc516dd1332f9a692b3007ff",
+ "producer": "Claude implementation agent (build, the fix round and fix round 2 after the reviews); not an independent reviewer",
+ "produced_at": "2026-11-14T20:36:36.730679+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -96,6 +96,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0311/falsifiers.json",
      "detail": "Fix round, each applied once and seen red: space311-trunk-guessed-by-the-hook and space311-trunk-guessed-as-main red f1/no-declaration-nothing-sent; space311-ref-not-judged-against-the-declared-trunk reds f1/trunk-master-main-moved; space311-entry-taken-at-its-word reds f2/commit-not-on-ref-is-nothing. The declared falsifier was applied again and is still red on its row."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Fix round 2 rows (the re-review of 90cc1fc8). r2/git-runs-whole-read-forms-only (finding 1, blocking): the one function that runs git takes the five whole forms the module uses and no other; more than fifty other forms, among them a symbolic ref given a value, a symbolic ref deleted, update-ref, config writes, -c and other options before the command, and other forms of the four commands, are each answered (None, '') with no git process started, and the refs, both HEADs, the configuration, the worktree list and the worktree are as they were; the five whole forms are run, one process each. paths/no-delete-and-canon, restored: every place the module calls that function passes one of the five forms, the function goes by no other name, the module starts a process in one place only and that place is behind the guard. r2/old-commit-never-passed-on (finding 2): an entry with an old commit git never had is recorded with old as null, and that commit is nowhere in the record; what read_git answers for a true entry has old as null; the spool entry is not changed. Rows ac3/one-event-record, f1/trunk-master-main-moved and f2/commit-not-on-ref-is-nothing now expect old as null in the event record."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "Fix round 2, each applied once and seen red: space311-git-allowed-by-its-first-word (the guard goes by the first word again) reds r2/git-runs-whole-read-forms-only; space311-ref-write-added-to-the-read (the reviewer's own mutant: a symbolic-ref write added to read_git) reds paths/no-delete-and-canon; space311-old-commit-passed-on-unread (the hook's word for the old commit is signed) reds r2/old-commit-never-passed-on. The declared falsifier and those of the fix round were applied again on this tree and are still red on their rows."
     }
    ]
   },
@@ -127,6 +137,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0311/falsifiers.json",
      "detail": "Fix round, each applied once and seen red: space311-spool-folder-of-any-mode-taken reds f2/unsafe-folder-refused; space311-entry-file-of-any-mode-read reds f2/unsafe-entry-set-aside; space311-server-identity-not-asked reds f2/server-identity-checked; space311-nothing-dropped-without-a-trace reds f4/nothing-leaves-a-trace; space311-replay-without-a-deadline reds f5/replay-stops-at-its-deadline. The declared falsifier was applied again and is still red on its row."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Fix round 2 row. r2/deadline-bounds-git-reads (finding 3): in a replay of five seconds whose authority takes two for each entry, every read of git for the first entry is given three seconds and for the second one second; for the third no time is left, no git process is started, and the entry stays in the spool whole with its count of tries unchanged, nothing set aside; a read asked for past the deadline starts no process; a read with no deadline has five seconds; the next replay delivers the entry. f5/replay-stops-at-its-deadline now moves its clock in the authority's accept, so it still shows the stop between two entries."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "Fix round 2, applied once and seen red: space311-git-read-not-given-the-time-left (the replay reads git with no deadline) reds r2/deadline-bounds-git-reads. space311-replay-without-a-deadline, applied on 8a9f4a1b against the changed row f5/replay-stops-at-its-deadline, was NOT red: with the deadline inside git's reads a third entry started past the deadline stays spooled anyway. The row now also reads that the authority is never asked about the third entry (7ef741cd, suite only), and the case applied again there is red on it. The declared falsifier is still red on its row."
     }
    ]
   }
@@ -135,7 +155,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "On the committed tree (commit 90cc1fc8ffd4): python3 scripts/selftest.py --suite 148_veldo_0311_git_hooks (28 rows, 54 passed with the shared preamble, 0 failed); suites 147_veldo_0310_landed_contained and 133_veldo_0326_space_principals, 56 passed and 0 failed each (proof/VELDO-0311/suite-green.txt). Partial runs, not the gate."
+   "command": "python3 scripts/selftest.py --suite 148_veldo_0311_git_hooks on the committed tree (commit 7ef741cdfb33): 31 rows, 57 passed with the shared preamble, 0 failed. On 8a9f4a1b2c01 (the same production files; one row of suite 148 differs): suites 147_veldo_0310_landed_contained (56 passed), 149_veldo_0312_ticket_ended (61 passed) and 133_veldo_0326_space_principals (56 passed), 0 failed each (proof/VELDO-0311/suite-green.txt). Partial runs, not the gate."
   },
   {
    "name": "integration",
@@ -145,7 +165,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The 21 cases of finding 311 (10 of the build applied again, 11 of the fix round), each applied once on the committed tree, noop copy green and mutant copy red on its target rows (proof/VELDO-0311/mutations.txt, falsifiers.json). Not the teeth run."
+   "command": "The 25 cases of finding 311 (10 of the build and 11 of the fix round applied again, 4 of fix round 2), each applied once on 8a9f4a1b2c01, noop copy green and mutant copy red on its target rows, but for one: space311-replay-without-a-deadline was green there, its row was strengthened in 7ef741cdfb33 and the case is red on that tree (proof/VELDO-0311/mutations.txt, falsifiers.json). Not the teeth run."
   },
   {
    "name": "fast checks",
@@ -165,7 +185,8 @@
   "4. THE TWO CHECKS OF A SWITCH TO ACT (VELDO-0332 and 0339) are stand-ins that allow, so the fixture project can be in act mode; the docker client and the process table are fixtures.",
   "5. THE TRUNK IS NEVER GUESSED (fix round). The hook reads veldo.space.trunk, which VELDO-0329 is to set from the declared land trunk, and the authority reads the land entry through Local's landing argument; the suite gives both. NOT PROVEN HERE: the service handing its own land entry (control_service.landing_names) to Local, which is the wiring of VELDO-0323 and 0315. A plain repository has no land entry today and gets no trunk events.",
   "6. Suite 86_veldo_0127 was not run (52 of 54 by a known recapture; left as it is). scripts/check_pack_drift.py reports the pack's engine copy missing in this worktree (417 files, none of this ticket's); it is not one of the gate's checks and was left as found.",
-  "7. FIX ROUND LIMITS. Another account cannot be played in a suite: the other-owner refusal is shown by making this account read as another, and the socket check by expecting another account than the one that serves. The old commit of a ref change is the hook's word and is not verified. No key authenticates an entry (owner rule: single-user setup); VELDO-0323 has the duty the spec's History records. The builder did not read the reviewer's own probe file; row f2/unsafe-folder-refused rebuilds it from the review's description."
+  "7. FIX ROUND LIMITS. Another account cannot be played in a suite: the other-owner refusal is shown by making this account read as another, and the socket check by expecting another account than the one that serves. The old commit of a ref change is not read from git and, since fix round 2, is recorded as null. No key authenticates an entry (owner rule: single-user setup); VELDO-0323 has the duty the spec's History records. The builder did not read the reviewer's own probe file; row f2/unsafe-folder-refused rebuilds it from the review's description.",
+  "8. FIX ROUND 2 LIMITS. The five whole forms are judged by their arguments, and the folder git is run in is the entry's repository or worktree path, as before. A read of git that does not end within five seconds when no deadline cut it short is still answered as unread, and the entry is then recorded as nothing with an observation that holds it whole (as in the fix round). AC3 names the old commit: the event record has the field, null, until VELDO-0323's consumer reads it from git itself. With a deadline inside an entry the suite's timing rows depend on git answering within the time left (three seconds and one second in the row); on a heavily loaded machine a hook's own five seconds can run out sooner than before, and the entries then stay spooled for the next call."
  ],
  "rollback": "Revert the change. The hooks record nothing, and a worktree made with plain git is found by reconcile."
 }

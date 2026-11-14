@@ -34,7 +34,10 @@
    "f4/paths-as-the-ledger-compares",
    "f5/replay-stops-at-its-deadline",
    "hooks/never-fail-git",
-   "paths/no-delete-and-canon"
+   "paths/no-delete-and-canon",
+   "r2/deadline-bounds-git-reads",
+   "r2/git-runs-whole-read-forms-only",
+   "r2/old-commit-never-passed-on"
   ],
   "red_details": [
    [
@@ -43,7 +46,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -79,7 +82,10 @@
    "f4/paths-as-the-ledger-compares",
    "f5/replay-stops-at-its-deadline",
    "hooks/never-fail-git",
-   "paths/no-delete-and-canon"
+   "paths/no-delete-and-canon",
+   "r2/deadline-bounds-git-reads",
+   "r2/git-runs-whole-read-forms-only",
+   "r2/old-commit-never-passed-on"
   ],
   "red_details": [
    [
@@ -88,7 +94,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -110,7 +116,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -128,7 +134,8 @@
    "ac4/replayed-in-order-at-next-call",
    "ac4/service-start-before-reconcile",
    "f5/replay-stops-at-its-deadline",
-   "paths/no-delete-and-canon"
+   "paths/no-delete-and-canon",
+   "r2/deadline-bounds-git-reads"
   ],
   "red_details": [
    [
@@ -137,7 +144,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -159,7 +166,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -183,7 +190,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -207,7 +214,10 @@
    "f4/nothing-leaves-a-trace",
    "f5/replay-stops-at-its-deadline",
    "hooks/never-fail-git",
-   "paths/no-delete-and-canon"
+   "paths/no-delete-and-canon",
+   "r2/deadline-bounds-git-reads",
+   "r2/git-runs-whole-read-forms-only",
+   "r2/old-commit-never-passed-on"
   ],
   "red_details": [
    [
@@ -216,7 +226,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -238,7 +248,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -260,7 +270,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -283,7 +293,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -306,7 +316,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -329,7 +339,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -353,7 +363,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -378,7 +388,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -401,7 +411,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -420,11 +430,11 @@
   "red_details": [
    [
     "VELDO-0311 f2/server-identity-checked",
-    "when the kernel names another account than the expected one nothing is sent {'answer': {'scope': {'type': 'project', 'id': 'orchard'}, 'patterns': ['agent/{agent}/{ticket}'], 'trunk': 'main', 'landing_refs': ['release'], 'item': None, 'stat"
+    "when the kernel names another account than the expected one nothing is sent {'answer': {'scope': {'type': 'project', 'id': 'orchard'}, 'patterns': ['agent/{agent}/{ticket}'], 'trunk': 'main', 'landing_refs': ['release'], 'item': None, 'state': None, 'creator': None, 'other': None}} {'served': True, 'answer': {'scope': {'type': 'project', 'id': 'orchard'}, 'patterns': ['agent/{agent}/{ticket}'], 'trunk': 'main', 'landing_refs': ['release'], 'item': None, 'state': None, 'creator': None, 'other': None}}"
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -438,7 +448,11 @@
   ],
   "noop_red_rows": [],
   "red_rows": [
-   "f2/commit-not-on-ref-is-nothing"
+   "ac3/one-event-record",
+   "f1/trunk-master-main-moved",
+   "f2/commit-not-on-ref-is-nothing",
+   "r2/deadline-bounds-git-reads",
+   "r2/old-commit-never-passed-on"
   ],
   "red_details": [
    [
@@ -447,7 +461,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -470,7 +484,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -492,7 +506,10 @@
    "f4/paths-as-the-ledger-compares",
    "f5/replay-stops-at-its-deadline",
    "hooks/never-fail-git",
-   "paths/no-delete-and-canon"
+   "paths/no-delete-and-canon",
+   "r2/deadline-bounds-git-reads",
+   "r2/git-runs-whole-read-forms-only",
+   "r2/old-commit-never-passed-on"
   ],
   "red_details": [
    [
@@ -501,7 +518,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -524,7 +541,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -543,11 +560,107 @@
   "red_details": [
    [
     "VELDO-0311 f5/replay-stops-at-its-deadline",
-    "a replay with a deadline of one second stops after the second entry [('worktree_added', 'recorded'), ('worktree_added', 'recorded'), ('worktree_added', 'recorded')]"
+    "the third entry is never started: the authority is not asked about it ['/tmp/v311-0vfi81tw/projects/orchard-worktrees/t151', '/tmp/v311-0vfi81tw/projects/orchard-worktrees/t152', '/tmp/v311-0vfi81tw/projects/orchard-worktrees/t153']"
    ]
   ],
   "red_as_expected": true,
-  "commit": "90cc1fc8ffd4",
+  "commit": "7ef741cdfb33",
+  "applied": "twice, and both are recorded: on 8a9f4a1b2c01 the mutant was NOT red on its row (targets {\"f5/replay-stops-at-its-deadline\": [true]}), because the row could no longer tell a stop between two entries from a third entry started and kept; the row was strengthened in 7ef741cdfb33 (suite only) and the case applied again there, noop copy then mutant copy: red"
+ },
+ {
+  "falsifier": "space311-git-allowed-by-its-first-word",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": false,
+  "rereview_finding": 1,
+  "expected_red": [
+   "r2/git-runs-whole-read-forms-only"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "paths/no-delete-and-canon",
+   "r2/git-runs-whole-read-forms-only"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 r2/git-runs-whole-read-forms-only",
+    "none of 56 forms that write, or that are not one of the five whole forms, is let through [('symbolic-ref', 'HEAD', 'refs/heads/unwatched'), ('symbolic-ref', '--delete', 'HEAD'), ('symbolic-ref', '-d', 'HEAD'), ('symbolic-ref', 'refs/r2/written', 'refs/heads/main')]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "8a9f4a1b2c01",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-ref-write-added-to-the-read",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": false,
+  "rereview_finding": 1,
+  "expected_red": [
+   "paths/no-delete-and-canon"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 paths/no-delete-and-canon",
+    "every place the module calls its one git function passes one of the five whole forms that read, and the function goes by no other name [('merge-base', '--is-ancestor', '<commit>', '<tip>'), ('rev-parse', '--absolute-git-dir'), ('rev-parse', '--verify', '--quiet', '--end-of-options', \"<name + '^{commit}'>\"), ('symbolic-ref', '-q', '--short', 'HEAD'), ('symbolic-ref', 'refs/rr0311/written', \"<subject['ref']>\"), ('worktree', 'list', '--porcelain')]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "8a9f4a1b2c01",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-old-commit-passed-on-unread",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": false,
+  "rereview_finding": 2,
+  "expected_red": [
+   "r2/old-commit-never-passed-on"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/one-event-record",
+   "f1/trunk-master-main-moved",
+   "f2/commit-not-on-ref-is-nothing",
+   "r2/old-commit-never-passed-on"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 r2/old-commit-never-passed-on",
+    "an entry with an old commit git never had is recorded with old as null [{'new': '19a0fa7cf0fc8b49070a934e4cf2df2884dbaf20', 'old': 'ffffffffffffffffffffffffffffffffffffffff', 'ref': 'refs/heads/main', 'repository': '/tmp/v311-fnpttnzo/projects/orchard'}]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "8a9f4a1b2c01",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-git-read-not-given-the-time-left",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "rereview_finding": 3,
+  "expected_red": [
+   "r2/deadline-bounds-git-reads"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "r2/deadline-bounds-git-reads"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 r2/deadline-bounds-git-reads",
+    "each read of git for the first entry is given the three seconds left, for the second the one second left [5.0, 5.0, 5.0, 5.0] [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "8a9f4a1b2c01",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  }
 ]
