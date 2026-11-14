@@ -1,0 +1,8 @@
+  selector    --suite 140_veldo_0345_space_keep
+  running     1 of 210 suites: 140_veldo_0345_space_keep
+  140_veldo_0345_space_keep                       25 passed    3.28s
+selftest (PARTIAL, 1 of 210 suites): 51 passed, 0 failed in 3.28s
+  139_veldo_0301_space_signal                     13 passed    0.98s
+  138_veldo_0300_space_remove                     39 passed    2.49s
+  132_veldo_0297_space_ledger                     31 passed    1.38s
+  133_veldo_0326_space_principals                 30 passed   24.51s

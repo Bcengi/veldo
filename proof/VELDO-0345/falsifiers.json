@@ -1,0 +1,360 @@
+[
+ {
+  "falsifier": "space345-refs-after-the-remove",
+  "criterion": "AC1",
+  "module": "control_space_remove.py",
+  "expected_red": [
+   "ac1/kept-before-remove"
+  ],
+  "red_rows": [
+   "ac1/agent-worktree-in-shared",
+   "ac1/kept-before-remove",
+   "ac3/fetch-fails",
+   "ac3/main-repository-gone",
+   "ac3/ref-at-another-commit",
+   "ac3/ref-unwritable",
+   "ac3/second-attempt-after-crash",
+   "ac4/outside-git",
+   "ac4/store-protected",
+   "ac5/every-attempt-listed",
+   "ac5/failed-save-removes-nothing",
+   "ac5/kill-points",
+   "ac5/never-replaced",
+   "ac5/retry-compares",
+   "ac6/removing-put-back",
+   "ac6/three-deferrals",
+   "keep/canon",
+   "keep/ledger-reads-itself",
+   "keep/names",
+   "signal/removing-while-the-remover-runs"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac1/kept-before-remove",
+    "before git's remove ran, the head, the own ref, the operation's commit and the commit only the log named were each on a kept ref of the main repository [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-agent-worktree-kept-in-agent-repository",
+  "criterion": "AC1",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac1/agent-worktree-in-shared"
+  ],
+  "red_rows": [
+   "ac1/agent-worktree-in-shared",
+   "ac3/fetch-fails",
+   "ac3/main-repository-gone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac1/agent-worktree-in-shared",
+    "the agent's worktree is removed [{'item': 'space:item:4dceea4cf00b4eeebbcae016d2311d98', 'action': 'remove', 'outcome': 'deferred', 'deferral': 'keep_failed', 'rule': 'tool'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-removed-with-no-keep-record",
+  "criterion": "AC1",
+  "module": "control_space.py",
+  "expected_red": [
+   "ac1/removed-needs-keep-record"
+  ],
+  "red_rows": [
+   "ac1/removed-needs-keep-record"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac1/removed-needs-keep-record",
+    "the outcome removed for a worktree that is due and has no keep record is refused by name, nothing written [accepted]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-branches-only",
+  "criterion": "AC2",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac2/private-repository"
+  ],
+  "red_rows": [
+   "ac2/private-repository"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac2/private-repository",
+    "afterwards the first commit only a log names is read from the main repository alone, under the item's kept refs"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-remover-called-after-failed-keep",
+  "criterion": "AC3",
+  "module": "control_space_remove.py",
+  "expected_red": [
+   "ac3/ref-unwritable"
+  ],
+  "red_rows": [
+   "ac3/fetch-fails",
+   "ac3/main-repository-gone",
+   "ac3/ref-at-another-commit",
+   "ac3/ref-unwritable"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac3/ref-unwritable",
+    "with the main repository's refs unwritable the worktree is deferred as keep_failed [(None, None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-goes-on-with-main-repository-gone",
+  "criterion": "AC3",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac3/main-repository-gone"
+  ],
+  "red_rows": [
+   "ac3/main-repository-gone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac3/main-repository-gone",
+    "the remover, handed the item with every rule set aside, is refused by the keep step: keep_failed, the main repository is not at its path [None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-snapshot-in-the-object-store",
+  "criterion": "AC4",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac4/outside-git"
+  ],
+  "red_rows": [
+   "ac4/outside-git"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac4/outside-git",
+    "writing it added no object to the main repository's object store [['count: 40', 'size: 160']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-snapshot-by-git-stash",
+  "criterion": "AC4",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac4/nothing-touched"
+  ],
+  "red_rows": [
+   "ac1/kept-before-remove",
+   "ac4/nothing-touched",
+   "ac4/outside-git",
+   "ac4/plain-files-with-manifest",
+   "ac4/store-protected",
+   "ac5/every-attempt-listed",
+   "ac5/failed-save-removes-nothing",
+   "ac5/kill-points",
+   "ac5/never-replaced",
+   "ac5/retry-compares",
+   "ac6/removing-put-back",
+   "ac6/three-deferrals",
+   "keep/canon",
+   "keep/ledger-reads-itself",
+   "keep/names",
+   "signal/removing-while-the-remover-runs"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac4/nothing-touched",
+    "writing it changed no file of the worktree"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-store-off-the-protect-list",
+  "criterion": "AC4",
+  "module": "control_space.py",
+  "expected_red": [
+   "ac4/store-protected"
+  ],
+  "red_rows": [
+   "ac1/kept-before-remove",
+   "ac4/store-protected",
+   "ac5/every-attempt-listed",
+   "ac5/failed-save-removes-nothing",
+   "ac5/kill-points",
+   "ac5/never-replaced",
+   "ac5/retry-compares",
+   "ac6/removing-put-back",
+   "ac6/three-deferrals",
+   "keep/canon",
+   "keep/ledger-reads-itself",
+   "keep/names",
+   "signal/removing-while-the-remover-runs"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac4/store-protected",
+    "declaring a folder of the store as scratch is refused: it is protected [accepted]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-goes-on-after-a-short-write",
+  "criterion": "AC5",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac5/failed-save-removes-nothing"
+  ],
+  "red_rows": [
+   "ac5/failed-save-removes-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac5/failed-save-removes-nothing",
+    "when a write comes back short the item is deferred as keep_failed [('removed', None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-deletes-the-folder-to-make-room",
+  "criterion": "AC5",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac5/never-replaced"
+  ],
+  "red_rows": [
+   "ac5/every-attempt-listed",
+   "ac5/failed-save-removes-nothing",
+   "ac5/kill-points",
+   "ac5/never-replaced",
+   "ac5/retry-compares"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac5/never-replaced",
+    "the retry is killed before its rename: the first attempt's folder is whole, and it still holds the file the removal deleted [True ['1.partial']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-recorded-snapshot-used-without-comparing",
+  "criterion": "AC5",
+  "module": "control_space_keep.py",
+  "expected_red": [
+   "ac5/retry-compares"
+  ],
+  "red_rows": [
+   "ac5/every-attempt-listed",
+   "ac5/never-replaced",
+   "ac5/retry-compares"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac5/retry-compares",
+    "the file changed after the kill: the retry does not use the attempt the record lists, it writes the next number with the new content [None [1]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-only-the-newest-attempt-on-the-record",
+  "criterion": "AC5",
+  "module": "control_space.py",
+  "expected_red": [
+   "ac5/every-attempt-listed"
+  ],
+  "red_rows": [
+   "ac5/every-attempt-listed",
+   "ac5/retry-compares"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac5/every-attempt-listed",
+    "the retry saves what is left under the next number and the record lists both attempts [None [3]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-remove-refused-alone",
+  "criterion": "AC6",
+  "module": "control_space.py",
+  "expected_red": [
+   "ac6/three-deferrals",
+   "ac6/removing-put-back"
+  ],
+  "red_rows": [
+   "ac3/fetch-fails",
+   "ac3/main-repository-gone",
+   "ac3/ref-at-another-commit",
+   "ac3/ref-unwritable",
+   "ac5/failed-save-removes-nothing",
+   "ac6/removing-put-back",
+   "ac6/three-deferrals"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac6/three-deferrals",
+    "a removing item is deferred as in_use, and the record holds the deferral it was given [space_item_state:removing]"
+   ],
+   [
+    "VELDO-0345 ac6/removing-put-back",
+    "put back with an unsaved file, it is recorded as deferred with keep_failed and is not left removing [(None, 'keep_failed', 'tool') removing]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-due-while-the-remover-runs",
+  "criterion": "VELDO-0301 at design 4.1",
+  "module": "control_space_signal.py",
+  "expected_red": [
+   "signal/removing-while-the-remover-runs"
+  ],
+  "red_rows": [
+   "ac1/kept-before-remove",
+   "ac3/second-attempt-after-crash",
+   "ac5/kill-points",
+   "ac6/removing-put-back",
+   "signal/removing-while-the-remover-runs"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 signal/removing-while-the-remover-runs",
+    "the item is written removing before its remover is called, then removed [[('space:item:bc81d5f48b3540afa8dee6e35b2c21a9', 'due')] ('removed', None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

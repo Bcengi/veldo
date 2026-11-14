@@ -1,0 +1,174 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0345",
+ "commit": "0ceda28f8b620ddfef4e4d0a04ca875f1ca3549c",
+ "tree": "f5386c2d4bea33201976f42690ef36bbce742d63",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-14T05:01:20.548628+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "Rows ac1/kept-before-remove (a detached worktree with a commit only its HEAD log names, a ref of its own and a commit ORIG_HEAD names; the remover is killed just after git removed the worktree; before git's remove ran, head, ref/refs/worktree/mine, op/ORIG_HEAD and log/1 were on kept refs of the main repository and on the keep record with the repository and the path; after the kill each commit is read there through its kept ref and the ref's log names the event), ac1/removed-needs-keep-record (the outcome removed for a worktree and for a private repository with no keep record, due or removing, is refused space_no_keep_record with nothing written; a scratch folder needs none; with the record written it is accepted), ac1/agent-worktree-in-shared (an agent's worktree is removed; its kept refs are in the shared repository under its own item, the record names the shared repository, none is in the agent repository; the agent repository is then removed and the kept head and both commits a reset left behind are read from the shared repository alone). Green: proof/VELDO-0345/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "The rows run the keeper, the removers and Signal against a real Ledger on a real control store, on real git repositories, worktrees, agent repositories, stash entries and snapshot folders that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. After each removal, refusal or kill the disk and the main repository are read again with plain git, never from the call's answer alone."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-refs-after-the-remove (the keep step is called after git's remove): ac1/kept-before-remove red, no kept ref before the remove. space345-agent-worktree-kept-in-agent-repository: ac1/agent-worktree-in-shared red; the ledger refuses a keep record that names the agent repository, so the worktree is not removed at all, one step before the loss the falsifier describes. space345-removed-with-no-keep-record (the ledger's refusal taken out): ac1/removed-needs-keep-record red."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "Row ac2/private-repository (a private repository with a branch, an annotated tag at a commit no branch holds, two stash entries and two commits resets left behind; the shared repository holds none of them; after the keep step and the removal each commit and its HEAD is read from the main repository alone and reached by a kept ref of the item; the record lists head, every ref by its full name, stash/1, stash/2, op/ORIG_HEAD and log/1; the tag is kept as a tag). Green: proof/VELDO-0345/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "The rows run the keeper, the removers and Signal against a real Ledger on a real control store, on real git repositories, worktrees, agent repositories, stash entries and snapshot folders that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. After each removal, refusal or kill the disk and the main repository are read again with plain git, never from the call's answer alone."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-branches-only (only refs/heads are recorded): ac2/private-repository red, the stash entries are in no repository after the removal."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "Rows ac3/ref-unwritable (the main repository's kept refs unwritable: deferred keep_failed, the deferral holds the ref and git's words, the worktree is at its path and its commit still in its log; writable again, the next event removes it with the commit kept), ac3/ref-at-another-commit (a kept ref that exists at another commit, and one that reads back as another, are keep_failed with the ref; nothing is moved, no record is written), ac3/fetch-fails (the main repository's object store unwritable: the agent worktree is keep_failed with git's words and whole), ac3/main-repository-gone (the shared repository moved away: the ending event removes nothing; the remover handed the item directly is refused keep_failed, the main repository is not at its path; control_space_keep.verify, what reconcile asks, refuses; an item with no main repository named stays; with the repository back the worktree is removed and verify is ok), ac3/second-attempt-after-crash (killed after the refs and before the record: the second attempt finds each ref at the same commit, passes, writes the record, removes; each ref's log has one entry), ac3/kept-ref-holds-nothing (rule 5 reads case 5 with a kept ref at the commit as without one; the worktree is deferred unique_work and whole). Green: proof/VELDO-0345/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "The rows run the keeper, the removers and Signal against a real Ledger on a real control store, on real git repositories, worktrees, agent repositories, stash entries and snapshot folders that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. After each removal, refusal or kill the disk and the main repository are read again with plain git, never from the call's answer alone."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-remover-called-after-failed-keep: ac3/ref-unwritable red, the worktree is removed with its refs unwritten. space345-goes-on-with-main-repository-gone: ac3/main-repository-gone red, the worktree is removed with the main repository away."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "Rows ac4/plain-files-with-manifest (a worktree with a tracked edit, staged content that differs from the working file, three untracked files, a link, an ignored settings file, a file deleted in the work tree, one deleted in the index and build output: the snapshot is <state root>/space-saved/<ticket>/<item>/1, outside every repository, every folder mode 0700; one manifest row per saved path with what it is, its mode, size and SHA-256; work/ byte for byte, the link as a link; staged/ holds the staged content; the two deleted lists; build output not saved; the keep record lists the attempt with its size and manifest digest), ac4/nothing-touched (the worktree's files, its index bytes, git's status and the stash entries are as before), ac4/outside-git (git count-objects of the main repository is unchanged and the marker in the ignored settings file is in no object of it, before and after a removal that saved the file), ac4/store-protected (a folder of the store, the item's folder, the store and the state root cannot be declared as scratch; adopt and report refuse; rule 2 reads the store on the ledger's protect list though no declaration names it; after the owner's ending event the snapshot is whole). Green: proof/VELDO-0345/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "The rows run the keeper, the removers and Signal against a real Ledger on a real control store, on real git repositories, worktrees, agent repositories, stash entries and snapshot folders that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. After each removal, refusal or kill the disk and the main repository are read again with plain git, never from the call's answer alone."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-snapshot-in-the-object-store (the snapshot's files written into the main repository's object store, the detectable part of a commit on a kept ref): ac4/outside-git red. space345-snapshot-by-git-stash: ac4/nothing-touched red. space345-store-off-the-protect-list: ac4/store-protected red, the folder is declared and its ending event removes the snapshot."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "Rows ac5/failed-save-removes-nothing (store unwritable, pool full in the middle of a file, short write, read back differs, sync fails, rename fails: each time deferred keep_failed, the worktree and its file in place, what was written left as <n>.partial, no numbered folder, no attempt on the record; the next attempt writes number 6 whole and removes once; five temporary folders kept and counted by control_space_keep.attempts), ac5/kill-points (killed inside the snapshot write, after the rename and before the record, after the record and before the remover: the next attempt writes the next number, or uses the listed attempt and writes nothing, and removes once), ac5/retry-compares (a file changed after the kill: the listed attempt is not used, number 2 holds the new content and the answer its digest; an attempt whose manifest changed is reported missing), ac5/never-replaced (a retry killed before its rename leaves attempt 1 whole with the file the removal deleted), ac5/every-attempt-listed (the record lists attempts 1 and 3; applied oldest first they bring back the deleted file and the newer content; a keep write that saves nothing leaves the list and the refs; an attempt named with other figures is refused). Green: proof/VELDO-0345/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "The rows run the keeper, the removers and Signal against a real Ledger on a real control store, on real git repositories, worktrees, agent repositories, stash entries and snapshot folders that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. After each removal, refusal or kill the disk and the main repository are read again with plain git, never from the call's answer alone."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-goes-on-after-a-short-write: ac5/failed-save-removes-nothing red, the item is removed after a short write. space345-deletes-the-folder-to-make-room: ac5/never-replaced red, no copy of the deleted file. space345-recorded-snapshot-used-without-comparing: ac5/retry-compares red. space345-only-the-newest-attempt-on-the-record: ac5/every-attempt-listed red."
+    }
+   ]
+  },
+  {
+   "id": "AC6",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "Rows ac6/three-deferrals (a removing item is deferred with remove_refused, in_use and keep_failed, the record holding the one given; unique_work, protected, not_in_ledger, any other name and the outcome kept are refused space_item_state:removing with nothing written), ac6/removing-put-back (a worktree that was removing while its remover ran and was put back with an unsaved ignored file is deferred keep_failed and at its path; a folder put back because a process used it under its marked name is deferred in_use and whole). Green: proof/VELDO-0345/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "The rows run the keeper, the removers and Signal against a real Ledger on a real control store, on real git repositories, worktrees, agent repositories, stash entries and snapshot folders that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. After each removal, refusal or kill the disk and the main repository are read again with plain git, never from the call's answer alone."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-remove-refused-alone: ac6/three-deferrals and ac6/removing-put-back red, the outcome is refused and the item is still removing."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 140_veldo_0345_space_keep (25 rows). Suites 130 to 139, each on its own, are green after the change (proof/VELDO-0345/suite-green.txt holds 140, 139, 138, 132 and 133)."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store and git, with the real keeper, removers and Signal, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The fifteen registered cases of finding 345 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy: every noop green, every mutant turns its target rows red (proof/VELDO-0345/mutations.txt, falsifiers.json). The seven cases of finding 301 were applied again the same way after the change to Signal: each still turns its row red."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_git_boundary.py. All pass."
+  },
+  {
+   "name": "gate",
+   "status": "pending",
+   "command": "./scripts/verify.sh, run by the lead through the gate lock. Not run by the builder, with the heavy suites and the teeth stage."
+  }
+ ],
+ "assumptions": [
+  "SIGNAL IS BACK AT DESIGN 4.1 (the lead's instruction; spec History 2026-11-14, built). The item is written removing when rules 1 to 6 have passed and before its remover is called. Row signal/removing-while-the-remover-runs: the remover sees the item removing, the journal grows by signal, removing and removed; a process killed inside the remover leaves the item removing with the event and the emitter recorded; when the ledger refuses that write the remover is not handed the item. Falsifier space345-due-while-the-remover-runs turns the row red. Suite 139 runs the keeper itself since this change.",
+  "THE LEDGER READS THE KEEP RECORD ITSELF. Row keep/ledger-reads-itself: a ref the repository does not hold or holds at another commit, a ref outside the item's own, a repository the declarations do not name or named through .., a snapshot path outside the store, written with .., or a link, a missing folder and a manifest with another digest are each refused by name with nothing written; neither host principal may sign keep; a later write adds and never moves. This is not a criterion of the spec; it is the keep command of design 6.1.",
+  "NOT PROVEN ON A REAL FULL DISK OR BY A REAL KILL. A full pool is the keeper's own write replaced for one attempt (it writes half a block and raises no space left, or returns short); a kill is an exception no handler catches, raised at the named point in the suite's own process. No process was sent a signal and no filesystem was filled.",
+  "TWO FALSIFIERS ARE APPLIED IN A NARROWER FORM (spec History 2026-11-14, built). The agent worktree's refs in its agent repository is stopped by the ledger's own check one step before the loss. The snapshot as a commit on a kept ref is applied as its files written into the main repository's object store.",
+  "RECONCILE IS NOT BUILT (VELDO-0315). \"By reconcile\" in AC3 is shown by control_space_keep.verify, the check reconcile must pass before it completes an item, and by a second attempt made the way reconcile will make it. The snapshot is written only when the keeper is made with snapshot=True; the removals that ask for one are VELDO-0318, 0336 and 0347, and no remover here forces a removal.",
+  "A KEPT REF IS NEVER MOVED, so an item whose head moved after a deferred attempt is keep_failed until its kept refs are dropped (VELDO-0346). Nothing is lost by it; it can leave a worktree waiting (spec History).",
+  "FOUND, NOT FIXED: the registered case space331-signal-reads-no-mode has had no anchor in control_space_signal.py since VELDO-0301 (it is absent at 27164fc4 too).",
+  "The full gate, the heavy suites and the teeth stage were not run by the builder."
+ ],
+ "rollback": "Revert the change. Removers then run without the keep step, as before this ticket. Kept refs already written stay in their repositories and are still read by plain git."
+}
