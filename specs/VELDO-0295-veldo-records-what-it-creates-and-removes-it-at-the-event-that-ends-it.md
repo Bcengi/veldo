@@ -459,3 +459,13 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   guard hook refuses a shell command that names the snapshot store or refs/veldo/kept, except veldo space
   kept drop. That is one more ticket, VELDO-0349, built after 0346; scripts/veldo-guard.sh is a protected
   path and the change lands with the owner's approval. Section 15 of the design is empty. Still a draft.
+- 2026-11-13: the two points of the final check that the amendment before this one left out, F3 and F4
+  (design-veldo-nowork-r2-validation-2026-11-14.md; design 14.8), are taken in the design and in the
+  tickets, by the lead's word that both are required under the owner's rule; AC0 is unchanged. F3: a
+  removal that the comparison with the manifest stops renames the folder back to its locator before the
+  item is deferred, and reconcile marks no item gone while a folder is beside its locator under its marked
+  name (0347, 0315). F4: Discard and Save move the worktree to a marked name with git's worktree move and
+  make the last look there, so a file written between that look and git's remove is neither lost nor
+  deleted without a word (0318, 0315); attempt folders no keep record names are listed under their item
+  and go with its drop (0346); VELDO-0299's History says its AC1 is read more strictly. The suite gains
+  the cases and two mutations (0348). No ticket is added. Still a draft.

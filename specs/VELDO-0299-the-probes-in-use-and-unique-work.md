@@ -176,3 +176,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   repository (VELDO-0347 AC2). The same validation confirmed that AC1's text is not edited for the reading
   of every thread: the built code and its proof still answer it, and the stricter reading is VELDO-0344
   AC8. No acceptance criterion changed.
+- 2026-11-13: wording, asked for by the final check of design section 0
+  (design-veldo-nowork-r2-validation-2026-11-14.md, F4; design 14.8). The entry above that opens "an
+  acceptance criterion changes" is to be read as: AC1 is read more strictly. AC1's text was not edited
+  then and is not edited now, the built code and its proof bundle still answer it, and the stricter
+  reading is VELDO-0344 AC8. That entry is left as it was written. No acceptance criterion changed.

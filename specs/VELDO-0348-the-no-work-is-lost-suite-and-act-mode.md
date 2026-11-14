@@ -51,10 +51,13 @@ acceptance_criteria:
       A file added after the probe, a process that opens a file after the first probe, a branch moved
       between the probe and the remove, a file added between the snapshot and the forced remove, an
       ignored file added between Save's snapshot and its remove, and a file of review scratch or of a dead
-      run's worker clone rewritten between the snapshot and its own delete each leave the work in place.
-      With the process killed at each step boundary of section 0.2, the two snapshot boundaries included,
-      and of the folder remover, and reconcile run afterwards, every planted thing is in place or comes
-      back
+      run's worker clone rewritten between the snapshot and its own delete each leave the work in place. A
+      write by the worktree's path between the last look and git's remove, in a Discard and in a Save,
+      either fails for the writer or leaves its file in place or in the snapshot. A worker clone whose
+      removal the comparison stopped is back at its locator, and reconcile run afterwards does not mark it
+      gone. With the process killed at each step boundary of section 0.2, the two snapshot boundaries
+      included, and of the folder remover, and reconcile run afterwards, every planted thing is in place
+      or comes back
     falsified_by: >
       Complete a removing item at reconcile without its keep record; the row killed before the refs were
       written finds the worktree gone and its commit unreachable, and fails
@@ -70,7 +73,9 @@ acceptance_criteria:
       replaced on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore
       that applies the snapshot only when its folder is there, a clone adopted as scratch, no look at an
       item's own folder, an agent worktree's kept refs written into its agent repository, a clean clone
-      read without its logs, and a keep record that holds only the newest attempt
+      read without its logs, a keep record that holds only the newest attempt, a folder left under its
+      marked name when the comparison stops its removal, and a Discard or a Save that removes the worktree
+      at its own path
     falsified_by: >
       Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree
       leaves the suite green and the mutation check fails
@@ -153,3 +158,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   mutation, a keep record that holds only the newest attempt, and design 0.7's Retry shape gains the case
   that turns it red: a review worktree whose scratch removal stopped after its first delete, is retried
   and is then restored. The falsifier is unchanged.
+- 2026-11-13: amended for the two points of the final check of design section 0 that the amendment before
+  this one left out (design-veldo-nowork-r2-validation-2026-11-14.md, F3 and F4; design 14.8), by the
+  lead's word that both are required under the owner's rule that no work is ever lost. AC2 gains two
+  cases: a write by the worktree's path between the last look and git's remove, in a Discard and in a
+  Save, which either fails for the writer or leaves its file in place or in the snapshot (F4), and a
+  worker clone whose removal the comparison stopped, which is back at its locator and is not marked gone
+  by reconcile (F3). AC3 gains two mutations: a folder left under its marked name when the comparison
+  stops its removal, and a Discard or a Save that removes the worktree at its own path. Design 0.7's
+  Mid-removal shape gains the cases that turn them red. The falsifiers are unchanged.

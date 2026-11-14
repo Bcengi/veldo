@@ -48,12 +48,18 @@ acceptance_criteria:
   - id: AC2
     text: >
       Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was
-      not already due. A removing worktree or private repository is completed only when its keep record
-      exists, every ref in it resolves and every snapshot attempt it lists is there with its digest;
-      otherwise it is deferred as keep_failed. An item that is due or removing with a keep record, and
-      whose thing is still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5)
+      not already due. An item is marked gone only when nothing is at its locator and nothing is beside it
+      under its marked name. A removing worktree or private repository is completed only when its keep
+      record exists, every ref in it resolves and every snapshot attempt it lists is there with its
+      digest; otherwise it is deferred as keep_failed. A folder under its marked name that the comparison
+      with its manifest stops is renamed back to its locator, and a worktree under its marked name that is
+      in use or no longer equals its snapshot is moved back to its path; each is deferred as keep_failed.
+      An item that is due or removing with a keep record, and whose thing is still whole at its locator,
+      is attempted again from rule 1 (VELDO-0345 AC5)
     falsified_by: >
-      Remove reported things; the reported fixture folder is gone and the row fails
+      Each of these turns a row of its own red. Remove reported things: the reported fixture folder is
+      gone. Mark gone by the locator alone: the row's worker clone was left under its marked name holding
+      a file its snapshot does not, and after reconcile the item is gone while that folder is on disk
   - id: AC3
     text: >
       The service replays the spool and reconciles before it accepts its first dispatch, and a failed
@@ -120,3 +126,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   lists every snapshot attempt (VELDO-0345 AC5). AC2 completes a removing item only when every attempt its
   keep record lists is there with its digest, where it said the snapshot the record names. The falsifier
   is unchanged.
+- 2026-11-13: amended for the two points of the final check of design section 0 that the amendment before
+  this one left out (design-veldo-nowork-r2-validation-2026-11-14.md, F3 and F4; design 14.8), by the
+  lead's word that both are required under the owner's rule that no work is ever lost. F3 and F4: AC2
+  marks an item gone only when nothing is at its locator and nothing is beside it under its marked name. A
+  folder under its marked name that the comparison with its manifest stops is renamed back to its locator,
+  and a worktree under its marked name that is in use or no longer equals its snapshot is moved back to
+  its path; each is deferred as keep_failed. Before, a worker clone's folder left under its marked name
+  read as nothing at the locator and its item was marked gone. AC2 gains a second falsifier: gone by the
+  locator alone. Still four criteria.

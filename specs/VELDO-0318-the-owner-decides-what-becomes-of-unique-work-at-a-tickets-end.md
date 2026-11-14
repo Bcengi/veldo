@@ -49,23 +49,33 @@ acceptance_criteria:
       worktree has no ticket, authored as the owner's configured identity, and then removes the worktree
       without force. Ignored files that are work go to the snapshot store, outside git, and never to the
       branch, and the remove runs only while those files still equal the snapshot by path, mode and
-      digest: a new or changed one refuses it, and the worktree stays with everything in it. Without a
-      settled Save answer Veldo makes no commit
+      digest: a new or changed one refuses it, and the worktree stays with everything in it. Before that
+      last look the worktree is moved to a marked name beside itself by git's worktree move, without
+      force, and the in-use probe, rule 5 and the comparison are made under that name; a user or a
+      difference moves it back to its path. Without a settled Save answer Veldo makes no commit
     falsified_by: >
       Each of these turns a row of its own red. Commit at the deferral: the row finds a commit with no
       settled answer. Run Save's remove without the comparison: the row adds a local settings file between
-      the snapshot and the remove, and finds it neither in place nor in the snapshot
+      the snapshot and the remove, and finds it neither in place nor in the snapshot. Make the last look
+      at the worktree's own path: the row writes an ignored settings file by that path between the look
+      and git's remove, and finds it neither in place nor in the snapshot
   - id: AC3
     text: >
       Discard removes that one worktree with git's force option, only on a settled discard answer, only
       while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass. It first writes the
       snapshot of the uncommitted state to the snapshot store (VELDO-0345), runs only while the worktree
       still equals that snapshot, and does not run when the snapshot cannot be written, synced, read back
-      or renamed into place. A Discard raised again after such a refusal saves under the next attempt
-      number and leaves the earlier folder as it is. The branch and its commits are still there
-      afterwards, and no commit is lost (VELDO-0343)
+      or renamed into place. Before the remove the worktree is moved to a marked name beside itself by
+      git's worktree move, without force; the in-use probe and the comparison with the snapshot are made
+      again under that name, and a user or a difference moves it back to its path with everything in it. A
+      Discard raised again after such a refusal saves under the next attempt number and leaves the earlier
+      folder as it is. The branch and its commits are still there afterwards, and no commit is lost
+      (VELDO-0343)
     falsified_by: >
-      Skip the list comparison; the row that adds a file after the request was shown loses it and fails
+      Each of these turns a row of its own red. Skip the list comparison: the row that adds a file after
+      the request was shown loses it. Force the remove at the worktree's own path after the last look: the
+      row writes a file by that path between the look and git's remove, and finds it neither in place nor
+      restored
   - id: AC4
     text: >
       Keep sets the item to kept; no later event retries it and no second request is raised until the
@@ -129,3 +139,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   the remove. N2.1 and N2.2: AC3 lists the failures of the save that refuse the Discard, and a Discard
   raised again saves under the next attempt number and leaves the earlier folder as it is. AC3's falsifier
   is unchanged.
+- 2026-11-13: amended for the two points of the final check of design section 0 that the amendment before
+  this one left out (design-veldo-nowork-r2-validation-2026-11-14.md, F3 and F4; design 14.8), by the
+  lead's word that both are required under the owner's rule that no work is ever lost. F4: Discard and
+  Save each looked at the worktree once more and then ran one git command, and a file written between the
+  two was lost by Discard, or deleted without a word by Save when git ignores it. AC2 and AC3: the
+  worktree is first moved to a marked name beside itself by git's worktree move, without force, and the
+  in-use probe and the last look are made under that name; a user or a difference moves it back to its
+  path. A crash while it is under the marked name is set right with git's worktree repair at reconcile
+  (VELDO-0315 AC2). AC2 gains a third falsifier and AC3 a second: the last look made at the worktree's own
+  path. What stays outside is in design 0.9: a process that finds the marked name. Still four criteria.

@@ -78,13 +78,17 @@ acceptance_criteria:
       uncommitted or untracked file that is work is deferred as unique work and raises one request on the
       space disposition touchpoint, as a worktree does. A worker clone of a run that has ended is not
       deferred for such files: they are saved in the snapshot store, each file is compared with the
-      manifest immediately before it is deleted, and the clone is removed with no request
+      manifest immediately before it is deleted, and the clone is removed with no request. When that
+      comparison stops the removal, the folder remover renames the folder back to its locator before the
+      item is deferred, so the item keeps its id, the next attempt saves what is left, and reconcile does
+      not mark it gone
     falsified_by: >
       Each of these turns a row of its own red. Remove a clone by the folder remover alone: the row's
       commit that the runner never brought across is in no repository. Remove a worker clone without the
       snapshot: the row's uncommitted file is neither in place nor restored. Delete a worker clone's files
       without the comparison: the row rewrites a file after the snapshot, and finds the new content
-      neither in place nor in the snapshot
+      neither in place nor in the snapshot. Leave the folder under its marked name at that stop: the row
+      runs reconcile, and finds the item marked gone and the rewritten file in a folder no item names
   - id: AC4
     text: >
       An evidence file is removed only when its digest, read again at the removal, is the digest of a blob
@@ -169,3 +173,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   this host each commit is in that repository now; two more falsifiers. A remote on another host is a
   residual the design states in 0.9. The footprint gains the kind registry and the ledger. Four criteria
   became five.
+- 2026-11-13: amended for the two points of the final check of design section 0 that the amendment before
+  this one left out (design-veldo-nowork-r2-validation-2026-11-14.md, F3 and F4; design 14.8), by the
+  lead's word that both are required under the owner's rule that no work is ever lost. F3: when the
+  comparison with the manifest stopped a worker clone's removal, the folder stayed under the folder
+  remover's marked name; the item then had nothing at its locator, reconcile marked it gone, and the file
+  that was not saved sat in a folder no item names. AC3: on that stop the folder remover renames the
+  folder back to its locator before the item is deferred, so the item keeps its id, the next attempt saves
+  what is left, and reconcile does not mark it gone. AC3 gains a fourth falsifier: the folder left under
+  its marked name. The reconcile side is VELDO-0315 AC2. Still five criteria.

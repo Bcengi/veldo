@@ -96,12 +96,14 @@ acceptance_criteria:
       recorded digest. What fails is reported under space.reports as kept work missing, with the item, and
       is shown at the top of the console's Space screen until the ref or the snapshot is back or the owner
       drops that item's kept work. A snapshot store that is gone, or whose owner or mode is not the
-      installation owner's and 0700, is reported the same way. Snapshot folders no keep record names are
-      listed with their sizes, and nothing is proposed for them
+      installation owner's and 0700, is reported the same way. Snapshot folders no keep record names,
+      whole or temporary, are listed under the item whose folder holds them, with their sizes, and are
+      counted in the totals. They go with that item's drop (AC3), and nothing else is proposed for them
     falsified_by: >
       Each of these turns a row of its own red. Check the kept refs only: the row deletes the snapshot
       store, runs reconcile and finds no report. Check the newest attempt only: the row deletes the first
-      of an item's two listed attempts, runs reconcile and finds no report
+      of an item's two listed attempts, runs reconcile and finds no report. List only what keep records
+      name: the row's item has an attempt folder no record names, and veldo space kept does not show it
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Revert the change. The kept refs and the snapshots stay. They are restored by hand: git worktree add
@@ -173,3 +175,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   record lists and the temporary ones included, and removes the item's whole folder in the store; one more
   falsifier. AC5 checks every listed attempt; one more falsifier. The guard hook is the lead's decision of
   the same day and is its own ticket, VELDO-0349, built after this one. Still five criteria.
+- 2026-11-13: amended for the two points of the final check of design section 0 that the amendment before
+  this one left out (design-veldo-nowork-r2-validation-2026-11-14.md, F3 and F4; design 14.8), by the
+  lead's word that both are required under the owner's rule that no work is ever lost. F4: attempt folders
+  no keep record names could only grow. Drop has listed and taken them since the amendment before this one
+  (AC3, unchanged). AC5 now lists each of them, whole or temporary, under the item whose folder holds it
+  and counts it in the totals, so none grows unseen and each goes with that item's drop. AC5 gains a third
+  falsifier: a listing of only what keep records name. Still five criteria.

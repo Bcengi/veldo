@@ -131,6 +131,21 @@ The lead also answered the one open question: the guard hook refuses a shell com
 snapshot store or the kept refs. That is one more ticket, VELDO-0349, built after 0346 (0.3, sections
 12, 13 and 15).
 
+Amended an eighth time 2026-11-13, for the two points of that check the seventh amendment left out,
+F3 and F4 (14.8), in sections 0, 6.5, 7, 8.8, 12 and 14.8. The lead's word: both are required under
+the owner's rule, F4 included.
+
+- A removal that the comparison with the manifest stops inside a renamed folder renames the folder
+  back to its locator before the item is deferred. Left under its marked name the item had nothing
+  at its locator, and reconcile marked it gone with an unsaved file still in the folder (0.3, 6.5,
+  8.8).
+- Discard and Save move the worktree to a marked name with git's worktree move and look at it once
+  more under that name before they remove it. The last look and git's one remove command no longer
+  have a moment between them in which a file written by the worktree's path goes unsaved (0.3, 6.5,
+  section 7).
+- An attempt folder in the snapshot store that no keep record names is listed under its item and
+  goes with that item's drop. None is left to grow unseen (0.3, 0.5).
+
 What changed in revision 6:
 
 - One answer still covers a day's whole review group, and the request now also offers an answer for one
@@ -372,8 +387,9 @@ A crash between the steps loses nothing, whichever step it falls on:
 | Inside the snapshot write, where the removal writes one (0.3) | The refs, the item untouched, and a folder with a temporary name in the snapshot store | Starts again from rule 1 and writes a new attempt under the next number. The temporary folder stays, is counted in the console's totals and is reported by reconcile |
 | After the snapshot's rename, before the record | The refs, the item untouched, and a whole snapshot folder that no keep record names | The same: a new attempt under the next number. The folder no record names stays, counted and reported |
 | After the record, before the remover | The refs, the record, the snapshot it names, the item | The next attempt, or reconcile reading the record from the ledger, starts again from rule 1. It uses the snapshot the record names when that still has the recorded digest and the item still equals it, and otherwise writes the next attempt and adds it to the record. Then it removes |
-| Inside a remover that deletes file by file, stopped by a file that changed | The refs, the record with the attempt that holds every file, and what is left of the item | The next attempt saves what is left under the next number and adds that attempt to the record. The first attempt stays on the record, and a restore applies both (0.3, 0.5) |
+| Inside a remover that deletes file by file, stopped by a file that changed | The refs, the record with the attempt that holds every file, and what is left of the item, back at its locator (0.3, 6.5) | The next attempt saves what is left under the next number and adds that attempt to the record. The first attempt stays on the record, and a restore applies both (0.3, 0.5) |
 | Inside the remover | The refs, the record, and a folder half removed under its marked name, or a worktree git has partly removed | Reconcile completes it, and only because the record is there and every ref in it still resolves (4.1, 8.8) |
+| Inside a Discard or a Save, after the worktree was moved to its marked name | The refs, the record with its snapshot, and the whole worktree under its marked name | Reconcile sets git's record of the worktree right with git's worktree repair and reads the worktree again. Equal to its snapshot and not in use, its removal is completed. Otherwise it is moved back to its path and deferred as keep_failed (0.3, 8.8) |
 | After the remover, before the outcome | The refs and the record | Reconcile finds nothing at the locator and writes the outcome |
 
 Section 4.1 said a removing item "is removed to the end, because the decision to remove it was already
@@ -440,6 +456,29 @@ between stops the remove; the worktree is deferred again and the request is rais
 list. That is the check section 6.5 already makes against the list the owner was shown, made a second
 time against what was saved.
 
+The last look and the remove have no moment between them (the final check, 14.8, F4). Reading the
+worktree once more and then running one git command leaves a gap. Rule 4 has run by then, so only a
+process that starts in that gap can write there, but a file it writes would go with the Discard
+unsaved. So the discard remover first renames the worktree to a marked name beside itself, as the
+folder remover does with a folder (6.5). The rename is git's worktree move, without the force
+option, which keeps the worktree and the repository's record of it pointing at each other. Under the
+marked name the remover runs the in-use probe again and reads the worktree's state again, and it
+removes only when no user is found and the worktree equals the snapshot path by path, in mode and in
+digest. A process that writes by the worktree's path after the rename finds no such folder: the
+write fails in the writer's own hands, and no file that was written is lost. A file written before
+the rename is seen by the look that follows it. When that look finds a user or a difference, the
+worktree is moved back to its path and deferred as keep_failed with everything in it, and the
+request is raised again with the new list.
+
+When git refuses the move, as it does for a locked worktree and for one that holds a submodule,
+nothing has been renamed, and the worktree is deferred as remove_refused at its path. Where a crash
+left the folder under its marked name while git's record still names the old path, or the other way
+round, git's worktree repair, run in the folder, sets the record right before anything else is done
+(8.8). Something that appears at the old path while the worktree is under its marked name is not
+the worktree, and no remover touches it. When it is in the way of the move back, the worktree stays
+under its marked name with its item removing, and reconcile reports both. Neither was measured on
+this host for this amendment; ticket 0318's rows show them.
+
 A save that fails, or that stops half way, refuses the removal. Each of these ends the attempt with
 the item deferred as keep_failed and everything in it still in place: the store cannot be made or
 written; the store's pool runs out of room, also in the middle of a file; a file of the item cannot be
@@ -501,7 +540,10 @@ drops that item's kept work. A store folder that is missing as a whole, or whose
 the installation owner's and 0700, is one more report of the same kind. The keeper also looks each
 time it writes a snapshot: a store that is gone while keep records name snapshots in it is reported
 before the new one is written. A snapshot's folders that no keep record names are listed in the same
-read as information, with their sizes; nothing is proposed for them.
+read as information, with their sizes; nothing is proposed for them. They are not left to grow
+unseen (the final check, 14.8, F4). Each one, whole or temporary, is listed under the item whose
+folder in the store holds it, it is counted in the totals, and it goes with that item's drop, which
+lists its files before it acts (0.5).
 
 The guard keeps an agent's own commands off the store and the kept refs (the lead's decision,
 2026-11-13; VELDO-0349). The guard hook, scripts/veldo-guard.sh, already reads every shell command an
@@ -538,6 +580,13 @@ and for no other. A new ignored file, a changed one, or any other case of rule 5
 the worktree is deferred with everything in it, and the next attempt saves again under the next
 number.
 
+Save's last look is made under a marked name too, as Discard's is (above). Git's non-forced remove
+refuses a tracked edit or an untracked file by itself, but it deletes an ignored file without a
+word, and that is the file a gap between the look and the remove would lose with no trace. So the
+worktree is moved to its marked name first, and the in-use probe, rule 5 and the comparison of the
+ignored files that are work with the snapshot are made there. A user or a difference moves the
+worktree back to its path and defers it.
+
 Two removals save and then remove with no answer from the owner. Both are the lead's decisions, and
 both rest on the same sentence: saved means not lost.
 
@@ -559,7 +608,21 @@ that wrote it and closed it. So both removers compare each file with the manifes
 they delete it: its path is in the manifest, and its mode and SHA-256 are the ones recorded. A file
 that is not in the manifest, or differs from it, stops the removal there. The item is deferred as
 keep_failed, what is left of it stays, and what was already deleted is in that attempt's snapshot. The
-attempt stays on the keep record whatever a retry saves, and a restore brings its files back. For a folder of review scratch the comparison is made for each file in it. For a
+attempt stays on the keep record whatever a retry saves, and a restore brings its files back.
+
+What is left stays at its own path (the final check, 14.8, F3). The folder remover has renamed the
+folder to a marked name before the first delete, and until this amendment it renamed it back only
+when its second probe found a user. A stop by the comparison left a worker clone's folder under the
+marked name. The item then had nothing at its locator, reconcile marked it gone, and the one file
+that was not saved sat in a folder no item names: nothing deleted, but nothing a restore by the
+item's id could reach. So on that stop the remover renames the folder back to the path it had
+before it defers the item. That holds for a worker clone's folder and for a folder of review
+scratch alike. The item keeps its id and its locator, the next attempt saves what is left under the
+next number, and a restore then brings every file back. When the rename back fails, the item stays
+removing. Reconcile looks for the marked name before it marks any item gone, so it finds the folder,
+tries the rename again and reports it (8.8).
+
+For a folder of review scratch the comparison is made for each file in it. For a
 worker clone it is made for each file of the work tree that is work; the clone's git folder is
 covered by the kept refs and the read back of 0.2.
 
@@ -672,6 +735,10 @@ and they follow the same line:
 | The main repository is not at its path any more | keep_failed; nothing is removed, by an event or by reconcile |
 | The snapshot cannot be written, synced, read back or renamed into place, or the store has no room or cannot be written | keep_failed; the discard, Save's remove, the scratch removal or the clone's removal does not run, and what the attempt wrote stays |
 | The item changed after its snapshot: a worktree before the forced remove, an ignored file before Save's remove, a file of review scratch or of a worker clone before its own delete | keep_failed; the removal stops there |
+| A removal the comparison with the manifest stops inside a folder the remover renamed | The folder is renamed back to its path before the item is deferred. Where that fails the item stays removing, and it is never marked gone |
+| A worktree that is in use or has changed when it is read under its marked name, before a Discard's or a Save's remove | Moved back to its path; keep_failed, and nothing is removed |
+| git refuses to move the worktree to its marked name | remove_refused; the worktree stays at its path |
+| An item with nothing at its locator and a folder or a worktree under its marked name beside it | Not gone. Reconcile completes it only as 8.8 says, and otherwise moves it back |
 | A snapshot folder already exists for the item | It is left as it is; the attempt writes the next number |
 | The item's keep record already lists a snapshot attempt | It stays on the list; the new attempt is added to it |
 | At a restore, any snapshot attempt the keep record lists has its folder or manifest missing, a manifest's digest is not the recorded one, a saved file does not match the manifest, or a manifest path leads outside the target | The restore is refused and says why; nothing is added, the snapshot stays, and kept work missing is reported |
@@ -727,7 +794,7 @@ And in each of these shapes:
 | Snapshot store | A store whose pool fills in the middle of a file; a store that is not writable; a read back that differs; a rename that fails; a sync that fails |
 | Retry | A snapshot folder that already exists for the item, whole, and one left under its temporary name; the attempt is made again, and again after that. A review worktree whose scratch removal stopped after its first delete, is retried, and is then restored |
 | Restore | The snapshot folder deleted; the manifest deleted; the manifest changed; one saved file changed; a manifest path that is absolute, one with a ".." part and one that leads out through a link; a kept ref deleted |
-| Mid-removal | A file added after the probe; a process that opens a file after the first probe; a branch that moves between the probe and the remove; a file added between the snapshot and the forced remove; an ignored settings file added between Save's snapshot and its remove; a file of review scratch, and a file of a dead run's worker clone, rewritten between the snapshot and its own delete |
+| Mid-removal | A file added after the probe; a process that opens a file after the first probe; a branch that moves between the probe and the remove; a file added between the snapshot and the forced remove; an ignored settings file added between Save's snapshot and its remove; a file of review scratch, and a file of a dead run's worker clone, rewritten between the snapshot and its own delete; a file written by the worktree's path between the last look and git's remove, in a Discard and in a Save; a worker clone whose removal the comparison stopped, with reconcile run afterwards |
 | Crash between steps | The process is killed at each boundary of the table in 0.2, the two snapshot boundaries included, and at each step of the folder remover, and reconcile then runs |
 
 The suite has to be able to fail. Each loss the reviews reproduced, and each step this section adds,
@@ -741,7 +808,9 @@ without the comparison with its manifest, an existing snapshot folder replaced o
 remove run with an ignored file the snapshot does not hold, a restore that applies the snapshot only
 when its folder is there, a clone adopted as scratch, no look at an item's own folder, an agent
 worktree's kept refs written into its agent repository, and a clean clone read without its logs. The
-final check (14.8) added one: a keep record that holds only the newest attempt.
+final check (14.8) added one: a keep record that holds only the newest attempt. Its points F3 and
+F4 added two: a folder left under its marked name when the comparison stops its removal, and a
+Discard or a Save that removes the worktree at its own path.
 
 A row that restores passes only on the command's own word and the files together: restore said it
 succeeded and every planted file is back, or restore refused and said what is missing. A restore that
@@ -825,6 +894,17 @@ the guard hook added one ticket. None of these tickets is built.
 | VELDO-0348 The suite | AC3 | One more mutation: a keep record that holds only the newest attempt |
 | VELDO-0349 The guard (new) | AC1 to AC4 | The guard hook refuses a shell command that names the snapshot store or the kept refs, and lets veldo space kept drop through |
 
+The two points of that check which the seventh amendment left out, F3 and F4, changed criteria a
+fifth time. None of these tickets is built.
+
+| Ticket | Criterion | The change |
+| :- | :- | :- |
+| VELDO-0315 Reconcile | AC2 | An item is marked gone only when nothing is beside its locator under its marked name. A folder the comparison stops, and a worktree that no longer equals its snapshot, go back to their path. One more falsifier |
+| VELDO-0318 Unique work at a ticket's end | AC2, AC3 | Save and Discard move the worktree to a marked name and make the last look there. One more falsifier each |
+| VELDO-0346 Kept, restore and drop | AC5 | Folders no keep record names are listed under their item and go with its drop. One more falsifier |
+| VELDO-0347 Work the first rules did not see | AC3 | The folder remover renames a worker clone's folder back when the comparison stops it. One more falsifier |
+| VELDO-0348 The suite | AC2, AC3 | The write between the last look and git's remove, and the stopped worker clone at reconcile. Two more mutations |
+
 Eight tickets are built and have proof bundles: VELDO-0296, 0297, 0298, 0299, 0326, 0330, 0331 and
 0338. Their criteria are not edited, because a proof bundle answers the criteria it was written for.
 What the rule asks of their code is carried by the new tickets and noted in their History:
@@ -851,8 +931,8 @@ notes the fourth condition.
 
 ### 0.9 What the rule does not reach
 
-The rule is about what space management removes. Six things are outside it, and saying so is part of
-the rule.
+The rule is about what space management removes. Seven things are outside it, and saying so is part
+of the rule.
 
 Scratch and build output are removed without being saved, because by their declaration they are made
 again. A file that matters and was written into a run's scratch root, a session's scratch folder or a
@@ -883,6 +963,12 @@ A clean clone whose remote is on another host is judged by its remote-tracking r
 what that remote had at the last fetch, and it can be written by hand, so a commit the remote has
 since lost, or never had, goes with the scratch folder the clone is in. Reading the remote would need
 the network at every removal, and the design does not do that.
+
+A worktree under its marked name can still be written by a process that finds that name. The move
+before a Discard's or a Save's remove (0.3) closes the gap for every process that uses the
+worktree's path, and the second in-use probe sees one that sits in the folder or holds a file of it.
+A process that lists the parent folder, opens the marked name and writes there between that look
+and git's remove is not seen. No run is given the marked name.
 
 ## 1. What was measured
 
@@ -1517,9 +1603,9 @@ container still uses is deferred by the engine's own refusal.
 
 | Action | Method | It refuses by itself when |
 | :- | :- | :- |
-| Remove a disk folder | Rename it to a marked name beside itself, run the in-use probe again on the new name, then delete it; if the second probe finds a user, rename it back and defer. Before the delete it opens up directories a confined process left unreadable or unwritable, through descriptors and without following a link, as the sandbox's own remove_tree does today (agent_sandbox.py:2052-2071) | The folder is a mount point, or is not on the item's pool |
-| Remove a worktree | The keep step (0.2), then git's worktree remove, without the force option. For an agent's worktree the kept refs are fetched into the shared repository and written there. After a Save, the remove runs only while the worktree's ignored files that are work equal the snapshot (0.3) | A kept ref could not be written or read back; the main repository is not at its path; git finds a modified tracked file or an untracked file; after a Save, an ignored file that is work is new or changed |
-| Remove an agent repository, or any other private repository | The keep step (0.2), which brings every ref, stash entry and log commit across to the main repository, then the folder remover, after the unique work rule has compared its branches with the shared repository. For a worker clone whose run has ended, the snapshot of its uncommitted state is written between the two (0.3), and the folder remover compares each file of the work tree that is work with the manifest immediately before it deletes it | A kept ref could not be written or read back; no main repository is named, or it is not at its path; the snapshot could not be written, synced, read back or renamed into place; a file is not in the manifest or differs from it |
+| Remove a disk folder | Rename it to a marked name beside itself, run the in-use probe again on the new name, then delete it; if the second probe finds a user, rename it back and defer. Where the removal compares each file with a manifest and that comparison stops it, rename what is left back as well, before the item is deferred (0.3). The marked name holds the item's id, so reconcile finds a folder left under it. Before the delete it opens up directories a confined process left unreadable or unwritable, through descriptors and without following a link, as the sandbox's own remove_tree does today (agent_sandbox.py:2052-2071) | The folder is a mount point, or is not on the item's pool |
+| Remove a worktree | The keep step (0.2), then git's worktree remove, without the force option. For an agent's worktree the kept refs are fetched into the shared repository and written there. After a Save, the worktree is first moved to a marked name beside itself by git's worktree move, and the remove runs only while, under that name, it is not in use and its ignored files that are work equal the snapshot (0.3) | A kept ref could not be written or read back; the main repository is not at its path; git finds a modified tracked file or an untracked file; after a Save, git refuses the move, the worktree is in use under its marked name, or an ignored file that is work is new or changed |
+| Remove an agent repository, or any other private repository | The keep step (0.2), which brings every ref, stash entry and log commit across to the main repository, then the folder remover, after the unique work rule has compared its branches with the shared repository. For a worker clone whose run has ended, the snapshot of its uncommitted state is written between the two (0.3), and the folder remover compares each file of the work tree that is work with the manifest immediately before it deletes it. A stop by that comparison renames the folder back to its locator | A kept ref could not be written or read back; no main repository is named, or it is not at its path; the snapshot could not be written, synced, read back or renamed into place; a file is not in the manifest or differs from it |
 | Remove an image tag | The engine's image remove, without the force option, on the tag | A container uses the image |
 | Stop and remove a container | The engine's stop, then remove, without the force option | |
 | Remove a volume | The engine's volume remove | A container uses the volume |
@@ -1527,7 +1613,7 @@ container still uses is deferred by the engine's own refusal.
 | Drop caches in an evidence folder | Remove the sub-folders the project declares as caches; nothing else | |
 | Mark a branch contained | A ledger write; git is not called | |
 | Remove review scratch | For a review worktree only. Asks git for the worktree's untracked paths that it does not ignore and removes each one: a folder by the folder remover's rename, second probe and delete, a file by a plain delete, a link by deleting the link and never what it points at. Each path passes rules 1, 2, 3, 4 and 6 first, and the snapshot of all of them is in the snapshot store, with its keep record written, before the first is deleted (0.3). Immediately before each file is deleted, its mode and digest are compared with the manifest; for a folder that is done for each file in it. No force option and no clean command of git is used | A path resolves outside the worktree, is on the protect list, or is in use; the snapshot could not be written, synced, read back or renamed into place; a file is not in the manifest or differs from it |
-| Discard a worktree | git's worktree remove with the force option, on a worktree named by a settled owner decision: the one worktree of its request, each worktree of a review group, or the one member a member pick names. For a detached worktree whose checked-out commit no ref holds, the Ledger first creates a kept branch at that commit. Then the keep step and the snapshot of the uncommitted state (0.2, 0.3), and the remove runs only after both | The decision is not settled, does not name that worktree, the worktree's list of changed files differs from the list the owner was shown, the kept branch could not be created, a kept ref could not be written, the snapshot could not be written, synced, read back or renamed into place, or the worktree no longer equals the snapshot |
+| Discard a worktree | git's worktree remove with the force option, on a worktree named by a settled owner decision: the one worktree of its request, each worktree of a review group, or the one member a member pick names. For a detached worktree whose checked-out commit no ref holds, the Ledger first creates a kept branch at that commit. Then the keep step and the snapshot of the uncommitted state (0.2, 0.3), and the remove runs only after both. Before the remove the worktree is moved to a marked name beside itself by git's worktree move, without the force option, the in-use probe and the comparison with the snapshot are made again under that name, and a user or a difference moves it back to its path | The decision is not settled, does not name that worktree, the worktree's list of changed files differs from the list the owner was shown, the kept branch could not be created, a kept ref could not be written, the snapshot could not be written, synced, read back or renamed into place, the worktree no longer equals the snapshot, git refuses the move to the marked name, or the worktree is in use under that name |
 
 No remover calls a prune command. No remover passes a force option, with the one exception in the last
 row. Discard is the one forced removal, and it is allowed only after the owner's discard answer (section
@@ -1937,6 +2023,8 @@ Notes on the probes:
 - The folder remover's rename closes the gap between probe and delete. A process that opens the folder
   after the first probe either fails to find it, or holds a file that the second probe sees under the new
   name.
+- A Discard's and a Save's move of the worktree to a marked name closes the same gap between the last
+  look at the worktree and git's remove (0.3, 6.5).
 - Unique work for a squash landing: the branch tip is not an ancestor of the trunk, but it is the source
   commit the completion receipt names, or an ancestor of it. That is why rule 5 reads the receipts.
 
@@ -2578,9 +2666,9 @@ answers:
 
 | Answer | What happens |
 | :- | :- |
-| Save | The changes are committed on a kept branch named for the ticket, authored as the owner's configured git identity. A worktree with no ticket gets a kept branch named for the run that owned it: the prefix space-saved, then the run's label. Then the worktree is removed by git's non-forced remove. When the tree is clean and only unlanded commits made the work unique, nothing is committed: the branch already holds them, it is kept, and the worktree is removed. Ignored files that are work are written to the snapshot store and never to the branch, and the remove runs only while those files still equal the snapshot (0.3) |
+| Save | The changes are committed on a kept branch named for the ticket, authored as the owner's configured git identity. A worktree with no ticket gets a kept branch named for the run that owned it: the prefix space-saved, then the run's label. Then the worktree is removed by git's non-forced remove. When the tree is clean and only unlanded commits made the work unique, nothing is committed: the branch already holds them, it is kept, and the worktree is removed. Ignored files that are work are written to the snapshot store and never to the branch, and the remove runs only while those files still equal the snapshot. The worktree is moved to a marked name before that last look, so a file written by its path afterwards cannot go with the remove (0.3) |
 | Keep | The item's state becomes kept. Nothing retries it and no second request is raised. Abandon on the console ends that |
-| Discard | The discard remover runs: git's worktree remove with the force option on that one worktree. Rules 1, 2, 3, 4 and 6 still apply, and the remover refuses if the list of files differs from the list the owner was shown. No commit is lost. The branch is kept, so every commit on it survives. A detached worktree whose commits no ref holds gets a kept branch at its checked-out commit before the remove, and when that branch cannot be created the discard does not run (6.5). The uncommitted and untracked files the owner was shown are saved as a snapshot in the snapshot store before the remove, and veldo space restore brings them back (0.3, 0.5). Nothing is lost |
+| Discard | The discard remover runs: git's worktree remove with the force option on that one worktree. Rules 1, 2, 3, 4 and 6 still apply, and the remover refuses if the list of files differs from the list the owner was shown. No commit is lost. The branch is kept, so every commit on it survives. A detached worktree whose commits no ref holds gets a kept branch at its checked-out commit before the remove, and when that branch cannot be created the discard does not run (6.5). The uncommitted and untracked files the owner was shown are saved as a snapshot in the snapshot store before the remove, and veldo space restore brings them back (0.3, 0.5). The worktree is moved to a marked name before the last look and the remove, so a file written by its path afterwards cannot go with it (0.3). Nothing is lost |
 
 Veldo never commits on its own. The commit in Save exists only because the owner's signed answer asked for
 it. A snapshot is not a commit: it is files in the snapshot store, outside git (0.3). Discard's is
@@ -2863,8 +2951,9 @@ A hook that fails or cannot reach the authority spools and returns; it never blo
 | Found | Ledger | Result |
 | :- | :- | :- |
 | Thing | Matching item | Matched; size refreshed |
-| Nothing | Item present, declared, due or deferred | gone |
-| Half-removed folder under its marked name | Item removing | Removal completed. For a worktree or a private repository only when its keep record exists, every kept ref resolves and every snapshot attempt it lists is there with its digest; otherwise deferred as keep_failed (0.2). Where the removal compares files with a manifest, the completion compares them too |
+| Nothing, and nothing under the item's marked name beside the locator | Item present, declared, due or deferred | gone |
+| Nothing at the locator, and a folder or a worktree under the item's marked name beside it | Item in any state | Never gone. Handled as the next row says |
+| Half-removed folder under its marked name | Item removing | Removal completed. For a worktree or a private repository only when its keep record exists, every kept ref resolves and every snapshot attempt it lists is there with its digest; otherwise deferred as keep_failed (0.2). Where the removal compares files with a manifest, the completion compares them too, and a folder that comparison stops is renamed back to its locator and its item deferred as keep_failed. A worktree under its marked name is first set right with git's worktree repair and read again: equal to its snapshot and not in use, its removal is completed; otherwise it is moved back to its path and deferred as keep_failed. Where the way back is taken by something else, the item stays removing and both are reported |
 | Worktree in a bound repository's list, under the project's worktree root, on a branch the branch pattern maps to a ticket | None | Adopted, owner that ticket |
 | Worktree as above, branch maps to no ticket | None | Adopted, owner the project only. It ends on contained, project ended and Abandon |
 | Worktree in a plain repository's list, under its worktree root | None | Adopted, owner the repository only |
@@ -3469,7 +3558,7 @@ Components: Reconciler, Authority service.
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | Each row of the table in 8.8 gives its result, including the agent repository, the build root folder named for a worktree, the plain repository and the session scratch. A clone folder's work tree, a batch clone and a candidate workspace are adopted as agent repository items with their form, and a folder that is itself a git repository is never adopted as scratch or as build output | Each of these turns a row of its own red. Adopt every folder under a root: the row with no provable owner gets an item. Adopt a batch clone as scratch: the row's clone holds a commit its main repository does not, its batch has ended and its scope is in act, and after reconcile the clone is gone and the commit is in no repository |
-| AC2 | Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was not already due. A removing worktree or private repository is completed only when its keep record exists, every ref in it resolves and every snapshot attempt it lists is there with its digest; otherwise it is deferred as keep_failed. An item that is due or removing with a keep record, and whose thing is still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5) | Remove reported things; the reported fixture folder is gone and the row fails |
+| AC2 | Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was not already due. An item is marked gone only when nothing is at its locator and nothing is beside it under its marked name. A removing worktree or private repository is completed only when its keep record exists, every ref in it resolves and every snapshot attempt it lists is there with its digest; otherwise it is deferred as keep_failed. A folder under its marked name that the comparison with its manifest stops is renamed back to its locator, and a worktree under its marked name that is in use or no longer equals its snapshot is moved back to its path; each is deferred as keep_failed. An item that is due or removing with a keep record, and whose thing is still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5) | Each of these turns a row of its own red. Remove reported things: the reported fixture folder is gone. Mark gone by the locator alone: the row's worker clone was left under its marked name holding a file its snapshot does not, and after reconcile the item is gone while that folder is on disk |
 | AC3 | The service replays the spool and reconciles before it accepts its first dispatch, and a failed reconcile is reported by name while everything else is served | Reconcile in the background; the row that sends a dispatch at once is admitted against an empty ledger and fails |
 | AC4 | Nothing runs reconcile on a schedule: the only callers are service start, the API action and the CLI. The row advances the fixture clock by a year with no event and counts one reconcile | Add a periodic call with any period; the row counts more than one and fails |
 
@@ -3505,8 +3594,8 @@ is VELDO-0343.
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | A worktree deferred for unique work at ticket ended, project ended, worktree abandoned or released by its creator, and a worktree owned by a run that is not a review deferred at run finished, raises one request on the space disposition touchpoint with the three answers and the list of files; a later event for the same item raises no second one | Raise a request at every event; the row counts two requests and fails |
-| AC2 | Save commits the changes on a kept branch named for the ticket, or for the owning run when the worktree has no ticket, authored as the owner's configured identity, and then removes the worktree without force. Ignored files that are work go to the snapshot store, outside git, and never to the branch, and the remove runs only while those files still equal the snapshot by path, mode and digest: a new or changed one refuses it, and the worktree stays with everything in it. Without a settled Save answer Veldo makes no commit | Each of these turns a row of its own red. Commit at the deferral: the row finds a commit with no settled answer. Run Save's remove without the comparison: the row adds a local settings file between the snapshot and the remove, and finds it neither in place nor in the snapshot |
-| AC3 | Discard removes that one worktree with git's force option, only on a settled discard answer, only while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass. It first writes the snapshot of the uncommitted state to the snapshot store (VELDO-0345), runs only while the worktree still equals that snapshot, and does not run when the snapshot cannot be written, synced, read back or renamed into place. A Discard raised again after such a refusal saves under the next attempt number and leaves the earlier folder as it is. The branch and its commits are still there afterwards, and no commit is lost (VELDO-0343) | Skip the list comparison; the row that adds a file after the request was shown loses it and fails |
+| AC2 | Save commits the changes on a kept branch named for the ticket, or for the owning run when the worktree has no ticket, authored as the owner's configured identity, and then removes the worktree without force. Ignored files that are work go to the snapshot store, outside git, and never to the branch, and the remove runs only while those files still equal the snapshot by path, mode and digest: a new or changed one refuses it, and the worktree stays with everything in it. Before that last look the worktree is moved to a marked name beside itself by git's worktree move, without force, and the in-use probe, rule 5 and the comparison are made under that name; a user or a difference moves it back to its path. Without a settled Save answer Veldo makes no commit | Each of these turns a row of its own red. Commit at the deferral: the row finds a commit with no settled answer. Run Save's remove without the comparison: the row adds a local settings file between the snapshot and the remove, and finds it neither in place nor in the snapshot. Make the last look at the worktree's own path: the row writes an ignored settings file by that path between the look and git's remove, and finds it neither in place nor in the snapshot |
+| AC3 | Discard removes that one worktree with git's force option, only on a settled discard answer, only while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass. It first writes the snapshot of the uncommitted state to the snapshot store (VELDO-0345), runs only while the worktree still equals that snapshot, and does not run when the snapshot cannot be written, synced, read back or renamed into place. Before the remove the worktree is moved to a marked name beside itself by git's worktree move, without force; the in-use probe and the comparison with the snapshot are made again under that name, and a user or a difference moves it back to its path with everything in it. A Discard raised again after such a refusal saves under the next attempt number and leaves the earlier folder as it is. The branch and its commits are still there afterwards, and no commit is lost (VELDO-0343) | Each of these turns a row of its own red. Skip the list comparison: the row that adds a file after the request was shown loses it. Force the remove at the worktree's own path after the last look: the row writes a file by that path between the look and git's remove, and finds it neither in place nor restored |
 | AC4 | Keep sets the item to kept; no later event retries it and no second request is raised until the owner presses Abandon | Leave a kept item deferred; the next event's row raises a second request and fails |
 
 ### VELDO-0319 The console's Space screen
@@ -3831,7 +3920,7 @@ Console. Depends on 0319 and 0345. It builds section 0.5 and the watch on the sn
 | AC2 | veldo space restore adds a worktree at the path the item had, or at the path given, at the kept head, and applies every snapshot attempt the keep record lists, the oldest first, so that the later one wins where two hold the same path: after a Discard and a restore the tracked edits, the staged state, the untracked files and the ignored files that are work are back byte for byte with their modes. Whether there is a snapshot is read from the keep record alone. It refuses, adding nothing and saying what is missing, when something is at the path, when any attempt the record lists has its folder or manifest missing or a manifest with another digest than the record holds, when a saved file does not match its manifest, and when a manifest path is absolute, holds a .. part or resolves outside the target path. It leaves the kept refs and the snapshots in place | Each of these turns a row of its own red. Restore the head without the snapshot: the row's untracked file is missing. Apply the snapshot only when the folder is there: the row deletes the snapshot, restores, finds the head without the untracked file, and the command said success. Copy a manifest path as it is written: the row's manifest names a path with a .. part, and a file is written outside the target. Apply the newest attempt only: the row's review scratch removal stopped after its first delete and was retried, and the restore leaves the first deleted file missing |
 | AC3 | Only veldo space kept drop removes a kept ref or a snapshot. It is the owner's signed command, it lists the commits that would no longer be reachable and every file of every attempt folder of the item, the folders no record lists and the temporary ones included, before it acts, it removes the item's whole folder in the store, and it is refused from every host principal | Each of these turns a row of its own red. Accept drop from space-runner: the row that sends it finds the refs gone. List only the attempts the record lists: the row's item has one more attempt folder that no record lists, and drop removes a file its listing did not show |
 | AC4 | The console's Removed section and the space.kept read show, for each removal, the number of kept refs, whether a snapshot was saved and its size, and the restore command with the item filled in; and for the installation the count and the size of all kept refs and of all snapshots | Leave the kept refs out of the read; the row that expects the restore command beside the removed worktree finds none and fails |
-| AC5 | Reconcile and veldo space kept check every keep record against the disk: each kept ref resolves to its recorded commit, every snapshot attempt the record lists is there, and each manifest has its recorded digest. What fails is reported under space.reports as kept work missing, with the item, and is shown at the top of the console's Space screen until the ref or the snapshot is back or the owner drops that item's kept work. A snapshot store that is gone, or whose owner or mode is not the installation owner's and 0700, is reported the same way. Snapshot folders no keep record names are listed with their sizes, and nothing is proposed for them | Each of these turns a row of its own red. Check the kept refs only: the row deletes the snapshot store, runs reconcile and finds no report. Check the newest attempt only: the row deletes the first of an item's two listed attempts, runs reconcile and finds no report |
+| AC5 | Reconcile and veldo space kept check every keep record against the disk: each kept ref resolves to its recorded commit, every snapshot attempt the record lists is there, and each manifest has its recorded digest. What fails is reported under space.reports as kept work missing, with the item, and is shown at the top of the console's Space screen until the ref or the snapshot is back or the owner drops that item's kept work. A snapshot store that is gone, or whose owner or mode is not the installation owner's and 0700, is reported the same way. Snapshot folders no keep record names, whole or temporary, are listed under the item whose folder holds them, with their sizes, and are counted in the totals. They go with that item's drop (AC3), and nothing else is proposed for them | Each of these turns a row of its own red. Check the kept refs only: the row deletes the snapshot store, runs reconcile and finds no report. Check the newest attempt only: the row deletes the first of an item's two listed attempts, runs reconcile and finds no report. List only what keep records name: the row's item has an attempt folder no record names, and veldo space kept does not show it |
 
 ### VELDO-0347 Work the first rules did not see: ignored files, repositories in any folder, evidence
 
@@ -3843,7 +3932,7 @@ agent repository item), Clone provisioner, Batch, Landing line. Depends on 0302,
 | :- | :- | :- |
 | AC1 | Rule 5 refuses a worktree that holds an ignored file which is not build output: a loose ignored file outside every build output folder, and a path only a personal ignore rule covers. A path whose rule cannot be traced is counted the same way | Leave ignored paths out of case 3; the row's local settings file goes with git's non-forced remove and the row fails |
 | AC2 | A git repository beneath a scratch item or a build output item holds it, as unrecorded, unless it is a clean clone: no uncommitted and no untracked file, no stash, every ref and its HEAD held by one of its own remote-tracking refs, no log entry whose commit those refs do not reach, and, for a remote that is a path on this host, each of those commits present in that repository now. One that cannot be read, one whose local remote cannot be read, and a folder that cannot be listed, hold the item | Each of these turns a row of its own red. Look beneath worktrees and agent repositories only: the row's clone with an unpushed commit in a session's scratch is deleted. Leave the logs out: the row's clone whose only unpushed commit a reset left in its HEAD log is deleted. Take a remote-tracking ref at its word: the row writes one by hand for a commit its local remote does not hold, and the clone is deleted |
-| AC3 | A worker clone, a batch clone and a candidate workspace are items of the kind agent repository with their form, never scratch, and are removed as private repositories: the keep step records every commit in the main repository first. A batch clone or a candidate workspace whose work tree holds an uncommitted or untracked file that is work is deferred as unique work and raises one request on the space disposition touchpoint, as a worktree does. A worker clone of a run that has ended is not deferred for such files: they are saved in the snapshot store, each file is compared with the manifest immediately before it is deleted, and the clone is removed with no request | Each of these turns a row of its own red. Remove a clone by the folder remover alone: the row's commit that the runner never brought across is in no repository. Remove a worker clone without the snapshot: the row's uncommitted file is neither in place nor restored. Delete a worker clone's files without the comparison: the row rewrites a file after the snapshot, and finds the new content neither in place nor in the snapshot |
+| AC3 | A worker clone, a batch clone and a candidate workspace are items of the kind agent repository with their form, never scratch, and are removed as private repositories: the keep step records every commit in the main repository first. A batch clone or a candidate workspace whose work tree holds an uncommitted or untracked file that is work is deferred as unique work and raises one request on the space disposition touchpoint, as a worktree does. A worker clone of a run that has ended is not deferred for such files: they are saved in the snapshot store, each file is compared with the manifest immediately before it is deleted, and the clone is removed with no request. When that comparison stops the removal, the folder remover renames the folder back to its locator before the item is deferred, so the item keeps its id, the next attempt saves what is left, and reconcile does not mark it gone | Each of these turns a row of its own red. Remove a clone by the folder remover alone: the row's commit that the runner never brought across is in no repository. Remove a worker clone without the snapshot: the row's uncommitted file is neither in place nor restored. Delete a worker clone's files without the comparison: the row rewrites a file after the snapshot, and finds the new content neither in place nor in the snapshot. Leave the folder under its marked name at that stop: the row runs reconcile, and finds the item marked gone and the rewritten file in a folder no item names |
 | AC4 | An evidence file is removed only when its digest, read again at the removal, is the digest of a blob the store holds or of a file in a commit the trunk or a kept ref reaches; a store or a commit that cannot be read is no copy | Use the digest recorded at the last measurement; the row changes the file after it was measured, finds the changed file gone and fails |
 | AC5 | The look of rule 6 starts at the item's own folder: an item whose folder is a git repository and whose kind is neither worktree nor agent repository holds itself, as unrecorded. The kind registry has a row for an agent repository item whose form is a worker clone, a batch clone or a candidate workspace, which ends at the events its creator sends; an item with no form ends only on the agent repository's own events | Each of these turns a row of its own red. Look beneath the item only: the row's scratch item whose own folder is a repository with an unpushed commit is deleted. Give an item with no form the clone's row: the row's agent repository with its worktree still in place is made due at run finished |
 
@@ -3856,8 +3945,8 @@ be there before any scope can be switched to act.
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | The suite drives every removal path of section 0.7 at every kind of work of section 0.1, in every shape of that section's table: nested, adopted, an agent worktree and then its repository, linked, locked, unreadable, main repository gone, snapshot store, retry and restore. After each drive every planted thing is in its place byte for byte, or comes back byte for byte through veldo space restore from what the removal left; a restore that says it succeeded while a planted file is absent fails the row; the suite's own copies are never read. The paths, kinds and shapes are data, and a remover or a kind of work with no row fails the suite | Run Discard without the snapshot; the Discard rows find the untracked file neither in place nor restored and fail |
-| AC2 | A file added after the probe, a process that opens a file after the first probe, a branch moved between the probe and the remove, a file added between the snapshot and the forced remove, an ignored file added between Save's snapshot and its remove, and a file of review scratch or of a dead run's worker clone rewritten between the snapshot and its own delete each leave the work in place. With the process killed at each step boundary of section 0.2, the two snapshot boundaries included, and of the folder remover, and reconcile run afterwards, every planted thing is in place or comes back | Complete a removing item at reconcile without its keep record; the row killed before the refs were written finds the worktree gone and its commit unreachable, and fails |
-| AC3 | Each mutation of section 0.7 turns a row of the suite red and is registered with the gate's mutation check: a kept child that does not hold, a stash counted as a holding ref, no look beneath a worktree, a private repository compared with itself, an unreadable worktree read as unlocked, an unopenable scratch read as free, the keep step skipped, the remove run after a failed keep, Discard without the snapshot, a snapshot written into a repository's object store, a removing item completed with no keep record, the remove run after a failed snapshot, review scratch deleted without the snapshot, a file deleted without the comparison with its manifest, an existing snapshot folder replaced on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore that applies the snapshot only when its folder is there, a clone adopted as scratch, no look at an item's own folder, an agent worktree's kept refs written into its agent repository, a clean clone read without its logs, and a keep record that holds only the newest attempt | Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree leaves the suite green and the mutation check fails |
+| AC2 | A file added after the probe, a process that opens a file after the first probe, a branch moved between the probe and the remove, a file added between the snapshot and the forced remove, an ignored file added between Save's snapshot and its remove, and a file of review scratch or of a dead run's worker clone rewritten between the snapshot and its own delete each leave the work in place. A write by the worktree's path between the last look and git's remove, in a Discard and in a Save, either fails for the writer or leaves its file in place or in the snapshot. A worker clone whose removal the comparison stopped is back at its locator, and reconcile run afterwards does not mark it gone. With the process killed at each step boundary of section 0.2, the two snapshot boundaries included, and of the folder remover, and reconcile run afterwards, every planted thing is in place or comes back | Complete a removing item at reconcile without its keep record; the row killed before the refs were written finds the worktree gone and its commit unreachable, and fails |
+| AC3 | Each mutation of section 0.7 turns a row of the suite red and is registered with the gate's mutation check: a kept child that does not hold, a stash counted as a holding ref, no look beneath a worktree, a private repository compared with itself, an unreadable worktree read as unlocked, an unopenable scratch read as free, the keep step skipped, the remove run after a failed keep, Discard without the snapshot, a snapshot written into a repository's object store, a removing item completed with no keep record, the remove run after a failed snapshot, review scratch deleted without the snapshot, a file deleted without the comparison with its manifest, an existing snapshot folder replaced on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore that applies the snapshot only when its folder is there, a clone adopted as scratch, no look at an item's own folder, an agent worktree's kept refs written into its agent repository, a clean clone read without its logs, a keep record that holds only the newest attempt, a folder left under its marked name when the comparison stops its removal, and a Discard or a Save that removes the worktree at its own path | Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree leaves the suite green and the mutation check fails |
 | AC4 | The switch to act is refused as space_act_unbuilt naming VELDO-0348 until this ticket lands. From then it is refused unless the ledger holds a proof record that passed, written by the owner's veldo space prove on this host, whose digest of the space modules and whose git version are the ones in use; the refusal names what does not match. A scope already in act with no matching record writes due and removes nothing | Accept any proof record that passed; the row changes one space module after the proof, switches a scope to act and fails |
 
 ### VELDO-0349 The guard keeps hands off the kept store
@@ -4185,11 +4274,25 @@ both were changes of text.
 | F1 a retry's snapshot replaces the record of an earlier attempt whose files were already deleted | True. The record held one snapshot and a later save wrote it again, so after a review scratch removal that stopped at its second file, the retry's snapshot was the only one a restore applied. The record now lists every attempt and a later write removes none, also a write that saves nothing. Restore applies every listed attempt, the oldest first, and refuses when any is missing or not whole. The listing and the watch check every listed attempt. Drop lists every attempt folder of the item, the ones no record lists included | 0.2 (one row), 0.3, 0.5, 0.6, 0.7, 4.1, 6.1, 6.6, 8.8; ticket 0345 AC5, ticket 0346 AC1, AC2, AC3 and AC5, ticket 0315 AC2, ticket 0348 AC3 |
 | F2 a writer that writes first and then executes the reader | True by the kernel's definition of execve. It was not run on this host; ticket 0344's row shows it. Closed as the check says: the probe requires NoNewPrivs 1 and Seccomp 2 of the writer, the reader writes its header only after it has locked itself, and it writes the table only after the probe's byte. The writer check stays | 7.1 ("A writer that becomes the reader", the reader's bullets, the header line, check 5); ticket 0344 AC1 |
 
-Not in this amendment, because the lead's brief for it named F1 and F2: F3, where the folder remover
-leaves a worker clone's folder when the comparison with the manifest stops it, and two points of F4,
-the gap between the last look and git's one remove command in Discard and in Save, and the wording
-of the second History entry of VELDO-0299. By the check's own reading F3 deletes nothing. F4's other
+The seventh amendment took F1 and F2 only, because the lead's brief for it named those two. It left
+out F3, where the folder remover leaves a worker clone's folder when the comparison with the
+manifest stops it, and two points of F4, the gap between the last look and git's one remove command
+in Discard and in Save, and the wording of the second History entry of VELDO-0299. F4's other
 point, that drop takes the attempt folders no record lists, went in with F1.
+
+The eighth amendment takes them, by the lead's word that both are required under the owner's rule,
+F4 included. The check listed F4 as recommended and offered a second way for its first point, to
+name the gap as a residual in 0.9. That way is not taken: the gap is closed.
+
+| Point | Checked | Where it is fixed |
+| :- | :- | :- |
+| F3 a stop by the manifest comparison leaves the folder under its marked name | True. 6.5 renamed the folder back only when the second probe found a user, and 8.8 marks an item gone when nothing is at its locator. The first way the check offered is taken: on that stop the remover renames the folder back to its locator before it defers the item. Reconcile also looks for the marked name before it marks anything gone | 0.2 (one row), 0.3, 0.6, 0.7, 6.5, 8.8; ticket 0347 AC3, ticket 0315 AC2, ticket 0348 AC2 and AC3 |
+| F4 a file written between the last look and git's one remove command, in Discard and in Save | True. The worktree is moved to a marked name with git's worktree move, and the in-use probe and the look at the worktree are made again under that name. A crash in between is set right with git's worktree repair at reconcile. What stays outside is one sentence in 0.9: a process that finds the marked name | 0.2 (one row), 0.3, 0.6, 0.7, 0.9, 6.5, section 7, 8.8; ticket 0318 AC2 and AC3, ticket 0315 AC2, ticket 0348 AC2 and AC3 |
+| F4 attempt folders no record names can only grow | Drop has listed and taken them since the seventh amendment. The listing now shows each under its item, so none grows unseen | 0.3, 0.5; ticket 0346 AC3 and AC5 |
+| F4 the wording of VELDO-0299's second History entry on AC1 | Taken as the check words it: a new History line says AC1 is read more strictly. The criterion's text and the earlier entry are not edited | VELDO-0299, History |
+
+That git refuses to move a locked worktree and one that holds a submodule is how git documents the
+command. It was not run on this host for this amendment; ticket 0318's rows show it.
 
 ## 15. Open questions for the lead
 
