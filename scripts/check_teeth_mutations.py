@@ -14362,6 +14362,67 @@ def cases():
         '2>&1\nfi\nexit 0\n', '2>&1\nfi\nexit $?\n', ['hooks/never-fail-git'])
     result[-1]['dir'] = 'engine/hooks'
 
+    # VELDO-0312: ticket ended, project ended and worktree abandoned, from the authority service. The
+    # four declared falsifiers: the assignment's close is left unwired; project ended is sent for
+    # complete only; the event is decided inside the transition, from the record as it is signed,
+    # before the commit; a worktree unchanged for 30 days is sent worktree abandoned.
+    space312 = '149_veldo_0312_ticket_ended.py'
+
+    def ended312(name, old, new, rows, also=()):
+        add(312, name, space312, 'control_service.py', old, new, rows, also=also)
+
+    ended312('space312-close-unwired',
+             "                elif (kind == 'assignment_disposition' and data.get('ruling') == 'close'\n",
+             "                elif (kind == 'assignment_disposition' and data.get('ruling') == 'unwired'\n",
+             ['ac1/assignment-close'])
+    project312 = "                if kind == 'project' and state in FACTORY_ENDED and moved:\n"
+    ended312('space312-sent-for-complete-only', project312,
+             "                if kind == 'project' and state == 'COMPLETED' and moved:\n",
+             ['ac2/project-cancel'])
+    ended312('space312-sent-before-the-commit',
+             "        return SIG.sign_bytes(self.config['journal_key'], data, L.JOURNAL_NAMESPACE)\n",
+             "        # defect: the event is decided here, inside the transition, from the record being signed\n"
+             "        self.space_early = getattr(self, 'space_early', []) + [json.loads(data)]\n"
+             "        return SIG.sign_bytes(self.config['journal_key'], data, L.JOURNAL_NAMESPACE)\n",
+             ['ac3/rollback-sends-nothing'],
+             also=[("            records = self.space_committed(head) if head > self.space_seen else []\n",
+                    "            records, self.space_early = getattr(self, 'space_early', []), []\n")])
+    ended312('space312-idle-worktree-abandoned',
+             "            # Only what is committed is read: the journal, after the commit, by its own sequence.\n",
+             "            for identity, record in sorted(self.space['ledger'].items().items()):  # defect: an age rule\n"
+             "                where = (record.get('locator') or {}).get('path')\n"
+             "                if (record.get('kind') == 'worktree' and record.get('state') == 'present' and where\n"
+             "                        and os.path.isdir(where) and time.time() - os.stat(where).st_mtime > 30 * 86400):\n"
+             "                    sent.append(self.space_abandon(identity, cause='age'))\n",
+             ['ac4/month-idle-sends-nothing'])
+    # Beside them: a pause is taken for an end; an authorization recorded on a unit that had ended, and
+    # a later record of another command, are taken for an end again; Abandon is sent although another
+    # worktree of the owner would go with it; a stale version is accepted; the worktree a run is
+    # provisioned in is itself abandoned.
+    ended312('space312-pause-taken-for-an-end', project312,
+             "                if kind == 'project' and state in FACTORY_ENDED + ('PAUSED',) and moved:\n",
+             ['ac2/pause-sends-nothing'])
+    ended312('space312-authorization-taken-for-an-end',
+             "                moved = entry.get('target') == state and entry.get('source') != state\n",
+             "                moved = entry.get('target') == state\n",
+             ['ac1/closed-unit-authorized-later'])
+    ended312('space312-another-commands-record-counted',
+             "                entry = entry if entry.get('command_id') == command else {}\n",
+             "                entry = entry if entry.get('command_id') else {}\n",
+             ['ac1/closed-unit-authorized-later'])
+    ended312('space312-abandon-sent-past-another-worktree',
+             "        if others:\n            out['reason'] = 'not_alone'\n",
+             "        if False:\n            out['reason'] = 'not_alone'\n",
+             ['ac4/second-worktree-stays', 'ac4/scope-owner-reaches-nothing-else'])
+    ended312('space312-stale-version-accepted',
+             "            if held is None or type(version) is not int or held[0] != version:\n",
+             "            if held is None:\n",
+             ['ac4/owner-abandon'])
+    ended312('space312-provisioned-worktree-abandoned',
+             "                if where == new or where.startswith(new + '/') or new.startswith(where.rstrip('/') + '/'):\n",
+             "                if False:\n",
+             ['ac4/provisioned-in-another-worktree'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

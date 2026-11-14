@@ -90,3 +90,62 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-14: built. No acceptance criterion changed. In control_service.py: Service.space (the ledger and
+  what Signal is given, wired in by the installation), space_pass, space_events, space_send, space_abandon
+  and space_provisioned. Suite scripts/suites/149_veldo_0312_ticket_ended.py, 22 rows; ten falsifiers
+  registered under finding 312, the four declared ones among them, each applied once and seen red on its
+  row. What the build decided, and what it leaves to other tickets:
+  - Nothing here removes anything. The service sends an event through Signal and through nothing else:
+    the rules, the keep step and the removers are Signal's. A worktree with uncommitted or untracked
+    work, with a commit only its branch holds, or one git or a process holds, is deferred and stays.
+  - After the commit, from the journal. The six transitions are committed by their own organs (the
+    backlog, the assignment inbox, the project service), which this ticket does not touch. After a
+    packet, a channel pass and a factory loop pass the service reads the journal records committed
+    since the last one it read, outside any transaction, and sends for a record only what that record
+    committed: the record's command is the one the last history entry of the item, the unit or the
+    project names, with the state it moved to, or the one the disposition record of a close names. So
+    a refused command and a rolled back transaction, which leave no record, send nothing, and a later
+    write to an ended entity is not read as an end again. The terminal states have no exit, so no
+    ticket is reopened; a pause is not an end.
+  - What a ticket is. The unit: ticket ended is sent with the subject {the unit's project, the unit},
+    as landed is. An item's complete and cancel end every unit of its decomposition. A project the
+    ledger does not name is sent nothing.
+  - Signal runs in the service's own process, inside the pass (VELDO-0301). The space worker the design
+    gives the service for its own events is VELDO-0323's. Until then a large removal holds the service
+    loop. FOR THE LEAD.
+  - A service that starts reads the journal from its head: an end committed while no service ran, or
+    before a ledger was wired in, is not sent. Those items wait for reconcile (VELDO-0315). FOR THE
+    LEAD.
+  - Nothing in the engine builds Service.space yet (the ledger for the installation is built at start
+    by VELDO-0315), so an installation sends nothing until that wiring lands. FOR THE LEAD.
+  - AC4, the owner's Abandon, FOR THE LEAD: NOT BUILT AS A ROUTE. The authority's side is built and
+    proven (Service.space_abandon: one worktree, at the version the screen showed). The console's
+    signed route space.abandon is not: a write route needs its operation in
+    control_api_assertion.OPERATIONS and its dispatch in control_api_authority.ApiAuthority._apply,
+    and neither file is in this footprint. A route added to control_api.py alone would be refused at
+    the assertion's shape and would turn suite 71_veldo_0130 red (it holds the write routes equal to
+    the assertion's operations). So control_api.py, its synced copy and engine/ui/src/api/routes.json
+    are unchanged. What is needed: a footprint amendment for those two files (and their synced
+    copies), or the route in VELDO-0319, whose AC3 already covers the signed owner commands.
+  - AC4, provisioned in another worktree, FOR THE LEAD. The entry is Service.space_provisioned(unit,
+    worktree, dispatch): every other worktree the ledger records for that ticket is sent worktree
+    abandoned. The provisioner that calls it is in control_launch.py and control_clone.py, outside
+    this footprint; the suite calls the entry directly. It must be called before the new worktree's
+    own item is confirmed (see the next point).
+  - The ledger's signal names an owner, not an item (the same limit VELDO-0310 recorded). So worktree
+    abandoned for one worktree is sent with the whole owner of each live item at or beneath it, and
+    only when the event would reach no other worktree and no agent repository of that owner; for an
+    owner that is a scope alone (a branch no pattern maps to a ticket) it must reach nothing else that
+    the event removes. Otherwise nothing is sent (not_alone, with what it would have reached). Two
+    consequences. A ticket with two recorded worktrees cannot have one abandoned: both stay, and no
+    work is lost, but space is. And the event reaches what the ticket owns elsewhere (its scratch, its
+    ended runs' containers and volumes), as the worktree abandoned column says, also when the ticket
+    goes on in another worktree; a run that has not ended holds its things by rule 3. Closing both
+    needs a signal that names items, which is the ledger's. FOR THE LEAD.
+  - The state kept is one the ledger's signal reaches: ticket ended and project ended make an item the
+    owner marked Keep due again (design 0.4 says only Abandon ends Keep). That is the ledger's to
+    settle with VELDO-0318, as VELDO-0310's history says of landed. FOR THE LEAD.
+  - The unit's dispose_unit and the assignment's close are driven in the suite by journal records a
+    fixture command commits on the real store, holding the entities those transitions write. The two
+    need the owner's settled answer through the settlement chain, which this suite does not build. The
+    item's complete and cancel and the project's four commands are the real organs' own.

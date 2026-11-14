@@ -165,6 +165,45 @@ each engine's events is in the poll set beside the launch pipes and the provisio
 event, handed to the adapter in the same loop iteration; nothing reads the stream on an interval and no thread
 does. End of file on a pipe makes the adapter take a new snapshot of that engine before it subscribes again.
 
+TICKET ENDED, PROJECT ENDED AND WORKTREE ABANDONED (VELDO-0312, design sections 5 and 6.6). When the instance
+has a space ledger (Service.space: the mapping an installation wires in, with ledger, the control_space.Ledger on
+this store, and under their own names what Signal is given: probe, kinds, remover, free, keep, owner_live, landed,
+queued, run, proc, borrow_root), it sends three events through Signal (control_space_signal.signal), and through
+nothing else. This module deletes nothing: whatever goes is removed by Signal's removers, after the safety rules
+and the keep step, and whatever a rule keeps is deferred on its record.
+
+  ticket ended    after the commit of the backlog item's complete or cancel (for every unit of its
+                  decomposition), of the unit's dispose_unit, or of the assignment's dispose with the ruling
+                  close. The subject is the unit's project and the unit: the ticket.
+  project ended   after the commit of the project's cancel or complete. The subject is the project alone, so it
+                  ends the items of the project that have no ticket as well as those that have. A pause sends
+                  nothing.
+  worktree abandoned   when the ticket's next run is provisioned in another worktree (space_provisioned, the
+                  entry a provisioner calls) and when the owner presses Abandon (space_abandon, the authority's
+                  side of the console's action), for one worktree.
+
+AFTER THE COMMIT, AND FROM NOTHING ELSE. The four transitions and the two of a project are committed by their own
+organs. The service does not send from inside any of them. After a packet, a channel pass and a factory loop pass
+(space_pass) it reads the journal records committed since the last one it read, outside any transaction, and sends
+for a record only what that record itself committed: the record's command is the one the item's, the unit's or
+the project's last history entry names, or the one the disposition record of a close names (space_events). A
+command that was refused and a transaction that rolled back left no journal record, so they send nothing. The
+terminal states have no exit (entity_contract), so no record is read as an end twice. Each event's emitter, which
+Signal writes on every outcome, and the line in the observation log name the transition and the command that
+committed it. A project the ledger does not name is sent nothing.
+
+ONE WORKTREE. The ledger's signal names an owner, not an item. So worktree abandoned is sent with the whole owner
+of each live item at or beneath the worktree, and only when the event would then reach, anywhere else, no
+worktree and no agent repository, and, where the owner is a scope alone (a worktree on a branch no pattern maps
+to a ticket), nothing at all that the event removes: such an owner is every ticket's, and the event would end
+their scratch, build output, containers, networks and volumes. Otherwise nothing is sent and the answer says
+not_alone with what it would have reached. What a ticket's own runs left elsewhere is reached, as the table of
+section 5 says, and a run that has not ended holds its things by rule 3. A worktree no live item records is sent
+nothing. Abandon takes the item's version as the owner's screen showed it, and a stale one is refused.
+
+NO AGE. Nothing here reads a clock to decide. A worktree nobody touched for a month is sent nothing until one of
+the two things above happens.
+
 A NEW PROJECT FROM CHAT (VELDO-0143). The instance's NewProjectPass (control_service_projects) runs when an
 event it acts on made it due, never on a timer and never by reading the journal for a change: at the start,
 after a packet or channel pass that advanced the journal (hint_after: an owner's answer, a take-on this
@@ -283,6 +322,8 @@ LS = _organ('control_landing_station', lazy=True)
 WU = _organ('control_workflow_unit', lazy=True)
 # VELDO-0239: the owner's batches of a line's project, run on the line's pass.
 BS = _organ('control_batch_service', lazy=True)
+# VELDO-0312: Signal, the one entry point an event is sent through. The modules it is given come with the ledger.
+SPACE_SIGNAL = _organ('control_space_signal', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -336,6 +377,15 @@ JOURNAL_KEY = 'journal'
 SPACE_PRINCIPALS = ('space-observer', 'space-runner')
 SPACE_SCOPE = 'space'
 SPACE_KEYS = 'keys'
+# VELDO-0312: the three events the service sends (design section 5), the item states an event reaches and those
+# of a thing that is no longer there, the kinds an Abandon is never sent past, the kinds the worktree abandoned
+# column removes beside them, and the most entries of one list in an event's observation.
+SPACE_TICKET_ENDED, SPACE_PROJECT_ENDED, SPACE_ABANDONED = 'ticket_ended', 'project_ended', 'worktree_abandoned'
+SPACE_SIGNALLED = ('present', 'kept', 'deferred')
+SPACE_ENDED = ('removed', 'gone')
+SPACE_WORKTREES = ('worktree', 'agent_repository')
+SPACE_ABANDON_TAKES = ('scratch', 'build_output', 'container', 'network', 'volume')
+SPACE_NAMED = 50
 EXIT_LOCK_HELD = 75
 EXIT_REFUSED = 78
 # The kernel's limit on a local socket path (sun_path), terminator included.
@@ -1471,6 +1521,9 @@ class Service:
         # VELDO-0306: the Docker adapter of the installation's space ledger (control_space_docker.Adapter),
         # set by whoever builds that ledger for this instance. Its event pipes are in the poll set.
         self.space_docker = None
+        # VELDO-0312: the installation's space ledger and what Signal is given, set by whoever builds that ledger
+        # for this instance (None: nothing is sent), and the last journal record space_pass has read.
+        self.space, self.space_seen = None, self.watermark()
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1611,6 +1664,7 @@ class Service:
                            taxonomy=None if ok else taxonomy(result.get('reason')), watermark=self.watermark())
         self.hint_after(before)
         self._count(observation)
+        self.space_pass()
         return result
 
     def owner_revision(self, packet, observation=None):
@@ -1886,6 +1940,7 @@ class Service:
         if summary.pop('notable', False):
             self._log(dict(summary, kind='channel', operation='channel_pass', at=time.time(), domain_uuid=self.domain))
         self.hint_after(before)
+        self.space_pass()
         return summary
 
     def inspect(self, packet):
@@ -2104,6 +2159,289 @@ class Service:
                            'domain_uuid': self.domain, 'outcome': 'refused',
                            'refusal': 'unknown_outcome:' + type(error).__name__})
             return None
+
+    # The space events (VELDO-0312).
+
+    @staticmethod
+    def space_events(records):
+        """What each journal record ended, in order: one entry per event to send, {event, transition, seq,
+        command_id, entity, project, tickets}. A record is {seq, command_id, transition}, the transition being
+        the entities the record wrote, as the journal holds them.
+
+        A record counts only for what its own command committed. The backlog item's complete and cancel, the
+        unit's dispose_unit and the project's cancel and complete each append the history entry of their
+        command, with the state they came from and the state they moved to: the record's command must be that
+        entry's, the entity must be in the state the entry moved it to, and it must have come from another. An
+        assignment's dispose with the ruling close writes its disposition record, which names its command and
+        its unit, and marks the unit it moved to CANCELED with the same command. Nothing else is an end: a
+        pause, a unit an item's cancel moved (the item's entry stands for it), an authorization recorded on a
+        unit that was closed before, or any later write to an entity that has ended."""
+        found = []
+        for record in records:
+            command, transition = record.get('command_id'), record.get('transition')
+            if not isinstance(command, str) or not command or not isinstance(transition, dict):
+                continue
+            about = {'seq': record.get('seq'), 'command_id': command}
+            for identity in sorted(transition):
+                new = transition[identity] if isinstance(transition[identity], dict) else {}
+                kind, data = new.get('kind'), new.get('data')
+                if not isinstance(data, dict):
+                    continue
+                state, history = data.get('state'), data.get('history')
+                entry = history[-1] if isinstance(history, list) and history and isinstance(history[-1], dict) else {}
+                entry = entry if entry.get('command_id') == command else {}
+                moved = entry.get('target') == state and entry.get('source') != state
+                if kind == 'project' and state in FACTORY_ENDED and moved:
+                    name = data.get('name') if isinstance(data.get('name'), str) else identity[len('project:'):]
+                    found.append(dict(about, event=SPACE_PROJECT_ENDED, entity=identity, project=name, tickets=[],
+                                      transition='project_cancel' if state == 'CANCELED' else 'project_complete'))
+                elif kind == 'backlog_item' and moved and (
+                        (state == 'DONE' and entry.get('source') == 'ACTIVE' and entry.get('operation') == 'complete')
+                        or (state == 'CANCELED' and entry.get('operation') == 'cancel')):
+                    units = [unit.get('unit') for unit in data.get('decomposition') or [] if isinstance(unit, dict)]
+                    found.append(dict(about, event=SPACE_TICKET_ENDED, entity=identity, project=data.get('project'),
+                                      tickets=[unit for unit in units if isinstance(unit, str) and unit],
+                                      transition='item_complete' if state == 'DONE' else 'item_cancel'))
+                elif (kind == 'execution_unit' and state == 'CANCELED' and moved
+                      and entry.get('operation') == 'dispose_unit'):
+                    found.append(dict(about, event=SPACE_TICKET_ENDED, entity=identity, project=None,
+                                      tickets=[identity], transition='unit_dispose_unit'))
+                elif (kind == 'assignment_disposition' and data.get('ruling') == 'close'
+                      and data.get('dispose_command_id') == command):
+                    unit = data.get('unit_id')
+                    closed = transition.get(unit) if isinstance(unit, str) else None
+                    closed = closed.get('data') if isinstance(closed, dict) and closed.get('kind') == 'execution_unit' else None
+                    mark = closed.get('disposition') if isinstance(closed, dict) else None
+                    if (isinstance(closed, dict) and closed.get('state') == 'CANCELED' and isinstance(mark, dict)
+                            and mark.get('dispose_command_id') == command):
+                        found.append(dict(about, event=SPACE_TICKET_ENDED, entity=identity, project=None,
+                                          tickets=[unit], transition='assignment_close'))
+        return found
+
+    def space_committed(self, head):
+        """The journal records committed after the last one space_pass read, up to `head`, oldest first, each
+        {seq, command_id, transition}. A transition that cannot be read is None, and ends nothing."""
+        records = []
+        for seq, command, transition in self.conn.execute(
+                'SELECT seq, command_id, transition FROM journal WHERE seq > ? AND seq <= ? ORDER BY seq',
+                (self.space_seen, head)).fetchall():
+            try:
+                changed = json.loads(transition)
+            except ValueError:
+                changed = None
+            records.append({'seq': seq, 'command_id': command, 'transition': changed})
+        return records
+
+    def space_pass(self):
+        """VELDO-0312: after a packet, a channel pass or a factory loop pass, send ticket ended and project
+        ended for what the journal records committed since the last pass ended (the module's AFTER THE
+        COMMIT). Returns what was sent, one observation per event, each logged. With no ledger nothing is
+        sent and the records are passed over. It reads nothing inside a transaction, no clock and no age,
+        and it never raises: a fault is logged by name and ends neither the packet nor the service."""
+        sent = []
+        try:
+            if getattr(self, 'space', None) is None or self.conn.in_transaction:
+                if not self.conn.in_transaction:
+                    self.space_seen = self.watermark()
+                return sent
+            # Only what is committed is read: the journal, after the commit, by its own sequence.
+            head = self.watermark()
+            records = self.space_committed(head) if head > self.space_seen else []
+            for record in records:
+                for found in self.space_events([record]):
+                    sent.append(self.space_send(found))
+                self.space_seen = max(self.space_seen, record['seq'])
+        except Exception as error:  # noqa: BLE001 - an event that could not be sent removes nothing, and is named
+            with contextlib.suppress(Exception):
+                self._log({'kind': 'space', 'operation': 'space_pass', 'at': time.time(), 'domain_uuid': self.domain,
+                           'outcome': 'refused', 'refusal': 'unknown_outcome:' + type(error).__name__,
+                           'detail': str(error)[:300]})
+        return sent
+
+    def _space_project(self, identity):
+        """The name of the project of an execution unit or a backlog item, read from the committed store: its
+        own `project`, else its backlog item's, else the end of its chain (objective, project_uuid). None when
+        the record names none."""
+        def row(key):
+            found = self.conn.execute('SELECT kind, data FROM entities WHERE id=?', (key,)).fetchone() \
+                if isinstance(key, str) and key else None
+            return (found[0], json.loads(found[1])) if found else (None, {})
+        kind, data = row(identity)
+        if kind == 'execution_unit' and not (isinstance(data.get('project'), str) and data['project']):
+            kind, data = row(data.get('backlog_item_uuid'))
+        if kind not in ('execution_unit', 'backlog_item') or not isinstance(data, dict):
+            return None
+        if isinstance(data.get('project'), str) and data['project']:
+            return data['project']
+        kind, objective = row(data.get('objective_uuid'))
+        pid = objective.get('project_uuid') if kind == 'objective' and isinstance(objective, dict) else None
+        return pid[len('project:'):] if isinstance(pid, str) and pid.startswith('project:') and pid != 'project:' else None
+
+    def _space_signal(self, out, event, subjects, emitter):
+        """Send `event` through Signal once for each subject, and write into `out` what became of every item
+        it reached: sent, subjects, removed, deferred and left. Nothing here removes anything."""
+        ledger = self.space['ledger']
+        given = {key: value for key, value in self.space.items() if key not in ('ledger', 'emitter')}
+        for subject in subjects:
+            answer = SPACE_SIGNAL.signal(ledger, event, subject, emitter=emitter, **given)
+            out['subjects'].append({'subject': subject, 'ok': answer.get('ok') is True, 'reason': answer.get('reason'),
+                                    'items': len(answer.get('items') or ()), 'left': len(answer.get('left') or ())})
+            out['sent'] = out['sent'] or answer.get('ok') is True
+            out['left'] += len(answer.get('left') or ())
+            for done in answer.get('outcomes') or ():
+                record = ledger.item(done.get('item')) or {}
+                locator = record.get('locator') or {}
+                named = {'item': done.get('item'), 'kind': record.get('kind'),
+                         'at': locator.get('path') or locator.get('name') or locator.get('ref')}
+                if done.get('outcome') == 'removed':
+                    out['removed'].append(named)
+                elif done.get('outcome') not in ('kept', 'gone'):
+                    out['deferred'].append(dict(named, deferral=done.get('deferral'),
+                                                rule=done.get('rule') or done.get('reason') or done.get('refused')))
+        for part in ('subjects', 'removed', 'deferred'):
+            if len(out[part]) > SPACE_NAMED:
+                out[part] = out[part][:SPACE_NAMED] + [{'more': len(out[part]) - SPACE_NAMED}]
+
+    def _space_observation(self, event, transition, **more):
+        return dict({'kind': 'space', 'operation': 'space_event', 'at': time.time(), 'domain_uuid': self.domain,
+                     'event': event, 'transition': transition, 'sent': False, 'reason': None, 'subjects': [],
+                     'removed': [], 'deferred': [], 'left': 0, 'raised': None}, **more)
+
+    def _space_logged(self, out):
+        out['outcome'] = 'sent' if out['sent'] else 'not_sent'
+        with contextlib.suppress(Exception):
+            self._log(out)
+        return out
+
+    def space_send(self, found):
+        """Send one event space_events found, through Signal: ticket ended once for each of its tickets, with
+        the subject {the project, the ticket}; project ended once, with the project alone as the subject, so it
+        reaches the project's items that have no ticket too. The emitter names the transition and the command
+        that committed it. Returns the observation, which is logged; it never raises."""
+        out = self._space_observation(found['event'], found['transition'], seq=found.get('seq'),
+                                      command_id=found.get('command_id'), entity=found.get('entity'),
+                                      project=found.get('project'), tickets=list(found.get('tickets') or ()))
+        try:
+            ledger = self.space['ledger']
+            name = out['project'] or next((name for name in map(self._space_project, out['tickets']) if name), None)
+            out['project'] = name
+            if not isinstance(name, str) or not any(project.get('project') == name for project in ledger.projects):
+                out['reason'] = 'no_project:%s' % (name,)
+            elif found['event'] == SPACE_TICKET_ENDED and not out['tickets']:
+                out['reason'] = 'no_ticket'
+            else:
+                scope = {'type': 'project', 'id': name}
+                subjects = ([{'scope': scope}] if found['event'] == SPACE_PROJECT_ENDED
+                            else [{'scope': scope, 'ticket': ticket} for ticket in out['tickets']])
+                self._space_signal(out, found['event'], subjects, {
+                    'process': 'authority_service', 'transition': found['transition'],
+                    'command_id': found.get('command_id'), 'seq': found.get('seq')})
+        except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
+            out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+        return self._space_logged(out)
+
+    def space_abandon(self, item, version=None, by=None, cause='owner_abandon'):
+        """VELDO-0312: worktree abandoned for the one worktree whose item is `item` (the module's ONE WORKTREE).
+        `version` is the item's version as the owner's screen showed it; one that is not the item's now is
+        refused stale_version. `by` names who asked and `cause` why: the owner's Abandon, or the ticket's next
+        run provisioned in another worktree. The event is sent with the whole owner of each live item at or
+        beneath the worktree, and only when it would reach no worktree and no agent repository anywhere else
+        (and, for an owner that is a scope alone, nothing else the event removes).
+        Returns the observation {sent, reason, item, path, subjects, removed, deferred, left, others, raised},
+        which is logged; it never raises. Nothing here removes anything: the rules, the keep step and the
+        removers are Signal's, and a worktree with unique work, or one a process uses, is deferred and stays."""
+        out = self._space_observation(SPACE_ABANDONED, cause, item=item, path=None, by=by, others=[])
+        try:
+            self._space_abandon(out, item, version, by, cause)
+        except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
+            out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+        return self._space_logged(out)
+
+    def _space_abandon(self, out, item, version, by, cause):
+        if getattr(self, 'space', None) is None:
+            out['reason'] = 'no_ledger'
+            return
+        ledger = self.space['ledger']
+        record = ledger.item(item) if isinstance(item, str) and item else None
+        path = (record.get('locator') or {}).get('path') if isinstance(record, dict) else None
+        if record is None or record.get('kind') != 'worktree' or not isinstance(path, str) or not path:
+            out['reason'] = 'not_a_worktree'
+            return
+        out['path'] = path
+        if record.get('state') not in SPACE_SIGNALLED:
+            out['reason'] = 'item_state:%s' % (record.get('state'),)
+            return
+        if version is not None:
+            held = self.conn.execute('SELECT version FROM entities WHERE id=?', (item,)).fetchone()
+            if held is None or type(version) is not int or held[0] != version:
+                out['reason'] = 'stale_version'
+                return
+
+        def here(other):
+            where = (other.get('locator') or {}).get('path')
+            return isinstance(where, str) and (where == path or where.startswith(path.rstrip('/') + '/'))
+
+        def owned(other, subject):
+            owner = other.get('owner') or {}
+            return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
+                       for part, wanted in subject.items())
+
+        every = ledger.items()
+        subjects = []
+        for identity, other in sorted(every.items()):
+            if other.get('state') in SPACE_SIGNALLED and here(other):
+                subject = dict(other.get('owner') or {})
+                if isinstance(subject.get('run'), dict):
+                    subject['run'] = subject['run'].get('id')
+                if subject and subject not in subjects:
+                    subjects.append(subject)
+        # The ledger's signal ends every item of an owner. Another worktree or agent repository of the same
+        # owner would go with this one, so nothing is sent while there is one the event would reach. An owner
+        # that is a scope alone is every ticket's: nothing the event removes may be reached elsewhere by it.
+        others = [identity for identity, other in sorted(every.items())
+                  if other.get('state') in SPACE_SIGNALLED and not here(other)
+                  and SPACE_ABANDONED in ((other.get('ends_on') or {}).get('events') or ())
+                  and any(owned(other, subject) and (other.get('kind') in SPACE_WORKTREES or (
+                      set(subject) <= {'scope'} and other.get('kind') in SPACE_ABANDON_TAKES))
+                      for subject in subjects)]
+        if others:
+            out['reason'] = 'not_alone'
+            out['others'] = [{'item': other, 'at': (every[other].get('locator') or {}).get('path')}
+                             for other in others[:SPACE_NAMED]]
+            return
+        self._space_signal(out, SPACE_ABANDONED, subjects,
+                           {'process': 'authority_service', 'transition': cause, 'item': item, 'by': by})
+
+    def space_provisioned(self, unit, worktree, dispatch=None):
+        """VELDO-0312: the ticket `unit`'s next run is provisioned in the worktree at `worktree` (the entry a
+        provisioner calls, before it confirms that worktree's own item). Every other worktree the ledger
+        records as present, kept or deferred for that ticket of its project is sent worktree abandoned, each
+        through space_abandon and so each only when it is alone. The worktree named, and one above or beneath
+        it, is never one of them. Returns the observations, one per worktree; [] when there is none, no
+        ledger, or the unit names no project. It never raises."""
+        sent = []
+        try:
+            if getattr(self, 'space', None) is None or not isinstance(unit, str) or not unit \
+                    or not isinstance(worktree, str) or not os.path.isabs(worktree):
+                return sent
+            new = os.path.normpath(worktree)
+            name = self._space_project(unit)
+            scope = {'type': 'project', 'id': name}
+            for identity, record in sorted(self.space['ledger'].items().items()):
+                owner, where = record.get('owner') or {}, (record.get('locator') or {}).get('path')
+                if (record.get('kind') != 'worktree' or record.get('state') not in SPACE_SIGNALLED
+                        or not isinstance(where, str) or owner.get('scope') != scope or owner.get('ticket') != unit):
+                    continue
+                if where == new or where.startswith(new + '/') or new.startswith(where.rstrip('/') + '/'):
+                    continue
+                sent.append(self.space_abandon(identity, by={'unit': unit, 'worktree': new, 'dispatch': dispatch},
+                                               cause='provisioned_elsewhere'))
+        except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
+            with contextlib.suppress(Exception):
+                self._log({'kind': 'space', 'operation': 'space_provisioned', 'at': time.time(),
+                           'domain_uuid': self.domain, 'outcome': 'refused', 'unit': unit,
+                           'refusal': 'unknown_outcome:' + type(error).__name__, 'detail': str(error)[:300]})
+        return sent
 
     def _receiver_configuration(self, repository, workspace):
         """The repository's launch receiver configuration beside the installed ones: an installed receiver
@@ -3713,8 +4051,9 @@ def serve(config_path):
                     if service.channel is not None and not stopping and time.monotonic() >= next_pass:
                         service.channel_pass()
                         next_pass = time.monotonic() + CH.POLL_SECONDS
-                    if service.loop is not None and not stopping:
-                        service.loop.run()
+                    if service.loop is not None and not stopping and service.loop.run() is not None:
+                        # VELDO-0312: what a factory loop pass committed (the PM's complete of an item).
+                        service.space_pass()
                     # VELDO-0161: a faulted take-on, judged again when its time came (a timer, never a poll).
                     if not stopping and service.adoption_due() is not None and service.adoption_due() <= time.monotonic():
                         service.take_on()
