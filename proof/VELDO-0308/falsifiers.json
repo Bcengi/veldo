@@ -438,5 +438,230 @@
   "red_as_expected": true,
   "criterion": "AC4",
   "declared": false
+ },
+ {
+  "falsifier": "space308-sweep-resends-for-a-handed-over-run",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sweep-never-resends"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "f1/sweep-never-resends"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sweep-never-resends",
+    "three Runner.sweep calls send no event for the run [[('runner.sweep', 'run_finished', 'dispatch/resend-51')]]"
+   ],
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover the event reaches and does not remove (its item was never confirmed) is sent run finished once over three sweeps, and stays [[('runner.sweep', 'run_finished', 'dispatch/once-53'), ('runner.sweep', 'run_finished', 'dispatch/once-53'), ('runner.sweep', 'run_finished', 'dispatch/once-53')] ["
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix",
+  "finding": "F1"
+ },
+ {
+  "falsifier": "space308-sweep-event-reaches-the-clone",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "while the run's owner still has its clone the sweep sends nothing for the run directory: not_alone, nothing written, the clone's items present [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/alone-55', 'outcome': 'removed'}] ['removed', 'removed', 'removed']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix",
+  "finding": "F1"
+ },
+ {
+  "falsifier": "space308-sweep-sends-at-every-sweep",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover the event reaches and does not remove (its item was never confirmed) is sent run finished once over three sweeps, and stays [[('runner.sweep', 'run_finished', 'dispatch/once-53'), ('runner.sweep', 'run_finished', 'dispatch/once-53'), ('runner.sweep', 'run_finished', 'dispatch/once-53')] ["
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix",
+  "finding": "F1"
+ },
+ {
+  "falsifier": "space308-start-sweep-without-the-rule",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/start-sweep-applies-the-rule"
+  ],
+  "red_rows": [
+   "f1/start-sweep-applies-the-rule"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/start-sweep-applies-the-rule",
+    "at start a run directory the ledger holds is no leftover: it is sent nothing, and the observation says it was found at start [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/resend-51', 'outcome': 'handed_over', 'at': 'sweep', 'space': {'item': 'space:item:4f1af5f3c76743f092f4423dd3a5ca0d', 's"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix",
+  "finding": "F1"
+ },
+ {
+  "falsifier": "space308-receiver-event-reaches-the-clone",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "the receiver's own send is for its run's folders alone too: with the clone there it sends nothing and judges nothing [True None ['removed', 'removed', 'removed']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix",
+  "finding": "F1"
+ },
+ {
+  "falsifier": "space308-unread-group-sent",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f3/unread-group-sends-nothing"
+  ],
+  "red_rows": [
+   "f3/unread-group-sends-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f3/unread-group-sends-nothing",
+    "a group nobody could read is not known to be empty: run finished is not sent, and the end says group_unread [True None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix",
+  "finding": "F3"
+ },
+ {
+  "falsifier": "space308-pins-followed-from-memory",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "f4/pins-followed-after-a-restart"
+  ],
+  "red_rows": [
+   "f4/pins-followed-after-a-restart"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f4/pins-followed-after-a-restart",
+    "the next sweep of the restarted service releases the pin, from the refs on disk [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": false,
+  "round": "fix",
+  "finding": "F4"
+ },
+ {
+  "falsifier": "space308-pins-released-with-no-item",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "f4/clone-being-made-keeps-its-pin"
+  ],
+  "red_rows": [
+   "f4/clone-being-made-keeps-its-pin"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f4/clone-being-made-keeps-its-pin",
+    "no item and nothing at the path releases nothing: the pin of a clone being made is held through the start and two sweeps [[] [{'schema': 'veldo.retirement/v1', 'operation': 'release_pins', 'clone_id': 'clone-making-59', 'outcome': 'released', 'released': ['refs/veldo/pins/clone-making-59/68566dc699f"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": false,
+  "round": "fix",
+  "finding": "F4"
+ },
+ {
+  "falsifier": "space308-refusal-reported-before-the-space-end",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f5/refused-before-spawn"
+  ],
+  "red_rows": [
+   "f5/refused-before-spawn"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f5/refused-before-spawn",
+    "the refusal is reported last, after the space end: the folders gone, the hold released, run finished sent once [[('emit', 'refused', 'unregistered_adapter:engine', True, True, 'admitted', 0)]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix",
+  "finding": "F5"
+ },
+ {
+  "falsifier": "space308-spawn-failure-reported-before-the-space-end",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f5/spawn-failed"
+  ],
+  "red_rows": [
+   "f5/spawn-failed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f5/spawn-failed",
+    "the refusal is reported last, after the space end: the folders gone, the hold released, run finished sent once [[('emit', 'refused', 'spawn_failed:ENOENT', True, True, 'admitted', 0)]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix",
+  "finding": "F5"
  }
 ]

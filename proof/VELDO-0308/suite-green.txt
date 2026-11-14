@@ -30,3 +30,21 @@
 06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 216 suites): 1414 passed, 0 failed in 38.76s
 # 82_veldo_0165_launch_hygiene is 47 passed, 2 failed: evidence/completeness and evidence/outside-scan, red at the base too (the review of VELDO-0305 measured it); VELDO-0165's, untouched here.
 # Not run: 86_veldo_0127_agent_configuration (52 of 54 on this branch: its live captures wait for the lead's recapture; left as it is).
+# FIX ROUND. Each suite on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 6ed80a58, with a stub engine (a docker first on PATH that logs and exits 1, DOCKER_HOST at a missing socket; the only calls it saw were suite 144's image ls discovery). Partial runs: none is the gate.
+146_veldo_0308_run_finished: 55 passed, 0 failed
+142_veldo_0303_space_paths: 57 passed, 0 failed
+129_veldo_0254_canary_launch: 33 passed, 0 failed (200 runs back to back, 0 with a failure)
+139_veldo_0301_space_signal: 44 passed, 0 failed
+143_veldo_0305_space_census: 52 passed, 0 failed
+144_veldo_0306_space_docker: 54 passed, 0 failed
+145_veldo_0307_space_docker_ownership: 51 passed, 0 failed
+147_veldo_0310_landed_contained: 47 passed, 0 failed
+62_veldo_0039_dispatch: 51 passed, 0 failed
+63_veldo_0040_containment: 85 passed, 0 failed
+66_veldo_0042_clones: 46 passed, 0 failed
+67_veldo_0041_heartbeat: 49 passed, 0 failed
+83_veldo_0154_factory_loop: 40 passed, 0 failed
+85_veldo_0158_credential_delivery: 49 passed, 0 failed
+06_capabilities_manifest_honesty_veldo: 1414 passed, 0 failed (4 of 217 suites)
+# Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged).
+# Not run in the fix round: ./scripts/verify.sh, the teeth run, the other suites of the first list above, and 86_veldo_0127_agent_configuration (52 of 54 by a known recapture; left as it is).
