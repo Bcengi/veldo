@@ -1,0 +1,17 @@
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 070e7d41. Partial runs: none is the gate.
+143_veldo_0305_space_census: selftest (PARTIAL, 1 of 213 suites): 45 passed, 0 failed in 1.91s
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 213 suites): 57 passed, 0 failed in 3.07s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 213 suites): 44 passed, 0 failed in 1.55s
+138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 213 suites): 65 passed, 0 failed in 2.92s
+140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 213 suites): 57 passed, 0 failed in 5.71s
+66_veldo_0042_clones: selftest (PARTIAL, 1 of 213 suites): 46 passed, 0 failed in 2.13s
+66_veldo_0047_authority: selftest (PARTIAL, 1 of 213 suites): 56 passed, 0 failed in 14.00s
+66_veldo_0051_events: selftest (PARTIAL, 1 of 213 suites): 37 passed, 0 failed in 7.21s
+70_veldo_0057_landing: selftest (PARTIAL, 1 of 213 suites): 57 passed, 0 failed in 15.16s
+70_veldo_0069_bindings: selftest (PARTIAL, 1 of 213 suites): 36 passed, 0 failed in 6.27s
+70_veldo_0073_activation: selftest (PARTIAL, 1 of 213 suites): 37 passed, 0 failed in 3.11s
+85_veldo_0158_credential_delivery: selftest (PARTIAL, 1 of 213 suites): 49 passed, 0 failed in 5.01s
+87_veldo_0170_receiver_trust: selftest (PARTIAL, 1 of 213 suites): 38 passed, 0 failed in 7.81s
+128_veldo_0235_land_locally: selftest (PARTIAL, 1 of 213 suites): 35 passed, 0 failed in 13.78s
+128_veldo_0254_confined_runner: selftest (PARTIAL, 1 of 213 suites): 27 passed, 0 failed in 0.69s
+# NOT GREEN, and not from this ticket: 86_veldo_0127_agent_configuration: 52 passed, 2 failed (live/claude, live/codex). The same two rows were red at b146a50a before this build; its live captures wait for the lead's recapture, and this build did not touch them.

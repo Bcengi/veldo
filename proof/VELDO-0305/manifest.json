@@ -1,0 +1,131 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0305",
+ "commit": "070e7d41f55e02a0960b92c1ec0864902d7d0c1f",
+ "tree": "f238eea2de6eae3785fc86a6e8ff08e92a7a38d5",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-14T09:02:38.089674+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "Rows ac1/any-ignored-folder (ignored folders named out, generated and target, one three levels down, each covered by the committed ignore file: each is a build output item inside the worktree's item, declared by the census, owned by the run, present, and measured with the event; removed at run finished by the folder remover, tracked files untouched), ac1/declared-pattern (a folder only a personal rule ignores but a declared pattern covers is an item), ac1/keep-entry (a keep entry, and a folder a keep entry lies in, get no item and are byte for byte on disk after run finished), ac1/personal-rule (a folder only info/exclude ignores and one only a global excludes file ignores get no item and stay; the fixture shows git itself reporting the second as ignored with that file), ac1/uncommitted-rule (a rule nobody committed covers nothing; once committed the folder is an item), ac1/each-event (a second census at another event declares only what is new and writes each size with that event). Green: proof/VELDO-0305/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "The rows run the census and the receiver's own methods against a real Ledger on a real control store, on real git worktrees made with plain git, and send the run's events through the real Signal, kind registry, probes, removers and keeper, which really delete build output. The project is in act mode by the owner's own signed command with a real key. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0305/falsifiers.json",
+     "detail": "space305-match-the-name-target (the declared falsifier): ac1/any-ignored-folder red, the folder named out has no item. Beside it: space305-keep-entry-not-read reds ac1/keep-entry; space305-uncommitted-ignore-rule-counts reds ac1/uncommitted-rule. Each noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "Rows ac2/untracked-never-recorded (a new source folder git does not ignore has no item at it or inside it, its files are named as work, it is byte for byte on disk after run finished while the build folder beside it is gone, and at worktree abandoned the worktree stays, deferred as unique_work, with the source), ac2/ignored-uncovered (an ignored folder only info/exclude covers, a loose ignored file a committed rule covers and one a personal rule covers: no item, named as work, byte for byte after run finished and after worktree abandoned, the worktree not removed), ac2/repository-in-build-output (the loss the reviews of VELDO-0300 reproduced: a repository with its only commit in an ignored build folder; the folder is recorded and at run finished the remover leaves it whole, the commit readable)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "The rows run the census and the receiver's own methods against a real Ledger on a real control store, on real git worktrees made with plain git, and send the run's events through the real Signal, kind registry, probes, removers and keeper, which really delete build output. The project is in act mode by the owner's own signed command with a real key. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0305/falsifiers.json",
+     "detail": "space305-record-every-untracked-folder (the declared falsifier): ac2/untracked-never-recorded red, the new source folder has an item. Beside it: space305-every-ignored-folder-is-build-output reds ac1/personal-rule and ac2/ignored-uncovered. Each noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "Rows ac3/declared-before-worker (Receiver._space_given: the temporary folder variable and two build variables are set; before any worker is started the temporary folder has a live scratch item and the build root a live build output item, both owned by the run; at each declare the folder was not there and at each confirm it was; a real worker started with that environment writes into both), ac3/engine-strip (the values survive the trusted wrapper's strip of an engine environment, which drops a plain TMPDIR), ac3/refused-not-pointed (a build root folder already there with no item is not taken over: the launch is refused as unavailable_service:space_ledger and its file is byte for byte; a build variable named HOME or a delivered name is refused; a ledger that raises is refused; nothing is made), ac3/nothing-given (a worktree no item records, a station the ledger has no run for, a confined run, an engine on another host and no ledger: no folder, environment unchanged), ac3/spawn-order (read from the source of the one spawn: the folders are given before the execution record, the launch scan and any process start), ac3/run-end (the receiver's own end: the census runs before Signal, the build folder the worker made in the worktree is declared and goes at run finished with the run directory, the scratch root and the build root, each measured first; untracked notes stay byte for byte; a run whose group could not be emptied gets no census)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "The rows run the census and the receiver's own methods against a real Ledger on a real control store, on real git worktrees made with plain git, and send the run's events through the real Signal, kind registry, probes, removers and keeper, which really delete build output. The project is in act mode by the owner's own signed command with a real key. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0305/falsifiers.json",
+     "detail": "space305-variables-without-declaring (the declared falsifier): ac3/declared-before-worker red, the build root the variables point at has no item. Beside it: space305-no-census-at-the-receivers-end reds ac3/run-end; space305-values-lost-at-the-strip reds ac3/engine-strip. Each noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "Rows ac4/adopted-patterns-only (a worktree reconcile adopted: the ignored data folder the committed ignore file covers gets no item and is named as work, so does an old build folder; only the folder a declared pattern covers is recorded; after run finished the data is byte for byte and the declared folder is gone), ac4/not-recorded (a worktree no item records, and a folder inside a worktree, get nothing: not_in_ledger, nothing written)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/143_veldo_0305_space_census.py",
+     "detail": "The rows run the census and the receiver's own methods against a real Ledger on a real control store, on real git worktrees made with plain git, and send the run's events through the real Signal, kind registry, probes, removers and keeper, which really delete build output. The project is in act mode by the owner's own signed command with a real key. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0305/falsifiers.json",
+     "detail": "space305-ignored-folder-rule-for-adopted (the declared falsifier): ac4/adopted-patterns-only red, the adopted fixture's ignored data folder has an item. Noop copy green."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 143_veldo_0305_space_census (19 rows). Each on its own, green: 138, 139, 140, 142, 66 (0042, 0047, 0051), 70 (0057, 0069, 0073), 85 (0158), 87 (0170) and 128 (0235, 0254) (proof/VELDO-0305/suite-green.txt). 86_veldo_0127 is 52 of 54 as it was before this build (its two live rows wait for the lead's recapture)."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, git, Signal, removers and keeper, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The nine registered cases of finding 305 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy: every noop green, every mutant turns its target rows red (proof/VELDO-0305/mutations.txt, falsifiers.json). Every anchor of the cases other tickets registered against control_launch.py still occurs exactly once. Not run: those other cases; the gate's mutation stage runs them."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py; python3 .veldo/validate.py all: exit 0."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "Not run, by the lead's instruction. The single suites, the registered cases of finding 305 through the driver's own functions and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "1. THE CREATORS DECLARE NOTHING YET (VELDO-0302 is not built). The suite declares and confirms each worktree and each run directory itself, or adopts the worktree as reconcile would. The census finds the worktree's item by path. In production a worktree no item records gets no census and no folders (rows ac4/not-recorded, ac3/nothing-given).",
+  "2. NOTHING IN THE ENGINE BUILDS `space` YET (VELDO-0303's assumption 3). The receiver's main() passes none, so until a later ticket wires it a run is given what it was given before and no census runs. The suite wires the mapping itself.",
+  "3. THE RECEIVER IS MADE WITHOUT ITS STORES. object.__new__ and the attributes _space_given and _remove_run read; _engine_cwd answers the fixture worktree. The one spawn itself is not driven: that it gives the folders before the execution record and before any process start is read from its source (ac3/spawn-order), and the worker of ac3/declared-before-worker is a python process the row starts with the environment the receiver gave. Other stand-ins: the two checks of a switch to act (VELDO-0332, 0339), the docker client (a function), the process table (an empty fixture folder).",
+  "4. COMMITTED IS READ AS IN HEAD AND UNCHANGED ON DISK. The design says a committed ignore file of the project. The census counts an ignore file only when the worktree's HEAD holds it with the content on disk, which is narrower than the remover's last look (tracked). A worker that commits a new ignore rule in its worktree does make that rule the project's for that worktree; a project that keeps something precious in an ignored folder names it in its keep list (design 6.3).",
+  "5. RULE 5 DOES NOT READ IGNORED WORK YET (VELDO-0347 AC1). The census never records such a path, so nothing removes it as build output. That the worktree around it stays is shown at worktree abandoned in ac2/ignored-uncovered, where the keep step and the remover's last look hold it; the row asserts the worktree is not removed and the files are byte for byte, not the name of the deferral.",
+  "6. NOT BUILT HERE, by the ticket's criteria: the run's label and compose project name and the census of Docker objects (VELDO-0306); the order census, Signal, release with the conclusive end (VELDO-0308), so a run with no run directory gets its census at the receiver's end and no run finished from it; the gate's census at a verdict (VELDO-0309). A run in the confined runner and an engine on another host are given no folders (the spec's History says why).",
+  "7. THE BUILD ROOT'S NAME AND THE REFUSALS ARE THIS BUILD'S CHOICE: <first build root>/<worktree name>-<digest of its path>, <first scratch root>/runs/<digest of the dispatch>, unavailable_service:space_ledger and invalid_input:space_build_variable. The design fixes none of them. Only the first scratch root and the first build root are used."
+ ],
+ "rollback": "Revert the change. Runs leave build output with no record."
+}

@@ -1,0 +1,211 @@
+[
+ {
+  "falsifier": "space305-match-the-name-target",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/any-ignored-folder"
+  ],
+  "red_rows": [
+   "ac1/any-ignored-folder",
+   "ac1/declared-pattern",
+   "ac1/each-event",
+   "ac1/keep-entry",
+   "ac1/uncommitted-rule",
+   "ac2/ignored-uncovered",
+   "ac2/repository-in-build-output",
+   "ac2/untracked-never-recorded",
+   "ac3/run-end",
+   "ac4/adopted-patterns-only"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac1/any-ignored-folder",
+    "the ignored folder out is a build output item, whatever its name and depth [None]"
+   ],
+   [
+    "VELDO-0305 ac1/declared-pattern",
+    "a folder only a personal rule ignores but a declared pattern covers is a build output item [[] None]"
+   ],
+   [
+    "VELDO-0305 ac1/keep-entry",
+    "a folder that is a keep entry and a folder a keep entry lies in get no item, and the census says it left them out [['/tmp/veldo-0305-fr6cqq9c/projects/orchard-worktrees/run-03'] ['models', 'vendor-cache']]"
+   ],
+   [
+    "VELDO-0305 ac1/uncommitted-rule",
+    "once the rule is committed the folder is a build output item [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-record-every-untracked-folder",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/untracked-never-recorded"
+  ],
+  "red_rows": [
+   "ac1/personal-rule",
+   "ac2/untracked-never-recorded"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac1/personal-rule",
+    "a folder only info/exclude ignores and one only a global excludes file ignores get no item, and both are named as work [['/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-04', '/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-04/journal'] ['journal/day.md', 'private-notes/']]"
+   ],
+   [
+    "VELDO-0305 ac2/untracked-never-recorded",
+    "the new source folder has no item at it or inside it [['/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-07', '/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-07/build', '/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-07/newsrc']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-variables-without-declaring",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/declared-before-worker"
+  ],
+  "red_rows": [
+   "ac3/declared-before-worker",
+   "ac3/run-end"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac3/declared-before-worker",
+    "before any worker is started the build root the variables point at has a live build output item owned by the run [None]"
+   ],
+   [
+    "VELDO-0305 ac3/run-end",
+    "the scratch root and the build root were measured at run finished before they went [{'space:item:523953272ebd455a96a66321e2396c1c': 8192, 'space:item:35dbea0fc7974f178bf123eabbe5ce2a': 32768, 'space:item:e943c3b8097d45138591551ade368b45': 8192}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-ignored-folder-rule-for-adopted",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/adopted-patterns-only"
+  ],
+  "red_rows": [
+   "ac4/adopted-patterns-only"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac4/adopted-patterns-only",
+    "the ignored data folder, which the committed ignore file covers, gets no item [['/tmp/veldo-0305-8k_11go2/projects/orchard-worktrees/run-17', '/tmp/veldo-0305-8k_11go2/projects/orchard-worktrees/run-17/build', '/tmp/veldo-0305-8k_11go2/projects/orchard-worktrees/run-17/data', '/tmp/veldo-0305-8k_11g"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-keep-entry-not-read",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/keep-entry"
+  ],
+  "red_rows": [
+   "ac1/keep-entry"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac1/keep-entry",
+    "a folder that is a keep entry and a folder a keep entry lies in get no item, and the census says it left them out [['/tmp/veldo-0305-w7j13ez6/projects/orchard-worktrees/run-03', '/tmp/veldo-0305-w7j13ez6/projects/orchard-worktrees/run-03/build', '/tmp/veldo-0305-w7j13ez6/projects/orchard-worktrees/r"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-uncommitted-ignore-rule-counts",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/uncommitted-rule"
+  ],
+  "red_rows": [
+   "ac1/uncommitted-rule"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac1/uncommitted-rule",
+    "a rule added to the ignore file and not committed covers nothing: no item, named as work [['/tmp/veldo-0305-y2_issyf/projects/orchard-worktrees/run-05/drafts'] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-every-ignored-folder-is-build-output",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac1/personal-rule",
+   "ac2/ignored-uncovered"
+  ],
+  "red_rows": [
+   "ac1/personal-rule",
+   "ac1/uncommitted-rule",
+   "ac2/ignored-uncovered",
+   "ac4/adopted-patterns-only"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac1/personal-rule",
+    "a folder only info/exclude ignores and one only a global excludes file ignores get no item, and both are named as work [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-04', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-04/private-notes'] ['journal/day.md']]"
+   ],
+   [
+    "VELDO-0305 ac1/uncommitted-rule",
+    "a rule added to the ignore file and not committed covers nothing: no item, named as work [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-05/drafts'] []]"
+   ],
+   [
+    "VELDO-0305 ac2/ignored-uncovered",
+    "an ignored folder nothing of the project covers and two loose ignored files get no item [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-08', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-08/build', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-08/experiments']]"
+   ],
+   [
+    "VELDO-0305 ac4/adopted-patterns-only",
+    "the ignored data folder, which the committed ignore file covers, gets no item [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-17', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-17/build', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-17/data', '/tmp/veldo-0305-nm4ry2"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-no-census-at-the-receivers-end",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/run-end"
+  ],
+  "red_rows": [
+   "ac3/run-end"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac3/run-end",
+    "the census ran at the receiver's end and declared the build folder the worker made in the worktree, owned by the run [None []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-values-lost-at-the-strip",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/engine-strip"
+  ],
+  "red_rows": [
+   "ac3/engine-strip"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac3/engine-strip",
+    "after the trusted wrapper's strip the engine still has the temporary folder and the build variables at the declared folders [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]
