@@ -159,6 +159,12 @@ take-on that faults unexpectedly leaves its record as it was and is judged again
 waits on, ADOPTION_RETRY_SECONDS after that record's own fault, never sooner, whatever else is taken on
 meanwhile. inspect reports the instance and the repositories it serves.
 
+DOCKER EVENTS (VELDO-0306, design 6.4). When the instance has a Docker adapter of the space ledger
+(Service.space_docker, a control_space_docker.Adapter), the output pipe of the one client process that prints
+each engine's events is in the poll set beside the launch pipes and the provisioner pipes. A readable pipe is an
+event, handed to the adapter in the same loop iteration; nothing reads the stream on an interval and no thread
+does. End of file on a pipe makes the adapter take a new snapshot of that engine before it subscribes again.
+
 A NEW PROJECT FROM CHAT (VELDO-0143). The instance's NewProjectPass (control_service_projects) runs when an
 event it acts on made it due, never on a timer and never by reading the journal for a change: at the start,
 after a packet or channel pass that advanced the journal (hint_after: an owner's answer, a take-on this
@@ -1462,6 +1468,9 @@ class Service:
         # VELDO-0143: this instance's new-project work, made when first asked for, and whether a pass of it is
         # due (at the start, and after an event it acts on: A NEW PROJECT FROM CHAT).
         self.projects_pass, self.projects_due = None, True
+        # VELDO-0306: the Docker adapter of the installation's space ledger (control_space_docker.Adapter),
+        # set by whoever builds that ledger for this instance. Its event pipes are in the poll set.
+        self.space_docker = None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -2061,6 +2070,26 @@ class Service:
         due."""
         if self.projects_pass is not None and self.projects_pass.readable(fd):
             self.projects_due = True
+
+    def docker_pipes(self):
+        """VELDO-0306: {fd: engine context}, the output pipe of the one client process that prints each
+        engine's events, for the service loop's poll set. Empty when no Docker adapter is set."""
+        return self.space_docker.pipes() if self.space_docker is not None else {}
+
+    def docker_readable(self, fd):
+        """VELDO-0306: the poll set found an engine's event pipe readable. The adapter handles every event
+        the pipe holds, and at its end of file takes a new snapshot before it subscribes again. Nothing is
+        read on an interval: this is called for a readable pipe and for nothing else."""
+        if self.space_docker is None:
+            return None
+        try:
+            return self.space_docker.readable(fd)
+        except Exception as error:  # noqa: BLE001 - never the end of the service
+            with contextlib.suppress(OSError):
+                self._log({'kind': 'space', 'operation': 'docker_events', 'at': time.time(),
+                           'domain_uuid': self.domain, 'outcome': 'refused',
+                           'refusal': 'unknown_outcome:' + type(error).__name__})
+            return None
 
     def _receiver_configuration(self, repository, workspace):
         """The repository's launch receiver configuration beside the installed ones: an installed receiver
@@ -3633,6 +3662,9 @@ def serve(config_path):
                     # VELDO-0143: and the output pipe of every provisioner this instance started.
                     provisioners = service.provisioner_pipes()
                     pipes = {**pipes, **provisioners}
+                    # VELDO-0306: and the event pipe of every engine the Docker adapter is subscribed to.
+                    dockers = service.docker_pipes()
+                    pipes = {**pipes, **dockers}
                     wait = ACCEPT_SECONDS
                     if service.loop is not None and service.loop.timer is not None:
                         wait = max(0.0, min(wait, service.loop.timer - time.time()))
@@ -3653,7 +3685,9 @@ def serve(config_path):
                     if response is not None:
                         service.observe_response(response)
                     for fd in ready:
-                        if fd in provisioners:
+                        if fd in dockers:
+                            service.docker_readable(fd)
+                        elif fd in provisioners:
                             service.provisioner_readable(fd)
                         elif fd in pipes:
                             service.loop.readable(pipes[fd])

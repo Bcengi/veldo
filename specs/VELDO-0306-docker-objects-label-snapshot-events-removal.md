@@ -16,6 +16,10 @@ footprint:
   - ".veldo/control_space_docker.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - "engine/.veldo/control_space_signal.py"
+  - ".veldo/control_space_signal.py"
+  - "engine/.veldo/control_space_probe.py"
+  - ".veldo/control_space_probe.py"
   - "scripts/suites/*_veldo_0306_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -103,3 +107,36 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   locator gets run_label when the object carries it, created_at for a volume (the engine's CreatedAt,
   from the create event or the snapshot), and id (for an image tag, the image Id the tag named when it
   was built). An item recorded without them is never removed: it waits as remove_refused.
+- 2026-11-14: built. No acceptance criterion changed. What the build found and decided:
+  - The footprint grew by two files and their synced copies: control_space_signal.py (rule 1) and
+    control_space_probe.py (located). The reason is AC3. Rule 1 as built knew a Docker object by its
+    engine Id alone, and an engine gives a volume no Id, so every volume was deferred as not_in_ledger
+    and none could go at run finished (the note in VELDO-0301's History says so). located now also
+    returns the engine's CreatedAt, and rule 1 passes a volume whose locator holds created_at when the
+    engine shows a volume made at that time; another time is a volume made again and is not_in_ledger,
+    and a volume recorded with neither id nor created_at is not proven by its name, as before. No other
+    kind is read differently. This is the lead's to confirm: neither file is a protected path.
+  - The adapter (control_space_docker.py) removes nothing and has no way to: it gives an engine ls,
+    inspect and events only. Removal at run finished is Signal's, in the kind registry's order, through
+    the safety rules and the removers of VELDO-0300, so the falsifier of AC3 (volumes first) is applied
+    to the registry's order, where the order is.
+  - A run is known by the items it owns that are neither removed nor gone, and by what the adapter's
+    caller names. Its space label is the id the ledger records it under, and its compose project name
+    is derived from the label with a part of the label's digest (compose_project). Putting the two in
+    a run's environment is the receiver's and is not in this ticket; `given` says what they are.
+  - An object is recorded by the ledger's adopt, with the rule that proved its owner (run_label or
+    compose_project). An object the engine shows without its Id, or a volume without its CreatedAt, is
+    a report and never an item. A label that names no known run, and a label and a compose name of two
+    different runs, are reports as well. The engine's own networks (bridge, host, none) are not
+    recorded.
+  - Images are not read here (VELDO-0328). The service has no space ledger of its own yet, so nothing
+    in this repository sets Service.space_docker: the pipes are in the poll set from the moment the
+    ticket that builds the ledger for the service sets it.
+  - A broken engine is not asked without end: a context whose snapshot cannot be read after its stream
+    ended, or whose stream ended twice in a row without a byte, has no subscription until start() is
+    called again. No timer does that.
+  - Seen and left alone, outside this ticket: control_space_probe.located reads "no such" as the
+    engine's answer that an object is absent. A real engine says "network <name> not found" for a
+    network, so a network removed by hand is deferred as not_in_ledger and never marked gone by
+    Signal (safe, and the adapter's destroy event marks it gone); and a client that cannot reach the
+    engine can say "no such file", which the adapter does not take for an answer (absent).

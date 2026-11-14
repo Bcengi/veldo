@@ -418,11 +418,13 @@ def located(kind, locator, run=None):
     worktree repository, the common git folder of the repository the folder is a worktree of, None
     when it is not the top of one. exists is True when something is there, False only when the kernel
     said not found, and None when the path could not be read, with what was said in unread (`there`).
-    A Docker object: {engine, name, type, read, id, said}."""
+    A Docker object: {engine, name, type, read, id, created_at, said}. created_at is the engine's
+    CreatedAt of the object shown: what a volume, to which an engine gives no Id, is known by
+    (VELDO-0306)."""
     run = run or _run
     if kind in DOCKER_TYPE:
         facts = {'kind': kind, 'engine': locator.get('engine'), 'name': locator.get('name'),
-                 'type': DOCKER_TYPE[kind], 'read': False, 'id': None, 'said': None}
+                 'type': DOCKER_TYPE[kind], 'read': False, 'id': None, 'created_at': None, 'said': None}
         code, out = run(['docker', '--context', str(facts['engine']), facts['type'], 'inspect', str(facts['name'])])
         if code == 0:
             try:
@@ -431,7 +433,9 @@ def located(kind, locator, run=None):
                 records = None
             if isinstance(records, list) and len(records) == 1 and isinstance(records[0], dict):
                 found = records[0].get('Id')
-                facts.update(read=True, id=found if isinstance(found, str) and found else None)
+                made = records[0].get('CreatedAt')
+                facts.update(read=True, id=found if isinstance(found, str) and found else None,
+                             created_at=made if isinstance(made, str) and made else None)
             else:
                 facts['said'] = 'the inspect record is not one JSON record'
         elif code is not None and 'no such' in str(out).lower():

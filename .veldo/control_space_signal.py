@@ -133,7 +133,9 @@ could not be read is refused with unread, what was said. A path must be there an
 was resolved when it was declared, so one that now leads elsewhere goes through a link made since. A
 worktree's folder must also be a worktree of the repository the item's branches are recorded in (its
 agent repository when it lives inside one, else its project's or plain repository's). A Docker name
-must be held by the object id the locator records.
+must be held by the object id the locator records. A volume has no id of its own, so its name must be
+held by a volume the engine made at the time the locator records (created_at, VELDO-0306); a volume
+recorded with neither is not proven by its name.
 
 WHAT CANNOT BE READ IS NOT FREE. An engine the client cannot read, a worktree or a repository git
 cannot read, a process table that hides processes, a scratch folder that cannot be opened, a run nobody
@@ -468,6 +470,15 @@ def _rule_ledger(ledger, probe, identity, record, given):
     if 'engine' in facts:
         if not facts['read']:
             return {'unread': facts['said'], 'engine': facts['engine']}
+        if kind == 'volume' and locator.get('id') is None and locator.get('created_at'):
+            # An engine gives a volume no Id (VELDO-0306): the volume under the name is the one recorded
+            # when the engine shows one made at the recorded time. A recorded time that differs is a
+            # volume made again; one the engine does not hold is missing.
+            made = facts.get('created_at')
+            if facts['said'] is None and made == locator['created_at']:
+                return None
+            return {'recorded_created_at': locator['created_at'], 'created_at': made,
+                    'missing': facts['said'] is not None}
         if facts['id'] is None or locator.get('id') is None or facts['id'] != locator['id']:
             return {'recorded_id': locator.get('id'), 'id': facts['id'], 'missing': facts['id'] is None}
         return None

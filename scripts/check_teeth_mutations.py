@@ -13633,6 +13633,87 @@ def cases():
     census305('space305-values-lost-at-the-strip',
               "    if values and ENGINE_OVERRIDES in environment:\n", "    if False:\n", ['ac3/engine-strip'])
 
+    # VELDO-0306: Docker objects: label, snapshot, events, removal. The declared falsifier of each
+    # acceptance criterion. AC1: read one context only. AC2: attribute an object with no label to a
+    # live run. AC3: remove volumes first (the order is the kind registry's, so that is where it is
+    # broken). AC4: read the stream on an interval. And beside them the ways a wrong record would
+    # lose somebody's data: an unlabelled object given to the only live run, an object two runs'
+    # names are on given to one of them, an object recorded without its identity, the compose project
+    # label left out of the locator so that the protect list cannot see it, a volume made again
+    # under a recorded name not seen by rule 1 or by the snapshot, a record marked gone without the
+    # engine's own answer, the snapshot left out or made after the subscription at end of file, a
+    # broken engine asked without end, and the pipes left out of the service loop's poll set.
+    space306 = '144_veldo_0306_space_docker.py'
+
+    def docker306(name, old, new, rows, module='control_space_docker.py', siblings=False):
+        add(306, name, space306, module, old, new, rows)
+        if siblings:
+            result[-1]['siblings'] = True
+
+    docker306('space306-read-one-context-only',
+              "        for engine in self.engines:\n            if engine in self.streams:\n",
+              "        for engine in self.engines[:1]:\n            if engine in self.streams:\n",
+              ['ac1/label-and-compose-name'])
+    docker306('space306-given-to-a-live-run',
+              "    return None, None, 'no_label'\n",
+              "    if runs:\n        return sorted(runs)[0], runs[sorted(runs)[0]], 'run_label'\n"
+              "    return None, None, 'no_label'\n",
+              ['ac2/unattributable-is-a-report'])
+    docker306('space306-given-to-the-only-live-run',
+              "    return None, None, 'no_label'\n",
+              "    if len(runs) == 1:\n        return sorted(runs)[0], runs[sorted(runs)[0]], 'run_label'\n"
+              "    return None, None, 'no_label'\n",
+              ['ac2/one-live-run'])
+    docker306('space306-two-runs-given-to-the-label',
+              "    if by_label is not None and by_compose is not None and by_label != by_compose:\n"
+              "        return None, None, 'two_runs'\n", "",
+              ['ac2/unknown-run-and-two-runs'])
+    docker306('space306-no-identity-still-an-item',
+              "        if owner is not None and field not in locator:\n"
+              "            label, owner, rule = None, None, 'no_identity'\n", "",
+              ['ac1/identity-recorded'])
+    docker306('space306-compose-project-not-in-the-locator',
+              "    if _text(labels.get(COMPOSE_PROJECT)):\n        locator['compose_project'] = labels[COMPOSE_PROJECT]\n",
+              "", ['ac1/protected'])
+    docker306('space306-volumes-first',
+              "ORDER = ('scratch', 'build_output', 'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',\n",
+              "ORDER = ('scratch', 'build_output', 'volume', 'network', 'container', 'image_tag', 'evidence', 'worktree',\n",
+              ['ac3/order-and-non-forced'], module='control_space_kinds.py')
+    docker306('space306-volume-made-again-not-seen-by-rule-1',
+              "            if facts['said'] is None and made == locator['created_at']:\n",
+              "            if facts['said'] is None:\n",
+              ['loss/volume-made-again'], module='control_space_signal.py')
+    docker306('space306-volume-made-again-not-seen-by-the-snapshot',
+              "            same = field in locator and (record.get('locator') or {}).get(field) == locator[field]\n",
+              "            same = True\n", ['loss/volume-made-again'])
+    docker306('space306-stream-read-on-an-interval',
+              "        return {stream['fd']: engine for engine, stream in self.streams.items()}\n",
+              "        import time\n"
+              "        self._due = getattr(self, '_due', time.monotonic() + 5)\n"
+              "        if time.monotonic() < self._due:\n"
+              "            return {}\n"
+              "        self._due = time.monotonic() + 5\n"
+              "        return {stream['fd']: engine for engine, stream in self.streams.items()}\n",
+              ['ac4/event-with-the-clock-stopped'])
+    docker306('space306-subscribe-before-the-snapshot',
+              "        self._note('end_of_file', engine=engine, bytes=stream['bytes'])\n"
+              "        taken = self.snapshot(engine)\n",
+              "        self._note('end_of_file', engine=engine, bytes=stream['bytes'])\n"
+              "        self.subscribe(engine)\n"
+              "        taken = self.snapshot(engine)\n",
+              ['ac4/end-of-file'])
+    docker306('space306-no-snapshot-at-end-of-file',
+              "        taken = self.snapshot(engine)\n        if not taken['read']:\n",
+              "        taken = {'read': True, 'said': None}\n        if not taken['read']:\n",
+              ['ac4/end-of-file'])
+    docker306('space306-broken-engine-asked-without-end',
+              "        elif self.barren[engine] >= BARREN:\n", "        elif False:\n", ['ac4/broken-engine'])
+    docker306('space306-gone-without-the-engines-answer',
+              "        if not absent(kind, code, out):\n", "        if False:\n", ['loss/engine-unreadable'])
+    docker306('space306-pipes-not-in-the-poll-set',
+              "                    pipes = {**pipes, **dockers}\n", "",
+              ['ac4/poll-set'], module='control_service.py', siblings=True)
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
