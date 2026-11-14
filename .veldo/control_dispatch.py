@@ -132,6 +132,10 @@ TRANSITIONS = {
 }
 # States that hold their unit and station. An unknown outcome holds it: never a new dispatch.
 HOLDING = ('prepared', 'accepted', 'running', 'unknown')
+# VELDO-0350: the actions that record a dispatch's end, and how often such a write is sent again when the
+# record moved between its read and its command (THE END WRITE, in Dispatches._run).
+ENDS = ('exit', 'refuse', 'unknown')
+END_RETRIES = 8
 STOP = 'dispatch-outcome-unknown'
 
 CONTRACT_FIELDS = ('schema', 'dispatch_id', 'domain', 'repository', 'unit', 'station', 'attempt', 'source',
@@ -630,6 +634,17 @@ class Dispatches:
     # Commands.
 
     def _run(self, action, dispatch_id, fields, now, contract=None):
+        """One dispatch command: the versions read, then the command that expects them.
+
+        THE END WRITE (VELDO-0350). A stop request and the runner's record of its ask are written on the
+        dispatch record and move its version, not its state. When one of them commits between the read
+        here and the command, the store refuses the command stale_version. For a write that records the
+        dispatch's end (ENDS) that refusal is not the answer: the record is read again, and while a
+        version did move and the record still shows no end, in a state the action moves a record from,
+        the same command is sent with the versions read then, at most END_RETRIES times. A record that shows an end, or any state the
+        action does not move, is not written: the refusal stands. The transition judges the binding and
+        the state inside each command's transaction, so no two ends are ever recorded. Every other
+        action is refused stale_version as before."""
         if not _text(dispatch_id):
             raise Refused('invalid_input', 'a dispatch is named')
         current = contract or (self.record(dispatch_id) or {}).get('contract') or {}
@@ -641,27 +656,42 @@ class Dispatches:
         # Idempotent by content: a delivery retry of the same observation replays its first result,
         # and a different observation is a new command the transition itself judges.
         command_id = 'dispatch/%s/%s/%s' % (action, dispatch_id, digest(params)[len('sha256:'):][:24])
-        expected = {}
-        for identity in ids:
-            row = self.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
-            expected[identity] = row[0] if row else 0
-        # A delivery retry of the same observation reuses the versions its first commit expected.
-        prior = self.conn.execute('SELECT before_versions FROM journal WHERE command_id=?', (command_id,)).fetchone()
-        if prior:
-            expected = json.loads(prior[0])
-        command = dict(command_id=command_id, principal=self.principal, operation=OPERATION, parameters=params,
-                       expected_versions=expected, artifact_digests=[], nonce='dispatch/' + command_id)
-        event = {'schema': SCHEMA, 'operation': action, 'domain': self.domain, 'repository': self.repository,
-                 'unit': current.get('unit'), 'station': current.get('station'), 'dispatch_id': dispatch_id,
-                 'request': command_id, 'accepted_versions': dict(expected)}
-        try:
-            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
-        except (Refused, self.store.StoreRefused) as error:
-            self.counts['refused'] += 1
-            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))
-            if isinstance(error, Refused):
-                raise
-            raise Refused(error.code, error.detail) from error
+        def versions():
+            found = {}
+            for identity in ids:
+                row = self.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+                found[identity] = row[0] if row else 0
+            return found
+
+        attempt = 0
+        while True:
+            expected = versions()
+            # A delivery retry of the same observation reuses the versions its first commit expected.
+            prior = self.conn.execute('SELECT before_versions FROM journal WHERE command_id=?', (command_id,)).fetchone()
+            if prior:
+                expected = json.loads(prior[0])
+            command = dict(command_id=command_id, principal=self.principal, operation=OPERATION, parameters=params,
+                           expected_versions=expected, artifact_digests=[], nonce='dispatch/' + command_id)
+            event = {'schema': SCHEMA, 'operation': action, 'domain': self.domain, 'repository': self.repository,
+                     'unit': current.get('unit'), 'station': current.get('station'), 'dispatch_id': dispatch_id,
+                     'request': command_id, 'accepted_versions': dict(expected)}
+            try:
+                result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)
+            except (Refused, self.store.StoreRefused) as error:
+                if (error.code == 'stale_version' and action in ENDS and attempt < END_RETRIES and not prior
+                        and versions() != expected
+                        and (self.record(dispatch_id) or {}).get('state') in TRANSITIONS[action][0]):
+                    # The record moved after it was read and still shows no end: read again and send again.
+                    attempt += 1
+                    self.observe(dict(event, outcome='retried', refusal=error.code, taxonomy=taxonomy(error.code),
+                                      attempt=attempt))
+                    continue
+                self.counts['refused'] += 1
+                self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))
+                if isinstance(error, Refused):
+                    raise
+                raise Refused(error.code, error.detail) from error
+            break
         self.counts['accepted'] += 1
         self.observe(dict(event, outcome='accepted', watermark=result['seq'], state=TRANSITIONS[action][1]))
         return self.record(dispatch_id)

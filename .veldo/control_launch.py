@@ -3833,6 +3833,21 @@ def _request(fd, seconds):
     return json.loads(line), bytearray(rest)
 
 
+END_UNRECORDED = 3  # the receiver's exit status when it failed and the dispatch's record shows no end
+
+
+def end_recorded(receiver, request):
+    """VELDO-0350: whether the record of the dispatch a receiver was asked to launch shows an end
+    (exited, refused or unknown). False when it shows none, and when it cannot be read: with no
+    receiver, no dispatch named in the request, no record, or a read that raises."""
+    try:
+        dispatch_id = request['contract']['dispatch_id']
+        state = (receiver.dispatches.record(dispatch_id) or {}).get('state')
+    except Exception:  # noqa: BLE001 - a record that cannot be read shows no end
+        return False
+    return state in D.STATES and state not in D.STOPPABLE
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'exec':
         wrap(sys.argv[2:])
@@ -3841,7 +3856,7 @@ def main():
     def emit(message):
         sys.stdout.write(json.dumps(message) + '\n')
         sys.stdout.flush()
-    receiver = None
+    receiver, request, status = None, None, 0
     try:
         config = json.loads(Path(sys.argv[1]).read_text())
         request, pending = _request(0, 10)
@@ -3851,9 +3866,14 @@ def main():
     except (OSError, ValueError, TypeError, KeyError, D.Refused, S.StoreRefused, C.Refused) as error:
         # Nothing conclusive is claimed: the runner reads the record and settles it.
         emit({'event': 'failed', 'error': type(error).__name__})
+        # VELDO-0350: a receiver that failed and left no end on the dispatch's record does not end as a
+        # clean one does.
+        status = 0 if end_recorded(receiver, request) else END_UNRECORDED
     finally:
         if receiver is not None:
             receiver.close()
+    if status:
+        sys.exit(status)
 
 
 if __name__ == '__main__':

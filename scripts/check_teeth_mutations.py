@@ -3113,19 +3113,15 @@ def cases():
              "stopped=sorted(d for d, s in states.items() if s == 'refused'),",
              'observations')
     # Anchored on the transition writer's event: VELDO-0131's _stop_command observes its refusals the same way.
+    # Re-anchored by VELDO-0350, unchanged in meaning: the writer's refusal is counted and observed after
+    # the end write's retry, one level deeper.
     dispatch('dispatch-refusal-not-observed', 'control_dispatch.py',
-             "                 'request': command_id, 'accepted_versions': dict(expected)}\n"
-             "        try:\n"
-             "            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
-             "        except (Refused, self.store.StoreRefused) as error:\n"
-             "            self.counts['refused'] += 1\n"
-             "            self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))\n",
-             "                 'request': command_id, 'accepted_versions': dict(expected)}\n"
-             "        try:\n"
-             "            result = self.store.execute(self.conn, command, self.signer, self.sign, self.generation)\n"
-             "        except (Refused, self.store.StoreRefused) as error:\n"
-             "            self.counts['refused'] += 1\n"
-             "            pass  # defect: a refusal is not observed\n",
+             "                    continue\n"
+             "                self.counts['refused'] += 1\n"
+             "                self.observe(dict(event, outcome='refused', refusal=error.code, taxonomy=taxonomy(error.code)))\n",
+             "                    continue\n"
+             "                self.counts['refused'] += 1\n"
+             "                pass  # defect: a refusal is not observed\n",
              'observations')
     dispatch('dispatch-receiver-not-installed', 'init_scaffold.py',
              '    ".veldo/control_launch.py",\n', '', 'installed-assets')
@@ -14689,6 +14685,35 @@ def cases():
              "    def space_abandon(self, item, version=None, by=None, *, cause):\n",
              "    def space_abandon(self, item, version=None, by=None, cause=SPACE_OWNER_ABANDON):\n",
              ['r2/abandon-names-its-cause'])
+
+    # VELDO-0350: the write that records a dispatch's end, and the receiver's exit status. The declared
+    # falsifier of each acceptance criterion. AC1: the end write is refused stale_version as it was,
+    # with no second read. AC2: the write is sent again whatever the record shows, also over an end
+    # another writer recorded. AC3: a receiver that failed exits 0 as it did. And the steps beside
+    # them: every write is sent again, not only one that records an end; the retry has no bound; a
+    # receiver that failed exits with END_UNRECORDED also when its end is on the record.
+    end350 = '150_veldo_0350_end_write.py'
+    retry350 = ("                if (error.code == 'stale_version' and action in ENDS and attempt < END_RETRIES and not prior\n",
+                "                        and (self.record(dispatch_id) or {}).get('state') in TRANSITIONS[action][0]):\n",
+                "        status = 0 if end_recorded(receiver, request) else END_UNRECORDED\n")
+    add(350, 'end350-stale-end-write-refused', end350, 'control_dispatch.py', retry350[0],
+        "                if (False and error.code == 'stale_version' and action in ENDS and not prior\n",
+        ['ac1/exit-after-the-stop-record', 'ac1/unknown-and-refuse-after-the-stop-record'])
+    add(350, 'end350-every-write-sent-again', end350, 'control_dispatch.py', retry350[0],
+        "                if (error.code == 'stale_version' and attempt < END_RETRIES and not prior\n",
+        ['ac1/other-writes-refused-as-before'])
+    add(350, 'end350-sent-again-over-a-recorded-end', end350, 'control_dispatch.py', retry350[1],
+        "                        ):\n",
+        ['ac2/never-two-ends'])
+    add(350, 'end350-retry-without-a-bound', end350, 'control_dispatch.py', retry350[0],
+        "                if (error.code == 'stale_version' and action in ENDS and not prior\n",
+        ['ac2/retry-is-bounded'])
+    add(350, 'end350-failed-receiver-exits-zero', end350, 'control_launch.py', retry350[2],
+        "        status = 0\n",
+        ['ac3/failed-without-an-end'])
+    add(350, 'end350-failed-receiver-never-exits-zero', end350, 'control_launch.py', retry350[2],
+        "        status = END_UNRECORDED\n",
+        ['ac3/zero-with-an-end'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

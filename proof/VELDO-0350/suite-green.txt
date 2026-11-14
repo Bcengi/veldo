@@ -1,0 +1,16 @@
+# VELDO-0350, built 2026-11-14. Each suite on its own with python3 scripts/selftest.py --suite, on the tree of e38d5dcd with this ticket's changes, before the commit, with a stub engine that was never called (a docker first on PATH that logs and exits 1, DOCKER_HOST at a missing socket; its log is empty).
+150_veldo_0350_end_write: 34 passed, 0 failed (8 rows)
+62_veldo_0039_dispatch: 51 passed, 0 failed
+62_veldo_0045_runtime: 47 passed, 0 failed
+62_veldo_0054_decisions: 65 passed, 0 failed
+62_veldo_0065_presentations: 68 passed, 0 failed
+142_veldo_0303_space_paths: 57 passed, 0 failed
+146_veldo_0308_run_finished: 64 passed, 0 failed
+147_veldo_0310_landed_contained: 59 passed, 0 failed
+148_veldo_0311_git_hooks: 57 passed, 0 failed
+149_veldo_0312_ticket_ended: 66 passed, 0 failed
+141_veldo_0344_process_reader: 85 passed, 0 failed
+# 62_veldo_0039_dispatch twenty times in sequence: 51 passed, 0 failed, twenty of twenty. Twenty more, four at a time: 51 passed, 0 failed, twenty of twenty.
+# Also run once, three at a time, the 48 other suites that name control_dispatch or control_launch (86_veldo_0127_agent_configuration left out: 52 of 54 by a known recapture; left as it is): 44 with 0 failed. Four are red: 67_veldo_0056_candidates (4 failed), 82_veldo_0173_tool_registry (3), 82_veldo_0165_launch_hygiene (2), 86_veldo_0189_engine_upgrade (2). Each was run again alone, here and on a clean clone of e38d5dcd: the same rows fail in both, so they are not this ticket's; they are not looked into here.
+# Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py; python3 scripts/check_personal_setup.py; python3 scripts/secret_inventory.py.
+# Not run: ./scripts/verify.sh, the registered mutation stage, every suite not named here. No manifest is in this bundle yet: a manifest names the commit and the tree it proves, and is written after the commit.
