@@ -1318,7 +1318,9 @@ def _v312_suite():
         shown, head, before = version(target['worktree']), journal_head(), len(logged())
         unsigned, _p = pressed_by('olga', target['worktree'], shown, signer=None)
         own_key, _p = pressed_by('olga', target['worktree'], shown, signer='olga')
+        asked = len(logged())
         not_owner, _p = pressed_by('pavel', target['worktree'], shown)
+        asked = len(logged()) - asked
         runner, _p = pressed_by('space-runner', target['worktree'], shown)
         observer, _p = pressed_by('space-observer', target['worktree'], shown)
         stale, _p = pressed_by('olga', target['worktree'], shown - 1)
@@ -1327,10 +1329,11 @@ def _v312_suite():
         check(R, 'an assertion with no signature and one the owner\'s own key signed, not the edge\'s, are refused as '
                  'unauthenticated [%s %s]' % (unsigned.get('reason'), own_key.get('reason')),
               unsigned.get('reason') == 'unauthenticated:signature' and own_key.get('reason') == 'unauthenticated:signature')
-        check(R, 'a person who is not the owner is refused as not the owner, and each host principal of the space '
-                 'ledger, holding a credential record of its own, as not a person [%s %s %s]'
-              % (not_owner.get('reason'), runner.get('reason'), observer.get('reason')),
-              not_owner.get('reason') == 'unauthorized:not_owner'
+        check(R, 'a person who is not the owner is refused as not the owner by the authority itself, before the '
+                 'service is asked (no event is logged for it; the ledger\'s own check of the owner is behind this '
+                 'one), and each host principal of the space ledger, holding a credential record of its own, as not a '
+                 'person [%s %s %s %s]' % (not_owner.get('reason'), asked, runner.get('reason'), observer.get('reason')),
+              not_owner.get('reason') == 'unauthorized:not_owner' and asked == 0
               and runner.get('reason') == 'unauthenticated:principal_not_person'
               and observer.get('reason') == 'unauthenticated:principal_not_person')
         check(R, 'a stale version, a version of none and an assertion without the version are refused by name '

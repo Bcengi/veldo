@@ -252,3 +252,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     r2/abandon-names-its-cause). Finding 312 holds 30 falsifiers, seven of this round, each applied once
     by the registry's own case and the driver's own materialize and worker and seen red on its row; the
     bundle lists them.
+  - One row of the first fix round is tightened, because F2 made its falsifier pass: with the ledger
+    checking the owner, a route that let anyone who signed in through
+    (space312-abandon-by-anyone-signed-in) was still refused, by the ledger, under the same name. Row
+    f3/route-refusals now also sees that the API authority refuses a person who is not the owner before
+    the service is asked: no event is logged. Both guards have their falsifier red again.
