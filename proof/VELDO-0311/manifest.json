@@ -1,0 +1,130 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0311",
+ "commit": "bf5e95057e83904c960c0b77ec9586dfa6165fa9",
+ "tree": "12051cbfd981563743da70f5fdc167c5366b80f1",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-14T15:43:08.956585+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Rows ac1/plain-git-worktree-has-item (git worktree add with a new branch in the bound repository returns 0 and says what it says without the hook; when it returns the worktree has an item, present, with its branch, the checked-out commit as its start, the owner {project, ticket} the branch pattern gives and the creator hook; the branch has an item with the same start and owner; every command was signed by space-observer and accepted by the Ledger; nothing is left in the spool), ac1/plain-repository (the same in a plain repository: owned by the plain repository's scope, with its branch item), ac1/owner-from-branch-pattern (a branch no pattern matches is owned by the project alone; a detached worktree has an item with no branch and its commit as start; a pattern field is one segment), ac1/own-checkout-is-no-item (a branch made and switched in the repository's own checkout writes nothing and spools nothing), ac1/refused-is-set-aside (a worktree added outside every known root: git returns 0, the worktree is made, the Ledger refuses space_outside_roots, there is no item and the entry is in refused/ whole with the reason), hooks/never-fail-git (a CLI that is not there, a repository with no state root and a spool folder that is a link: worktree add, a trunk commit and switch return 0)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "The rows run plain git in a bound project's repository and in a plain repository, with the two hooks in the hooks folder as files. The hooks start the real CLI in its own process; it signs as space-observer with a real OpenSSH key from a fixture installation folder and reaches the authority over the real local socket in the spool folder. The authority is the real Ledger on a real store with OpenSSH signatures, whose own accept verifies each packet. Where a row lands something, Signal, the kind registry, the probes, the removers and the keeper are the real ones and really delete; the project is in act mode by the owner's own signed command. The disk, git and the ledger are read as each git command returns. Stand-ins: assumptions 1 to 5."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "space311-recorded-only-by-the-record-verb is the declared falsifier: git's own worktree add records nothing; ac1/plain-git-worktree-has-item finds no item and is red. Beside it, each applied once and red on its row: space311-refused-entry-dropped (a refused entry is unlinked and not set aside) reds ac1/refused-is-set-aside; space311-hook-status-reaches-git (the hook exits with the CLI's status) reds hooks/never-fail-git, with git worktree add returning 127."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Rows ac2/switch-updates-item (a commit on X changes nothing in the item; git switch to a new branch Y in the recorded worktree leaves the same item naming Y, with Y's commit as its start, and Y has an item; a switch in a worktree no item records writes nothing), ac2/landing-of-old-branch-leaves-worktree (the trunk is moved to X's tip with plain git; the landing station's own decision, control_landing.space_branches and space_reach, sends nothing for the worktree's owner; the worktree is on disk and in git's list, on Y, with its file; its item is present; both branches are in the repository at their commits), ac2/rebase-keeps-the-branch (a rebase in a recorded worktree ends on the branch and the item still names the branch and its start; measured on git 2.43.0 a rebase runs post-checkout with HEAD detached)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "The rows run plain git in a bound project's repository and in a plain repository, with the two hooks in the hooks folder as files. The hooks start the real CLI in its own process; it signs as space-observer with a real OpenSSH key from a fixture installation folder and reaches the authority over the real local socket in the spool folder. The authority is the real Ledger on a real store with OpenSSH signatures, whose own accept verifies each packet. Where a row lands something, Signal, the kind registry, the probes, the removers and the keeper are the real ones and really delete; the project is in act mode by the owner's own signed command. The disk, git and the ledger are read as each git command returns. Stand-ins: assumptions 1 to 5."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "space311-recorded-at-worktree-add-only is the declared falsifier: a switch is not recorded; the row lands X after the switch, contained is sent for the worktree's owner, the real removers take the worktree after the keep step, and ac2/landing-of-old-branch-leaves-worktree is red. Beside it: space311-rebase-checkout-taken-for-a-switch reds ac2/rebase-keeps-the-branch (the item's branch is None after the rebase)."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Rows ac3/one-event-record (a commit on the trunk with plain git leaves exactly one event record: type ref_changed, the repository, refs/heads/main, the old and the new commit, the emitter reference-transaction; a change of the declared landing ref leaves one; another branch and a ref under refs/veldo/ leave none; every worktree is still in git's list), ac3/git-returns-while-remover-held (a contained worktree is planted; every remover is held on a latch that opens only when the git command has returned; the trunk is moved with plain git; the git command returns while the remover is held, with the worktree on disk; afterwards the worktree is removed by the rules after the keep step, the kept refs in the main repository at its commit, its branch still in the repository, every other worktree where it was), ac3/no-event-command-waits (with the Ledger as it is, no stand-in: the commit returns 0, the event is in the spool as one file with tries 1, a worktree added after it is still recorded, and once the command exists the next CLI call delivers the event once). The event record of the first two rows is written by a stand-in for the Ledger's event command (assumption 1)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "The rows run plain git in a bound project's repository and in a plain repository, with the two hooks in the hooks folder as files. The hooks start the real CLI in its own process; it signs as space-observer with a real OpenSSH key from a fixture installation folder and reaches the authority over the real local socket in the spool folder. The authority is the real Ledger on a real store with OpenSSH signatures, whose own accept verifies each packet. Where a row lands something, Signal, the kind registry, the probes, the removers and the keeper are the real ones and really delete; the project is in act mode by the owner's own signed command. The disk, git and the ledger are read as each git command returns. Stand-ins: assumptions 1 to 5."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "space311-removed-inside-the-hook is the declared falsifier: what follows the event runs before the hook has its answer; with the remover held on the latch the git command is still waiting after four seconds and ac3/git-returns-while-remover-held is red. Beside it: space311-every-ref-change-sent reds ac3/one-event-record."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Rows ac4/down-git-unchanged-and-spooled (no authority: git worktree add returns 0 and says what it says without the hook, the worktree is made on its branch; one entry is in the spool, whole, with the path, the branch and the start; nothing was written to the ledger; no partial file; folder 0700, entry 0600), ac4/replayed-in-order-at-next-call (an add, a switch in it and a trunk commit wait in the order the hooks ran; the next hook call that reaches the authority delivers them oldest first, before its own entry; the worktree has its item on the branch it was switched to; the trunk change is one event record; the spool is empty), ac4/service-start-before-reconcile (a worktree added while the authority was down has no item; start replays the spool and then calls reconcile, which finds the worktree with its item, present, and the spool empty), ac4/delivered-twice-recorded-once (an entry put back as a crash between the answer and the unlink leaves it is answered again and writes nothing: one item, the journal as long as it was), ac4/waiting-keeps-order (with the observer's key missing an add and a switch both return 0 and both wait, in order; with the key back the next CLI call records the worktree on the branch it is on)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "The rows run plain git in a bound project's repository and in a plain repository, with the two hooks in the hooks folder as files. The hooks start the real CLI in its own process; it signs as space-observer with a real OpenSSH key from a fixture installation folder and reaches the authority over the real local socket in the spool folder. The authority is the real Ledger on a real store with OpenSSH signatures, whose own accept verifies each packet. Where a row lands something, Signal, the kind registry, the probes, the removers and the keeper are the real ones and really delete; the project is in act mode by the owner's own signed command. The disk, git and the ledger are read as each git command returns. Stand-ins: assumptions 1 to 5."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "space311-dropped-when-the-authority-is-down is the declared falsifier: an entry the authority cannot be reached for is unlinked; after start reconcile finds the worktree with no item and ac4/service-start-before-reconcile is red. Beside it: space311-waiting-entry-passed-by-a-later-one reds ac4/waiting-keeps-order; space311-entry-sent-again-as-a-new-packet reds ac4/delivered-twice-recorded-once (the journal grows)."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "On the committed tree (commit bf5e95057e83): python3 scripts/selftest.py --suite 148_veldo_0311_git_hooks (18 rows, 44 passed with the shared preamble, 0 failed) (proof/VELDO-0311/suite-green.txt). A partial run, not the gate."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: real git with the hooks in play, the real CLI in its own process, real OpenSSH signatures, the real Ledger, Signal, probes, removers and keeper."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The 10 cases of finding 311, each applied once on the committed tree, noop copy green and mutant copy red on its target rows (proof/VELDO-0311/mutations.txt, falsifiers.json). Not the teeth run."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all (exit 0); bash scripts/check_docs.sh (pass); bash scripts/check_template_sync.sh (pass, 320 pairs); bash scripts/check_generated.sh (pass); python3 scripts/check_git_boundary.py (pass); bash scripts/check_lint.sh (pass)."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh was not run by the builder: the lead runs it through the gate lock, with the teeth run python3 scripts/check_teeth_mutations.py --finding 311."
+  }
+ ],
+ "assumptions": [
+  "1. THE LEDGER HAS NO EVENT COMMAND YET (VELDO-0323; control_space.py is outside this footprint). Today the Ledger answers the hook's event packet space_no_command:space_event and the entry waits in the spool, which row ac3/no-event-command-waits shows with the real Ledger. The rows that show one event record use a stand-in for that command, which verifies the observer's signature and keeps the record. NOT PROVEN HERE: the Ledger's own event record.",
+  "2. THE SERVICE NEITHER SERVES THE SPOOL'S SOCKET NOR CALLS start YET (VELDO-0323 and VELDO-0315; control_service.py is outside this footprint). The suite serves the socket in its own process with the module's serve_one, and calls start itself with a stand-in for reconcile. In production no authority answers until that wiring lands, so every entry waits in the spool. NOT PROVEN HERE: the wiring, and the event consumer, for which the suite's consumer (the landing station's own decision, then the real Signal) stands in.",
+  "3. THE HOOKS ARE NOT INSTALLED BY ANYTHING YET (VELDO-0329). The suite copies them into the hooks folder and sets veldo.space.stateroot, veldo.space.cli and veldo.space.installation in the repository's git configuration.",
+  "4. THE TWO CHECKS OF A SWITCH TO ACT (VELDO-0332 and 0339) are stand-ins that allow, so the fixture project can be in act mode; the docker client and the process table are fixtures.",
+  "5. THE TRUNK IS main unless veldo.space.trunk names another: no declaration names a project's trunk.",
+  "6. Suite 86_veldo_0127 was not run (52 of 54 by a known recapture; left as it is). scripts/check_pack_drift.py reports the pack's engine copy missing in this worktree (417 files, none of this ticket's); it is not one of the gate's checks and was left as found."
+ ],
+ "rollback": "Revert the change. The hooks record nothing, and a worktree made with plain git is found by reconcile."
+}

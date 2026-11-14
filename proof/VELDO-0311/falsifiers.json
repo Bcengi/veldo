@@ -1,0 +1,265 @@
+[
+ {
+  "falsifier": "space311-recorded-only-by-the-record-verb",
+  "module": "control_space_spool.py",
+  "criterion": "AC1",
+  "declared": true,
+  "expected_red": [
+   "ac1/plain-git-worktree-has-item"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/owner-from-branch-pattern",
+   "ac1/plain-git-worktree-has-item",
+   "ac1/plain-repository",
+   "ac1/refused-is-set-aside",
+   "ac2/landing-of-old-branch-leaves-worktree",
+   "ac2/rebase-keeps-the-branch",
+   "ac2/switch-updates-item",
+   "ac3/git-returns-while-remover-held",
+   "ac3/no-event-command-waits",
+   "ac4/delivered-twice-recorded-once",
+   "ac4/down-git-unchanged-and-spooled",
+   "ac4/replayed-in-order-at-next-call",
+   "ac4/service-start-before-reconcile",
+   "ac4/waiting-keeps-order",
+   "hooks/never-fail-git",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac1/plain-git-worktree-has-item",
+    "when git returns the worktree has an item, present [None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-recorded-at-worktree-add-only",
+  "module": "control_space_spool.py",
+  "criterion": "AC2",
+  "declared": true,
+  "expected_red": [
+   "ac2/landing-of-old-branch-leaves-worktree"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/plain-git-worktree-has-item",
+   "ac2/landing-of-old-branch-leaves-worktree",
+   "ac2/rebase-keeps-the-branch",
+   "ac2/switch-updates-item",
+   "ac3/git-returns-while-remover-held",
+   "ac3/no-event-command-waits",
+   "ac3/one-event-record",
+   "ac4/delivered-twice-recorded-once",
+   "ac4/down-git-unchanged-and-spooled",
+   "ac4/replayed-in-order-at-next-call",
+   "ac4/service-start-before-reconcile",
+   "ac4/waiting-keeps-order",
+   "hooks/never-fail-git",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac2/landing-of-old-branch-leaves-worktree",
+    "the landing sends nothing for the worktree's owner: its branch is Y, at its start [{'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'T-101'}]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-removed-inside-the-hook",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": true,
+  "expected_red": [
+   "ac3/git-returns-while-remover-held"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/git-returns-while-remover-held"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac3/git-returns-while-remover-held",
+    "the git command returned while the remover was held, the worktree still on disk [False True 4.2s]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-dropped-when-the-authority-is-down",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": true,
+  "expected_red": [
+   "ac4/service-start-before-reconcile"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac4/delivered-twice-recorded-once",
+   "ac4/down-git-unchanged-and-spooled",
+   "ac4/replayed-in-order-at-next-call",
+   "ac4/service-start-before-reconcile",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac4/service-start-before-reconcile",
+    "at service start reconcile finds the worktree with its item: the spool was replayed first {'item': None, 'pending': []}"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-waiting-entry-passed-by-a-later-one",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "expected_red": [
+   "ac4/waiting-keeps-order"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac4/waiting-keeps-order"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac4/waiting-keeps-order",
+    "with the observer's key missing both git commands return 0 and both entries wait, in order [('worktree_added', 'agent/kim/T-110')]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-refused-entry-dropped",
+  "module": "control_space_spool.py",
+  "criterion": "AC1",
+  "declared": false,
+  "expected_red": [
+   "ac1/refused-is-set-aside"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/refused-is-set-aside",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac1/refused-is-set-aside",
+    "the Ledger refused the path outside every known root, and there is no item [None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-every-ref-change-sent",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": false,
+  "expected_red": [
+   "ac3/one-event-record"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/plain-git-worktree-has-item",
+   "ac3/no-event-command-waits",
+   "ac3/one-event-record",
+   "ac4/delivered-twice-recorded-once",
+   "ac4/down-git-unchanged-and-spooled",
+   "ac4/replayed-in-order-at-next-call",
+   "ac4/service-start-before-reconcile",
+   "ac4/waiting-keeps-order",
+   "hooks/never-fail-git",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac3/one-event-record",
+    "another branch, and a ref under refs/veldo/, leave none"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-rebase-checkout-taken-for-a-switch",
+  "module": "control_space_spool.py",
+  "criterion": "AC2",
+  "declared": false,
+  "expected_red": [
+   "ac2/rebase-keeps-the-branch"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/rebase-keeps-the-branch"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac2/rebase-keeps-the-branch",
+    "the item still names the branch and its start [None 6380a39c3ba396c5fc2b66f81035f594c3f238dd]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-entry-sent-again-as-a-new-packet",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "expected_red": [
+   "ac4/delivered-twice-recorded-once"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac4/delivered-twice-recorded-once"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 ac4/delivered-twice-recorded-once",
+    "one item, present, and the journal as long as it was [1 47]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-hook-status-reaches-git",
+  "module": "engine/hooks/post-checkout",
+  "criterion": "AC1",
+  "declared": false,
+  "expected_red": [
+   "hooks/never-fail-git"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "hooks/never-fail-git",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 hooks/never-fail-git",
+    "with a CLI that is not there a worktree add, a trunk commit and a switch return 0 [127 0 1]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "bf5e95057e83",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ }
+]
