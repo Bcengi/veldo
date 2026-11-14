@@ -100,3 +100,52 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   acceptance criterion changed. A clone and a candidate workspace are private repositories: VELDO-0347 AC3
   has the keep step record their commits in the main repository before the folder goes, and defers one
   whose work tree holds uncommitted work.
+- 2026-11-14: built. No acceptance criterion changed. What the build decided, recorded here because
+  the criteria do not say it:
+  - The seam. Each of the five modules is given `space`, a mapping with the Ledger and the arguments
+    Signal takes (probe, kinds, remover, free, keep, owner_live and the rest), or None. Each module
+    carries the same small function, space_signal: it finds the live items the ledger records at or
+    beneath the paths of the removal, signals the event once for each owner among them with every
+    part of that owner as the subject, and answers with the state of each path's item. It deletes
+    nothing. The function is carried five times because no shared module is in this footprint.
+    Nothing in the engine builds `space` yet: the service holds no Ledger, and the creators declare
+    nothing until VELDO-0302. Until both are wired the five paths run as before.
+  - With no ledger each path removes as it did, as a creator with no central installation creates as
+    it did (design 6.1). So the direct deletes are still in the files, in the branch that runs only
+    when `space` is None; the existing suites of the clone, the run directory and the landing line
+    drive that branch and are unchanged. The boundary check of VELDO-0304 has to name those branches.
+    One thing differs with no ledger: the fleet never passes git's force option. It runs git's
+    non-forced remove, and only for a worktree this provisioner added whose checked-out commit has
+    not moved since, because with no ledger there is no keep step and a commit made on the detached
+    head would be named by nothing. Anything else stays and is listed, never swallowed.
+  - The events. A fleet worktree: worktree abandoned. A clone at teardown and at a failed
+    provisioning, a run directory at the receiver's end and at the sweep, a candidate folder at the
+    landing line's close and the lander's candidate workspace at discard: run finished. Design
+    section 5 names run finished for a worker clone and leaves the landing line's event unnamed; the
+    lander's discard is the sibling of the batch's discard, which 6.10 gives run finished.
+  - A private repository is not removed at run finished by today's table. The row of an agent
+    repository whose form is a worker clone or a candidate workspace is VELDO-0347. Until it is built
+    the ledger does not make a clone's work tree or a candidate folder due at run finished: it stays,
+    it holds its root, its pins stay held, and the teardown is refused. The suite adds that one cell
+    to a copy of the registry, as a stand-in.
+  - Rule 3. Where a module has just read from the kernel that the run is over (the clone's users
+    have ended, the sweep's kernel test, a receiver whose group is known to be empty or whose engine
+    never started), rule 3 is answered conclusive for the runs that own the items of that removal,
+    and for no other owner. A receiver whose group nobody could read does not answer; the wired
+    answer does.
+  - The pins. They are released only when the work tree's item is removed or gone, or when no live
+    item records the work tree and the kernel says nothing is at its path. Not found is the only
+    answer that counts: a path that could not be read releases nothing.
+  - A failed provisioning confirms the items still in state declared, so that the event reaches
+    them, and then signals. What was never made is marked gone by Signal.
+  - The fleet signals only for its own worktree: when the worktree's owner also owns another
+    worktree or agent repository the event would end, nothing is signalled and the worktree stays.
+  - A refusal is space_deferred and the rule's name. For an item no rule deferred it is the state the
+    item is in: due (report mode), removing (left under its marked name), kept, present; and
+    not_in_ledger when no item records the thing. space_deferred is in the clone's taxonomy as
+    stale_subject, beside clone_in_use.
+  - For the lead, not built here because control_retirement.py is not in this footprint: a clone
+    whose teardown is refused keeps its dispatch's worker slot, since the clone obligation stays open
+    while its root is on disk or a pin is held. In report mode every clone is left due, so once a
+    ledger is wired every dispatch would keep its slot until the owner's Confirm. The same holds for
+    a clone a rule defers. This needs a decision before `space` is wired into the clone provisioner.

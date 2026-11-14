@@ -65,17 +65,125 @@ def artifact(record, reference):
     return document
 
 
-def configured(root, path=None):
+SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+_SPACE = {}
+
+
+def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
+    """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
+    and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
+    whatever goes is removed by Signal's removers, after the safety rules and the keep step.
+
+    `space` is what the installation wires in when it has a space ledger: a mapping with ledger (the
+    control_space.Ledger) and, under their own names, the arguments Signal is given (probe, kinds,
+    remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). The items are the live
+    ones the ledger records at or beneath `paths`. The event is signalled once for each owner among
+    them, and the subject is every part of that owner. A path the ledger records no live item for
+    answers with no item and the deferral not_in_ledger, and nothing is done to it; when the kernel
+    says nothing is at that path (not found, and no other answer) it answers gone, for there is
+    nothing to remove. Whatever raises removes nothing: every path then answers with the deferral
+    remove_refused and what was raised.
+
+    `ended` says the caller has just read from the kernel that the runs owning these items are over:
+    rule 3 is answered conclusive for those runs and for no other owner. `confirm` first confirms the
+    items still in state declared (a creation that failed part way), so the event reaches them.
+    `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
+    repository that is not at or beneath `paths`."""
+    paths = [os.path.normpath(str(path)) for path in paths]
+    found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
+
+    def beneath(record):
+        where = (record.get('locator') or {}).get('path')
+        return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
+
+    def owned(record, subject):
+        owner = record.get('owner') or {}
+        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
+                   for part, wanted in subject.items())
+
+    try:
+        ledger = space['ledger']
+        given = {key: value for key, value in space.items() if key != 'ledger'}
+        every = ledger.items()
+        live = {identity: record for identity, record in every.items()
+                if record.get('state') not in SPACE_ENDED and beneath(record)}
+        subjects, runs = [], set()
+        for identity, record in sorted(live.items()):
+            if confirm and record.get('state') == 'declared':
+                ledger.confirm(identity)
+            owner = dict(record.get('owner') or {})
+            if isinstance(owner.get('run'), dict):
+                owner['run'] = owner['run'].get('id')
+                runs.add(owner['run'])
+            if owner and owner not in subjects:
+                subjects.append(owner)
+        others = [identity for identity, record in sorted(every.items())
+                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
+                  and record.get('kind') in ('worktree', 'agent_repository')
+                  and any(owned(record, subject) for subject in subjects)]
+        if others:
+            raise ValueError('the owner of this thing also owns %s: the event would end it too'
+                             % ', '.join(others[:3]))
+        if ended:
+            wired = given.get('owner_live')
+            given['owner_live'] = lambda owner: (
+                {'conclusive': True, 'group_empty': True} if (owner.get('run') or {}).get('id') in runs
+                else wired(owner) if wired else None)
+        if 'signal' not in _SPACE:
+            _SPACE['signal'] = organ('control_space_signal').signal
+        for subject in subjects:
+            _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
+        for identity, record in live.items():
+            where = record['locator']['path']
+            if where in found:
+                now = ledger.item(identity) or {}
+                found[where] = {'item': identity, 'state': now.get('state'),
+                                'deferral': (now.get('deferral') or {}).get('rule')
+                                if now.get('state') == 'deferred' else None}
+        for path in paths:
+            if found[path]['item'] is None and space_absent(path):
+                found[path] = {'item': None, 'state': 'gone', 'deferral': None}
+    except Exception as error:  # noqa: BLE001 - what could not be signalled is not removed
+        raised = '%s: %s' % (type(error).__name__, str(error)[:300])
+        found = {path: {'item': None, 'state': None, 'deferral': 'remove_refused', 'raised': raised}
+                 for path in paths}
+    return found
+
+
+def space_absent(path):
+    """Whether the kernel says nothing is at `path`: not found, and nothing else. A path that could
+    not be read (a folder above it that may not be searched, a failing disk) is not absent."""
+    try:
+        os.lstat(path)
+    except FileNotFoundError:
+        return True
+    except OSError:
+        return False
+    return False
+
+
+def space_refusal(entry):
+    """The name of the refusal for a thing Signal did not remove: space_deferred and the rule that
+    deferred it; for an item no rule deferred, the state it is in (due in report mode, removing when
+    it was left under its marked name, kept, present); not_in_ledger when no item records it."""
+    return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
+
+
+def configured(root, path=None, space=None):
     path = Path(path) if path is not None else Path(root) / '.veldo' / 'worker.json'
     if not path.is_file():
         raise Refused('missing_authority:worker_configuration')
-    return Runtime(root, path)
+    return Runtime(root, path, space=space)
 
 
 class Runtime:
-    """One synchronous installed worker session. close() releases owned connections."""
+    """One synchronous installed worker session. close() releases owned connections. `space` is the
+    installation's space ledger and what Signal is given (space_signal), or None where there is none: with
+    it the candidate folders are removed at close through Signal, and `kept` lists each one that was not
+    (VELDO-0303)."""
 
-    def __init__(self, root, path):
+    def __init__(self, root, path, space=None):
+        self.space, self.kept = space, []
         self.root, self.path = Path(root).resolve(), Path(path).resolve()
         self.config = json.loads(self.path.read_text())
         c = self.config
@@ -104,7 +212,14 @@ class Runtime:
 
     def close(self):
         for directory in self.candidates:
-            shutil.rmtree(directory, ignore_errors=True)
+            if self.space is None:
+                shutil.rmtree(directory, ignore_errors=True)
+                continue
+            # VELDO-0303: a candidate folder is a private repository. It goes through Signal, after the rules
+            # and the keep step, or it stays and the deferral is on the record.
+            found = space_signal(self.space, 'run_finished', [directory], 'landing_line.close')[os.path.normpath(directory)]
+            if found['state'] not in SPACE_ENDED:
+                self.kept.append(dict(found, path=directory, refusal=space_refusal(found)))
         self.floor.close()
         self.conn.close()
 

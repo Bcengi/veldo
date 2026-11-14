@@ -127,6 +127,7 @@ EXIT_REFUSED = 70
 # the dispatch record's own classes (control_dispatch.TAXONOMY). Unknown is never success.
 TAXONOMY = {'invalid_input': 'invalid_input', 'binding_mismatch': 'invalid_input',
             'missing_authority': 'missing_authority', 'stale_input': 'stale_subject', 'clone_in_use': 'stale_subject',
+            'space_deferred': 'stale_subject',
             'unavailable_service': 'unavailable_service', 'missing_evidence': 'missing_evidence'}
 
 # Landlock (the generic syscall table numbers, the same on x86_64 and aarch64) and the rights it
@@ -411,6 +412,110 @@ def _file_digest(path):
 
 # The provisioner.
 
+SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+_SPACE = {}
+
+
+def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
+    """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
+    and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
+    whatever goes is removed by Signal's removers, after the safety rules and the keep step.
+
+    `space` is what the installation wires in when it has a space ledger: a mapping with ledger (the
+    control_space.Ledger) and, under their own names, the arguments Signal is given (probe, kinds,
+    remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). The items are the live
+    ones the ledger records at or beneath `paths`. The event is signalled once for each owner among
+    them, and the subject is every part of that owner. A path the ledger records no live item for
+    answers with no item and the deferral not_in_ledger, and nothing is done to it; when the kernel
+    says nothing is at that path (not found, and no other answer) it answers gone, for there is
+    nothing to remove. Whatever raises removes nothing: every path then answers with the deferral
+    remove_refused and what was raised.
+
+    `ended` says the caller has just read from the kernel that the runs owning these items are over:
+    rule 3 is answered conclusive for those runs and for no other owner. `confirm` first confirms the
+    items still in state declared (a creation that failed part way), so the event reaches them.
+    `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
+    repository that is not at or beneath `paths`."""
+    paths = [os.path.normpath(str(path)) for path in paths]
+    found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
+
+    def beneath(record):
+        where = (record.get('locator') or {}).get('path')
+        return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
+
+    def owned(record, subject):
+        owner = record.get('owner') or {}
+        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
+                   for part, wanted in subject.items())
+
+    try:
+        ledger = space['ledger']
+        given = {key: value for key, value in space.items() if key != 'ledger'}
+        every = ledger.items()
+        live = {identity: record for identity, record in every.items()
+                if record.get('state') not in SPACE_ENDED and beneath(record)}
+        subjects, runs = [], set()
+        for identity, record in sorted(live.items()):
+            if confirm and record.get('state') == 'declared':
+                ledger.confirm(identity)
+            owner = dict(record.get('owner') or {})
+            if isinstance(owner.get('run'), dict):
+                owner['run'] = owner['run'].get('id')
+                runs.add(owner['run'])
+            if owner and owner not in subjects:
+                subjects.append(owner)
+        others = [identity for identity, record in sorted(every.items())
+                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
+                  and record.get('kind') in ('worktree', 'agent_repository')
+                  and any(owned(record, subject) for subject in subjects)]
+        if others:
+            raise ValueError('the owner of this thing also owns %s: the event would end it too'
+                             % ', '.join(others[:3]))
+        if ended:
+            wired = given.get('owner_live')
+            given['owner_live'] = lambda owner: (
+                {'conclusive': True, 'group_empty': True} if (owner.get('run') or {}).get('id') in runs
+                else wired(owner) if wired else None)
+        if 'signal' not in _SPACE:
+            _SPACE['signal'] = _organ('control_space_signal').signal
+        for subject in subjects:
+            _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
+        for identity, record in live.items():
+            where = record['locator']['path']
+            if where in found:
+                now = ledger.item(identity) or {}
+                found[where] = {'item': identity, 'state': now.get('state'),
+                                'deferral': (now.get('deferral') or {}).get('rule')
+                                if now.get('state') == 'deferred' else None}
+        for path in paths:
+            if found[path]['item'] is None and space_absent(path):
+                found[path] = {'item': None, 'state': 'gone', 'deferral': None}
+    except Exception as error:  # noqa: BLE001 - what could not be signalled is not removed
+        raised = '%s: %s' % (type(error).__name__, str(error)[:300])
+        found = {path: {'item': None, 'state': None, 'deferral': 'remove_refused', 'raised': raised}
+                 for path in paths}
+    return found
+
+
+def space_absent(path):
+    """Whether the kernel says nothing is at `path`: not found, and nothing else. A path that could
+    not be read (a folder above it that may not be searched, a failing disk) is not absent."""
+    try:
+        os.lstat(path)
+    except FileNotFoundError:
+        return True
+    except OSError:
+        return False
+    return False
+
+
+def space_refusal(entry):
+    """The name of the refusal for a thing Signal did not remove: space_deferred and the rule that
+    deferred it; for an item no rule deferred, the state it is in (due in report mode, removing when
+    it was left under its marked name, kept, present); not_in_ledger when no item records it."""
+    return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
+
+
 class Clones(EP.EnvProvisioner):
     """Worker clones of one domain over the runner's control_dispatch.Dispatches (its store connection,
     bindings and dispatch records). `clones` and `caches` are the roots clones and repository caches live
@@ -418,8 +523,11 @@ class Clones(EP.EnvProvisioner):
     `engines` those it may read and execute but never write (the pinned engine copies and packages). The
     store's directory is never written by a worker either."""
 
-    def __init__(self, dispatches, *, clones, caches, protected=(), engines=(), clock=None):
+    def __init__(self, dispatches, *, clones, caches, protected=(), engines=(), clock=None, space=None):
         super().__init__()
+        # VELDO-0303: the installation's space ledger and what Signal is given (space_signal), or None
+        # where the installation has none. With it, no clone folder is deleted here: it goes through Signal.
+        self.space = space
         self.C = _organ('control_containment')  # VELDO-0040: a clone user's ending read from the kernel
         self.dispatches, self.store, self.conn = dispatches, dispatches.store, dispatches.conn
         self.domain, self.clock = dispatches.domain, clock or time.time
@@ -601,9 +709,13 @@ class Clones(EP.EnvProvisioner):
                                    'group': None}]}
             self._write(manifest)
         except BaseException as error:
-            for pin in pins:
-                self._release(Path(pin['cache']), pin['ref'])
-            shutil.rmtree(root, ignore_errors=True)
+            if self.space is None:
+                for pin in pins:
+                    self._release(Path(pin['cache']), pin['ref'])
+                shutil.rmtree(root, ignore_errors=True)
+            else:
+                # VELDO-0303: the declared items go as at teardown, through Signal. No worker has entered.
+                self._through_space(root, work, pins, confirm=True)
             if isinstance(error, (Refused, OSError, subprocess.SubprocessError)):
                 self._event('provision', accepted, 'refused', refusal=getattr(error, 'code', 'unavailable_service:provisioning'))
             raise
@@ -744,7 +856,10 @@ class Clones(EP.EnvProvisioner):
 
     def _teardown(self, handle):
         """Retire a clone: once every worker and consumer has ended, remove it and release its pins.
-        Idempotent; a clone still in use is refused clone_in_use and keeps its pins."""
+        Idempotent; a clone still in use is refused clone_in_use and keeps its pins. With a space ledger
+        (VELDO-0303) the removal is Signal's: clone_in_use stays first and unchanged, a thing a safety
+        rule keeps is refused as space_deferred with the rule's name, and the pins are released only
+        after the work tree's removal outcome is written."""
         manifest = self._manifest(handle.env_id)
         if manifest is None:
             return
@@ -754,6 +869,16 @@ class Clones(EP.EnvProvisioner):
             self._event('retire', manifest, 'refused', refusal='clone_in_use', clone_id=handle.env_id, users=users)
             raise Refused('clone_in_use', ', '.join(live))
         root = Path(manifest['root'])
+        if self.space is not None:
+            # VELDO-0303: every user has ended, as the kernel says: run finished, through Signal.
+            whole, released = self._through_space(root, manifest['work'], manifest['pins'])
+            if whole['state'] not in SPACE_ENDED:
+                refusal = space_refusal(whole)
+                self._event('retire', manifest, 'refused', refusal=refusal, clone_id=handle.env_id, users=users,
+                            space=whole, released=released)
+                raise Refused(refusal, str(root))
+            self._event('retire', manifest, 'retired', clone_id=handle.env_id, users=users, released=released)
+            return
         shutil.rmtree(root / 'work', ignore_errors=True)
         shutil.rmtree(root / 'scratch', ignore_errors=True)
         for pin in manifest['pins']:
@@ -761,6 +886,23 @@ class Clones(EP.EnvProvisioner):
         shutil.rmtree(root, ignore_errors=True)
         self._event('retire', manifest, 'retired', clone_id=handle.env_id, users=users,
                     released=[p['ref'] for p in manifest['pins']])
+
+    def _through_space(self, root, work, pins, confirm=False):
+        """VELDO-0303: send run finished through Signal for the clone's items (its work tree, its scratch
+        folder and its root, whatever the ledger records at or beneath the root) and release the pins
+        only after the work tree's removal outcome is written, or when no live item records it and
+        the kernel says nothing is at its path: while the work tree is on disk its objects are the
+        caches', and a pin is what keeps them. Returns (the root's entry, the refs released). Nothing
+        is deleted here."""
+        found = space_signal(self.space, 'run_finished', [root, work], 'clone.' + ('provision' if confirm else 'teardown'),
+                             ended=True, confirm=confirm)
+        whole, tree = found[os.path.normpath(str(root))], found[os.path.normpath(str(work))]
+        released = []
+        if tree['state'] in SPACE_ENDED:
+            for pin in pins:
+                self._release(Path(pin['cache']), pin['ref'])
+                released.append(pin['ref'])
+        return whole, released
 
     def retire(self, handle):
         return self.teardown(handle if isinstance(handle, EP.EnvHandle) else self.handle(handle))

@@ -116,6 +116,110 @@ def _git_worktree(args, cwd=None):
     return proc.stdout
 
 
+SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+_SPACE = {}
+
+
+def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
+    """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
+    and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
+    whatever goes is removed by Signal's removers, after the safety rules and the keep step.
+
+    `space` is what the installation wires in when it has a space ledger: a mapping with ledger (the
+    control_space.Ledger) and, under their own names, the arguments Signal is given (probe, kinds,
+    remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). The items are the live
+    ones the ledger records at or beneath `paths`. The event is signalled once for each owner among
+    them, and the subject is every part of that owner. A path the ledger records no live item for
+    answers with no item and the deferral not_in_ledger, and nothing is done to it; when the kernel
+    says nothing is at that path (not found, and no other answer) it answers gone, for there is
+    nothing to remove. Whatever raises removes nothing: every path then answers with the deferral
+    remove_refused and what was raised.
+
+    `ended` says the caller has just read from the kernel that the runs owning these items are over:
+    rule 3 is answered conclusive for those runs and for no other owner. `confirm` first confirms the
+    items still in state declared (a creation that failed part way), so the event reaches them.
+    `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
+    repository that is not at or beneath `paths`."""
+    paths = [os.path.normpath(str(path)) for path in paths]
+    found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
+
+    def beneath(record):
+        where = (record.get('locator') or {}).get('path')
+        return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
+
+    def owned(record, subject):
+        owner = record.get('owner') or {}
+        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
+                   for part, wanted in subject.items())
+
+    try:
+        ledger = space['ledger']
+        given = {key: value for key, value in space.items() if key != 'ledger'}
+        every = ledger.items()
+        live = {identity: record for identity, record in every.items()
+                if record.get('state') not in SPACE_ENDED and beneath(record)}
+        subjects, runs = [], set()
+        for identity, record in sorted(live.items()):
+            if confirm and record.get('state') == 'declared':
+                ledger.confirm(identity)
+            owner = dict(record.get('owner') or {})
+            if isinstance(owner.get('run'), dict):
+                owner['run'] = owner['run'].get('id')
+                runs.add(owner['run'])
+            if owner and owner not in subjects:
+                subjects.append(owner)
+        others = [identity for identity, record in sorted(every.items())
+                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
+                  and record.get('kind') in ('worktree', 'agent_repository')
+                  and any(owned(record, subject) for subject in subjects)]
+        if others:
+            raise ValueError('the owner of this thing also owns %s: the event would end it too'
+                             % ', '.join(others[:3]))
+        if ended:
+            wired = given.get('owner_live')
+            given['owner_live'] = lambda owner: (
+                {'conclusive': True, 'group_empty': True} if (owner.get('run') or {}).get('id') in runs
+                else wired(owner) if wired else None)
+        if 'signal' not in _SPACE:
+            _SPACE['signal'] = _load("veldo_space_signal_fl", ".veldo/control_space_signal.py").signal
+        for subject in subjects:
+            _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
+        for identity, record in live.items():
+            where = record['locator']['path']
+            if where in found:
+                now = ledger.item(identity) or {}
+                found[where] = {'item': identity, 'state': now.get('state'),
+                                'deferral': (now.get('deferral') or {}).get('rule')
+                                if now.get('state') == 'deferred' else None}
+        for path in paths:
+            if found[path]['item'] is None and space_absent(path):
+                found[path] = {'item': None, 'state': 'gone', 'deferral': None}
+    except Exception as error:  # noqa: BLE001 - what could not be signalled is not removed
+        raised = '%s: %s' % (type(error).__name__, str(error)[:300])
+        found = {path: {'item': None, 'state': None, 'deferral': 'remove_refused', 'raised': raised}
+                 for path in paths}
+    return found
+
+
+def space_absent(path):
+    """Whether the kernel says nothing is at `path`: not found, and nothing else. A path that could
+    not be read (a folder above it that may not be searched, a failing disk) is not absent."""
+    try:
+        os.lstat(path)
+    except FileNotFoundError:
+        return True
+    except OSError:
+        return False
+    return False
+
+
+def space_refusal(entry):
+    """The name of the refusal for a thing Signal did not remove: space_deferred and the rule that
+    deferred it; for an item no rule deferred, the state it is in (due in report mode, removing when
+    it was left under its marked name, kept, present); not_in_ledger when no item records it."""
+    return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
+
+
 class WorktreeProvisioner:
     """Provisions a git-worktree-isolated workspace per worker and tears it down on retire. A git
     worktree is a real checkout on its own path sharing the one .git, so each worker edits in
@@ -125,13 +229,31 @@ class WorktreeProvisioner:
     dispatch works in.
 
       add(worker_id) -> path   an in-line `git worktree add` at a fresh per-worker path
-      remove(path)             an in-line `git worktree remove --force`, idempotent
+      remove(path)             the worktree's removal, never with git's force option (below)
 
     base_dir (VELDO_WORKTREE_DIR, else a stable per-repo temp dir) holds the worktrees OUTSIDE the
     repo working tree. Real git calls run only on this reference path; the gate drives a fake
-    provisioner, so no worktree is ever created there."""
+    provisioner, so no worktree is ever created there.
 
-    def __init__(self, repo_root=None, base_dir=None):
+    REMOVAL (VELDO-0303). No work is lost by a retire: git's force option is never passed, and a
+    refusal is never swallowed. `space` is the installation's space ledger and what Signal is given
+    (space_signal), or None where there is none.
+
+      with a ledger   remove sends worktree abandoned through Signal for the worktree's item. The
+                      safety rules judge it, the keep step records its commits, and git's own
+                      non-forced remove takes it. A worktree with an untracked file, or anything
+                      else a rule keeps, stays on disk and is deferred on the record. A worktree
+                      no item records stays too. This module runs no git remove of its own then.
+      without one     there is no keep step, so remove runs git's non-forced worktree remove only
+                      for a worktree this provisioner added and whose checked-out commit has not
+                      moved since: a commit made in it could be named by nothing else. git itself
+                      refuses a modified or an untracked file. Anything else stays.
+
+    remove returns what became of the worktree, {path, item, state, deferral}, and `deferred` lists
+    every worktree a remove left in place, with the reason."""
+
+    def __init__(self, repo_root=None, base_dir=None, space=None):
+        self.space, self.deferred, self._added = space, [], {}
         self.repo_root = str(repo_root or ROOT)
         self.base_dir = base_dir or os.environ.get("VELDO_WORKTREE_DIR") or os.path.join(
             tempfile.gettempdir(), "veldo-worktrees",
@@ -144,15 +266,41 @@ class WorktreeProvisioner:
         path = self.path_for(worker_id)
         os.makedirs(self.base_dir, exist_ok=True)
         _git_worktree(["add", "--detach", path], cwd=self.repo_root)
+        self._added[path] = self._head(path)
         return path
+
+    def _head(self, path):
+        """The commit git's worktree list shows checked out at `path`, or None."""
+        at, wanted = None, os.path.realpath(path)
+        for line in _git_worktree(["list", "--porcelain"], cwd=self.repo_root).splitlines():
+            if line.startswith("worktree "):
+                at = os.path.realpath(line[len("worktree "):])
+            elif line.startswith("HEAD ") and at == wanted:
+                return line[len("HEAD "):].strip()
+        return None
 
     def remove(self, path):
         if not path:
-            return
-        try:
-            _git_worktree(["remove", "--force", path], cwd=self.repo_root)
-        except WorktreeError:
-            pass  # teardown is best-effort and idempotent: a missing worktree is not an error
+            return None
+        path = str(path)
+        if self.space is not None:
+            entry = dict(space_signal(self.space, "worktree_abandoned", [path], "fleet.retire",
+                                      alone=True)[os.path.normpath(path)], path=path)
+        elif space_absent(path):
+            entry = {"path": path, "item": None, "state": "gone", "deferral": None}  # idempotent
+        else:
+            entry = {"path": path, "item": None, "state": "removed", "deferral": None}
+            try:
+                started = self._added.get(path)
+                if started is None or self._head(path) != started:
+                    raise WorktreeError("the worktree's checked-out commit is not the one it was added at, "
+                                        "or this provisioner did not add it: nothing else may name its commits")
+                _git_worktree(["remove", path], cwd=self.repo_root)
+            except WorktreeError as error:
+                entry.update(state=None, deferral="remove_refused", said=str(error))
+        if entry["state"] not in SPACE_ENDED:
+            self.deferred.append(entry)
+        return entry
 
 
 class WorktreeInSessionStart:
@@ -172,10 +320,10 @@ class WorktreeInSessionStart:
     leaks. env carries the worker's account CLAUDE_CONFIG_DIR (threaded by the spawner), id, scope,
     and capabilities."""
 
-    def __init__(self, dispatch, provisioner=None, dispatch_stop=None, repo_root=None):
+    def __init__(self, dispatch, provisioner=None, dispatch_stop=None, repo_root=None, space=None):
         self._dispatch = dispatch
         self._dispatch_stop = dispatch_stop
-        self._prov = provisioner or WorktreeProvisioner(repo_root=repo_root)
+        self._prov = provisioner or WorktreeProvisioner(repo_root=repo_root, space=space)
 
     def __call__(self, worker_id, env):
         if self._dispatch is None:
@@ -195,11 +343,12 @@ class WorktreeInSessionStart:
 
     def stop(self, handle):
         """Retire: stop the in-session worker cooperatively (it stops pulling work; there is no kill
-        of a detached process because none was started) and remove its worktree. Idempotent."""
+        of a detached process because none was started) and remove its worktree. Idempotent. Returns
+        what the provisioner's remove answered: a worktree that holds work stays (VELDO-0303)."""
         rec = handle if isinstance(handle, dict) else {}
         if self._dispatch_stop is not None and rec.get("worker") is not None:
             self._dispatch_stop(rec.get("worker"))
-        self._prov.remove(rec.get("worktree"))
+        return self._prov.remove(rec.get("worktree"))
 
 
 class AccountSpreader:

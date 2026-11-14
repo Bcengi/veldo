@@ -13465,6 +13465,73 @@ def cases():
               '/usr/bin/git --no-replace-objects cat-file blob C:scripts/veldo_procread.c',
               '/usr/bin/git show C:scripts/veldo_procread.c', ['ac7/no-replace-objects'], where='docs')
 
+    # VELDO-0303: the existing removal paths go through the safety rules. The declared falsifier of
+    # each acceptance criterion, each one a way to lose or strand what its row plants. AC1: git's
+    # force option is left in place in the fleet's remove. AC2: the clone's direct delete is left in
+    # place at teardown, and at the failed-provision cleanup. AC3: the receiver's direct delete of
+    # its run directory is left in place, and the sweep's. AC4: the landing line's direct delete of
+    # a candidate folder is left in place, and the lander's of its candidate workspace. And the
+    # steps the criteria name beside them: the pins released whatever became of the work tree, the
+    # clone_in_use check no longer first, an owner that also owns another worktree signalled anyway,
+    # rule 3 answered for a run whose group nobody could read, and a path that could not be read
+    # taken for one with nothing at it.
+    space303 = '142_veldo_0303_space_paths.py'
+
+    def path303(name, module, old, new, rows, also=()):
+        add(303, name, space303, module, old, new, rows, also)
+        result[-1]['siblings'] = True
+
+    path303('space303-fleet-force-left-in-place', 'fleet.py',
+            "        path = str(path)\n        if self.space is not None:\n",
+            "        path = str(path)\n        try:\n"
+            "            _git_worktree([\"remove\", \"--force\", path], cwd=self.repo_root)\n"
+            "        except WorktreeError:\n            pass\n        if self.space is not None:\n",
+            ['ac1/fleet-untracked-stays'])
+    path303('space303-fleet-owner-of-another-worktree-signalled', 'fleet.py',
+            "                  if alone and identity not in live and record.get('state') not in SPACE_ENDED\n",
+            "                  if False and identity not in live and record.get('state') not in SPACE_ENDED\n",
+            ['ac1/fleet-alone'])
+    path303('space303-clone-teardown-direct-delete', 'control_clone.py',
+            "        if self.space is not None:\n"
+            "            # VELDO-0303: every user has ended, as the kernel says: run finished, through Signal.\n",
+            "        if False:\n"
+            "            # VELDO-0303: every user has ended, as the kernel says: run finished, through Signal.\n",
+            ['ac2/open-file-stays'])
+    path303('space303-clone-provision-direct-delete', 'control_clone.py',
+            "            if self.space is None:\n                for pin in pins:\n",
+            "            if True:\n                for pin in pins:\n",
+            ['ac2/failed-provision'])
+    path303('space303-pins-released-whatever-the-outcome', 'control_clone.py',
+            "        if tree['state'] in SPACE_ENDED:\n", "        if True:\n",
+            ['ac2/pins-after-outcome'])
+    path303('space303-clone-in-use-not-first', 'control_clone.py',
+            "        if live:\n", "        if False:\n", ['ac2/clone-in-use-first'])
+    path303('space303-receiver-direct-delete', 'control_launch.py',
+            "        if not stays and self.space is not None:\n", "        if False:\n",
+            ['ac3/receiver-end'])
+    path303('space303-sweep-direct-delete', 'control_launch.py',
+            "            if self.space is not None:\n"
+            "                # VELDO-0303: the kernel test above is rule 3's answer for this run; the rest is Signal's.\n",
+            "            if False:\n"
+            "                # VELDO-0303: the kernel test above is rule 3's answer for this run; the rest is Signal's.\n",
+            ['ac3/sweep-leftover'])
+    path303('space303-receiver-answers-for-an-unread-group', 'control_launch.py',
+            "                ended=(self.supervision or {}).get('empty', True) is True)[os.path.normpath(run)]\n",
+            "                ended=True)[os.path.normpath(run)]\n",
+            ['ac3/deferred-then-swept'])
+    path303('space303-landing-line-direct-delete', 'control_launch_work.py',
+            "            if self.space is None:\n                shutil.rmtree(directory, ignore_errors=True)\n",
+            "            if True:\n                shutil.rmtree(directory, ignore_errors=True)\n",
+            ['ac4/landing-line-close'])
+    path303('space303-lander-direct-delete', 'lander.py',
+            "        if c and self.space is not None:\n", "        if False:\n",
+            ['ac4/lander-discard'])
+    path303('space303-unread-path-read-as-absent', 'control_clone.py',
+            "    try:\n        os.lstat(path)\n    except FileNotFoundError:\n        return True\n"
+            "    except OSError:\n        return False\n    return False\n",
+            "    return not os.path.lexists(path)\n",
+            ['paths/absent-only-when-not-found'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
