@@ -13594,7 +13594,7 @@ def cases():
         add(305, name, space305, 'control_launch.py', old, new, rows)
         result[-1]['siblings'] = True
 
-    covered305 = ("        elif source.get(folder) in committed or any(\n"
+    covered305 = ("        elif placed or any(\n"
                   "                fnmatch.fnmatchcase(os.path.basename(inside), pattern) for pattern in patterns):\n")
     census305('space305-match-the-name-target', covered305,
               "        elif os.path.basename(inside) == 'target':\n", ['ac1/any-ignored-folder'])
@@ -13605,11 +13605,11 @@ def cases():
               ['ac2/untracked-never-recorded'])
     census305('space305-variables-without-declaring',
               "            if os.path.lexists(path):\n"
-              "                return dict(out, refusal=SPACE_UNAVAILABLE,\n"
-              "                            detail='the %s folder is there and no item records it' % name)\n",
+              "                return dict(out, refusal=SPACE_UNRECORDED,\n"
+              "                            detail='the %s folder %s is there and no item records it' % (name, path))\n",
               "            if os.path.lexists(path):\n"
-              "                return dict(out, refusal=SPACE_UNAVAILABLE,\n"
-              "                            detail='the %s folder is there and no item records it' % name)\n"
+              "                return dict(out, refusal=SPACE_UNRECORDED,\n"
+              "                            detail='the %s folder %s is there and no item records it' % (name, path))\n"
               "            if name == 'build':\n"
               "                os.makedirs(path, mode=0o700)\n"
               "                out[name] = path\n"
@@ -13619,12 +13619,12 @@ def cases():
               "        read = census_read(where, adopted=bool(record.get('adopted')),\n",
               "        read = census_read(where, adopted=False,\n", ['ac4/adopted-patterns-only'])
     census305('space305-keep-entry-not-read',
-              "                           patterns=project.get('build_output') or (), keep=project.get('keep') or ())\n",
-              "                           patterns=project.get('build_output') or (), keep=())\n",
+              "                           patterns=project.get('build_output') or (), keep=project.get('keep') or (),\n",
+              "                           patterns=project.get('build_output') or (), keep=(),\n",
               ['ac1/keep-entry'])
     census305('space305-uncommitted-ignore-rule-counts',
-              "                if held is not None and held.strip() == _census_git(where, 'hash-object', '--', found).strip():\n",
-              "                if True:\n", ['ac1/uncommitted-rule'])
+              "                        and held.strip() == _census_git(where, 'hash-object', '--', found).strip()):\n",
+              "                        ):\n", ['ac1/uncommitted-rule'])
     census305('space305-every-ignored-folder-is-build-output', covered305,
               "        elif True:\n", ['ac1/personal-rule', 'ac2/ignored-uncovered'])
     census305('space305-no-census-at-the-receivers-end',
@@ -13632,6 +13632,35 @@ def cases():
               "        if False:\n", ['ac3/run-end'])
     census305('space305-values-lost-at-the-strip',
               "    if values and ENGINE_OVERRIDES in environment:\n", "    if False:\n", ['ac3/engine-strip'])
+    # The review of VELDO-0305 (findings 1 to 5), each a way to lose work or to hide where it is: an
+    # ignore file taken for the project's without asking the recorded start commit, a negation not
+    # read, the personal excludes file read again, a rule taken from an ignore file of another
+    # directory, the folder's refusal named as a service out of reach, its path left out of the
+    # refused event, the temporary folder under the run directories' own name, and the run
+    # directory not looked at.
+    census305('space305-review-start-commit-not-asked',
+              "                if (began is not None and held is not None and began.strip() == held.strip()\n",
+              "                if (held is not None\n", ['review/run-commits-ignore-rule'])
+    census305('space305-review-negation-not-read',
+              "            if negated:\n", "            if False:\n", ['review/negation-keeps-folder'])
+    census305('space305-review-excludes-file-read',
+              "                                 '-c', 'core.excludesFile=', '-C', str(where)]\n",
+              "                                 '-C', str(where)]\n", ['review/local-excludes-file'])
+    census305('space305-review-rule-of-another-directory',
+              "        placed = rule in committed and (os.path.dirname(rule) == ''\n"
+              "                                        or inside.startswith(os.path.dirname(rule) + '/'))\n",
+              "        placed = rule in committed\n", ['review/local-excludes-file'])
+    census305('space305-review-refusal-says-unavailable',
+              "SPACE_UNRECORDED = 'invalid_state:space_folder_unrecorded'\n",
+              "SPACE_UNRECORDED = SPACE_UNAVAILABLE\n", ['review/refusal-names-the-folder'])
+    census305('space305-review-refused-event-without-path',
+              "            if error.code.startswith(SPACE_FOLDER_STATE) and error.detail:\n",
+              "            if False:\n", ['review/refusal-names-the-folder'])
+    census305('space305-review-scratch-named-runs',
+              "SPACE_RUN_SCRATCH = 'run-scratch'  # under the scratch root; never the name the run directories are under\n",
+              "SPACE_RUN_SCRATCH = 'runs'\n", ['review/scratch-apart-from-run-directory'])
+    census305('space305-review-run-directory-not-looked-at',
+              "            if run:\n", "            if False:\n", ['review/scratch-apart-from-run-directory'])
 
     # VELDO-0306: Docker objects: label, snapshot, events, removal. The declared falsifier of each
     # acceptance criterion. AC1: read one context only. AC2: attribute an object with no label to a

@@ -22,8 +22,8 @@ stay), ac1/declared-pattern (a folder only a personal rule ignores but a declare
 item), ac1/keep-entry (a folder that is a keep entry, and a folder a keep entry lies in, get no item
 and are on disk byte for byte after run finished), ac1/personal-rule (a folder only info/exclude
 ignores, and one only a global excludes file ignores, get no item and stay), ac1/uncommitted-rule (a
-rule added to the ignore file and not committed covers nothing; once it is committed the folder is an
-item), ac1/each-event (a second census at another event declares nothing twice and writes each size
+rule added to the ignore file and not committed covers nothing; committed by the run on its own
+branch it still covers nothing), ac1/each-event (a second census at another event declares nothing twice and writes each size
 with that event).
 
 AC2 rows: ac2/untracked-never-recorded (the declared falsifier row: a new source folder git does not
@@ -55,6 +55,24 @@ AC4 rows: ac4/adopted-patterns-only (the declared falsifier row: in a worktree r
 ignored data folder a committed ignore file covers gets no item and is named as work, a folder a
 declared pattern covers is an item; after run finished the data is byte for byte),
 ac4/not-recorded (a worktree no item records gets nothing: not_in_ledger, no item, nothing written).
+
+REVIEW rows (the review of this ticket, findings 1 to 5): review/run-commits-ignore-rule (a run writes
+results, adds their folder to the ignore file and commits: git itself reports the folder ignored, the
+census names it as work with no item, and after run finished and worktree abandoned the results are
+byte for byte; an ignore file the run changed covers nothing at all; a worktree with no recorded
+start commit gets declared patterns only), review/negation-keeps-folder (out/ beside !out/keep.txt,
+and a pattern without a slash that reaches three levels into a folder: git reports each folder whole,
+the census names each as work, every file is byte for byte after run finished, and a folder no
+negation reaches is still build output and goes), review/local-excludes-file (a repository-local
+core.excludesFile naming a committed tools/.gitignore: the folder at the top is untracked work, and
+when git is made to apply the file anyway the folder still gets no item, while the folder inside
+tools, which that file does cover, is an item), review/refusal-names-the-folder (a folder there with
+no item, and one recorded as something else, are refused as invalid_state with the folder's path in
+the detail and in the receiver's refused event; a ledger out of reach keeps unavailable_service),
+review/scratch-apart-from-run-directory (an installation whose first scratch root is the state root:
+the temporary folder is not the run directory, holds none of it and lies in none of it, and the run
+directory's files are untouched; a temporary folder that would be the run directory is refused and
+nothing is declared or made).
 
 paths/nothing-deleted (the census and the run folders deleted nothing in any drive: the module's
 recursive delete was never called during one, and the five functions hold no removal primitive),
@@ -99,6 +117,8 @@ def _v305_space_census_suite():
             'ac3/declared-before-worker', 'ac3/engine-strip', 'ac3/refused-not-pointed', 'ac3/nothing-given',
             'ac3/spawn-order', 'ac3/run-end',
             'ac4/adopted-patterns-only', 'ac4/not-recorded',
+            'review/run-commits-ignore-rule', 'review/negation-keeps-folder', 'review/local-excludes-file',
+            'review/refusal-names-the-folder', 'review/scratch-apart-from-run-directory',
             'paths/nothing-deleted', 'paths/canon')
     rows = {name: [] for name in ROWS}
 
@@ -230,6 +250,16 @@ def _v305_space_census_suite():
         plant(REPOSITORY / 'deep' / 'pkg' / 'module.txt', 'a tracked module\n')
         git(REPOSITORY, 'add', '.gitignore', 'tracked.txt', 'deep')
         git(REPOSITORY, 'commit', '-q', '-m', 'base')
+        # A second line of the project, for the review rows: its committed ignore file keeps one
+        # file of out/ and every *.keep by negation, and it holds a tools/.gitignore of its own.
+        NEGATED = IGNORE + '!out/keep.txt\n!*.keep\n'
+        git(REPOSITORY, 'checkout', '-q', '-b', 'kept-lines')
+        plant(REPOSITORY / '.gitignore', NEGATED)
+        plant(REPOSITORY / 'tools' / '.gitignore', 'precious/\n')
+        plant(REPOSITORY / 'tools' / 'tool.txt', 'a tracked tool\n')
+        git(REPOSITORY, 'add', '.gitignore', 'tools')
+        git(REPOSITORY, 'commit', '-q', '-m', 'keep lines and a tools ignore file')
+        git(REPOSITORY, 'checkout', '-q', 'main')
         plant(REPOSITORY / '.veldo' / 'space.yaml', YAML.dump({
             'build_output': ['dist-*'], 'build_variables': ['CARGO_TARGET_DIR', 'ORCHARD_BUILD_ROOT'],
             'keep': ['vendor-cache', 'models/weights']}))
@@ -315,7 +345,7 @@ def _v305_space_census_suite():
 
         counter = [0]
 
-        def worktree(adopted=False, declare=True):
+        def worktree(adopted=False, declare=True, at='main', start=True):
             """A worktree of the project made with plain git, and its item as the creator's seam will
             declare it (VELDO-0302), or as reconcile adopts one: (path, item, ticket, the run's owner,
             the run's scratch item path)."""
@@ -326,11 +356,11 @@ def _v305_space_census_suite():
             item = None
             if declare and not adopted:
                 made = L.declare('worktree', {'path': str(path)}, owner, 'seam',
-                                 start=git(REPOSITORY, 'rev-parse', 'main'))
+                                 **({'start': git(REPOSITORY, 'rev-parse', at)} if start else {}))
                 if not made['ok']:
                     raise RuntimeError('declare worktree: %s' % (made.get('reason'),))
                 item = made['item']
-            git(REPOSITORY, 'worktree', 'add', '-q', '--detach', str(path), 'main')
+            git(REPOSITORY, 'worktree', 'add', '-q', '--detach', str(path), at)
             if declare and not adopted:
                 L.confirm(item)
             if adopted:
@@ -488,11 +518,12 @@ def _v305_space_census_suite():
             check(row, 'after run finished the draft is on disk byte for byte',
                   text_of(path / 'drafts' / 'essay.md') == DRAFT)
             git(path, 'add', '.gitignore')
-            git(path, 'commit', '-q', '-m', 'the project ignores drafts')
+            git(path, 'commit', '-q', '-m', 'the run ignores its drafts')
             with drive(row):
                 census = LA.space_census(space(), str(path), 'verdict_recorded', owner=run)
-            check(row, 'once the rule is committed the folder is a build output item [%s]' % sorted(census['items']),
-                  list(census['items']) == [str(path / 'drafts')])
+            check(row, 'committed by the run on its own branch the rule still covers nothing [%s %s]'
+                  % (sorted(census['items']), census['work']),
+                  census['items'] == {} and census['work'] == ['drafts/'])
 
             row = 'ac1/each-event'
             path, item, ticket, run = worktree()
@@ -696,6 +727,7 @@ def _v305_space_census_suite():
             dispatch_id = run['run']['id']
             probe = LA.space_run_folders(space(), str(path), dispatch_id + '-probe', 'turn')
             wanted = os.path.join(str(BUILD), '%s-%s' % (path.name, LA.hashlib.sha256(str(path).encode()).hexdigest()[:12]))
+            (SCRATCH / 'run-scratch').mkdir(exist_ok=True)
             SOMEONE = plant(Path(wanted) / 'theirs.txt', 'made by somebody else, recorded by nobody\n')
             R = receiver(space(), path)
             raised = None
@@ -707,14 +739,14 @@ def _v305_space_census_suite():
                 raised = error.code
             check(row, 'a build root folder that is already there with no item refuses the launch by name [%s %s]'
                   % (raised, (R.space_run or {}).get('detail')),
-                  raised == 'unavailable_service:space_ledger' and (R.space_run or {}).get('environment') == {}
+                  raised == 'invalid_state:space_folder_unrecorded' and (R.space_run or {}).get('environment') == {}
                   and probe.get('detail') == 'station')
             check(row, 'the folder is not taken over: no item records it and its file is byte for byte',
                   items_at(wanted) == {} and text_of(Path(wanted) / 'theirs.txt') == SOMEONE)
             ORCHARD_LIVE = [one for one in L.projects if one.get('project') == ORCHARD['project']][0]
             declared_variables = list(ORCHARD_LIVE['build_variables'])
             path, item, ticket, run = worktree()
-            made_before = sorted(os.listdir(SCRATCH / 'runs'))
+            made_before = sorted(os.listdir(SCRATCH / 'run-scratch'))
             try:
                 ORCHARD_LIVE['build_variables'] = ['HOME']
                 home = LA.space_run_folders(space(), str(path), run['run']['id'], 'build')
@@ -726,7 +758,7 @@ def _v305_space_census_suite():
                        '[%s %s]' % (home.get('refusal'), taken.get('refusal')),
                   home.get('refusal') == 'invalid_input:space_build_variable:HOME'
                   and taken.get('refusal') == 'invalid_input:space_build_variable:MY_TOKEN'
-                  and home['environment'] == {} and sorted(os.listdir(SCRATCH / 'runs')) == made_before)
+                  and home['environment'] == {} and sorted(os.listdir(SCRATCH / 'run-scratch')) == made_before)
 
             class Unreachable:
                 projects, config = L.projects, L.config
@@ -739,14 +771,14 @@ def _v305_space_census_suite():
             check(row, 'a ledger that cannot be reached refuses the launch and points nothing anywhere [%s]'
                   % (down.get('refusal'),),
                   down.get('refusal') == 'unavailable_service:space_ledger' and down['environment'] == {}
-                  and sorted(os.listdir(SCRATCH / 'runs')) == made_before)
+                  and sorted(os.listdir(SCRATCH / 'run-scratch')) == made_before)
 
             row = 'ac3/nothing-given'
             path, item, ticket, run = worktree(declare=False)
-            made_before = (sorted(os.listdir(SCRATCH / 'runs')), sorted(os.listdir(BUILD)), journal_length())
+            made_before = (sorted(os.listdir(SCRATCH / 'run-scratch')), sorted(os.listdir(BUILD)), journal_length())
 
             def unchanged():
-                return (sorted(os.listdir(SCRATCH / 'runs')), sorted(os.listdir(BUILD)), journal_length()) == made_before
+                return (sorted(os.listdir(SCRATCH / 'run-scratch')), sorted(os.listdir(BUILD)), journal_length()) == made_before
 
             R = receiver(space(), path)
             environment = R._space_given(run['run']['id'], ['worker'], dict(BASE), {'identity': 'local'})
@@ -754,7 +786,7 @@ def _v305_space_census_suite():
                   % ((R.space_run or {}).get('detail'),),
                   environment == BASE and (R.space_run or {}).get('detail') == 'not_in_ledger' and unchanged())
             path, item, ticket, run = worktree()
-            made_before = (sorted(os.listdir(SCRATCH / 'runs')), sorted(os.listdir(BUILD)), journal_length())
+            made_before = (sorted(os.listdir(SCRATCH / 'run-scratch')), sorted(os.listdir(BUILD)), journal_length())
             R = receiver(space(), path, station='turn')
             environment = R._space_given(run['run']['id'], ['worker'], dict(BASE), {'identity': 'local'})
             check(row, 'a station the ledger has no run for is given nothing',
@@ -865,6 +897,13 @@ def _v305_space_census_suite():
             plant(Path(git(path, 'rev-parse', '--git-path', 'info/exclude')), 'dist-app/\n')
             plant(path / 'dist-app' / 'bundle.js', 'bundle\n')
             check(row, 'the fixture is real: the worktree\'s item is adopted', (L.item(item) or {}).get('adopted') is True)
+            # An adopted worktree whose branch was written later has a start commit on its record. Its
+            # history before that is still unseen, so the ignore files still prove nothing.
+            moved = L.rebranch(item, None, git(REPOSITORY, 'rev-parse', 'main'))
+            check(row, 'the fixture is real: the adopted item records a start commit that holds the ignore file '
+                       '[%s %s]' % (moved.get('reason'), (L.item(item) or {}).get('start')),
+                  moved.get('ok') and (L.item(item) or {}).get('start') == git(path, 'rev-parse', 'HEAD')
+                  and (L.item(item) or {}).get('adopted') is True)
             with drive(row):
                 census = LA.space_census(space(), str(path), 'run_finished', owner=run)
             found = items_at(path)
@@ -899,6 +938,255 @@ def _v305_space_census_suite():
             stopped(row, error)
 
         # =====================================================================================
+        # The review: a run's own ignore rule, a negation, a local excludes file, the refusal, the scratch
+        # =====================================================================================
+        try:
+            def reported(where):
+                # what plain git says of the worktree, with every ignored path
+                return git(where, 'status', '--porcelain', '--ignored').split('\n')
+
+            row = 'review/run-commits-ignore-rule'
+            path, item, ticket, run = worktree()
+            RESULTS = plant(path / 'analysis' / 'results.csv', 'three days of measurements, in no commit\n')
+            OBJECT = plant(path / 'build' / 'app.o', 'object\n')
+            with drive(row):
+                census = LA.space_census(space(), str(path), 'dispatch_ended', owner=run)
+            check(row, 'before the run touches the ignore file its results are untracked work and build is an item '
+                       '[%s %s]' % (census['work'], sorted(census['items'])),
+                  census['work'] == ['analysis/results.csv'] and list(census['items']) == [str(path / 'build')])
+            first = output(census, path / 'build')
+            plant(path / '.gitignore', IGNORE + 'analysis/\n')
+            plant(path / 'summary.txt', 'what the run concluded\n')
+            git(path, 'add', '.gitignore', 'summary.txt')
+            git(path, 'commit', '-q', '-m', 'results summary; keep the raw results out of the commit')
+            check(row, 'the fixture is real: git itself now reports the results folder as ignored, by a rule HEAD '
+                       'holds, in a clean worktree [%s]' % (reported(path),),
+                  reported(path) == ['!! analysis/', '!! build/'])
+            with drive(row):
+                census = LA.space_census(space(), str(path), 'run_finished', owner=run)
+            check(row, 'the rule the run committed covers nothing: the results folder gets no item and is named as '
+                       'work [%s %s]' % (sorted(items_at(path)), census['work']),
+                  str(path / 'analysis') not in items_at(path) and 'analysis/' in census['work']
+                  and str(path / 'analysis') not in census['items'])
+            check(row, 'an ignore file the run changed covers nothing at all: nothing new is declared [%s %s]'
+                  % (census['declared'], census['work']),
+                  census['declared'] == [] and census['work'] == ['analysis/', 'build/']
+                  and sorted(items_at(path)) == sorted([str(path), str(path / 'build')])
+                  and items_at(path)[str(path / 'build')][0] == first)
+            finished(run)
+            check(row, 'after run finished the results are on disk byte for byte',
+                  text_of(path / 'analysis' / 'results.csv') == RESULTS)
+            answer = abandoned(path)
+            check(row, 'at worktree abandoned the worktree stays with the results byte for byte [%s]' % (answer,),
+                  state_of(item) not in ('removed', 'gone')
+                  and text_of(path / 'analysis' / 'results.csv') == RESULTS
+                  and text_of(path / 'summary.txt') == 'what the run concluded\n')
+            path, item, ticket, run = worktree(start=False)
+            plant(path / 'build' / 'app.o', OBJECT)
+            check(row, 'the fixture is real: the second worktree\'s item records no start commit [%s]'
+                  % ((L.item(item) or {}).get('start'),), (L.item(item) or {}).get('start') is None)
+            with drive(row):
+                census = LA.space_census(space(), str(path), 'run_finished', owner=run)
+            check(row, 'a worktree with no recorded start commit gets declared patterns only: the ignored build '
+                       'folder is work [%s %s]' % (sorted(census['items']), census['work']),
+                  census['refusal'] is None and census['items'] == {} and census['work'] == ['build/'])
+
+            row = 'review/negation-keeps-folder'
+            path, item, ticket, run = worktree(at='kept-lines')
+            KEPT = plant(path / 'out' / 'keep.txt', 'the file the project said to keep\n')
+            BESIDE = plant(path / 'out' / 'app.bin', 'beside the kept file\n')
+            DEEP = plant(path / 'generated' / 'a' / 'b' / 'tuned.keep', 'three levels down, kept by name\n')
+            plant(path / 'generated' / 'unit.o', 'object\n')
+            plant(path / 'target' / 'debug' / 'app', 'no negation reaches this\n')
+            check(row, 'the fixture is real: git reports each of the three folders whole, the kept file with them '
+                       '[%s]' % (reported(path),),
+                  reported(path) == ['!! generated/', '!! out/', '!! target/'])
+            with drive(row):
+                census = LA.space_census(space(), str(path), 'run_finished', owner=run)
+            found = items_at(path)
+            check(row, 'the folder a negation with a path reaches into gets no item and is named as work [%s %s]'
+                  % (sorted(found), census['work']),
+                  str(path / 'out') not in found and 'out/' in census['work'])
+            check(row, 'the folder a negation without a slash reaches three levels into gets no item [%s]'
+                  % (census['work'],), str(path / 'generated') not in found and 'generated/' in census['work'])
+            check(row, 'the folder no negation reaches is still a build output item [%s]' % sorted(census['items']),
+                  list(census['items']) == [str(path / 'target')] and census['work'] == ['generated/', 'out/'])
+            finished(run)
+            check(row, 'after run finished the kept files and what is beside them are byte for byte, and the build '
+                       'output is gone',
+                  text_of(path / 'out' / 'keep.txt') == KEPT and text_of(path / 'out' / 'app.bin') == BESIDE
+                  and text_of(path / 'generated' / 'a' / 'b' / 'tuned.keep') == DEEP
+                  and text_of(path / 'generated' / 'unit.o') == 'object\n' and not os.path.lexists(path / 'target'))
+            sealed = path / 'data'
+            plant(sealed / 'closed' / 'x.bin', 'cannot be listed\n')
+            os.chmod(sealed / 'closed', 0)
+            try:
+                with drive(row):
+                    census = LA.space_census(space(), str(path), 'verdict_recorded', owner=run)
+            finally:
+                os.chmod(sealed / 'closed', 0o700)
+            check(row, 'a folder that cannot be walked for the negations is work, or nothing is recorded at all '
+                       '[%s %s]' % (census.get('refusal'), census['work']),
+                  str(sealed) not in items_at(path) and (census['refusal'] == 'census_failed' or os.getuid() == 0
+                                                         or 'data/' in census['work']))
+
+            row = 'review/local-excludes-file'
+            path, item, ticket, run = worktree(at='kept-lines')
+            PRECIOUS = plant(path / 'precious' / 'plan.md', 'at the top, where tools/.gitignore does not reach\n')
+            plant(path / 'tools' / 'precious' / 'cache.bin', 'inside tools, where it does\n')
+            real_organ, DROPPED = LA._organ, []
+
+            def applying(name):
+                # the Git boundary, as a git that applies the personal excludes file anyway: the
+                # census's own -c is dropped from each call
+                module = real_organ(name)
+                if name == 'git_process':
+                    real_run = module.run
+
+                    def run(argv, **given):
+                        argv = list(argv)
+                        if 'core.excludesFile=' in argv:
+                            at = argv.index('core.excludesFile=')
+                            del argv[at - 1:at + 1]
+                            DROPPED.append(at)
+                        return real_run(argv, **given)
+
+                    module.run = run
+                return module
+
+            git(REPOSITORY, 'config', 'core.excludesFile', 'tools/.gitignore')
+            try:
+                seen = reported(path)
+                with drive(row):
+                    census = LA.space_census(space(), str(path), 'dispatch_ended', owner=run)
+                LA._organ = applying
+                try:
+                    with drive(row):
+                        second = LA.census_read(str(path), start=(L.item(item) or {}).get('start'))
+                finally:
+                    LA._organ = real_organ
+            finally:
+                git(REPOSITORY, 'config', '--unset', 'core.excludesFile')
+            check(row, 'the fixture is real: with the repository-local excludes file git itself reports the folder '
+                       'at the top as ignored [%s]' % (seen,), '!! precious/' in seen and '!! tools/precious/' in seen)
+            check(row, 'the census does not read the excludes file: the folder at the top is untracked work, file by '
+                       'file, with no item [%s %s]' % (census['work'], sorted(census['items'])),
+                  census['work'] == ['precious/plan.md'] and list(census['items']) == [str(path / 'tools' / 'precious')])
+            check(row, 'and when git applies the file anyway, a rule read from tools/.gitignore still covers nothing '
+                       'outside tools [%s]' % (second,),
+                  second['build'] == ['tools/precious'] and second['work'] == ['precious/'] and len(DROPPED) >= 3)
+            finished(run)
+            check(row, 'after run finished the folder at the top is byte for byte and the one inside tools is gone',
+                  text_of(path / 'precious' / 'plan.md') == PRECIOUS and not os.path.lexists(path / 'tools' / 'precious')
+                  and text_of(path / 'tools' / 'tool.txt') == 'a tracked tool\n')
+
+            row = 'review/refusal-names-the-folder'
+            path, item, ticket, run = worktree()
+            dispatch_id = run['run']['id']
+            wanted = os.path.join(str(BUILD), '%s-%s' % (path.name, LA.hashlib.sha256(str(path).encode()).hexdigest()[:12]))
+            THEIRS = plant(Path(wanted) / 'theirs.txt', 'made by somebody else, recorded by nobody\n')
+            EMITTED, REFUSED = [], []
+
+            class Dispatches:
+                @staticmethod
+                def refuse(dispatch, digest, refusal, **more):
+                    REFUSED.append((dispatch, refusal))
+
+            R = receiver(space(), path)
+            R.dispatches, R.emit = Dispatches(), EMITTED.append
+            raised = None
+            try:
+                R._space_given(dispatch_id, ['worker'], dict(BASE), {'identity': 'local'})
+            except LA.C.Refused as error:
+                raised = error
+                R._uncontained(dispatch_id, 'digest', error)
+            check(row, 'a folder that is there with no item is refused as a state of the folder, not as a service '
+                       'that is unavailable [%s]' % (getattr(raised, 'code', None),),
+                  getattr(raised, 'code', None) == 'invalid_state:space_folder_unrecorded'
+                  and REFUSED == [(dispatch_id, 'invalid_state:space_folder_unrecorded')])
+            check(row, 'the detail keeps the folder\'s path, and the receiver\'s refused event carries it [%s]'
+                  % ([sorted(one) for one in EMITTED],),
+                  wanted in getattr(raised, 'detail', '') and wanted in (R.space_run or {}).get('detail', '')
+                  and len(EMITTED) == 1 and EMITTED[0].get('event') == 'refused'
+                  and EMITTED[0].get('refusal') == 'invalid_state:space_folder_unrecorded'
+                  and wanted in EMITTED[0].get('detail', ''))
+            check(row, 'the folder is not taken over and its file is byte for byte',
+                  items_at(wanted) == {} and text_of(Path(wanted) / 'theirs.txt') == THEIRS)
+            path, item, ticket, run = worktree()
+            wanted = os.path.join(str(BUILD), '%s-%s' % (path.name, LA.hashlib.sha256(str(path).encode()).hexdigest()[:12]))
+            other = L.declare('scratch', {'path': wanted}, run, 'seam')
+            os.mkdir(wanted, 0o700)
+            L.confirm(other['item'])
+            MINE = plant(Path(wanted) / 'kept.txt', 'recorded as scratch\n')
+            otherwise = LA.space_run_folders(space(), str(path), run['run']['id'], 'build')
+            check(row, 'a build root a live item records as something else is refused as a state too, with the path '
+                       'and the item in the detail [%s %s]' % (otherwise.get('refusal'), other.get('reason')),
+                  other.get('ok') and otherwise.get('refusal') == 'invalid_state:space_folder_recorded_otherwise'
+                  and wanted in (otherwise.get('detail') or '') and other['item'] in (otherwise.get('detail') or '')
+                  and otherwise['environment'] == {} and text_of(Path(wanted) / 'kept.txt') == MINE)
+            EMITTED[:] = []
+            R._uncontained(dispatch_id, 'digest', LA.C.Refused('unavailable_service:space_ledger', 'declare refused: x'))
+            check(row, 'a ledger that refuses keeps its own code, and its event is as it was [%s]' % (EMITTED,),
+                  EMITTED == [{'event': 'refused', 'refusal': 'unavailable_service:space_ledger', 'group': None}])
+
+            row = 'review/scratch-apart-from-run-directory'
+            import copy
+
+            class Rooted:
+                # The ledger of an installation whose first scratch root is the state root.
+
+                def __init__(self, root):
+                    self.config = copy.deepcopy(L.config)
+                    self.config['scratch_roots']['roots'] = [str(root)]
+
+                def __getattr__(self, attribute):
+                    return getattr(L, attribute)
+
+            path, item, ticket, run = worktree()
+            dispatch_id = run['run']['id']
+            R = receiver(space(ledger=Rooted(STATE)), path)
+            R.config = {'state_root': str(STATE)}
+            made = R._run_directories(dispatch_id)
+            TOKEN = plant(Path(made['config']) / 'token', 'the run\'s subscription token\n')
+            before = sorted(str(one.relative_to(made['root'])) for one in Path(made['root']).rglob('*'))
+            with drive(row):
+                environment = R._space_given(dispatch_id, ['worker'], dict(BASE), {'identity': 'local'})
+            scratch = environment.get('TMPDIR') or ''
+            check(row, 'the fixture is real: the run directory is under the root the scratch folder is under, and '
+                       'both are named by the dispatch\'s digest [%s %s]' % (made['root'], scratch),
+                  os.path.dirname(os.path.dirname(made['root'])) == str(STATE)
+                  and os.path.dirname(os.path.dirname(scratch)) == str(STATE)
+                  and os.path.basename(scratch) == os.path.basename(made['root']))
+            check(row, 'the temporary folder is not the run directory, holds none of it and lies in none of it',
+                  bool(scratch) and scratch != made['root'] and not scratch.startswith(made['root'] + '/')
+                  and not made['root'].startswith(scratch + '/') and os.path.isdir(scratch)
+                  and os.listdir(scratch) == [])
+            check(row, 'the run directory holds what it held, and its token is byte for byte',
+                  sorted(str(one.relative_to(made['root'])) for one in Path(made['root']).rglob('*')) == before
+                  and text_of(Path(made['config']) / 'token') == TOKEN)
+            path, item, ticket, run = worktree()
+            dispatch_id = run['run']['id']
+            R = receiver(space(), path)
+            R.config = {'runs': str(SCRATCH / 'run-scratch')}
+            made = R._run_directories(dispatch_id)
+            TOKEN = plant(Path(made['config']) / 'token', 'the run\'s subscription token\n')
+            length, raised = journal_length(), None
+            try:
+                with drive(row):
+                    R._space_given(dispatch_id, ['worker'], dict(BASE), {'identity': 'local'})
+            except LA.C.Refused as error:
+                raised = error
+            check(row, 'a temporary folder that would be the run directory is refused by name, with both paths in '
+                       'the detail [%s]' % (raised,),
+                  getattr(raised, 'code', None) == 'invalid_state:space_folder_run_directory'
+                  and made['root'] in getattr(raised, 'detail', ''))
+            check(row, 'nothing was declared, no variable points anywhere and the token is byte for byte',
+                  journal_length() == length and (R.space_run or {}).get('environment') == {}
+                  and items_at(made['root']) == {} and text_of(Path(made['config']) / 'token') == TOKEN)
+        except Exception as error:
+            stopped(row, error)
+
+        # =====================================================================================
         # Nothing deleted, and the canon
         # =====================================================================================
         try:
@@ -910,7 +1198,8 @@ def _v305_space_census_suite():
             PRIMITIVES = ('rmtree', 'os.unlink', 'os.remove', 'os.rmdir', 'os.removedirs', 'os.rename', 'os.replace',
                           '.unlink(', "'worktree', 'remove'", "'clean'", "'reset'", "'checkout'", "'stash'",
                           '--force', "'rm'")
-            for name in ('_census_git', 'census_read', 'space_census', 'space_run_folders', 'space_environment'):
+            for name in ('_census_git', '_census_negations', 'census_read', 'space_census', 'space_run_folders',
+                         'space_environment'):
                 text = inspect.getsource(getattr(LA, name))
                 check(row, '%s holds no removal primitive and no git command that changes a work tree [%s]'
                       % (name, [mark for mark in PRIMITIVES if mark in text]),

@@ -418,13 +418,14 @@ def located(kind, locator, run=None):
     worktree repository, the common git folder of the repository the folder is a worktree of, None
     when it is not the top of one. exists is True when something is there, False only when the kernel
     said not found, and None when the path could not be read, with what was said in unread (`there`).
-    A Docker object: {engine, name, type, read, id, created_at, said}. created_at is the engine's
-    CreatedAt of the object shown: what a volume, to which an engine gives no Id, is known by
-    (VELDO-0306)."""
+    A Docker object: {engine, name, type, read, id, created_at, labels, said}. created_at is the
+    engine's CreatedAt of the object shown: what a volume, to which an engine gives no Id, is known by
+    (VELDO-0306). labels are the labels the engine shows on it now, None when it showed none."""
     run = run or _run
     if kind in DOCKER_TYPE:
         facts = {'kind': kind, 'engine': locator.get('engine'), 'name': locator.get('name'),
-                 'type': DOCKER_TYPE[kind], 'read': False, 'id': None, 'created_at': None, 'said': None}
+                 'type': DOCKER_TYPE[kind], 'read': False, 'id': None, 'created_at': None, 'labels': None,
+                 'said': None}
         code, out = run(['docker', '--context', str(facts['engine']), facts['type'], 'inspect', str(facts['name'])])
         if code == 0:
             try:
@@ -434,8 +435,13 @@ def located(kind, locator, run=None):
             if isinstance(records, list) and len(records) == 1 and isinstance(records[0], dict):
                 found = records[0].get('Id')
                 made = records[0].get('CreatedAt')
+                labels = records[0].get('Labels')
+                if not isinstance(labels, dict):
+                    labels = (records[0].get('Config') or {}).get('Labels') if isinstance(
+                        records[0].get('Config'), dict) else None
                 facts.update(read=True, id=found if isinstance(found, str) and found else None,
-                             created_at=made if isinstance(made, str) and made else None)
+                             created_at=made if isinstance(made, str) and made else None,
+                             labels=dict(labels) if isinstance(labels, dict) else None)
             else:
                 facts['said'] = 'the inspect record is not one JSON record'
         elif code is not None and 'no such' in str(out).lower():
@@ -480,6 +486,75 @@ def protected(kind, locator, protect):
                 if how:
                     return {'protected': True, 'entry': 'path:' + entry['value'], 'how': how}
     return {'protected': False, 'entry': None, 'how': None}
+
+
+COMPOSE_PROJECT = 'com.docker.compose.project'  # the label compose stamps on what it creates
+
+
+def _inspect_one(run, engine, kind, name):
+    """The one inspect record of an object of `engine`, or (None, what was said)."""
+    code, out = run(['docker', '--context', str(engine), kind, 'inspect', str(name)])
+    if code != 0:
+        return None, str(out)[:300] or 'the client gave no answer'
+    try:
+        records = json.loads(out)
+    except ValueError:
+        records = None
+    if isinstance(records, list) and len(records) == 1 and isinstance(records[0], dict):
+        return records[0], None
+    return None, 'the inspect record is not one JSON record'
+
+
+def mounts(locator, protect, run=None):
+    """Rule 2's facts for a container (design section 7, the protect list; the review of VELDO-0306,
+    finding 2): whether it mounts what the protect list covers, read from the engine now:
+    {read, protected, entry, how, mount, said}. A volume the list covers by its name or by its compose
+    project label, or a bind source at, above or beneath a protected path, makes the container
+    protected; how is mounted_volume or mounted_path and mount names what is mounted. read is False,
+    with what was said, when the container, its mounts or a mounted volume could not be read: the
+    caller refuses then."""
+    run = run or _run
+    engine = locator.get('engine')
+    facts = {'read': False, 'protected': False, 'entry': None, 'how': None, 'mount': None, 'said': None}
+    shown, facts['said'] = _inspect_one(run, engine, 'container', locator.get('id') or locator.get('name'))
+    if shown is None:
+        return facts
+    held = shown.get('Mounts')
+    if not isinstance(held, list) or not all(isinstance(mount, dict) for mount in held):
+        return dict(facts, said='the engine showed the container without its mounts')
+    entries = [entry for entry in protect if engine in entry.get('engines', ())]
+    composed = [entry['value'] for entry in entries if entry['type'] == 'compose_project']
+    for mount in held:
+        name, source = mount.get('Name'), mount.get('Source')
+        if mount.get('Type') == 'volume' or (isinstance(name, str) and name):
+            if not (isinstance(name, str) and name):
+                return dict(facts, said='a volume mount has no name')
+            for entry in entries:
+                if entry['type'] == 'volume' and fnmatch.fnmatchcase(name, entry['value']):
+                    return dict(facts, read=True, protected=True, entry='volume:' + entry['value'],
+                                how='mounted_volume', mount=name)
+            if composed:
+                volume, said = _inspect_one(run, engine, 'volume', name)
+                if volume is None:
+                    return dict(facts, said='the mounted volume %s could not be read: %s' % (name, said))
+                labels = volume.get('Labels')
+                project = labels.get(COMPOSE_PROJECT) if isinstance(labels, dict) else None
+                if project in composed:
+                    return dict(facts, read=True, protected=True, entry='compose_project:' + project,
+                                how='mounted_volume', mount=name)
+        elif mount.get('Type') == 'bind':
+            if not (isinstance(source, str) and source.startswith('/')):
+                return dict(facts, said='a bind mount has no source path')
+            for entry in entries:
+                if entry['type'] != 'path':
+                    continue
+                value = os.path.normpath(entry['value'])
+                for mine in (os.path.normpath(source), os.path.realpath(source)):
+                    for theirs in (value, os.path.realpath(value)):
+                        if mine == theirs or _beneath(theirs, mine) or _beneath(mine, theirs):
+                            return dict(facts, read=True, protected=True, entry='path:' + entry['value'],
+                                        how='mounted_path', mount=source)
+    return dict(facts, read=True)
 
 
 # Process use.

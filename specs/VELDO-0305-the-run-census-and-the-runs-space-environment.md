@@ -132,3 +132,35 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   - Not built here: the run's label and compose project name and the census of Docker objects
     (VELDO-0306), the order census, Signal, release and the conclusive end (VELDO-0308), the gate's
     census at a verdict (VELDO-0309), and rule 5's own reading of ignored work (VELDO-0347 AC1).
+- 2026-11-14: fixed from the independent review (verdict FIX, findings 1 to 5). No acceptance
+  criterion changed. What changed, each with a row on a real repository and a registered falsifier:
+  - Committed means the project's, not the run's (finding 1). An ignore file covers a folder only
+    when the commit the worktree's item records as its start holds it, the worktree's HEAD holds
+    that very content and so does the disk. A rule the run added or changed, committed on its own
+    branch or not, covers nothing, and neither does the rest of that file: a run that touches an
+    ignore file leaves its ignored folders as work, which costs space and loses nothing. A worktree
+    whose item records no start commit gets the declared patterns only. This replaces "committed
+    means in HEAD and unchanged" above; row ac1/uncommitted-rule now ends with the run's commit
+    still covering nothing, and row review/run-commits-ignore-rule is the reviewer's case.
+  - A negation keeps the folder (finding 2). When a negation pattern of any .gitignore on disk
+    from the folder's directory up to the top could match the folder or a path inside it, the
+    folder is work, whole. The match is wider than git's on purpose; a folder that cannot be
+    walked is work. Row review/negation-keeps-folder.
+  - A personal excludes file is never read (finding 3). Every census read sets core.excludesFile
+    to nothing, and a rule read from a per-directory ignore file covers only folders inside that
+    file's directory. Row review/local-excludes-file.
+  - The refusals (finding 4). A folder that is there with no item is refused as
+    invalid_state:space_folder_unrecorded, one a live item records as something else as
+    invalid_state:space_folder_recorded_otherwise; the detail names the folder, and the receiver's
+    refused event carries the detail for these codes. The dispatch record holds the code only: its
+    refuse command has no detail field and control_dispatch.py is outside this footprint. A ledger
+    that refuses or cannot be reached keeps unavailable_service:space_ledger. Row
+    review/refusal-names-the-folder.
+  - The temporary folder (finding 5) is <first scratch root>/run-scratch/<the dispatch's digest>,
+    and one that is the run directory, holds it or lies in it is refused as
+    invalid_state:space_folder_run_directory with nothing declared. Row
+    review/scratch-apart-from-run-directory.
+  - Left open, as the review states them: finding 6 (a reused build root keeps its first run as
+    owner; build output, so no work is lost), the remover's last look, which has finding 1's hole
+    and is VELDO-0347's, and a build output item declared before a run changed the ignore file,
+    which stays an item.

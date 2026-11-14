@@ -666,6 +666,14 @@ SPACE_WORKTREES = ('worktree', 'agent_repository')  # the kinds whose folder is 
 SPACE_STATIONS = ('build', 'review', 'gate')  # the stations the ledger records a run with
 SPACE_TEMPORARY = 'TMPDIR'
 SPACE_UNAVAILABLE = 'unavailable_service:space_ledger'
+# A folder of the run that is on disk and wrongly recorded: a state of a path that every launch of
+# the worktree meets again, and never the ledger being out of reach.
+SPACE_UNRECORDED = 'invalid_state:space_folder_unrecorded'
+SPACE_OTHERWISE = 'invalid_state:space_folder_recorded_otherwise'
+SPACE_RUN_DIRECTORY = 'invalid_state:space_folder_run_directory'
+SPACE_FOLDER_STATE = 'invalid_state:space_folder_'
+SPACE_RUN_SCRATCH = 'run-scratch'  # under the scratch root; never the name the run directories are under
+SPACE_COMMIT = re.compile(r'[0-9a-f]{40}([0-9a-f]{24})?\Z')
 
 
 class _CensusStop(Exception):
@@ -674,15 +682,17 @@ class _CensusStop(Exception):
 
 def _census_git(where, *argv, feed=None, absent=False):
     """One git read of the census, through the one Git boundary: no GIT_ variable of the caller and
-    no system or global configuration reaches it, so a path only a personal excludes file ignores is
-    an untracked path here. Raises _CensusStop when git cannot say; with `absent`, a quiet failure
-    answers None."""
+    no system or global configuration reaches it, and no excludes file the repository's own
+    configuration names (core.excludesFile is set to nothing on the command line, which is read
+    last), so a path only a personal excludes file ignores is an untracked path here. Raises
+    _CensusStop when git cannot say; with `absent`, a quiet failure answers None."""
     _git_process = _organ('git_process')
     given = dict(env=dict(os.environ, LC_ALL='C'), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                  timeout=CENSUS_SECONDS)
     given.update({'stdin': subprocess.DEVNULL} if feed is None else {'input': feed})
     try:
-        done = _git_process.run(['git', '--no-optional-locks', '-c', 'core.fsmonitor=false', '-C', str(where)]
+        done = _git_process.run(['git', '--no-optional-locks', '-c', 'core.fsmonitor=false',
+                                 '-c', 'core.excludesFile=', '-C', str(where)]
                                 + [str(word) for word in argv], **given)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         raise _CensusStop('git could not be run: %s' % type(error).__name__) from None
@@ -694,14 +704,75 @@ def _census_git(where, *argv, feed=None, absent=False):
     return done.stdout.decode('utf-8', 'surrogateescape')
 
 
-def census_read(where, adopted=False, patterns=(), keep=()):
+def _census_negations(top, folder):
+    """Whether a negation pattern (`!keep.txt`) of an ignore file above `folder`, a folder of the
+    worktree `top` named relative to it, could match the folder or anything inside it. Git never
+    re-includes a path under a folder it excludes, so it reports `out/` whole beside `!out/keep.txt`;
+    but the file says that path is not to be ignored, and so the folder is not shown to be build
+    output. Every .gitignore on disk from the folder's own directory up to the top is read,
+    committed or not: a negation only ever keeps. The match is wider than git's (a star crosses a
+    slash, a pattern with a backslash matches everything), and wider is the safe side. Raises OSError
+    when an ignore file or the folder cannot be read; the caller takes that for work."""
+    above = os.path.dirname(folder)
+    places = [above]
+    while places[-1]:
+        places.append(os.path.dirname(places[-1]))
+    names, anchored = [], []
+    for place in places:
+        try:
+            with open(os.path.join(top, place, '.gitignore'), 'rb') as handle:
+                lines = handle.read().decode('utf-8', 'surrogateescape').splitlines()
+        except (FileNotFoundError, NotADirectoryError):
+            continue
+        for line in lines:
+            if not line.startswith('!'):
+                continue
+            pattern = line[1:].rstrip(' \t\r').rstrip('/')
+            if not pattern:
+                continue
+            if '\\' in pattern:
+                return True  # an escape this reader does not follow: it could name anything
+            if '/' not in pattern:
+                names.append(pattern)
+                continue
+            pattern = pattern.lstrip('/').replace('**/', '*').replace('/**', '/*')
+            pattern = (place + '/' if place else '') + pattern
+            fixed = re.split(r'[*?\[]', pattern, maxsplit=1)[0]
+            if fixed.startswith(folder + '/') or (folder + '/').startswith(fixed) or fixed == folder:
+                anchored.append(pattern)
+    if not names and not anchored:
+        return False
+
+    def matched(path):
+        return (any(fnmatch.fnmatchcase(os.path.basename(path), pattern) for pattern in names)
+                or any(fnmatch.fnmatchcase(path, pattern) for pattern in anchored))
+
+    def unread(error):
+        raise error
+
+    if matched(folder):
+        return True
+    for found, folders, files in os.walk(os.path.join(top, folder), onerror=unread):
+        inside = os.path.relpath(found, top)
+        if any(matched(os.path.join(inside, name)) for name in folders + files):
+            return True
+    return False
+
+
+def census_read(where, adopted=False, patterns=(), keep=(), start=None):
     """What a run left in the worktree `where`, as git reads it now with every ignored path:
     {build: [folder], kept: [folder], work: [path]}, each relative to the worktree.
 
     build names every ignored folder git reports as a whole, at any depth and whatever its name,
     that a committed ignore file of the worktree or a pattern the project declares covers. An ignore
-    file is committed when the worktree's HEAD holds it and the file on disk is that very content: a
-    rule somebody added and has not committed yet covers nothing. In a worktree reconcile adopted,
+    file is the project's when the commit the worktree was recorded as started from (`start`) holds
+    it, the worktree's HEAD holds that very content, and so does the file on disk: a rule the run
+    added, committed on its own branch or not, covers nothing, so a run that ignores its own results
+    folder does not turn it into build output. A worktree with no recorded start commit gets the
+    declared patterns only. A per-directory ignore file covers only what lies in its own directory:
+    a file git applied from anywhere else (a personal excludes file that happens to be committed)
+    covers nothing. And a folder that a negation pattern of an ignore file above it could reach
+    into is work, whole (_census_negations). In a worktree reconcile adopted,
     whose history nobody saw, the ignore files prove nothing and only the declared patterns count.
     kept names the folders a keep entry of the project holds: the entry itself, anything inside it,
     and a folder the entry lies in. They are left out.
@@ -734,21 +805,34 @@ def census_read(where, adopted=False, patterns=(), keep=()):
         rules = _census_git(where, 'check-ignore', '-v', '-z', '--stdin',
                             feed=b''.join(os.fsencode(name) + b'\0' for name in folders)).split('\0')[:-1]
         source = {rules[at + 3]: rules[at] for at in range(0, len(rules) - 3, 4)}
-        if not adopted:
+        if not adopted and isinstance(start, str) and SPACE_COMMIT.match(start):
             for found in sorted(set(source.values())):
                 if os.path.isabs(found) or os.path.basename(found) != '.gitignore':
                     continue  # info/exclude, or a file outside the worktree: a personal rule
+                began = _census_git(where, 'rev-parse', '--verify', '--quiet', start + ':' + found, absent=True)
                 held = _census_git(where, 'rev-parse', '--verify', '--quiet', 'HEAD:' + found, absent=True)
-                if held is not None and held.strip() == _census_git(where, 'hash-object', '--', found).strip():
+                if (began is not None and held is not None and began.strip() == held.strip()
+                        and held.strip() == _census_git(where, 'hash-object', '--', found).strip()):
                     committed.add(found)
     for folder in folders:
         inside = folder.rstrip('/')
+        rule = source.get(folder)
+        # a per-directory ignore file reaches only into its own directory
+        placed = rule in committed and (os.path.dirname(rule) == ''
+                                        or inside.startswith(os.path.dirname(rule) + '/'))
         if any(inside == entry or inside.startswith(entry + '/') or entry.startswith(inside + '/')
                for entry in keep):
             kept.append(inside)
-        elif source.get(folder) in committed or any(
+        elif placed or any(
                 fnmatch.fnmatchcase(os.path.basename(inside), pattern) for pattern in patterns):
-            build.append(inside)
+            try:
+                negated = _census_negations(top, inside)
+            except (OSError, ValueError):
+                negated = True  # what could not be read is not shown to be build output
+            if negated:
+                work.append(folder)
+            else:
+                build.append(inside)
         else:
             work.append(folder)
     return {'build': sorted(build), 'kept': sorted(kept), 'work': sorted(set(work))}
@@ -803,7 +887,8 @@ def space_census(space, worktree, event, owner=None, also=()):
         answer['worktree'] = identity
         project = _space_project(ledger, record.get('owner'))
         read = census_read(where, adopted=bool(record.get('adopted')),
-                           patterns=project.get('build_output') or (), keep=project.get('keep') or ())
+                           patterns=project.get('build_output') or (), keep=project.get('keep') or (),
+                           start=record.get('start'))
         answer['kept'], answer['work'] = read['kept'], read['work']
         for inside in read['build']:
             path = os.path.join(where, inside)
@@ -846,7 +931,7 @@ def space_census(space, worktree, event, owner=None, also=()):
     return answer
 
 
-def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=False):
+def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=False, run=None):
     """VELDO-0305 AC3: the folders a run is given, each declared in the ledger before it is made and
     before the worker starts: the run's temporary folder, a scratch item under the installation's first
     scratch root, and, for a project that declares build variables, the build root, a build output item
@@ -856,8 +941,14 @@ def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=
     the temporary folder variable at the scratch folder and each declared build variable at the
     build root. A variable is in it only when its folder has a live item.
 
+    The temporary folder is <first scratch root>/run-scratch/<the dispatch's digest>: a name of its
+    own, never the one the run directories are under, and a folder that is, holds or lies in the run
+    directory `run` (its generated configuration and its token) is refused as SPACE_RUN_DIRECTORY.
+
     Declare, make, confirm, in that order (design 6.2). A folder that is already there with no live
-    item is never taken over: whatever is in it was not made by this run. The build root of a worktree
+    item is never taken over: whatever is in it was not made by this run. That, and a folder a live
+    item records as something else, is a state of the path and not of the ledger: the refusal is
+    SPACE_UNRECORDED or SPACE_OTHERWISE, and the detail names the folder. The build root of a worktree
     passes from one run of the worktree to the next, so one a live build output item records is used
     as it is. A worktree no live item records, and a station the ledger has no run for, are given
     nothing and the environment stays as it was (detail says which). So is a run in the confined
@@ -892,7 +983,7 @@ def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=
                 return dict(out, refusal='invalid_input:space_build_variable:' + name,
                             detail='a build variable names a variable of the launch')
         wanted = [('scratch', 'scratch', (ledger.config['scratch_roots']['roots'] or [None])[0],
-                   lambda root: run_directory(os.path.join(root, 'runs'), dispatch_id))]
+                   lambda root: run_directory(os.path.join(root, SPACE_RUN_SCRATCH), dispatch_id))]
         if variables:
             wanted.append(('build', 'build_output', (ledger.config['build_roots'] or [None])[0],
                            lambda root: os.path.join(root, '%s-%s' % (
@@ -901,19 +992,26 @@ def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=
             if not root:
                 return dict(out, refusal=SPACE_UNAVAILABLE, detail='the installation names no %s root' % name)
             path = os.path.normpath(place(str(root)))
+            if run:
+                own, given = os.path.realpath(str(run)), os.path.realpath(path)
+                if own == given or own.startswith(given + os.sep) or given.startswith(own + os.sep):
+                    return dict(out, refusal=SPACE_RUN_DIRECTORY,
+                                detail='the %s folder %s and the run directory %s are not apart'
+                                       % (name, path, os.path.normpath(str(run))))
             known = live.get(path)
             if known is not None:
                 mine = (known[1]['owner'].get('run') or {}).get('id') == dispatch_id
                 if (known[1].get('kind') != kind or (name == 'scratch' and not mine)
                         or known[1]['owner'].get('scope') != owner['scope']
                         or os.path.islink(path) or not os.path.isdir(path)):
-                    return dict(out, refusal=SPACE_UNAVAILABLE,
-                                detail='the %s folder is recorded as something else: %s' % (name, known[0]))
+                    return dict(out, refusal=SPACE_OTHERWISE,
+                                detail='the %s folder %s is recorded as something else: %s'
+                                       % (name, path, known[0]))
                 out[name], out['items'][path] = path, known[0]
                 continue
             if os.path.lexists(path):
-                return dict(out, refusal=SPACE_UNAVAILABLE,
-                            detail='the %s folder is there and no item records it' % name)
+                return dict(out, refusal=SPACE_UNRECORDED,
+                            detail='the %s folder %s is there and no item records it' % (name, path))
             made = ledger.declare(kind, {'path': path}, owner, 'seam')
             if not made.get('ok'):
                 return dict(out, refusal=SPACE_UNAVAILABLE,
@@ -2476,7 +2574,10 @@ class Receiver:
         by name, or unknown when its group could not be emptied."""
         if error.settled:
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
-            self.emit({'event': 'refused', 'refusal': error.code, 'group': error.group})
+            refused = {'event': 'refused', 'refusal': error.code, 'group': error.group}
+            if error.code.startswith(SPACE_FOLDER_STATE) and error.detail:
+                refused['detail'] = error.detail  # VELDO-0305: the folder the owner has to look at
+            self.emit(refused)
         else:
             self.dispatches.unknown(dispatch_id, contract_digest, 'containment_not_empty', now=time.time(),
                                     expected_state='accepted',
@@ -2575,7 +2676,8 @@ class Receiver:
         contract = getattr(self, 'contract', None) or {}
         given = space_run_folders(space, worktree, dispatch_id, contract.get('station'),
                                   taken=tuple(getattr(self, 'delivered', None) or ()),
-                                  confined=(getattr(self, 'runner', None) or {}).get('runner') == 'confined')
+                                  confined=(getattr(self, 'runner', None) or {}).get('runner') == 'confined',
+                                  run=getattr(self, 'run', None))
         self.space_run = given
         if given['refusal']:
             raise C.Refused(given['refusal'], given.get('detail') or '')

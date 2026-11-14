@@ -2076,6 +2076,11 @@ class Service:
         engine's events, for the service loop's poll set. Empty when no Docker adapter is set."""
         return self.space_docker.pipes() if self.space_docker is not None else {}
 
+    def docker_unread(self):
+        """VELDO-0306: {engine context: why}, every engine the Docker adapter is not reading now. A run's
+        objects on such an engine are not being recorded until the adapter is started again."""
+        return self.space_docker.unread() if self.space_docker is not None else {}
+
     def docker_readable(self, fd):
         """VELDO-0306: the poll set found an engine's event pipe readable. The adapter handles every event
         the pipe holds, and at its end of file takes a new snapshot before it subscribes again. Nothing is
@@ -2083,7 +2088,16 @@ class Service:
         if self.space_docker is None:
             return None
         try:
-            return self.space_docker.readable(fd)
+            answer = self.space_docker.readable(fd)
+            if isinstance(answer, dict) and answer.get('down'):
+                # The review of VELDO-0306, finding 4: an engine that is not read any more is said in
+                # the observation log, never silent: its objects are not being recorded.
+                with contextlib.suppress(OSError):
+                    self._log({'kind': 'space', 'operation': 'docker_events', 'at': time.time(),
+                               'domain_uuid': self.domain, 'outcome': 'refused',
+                               'refusal': 'unavailable:engine_not_read', 'engine': answer.get('engine'),
+                               'detail': str(answer['down'])[:300]})
+            return answer
         except Exception as error:  # noqa: BLE001 - never the end of the service
             with contextlib.suppress(OSError):
                 self._log({'kind': 'space', 'operation': 'docker_events', 'at': time.time(),
