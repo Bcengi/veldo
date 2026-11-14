@@ -1,0 +1,131 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0312",
+ "commit": "e4678ecfcdcb2eab2dd72981f2cb96c9b4df3a9d",
+ "tree": "8c6116df32a115a91b97d767852c3a223289f748",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-14T16:08:47.841956+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "Rows, one per transition: ac1/item-complete (the backlog organ's complete: nothing is sent by the commit itself; the pass sends ticket ended once for both units of the item; the scratch of both goes; the clean worktree goes after its build output and after the keep step, with the kept ref in the main repository at its commit and the branch still there; a second pass sends nothing), ac1/item-cancel (the backlog organ's cancel: the scratch goes; the worktree with an untracked file is deferred as unique_work, the file byte for byte, with no keep step run), ac1/unit-dispose-unit (the scratch goes; the worktree whose branch holds a commit no other ref holds is deferred as unique_work with the commit on its branch; the item stays open and its other unit is not ended), ac1/assignment-close (the unit's scratch goes; its open sibling's scratch stays), ac1/other-ticket-untouched, ac1/closed-unit-authorized-later (an authorization recorded on a unit a close had ended, and a later record of another command that writes an ended item, send nothing and judge nothing again), ac1/record-names-transition-and-command (the observation log and each removal and deferral record name the transition and the command that committed it)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "The rows run the real Service on a real SQLite store with OpenSSH journal and command signatures; every journal record is signed by the service's own sign. The project's cancel, complete, pause and resume and the backlog item's complete and cancel are the real organs' own signed commands on that connection. The space Ledger is on the same store, with Signal, the kind registry, the probes, the removers and the keeper, which really delete; each project is in act mode by the owner's own signed command; every worktree is a real linked worktree made with plain git. The disk, git and the ledger are read as each pass returns. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0312/falsifiers.json",
+     "detail": "space312-close-unwired is the declared falsifier: the close is not read as an end; ac1/assignment-close finds no event and the scratch present, and is red. Beside it, each applied once and red on its row: space312-authorization-taken-for-an-end and space312-another-commands-record-counted red ac1/closed-unit-authorized-later."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "Rows ac2/project-cancel (the project organ's cancel: project ended is sent once with the project alone as the subject; the worktree that has no ticket is removed after its build output and after the keep step; the scratch of a ticket and the scratch with no ticket are removed; the ticket's worktree with an untracked file is deferred as unique_work and stays, the file byte for byte), ac2/project-complete (the same for the project's complete), ac2/pause-sends-nothing (a pause and a resume send nothing and every item is present), ac2/other-project-untouched."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "The rows run the real Service on a real SQLite store with OpenSSH journal and command signatures; every journal record is signed by the service's own sign. The project's cancel, complete, pause and resume and the backlog item's complete and cancel are the real organs' own signed commands on that connection. The space Ledger is on the same store, with Signal, the kind registry, the probes, the removers and the keeper, which really delete; each project is in act mode by the owner's own signed command; every worktree is a real linked worktree made with plain git. The disk, git and the ledger are read as each pass returns. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0312/falsifiers.json",
+     "detail": "space312-sent-for-complete-only is the declared falsifier: ac2/project-cancel finds no event and the canceled project's worktree present with no due record, and is red. space312-pause-taken-for-an-end reds ac2/pause-sends-nothing."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "Rows ac3/refused-sends-nothing (a complete the backlog organ refuses, a cancel by someone who is not the owner and a project cancel at a stale version leave no journal record; the pass sends nothing), ac3/rollback-sends-nothing (the item's cancel runs its transition, its journal record is signed by the service, and the transaction rolls back: no event, nothing due, the worktree, build output and scratch present, the item ACTIVE; the same cancel committed afterwards is sent), ac3/no-ledger-sends-nothing (a service with no ledger commits as before and sends nothing; a ledger wired in afterwards is not sent what was committed before), ac3/after-a-packet (a signed packet through the service's own apply that commits an end is followed by the event before apply returns; a packet whose signature does not cover its command is refused and sends nothing)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "The rows run the real Service on a real SQLite store with OpenSSH journal and command signatures; every journal record is signed by the service's own sign. The project's cancel, complete, pause and resume and the backlog item's complete and cancel are the real organs' own signed commands on that connection. The space Ledger is on the same store, with Signal, the kind registry, the probes, the removers and the keeper, which really delete; each project is in act mode by the owner's own signed command; every worktree is a real linked worktree made with plain git. The disk, git and the ledger are read as each pass returns. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0312/falsifiers.json",
+     "detail": "space312-sent-before-the-commit is the declared falsifier: the event is decided from the record as it is signed, inside the transition; ac3/rollback-sends-nothing finds ticket ended sent for the rolled back cancel and the ticket's worktree and scratch removed, and is red."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "Rows ac4/provisioned-in-another-worktree (space_provisioned for a worktree whose item is declared: the ticket's earlier worktree is sent worktree abandoned and removed after the keep step; the new worktree is untouched; a later run in the same worktree abandons nothing), ac4/owner-abandon (space_abandon at the version shown: removed after the keep step, the removal record naming the Abandon and who pressed it; a stale version, an item that is no worktree, an unknown item and a removed one send nothing), ac4/abandon-keeps-unique-work (an untracked file: deferred as unique_work, the file byte for byte; a locked index: deferred as in_use), ac4/second-worktree-stays (a ticket with two recorded worktrees: nothing is sent and both stay), ac4/scope-owner-reaches-nothing-else, ac4/month-idle-sends-nothing (a worktree whose files are 31 days old is sent nothing by any pass), paths/no-delete-and-canon (this ticket's part of the service deletes nothing, runs no process and reads no clock to decide)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
+     "detail": "The rows run the real Service on a real SQLite store with OpenSSH journal and command signatures; every journal record is signed by the service's own sign. The project's cancel, complete, pause and resume and the backlog item's complete and cancel are the real organs' own signed commands on that connection. The space Ledger is on the same store, with Signal, the kind registry, the probes, the removers and the keeper, which really delete; each project is in act mode by the owner's own signed command; every worktree is a real linked worktree made with plain git. The disk, git and the ledger are read as each pass returns. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0312/falsifiers.json",
+     "detail": "space312-idle-worktree-abandoned is the declared falsifier: an age rule in the pass; ac4/month-idle-sends-nothing finds the event sent and the worktree gone, and is red. Beside it: space312-abandon-sent-past-another-worktree reds ac4/second-worktree-stays and ac4/scope-owner-reaches-nothing-else, space312-stale-version-accepted reds ac4/owner-abandon, space312-provisioned-worktree-abandoned reds ac4/provisioned-in-another-worktree. NOT PROVEN HERE: the console's signed route and the provisioner's call (assumptions 1 and 2)."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "On the committed tree (commit e4678ecfcdcb): python3 scripts/selftest.py --suite 149_veldo_0312_ticket_ended (22 rows, 48 passed with the shared preamble, 0 failed) (proof/VELDO-0312/suite-green.txt). A partial run, not the gate."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: the real Service, store, OpenSSH signatures, project and backlog organs, Ledger, Signal, probes, removers and keeper, and real git worktrees. Beside it, on the same tree, the three suites that exercise the service: 66_veldo_0047_authority (56 passed), 144_veldo_0306_space_docker (55 passed), 83_veldo_0154_factory_loop (40 passed), 0 failed each."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The 10 cases of finding 312, each applied once on the committed tree, noop copy green and mutant copy red on its target rows (proof/VELDO-0312/mutations.txt, falsifiers.json). Not the teeth run."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all (exit 0); bash scripts/check_docs.sh (pass); bash scripts/check_template_sync.sh (pass, 321 pairs); bash scripts/check_generated.sh (pass); python3 scripts/check_git_boundary.py (pass); bash scripts/check_lint.sh (pass)."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh was not run by the builder: the lead runs it through the gate lock, with the teeth run python3 scripts/check_teeth_mutations.py --finding 312."
+  }
+ ],
+ "assumptions": [
+  "1. THE CONSOLE'S SIGNED ROUTE space.abandon IS NOT BUILT. A write route needs its operation in control_api_assertion.OPERATIONS and its dispatch in control_api_authority.ApiAuthority._apply; neither file is in this footprint, and a route in control_api.py alone would be refused at the assertion's shape and turn suite 71_veldo_0130 red. control_api.py, its synced copy and engine/ui/src/api/routes.json are unchanged. The authority's side, Service.space_abandon, is built and the rows call it directly. NOT PROVEN HERE: that an owner's press reaches it, and that a session without the owner's passkey is refused (VELDO-0319 AC3).",
+  "2. THE PROVISIONER DOES NOT CALL space_provisioned YET (control_launch.py and control_clone.py are outside this footprint). The rows call the entry directly, before the new worktree's item is confirmed.",
+  "3. NOTHING BUILDS Service.space YET (the installation's ledger is built at start by VELDO-0315). The suite gives the service its ledger. Until that wiring lands an installation sends nothing. A service that starts reads the journal from its head: an end committed while no service ran waits for reconcile.",
+  "4. THE UNIT'S dispose_unit AND THE ASSIGNMENT'S CLOSE ARE STAND-IN RECORDS: journal records a fixture command commits on the real store, holding the entities control_backlog._dispose_unit and control_assignment._dispose_changes write, signed by the service. The real commands need the owner's settled answer through the settlement chain. NOT PROVEN HERE: those two against the real organs. The units, the items and their authorized alternative outcomes are fixture records.",
+  "5. THE LEDGER'S SIGNAL NAMES AN OWNER, NOT AN ITEM. Worktree abandoned is sent only when it would reach no other worktree or agent repository of the owner, so a ticket with two recorded worktrees cannot have one abandoned; and the event reaches what the ticket owns elsewhere (its scratch), as the table's column says. Ticket ended and project ended reach an item in the state kept (the ledger's to settle with VELDO-0318).",
+  "6. THE TWO CHECKS OF A SWITCH TO ACT (VELDO-0332 and 0339) are stand-ins that allow, so the fixture projects can be in act mode; the docker client and the process table are fixtures; the items are declared by the suite (VELDO-0302). Signal runs in the service's own process (the space worker is VELDO-0323's).",
+  "7. Suite 86_veldo_0127 was not run (52 of 54 by a known recapture; left as it is). The full gate, the heavy suites and the teeth run were not run by the builder."
+ ],
+ "rollback": "Revert the change. The six transitions commit as before and send no event."
+}

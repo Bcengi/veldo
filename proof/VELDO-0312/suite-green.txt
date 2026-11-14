@@ -1,0 +1,9 @@
+# Each run on the tree of commit e4678ecfcdcb, python3 scripts/selftest.py --suite NAME. Partial runs: none is the gate.
+selector    --suite 149_veldo_0312_ticket_ended
+running     1 of 219 suites: 149_veldo_0312_ticket_ended
+149_veldo_0312_ticket_ended                     22 passed    1.85s
+selftest (PARTIAL, 1 of 219 suites): 48 passed, 0 failed in 1.85s
+66_veldo_0047_authority: selftest (PARTIAL, 1 of 219 suites): 56 passed, 0 failed in 13.52s
+144_veldo_0306_space_docker: selftest (PARTIAL, 1 of 219 suites): 55 passed, 0 failed in 4.60s
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 219 suites): 40 passed, 0 failed in 62.78s
+# 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is).

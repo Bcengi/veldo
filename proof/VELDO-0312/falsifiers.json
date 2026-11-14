@@ -1,0 +1,236 @@
+[
+ {
+  "falsifier": "space312-close-unwired",
+  "module": "control_service.py",
+  "criterion": "AC1",
+  "declared": true,
+  "expected_red": [
+   "ac1/assignment-close"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/assignment-close",
+   "ac1/closed-unit-authorized-later",
+   "ac1/record-names-transition-and-command"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac1/assignment-close",
+    "the pass sent ticket ended once for the unit, as the assignment's close [[]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-sent-for-complete-only",
+  "module": "control_service.py",
+  "criterion": "AC2",
+  "declared": true,
+  "expected_red": [
+   "ac2/project-cancel"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/project-cancel"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac2/project-cancel",
+    "the pass sent project ended once, for the project alone, as its cancel [[]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-sent-before-the-commit",
+  "module": "control_service.py",
+  "criterion": "AC3",
+  "declared": true,
+  "expected_red": [
+   "ac3/rollback-sends-nothing"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/no-ledger-sends-nothing",
+   "ac3/rollback-sends-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac3/rollback-sends-nothing",
+    "the pass sent nothing: no event, nothing due, the ticket's worktree, build output and scratch present [[('item_cancel', True)] removed removed]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-idle-worktree-abandoned",
+  "module": "control_service.py",
+  "criterion": "AC4",
+  "declared": true,
+  "expected_red": [
+   "ac4/month-idle-sends-nothing"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac4/month-idle-sends-nothing",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac4/month-idle-sends-nothing",
+    "a pass with nothing committed and a pass after a record that ends nothing send nothing [[{'kind': 'space', 'operation': 'space_event', 'at': 1794672356.353362, 'domain_uuid': 'domain-312', 'event': 'worktree_abandoned', 'transition': 'age', 'sent': True, 'reason': None, 'subjects': [{'subject': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9718'}, 'ok': True, 'reason': None, 'items': 3, 'left': 0}], 'removed': [{'item': 'space:item:f92e08eb34fa48f59b9979153dcf23e5', 'kind': 'scratch', 'at': '<base>/scratch/s18-veldo-9718'}, {'item': 'space:item:7726a8e41dd946429cb06abbf4c817c2', 'kind': 'build_output', 'at': '<base>/projects/orchard-worktrees/idle/build'}, {'item': 'space:item:062ca6947a5248868077b3c0542ba89e', 'kind': 'worktree', 'at': '<base>/projects/orchard-worktrees/idle'}], 'deferred': [], 'left': 0, 'raised': None, 'item': 'space:item:062ca6947a5248868077b3c0542ba89e', 'path': '<base>/projects/orchard-worktrees/idle', 'by': None, 'others': [], 'outcome': 'sent'}] []]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-pause-taken-for-an-end",
+  "module": "control_service.py",
+  "criterion": "AC2",
+  "declared": false,
+  "expected_red": [
+   "ac2/pause-sends-nothing"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/other-project-untouched",
+   "ac2/pause-sends-nothing",
+   "ac3/refused-sends-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac2/pause-sends-nothing",
+    "neither sent anything: no event, and the project's worktrees, build output and scratch are present [[{'kind': 'space', 'operation': 'space_event', 'at': 1794672360.308426, 'domain_uuid': 'domain-312', 'event': 'project_ended', 'transition': 'project_complete', 'sent': True, 'reason': None, 'subjects': [{'subject': {'scope': {'type': 'project', 'id': 'pond'}}, 'ok': True, 'reason': None, 'items': 5, 'left': 0}], 'removed': [{'item': 'space:item:a9262219e68b40519786348f37f71dc2', 'kind': 'scratch', 'at': '<base>/scratch/s16-veldo-9722'}, {'item': 'space:item:0e9f0096ab0a4d748c59477a4fe59553', 'kind': 'build_output', 'at': '<base>/projects/pond-worktrees/loose/build'}, {'item': 'space:item:b21067e6bd5749a4910f128eef7e5fa4', 'kind': 'build_output', 'at': '<base>/projects/pond-worktrees/ticket/build'}, {'item': 'space:item:5561baa7662d497296adab5f106fc600', 'kind': 'worktree', 'at': '<base>/projects/pond-worktrees/ticket'}, {'item': 'space:item:79783a4b2faf4cf19c8fac8493329e75', 'kind': 'worktree', 'at': '<base>/projects/pond-worktrees/loose'}], 'deferred': [], 'left': 0, 'raised': None, 'seq': 160, 'command_id': 'cmd-54', 'entity': 'project:pond', 'project': 'pond', 'tickets': [], 'outcome': 'sent'}] []]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-authorization-taken-for-an-end",
+  "module": "control_service.py",
+  "criterion": "AC1",
+  "declared": false,
+  "expected_red": [
+   "ac1/closed-unit-authorized-later"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/closed-unit-authorized-later"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac1/closed-unit-authorized-later",
+    "the owner's authorization recorded on the closed unit is no transition: nothing is sent, and the deferred worktree is not judged again [[{'kind': 'space', 'operation': 'space_event', 'at': 1794672365.1861467, 'domain_uuid': 'domain-312', 'event': 'ticket_ended', 'transition': 'unit_dispose_unit', 'sent': True, 'reason': None, 'subjects': [{'subject': {'scope': {'type': 'project', 'id': 'orchard'}, 'ticket': 'VELDO-9709'}, 'ok': True, 'reason': None, 'items': 1, 'left': 0}], 'removed': [], 'deferred': [{'item': 'space:item:9c8eb32d5f4447c889d7c4aa6a2f8534', 'kind': 'worktree', 'at': '<base>/projects/orchard-worktrees/late', 'deferral': 'unique_work', 'rule': 'unique_work'}], 'left': 0, 'raised': None, 'seq': 158, 'command_id': 'authorize-1', 'entity': 'VELDO-9709', 'project': 'orchard', 'tickets': ['VELDO-9709'], 'outcome': 'sent'}] 2]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-another-commands-record-counted",
+  "module": "control_service.py",
+  "criterion": "AC1",
+  "declared": false,
+  "expected_red": [
+   "ac1/closed-unit-authorized-later"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/closed-unit-authorized-later",
+   "ac1/record-names-transition-and-command"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac1/closed-unit-authorized-later",
+    "a later record that writes an ended item again, by another command, is no end: nothing is sent and the canceled ticket's deferred worktree is not judged again [[{'kind': 'space', 'operation': 'space_event', 'at': 1794672370.133924, 'domain_uuid': 'domain-312', 'event': 'ticket_ended', 'transition': 'item_cancel', 'sent': True, 'reason': None, 'subjects': [{'subject': {'scope': {'type': 'project', 'id': 'orchard'}, 'ticket': 'VELDO-9703'}, 'ok': True, 'reason': None, 'items': 1, 'left': 0}], 'removed': [], 'deferred': [{'item': 'space:item:eb6c66a2cc324caa809d8519d5439c09', 'kind': 'worktree', 'at': '<base>/projects/orchard-worktrees/cancel', 'deferral': 'unique_work', 'rule': 'unique_work'}], 'left': 0, 'raised': None, 'seq': 159, 'command_id': 'note-1', 'entity': 'backlog:cancel', 'project': 'orchard', 'tickets': ['VELDO-9703'], 'outcome': 'sent'}] 2]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-abandon-sent-past-another-worktree",
+  "module": "control_service.py",
+  "criterion": "AC4",
+  "declared": false,
+  "expected_red": [
+   "ac4/second-worktree-stays",
+   "ac4/scope-owner-reaches-nothing-else"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/other-ticket-untouched",
+   "ac4/scope-owner-reaches-nothing-else",
+   "ac4/second-worktree-stays"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac4/second-worktree-stays",
+    "Abandon of one of a ticket's two recorded worktrees sends nothing and names the other: the ledger's signal would end both [None []]"
+   ],
+   [
+    "VELDO-0312 ac4/scope-owner-reaches-nothing-else",
+    "Abandon of a worktree owned by the project alone sends nothing while the event would reach what the project's tickets have elsewhere [None 0]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-stale-version-accepted",
+  "module": "control_service.py",
+  "criterion": "AC4",
+  "declared": false,
+  "expected_red": [
+   "ac4/owner-abandon"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac4/owner-abandon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac4/owner-abandon",
+    "a stale version, an item that is no worktree and an unknown item send nothing, each by name [None not_a_worktree not_a_worktree]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space312-provisioned-worktree-abandoned",
+  "module": "control_service.py",
+  "criterion": "AC4",
+  "declared": false,
+  "expected_red": [
+   "ac4/provisioned-in-another-worktree"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac4/provisioned-in-another-worktree"
+  ],
+  "red_details": [
+   [
+    "VELDO-0312 ac4/provisioned-in-another-worktree",
+    "a later run provisioned in the same worktree abandons nothing [[{'kind': 'space', 'operation': 'space_event', 'at': 1794672385.4416614, 'domain_uuid': 'domain-312', 'event': 'worktree_abandoned', 'transition': 'provisioned_elsewhere', 'sent': True, 'reason': None, 'subjects': [{'subject': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9713'}, 'ok': True, 'reason': None, 'items': 1, 'left': 0}], 'removed': [{'item': 'space:item:ac8cd610f962498b8bc528e268ef6c62', 'kind': 'worktree', 'at': '<base>/projects/orchard-worktrees/prov-second'}], 'deferred': [], 'left': 0, 'raised': None, 'item': 'space:item:ac8cd610f962498b8bc528e268ef6c62', 'path': '<base>/projects/orchard-worktrees/prov-second', 'by': {'unit': 'VELDO-9713', 'worktree': '<base>/projects/orchard-worktrees/prov-second', 'dispatch': 'dispatch-3'}, 'others': [], 'outcome': 'sent'}]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "e4678ecfcdcb",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ }
+]
