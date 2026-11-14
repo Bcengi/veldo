@@ -1,0 +1,111 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0310",
+ "commit": "5d0eb013fbca7094f0fc9ef6e13c8b2da3f545db",
+ "tree": "74a894c48326106597f247e3dade65b7b9e26ed3",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-14T13:03:31.476641+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/147_veldo_0310_landed_contained.py",
+     "detail": "Rows ac1/after-the-receipt (landed is sent once for the unit by its land dispatch; every event of the landing is sent while the receipt of that unit and dispatch is in the store and the land dispatch's record still says running; the ended record carries the step with the receipt's id; Signal is given the source commit and the new trunk tip from the receipt), ac1/failed-landing-sends-nothing (a land of U2 that started and was refused because the trunk moved: no receipt, no event, nothing written to the ledger, the worktree in git's list with its build output byte for byte, the items present, no space step in the record; its re-land lands and only then is landed sent, the worktree and build output removed, the branch kept, the kept ref at the commit), ac1/no-receipt-no-event (the station's landed step for a dispatch with no receipt, and with another unit's dispatch: nothing sent, nothing written), ac1/undone-landing-sends-nothing (the local trunk put back to the watermark: nothing sent, the worktree, its notes and build output as they were), ac1/no-ledger-sends-nothing (a station with no ledger lands with no space field, no event and no ledger write)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/147_veldo_0310_landed_contained.py",
+     "detail": "The rows run the land station's own land on a real store with OpenSSH signatures: the lander's disposable candidate, the installed gate, the Landing and its completion receipt, with the project landing locally (VELDO-0235). The space Ledger is a real one on that same store and connection; every event goes through the real Signal, kind registry, probes, removers and keeper, which really delete real linked worktrees and folders made with plain git. The project is in act mode by the owner's own signed command with a real key. The disk, git and the ledger are read after each call. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0310/falsifiers.json",
+     "detail": "space310-sent-when-the-landing-starts is the declared falsifier: landed is sent through Signal when the land dispatch is opened; the land of U2 then fails and ac1/failed-landing-sends-nothing finds the worktree gone and is red. Applied once each, noop copy green, mutant copy red on its target rows: space310-sent-when-the-landing-starts reds ac1/failed-landing-sends-nothing, space310-sent-with-the-trunk-put-back reds ac1/undone-landing-sends-nothing."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/147_veldo_0310_landed_contained.py",
+     "detail": "Rows ac2/worktree-after-build-output (the record's removals at landed hold the build output and then the worktree; both gone from the disk and removed in the ledger; git lists no such worktree; the method is keep_then_git_worktree_remove; the keep step was called for the worktree and the kept ref is in the main repository at its commit), ac2/branch-kept-and-marked (refs/heads/build/<unit> resolves to the evidence commit, the branch item is kept, the record names it marked with its ref, tip and event; every planted branch of the repository still resolves), ac2/image-tags-go (the unit's image tag is removed in the ledger and from the engine by image rm on the tag, with no force option), ac2/record-joined-to-receipt (the land dispatch's record names the receipt, the new trunk tip, the source and the scope; each removal record in the ledger names the receipt and the landing station as emitter; the station observed the step; the record is under 20000 bytes), ac2/unlanded-work-stays (U3, built on after its evidence commit: the landing is a fact with its receipt, landed is not sent, reason not_landed, the worktree, the later commit and the build output are there with their items present, and the record names the branch and the worktree as left), ac2/uncommitted-work-stays (U4, whose worktree holds an untracked file: the build output is removed, the worktree deferred as unique_work with the file byte for byte, the branch kept at its commit, the record names the deferral)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/147_veldo_0310_landed_contained.py",
+     "detail": "The rows run the land station's own land on a real store with OpenSSH signatures: the lander's disposable candidate, the installed gate, the Landing and its completion receipt, with the project landing locally (VELDO-0235). The space Ledger is a real one on that same store and connection; every event goes through the real Signal, kind registry, probes, removers and keeper, which really delete real linked worktrees and folders made with plain git. The project is in act mode by the owner's own signed command with a real key. The disk, git and the ledger are read after each call. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0310/falsifiers.json",
+     "detail": "space310-branch-removed-with-the-worktree is the declared falsifier: the landing deletes the ref of each branch the event was sent for; ac2/branch-kept-and-marked finds no branch and is red. Applied once each, noop copy green, mutant copy red on its target rows: space310-branch-removed-with-the-worktree reds ac2/branch-kept-and-marked, space310-landed-for-a-branch-built-on reds ac2/unlanded-work-stays."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/147_veldo_0310_landed_contained.py",
+     "detail": "Rows, every branch planted before the first landing under a ticket of its own: ac3/contained-worktree-removed (a branch moved from its start commit to a commit the new trunk tip contains: contained sent once for its owner, build output then worktree removed, the branch kept in the repository and named marked, the kept ref at the commit), ac3/fresh-branch-left (a worktree on a new branch whose tip is its start commit, which the trunk contains: nothing sent, worktree, build output and items as they were, after the first and the second landing; the record counts it at_start), ac3/no-start-left (a branch recorded with no start commit), ac3/not-in-trunk-left (a branch with a commit the trunk does not hold), ac3/work-in-contained-worktree-stays (a contained branch whose worktree holds an untracked file: deferred as unique_work with the file byte for byte, retried at the second landing and deferred again, attempts 2), ac3/not-alone-left (one ticket with a contained branch and one that is not: nothing sent for that owner at either landing, both worktrees present, the record names the contained branch left as not_alone), ac3/moved-after-the-check (the branch gains a commit between the landing's check and Signal: the worktree is deferred as unique_work and holds the commit, the record names the branch moved and not marked), ac3/other-project-untouched (a branch and worktree of another project in act mode: nothing sent, as they were after every landing), ac3/marked-once (the branch marked at the first landing is not sent the event at the second)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/147_veldo_0310_landed_contained.py",
+     "detail": "The rows run the land station's own land on a real store with OpenSSH signatures: the lander's disposable candidate, the installed gate, the Landing and its completion receipt, with the project landing locally (VELDO-0235). The space Ledger is a real one on that same store and connection; every event goes through the real Signal, kind registry, probes, removers and keeper, which really delete real linked worktrees and folders made with plain git. The project is in act mode by the owner's own signed command with a real key. The disk, git and the ledger are read after each call. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0310/falsifiers.json",
+     "detail": "space310-start-commit-test-dropped is the declared falsifier: the test that the tip is not the start commit is dropped; contained is sent for the fresh branch's owner and ac3/fresh-branch-left is red. Applied once each, noop copy green, mutant copy red on its target rows: space310-start-commit-test-dropped reds ac3/fresh-branch-left, space310-no-start-taken-for-contained reds ac3/no-start-left, space310-not-in-trunk-taken-for-contained reds ac3/not-in-trunk-left, space310-contained-for-an-owner-not-alone reds ac3/not-alone-left, space310-moved-branch-named-marked reds ac3/moved-after-the-check, space310-marked-branch-sent-again reds ac3/marked-once."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 147_veldo_0310_landed_contained (21 rows, run twice). Each on its own, green on the committed tree: the suites that load the two changed modules, 70 (0057), 86 (0148), 103 (0142), 107 (0153), 128 (0235), 129 (0260, 0239), the factory loop that builds the station, 83 (0154), and 06 (the suite manifest's honesty) (proof/VELDO-0310/suite-green.txt). 86_veldo_0127_agent_configuration was not run: it is 52 of 54 on this branch until the lead recaptures its live captures."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run real landings through the land station and a real ledger, Signal, removers and keeper, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The 10 cases registered under finding 310 in scripts/check_teeth_mutations.py, each applied once with the observer's own materialize and worker (noop copy, then mutant copy): every noop green, every mutant red on its target rows (proof/VELDO-0310/falsifiers.json, mutations.txt). Not the teeth run: the lead runs it through the gate lock."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all (exit 0); bash scripts/check_docs.sh (docs hygiene: pass); bash scripts/check_template_sync.sh (pass, 320 pairs); bash scripts/check_lint.sh (pass); bash scripts/check_generated.sh (pass); python3 scripts/check_git_boundary.py (pass). The 60 mutation cases registered on the two modules by earlier tickets still find their anchors once."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh was not run by the builder: the lead runs it, the heavy suites and the teeth run through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "1. THE CREATORS AND THE HOOKS DECLARE NOTHING YET (VELDO-0302 and VELDO-0311 are not built). The suite declares and confirms each worktree, branch, build output and image tag item itself, with the branch name and the start commit the hooks will record. In production nothing records them yet, so a landing's space step finds no item and sends nothing.",
+  "2. NOTHING IN THE ENGINE BUILDS `space` YET. control_service.py builds the station and is outside this footprint: no installation gives the station a ledger, so until that wiring lands every landing runs as before. The suite gives the station the mapping itself. NOT PROVEN HERE: the wiring.",
+  "3. THE TWO CHECKS OF A SWITCH TO ACT (VELDO-0332 and 0339) are stand-ins that allow. The project is put in act mode by the owner's signed command; no row runs in report mode, where Signal leaves every item due (VELDO-0331's own suite).",
+  "4. THE DOCKER CLIENT is a function holding one image, and THE PROCESS TABLE an empty folder shaped as the kernel's. The units, the floor handoffs and the project records are fixture records and the authority's candidate policy accepts, as in VELDO-0235's suite.",
+  "5. EVERY LANDING OF THE SUITE LANDS LOCALLY. NOT PROVEN HERE: a landing that pushes. Its read of the trunk is the remote's answer (Landing._remote_tip, as the completion uses it) and no row drives it. After such a landing the project's repository does not hold the new trunk tip until it fetches, so the other branches are counted unread and sent nothing at that landing; they end at the ref hook's event (VELDO-0311). The spec's History says so for the lead.",
+  "6. MARKED CONTAINED is the branch item's outcome kept with the action mark_contained, written by Signal through the ledger, and the landing's own record names the branch. The ledger's item has no field for the mark (control_space.py is outside this footprint).",
+  "7. THE LEDGER'S SIGNAL NAMES AN OWNER, NOT AN ITEM. Landed and contained are therefore sent per owner and only when everything the event would reach is landed or contained; an owner with a branch that is not is sent nothing. Design section 5's switched worktree (mark X, leave the worktree on Y, one ticket) leaves X unmarked here. Recorded in the spec's History for the lead.",
+  "8. ./scripts/verify.sh, the heavy suites and the teeth run were not run by the builder."
+ ],
+ "rollback": "Revert the change. A landing removes nothing, and the worktrees of landed branches stay until another event ends them."
+}

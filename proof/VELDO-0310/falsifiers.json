@@ -1,0 +1,234 @@
+[
+ {
+  "falsifier": "space310-sent-when-the-landing-starts",
+  "module": "control_landing_station.py",
+  "expected_red": [
+   "ac1/failed-landing-sends-nothing"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/after-the-receipt",
+   "ac1/failed-landing-sends-nothing",
+   "ac2/image-tags-go",
+   "ac2/record-joined-to-receipt",
+   "ac2/unlanded-work-stays",
+   "ac2/worktree-after-build-output"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac1/failed-landing-sends-nothing",
+    "the unit's worktree is on the disk and in git's list, with its build output byte for byte"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": true
+ },
+ {
+  "falsifier": "space310-branch-removed-with-the-worktree",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac2/branch-kept-and-marked"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/failed-landing-sends-nothing",
+   "ac2/branch-kept-and-marked",
+   "ac2/uncommitted-work-stays",
+   "ac3/contained-worktree-removed",
+   "ac3/moved-after-the-check",
+   "ac3/work-in-contained-worktree-stays",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac2/branch-kept-and-marked",
+    "the branch is in the repository, at its commit [None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC2",
+  "declared": true
+ },
+ {
+  "falsifier": "space310-start-commit-test-dropped",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac3/fresh-branch-left"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/fresh-branch-left"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac3/fresh-branch-left",
+    "nothing was sent for it [[{'event': 'contained', 'ticket': 'VELDO-9802', 'unit': 'VELDO-9701', 'dispatch': 'dispatch/VELDO-9701/land-1-bf14fa37', 'receipt': True, 'record': 'running', 'landed': ('9627b47f717b8608c7100efdd4c714df5a201526', '1d22c7b5d3246f2d581ce94d634ef4ead404457b')}]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": true
+ },
+ {
+  "falsifier": "space310-sent-with-the-trunk-put-back",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac1/undone-landing-sends-nothing"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/undone-landing-sends-nothing",
+   "ac2/uncommitted-work-stays"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac1/undone-landing-sends-nothing",
+    "with the trunk put back before the landing, nothing is sent [True None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false
+ },
+ {
+  "falsifier": "space310-landed-for-a-branch-built-on",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac2/unlanded-work-stays"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/unlanded-work-stays"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac2/unlanded-work-stays",
+    "landed was not sent for the unit, and the record says why [True None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC2",
+  "declared": false
+ },
+ {
+  "falsifier": "space310-no-start-taken-for-contained",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac3/no-start-left"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/no-start-left"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac3/no-start-left",
+    "a branch recorded with no start commit, which the trunk contains, is sent nothing [[{'event': 'contained', 'ticket': 'VELDO-9803', 'unit': 'VELDO-9701', 'dispatch': 'dispatch/VELDO-9701/land-1-0eff6e77', 'receipt': True, 'record': 'running', 'landed': ('f2c2c251c51fbd51e03d6a0ce7f00e8158f84895', '98cb3c8aa7e2bbe57a324ec400cbfa2470b0619e')}]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space310-not-in-trunk-taken-for-contained",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac3/not-in-trunk-left"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/after-the-receipt",
+   "ac1/failed-landing-sends-nothing",
+   "ac1/no-ledger-sends-nothing",
+   "ac1/no-receipt-no-event",
+   "ac1/undone-landing-sends-nothing",
+   "ac2/branch-kept-and-marked",
+   "ac2/image-tags-go",
+   "ac2/record-joined-to-receipt",
+   "ac2/uncommitted-work-stays",
+   "ac2/unlanded-work-stays",
+   "ac2/worktree-after-build-output",
+   "ac3/contained-worktree-removed",
+   "ac3/fresh-branch-left",
+   "ac3/marked-once",
+   "ac3/moved-after-the-check",
+   "ac3/no-start-left",
+   "ac3/not-alone-left",
+   "ac3/not-in-trunk-left",
+   "ac3/other-project-untouched",
+   "ac3/work-in-contained-worktree-stays",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac3/not-in-trunk-left",
+    "a branch with a commit the trunk does not hold is sent nothing [[{'event': 'contained', 'ticket': 'VELDO-9804', 'unit': 'VELDO-9701', 'dispatch': 'dispatch/VELDO-9701/land-1-2593356a', 'receipt': True, 'record': 'running', 'landed': ('64e607db0b2b779c15f05db4629e29362658a341', '1a41ee00678da2e4f1411a739d74e317f23cbbc3')}]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space310-contained-for-an-owner-not-alone",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac3/not-alone-left"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/not-alone-left"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac3/not-alone-left",
+    "nothing was sent for an owner with a contained branch and one that is not [[{'event': 'contained', 'ticket': 'VELDO-9806', 'unit': 'VELDO-9701', 'dispatch': 'dispatch/VELDO-9701/land-1-cc81f178', 'receipt': True, 'record': 'running', 'landed': ('f479b14dc464c80e6c3aa1b0bb20180b38efb940', '745c20f74fce86170c127faefe987f7189c17058')}]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space310-moved-branch-named-marked",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac3/moved-after-the-check"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/moved-after-the-check"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac3/moved-after-the-check",
+    "the record names the branch moved, and does not name it marked [[{'event': 'contained', 'item': 'space:item:69e9e924f8c943b58d12f6fdc9372bbc', 'now': '60b7fae3587ba40e33a233263b4c3bb1ce10da94', 'ref': 'refs/heads/side/moved', 'tip': '1950cd1a2be10a86dc89a7eb750ae3a63ddf20f7'}] [{'event': 'contained', 'item': 'space:item:69e9e924f8c943b58d12f6fdc9372bbc', 'ref': 'refs/heads/side/moved', 'repository"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space310-marked-branch-sent-again",
+  "module": "control_landing.py",
+  "expected_red": [
+   "ac3/marked-once"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/marked-once"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 ac3/marked-once",
+    "the branch marked at the first landing was not sent the event again [2]"
+   ]
+  ],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ }
+]

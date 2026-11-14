@@ -1,0 +1,13 @@
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 5d0eb013. Partial runs: none is the gate.
+147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 217 suites): 47 passed, 0 failed in 12.61s
+147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 217 suites): 47 passed, 0 failed in 12.93s
+70_veldo_0057_landing: selftest (PARTIAL, 1 of 217 suites): 57 passed, 0 failed in 16.40s
+86_veldo_0148_re_land: selftest (PARTIAL, 1 of 217 suites): 52 passed, 0 failed in 69.51s
+103_veldo_0142_git_identities: selftest (PARTIAL, 1 of 217 suites): 49 passed, 0 failed in 27.19s
+107_veldo_0153_identity_push: selftest (PARTIAL, 1 of 217 suites): 146 passed, 0 failed in 7.10s
+128_veldo_0235_land_locally: selftest (PARTIAL, 1 of 217 suites): 35 passed, 0 failed in 14.36s
+129_veldo_0260_checkout_in_step: selftest (PARTIAL, 1 of 217 suites): 44 passed, 0 failed in 28.16s
+129_veldo_0239_batch_landing: selftest (PARTIAL, 1 of 217 suites): 49 passed, 0 failed in 23.33s
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 217 suites): 40 passed, 0 failed in 47.49s
+06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 217 suites): 1414 passed, 0 failed in 42.30s
+# 86_veldo_0127_agent_configuration was not run (52 of 54 on this branch: its live captures wait for the lead's recapture; left as it is).
