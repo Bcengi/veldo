@@ -244,3 +244,40 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   THAT NAMES ITEMS). This ticket adopts it next: it closes finding 3 above, the landing that judged a
   snapshot of the ledger's items and then signalled their owner, so landed and contained act on the
   items judged, at the versions judged. No behaviour of this ticket changed in that round.
+- 2026-11-14: fix round 3, the item-naming signal adopted, by the lead's decision recorded in the entry
+  above. No acceptance criterion changed and the footprint is as it was. It closes finding 3, the known
+  gap of the first fix round: an item declared for the same owner between the landing's check and its
+  send is never reached.
+  - What changed, in control_landing.py. Landed and contained no longer signal the owner. Each event
+    names exactly the items its check judged for that owner (space_reach's matched), each with the
+    version read with the check (space_names, space_versions), and the ledger acts on those and on
+    nothing else of the owner. The check reads the versions before the records, so a record that changes
+    between the two reads is judged as it is and named at the version it had, and refused.
+  - A judged item that changed after the check. The ledger refuses the whole event, with nothing written
+    (space_item_version:<item>). The landing sends nothing in its place: the record's event entry says
+    not ok with the ledger's reason, each branch the event was for is named as left with why refused,
+    and for landed the record says not sent, reason refused:<the ledger's reason>. The items wait for a
+    later landing's check, which judges them as they are then. Nothing is lost by the refusal.
+  - An item the owner marked Keep is judged with the others, as before, and is never named: no event
+    ends it (VELDO-0312).
+  - Who signs. No allowance was added to the ledger. The station's commands are sent as the installation
+    wires them, and the ledger's rule for who may sign limits only the two host principals; the runner
+    stays refused for a signal that names items, as VELDO-0312 decided (its row r2/runner-names-no-items).
+  - What is not changed, FOR THE LEAD. Contained is still sent once for each owner, and only when that
+    owner has nothing the event ends that is not contained. Design section 5's case of a worktree
+    switched from a contained branch X to a branch Y under one ticket (mark X, leave the worktree; note
+    A of the review) could now be sent for X alone. It is not built here: it changes what is judged, and
+    this round changes only what is sent.
+  - Suite 147 is 32 rows, 58 passed. New row f3/declared-after-the-check, the reviewer's case: an
+    owner's branch is judged contained with its worktree; inside the Signal stand-in, after the check
+    and before the ledger's command, a fresh worktree is declared for the same owner on a new branch at
+    its start commit, clean and in the trunk; the event names the three items judged at the versions
+    read, the fresh worktree, its build output and its branch are as they were declared, and the judged
+    items are ended as judged. Its falsifier, registered and applied once to the copy the suite loads,
+    seen red, the fresh worktree removed: space310-owner-signalled-after-the-check (the owner is
+    signalled, as it was). New row f3/changed-after-the-check: inside the stand-in the judged worktree
+    is switched to a new branch at its start commit and the switch recorded; the ledger refuses the
+    whole event, the record names the branch as left, refused, nothing of that owner is ended, and a
+    later check leaves the owner by the start commit rule. Its falsifier, applied once and red, the
+    switched worktree removed: space310-refused-event-sent-for-the-owner. The anchors of the nineteen
+    earlier falsifiers are unchanged; they were not applied again in this round.

@@ -14316,6 +14316,23 @@ def cases():
               "                return None\n",
               ['f1/project-repository-brought'])
 
+    # VELDO-0310, the third fix round (finding 3): the events name the items the check judged, at the
+    # versions read with it (the ledger's signal that names items). The event is sent for the owner
+    # again, as it was, so it reaches a worktree declared after the check; an event the ledger refused
+    # whole, because a judged item changed after the check, is sent again for the owner.
+    landed310('space310-owner-signalled-after-the-check', 'control_landing.py',
+              "            answer = _SPACE['signal'](ledger, event, named, emitter=emitter, **given)\n",
+              "            answer = _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)\n",
+              ['f3/declared-after-the-check'])
+    landed310('space310-refused-event-sent-for-the-owner', 'control_landing.py',
+              "            if answer.get('ok') is not True:\n"
+              "                # Refused whole: nothing was written. The branches wait for a later landing's check.\n",
+              "            if answer.get('ok') is not True:\n"
+              "                answer = _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)\n"
+              "            if answer.get('ok') is not True:\n"
+              "                # Refused whole: nothing was written. The branches wait for a later landing's check.\n",
+              ['f3/changed-after-the-check'])
+
     # VELDO-0311: git hooks, worktrees and landings made with plain git. The four declared falsifiers.
     # AC1: record only through the CLI's record verb, so git's own worktree add records nothing. AC2:
     # record at worktree add only, so a switch is not seen and a landing of the old branch takes the

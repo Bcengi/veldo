@@ -71,6 +71,15 @@ on disk).
 f2/trunk-read-at-the-attempt (finding 2: a clean worktree whose commit only the
 trunk holds counts as contained at the check; the trunk is put back inside the Signal stand-in; rule 5,
 given the source commit only, reads the trunk itself and defers the worktree as unique_work).
+f3/declared-after-the-check (finding 3, the reviewer's case, closed in the third fix round: an owner's
+branch is judged contained with its worktree; inside the Signal stand-in, after the check and before the
+ledger's command, a fresh worktree is declared for the same owner on a new branch at its start commit, clean
+and in the trunk; the event names exactly the three items judged at the versions read, so the fresh
+worktree, its build output and its branch are never reached, and the judged items are ended as judged).
+f3/changed-after-the-check (inside the stand-in the judged worktree is switched to a new branch at its start
+commit and the switch is recorded: the ledger refuses the whole event by the item that changed, the record
+names the branch as left, refused, and nothing of that owner is ended; a later check judges the owner as it
+is then and leaves it, by the start commit rule).
 f4/squash-landing (a branch whose tip is the source commit and not in the trunk, the trunk at a squash
 commit made with plain git: landed through the source commit, removed after the keep step),
 f4/one-landed-one-unlanded (a unit with a second branch the landing does not hold, which is not the first
@@ -124,6 +133,7 @@ def _v310_suite():
             'f1/remote-trunk-put-back', 'f1/remote-unit-landed', 'f1/remote-branch-contained',
             'f1/project-repository-brought',
             'f2/trunk-read-at-the-attempt',
+            'f3/declared-after-the-check', 'f3/changed-after-the-check',
             'f4/squash-landing', 'f4/one-landed-one-unlanded', 'f4/detached-worktree-at-landed',
             'f5/space-step-failed',
             'paths/no-delete-and-canon')
@@ -210,7 +220,7 @@ def _v310_suite():
         U1, U2, U3, U4, U5, U6, U7, U8, U9 = ('VELDO-97%02d' % n for n in range(1, 10))
         UNITS = (U1, U2, U3, U4, U5, U6, U7, U9)
         (T_CONT, T_FRESH, T_NOSTART, T_AHEAD, T_DIRTY, T_MIXED, T_MOVED, T_MEADOW, T_HELD, T_REMOTE, T_AGENT,
-         T_BROUGHT) = ('VELDO-98%02d' % n for n in range(1, 13))
+         T_BROUGHT, T_LATE, T_STALE) = ('VELDO-98%02d' % n for n in range(1, 15))
 
         seed = base / 'seed'
         seed.mkdir()
@@ -584,7 +594,22 @@ def _v310_suite():
         # What a row has happen inside the stand-in, once, as the event for (event, ticket) is sent.
         INSIDE = {}
 
+        def ticket_of(subject):
+            """The ticket an event is sent for: the subject's own, or for a signal that names items the
+            one ticket that owns every item named."""
+            if 'items' not in subject:
+                return subject.get('ticket')
+            tickets = {((L.item(one['item']) or {}).get('owner') or {}).get('ticket') for one in subject['items']}
+            return tickets.pop() if len(tickets) == 1 else sorted(tickets, key=str)
+
         def counted(ledger, event, subject, **given):
+            named = [dict(one) for one in subject['items']] if 'items' in subject else None
+            subject = dict(subject, ticket=ticket_of(subject))
+            answer = counting(ledger, event, subject, **given)
+            SENT[-1].update(named=named, ok=answer.get('ok'), reason=answer.get('reason'))
+            return answer
+
+        def counting(ledger, event, subject, **given):
             unit = (given.get('emitter') or {}).get('unit')
             dispatch = (given.get('emitter') or {}).get('dispatch')
             receipt = row(LG.receipt_id(unit, dispatch)) if unit and dispatch else None
@@ -602,7 +627,8 @@ def _v310_suite():
                          'record': ((record or {}).get('data') or {}).get('state'),
                          'step': ((step or {}).get('data') or {}).get('state'),
                          'landed': tuple(given.get('landed') or ())})
-            return SIG.signal(ledger, event, subject, **given)
+            return SIG.signal(ledger, event, {key: value for key, value in subject.items()
+                                              if 'items' not in subject or key != 'ticket'}, **given)
 
         LG._SPACE['signal'] = counted
 
@@ -1348,6 +1374,114 @@ def _v310_suite():
               and state_of(beside['worktree']) == 'removed' and kept_at(beside['worktree'], caller, SEED)
               and state_of(beside['branch_item']) == 'kept' and tip(caller, 'side/brought') == SEED
               and len(of(came.get('marked') or [], item=beside['branch_item'], event='contained')) == 1)
+
+        # ---- the third fix round: finding 3, the events name the items judged, at the versions read -------------
+        def version_of(identity):
+            return writer.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()[0]
+
+        R = 'f3/declared-after-the-check'
+        # The reviewer's case: between the landing's check and its send, a provisioner declares a fresh
+        # worktree for the same owner, on a new branch at its start commit.
+        for name in ('side/late', 'side/stale'):
+            git(caller, 'branch', name, FIRST)
+        late = planted('late', 'side/late', T_LATE)
+        moved_past(late, SEED)
+        stale = planted('stale', 'side/stale', T_STALE)
+        moved_past(stale, SEED)
+        THIRD = {}
+
+        def provisioned(seen):
+            # Inside the Signal stand-in: after the landing's check, before the ledger's command.
+            git(caller, 'branch', 'side/late-fresh', SEED)
+            THIRD['fresh'] = planted('late-fresh', 'side/late-fresh', T_LATE)
+
+        def switched(seen):
+            # Inside the Signal stand-in: the worktree is switched to a new branch, at its start commit, and
+            # the switch is recorded as the hook records one (rebranch): the worktree's item changes.
+            git(stale['path'], 'checkout', '-q', '-b', 'side/stale-next')
+            THIRD['rebranch'] = L.rebranch(stale['worktree'], 'side/stale-next', SEED)
+        read = {identity: version_of(identity) for made in (late, stale)
+                for identity in (made['branch_item'], made['worktree'], made['build'])}
+        INSIDE[('contained', T_LATE)] = provisioned
+        INSIDE[('contained', T_STALE)] = switched
+        dispatch9, landing9 = str(ninth.get('dispatch_id')), opened[-1].landing
+        again = station.landed(U9, dispatch9, landing9)
+        for key in (('contained', T_LATE), ('contained', T_STALE)):
+            INSIDE.pop(key, None)
+        fresh2 = THIRD.get('fresh') or {}
+        mine = sent_for(T_LATE)
+        named = (mine[0].get('named') or []) if mine else []
+        check(R, 'the owner\'s branch, past its start commit and in the new trunk tip, was judged contained with its '
+                 'worktree, and contained was sent once, naming exactly the three items judged, each at the version '
+                 'read at the check [%s %s]' % ([e['event'] for e in mine], named),
+              again.get('sent') is True and [e['event'] for e in mine] == ['contained'] and mine[0].get('ok') is True
+              and {one['item']: one['version'] for one in named}
+              == {identity: read[identity] for identity in (late['branch_item'], late['worktree'], late['build'])})
+        check(R, 'inside the stand-in, after the check and before the ledger\'s command, a fresh worktree was declared '
+                 'for the same owner on a new branch at its start commit, which the trunk holds: a clean worktree '
+                 'rule 5 would let go [%s]' % (sorted(fresh2),),
+              bool(fresh2) and tip(caller, 'side/late-fresh') == SEED
+              and (L.item(fresh2['worktree']) or {}).get('start') == SEED
+              and ((L.item(fresh2['worktree']) or {}).get('owner') or {}).get('ticket') == T_LATE
+              and within(caller, SEED, git(bare, 'rev-parse', 'refs/heads/main')))
+        check(R, 'the fresh worktree is never reached: it was not named, and it, its build output, its branch and '
+                 'their items are as they were declared [%s %s]'
+              % (state_of(fresh2.get('worktree')), state_of(fresh2.get('branch_item'))),
+              bool(fresh2) and not ({one['item'] for one in named}
+                                    & {fresh2['worktree'], fresh2['build'], fresh2['branch_item']})
+              and untouched(fresh2) and head_of(fresh2['path']) == SEED and tip(caller, 'side/late-fresh') == SEED)
+        gone = [entry for entry in of(again.get('removed') or [], event='contained')
+                if entry.get('item') in (late['build'], late['worktree'])]
+        check(R, 'the items that were judged are ended as judged: the build output and then the worktree removed '
+                 'after the keep step, the branch kept at its commit and named marked [%s %s]'
+              % (kinds_of(gone), state_of(late['branch_item'])),
+              kinds_of(gone) == ['build_output', 'worktree'] and not os.path.lexists(str(late['path']))
+              and state_of(late['worktree']) == 'removed' and kept_at(late['worktree'], caller, SEED)
+              and state_of(late['branch_item']) == 'kept' and tip(caller, 'side/late') == SEED
+              and len(of(again.get('marked') or [], item=late['branch_item'], event='contained')) == 1)
+
+        R = 'f3/changed-after-the-check'
+        mine = sent_for(T_STALE)
+        named = (mine[0].get('named') or []) if mine else []
+        check(R, 'contained was sent once for the other owner, naming its three items at the versions read at the '
+                 'check; inside the stand-in its worktree was switched to a new branch at its start commit and the '
+                 'switch recorded, so the worktree\'s item is at a later version [%s %s %s]'
+              % ([e['event'] for e in mine], (THIRD.get('rebranch') or {}).get('ok'), named),
+              [e['event'] for e in mine] == ['contained'] and (THIRD.get('rebranch') or {}).get('ok') is True
+              and {one['item']: one['version'] for one in named}
+              == {identity: read[identity] for identity in (stale['branch_item'], stale['worktree'], stale['build'])}
+              and version_of(stale['worktree']) > read[stale['worktree']]
+              and (L.item(stale['worktree']) or {}).get('branch') == 'side/stale-next')
+        check(R, 'the ledger refused the whole event by the item that changed, and the record names the branch as '
+                 'left, refused, with the ledger\'s reason [%s %s]'
+              % (mine[0].get('reason') if mine else None, of(again.get('left') or [], item=stale['branch_item'])),
+              bool(mine) and mine[0].get('ok') is False
+              and mine[0].get('reason') == 'space_item_version:' + stale['worktree']
+              and [(e.get('why'), e.get('reason')) for e in of(again.get('left') or [], item=stale['branch_item'])]
+              == [('refused', 'space_item_version:' + stale['worktree'])]
+              and [(e.get('ok'), e.get('reason')) for e in again.get('events') or []
+                   if e.get('subject') == {'scope': A, 'ticket': T_STALE}]
+              == [(False, 'space_item_version:' + stale['worktree'])])
+        check(R, 'nothing of that owner was ended: the worktree, on its new branch, its build output and both '
+                 'branches are on disk and present, and the two items that did not change are at the version read '
+                 '[%s %s %s]' % (state_of(stale['worktree']), state_of(stale['build']), state_of(stale['branch_item'])),
+              untouched(stale) and head_of(stale['path']) == SEED
+              and tip(caller, 'side/stale') == SEED and tip(caller, 'side/stale-next') == SEED
+              and version_of(stale['branch_item']) == read[stale['branch_item']]
+              and version_of(stale['build']) == read[stale['build']])
+        # A later check judges what is there then: both owners now have a worktree on a branch at its start
+        # commit, which the start commit rule leaves, so neither is sent anything.
+        sent_before = len(SENT)
+        later = station.landed(U9, dispatch9, landing9)
+        check(R, 'a later check judges the owner as it is then: its worktree is on a branch at its start commit, so '
+                 'contained is not sent and the branch is named as left, not alone; the same holds for the owner of '
+                 'the fresh worktree; everything of both is as it was [%s %s]'
+              % ([e['ticket'] for e in SENT[sent_before:]],
+                 [e.get('why') for e in of(later.get('left') or [], item=stale['branch_item'])]),
+              not [e for e in SENT[sent_before:] if e['ticket'] in (T_LATE, T_STALE)]
+              and [e.get('why') for e in of(later.get('left') or [], item=stale['branch_item'])] == ['not_alone']
+              and [e.get('why') for e in of(later.get('left') or [], item=late['branch_item'])] == ['not_alone']
+              and untouched(stale) and bool(fresh2) and untouched(fresh2))
 
         R = 'ac3/other-project-untouched'
         check(R, 'after every landing the other project\'s branch and worktree are as they were',

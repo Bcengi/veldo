@@ -110,13 +110,18 @@ rules and the keep step, by the removers. landed does this, in order, and return
      of its ancestors (a squash). Another branch is contained when it has a start commit, its tip is not that
      commit, the start commit is an ancestor of the tip, and the new trunk tip contains the tip. What git
      cannot read is neither;
-  4. landed is sent for the unit (the subject is the project and the ticket) only when every branch, and the
-     branch of every worktree, the event would reach is landed. A unit with a branch that holds commits the
+  4. landed is sent for the unit (the project and the ticket) only when every branch, and the branch of
+     every worktree, of that owner the event ends is landed. A unit with a branch that holds commits the
      landing does not (rebased since, or built on after the evidence commit) is sent nothing, by name;
-  5. contained is sent once for each owner of a contained branch, and only when the event would reach nothing
-     but contained branches and worktrees on them that have themselves moved past their start commit. An
-     owner whose event would also end a branch or a worktree that is not contained is sent nothing, and the
-     branch is named as left. A branch already kept, with nothing else for the event to reach, is not sent again;
+  5. contained is sent once for each owner of a contained branch, and only when that owner has nothing the
+     event ends but contained branches and worktrees on them that have themselves moved past their start
+     commit. An owner who also has a branch or a worktree that is not contained is sent nothing, and the
+     branch is named as left. A branch already kept, with nothing else for the event to end, is not sent again;
+     Each event names the items its check judged, each at the version read with it (the ledger's signal
+     that names items): the ledger acts on exactly those and on nothing else of that owner, so an item
+     declared after the check is never reached, and it refuses the whole event, with nothing written,
+     when one of them changed since. Such a branch is named as left (refused), and waits for a later
+     landing's check. An item the owner marked Keep is judged with the others and never named;
   6. after each event the tip of every branch it counted is read again: a branch that moved since the check
      is named as moved and is not listed as marked.
 
@@ -467,6 +472,20 @@ def _space_owned(record, subject):
 def _space_at(record):
     locator = record.get('locator') or {}
     return locator.get('path') or locator.get('ref') or locator.get('name')
+
+
+def space_versions(ledger):
+    """The version of every entity of the ledger's store now, {identity: version} (VELDO-0310)."""
+    return {identity: version for identity, version in ledger.conn.execute('SELECT id, version FROM entities')}
+
+
+def space_names(items, versions, matched):
+    """The subject of an event sent for exactly the items `matched`, as the ledger's signal that names items
+    takes it (VELDO-0310): {items: [{item, version}, ...]}, each item of the check with the version read
+    before its record was. An item the owner marked Keep is judged with the others and never named: no
+    event ends it. One whose version was not read (it appeared between the two reads) is not named."""
+    return {'items': [{'item': identity, 'version': versions[identity]} for identity in matched
+                      if identity in versions and not (items.get(identity) or {}).get('owner_keep')]}
 
 
 def space_branches(ledger, items, scope, trunk, source, reaches, tip_of):
@@ -1491,15 +1510,25 @@ class Landing:
             _SPACE['signal'] = _organ('control_space_signal').signal
 
         def view():
+            # The versions before the records: a record that changes between the two reads is judged as
+            # it is now and named at the version it had, and the ledger refuses the event.
+            versions = space_versions(ledger)
             items = ledger.items()
-            return (items,) + space_branches(ledger, items, scope, receipt['candidate'], receipt['source'],
-                                             self._reaches, self._tip_of)
+            return (items, versions) + space_branches(ledger, items, scope, receipt['candidate'], receipt['source'],
+                                                      self._reaches, self._tip_of)
 
-        def send(event, subject, mine):
-            """One event through Signal, and what became of every item it reached. `mine` are the
-            branch entries the event was sent for, each read again after it."""
-            answer = _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
-            entry = {'event': event, 'subject': subject, 'ok': answer.get('ok') is True,
+        def send(event, subject, mine, named):
+            """One event through Signal, and what became of every item it reached. `named` is the
+            event's subject: exactly the items the check judged for the owner `subject`, each at the
+            version read with it. The ledger acts on those and on nothing else of that owner, and refuses
+            the whole event when one of them changed. `mine` are the branch entries the event was sent
+            for, each read again after it."""
+            answer = _SPACE['signal'](ledger, event, named, emitter=emitter, **given)
+            if answer.get('ok') is not True:
+                # Refused whole: nothing was written. The branches wait for a later landing's check.
+                out['left'].extend({'item': branch['item'], 'at': branch['ref'], 'event': event, 'why': 'refused',
+                                    'reason': answer.get('reason')} for branch in mine)
+            entry = {'event': event, 'subject': subject, 'named': len(named['items']), 'ok': answer.get('ok') is True,
                      'reason': answer.get('reason'), 'items': len(answer.get('items') or ()),
                      'left': len(answer.get('left') or ())}
             out['events'].append(entry)
@@ -1529,7 +1558,7 @@ class Landing:
             return entry
 
         # Landed, for the unit: only when everything the event would reach is in the landing.
-        items, branches, worktrees = view()
+        items, versions, branches, worktrees = view()
         subject = {'scope': scope, 'ticket': unit}
         matched, others = space_reach(items, SPACE_LANDED, subject, branches, worktrees,
                                       lambda branch: branch['landed'])
@@ -1539,10 +1568,14 @@ class Landing:
                                 'why': 'not_landed'} for other in others)
         else:
             out['sent'] = True
-            if matched:
-                send(SPACE_LANDED, subject, [branch for branch in branches.values() if branch['item'] in matched])
+            named = space_names(items, versions, matched)
+            if named['items']:
+                entry = send(SPACE_LANDED, subject,
+                             [branch for branch in branches.values() if branch['item'] in matched], named)
+                if not entry['ok']:
+                    out['sent'], out['reason'] = False, 'refused:%s' % (entry['reason'],)
         # Contained, for every other recorded branch of the project the new trunk tip contains.
-        items, branches, worktrees = view()
+        items, versions, branches, worktrees = view()
         tally, subjects = {}, []
         for key, branch in sorted(branches.items()):
             if branch['ticket'] == unit:
@@ -1565,8 +1598,10 @@ class Landing:
             if all(items[identity].get('kind') == 'branch' and items[identity].get('state') == 'kept'
                    for identity in matched):
                 continue  # marked at an earlier landing, and nothing else for the event to reach
-            send(SPACE_CONTAINED, subject, mine)
-            items, branches, worktrees = view()
+            named = space_names(items, versions, matched)
+            if named['items']:
+                send(SPACE_CONTAINED, subject, mine, named)
+            items, versions, branches, worktrees = view()
 
     # Observability.
 
