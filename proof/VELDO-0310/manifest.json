@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0310",
- "commit": "e84c80c7069d49eebc5243b7bf520db4805d398c",
- "tree": "1eb892e0459a7e04b52427f1acafb62be3d55482",
- "producer": "Claude implementation agent (build, and the fix round after the review); not an independent reviewer",
- "produced_at": "2026-11-14T14:47:50.675931+00:00",
+ "commit": "03172b82df4d25fcb71c66c96a1a5767d49a5b15",
+ "tree": "dde204a66bb7146be10af8d2f6d2dd4dae74a983",
+ "producer": "Claude implementation agent (build, and the two fix rounds after the reviews); not an independent reviewer",
+ "produced_at": "2026-11-14T15:11:42.107089+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -96,6 +96,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0310/falsifiers.json",
      "detail": "Fix round, each applied once and seen red: space310-candidate-not-brought and space310-transfer-writes-a-ref red f1/remote-branch-contained (the second is the owner rule that the transfer writes no ref); space310-candidate-given-to-rule-5 reds f2/trunk-read-at-the-attempt. The declared falsifier space310-start-commit-test-dropped was applied again and still reds ac3/fresh-branch-left."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/147_veldo_0310_landed_contained.py",
+     "detail": "Fix round 2 row (the re-review's note 3 and its case 3). f1/project-repository-brought: a unit lands at the remote with the lander's workspace discard disabled (it is asked and does nothing; the workspace is still on disk), so no kept ref gives the project's own repository the candidate: when the step begins that repository does not hold it, by a ref or by an alternate. The step copies the candidate's objects from the landing's clone into it and the record names it copied; the refs of that repository at the first event are exactly those before the step, nothing was fetched, and after the step no ref of it holds the candidate. Landed is sent for the unit, with the source commit only, its build output and then its worktree removed after the keep step and its branch kept. Contained still holds: another branch of that repository, which the remote's new tip contains past its start commit, is sent contained once, its worktree removed after the keep step, the branch kept at its commit and named marked."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0310/falsifiers.json",
+     "detail": "Fix round 2, applied once and seen red: space310-project-repository-left-to-the-discard (a repository that has kept refs is not brought to) reds f1/project-repository-brought and no other behaviour row: the record names the project's repository not_brought. space310-candidate-not-brought and space310-transfer-writes-a-ref, applied again, are red on this row and on f1/remote-branch-contained."
     }
    ]
   }
@@ -104,7 +114,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "Fix round, on the committed tree (commit e84c80c7069d), each suite on its own with a stub engine that was never called: python3 scripts/selftest.py --suite 147_veldo_0310_landed_contained (29 rows, 55 passed, 0 failed, run twice), 146_veldo_0308_run_finished (58, 0), 142_veldo_0303_space_paths (57, 0), 70_veldo_0057_landing (57, 0), and beside them 70 (0069, 0073), 86 (0148), 103 (0142, 0211), 107 (0153), 128 (0235), 129 (0260, 0239), 83 (0154) and 06 (the suite manifest honesty), all 0 failed (proof/VELDO-0310/suite-green.txt). 86_veldo_0127_agent_configuration was not run: 52 of 54 by a known recapture."
+   "command": "Fix round 2, on the committed tree (commit 03172b82df4d, no engine file changed since e84c80c7069d), each suite on its own with a stub engine that was never called: python3 scripts/selftest.py --suite 147_veldo_0310_landed_contained (30 rows, 56 passed, 0 failed), 146_veldo_0308_run_finished (58, 0), 142_veldo_0303_space_paths (57, 0) (proof/VELDO-0310/suite-green.txt). The other suites of the fix round were not run again. The first fix round, on its committed tree (commit e84c80c7069d), each suite on its own with a stub engine that was never called: python3 scripts/selftest.py --suite 147_veldo_0310_landed_contained (29 rows, 55 passed, 0 failed, run twice), 146_veldo_0308_run_finished (58, 0), 142_veldo_0303_space_paths (57, 0), 70_veldo_0057_landing (57, 0), and beside them 70 (0069, 0073), 86 (0148), 103 (0142, 0211), 107 (0153), 128 (0235), 129 (0260, 0239), 83 (0154) and 06 (the suite manifest honesty), all 0 failed (proof/VELDO-0310/suite-green.txt). 86_veldo_0127_agent_configuration was not run: 52 of 54 by a known recapture."
   },
   {
    "name": "integration",
@@ -114,12 +124,12 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "18 cases are registered under finding 310 in scripts/check_teeth_mutations.py: the 10 of the build and the 8 of the fix round. On the committed tree each of the 18 was applied once to the repository copy the suite loads, the whole suite run, and the copy put back from the engine canon: every mutant turns its target rows red, no run raised, and the unchanged tree is green (proof/VELDO-0310/mutations.txt, falsifiers.json). Every anchor in control_landing.py and control_landing_station.py occurs exactly once. Not run: the teeth run (check_teeth_mutations.py --finding 310); the lead runs it through the gate lock."
+   "command": "19 cases are registered under finding 310 in scripts/check_teeth_mutations.py: the 10 of the build, the 8 of the fix round and 1 of fix round 2 (space310-project-repository-left-to-the-discard). In fix round 2 the new case and the two others of the object transfer were applied once each to the repository copy the suite loads, the whole suite run, and the copy put back from the engine canon and compared: each turns its target rows red, no run raised, the unchanged tree is green at 56. The other 16 were applied on commit e84c80c7069d and not again. Every anchor in control_landing.py and control_landing_station.py occurs exactly once. Not run: the teeth run (check_teeth_mutations.py --finding 310); the lead runs it through the gate lock."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "Fix round: python3 .veldo/validate.py all (exit 0); bash scripts/check_docs.sh (docs hygiene: pass); bash scripts/check_template_sync.sh (pass, 320 pairs); bash scripts/check_lint.sh (pass)."
+   "command": "Fix round 2, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged)."
   },
   {
    "name": "gate",
@@ -139,7 +149,8 @@
   "9. THE SQUASH LANDING HAS A STAND-IN RECEIPT (fix round, finding 4). The lander makes no squash, so f4/squash-landing gives Landing.receipt a stand-in for one unit that names a squash commit made with plain git as the candidate and the branch commit as the source, and moves the trunk to that commit. The trunk read, the branch reads, Signal, rule 5, the keep step and the remover are the real ones.",
   "10. KNOWN GAP, NOT CLOSED (finding 3, the lead decision). The landing judges a snapshot of the ledger items and the ledger matches again at the send; an item declared for the same owner in between is reached though it was never judged. No work is lost: rule 5 holds any file in no commit and the keep step keeps the commits. It waits for the item-naming signal follow-up (spec History).",
   "11. A FAILED OR INTERRUPTED SPACE STEP IS NOT RETRIED (finding 5). The land dispatch is ended landed first; the space step record stays failed, or running when the process died in it, and the worktrees end at a later event or by reconcile (VELDO-0315). f5/space-step-failed drives a step that raises; a process that dies in the step is not driven, and by the same order it leaves the dispatch record ended.",
-  "12. THE OBJECT TRANSFER WRITES LOOSE OBJECTS NO REF HOLDS into the branch repository. They cost space until that repository collects them, and they are needed only for the reads of that step. Nothing is fetched, no ref is written and nothing is removed by it."
+  "12. THE OBJECT TRANSFER WRITES LOOSE OBJECTS NO REF HOLDS into the branch repository. They cost space until that repository collects them, and they are needed only for the reads of that step. Nothing is fetched, no ref is written and nothing is removed by it.",
+  "13. A SPACE STEP THAT HANGS, OR A PROCESS THAT DIES BEFORE THE STEP'S RECORD IS OPENED, LEAVES NO READABLE RECORD (fix round 2, the re-review's note 4). A hung step leaves its record running for good and is never run again; a death between the end of the dispatch's record and the open of the step's leaves no space record; and the station's status lists dispatch records only. No work is lost: the landing and its receipt are facts and every worktree and branch stays as it was. It is picked up by VELDO-0315 reconcile, not built. Recorded in the spec's History."
  ],
  "rollback": "Revert the change. A landing removes nothing, and the worktrees of landed branches stay until another event ends them."
 }

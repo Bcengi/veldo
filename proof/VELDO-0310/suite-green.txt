@@ -17,3 +17,9 @@
 06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 217 suites): 1414 passed, 0 failed in 49.81s
 # 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is).
 # The first build ran 147 (47 passed), 70, 86 (0148), 103, 107, 128, 129 (0260, 0239), 83 and 06 on commit 5d0eb013: all 0 failed.
+# Fix round 2, on the tree of commit 03172b82df4d (no engine file changed since e84c80c7069d), each suite on its own, with a stub engine first on PATH (it was never called). Partial runs: none is the gate.
+147_veldo_0310_landed_contained: 56 passed, 0 failed (30 rows; the new row is f1/project-repository-brought)
+146_veldo_0308_run_finished: 58 passed, 0 failed
+142_veldo_0303_space_paths: 57 passed, 0 failed
+# Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged).
+# Not run in fix round 2: ./scripts/verify.sh, the teeth run, and every suite not named in this section.

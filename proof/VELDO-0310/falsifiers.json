@@ -476,5 +476,21 @@
   "review_finding": 5,
   "fix_round": true,
   "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-project-repository-left-to-the-discard",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f1/project-repository-brought"
+  ],
+  "red_rows": [
+   "f1/project-repository-brought",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": "the re-review, note 3",
+  "fix_round": 2,
+  "commit": "03172b82df4d",
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
  }
 ]
