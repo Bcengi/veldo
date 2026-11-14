@@ -17,7 +17,9 @@ THE OBLIGATIONS, each read at every attempt from its own source, never from a re
   clone the dispatch uses is removed through that provisioner's own teardown, which deletes its files
   and releases its pins only once every user of the clone has ended. The receiver's group is recorded
   on the clone's user first, so the teardown reads that user's ending from the kernel too. Teardown
-  is attempted only once termination, group and outcome are complete.
+  is attempted only once termination, group and outcome are complete. With a space ledger wired into
+  the provisioner (VELDO-0308 AC4) the obligation closes when the teardown has been HANDED TO THE
+  LEDGER, not when the files are gone (below).
 - accounting: every model call reserved under the dispatch has its final report. VELDO-0036's
   `retire` transition judges this itself (missing_accounting). A final report that left usage units
   unknown settles the call as unknown there; this retirement RETAINS those units in its record
@@ -57,17 +59,51 @@ unavailable service, a stale version). An unchanged obligation, such as an unkno
 attempted again and again. A retry is the same single release: the same gate, the same command
 identity and the `already_retired` refusal, so a slot released by any path is never released twice.
 
+HANDED TO THE LEDGER (VELDO-0308 AC4; the review of VELDO-0303, finding 4). The worker slot is
+compute, and a clone's files are items the space ledger tracks. With a ledger wired into the clone
+provisioner, a teardown is handed over when it answers retired, and when it is refused with a code
+that starts space_deferred while the ledger records the clone's root as a live item past present (due
+in report mode, deferred by a rule, removing, kept): the ledger then holds the clone and its own
+retries apply (the item's next event, admission, reconcile, the owner's Confirm). The clone
+obligation is closed from then on, for this dispatch and for every other dispatch that uses the same
+clone, the slot is released as soon as nothing else is open, and no later attempt and no sweep calls
+that teardown again: run finished is sent once for the clone. A teardown refused clone_in_use is live
+compute and keeps the obligation open and the slot held, unchanged. So does a refusal the ledger does
+not answer for: no ledger is wired, no live item records the root (space_deferred:not_in_ledger), the
+event never reached the item (it is still present: Signal raised), or the ledger could not be read.
+Those are attempted again as before.
+
+THE PINS FOLLOW THE WORK TREE (VELDO-0308 AC4). The provisioner releases a clone's pins inside its
+teardown call, and only when the work tree's removal outcome is written there. After a hand-over
+nothing calls that teardown again, so `follow_pins` releases them here: for each clone handed over
+whose pins are still held, when the ledger says the work tree's item is removed or gone and the
+kernel says nothing is at its path. Whoever removed it, and whenever: every sweep and every retire
+call looks. Not before: while the work tree is on disk its objects are the caches', and a pin is what
+keeps them, so a work tree that is deferred, due or removing, an item or a path that cannot be read,
+and a clone whose work tree no item recorded and that is still on disk release nothing. What is
+followed is in memory, like every entry here.
+
+THE DISPATCH'S DEFERRED ITEMS (VELDO-0308 AC3, design section 7, Retry). When a pending retirement is
+carried out, the call that released the slot hands the dispatch to `deferred(dispatch_id, but)`, the
+runner's seam into Signal, once: the items of that run the ledger holds deferred are judged again
+from rule 1. `but` names the clone root when this same attempt's teardown already sent run finished
+for the clone. The retry is bound to the obligation completing: a sweep that finds the obligations
+unchanged makes no attempt, so it retries nothing, whatever the number of sweeps.
+
 OBSERVABILITY. Each attempt appends one event to `observations`: operation, domain, repository, unit,
 dispatch, request, accepted slot version, outcome, named refusal and its taxonomy, the obligations
 still open, what the kernel said of the group, and its basis (the runner's reason for a first attempt,
-or what a retry was made for: `clone_removed`, `accounting_reported`, `sweep`). `status()` counts
-accepted, refused and retried attempts and lists the pending ones.
+or what a retry was made for: `clone_removed`, `clone_handed_over`, `accounting_reported`, `sweep`). A retry of the
+dispatch's deferred items and a release of followed pins each append one event too (operations
+`retry_deferred` and `release_pins`). `status()` counts accepted, refused and retried attempts and
+lists the pending ones.
 
 WHAT IT IS NOT. What it tracks is in memory: retirement that survives the runner's crash, recovery of
 an unknown outcome and leadership fencing are Release 2. Standard library only.
 """
 import importlib.util
 import json
+import os
 from pathlib import Path
 import time
 import weakref
@@ -98,6 +134,13 @@ TAXONOMY = {'worker_alive': 'stale_subject', 'cleanup_incomplete': 'stale_subjec
             'unavailable_service': 'unavailable_service'}
 # The refusals an open obligation names: a retirement refused with one of them waits on that obligation.
 WAITING = frozenset(REFUSALS.values())
+# VELDO-0308 AC4. The teardown outcomes that hand a clone to the space ledger, the refusal that says
+# a safety rule or the mode kept something of it, and the states of a root item the ledger carries on
+# from by itself. An item still declared or present was not reached by the event.
+HANDED = ('retired', 'deferred')
+SPACE_DEFERRED = 'space_deferred'
+SPACE_ENDED = ('removed', 'gone')
+SPACE_TRACKED = ('due', 'deferred', 'removing', 'kept')
 
 
 def taxonomy(code):
@@ -145,8 +188,12 @@ class Retirements:
     runner's control_dispatch.Dispatches, `clones` VELDO-0042's clone provisioner when dispatches use
     clones, and `observations` the list each attempt's event is appended to."""
 
-    def __init__(self, reservations, dispatches, *, clones=None, clock=None, observations=None):
+    def __init__(self, reservations, dispatches, *, clones=None, clock=None, observations=None, deferred=None):
         self.reservations, self.dispatches, self.clones = reservations, dispatches, clones
+        # VELDO-0308: the runner's seam into Signal for a dispatch's deferred items (AC3), and the clones
+        # handed to the space ledger, by clone: {teardown, refusal, by, root, item, work, pins} (AC4).
+        self.deferred = deferred
+        self.handed = {}
         self.store = reservations.store
         self.clock = clock or time.time
         self.observations = observations if observations is not None else []
@@ -188,9 +235,14 @@ class Retirements:
             entry['clone'] = {'handle': handle, 'clone_id': handle.env_id, 'root': handle.paths.get('root'),
                               'teardown': None, 'refusal': None, 'removed_by': None}
         clone = entry['clone']
+        handed = self.handed.get(clone['clone_id'])
+        if handed is not None and clone['teardown'] not in HANDED:
+            # Another dispatch's teardown handed this clone to the ledger: it is not torn down again.
+            clone.update(teardown=handed['teardown'], refusal=handed['refusal'], removed_by=handed['by'])
         # The provisioner's own liveness surface (env_provision): its root on disk or a pin still held.
         return {'clone_id': clone['clone_id'], 'root': clone['root'], 'present': bool(self.clones._is_live(clone['handle'])),
-                'teardown': clone['teardown'], 'refusal': clone['refusal']}
+                'teardown': clone['teardown'], 'refusal': clone['refusal'],
+                'handed_over': handed['teardown'] if handed is not None else None}
 
     def _calls(self, dispatch_id):
         return [r for r in self.reservations._records().values() if r.get('type') == 'invocation'
@@ -211,6 +263,9 @@ class Retirements:
             'clone': dict(clone, open=clone['present']) if clone else {'open': False, 'clone_id': None},
             'accounting': {'open': bool(pending), 'pending': pending, 'calls': len(calls)},
         }
+        if clone and clone['handed_over']:
+            # VELDO-0308 AC4: a clone handed to the space ledger is the ledger's, on disk or not.
+            obligations['clone']['open'] = False
         retained = {'accounting_unknown': {r['invocation']: sorted(r['unknown']) for r in calls if r['unknown']}}
         return {'kernel': kernel, 'obligations': obligations, 'retained': retained,
                 'open': [name for name in ORDER if obligations[name]['open']]}
@@ -221,13 +276,120 @@ class Retirements:
         if not obligations['clone']['open'] or any(obligations[n]['open'] for n in ('termination', 'group', 'outcome')):
             return
         clone = entry['clone']
+        before = self._clone_record(clone)
         try:
             if isinstance(entry['group'], dict) and entry['group'].get('cgroup'):
                 self.clones.record_group(dispatch_id, {k: entry['group'].get(k) for k in ('unit', 'slice', 'cgroup')})
             self.clones.retire(clone['handle'])
             clone.update(teardown='retired', refusal=None, removed_by=dispatch_id)
+            if self._space() is not None:
+                self._hand_over(dispatch_id, clone, before, None)
         except Exception as error:  # noqa: BLE001 - a refused teardown keeps the clone and the slot
-            clone['teardown'], clone['refusal'] = 'refused', getattr(error, 'code', None) or type(error).__name__
+            code = getattr(error, 'code', None) or type(error).__name__
+            tracked = self._tracked(before, code)
+            if tracked is not None:
+                # VELDO-0308 AC4: the ledger holds the clone's items now and retries them itself.
+                clone.update(teardown='deferred', refusal=code, removed_by=None)
+                self._hand_over(dispatch_id, clone, before, tracked)
+            else:
+                clone['teardown'], clone['refusal'] = 'refused', code
+
+    def _space(self):
+        """What the installation wired into the clone provisioner for its space ledger, or None."""
+        space = getattr(self.clones, 'space', None)
+        return space if isinstance(space, dict) and space.get('ledger') is not None else None
+
+    def _clone_record(self, clone):
+        """What the provisioner records of a clone before its teardown: its root, its work tree and the
+        pins it holds. Read now, because the record lies in the root and goes with it."""
+        try:
+            manifest = self.clones._manifest(clone['clone_id']) or {}
+        except Exception:  # noqa: BLE001 - a record that cannot be read names nothing to follow
+            manifest = {}
+        return {'root': manifest.get('root') or clone.get('root'), 'work': manifest.get('work'),
+                'pins': [dict(pin) for pin in manifest.get('pins') or () if isinstance(pin, dict)]}
+
+    def _live_item(self, path):
+        """The live item the space ledger records at `path`: (identity, record), or None. Raises when the
+        ledger cannot be read."""
+        if not path:
+            return None
+        where = os.path.normpath(str(path))
+        for identity, record in sorted(self._space()['ledger'].items().items()):
+            if (record.get('locator') or {}).get('path') == where and record.get('state') not in SPACE_ENDED:
+                return identity, record
+        return None
+
+    def _tracked(self, before, code):
+        """Whether a refused teardown was handed to the space ledger: the refusal says a rule or the mode
+        kept something (space_deferred), and the ledger records the clone's root as a live item past
+        present. Returns that item's identity and state, or None: no ledger, another refusal
+        (clone_in_use is live compute), no item, an item the event did not reach, or a ledger that could
+        not be read. What is not handed over keeps the obligation open."""
+        if self._space() is None or str(code).split(':', 1)[0] != SPACE_DEFERRED:
+            return None
+        try:
+            found = self._live_item(before['root'])
+        except Exception:  # noqa: BLE001 - a ledger that cannot be read answers for nothing
+            return None
+        if found is None or found[1].get('state') not in SPACE_TRACKED:
+            return None
+        return {'item': found[0], 'state': found[1].get('state')}
+
+    def _hand_over(self, dispatch_id, clone, before, tracked):
+        """Record that the clone is the ledger's from now on, with what `follow_pins` needs: the work
+        tree's path and the pins the clone held."""
+        self.handed[clone['clone_id']] = {
+            'teardown': clone['teardown'], 'refusal': clone['refusal'], 'by': dispatch_id, 'root': before['root'],
+            'item': (tracked or {}).get('item'), 'work': before['work'],
+            # A retired teardown released its pins itself; a deferred one left them for the work tree.
+            'pins': list(before['pins']) if tracked is not None else []}
+
+    def follow_pins(self):
+        """VELDO-0308 AC4: release the pins of each clone handed to the ledger whose work tree is gone:
+        every item the ledger records at the work tree's path is removed or gone, and the kernel says
+        nothing is at that path (not found, and no other answer). A work tree no item ever recorded is
+        followed by its path alone. An item there in any other state (deferred, due, removing under
+        its marked name, kept), a path that is still there, and anything that cannot be read release
+        nothing, and the clone is looked at again at the next call. Returns the refs released."""
+        released = []
+        following = sorted(clone_id for clone_id, handed in self.handed.items() if handed['pins'])
+        if not following:
+            return released
+        try:
+            every = list(self._space()['ledger'].items().values())
+        except Exception as error:  # noqa: BLE001 - a ledger that cannot be read releases nothing
+            self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': None,
+                                      'outcome': 'refused', 'refusal': 'unavailable_service:' + type(error).__name__})
+            return released
+        for clone_id in following:
+            handed, done = self.handed[clone_id], []
+            try:
+                if not handed['work']:
+                    continue
+                where = os.path.normpath(str(handed['work']))
+                if any((record.get('locator') or {}).get('path') == where and record.get('state') not in SPACE_ENDED
+                       for record in every):
+                    continue  # the ledger still holds the work tree: not before its removal
+                try:
+                    os.lstat(where)
+                    continue  # the work tree is on disk: its objects are the caches'
+                except FileNotFoundError:
+                    pass
+                for pin in list(handed['pins']):
+                    self.clones._release(Path(pin['cache']), pin['ref'])
+                    handed['pins'].remove(pin)
+                    done.append(pin['ref'])
+            except Exception as error:  # noqa: BLE001 - what could not be read or released stays pinned
+                self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': clone_id,
+                                          'outcome': 'refused', 'released': done,
+                                          'refusal': 'unavailable_service:' + type(error).__name__})
+                released += done
+                continue
+            released += done
+            self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': clone_id,
+                                      'outcome': 'released', 'released': done})
+        return released
 
     def _removable(self, entry):
         """Whether the teardown of a pending retirement's clone can succeed now: every user of the clone
@@ -245,24 +407,61 @@ class Retirements:
         if outcome in ('completed', 'failed') and entry['stop_requested']:
             outcome = 'cancelled'  # the runner asked for the stop
         entry['outcome'] = outcome
-        return self._attempt(dispatch_id, entry, basis)
+        try:
+            return self._attempt(dispatch_id, entry, basis)
+        finally:
+            self.follow_pins()
 
     def _attempt(self, dispatch_id, entry, basis):
         """One attempt; when its teardown removed the dispatch's clone, each other pending retirement
         that waits on those files is retried at once."""
-        removed_before = (entry['clone'] or {}).get('teardown') == 'retired'
+        handed_before = (entry['clone'] or {}).get('teardown') in HANDED
+        pending = entry['held']
         released = self._try(dispatch_id, entry, basis)
         clone = entry['clone'] or {}
-        if clone.get('teardown') == 'retired' and not removed_before:
+        torn_down = clone.get('teardown') in HANDED and not handed_before
+        if released and pending:
+            # VELDO-0308 AC3: a pending retirement was carried out; its deferred items are retried now.
+            self._retry_deferred(dispatch_id, [clone['root']] if torn_down and clone.get('root') else [])
+        if torn_down:
             for other in sorted(self.entries):
                 waiting = self.entries[other]
                 if other != dispatch_id and waiting['held'] and (waiting['clone'] or {}).get('clone_id') == clone['clone_id']:
+                    if clone['teardown'] != 'retired':
+                        # VELDO-0308 AC4: the files stay, as the ledger's; the obligation is closed.
+                        self._retry_handed(other)
+                        continue
                     waiting['clone']['removed_by'] = dispatch_id
                     try:
                         self._retry(other, 'clone_removed')
                     except Exception as error:  # noqa: BLE001 - the sweep retries what this could not
                         self._unobserved(other, 'clone_removed', error)
         return released
+
+    def _retry_handed(self, dispatch_id):
+        """Retry a pending retirement that waited on a clone another dispatch's teardown has just handed
+        to the space ledger."""
+        try:
+            self._retry(dispatch_id, 'clone_handed_over')
+        except Exception as error:  # noqa: BLE001 - the sweep retries what this could not
+            self._unobserved(dispatch_id, 'clone_handed_over', error)
+
+    def _retry_deferred(self, dispatch_id, but):
+        """Hand the dispatch to the runner's seam into Signal, once, and record what it answered. An
+        installation with no space ledger answers None, and nothing is recorded: for it nothing has
+        changed. It never raises into the retirement, whose slot is already released."""
+        if self.deferred is None:
+            return
+        event = {'schema': SCHEMA, 'operation': 'retry_deferred', 'domain': self.reservations.domain,
+                 'repository': self.reservations.repository, 'dispatch_id': dispatch_id, 'but': list(but)}
+        try:
+            answer = self.deferred(dispatch_id, list(but))
+        except Exception as error:  # noqa: BLE001 - the items stay deferred, for their next event
+            self.observations.append(dict(event, outcome='refused',
+                                          refusal='unavailable_service:' + type(error).__name__))
+            return
+        if answer is not None:  # None: no space ledger is wired, and nothing was asked of one
+            self.observations.append(dict(event, outcome='retried', answer=answer))
 
     def _try(self, dispatch_id, entry, basis):
         entry['attempts'] += 1
@@ -340,6 +539,8 @@ class Retirements:
                     released.append(dispatch_id)
             except Exception as error:  # noqa: BLE001 - one retirement that cannot be tried strands no other
                 self._unobserved(dispatch_id, basis, error)
+        # VELDO-0308 AC4: the pins of a clone handed to the ledger follow its work tree's removal.
+        self.follow_pins()
         return released
 
     def reported(self, event):

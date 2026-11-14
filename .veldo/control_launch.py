@@ -342,8 +342,15 @@ def run_end_scan(receiver, dispatch_id, contract):
 
 def report_end(receiver, contract, event):
     """VELDO-0254 AC2: a run whose end is recorded has the files it changed scanned now, so the scan neither delays
-    the record nor re-reads what was there before; then its end is reported."""
+    the record nor re-reads what was there before; then its end is reported. VELDO-0308: with a space ledger the
+    run's space end (Receiver._space_end: the census, Signal, the release of the hold) is made between the two:
+    after the record and the scan, which reads the run's scratch, and before the report, because the runner stops
+    this receiver once it reads the end."""
     run_end_scan(receiver, contract['dispatch_id'], contract)
+    if getattr(receiver, 'space', None) is not None and hasattr(receiver, '_space_end'):
+        end = receiver._space_end(contract['dispatch_id'], contract)
+        event = dict(event, space={'sent': end['sent'], 'reason': end['reason'], 'items': end['items'],
+                                   'hold': (end['hold'] or {}).get('state')})
     receiver.emit(event)
 
 
@@ -656,6 +663,107 @@ def space_standalone(path, kind, main=None, event='run_finished', ticket=None, s
     except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
         return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
                 'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
+
+
+# VELDO-0308: run finished, from the receiver (design section 5, 6.7 and 8.1 steps 6 to 10). Nothing here
+# deletes anything.
+SPACE_CONCLUSIVE = ('exited', 'refused')  # a dispatch record with a recorded end (VELDO-0041)
+
+
+def _space_run_of(record):
+    return ((record.get('owner') or {}).get('run') or {}).get('id')
+
+
+def space_run_items(space, dispatch_id):
+    """What the ledger holds of the run `dispatch_id` now: {item: {kind, state, deferral}} for every item
+    the run owns, each removal outcome as it was written. A ledger that cannot be read answers nothing."""
+    try:
+        return {identity: {'kind': record.get('kind'), 'state': record.get('state'),
+                           'deferral': (record.get('deferral') or {}).get('rule')
+                           if record.get('state') == 'deferred' else None}
+                for identity, record in sorted(space['ledger'].items().items())
+                if _space_run_of(record) == dispatch_id}
+    except Exception:  # noqa: BLE001 - a record of what happened, never a reason to stop the end
+        return {}
+
+
+def space_release(space, identity):
+    """VELDO-0308 AC2: release the hold `identity` (design 6.7: at run finished, after Signal). The answer is
+    {hold, state, released, refusal}: released is True when this call wrote the release. A hold that is
+    released already is left as it is, and a run that was given no hold has none (refusal no_hold).
+    Whatever raises releases nothing and is named."""
+    out = {'hold': identity, 'state': None, 'released': False, 'refusal': None}
+    try:
+        ledger = space['ledger']
+        held = ledger.hold(identity) if isinstance(identity, str) and identity else None
+        if held is None:
+            return dict(out, refusal='no_hold')
+        if held.get('state') == 'released':
+            return dict(out, state='released')
+        done = ledger.release(identity)
+        if not done.get('ok'):
+            return dict(out, state=held.get('state'), refusal=str(done.get('reason')))
+        return dict(out, state='released', released=True)
+    except Exception as error:  # noqa: BLE001 - a hold that could not be released is named, never assumed
+        return dict(out, refusal='%s: %s' % (type(error).__name__, str(error)[:300]))
+
+
+def space_retry(space, dispatch_id, emitter, but=(), ended=False):
+    """VELDO-0308 AC3: judge again, once, the items of the run `dispatch_id` that the ledger holds deferred
+    (design section 7, Retry). Run finished is signalled once for each owner among them, as their next
+    ending event, and Signal judges each item again from rule 1 and writes its outcome before this
+    returns. `ended` says the caller has just read, from the dispatch record and from the kernel, that
+    this run is over: rule 3 is then answered conclusive for this run and for no other owner; without
+    it rule 3 is left to the answer the installation wired in. `but`
+    names paths whose items were sent the event in this same call already (a clone's teardown): an
+    owner of an item at or beneath one of them is not signalled again. The answer is {retried, signals,
+    states, raised}: the deferred items that were retried, the number of events sent, and the state of
+    each as the call returns. A run with no deferred item gets nothing and nothing is written. Nothing
+    here deletes anything, and whatever raises removes nothing."""
+    out = {'retried': [], 'signals': 0, 'states': {}, 'raised': None}
+    try:
+        ledger = space['ledger']
+        given = {key: value for key, value in space.items() if key != 'ledger'}
+        paths = [os.path.normpath(str(path)) for path in but]
+
+        def subject(record):
+            owner = dict(record.get('owner') or {})
+            if isinstance(owner.get('run'), dict):
+                owner['run'] = owner['run'].get('id')
+            return owner
+
+        def beneath(record):
+            where = (record.get('locator') or {}).get('path')
+            return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
+
+        every = ledger.items()
+        sent = [subject(record) for record in every.values() if beneath(record)]
+        subjects = []
+        for identity, record in sorted(every.items()):
+            if record.get('state') != 'deferred' or _space_run_of(record) != dispatch_id:
+                continue
+            owner = subject(record)
+            if owner in sent:
+                continue
+            out['retried'].append(identity)
+            if owner not in subjects:
+                subjects.append(owner)
+        if not subjects:
+            return out
+        if ended is True:
+            wired = given.get('owner_live')
+            given['owner_live'] = lambda owner: (
+                {'conclusive': True, 'group_empty': True} if (owner.get('run') or {}).get('id') == dispatch_id
+                else wired(owner) if wired else None)
+        if 'signal' not in _SPACE:
+            _SPACE['signal'] = _organ('control_space_signal').signal
+        for owner in subjects:
+            _SPACE['signal'](ledger, 'run_finished', owner, emitter=emitter, **given)
+            out['signals'] += 1
+        out['states'] = {identity: (ledger.item(identity) or {}).get('state') for identity in out['retried']}
+    except Exception as error:  # noqa: BLE001 - what could not be retried stays deferred
+        out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+    return out
 
 
 # VELDO-0305: the run census and the run's space environment (design 6.3). Nothing here deletes
@@ -1242,8 +1350,29 @@ class Runner:
         self.runs, self.profile = runs, profile
         self.leftovers = {}
         self.clones = clones  # VELDO-0303: read before run finished, for a consumer of the run's clone
+        # VELDO-0308 AC3: a pending retirement that is carried out retries its dispatch's deferred items.
         self.retirements = RT.Retirements(reservations, dispatches, clones=clones, clock=self.clock,
-                                          observations=self.observations)
+                                          observations=self.observations, deferred=self.retry_deferred)
+
+    def retry_deferred(self, dispatch_id, but=()):
+        """VELDO-0308 AC3: the retirement service's seam into Signal. When a pending retirement is carried out,
+        the items of that dispatch's run the ledger holds deferred are judged again in that call (space_retry).
+        With no ledger there is nothing to retry. The consumer first, as at every run finished: while another
+        dispatch still uses the run's clone the event is not sent, since it would end the clone under it."""
+        if self.space is None:
+            return None
+        users = clone_users(self.clones, self.dispatches, dispatch_id, self.space)
+        if users:
+            return {'retried': [], 'signals': 0, 'states': {}, 'raised': None, 'refusal': 'clone_in_use', 'users': users}
+        # Rule 3 is answered here only on what is read now: the record has a known end and the kernel shows
+        # the worker gone and its group empty. Anything else is left to the answer the installation wired in.
+        try:
+            record = self.dispatches.record(dispatch_id) or {}
+            seen = C.retirement((self.retirements.entries.get(dispatch_id) or {}).get('group'), record.get('process'))
+            ended = record.get('state') in RT.CONCLUSIVE and seen['terminated'] is True and seen['cleaned'] is True
+        except Exception:  # noqa: BLE001 - a run that cannot be read is not known to have ended
+            ended = False
+        return space_retry(self.space, dispatch_id, 'runner.retirement', but=but, ended=ended)
 
     def _slot(self, dispatch_id):
         entity = RES_ENTITY(self.dispatches.domain, dispatch_id)
@@ -1884,6 +2013,8 @@ class Receiver:
         # VELDO-0305: what the run was given before its worker started (space_run_folders), and what the
         # census read at its end (space_census).
         self.space_run, self.run_census = None, None
+        # VELDO-0308: what this receiver's space end did (_space_end), and whether it sent run finished.
+        self.run_end, self.run_sent = None, False
         self.profile = config.get('profile')
         self.qualification = None
         self.supervision = None
@@ -1971,11 +2102,13 @@ class Receiver:
     def _remove_run(self):
         """The run's own directories are removed once its engine has ended (or never started), before its end is
         recorded; a group that could not be emptied keeps them, since what is left of the run may still use them.
-        With a space ledger the removal is Signal's, and nothing is deleted here (VELDO-0303)."""
+        With a space ledger the removal is Signal's, and nothing is deleted here (VELDO-0303); it is then called
+        from the run's space end, after the end is recorded (_space_end, VELDO-0308)."""
         run, self.run = self.run, None
-        stays = run is None or (self.supervision or {}).get('empty') is False
+        empty = self._group_empty()
+        stays = run is None or empty is False
         given = getattr(self, 'space_run', None) or {}
-        if self.space is not None and given.get('worktree') and (self.supervision or {}).get('empty') is not False:
+        if self.space is not None and given.get('worktree') and empty is not False:
             # VELDO-0305: the census of the run's worktree at the run's end, before Signal (design 8.1,
             # step 7): the build output the run left is declared now, so run finished can reach it, and
             # what is work gets no item. It declares and measures and deletes nothing.
@@ -1993,9 +2126,10 @@ class Receiver:
             if users:
                 self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}
                 return
+            self.run_sent = True
             self.run_removal = space_signal(
                 self.space, 'run_finished', [run] + [path for path in (given.get('scratch'),) if path], 'receiver',
-                ended=(self.supervision or {}).get('empty', True) is True)[os.path.normpath(run)]
+                ended=empty is True)[os.path.normpath(run)]
         elif not stays:
             # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
             # for close() alone could survive into the clone (VELDO-0127).
@@ -2008,6 +2142,58 @@ class Receiver:
                 return
             self._unstage_skills()
             shutil.rmtree(run, ignore_errors=True)
+
+    def _group_empty(self):
+        """Whether the run's containment group is empty, as the kernel answered when the receiver settled it:
+        True, False while something of the group is still running, or None when nobody could read it. A run
+        whose worker was never started has no group and nothing in it. Never the end of the worker's own
+        process: a child of it may still hold a file of the run (VELDO-0308 AC1)."""
+        return (self.supervision or {}).get('empty', True)
+
+    def _space_end(self, dispatch_id, contract=None):
+        """VELDO-0308: the run's end in the space ledger (design 8.1, steps 6 to 10). Run finished has happened
+        when the dispatch record is conclusive (exited or refused, read from the store now) and the run's
+        containment group is empty (design section 5). Only then, in this order and each written before this
+        returns: the census of the run's worktree, Signal with run finished (both in _remove_run, where every
+        removal is Signal's, after the safety rules and the keep step), and the release of the run's hold.
+        The receiver reports its end, and so exits, only after this has returned.
+
+        A dispatch whose record is not conclusive, or whose group still has a process, is sent nothing:
+        nothing of it is judged, its items stay as they are and its hold stays held, because what is left of
+        the run may still write. Its run directory is the sweep's (Runner.clear_runs). A group nobody could
+        read is left to the answer the installation wired in for rule 3, as in _remove_run.
+
+        The hold is the one the contract's space field names (design 6.7), else the one placed under the
+        dispatch's own identity. Returns, and keeps in run_end, {dispatch_id, sent, reason, census, removal,
+        items, hold}: whether run finished was sent and why not, what the census read, what Signal answered
+        for the run directory, the state of every item of the run as the ledger holds it now, and what
+        became of the hold."""
+        end = {'dispatch_id': dispatch_id, 'sent': False, 'reason': None, 'census': None, 'removal': None,
+               'items': {}, 'hold': None}
+        self.run_end = end
+        space = getattr(self, 'space', None)
+        if space is None:
+            return end
+        try:
+            state = (self.dispatches.record(dispatch_id) or {}).get('state')
+        except Exception:  # noqa: BLE001 - a record that cannot be read is not conclusive
+            state = None
+        if state not in SPACE_CONCLUSIVE:
+            end['reason'] = 'not_conclusive:%s' % (state,)
+        elif self._group_empty() is False:
+            end['reason'] = 'group_not_empty'
+        if end['reason'] is not None:
+            self._unstage_skills()
+            return end
+        self.run_sent = False
+        self._remove_run()
+        end.update(sent=self.run_sent, census=self.run_census, removal=self.run_removal,
+                   items=space_run_items(space, dispatch_id))
+        if not self.run_sent:
+            end['reason'] = ((self.run_removal or {}).get('deferral') if self.run_removal else None) or 'nothing_recorded'
+        named = ((contract or {}).get('space') or {}).get('hold') if isinstance((contract or {}).get('space'), dict) else None
+        end['hold'] = space_release(space, named or dispatch_id)
+        return end
 
     def _settlement_trust(self, EL):
         """VELDO-0069: the decision settlement signers this receiver's Gate verifies with, derived as the
@@ -2113,6 +2299,7 @@ class Receiver:
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
+            self._space_end(dispatch_id, contract)
             self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,
                        'dispatch_id': dispatch_id, 'repository': self.config.get('repository'),
                        'configuration': getattr(self, 'configuration_path', None),
@@ -2131,6 +2318,7 @@ class Receiver:
                 return
             self.dispatches.refuse(dispatch_id, record['contract_digest'], error.code, now=time.time(),
                                    expected_state='prepared')
+            self._space_end(dispatch_id, contract)
             self.emit({'event': 'refused', 'refusal': error.code})
             return
         acceptance = self.dispatches.receipt(dispatch_id, 'accept')
@@ -2140,6 +2328,7 @@ class Receiver:
         except Unfunded as error:
             # Checked and refused before anything was spawned: nothing ran, nothing was reserved.
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self._space_end(dispatch_id, contract)
             self.emit({'event': 'refused', 'refusal': error.code})
             return
         except C.Refused as error:
@@ -2152,6 +2341,7 @@ class Receiver:
             # run never starts without its server.
             self._not_executed()
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self._space_end(dispatch_id, contract)
             self.emit({'event': 'refused', 'refusal': error.code,
                        'credentials': DL.report(dispatch_id, self.credentials, refusal=error, selected=self.selected)})
             return
@@ -2159,6 +2349,7 @@ class Receiver:
             self._not_executed()
             refusal = 'spawn_failed:' + errno.errorcode.get(error.errno or 0, type(error).__name__)
             self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')
+            self._space_end(dispatch_id, contract)
             self.emit({'event': 'refused', 'refusal': refusal})
             return
         carry = b''
@@ -2171,6 +2362,7 @@ class Receiver:
                     self._not_executed()
                     self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(),
                                            expected_state='accepted')
+                    self._space_end(dispatch_id, contract)
                     self.emit({'event': 'refused', 'refusal': refusal})
                     return
             else:
@@ -2215,7 +2407,10 @@ class Receiver:
             self.metering.settle(termination, (self.supervision or {}).get('cause'))
             if self.metering.report is not None:
                 self.emit({'event': 'artifact', 'artifact': self.metering.report})
-        self._remove_run()
+        if getattr(self, 'space', None) is None:
+            self._remove_run()
+        # VELDO-0308 AC1: with a space ledger nothing of the run is judged here, where only the worker's own
+        # process is known to have ended. Run finished is sent once the end below is recorded (report_end).
         if remote and termination['deadline_stop']:
             # Stopping the local transport at the deadline does not show the remote engine ended: its
             # outcome is unknown, and the unit and station stay held.
@@ -2573,8 +2768,10 @@ class Receiver:
 
     def _not_executed(self):
         """A reserved invocation whose engine never started: the receiver attests it (VELDO-0036), and the run's
-        own directories go."""
-        self._remove_run()
+        own directories go. With a space ledger they go at the run's space end, once the refusal is recorded
+        (VELDO-0308 AC1)."""
+        if getattr(self, 'space', None) is None:
+            self._remove_run()
         metering, self.metering = self.metering, None
         if metering is not None:
             metering.settle(None, None)
@@ -2584,6 +2781,7 @@ class Receiver:
         by name, or unknown when its group could not be emptied."""
         if error.settled:
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self._space_end(dispatch_id, getattr(self, 'contract', None))
             refused = {'event': 'refused', 'refusal': error.code, 'group': error.group}
             if error.code.startswith(SPACE_FOLDER_STATE) and error.detail:
                 refused['detail'] = error.detail  # VELDO-0305: the folder the owner has to look at

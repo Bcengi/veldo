@@ -126,3 +126,56 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   must land before `space` is wired into the clone provisioner: VELDO-0303 threads `space` through
   to the three places that build one (control_launch.py twice, control_launch_work.py once), and
   nothing gives them a ledger yet.
+- 2026-11-14: built. No acceptance criterion changed. What the build decided, recorded here because
+  the criteria do not say it:
+  - Where it is. In control_launch.py: Receiver._space_end and _group_empty, the functions
+    space_release, space_retry and space_run_items, Runner.retry_deferred, and report_end. In
+    control_retirement.py: the hand-over (_tracked, _hand_over), follow_pins and the retry seam
+    (`deferred`). Nothing in either deletes anything: every removal is Signal's, after the safety rules
+    and the keep step. Nothing in the engine builds `space` yet, so an installation runs as before.
+  - The order at the receiver's end. With a ledger the receiver judges nothing where only the worker's
+    own process is known to have ended. The end is recorded first (exit or refusal), then the run-end
+    scan reads the run's workspace, then the space end runs (census, Signal, release), and only then is
+    the end reported; the runner stops the receiver once it reads that report. So the space end sits
+    in report_end, between the scan and the emit. The refusal paths of launch call it after their
+    refuse record. With no ledger the run directory goes where it went before.
+  - Conclusive is exited or refused, read from the store at that moment. An unknown outcome is not a
+    recorded end: such a run is sent nothing by its receiver, its items stay and its hold stays held.
+    Its run directory is still the sweep's (Runner.clear_runs, VELDO-0303), which sends run finished
+    for a leftover once the kernel shows the run gone, whatever the record says. That is unchanged
+    here, because suite 142 holds it to that and is outside this footprint. FOR THE LEAD: that sweep
+    still sends run finished at every sweep for a leftover whose run directory stays deferred, and the
+    event reaches every item of the same run, a clone handed over among them. It judges again and
+    loses nothing, but it is a run finished per sweep for an unknown or orphaned dispatch.
+  - A group nobody could read (empty is None) is not held back by the receiver: the event is sent and
+    rule 3 is left to the answer the installation wired in, as VELDO-0303 built it. Only a group known
+    to hold a process stops the send.
+  - The hold. The receiver releases the hold the contract's space field names (design 6.7), else the
+    one placed under the dispatch's own identity; nothing writes either yet (VELDO-0316). It is
+    released whenever the run has ended (conclusive, group not known to hold a process), also when a
+    consumer of the run's clone kept the event from being sent. Nothing but the receiver releases a
+    hold in this ticket: a hold of a run whose receiver died, or whose outcome is unknown, stays
+    until VELDO-0315 or 0316 gives the sweep or reconcile that release. FOR THE LEAD.
+  - Handed to the ledger means the ledger answers for it. The clone obligation closes on retired, and
+    on a refusal that starts space_deferred only while the ledger records the clone's root as a live
+    item in state due, deferred, removing or kept. A clone no item records
+    (space_deferred:not_in_ledger), a root still present because Signal raised and the event never
+    reached it, a ledger that cannot be read, and an installation with no ledger keep the obligation
+    open and the slot held, and are attempted again as before. This is narrower than "any refusal
+    whose code is space_deferred": releasing the slot there would leave a clone on disk that nothing
+    tracks. FOR THE LEAD, should the slot be wanted back in those cases too.
+  - The pins. follow_pins runs at every sweep and every retire call. It releases a handed-over
+    clone's pins when every item the ledger records at the work tree's path is removed or gone and
+    the kernel says nothing is at that path. What it follows is in memory, like every entry of the
+    retirement service: after a restart of the runner a clone handed over before it keeps its pins
+    until something else releases them (a held pin keeps objects; it loses nothing).
+  - The retry of AC3 is run finished for the run, sent once for each owner among the run's deferred
+    items. Rule 3 is answered for that run alone, and only when the runner reads at that moment that
+    the record has a known end and the kernel shows the worker gone and its group empty; otherwise it
+    is left to the answer the installation wired in. It is made only when a retirement that was pending is carried out; one carried
+    out at its first attempt retries nothing. When that same attempt's teardown already sent run
+    finished for the clone, the owners of the clone's items are not signalled twice. It is not sent
+    while a consumer of the run's clone has not ended.
+  - Two registered falsifiers of earlier tickets were re-anchored, unchanged in meaning, because
+    _remove_run now reads the group in one place: space303-receiver-answers-for-an-unread-group and
+    space305-no-census-at-the-receivers-end. Each was applied again and turns its row red.

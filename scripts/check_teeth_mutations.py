@@ -13516,7 +13516,7 @@ def cases():
             "                # The consumer first: run finished never ends a clone another dispatch still uses.\n",
             ['ac3/sweep-leftover'])
     path303('space303-receiver-answers-for-an-unread-group', 'control_launch.py',
-            "                ended=(self.supervision or {}).get('empty', True) is True)[os.path.normpath(run)]\n",
+            "                ended=empty is True)[os.path.normpath(run)]\n",
             "                ended=True)[os.path.normpath(run)]\n",
             ['ac3/deferred-then-swept'])
     path303('space303-landing-line-direct-delete', 'control_launch_work.py',
@@ -13628,7 +13628,7 @@ def cases():
     census305('space305-every-ignored-folder-is-build-output', covered305,
               "        elif True:\n", ['ac1/personal-rule', 'ac2/ignored-uncovered'])
     census305('space305-no-census-at-the-receivers-end',
-              "        if self.space is not None and given.get('worktree') and (self.supervision or {}).get('empty') is not False:\n",
+              "        if self.space is not None and given.get('worktree') and empty is not False:\n",
               "        if False:\n", ['ac3/run-end'])
     census305('space305-values-lost-at-the-strip',
               "    if values and ENGINE_OVERRIDES in environment:\n", "    if False:\n", ['ac3/engine-strip'])
@@ -14017,6 +14017,91 @@ def cases():
               "                if (self.protected.get((engine, 'image', name)) or {}).get('id') == identity:\n",
               "                if True:\n",
               DIGEST_ROW)
+
+    # VELDO-0308: run finished, from the receiver. The declared falsifier of each acceptance
+    # criterion. AC1: send it when the worker's own process exits. AC2: exit after Signal without
+    # releasing the hold. AC3: retry on every sweep call. AC4, each with a row of its own: keep the
+    # obligation open on space_deferred, attempt the teardown on every sweep, release the pins at
+    # the teardown call only, release them at hand-over. And the steps the criteria name beside
+    # them: the event sent before the dispatch record is conclusive, the run judged before its end
+    # is recorded, the end reported before the space end, the hold released before Signal, the
+    # retry left out when the retirement is carried out, made for a retirement that was never
+    # pending, sent under a consumer of the run's clone, or answered for a run the record does not
+    # show ended, a clone no item records taken for the
+    # ledger's, and the pins released while the work tree's item is not removed.
+    space308 = '146_veldo_0308_run_finished.py'
+
+    def finished308(name, module, old, new, rows):
+        add(308, name, space308, module, old, new, rows)
+        result[-1]['siblings'] = True
+
+    finished308('space308-sent-when-the-worker-exits', 'control_launch.py',
+                "        return (self.supervision or {}).get('empty', True)\n", "        return True\n",
+                ['ac1/surviving-child'])
+    finished308('space308-sent-before-the-record', 'control_launch.py',
+                "        if state not in SPACE_CONCLUSIVE:\n", "        if False:\n",
+                ['ac1/not-before-the-record'])
+    finished308('space308-judged-before-the-record', 'control_launch.py',
+                "        if getattr(self, 'space', None) is None:\n            self._remove_run()\n"
+                "        # VELDO-0308 AC1: with a space ledger nothing of the run is judged here, where only the worker's own\n",
+                "        if True:\n            self._remove_run()\n"
+                "        # VELDO-0308 AC1: with a space ledger nothing of the run is judged here, where only the worker's own\n",
+                ['ac1/removal-before-the-report'])
+    finished308('space308-reported-before-the-space-end', 'control_launch.py',
+                "    run_end_scan(receiver, contract['dispatch_id'], contract)\n"
+                "    if getattr(receiver, 'space', None) is not None and hasattr(receiver, '_space_end'):\n",
+                "    run_end_scan(receiver, contract['dispatch_id'], contract)\n"
+                "    receiver.emit(event)\n"
+                "    if getattr(receiver, 'space', None) is not None and hasattr(receiver, '_space_end'):\n",
+                ['ac1/removal-before-the-report'])
+    finished308('space308-exit-without-releasing-the-hold', 'control_launch.py',
+                "        end['hold'] = space_release(space, named or dispatch_id)\n", "        end['hold'] = None\n",
+                ['ac2/waiting-unit'])
+    finished308('space308-hold-released-before-signal', 'control_launch.py',
+                "        self.run_sent = False\n        self._remove_run()\n",
+                "        self.run_sent = False\n        space_release(space, dispatch_id)\n        self._remove_run()\n",
+                ['ac2/census-signal-release'])
+    finished308('space308-retry-under-a-consumer', 'control_launch.py',
+                "        if users:\n            return {'retried': [], 'signals': 0, 'states': {}, 'raised': None, 'refusal': 'clone_in_use', 'users': users}\n",
+                "        if False:\n            return {'retried': [], 'signals': 0, 'states': {}, 'raised': None, 'refusal': 'clone_in_use', 'users': users}\n",
+                ['ac3/not-under-a-consumer'])
+    finished308('space308-retry-answers-for-a-run-not-ended', 'control_launch.py',
+                "            ended = record.get('state') in RT.CONCLUSIVE and seen['terminated'] is True and seen['cleaned'] is True\n",
+                "            ended = True\n", ['ac3/not-for-a-run-not-ended'])
+    finished308('space308-retry-on-every-sweep', 'control_retirement.py',
+                "        for dispatch_id in list(self.pending()):\n            try:\n"
+                "                if self._retry(dispatch_id, basis):\n",
+                "        for dispatch_id in list(self.pending()):\n            try:\n"
+                "                self._retry_deferred(dispatch_id, [])\n"
+                "                if self._retry(dispatch_id, basis):\n",
+                ['ac3/unchanged-sweeps-retry-nothing'])
+    finished308('space308-no-retry-when-carried-out', 'control_retirement.py',
+                "        if released and pending:\n", "        if False:\n", ['ac3/retried-when-carried-out'])
+    finished308('space308-retry-at-every-release', 'control_retirement.py',
+                "        if released and pending:\n", "        if released:\n", ['ac3/only-a-pending-retirement'])
+    finished308('space308-obligation-open-on-space-deferred', 'control_retirement.py',
+                "        if clone and clone['handed_over']:\n", "        if False:\n",
+                ['ac4/deferred-releases-the-slot'])
+    finished308('space308-teardown-on-every-sweep', 'control_retirement.py',
+                "        if not obligations['clone']['open'] or any(obligations[n]['open'] for n in ('termination', 'group', 'outcome')):\n",
+                "        if not obligations['clone'].get('present') or any(obligations[n]['open'] for n in ('termination', 'group', 'outcome')):\n",
+                ['ac4/one-run-finished-per-clone'])
+    finished308('space308-pins-released-at-the-teardown-only', 'control_retirement.py',
+                "        following = sorted(clone_id for clone_id, handed in self.handed.items() if handed['pins'])\n",
+                "        following = []\n", ['ac4/pins-follow-the-removal'])
+    finished308('space308-pins-released-at-hand-over', 'control_retirement.py',
+                "            'pins': list(before['pins']) if tracked is not None else []}\n",
+                "            'pins': list(before['pins']) if tracked is not None else []}\n"
+                "        for pin in before['pins']:\n"
+                "            self.clones._release(Path(pin['cache']), pin['ref'])\n",
+                ['ac4/pins-held-while-deferred'])
+    finished308('space308-pins-released-while-the-item-is-not-removed', 'control_retirement.py',
+                "                    continue  # the ledger still holds the work tree: not before its removal\n",
+                "                    pass\n", ['ac4/pins-held-while-deferred'])
+    finished308('space308-unrecorded-clone-taken-for-the-ledgers', 'control_retirement.py',
+                "        if found is None or found[1].get('state') not in SPACE_TRACKED:\n            return None\n",
+                "        if found is None:\n            return {'item': None, 'state': None}\n",
+                ['ac4/not-handed-over-keeps-the-slot'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
