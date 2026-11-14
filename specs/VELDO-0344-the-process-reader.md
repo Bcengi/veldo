@@ -423,3 +423,17 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
     .veldo/control_space_probe.py, engine/.veldo/control_space_probe.py and
     docs/veldo-procread-setup.txt. The policy file is still not edited by the builder; until the owner
     adds the nine entries none of those files is a protected path.
+- 2026-11-14: toolchain record. No acceptance criterion, no code, no suite and no setup text changed. An
+  unattended update of the C library on the build host that day (glibc 2.39-0ubuntu8.9 to
+  2.39-0ubuntu8.12) changed the digest of the reader's build: the link is static, so the library's code
+  is in the program. The reviewed source is unchanged (scripts/veldo_procread.c, SHA-256
+  233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c). Line 1 of
+  proof/VELDO-0344/owner-install.txt, run twice against commit
+  705d64311de90f1945d7d0c0a5b9b3e6d125e78e with cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 and glibc
+  2.39-0ubuntu8.12 on x86_64, printed 861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199
+  both times. proof/VELDO-0344/reader.sha256 records it with its toolchain and keeps the earlier record
+  (bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035, glibc 2.39-0ubuntu8.9) with its
+  own. owner-install.txt carries the new H and says that H follows the toolchain: it is read from the
+  record reviewed for the toolchain of the host the reader is installed on, and a digest that line 1
+  prints and no reviewed record has is not installed. The new record awaits review. No sudo command was
+  run, and the reader is not installed on this host.

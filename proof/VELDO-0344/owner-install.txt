@@ -10,15 +10,30 @@ THE TWO VALUES
       208e7c1f0c80365181e83885b999b34ff740ab6f, scripts/veldo_procread.c, SHA-256
       233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c). When the change lands as
       another commit, use that commit's full hash; the source's SHA-256 must be the same.
-  H = bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035
+  H = 861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199
       the digest of that source's build with cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 and glibc
-      2.39-0ubuntu8.9 on x86_64, as proof/VELDO-0344/reader.sha256 records it. The setup text's rule
-      holds: take H from the review record you approved for C, and use the value here only to see
-      that the two agree. The builder ran line 1 below against C in this worktree and it printed H.
+      2.39-0ubuntu8.12 on x86_64, as proof/VELDO-0344/reader.sha256 records it. The builder ran
+      line 1 below against C in this worktree on 2026-11-14, twice, and it printed H both times.
+
+      H FOLLOWS THE TOOLCHAIN. The reader is linked statically, so the C library's code is part of
+      the program: the same source built with another cc or another C library has another digest.
+      Until 2026-11-14 this host had glibc 2.39-0ubuntu8.9 and H was
+      bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035; an unattended update to
+      2.39-0ubuntu8.12 changed it, with the source unchanged. reader.sha256 keeps both records,
+      each with its toolchain.
+
+      So read H from the record reviewed for the toolchain of the host you install on: compare
+      "cc --version" and "ldd --version" there with the record's cc and libc lines, and take the
+      digest written with those. The setup text's rule holds as well: take H from the review
+      record you approved for C, and use the value here only to see that the two agree. When
+      line 1 prints a digest that is in no reviewed record for your toolchain, stop: install
+      nothing until that digest is recorded with its toolchain and reviewed. Never write into
+      line 2 or into step 4 a digest only because line 1 printed it.
 
 THE COMMANDS, from the root of the authority checkout, in one shell
 
-1. No sudo. Builds from the blob of C and prints the digest. It must print H:
+1. No sudo. Builds from the blob of C and prints the digest. It must print the H that the reviewed
+   record has for this host's toolchain (above):
 
 d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob 705d64311de90f1945d7d0c0a5b9b3e6d125e78e:scripts/veldo_procread.c > "$d/veldo_procread.c" && (cd "$d" && env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c) && sha256sum "$d/veldo-procread"
 
@@ -29,15 +44,16 @@ d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob
    step after the comparison fails, root removes the copy and nothing is installed. The folder
    /usr/local/lib/veldo gets mode 0755 only when this line makes it:
 
-sudo sh -c "umask 077 && { [ -d /usr/local/lib/veldo ] || { mkdir -p /usr/local/lib/veldo && chmod 0755 /usr/local/lib/veldo; }; } && t=\$(mktemp /usr/local/lib/veldo/.veldo-procread.XXXXXX) && if cat > \"\$t\" && echo 'bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035  '\"\$t\" | sha256sum -c - >/dev/null; then chown root:'$g' \"\$t\" && chmod 0750 \"\$t\" && setcap cap_sys_ptrace=ep \"\$t\" && mv -f \"\$t\" /usr/local/lib/veldo/veldo-procread || { rm -f \"\$t\"; echo 'the install failed: nothing installed' >&2; exit 1; }; else rm -f \"\$t\"; echo 'digest differs: nothing installed' >&2; exit 1; fi" < "$d/veldo-procread" && rm -r "$d"
+sudo sh -c "umask 077 && { [ -d /usr/local/lib/veldo ] || { mkdir -p /usr/local/lib/veldo && chmod 0755 /usr/local/lib/veldo; }; } && t=\$(mktemp /usr/local/lib/veldo/.veldo-procread.XXXXXX) && if cat > \"\$t\" && echo '861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199  '\"\$t\" | sha256sum -c - >/dev/null; then chown root:'$g' \"\$t\" && chmod 0750 \"\$t\" && setcap cap_sys_ptrace=ep \"\$t\" && mv -f \"\$t\" /usr/local/lib/veldo/veldo-procread || { rm -f \"\$t\"; echo 'the install failed: nothing installed' >&2; exit 1; }; else rm -f \"\$t\"; echo 'digest differs: nothing installed' >&2; exit 1; fi" < "$d/veldo-procread" && rm -r "$d"
 
 3. No sudo. The two user units and the socket:
 
 python3 -I .veldo/control_space_probe.py reader-units && systemctl --user daemon-reload && systemctl --user enable --now veldo-procread.socket
 
-4. In the installation's space section (installation.yaml), add the key, quoted as a string:
+4. In the installation's space section (installation.yaml), add the key, quoted as a string (the
+   same H as in line 2, the one for this host's toolchain):
 
-  process_reader: "bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035"
+  process_reader: "861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199"
 
 5. The reader check. It must print "state used cap=1" and five PASS lines, and exit 0:
 
