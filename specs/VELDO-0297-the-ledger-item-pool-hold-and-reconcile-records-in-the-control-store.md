@@ -115,3 +115,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   the keep record on a worktree or private repository item, the keep command, and the refusal of the
   outcome removed for such an item with no keep record (VELDO-0345); the restore and drop kept commands
   (VELDO-0346); the proof record and its command (VELDO-0348). No acceptance criterion changed.
+- 2026-11-13: from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md; design 14.7). This ticket is built and its
+  criteria are not edited. What it adds to the ledger is built elsewhere: the form of an agent repository
+  item, stated at declare and at adopt (VELDO-0347); the keep record's snapshot path with its attempt
+  number, written again by a later attempt, and the keep command's refusal of a main repository that is a
+  private repository (VELDO-0345 AC5 and AC1); the restore command's refusals for a snapshot it cannot
+  find or verify (VELDO-0346 AC2). No acceptance criterion changed.

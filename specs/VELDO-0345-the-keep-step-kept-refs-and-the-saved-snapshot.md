@@ -31,12 +31,15 @@ behavior_bearing: true
 observability:
   logs: >
     The keep record on the item, one journal record: the main repository, each kept ref with its commit,
-    the snapshot's path, size and manifest digest when one was written, and the path the item had. Each kept ref's own log names
-    the event that wrote it.
+    the snapshot's path with its attempt number, its size and its manifest digest when one was written,
+    and the path the item had. Each kept ref's own log names the event that wrote it. A later attempt that
+    saves again writes the record again.
   error_taxonomy: >
     space_deferred:keep_failed, with the ref and what git said, when a kept ref or a snapshot cannot be
-    written or read back, when the fetch from a private repository fails, and when a private repository
-    names no main repository. Nothing is removed in any of these cases.
+    written or read back, when the fetch from a private repository fails, when the main repository is not
+    at its path, and when a private repository names no main repository. For the snapshot: an unwritable
+    store, a full pool, a short write, a read back that differs, a failed sync or rename, and an item that
+    changed after it was saved. Nothing is removed in any of these cases.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -44,10 +47,14 @@ acceptance_criteria:
       commit an operation in progress names and each commit only its HEAD log names is on a kept ref under
       refs/veldo/kept/<ticket>/<item>/ in the main repository, read back, and listed on the item's keep
       record; the ledger refuses the outcome removed for a worktree or a private repository that has no
-      keep record
+      keep record. For an agent's worktree the main repository is the shared repository: the commits are
+      fetched from the agent repository and the kept refs are written there, and none is written in the
+      agent repository
     falsified_by: >
-      Write the refs after the remove; the row kills the remover between the two, finds the commit the
-      HEAD log named in no ref, and fails
+      Each of these turns a row of its own red. Write the refs after the remove: the row kills the remover
+      between the two and finds the commit the HEAD log named in no ref. Write an agent worktree's kept
+      refs in its agent repository: the row removes the worktree and then the agent repository, and finds
+      the worktree's kept head under its own item's name in no repository
   - id: AC2
     text: >
       Before a private repository is removed, every ref it has, every stash entry, its HEAD and each
@@ -59,12 +66,15 @@ acceptance_criteria:
   - id: AC3
     text: >
       When a ref cannot be written, exists at another commit or reads back as another commit, when the
-      fetch fails, or when a private repository names no main repository, nothing is removed and the item
-      is deferred as keep_failed with the ref and git's words. A second attempt after a crash finds the
-      refs it wrote and passes. Rule 5 does not count a kept ref as a ref that holds a commit
+      fetch fails, when the main repository is not at its path any more, or when a private repository
+      names no main repository, nothing is removed, by an event or by reconcile, and the item is deferred
+      as keep_failed with the ref and git's words. A second attempt after a crash finds the refs it wrote
+      and passes. Rule 5 does not count a kept ref as a ref that holds a commit
     falsified_by: >
-      Call the remover after a failed write; the row makes the main repository's refs unwritable, finds
-      the worktree gone and its commit unreachable, and fails
+      Each of these turns a row of its own red. Call the remover after a failed write: the row makes the
+      main repository's refs unwritable, and finds the worktree gone and its commit unreachable. Go on
+      when the main repository is gone: the row moves the main repository away, sends the ending event,
+      runs reconcile, and finds the worktree gone
   - id: AC4
     text: >
       The saved snapshot is plain files with a manifest in the snapshot store under the state root,
@@ -80,6 +90,25 @@ acceptance_criteria:
       before and after, and finds the worktree emptied and an entry added. Leave the store off the protect
       list: the row declares a folder of the store as scratch, sends its ending event and finds the
       snapshot gone
+  - id: AC5
+    text: >
+      A save that fails or stops half way removes nothing: when the store cannot be written, when its pool
+      fills in the middle of a file, when a write is short, when a read back differs, when a sync or the
+      rename fails, the item is deferred as keep_failed with everything in place, and what the attempt
+      wrote stays under its temporary name. Each attempt writes a numbered folder of its own, <state
+      root>/space-saved/<ticket>/<item>/<n>/, that is never replaced and never deleted; the keep record
+      names the one it used, and a folder no record names and a temporary one are kept and counted. A
+      retry uses the snapshot the keep record names when its manifest has the recorded digest and the item
+      still equals it, and otherwise writes the next number. With the process killed inside the snapshot
+      write, after the rename and before the keep record, and after the record and before the remover, the
+      next attempt ends with the item removed once and its snapshot whole, or with the item in place;
+      reconcile's part in that is VELDO-0315 AC2
+    falsified_by: >
+      Each of these turns a row of its own red. Go on after a short write: the row fills the store's pool
+      in the middle of a file, and finds the worktree gone and the file in no place. Make room for a retry
+      by deleting the existing snapshot folder: the row kills the remover between the delete and the
+      rename and finds no copy of the file. Use the snapshot the record names without comparing: the row
+      changes a file after the kill, and finds the new content neither in place nor restored
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. Removers then run without the keep step, as before this ticket. Kept refs already
@@ -107,7 +136,8 @@ What section 12 says about this ticket:
 
 > Components: Keeper, Removers, Ledger (the keep record). Depends on 0297, 0299, 0300 and 0330. It builds
 > sections 0.2 and 0.3, and it adds the keep step inside the worktree remover and the private repository
-> remover of 0300.
+> remover of 0300. Since the validation of section 0 it has five criteria: AC5 holds the snapshot's
+> failure, crash and retry paths.
 
 Build order. It is built straight after 0301 and before every ticket that removes a worktree or a private
 repository on a real host. depends_on holds the dependencies the design states for this ticket.
@@ -137,3 +167,15 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   settings file is then found in the main repository's objects), the snapshot written with git's stash
   command, and the store left off the protect list. The keep record holds the snapshot's path, size and
   manifest digest. The same snapshot is written for a dead run's worker clone (VELDO-0347 AC3).
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N-R1: AC1 writes an agent worktree's kept refs in the shared repository,
+  fetched from the agent repository, and none in the agent repository, which is removed later; written
+  there they were carried across under another name and the worktree could not be restored. AC1 gains that
+  falsifier. N-R3: AC3 refuses when the main repository is no longer at its path, by an event or by
+  reconcile, with a falsifier. N2: new AC5 holds the snapshot's failure, crash and retry paths. A save
+  that fails or stops half way removes nothing; each attempt writes a numbered folder, <state
+  root>/space-saved/<ticket>/<item>/<n>/, never replaced and never deleted; the keep record names the one
+  used; a retry uses it only when it still equals the item; the three kill points around the snapshot are
+  rows. AC5 has three falsifiers: the remove after a short write, an existing folder deleted to make room,
+  and the recorded snapshot used without comparing. AC4 is unchanged. Four criteria became five.

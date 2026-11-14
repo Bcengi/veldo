@@ -167,3 +167,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   frontmatter text is not edited; the row, the falsifier and the proof are VELDO-0344's. The same
   validation moved the reader into a user unit of its own and made its matching by inode number alone
   (design 7.1); neither changes this ticket.
+- 2026-11-13: from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md; design 14.7). This ticket is built and its
+  criteria are not edited. Two readings of the unique work probe change, both built elsewhere. Rule 5's
+  case 3 has a reading for the remove that follows a settled Save: an ignored file that is work does not
+  refuse when it is in the snapshot the keep record names with the same mode and digest (VELDO-0318 AC2).
+  The clean clone reading also looks at the logs and, for a remote that is a path on this host, at that
+  repository (VELDO-0347 AC2). The same validation confirmed that AC1's text is not edited for the reading
+  of every thread: the built code and its proof still answer it, and the stricter reading is VELDO-0344
+  AC8. No acceptance criterion changed.

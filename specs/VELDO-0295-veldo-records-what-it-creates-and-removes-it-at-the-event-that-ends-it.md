@@ -429,3 +429,19 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   its own, reads every thread, is built from the approved commit against a digest the gate recorded, and
   is matched by inode number alone. One capability stays. Section 15 of the design is empty. Still a
   draft.
+- 2026-11-13: the validation of design section 0 and of 7.1's second revision
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES) found three paths that could
+  still lose work or report lost work as restored, and five smaller points. All are taken in the design
+  (14.7) and in the tickets; AC0 is unchanged. A worker clone, a batch clone and a candidate workspace are
+  items of the kind agent repository everywhere and never scratch, and a repository found in an item of
+  another kind holds it (0302, 0315, 0347). The snapshot's failure, crash and retry paths are written out:
+  a failed save refuses the removal, each attempt has a numbered folder that is never replaced, a crash
+  between the save and the removal is recovered from the ledger, and files removed one by one are compared
+  with the manifest first (0318, 0336, 0345, 0347). A restore that cannot find or verify its snapshot
+  refuses and says so, and reconcile and veldo space kept report a kept ref or a snapshot that is missing
+  (0346). An agent worktree's kept refs go to the shared repository (0345), a clean clone is read more
+  strictly (0347), the suite plants the new shapes and ten more mutations (0348), and the process reader's
+  writer is held by a pidfd, the reader waits for the probe, and its install line reads past replace refs
+  (0344). VELDO-0345, 0346 and 0347 have five criteria each. No ticket is added. One question is put to
+  the lead in design section 15: a guard hook that refuses a shell command naming the snapshot store or
+  the kept refs. Still a draft.

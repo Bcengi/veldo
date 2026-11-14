@@ -18,6 +18,10 @@ footprint:
   - ".veldo/control_space_signal.py"
   - "engine/.veldo/control_space_remove.py"
   - ".veldo/control_space_remove.py"
+  - "engine/.veldo/control_space_kinds.py"
+  - ".veldo/control_space_kinds.py"
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
   - "engine/.veldo/control_clone.py"
   - ".veldo/control_clone.py"
   - "engine/.veldo/control_batch.py"
@@ -42,7 +46,8 @@ observability:
   error_taxonomy: >
     space_deferred:unique_work for an ignored file that is not build output and for a private repository
     whose work tree holds uncommitted work; space_deferred:in_use, by children, for a repository beneath a
-    scratch or build output item.
+    scratch or build output item, and for an item of another kind whose own folder is a repository;
+    space_deferred:keep_failed for a worker clone's file that changed after its snapshot.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -55,24 +60,31 @@ acceptance_criteria:
   - id: AC2
     text: >
       A git repository beneath a scratch item or a build output item holds it, as unrecorded, unless it is
-      a clean clone: no uncommitted and no untracked file, no stash, and every ref and its HEAD held by
-      one of its own remote-tracking refs. One that cannot be read, and a folder that cannot be listed,
-      hold the item
+      a clean clone: no uncommitted and no untracked file, no stash, every ref and its HEAD held by one of
+      its own remote-tracking refs, no log entry whose commit those refs do not reach, and, for a remote
+      that is a path on this host, each of those commits present in that repository now. One that cannot
+      be read, one whose local remote cannot be read, and a folder that cannot be listed, hold the item
     falsified_by: >
-      Look beneath worktrees and agent repositories only; the row's clone with an unpushed commit in a
-      session's scratch is deleted and the row fails
+      Each of these turns a row of its own red. Look beneath worktrees and agent repositories only: the
+      row's clone with an unpushed commit in a session's scratch is deleted. Leave the logs out: the row's
+      clone whose only unpushed commit a reset left in its HEAD log is deleted. Take a remote-tracking ref
+      at its word: the row writes one by hand for a commit its local remote does not hold, and the clone
+      is deleted
   - id: AC3
     text: >
-      A worker clone, a batch clone and a candidate workspace are removed as private repositories: the
-      keep step records every commit in the main repository first. A batch clone or a candidate workspace
-      whose work tree holds an uncommitted or untracked file that is work is deferred as unique work and
-      raises one request on the space disposition touchpoint, as a worktree does. A worker clone of a run
-      that has ended is not deferred for such files: they are saved in the snapshot store, and the clone
-      is removed with no request
+      A worker clone, a batch clone and a candidate workspace are items of the kind agent repository with
+      their form, never scratch, and are removed as private repositories: the keep step records every
+      commit in the main repository first. A batch clone or a candidate workspace whose work tree holds an
+      uncommitted or untracked file that is work is deferred as unique work and raises one request on the
+      space disposition touchpoint, as a worktree does. A worker clone of a run that has ended is not
+      deferred for such files: they are saved in the snapshot store, each file is compared with the
+      manifest immediately before it is deleted, and the clone is removed with no request
     falsified_by: >
       Each of these turns a row of its own red. Remove a clone by the folder remover alone: the row's
       commit that the runner never brought across is in no repository. Remove a worker clone without the
-      snapshot: the row's uncommitted file is neither in place nor restored
+      snapshot: the row's uncommitted file is neither in place nor restored. Delete a worker clone's files
+      without the comparison: the row rewrites a file after the snapshot, and finds the new content
+      neither in place nor in the snapshot
   - id: AC4
     text: >
       An evidence file is removed only when its digest, read again at the removal, is the digest of a blob
@@ -81,6 +93,17 @@ acceptance_criteria:
     falsified_by: >
       Use the digest recorded at the last measurement; the row changes the file after it was measured,
       finds the changed file gone and fails
+  - id: AC5
+    text: >
+      The look of rule 6 starts at the item's own folder: an item whose folder is a git repository and
+      whose kind is neither worktree nor agent repository holds itself, as unrecorded. The kind registry
+      has a row for an agent repository item whose form is a worker clone, a batch clone or a candidate
+      workspace, which ends at the events its creator sends; an item with no form ends only on the agent
+      repository's own events
+    falsified_by: >
+      Each of these turns a row of its own red. Look beneath the item only: the row's scratch item whose
+      own folder is a repository with an unpushed commit is deleted. Give an item with no form the clone's
+      row: the row's agent repository with its worktree still in place is made due at run finished
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. Ignored files are then no longer read by rule 5, a repository beneath scratch or
@@ -105,9 +128,9 @@ criteria and falsifiers are copied here word for word.
 
 What section 12 says about this ticket:
 
-> Components: Probes, Signal (rules 5 and 6), Removers, Clone provisioner, Batch, Landing line. Depends on
-> 0302, 0303, 0305, 0324 and 0345. It builds section 0.1 and 0.4 where they go past what VELDO-0299 and
-> VELDO-0330 built.
+> Components: Probes, Signal (rules 5 and 6), Removers, Kind registry (one row), Ledger (the form of an
+> agent repository item), Clone provisioner, Batch, Landing line. Depends on 0302, 0303, 0305, 0324 and
+> 0345. It builds section 0.1 and 0.4 where they go past what VELDO-0299 and VELDO-0330 built.
 
 Build order. It is built after the creators and the census it corrects (0302, 0303, 0305, 0324) and before
 0304. depends_on holds the dependencies the design states for this ticket.
@@ -132,3 +155,17 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   are saved in the snapshot store and the clone is removed with no request, as review scratch is. The
   answer names worker clones, so a batch clone and a candidate workspace still raise one request. AC3
   gains a second falsifier: a worker clone removed without the snapshot.
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N1: AC3 says a worker clone, a batch clone and a candidate workspace are
+  items of the kind agent repository with their form, never scratch. There is no eleventh kind; the form
+  picks a new row of the kind registry, because the agent repository's own row does nothing at run
+  finished, the event a clone's teardown sends. New AC5: the look of rule 6 starts at the item's own
+  folder, so an item of another kind that is itself a repository holds itself, and an item with no form
+  ends only on the agent repository's events. The row for a batch clone that reconcile adopts is
+  VELDO-0315 AC1, which is built after this ticket. N2.3: AC3 compares each file of a dead run's worker
+  clone with the manifest just before it is deleted, with a third falsifier. N-R2: AC2's clean clone also
+  has no log entry whose commit its remote-tracking refs do not reach, and for a remote that is a path on
+  this host each commit is in that repository now; two more falsifiers. A remote on another host is a
+  residual the design states in 0.9. The footprint gains the kind registry and the ledger. Four criteria
+  became five.

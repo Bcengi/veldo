@@ -36,20 +36,25 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      The suite drives every removal path of section 0.7 at every kind of work of section 0.1, in the
-      nested, linked, locked and unreadable shapes. After each drive every planted thing is in its place
-      byte for byte, or comes back byte for byte through veldo space restore from what the removal left;
-      the suite's own copies are never read. The paths, kinds and shapes are data, and a remover or a kind
-      of work with no row fails the suite
+      The suite drives every removal path of section 0.7 at every kind of work of section 0.1, in every
+      shape of that section's table: nested, adopted, an agent worktree and then its repository, linked,
+      locked, unreadable, main repository gone, snapshot store, retry and restore. After each drive every
+      planted thing is in its place byte for byte, or comes back byte for byte through veldo space restore
+      from what the removal left; a restore that says it succeeded while a planted file is absent fails
+      the row; the suite's own copies are never read. The paths, kinds and shapes are data, and a remover
+      or a kind of work with no row fails the suite
     falsified_by: >
       Run Discard without the snapshot; the Discard rows find the untracked file neither in place nor
       restored and fail
   - id: AC2
     text: >
       A file added after the probe, a process that opens a file after the first probe, a branch moved
-      between the probe and the remove, and a file added between the snapshot and the forced remove each
-      leave the work in place. With the process killed at each step boundary of section 0.2 and of the
-      folder remover, and reconcile run afterwards, every planted thing is in place or comes back
+      between the probe and the remove, a file added between the snapshot and the forced remove, an
+      ignored file added between Save's snapshot and its remove, and a file of review scratch or of a dead
+      run's worker clone rewritten between the snapshot and its own delete each leave the work in place.
+      With the process killed at each step boundary of section 0.2, the two snapshot boundaries included,
+      and of the folder remover, and reconcile run afterwards, every planted thing is in place or comes
+      back
     falsified_by: >
       Complete a removing item at reconcile without its keep record; the row killed before the refs were
       written finds the worktree gone and its commit unreachable, and fails
@@ -59,8 +64,13 @@ acceptance_criteria:
       check: a kept child that does not hold, a stash counted as a holding ref, no look beneath a
       worktree, a private repository compared with itself, an unreadable worktree read as unlocked, an
       unopenable scratch read as free, the keep step skipped, the remove run after a failed keep, Discard
-      without the snapshot, a snapshot written into a repository's object store, and a removing item
-      completed with no keep record
+      without the snapshot, a snapshot written into a repository's object store, a removing item completed
+      with no keep record, the remove run after a failed snapshot, review scratch deleted without the
+      snapshot, a file deleted without the comparison with its manifest, an existing snapshot folder
+      replaced on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore
+      that applies the snapshot only when its folder is there, a clone adopted as scratch, no look at an
+      item's own folder, an agent worktree's kept refs written into its agent repository, and a clean
+      clone read without its logs
     falsified_by: >
       Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree
       leaves the suite green and the mutation check fails
@@ -124,3 +134,17 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   does not enter git; commits stay on kept refs (design 0.3). AC3 gains one mutation: a snapshot written
   into a repository's object store. The suite plants a marker in the ignored file and searches every
   repository's objects for it after each drive (design 0.7). The falsifier is unchanged.
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N-R3: AC1 names every shape of design 0.7's table, with the ones this
+  validation added: an adopted batch clone, an agent worktree and then its repository, a main repository
+  that is gone, a snapshot store that is full or not writable, a retry onto an existing snapshot folder,
+  and a restore whose snapshot or kept ref is missing or changed. A restore that says it succeeded while a
+  planted file is absent fails its row. AC2 gains three mid-removal cases (Save's ignored file, review
+  scratch and a worker clone rewritten after the snapshot) and the two kill points around the snapshot.
+  AC3 gains ten mutations: the remove run after a failed snapshot, review scratch deleted without the
+  snapshot, a file deleted without the comparison with its manifest, an existing snapshot folder replaced
+  on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore that applies
+  the snapshot only when its folder is there, a clone adopted as scratch, no look at an item's own folder,
+  an agent worktree's kept refs written into its agent repository, and a clean clone read without its
+  logs. The three falsifiers are unchanged.

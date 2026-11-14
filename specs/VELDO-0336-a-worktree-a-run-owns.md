@@ -32,7 +32,8 @@ observability:
     of the worktree's outcome.
   error_taxonomy: >
     A stray file a live process holds open keeps its worktree, space_deferred:in_use. A path that resolves
-    outside the worktree, or is on the protect list, is not removed.
+    outside the worktree, or is on the protect list, is not removed. A file that is not in the snapshot's
+    manifest, or differs from it, stops the removal, space_deferred:keep_failed.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -53,9 +54,14 @@ acceptance_criteria:
     text: >
       A review worktree with an untracked file git does not ignore is removed at run finished with no
       decision request and no force option; the file is saved in the snapshot store (VELDO-0345) and then
-      deleted, as review scratch
+      deleted, as review scratch. Each file is compared with the snapshot's manifest immediately before it
+      is deleted, and one that is not in the manifest or differs from it stops the removal, with the
+      worktree deferred as keep_failed
     falsified_by: >
-      Defer it as unique work; the row finds the worktree present and a request raised and fails
+      Each of these turns a row of its own red. Defer it as unique work: the row finds the worktree
+      present and a request raised. Delete the scratch without the snapshot: the row's stray file is
+      neither in place nor restored. Delete without the comparison: the row rewrites the stray file after
+      the snapshot, and finds the new content neither in place nor in the snapshot
   - id: AC4
     text: >
       Review scratch is removed path by path under rules 1, 2, 3, 4 and 6, with no force option and no
@@ -109,3 +115,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   does not enter git; commits stay on kept refs (design 0.3). AC3: review scratch is saved in the snapshot
   store before it is deleted, where it said on a kept ref. The lead confirmed decision (e): saved first,
   then removed with no request, because saved means not lost. The falsifier is unchanged.
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N2.3: AC3 says each file of review scratch is compared with the
+  snapshot's manifest immediately before it is deleted, and one that is not in it or differs from it stops
+  the removal with the worktree deferred as keep_failed; the remover deletes path by path after one
+  snapshot, and a file rewritten in between went unsaved. N2.4: AC3 gains two falsifiers, the scratch
+  deleted without the snapshot, which nothing caught, and the delete without the comparison.

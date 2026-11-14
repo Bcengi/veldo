@@ -46,12 +46,14 @@ acceptance_criteria:
     text: >
       Each creator's thing has a declared item before it exists and a present item after, with project,
       ticket, run and lane as owner; the rows cover the clone, the fleet worktree, the run directory, the
-      candidate workspace, the batch clone and the batch's observation folder. The clone, the batch clone
-      and the candidate workspace are declared with their main repository, and the receiver's artifacts,
-      receipts and token records are declared as evidence, never as scratch
+      candidate workspace, the batch clone and the batch's observation folder. The clone's work tree, the
+      batch clone and the candidate workspace are declared as items of the kind agent repository, each
+      with its form and its main repository, and never as scratch. The receiver's artifacts, receipts and
+      token records are declared as evidence, never as scratch
     falsified_by: >
-      Declare after creating; the row that kills the creator between the two finds a folder with no item
-      and fails
+      Each of these turns a row of its own red. Declare after creating: the row that kills the creator
+      between the two finds a folder with no item. Declare the batch clone as scratch: the row that reads
+      the item finds the kind scratch and no main repository
   - id: AC2
     text: >
       The sandbox's prepare leaves three items: the agent repository, its worktree as the repository's
@@ -108,3 +110,9 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
   each is a private repository whose commits the keep step must bring across before it goes; the
   receiver's artifacts, receipts and token records are declared as evidence and never as scratch. The
   falsifier is unchanged.
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N1: AC1 names the kind. The clone's work tree, the batch clone and the
+  candidate workspace are declared as items of the kind agent repository, each with its form and its main
+  repository, and never as scratch; the design still said scratch in four places an implementer builds
+  from. AC1 gains a second falsifier: the batch clone declared as scratch.

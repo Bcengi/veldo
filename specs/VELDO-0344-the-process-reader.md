@@ -53,17 +53,21 @@ acceptance_criteria:
       owns or may write, a capability attribute other than exactly cap_sys_ptrace permitted and effective
       in version 2 or in version 3 with root id 0, no digest in the installation's space section, a digest
       other than that one, no socket, an output the kernel does not show as written by one process of the
-      owner's that holds exactly that capability, or a header that says it holds no capability), the probe
-      does not use it, every unread process is judged as before this ticket, and the in_use facts name the
-      reader's state and the check that failed
+      owner's that holds exactly that capability and that a pidfd names as alive before and after its
+      status was read, or a header that says it holds no capability), the probe does not use it, every
+      unread process is judged as before this ticket, and the in_use facts name the reader's state and the
+      check that failed
     falsified_by: >
       Each of these turns a row of its own red. Skip the digest check: the row puts a program that prints
       an empty table in the reader's place, the undumpable process in the item is not counted and the item
       reads free. Accept any capability set that holds cap_sys_ptrace: the row's copy with
-      cap_dac_read_search added is used. Check the file and not its folders: the row's reader in a folder
-      the owner may write is used. Ignore the header's cap field: the row's reader that says cap=0 is
-      used. Take the output whoever wrote it: the row's stand-in listens on the socket, answers with an
-      empty table, and the item reads free
+      cap_dac_read_search added is used. Accept version 3 of the capability attribute with any root id:
+      the row's copy with another root id is used. Check the file and not its folders: the row's reader in
+      a folder the owner may write is used. Ignore the header's cap field: the row's reader that says
+      cap=0 is used. Take the output whoever wrote it: the row's stand-in listens on the socket, answers
+      with an empty table, and the item reads free. Trust the process id without the pidfd: the row's
+      stand-in writes an empty table and exits, the row answers the status read for its number as a real
+      reader's, and the item reads free
   - id: AC2
     text: >
       With the reader in use, a process of the owner's that is not dumpable counts for an item exactly
@@ -110,12 +114,15 @@ acceptance_criteria:
       An output with no end line, an end count other than the number of blocks, a line outside the format,
       bytes after the end line or, where the reader is run directly, an exit status other than 0 is not
       used at all: the reader's state is refused, and every unread process is judged as before this
-      ticket. The reader itself ends with no end line when a write fails
+      ticket. The reader itself ends with no end line when a write fails. After its end line it waits,
+      with one read on descriptor 1, until the probe has shut down its side, so the writer of a short
+      output, one that fits in the socket's buffer, is still alive when the probe looks
     falsified_by: >
       Each of these turns a row of its own red. Use the blocks read before the cut: the row cuts the
       output before the block of the process in the item, and the item reads free. Go on after a failed
       write: the row gives the built reader a standard output that takes no more bytes, and finds an end
-      line after the gap
+      line after the gap. Exit straight after the end line: the row lets the built reader finish a short
+      output before it reads, and finds the writer gone when it looks
   - id: AC6
     text: >
       The reader runs in a socket-started systemd user unit of its own, with no NoNewPrivileges and no
@@ -124,7 +131,7 @@ acceptance_criteria:
       descriptor and executes that descriptor. Where the reader is installed (requires.json), the reader
       check, run in a transient user unit with the authority unit's properties, reports the state used
       with cap=1 and reads an undumpable process it started in a folder, whose second thread sits in
-      another
+      another; the row records how long the reader ran on that host
     falsified_by: >
       Each of these turns a row of its own red. Have the probe execute the reader itself, so that the
       check passes from the owner's shell only: the installed row, which runs the check under
@@ -136,13 +143,16 @@ acceptance_criteria:
       /usr/bin/cc, an empty environment and the house build line, has one SHA-256 digest, and the proof
       bundle records it with the versions of the compiler and the C library
       (proof/VELDO-0344/reader.sha256). The owner's install lines in the setup text build from the blob of
-      a named commit, and root's line compares the installed copy with a digest written into it before it
-      sets the capability
+      a commit named by its full hash, read with git's cat-file under --no-replace-objects, and root's
+      line compares the installed copy with a digest written into it before it sets the capability. The
+      setup text says that this digest is copied from the review record the owner approved for the commit
+      and is not read back from the checkout
     falsified_by: >
       Each of these turns a row of its own red. Drop the prefix map from the build line: the two folders
       give two digests. Take the compiler from the path: the row puts a stand-in cc first in the path and
       finds the stand-in's output. Put setcap before the digest comparison in the setup text: the row that
-      reads the lines finds the order wrong
+      reads the lines finds the order wrong. Read the blob with git show: the row adds a replace ref for
+      the blob in a fixture repository, runs the first line there and finds the other source built
   - id: AC8
     text: >
       The probe's own reading of a process it may read covers every thread: the working directory and the
@@ -210,6 +220,17 @@ of the owner's that holds exactly cap_sys_ptrace (SO_PASSCRED; measured on this 
 The validation did not ask for that check; without it the digest of the installed file would say
 nothing about who answers.
 
+What the second validation changed (design-veldo-nowork-0344r2-validation-2026-11-14.md; design 14.7).
+It found the seven points above resolved and kept the writer check. A process id can be handed out
+again between a write and the probe's look, so the probe also sets SO_PASSPIDFD and holds the writer
+by the pidfd the kernel attaches (measured on this host on 2026-11-13, kernel 7.0: each part carries
+one, and it reads as ended for a writer that has gone). The reader's whole output can fit in the
+socket's buffer, so after its end line the reader waits, with one read on descriptor 1, until the
+probe has shut down its side. The install line reads the source with git's cat-file under
+--no-replace-objects, because git show follows a replace ref any process of the owner's can add, and
+the digest root compares with is copied from the review record the owner approved, not read back from
+the checkout. The reader also checks that /proc is a process file system before it reads.
+
 Every thread. The entries under /proc/<pid> are the first thread's. The reader reads the working
 directory and the fdinfo entries of every task, and so does the probe's own reading of the processes it
 may read, which had the same gap (AC8, recorded on VELDO-0299's spec).
@@ -247,6 +268,9 @@ What a row can and cannot do. Installing the reader needs root, and a suite has 
 AC2, AC3 and AC5 give the probe a reader through its seam: a program the row writes, served on a socket
 the row makes, with the check's file facts (owner, mode, capability) and the writer's capability supplied
 by the row. One AC1 row leaves the writer check real and answers from a stand-in, which must be refused.
+Another has the stand-in write and exit while the row answers the status read as a real reader's; the
+pidfd must refuse it. One AC5 row serves the built reader on a socket, lets it finish a short output
+before it reads, and checks that the writer is still alive.
 The rows for AC4 and AC7 build the real reader from its source and run it without the capability, where
 it prints x lines for what it may not read. The row for AC8 needs no reader. One row of AC6 runs only
 where the reader is installed (declared in requires.json as the namespace helper's rows are): it runs the
@@ -287,3 +311,15 @@ proves all three.
   kernel names (AC1), because a socket in the owner's runtime folder can be answered by any process of the
   owner's; and the reader ends with no end line when a write fails (AC5). The footprint and the protected
   paths gain the two unit templates. Five criteria became eight. Status ready.
+- 2026-11-13: design 7.1 amended after its second validation
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md; design 14.7), which found B1 to B3 and R1 to R4
+  resolved and kept the writer check. N-R4: AC1 holds the writer by a pidfd (SO_PASSPIDFD, measured on
+  this host), with a falsifier for a process id trusted without it; AC5 has the reader wait after its end
+  line until the probe has shut down its side, with a row for a short output and a falsifier for a reader
+  that exits at once. The reader checks that /proc is a process file system, and the design names what it
+  takes on trust about /proc. N-R5: AC7 reads the blob with git's cat-file under --no-replace-objects,
+  from a commit named by its full hash, and the setup text says the digest is copied from the approved
+  review record; one more falsifier, a replace ref. From the same validation's table: AC1 gains a
+  falsifier for version 3 of the capability attribute with any root id, and AC6's installed row records
+  the reader's run time. Still eight criteria. VELDO-0299's AC1 is not edited, as that validation
+  confirmed. Status ready.

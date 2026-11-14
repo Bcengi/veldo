@@ -37,14 +37,21 @@ acceptance_criteria:
   - id: AC1
     text: >
       Each row of the table in 8.8 gives its result, including the agent repository, the build root folder
-      named for a worktree, the plain repository and the session scratch
+      named for a worktree, the plain repository and the session scratch. A clone folder's work tree, a
+      batch clone and a candidate workspace are adopted as agent repository items with their form, and a
+      folder that is itself a git repository is never adopted as scratch or as build output
     falsified_by: >
-      Adopt every folder under a root; the row with no provable owner gets an item and fails
+      Each of these turns a row of its own red. Adopt every folder under a root: the row with no provable
+      owner gets an item. Adopt a batch clone as scratch: the row's clone holds a commit its main
+      repository does not, its batch has ended and its scope is in act, and after reconcile the clone is
+      gone and the commit is in no repository
   - id: AC2
     text: >
       Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was
       not already due. A removing worktree or private repository is completed only when its keep record
-      exists and every ref in it resolves; otherwise it is deferred as keep_failed
+      exists, every ref in it resolves and the snapshot it names is there with its digest; otherwise it is
+      deferred as keep_failed. An item that is due or removing with a keep record, and whose thing is
+      still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5)
     falsified_by: >
       Remove reported things; the reported fixture folder is gone and the row fails
   - id: AC3
@@ -98,3 +105,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   AC2: reconcile completes a removing worktree or private repository only when its keep record exists and
   every ref in it resolves (design 0.2); otherwise it is deferred as keep_failed and what is left of it
   stays. The falsifier is unchanged.
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N1: AC1 says that a clone folder's work tree, a batch clone and a
+  candidate workspace are adopted as agent repository items with their form, and that a folder that is
+  itself a git repository is never adopted as scratch or build output; its second falsifier is the row the
+  validation asked for, a batch clone with an unpushed commit, its batch ended and its scope in act,
+  adopted as scratch. N2: AC2 completes a removing item only when the snapshot its keep record names is
+  there with its digest, and an item that is due or removing with a keep record and still whole at its
+  locator is attempted again from rule 1, which is how a crash between the save and the removal is
+  recovered. AC2's falsifier is unchanged.

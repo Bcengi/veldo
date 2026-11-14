@@ -151,3 +151,9 @@ the rules, and Probes, which holds the protect list.
   reach what it records: a deferral for process use now names the thread as well as the process, with the
   device and inode number that matched, and the probe reads every thread of a process (VELDO-0344 AC2 and
   AC8). No acceptance criterion changed.
+- 2026-11-13: from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md; design 14.7). This ticket is built and its
+  criteria are not edited. The seven rules keep their order and their numbers. Rule 6's look starts at the
+  item's own folder: an item whose folder is a git repository and whose kind is neither worktree nor agent
+  repository holds itself (VELDO-0347 AC5). Where a removal saves a snapshot, the save is part of the keep
+  step and fails as keep_failed (VELDO-0345 AC5). No acceptance criterion changed.

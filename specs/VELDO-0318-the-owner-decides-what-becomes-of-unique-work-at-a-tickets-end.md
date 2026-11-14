@@ -32,7 +32,8 @@ observability:
     the kept branch for Save, kept for Keep, the forced remove for Discard.
   error_taxonomy: >
     space_deferred:unique_work with one request per item. A Discard whose file list no longer equals the
-    list the owner was shown does not run.
+    list the owner was shown does not run. space_deferred:keep_failed when the snapshot cannot be saved,
+    and when an ignored file that is work is new or changed at Save's remove.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -47,16 +48,22 @@ acceptance_criteria:
       Save commits the changes on a kept branch named for the ticket, or for the owning run when the
       worktree has no ticket, authored as the owner's configured identity, and then removes the worktree
       without force. Ignored files that are work go to the snapshot store, outside git, and never to the
-      branch. Without a settled Save answer Veldo makes no commit
+      branch, and the remove runs only while those files still equal the snapshot by path, mode and
+      digest: a new or changed one refuses it, and the worktree stays with everything in it. Without a
+      settled Save answer Veldo makes no commit
     falsified_by: >
-      Commit at the deferral; the row finds a commit with no settled answer and fails
+      Each of these turns a row of its own red. Commit at the deferral: the row finds a commit with no
+      settled answer. Run Save's remove without the comparison: the row adds a local settings file between
+      the snapshot and the remove, and finds it neither in place nor in the snapshot
   - id: AC3
     text: >
       Discard removes that one worktree with git's force option, only on a settled discard answer, only
       while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass. It first writes the
       snapshot of the uncommitted state to the snapshot store (VELDO-0345), runs only while the worktree
-      still equals that snapshot, and does not run when the snapshot cannot be written. The branch and its
-      commits are still there afterwards, and no commit is lost (VELDO-0343)
+      still equals that snapshot, and does not run when the snapshot cannot be written, synced, read back
+      or renamed into place. A Discard raised again after such a refusal saves under the next attempt
+      number and leaves the earlier folder as it is. The branch and its commits are still there
+      afterwards, and no commit is lost (VELDO-0343)
     falsified_by: >
       Skip the list comparison; the row that adds a file after the request was shown loses it and fails
   - id: AC4
@@ -113,3 +120,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   does not enter git; commits stay on kept refs (design 0.3). AC2: Save writes ignored files that are work
   to the snapshot store. AC3: Discard writes its snapshot to the snapshot store. Both said the saved ref.
   Both falsifiers are unchanged.
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N2.5: AC2 says Save's remove runs only while the worktree's ignored
+  files that are work equal the snapshot by path, mode and digest; rule 5's case 3 counts exactly those
+  files as saved, for that one remove. Without it Save could never finish, or lost an ignored file written
+  after its snapshot. AC2 gains a second falsifier: a local settings file added between the snapshot and
+  the remove. N2.1 and N2.2: AC3 lists the failures of the save that refuse the Discard, and a Discard
+  raised again saves under the next attempt number and leaves the earlier folder as it is. AC3's falsifier
+  is unchanged.

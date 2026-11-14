@@ -18,6 +18,8 @@ footprint:
   - ".veldo/control_space.py"
   - "engine/.veldo/control_space_keep.py"
   - ".veldo/control_space_keep.py"
+  - "engine/.veldo/control_space_reconcile.py"
+  - ".veldo/control_space_reconcile.py"
   - "engine/.veldo/control_api.py"
   - ".veldo/control_api.py"
   - "engine/ui/src/api/routes.json"
@@ -34,27 +36,39 @@ behavior_bearing: true
 observability:
   logs: >
     A restore is one journal record with the item, the path and the refs it used. A drop is one journal
-    record with the item and every ref it deleted, with the commit each one held.
+    record with the item and every ref it deleted, with the commit each one held. A report of kept work
+    missing names the item, its ticket, the path it had and the ref or the snapshot that is missing.
   error_taxonomy: >
-    restore is refused when it is not signed by the owner, when something is at the path, and for an item
-    with no keep record. drop kept is refused when it is not signed by the owner.
+    restore is refused when it is not signed by the owner, when something is at the path, for an item
+    with no keep record, when a kept ref does not resolve, when the snapshot the keep record names is
+    missing or does not match its recorded digest or its manifest, and when a manifest path leads outside
+    the target. Each refusal says what is missing and adds nothing. drop kept is refused when it is not
+    signed by the owner.
 acceptance_criteria:
   - id: AC1
     text: >
       veldo space kept lists, for each removed worktree and private repository, its ticket, the path it
       had, the event that removed it and each kept ref with its commit, and says of each ref whether it
-      still resolves. With no ledger reachable it lists the same refs from the repository alone
+      still resolves and of each snapshot whether it is still there and whole. With no ledger reachable it
+      lists the same refs from the repository alone
     falsified_by: >
       Read the ledger only; the row with the authority down gets an empty list and fails
   - id: AC2
     text: >
       veldo space restore adds a worktree at the path the item had, or at the path given, at the kept
-      head, and applies the saved snapshot from the snapshot store: after a Discard and a restore the
-      tracked edits, the staged state, the untracked files and the ignored files that are work are back
-      byte for byte with their modes. It refuses when something is at the path or when a saved file does
-      not match its manifest, and it leaves the kept refs and the snapshot in place
+      head, and applies the snapshot the keep record names: after a Discard and a restore the tracked
+      edits, the staged state, the untracked files and the ignored files that are work are back byte for
+      byte with their modes. Whether there is a snapshot is read from the keep record alone. It refuses,
+      adding nothing and saying what is missing, when something is at the path, when the record names a
+      snapshot whose folder or manifest is missing or whose manifest has another digest than the record
+      holds, when a saved file does not match its manifest, and when a manifest path is absolute, holds a
+      .. part or resolves outside the target path. It leaves the kept refs and the snapshot in place
     falsified_by: >
-      Restore the head without the snapshot; the row's untracked file is missing and the row fails
+      Each of these turns a row of its own red. Restore the head without the snapshot: the row's untracked
+      file is missing. Apply the snapshot only when the folder is there: the row deletes the snapshot,
+      restores, finds the head without the untracked file, and the command said success. Copy a manifest
+      path as it is written: the row's manifest names a path with a .. part, and a file is written outside
+      the target
   - id: AC3
     text: >
       Only veldo space kept drop removes a kept ref or a snapshot. It is the owner's signed command, it
@@ -70,6 +84,18 @@ acceptance_criteria:
     falsified_by: >
       Leave the kept refs out of the read; the row that expects the restore command beside the removed
       worktree finds none and fails
+  - id: AC5
+    text: >
+      Reconcile and veldo space kept check every keep record against the disk: each kept ref resolves to
+      its recorded commit, the snapshot folder the record names is there, and its manifest has the
+      recorded digest. What fails is reported under space.reports as kept work missing, with the item, and
+      is shown at the top of the console's Space screen until the ref or the snapshot is back or the owner
+      drops that item's kept work. A snapshot store that is gone, or whose owner or mode is not the
+      installation owner's and 0700, is reported the same way. Snapshot folders no keep record names are
+      listed with their sizes, and nothing is proposed for them
+    falsified_by: >
+      Check the kept refs only; the row deletes the snapshot store, runs reconcile, finds no report and
+      fails
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Revert the change. The kept refs and the snapshots stay. They are restored by hand: git worktree add
@@ -93,8 +119,8 @@ the design holds the ticket itself; its acceptance criteria and falsifiers are c
 
 What section 12 says about this ticket:
 
-> Components: CLI, Ledger (restore, drop kept), API, Console. Depends on 0319 and 0345. It builds section
-> 0.5.
+> Components: CLI, Ledger (restore, drop kept), Keeper (the check of keep records), Reconciler, API,
+> Console. Depends on 0319 and 0345. It builds section 0.5 and the watch on the snapshot store of 0.3.
 
 Build order. It is in the closing sequence, after 0319, whose console it extends. depends_on holds the
 dependencies the design states for this ticket.
@@ -120,3 +146,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   installation, the count and the size of all kept refs and of all snapshots; nothing drops them without
   the owner's rule. The three falsifiers are unchanged. Plain git no longer restores a snapshot; without
   Veldo its working files are copied back by hand (design 0.5).
+- 2026-11-13: amended from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md, verdict CHANGES; design 14.7), under the owner's
+  rule that no work is ever lost. N3.1: AC2 reads whether there is a snapshot from the keep record alone,
+  and refuses, adding nothing and saying what is missing, when the folder or the manifest the record names
+  is missing, when the manifest has another digest, and when a manifest path is absolute, holds a .. part
+  or resolves outside the target; read from the disk, a deleted snapshot gave a worktree at the kept head
+  and the word success. AC2 gains two falsifiers. N3.2: AC1 says of each snapshot whether it is still
+  there and whole, and new AC5 has reconcile and veldo space kept check every keep record and report kept
+  work missing until it is back or dropped, so the loss of the store or of a kept ref is never silent. The
+  footprint gains the reconciler, which calls the check. The guard hook the validation recommended is put
+  to the lead in design section 15 and is not in this ticket. Four criteria became five.

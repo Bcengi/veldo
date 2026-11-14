@@ -112,3 +112,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   and a candidate workspace take the agent repository's row as private repositories (VELDO-0347), and the
   review scratch action saves a snapshot before it deletes, inside the remover (VELDO-0345, VELDO-0336
   AC3). No acceptance criterion changed.
+- 2026-11-13: from the validation of design section 0
+  (design-veldo-nowork-0344r2-validation-2026-11-14.md; design 14.7). This ticket is built and its
+  criteria are not edited. The ten kinds stay. The table gains one row, built by VELDO-0347 (its AC5): an
+  agent repository item whose form is a worker clone, a batch clone or a candidate workspace ends at the
+  events its creator sends, where the agent repository's own row does nothing at run finished. This
+  replaces the note above that those three take the agent repository's row. An item with no form keeps
+  that row. No acceptance criterion changed.
