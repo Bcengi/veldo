@@ -1,0 +1,8 @@
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, at commit cd4acb20. Partial runs: none is the gate.
+  142_veldo_0303_space_paths                      23 passed    3.20s
+  06_capabilities_manifest_honesty_veldo         262 passed   10.44s
+  66_veldo_0042_clones                            20 passed    4.00s
+  70_veldo_0057_landing                           31 passed   16.03s
+  85_veldo_0158_credential_delivery               23 passed    5.13s
+  128_veldo_0235_land_locally                      9 passed   13.69s
+  139_veldo_0301_space_signal                     18 passed    3.14s

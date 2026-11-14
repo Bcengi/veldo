@@ -1,0 +1,304 @@
+[
+ {
+  "falsifier": "space303-fleet-force-left-in-place",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/fleet-untracked-stays"
+  ],
+  "red_rows": [
+   "ac1/fleet-alone",
+   "ac1/fleet-commit-stays",
+   "ac1/fleet-no-ledger",
+   "ac1/fleet-not-recorded",
+   "ac1/fleet-removed-through-signal",
+   "ac1/fleet-untracked-stays",
+   "paths/no-delete-with-a-ledger"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac1/fleet-removed-through-signal",
+    "the item is removed and the answer says so [deferred {'item': 'space:item:551bb5cdfa384c3bb960476f141ee0c2', 'state': 'deferred', 'deferral': 'in_use', 'path': '/tmp/veldo-0303-jucvk9ld/projects/orchard-worktrees/worker-1'}]"
+   ],
+   [
+    "VELDO-0303 ac1/fleet-untracked-stays",
+    "the untracked file is on disk byte for byte as the call returns [None]"
+   ],
+   [
+    "VELDO-0303 ac1/fleet-commit-stays",
+    "the worktree stays, deferred as unique_work [{'item': 'space:item:64bee55439b94ba78361c3475a31494c', 'state': 'deferred', 'deferral': 'in_use', 'path': '/tmp/veldo-0303-jucvk9ld/projects/orchard-worktrees/worker-3'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-fleet-owner-of-another-worktree-signalled",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/fleet-alone"
+  ],
+  "red_rows": [
+   "ac1/fleet-alone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac1/fleet-alone",
+    "nothing is signalled: the journal did not grow and both items are present [7 removed removed]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-clone-teardown-direct-delete",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/open-file-stays"
+  ],
+  "red_rows": [
+   "ac2/open-file-stays",
+   "ac2/pins-after-outcome",
+   "ac2/report-mode-removes-nothing",
+   "ac2/teardown-through-signal",
+   "ac2/uncommitted-stays",
+   "paths/absent-only-when-not-found",
+   "paths/no-delete-with-a-ledger"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac2/teardown-through-signal",
+    "the three items are removed, the scratch folder and the work tree before the root [['present', 'present', 'present']]"
+   ],
+   [
+    "VELDO-0303 ac2/open-file-stays",
+    "the work tree and the file the process holds are on disk as the teardown returns [None]"
+   ],
+   [
+    "VELDO-0303 ac2/pins-after-outcome",
+    "each pin was released with the work tree's item already removed and its folder gone [None [('present', False)]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-clone-provision-direct-delete",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/failed-provision"
+  ],
+  "red_rows": [
+   "ac2/failed-provision",
+   "paths/no-delete-with-a-ledger"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac2/failed-provision",
+    "the clone root is not on disk and the items that were declared are removed or gone [['declared', 'declared', 'declared']]"
+   ],
+   [
+    "VELDO-0303 paths/no-delete-with-a-ledger",
+    "in ac2/failed-provision no module called its recursive delete and the fleet ran no git remove [[('control_clone.py', '/tmp/veldo-0303-11o5sila/state/clones/clone-failed0000000000000000000000007')] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-pins-released-whatever-the-outcome",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/pins-after-outcome"
+  ],
+  "red_rows": [
+   "ac2/open-file-stays",
+   "ac2/pins-after-outcome",
+   "ac2/report-mode-removes-nothing",
+   "ac2/uncommitted-stays",
+   "paths/absent-only-when-not-found"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac2/open-file-stays",
+    "the pins are still held and the refusal is observed with the rule's name [space_deferred:in_use]"
+   ],
+   [
+    "VELDO-0303 ac2/pins-after-outcome",
+    "a clone whose work tree stays keeps every pin: nothing was released [space_deferred:in_use [('deferred', True)]]"
+   ],
+   [
+    "VELDO-0303 ac2/uncommitted-stays",
+    "the pins are still held"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-clone-in-use-not-first",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/clone-in-use-first"
+  ],
+  "red_rows": [
+   "ac2/clone-in-use-first"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac2/clone-in-use-first",
+    "a clone whose user has not ended is refused clone_in_use, unchanged [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-receiver-direct-delete",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/receiver-end"
+  ],
+  "red_rows": [
+   "ac3/deferred-then-swept",
+   "ac3/receiver-end",
+   "ac3/sweep-leftover",
+   "paths/no-delete-with-a-ledger"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac3/receiver-end",
+    "its item is removed, never present with its folder gone [present]"
+   ],
+   [
+    "VELDO-0303 ac3/sweep-leftover",
+    "a leftover whose directory an earlier event already removed is cleared, with nothing written [['dispatch/run-gone-06']]"
+   ],
+   [
+    "VELDO-0303 ac3/deferred-then-swept",
+    "a run directory a process sits in is whole and deferred as in_use at the receiver's end [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-sweep-direct-delete",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/sweep-leftover"
+  ],
+  "red_rows": [
+   "ac3/deferred-then-swept",
+   "ac3/sweep-leftover",
+   "paths/no-delete-with-a-ledger"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac3/sweep-leftover",
+    "its item is removed, never present with its folder gone [present]"
+   ],
+   [
+    "VELDO-0303 ac3/deferred-then-swept",
+    "the sweep finds it left, and while the process sits there it stays, refused by name [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/run-held-03', 'outcome': 'removed'}]]"
+   ],
+   [
+    "VELDO-0303 paths/no-delete-with-a-ledger",
+    "in ac3/sweep-leftover no module called its recursive delete and the fleet ran no git remove [[('control_launch.py', '/tmp/veldo-0303-vid6xtlv/state/runs/4a84240975f71a9a3621f5ef0898f528')] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-receiver-answers-for-an-unread-group",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/deferred-then-swept"
+  ],
+  "red_rows": [
+   "ac3/deferred-then-swept"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac3/deferred-then-swept",
+    "a run whose group nobody could read is left to the wired answer: here none, so it is deferred as in_use by the owner rule and whole [{'item': 'space:item:fa24a777496c47669eb5e172e557cafc', 'state': 'removed', 'deferral': None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-landing-line-direct-delete",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/landing-line-close"
+  ],
+  "red_rows": [
+   "ac4/candidate-with-work-stays",
+   "ac4/landing-line-close",
+   "paths/no-delete-with-a-ledger"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac4/landing-line-close",
+    "its item is removed, never present with its folder gone [present]"
+   ],
+   [
+    "VELDO-0303 ac4/candidate-with-work-stays",
+    "a candidate folder with a file nobody saved stays, the file byte for byte [[]]"
+   ],
+   [
+    "VELDO-0303 paths/no-delete-with-a-ledger",
+    "in ac4/landing-line-close no module called its recursive delete and the fleet ran no git remove [[('control_launch_work.py', '/tmp/veldo-0303-ol_y7r29/state/candidates/candidate-close-01')] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-lander-direct-delete",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/lander-discard"
+  ],
+  "red_rows": [
+   "ac4/candidate-with-work-stays",
+   "ac4/lander-discard",
+   "paths/no-delete-with-a-ledger"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac4/lander-discard",
+    "both items are removed, never present with their folders gone, and the candidate says discarded [present present]"
+   ],
+   [
+    "VELDO-0303 ac4/candidate-with-work-stays",
+    "a workspace a process holds a file in stays whole, with its own commit checked out [{}]"
+   ],
+   [
+    "VELDO-0303 paths/no-delete-with-a-ledger",
+    "in ac4/lander-discard no module called its recursive delete and the fleet ran no git remove [[('lander.py', '/tmp/veldo-0303-cporv06l/state/landing/veldo-candidate-discard-02'), ('lander.py', '/tmp/veldo-0303-cporv06l/scratch/observation-discard-02')] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-unread-path-read-as-absent",
+  "criterion": "AC2",
+  "expected_red": [
+   "paths/absent-only-when-not-found"
+  ],
+  "red_rows": [
+   "paths/absent-only-when-not-found"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 paths/absent-only-when-not-found",
+    "control_clone.py: the folder that could not be read is not gone, and the path with nothing at it is [{'item': None, 'state': 'gone', 'deferral': None} {'item': None, 'state': 'gone', 'deferral': None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

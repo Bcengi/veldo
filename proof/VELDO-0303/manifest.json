@@ -1,0 +1,131 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0303",
+ "commit": "cd4acb200f57fc8fa509d4081d16a4a01b46884d",
+ "tree": "eb77c66022488d8185d8df6bcfb191d8985d4770",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-14T07:23:29.722919+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "Rows ac1/fleet-removed-through-signal (a clean fleet worktree is removed at worktree abandoned by git's own remove after the keep step; its checked-out commit is on a kept ref of the main repository; no command of the remover held a force option and the fleet ran no git remove), ac1/fleet-untracked-stays (a worktree with an untracked file stays, the file byte for byte, deferred on the record as unique_work by rule 5 at worktree abandoned; the answer and the deferred list name it), ac1/fleet-commit-stays (a commit on the detached head that no ref holds: deferred, still checked out), ac1/fleet-alone, ac1/fleet-not-recorded, ac1/fleet-no-ledger (with no ledger no force option either: an untracked file and a moved head stay, a clean worktree goes). Green: proof/VELDO-0303/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "The rows drive the module's own removal method against a real Ledger on a real control store, with the real Signal, kind registry, probes, removers and keeper, on real folders, git repositories, worktrees, clones and pins that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The disk and the ledger are read after the call returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0303/falsifiers.json",
+     "detail": "space303-fleet-force-left-in-place (the force option left in place): ac1/fleet-untracked-stays red, \"the untracked file is on disk byte for byte as the call returns [None]\". space303-fleet-owner-of-another-worktree-signalled: ac1/fleet-alone red."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "Rows ac2/teardown-through-signal (scratch folder, work tree and root removed in that order at run finished; the work tree by the keep step and the folder remover, its head on a kept ref; retired), ac2/open-file-stays (a process holds an open file in the work tree: refused as space_deferred:in_use, the work tree and the file on disk, items deferred, pins held), ac2/clone-in-use-first (clone_in_use unchanged and before the ledger is asked anything), ac2/pins-after-outcome (each pin released with the work tree's item already removed; a clone whose work tree stays keeps every pin and its commit is readable after the cache was collected), ac2/uncommitted-stays, ac2/failed-provision (the failed-provision cleanup: declared items confirmed and sent through Signal, the pin released after the outcome, the provisioning's own error raised), ac2/report-mode-removes-nothing, ac2/no-ledger-as-before, paths/absent-only-when-not-found. Green: proof/VELDO-0303/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "The rows drive the module's own removal method against a real Ledger on a real control store, with the real Signal, kind registry, probes, removers and keeper, on real folders, git repositories, worktrees, clones and pins that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The disk and the ledger are read after the call returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0303/falsifiers.json",
+     "detail": "space303-clone-teardown-direct-delete (the direct delete left in place): ac2/open-file-stays red, \"the work tree and the file the process holds are on disk as the teardown returns [None]\". space303-clone-provision-direct-delete: ac2/failed-provision red. space303-pins-released-whatever-the-outcome: ac2/pins-after-outcome red. space303-clone-in-use-not-first: ac2/clone-in-use-first red. space303-unread-path-read-as-absent: paths/absent-only-when-not-found red."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "Rows ac3/receiver-end (at the receiver's end the run directory is removed through Signal; the item is removed and its removal record names run finished, the receiver and the folder remover), ac3/sweep-leftover (a leftover the sweep finds is removed through Signal; a leftover an earlier event already removed is cleared with nothing written), ac3/deferred-then-swept (a run directory a process sits in is deferred as in_use and whole; the sweep's next event removes it once the process is gone; a run whose group could not be emptied is not signalled, and one whose group nobody could read is not answered for). Green: proof/VELDO-0303/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "The rows drive the module's own removal method against a real Ledger on a real control store, with the real Signal, kind registry, probes, removers and keeper, on real folders, git repositories, worktrees, clones and pins that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The disk and the ledger are read after the call returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0303/falsifiers.json",
+     "detail": "space303-receiver-direct-delete (the receiver's direct delete left in place): ac3/receiver-end red, \"its item is removed, never present with its folder gone [present]\". space303-sweep-direct-delete (the sweep's): ac3/sweep-leftover red, the same words. space303-receiver-answers-for-an-unread-group: ac3/deferred-then-swept red."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "Rows ac4/landing-line-close (a candidate folder, a private repository, is removed at close through Signal after the keep step; the item is removed and its head is on a kept ref), ac4/lander-discard (the lander's candidate workspace and its observation folder removed through Signal; the candidate's own merge commit is on a kept ref of the main repository and readable there; discarded true), ac4/candidate-with-work-stays (a candidate folder with an unsaved file is deferred as keep_failed, a workspace a process holds a file in as in_use; both whole, and the caller is told). Green: proof/VELDO-0303/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/142_veldo_0303_space_paths.py",
+     "detail": "The rows drive the module's own removal method against a real Ledger on a real control store, with the real Signal, kind registry, probes, removers and keeper, on real folders, git repositories, worktrees, clones and pins that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The disk and the ledger are read after the call returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0303/falsifiers.json",
+     "detail": "space303-landing-line-direct-delete (the direct delete left in place): ac4/landing-line-close red, \"its item is removed, never present with its folder gone [present]\". space303-lander-direct-delete (the same row for the lander's candidate item): ac4/lander-discard red."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 142_veldo_0303_space_paths (23 rows). The existing suites of the changed modules, each on its own, are green: 06, 66, 70, 85, 128, and 139 (proof/VELDO-0303/suite-green.txt)."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, git, Signal, removers and keeper, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The twelve registered cases of finding 303 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy: every noop green, every mutant turns its target row red (proof/VELDO-0303/mutations.txt, falsifiers.json). The 231 cases registered before this ticket for the five changed modules still find their anchor exactly once."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py; python3 .veldo/validate.py all: exit 0."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "Not run, by the lead's instruction. The single suites, the registered cases through the driver's own functions and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "1. THE CREATORS DECLARE NOTHING YET (VELDO-0302 is not built). The suite declares and confirms each item itself, with the kind and parent design 6.10 gives it: a clone's root and scratch folder as scratch, its work tree as an agent repository inside the root, a run directory as scratch owned by its dispatch, a candidate folder and a candidate workspace as agent repositories. The removal paths find their items by path, so they do not depend on where a creator stores an identity. A thing no item records is not removed (rows ac1/fleet-not-recorded, paths/absent-only-when-not-found).",
+  "2. THE TABLE HAS NO CELL FOR A PRIVATE REPOSITORY AT RUN FINISHED (VELDO-0347 is not built). The suite's ledger and registry are a copy of the current table with one cell added: agent repository at run finished, remove. On today's table a clone's work tree and a candidate folder are not made due at run finished: they stay, the root waits, the pins stay held and the teardown is refused. Not proven here: that row itself, and the snapshot of a worker clone of an ended run (0347), which is why ac2/uncommitted-stays shows keep_failed.",
+  "3. NOTHING IN THE ENGINE BUILDS `space` YET. The service holds no Ledger. The suite wires the mapping itself. In production the five paths run their no-ledger branch until a later ticket wires it; that branch is the one the existing suites drive, and they are green.",
+  "4. OBJECTS MADE WITHOUT THEIR STORES. The clone provisioner, the receiver, the runner and the landing line's runtime are made with object.__new__ and the attributes their removal methods read; the lander's ops likewise. The dispatch records are a mapping, the process table a fixture folder, the docker client a function, and the two checks of a switch to act allow. For ac2/failed-provision the provisioner's accepted source, its protection and its verify are replaced so that the provisioning fails after the checkout, and uuid4 is fixed so the suite can declare the items first.",
+  "5. WITH NO LEDGER THE DIRECT DELETES REMAIN, in the branch that runs only when `space` is None (spec History, 2026-11-14). Design 6.10 says none of these paths calls a delete itself after the change; that holds with a ledger (row paths/no-delete-with-a-ledger) and not without one. The fleet is the exception: no force option in either branch.",
+  "6. NOT BUILT, FOR THE LEAD: a clone whose teardown is refused keeps its dispatch's worker slot (control_retirement.py, outside this footprint). In report mode that is every clone once a ledger is wired. Recorded in the spec History.",
+  "7. THE LANDING LINE'S EVENT is run finished, by the build's reading of design section 5 and 6.10; the design does not name it."
+ ],
+ "rollback": "Revert the change. The seven paths delete directly again, the fleet's with git's force option."
+}
