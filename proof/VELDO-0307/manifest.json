@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0307",
- "commit": "0023e86fc43482d47ecfe6ad2aa4dd76b52504ca",
- "tree": "6e5943522370ef4e74e996a6ba06f9f464e0f69d",
- "producer": "Claude implementation agent (build, and the fix of the two protect-list defects the build left for the lead); not an independent reviewer",
- "produced_at": "2026-11-14T11:12:17.874397+00:00",
+ "commit": "2431bffbbba8d6387bdedd27c9cd0c6f3afc3ea5",
+ "tree": "2c2c33b369975d5fa76756818ff6f04826fa6365",
+ "producer": "Claude implementation agent (build, the fix of the two protect-list defects the build left for the lead, and the fix of the three findings of the independent review); not an independent reviewer",
+ "produced_at": "2026-11-14T11:34:53.263552+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -13,7 +13,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
-     "detail": "Rows ac1/inside-a-recorded-worktree (a container whose compose working folder label is inside the recorded worktree wt-b, a container on the second context whose second configuration file is, a container with no label and a bind mount whose host source is, and a volume and a network that carry the labels: each has wt-b's owner as proposed owner, with the worktree, the label or mount that gave it and the path in the report; the container and the volume whose label names a same-named folder wt-b outside every worktree, the same pair for wt-a of the act-mode project, and a container in a folder whose name only begins with the worktree's name, have no owner, no proposed owner and no parent), ac1/by-where-the-path-leads (a path that leads into the worktree through a link outside it places the container; a path written inside the worktree that leads out through a link places nothing; the reconciler's worktree_inside answers the same when asked itself), ac1/no-proposal-when-undecided (a path with a .. segment although a bind source is inside, a configuration file that is not an absolute path, paths into two recorded worktrees, a worktree marked gone and a volume shown without its CreatedAt: each is a report with no proposed owner that says why; without the reconciler the adapter reports and proposes nothing, and with it the same record shows the proposed owner), ac1/a-run-label-comes-first (a container with a known run's label is that run's item although it binds a folder of the worktree; one whose label names no known run is a report with no proposal although compose ran inside the worktree). Green: proof/VELDO-0307/suite-green.txt."
+     "detail": "Rows ac1/inside-a-recorded-worktree (a container whose compose working folder label is inside the recorded worktree wt-b, a container on the second context whose second configuration file is, a container with no label and a bind mount whose host source is, and a volume and a network that carry the labels: each has wt-b's owner as proposed owner, with the worktree, the label or mount that gave it and the path in the report; the container and the volume whose label names a same-named folder wt-b outside every worktree, the same pair for wt-a of the act-mode project, and a container in a folder whose name only begins with the worktree's name, have no owner, no proposed owner and no parent), ac1/by-where-the-path-leads (a path that leads into the worktree through a link outside it places the container; a path written inside the worktree that leads out through a link places nothing; the reconciler's worktree_inside answers the same when asked itself), ac1/no-proposal-when-undecided (a path with a .. segment although a bind source is inside, paths into two recorded worktrees, a worktree marked gone and a volume shown without its CreatedAt: each is a report with no proposed owner that says why; without the reconciler the adapter reports and proposes nothing, and with it the same record shows the proposed owner), ac1/a-run-label-comes-first (a container with a known run's label is that run's item although it binds a folder of the worktree; one whose label names no known run is a report with no proposal although compose ran inside the worktree). Green: proof/VELDO-0307/suite-green.txt."
     },
     {
      "type": "integration",
@@ -24,6 +24,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0307/falsifiers.json",
      "detail": "space307-folder-name-only (the declared falsifier: the worktree is matched by its folder's name alone): ac1/inside-a-recorded-worktree red, the container in the same-named folder outside gets an owner; loss/nothing-of-theirs-touched red too, because in the act-mode project that container was adopted and then stopped and removed at the ticket's end, which is the loss the row plants. Further cases, each red on its row: space307-link-not-followed, space307-parent-segment-read, space307-two-worktrees-one-taken, space307-gone-worktree-still-recorded, space307-run-label-ignored, space307-no-identity-still-proposed, space307-bind-source-not-read, space307-configuration-files-not-read. Each applied once, noop copy green then mutant copy red: proof/VELDO-0307/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "The review, finding 2 (the lead's decision). Row review/split-owner-is-a-conflict: a container whose compose working folder leads outside every recorded worktree while its bind source leads into one, in the act-mode project and in the report-mode one, and a container whose only compose label is a configuration file outside with a bind source inside, are each a report with no owner, no proposed owner and no parent, not adopted, ending on no event, and the report says conflict; the adapter said reported, never proposed or adopted; the reconciler asked itself answers conflict in either order of the paths, for a working folder and for a configuration file outside, while a working folder inside places the object whatever else leads outside, a bind source alone still places it, a configuration file inside still places it although the working folder is outside (left for the lead, spec History), two worktrees are still two worktrees and a path that is not absolute is still path_unread; after the tickets of the worktrees and the run ended through the real Signal and removers, each of the three containers was named to no stop and no remove, is running, and nobody owns it. The container relative-1, which was in ac1/no-proposal-when-undecided as a report that said path_unread, is now in review/relative-label-refused (AC3 evidence): it has no record."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0307/falsifiers.json",
+     "detail": "space307-split-owner-placed-by-its-bind-source (finding 2 as it was: the conflict answer is gone): review/split-owner-is-a-conflict red, its first false check being that in the act-mode project the container split-a-1 has the worktree's owner and the worktree as parent. space307-compose-label-outside-not-seen: the same row red on the same check. Only the first false check of a row is kept in falsifiers.json. proof/VELDO-0307/mutations.txt."
     }
    ]
   },
@@ -76,6 +86,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0307/falsifiers.json",
      "detail": "Ten cases for the two rows, each noop green then mutant red on its row. protect/image-pattern-every-tag: space307-ledger-image-pattern-by-the-full-tag (the defect as it was: the Ledger matches the tag in full), space307-ledger-digest-read-as-a-tag, space307-ledger-tagged-pattern-covers-every-tag, space307-rule-2-image-pattern-by-the-full-tag, space307-rule-2-tagged-pattern-covers-every-tag. protect/covered-after-adoption: space307-rule-2-reads-no-labelled-path (the defect as it was: rule 2 does not read a labelled path), space307-rule-2-unread-labels-pass, space307-rule-2-labelled-paths-not-read, space307-rule-2-configuration-files-not-split, space307-rule-2-labelled-path-beneath-only. proof/VELDO-0307/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "The review, findings 1 and 3. Row review/relative-label-refused: in the adapter, a container whose configuration file label is not an absolute path, one whose working folder label is not and whose bind source is inside the act-mode worktree, and one whose working folder label is not and that carries a known run's label, each have no record, neither an item nor a report, and the adapter said refused, labels_unread; covered() answers unread for such a label on a container, a volume and an image, still answers the protect entry when another path, or the name, is protected, and reads an empty label as no label; after the tickets and the run ended none was named to a stop or a remove and each is running. At removal: a container adopted to a worktree while its labels are absolute paths passes rule 2; the stand-in engine is then made to show a working folder label that is not an absolute path; the probe's labelled() answers read False for it and for a second configuration file that is not one, protected for such a file beside a protected working folder, and read True for an empty label; rule 2 refuses the removal as labels_unread; at the ticket's end through the real Signal and removers the container was named to no stop and no remove, is running, and its item is deferred with labels_unread. Row review/digest-pattern-listed: with a protect entry that names a digest, the image on the second context known by that digest alone is listed as protected by its name, with its Id; another digest of the same repository is not covered and does not take the listing away; a tag of that repository on the first context is not listed; the Ledger's protected_by, rule 2's protected and the adapter's covered agree on both digests; no image has a record and the engine was asked ls and inspect of images only. The check of image_names in ac3/protected-image now holds the digest name in full. In ac2/report-mode the second snapshot counts the three containers of the first row as refused and writes nothing."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0307/falsifiers.json",
+     "detail": "Four cases, each noop green then mutant red on its row. review/relative-label-refused: space307-relative-label-passes-rule-2 (finding 1 as it was at removal: the path is skipped; the first false check is the probe answering read True for a working folder that is not an absolute path), space307-relative-label-passes-the-adapter (finding 1 as it was in the adapter; the first false check is relative-1 having a report record; ac2/report-mode is red too). Only the first false check of a row is kept in falsifiers.json. review/digest-pattern-listed: space307-digest-name-not-listed (finding 3 as it was; ac3/protected-image is red too, on the names of an image), space307-uncovered-image-unlists-its-namesake. proof/VELDO-0307/mutations.txt."
     }
    ]
   }
@@ -84,7 +104,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 145_veldo_0307_space_docker_ownership (16 rows). Each on its own, green: the sixteen suites 130 to 145, 144 with its real-engine row skipped (proof/VELDO-0307/suite-green.txt, which also names what was not run)."
+   "command": "python3 scripts/selftest.py --suite 145_veldo_0307_space_docker_ownership (19 rows). Each on its own, green: the sixteen suites 130 to 145, 144 with its real-engine row skipped (proof/VELDO-0307/suite-green.txt, which also names what was not run)."
   },
   {
    "name": "integration",
@@ -94,7 +114,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The 26 registered cases of finding 307 in scripts/check_teeth_mutations.py (16 of the build, 10 of the fix), each applied once through the driver's own materialize() and worker(), noop then mutant: 26 of 26 red on their target rows, no noop red (proof/VELDO-0307/falsifiers.json, mutations.txt). The 98 earlier registered cases in the three modules the fix changed (control_space.py, control_space_probe.py, control_space_signal.py; findings 297, 299, 301, 306, 326, 330, 331, 344, 345), each applied once in mutant mode against its own suite on the tree of this commit: 98 of 98 red on their target rows. The 19 earlier cases in the two modules the build changed were run at the build (19 of 19 red) and those modules are unchanged since."
+   "command": "The 32 registered cases of finding 307 in scripts/check_teeth_mutations.py (16 of the build, 10 of the fix of the two protect-list defects, 6 of the review), each applied once through the driver's own materialize() and worker(), noop then mutant, on the tree of this commit: 32 of 32 red on their target rows, no noop red (proof/VELDO-0307/falsifiers.json, mutations.txt). The 59 earlier registered cases in the three modules the review's fix changed (control_space_docker.py, control_space_probe.py, control_space_reconcile.py; findings 299, 301, 306, 331, 344), each applied once in mutant mode against its own suite on the tree of this commit: 59 of 59 red on their target rows. The earlier cases in control_space.py and control_space_signal.py were run at the fix before (98 of 98 red with those of the probes) and those two modules are unchanged since."
   },
   {
    "name": "fast checks",
@@ -104,7 +124,7 @@
   {
    "name": "gate",
    "status": "not_run",
-   "command": "./scripts/verify.sh was not run by the builder, at the build or at the fix, by the lead's instruction: the lead runs it through the gate lock. Suite 86_veldo_0127 is known 52 of 54 on this branch until the lead recaptures its live captures; it was not run and not touched."
+   "command": "./scripts/verify.sh was not run by the builder, at the build, at the fix or at the review's fix, by the lead's instruction: the lead runs it through the gate lock. Suite 86_veldo_0127 is known 52 of 54 on this branch until the lead recaptures its live captures; it was not run and not touched."
   }
  ],
  "assumptions": [
@@ -114,7 +134,10 @@
   "4. RULE 2 AT REMOVAL NOW READS A LABELLED PATH (fixed after the build, by the lead's instruction; the footprint is extended in the spec's History). It reads the object's labels from the engine again at every judged removal, one more inspect per Docker item, and refuses when they cannot be read. A bind source is read as before by control_space_probe.mounts. Act mode is refused until VELDO-0332 and 0339.",
   "5. A BIND SOURCE IS READ AS A PATH OF THIS HOST. An engine context that reaches an engine on another host would report that host's paths; the installation's two contexts are local sockets.",
   "6. ONE EARLIER CASE MOVED WITH THE CODE: space306-compose-project-not-in-the-locator now carries a second edit, because the adapter reads the compose project label against the protect list itself before the ledger does, and the defect needs both readings gone. With both, its row ac1/protected is red as before.",
-  "7. AN IMAGE NAME IS READ AS WRITTEN. The Ledger and rule 2 take the repository as the name without its tag (what follows the last colon when no / comes after it) and without its digest (what follows @). A registry host or the library/ prefix an engine may leave out or add is not made the same: minio/minio does not cover registry.example:5000/minio/minio. The adapter's listing of protected images (image_names) is unchanged: it knows an image by each tag in full and by each repository, so a pattern that names a digest is matched by the Ledger and rule 2 and not by that listing."
+  "7. AN IMAGE NAME IS READ AS WRITTEN. The Ledger and rule 2 take the repository as the name without its tag (what follows the last colon when no / comes after it) and without its digest (what follows @). A registry host or the library/ prefix an engine may leave out or add is not made the same: minio/minio does not cover registry.example:5000/minio/minio. The adapter's listing of protected images (image_names) knows an image by each tag and each digest name in full and by each repository, so a pattern that names a digest is matched there too (the review, finding 3). Two images of one repository are listed under one name, the repository's: the listing shows the one read last that is covered.",
+  "8. A SPLIT OWNER IS A CONFLICT ONLY WHEN THE BIND SOURCE IS ALL THAT LEADS INSIDE (the review, finding 2, the lead's decision). An object whose compose working folder leads outside every recorded worktree while one of its configuration files leads into one is still placed by that file, as AC1 reads and as the build's rows show. The review's wording would make that a conflict as well. It is left for the lead and recorded in the spec's History. The design's 6.4 text, outside this ticket's footprint, still says a bind source places the object; it was not edited.",
+  "9. A LABEL THAT IS NOT AN ABSOLUTE PATH WAS NOT SEEN ON A REAL ENGINE: compose wrote absolute paths on both measured engines (compose-labels.json). The rows make the stand-in engine show one. At removal the row changes the labels of a container the stand-in already holds, which a real engine does not allow; it stands for an item recorded by a path other than the adapter. An object refused as labels_unread has no record, so it is not in the ledger's reports: it is in the adapter's observations only, as a container with unread mounts is.",
+  "10. THE REVIEW'S OBSERVATION ON VOLUMES (a volume placed only by a path label would be removed with its worktree with no unique-work rule) is not built: no measured engine writes the label on a volume, and the lead decides it."
  ],
  "rollback": "Revert the change. Objects without a run label stay reports with no proposed owner."
 }

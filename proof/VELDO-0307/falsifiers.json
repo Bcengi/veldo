@@ -36,8 +36,8 @@
    "ac2/report-mode"
   ],
   "red_rows": [
-   "ac1/by-where-the-path-leads",
    "ac1/inside-a-recorded-worktree",
+   "ac1/by-where-the-path-leads",
    "ac1/no-proposal-when-undecided",
    "ac2/report-mode",
    "ac2/report-then-act",
@@ -58,7 +58,7 @@
    ],
    [
     "VELDO-0307 ac2/report-mode",
-    "in report mode the container meadow-web-1 is a report and not an item: no owner, no parent, not adopted, ending on no event [owner {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent space:item:76898d1e18e34adb9f5ee666073d7a14, adopted True, ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']]"
+    "in report mode the container meadow-web-1 is a report and not an item: no owner, no parent, not adopted, ending on no event [owner {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent space:item:5bb94a93cdf943db9f62628b239b473a, adopted True, ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']]"
    ],
    [
     "VELDO-0307 ac2/report-then-act",
@@ -80,9 +80,9 @@
    "ac3/protected-container"
   ],
   "red_rows": [
-   "ac3/covered-later",
+   "ac3/protected-volume",
    "ac3/protected-container",
-   "ac3/protected-volume"
+   "ac3/covered-later"
   ],
   "red_details": [
    [
@@ -147,12 +147,17 @@
    "ac1/no-proposal-when-undecided"
   ],
   "red_rows": [
-   "ac1/no-proposal-when-undecided"
+   "ac1/no-proposal-when-undecided",
+   "review/split-owner-is-a-conflict"
   ],
   "red_details": [
    [
     "VELDO-0307 ac1/no-proposal-when-undecided",
     "the container two-1 is a report with no proposed owner: two_worktrees [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+   ],
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "a bind source alone still places, a configuration file inside still places although the working folder is outside, and two worktrees are still two worktrees"
    ]
   ],
   "noop_red_rows": [],
@@ -181,7 +186,7 @@
    ],
    [
     "VELDO-0307 ac2/report-mode",
-    "a second snapshot writes nothing [{'default': {'matched': 21, 'refused': 1, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
+    "a second snapshot writes nothing [{'default': {'matched': 23, 'refused': 4, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
    ]
   ],
   "noop_red_rows": [],
@@ -235,9 +240,10 @@
   "red_rows": [
    "ac1/inside-a-recorded-worktree",
    "ac1/no-proposal-when-undecided",
-   "ac2/act-mode",
    "ac2/report-mode",
-   "protect/covered-after-adoption"
+   "ac2/act-mode",
+   "protect/covered-after-adoption",
+   "review/split-owner-is-a-conflict"
   ],
   "red_details": [
    [
@@ -259,6 +265,10 @@
    [
     "VELDO-0307 protect/covered-after-adoption",
     "while nothing covers it the container late-bind-1 is adopted to the worktree, and rule 2 passes it [None None ['ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children']]"
+   ],
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed None, parent None, outside]"
    ]
   ],
   "noop_red_rows": [],
@@ -273,20 +283,17 @@
   ],
   "red_rows": [
    "ac1/inside-a-recorded-worktree",
-   "ac1/no-proposal-when-undecided",
    "ac2/report-mode",
    "ac3/protected-container",
    "ac3/protected-image",
-   "protect/covered-after-adoption"
+   "protect/covered-after-adoption",
+   "review/relative-label-refused",
+   "review/split-owner-is-a-conflict"
   ],
   "red_details": [
    [
     "VELDO-0307 ac1/inside-a-recorded-worktree",
     "the container meadow-cf-1 has the worktree wt-b as proposed owner, by its compose_config_file [None None outside]"
-   ],
-   [
-    "VELDO-0307 ac1/no-proposal-when-undecided",
-    "the container relative-1 is a report with no proposed owner: path_unread [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
    ],
    [
     "VELDO-0307 ac2/report-mode",
@@ -303,6 +310,14 @@
    [
     "VELDO-0307 protect/covered-after-adoption",
     "while nothing covers it the container late-cf-1 is adopted to the worktree, and rule 2 passes it [None None ['ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children']]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:c1dc90f604fd4c65be1b65cadddbb2eb'] [('proposed', None)]]"
+   ],
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "in the report-mode project the container split-cf-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent None, None]"
    ]
   ],
   "noop_red_rows": [],
@@ -318,12 +333,18 @@
    "ac3/protected-image"
   ],
   "red_rows": [
-   "ac3/covered-later",
+   "ac2/report-mode",
+   "ac3/protected-volume",
    "ac3/protected-container",
    "ac3/protected-image",
-   "ac3/protected-volume"
+   "ac3/covered-later",
+   "review/relative-label-refused"
   ],
   "red_details": [
+   [
+    "VELDO-0307 ac2/report-mode",
+    "a second snapshot writes nothing [{'default': {'matched': 30, 'protected': 3}, 'desktop-linux': {'matched': 7, 'protected': 1}}]"
+   ],
    [
     "VELDO-0307 ac3/protected-volume",
     "the volume vault_data is listed as protected, by its compose_working_dir [None None]"
@@ -339,6 +360,10 @@
    [
     "VELDO-0307 ac3/covered-later",
     "once a protected path is beneath its working folder it is listed as protected [None]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:532c8aa88f3b4da39f612d1bff41e457'] [('reported', None)]]"
    ]
   ],
   "noop_red_rows": [],
@@ -352,9 +377,9 @@
    "ac3/protected-image"
   ],
   "red_rows": [
+   "ac3/protected-volume",
    "ac3/protected-container",
-   "ac3/protected-image",
-   "ac3/protected-volume"
+   "ac3/protected-image"
   ],
   "red_details": [
    [
@@ -381,12 +406,17 @@
    "ac3/protected-image"
   ],
   "red_rows": [
-   "ac3/protected-image"
+   "ac3/protected-image",
+   "review/digest-pattern-listed"
   ],
   "red_details": [
    [
     "VELDO-0307 ac3/protected-image",
     "the image store/objects on default is listed as protected, by its name [None None]"
+   ],
+   [
+    "VELDO-0307 review/digest-pattern-listed",
+    "the image known by the digest a protect entry names is listed as protected, by its name [None None None]"
    ]
   ],
   "noop_red_rows": [],
@@ -443,7 +473,7 @@
   "red_details": [
    [
     "VELDO-0307 protect/image-pattern-every-tag",
-    "the pattern minio/minio covers the tag latest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:e88bf058f8774cfea78c5c9dd964005c', 'space_locator_taken:space:item:e88bf058f8774cfea78c5c9dd964005c']]"
+    "the pattern minio/minio covers the tag latest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:3d697f8a14034bb3b521e459da478da5', 'space_locator_taken:space:item:3d697f8a14034bb3b521e459da478da5']]"
    ]
   ],
   "noop_red_rows": [],
@@ -462,7 +492,7 @@
   "red_details": [
    [
     "VELDO-0307 protect/image-pattern-every-tag",
-    "the pattern minio/minio covers a digest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:8f283aba56ad4ae4b9c32776ddb6233e', 'space_locator_taken:space:item:8f283aba56ad4ae4b9c32776ddb6233e']]"
+    "the pattern minio/minio covers a digest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:c8375d2c155240dab4ab7afc748f94f9', 'space_locator_taken:space:item:c8375d2c155240dab4ab7afc748f94f9']]"
    ]
   ],
   "noop_red_rows": [],
@@ -476,12 +506,17 @@
    "protect/image-pattern-every-tag"
   ],
   "red_rows": [
-   "protect/image-pattern-every-tag"
+   "protect/image-pattern-every-tag",
+   "review/digest-pattern-listed"
   ],
   "red_details": [
    [
     "VELDO-0307 protect/image-pattern-every-tag",
     "another tag of a tagged pattern: the ledger and rule 2 both say None [image:registry.example:5000/tools/pinned:1.2 None]"
+   ],
+   [
+    "VELDO-0307 review/digest-pattern-listed",
+    "the Ledger and rule 2 at removal read the entry the same way"
    ]
   ],
   "noop_red_rows": [],
@@ -514,12 +549,17 @@
    "protect/image-pattern-every-tag"
   ],
   "red_rows": [
-   "protect/image-pattern-every-tag"
+   "protect/image-pattern-every-tag",
+   "review/digest-pattern-listed"
   ],
   "red_details": [
    [
     "VELDO-0307 protect/image-pattern-every-tag",
     "another tag of a tagged pattern: the ledger and rule 2 both say None [None image:registry.example:5000/tools/pinned:1.2]"
+   ],
+   [
+    "VELDO-0307 review/digest-pattern-listed",
+    "the Ledger and rule 2 at removal read the entry the same way"
    ]
   ],
   "noop_red_rows": [],
@@ -552,12 +592,17 @@
    "protect/covered-after-adoption"
   ],
   "red_rows": [
-   "protect/covered-after-adoption"
+   "protect/covered-after-adoption",
+   "review/relative-label-refused"
   ],
   "red_details": [
    [
     "VELDO-0307 protect/covered-after-adoption",
     "labels the engine does not show at rule 2 refuse the removal [None None]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "rule 2 refuses the removal of the container whose working folder label is not an absolute path: labels_unread [None None None]"
    ]
   ],
   "noop_red_rows": [],
@@ -571,12 +616,17 @@
    "protect/covered-after-adoption"
   ],
   "red_rows": [
-   "protect/covered-after-adoption"
+   "protect/covered-after-adoption",
+   "review/relative-label-refused"
   ],
   "red_details": [
    [
     "VELDO-0307 protect/covered-after-adoption",
     "once the folder is on the protect list rule 2 refuses the removal of the container late-web-1, by the path it names now [None None None None]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "the probe's reading of a working folder that is not an absolute path [read True, protected False, None]"
    ]
   ],
   "noop_red_rows": [],
@@ -590,12 +640,17 @@
    "protect/covered-after-adoption"
   ],
   "red_rows": [
-   "protect/covered-after-adoption"
+   "protect/covered-after-adoption",
+   "review/relative-label-refused"
   ],
   "red_details": [
    [
     "VELDO-0307 protect/covered-after-adoption",
     "once the folder is on the protect list rule 2 refuses the removal of the container late-cf-1, by the path it names now [None None None None]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "the probe's reading of a second configuration file that is not one [read True, protected False, None]"
    ]
   ],
   "noop_red_rows": [],
@@ -609,12 +664,141 @@
    "protect/covered-after-adoption"
   ],
   "red_rows": [
-   "protect/covered-after-adoption"
+   "protect/covered-after-adoption",
+   "review/relative-label-refused"
   ],
   "red_details": [
    [
     "VELDO-0307 protect/covered-after-adoption",
     "once the folder is on the protect list rule 2 refuses the removal of the container late-cf-1, by the path it names now [None None None None]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "the probe's reading of such a file beside a protected working folder [read False, protected False, the label com.docker.compose.project.config_files holds a path that is not absolute: compose.yaml]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-relative-label-passes-rule-2",
+  "criterion": "AC3",
+  "module": "control_space_probe.py",
+  "expected_red": [
+   "review/relative-label-refused"
+  ],
+  "red_rows": [
+   "review/relative-label-refused"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "the probe's reading of a working folder that is not an absolute path [read True, protected False, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-relative-label-passes-the-adapter",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/relative-label-refused"
+  ],
+  "red_rows": [
+   "ac2/report-mode",
+   "review/relative-label-refused"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac2/report-mode",
+    "a second snapshot writes nothing [{'default': {'matched': 27, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:78fdeac9db2c4dfb980bddcdb12fd332'] [('reported', None)]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-split-owner-placed-by-its-bind-source",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "review/split-owner-is-a-conflict"
+  ],
+  "red_rows": [
+   "review/split-owner-is-a-conflict"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:d6316175c001462fb1a577ab953a248a, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-compose-label-outside-not-seen",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "review/split-owner-is-a-conflict"
+  ],
+  "red_rows": [
+   "review/split-owner-is-a-conflict"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:665b7be309de4ee89bd00df39b658faf, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-digest-name-not-listed",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/digest-pattern-listed"
+  ],
+  "red_rows": [
+   "ac3/protected-image",
+   "review/digest-pattern-listed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac3/protected-image",
+    "the names of an image: each tag and each digest name, and each repository without its tag or its digest"
+   ],
+   [
+    "VELDO-0307 review/digest-pattern-listed",
+    "the image known by the digest a protect entry names is listed as protected, by its name [None None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-uncovered-image-unlists-its-namesake",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/digest-pattern-listed"
+  ],
+  "red_rows": [
+   "review/digest-pattern-listed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 review/digest-pattern-listed",
+    "the image known by the digest a protect entry names is listed as protected, by its name [None None None]"
    ]
   ],
   "noop_red_rows": [],
