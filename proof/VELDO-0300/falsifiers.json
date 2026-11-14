@@ -1,0 +1,166 @@
+[
+ {
+  "falsifier": "space300-delete-after-first-probe",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/rename-probe-delete"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/cannot-put-back",
+   "ac1/delete-stops",
+   "ac1/order",
+   "ac1/rename-probe-delete",
+   "ac2/agent-repository",
+   "ac2/git-refusals",
+   "ac2/ignored-files-measured",
+   "ac2/keep-step",
+   "ac2/non-forced",
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 ac1/rename-probe-delete",
+    "the first probe passed and the remover was reached: six rules passed, the tool refused [['ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children', 'tool'] None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-worktree-forced",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/non-forced"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/agent-repository",
+   "ac2/git-refusals",
+   "ac2/ignored-files-measured",
+   "ac2/keep-step",
+   "ac2/non-forced",
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 ac2/non-forced",
+    "a worktree with an untracked file is refused remove_refused [(True, None, None)]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-volume-prune",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/commands"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac3/engine-refusal",
+   "ac4/engine-image-pool"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 ac3/commands",
+    "the volume remover took the one volume it names and left the other"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-engine-reclaimable-as-freed",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/engine-image-pool"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 ac4/engine-image-pool",
+    "freed is the measured difference, not the engine's own reclaimable figure [5242880000, reclaimable 5242880000]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-removes-with-no-keep-step",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/keep-step"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/agent-repository",
+   "ac2/keep-step"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 ac2/keep-step",
+    "no keep step: deferred keep_failed [(True, None, None)]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-removes-after-a-failed-keep",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/keep-step"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/keep-step"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 ac2/keep-step",
+    "a keep step that answers no: deferred keep_failed [(True, None, None)]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-left-under-its-marked-name",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/delete-stops"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/cannot-put-back",
+   "ac1/delete-stops",
+   "ac1/rename-probe-delete"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 ac1/delete-stops",
+    "what is left is back at its path and nothing is under the marked name"
+   ]
+  ],
+  "red_as_expected": true
+ }
+]

@@ -1,0 +1,139 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0300",
+ "commit": "c29021001a404d3122d32f6922645ac317d21669",
+ "tree": "badad0ad6d4a53d0ec10084e600070410a3155b5",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-14T03:17:29.500556+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Rows ac1/rename-probe-delete (through control_space_signal.rules with the remover as rule 7: the probe's test seam SEAM[after_in_use] opens a file in the folder after the first probe; six rules pass, the remover refuses with the deferral in_use and the process id, the folder is back under its own name with both files byte for byte and nothing is under the marked name; once the process has ended the same call removes it), ac1/order (the probe ran twice, on the path and then on the marked name; at the second probe nothing was at the path and the folder was whole under <name>.veldo-removing.<item id>), ac1/refuses-itself (a link in the folder's place, a mount point, a folder not on the item's pool and a taken marked name: refused, untouched, no command run), ac1/shut-and-linked (a directory of mode 000 inside one of mode 500 is opened up and removed; links inside are deleted and what they point at is not), ac1/cannot-put-back (a user is found and something appeared at the path: the folder stays whole under its marked name, left_at names it, the newcomer is untouched), ac1/delete-stops (a delete that fails part way puts what is left back at its path; the next attempt removes it). Green: proof/VELDO-0300/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "A real ledger on a real store, real folders really deleted, the real probes of VELDO-0299, and a real child process that holds the file open; its entry in the fixture process table is a link to its entry in the kernel's, so the second probe reads the kernel's own record of the open file under the new name."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Falsifier space300-delete-after-first-probe (the second probe is not run): ac1/rename-probe-delete red, the remover removed the folder a process holds a file in. Also space300-left-under-its-marked-name (no put back): ac1/delete-stops red. Applied once through the registered teeth case (scripts/check_teeth_mutations.py, finding 300) with the driver's own materialize() and worker(): the unchanged copy is green, the mutant turns the named row red. Runs: proof/VELDO-0300/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Rows ac2/non-forced (a worktree with an untracked file: remove_refused, the file byte for byte, the tracked file, git's record and its status unchanged; git was asked once, for worktree remove with no force option; the same worktree clean is removed and its branch stays), ac2/git-refusals (a modified tracked file and a locked worktree refused the same way), ac2/keep-step (a worktree with a commit on a detached HEAD is deferred keep_failed with no keep step, one that answers no, one that fails and one that answers nothing; git's remove is not run; with a keep step that kept it, it is removed after the keep step), ac2/agent-repository (the same, then the folder remover), ac2/ignored-files-measured (below). Green: proof/VELDO-0300/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Real git 2.43.0 worktrees of a real repository; git's worktree remove is run by the remover through the one Git boundary (.veldo/git_process.py, isolated profile: no GIT_ variable of the caller, no system or global configuration). MEASURED, as the ticket asks: on git 2.43.0 the non-forced git worktree remove of a clean worktree holding an ignored folder (build/output.bin, ignored by the committed .gitignore) and a loose ignored file (settings.local) ends with status 0 and deletes both with the worktree, with no word. The design does not depend on it (build output goes before the worktree); what an ignored file is worth is rule 5's, VELDO-0347."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Falsifier space300-worktree-forced (the force option is passed): ac2/non-forced red, the untracked file is lost. Also space300-removes-with-no-keep-step and space300-removes-after-a-failed-keep: ac2/keep-step red, the worktree with its detached commit is removed. Applied once through the registered teeth case (scripts/check_teeth_mutations.py, finding 300) with the driver's own materialize() and worker(): the unchanged copy is green, the mutant turns the named row red. Runs: proof/VELDO-0300/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Rows ac3/commands (every command every remover ran, read from the client runner's own record and equal to what each remover returns under commands: the folder remover on scratch and build output, the worktree remover removing and refused, the agent repository remover, and the four Docker removers; no prune command, no force option; the engine was told container stop, container rm, network rm, volume rm, image rm and nothing else; the volume remover left the other volume; the source holds neither word as a string, and scripts/check_git_boundary.py finds no git run outside the Git boundary in it), ac3/engine-refusal (a volume and an image a container uses, a network with an endpoint, a container that does not stop: remove_refused, still there, no rm after a failed stop), ac3/drop-caches (only the declared cache sub-folders go, the evidence beside them stays byte for byte, a cache that is a link is refused), ac3/no-remover (an action and kind with no remover is refused; there is no discard remover in this module, so no remover here passes a force option at all). Green: proof/VELDO-0300/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "The git commands are real. The container engine is a stand-in (see assumptions): the row reads the commands it was given."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Falsifier space300-volume-prune (the engine's volume prune for volumes): ac3/commands red, the other volume is gone and a prune command is in the record. Applied once through the registered teeth case (scripts/check_teeth_mutations.py, finding 300) with the driver's own materialize() and worker(): the unchanged copy is green, the mutant turns the named row red. Runs: proof/VELDO-0300/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Rows ac4/folder-figures (bytes equal to the folder's size the row measured itself just before; pool_free_before and pool_free_after as the reader gave them; freed their difference; no host figure for a filesystem pool; a worktree's bytes; a refusal carries the figures read before it), ac4/engine-image-pool (an image tag and a volume on an engine image pool: freed is the measured difference of the pool's free space, 70000, and not the engine's reclaimable figure; host holds the backing pool with its own free_before, free_after and freed 0), ac4/free-unread (a reading that fails before the removal refuses it, a missing reader refuses, a reading that fails after leaves the figure None, an unreadable host figure refuses), ac4/docker-bytes (image size, container layer, a volume's folder measured, the ledger's last measurement named as that, None when there is neither). Green: proof/VELDO-0300/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Real folders and worktrees measured on disk through descriptors; the pools are the ledger's own records (a filesystem pool and an engine image pool with its backing pool). The free space reader is a stand-in (see assumptions)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Falsifier space300-engine-reclaimable-as-freed (the engine's own reclaimable figure reported as freed): ac4/engine-image-pool red, freed 5242880000 against a measured 70000. Applied once through the registered teeth case (scripts/check_teeth_mutations.py, finding 300) with the driver's own materialize() and worker(): the unchanged copy is green, the mutant turns the named row red. Runs: proof/VELDO-0300/mutations.txt."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 138_veldo_0300_space_remove (21 rows, 47 checks counted with the shared preamble)."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, git, folders and one real process, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "Seven registered cases, finding 300, each applied once: noop green, mutant red on its row (proof/VELDO-0300/falsifiers.json, mutations.txt)."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh (314 pairs); bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py (no change); python3 .veldo/validate.py spec specs/VELDO-0300-the-removers.md; python3 .veldo/validate.py all; each exit 0. python3 scripts/check_git_boundary.py names no line of control_space_remove.py."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build ran the single suite and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock. The teeth cases were run here through the driver's own functions, not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "The removers are control_space_remove.remove(ledger, probe, identity, record, action, free, keep, run, proc) and tool(...), which gives the same in the form rule 7 calls. Nothing calls them yet: Signal's carry out and the outcome it writes are VELDO-0301. A remover writes nothing to the ledger.",
+  "NO WORK LOST, as built here. The spec's History says the keep step is added inside the worktree and private repository removers by VELDO-0345. Until then those two removers do not run without it: keep(identity, record) is a parameter, and with none, or any answer but {ok: True}, the item is deferred keep_failed and nothing is touched. This is beyond the four criteria and is built so that no path of this module can remove commits unrecorded; it has its own row and two falsifiers. What the keeper does and the check of the keep record are VELDO-0345.",
+  "Not built here, because each saves first and belongs to a later ticket: the discard remover (VELDO-0318, the one forced removal), the review scratch remover (VELDO-0336) and the removal of evidence files a copy holds (remove_held). So AC3's exception for the discard remover has nothing to except yet: no command of this module carries a force option. Mark a branch contained is a ledger write and is not a remover.",
+  "A refusal reaches Signal as rule 7's found.said. The rules name every tool refusal remove_refused (control_space_signal.DEFERRAL, not in this ticket's footprint); the remover's own answer names the deferral it means (in_use for the second probe, keep_failed for the keep step) in said.deferral and said.reason. VELDO-0301 has to write that one.",
+  "The folder remover deletes what the rules passed. It does not look whether a scratch or build output folder is itself a git repository or holds one: that is rule 6's look, VELDO-0347 AC2 and AC5, and it is not built. Until it is, such a folder is protected only by the mode: nothing is in act.",
+  "free(pool record) is given, as admission is given it; reading free space from a filesystem or an engine is VELDO-0316. With no reader, or a reading that fails before the removal, nothing is removed. In the suite the reader is a stand-in: the host pool answers a fixed capacity minus the measured size of the fixture folders, the engine image pool answers the stand-in engine's figure, so freed can be compared exactly.",
+  "The container engine is a stand-in function given as the client runner: it keeps containers, images, volumes and networks in memory and refuses what an engine refuses. No container engine was asked anything, so the engines' real refusal texts and the real effect of image rm on a last tag (the engine deletes the image with it) are not measured here; they are VELDO-0306's to check on both engines.",
+  "bytes for a volume is measured only where the engine names a folder this user can read; otherwise the ledger's last measurement, named as that, or None. bytes for a folder counts blocks on disk, a file with several names once.",
+  "A mount point is refused by os.path.ismount; the row proves the helper on /proc and the refusal with the helper replaced for one folder, because the suite cannot mount. A filesystem mounted inside the folder stops the measurement before any delete (the device of every directory is compared); that stop and a failing delete are driven in the suite by replacing the module's delete function, not by a real failure.",
+  "drop_caches removes the declared sub-folders one by one. When a later one refuses, the earlier ones are gone; they are caches by the project's own declaration.",
+  "One command of a tool may run for an hour (SECONDS). A git remove that is killed at that bound can leave a worktree partly removed; that is reconcile's case (design 0.2), not handled here.",
+  "The process table of the rows is a fixture folder, because this host's table holds processes this user may not read and they count as use (design section 7).",
+  "FOUND, NOT FIXED (outside this ticket's footprint): python3 scripts/check_git_boundary.py exits 1 on this branch for .veldo/control_space_probe.py:228 and its engine copy (the probes' _git builds a git argument vector outside git_process.py). Suite 50_git_environment's row git-boundary/no-private-git-invocations reads that check, so it is expected red in the gate until the probe module goes through the Git boundary. The removers do.",
+  "Because git runs in the Git boundary's isolated profile, a file that only a personal global excludes file ignores is an untracked file to git's worktree remove, and git refuses. That is the direction design 0.1 asks for.",
+  "python3 scripts/check_first_use.py was started once by mistake during the fast checks (it is a heavy check) and was stopped; no result of it is claimed."
+ ],
+ "rollback": "Revert the change. Removers are called only through Signal, and nothing calls them yet, so without them nothing is removed."
+}
