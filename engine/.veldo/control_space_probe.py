@@ -222,8 +222,9 @@ its folder and everything beneath it, following no link, and a folder that canno
 path in use. A process with no block, a block with an unread fact or another start time stays unread.
 
 THE COMMANDS (the owner's, docs/veldo-procread-setup.txt): `reader` runs the reader check, which prints
-the reader's state and reads one undumpable process it starts itself, whose second thread sits in
-another folder; `reader-units` lays the two unit templates into the owner's systemd user unit folder,
+the reader's state, reads one undumpable process it starts itself, whose second thread sits in another
+folder, and requires a whole block for process 1, which is root's and which the probe cannot read
+itself; `reader-units` lays the two unit templates into the owner's systemd user unit folder,
 through install(1), and is the one thing in this file that writes; `reader-exec` is the unit's entry:
 it opens the reader once, makes the file's checks on that descriptor and executes that same descriptor
 with an empty environment, or executes nothing. No probe function calls any of the three.
@@ -1599,7 +1600,10 @@ sys.stdin.read()
 def reader_check(out=None):
     """The reader check: prints the reader's state, starts one process that is not dumpable, in a
     folder, whose second thread sits in another, and reads it through the reader's socket as every
-    probe does. 0 when the state is used and each thread was found in its folder and in no other."""
+    probe does. 0 when the state is used, each thread was found in its folder and in no other, and
+    process 1, root's and closed to the probe's own reading, has a whole block in the reader's table.
+    The first four rows read a process of the owner's own uid. The fifth is the one that shows the
+    capability reading an entry of another uid: the kernel checks that on another branch."""
     import tempfile
     out = out or sys.stdout
     with tempfile.TemporaryDirectory(prefix='veldo-procread-check-') as first, \
@@ -1609,7 +1613,8 @@ def reader_check(out=None):
                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         try:
             thread = int(started.stdout.readline().strip() or 0)
-            seen = {where: in_use(where) for where in (first, second, other)}
+            asked = reader_read()
+            seen = {where: in_use(where, reader=asked) for where in (first, second, other)}
         finally:
             started.stdin.close()
             started.wait()
@@ -1624,11 +1629,24 @@ def reader_check(out=None):
                           if user['pid'] == started.pid and user.get('by') == 'reader'
                           for use in user['uses'] if use['how'] == 'cwd')
 
+        # Process 1: root's, and the probe itself is refused its working directory. Its block must be
+        # whole (no x line, no g line, one block) and carry the start time the probe reads itself.
+        who, block, own = _identity(os.path.join(PROC, '1')), (asked['blocks'] or {}).get(1), process(1)
+        try:
+            os.stat(os.path.join(PROC, '1', 'cwd'))
+            closed = False
+        except PermissionError:
+            closed = True
+        except OSError:
+            closed = False
         rows = (('the reader is used', reader['state'] == 'used'),
                 ('the first thread of the undumpable process is read in its folder', tasks(first) == [started.pid]),
                 ('its second thread is read in the other folder', thread > 0 and tasks(second) == [thread]),
                 ('it is not counted in a folder it does not hold', tasks(other) == []
-                 and not any(entry['pid'] == started.pid for entry in seen[other]['unread']['processes'])))
+                 and not any(entry['pid'] == started.pid for entry in seen[other]['unread']['processes'])),
+                ('process 1, root-owned and closed to the probe itself, has a whole block with its start time',
+                 who is not None and who['uid'] == 0 and closed and block is not None and block['whole']
+                 and own is not None and own['start'] == block['start']))
         for label, passed in rows:
             print('%s: %s' % ('PASS' if passed else 'FAIL', label), file=out)
     return 0 if all(passed for _, passed in rows) else 1

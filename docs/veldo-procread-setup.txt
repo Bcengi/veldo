@@ -18,10 +18,12 @@ add one:
 
 d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob C:scripts/veldo_procread.c > "$d/veldo_procread.c" && (cd "$d" && env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c) && sha256sum "$d/veldo-procread"
 
-Line 2 is the sudo command, in the same shell, with H written into it. Root installs the build,
-compares the installed copy with H, and only then sets the capability:
+Line 2 is the sudo command, in the same shell, with H written into it. Root opens no path your
+account controls: your own shell opens the build and hands it to root as standard input. Root
+copies it into a temporary file of its own, compares that copy with H, and only then sets the
+owner, the mode and the capability and moves the file into place:
 
-sudo sh -c "install -D -m 0750 '$d/veldo-procread' /usr/local/lib/veldo/veldo-procread && chown root:'$g' /usr/local/lib/veldo/veldo-procread && chmod 0750 /usr/local/lib/veldo/veldo-procread && echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c - && setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread" && rm -r "$d"
+sudo sh -c "umask 077 && { [ -d /usr/local/lib/veldo ] || { mkdir -p /usr/local/lib/veldo && chmod 0755 /usr/local/lib/veldo; }; } && t=\$(mktemp /usr/local/lib/veldo/.veldo-procread.XXXXXX) && if cat > \"\$t\" && echo 'H  '\"\$t\" | sha256sum -c - >/dev/null; then chown root:'$g' \"\$t\" && chmod 0750 \"\$t\" && setcap cap_sys_ptrace=ep \"\$t\" && mv -f \"\$t\" /usr/local/lib/veldo/veldo-procread || { rm -f \"\$t\"; echo 'the install failed: nothing installed' >&2; exit 1; }; else rm -f \"\$t\"; echo 'digest differs: nothing installed' >&2; exit 1; fi" < "$d/veldo-procread" && rm -r "$d"
 
 Line 3 installs the two user units and starts the socket. Then write H into the installation's
 space section as process_reader (a string of 64 hexadecimal digits), and run line 4, the reader
@@ -33,21 +35,34 @@ python3 -I .veldo/control_space_probe.py reader
 What it does, in order:
 1. Reads scripts/veldo_procread.c as commit C holds it and builds it statically and reproducibly
    in a temporary directory, with the compiler at /usr/bin/cc and an empty environment.
-2. Installs the build as /usr/local/lib/veldo/veldo-procread, owner root, group your own group,
-   mode 0750, so that your account can run it and no other account can.
-3. Compares the installed copy with H. When they differ the line stops there and the copy is left
-   with no capability, whatever a process of your account did to the compiler, the source, the
-   checkout's refs or the built file.
-4. Sets the one file capability, cap_sys_ptrace=ep. It is set last because a change of owner
-   clears it.
+2. Your shell, with your permissions, opens the build and gives it to the sudo command as its
+   standard input. Root reads that input and never a path in your temporary directory, so a link
+   put there by a process of your account gives root nothing you could not read yourself. Root
+   writes the copy into a temporary file of its own in /usr/local/lib/veldo, under umask 077:
+   owner root, mode 0600. The folder is made with mode 0755 only when it is not there yet; one
+   that exists is left as it is.
+3. Compares that copy with H. When they differ, root removes the copy and the line ends with
+   "digest differs: nothing installed", whatever a process of your account did to the compiler,
+   the source, the checkout's refs or the built file. Nothing is left behind, and a reader
+   installed earlier is not touched.
+4. Only after the comparison: sets owner root, group your own group, mode 0750, so that your
+   account can run it and no other account can; then the one file capability,
+   cap_sys_ptrace=ep, after the change of owner because a change of owner clears it; then moves
+   the file to /usr/local/lib/veldo/veldo-procread. The file is in place only once it holds the
+   capability. When one of these steps fails, root removes the copy and the line ends with "the
+   install failed: nothing installed".
 5. Writes veldo-procread.socket and veldo-procread@.service into your systemd user unit
    directory and starts the socket. They are user units: no sudo, no system service, no second
    account. The service unit carries no NoNewPrivileges and no sandboxing setting, because the
    kernel grants a file capability only without them; the reader locks itself in after it has
    been executed. The authority unit is not changed and never holds the capability.
 6. Runs the reader check, which reads through the socket as every probe does. It prints the
-   reader's state and one PASS or FAIL line per row, and exits 0 only when the state is used and
-   it read an undumpable process it started itself, whose second thread sits in another folder.
+   reader's state and one PASS or FAIL line for each of its five rows. It must print "state used
+   cap=1" and five PASS lines, and it exits 0 only then: the state is used; it read an undumpable
+   process it started itself, whose second thread sits in another folder (three rows, all of
+   your own uid); and process 1, which is root's and which the probe cannot read itself, has a
+   whole block in the reader's table, with the start time the probe reads. The fifth row is the
+   one that shows the capability reading a process of another uid.
 
 What the reader is: a static program that reads entries of the process table and prints numbers,
 the device and inode numbers of each process's working directories, open files and mapped files.
@@ -66,9 +81,24 @@ source leaves the installed binary working with its old pin. When the edit chang
 format, the probe refuses the old binary's output, and every item under your home folder defers
 until you have installed and pinned the new build.
 
-Undo: any one of these three lines is enough, and after it the probe reports the reader as
-refused or absent. Then set process_reader to none.
+Undo: any one of these three lines is enough to turn the reader off, and after it the probe
+reports the reader as refused or absent. Then set process_reader to none.
 
 systemctl --user disable --now veldo-procread.socket
 sudo setcap -r /usr/local/lib/veldo/veldo-procread
 sudo rm /usr/local/lib/veldo/veldo-procread
+
+Uninstall: the full removal, from the root of the authority checkout. It can be undone by running
+the setup again.
+
+systemctl --user disable --now veldo-procread.socket
+systemctl --user stop 'veldo-procread@*.service'
+rm -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/veldo-procread.socket" "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/veldo-procread@.service"
+systemctl --user daemon-reload
+systemctl --user reset-failed 'veldo-procread*'
+sudo rm -f /usr/local/lib/veldo/veldo-procread
+sudo rmdir --ignore-fail-on-non-empty /usr/local/lib/veldo
+
+Then set process_reader to none in the installation's space section, or remove the key. The
+rmdir keeps the folder while anything else lives in it. After this the probe reports the reader
+as absent and judges every process it cannot read as before.

@@ -1,4 +1,4 @@
-# VELDO-0344 registered mutation cases (scripts/check_teeth_mutations.py, finding 344), each applied once through the driver's own materialize() and worker(): noop copy then mutant copy, target rows. 32 cases. The falsifier of the installed row of AC6 is registered nowhere and was not applied: it needs the installed reader.
+# VELDO-0344 registered mutation cases (scripts/check_teeth_mutations.py, finding 344), each applied once through the driver's own materialize() and worker(): noop copy then mutant copy, target rows. 32 cases. The falsifier of the installed row of AC6 is registered nowhere and was not applied: it needs the installed reader. Run again, all 32, on the code of the review fix (the reader check's fifth row, the new sudo line, the re-anchored case space344-setcap-before-the-comparison).
 space344-digest-not-compared noop rows 85 targets {"ac1/digest": [true]} failed []
 space344-digest-not-compared mutant rows 85 targets {"ac1/digest": [false]} failed ['VELDO-0344 ac1/digest', 'VELDO-0344 ac6/refused-executes-nothing']
 space344-any-set-with-ptrace noop rows 85 targets {"ac1/capability-exact": [true]} failed []

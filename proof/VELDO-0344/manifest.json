@@ -4,7 +4,7 @@
  "commit": "705d64311de90f1945d7d0c0a5b9b3e6d125e78e",
  "tree": "a81d07342e6759a0cbf14ff1637c7e502e153d51",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-14T06:25:09.890238+00:00",
+ "produced_at": "2026-11-14T06:49:18.725606+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -118,7 +118,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/141_veldo_0344_process_reader.py",
-     "detail": "Rows ac6/units (the socket unit and the service unit setting by setting: no NoNewPrivileges and no sandboxing setting; the authority unit keeps NoNewPrivileges=yes), ac6/reads-through-the-socket (a program at the reader's path that answers when run, and no socket: refused:no_socket, the process judged by the bound), ac6/executes-the-checked-descriptor (the entry runs the reader with an empty environment under the name veldo-procread; with the file swapped between the check and the execution the checked program is the one that ran), ac6/refused-executes-nothing, ac6/reader-units (the two units written with the interpreter and the entry filled in). NOT RUN HERE: ac6/installed, which needs the installed reader; it printed its skip line. Green: proof/VELDO-0344/suite-green.txt."
+     "detail": "Rows ac6/units (the socket unit and the service unit setting by setting: no NoNewPrivileges and no sandboxing setting; the authority unit keeps NoNewPrivileges=yes), ac6/reads-through-the-socket (a program at the reader's path that answers when run, and no socket: refused:no_socket, the process judged by the bound), ac6/executes-the-checked-descriptor (the entry runs the reader with an empty environment under the name veldo-procread; with the file swapped between the check and the execution the checked program is the one that ran), ac6/refused-executes-nothing, ac6/reader-units (the two units written with the interpreter and the entry filled in). NOT RUN HERE: ac6/installed, which needs the installed reader; it printed its skip line. After the review (finding 2) that row requires five PASS lines of the reader check, the fifth being a whole block in the reader's table for process 1, root's and closed to the probe itself, with the start time the probe reads; and its skip line says which condition skipped it (no reader, or a reader and no systemd-run). Green: proof/VELDO-0344/suite-green.txt."
     },
     {
      "type": "integration",
@@ -129,6 +129,11 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0344/falsifiers.json",
      "detail": "space344-probe-executes-the-reader (ac6/reads-through-the-socket red: the probe runs the program and uses its table) and space344-checks-the-path-executes-the-path (ac6/executes-the-checked-descriptor red: the other program ran). The declared falsifier of the installed row (cap=0 under NoNewPrivileges=yes) was NOT applied: it needs the installed reader."
+    },
+    {
+     "type": "unit",
+     "ref": ".veldo/control_space_probe.py",
+     "detail": "From the independent review (finding 2). The reader check's fifth row, run here by hand against the real function with reader_read replaced by a stand-in table, since no suite row can reach it without the installed reader: a whole block for process 1 with the probe's start time passes the row; a block that is not whole, another start time and no block each fail it. On this host process 1 is root's and the probe is refused its working directory. With no reader installed the check prints state absent and five FAIL lines and exits 1. NOT RUN: the row against the real reader with its capability."
     }
    ]
   },
@@ -139,17 +144,17 @@
     {
      "type": "unit",
      "ref": "scripts/suites/141_veldo_0344_process_reader.py",
-     "detail": "Rows ac7/reproducible (the setup text's first line run twice in a fixture repository: two folders, one digest; the suite's own two builds have the same one; the line is the house line with the prefix map; the program has no interpreter segment), ac7/recorded-digest (proof/VELDO-0344/reader.sha256 holds the digest with the versions of the compiler and the C library, and on those versions the build has it), ac7/compiler-not-from-path (a stand-in cc first in the path changes nothing), ac7/setcap-after-digest (install, owner, mode, comparison, then setcap), ac7/no-replace-objects (a replace ref for the blob: git show gives the other source, the line still builds the commit's), ac7/digest-from-the-review-record. Green: proof/VELDO-0344/suite-green.txt."
+     "detail": "Rows ac7/reproducible (the setup text's first line run twice in a fixture repository: two folders, one digest; the suite's own two builds have the same one; the line is the house line with the prefix map; the program has no interpreter segment), ac7/recorded-digest (proof/VELDO-0344/reader.sha256 holds the digest with the versions of the compiler and the C library, and on those versions the build has it), ac7/compiler-not-from-path (a stand-in cc first in the path changes nothing), ac7/setcap-after-digest (after the review, finding 1: the line's order is umask 077, a temporary file of root's in /usr/local/lib/veldo, the copy from standard input, the comparison, then owner, mode, setcap and only then the move into place; no path of the owner's is inside the root command and the line ends with the owner's redirection; a failed comparison and a failed later step each remove the copy and end with status 1; the folder gets mode 0755 only when the line made it), ac7/no-replace-objects (a replace ref for the blob: git show gives the other source, the line still builds the commit's), ac7/digest-from-the-review-record. Green: proof/VELDO-0344/suite-green.txt."
     },
     {
      "type": "integration",
      "ref": "scripts/suites/141_veldo_0344_process_reader.py",
-     "detail": "The first line of docs/veldo-procread-setup.txt is run as written, with C replaced by a fixture commit's full hash, by bash in a fixture repository made with plain git. The sudo line is read and never run. The builder also ran the first line in this worktree against commit 705d6431 and it printed the recorded digest."
+     "detail": "The first line of docs/veldo-procread-setup.txt is run as written, with C replaced by a fixture commit's full hash, by bash in a fixture repository made with plain git. The sudo line is read and never run by the suite. After the review the builder ran the new line's root script by hand in a scratch folder, as the owner's shell expands it, with the folder moved to scratch and stand-ins for chown and setcap, never as root: a good digest installs mode 0750 and a new folder gets 0755; a wrong digest, a failing setcap, a failing chown and a source that is a link to another file each end with status 1 and leave no file behind; a folder that exists with mode 0700 keeps it. The builder also ran the first line in this worktree against commit 705d6431 and it printed the recorded digest."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0344/falsifiers.json",
-     "detail": "space344-compiler-from-the-path (ac7/compiler-not-from-path red: the stand-in's output), space344-setcap-before-the-comparison (ac7/setcap-after-digest red), space344-blob-read-with-git-show (ac7/no-replace-objects red: the other source built). space344-no-prefix-map turns ac7/reproducible red ONLY because the row requires the map in the line: the two digests stay equal without it (see the assumptions)."
+     "detail": "space344-compiler-from-the-path (ac7/compiler-not-from-path red: the stand-in's output), space344-setcap-before-the-comparison (re-anchored on the new sudo line: setcap put before the comparison, ac7/setcap-after-digest red), space344-blob-read-with-git-show (ac7/no-replace-objects red: the other source built). space344-no-prefix-map turns ac7/reproducible red ONLY because the row requires the map in the line: the two digests stay equal without it (see the assumptions)."
     },
     {
      "type": "unit",
@@ -184,7 +189,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 141_veldo_0344_process_reader (59 rows; ac6/installed skipped, the reader is not installed). Suites 130 to 141, each on its own, are green on the code of this commit (proof/VELDO-0344/suite-green.txt)."
+   "command": "python3 scripts/selftest.py --suite 141_veldo_0344_process_reader (59 rows; ac6/installed skipped, the reader is not installed). Suites 130 to 141, each on its own, are green on the code of the review fix (proof/VELDO-0344/suite-green.txt, run again after it; 141 was green in five runs of five)."
   },
   {
    "name": "integration",
@@ -194,12 +199,12 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The 32 registered cases of finding 344 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, on the code of this commit: every noop green (85 observations: the suite's 59 rows and the shared preamble's 26; none red), every mutant turns its target rows red (proof/VELDO-0344/mutations.txt, falsifiers.json). One of them, space344-no-prefix-map, is red only on the row's requirement that the line carries the map. The falsifier of the installed row was not applied."
+   "command": "The 32 registered cases of finding 344 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, on the code of the review fix, all 32 run again: every noop green (85 observations: the suite's 59 rows and the shared preamble's 26; none red), every mutant turns its target rows red (proof/VELDO-0344/mutations.txt, falsifiers.json). One of them, space344-no-prefix-map, is red only on the row's requirement that the line carries the map. The falsifier of the installed row was not applied. The run was six cases at a time on a host under load (load average 19). One mutant, space344-version-3-any-root-id, showed one stray red row beside its target in two of its five runs (ac2/directory-descriptor once, ac1/bytes-before-the-byte once, each a row that reads live processes on a socket); its three runs alone and last were red on the target only, and the recorded line is the last of them. No noop copy and no run of the unchanged suite was red."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh (318 pairs); bash scripts/check_docs.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py. Every anchor of the 80 registered cases on the five touched modules still applies exactly once."
+   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh (318 pairs); bash scripts/check_docs.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py. Every anchor of the 80 registered cases on the five touched modules still applies exactly once. After the review fix: validate all, template sync (318 pairs), docs, lint, generated and the git boundary check were run again and pass; the 32 cases of finding 344 each applied their anchor exactly once."
   },
   {
    "name": "gate",
@@ -208,8 +213,8 @@
   }
  ],
  "assumptions": [
-  "NOT DONE: .veldo/policy.yaml. The spec's footprint and protected_paths name it, to protect the reader's source and the two unit templates. It is itself a protected path and the builder was told to touch none and to report. The six entries are written out in proof/VELDO-0344/owner-install.txt. Until they are added those files are not protected paths.",
-  "NOT RUN: everything that needs the installed reader. The builder has no sudo. Row ac6/installed (the reader check in a transient user unit with NoNewPrivileges=yes, reading an undumpable process and its second thread through the installed reader, with the run time recorded) printed its skip line, and its declared falsifier was not applied. The state used was reached only with a stand-in reader and with the capability facts given through the seam. So three things stay assumptions until the owner's host runs that row: cap_sys_ptrace held by the owner's uid reads root-owned entries; it reads the task entries; the two unit files work as written (Accept=yes, the capability arriving in the unit). Also unmeasured: how long the reader runs with the capability on the full table. Without it, it printed 3.6 MB for 373 processes in well under a second.",
+  "NOT DONE: .veldo/policy.yaml. The spec's footprint and protected_paths name it, to protect the reader's source and the two unit templates. It is itself a protected path and the builder was told to touch none and to report. Nine entries are written out in proof/VELDO-0344/owner-install.txt: the six of the spec's protected_paths, and three the review names (finding 3): .veldo/control_space_probe.py, engine/.veldo/control_space_probe.py and docs/veldo-procread-setup.txt. Until the owner adds them none of those files is a protected path.",
+  "NOT RUN: everything that needs the installed reader. The builder has no sudo. Row ac6/installed (the reader check in a transient user unit with NoNewPrivileges=yes, reading an undumpable process and its second thread through the installed reader, with the run time recorded) printed its skip line, and its declared falsifier was not applied. The state used was reached only with a stand-in reader and with the capability facts given through the seam. So three things stay assumptions until the owner's host runs that row: cap_sys_ptrace held by the owner's uid reads root-owned entries (proved by the check's fifth line alone, the whole block of process 1; the other four lines read a process of the owner's own uid, which the kernel permits on another branch, as the review found); it reads the task entries; the two unit files work as written (Accept=yes, the capability arriving in the unit). Also unmeasured: how long the reader runs with the capability on the full table. Without it, it printed 3.6 MB for 373 processes in well under a second.",
   "requires.json cannot name a row: it is derived by scripts/run_scope.py and holds suite closures only. It was regenerated for the new suite. The installed-only row is declared by its SELFTEST SKIP line and in the suite's requires_note in scripts/suites/manifest.json, which is how the namespace helper's rows are in fact declared.",
   "AC7, THE PREFIX MAP DOES NOT CHANGE THE DIGEST. Measured on this compiler: with the map, without it, and compiled by an absolute path from another folder, the build has one digest, because the line carries no debug information and no folder name reaches the binary. The falsifier as worded (two folders give two digests) does not turn red. The row requires the map in the line and the registered case is red on that requirement alone. The spec's History records it.",
   "WORDING OF TWO FALSIFIERS. \"A program that prints an empty table ... the item reads free\" (AC1) and \"the row cuts the output ... the item reads free\" (AC5): a process with no block stays unread and is counted by the bound, so no empty or cut table can make an item read free. The rows use the table that would: a whole block that shows the process elsewhere. For the cut, the row reads the process whose block came before the cut. On the host's own table the rows read one process's part of the answer (other processes of the host are judged too); the AC3 rows read the whole answer on a fixture table.",
@@ -219,7 +224,8 @@
   "THE THREE OWNER COMMANDS ARE IN THE PROBE FILE, as the design's install lines name them. reader-units writes the two unit files through install(1), and the reader check makes three empty temporary folders. VELDO-0299's row probe/facts-only, which holds that the module calls nothing that writes, is green; a reviewer should know that this command exists beside the probes and that no probe function calls it.",
   "The reader allows no call for memory (it keeps everything in static storage: about 60 MB of untouched address space), which is narrower than the list in design 7.1. A process with more than 524,288 distinct facts, or 65,536 tasks or mounts, gets an x line and stays unread.",
   "A zombie of the owner's still counts by the bound with the reader used: its mountinfo cannot be read, the reader prints x mnt 22, and the block is unread. That is the behaviour before this ticket, not a new one.",
-  "On the owner's host, once the reader is installed and pinned, every in_use call of every suite that reads the host's own process table will go through the real reader. Suites 136 to 140 were only run here with the reader absent."
+  "On the owner's host, once the reader is installed and pinned, every in_use call of every suite that reads the host's own process table will go through the real reader. Suites 136 to 140 were only run here with the reader absent.",
+  "REVIEW FIX (review-veldo-0344.md, verdict FIX). The reader's source is unchanged (SHA-256 233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c), so C, H and proof/VELDO-0344/reader.sha256 stand. The new sudo line was never run as root: its order and its removals are read by the row and were run by hand in a scratch folder with stand-ins. Beyond the review's form, the copy from standard input is part of the condition of the comparison and a failed step after the comparison also removes the copy, so that no failure leaves a file; the review asked for nothing left behind after a failed comparison. The fifth row assumes process 1 is root's and closed to the probe, which holds on the owner's host; where it does not, the row fails and the check does not pass. The design document's copy of the old sudo line (docs/design/VELDO-0295-design.md, section 7.1) is outside this spec's footprint and was NOT edited: it differs from the setup text until the lead amends it."
  ],
- "rollback": "Revert the change and set process_reader to none in the installation's space section. The probe then judges unread processes by the bound alone, as before. The installed binary and the two user units are the owner's to remove (systemctl --user disable --now veldo-procread.socket; sudo rm /usr/local/lib/veldo/veldo-procread); left in place they are used by nothing. Nothing was installed by this build."
+ "rollback": "Revert the change and set process_reader to none in the installation's space section. The probe then judges unread processes by the bound alone, as before. The installed binary and the two user units are the owner's to remove (the Uninstall lines of docs/veldo-procread-setup.txt and of proof/VELDO-0344/owner-install.txt); left in place they are used by nothing. Nothing was installed by this build."
 }

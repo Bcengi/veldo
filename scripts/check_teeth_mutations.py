@@ -13456,10 +13456,10 @@ def cases():
               'env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11', 'cc -std=c11', ['ac7/compiler-not-from-path'],
               where='docs')
     reader344('space344-setcap-before-the-comparison', setup344,
-              "echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c - && "
-              "setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread",
-              "setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread && "
-              "echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c -",
+              'if cat > \\"\\$t\\" && echo \'H  \'\\"\\$t\\" | sha256sum -c - >/dev/null; then '
+              'chown root:\'$g\' \\"\\$t\\" && chmod 0750 \\"\\$t\\" && setcap cap_sys_ptrace=ep \\"\\$t\\" && mv ',
+              'if cat > \\"\\$t\\" && setcap cap_sys_ptrace=ep \\"\\$t\\" && echo \'H  \'\\"\\$t\\" | sha256sum -c - '
+              '>/dev/null; then chown root:\'$g\' \\"\\$t\\" && chmod 0750 \\"\\$t\\" && mv ',
               ['ac7/setcap-after-digest'], where='docs')
     reader344('space344-blob-read-with-git-show', setup344,
               '/usr/bin/git --no-replace-objects cat-file blob C:scripts/veldo_procread.c',

@@ -679,7 +679,7 @@
   "red_details": [
    [
     "VELDO-0344 ac7/setcap-after-digest",
-    "root installs, sets the owner and the mode, compares the installed copy with the digest written into the line, and only then sets the capability [[12, 90, 145, 259, 195]]"
+    "root copies its input into a temporary file of its own under umask 077, compares that copy with the digest written into the line, and only then sets the owner, the mode and the capability and moves the file into place [[0, 134, 194, 250, 302, 329, 214, 351, 480, 548]]"
    ]
   ],
   "noop_red_rows": [],

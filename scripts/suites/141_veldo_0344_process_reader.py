@@ -55,8 +55,10 @@ reader, read to its end line, is still alive until the row shuts down its side).
 
 AC6 rows: ac6/units, ac6/reads-through-the-socket, ac6/executes-the-checked-descriptor,
 ac6/refused-executes-nothing, ac6/reader-units, and ac6/installed, which runs only where the reader is
-installed at its fixed path (the owner's host after docs/veldo-procread-setup.txt): elsewhere it
-prints a SELFTEST SKIP line and adds no row.
+installed at its fixed path (the owner's host after docs/veldo-procread-setup.txt) and requires the
+check's five PASS lines, the fifth being a whole block for process 1, root's and closed to the probe
+itself: elsewhere it prints a SELFTEST SKIP line that says which condition skipped it (no reader, or a
+reader and no systemd-run) and adds no row.
 
 AC7 rows: ac7/reproducible, ac7/recorded-digest, ac7/compiler-not-from-path, ac7/setcap-after-digest,
 ac7/no-replace-objects, ac7/digest-from-the-review-record.
@@ -1092,7 +1094,8 @@ sys.exit(P.reader_exec())
         check('ac6/reader-units', 'an unknown command line is refused with status 2', usage.returncode == 2)
 
         # The installed row: only where the owner has installed the reader.
-        if os.path.lexists(P.READER) and shutil.which('systemd-run'):
+        present, runner = os.path.lexists(P.READER), shutil.which('systemd-run')
+        if present and runner:
             ran = subprocess.run(['systemd-run', '--user', '--wait', '--pipe', '--quiet', '-p', 'NoNewPrivileges=yes',
                                   '-p', 'UMask=0077', '-p', 'KillMode=mixed', os.path.realpath(sys.executable), '-I',
                                   str(PRODUCTION['control_space_probe.py'].resolve()), 'reader'],
@@ -1100,10 +1103,17 @@ sys.exit(P.reader_exec())
             said = ran.stdout.decode('utf-8', 'replace')
             print('  VELDO-0344 ac6/installed: ' + said.split('\n')[0])
             rows['ac6/installed'] = [('under the authority unit\'s properties the reader check reports the state used '
-                                      'with cap=1 and reads the undumpable process and its second thread [%s %s]'
-                                      % (ran.returncode, said[-400:]),
+                                      'with cap=1, reads the undumpable process and its second thread, and finds a '
+                                      'whole block for process 1, which is root\'s and closed to the probe itself: '
+                                      'five PASS lines [%s %s]' % (ran.returncode, said[-500:]),
                                       ran.returncode == 0 and 'state used cap=1' in said and 'FAIL' not in said
-                                      and said.count('PASS') == 4)]
+                                      and said.count('PASS: ') == 5
+                                      and 'PASS: process 1, root-owned and closed to the probe itself, has a whole '
+                                          'block with its start time' in said)]
+        elif present:
+            print('  SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is installed at %s, but systemd-run is '
+                  'not on the path of this run, so the row cannot start the check under the authority unit\'s '
+                  'properties' % P.READER)
         else:
             print('  SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is not installed at %s on this host; '
                   'the row runs after the owner\'s setup (docs/veldo-procread-setup.txt)' % P.READER)
@@ -1194,16 +1204,39 @@ sys.exit(P.reader_exec())
         check('ac7/compiler-not-from-path', 'the line names the compiler by its path, under an empty environment',
               len(first) == 1 and 'env -i PATH=/usr/bin:/bin /usr/bin/cc ' in first[0])
 
+        # The sudo line (review of VELDO-0344, finding 1): root copies its standard input into a
+        # temporary file of its own, compares that copy with the digest, and only then sets the owner,
+        # the mode and the capability and moves the file into place. A failure removes the copy.
         order = [second[0].find(step) if len(second) == 1 else -1
-                 for step in ("install -D -m 0750 '$d/veldo-procread' /usr/local/lib/veldo/veldo-procread",
-                              "chown root:'$g' /usr/local/lib/veldo/veldo-procread",
-                              'chmod 0750 /usr/local/lib/veldo/veldo-procread',
-                              "echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c -",
-                              'setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread')]
-        check('ac7/setcap-after-digest', 'root installs, sets the owner and the mode, compares the installed copy with '
-              'the digest written into the line, and only then sets the capability [%s]' % order,
-              -1 not in order and order == sorted(order) and second[0].count('setcap') == 1
-              and second[0].count(' && ') == 5)
+                 for step in ('sudo sh -c "umask 077 && ',
+                              't=\\$(mktemp /usr/local/lib/veldo/.veldo-procread.XXXXXX) && ',
+                              'if cat > \\"\\$t\\" && ',
+                              'echo \'H  \'\\"\\$t\\" | sha256sum -c - >/dev/null; then ',
+                              'chown root:\'$g\' \\"\\$t\\" && ',
+                              'chmod 0750 \\"\\$t\\" && ',
+                              'setcap cap_sys_ptrace=ep \\"\\$t\\" && ',
+                              'mv -f \\"\\$t\\" /usr/local/lib/veldo/veldo-procread || ',
+                              '; else rm -f \\"\\$t\\"; ',
+                              'exit 1; fi" < "$d/veldo-procread" && rm -r "$d"')]
+        check('ac7/setcap-after-digest', 'root copies its input into a temporary file of its own under umask 077, '
+              'compares that copy with the digest written into the line, and only then sets the owner, the mode and '
+              'the capability and moves the file into place [%s]' % order,
+              -1 not in order and order == sorted(order)
+              and all(second[0].count(word) == 1 for word in ('setcap', 'sha256sum', 'chown', 'mktemp', 'mv ', 'cat ')))
+        script = second[0].split(' < "$d/veldo-procread" && rm -r "$d"')[0] if len(second) == 1 else '$d'
+        check('ac7/setcap-after-digest', 'root is given no path of the owner\'s: the build reaches it as the standard '
+              'input the owner\'s shell opened, and the line ends with that redirection',
+              len(second) == 1 and '$d' not in script and second[0].count('$d') == 2
+              and second[0].endswith('fi" < "$d/veldo-procread" && rm -r "$d"')
+              and "install -D" not in second[0])
+        check('ac7/setcap-after-digest', 'a comparison that fails and a step after it that fails both remove the copy '
+              'and end with status 1; the folder is given mode 0755 only when the line made it',
+              len(second) == 1
+              and '|| { rm -f \\"\\$t\\"; echo \'the install failed: nothing installed\' >&2; exit 1; }; else '
+                  'rm -f \\"\\$t\\"; echo \'digest differs: nothing installed\' >&2; exit 1; fi"' in second[0]
+              and '{ [ -d /usr/local/lib/veldo ] || { mkdir -p /usr/local/lib/veldo && chmod 0755 '
+                  '/usr/local/lib/veldo; }; } && t=' in second[0]
+              and second[0].count('chmod 0755') == 1)
 
         blob = git(checkout, 'rev-parse', approved + ':scripts/veldo_procread.c')
         (temporary / 'other.c').write_text('int main(void)\n{\n    return 7;\n}\n')

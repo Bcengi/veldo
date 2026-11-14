@@ -293,16 +293,23 @@ it prints x lines for what it may not read. The row for AC8 needs no reader. One
 where the reader is installed (declared in requires.json as the namespace helper's rows are): it runs the
 reader check in a transient user unit with the authority unit's properties, NoNewPrivileges=yes among
 them, and that check starts a real undumpable process in a folder, with a second thread in another, and
-reads it through the installed reader. That row is the proof on the owner's host that the installed form
-reads what the measurement says, from the place the service reads it.
+reads it through the installed reader. The check's fifth row requires a whole block in the reader's
+table (no x line, the start time the probe reads) for process 1, which is root's and which the probe
+cannot read itself. The installed row requires all five PASS lines. That row is the proof on the owner's
+host that the installed form reads what the measurement says, from the place the service reads it.
 
 Assumptions, marked as such. Three things were not measured. The measurement of what the capability
 reads was made in a container that shares the host's process table, as uid 0 holding cap_sys_ptrace and
 no other capability, against a process of the owner's; the installed reader runs as the owner against
-root-owned entries, which is the same permission check from the other side. The task entries were not
-read with the capability. And the two unit files were not run as written: a transient unit does not take
-Accept=yes, and the capability arriving in the unit needs the installed binary. The installed row of AC6
-proves all three.
+root-owned entries, which the kernel permits on another branch of its check (the uids differ, and its
+capability-subset check applies), so the measurement does not cover it. The task entries were not read with the capability. And the two unit files were not run
+as written: a transient unit does not take Accept=yes, and the capability arriving in the unit needs
+the installed binary. What the installed row of AC6 proves of each, by the line of the reader check that
+carries it: root-owned entries, by the fifth line alone (process 1), since the other four read a process
+of the owner's own uid and say nothing about another uid; the task entries, by the second and third
+lines on the owner's process and by the fifth, whose block is whole only when every task of process 1
+was read; the unit files, by the state used with cap=1, reached through the socket from a unit with
+NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assumptions.
 
 ## History
 
@@ -390,3 +397,29 @@ proves all three.
     falsifier of their own.
   - The reader keeps everything in static storage, so its filter allows no call for memory, which design
     7.1 lists among the allowed ones. That is narrower than the design, not wider.
+- 2026-11-14: fixed after the independent review (review-veldo-0344.md, verdict FIX; the C reader, the
+  filter, the writer check and the fail-closed paths were found sound). No acceptance criterion was
+  edited, and the reader's source is unchanged, so C and H stay as recorded.
+  - Finding 1, the sudo line. The line made root read a path in the owner's temporary folder, which any
+    process of the owner's account can turn into a link to a root-only file, and it left the copy in
+    place, readable by the owner's group, when the comparison failed. Now the owner's shell opens the
+    build and root reads it as standard input, into a temporary file of root's own under umask 077; root
+    compares that copy with H before chown, chmod and setcap, and moves the file into place only after
+    setcap; a failed comparison, or a failed step after it, removes the copy. The folder gets mode 0755
+    only when the line makes it. Row ac7/setcap-after-digest reads the new order, that no path of the
+    owner's is inside the root command, and the two removals; its registered case
+    (space344-setcap-before-the-comparison) is re-anchored on the new line and still turns it red. The
+    setup text and proof/VELDO-0344/owner-install.txt carry the line and the review's full uninstall.
+    The design's copy of the old line (docs/design, section 7.1) is outside this footprint and is not
+    edited here: the setup text is the line the owner runs.
+  - Finding 2, the installed row. The reader check had four rows, all on a process of the owner's own
+    uid, and the spec said the installed row proved root-owned reading. The check gains a fifth row: a
+    whole block for process 1, root's and closed to the probe itself, with the start time the probe
+    reads. Row ac6/installed and the setup text require five PASS lines. The Design section's claim is
+    corrected to say which line proves which assumption, and that the earlier measurement does not cover
+    another uid. When the reader is present and systemd-run is not, the skip line says that. Still not
+    run here: nothing in this build can install the capability.
+  - Finding 3, the policy entries. Three more are written out beside the six in owner-install.txt:
+    .veldo/control_space_probe.py, engine/.veldo/control_space_probe.py and
+    docs/veldo-procread-setup.txt. The policy file is still not edited by the builder; until the owner
+    adds the nine entries none of those files is a protected path.

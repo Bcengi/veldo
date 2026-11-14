@@ -22,9 +22,14 @@ THE COMMANDS, from the root of the authority checkout, in one shell
 
 d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob 705d64311de90f1945d7d0c0a5b9b3e6d125e78e:scripts/veldo_procread.c > "$d/veldo_procread.c" && (cd "$d" && env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c) && sha256sum "$d/veldo-procread"
 
-2. The one sudo command. Root installs, compares with H, and only then sets the capability:
+2. The one sudo command. Root opens no path of the owner's account: the owner's shell opens the
+   build and hands it to root as standard input. Root copies it into a temporary file of its own
+   (owner root, mode 0600, under umask 077), compares that copy with H, and only then sets the
+   owner, the mode and the capability and moves the file into place. When the digest differs, or a
+   step after the comparison fails, root removes the copy and nothing is installed. The folder
+   /usr/local/lib/veldo gets mode 0755 only when this line makes it:
 
-sudo sh -c "install -D -m 0750 '$d/veldo-procread' /usr/local/lib/veldo/veldo-procread && chown root:'$g' /usr/local/lib/veldo/veldo-procread && chmod 0750 /usr/local/lib/veldo/veldo-procread && echo 'bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035  /usr/local/lib/veldo/veldo-procread' | sha256sum -c - && setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread" && rm -r "$d"
+sudo sh -c "umask 077 && { [ -d /usr/local/lib/veldo ] || { mkdir -p /usr/local/lib/veldo && chmod 0755 /usr/local/lib/veldo; }; } && t=\$(mktemp /usr/local/lib/veldo/.veldo-procread.XXXXXX) && if cat > \"\$t\" && echo 'bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035  '\"\$t\" | sha256sum -c - >/dev/null; then chown root:'$g' \"\$t\" && chmod 0750 \"\$t\" && setcap cap_sys_ptrace=ep \"\$t\" && mv -f \"\$t\" /usr/local/lib/veldo/veldo-procread || { rm -f \"\$t\"; echo 'the install failed: nothing installed' >&2; exit 1; }; else rm -f \"\$t\"; echo 'digest differs: nothing installed' >&2; exit 1; fi" < "$d/veldo-procread" && rm -r "$d"
 
 3. No sudo. The two user units and the socket:
 
@@ -34,7 +39,7 @@ python3 -I .veldo/control_space_probe.py reader-units && systemctl --user daemon
 
   process_reader: "bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035"
 
-5. The reader check. It must print "state used cap=1" and four PASS lines, and exit 0:
+5. The reader check. It must print "state used cap=1" and five PASS lines, and exit 0:
 
 python3 -I .veldo/control_space_probe.py reader
 
@@ -43,18 +48,43 @@ python3 -I .veldo/control_space_probe.py reader
 
 python3 scripts/selftest.py --suite 141_veldo_0344_process_reader
 
-   Its line "VELDO-0344 ac6/installed: ..." carries how long the reader ran. This row is the first
-   proof of three things the design marks as assumptions: that cap_sys_ptrace, held by the owner's
-   uid, reads root-owned entries; that it reads the task entries; and that the two unit files work
-   as written (Accept=yes, the capability arriving in the unit). If step 5 or this row fails, undo
-   with any one line of the Undo section of docs/veldo-procread-setup.txt; nothing depends on the
+   Its line "VELDO-0344 ac6/installed: ..." carries how long the reader ran. The row requires the
+   check's five PASS lines. What each proves, of the three things the design marks as assumptions:
+   - that cap_sys_ptrace, held by the owner's uid, reads root-owned entries: the fifth line alone.
+     Process 1 is root's, the probe cannot read it itself, and the reader's table must hold a
+     whole block for it (no x line) with the start time the probe reads. The other four lines read
+     a process of the owner's own uid, which the kernel permits on another branch, and prove
+     nothing about root-owned entries.
+   - that it reads the task entries: the second and third lines, on a process of the owner's uid,
+     and the fifth, whose block is whole only when every task of process 1 was read.
+   - that the two unit files work as written (Accept=yes, the capability arriving in the unit):
+     the state "used cap=1", reached through the socket from a unit with NoNewPrivileges=yes.
+   When the reader is installed and systemd-run is not on the path, the suite's skip line says so;
+   it does not say the reader is missing. If step 5 or this row fails, turn the reader off with
+   any one line of the Undo section of docs/veldo-procread-setup.txt; nothing depends on the
    reader being there.
+
+UNINSTALL (full, reversible by running the commands above again), from the root of the authority
+checkout:
+
+systemctl --user disable --now veldo-procread.socket
+systemctl --user stop 'veldo-procread@*.service'
+rm -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/veldo-procread.socket" "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/veldo-procread@.service"
+systemctl --user daemon-reload
+systemctl --user reset-failed 'veldo-procread*'
+sudo rm -f /usr/local/lib/veldo/veldo-procread
+sudo rmdir --ignore-fail-on-non-empty /usr/local/lib/veldo
+
+Then set process_reader: none in the installation's space section (or remove the key). The rmdir
+keeps the folder while veldo-userns lives there. After this the probe reports absent and judges
+every unread process by the bound, as before the ticket.
 
 THE POLICY FILE, NOT EDITED BY THE BUILDER
 
 The spec names .veldo/policy.yaml in its footprint, to make the reader's source and the two unit
-templates protected paths. That file is itself a protected path and the builder was told to touch
-none. The entries to add under protected_paths, by the owner or on the owner's word:
+templates protected paths, and the review adds the probe and the setup text. That file is itself
+a protected path and the builder was told to touch none. The entries to add under
+protected_paths, by the owner or on the owner's word:
 
   # VELDO-0344: the process reader holds a file capability. Its source and the two unit templates
   # decide what that capability can do and where it is granted.
@@ -64,3 +94,13 @@ none. The entries to add under protected_paths, by the owner or on the owner's w
   - {path: "engine/.veldo/services/veldo-procread@.service", floor: high}
   - {path: ".veldo/services/veldo-procread.socket", floor: high}
   - {path: ".veldo/services/veldo-procread@.service", floor: high}
+  # VELDO-0344 (review, finding 3): the probe holds every check that makes the reader trustworthy
+  # (the file, folder, capability and digest checks, the writer check, the table parser and
+  # reader-exec, which the reader's unit runs), and a change there takes effect the moment it
+  # lands. The setup text holds the line the owner pastes into a root shell.
+  - {path: ".veldo/control_space_probe.py", floor: high}
+  - {path: "engine/.veldo/control_space_probe.py", floor: high}
+  - {path: "docs/veldo-procread-setup.txt", floor: high}
+
+Nine entries. The spec's protected_paths names the first six; the last three come from the review
+(finding 3). Until the owner adds them, none of the nine files is a protected path.
