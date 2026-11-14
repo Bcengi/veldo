@@ -14114,14 +14114,15 @@ def cases():
     finished308('space308-sweep-resends-for-a-handed-over-run', 'control_launch.py',
                 "                handed = self._handed_over(dispatch_id, place, 'sweep')\n",
                 "                handed = False\n", ['f1/sweep-never-resends'])
-    result[-1]['also'] = [["                if apart or entry.get('sent'):\n", "                if False:\n"],
+    result[-1]['also'] = [["                if entry.get('sent'):\n", "                if False:\n"],
                           ["                                     alone=True)[os.path.normpath(place)]\n",
                            "                                     )[os.path.normpath(place)]\n"]]
+    # Re-anchored in the fourth fix round: the look before the send is gone (a live clone holds
+    # nothing back), so the mutant is the send for the owner alone, which reaches the live clone.
     finished308('space308-sweep-event-reaches-the-clone', 'control_launch.py',
-                "                if apart or entry.get('sent'):\n", "                if entry.get('sent'):\n",
-                ['f1/sent-once-and-alone'])
-    result[-1]['also'] = [["                                     alone=True)[os.path.normpath(place)]\n",
-                           "                                     )[os.path.normpath(place)]\n"]]
+                "                                     alone=True)[os.path.normpath(place)]\n",
+                "                                     )[os.path.normpath(place)]\n",
+                ['n1/live-clone-holds-nothing-back'])
     finished308('space308-sweep-sends-at-every-sweep', 'control_launch.py',
                 "                entry['sent'] = found.get('item') is not None\n", "                entry['sent'] = False\n",
                 ['f1/sent-once-and-alone'])
@@ -14129,11 +14130,9 @@ def cases():
                 "                if self.space is not None and self._handed_over(\n",
                 "                if False and self._handed_over(\n", ['f1/start-sweep-applies-the-rule'])
     finished308('space308-receiver-event-reaches-the-clone', 'control_launch.py',
-                "            if apart:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'not_alone', 'with': apart[:3]}\n",
-                "            if False:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'not_alone', 'with': apart[:3]}\n",
-                ['f1/sent-once-and-alone'])
-    result[-1]['also'] = [["                ended=empty is True, alone=True)[os.path.normpath(run)]\n",
-                           "                ended=empty is True)[os.path.normpath(run)]\n"]]
+                "                ended=empty is True, alone=True)[os.path.normpath(run)]\n",
+                "                ended=empty is True)[os.path.normpath(run)]\n",
+                ['n1/live-clone-holds-nothing-back'])
     finished308('space308-unread-group-sent', 'control_launch.py',
                 "        elif self._group_empty() is not True:\n", "        elif False:\n",
                 ['f3/unread-group-sends-nothing'])
@@ -14168,9 +14167,14 @@ def cases():
     # leftover that was sent its one event stays in memory.
     # Re-anchored in the third fix round (the item-naming signal): the clone test moved into
     # _space_clones; the mutant is the same look, every worktree and agent repository of the owner.
-    finished308('space308-any-repository-of-the-owner-holds-the-event-back', 'control_launch.py',
-                "                  and _space_clones(record, paths, root)\n",
-                "                  and not beneath(record, paths) and record.get('kind') in ('worktree', 'agent_repository')\n",
+    # Re-anchored again in the fourth: no look holds the send back any more, so the mutant puts
+    # the same look back before the send (space_signal's `alone`).
+    named308 = "            # Exactly the run's own items, each at the version read now; never an item of a clone.\n"
+    finished308('space308-any-repository-of-the-owner-holds-the-event-back', 'control_launch.py', named308,
+                "            if [1 for other in every.values() if other.get('state') not in SPACE_ENDED and not beneath(other)\n"
+                "                    and other.get('kind') in ('worktree', 'agent_repository')\n"
+                "                    and _space_owner(other) in subjects]:\n"
+                "                raise ValueError('the owner of this thing also owns a worktree or an agent repository')\n",
                 ['n1/own-items-ended'])
     finished308('space308-event-reaches-a-handed-over-clone', 'control_launch.py',
                 "        return root is not None and beneath(record, [root])\n", "        return False\n",
@@ -14179,8 +14183,8 @@ def cases():
                 "            if what in seen:\n                return\n", "            if False:\n                return\n",
                 ['n2/observations-bounded'])
     finished308('space308-sent-leftover-stays-in-memory', 'control_launch.py',
-                "                    if not apart:\n                        del self.leftovers[dispatch_id]",
-                "                    if False:\n                        del self.leftovers[dispatch_id]",
+                "                    del self.leftovers[dispatch_id]  # sent its one event: never a sweep's again\n",
+                "                    pass\n",
                 ['n2/observations-bounded'])
 
     # VELDO-0308, the third fix round: run finished names the run's own items at their versions (the
@@ -14195,6 +14199,27 @@ def cases():
                 "                                 % ((answer or {}).get('reason') if isinstance(answer, dict) else answer,))\n",
                 "                [_SPACE['signal'](ledger, event, one, emitter=emitter, **given) for one in subjects]\n",
                 ['n1/changed-between-judge-and-send'])
+
+    # VELDO-0308, the fourth fix round (the lead's decision on N1's open point): the clone's teardown
+    # names exactly the clone's own items at their versions, and a live clone holds nothing back.
+    # The hold put back, as it was: nothing is sent for the run while its clone is declared or
+    # present. The teardown names every item of the clone's owner, as the owner's event did, so it
+    # reaches the run directory. A teardown's send the ledger refused whole is sent again for the run.
+    finished308('space308-live-clone-holds-the-send-back', 'control_launch.py', named308,
+                "            if [1 for other in every.values() if other.get('state') in ('declared', 'present')\n"
+                "                    and _space_clones(other, paths, clones_root(clones)) and _space_owner(other) in subjects]:\n"
+                "                raise ValueError('the owner of this thing also owns a live clone: its teardown sends the event')\n",
+                ['n1/live-clone-holds-nothing-back'])
+    finished308('space308-teardown-names-the-owner', 'control_clone.py',
+                "                   and _space_beneath(record, paths))\n",
+                "                   and any(_space_beneath(other, paths) and other.get('owner') == record.get('owner')\n"
+                "                           for other in ledger.items().values()))\n",
+                ['n1/teardown-names-its-clone-only'])
+    finished308('space308-teardown-refused-send-falls-back-to-the-owner', 'control_clone.py',
+                "                raise ValueError('the ledger refused the send whole: %s'\n"
+                "                                 % ((answer or {}).get('reason') if isinstance(answer, dict) else answer,))\n",
+                "                [_SPACE['signal'](ledger, event, {'run': run}, emitter=emitter, **given) for run in sorted(runs)]\n",
+                ['n1/teardown-changed-between-judge-and-send'])
 
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the

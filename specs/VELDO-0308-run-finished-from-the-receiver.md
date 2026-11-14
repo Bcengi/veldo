@@ -16,6 +16,8 @@ footprint:
   - ".veldo/control_launch.py"
   - "engine/.veldo/control_retirement.py"
   - ".veldo/control_retirement.py"
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
   - "scripts/suites/*_veldo_0308_*.py"
   - "scripts/suites/142_veldo_0303_space_paths.py"
   - "scripts/suites/129_veldo_0254_canary_launch.py"
@@ -389,3 +391,58 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     it and the seven others whose lines or rows were touched were applied again by hand, one at a time:
     all red on their rows. The registered set was not run as a whole in this round. Suite 142 is
     unchanged, 57 passed.
+- 2026-11-14: fix round 4, by the lead's decision on the point fix round 3 left FOR THE LEAD. The clone's
+  teardown names exactly the clone's own items at their versions, and a clone that is still live holds
+  nothing back. No acceptance criterion changed. FOOTPRINT AMENDED: control_clone.py and its engine copy
+  (engine/.veldo/control_clone.py, .veldo/control_clone.py) are added, by that decision.
+  - What changed, in control_clone.py. The send of the space path (space_signal, called by the teardown
+    and by a provision that failed part way) no longer signals the owner. It sends one event that names
+    exactly the items the ledger records at or beneath the clone's root that the event reaches (present,
+    kept or deferred, ending on run finished, not marked Keep by the owner), each at the version read
+    then (space_named). The versions are read before the records. The ledger acts on those items and on
+    nothing else of the owner, so a run directory, a scratch folder, a worktree or an agent repository
+    of the same owner outside the clone is never reached by a teardown. With nothing to name, no command
+    is sent. The `alone` argument of this module's space_signal, which nothing called, is gone.
+  - A version that changed between the read and the send. The ledger refuses the whole command, with
+    nothing written (space_item_version:<item>). The teardown is refused as space_deferred:remove_refused
+    with the ledger's reason on its retire event, no pin is released, and nothing is sent in its place.
+    The clone is whole and its obligation open: the next teardown reads the versions again.
+  - What changed, in control_launch.py. The look that held the run's send back while a clone of the same
+    owner was declared or present is removed (space_apart, _space_apart, SPACE_CLONE_LIVE, the refusal
+    not_alone of the receiver and of the sweep). The receiver's send and the sweep's name the run's own
+    items and never a clone's, as since fix round 3, so nothing of the clone can be reached by them and
+    nothing of the run waits for the clone's teardown. The clone_in_use test before both sends is
+    unchanged: a run directory still stays while another dispatch uses the run's clone.
+  - Nothing here removes anything. Every removal is Signal's, after the safety rules and the keep step.
+    No allowance was added to the ledger; the teardown signs as before.
+  - What is not changed, FOR THE LEAD. The retry of AC3 (space_retry) still signals the owner of the
+    dispatch's deferred items, as recorded in fix round 3. The sends of fleet.py, lander.py and
+    control_launch_work.py are other tickets' and still signal the owner.
+  - Suite 146 is 36 rows, 62 passed. New rows, each with a registered falsifier applied once to the
+    copy the suite loads and seen red. n1/live-clone-holds-nothing-back: beside a live clone of the same
+    owner the receiver, and for a leftover the sweep, sends run finished once naming the run's own items;
+    they are removed, and the clone's three items stay present at the version they had; each clone is
+    then removed by its own teardown. Falsifier space308-live-clone-holds-the-send-back (the look put
+    back). n1/teardown-names-its-clone-only: the teardown names exactly the clone's three items at the
+    versions read, the run directory and an agent repository of the same owner keep their state and
+    version, and no teardown of the suite named an item outside its own clone. Falsifier
+    space308-teardown-names-the-owner (every item of the owner named, as the owner's event did).
+    n1/teardown-changed-between-judge-and-send: an item of the clone is measured after the read and
+    before the ledger's command; the whole send is refused, nothing of the clone is ended, no pin is
+    released, and the next teardown removes the clone. Falsifier
+    space308-teardown-refused-send-falls-back-to-the-owner.
+  - Older rows that changed with the behavior. f1/sweep-never-resends: the run directory is deferred by
+    the receiver's own event, since the teardown no longer reaches it. f1/sent-once-and-alone: its
+    not_alone part is gone. n2/observations-bounded: once the consumer has ended the next sweep sends
+    the one event and the run directory goes while the clone is present. Suite 142,
+    f3/consumer-holds-clone: once the consumer has ended the sweep removes the run directory alone, the
+    live clone stays whole and present, and the teardown then removes the clone. Suite 146 loads
+    control_clone.py by its production anchor, so the registered runner substitutes it and the canon
+    row compares it.
+  - Falsifiers re-anchored, unchanged in meaning, each applied again and red on its rows:
+    space308-sweep-event-reaches-the-clone and space308-receiver-event-reaches-the-clone (the send for
+    the owner; target n1/live-clone-holds-nothing-back), space308-any-repository-of-the-owner-holds-the-
+    event-back (the look put back for every worktree and agent repository of the owner),
+    space308-sent-leftover-stays-in-memory and space308-sweep-resends-for-a-handed-over-run (their
+    anchors lost the look). 36 cases are registered under finding 308. The registered set is run whole
+    in this round through scripts/check_teeth_mutations.py; the counts are in the proof bundle.

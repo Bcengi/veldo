@@ -80,9 +80,9 @@ at the sweep; one that holds none is removed as before), loss/candidate-commits 
 a candidate workspace go only after their own commits are on kept refs of the repository; each stays
 with a file in no commit). f3/consumer-holds-clone (the worker's receiver ends, and then the sweep runs,
 while a consumer attached to the worker's clone has no process: nothing is signalled, the clone is whole
-and the refusal is clone_in_use; once the consumer has ended the sweep still sends nothing while the
-clone of the same owner is there (not_alone, VELDO-0308), and the clone's teardown removes the run
-directory with the clone).
+and the refusal is clone_in_use; once the consumer has ended the sweep sends run finished for the run
+directory alone, which goes while the live clone of the same owner stays whole and present (VELDO-0308:
+each send names its own items), and the clone's teardown then removes the clone and nothing else).
 f5/clones-given-space (every clone provisioner the two launch modules build is given space; read from
 their sources, the one row here that drives nothing).
 
@@ -1021,21 +1021,26 @@ def _v303_space_paths_suite():
             RECORDS[consumer_id] = {'state': 'exited', 'process': None}
             with with_ledger(row):
                 removed = N.clear_runs()
-            # VELDO-0308 (the review's finding 1): the sweep's event is for the run directory alone. While the
-            # run's owner still has its clone, the sweep sends nothing; the clone's teardown sends the event.
-            check(row, 'once the consumer has ended the sweep still sends nothing, for the event would judge the clone '
-                       'of the same owner too: not_alone, nothing written, the clone whole [%s]' % (N.observations[-1:],),
-                  removed == [] and journal_length() == length and N.observations[-1].get('refusal') == 'not_alone'
-                  and (work / 'tracked.txt').is_file() and os.path.isdir(shared_run) and state_of(run_item) == 'present'
-                  and [state_of(items[name]) for name in ('root', 'work', 'scratch')] == ['present'] * 3)
+            # VELDO-0308 (the lead's decision on N1's open point): the sweep's event names the run's own items
+            # and never the clone's, and the clone's teardown names the clone's own. Neither waits for the other.
+            check(row, 'once the consumer has ended the sweep sends run finished for the run directory alone: it goes, '
+                       'and the live clone of the same owner is whole, its three items present [%s %s]'
+                  % (removed, removal_of(run_item).get('emitter')),
+                  removed == [worker_id] and not os.path.lexists(shared_run) and state_of(run_item) == 'removed'
+                  and removal_of(run_item).get('emitter') == 'runner.sweep'
+                  and (work / 'tracked.txt').is_file() and (root / CL.MANIFEST).is_file()
+                  and [state_of(items[name]) for name in ('root', 'work', 'scratch')] == ['present'] * 3
+                  and len(C._pins_held(clone_id)) == 1)
             with with_ledger(row):
                 C.retire(C.handle(clone_id))
             with with_ledger(row):
                 removed = N.clear_runs()
-            check(row, 'the clone\'s teardown sends run finished for that owner and the run directory goes with the '
-                       'clone; the sweep then finds nothing left [%s %s]' % (removed, removal_of(run_item).get('emitter')),
-                  removed == [worker_id] and not os.path.lexists(shared_run) and state_of(run_item) == 'removed'
-                  and removal_of(run_item).get('emitter') == 'clone.teardown' and not os.path.lexists(root))
+            check(row, 'the clone\'s teardown then removes the clone, by its own event, and the sweep finds nothing '
+                       'left [%s %s]' % (removed, [removal_of(items[name]).get('emitter') for name in ('root', 'work', 'scratch')]),
+                  removed == [] and not os.path.lexists(root) and N.leftovers == {}
+                  and [state_of(items[name]) for name in ('root', 'work', 'scratch')] == ['removed'] * 3
+                  and [removal_of(items[name]).get('emitter') for name in ('root', 'work', 'scratch')]
+                  == ['clone.teardown'] * 3)
         except Exception as error:
             stopped(row, error)
 

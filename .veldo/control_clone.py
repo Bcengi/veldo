@@ -414,10 +414,11 @@ def _file_digest(path):
 
 SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
 SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger that allow a delete
+SPACE_SIGNALLED = ('present', 'kept', 'deferred')  # the states the ledger's signal reaches
 _SPACE = {}
 
 
-def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
+def space_signal(space, event, paths, emitter, ended=False, confirm=False):
     """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
     and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
     whatever goes is removed by Signal's removers, after the safety rules and the keep step.
@@ -425,53 +426,41 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
     `space` is what the installation wires in when it has a space ledger: a mapping with ledger (the
     control_space.Ledger) and, under their own names, the arguments Signal is given (probe, kinds,
     remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). The items are the live
-    ones the ledger records at or beneath `paths`. The event is signalled once for each owner among
-    them, and the subject is every part of that owner. A path the ledger records no live item for
-    answers with no item and the deferral not_in_ledger, and nothing is done to it; when the kernel
-    says nothing is at that path (not found, and no other answer) it answers gone, for there is
-    nothing to remove. Whatever raises removes nothing: every path then answers with the deferral
-    remove_refused and what was raised.
+    ones the ledger records at or beneath `paths`.
+
+    VELDO-0308: the event is sent once, and it names exactly the clone's own items, each at the version
+    read here (space_named, the ledger's signal that names items): the ledger acts on those and on
+    nothing else of their owner, so a run directory, a worktree or an agent repository of the same owner
+    that is not at or beneath `paths` is never reached from here, and the run's own send (the receiver's,
+    the sweep's) does not wait for this one. The ledger refuses the whole command, with nothing written,
+    when one named item changed since it was read: every path then answers remove_refused with the
+    ledger's reason, and nothing is sent in its place. With nothing to name no command is sent.
+
+    A path the ledger records no live item for answers with no item and the deferral not_in_ledger, and
+    nothing is done to it; when the kernel says nothing is at that path (not found, and no other answer)
+    it answers gone, for there is nothing to remove. Whatever raises removes nothing: every path then
+    answers with the deferral remove_refused and what was raised.
 
     `ended` says the caller has just read from the kernel that the runs owning these items are over:
     rule 3 is answered conclusive for those runs and for no other owner. `confirm` first confirms the
-    items still in state declared (a creation that failed part way), so the event reaches them.
-    `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
-    repository that is not at or beneath `paths`."""
+    items still in state declared (a creation that failed part way), so the event reaches them."""
     paths = [os.path.normpath(str(path)) for path in paths]
     found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
-
-    def beneath(record):
-        where = (record.get('locator') or {}).get('path')
-        return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
-
-    def owned(record, subject):
-        owner = record.get('owner') or {}
-        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
-                   for part, wanted in subject.items())
 
     try:
         ledger = space['ledger']
         given = {key: value for key, value in space.items() if key != 'ledger'}
-        every = ledger.items()
-        live = {identity: record for identity, record in every.items()
-                if record.get('state') not in SPACE_ENDED and beneath(record)}
-        subjects, runs = [], set()
+        live = {identity: record for identity, record in ledger.items().items()
+                if record.get('state') not in SPACE_ENDED and _space_beneath(record, paths)}
+        runs = set()
         for identity, record in sorted(live.items()):
             if confirm and record.get('state') == 'declared':
                 ledger.confirm(identity)
-            owner = dict(record.get('owner') or {})
-            if isinstance(owner.get('run'), dict):
-                owner['run'] = owner['run'].get('id')
-                runs.add(owner['run'])
-            if owner and owner not in subjects:
-                subjects.append(owner)
-        others = [identity for identity, record in sorted(every.items())
-                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
-                  and record.get('kind') in ('worktree', 'agent_repository')
-                  and any(owned(record, subject) for subject in subjects)]
-        if others:
-            raise ValueError('the owner of this thing also owns %s: the event would end it too'
-                             % ', '.join(others[:3]))
+            run = (record.get('owner') or {}).get('run')
+            if isinstance(run, dict):
+                runs.add(run.get('id'))
+        # Exactly the clone's own items, each at the version read now; never an item that is not here.
+        named = space_named(ledger, event, paths)
         if ended:
             wired = given.get('owner_live')
             given['owner_live'] = lambda owner: (
@@ -479,8 +468,12 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
                 else wired(owner) if wired else None)
         if 'signal' not in _SPACE:
             _SPACE['signal'] = _organ('control_space_signal').signal
-        for subject in subjects:
-            _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
+        if named['items']:
+            answer = _SPACE['signal'](ledger, event, named, emitter=emitter, **given)
+            if not (isinstance(answer, dict) and answer.get('ok') is True):
+                # One named item changed since it was read: nothing was written, and nothing is sent in its place.
+                raise ValueError('the ledger refused the send whole: %s'
+                                 % ((answer or {}).get('reason') if isinstance(answer, dict) else answer,))
         for identity, record in live.items():
             where = record['locator']['path']
             if where in found:
@@ -496,6 +489,26 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
         found = {path: {'item': None, 'state': None, 'deferral': 'remove_refused', 'raised': raised}
                  for path in paths}
     return found
+
+
+def _space_beneath(record, places):
+    where = (record.get('locator') or {}).get('path')
+    return bool(where) and any(where == path or where.startswith(path + '/') for path in places)
+
+
+def space_named(ledger, event, paths):
+    """VELDO-0308: the subject of an event sent for exactly the items at or beneath `paths`, as the
+    ledger's signal that names items takes it: {items: [{item, version}, ...]}. The items are those the
+    event reaches there (present, kept or deferred, ending on `event`, not marked Keep by the owner),
+    whoever else their owner owns. The versions are read before the records, so a record that changed
+    between the two reads is named at the version it had, and the ledger refuses the whole command. An
+    item that appeared between them was not read and is not named."""
+    versions = {identity: version for identity, version in ledger.conn.execute('SELECT id, version FROM entities')}
+    named = sorted(identity for identity, record in ledger.items().items()
+                   if identity in versions and record.get('state') in SPACE_SIGNALLED and not record.get('owner_keep')
+                   and event in ((record.get('ends_on') or {}).get('events') or ())
+                   and _space_beneath(record, paths))
+    return {'items': [{'item': identity, 'version': versions[identity]} for identity in named]}
 
 
 def space_absent(path):
@@ -938,7 +951,8 @@ class Clones(EP.EnvProvisioner):
 
     def _through_space(self, root, work, pins, confirm=False):
         """VELDO-0303: send run finished through Signal for the clone's items (its work tree, its scratch
-        folder and its root, whatever the ledger records at or beneath the root) and release the pins
+        folder and its root, whatever the ledger records at or beneath the root; VELDO-0308: exactly
+        those, named at their versions, and nothing else of the run that owns them) and release the pins
         only after the work tree's removal outcome is written, or when no live item records it and
         the kernel says nothing is at its path: while the work tree is on disk its objects are the
         caches', and a pin is what keeps them. Returns (the root's entry, the refs released). Nothing
