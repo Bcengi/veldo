@@ -53,7 +53,10 @@ and had the keep record written. With no keeper, or any other answer, the item i
 keep_failed and nothing is touched. The keeper itself is VELDO-0345. This module only refuses to run
 without it.
 
-THE WORKTREE REMOVER runs git's worktree remove in the worktree's repository, with no force option. git
+THE WORKTREE REMOVER runs git's worktree remove in the worktree's repository, with no force option,
+through the one Git boundary (git_process.py, the sibling of this file): no GIT_ variable of the caller
+and no system or global configuration reaches it, so a file only a personal excludes file ignores is an
+untracked file to it. git
 refuses a worktree with a modified tracked file, an untracked file, a lock or a submodule, and that
 refusal is the deferral remove_refused with the worktree untouched. git's non-forced remove does delete
 ignored files without a word (measured in this ticket's proof); what an ignored file is worth is
@@ -80,10 +83,23 @@ second probe), keep_failed (the keep step).
 Standard library only. The ledger is the control_space.Ledger and the probe the control_space_probe
 module the caller passes in.
 """
+import importlib.util
 import json
 import os
+from pathlib import Path
 import stat
 import subprocess
+
+
+def _sibling(name):
+    spec = importlib.util.spec_from_file_location('veldo_space_remove_' + name,
+                                                  Path(__file__).resolve().with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_git_process = _sibling('git_process')
 
 SCHEMA = 'veldo.control_space_remove/v1'
 
@@ -345,6 +361,22 @@ def _r_agent_repository(ctx, identity, record, answer):
     _after(ctx, pools, answer)
 
 
+def _worktree_remove(ctx, repository, path):
+    """git's own worktree remove, with no force option: (exit code, output). The command recorded is
+    the one the process was given."""
+    try:
+        done = _git_process.run(['git', '-C', repository, 'worktree', 'remove', path], stdin=subprocess.DEVNULL,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=SECONDS)
+    except (OSError, subprocess.SubprocessError) as error:
+        if getattr(error, 'cmd', None):
+            ctx['commands'].append([str(word) for word in error.cmd])
+        return None, _said(error)
+    ctx['commands'].append([str(word) for word in done.args])
+    if done.returncode:
+        return done.returncode, done.stderr.decode('utf-8', 'replace').strip()[-300:]
+    return 0, done.stdout.decode('utf-8', 'surrogateescape')
+
+
 def _r_worktree(ctx, identity, record, answer):
     answer['method'] = 'keep_then_git_worktree_remove'
     path = record['locator']['path']
@@ -357,7 +389,7 @@ def _r_worktree(ctx, identity, record, answer):
     except (OSError, RecursionError, _Stop) as error:
         raise _Refusal(REFUSED, 'the worktree could not be measured: ' + _said(error))
     pools = _before(ctx, record, answer)
-    code, out = ctx['run'](['git', '-C', repository, 'worktree', 'remove', path])
+    code, out = _worktree_remove(ctx, repository, path)
     if code != 0:
         raise _Refusal(REFUSED, 'git refused the remove: ' + str(out)[:300], code=code)
     if os.path.lexists(path):
@@ -484,7 +516,8 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
     `probe` is the control_space_probe module. `free(pool record)` returns the free bytes of one pool
     at the moment of the call; without it nothing is removed. `keep(identity, record)` is the keep
     step of a worktree and an agent repository; without it neither is removed. `run` and `proc` are the
-    probes' own parameters, the client runner and the process table; `run` also runs the tools.
+    probes' own parameters, the client runner and the process table; `run` also runs the engine's
+    client. git's worktree remove is run through the Git boundary and not through `run`.
 
     Returns {ok: True, ...} or the refusal {ok: False, reason, deferral, said, ...}, each with item,
     action, kind, method, bytes, bytes_source, pool, pool_free_before, pool_free_after, freed, host and
@@ -495,7 +528,8 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
         commands.append([str(word) for word in argv])
         return given(argv, cwd)
 
-    ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc}
+    ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc,
+           'commands': commands}
     answer = {'item': identity, 'action': action, 'kind': record.get('kind'), 'method': None, 'bytes': None,
               'bytes_source': None, 'pool': record.get('pool'), 'pool_free_before': None,
               'pool_free_after': None, 'freed': None, 'host': None, 'commands': commands}

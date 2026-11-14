@@ -12764,18 +12764,22 @@ def cases():
         "        use = _second_probe(ctx, name)\n",
         "        use = None\n",
         ['ac1/rename-probe-delete'])
+    result[-1]['siblings'] = True
     add(300, 'space300-worktree-forced', space300, 'control_space_remove.py',
-        "    code, out = ctx['run'](['git', '-C', repository, 'worktree', 'remove', path])\n",
-        "    code, out = ctx['run'](['git', '-C', repository, 'worktree', 'remove', '--force', path])\n",
+        "        done = _git_process.run(['git', '-C', repository, 'worktree', 'remove', path], stdin=subprocess.DEVNULL,\n",
+        "        done = _git_process.run(['git', '-C', repository, 'worktree', 'remove', '--force', path], stdin=subprocess.DEVNULL,\n",
         ['ac2/non-forced'])
+    result[-1]['siblings'] = True
     add(300, 'space300-volume-prune', space300, 'control_space_remove.py',
         "(('volume', 'rm', '$name'),))\n",
         "(('volume', 'prune'),))\n",
         ['ac3/commands'])
+    result[-1]['siblings'] = True
     add(300, 'space300-engine-reclaimable-as-freed', space300, 'control_space_remove.py',
         "    answer['freed'] = after - before if after is not None else None\n",
         "    answer['freed'] = int(ctx['run'](['docker', '--context', str(pool.get('engine')), 'system', 'df'])[1])\n",
         ['ac4/engine-image-pool'])
+    result[-1]['siblings'] = True
     # No work is ever lost (design section 0), as these removers read it. A worktree removed with no
     # keep step given; the remove run after a keep step that failed; a folder whose delete stopped left
     # under its marked name, where its item no longer finds it.
@@ -12783,14 +12787,17 @@ def cases():
         "        raise _Refusal(KEEP_FAILED, 'no keep step was given: the commits of this item are recorded nowhere')\n",
         "        return\n",
         ['ac2/keep-step'])
+    result[-1]['siblings'] = True
     add(300, 'space300-removes-after-a-failed-keep', space300, 'control_space_remove.py',
         "    if not isinstance(said, dict) or said.get('ok') is not True:\n",
         "    if False:\n",
         ['ac2/keep-step'])
+    result[-1]['siblings'] = True
     add(300, 'space300-left-under-its-marked-name', space300, 'control_space_remove.py',
         "    stuck = _put_back(name, path)\n",
         "    stuck = None\n",
         ['ac1/delete-stops'])
+    result[-1]['siblings'] = True
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'

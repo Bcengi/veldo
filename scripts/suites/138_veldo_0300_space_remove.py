@@ -8,8 +8,9 @@ repository's .veldo. The ledger is a real one on a real store under one temporar
 is declared and confirmed by its own commands. The folders, repositories and worktrees are real, made
 with plain git, and every delete is a real delete under that temporary folder. Three things are
 stand-ins: the container engine, a function given as the client runner that keeps containers, images,
-volumes and networks in memory, refuses what an engine refuses, and hands every git command to the
-removers' own runner (no container engine is asked anything); the free space reader, which answers from
+volumes and networks in memory, refuses what an engine refuses, and hands the probes' git reads to the
+removers' own runner (no container engine is asked anything; git's worktree remove is run by the
+remover itself through the Git boundary, which the suite wraps only to record the command); the free space reader, which answers from
 the size of the fixture folders and from the stand-in engine, so the figures do not move with the rest
 of the host; and the process table, a folder shaped as the kernel's, because this host's own table
 holds processes this user may not read. The process that holds a file open in the declared falsifier
@@ -232,7 +233,7 @@ def _v300_space_remove_suite():
             """The client runner: docker from the stand-in engine, git by the removers' own runner."""
             ran.append([str(word) for word in argv])
             if argv[0] != 'docker':
-                return RM._run(argv, cwd)
+                return RM._run(argv, cwd)  # the probes' reads
             if ENGINE['unreadable']:
                 return 1, 'Cannot connect to the Docker daemon at unix:///var/run/docker.sock'
             engine, kind, verb = argv[2], argv[3], argv[4]
@@ -269,6 +270,15 @@ def _v300_space_remove_suite():
                     taken(kind, record)
                 return 0, ''
             return 1, 'unknown command'
+
+        boundary = RM._git_process.run
+
+        def recorded_git(args, **kwargs):
+            """The Git boundary the worktree remover calls, with the command it was given recorded."""
+            ran.append([str(word) for word in args])
+            return boundary(args, **kwargs)
+
+        RM._git_process.run = recorded_git
 
         CAPACITY = 500000 * MEGABYTE
         FREE = {'host': lambda: CAPACITY - sum(size_of(place) for place in (SCRATCH, BUILD, WORKTREES, STATE)),
@@ -684,6 +694,11 @@ def _v300_space_remove_suite():
         check(ROW, 'the source holds no prune, no clean and no force option as a string',
               words and not [word for word in words if 'prune' in word or word in ('clean', '-f', '--force', '-ff')
                              or word.startswith('--force')])
+
+        boundary_check = load('v300_check_git_boundary', ROOT / 'scripts' / 'check_git_boundary.py')
+        check(ROW, 'git is run through the one Git boundary and nowhere else in the removers',
+              boundary_check.problems(PRODUCTION['control_space_remove.py'].read_text()) == []
+              and '_git_process.run(' in PRODUCTION['control_space_remove.py'].read_text())
 
         ROW = 'ac3/engine-refusal'
         second = engine_objects('default', 'b')
