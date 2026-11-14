@@ -7,15 +7,20 @@
   ],
   "red_rows": [
    "ac1/children-first",
+   "ac1/every-item-gets-an-outcome",
    "ac1/kept-and-unknown",
    "ac1/removes-before-return",
    "ac2/deferred-then-retried",
    "ac2/missing-is-gone",
+   "ac2/unreadable-is-not-gone",
    "ac3/report-mode",
    "ac5/keep-failed-passed-through",
    "ac5/left-at-stays-removing",
    "ac5/remover-deferrals",
-   "look/agent-repository-held"
+   "carrier/one-remover",
+   "carrier/recorded",
+   "look/agent-repository-held",
+   "rules/carry-out-refused"
   ],
   "red_details": [
    [
@@ -35,8 +40,10 @@
   "red_rows": [
    "ac2/deferred-then-retried",
    "ac2/missing-is-gone",
+   "ac2/unreadable-is-not-gone",
    "ac5/keep-failed-passed-through",
-   "ac5/remover-deferrals"
+   "ac5/remover-deferrals",
+   "carrier/recorded"
   ],
   "red_details": [
    [
@@ -141,6 +148,153 @@
    [
     "VELDO-0301 look/agent-repository-held",
     "the agent repository is held back by the kind registry, as in_use, naming what holds it [('deferred', 'in_use', 'children') None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-lexists-at-the-locator",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac2/unreadable-is-not-gone"
+  ],
+  "red_rows": [
+   "ac2/unreadable-is-not-gone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac2/unreadable-is-not-gone",
+    "at its event the item is deferred as not_in_ledger by rule 1, never gone [('deferred', 'remove_refused', 'error') deferred]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-lexists-under-the-marked-name",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac2/unreadable-is-not-gone"
+  ],
+  "red_rows": [
+   "ac2/unreadable-is-not-gone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac2/unreadable-is-not-gone",
+    "a folder not found at its path, whose marked name answers an input/output error, is deferred with the error and never gone [('gone', None, None) gone]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-an-item-that-raises-stops-the-event",
+  "criterion": "AC7",
+  "expected_red": [
+   "ac1/every-item-gets-an-outcome"
+  ],
+  "red_rows": [
+   "ac1/every-item-gets-an-outcome",
+   "ac1/removes-before-return",
+   "carrier/one-remover",
+   "carrier/recorded",
+   "look/agent-repository-held",
+   "rules/carry-out-refused",
+   "signal/canon"
+  ],
+  "red_details": [],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-a-registry-that-raises-stops-the-event",
+  "criterion": "AC7",
+  "expected_red": [
+   "ac1/every-item-gets-an-outcome"
+  ],
+  "red_rows": [
+   "ac1/every-item-gets-an-outcome"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac1/every-item-gets-an-outcome",
+    "a kind registry that raises does not stop the call: every item is deferred with the error named [RuntimeError: the table could not be read (None, None, None) (None, None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-no-carrier-on-the-record",
+  "criterion": "AC8",
+  "expected_red": [
+   "carrier/recorded"
+  ],
+  "red_rows": [
+   "carrier/recorded"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 carrier/recorded",
+    "while its remover runs the item is removing and its removal record holds the carrier: this process, its start time and the call's signal record [removing None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-writes-over-another-carrier",
+  "criterion": "AC8",
+  "expected_red": [
+   "carrier/one-remover"
+  ],
+  "red_rows": [
+   "carrier/one-remover"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 carrier/one-remover",
+    "the item another carrier made removing is handed to no remover by this call [{'item': 'space:item:b26b993b583149d9a4f3a8a59d18ad3c', 'action': 'remove', 'outcome': 'deferred', 'deferral': 'remove_refused', 'rule': 'tool'} []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-carry-out-not-refused",
+  "criterion": "AC9",
+  "expected_red": [
+   "rules/carry-out-refused"
+  ],
+  "red_rows": [
+   "rules/carry-out-refused"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 rules/carry-out-refused",
+    "a call that gives its own carry_out is refused by name, with and without the modules [None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space331-signal-reads-no-mode",
+  "criterion": "VELDO-0331 AC2",
+  "expected_red": [
+   "ac2/signal-by-scope"
+  ],
+  "red_rows": [
+   "ac1/act-beside-report",
+   "ac2/signal-by-scope",
+   "ac3/then-due-and-nothing-removed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0331 ac2/signal-by-scope",
+    "the item of a report-mode project is left due and its folder stays [removed]"
    ]
   ],
   "noop_red_rows": [],

@@ -14,7 +14,12 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_space_signal.py"
   - ".veldo/control_space_signal.py"
+  - "engine/.veldo/control_space_probe.py"
+  - ".veldo/control_space_probe.py"
+  - "engine/.veldo/control_space_remove.py"
+  - ".veldo/control_space_remove.py"
   - "scripts/suites/*_veldo_0301_*.py"
+  - "scripts/suites/134_veldo_0331_space_mode.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -73,6 +78,46 @@ acceptance_criteria:
       worktree deferred as remove_refused and fails. Write the outcome of an answer with left_at as any
       other deferral: the row finds the item no longer removing, or marked gone with its folder whole
       under the marked name, and fails
+  - id: AC6
+    text: >
+      An item is marked gone only when os.lstat said not found (ENOENT) at its locator and at its marked
+      name. Any other answer, a folder above it that may not be searched (EACCES), an input/output error
+      (EIO) or any other error, is a path that could not be read: the item is deferred with what was said
+      and is never gone. The row is a folder whose parent has mode 000, due at its event: it is deferred
+      as not_in_ledger, its files are all there, and its next event removes it
+    falsified_by: >
+      Each of these turns the row red. Read the locator with os.path.lexists: the row finds the item not
+      deferred by rule 1 with what the kernel said. Read the marked name with os.path.lexists: the row's
+      folder, not found at its path and with an input/output error at its marked name, is marked gone
+  - id: AC7
+    text: >
+      Nothing that raises stops the event. An exception outside the rules while one item is carried out
+      (the second look at the locator, the look under the marked name, a write of the ledger) defers
+      that item as remove_refused with what was raised, and every other item of the event is carried
+      out. When the kind registry's due raises, every carried item is deferred as remove_refused with
+      what was raised and none is handed to a remover. The call returns with one entry per item
+    falsified_by: >
+      Each of these turns the row red. Let an item's exception leave the loop: the row's call raises and
+      the two folders after the failing item are still on disk. Let the registry's exception leave the
+      call: the row's call raises and its two items are due with no outcome
+  - id: AC8
+    text: >
+      Every outcome a call writes holds the carrier: the id and the start time of the process that
+      carries the item out and the journal number of the call's signal record. It is on the removal
+      record from the moment the item is written removing, before its remover runs. A call whose
+      removing write the ledger refuses because another carrier made the item removing first calls no
+      remover and writes nothing over that record
+    falsified_by: >
+      Each of these turns a row of its own red. Write no carrier: the row reads the item while its
+      remover runs and finds no carrier on its removal record. Write the refusal as a deferral: the
+      row's item, made removing by another carrier, is found deferred by this call
+  - id: AC9
+    text: >
+      No caller carries out by a callable of its own. A call that gives carry_out is refused by name,
+      space_carry_out_refused, before the ledger is asked anything: nothing is made due and the callable
+      is never called. Every removal an event causes passes the rules and its remover
+    falsified_by: >
+      Do not refuse; the row's call with carry_out makes the item due, and the row finds it not present
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. No event removes anything, and items stay as recorded.
@@ -162,3 +207,43 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     until VELDO-0320, so the suite reads the real ledger through a view that returns one item with
     it. A measure cell, a contained branch and an event with no cell for the item's row leave the item
     kept, with the action named: the measuring and the mark are their own tickets.
+- 2026-11-14: fixed from the independent review of this ticket (review-veldo-0301.md, verdict FIX).
+  Five criteria became nine: each fix is a criterion with a row and a falsifier, because a History note
+  that changes no criterion binds nobody. AC1 to AC5 are unchanged. AC6 to AC9 are not in section 12 of
+  the design, whose text this change does not edit.
+  - Finding 1 (the MUST), AC6. os.path.lexists answers False for a path it could not read, so a folder
+    under a parent of mode 000 was read as missing twice and its item marked gone with every file on
+    disk. Now the probe's located reads the locator with os.lstat (control_space_probe.there): exists
+    is False only for not found, and None with unread, what was said, for any other answer. Rule 1 says
+    missing only for not found. The removers' left reads the marked name the same way and raises on any
+    other answer. Signal marks gone only on not found at both. The probe and the removers are added to
+    the footprint (both copies). Row ac2/unreadable-is-not-gone; falsifiers
+    space301-lexists-at-the-locator and space301-lexists-under-the-marked-name. With lexists back at
+    the locator alone the row's item is no longer gone, because the look under the marked name now
+    raises for the same parent; it is red because rule 1 no longer names what could not be read.
+  - Finding 2, AC7. Only the rules were under a handler. Now each item is carried out under one of its
+    own and the registry's due under another. Row ac1/every-item-gets-an-outcome; falsifiers
+    space301-an-item-that-raises-stops-the-event and space301-a-registry-that-raises-stops-the-event.
+  - Finding 3, AC8. The carrier is {pid, started, seq}, read by the probe's carrier, written into
+    every outcome's facts and so onto the removal record at the removing write. No ledger code changed:
+    the ledger stores the facts it is given. The due record is not given a carrier, because an item
+    left due by the switch or by report mode is held by nobody, and a live long-running emitter named
+    on it would hold it for ever. The window between due and removing is closed another way: the
+    ledger admits one removing write, and the call that loses it writes nothing (the second half of
+    AC8). What reconcile does with the carrier is VELDO-0315 AC5, added with this fix. Rows
+    carrier/recorded and carrier/one-remover; falsifiers space301-no-carrier-on-the-record and
+    space301-writes-over-another-carrier.
+  - Finding 5, AC9. carry_out is refused, not routed: a callable given a due item can do anything with
+    it, and no production caller existed. The parameter keeps its place so that a positional fourth
+    argument is refused and not read as the principal. VELDO-0331's suite (134) used it as its
+    remover; it now gives Signal the real probes, registry and removers, which is why that suite is
+    in this footprint. No check of that suite was removed. Row rules/carry-out-refused; falsifier
+    space301-carry-out-not-refused.
+  - Finding 4, no code here. An item left due is not matched by a later event, and Signal does not
+    pick it up: a due item may be one another process is carrying. The tickets that carry such items
+    are VELDO-0320 (AC1: Confirm removes the group's due items through all seven rules) and VELDO-0315
+    (AC6, added with this fix: reconcile carries the due items that may now be carried out). The
+    retry of a signal command refused as stale_version is not built and is not in a criterion.
+  - Also in this change: the registered case space331-signal-reads-no-mode (VELDO-0331) had no anchor
+    since this ticket rewrote the line it mutated. It is anchored again at the line that reads the
+    mode, and is red on ac2/signal-by-scope (proof/VELDO-0301/mutations.txt).

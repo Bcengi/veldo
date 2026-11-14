@@ -24,7 +24,8 @@ worktree it is the shared repository, never the agent repository the worktree is
 removed later. An item the declarations name no repository for cannot be kept and stays. So does an
 item whose main repository is not at its path any more: the step has nowhere to write.
 
-THE KEPT REFS, refs/veldo/kept/<ticket>/<item>/<what> (the ledger's kept_prefix):
+THE KEPT REFS, refs/veldo/kept/<ticket>/<item>/<attempt>/<what> (the ledger's kept_prefix, then the
+number of the attempt that wrote the ref, from 1):
 
   head         the checked-out commit; for a private repository its HEAD
   ref/<name>   a worktree's own refs (a bisect, a rewritten ref); every ref of a private repository,
@@ -42,11 +43,21 @@ HOW THEY ARE WRITTEN. When the item's objects are not in the main repository's o
 repository, an agent's worktree), they are first fetched from the item's repository by hash, with
 uploadpack.allowAnySHA1InWant set for that one call, following no tag, recursing into no submodule and
 checking every object received. Each ref is then created with git's update-ref, which names the event
-in the ref's own log, and is never moved: a name that exists at the same commit is left (so a second
-attempt after a crash finds the refs it wrote and passes), and one that exists at another commit is a
-failure. A number of a log or a stash ref is the one an existing ref at that commit has, else the next
-unused one. Every ref is read back from the main repository and every object is read there, and only
-then is the keep record written by the Ledger, which reads the refs again itself.
+in the ref's own log, and is never moved. Every ref is read back from the main repository and every
+object is read there, and only then is the keep record written by the Ledger, which reads the refs
+again itself and adds them to the record: no ref is ever taken off it.
+
+EVERY ATTEMPT WRITES ITS OWN REFS (the design's append-only rule; the lead's decision of 2026-11-14).
+An attempt reads the refs the item already has. When the newest attempt holds every ref this one
+would write, each at the same commit, nothing is written and those refs are the answer: a second
+attempt after a crash finds the refs it wrote and passes, and an item that is deferred and tried
+again with nothing changed gets no new ref. In every other case (the head moved, a ref was added, a
+reset left one more commit behind, the earlier attempt was killed half way) the whole set is written
+under the next number, and no ref of an earlier attempt is touched. So a worktree whose head moved
+after an attempt that was then deferred is kept again at its new head and can be removed, and the
+head it had before is still on its own ref. A number of a log or a stash ref counts within its
+attempt. A name of the attempt's own that turns up at another commit between the read and the
+write is a failure, and is not moved.
 
 THE SNAPSHOT (design 0.3), written when the keeper is made with snapshot=True, by the removals that
 save uncommitted state first. Plain files in the snapshot store, <state root>/space-saved/<ticket>/
@@ -196,8 +207,9 @@ def _plan(commands, path, tips):
 
 
 def _numbered(plan, prefix, held):
-    """The plan with each log and stash entry given its number: the one a ref of the main repository
-    already has at that commit, else the next number no ref has. Returns {ref: object}."""
+    """The plan with each log and stash entry given its number: the one a ref of the attempt
+    already has at that commit, else the next number no ref has. `prefix` is the attempt's own and
+    `held` the refs under it. Returns {ref: object}."""
     refs = {}
     for group in ('stash/', 'log/'):
         at = {}
@@ -218,6 +230,22 @@ def _numbered(plan, prefix, held):
         if what not in ('stash/', 'log/'):
             refs[prefix + what] = commit
     return refs
+
+
+def _attempt(plan, prefix, held):
+    """The kept refs of this attempt, {ref: object}, each under <prefix><n>/. n is the newest attempt
+    the item has when that attempt already holds every ref of the plan at the same commit: there is
+    nothing to write. Otherwise n is the next number, and the whole plan is written under it: no ref
+    of an earlier attempt is moved, reused or added to."""
+    numbers = [int(part) for part in set(name[len(prefix):].split('/', 1)[0] for name in held)
+               if ATTEMPT.match(part) and part.isdigit()]
+    newest = max(numbers) if numbers else 0
+    if newest:
+        own = prefix + '%d/' % newest
+        refs = _numbered(plan, own, {name: commit for name, commit in held.items() if name.startswith(own)})
+        if all(held.get(name) == commit for name, commit in refs.items()):
+            return refs
+    return _numbered(plan, prefix + '%d/' % (newest + 1), {})
 
 
 def _held(commands, main, prefix):
@@ -241,7 +269,7 @@ def _record_refs(commands, main, source, refs, held, note):
             raise _Failed('the fetch into the main repository failed: ' + str(out)[:300], git=str(out)[:300])
     for name in sorted(refs):
         if name in held:
-            continue  # written by an earlier attempt, at the same commit: left as it is
+            continue  # the newest attempt already holds it, at the same commit: left as it is
         code, out = _git(commands, main, '-c', 'user.name=Veldo', '-c', 'user.email=veldo@localhost',
                          'update-ref', '--create-reflog', '-m', note, name, refs[name], '')
         if code != 0:
@@ -564,7 +592,7 @@ def keep(ledger, identity, record, event=None, snapshot=False):
             raise _Failed('git could not read the tips of the item')
         prefix = ledger.kept_prefix(identity)
         held = _held(commands, main, prefix)
-        refs = _numbered(_plan(commands, path, tips), prefix, held)
+        refs = _attempt(_plan(commands, path, tips), prefix, held)
         _record_refs(commands, main, None if own == store else own, refs, held,
                      'veldo keep: %s %s' % (event, identity))
         _seam('after_refs')

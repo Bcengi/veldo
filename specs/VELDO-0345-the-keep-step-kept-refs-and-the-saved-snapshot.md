@@ -266,3 +266,23 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     handler catches, raised at the named point.
   - Found and left alone: the registered case space331-signal-reads-no-mode (VELDO-0331) has had no
     anchor in control_space_signal.py since VELDO-0301 rewrote that line. It is not this ticket's.
+- 2026-11-14: every attempt writes its own kept refs (the lead's decision, from the builder's report
+  above that a kept ref is never moved and so a worktree whose head moves after a deferred attempt
+  stays keep_failed until its kept refs are dropped). No acceptance criterion's text changed. The name
+  is now refs/veldo/kept/<ticket>/<item>/<attempt>/<what>, the attempt numbered from 1, which is
+  still under the item's prefix as AC1 says. An attempt reads the item's refs: when the newest
+  attempt already holds every ref it would write, each at the same commit, it writes nothing (AC3: a
+  second attempt after a crash finds the refs it wrote and passes); in every other case it writes
+  its whole set under the next number and touches no ref of an earlier attempt. This is the design's
+  append-only rule (0.2: created and never moved; 0.3 says the same of a snapshot attempt). So a
+  later attempt with a new head keeps and proceeds, and the head the item had before is still on its
+  own ref. AC3's "exists at another commit" now reads on the attempt's own names: one that turns up
+  at another commit between the read and the write is keep_failed and is not moved. The keep record
+  lists the refs of every attempt (AC5: a later keep write adds refs and removes none), and verify
+  reads them all. No ledger code changed. Row ac3/kept-ref-per-attempt; falsifier
+  space345-attempt-takes-the-newest-names-again (the attempt takes the newest attempt's names
+  again: the row finds the worktree keep_failed at its new head). The row ac3/ref-at-another-commit
+  now plants the ref between the attempt's read and its write. The case space345-branches-only
+  keeps its meaning and is anchored at the renamed call. VELDO-0346 reads these names (its History).
+  Design sections 0.2 and 0.5 still show the name without the attempt; this change does not edit the
+  design's text.

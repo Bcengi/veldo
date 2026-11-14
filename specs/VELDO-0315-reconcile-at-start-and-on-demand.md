@@ -73,6 +73,32 @@ acceptance_criteria:
       CLI. The row advances the fixture clock by a year with no event and counts one reconcile
     falsified_by: >
       Add a periodic call with any period; the row counts more than one and fails
+  - id: AC5
+    text: >
+      Reconcile reads the carrier a removing item's removal record holds: the process id, its start time
+      and the signal record (VELDO-0301 AC8). When the kernel shows that process live with that start
+      time, the item is being removed now and reconcile leaves it as it is: it completes nothing, defers
+      nothing, moves nothing back and attempts nothing. An item whose carrier is no longer the same live
+      process, or whose record holds no carrier, is finished as AC2 says. A carrier that cannot be read
+      is a live one. Reconcile's own attempt writes its own carrier. And an item is marked gone only
+      when os.lstat said not found at its locator and at its marked name; any other answer defers it
+      (VELDO-0301 AC6)
+    falsified_by: >
+      Each of these turns a row of its own red. Finish every removing item: the row's item is removing
+      with a live process as its carrier, its remover stopped between the keep record and the tool, and
+      after reconcile a second remover was handed it. Read a path with a look that answers nothing for
+      an error: the row's folder is under a parent of mode 000 and its item is marked gone with the
+      folder on disk
+  - id: AC6
+    text: >
+      Reconcile carries out, through Signal's rules and removers and no other way, each item left due
+      that may now be carried out: the installation's switch is on, and its scope is in act mode or the
+      item carries the owner's confirmation. An item left due under a switch that is off, or unconfirmed
+      in a scope in report mode, stays due. When a live Signal call is carrying the same item, the
+      ledger's one removing write decides which of the two removes it, and the other writes nothing
+    falsified_by: >
+      Leave due items alone; the row's folder was left due with the switch off, the switch is on, and
+      after reconcile the folder is still on disk and the row fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. The ledger is no longer compared with the disk, and existing things are not adopted.
@@ -144,3 +170,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   before git's remove, so a removal killed in between leaves a whole worktree there with git's record
   pointing at it: reconcile reads it there, and moves it back with git's non-forced worktree move
   unless it completes the removal as AC2 says. Nothing in the tree calls left yet.
+- 2026-11-14: from the independent review of VELDO-0301 (review-veldo-0301.md, findings 1, 3 and 4). Four
+  criteria became six. AC5: Signal now writes the carrier of a removal on the item (process id, start
+  time, signal record), so reconcile can tell a removing item a live process is removing now from one
+  whose carrier died, and it leaves the first alone; before, both read the same and the design's row
+  "attempted again from rule 1" (8.8) would have started a second remover on an item whose first was
+  between its keep record and its tool. AC5 also binds reconcile to the same reading of not found as
+  Signal: os.lstat's not found and nothing else; control_space_probe.there and control_space_remove.left
+  read that way since that fix, and left raises on any other answer. AC6: an item Signal leaves due
+  (the switch off, report mode, a caller with no removers) is matched by no later event, so reconcile
+  carries those that may now be carried out; the owner's Confirm (VELDO-0320 AC1) carries the confirmed
+  ones. AC5 and AC6 are not in section 12 of the design, whose text this change does not edit.

@@ -35,8 +35,12 @@ refs, and the record lists every ref by its full name and both stash entries).
 AC3 rows: ac3/ref-unwritable (the declared falsifier row: with the main repository's refs unwritable
 the worktree is deferred keep_failed with the ref and git's words, is at its path, and its commit is
 still named by its log; writable again, the next event removes it), ac3/ref-at-another-commit (a kept
-ref that exists at another commit, and one that reads back as another, are keep_failed and nothing is
-moved), ac3/fetch-fails (the fetch from an agent repository fails: keep_failed with git's words),
+ref of the attempt that turns up at another commit between its read and its write, and one that
+reads back as another, are keep_failed and nothing is moved), ac3/kept-ref-per-attempt (the row of
+the lead's decision of 2026-11-14: a worktree kept at its head and then deferred, whose head then
+moves, is kept again by the later attempt on a ref of its own, <item>/2/head, and removed; the first
+attempt's ref is where it was with its one log entry, a keep with nothing changed writes no ref, and
+the keep record lists both attempts and reads true), ac3/fetch-fails (the fetch from an agent repository fails: keep_failed with git's words),
 ac3/main-repository-gone (the declared falsifier row: the main repository is moved away; the ending
 event removes nothing; the remover handed the item directly is refused by the keep step; what
 reconcile asks refuses; an item the declarations name no repository for stays; with the repository
@@ -123,6 +127,7 @@ def _v345_space_keep_suite():
             'ac2/private-repository',
             'ac3/ref-unwritable',
             'ac3/ref-at-another-commit',
+            'ac3/kept-ref-per-attempt',
             'ac3/fetch-fails',
             'ac3/main-repository-gone',
             'ac3/second-attempt-after-crash',
@@ -470,8 +475,10 @@ def _v345_space_keep_suite():
             git(path, 'reset', '-q', '--hard', 'HEAD~1')
             return made
 
-        def prefix_of(item):
-            return L.kept_prefix(item)
+        def prefix_of(item, number=1):
+            """What the kept refs of one attempt of the item begin with: the first attempt's unless the
+            row names another."""
+            return L.kept_prefix(item) + '%d/' % number
 
         def record_of(item):
             return (L.item(item) or {}).get('kept') or {}
@@ -686,14 +693,28 @@ def _v345_space_keep_suite():
         ROW = 'ac3/ref-at-another-commit'
         item, path = worktree('taken-name', {'scope': A, 'ticket': 'VELDO-9207'}, branch=False)
         other = commit(REPOSITORY, 'other.txt', 'another commit\n', 'another commit')
-        git(REPOSITORY, 'update-ref', prefix_of(item) + 'head', other)
-        done = send('landed', {'ticket': 'VELDO-9207'})
+        real_held, calls = KP._held, []
+
+        def taken(commands, main, prefix):
+            """The attempt's own name turns up at another commit between its read and its write."""
+            found = real_held(commands, main, prefix)
+            calls.append(prefix)
+            if len(calls) == 1:
+                git(REPOSITORY, 'update-ref', prefix_of(item) + 'head', other)
+            return found
+
+        KP._held = taken
+        try:
+            done = send('landed', {'ticket': 'VELDO-9207'})
+        finally:
+            KP._held = real_held
         deferral = json.dumps((L.item(item) or {}).get('deferral'))
-        check(ROW, 'a kept ref that exists at another commit is keep_failed, with the ref, and is not moved [%s]'
-              % (named(done, item),),
+        check(ROW, 'a kept ref of the attempt that exists at another commit is keep_failed, with the ref, and is '
+              'not moved [%s %s]' % (named(done, item), deferral[-300:]),
               named(done, item) == ('deferred', 'keep_failed', 'tool') and prefix_of(item) + 'head' in deferral
-              and 'exists at another commit' in deferral and listed(path)
-              and kept_refs(REPOSITORY)[prefix_of(item) + 'head'] == other)
+              and ('could not be written' in deferral or 'exists at another commit' in deferral) and listed(path)
+              and kept_refs(REPOSITORY)[prefix_of(item) + 'head'] == other
+              and len(log_of(REPOSITORY, prefix_of(item) + 'head').splitlines()) <= 1)
         item, path = worktree('reads-back', {'scope': A, 'ticket': 'VELDO-9207b'}, branch=False)
         real_held, calls = KP._held, []
 
@@ -712,6 +733,45 @@ def _v345_space_keep_suite():
               % (named(done, item),),
               named(done, item) == ('deferred', 'keep_failed', 'tool') and 'reads back as' in deferral
               and prefix_of(item) + 'head' in deferral and listed(path) and not record_of(item))
+
+        ROW = 'ac3/kept-ref-per-attempt'
+        item, path = worktree('head-moves', {'scope': A, 'ticket': 'VELDO-9230'}, branch=False)
+        first_head = git(path, 'rev-parse', 'HEAD')
+        entry = process_entry(5230, RM.marked(str(path), item))  # a user the remover's second probe finds
+        done = send('landed', {'ticket': 'VELDO-9230'})
+        shutil.rmtree(entry)
+        first_refs = dict(record_of(item).get('refs') or {})
+        check(ROW, 'the first attempt kept the head on its own ref, was put back and deferred as in_use [%s %s]'
+              % (named(done, item), sorted(first_refs)),
+              named(done, item) == ('deferred', 'in_use', 'tool') and listed(path)
+              and first_refs.get(prefix_of(item, 1) + 'head') == first_head
+              and all(name.startswith(prefix_of(item, 1)) for name in first_refs)
+              and kept_refs(REPOSITORY).get(prefix_of(item, 1) + 'head') == first_head)
+        L.signal('landed', {'ticket': 'VELDO-9230'})
+        again = KP.keep(L, item, L.item(item), event='landed')
+        L.outcome(item, 'deferred', {'rule': 'remove_refused', 'event': 'landed'})
+        check(ROW, 'a second keep of the same head uses the first attempt\'s ref and writes none [%s %s]'
+              % (again.get('said'), sorted(again.get('refs') or ())),
+              again.get('ok') is True and again.get('refs') == first_refs
+              and not [name for name in kept_refs(REPOSITORY) if name.startswith(prefix_of(item, 2))])
+        moved = commit(REPOSITORY, 'moved.txt', 'the trunk went on\n', 'the trunk went on')
+        git(path, 'checkout', '-q', '--detach', 'main')
+        check(ROW, 'the worktree\'s head moved after the deferred attempt',
+              git(path, 'rev-parse', 'HEAD') == moved and moved != first_head)
+        done = send('ticket_ended', {'ticket': 'VELDO-9230'})
+        refs_now = kept_refs(REPOSITORY)
+        check(ROW, 'the later attempt keeps the new head on a ref of its own and the worktree is removed [%s %s]'
+              % (named(done, item), json.dumps((L.item(item) or {}).get('deferral'))[-200:]),
+              named(done, item)[0] == 'removed' and state_of(item) == 'removed' and not os.path.lexists(str(path))
+              and refs_now.get(prefix_of(item, 2) + 'head') == moved)
+        check(ROW, 'the first attempt\'s ref is where it was, never moved: its log has its one entry',
+              refs_now.get(prefix_of(item, 1) + 'head') == first_head
+              and len(log_of(REPOSITORY, prefix_of(item, 1) + 'head').splitlines()) == 1)
+        check(ROW, 'the keep record lists the refs of both attempts and reads true against the disk [%s]'
+              % (sorted(record_of(item).get('refs') or ()),),
+              (record_of(item).get('refs') or {}).get(prefix_of(item, 1) + 'head') == first_head
+              and (record_of(item).get('refs') or {}).get(prefix_of(item, 2) + 'head') == moved
+              and KP.verify(L, item).get('ok') is True)
 
         ROW = 'ac3/fetch-fails'
         base_path = WORKTREES / 'agents' / 'a3'

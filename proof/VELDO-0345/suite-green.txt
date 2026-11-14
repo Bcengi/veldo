@@ -1,8 +1,16 @@
+  138_veldo_0300_space_remove                     39 passed    2.96s
+selftest (PARTIAL, 1 of 210 suites): 65 passed, 0 failed in 2.96s
   selector    --suite 140_veldo_0345_space_keep
   running     1 of 210 suites: 140_veldo_0345_space_keep
-  140_veldo_0345_space_keep                       25 passed    3.28s
-selftest (PARTIAL, 1 of 210 suites): 51 passed, 0 failed in 3.28s
-  139_veldo_0301_space_signal                     13 passed    0.98s
-  138_veldo_0300_space_remove                     39 passed    2.49s
-  132_veldo_0297_space_ledger                     31 passed    1.38s
-  133_veldo_0326_space_principals                 30 passed   24.51s
+  140_veldo_0345_space_keep                       26 passed    4.35s
+selftest (PARTIAL, 1 of 210 suites): 52 passed, 0 failed in 4.35s
+  139_veldo_0301_space_signal                     18 passed    3.96s
+  134_veldo_0331_space_mode                       16 passed    3.36s
+  130_veldo_0296_space_section                    22 passed    0.02s
+  131_veldo_0338_project_space_file               14 passed    0.02s
+  132_veldo_0297_space_ledger                     31 passed    2.43s
+  133_veldo_0326_space_principals                 30 passed  103.03s
+  135_veldo_0298_space_kinds                     124 passed    0.01s
+  136_veldo_0299_space_probe                      46 passed    5.26s
+  137_veldo_0330_space_rules                      23 passed    2.38s
+  138_veldo_0300_space_remove                     39 passed    2.96s

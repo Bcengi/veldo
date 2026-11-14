@@ -2,7 +2,6 @@
  {
   "falsifier": "space345-refs-after-the-remove",
   "criterion": "AC1",
-  "module": "control_space_remove.py",
   "expected_red": [
    "ac1/kept-before-remove"
   ],
@@ -10,6 +9,7 @@
    "ac1/agent-worktree-in-shared",
    "ac1/kept-before-remove",
    "ac3/fetch-fails",
+   "ac3/kept-ref-per-attempt",
    "ac3/main-repository-gone",
    "ac3/ref-at-another-commit",
    "ac3/ref-unwritable",
@@ -40,7 +40,6 @@
  {
   "falsifier": "space345-agent-worktree-kept-in-agent-repository",
   "criterion": "AC1",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac1/agent-worktree-in-shared"
   ],
@@ -52,7 +51,7 @@
   "red_details": [
    [
     "VELDO-0345 ac1/agent-worktree-in-shared",
-    "the agent's worktree is removed [{'item': 'space:item:4dceea4cf00b4eeebbcae016d2311d98', 'action': 'remove', 'outcome': 'deferred', 'deferral': 'keep_failed', 'rule': 'tool'}]"
+    "the agent's worktree is removed [{'item': 'space:item:3c9262eb8f124f6bba231236427f4bbd', 'action': 'remove', 'outcome': 'deferred', 'deferral': 'keep_failed', 'rule': 'tool'}]"
    ]
   ],
   "noop_red_rows": [],
@@ -61,7 +60,6 @@
  {
   "falsifier": "space345-removed-with-no-keep-record",
   "criterion": "AC1",
-  "module": "control_space.py",
   "expected_red": [
    "ac1/removed-needs-keep-record"
   ],
@@ -80,7 +78,6 @@
  {
   "falsifier": "space345-branches-only",
   "criterion": "AC2",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac2/private-repository"
   ],
@@ -99,7 +96,6 @@
  {
   "falsifier": "space345-remover-called-after-failed-keep",
   "criterion": "AC3",
-  "module": "control_space_remove.py",
   "expected_red": [
    "ac3/ref-unwritable"
   ],
@@ -121,7 +117,6 @@
  {
   "falsifier": "space345-goes-on-with-main-repository-gone",
   "criterion": "AC3",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac3/main-repository-gone"
   ],
@@ -140,7 +135,6 @@
  {
   "falsifier": "space345-snapshot-in-the-object-store",
   "criterion": "AC4",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac4/outside-git"
   ],
@@ -150,7 +144,7 @@
   "red_details": [
    [
     "VELDO-0345 ac4/outside-git",
-    "writing it added no object to the main repository's object store [['count: 40', 'size: 160']]"
+    "writing it added no object to the main repository's object store [['count: 43', 'size: 172']]"
    ]
   ],
   "noop_red_rows": [],
@@ -159,7 +153,6 @@
  {
   "falsifier": "space345-snapshot-by-git-stash",
   "criterion": "AC4",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac4/nothing-touched"
   ],
@@ -193,24 +186,11 @@
  {
   "falsifier": "space345-store-off-the-protect-list",
   "criterion": "AC4",
-  "module": "control_space.py",
   "expected_red": [
    "ac4/store-protected"
   ],
   "red_rows": [
-   "ac1/kept-before-remove",
-   "ac4/store-protected",
-   "ac5/every-attempt-listed",
-   "ac5/failed-save-removes-nothing",
-   "ac5/kill-points",
-   "ac5/never-replaced",
-   "ac5/retry-compares",
-   "ac6/removing-put-back",
-   "ac6/three-deferrals",
-   "keep/canon",
-   "keep/ledger-reads-itself",
-   "keep/names",
-   "signal/removing-while-the-remover-runs"
+   "ac4/store-protected"
   ],
   "red_details": [
    [
@@ -224,7 +204,6 @@
  {
   "falsifier": "space345-goes-on-after-a-short-write",
   "criterion": "AC5",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac5/failed-save-removes-nothing"
   ],
@@ -243,7 +222,6 @@
  {
   "falsifier": "space345-deletes-the-folder-to-make-room",
   "criterion": "AC5",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac5/never-replaced"
   ],
@@ -266,7 +244,6 @@
  {
   "falsifier": "space345-recorded-snapshot-used-without-comparing",
   "criterion": "AC5",
-  "module": "control_space_keep.py",
   "expected_red": [
    "ac5/retry-compares"
   ],
@@ -287,7 +264,6 @@
  {
   "falsifier": "space345-only-the-newest-attempt-on-the-record",
   "criterion": "AC5",
-  "module": "control_space.py",
   "expected_red": [
    "ac5/every-attempt-listed"
   ],
@@ -307,13 +283,13 @@
  {
   "falsifier": "space345-remove-refused-alone",
   "criterion": "AC6",
-  "module": "control_space.py",
   "expected_red": [
-   "ac6/three-deferrals",
-   "ac6/removing-put-back"
+   "ac6/removing-put-back",
+   "ac6/three-deferrals"
   ],
   "red_rows": [
    "ac3/fetch-fails",
+   "ac3/kept-ref-per-attempt",
    "ac3/main-repository-gone",
    "ac3/ref-at-another-commit",
    "ac3/ref-unwritable",
@@ -335,9 +311,26 @@
   "red_as_expected": true
  },
  {
+  "falsifier": "space345-attempt-takes-the-newest-names-again",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/kept-ref-per-attempt"
+  ],
+  "red_rows": [
+   "ac3/kept-ref-per-attempt"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac3/kept-ref-per-attempt",
+    "the later attempt keeps the new head on a ref of its own and the worktree is removed [('deferred', 'keep_failed', 'tool')  did not keep the item\"}}, \"order\": 7, \"refused_by\": \"tool\", \"retry\": [\"run_finished\", \"landed\", \"contained\", \"ticket_ended\", \"project_ended\", \"worktree_abandoned\", \"released\"], \"rule\": \"keep_failed\"}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
   "falsifier": "space345-due-while-the-remover-runs",
   "criterion": "VELDO-0301 at design 4.1",
-  "module": "control_space_signal.py",
   "expected_red": [
    "signal/removing-while-the-remover-runs"
   ],
@@ -351,7 +344,7 @@
   "red_details": [
    [
     "VELDO-0345 signal/removing-while-the-remover-runs",
-    "the item is written removing before its remover is called, then removed [[('space:item:bc81d5f48b3540afa8dee6e35b2c21a9', 'due')] ('removed', None, None)]"
+    "the item is written removing before its remover is called, then removed [[('space:item:8b4ce70b161640dbaba61fe58cd83a01', 'due')] ('removed', None, None)]"
    ]
   ],
   "noop_red_rows": [],

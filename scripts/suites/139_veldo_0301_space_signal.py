@@ -55,6 +55,24 @@ because something appeared at its path, is removing with left_at recorded, never
 gone; the folder is whole under its marked name and what appeared is untouched; the next event leaves
 it removing).
 
+From the independent review of this ticket (review-veldo-0301.md), a row for each finding fixed:
+ac2/unreadable-is-not-gone (finding 1: a folder whose parent has mode 000 is on disk and both
+os.path.lexists looks say it is not; at its event it is deferred as not_in_ledger with what the kernel
+said, never gone, its files are there when the parent is opened again, and the next event removes it;
+and a folder removed by hand whose marked name answers an input/output error is deferred with the
+error, never gone), ac1/every-item-gets-an-outcome (finding 2: a look under the marked name that
+raises, outside the rules, defers that item with the error named and the two items after it are
+removed; a kind registry that raises defers every item with the error named, none is handed to a
+remover, and the call returns), carrier/recorded (finding 3: while the remover runs the item is
+removing and its removal record holds the carrier, this process's id and its start time as the kernel
+shows them and the journal number of the call's signal record; the same carrier is on the removal
+record and on a deferral), carrier/one-remover (finding 3, the case the owner asked about: another
+carrier makes the item removing between this call's rules and its removing write; this call hands the
+item to no remover and writes nothing over the other's record: the item is removing with the other
+carrier, not deferred, and its folder whole), rules/carry-out-refused (finding 5: a call that gives its own carry_out is
+refused by name before anything is written: the callable is never called, the item is present, not
+due, and its folder whole; the same call without it removes the folder through the rules).
+
 look/agent-repository-held (the spec's row for the look: an agent repository due at an event, with a
 kept worktree inside it that the list holds only by its path, is held back by the kind registry given
 Signal's own `inside`, is never judged or handed to the remover, and the worktree's uncommitted file is
@@ -64,6 +82,7 @@ on disk when the call returns), signal/canon (each engine canon equals this repo
 
 def _v301_space_signal_suite():
     import ast
+    import errno
     import importlib.util
     import io
     import json
@@ -78,6 +97,8 @@ def _v301_space_signal_suite():
     # Literal anchors: the registered mutation driver substitutes the production copy here.
     PRODUCTION = {
         'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
+        'control_space_probe.py': ROOT / ".veldo" / "control_space_probe.py",
+        'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
     }
     VELDO = ROOT / '.veldo'
 
@@ -88,7 +109,9 @@ def _v301_space_signal_suite():
         return module
 
     ROWS = ('ac1/removes-before-return', 'ac1/children-first', 'ac1/kept-and-unknown',
-            'ac2/deferred-then-retried', 'ac2/missing-is-gone',
+            'ac1/every-item-gets-an-outcome',
+            'ac2/deferred-then-retried', 'ac2/missing-is-gone', 'ac2/unreadable-is-not-gone',
+            'carrier/recorded', 'carrier/one-remover', 'rules/carry-out-refused',
             'ac3/switch-off', 'ac3/report-mode',
             'ac4/no-clock',
             'ac5/keep-failed-passed-through', 'ac5/remover-deferrals', 'ac5/left-at-stays-removing',
@@ -134,8 +157,8 @@ def _v301_space_signal_suite():
         CFG = load('v301_control_space_config', VELDO / 'control_space_config.py')
         YAML = load('v301_yamlish', VELDO / 'yamlish.py')
         K = load('v301_control_space_kinds', VELDO / 'control_space_kinds.py')
-        P = load('v301_control_space_probe', VELDO / 'control_space_probe.py')
-        RM = load('v301_control_space_remove', VELDO / 'control_space_remove.py')
+        P = load('v301_control_space_probe', PRODUCTION['control_space_probe.py'])
+        RM = load('v301_control_space_remove', PRODUCTION['control_space_remove.py'])
         KP = load('v301_control_space_keep', VELDO / 'control_space_keep.py')
         AC = CM.AC
         NOW = 1000.0
@@ -673,6 +696,205 @@ def _v301_space_signal_suite():
               item not in (done.get('items') or ()) and state_of(item) == 'removing' and whole(mark)
               and handed == [])
 
+        # the review of this ticket: gone only when not found
+        ROW = 'ac2/unreadable-is-not-gone'
+        del handed[:]
+        owner = {'scope': A, 'ticket': 'VELDO-9120', 'run': {'id': 'run-120', 'station': 'build'}}
+        item, path = scratch('run-120-shut/item', owner)
+        shut = path.parent
+        os.chmod(str(shut), 0)
+        try:
+            blind = (os.path.lexists(str(path)), os.path.lexists(RM.marked(str(path), item)))
+            done = send('run_finished', {'run': 'run-120'})
+        finally:
+            os.chmod(str(shut), 0o755)
+        deferral = (L.item(item) or {}).get('deferral') or {}
+        check(ROW, 'with its parent at mode 000 the folder is on disk, and lexists says nothing is at its path or '
+              'at its marked name [%s]' % (blind,), blind == (False, False) and whole(path))
+        check(ROW, 'at its event the item is deferred as not_in_ledger by rule 1, never gone [%s %s]'
+              % (named(done, item), state_of(item)),
+              named(done, item) == ('deferred', 'not_in_ledger', 'ledger') and state_of(item) == 'deferred'
+              and done['counts']['gone'] == 0 and handed == [])
+        check(ROW, 'the deferral holds what the kernel said, and does not say missing [%s]' % (deferral.get('found'),),
+              'PermissionError' in str((deferral.get('found') or {}).get('unread'))
+              and (deferral.get('found') or {}).get('missing') is False)
+        check(ROW, 'its files are all there when the parent is opened again', whole(path))
+        done = send('ticket_ended', {'ticket': 'VELDO-9120'})
+        check(ROW, 'the next event for it, the parent readable, removes it [%s]' % (named(done, item),),
+              named(done, item)[0] == 'removed' and not os.path.lexists(str(path)))
+        owner = {'scope': A, 'ticket': 'VELDO-9120', 'run': {'id': 'run-120b', 'station': 'build'}}
+        item, path = scratch('run-120-io', owner)
+        mark = RM.marked(str(path), item)
+        shutil.rmtree(path)
+        real_lstat = os.lstat
+
+        def failing(target, *more, **named_more):
+            if str(target) == mark:
+                raise OSError(errno.EIO, 'Input/output error', mark)
+            return real_lstat(target, *more, **named_more)
+
+        os.lstat = failing
+        try:
+            done = send('run_finished', {'run': 'run-120b'})
+        finally:
+            os.lstat = real_lstat
+        check(ROW, 'a folder not found at its path, whose marked name answers an input/output error, is deferred '
+              'with the error and never gone [%s %s]' % (named(done, item), state_of(item)),
+              named(done, item) == ('deferred', 'remove_refused', 'error') and state_of(item) == 'deferred'
+              and 'Input/output error' in json.dumps((L.item(item) or {}).get('deferral')))
+        done = send('ticket_ended', {'ticket': 'VELDO-9120'})
+        check(ROW, 'control: with the marked name readable and nothing under it, the next event marks it gone [%s]'
+              % (named(done, item),), named(done, item)[0] == 'gone' and state_of(item) == 'gone')
+
+        # the review of this ticket: nothing that raises stops the event
+        ROW = 'ac1/every-item-gets-an-outcome'
+        del handed[:]
+        owner = {'scope': A, 'ticket': 'VELDO-9121', 'run': {'id': 'run-121', 'station': 'build'}}
+        bad, bad_path = scratch('run-121-bad', owner)
+        good_one, good_one_path = scratch('run-121-one', owner)
+        good_two, good_two_path = scratch('run-121-two', owner)
+        shutil.rmtree(bad_path)
+
+        def broken_left(where, identity):
+            raise RuntimeError('the look under the marked name broke')
+
+        bad_first = types.SimpleNamespace(
+            due=lambda *given, **more: sorted(K.due(*given, **more), key=lambda entry: entry['item'] != bad))
+        try:
+            done = send('run_finished', {'run': 'run-121'}, kinds=bad_first,
+                        remover=types.SimpleNamespace(remove=Spy.remove, left=broken_left))
+        except Exception as error:  # noqa: BLE001 - the row is about exactly this
+            done = {'raised': type(error).__name__ + ': ' + str(error)}
+        check(ROW, 'a look that raises outside the rules does not stop the call [%s]' % (done.get('raised'),),
+              done.get('ok') is True and 'raised' not in done)
+        check(ROW, 'the item it raised for is first and is deferred with the error named [%s %s]'
+              % (named(done, bad), [entry['item'] == bad for entry in done.get('outcomes') or ()]),
+              [entry['item'] for entry in done.get('outcomes') or ()][:1] == [bad]
+              and named(done, bad) == ('deferred', 'remove_refused', 'error') and state_of(bad) == 'deferred'
+              and 'the look under the marked name broke' in json.dumps((L.item(bad) or {}).get('deferral')))
+        check(ROW, 'the two items after it are carried out: removed, on disk and in the ledger [%s %s]'
+              % (named(done, good_one), named(done, good_two)),
+              state_of(good_one) == 'removed' and state_of(good_two) == 'removed'
+              and not os.path.lexists(str(good_one_path)) and not os.path.lexists(str(good_two_path))
+              and len(done.get('outcomes') or ()) == 3 and (done.get('counts') or {}).get('removed') == 2)
+        del handed[:]
+        owner = {'scope': A, 'ticket': 'VELDO-9121', 'run': {'id': 'run-121b', 'station': 'build'}}
+        one, one_path = scratch('run-121b-one', owner)
+        two, two_path = scratch('run-121b-two', owner)
+
+        def broken_due(*given, **more):
+            raise RuntimeError('the table could not be read')
+
+        try:
+            done = send('run_finished', {'run': 'run-121b'}, kinds=types.SimpleNamespace(due=broken_due))
+        except Exception as error:  # noqa: BLE001 - the row is about exactly this
+            done = {'raised': type(error).__name__ + ': ' + str(error)}
+        check(ROW, 'a kind registry that raises does not stop the call: every item is deferred with the error '
+              'named [%s %s %s]' % (done.get('raised'), named(done, one), named(done, two)),
+              done.get('ok') is True and named(done, one) == ('deferred', 'remove_refused', 'registry')
+              and named(done, two) == ('deferred', 'remove_refused', 'registry')
+              and all('the table could not be read' in json.dumps((L.item(each) or {}).get('deferral'))
+                      for each in (one, two)))
+        check(ROW, 'none of them was handed to a remover and both folders are whole',
+              handed == [] and whole(one_path) and whole(two_path)
+              and state_of(one) == 'deferred' and state_of(two) == 'deferred')
+
+        # the review of this ticket: the carrier of a removal is on the item
+        ROW = 'carrier/recorded'
+        del handed[:]
+        owner = {'scope': A, 'ticket': 'VELDO-9123', 'run': {'id': 'run-123', 'station': 'build'}}
+        item, path = scratch('run-123', owner)
+        watched_records = {}
+
+        class Watching:
+            left = staticmethod(RM.left)
+
+            @staticmethod
+            def remove(ledger, probe, identity, record, **given):
+                watched_records[identity] = L.item(identity)
+                return RM.remove(ledger, probe, identity, record, **given)
+
+        done = send('run_finished', {'run': 'run-123'}, remover=Watching)
+        me = P.process(os.getpid()) or {}
+        expected = {'pid': os.getpid(), 'started': me.get('start'), 'seq': done.get('seq')}
+        during = watched_records.get(item) or {}
+        check(ROW, 'while its remover runs the item is removing and its removal record holds the carrier: this '
+              'process, its start time and the call\'s signal record [%s %s]'
+              % (during.get('state'), (during.get('removal') or {}).get('carrier')),
+              during.get('state') == 'removing' and (during.get('removal') or {}).get('carrier') == expected
+              and isinstance(expected['started'], int) and isinstance(expected['seq'], int))
+        held = (during.get('removal') or {}).get('carrier') or {}
+        seen_now = P.process(held.get('pid') or 0) or {}
+        check(ROW, 'the kernel shows that carrier as the same live process [%s]' % (seen_now,),
+              seen_now.get('live') is True and seen_now.get('start') == held.get('started'))
+        check(ROW, 'the removal record holds the same carrier after the call [%s]' % (named(done, item),),
+              state_of(item) == 'removed' and ((L.item(item) or {}).get('removal') or {}).get('carrier') == expected)
+        owner = {'scope': A, 'ticket': 'VELDO-9123', 'run': {'id': 'run-123b', 'station': 'build'}}
+        item, path = scratch('run-123b', owner)
+        entry = process_entry(5123, str(path))
+        done = send('run_finished', {'run': 'run-123b'})
+        shutil.rmtree(entry)
+        held = ((L.item(item) or {}).get('deferral') or {}).get('carrier') or {}
+        check(ROW, 'a deferral holds its carrier too [%s %s]' % (named(done, item), held),
+              named(done, item)[0] == 'deferred' and held.get('pid') == os.getpid()
+              and held.get('started') == me.get('start') and held.get('seq') == done.get('seq') and whole(path))
+
+        ROW = 'carrier/one-remover'
+        del handed[:]
+        owner = {'scope': A, 'ticket': 'VELDO-9125', 'run': {'id': 'run-125', 'station': 'build'}}
+        item, path = scratch('run-125', owner)
+        OTHER = {'pid': 1, 'started': 7, 'seq': 0}
+
+        class Raced:
+            """The ledger as this call meets it when another carrier makes the item removing just before
+            this call's own removing write: that write is the real ledger's, and so is its refusal."""
+
+            def __getattr__(self, name):
+                return getattr(L, name)
+
+            def outcome(self, identity, outcome, facts):
+                if outcome == 'removing' and state_of(identity) == 'due':
+                    L.outcome(identity, 'removing', dict(facts, carrier=OTHER))
+                return L.outcome(identity, outcome, facts)
+
+        done = send('run_finished', {'run': 'run-125'}, ledger=Raced())
+        entry = outcome_of(done, item)
+        check(ROW, 'the item another carrier made removing is handed to no remover by this call [%s %s]'
+              % (entry, handed), handed == [] and entry.get('outcome') is None and entry.get('reason') == 'not_due'
+              and entry.get('held_by') == OTHER)
+        check(ROW, 'nothing is written over the other carrier\'s record: the item is removing, not deferred, and '
+              'its folder whole [%s %s]' % (state_of(item), ((L.item(item) or {}).get('removal') or {}).get('carrier')),
+              state_of(item) == 'removing' and ((L.item(item) or {}).get('removal') or {}).get('carrier') == OTHER
+              and not (L.item(item) or {}).get('deferral') and whole(path))
+
+        # the review of this ticket: no carrying out but through the rules
+        ROW = 'rules/carry-out-refused'
+        del handed[:]
+        owner = {'scope': A, 'ticket': 'VELDO-9124', 'run': {'id': 'run-124', 'station': 'build'}}
+        item, path = scratch('run-124', owner)
+        called = []
+
+        def own_way(identity, record):
+            called.append(identity)
+            shutil.rmtree(record['locator']['path'])
+
+        length = journal_length()
+        plain = SIG.signal(L, 'run_finished', {'run': 'run-124'}, own_way)
+        full = send('run_finished', {'run': 'run-124'}, carry_out=own_way)
+        check(ROW, 'a call that gives its own carry_out is refused by name, with and without the modules [%s %s]'
+              % (plain.get('reason'), full.get('reason')),
+              plain.get('ok') is False and plain.get('reason') == 'space_carry_out_refused'
+              and full.get('ok') is False and full.get('reason') == 'space_carry_out_refused')
+        check(ROW, 'the callable was never called, nothing was written, the item is present and its folder whole '
+              '[%s %s]' % (called, state_of(item)),
+              called == [] and journal_length() == length and state_of(item) == 'present' and whole(path)
+              and handed == [])
+        done = send('run_finished', {'run': 'run-124'})
+        check(ROW, 'control: the same call without it removes the folder through the rules and its remover [%s]'
+              % (named(done, item),),
+              named(done, item)[0] == 'removed' and handed == [item] and not os.path.lexists(str(path))
+              and called == [])
+
         # the look: the kind registry is given Signal's own inside, and no other
         ROW = 'look/agent-repository-held'
         del handed[:]
@@ -714,7 +936,8 @@ def _v301_space_signal_suite():
               text_of(kept_tree / 'uncommitted.txt') == 'work the owner chose to keep\n'
               and (home_path / '.git').is_dir() and state_of(inner) == 'kept')
 
-        for name in ('control_space_signal.py', 'control_space_remove.py', 'control_space_kinds.py'):
+        for name in ('control_space_signal.py', 'control_space_remove.py', 'control_space_kinds.py',
+                     'control_space_probe.py'):
             check('signal/canon', 'the engine canon engine/.veldo/%s equals this repository copy' % name,
                   (ROOT / 'engine' / '.veldo' / name).is_file()
                   and (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes())

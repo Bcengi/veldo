@@ -182,3 +182,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   (AC3, unchanged). AC5 now lists each of them, whole or temporary, under the item whose folder holds it
   and counts it in the totals, so none grows unseen and each goes with that item's drop. AC5 gains a third
   falsifier: a listing of only what keep records name. Still five criteria.
+- 2026-11-14: from VELDO-0345 (its History of this date). No acceptance criterion changed. A kept ref's
+  name now holds the number of the attempt that wrote it: refs/veldo/kept/<ticket>/<item>/<attempt>/<what>.
+  An item deferred after its keep step and kept again later has more than one attempt, each with a head
+  of its own. The listing shows every attempt, restore takes the newest attempt's head unless the owner
+  names another, and drop takes the refs of every attempt of the item.

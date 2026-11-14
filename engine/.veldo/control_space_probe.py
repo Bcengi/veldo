@@ -283,12 +283,37 @@ def repository(path, run=None):
     return os.path.realpath(folder.rstrip('\n')) if code == 0 and folder.strip() else None
 
 
+def there(path):
+    """Whether something is at `path`, read with os.lstat: (True, None) when something is, (False,
+    None) only when the kernel said not found (ENOENT), and (None, what was said) for any other
+    answer: a folder above it that may not be searched (EACCES), a failing disk (EIO), a name that
+    is too long, a parent that is no folder. What could not be read is not missing: os.path.lexists
+    answers False for all of these, and an item must never be marked gone on that word."""
+    try:
+        os.lstat(path)
+    except FileNotFoundError:
+        return False, None
+    except (OSError, ValueError) as error:
+        return None, _said(error)
+    return True, None
+
+
+def carrier(proc=PROC):
+    """The process that is running now, as the carrier of a removal: {pid, started}, its id and its
+    start time in clock ticks since boot, the two facts `process` reads again to tell whether the
+    same process is still live. started is None when the kernel does not show this process."""
+    seen = process(os.getpid(), proc)
+    return {'pid': os.getpid(), 'started': seen['start'] if seen else None}
+
+
 def located(kind, locator, run=None):
     """Rule 1's facts: what is at the locator of an item of `kind` now.
 
-    A path (a branch is read at its repository): {path, exists, link, resolved}, and for a worktree
-    repository, the common git folder of the repository the folder is a worktree of, None when it is
-    not the top of one. A Docker object: {engine, name, type, read, id, said}."""
+    A path (a branch is read at its repository): {path, exists, unread, link, resolved}, and for a
+    worktree repository, the common git folder of the repository the folder is a worktree of, None
+    when it is not the top of one. exists is True when something is there, False only when the kernel
+    said not found, and None when the path could not be read, with what was said in unread (`there`).
+    A Docker object: {engine, name, type, read, id, said}."""
     run = run or _run
     if kind in DOCKER_TYPE:
         facts = {'kind': kind, 'engine': locator.get('engine'), 'name': locator.get('name'),
@@ -310,7 +335,8 @@ def located(kind, locator, run=None):
             facts['said'] = str(out)[:300]
         return facts
     path = locator.get('path') or locator.get('repository')
-    facts = {'kind': kind, 'path': path, 'exists': os.path.lexists(path), 'link': os.path.islink(path),
+    exists, unread = there(path)
+    facts = {'kind': kind, 'path': path, 'exists': exists, 'unread': unread, 'link': os.path.islink(path),
              'resolved': os.path.realpath(path)}
     if kind == 'worktree':
         facts['repository'] = repository(path, run) if _git_folder(run, path) else None

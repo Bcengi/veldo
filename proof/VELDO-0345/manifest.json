@@ -4,7 +4,7 @@
  "commit": "0ceda28f8b620ddfef4e4d0a04ca875f1ca3549c",
  "tree": "f5386c2d4bea33201976f42690ef36bbce742d63",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-14T05:01:20.548628+00:00",
+ "produced_at": "2026-11-14T05:24:48.674778+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -66,6 +66,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0345/falsifiers.json",
      "detail": "space345-remover-called-after-failed-keep: ac3/ref-unwritable red, the worktree is removed with its refs unwritten. space345-goes-on-with-main-repository-gone: ac3/main-repository-gone red, the worktree is removed with the main repository away."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "Every attempt writes its own kept refs (the lead's decision of 2026-11-14; spec History). Row ac3/kept-ref-per-attempt: a detached worktree is kept at its head on <item>/1/head, put back by the remover's second probe and deferred as in_use; a second keep of the same head writes no ref and answers the first attempt's; its head then moves; the next event keeps the new head on <item>/2/head and the worktree is removed; <item>/1/head is at the first head with one log entry; the keep record lists both and verify reads true. Row ac3/ref-at-another-commit now plants the attempt's own name at another commit between the attempt's read and its write: keep_failed with the ref, not moved. Every other row reads the first attempt's names, <item>/1/<what>. 26 rows green: proof/VELDO-0345/suite-green.txt."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-attempt-takes-the-newest-names-again (the attempt writes under the newest attempt's number again): ac3/kept-ref-per-attempt red, the worktree is keep_failed at its new head, which is the builder's report this change answers."
     }
    ]
   },
@@ -137,7 +147,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 140_veldo_0345_space_keep (25 rows). Suites 130 to 139, each on its own, are green after the change (proof/VELDO-0345/suite-green.txt holds 140, 139, 138, 132 and 133)."
+   "command": "python3 scripts/selftest.py --suite 140_veldo_0345_space_keep (26 rows). Suites 130 to 139, each on its own, are green after the change (proof/VELDO-0345/suite-green.txt)."
   },
   {
    "name": "integration",
@@ -147,7 +157,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The fifteen registered cases of finding 345 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy: every noop green, every mutant turns its target rows red (proof/VELDO-0345/mutations.txt, falsifiers.json). The seven cases of finding 301 were applied again the same way after the change to Signal: each still turns its row red."
+   "command": "The sixteen registered cases of finding 345 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, after the per-attempt kept refs and the fix of VELDO-0301: every noop green, every mutant turns its target rows red (proof/VELDO-0345/mutations.txt, falsifiers.json). space345-branches-only is anchored at the renamed call. The cases of finding 301 are in proof/VELDO-0301."
   },
   {
    "name": "fast checks",
@@ -166,9 +176,9 @@
   "NOT PROVEN ON A REAL FULL DISK OR BY A REAL KILL. A full pool is the keeper's own write replaced for one attempt (it writes half a block and raises no space left, or returns short); a kill is an exception no handler catches, raised at the named point in the suite's own process. No process was sent a signal and no filesystem was filled.",
   "TWO FALSIFIERS ARE APPLIED IN A NARROWER FORM (spec History 2026-11-14, built). The agent worktree's refs in its agent repository is stopped by the ledger's own check one step before the loss. The snapshot as a commit on a kept ref is applied as its files written into the main repository's object store.",
   "RECONCILE IS NOT BUILT (VELDO-0315). \"By reconcile\" in AC3 is shown by control_space_keep.verify, the check reconcile must pass before it completes an item, and by a second attempt made the way reconcile will make it. The snapshot is written only when the keeper is made with snapshot=True; the removals that ask for one are VELDO-0318, 0336 and 0347, and no remover here forces a removal.",
-  "A KEPT REF IS NEVER MOVED, so an item whose head moved after a deferred attempt is keep_failed until its kept refs are dropped (VELDO-0346). Nothing is lost by it; it can leave a worktree waiting (spec History).",
-  "FOUND, NOT FIXED: the registered case space331-signal-reads-no-mode has had no anchor in control_space_signal.py since VELDO-0301 (it is absent at 27164fc4 too).",
-  "The full gate, the heavy suites and the teeth stage were not run by the builder."
+  "The full gate, the heavy suites and the teeth stage were not run by the builder.",
+  "A KEPT REF IS NEVER MOVED, AND EVERY ATTEMPT WRITES ITS OWN (spec History 2026-11-14). The name holds the attempt's number, <item>/<attempt>/<what>. An attempt whose refs the newest attempt already holds writes nothing; any other writes its whole set under the next number. An item tried many times with something changed each time gains one set of refs per attempt; they cost nothing and only the owner's drop takes them (VELDO-0346, whose History names the new names). commit and tree name the first build (0ceda28f); this change is in the commit that carries this bundle, made as one commit with the fix of VELDO-0301 by the lead's instruction.",
+  "The registered case space331-signal-reads-no-mode is anchored again and red (proof/VELDO-0301/mutations.txt)."
  ],
  "rollback": "Revert the change. Removers then run without the keep step, as before this ticket. Kept refs already written stay in their repositories and are still read by plain git."
 }

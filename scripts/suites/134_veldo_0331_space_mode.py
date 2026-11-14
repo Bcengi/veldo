@@ -9,9 +9,10 @@ owner is bootstrapped and signs each enrollment through the membership organ (co
 every mode command is a packet the owner's key signed, verified by the ledger with ssh-keygen. The
 journal signer is a stub. The lifecycle table is a fixture, as plain data.
 
-The folders the rows remove are fixture folders this suite makes under the temporary folder. The carrying
-out of a due item is a fixture: it deletes the item's folder and writes the outcome removed, standing
-in for the rules and removers of VELDO-0299 to 0301. Free space is a fixture number, the same for every
+The folders the rows remove are fixture folders this suite makes under the temporary folder. A due item
+is carried out by Signal's one path, the rules and then the remover, with the real probes, kind registry
+and removers (since the review of VELDO-0301 Signal refuses a caller's own carry_out); the docker client
+and the process table are stand-ins that show nothing. Free space is a fixture number, the same for every
 run on the pool.
 
 AC1 rows: ac1/no-record-is-report (with no command sent every scope is in report mode and the store
@@ -160,8 +161,11 @@ def _v331_space_mode_suite():
         SCRATCH = temp / 'scratch'
         SCRATCH.mkdir()
 
+        # The kind registry is the real one (Signal asks it for each item's action); the table the
+        # ledger is given is a fixture as plain data, under the version the registry holds.
+        KINDS = load('v331_control_space_kinds', beside.with_name('control_space_kinds.py'))
         EVENTS = ['run_finished', 'landed', 'ticket_ended', 'session_ended']
-        LIFECYCLE = {'version': 'fixture-1', 'events': EVENTS, 'ends_on': {
+        LIFECYCLE = {'version': KINDS.LIFECYCLE['version'], 'events': EVENTS, 'ends_on': {
             'worktree': ['landed', 'ticket_ended'], 'branch': ['landed'], 'agent_repository': ['landed'],
             'build_output': EVENTS, 'scratch': EVENTS, 'evidence': ['run_finished'], 'container': EVENTS,
             'volume': EVENTS, 'network': EVENTS, 'image_tag': ['landed']}}
@@ -244,13 +248,37 @@ def _v331_space_mode_suite():
             L.confirm(identity)
             return identity, path
 
+        # Signal carries out through the rules and a remover and by no callable of its caller (the
+        # review of VELDO-0301, finding 5): the rows give it the real probes, the real kind registry
+        # and the real removers. Stand-ins: the docker client, which shows no container, and the
+        # process table, an empty folder shaped as the kernel's.
+        PROBE = load('v331_control_space_probe', beside.with_name('control_space_probe.py'))
+        REMOVE = load('v331_control_space_remove', beside.with_name('control_space_remove.py'))
+        (temp / 'proc').mkdir()
         carried = []
 
-        def carry_out(identity, record):
-            """The fixture's carrying out of one due item: delete its folder, write the outcome."""
-            shutil.rmtree(record['locator']['path'])
-            L.outcome(identity, 'removed', {'event': record['due']['event'], 'method': 'fixture'})
-            carried.append(identity)
+        def client(argv, cwd=None):
+            if argv[0] != 'docker':
+                return PROBE._run(argv, cwd)
+            if argv[3:5] == ['container', 'ls']:
+                return 0, ''
+            return 1, 'Error response from daemon: No such object'
+
+        class Removers:
+            """The removers, with every item handed to them recorded."""
+            left = staticmethod(REMOVE.left)
+
+            @staticmethod
+            def remove(ledger, probe, identity, record, **given):
+                carried.append(identity)
+                return REMOVE.remove(ledger, probe, identity, record, **given)
+
+        def send(event, subject):
+            """One event through Signal's one path: the rules, then the remover."""
+            return SIG.signal(L, event, subject, probe=PROBE, kinds=KINDS, remover=Removers,
+                              emitter={'process': 'fixture'}, free=lambda pool: shutil.disk_usage(str(temp)).free,
+                              owner_live=lambda owner: {'conclusive': True, 'group_empty': True}, run=client,
+                              proc=str(temp / 'proc'), borrow_root=str(temp / 'borrowed'))
 
         def state_of(identity):
             return (L.item(identity) or {}).get('state')
@@ -341,7 +369,7 @@ def _v331_space_mode_suite():
         ROW = 'ac1/act-beside-report'
         a_item, a_path = thing(A, 'orchard-due', ticket='VELDO-9100')
         b_item, b_path = thing(B, 'meadow-due', ticket='VELDO-9100')
-        done = SIG.signal(L, 'ticket_ended', {'ticket': 'VELDO-9100'}, carry_out)
+        done = send('ticket_ended', {'ticket': 'VELDO-9100'})
         check(ROW, 'one event made both folders due [%s]' % done.get('reason'),
               done.get('ok') is True and sorted(done.get('items', ())) == sorted([a_item, b_item]))
         check(ROW, 'meadow\'s due folder is still on disk [%s, on disk: %s]' % (state_of(b_item), b_path.is_dir()),
@@ -669,7 +697,7 @@ def _v331_space_mode_suite():
                   'session_ended', True))
         for index, (label, scope, owned, subject, event, acted) in enumerate(cases):
             identity, path = thing(scope, 'signal-%d' % index, **owned)
-            done = SIG.signal(L, event, subject, carry_out)
+            done = send(event, subject)
             if acted:
                 check(ROW, 'the item of %s is carried out before the call returns [%s]' % (label, state_of(identity)),
                       done.get('ok') is True and done.get('carried') == [identity] and not path.exists()
@@ -678,7 +706,7 @@ def _v331_space_mode_suite():
                 check(ROW, 'the item of %s is left due and its folder stays [%s]' % (label, state_of(identity)),
                       done.get('ok') is True and done.get('left') == [identity] and done.get('carried') == []
                       and path.is_dir() and state_of(identity) == 'due' and identity not in carried)
-        unknown = SIG.signal(L, 'no_such_event', {'run': 'run-s-a'}, carry_out)
+        unknown = send('no_such_event', {'run': 'run-s-a'})
         check(ROW, 'an unknown event is the ledger\'s refusal, and nothing is carried out [%s]' % unknown.get('reason'),
               unknown.get('ok') is False and unknown.get('reason') == 'space_unknown_event')
 
@@ -749,7 +777,7 @@ def _v331_space_mode_suite():
         ROW = 'ac3/then-due-and-nothing-removed'
         del carried[:]
         after_item, after_path = thing(A, 'orchard-after', run='run-after')
-        done = SIG.signal(L, 'run_finished', {'run': 'run-after'}, carry_out)
+        done = send('run_finished', {'run': 'run-after'})
         check(ROW, 'the event writes due [%s %s]' % (done.get('reason'), state_of(after_item)),
               done.get('ok') is True and done.get('items') == [after_item] and state_of(after_item) == 'due')
         check(ROW, 'and removes nothing: the folder and its file are on disk and nothing was carried out',

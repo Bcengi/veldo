@@ -266,10 +266,17 @@ def unmarked(name):
 
 def left(path, identity):
     """The marked name of the item when something is there now, a folder or a worktree a removal that
-    stopped or was killed left under it; None when nothing is. Reconcile asks before it marks an item
-    gone (design 8.8)."""
+    stopped or was killed left under it; None only when the kernel said nothing is (ENOENT). Any
+    other answer of os.lstat (a folder above it that may not be searched, a failing disk) is raised
+    as the OSError it is: a name that could not be read is not a name with nothing under it, and the
+    caller must not mark the item gone on it. Signal and reconcile ask before they mark an item gone
+    (design 8.8)."""
     name = marked(path, identity)
-    return name if os.path.lexists(name) else None
+    try:
+        os.lstat(name)
+    except FileNotFoundError:
+        return None
+    return name
 
 
 def _plain(path):

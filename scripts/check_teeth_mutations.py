@@ -12557,9 +12557,12 @@ def cases():
         "        if old == new:\n            return self._observed({'ok': True, 'seq': None, 'replayed': False, 'changed': False,",
         ['ac3/switch-back-accepted'])
     result[-1]['siblings'] = True
+    # Re-anchored with the review of VELDO-0301: that ticket rewrote the line, and the case had no
+    # anchor from then on. The mode is read here, beside the owner's confirmation; the mutant reads
+    # neither and keeps the installation's switch.
     add(331, 'space331-signal-reads-no-mode', space331, 'control_space_signal.py',
-        "        if record.get('state') == 'due' and ledger.acts((record.get('owner') or {}).get('scope')):\n",
-        "        if record.get('state') == 'due':\n",
+        "                ledger.acts((record.get('owner') or {}).get('scope')) or record.get('confirmed')):\n",
+        "                True):\n",
         ['ac2/signal-by-scope'])
     add(331, 'space331-admission-reads-no-mode', space331, 'control_space_admission.py',
         "'waiting' if ledger.acts(scope) else 'advised'",
@@ -12968,9 +12971,45 @@ def cases():
         "    if False:\n",
         ['ac5/left-at-stays-removing'])
     add(301, 'space301-look-answers-nothing', space301, 'control_space_signal.py',
-        "        return inside(ledger, probe, identity, record, run)\n\n    entries = ",
-        "        return {}\n\n    entries = ",
+        "        return inside(ledger, probe, identity, record, run)\n\n    given = ",
+        "        return {}\n\n    given = ",
         ['look/agent-repository-held'])
+    # From the independent review of VELDO-0301 (review-veldo-0301.md), one falsifier per finding
+    # fixed. Finding 1: the probe reads the locator with os.path.lexists again, and the removers'
+    # look reads the marked name with it. Finding 2: what an item raises outside the rules is not
+    # caught, and what the kind registry raises is not caught. Finding 3: no carrier is written; and
+    # a call whose removing write another carrier won writes its own deferral over that record.
+    # Finding 5: a caller's own carry_out is not refused.
+    add(301, 'space301-lexists-at-the-locator', space301, 'control_space_probe.py',
+        "    exists, unread = there(path)\n",
+        "    exists, unread = os.path.lexists(path), None\n",
+        ['ac2/unreadable-is-not-gone'])
+    result[-1]['siblings'] = True
+    add(301, 'space301-lexists-under-the-marked-name', space301, 'control_space_remove.py',
+        "    try:\n        os.lstat(name)\n    except FileNotFoundError:\n        return None\n    return name\n",
+        "    return name if os.path.lexists(name) else None\n",
+        ['ac2/unreadable-is-not-gone'])
+    result[-1]['siblings'] = True
+    add(301, 'space301-an-item-that-raises-stops-the-event', space301, 'control_space_signal.py',
+        "        except Exception as error:  # noqa: BLE001 - an item that raises is deferred; the others are carried out\n",
+        "        except () as error:  # noqa: BLE001 - an item that raises is deferred; the others are carried out\n",
+        ['ac1/every-item-gets-an-outcome'])
+    add(301, 'space301-a-registry-that-raises-stops-the-event', space301, 'control_space_signal.py',
+        "    except Exception as error:  # noqa: BLE001 - a registry that raises defers every item and removes none\n",
+        "    except () as error:  # noqa: BLE001 - a registry that raises defers every item and removes none\n",
+        ['ac1/every-item-gets-an-outcome'])
+    add(301, 'space301-no-carrier-on-the-record', space301, 'control_space_signal.py',
+        "'action': action, 'carrier': given['carrier']}\n",
+        "'action': action}\n",
+        ['carrier/recorded'])
+    add(301, 'space301-writes-over-another-carrier', space301, 'control_space_signal.py',
+        "        if now.get('state') != 'due':\n            return dict(done, reason='not_due', state=now.get('state'),\n",
+        "        if False:\n            return dict(done, reason='not_due', state=now.get('state'),\n",
+        ['carrier/one-remover'])
+    add(301, 'space301-carry-out-not-refused', space301, 'control_space_signal.py',
+        "    if carry_out is not None:\n        return {'ok': False, 'reason': CARRY_OUT_REFUSED,",
+        "    if False:\n        return {'ok': False, 'reason': CARRY_OUT_REFUSED,",
+        ['rules/carry-out-refused'])
 
     # VELDO-0345: the keep step. The declared falsifiers of its acceptance criteria, each one a way to
     # lose the work its row plants. AC1: the kept refs are written after git's worktree remove; an
@@ -13011,9 +13050,9 @@ def cases():
             "        if False:\n",
             ['ac1/removed-needs-keep-record'])
     keep345('space345-branches-only', 'control_space_keep.py',
-            "        refs = _numbered(_plan(commands, path, tips), prefix, held)\n",
-            "        refs = _numbered([entry for entry in _plan(commands, path, tips) if kind == 'worktree'\n"
-            "                          or entry[0].startswith('ref/refs/heads/')], prefix, held)\n",
+            "        refs = _attempt(_plan(commands, path, tips), prefix, held)\n",
+            "        refs = _attempt([entry for entry in _plan(commands, path, tips) if kind == 'worktree'\n"
+            "                         or entry[0].startswith('ref/refs/heads/')], prefix, held)\n",
             ['ac2/private-repository'])
     keep345('space345-remover-called-after-failed-keep', 'control_space_remove.py',
             "    if not isinstance(said, dict) or said.get('ok') is not True:\n"
@@ -13068,6 +13107,12 @@ def cases():
             "                outcome == 'deferred' and facts.get('rule') not in TOOL_REFUSALS)):\n",
             "                outcome == 'deferred' and facts.get('rule') != TOOL_REFUSALS[0])):\n",
             ['ac6/three-deferrals', 'ac6/removing-put-back'])
+    # The lead's decision of 2026-11-14 (every attempt writes its own kept refs): the attempt takes
+    # the newest attempt's names again, so a head that moved meets its old ref at another commit.
+    keep345('space345-attempt-takes-the-newest-names-again', 'control_space_keep.py',
+            "    return _numbered(plan, prefix + '%d/' % (newest + 1), {})\n",
+            "    return _numbered(plan, prefix + '%d/' % (newest or 1), {})\n",
+            ['ac3/kept-ref-per-attempt'])
     keep345('space345-due-while-the-remover-runs', 'control_space_signal.py',
             "        if action in REMOVALS:\n            # Rules 1 to 6 have passed",
             "        if False:\n            # Rules 1 to 6 have passed",
