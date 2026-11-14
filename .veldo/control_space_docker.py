@@ -54,10 +54,12 @@ tied to a worktree by what the engine says of it (`placed`):
   compose's files            the label com.docker.compose.project.config_files: the files it read
   a bind mount's source      for a container, the host source of each bind mount
 
-When one of these leads inside a recorded worktree, that worktree is the proposed owner. Which worktree
-a path is inside is the reconciler's to say (control_space_reconcile.worktree_inside): by where the
-path leads, never by a folder's name, and paths that lead into two worktrees, or one that cannot be
-read as a path, give none. What is then written depends on the mode of the worktree's scope, and the
+When every one of these the object carries leads inside the same recorded worktree, that worktree is
+the proposed owner. Which worktree a path is inside is the reconciler's to say
+(control_space_reconcile.worktree_inside): by where the path leads, never by a folder's name. Paths
+that are split (one inside a worktree and one outside every worktree, or two inside two different
+worktrees) are a conflict and give none: the object is a report with no proposed owner and is never
+adopted by this rule. A path that cannot be read as a path gives none either. What is then written depends on the mode of the worktree's scope, and the
 reconciler's rule reads it (adopt_inside_worktree): in report mode a report that shows the worktree's
 owner as the proposed owner, with the label or the mount that gave it, and no item; in act mode an
 item adopted with the worktree as its parent, by the rule inside_recorded_worktree. An object the
@@ -703,7 +705,7 @@ class Adapter:
             label, owner, rule = None, None, 'no_identity'
         worktree, how, path = None, None, None
         if owner is None and rule == 'no_label' and self.reconcile is not None:
-            # No run label: the worktree its compose labels or a bind source place it in, when one does.
+            # No run label: the one worktree its compose labels and bind sources all lead inside, if any.
             worktree, how, path = self.reconcile.worktree_inside(self.ledger, placed(kind, shown))
             if worktree is not None and field not in locator:
                 worktree, how, rule = None, None, 'no_identity'
@@ -712,7 +714,7 @@ class Adapter:
                  'compose_project': locator.get('compose_project'),
                  'live_runs': sorted(runs)[:NAMED], 'more_runs': max(0, len(runs) - NAMED)}
         if worktree is None and how is not None:
-            # why its paths gave no worktree: outside, two_worktrees, conflict or path_unread
+            # why its paths gave no worktree: outside, conflict (a split) or path_unread
             found['not_placed'] = how
         before = (held[1].get('report') or {}).get('found', {}) if held is not None else {}
         if owner is not None:

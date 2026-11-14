@@ -203,3 +203,37 @@ the result in the proof (design 6.4).
     space306-review-unread-mounts-adopted still occurs once.
   - The review's observation on a volume placed only by a path label (no engine writes it today) is
     the lead's to decide and was not built.
+- 2026-11-14: the question the review's fix left for the lead is decided, and built here. No acceptance
+  criterion changed. THE LEAD'S DECISION, applied to every shape: an object with no run label gets a
+  proposed owner only when EVERY path it is tied to (compose's working folder, every configuration file
+  compose read, every bind source) leads inside the SAME recorded worktree. Any split is a conflict: a
+  report with no proposed owner in both modes, never adopted by this rule, never stopped or removed
+  with a worktree. The owner can still adopt it by their own word.
+  - What is a split (control_space_reconcile.worktree_inside): one path inside a recorded worktree
+    and another outside every one, whichever is which, or two paths inside two different worktrees.
+    The shapes, each with its row: the working folder outside with a bind source inside (the review's
+    row, review/split-owner-is-a-conflict); a configuration file inside with the working folder
+    outside (split/file-inside-folder-outside, the shape left for the lead); the working folder
+    inside with a configuration file outside (split/folder-inside-file-outside); compose inside with
+    a bind source outside (split/folder-inside-bind-outside); one bind source inside and another
+    outside (split/bind-inside-bind-outside); two worktrees (split/two-worktrees). The control row
+    split/every-path-inside-places: every path inside one worktree is adopted in act mode and
+    proposed in report mode, and paths all outside are outside, not a conflict.
+  - The answer two_worktrees is gone: two worktrees are a split like any other and the report says
+    conflict. The container two-1 of row ac1/no-proposal-when-undecided says conflict now.
+  - This narrows AC1's reading and the design's 6.4, where one label or one bind source inside places
+    the object: now one inside is not enough, all must be, and in the same worktree. Section 0 (no
+    work is ever lost) holds over 6.4 where they disagree; the design text is outside this ticket's
+    footprint and was not edited. What it costs: a container that compose ran inside a worktree and
+    that also mounts anything outside it (the engine's socket, a cache in the home folder, a
+    configuration file under /etc) is a conflict and stays a report with no proposed owner.
+  - Two fixtures moved with the rule, because their old shape is now a split: meadow-cf-1 (row
+    ac1/inside-a-recorded-worktree) and late-cf-1 (row protect/covered-after-adoption) were placed by
+    a second configuration file while the working folder and the first file were outside. Each now
+    carries configuration files only, all inside its worktree. The old shape is the container
+    cfin-b-1 of row split/file-inside-folder-outside, where it is a conflict.
+  - Mutation cases (finding 307): seven for the six rows and the control, and the case
+    space307-two-worktrees-one-taken moved with the code and names the row split/two-worktrees too.
+    The two cases of the review's finding 2 are replaced, because the code they edited is gone:
+    space307-split-owner-placed-by-its-bind-source by space307-split-placed-by-the-path-inside, and
+    space307-compose-label-outside-not-seen keeps its name with a new edit. 37 cases in all.

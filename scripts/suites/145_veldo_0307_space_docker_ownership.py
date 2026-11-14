@@ -84,10 +84,28 @@ protected path among the others still answers protected, and an empty label name
 review/split-owner-is-a-conflict (the lead's decision: a container whose bind source leads into a
 worktree while compose's working folder leads outside every worktree is a conflict, a report with no
 proposed owner; in the act-mode project it is no item, and at the worktree's ending event it is neither
-stopped nor removed; one with no compose label is placed by its bind source as before, and one whose
-configuration file leads inside is placed by that file), review/digest-pattern-listed (a protect entry
+stopped nor removed; one with no compose label is placed by its bind source as before),
+review/digest-pattern-listed (a protect entry
 that names a digest lists the image that carries that digest, as the Ledger and rule 2 read the entry;
 another digest of the same repository is not covered and does not take the listing away).
+
+ANY SPLIT IS A CONFLICT (the lead's decision after the review, applied to every shape). An object gets
+a proposed owner only when every path it is tied to (compose's working folder, every configuration
+file, every bind source) leads inside the same recorded worktree. Each split shape has its row, with a
+container in the act-mode project and one in the report-mode project: each is a report with no owner,
+no proposed owner and no parent, saying conflict; the adapter said reported, never proposed or adopted;
+at its worktree's ending event it is named to no stop and no remove; and it is still nobody's after the
+report-mode project switches to act. The reconciler asked itself answers conflict in either order.
+split/file-inside-folder-outside (a configuration file inside a worktree, the working folder outside
+every one: with another file outside, and with the working folder the only path outside),
+split/folder-inside-file-outside (the working folder inside, one of the configuration files outside),
+split/folder-inside-bind-outside (compose ran inside, a bind source outside),
+split/bind-inside-bind-outside (no compose label; one bind source inside, another outside),
+split/two-worktrees (the working folder in one worktree and a bind source in another, two configuration
+files in two worktrees, two bind sources in two worktrees), split/every-path-inside-places (the control:
+a container whose working folder, two configuration files and two bind sources all lead inside the
+act-mode worktree is adopted with that worktree as parent, and one in the report-mode project is
+proposed; paths all outside are outside, never a conflict).
 
 ownership/removes-nothing (the adapter gave the engine only ls, inspect and info, and the sources of
 the adapter and of the reconciler name no stop, no remove, no prune and no force option),
@@ -128,6 +146,9 @@ def _v307_space_docker_ownership_suite():
             'ac3/protected-volume', 'ac3/protected-container', 'ac3/protected-image', 'ac3/covered-later',
             'loss/nothing-of-theirs-touched', 'protect/image-pattern-every-tag', 'protect/covered-after-adoption',
             'review/relative-label-refused', 'review/split-owner-is-a-conflict', 'review/digest-pattern-listed',
+            'split/file-inside-folder-outside', 'split/folder-inside-file-outside',
+            'split/folder-inside-bind-outside', 'split/bind-inside-bind-outside', 'split/two-worktrees',
+            'split/every-path-inside-places',
             'ownership/removes-nothing', 'ownership/canon')
     rows = {name: [] for name in ROWS}
 
@@ -459,7 +480,7 @@ def _v307_space_docker_ownership_suite():
         # Meadow, report mode: inside wt-b.
         ENGINE.container('default', 'meadow-web-1', composed(PATH_B / 'app', project='app'))
         ENGINE.container('desktop-linux', 'meadow-cf-1',
-                         composed(ELSEWHERE / 'far', '/etc/veldo-0307-base.yaml,%s' % (PATH_B / 'compose.yaml')))
+                         {CF: '%s,%s' % (PATH_B / 'compose.yaml', PATH_B / 'app' / 'override.yaml')})
         ENGINE.container('default', 'meadow-bind-1', binds=[PATH_B / 'data'])
         ENGINE.volume('desktop-linux', 'meadow_cache', {WD: str(PATH_B / 'app')})
         ENGINE.network('default', 'meadow_net', {CF: str(PATH_B / 'app' / 'compose.yaml')})
@@ -502,6 +523,48 @@ def _v307_space_docker_ownership_suite():
         split_b = ENGINE.container('default', 'split-b-1', composed(ELSEWHERE / 'far'), binds=[PATH_B / 'data'])
         split_cf = ENGINE.container('default', 'split-cf-1', {CF: str(ELSEWHERE / 'far' / 'compose.yaml')},
                                     binds=[PATH_B / 'data'])
+        # Any split is a conflict. Each shape in the act-mode project (wt-a) and in the report-mode one
+        # (wt-b): (row, what the shape is, ((name, the project's mode, the container), ...)).
+        FAR = ELSEWHERE / 'far'
+        SPLITS = (
+            ('split/file-inside-folder-outside',
+             'a configuration file is inside a worktree while compose\'s working folder is outside every worktree',
+             (('cfin-a-1', 'act', ENGINE.container('default', 'cfin-a-1', composed(FAR, PATH_A / 'compose.yaml'))),
+              ('cfin-b-1', 'report', ENGINE.container('default', 'cfin-b-1', composed(
+                  FAR, '/etc/veldo-0307-base.yaml,%s' % (PATH_B / 'compose.yaml')))))),
+            ('split/folder-inside-file-outside',
+             'compose\'s working folder is inside a worktree while one of its configuration files is outside '
+             'every worktree',
+             (('cfout-a-1', 'act', ENGINE.container('default', 'cfout-a-1', composed(
+                 PATH_A / 'app', '%s,%s' % (PATH_A / 'app' / 'compose.yaml', FAR / 'override.yaml')))),
+              ('cfout-b-1', 'report', ENGINE.container('default', 'cfout-b-1',
+                                                       composed(PATH_B / 'app', FAR / 'compose.yaml'))))),
+            ('split/folder-inside-bind-outside',
+             'compose ran inside a worktree while a bind source is outside every worktree',
+             (('bindout-a-1', 'act', ENGINE.container('default', 'bindout-a-1', composed(PATH_A / 'app'),
+                                                      binds=[PATH_A / 'data', FAR])),
+              ('bindout-b-1', 'report', ENGINE.container('default', 'bindout-b-1', composed(PATH_B / 'app'),
+                                                         binds=[FAR / 'svc'])))),
+            ('split/bind-inside-bind-outside',
+             'one bind source is inside a worktree while another is outside every worktree, with no compose label',
+             (('binds-a-1', 'act', ENGINE.container('default', 'binds-a-1', binds=[PATH_A / 'data', FAR])),
+              ('binds-b-1', 'report', ENGINE.container('default', 'binds-b-1', binds=[FAR / 'svc', PATH_B / 'data'])))),
+            ('split/two-worktrees',
+             'the paths lead into two different worktrees',
+             (('two-a-1', 'act', ENGINE.container('default', 'two-a-1', composed(PATH_A / 'app'),
+                                                  binds=[PATH_B / 'data'])),
+              ('two-cf-1', 'report', ENGINE.container('default', 'two-cf-1', {
+                  CF: '%s,%s' % (PATH_B / 'compose.yaml', PATH_C / 'compose.yaml')})),
+              ('two-binds-1', 'report', ENGINE.container('default', 'two-binds-1',
+                                                         binds=[PATH_B / 'data', PATH_C / 'data'])))),
+        )
+        # The control: every path inside the same worktree.
+        whole_a = ENGINE.container('default', 'whole-a-1', composed(
+            PATH_A / 'app', '%s,%s' % (PATH_A / 'app' / 'compose.yaml', PATH_A / 'override.yaml')),
+            binds=[PATH_A / 'data', PATH_A / 'app'])
+        ENGINE.container('default', 'whole-b-1', composed(
+            PATH_B / 'app', '%s,%s' % (PATH_B / 'app' / 'compose.yaml', PATH_B / 'override.yaml')),
+            binds=[PATH_B / 'data', PATH_B / 'app'])
         # Protected, each with a path that places it inside a recorded worktree.
         pv_name = ENGINE.volume('default', 'atlas_pg_main', {WD: str(PATH_A / 'app')}, data='the real database')
         pv_compose = ENGINE.volume('desktop-linux', 'renamed_store',
@@ -589,7 +652,7 @@ def _v307_space_docker_ownership_suite():
 
         ROW = 'ac1/no-proposal-when-undecided'
         for name, kind, why, not_placed in (('dotdot-1', 'container', 'no_label', 'path_unread'),
-                                            ('two-1', 'container', 'no_label', 'two_worktrees'),
+                                            ('two-1', 'container', 'no_label', 'conflict'),
                                             ('ended-1', 'container', 'no_label', 'outside'),
                                             ('unstamped', 'volume', 'no_identity', None)):
             identity, record = record_at('default', kind, name)
@@ -676,19 +739,101 @@ def _v307_space_docker_ownership_suite():
               == (None, 'conflict', None)
               and REC.worktree_inside(L, [('compose_config_file', OUT + '/compose.yaml'), ('bind_source', IN_A)])
               == (None, 'conflict', None)
-              and REC.worktree_inside(L, [('compose_working_dir', str(PATH_A / 'app')),
-                                          ('compose_config_file', OUT + '/base.yaml'), ('bind_source', IN_A),
-                                          ('bind_source', OUT)])[:2] == (WT_A, 'compose_working_dir'))
-        check(ROW, 'a bind source alone still places, a configuration file inside still places although the '
-              'working folder is outside, and two worktrees are still two worktrees',
-              REC.worktree_inside(L, [('bind_source', IN_A), ('bind_source', OUT)]) == (WT_A, 'bind_source', IN_A)
-              and REC.worktree_inside(L, [('compose_working_dir', OUT),
-                                          ('compose_config_file', str(PATH_A / 'compose.yaml')),
-                                          ('bind_source', IN_A)])[:2] == (WT_A, 'compose_config_file')
               and REC.worktree_inside(L, [('compose_working_dir', OUT), ('bind_source', IN_A),
-                                          ('bind_source', str(PATH_B / 'data'))]) == (None, 'two_worktrees', None)
+                                          ('bind_source', str(PATH_B / 'data'))]) == (None, 'conflict', None))
+        check(ROW, 'a bind source alone still places, and a path that cannot be read is said before any conflict',
+              REC.worktree_inside(L, [('bind_source', IN_A)]) == (WT_A, 'bind_source', IN_A)
               and REC.worktree_inside(L, [('compose_working_dir', OUT), ('bind_source', 'data')])
-              == (None, 'path_unread', None))
+              == (None, 'path_unread', None)
+              and REC.worktree_inside(L, [('bind_source', IN_A), ('compose_working_dir', OUT),
+                                          ('bind_source', IN_A + '/../x')]) == (None, 'path_unread', None))
+
+        # ------------------------------------------------------------------------------------
+        # Any split of an object's paths is a conflict, never adopted: one row for each shape.
+        # ------------------------------------------------------------------------------------
+        for ROW, shape, members in SPLITS:
+            for name, project_name, shown in members:
+                identity, record = record_at('default', 'container', name)
+                proposed, found = report_of(record)
+                check(ROW, 'in the %s-mode project the container %s, of which %s, is a report with no owner, no '
+                      'proposed owner and no parent: a conflict [owner %s, proposed %s, parent %s, %s]'
+                      % (project_name, name, shape, record.get('owner'), proposed, record.get('parent'),
+                         found.get('not_placed')),
+                      identity is not None and record.get('owner') is None and proposed is None
+                      and record.get('parent') is None and record.get('adopted') is False
+                      and record.get('adoption') is None and record['ends_on']['events'] == []
+                      and found.get('why') == 'no_label' and found.get('not_placed') == 'conflict'
+                      and 'worktree' not in found and 'placed_by' not in found)
+                said = [entry['what'] for entry in ADAPTER.observations if entry.get('name') == name]
+                check(ROW, 'the adapter reported %s, and said of it neither proposed nor adopted [%s]' % (name, said),
+                      said == ['reported'])
+
+        def asked(*paths):
+            """The reconciler's answer for the paths, and for the same paths in the opposite order."""
+            return (REC.worktree_inside(L, list(paths)), REC.worktree_inside(L, list(reversed(paths))))
+
+        CONFLICT = ((None, 'conflict', None), (None, 'conflict', None))
+        A_APP, A_FILE, B_DATA = str(PATH_A / 'app'), str(PATH_A / 'compose.yaml'), str(PATH_B / 'data')
+        check('split/file-inside-folder-outside', 'the reconciler, asked itself: a configuration file inside with '
+              'the working folder outside is a conflict in either order, with or without a bind source inside',
+              asked(('compose_working_dir', OUT), ('compose_config_file', A_FILE)) == CONFLICT
+              and asked(('compose_working_dir', OUT), ('compose_config_file', A_FILE), ('bind_source', IN_A))
+              == CONFLICT
+              and asked(('compose_working_dir', OUT), ('compose_config_file', OUT + '/base.yaml'),
+                        ('compose_config_file', A_FILE)) == CONFLICT)
+        check('split/folder-inside-file-outside', 'the reconciler, asked itself: the working folder inside with a '
+              'configuration file outside is a conflict in either order, whatever else is inside',
+              asked(('compose_working_dir', A_APP), ('compose_config_file', OUT + '/base.yaml')) == CONFLICT
+              and asked(('compose_working_dir', A_APP), ('compose_config_file', A_FILE),
+                        ('compose_config_file', OUT + '/base.yaml'), ('bind_source', IN_A)) == CONFLICT
+              and asked(('compose_config_file', A_FILE), ('compose_config_file', '/etc/veldo-0307-base.yaml'))
+              == CONFLICT)
+        check('split/folder-inside-bind-outside', 'the reconciler, asked itself: compose\'s labels inside with a '
+              'bind source outside is a conflict in either order',
+              asked(('compose_working_dir', A_APP), ('bind_source', OUT)) == CONFLICT
+              and asked(('compose_working_dir', A_APP), ('compose_config_file', A_FILE), ('bind_source', IN_A),
+                        ('bind_source', OUT)) == CONFLICT
+              and asked(('compose_config_file', A_FILE), ('bind_source', '/var/run/docker.sock')) == CONFLICT)
+        check('split/bind-inside-bind-outside', 'the reconciler, asked itself: a bind source inside with another '
+              'outside is a conflict in either order',
+              asked(('bind_source', IN_A), ('bind_source', OUT)) == CONFLICT
+              and asked(('bind_source', IN_A), ('bind_source', A_APP), ('bind_source', '/var/run/docker.sock'))
+              == CONFLICT)
+        check('split/two-worktrees', 'the reconciler, asked itself: paths inside two different worktrees are a '
+              'conflict in either order, whichever kinds of path they are',
+              asked(('compose_working_dir', A_APP), ('bind_source', B_DATA)) == CONFLICT
+              and asked(('compose_config_file', A_FILE), ('compose_config_file', str(PATH_B / 'compose.yaml')))
+              == CONFLICT
+              and asked(('bind_source', IN_A), ('bind_source', B_DATA)) == CONFLICT
+              and asked(('compose_working_dir', A_APP), ('compose_config_file', A_FILE),
+                        ('bind_source', str(PATH_C / 'data'))) == CONFLICT
+              and asked(('compose_working_dir', str(PATH_B / 'app')), ('bind_source', str(PATH_C / 'data')),
+                        ('bind_source', OUT)) == CONFLICT)
+
+        ROW = 'split/every-path-inside-places'
+        identity, record = record_at('default', 'container', 'whole-a-1')
+        check(ROW, 'the container whose working folder, two configuration files and two bind sources all lead '
+              'inside the act-mode worktree is adopted with it as parent [owner %s, parent %s, rule %s]'
+              % (record.get('owner'), record.get('parent'), (record.get('adoption') or {}).get('rule')),
+              identity is not None and record.get('owner') == WHO_A and record.get('parent') == WT_A
+              and record.get('adopted') is True and (record.get('adoption') or {}).get('rule') == RULE
+              and record['locator'].get('id') == whole_a['Id'])
+        identity, record = record_at('default', 'container', 'whole-b-1')
+        proposed, found = report_of(record)
+        check(ROW, 'and the one in the report-mode project is proposed to its worktree, by the working folder '
+              '[%s %s %s]' % (proposed, found.get('placed_by'), found.get('not_placed')),
+              identity is not None and record.get('owner') is None and proposed == WHO_B
+              and found.get('worktree') == WT_B and found.get('placed_by') == 'compose_working_dir'
+              and found.get('path') == str(PATH_B / 'app') and 'not_placed' not in found)
+        check(ROW, 'the reconciler, asked itself: every path inside the same worktree places, by the first path, '
+              'in either order; paths all outside are outside and no conflict',
+              asked(('compose_working_dir', A_APP), ('compose_config_file', A_FILE), ('bind_source', IN_A))
+              == ((WT_A, 'compose_working_dir', A_APP), (WT_A, 'bind_source', IN_A))
+              and asked(('compose_config_file', A_FILE), ('compose_config_file', A_APP + '/override.yaml'))[0]
+              == (WT_A, 'compose_config_file', A_FILE)
+              and asked(('bind_source', IN_A), ('bind_source', A_APP))[0] == (WT_A, 'bind_source', IN_A)
+              and asked(('compose_working_dir', OUT), ('compose_config_file', OUT + '/compose.yaml'),
+                        ('bind_source', '/var/run/docker.sock')) == ((None, 'outside', None), (None, 'outside', None)))
 
         # ------------------------------------------------------------------------------------
         # AC2
@@ -906,11 +1051,13 @@ def _v307_space_docker_ownership_suite():
                   for path in (PATH_A, PATH_B, PATH_C, PATH_GONE)))
 
         # The review, findings 1 and 2, once the tickets and the run ended.
-        for row, shown, name in (('review/split-owner-is-a-conflict', split_a, 'split-a-1'),
-                                 ('review/split-owner-is-a-conflict', split_b, 'split-b-1'),
-                                 ('review/split-owner-is-a-conflict', split_cf, 'split-cf-1'),
-                                 ('review/relative-label-refused', relative_a, 'relative-a-1'),
-                                 ('review/relative-label-refused', relative_run, 'relative-run-1')):
+        EVERY_SPLIT = ((('review/split-owner-is-a-conflict', split_a, 'split-a-1'),
+                        ('review/split-owner-is-a-conflict', split_b, 'split-b-1'),
+                        ('review/split-owner-is-a-conflict', split_cf, 'split-cf-1'))
+                       + tuple((row, shown, name) for row, shape, members in SPLITS
+                               for name, project_name, shown in members))
+        for row, shown, name in EVERY_SPLIT + (('review/relative-label-refused', relative_a, 'relative-a-1'),
+                                               ('review/relative-label-refused', relative_run, 'relative-run-1')):
             identity, record = record_at('default', 'container', name)
             check(row, 'after the ticket of its worktree and its run ended, the container %s was named to no '
                   'stop and no remove, is running, and nobody owns it [%s %s]'
@@ -944,6 +1091,21 @@ def _v307_space_docker_ownership_suite():
         identity, record = record_at('default', 'container', 'namesake-1')
         check(ROW, 'and the container in the same-named folder outside still has no owner [%s]' % (record.get('owner'),),
               identity is not None and record.get('owner') is None and report_of(record)[0] is None)
+        # Any split, once both projects act: still nobody's, and still asked nothing.
+        for row, shown, name in EVERY_SPLIT:
+            identity, record = record_at('default', 'container', name)
+            said = [entry['what'] for entry in ADAPTER.observations if entry.get('name') == name]
+            check(row, 'with both projects in act mode and the context read again, the container %s is still a '
+                  'report with no owner and no proposed owner, was never said proposed or adopted, and was named '
+                  'to no stop and no remove [%s %s %s %s]'
+                  % (name, record.get('owner'), report_of(record)[0], sorted(set(said)),
+                     ENGINE.asked(shown['Id']) + ENGINE.asked(name)),
+                  identity is not None and record.get('owner') is None and report_of(record)[0] is None
+                  and record.get('parent') is None and record.get('adopted') is False
+                  and not set(said) & {'proposed', 'adopted'}
+                  and ENGINE.asked(shown['Id']) == [] and ENGINE.asked(name) == []
+                  and ENGINE.find('default', 'container', name) is shown
+                  and shown['State']['Status'] == 'running')
 
         # ------------------------------------------------------------------------------------
         # The protect list at the ledger: an image pattern with no tag covers every tag and digest.
@@ -1000,8 +1162,8 @@ def _v307_space_docker_ownership_suite():
         WT_D, WHO_D, PATH_D = worktree(A, ORCHARD, 'wt-d', TICKET_D)
         late = {
             'late-web-1': ('container', ENGINE.container('default', 'late-web-1', composed(PATH_D / 'app'))),
-            'late-cf-1': ('container', ENGINE.container('default', 'late-cf-1', composed(
-                ELSEWHERE / 'far', '/etc/veldo-0307-base.yaml,%s' % (PATH_D / 'conf' / 'compose.yaml')))),
+            'late-cf-1': ('container', ENGINE.container('default', 'late-cf-1', {
+                CF: '%s,%s' % (PATH_D / 'base.yaml', PATH_D / 'conf' / 'compose.yaml')})),
             'late-bind-1': ('container', ENGINE.container('default', 'late-bind-1', binds=[PATH_D / 'data'])),
             'late_cache': ('volume', ENGINE.volume('default', 'late_cache', {WD: str(PATH_D / 'app')},
                                                    data='what the late volume holds')),

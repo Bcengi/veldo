@@ -13864,8 +13864,8 @@ def cases():
               "        if not isinstance(path, str) or not path.startswith('/'):\n",
               ['ac1/no-proposal-when-undecided'], module='control_space_reconcile.py')
     docker307('space307-two-worktrees-one-taken',
-              "    if len(placed) > 1:\n        return None, 'two_worktrees', None\n", "",
-              ['ac1/no-proposal-when-undecided'], module='control_space_reconcile.py')
+              "    if len(inside) > 1:\n        return None, 'conflict', None  # two different worktrees\n", "",
+              ['ac1/no-proposal-when-undecided', 'split/two-worktrees'], module='control_space_reconcile.py')
     docker307('space307-gone-worktree-still-recorded',
               "                and record.get('state') not in ENDED and isinstance(path, str) and path.startswith('/')):\n",
               "                and isinstance(path, str) and path.startswith('/')):\n",
@@ -13972,6 +13972,15 @@ def cases():
     # (finding 3, as it was), and an image nothing covers takes away its namesake's listing.
     RELATIVE_ROW, SPLIT_ROW, DIGEST_ROW = (['review/relative-label-refused'], ['review/split-owner-is-a-conflict'],
                                            ['review/digest-pattern-listed'])
+    # Any split is a conflict (the lead's decision after the review): one row for each shape. The
+    # conflict answer gone; the rule as the review's fix left it (a compose label inside places the
+    # object whatever else is outside); and, one at a time, the working folder, a configuration file
+    # and a bind source not counted when it leads outside. Then the control: everything a conflict.
+    FILE_IN, FILE_OUT, BIND_OUT, BINDS = ('split/file-inside-folder-outside', 'split/folder-inside-file-outside',
+                                          'split/folder-inside-bind-outside', 'split/bind-inside-bind-outside')
+    INSIDE_AND_OUTSIDE = ("    if inside and outside:\n"
+                          "        return None, 'conflict', None  # one path inside a worktree, another outside every one\n")
+    OUTSIDE_SEEN = "        else:\n            outside = True\n"
     docker307('space307-relative-label-passes-rule-2',
               "                unplaced = unplaced or 'the label %s holds a path that is not absolute: %s' % (label, path[:200])\n",
               "", RELATIVE_ROW, module='control_space_probe.py')
@@ -13979,12 +13988,27 @@ def cases():
     docker307('space307-relative-label-passes-the-adapter',
               "            unplaced = unplaced or 'a labelled path (%s) is not absolute: %s' % (how, path[:200])\n",
               "", RELATIVE_ROW)
-    docker307('space307-split-owner-placed-by-its-bind-source',
-              "    if placed and composed_outside and not composed_inside:\n        return None, 'conflict', None\n",
-              "", SPLIT_ROW, module='control_space_reconcile.py')
-    docker307('space307-compose-label-outside-not-seen',
-              "        elif how in COMPOSED:\n            composed_outside = True\n",
-              "", SPLIT_ROW, module='control_space_reconcile.py')
+    docker307('space307-split-placed-by-the-path-inside', INSIDE_AND_OUTSIDE, "",
+              SPLIT_ROW + [FILE_IN, FILE_OUT, BIND_OUT, BINDS], module='control_space_reconcile.py')
+    docker307('space307-compose-label-inside-places-a-split',
+              "    if inside and outside:\n",
+              "    if inside and outside and not any(how.startswith('compose_') for how, path in inside.values()):\n",
+              [FILE_IN, FILE_OUT, BIND_OUT], module='control_space_reconcile.py')
+    docker307('space307-working-folder-outside-not-seen', OUTSIDE_SEEN,
+              "        elif how != 'compose_working_dir':\n            outside = True\n",
+              [FILE_IN], module='control_space_reconcile.py')
+    docker307('space307-configuration-file-outside-not-seen', OUTSIDE_SEEN,
+              "        elif how != 'compose_config_file':\n            outside = True\n",
+              SPLIT_ROW + [FILE_OUT], module='control_space_reconcile.py')
+    docker307('space307-bind-source-outside-not-seen', OUTSIDE_SEEN,
+              "        elif how != 'bind_source':\n            outside = True\n",
+              [BIND_OUT, BINDS], module='control_space_reconcile.py')
+    docker307('space307-compose-label-outside-not-seen', OUTSIDE_SEEN,
+              "        elif how == 'bind_source':\n            outside = True\n",
+              SPLIT_ROW + [FILE_IN, FILE_OUT], module='control_space_reconcile.py')
+    docker307('space307-every-placed-object-a-conflict',
+              "    if inside and outside:\n", "    if inside:\n",
+              ['split/every-path-inside-places'], module='control_space_reconcile.py')
     docker307('space307-digest-name-not-listed',
               "            names += [name]\n",
               "            names += [name] if field == 'RepoTags' else []\n",
