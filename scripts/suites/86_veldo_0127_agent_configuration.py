@@ -683,6 +683,8 @@ for step in (packet.get('payload') or {}).get('script',[]):
             unstage_link.symlink_to(unstage_run / 'config/role-skills/inspect', target_is_directory=True)
             receiver = object.__new__(f.L.Receiver)
             receiver.run, receiver.supervision, receiver.role_skills = str(unstage_run), {'empty': True}, [unstage_link]
+            # As Receiver.__init__ leaves them with no space ledger wired in (VELDO-0303).
+            receiver.space, receiver.run_removal, receiver.run_dispatch = None, None, None
             receiver._remove_run()
             check('review/skill-commit', 'staged role skills are removed with the run, before its end is reported',
                   not unstage_link.is_symlink() and not unstage_run.exists() and receiver.role_skills == [])
