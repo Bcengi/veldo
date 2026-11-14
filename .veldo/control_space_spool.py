@@ -5,7 +5,8 @@ WHAT THIS MODULE IS. A worktree added with plain git, a branch switched in it an
 all happen outside Veldo. Two git hooks (engine/hooks/post-checkout and reference-transaction) start the
 CLI, and the CLI calls this module. It writes down what the hook saw as one entry, hands it to the
 authority, and returns. It removes nothing of anybody's: no worktree, no folder, no ref, no branch. The
-only git commands it runs are the four that read (READS). Whatever goes wrong, the git command it rides
+only git commands it runs are the four that read (READS), each in the whole forms _reads names and in
+no other form. Whatever goes wrong, the git command it rides
 on ends as it would without it.
 
 AN ENTRY is what a hook saw, {schema, id, type, subject, emitter, at, tries}:
@@ -15,7 +16,8 @@ AN ENTRY is what a hook saw, {schema, id, type, subject, emitter, at, tries}:
   branch_switched   post-checkout with a real previous HEAD and the branch flag, in a linked worktree:
                     the same four fields, for the branch and commit the worktree is on now.
   ref_changed       reference-transaction in its committed state, for the declared trunk or a declared
-                    landing ref: repository, ref, old and new.
+                    landing ref: repository, ref, old and new. The old commit is the hook's word and
+                    git is never asked to confirm it, so the event that is signed carries old as null.
 
 THE TRUNK IS NEVER GUESSED. The hook names the trunk only from the repository's git configuration
 (veldo.space.trunk, which VELDO-0329 sets from the declared land trunk). With none it writes no entry for
@@ -63,7 +65,9 @@ WHAT BECOMES OF AN ENTRY at a replay:
              same worktree or the same ref stay behind it, so the order of one thing's entries is kept.
   not reachable  the replay stops there. Every file from that one on stays.
   out of time    a replay has an overall deadline (HOOK_SECONDS for a hook's call, REPLAY_SECONDS for the
-             replay verb and start). Past it the replay stops between two entries; the rest stay.
+             replay verb and start). Past it the replay stops between two entries; the rest stay. A
+             read of git inside an entry is given only the time that is left, and when none is left
+             the entry stays as it is, with the rest.
 
 THE COMMANDS ARE THE LEDGER'S, SIGNED AS space-observer. This module verifies no signature and judges no
 command: each one is a packet {command, signature} the Ledger's own accept takes, verifies and applies
@@ -142,7 +146,7 @@ UNDECLARED = 'undeclared'  # under the spool: one file for each repository whose
 OBSERVATIONS = 'observations.jsonl'  # one line for each entry that came to nothing
 FOLDER_REFUSED = SPOOL + '.refused.json'  # beside a spool folder that was refused, with why
 OTHER = 'space_path_of_another_repository:'
-# The only git commands this module runs: each reads, none writes.
+# The only git commands this module runs: each reads, none writes. Only the whole forms of _reads run.
 READS = ('rev-parse', 'symbolic-ref', 'merge-base', 'worktree')
 GIT_SECONDS = 5.0     # the longest one read of git is waited for
 REBASING = ('rebase-merge', 'rebase-apply')
@@ -156,6 +160,10 @@ _LOADED = {}
 
 class Unreachable(Exception):
     """The authority could not be reached, or gave no answer."""
+
+
+class _Late(Exception):
+    """The replay's deadline passed before git could be read: the entry stays as it is."""
 
 
 class Malformed(Exception):
@@ -527,82 +535,113 @@ def _key(one):
 # What git itself says: an entry is a hint, and only what is read here is recorded.
 # ---------------------------------------------------------------------------------------------
 
-def _git(where, *argv):
+def _reads(argv):
+    """Whether argv is, whole, one of the five forms this module runs. Each only reads. A command is
+    never allowed by its first word: any other form of the same command, any other command and any
+    option before the command (-c, -C, --git-dir) is not one of them."""
+    revision, symbolic, ancestry, worktree = READS
+    return (argv == (revision, '--absolute-git-dir')
+            or (len(argv) == 5 and argv[:4] == (revision, '--verify', '--quiet', '--end-of-options')
+                and _text(argv[4]) and argv[4].endswith('^{commit}'))
+            or argv == (symbolic, '-q', '--short', 'HEAD')
+            or (len(argv) == 4 and argv[:2] == (ancestry, '--is-ancestor') and bool(_hex(argv[2]))
+                and bool(_hex(argv[3])))
+            or argv == (worktree, 'list', '--porcelain'))
+
+
+def _git(where, *argv, until=None, clock=time.monotonic):
     """(status, output) of one git command that only reads, run in `where` through the one Git boundary
     (git_process.py, its isolated profile: no inherited GIT_ variable selects a repository); (None, '')
-    when it is not one of READS or could not be run."""
-    if not argv or argv[0] not in READS or (argv[0] == 'worktree' and argv[1:2] != ('list',)):
+    when it is not one of the whole forms of _reads or could not be run. `until`, when given, is the
+    replay's deadline on `clock`: the read is given only the time that is left, and raises _Late when
+    none is left or the read did not end in it."""
+    if not _reads(argv):
         return None, ''
+    seconds = GIT_SECONDS
+    if until is not None:
+        seconds = min(GIT_SECONDS, until - clock())
+        if seconds <= 0:
+            raise _Late('out of time')
     _git_process = _sibling('git_process')
     try:
         done = _git_process.run(['git', '-C', where] + list(argv), env=dict(os.environ, LC_ALL='C'),
                                 stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                timeout=GIT_SECONDS)
+                                timeout=seconds)
+    except subprocess.TimeoutExpired:
+        if seconds < GIT_SECONDS:
+            raise _Late('out of time')  # the deadline cut the read short: nothing is concluded from it
+        return None, ''
     except (OSError, ValueError, subprocess.SubprocessError):
         return None, ''
     return done.returncode, done.stdout.decode(errors='replace').strip()
 
 
-def _commit(where, name):
+def _commit(where, name, **time_left):
     """The commit `name` is at in `where`, or None."""
-    status, out = _git(where, 'rev-parse', '--verify', '--quiet', '--end-of-options', name + '^{commit}')
+    status, out = _git(where, 'rev-parse', '--verify', '--quiet', '--end-of-options', name + '^{commit}',
+                       **time_left)
     return out if status == 0 and _hex(out) else None
 
 
-def _holds(where, commit, tip):
+def _holds(where, commit, tip, **time_left):
     """Whether `tip` is `commit` or has it as an ancestor: True, False, or None when git did not say."""
     if commit == tip:
         return True
-    status, _out = _git(where, 'merge-base', '--is-ancestor', commit, tip)
+    status, _out = _git(where, 'merge-base', '--is-ancestor', commit, tip, **time_left)
     return True if status == 0 else False if status == 1 else None
 
 
-def read_git(one):
+def read_git(one, until=None, clock=time.monotonic):
     """What git itself says of what an entry names, read now: (subject, None), or (None, why) when git
-    does not confirm it. For a ref change the subject is the entry's when its new commit is on the named
-    ref. For a worktree it is the repository, the path, the branch the worktree is on now (None when
+    does not confirm it. For a ref change the subject is the entry's repository, ref and new commit when
+    that commit is on the named ref, and old as None: git is not asked for the old commit, and what was
+    not read is never passed on. For a worktree it is the repository, the path, the branch the worktree is on now (None when
     detached) and its start: the entry's commit when the worktree is still on the entry's branch and
     that commit is in its history, else the commit it is at now. Raises _Waits while a rebase is in
-    progress in the worktree: its branch is read when the rebase has ended."""
+    progress in the worktree: its branch is read when the rebase has ended. `until` is the replay's
+    deadline on `clock`: every read of git is given only the time that is left (_Late when none is)."""
     subject = one['subject']
+    time_left = {'until': until, 'clock': clock}
     repository = subject['repository']
     if one['type'] == 'ref_changed':
         if not subject['ref'].startswith('refs/') or not _hex(subject['new']):
             return None, 'not_a_ref_and_a_commit'
-        tip = _commit(repository, subject['ref'])
-        held = None if tip is None else _holds(repository, subject['new'], tip)
+        tip = _commit(repository, subject['ref'], **time_left)
+        held = None if tip is None else _holds(repository, subject['new'], tip, **time_left)
         if held is not True:
             return None, 'commit_not_on_ref' if held is False else 'ref_unread'
-        return dict(subject), None
+        return dict(subject, old=None), None  # the old commit was not read from git: never passed on
     path = subject['path']
-    status, out = _git(repository, 'worktree', 'list', '--porcelain')
+    status, out = _git(repository, 'worktree', 'list', '--porcelain', **time_left)
     if status != 0:
         return None, 'repository_unread'
     listed = [canonical(line[len('worktree '):]) for line in out.splitlines() if line.startswith('worktree ')]
     if canonical(path) not in listed[1:] or not os.path.isdir(path):
         return None, 'worktree_not_in_that_repository'
-    status, git_dir = _git(path, 'rev-parse', '--absolute-git-dir')
-    head = _commit(path, 'HEAD')
+    status, git_dir = _git(path, 'rev-parse', '--absolute-git-dir', **time_left)
+    head = _commit(path, 'HEAD', **time_left)
     if status != 0 or not git_dir or head is None:
         return None, 'worktree_unread'
     if [name for name in REBASING if os.path.lexists(os.path.join(git_dir, name))]:
         raise _Waits('worktree_rebasing')
-    status, branch = _git(path, 'symbolic-ref', '-q', '--short', 'HEAD')
+    status, branch = _git(path, 'symbolic-ref', '-q', '--short', 'HEAD', **time_left)
     if status not in (0, 1):
         return None, 'worktree_unread'
     branch = branch if status == 0 and branch else None
-    same = branch == subject['branch'] and _hex(subject['start']) and _holds(path, subject['start'], head) is True
+    same = (branch == subject['branch'] and _hex(subject['start'])
+            and _holds(path, subject['start'], head, **time_left) is True)
     return {'repository': repository, 'path': path, 'branch': branch,
             'start': subject['start'] if same else head}, None
 
 
-def send(one, authority, sign, facts=None):
+def send(one, authority, sign, facts=None, until=None, clock=time.monotonic):
     """Hand one entry to the authority as the Ledger's commands, each signed by `sign(operation,
     parameters, command_id, nonce)`. Returns {outcome, reason, answers}: recorded, nothing or refused.
     Raises Unreachable when the authority is not reachable and _Waits when it cannot take the entry yet.
-    `facts(one)` reads what git says of the entry (default: read_git); only what it answers is signed."""
+    `facts(one)` reads what git says of the entry (default: read_git); only what it answers is signed.
+    `until` is a replay's deadline on `clock`: read_git is given it, and raises _Late when it has passed."""
     kind, subject, answers = one['type'], one['subject'], []
-    facts = facts or read_git
+    facts = facts or (lambda one: read_git(one, until=until, clock=clock))
 
     def ask(step, operation, parameters):
         token = hashlib.sha256(('%s:%s:%d' % (one['id'], step, one['tries'])).encode()).hexdigest()
@@ -679,8 +718,8 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS, seconds=REPLAY_SECONDS, c
            facts=None):
     """Deliver the spooled entries, oldest first. Returns one {name, type, outcome, reason} for each
     entry it handled; an entry it could not reach the authority for, and every one after it, stays.
-    `seconds` is the replay's overall deadline: past it no further entry is started, and the rest stay
-    in the spool for the next replay."""
+    `seconds` is the replay's overall deadline: past it no further entry is started, a read of git is
+    given only the time that is left, and the rest stay in the spool for the next replay."""
     done = []
     until = None if seconds is None else clock() + seconds
     lock = _locked(folder, wait)
@@ -709,9 +748,11 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS, seconds=REPLAY_SECONDS, c
                 if key in blocked:
                     continue  # an older entry about the same thing waits: this one stays behind it
                 try:
-                    result = send(one, authority, sign, facts)
+                    result = send(one, authority, sign, facts, until=until, clock=clock)
                 except Unreachable:
                     return done
+                except _Late:
+                    return done  # out of time while git was read: this entry stays whole, and every later one
                 except _Waits as waiting:
                     blocked.add(key)
                     _write(os.path.join(folder, name), dict(one, tries=one['tries'] + 1))

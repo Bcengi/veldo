@@ -206,3 +206,32 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     entry waits: nothing deletes a waiting entry, and the spool grows until then.
   - Owner rule (Telegram 41209). The hooks and the spool still remove nothing but their own delivered or
     set-aside files: the module has the same two unlinks, both of its own spool files.
+- 2026-11-14: fix round 2 after the re-review of 90cc1fc8 (verdict FIX: one blocking finding and two
+  minor). Three rows added to the suite (31 rows), four falsifiers registered under finding 311 (25),
+  each applied once and seen red on its row. Two statements of the fix round entry above are replaced
+  here: "through one function that refuses any other command" (it refused by the first word only, so a
+  form of an allowed command that writes was run) and "The old commit of a ref change is the hook's word
+  and is not verified" (it is no longer passed on). What changed, by the lead's decisions:
+  - Finding 1 (blocking), git is run in five whole forms and no other. The one function that runs git
+    takes exactly: rev-parse --absolute-git-dir; rev-parse --verify --quiet --end-of-options
+    <name>^{commit}; symbolic-ref -q --short HEAD; the ancestry test --is-ancestor with two full commit
+    ids; worktree list --porcelain. Every other form is answered (None, '') and starts no process: a
+    symbolic ref given a value or deleted, update-ref, any config, any option before the command (-c,
+    -C, --git-dir, --exec-path), and any other form of the four commands. Row
+    r2/git-runs-whole-read-forms-only tries more than fifty such forms and reads the refs, both HEADs,
+    the configuration and the worktree list before and after. Row paths/no-delete-and-canon now reads
+    every place the module calls that function and finds only the five forms, the function under no
+    other name, one process start in the module and that one behind the guard: the reviewer's own
+    mutant (a ref write added to the read) is registered and red there.
+  - Finding 2, the old commit is never passed on. Git is not asked for the old commit of a ref change,
+    so the event that is signed carries old as null; the spool entry still holds what the hook saw. AC3
+    names "the old and the new commit": the record has both fields, and old is null until a consumer
+    reads it from git itself. The obligation for VELDO-0323 above stands, and gains this: old is never
+    taken from an event record.
+  - Finding 3, the deadline bounds git reads. Each read of git inside a replay is given only the time
+    the replay has left (never more than five seconds); with none left, or when the read does not end
+    in it, nothing is concluded: the entry stays in the spool as it is, with every later one, for the
+    next replay. Row f5/replay-stops-at-its-deadline now moves its clock in the authority's accept, so
+    that it still shows the stop between two entries.
+  - Owner rule (Telegram 41209). Nothing in this round removes anything: the module has the same two
+    unlinks, both of its own spool files, and an entry that runs out of time is kept whole.

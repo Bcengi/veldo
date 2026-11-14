@@ -32,7 +32,7 @@ sent for the worktree, it is on disk and in git's list, and its item is present)
 branch (a rebase in a recorded worktree leaves the item on its branch).
 
 AC3 rows. ac3/one-event-record (a commit on the trunk leaves exactly one event record with the
-repository, the ref, the old and the new commit; a declared landing ref leaves one; another branch and a
+repository, the ref and the new commit, and old as null (fix round 2); a declared landing ref leaves one; another branch and a
 ref under refs/veldo/ leave none; no worktree is gone). ac3/git-returns-while-remover-held (the declared
 falsifier row: every remover is held on a latch that opens only when the git command has returned; the
 git command returns with the worktree still on disk, and only then is the contained worktree removed,
@@ -77,6 +77,17 @@ the entry). f4/paths-as-the-ledger-compares (about compares paths by the Ledger'
 f5/replay-stops-at-its-deadline (finding 5: a replay past its deadline stops between two entries, the
 rest stay whole and the next replay delivers them).
 
+FIX ROUND 2 rows (the re-review of 90cc1fc8). r2/git-runs-whole-read-forms-only (finding 1: the one
+function that runs git takes the five whole forms the module uses and no other; every form that writes,
+a symbolic ref given a value or deleted, update-ref, a config write, an option before the command such
+as -c, and every other form of the four commands, is answered (None, '') with no git process started
+and the repository, its refs, its HEADs and its configuration as they were). paths/no-delete-and-canon
+also reads every place the module calls that function and finds only those five forms, so a ref write
+added anywhere in the module is red there. r2/old-commit-never-passed-on (finding 2: an entry with an
+old commit git never had is recorded with old as null; nothing unread is signed).
+r2/deadline-bounds-git-reads (finding 3: each read of git inside a replay is given only the time the
+replay has left, and with none left no git is run and the entry stays whole for the next replay).
+
 STAND-INS. The Ledger's event command and the event consumer are VELDO-0323's: the authority of this
 suite answers the event command with a stand-in that verifies the observer's signature and keeps the
 record, and its consumer makes the landing station's own decision (control_landing.space_branches and
@@ -119,6 +130,7 @@ def _v311_suite():
             'f2/unsafe-folder-refused', 'f2/unsafe-entry-set-aside', 'f2/server-identity-checked',
             'f2/commit-not-on-ref-is-nothing', 'f3/path-reused-by-another-repository',
             'f4/nothing-leaves-a-trace', 'f4/paths-as-the-ledger-compares', 'f5/replay-stops-at-its-deadline',
+            'r2/git-runs-whole-read-forms-only', 'r2/old-commit-never-passed-on', 'r2/deadline-bounds-git-reads',
             'hooks/never-fail-git', 'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
 
@@ -416,6 +428,9 @@ def _v311_suite():
         def spooled():
             return [SPOOL.read(FOLDER, name) for name in SPOOL.pending(FOLDER)]
 
+        def _hex40(value):
+            return isinstance(value, str) and len(value) >= 40 and not set(value) - set('0123456789abcdef')
+
         def listed(repo):
             return [line[len('worktree '):] for line in quiet(repo, 'worktree', 'list', '--porcelain').splitlines()
                     if line.startswith('worktree ')]
@@ -633,9 +648,10 @@ def _v311_suite():
         fresh = EVENTS[count:]
         check(ROW, 'a commit on the trunk with plain git leaves exactly one event record [%s %d]' % (code, len(fresh)),
               code == 0 and len(fresh) == 1)
-        check(ROW, 'it names the repository, the ref, the old and the new commit %s' % (fresh[:1],),
-              len(fresh) == 1 and fresh[0].get('type') == 'ref_changed'
-              and fresh[0].get('subject') == {'repository': str(REPO), 'ref': 'refs/heads/main', 'old': old, 'new': new})
+        check(ROW, 'it names the repository, the ref and the new commit, and old is null: git was not asked for it %s'
+              % (fresh[:1],),
+              len(fresh) == 1 and fresh[0].get('type') == 'ref_changed' and _hex40(old) and old != new
+              and fresh[0].get('subject') == {'repository': str(REPO), 'ref': 'refs/heads/main', 'old': None, 'new': new})
         check(ROW, 'and the hook that sent it',
               len(fresh) == 1 and (fresh[0].get('emitter') or {}).get('hook') == 'reference-transaction')
         count = len(EVENTS)
@@ -866,7 +882,8 @@ def _v311_suite():
         check(ROW, 'a commit on master, the declared trunk, leaves one event record for it %s'
               % ([one.get('subject') for one in EVENTS[count:]],),
               code == 0 and len(EVENTS) - count == 1
-              and EVENTS[-1]['subject'] == {'repository': str(HARBOR), 'ref': 'refs/heads/master', 'old': old,
+              and old != new
+              and EVENTS[-1]['subject'] == {'repository': str(HARBOR), 'ref': 'refs/heads/master', 'old': None,
                                             'new': new})
         count, seen = len(EVENTS), len(noted())
         quiet(HARBOR, 'config', 'veldo.space.trunk', 'main')  # a wrong git configuration
@@ -1027,7 +1044,7 @@ def _v311_suite():
         check(ROW, 'the same entry with a commit that is on the ref is recorded: one event %s'
               % ([(entry['outcome'], entry['reason']) for entry in done],),
               [entry['outcome'] for entry in done] == ['recorded'] and len(EVENTS) == count + 1
-              and EVENTS[-1]['subject'] == TRUE_EVENT)
+              and EVENTS[-1]['subject'] == dict(TRUE_EVENT, old=None))
         seen, length = len(noted()), journal_length()
         NEVER = TREES / 'never-made'
         SPOOL.put(FOLDER, planted({'repository': str(REPO), 'path': str(NEVER), 'branch': 'agent/kim/T-900',
@@ -1138,20 +1155,24 @@ def _v311_suite():
         ticks = [0.0]
 
         class Slow:
-            """The authority, each of whose answers about a worktree takes 0.6 seconds of the replay's clock."""
-            accept = staticmethod(AUTH.accept)
+            """The authority, each of whose accepted commands takes one second of the replay's clock: three
+            for a worktree, so the deadline passes between the second entry and the third."""
+            about = staticmethod(AUTH.about)
+            asked = []
 
             @staticmethod
-            def about(repository, path=None):
-                ticks[0] += 0.6
-                return AUTH.about(repository, path)
+            def accept(packet):
+                ticks[0] += 1.0
+                Slow.asked.append(ticks[0])
+                return AUTH.accept(packet)
 
-        done = SPOOL.replay(FOLDER, Slow, SIGN, seconds=1.0, clock=lambda: ticks[0])
+        done = SPOOL.replay(FOLDER, Slow, SIGN, seconds=5.0, clock=lambda: ticks[0])
         left = spooled()
         check(ROW, 'three entries wait %s' % (codes,), codes == [0, 0, 0] and waiting == [str(path) for path in SLOW])
-        check(ROW, 'a replay with a deadline of one second stops after the second entry %s'
-              % ([(entry['type'], entry['outcome']) for entry in done],),
+        check(ROW, 'a replay with a deadline of five seconds, six of them gone after two entries, stops after the '
+              'second entry %s %s' % ([(entry['type'], entry['outcome']) for entry in done], Slow.asked),
               [(entry['type'], entry['outcome']) for entry in done] == [('worktree_added', 'recorded')] * 2
+              and Slow.asked == [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
               and item_at(SLOW[0])[1].get('state') == 'present' and item_at(SLOW[1])[1].get('state') == 'present')
         check(ROW, 'the third is in the spool, whole, and has no item yet',
               [one['subject']['path'] for one in left] == [str(SLOW[2])] and left[0]['tries'] == 0
@@ -1168,6 +1189,167 @@ def _v311_suite():
             said = str(unreachable)
         check(ROW, 'past a hook\'s deadline no answer is waited for, and a hook\'s whole replay has five seconds [%s]'
               % said, said == 'out of time' and 0 < SPOOL.HOOK_SECONDS <= SPOOL.REACH_SECONDS)
+        up()
+
+        # ================================ fix round 2 ========================================================
+        GP = SPOOL._sibling('git_process')
+        gp_run, started = GP.run, []
+
+        def counted(args, **kwargs):
+            started.append((tuple(args[3:]), kwargs.get('timeout')))
+            return gp_run(args, **kwargs)
+
+        def state_of_git():
+            """Everything a git command could have changed in the two repositories and the worktree."""
+            return [quiet(REPO, 'for-each-ref'), quiet(REPO, 'rev-parse', '--symbolic-full-name', 'HEAD'),
+                    quiet(T101, 'rev-parse', '--symbolic-full-name', 'HEAD'), quiet(T101, 'rev-parse', 'HEAD'),
+                    quiet(REPO, 'config', '--list', '--local'), quiet(REPO, 'worktree', 'list', '--porcelain'),
+                    quiet(PLAIN, 'for-each-ref'), quiet(PLAIN, 'config', '--list', '--local'),
+                    quiet(T101, 'status', '--porcelain')]
+
+        ROW = 'r2/git-runs-whole-read-forms-only'
+        ANCESTRY = SPOOL.READS[2]
+        MARK = temp / 'r2-alias-ran'
+        OLDER = quiet(REPO, 'rev-parse', 'refs/heads/main~1')
+        WRITES = [
+            ('symbolic-ref', 'HEAD', 'refs/heads/unwatched'),           # moves the worktree's HEAD
+            ('symbolic-ref', '--delete', 'HEAD'),                       # deletes it
+            ('symbolic-ref', '-d', 'HEAD'),
+            ('symbolic-ref', 'refs/r2/written', 'refs/heads/main'),     # writes a ref
+            ('symbolic-ref', '-q', '--short', 'HEAD', 'refs/heads/unwatched'),
+            ('symbolic-ref', '-m', 'r2', 'HEAD', 'refs/heads/unwatched'),
+            ('symbolic-ref', '-q', 'HEAD'), ('symbolic-ref', 'HEAD'), ('symbolic-ref',),
+            ('update-ref', 'refs/heads/r2-written', TRUNK_TIP),
+            ('update-ref', '-d', 'refs/heads/unwatched'),
+            ('update-ref', '--stdin'),
+            ('config', 'veldo.space.trunk', 'r2'),
+            ('config', '--unset', 'veldo.space.stateroot'),
+            ('config', '--local', 'core.hooksPath', '/dev/null'),
+            ('config', '--global', 'user.name', 'r2'),
+            ('config', '--list'),
+            ('-c', 'core.hooksPath=/dev/null', 'rev-parse', '--absolute-git-dir'),
+            ('-c', 'alias.r2=!touch ' + str(MARK), 'r2'),
+            ('-c', 'core.worktree=' + str(PLAIN), 'worktree', 'list', '--porcelain'),
+            ('--config-env=core.hooksPath=HOME', 'rev-parse', '--absolute-git-dir'),
+            ('--git-dir=' + str(PLAIN / '.git'), 'rev-parse', '--absolute-git-dir'),
+            ('-C', str(PLAIN), 'worktree', 'list', '--porcelain'),
+            ('--exec-path=' + str(temp), 'rev-parse', '--absolute-git-dir'),
+            ('rev-parse', '--verify', 'HEAD'), ('rev-parse', 'HEAD'),
+            ('rev-parse', '--absolute-git-dir', '--git-path', 'HEAD'),
+            ('rev-parse', '--verify', '--quiet', '--end-of-options', 'HEAD'),
+            ('rev-parse', '--verify', '--quiet', '--end-of-options', 'HEAD^{commit}', 'HEAD'),
+            ('rev-parse', '--verify', '--quiet', 'HEAD^{commit}', '--end-of-options', 'x^{commit}'),
+            ('worktree', 'list'), ('worktree', 'list', '--porcelain', '-v'), ('worktree',),
+            ('worktree', 'add', str(TREES / 'r2-added'), 'unwatched'),
+            ('worktree', 'remove', '--force', str(T101)), ('worktree', 'prune'),
+            ('worktree', 'move', str(T101), str(TREES / 'r2-moved')), ('worktree', 'lock', str(T101)),
+            (ANCESTRY, '--is-ancestor', 'HEAD', 'refs/heads/main'),
+            (ANCESTRY, '--is-ancestor', OLDER, TRUNK_TIP, TRUNK_TIP),
+            (ANCESTRY, '--fork-point', 'refs/heads/main'), (ANCESTRY, OLDER, TRUNK_TIP),
+            (ANCESTRY, '--is-ancestor', '-c' + OLDER[2:], TRUNK_TIP),
+            ('branch', '-D', 'unwatched'), ('branch', '-f', 'unwatched', TRUNK_TIP),
+            ('checkout', '-q', 'unwatched'), ('switch', '-q', 'unwatched'), ('reset', '--hard', OLDER),
+            ('reflog', 'expire', '--all'), ('gc',), ('fetch',), ('clean', '-fdx'), ('stash',),
+            ('tag', 'r2'), ('commit', '--allow-empty', '-m', 'r2'), (),
+        ]
+        before = state_of_git()
+        GP.run = counted
+        try:
+            let_through = [form for form in WRITES if SPOOL._git(str(T101), *form) != (None, '')]
+            ran_for_writes = list(started)
+            del started[:]
+            reads = [SPOOL._git(str(T101), 'rev-parse', '--absolute-git-dir')[0],
+                     SPOOL._git(str(T101), 'rev-parse', '--verify', '--quiet', '--end-of-options', 'HEAD^{commit}')[0],
+                     SPOOL._git(str(T101), 'symbolic-ref', '-q', '--short', 'HEAD')[0],
+                     SPOOL._git(str(REPO), ANCESTRY, '--is-ancestor', OLDER, TRUNK_TIP)[0],
+                     SPOOL._git(str(REPO), 'worktree', 'list', '--porcelain')[0]]
+            ran_for_reads = len(started)
+        finally:
+            GP.run = gp_run
+            del started[:]
+        check(ROW, 'none of %d forms that write, or that are not one of the five whole forms, is let through %s'
+              % (len(WRITES), let_through[:4]), len(WRITES) >= 50 and let_through == [])
+        check(ROW, 'no git process was started for any of them %s' % (ran_for_writes[:3],), ran_for_writes == [])
+        check(ROW, 'the refs, both HEADs, the configuration, the worktree list and the worktree are as they were',
+              state_of_git() == before and not MARK.exists()
+              and tip_of(REPO, 'refs/r2/written') is None and tip_of(REPO, 'refs/heads/r2-written') is None
+              and tip_of(REPO, 'refs/heads/unwatched') is not None and (T101 / 'work.txt').is_file()
+              and not (TREES / 'r2-added').exists() and not (TREES / 'r2-moved').exists())
+        check(ROW, 'the five whole forms the module uses are run, one git process each %s' % (reads,),
+              reads[:2] == [0, 0] and reads[2] in (0, 1) and reads[3:] == [0, 0] and ran_for_reads == 5
+              and state_of_git() == before)
+
+        ROW = 'r2/old-commit-never-passed-on'
+        count, seen = len(EVENTS), len(noted())
+        NEVER_HAD = 'f' * 40
+        SPOOL.put(FOLDER, planted(dict(TRUE_EVENT, old=NEVER_HAD)))
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        fresh = EVENTS[count:]
+        check(ROW, 'an entry with an old commit git never had is recorded with old as null %s'
+              % ([one.get('subject') for one in fresh],),
+              [entry['outcome'] for entry in done] == ['recorded'] and len(fresh) == 1
+              and fresh[0]['subject'] == {'repository': str(REPO), 'ref': 'refs/heads/main', 'old': None,
+                                          'new': TRUNK_TIP}
+              and NEVER_HAD not in json.dumps(fresh[0], sort_keys=True))
+        facts = SPOOL.read_git(planted(TRUE_EVENT))
+        check(ROW, 'what is read from git for a true entry has old as null too, and the entry itself is not changed %s'
+              % (facts,), facts == (dict(TRUE_EVENT, old=None), None) and _hex40(TRUE_EVENT['old'])
+              and planted(TRUE_EVENT)['subject']['old'] == TRUE_EVENT['old'] and len(noted()) == seen)
+
+        ROW = 'r2/deadline-bounds-git-reads'
+        down()
+        refused_before_r2 = len(SPOOL.refused(FOLDER))
+        LATE = [TREES / name for name in ('t181', 't182', 't183')]
+        codes = [plain(REPO, 'worktree', 'add', '-q', '-b', 'agent/kim/T-' + path.name[1:], str(path))[0]
+                 for path in LATE]
+        ticks, marks = [0.0], []
+
+        class Ticking:
+            """The authority, each of whose answers about a worktree takes two seconds of the replay's clock."""
+            accept = staticmethod(AUTH.accept)
+
+            @staticmethod
+            def about(repository, path=None):
+                ticks[0] += 2.0
+                marks.append(len(started))
+                return AUTH.about(repository, path)
+
+        GP.run = counted
+        try:
+            done = SPOOL.replay(FOLDER, Ticking, SIGN, seconds=5.0, clock=lambda: ticks[0])
+            given = [seconds for _form, seconds in started]
+            try:
+                SPOOL._git(str(REPO), 'worktree', 'list', '--porcelain', until=time.monotonic() - 1.0)
+                said = None
+            except SPOOL._Late as late_error:
+                said = str(late_error)
+            ran_late = len(started) - len(given)
+            whole = SPOOL._git(str(REPO), 'worktree', 'list', '--porcelain')[0]
+            unbounded = started[-1][1] if started else None
+        finally:
+            GP.run = gp_run
+            del started[:]
+        left = spooled()
+        first, second = given[:marks[1]] if len(marks) > 1 else [], given[marks[1]:] if len(marks) > 1 else []
+        check(ROW, 'three entries wait, and the replay has five seconds %s' % (codes,),
+              codes == [0, 0, 0] and len(marks) == 3)
+        check(ROW, 'each read of git for the first entry is given the three seconds left, for the second the one '
+              'second left %s %s' % (first, second),
+              len(first) >= 4 and set(first) == {3.0} and len(second) >= 4 and set(second) == {1.0}
+              and SPOOL.GIT_SECONDS > 3.0)
+        check(ROW, 'with no time left no git is run for the third entry, and it stays in the spool, whole %s'
+              % ([(entry['type'], entry['outcome']) for entry in done],),
+              [(entry['type'], entry['outcome']) for entry in done] == [('worktree_added', 'recorded')] * 2
+              and marks[2:] == [len(given)]
+              and [one['subject']['path'] for one in left] == [str(LATE[2])] and left[0]['tries'] == 0
+              and item_at(LATE[2])[0] is None and LATE[2].is_dir() and len(SPOOL.refused(FOLDER)) == refused_before_r2)
+        check(ROW, 'a read asked for past the deadline starts no git process, and one with no deadline has %s seconds '
+              '[%s %s %s %s]' % (SPOOL.GIT_SECONDS, said, ran_late, whole, unbounded),
+              said == 'out of time' and ran_late == 0 and whole == 0 and unbounded == SPOOL.GIT_SECONDS)
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        check(ROW, 'the next replay delivers it %s' % ([(entry['type'], entry['outcome']) for entry in done],),
+              [(entry['type'], entry['outcome']) for entry in done] == [('worktree_added', 'recorded')]
+              and item_at(LATE[2])[1].get('state') == 'present' and SPOOL.pending(FOLDER) == [])
         up()
 
         # ================================ the hooks ==========================================================
@@ -1215,6 +1397,30 @@ def _v311_suite():
               and tip_of(REPO, 'refs/heads/unwatched') is not None
               and SPOOL._git(str(REPO), 'worktree', 'remove', '--force', str(T101)) == (None, '')
               and (T101 / 'work.txt').is_file() and SPOOL._git(str(REPO), 'worktree', 'prune') == (None, ''))
+        def shape(call):
+            return tuple(arg.value if isinstance(arg, ast.Constant) and isinstance(arg.value, str)
+                         else '<' + ast.unparse(arg) + '>' for arg in call.args[1:])
+        sites = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and ast.unparse(node.func) == '_git']
+        named = [node for node in ast.walk(tree) if isinstance(node, ast.Name) and node.id == '_git']
+        FORMS = sorted([('rev-parse', '--absolute-git-dir'),
+                        ('rev-parse', '--verify', '--quiet', '--end-of-options', "<name + '^{commit}'>"),
+                        ('symbolic-ref', '-q', '--short', 'HEAD'),
+                        (SPOOL.READS[2], '--is-ancestor', '<commit>', '<tip>'),
+                        ('worktree', 'list', '--porcelain')])
+        check(ROW, 'every place the module calls its one git function passes one of the five whole forms that read, '
+              'and the function goes by no other name %s' % (sorted(set(shape(site) for site in sites)),),
+              sorted(shape(site) for site in sites) == FORMS and len(named) == len(sites) == 5
+              and all(not any(isinstance(arg, ast.Starred) for arg in site.args)
+                      and [word.arg for word in site.keywords] == [None]
+                      and ast.unparse(site.keywords[0].value) == 'time_left' for site in sites))
+        others = sorted(call for call in calls if call in ('os.system', 'os.popen', 'eval', 'exec', '__import__')
+                        or call.startswith(('os.exec', 'os.spawn', 'os.posix_spawn', 'pty.', 'multiprocessing.')))
+        runner = [ast.unparse(node.func) for node in ast.walk(tree)
+                  if isinstance(node, ast.FunctionDef) and node.name == '_git'
+                  for node in ast.walk(node) if isinstance(node, ast.Call)]
+        check(ROW, 'nothing else starts a process, and the one that does is inside that function, behind the guard %s'
+              % (others,), others == [] and runner.count('_git_process.run') == 1 and runner.count('_reads') == 1
+              and source.count('_git_process.run(') == 1 and source.count("_sibling('git_process')") == 1)
         deletes = sorted(call for call in calls if call.split('.')[-1] in ('unlink', 'remove', 'rmdir', 'rmtree',
                                                                              'removedirs'))
         check(ROW, 'its only deletes are the unlink of a delivered and of a set-aside spool file %s' % (deletes,),

@@ -14395,7 +14395,7 @@ def cases():
              "            if False:  # defect: whoever listens on the socket is sent the packet\n",
              ['f2/server-identity-checked'])
     hooks311('space311-entry-taken-at-its-word',
-             "    facts = facts or read_git\n",
+             "    facts = facts or (lambda one: read_git(one, until=until, clock=clock))\n",
              "    facts = facts or (lambda one: (dict(one['subject']), None))  # defect: nothing is read from git\n",
              ['f2/commit-not-on-ref-is-nothing'])
     hooks311('space311-item-found-by-path-alone',
@@ -14414,6 +14414,30 @@ def cases():
              "                if until is not None and clock() >= until:\n",
              "                if False:  # defect: the whole backlog is replayed, however long it takes\n",
              ['f5/replay-stops-at-its-deadline'])
+
+    # VELDO-0311 fix round 2 (the re-review of 90cc1fc8). Finding 1: the git function allowed a command
+    # by its first word, so a form of an allowed command that writes was run; and a ref write added to
+    # the module (the reviewer's own mutant) was not seen by any row. Finding 2: the old commit of a ref
+    # change, which git is never asked for, was signed as the hook gave it. Finding 3: a read of git
+    # inside a replay was not given the time the replay had left.
+    hooks311('space311-git-allowed-by-its-first-word',
+             "    if not _reads(argv):\n",
+             "    if not argv or argv[0] not in READS or (argv[0] == 'worktree' and argv[1:2] != ('list',)):"
+             "  # defect: the first word alone\n",
+             ['r2/git-runs-whole-read-forms-only'])
+    hooks311('space311-ref-write-added-to-the-read',
+             "            return None, 'commit_not_on_ref' if held is False else 'ref_unread'\n",
+             "            _git(repository, 'symbolic-ref', 'refs/rr0311/written', subject['ref'])  # defect: a ref write\n"
+             "            return None, 'commit_not_on_ref' if held is False else 'ref_unread'\n",
+             ['paths/no-delete-and-canon'])
+    hooks311('space311-old-commit-passed-on-unread',
+             "        return dict(subject, old=None), None  # the old commit was not read from git: never passed on\n",
+             "        return dict(subject), None  # defect: the hook's word for the old commit is signed\n",
+             ['r2/old-commit-never-passed-on'])
+    hooks311('space311-git-read-not-given-the-time-left',
+             "                    result = send(one, authority, sign, facts, until=until, clock=clock)\n",
+             "                    result = send(one, authority, sign, facts)  # defect: git is read with no deadline\n",
+             ['r2/deadline-bounds-git-reads'])
 
     # VELDO-0312: ticket ended, project ended and worktree abandoned, from the authority service. The
     # four declared falsifiers: the assignment's close is left unwired; project ended is sent for
