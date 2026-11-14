@@ -1,0 +1,149 @@
+[
+ {
+  "falsifier": "space301-returns-after-marking-due",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/removes-before-return"
+  ],
+  "red_rows": [
+   "ac1/children-first",
+   "ac1/kept-and-unknown",
+   "ac1/removes-before-return",
+   "ac2/deferred-then-retried",
+   "ac2/missing-is-gone",
+   "ac3/report-mode",
+   "ac5/keep-failed-passed-through",
+   "ac5/left-at-stays-removing",
+   "ac5/remover-deferrals",
+   "look/agent-repository-held"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac1/removes-before-return",
+    "as the call returns the folder is not on disk [(None, None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-refused-item-not-deferred",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/deferred-then-retried"
+  ],
+  "red_rows": [
+   "ac2/deferred-then-retried",
+   "ac2/missing-is-gone",
+   "ac5/keep-failed-passed-through",
+   "ac5/remover-deferrals"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac2/deferred-then-retried",
+    "the folder a process sits in is deferred as in_use, and is whole on disk [('kept', 'in_use', 'process_use')]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-mode-ignored",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/report-mode",
+   "ac3/switch-off"
+  ],
+  "red_rows": [
+   "ac3/report-mode",
+   "ac3/switch-off"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac3/switch-off",
+    "with the switch off the call writes due and removes nothing, in an act scope [removed []]"
+   ],
+   [
+    "VELDO-0301 ac3/report-mode",
+    "the unconfirmed folder of the report project is on disk, whole, and its item due [removed]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-age-rule-for-scratch",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/no-clock"
+  ],
+  "red_rows": [
+   "ac4/no-clock"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac4/no-clock",
+    "with the clock moved 30 days and no event for it, the 31 day old scratch folder is on disk, whole [[] space_unknown_event]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-every-tool-refusal-remove-refused",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac5/keep-failed-passed-through"
+  ],
+  "red_rows": [
+   "ac5/keep-failed-passed-through",
+   "ac5/left-at-stays-removing",
+   "ac5/remover-deferrals"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac5/keep-failed-passed-through",
+    "the worktree is deferred as keep_failed, by the remover, not as remove_refused [('deferred', 'remove_refused', 'tool')]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-left-at-as-any-deferral",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac5/left-at-stays-removing"
+  ],
+  "red_rows": [
+   "ac2/missing-is-gone",
+   "ac5/left-at-stays-removing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 ac5/left-at-stays-removing",
+    "the folder the remover could not put back leaves the item removing, not deferred and not gone [('deferred', 'in_use', 'tool') deferred]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space301-look-answers-nothing",
+  "criterion": "History 2026-11-13 (the look)",
+  "expected_red": [
+   "look/agent-repository-held"
+  ],
+  "red_rows": [
+   "look/agent-repository-held"
+  ],
+  "red_details": [
+   [
+    "VELDO-0301 look/agent-repository-held",
+    "the agent repository is held back by the kind registry, as in_use, naming what holds it [('deferred', 'in_use', 'children') None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

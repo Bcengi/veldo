@@ -1,0 +1,155 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0301",
+ "commit": "296ef369a0a1a7fc7cdcf1fc40851f410b5c2955",
+ "tree": "1f43311c73a77a0dbfb670eb73c0df7646265e48",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-14T04:28:41.610337+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "Rows ac1/removes-before-return (a run's scratch folder is on disk; as the call returns it is not, the item is removed, the removal record holds the event, the emitter, the action, the method, the bytes and the pool's free space before and after, and the journal grew by the one signal record and one outcome), ac1/children-first (a worktree with a build output folder inside it: the folder goes first, then the worktree by git's own remove after the keep step, both outcomes written), ac1/kept-and-unknown (an evidence folder whose action is keep is kept and on disk; an unknown event is refused by name with nothing written). Green: proof/VELDO-0301/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "The rows run Signal against a real Ledger on a real control store, with the real kind registry, probes and removers, on real folders, git repositories and worktrees that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The disk is read after the call returns, never from the call's answer alone."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0301/falsifiers.json",
+     "detail": "space301-returns-after-marking-due (the call returns after marking due): ac1/removes-before-return red, \"as the call returns the folder is not on disk\"."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "Rows ac2/deferred-then-retried (a folder a process sits in is deferred as in_use, whole on disk, with the rule, the rule that refused, its order, the event, the retry events and attempts 1; the item's next event makes it due again, it is removed, and the removal names the second event), ac2/missing-is-gone (a folder removed by hand is gone; a volume the engine no longer holds is gone; a volume the engine still shows and one on an engine that cannot be read are deferred, never gone; a folder a killed remover left under its marked name is removing with the name recorded, whole). Green: proof/VELDO-0301/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "The rows run Signal against a real Ledger on a real control store, with the real kind registry, probes and removers, on real folders, git repositories and worktrees that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The process is an entry of the fixture process table; the engine is a stand-in function."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0301/falsifiers.json",
+     "detail": "space301-refused-item-not-deferred (the refused item is written kept, the state that like present holds no deferral and is signalled again; the ledger has no move back to present): ac2/deferred-then-retried red."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "Rows ac3/switch-off (with enabled false the call writes due and removes nothing in a scope in act mode: the folder is whole, carried is empty, no remover was handed anything), ac3/report-mode (in meadow, in report mode, the unconfirmed folder is whole and due, the one that carries the owner's confirmation is removed, and orchard's folder ended by the same event is removed). Green: proof/VELDO-0301/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "The rows run Signal against a real Ledger on a real control store, with the real kind registry, probes and removers, on real folders, git repositories and worktrees that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The confirmation is read through a view of the real ledger (assumption 3)."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0301/falsifiers.json",
+     "detail": "space301-mode-ignored: ac3/report-mode red (\"the unconfirmed folder ... [removed]\") and ac3/switch-off red."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "Row ac4/no-clock (a scratch folder with every time 31 days old, time.time moved 30 days forward: a call for another run and a call with an unknown event change nothing, the folder is whole, the item is as it was and present, the journal did not grow; Signal's source has no import and names no clock). Green: proof/VELDO-0301/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "The rows run Signal against a real Ledger on a real control store, with the real kind registry, probes and removers, on real folders, git repositories and worktrees that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. "
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0301/falsifiers.json",
+     "detail": "space301-age-rule-for-scratch (a 30 day age rule for present scratch, run at every call): ac4/no-clock red, the folder is gone."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "Rows ac5/keep-failed-passed-through (a worktree with a file only info/exclude ignores, due at landed: rules 1 to 6 pass, the real remover refuses keep_failed at its last look, the outcome and the deferral record say keep_failed by rule 7, the worktree is at its path with the file byte for byte and nothing at the marked name; the next event defers it again, attempts 2), ac5/remover-deferrals (remove_refused, in_use and keep_failed written as they are; another name, no name, an answer that is no mapping and a remover that raises are remove_refused; a folder still at its path with something else at its marked name is deferred, not removing), ac5/left-at-stays-removing (the real folder remover cannot put the folder back because something appeared at its path: the item is removing, removal.left_at is the marked name, the remover's deferral in_use is recorded, the folder is whole under the marked name and the newcomer untouched; the next event leaves it removing). Green: proof/VELDO-0301/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/139_veldo_0301_space_signal.py",
+     "detail": "The rows run Signal against a real Ledger on a real control store, with the real kind registry, probes and removers, on real folders, git repositories and worktrees that are really deleted. Orchard is in act mode by the owner's own signed command with a real key. The squatter is made through the probes' own test seam, as in suite 138."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0301/falsifiers.json",
+     "detail": "space301-every-tool-refusal-remove-refused: ac5/keep-failed-passed-through red (\"deferred, remove_refused\"). space301-left-at-as-any-deferral: ac5/left-at-stays-removing red (the item is deferred), and ac2/missing-is-gone red (the folder under its marked name is marked gone)."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 139_veldo_0301_space_signal (13 rows). Suites 132, 134, 135, 137 and 138, each on its own, are green after the change."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, git and the real removers, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The seven registered cases of finding 301 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy: every noop green, every mutant turns its target row red (proof/VELDO-0301/mutations.txt, falsifiers.json)."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py; python3 .veldo/validate.py spec on the spec, and all: exit 0."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The build ran the single suite, its neighbours and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock; the registered teeth cases were run here through the driver's own functions, not through the teeth run."
+  }
+ ],
+ "assumptions": [
+  "THE LOOK (spec History 2026-11-13). Row look/agent-repository-held: an agent repository due at an event, with a kept worktree inside it that the list holds only by its path, is held back by the kind registry given Signal's own inside; no rule judged it, no remover was handed it, and the worktree's uncommitted file is on disk as the call returns. Falsifier space301-look-answers-nothing turns the row red. With the stub look the remover is still not reached, because rule 6 reads the same inside and refuses; the row sees the registry's layer by the outcome's rule (registry, not children). Two layers hold the repository, and the falsifier removes one.",
+  "THE ITEM IS DUE WHILE ITS REMOVER RUNS (spec History 2026-11-14, built). Removing is written only for a thing left under its marked name. The ledger as built refuses any deferral but remove_refused for a removing item (VELDO-0345 AC6 is not built), so writing removing ahead of the remover would leave a keep_failed or in_use item removing with its folder back at its path, for reconcile to finish. No ledger code was changed. A process killed inside a remover therefore leaves its item due, with the thing under its marked name; reconcile (VELDO-0315) is what finds it. This differs from the state diagram of design 4.1, which writes removing when the rules pass: the lead should confirm it, or VELDO-0345 AC6 should land first and this be revisited.",
+  "THE OWNER'S CONFIRMATION is the item's confirmed field. No ledger command writes it until VELDO-0320, and the store refuses a write of an item by anything but the ledger's own transitions (foreign_transition, seen in this build). So ac3/report-mode has Signal read the real ledger through a view that returns one item with its confirmation; every other read and every write is the ledger's own. Signal carries out only items the event made due in this call: an item already due from an earlier call (left due in report mode, then confirmed) is not picked up by a later event, because the ledger's signal marks only present, kept and deferred items. Carrying out such a group is VELDO-0320.",
+  "ACT MODE in the suite is reached by the owner's real signed command with the two act checks standing in (VELDO-0332 and 0339 are not built and allow). Nothing in the repository installs those checks, so no scope on a real host can be in act, and on a real host Signal carries out only confirmed items, which nothing can write yet: this ticket removes nothing on a real host.",
+  "THE KEEP STEP is given to the removers by the caller of signal (keep=). VELDO-0345 is not built; the suite's stand-in answers ok with the tips the removers' own tips read. With no keep step the removers refuse every worktree and agent repository as keep_failed, and Signal writes that deferral.",
+  "GONE is written only when rule 1 finds nothing at the locator, the remover's left finds nothing under the marked name, and a second read by the probe agrees. A path is read with lexists, which also answers false when a folder above it cannot be searched; such an item would be marked gone with its thing still on disk. Gone deletes nothing, and rule 6 still looks on disk for worktrees and repositories inside a parent, but the item would no longer be tracked until reconcile reports the folder. Not closed here: the probes are VELDO-0299's.",
+  "KEPT is written for an action that removes nothing: keep, measure, mark_contained, pass, an event with no cell for the item's row, and drop_caches after its remover ran. The measuring of a measure cell and the mark of a contained branch are not done here. The ledger's signal marks a kept item due again at its next event, including a worktree the owner will one day answer Keep for (VELDO-0318): nothing in this ticket tells an owner's Keep from the table's keep, because nothing writes an owner's Keep yet. The ticket that writes it must make it visible to Signal or to the ledger's signal.",
+  "NOT DONE HERE, each deferred safely: remove_held (evidence files a copy holds) has no remover and is deferred remove_refused; a review worktree's scratch is not removed first, so git's non-forced remove refuses it; no decision request is raised for unique work (VELDO-0318). A caller's own carry_out is still accepted (suite 134 uses it) and now also obeys the switch and the confirmation.",
+  "Observability: the journal holds one signal record and one outcome record per carried item; the answer of signal holds outcomes and counts (removed, gone, kept, removing, left, deferred by deferral). Nothing emits these to a metrics sink; no caller of signal exists yet (the event sources are later tickets).",
+  "Rule 7's deferral in control_space_signal.rules is now the remover's own when it is remove_refused, in_use or keep_failed. Suites 137 and 138 are green with it: their rows read the rule, the passed count and said.deferral."
+ ],
+ "rollback": "Revert the change. No event removes anything, and items stay as recorded."
+}
