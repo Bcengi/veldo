@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0308",
- "commit": "6ed80a584b0c9e6c2651006c24bb166f1afccde5",
- "tree": "f10f7634f22d784a92045170eb7fe2c16641debe",
- "producer": "Claude implementation agent (build, and the fix round after the review); not an independent reviewer",
- "produced_at": "2026-11-14T13:42:25.190754+00:00",
+ "commit": "8074ab9229c11d44b5811a9dd6de61632122248b",
+ "tree": "0c43157890c2a4ad66ca64b23e8ba2b45583f551",
+ "producer": "Claude implementation agent (build, and the two fix rounds after the reviews); not an independent reviewer",
+ "produced_at": "2026-11-14T15:11:28.962638+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -34,6 +34,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0308/falsifiers.json",
      "detail": "Fix round, each applied once to the copy the suite loads and seen red on its target row: space308-unread-group-sent reds f3/unread-group-sends-nothing; space308-receiver-event-reaches-the-clone reds f1/sent-once-and-alone; space308-refusal-reported-before-the-space-end reds f5/refused-before-spawn; space308-spawn-failure-reported-before-the-space-end reds f5/spawn-failed."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "Fix round 2 rows (the re-review's N1: run finished for the run's own items). n1/own-items-ended (a run with its run directory, its scratch folder and an agent repository of the same owner outside its folders, no clone: the receiver sends run finished once and the three items are removed, the repository after its commit was kept; the sweep does the same for a leftover of such a run, one event over three calls; with the run's clone handed to the ledger and left due, the receiver still sends for the run, every item that is no clone's is ended, and the clone's three items are due at the version they had, the clone whole and its pin held). n1/handed-over-clone-untouched (a clone a retirement handed over with its work tree deferred, the slot released in the same attempt: the receiver sends nothing, not_alone, naming the clone's items, and writes nothing; three clear_runs calls send nothing and record not_alone once; then, the holder gone, five Runner.sweep calls, production's own trigger: no retirement is pending, nothing is sent, no retry is made, nothing is written, the leftover keeps its one observation; the clone is deferred at the version it had, whole, its commit readable and its pin held, and the run directory and the agent repository are present on disk and in the ledger, the repository at its commit). The row no longer calls retry_deferred by hand: nothing in production calls it for these items today (assumption 14)."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0308/falsifiers.json",
+     "detail": "Fix round 2, each applied once to the copy the suite loads and seen red on its target row: space308-any-repository-of-the-owner-holds-the-event-back (the look as it was before N1: every worktree and agent repository of the owner counts) reds n1/own-items-ended, the receiver answers not_alone and sends nothing; space308-event-reaches-a-handed-over-clone (the clones folder is not looked at) reds n1/handed-over-clone-untouched, the receiver sends and the event reaches the clone. The second was applied after the row's last check was rewritten."
     }
    ]
   },
@@ -86,6 +96,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0308/falsifiers.json",
      "detail": "Fix round, each applied once and seen red: space308-sweep-resends-for-a-handed-over-run (the defect as the review found it) reds f1/sweep-never-resends, and in suite 142 ac3/deferred-then-swept and f3/consumer-holds-clone; space308-sweep-event-reaches-the-clone and space308-sweep-sends-at-every-sweep red f1/sent-once-and-alone; space308-start-sweep-without-the-rule reds f1/start-sweep-applies-the-rule."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "Fix round 2 row (the re-review's N2: bounded observations). n2/observations-bounded (a leftover whose one event did not move its item is recorded once, run_finished_sent, and dropped from the runner's memory: one event and two observations over six sweeps, the folder on disk and its item as it was; a leftover held back by a consumer of its clone adds one clone_in_use observation over six sweeps, stays a leftover, and nothing is sent or written; once the consumer has ended the new outcome is recorded once over six more sweeps). f1/sent-once-and-alone now expects the leftover dropped after run_finished_sent and the not_alone observation to name the clone's items."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0308/falsifiers.json",
+     "detail": "Fix round 2, each applied once and seen red on n2/observations-bounded: space308-observation-at-every-sweep (six clone_in_use observations over six sweeps) and space308-sent-leftover-stays-in-memory (the leftover sent its one event is not dropped)."
     }
    ]
   },
@@ -125,7 +145,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "Fix round, on the committed tree, each suite on its own with a stub engine: python3 scripts/selftest.py --suite 146_veldo_0308_run_finished (29 rows, 55 passed, 0 failed), 142_veldo_0303_space_paths (57, 0), 129_veldo_0254_canary_launch (33, 0; 200 runs back to back with no failure, where the old read was red in 4 of 60), and beside them 139, 143, 144, 145, 147, 62, 63, 66 (0042), 67, 83 (0154), 85 and 06 (the suite manifest's honesty), all 0 failed (proof/VELDO-0308/suite-green.txt). The first build's wider list is in the same file, run on commit f2ba3a17. 86_veldo_0127_agent_configuration was not run: 52 of 54 by a known recapture."
+   "command": "Fix round 2, engine modules as committed in 8074ab92, each suite on its own with a stub engine that was never called: python3 scripts/selftest.py --suite 146_veldo_0308_run_finished (32 rows, 58 passed, 0 failed), 142_veldo_0303_space_paths (57, 0), 147_veldo_0310_landed_contained (56, 0), run on the tree of commit 03172b82, which changes no engine file (proof/VELDO-0308/suite-green.txt, section FIX ROUND 2). The first fix round, on the tree of commit 6ed80a58, each suite on its own with a stub engine: python3 scripts/selftest.py --suite 146_veldo_0308_run_finished (29 rows, 55 passed, 0 failed), 142_veldo_0303_space_paths (57, 0), 129_veldo_0254_canary_launch (33, 0; 200 runs back to back with no failure, where the old read was red in 4 of 60), and beside them 139, 143, 144, 145, 147, 62, 63, 66 (0042), 67, 83 (0154), 85 and 06 (the suite manifest's honesty), all 0 failed (proof/VELDO-0308/suite-green.txt). The first build's wider list is in the same file, run on commit f2ba3a17. 86_veldo_0127_agent_configuration was not run: 52 of 54 by a known recapture."
   },
   {
    "name": "integration",
@@ -135,7 +155,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "27 cases are registered under finding 308 in scripts/check_teeth_mutations.py: the 17 of the first build (applied then with the observer's materialize and worker) and the 10 of the fix round. Each of the 10 was applied to the repository copy the suite loads, the suite run, and the copy put back from the canon: every mutant turns its target rows red, the unchanged tree is green (proof/VELDO-0308/mutations.txt, falsifiers.json). The anchor of every case registered with module control_launch.py or control_retirement.py occurs exactly once; two cases were re-anchored in the fix round with their meaning unchanged (space303-receiver-answers-for-an-unread-group, space308-pins-released-at-the-teardown-only), and those and three more whose surroundings changed were applied again and are red. The test fix of finding 2 has its own falsifier, seen red. Not run: the teeth run (check_teeth_mutations.py --finding 308) and the cases of other findings; the lead runs them through the gate lock."
+   "command": "31 cases are registered under finding 308 in scripts/check_teeth_mutations.py: the 17 of the first build (applied then with the observer's materialize and worker), the 10 of the first fix round and the 4 of fix round 2 (N1: space308-any-repository-of-the-owner-holds-the-event-back, space308-event-reaches-a-handed-over-clone; N2: space308-observation-at-every-sweep, space308-sent-leftover-stays-in-memory). Each of the 14 was applied to the repository copy the suite loads, the suite run, and the copy put back from the canon and compared: every mutant turns its target rows red, the unchanged tree is green (proof/VELDO-0308/mutations.txt, falsifiers.json). The 4 of fix round 2 were applied on the tree of commit 03172b82, 58 of 58 unchanged. The anchor of every case registered with module control_launch.py or control_retirement.py occurs exactly once; two cases were re-anchored in the fix round with their meaning unchanged (space303-receiver-answers-for-an-unread-group, space308-pins-released-at-the-teardown-only), and those and three more whose surroundings changed were applied again and are red. The test fix of finding 2 has its own falsifier, seen red. Not run: the teeth run (check_teeth_mutations.py --finding 308) and the cases of other findings; the lead runs them through the gate lock."
   },
   {
    "name": "fast checks",
@@ -145,7 +165,7 @@
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "Not run, by the lead's instruction, in the build and in the fix round. The single suites, the registered cases and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
+   "reason": "Not run, by the lead's instruction, in the build and in both fix rounds. The single suites, the registered cases and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
   }
  ],
  "assumptions": [
@@ -159,9 +179,11 @@
   "8. A SWEEP IS NO RETRY (fix round, review finding 1, the lead's decision). Runner.clear_runs sends run finished only while no ending event has reached the run directory's item, at most once, and for the run directory alone; a held item is dropped as handed over. Until VELDO-0315 or 0316 lands, a deferred run directory of a run whose outcome is unknown (no retirement completes) stays on disk until reconcile. That costs space and loses nothing.",
   "9. NARROWER THAN THE AMENDMENT'S WORDS, ON THE SAFE SIDE. The clone obligation closes on a space_deferred refusal only while the ledger records the clone's root as a live item in state due, deferred, removing or kept. A clone no item records, a root the event never reached, and an unreadable ledger keep the slot held. Recorded for the lead in the spec's History.",
   "10. THE DESIGN'S RETRY PARAGRAPH (section 7) and the Retirement row of its component table still carry the wording from before AC4; the design is outside this footprint and is to be revised by the lead.",
-  "11. ALONE IS THE LIMIT USED. The ledger's signal takes an owner and no single item, and the ledger module is outside this footprint, so the sweep and the receiver send with `alone` and look first: while the run's owner also has a live worktree or agent repository that is not at or beneath the run's folders, nothing is sent (not_alone). For a clone its teardown sends the one event for that owner. A run that owned such an item which no teardown ends would be sent nothing by its receiver until that item's own event or reconcile; nothing declares one that way today (VELDO-0302 decides the owners). Recorded for the lead in the spec's History.",
+  "11. ALONE IS THE LIMIT USED. The ledger's signal takes an owner and no single item, and the ledger module is outside this footprint, so the sweep and the receiver send with `alone` and look first: while the run's owner also has a live worktree or agent repository that is not at or beneath the run's folders, nothing is sent (not_alone). For a clone its teardown sends the one event for that owner. A run that owned such an item which no teardown ends would be sent nothing by its receiver until that item's own event or reconcile; nothing declares one that way today (VELDO-0302 decides the owners). Recorded for the lead in the spec's History. SINCE FIX ROUND 2 (N1) the look counts only items of a clone of the same owner (beneath the clones folder, in a state an event takes): a run that owns a worktree or agent repository that is no clone's is sent run finished, and that event ends it.",
   "12. THE HOLD OF A RUN WHOSE GROUP WAS UNREAD STAYS HELD (fix round, review finding 3). The receiver keeps it, the sweep removes the folders once the kernel shows the run gone, and nothing but the receiver releases a hold in this ticket: it stays until VELDO-0315 or 0316 gives the sweep or reconcile that release, as for an unknown outcome.",
-  "13. THE FIX ROUND'S FALSIFIERS WERE APPLIED TO THE REPOSITORY COPY, NOT THROUGH THE OBSERVER. Each was written into .veldo/<module>, the suite run with a stub engine, and the copy put back from engine/.veldo and compared byte for byte. The launch cases were applied twice (the second time to record what each row said) and the pin cases three times (once more after the pin listing was moved to git_process); every application was red on its target rows. The stability figure of finding 2 (0 of 200) is from this host, idle but for the run itself."
+  "13. THE FIX ROUND'S FALSIFIERS WERE APPLIED TO THE REPOSITORY COPY, NOT THROUGH THE OBSERVER. Each was written into .veldo/<module>, the suite run with a stub engine, and the copy put back from engine/.veldo and compared byte for byte. The launch cases were applied twice (the second time to record what each row said) and the pin cases three times (once more after the pin listing was moved to git_process); every application was red on its target rows. The stability figure of finding 2 (0 of 200) is from this host, idle but for the run itself.",
+  "14. ITEMS BEHIND A HANDED-OVER, DEFERRED CLONE WAIT FOR THE LEDGER'S NEXT RETRY, AND NOTHING IN PRODUCTION MAKES ONE FOR THEM TODAY (fix round 2, the re-review's finding 1). space_retry has one production caller, Retirements._attempt, for a retirement that was pending and is released; a retirement that hands the clone over and releases in the same attempt never calls it. The run's own items the teardown's event did not reach then stay present, sent nothing (not_alone), until admission (VELDO-0316) or reconcile (VELDO-0315) is built, or the signal that names items lets run finished be sent for them beside the clone. Nothing is ended wrongly and nothing is lost; it costs space without bound in that case. The creators of VELDO-0302 that declare run items beside a clone depend on it. Recorded for the lead in the spec's History; the row asserts the items stay deferred and unharmed over five production sweeps.",
+  "15. THE BUNDLE CITES 8074ab92, THE COMMIT OF THE ENGINE CHANGE OF FIX ROUND 2. The suite row n1/handed-over-clone-untouched and the N1 History were corrected after it, in commit 03172b82, which changes no engine file; the suite figures and the four falsifier applications of this round are from that tree."
  ],
  "rollback": "Revert the change. The receiver sends no run finished, and the run's items stay present until another event ends them."
 }

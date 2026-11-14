@@ -48,3 +48,10 @@
 06_capabilities_manifest_honesty_veldo: 1414 passed, 0 failed (4 of 217 suites)
 # Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged).
 # Not run in the fix round: ./scripts/verify.sh, the teeth run, the other suites of the first list above, and 86_veldo_0127_agent_configuration (52 of 54 by a known recapture; left as it is).
+# FIX ROUND 2. The engine modules are those of commit 8074ab92 (control_launch.py and control_retirement.py byte for byte, canon and copy). Each suite on its own with python3 scripts/selftest.py --suite NAME, with a stub engine (a docker first on PATH that logs and exits 1, DOCKER_HOST at a missing socket; it was never called). Run on the tree of commit 03172b82, which changes no engine file: it rewrites the last check of row n1/handed-over-clone-untouched in suite 146 (runner sweeps, no hand call of retry_deferred) and corrects the N1 History. Partial runs: none is the gate.
+146_veldo_0308_run_finished: 58 passed, 0 failed (32 rows)
+142_veldo_0303_space_paths: 57 passed, 0 failed
+147_veldo_0310_landed_contained: 56 passed, 0 failed
+# The re-review ran, on a clean clone at 84dff437 with its own stub engine: 146 at 58 passed, 142 at 57, 129 (0239, 0247, 0254, 0260) and 130 to 145 all 0 failed, and check_teeth_mutations.py --finding 308 at registered=31 executed=31 rejected=31. That was before the row's last check was rewritten.
+# Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged).
+# Not run in fix round 2: ./scripts/verify.sh, the teeth run, and every suite not named in this section.

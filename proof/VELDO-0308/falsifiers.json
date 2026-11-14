@@ -663,5 +663,143 @@
   "declared": false,
   "round": "fix",
   "finding": "F5"
+ },
+ {
+  "falsifier": "space308-any-repository-of-the-owner-holds-the-event-back",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n1/own-items-ended"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n1/handed-over-clone-untouched",
+   "n1/own-items-ended",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "while the run's owner still has its clone the sweep sends nothing for the run directory: not_alone, nothing written, the clone's items present [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/alone-55', 'outcome': 'refused', 'refusal': 'not_alone', 'with': ['space:item:d4f0a679eda449cf843e9c9a"
+   ],
+   [
+    "VELDO-0308 n1/own-items-ended",
+    "a run whose owner has an agent repository elsewhere is sent run finished by its receiver, once [False not_alone []]"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the receiver sends nothing that would reach it: not_alone, naming the clone's items, and nothing is written [False not_alone ['space:item:0cce294e38164f219d772637a396041a', 'space:item:21f09f9138ae48d0982cbc38dd5fc404']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 2",
+  "finding": "N1"
+ },
+ {
+  "falsifier": "space308-event-reaches-a-handed-over-clone",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n1/handed-over-clone-untouched"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n1/handed-over-clone-untouched",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "while the run's owner still has its clone the sweep sends nothing for the run directory: not_alone, nothing written, the clone's items present [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/alone-55', 'outcome': 'removed'}] ['removed', 'removed', 'removed']]"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the receiver sends nothing that would reach it: not_alone, naming the clone's items, and nothing is written [True None None]"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "once the consumer has ended the new outcome is recorded, once over six more sweeps: one observation for each leftover and outcome, never one for each sweep [['clone_in_use'] ['remove_run', 'remove_run']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 2",
+  "finding": "N1"
+ },
+ {
+  "falsifier": "space308-observation-at-every-sweep",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n2/observations-bounded"
+  ],
+  "red_rows": [
+   "n1/handed-over-clone-untouched",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "nor does the sweep, over three calls; the clone's items are as they were, at the version they had, the clone whole, its pin held, and the run's own items present [[[], [], []] ['deferred', 'deferred', 'removed'] ['not_alone', 'not_alone', 'not_alone']]"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover held back by a consumer of its clone adds one observation over six sweeps, and stays a leftover [['clone_in_use', 'clone_in_use', 'clone_in_use', 'clone_in_use', 'clone_in_use', 'clone_in_use']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix 2",
+  "finding": "N2"
+ },
+ {
+  "falsifier": "space308-sent-leftover-stays-in-memory",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n2/observations-bounded"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover the event reaches and does not remove (its item was never confirmed) is sent run finished once over three sweeps, and stays on disk; sent its one event, it is no leftover of a sweep any more [[('runner.sweep', 'run_finished', 'dispatch/once-53')] [{'operation': 'remove_run', 'dispatch_id'"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover that can never be sent again (its one event did not move its item) is recorded once and dropped from memory: one event and two observations over six sweeps [[('runner.sweep', 'run_finished', 'dispatch/bound-75')] ['space_deferred:declared', 'run_finished_sent']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix 2",
+  "finding": "N2"
  }
 ]
