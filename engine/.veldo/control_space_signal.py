@@ -1,17 +1,69 @@
 #!/usr/bin/env python3
-"""Signal: the one entry point an emitting process calls with an event (design section 3, VELDO-0331),
-and the safety rules every removal passes (design section 7, VELDO-0330).
+"""Signal: the one entry point an emitting process calls with an event (design sections 3 and 6.1,
+VELDO-0301 and VELDO-0331), and the safety rules every removal passes (design section 7, VELDO-0330).
 
-WHAT IS HERE. The part of Signal that reads the mode, and below it the rules. A call marks the matching
-items due through the ledger's own signal command, and then asks, item by item, for the mode of the scope
-that item belongs to (the first part of its owner: its project, its plain repository, or no project):
+WHAT IS HERE. `signal`, and below it the rules. A call with an event does all of this in the calling
+process and returns when it is done. Nothing is left for a later call, and no loop or timer comes back
+to it:
 
-  act      the item is handed to `carry_out`, in the calling process, before the call returns
-  report   the item stays due and nothing else is done to it. The event wrote due and removed nothing
+  1 the ledger's own signal command marks every item the event ends as due (one journal record);
+  2 each of them is carried out or left due, by the installation's switch and the mode of its scope;
+  3 the kind registry gives each carried item its action and the order, children first, with rule 6's
+     own reading (`inside`) as the look it is given and no other;
+  4 a removal is judged by the rules and carried out by its remover, which is rule 7;
+  5 the outcome of each carried item is written through the ledger's own commands before the next
+     item is looked at.
 
-The mode is read per item, from the ledger's mode record of that item's scope (design 4.7). There is no
-mode of the installation: two projects that end on one event are judged each by its own record, and a
-scope with no record is in report mode.
+WHO IS CARRIED OUT. An item the event made due is carried out when the installation's switch is on
+(enabled in the space section) and either its scope is in act mode or the item carries the owner's
+confirmation:
+
+  switch off                  the call writes due and removes nothing
+  act                         the item is carried out
+  report, confirmed           the item is carried out: the owner confirmed its removal
+  report, not confirmed       the item stays due and nothing else is done to it
+
+The mode is read per item, from the ledger's mode record of that item's scope (the first part of its
+owner: its project, its plain repository, or no project; design 4.7). There is no mode of the
+installation: two projects that end on one event are judged each by its own record, and a scope with
+no record is in report mode.
+
+THE OUTCOMES, one per carried item, written before the call returns:
+
+  removed    the rules passed and the remover removed it. The record holds the event, the emitter, the
+             action, the method, the bytes and the free space of its pool before and after
+  deferred   a rule refused. The record holds the deferral the rule names, the rule, the event it was
+             refused at and the events that retry it. A refusal is a deferral, never an error. The
+             item's next event makes it due again and it is judged again from rule 1
+  gone       nothing is at the locator and nothing is under the item's marked name: someone removed
+             the thing by hand. Read again by the probe at that moment
+  removing   the thing is not at its locator and is under its marked name: the remover's answer
+             holds left_at (it could not put the folder back), or nothing is at the locator and the
+             look under the marked name (the remover's `left`) found it. The record holds left_at. Such an item is never marked
+             gone and never deferred: it is not at its path, and reconcile finishes it (design 8.8)
+  kept       the table's action removes nothing (keep, measure, mark_contained, pass, or no cell for
+             this event), or the action dropped caches and the item stays
+
+THE ITEM IS DUE WHILE ITS REMOVER RUNS. Removing is written only for a thing left under its marked
+name, and it is never written ahead of the remover. A remover that puts the thing back and refuses
+(in_use at its second probe, keep_failed at the keep step or its last look) leaves an item that is
+whole at its path. Were it recorded as removing first, it would be finished "to the end" by reconcile
+(design 4.1), which is the loss the review of VELDO-0300 named (finding 6).
+
+THE REMOVER'S OWN DEFERRAL IS PASSED THROUGH. Rule 7's refusal is named by the remover: remove_refused
+(the tool, or the remover by itself, refused), in_use (its second probe found a user and the item was
+put back) and keep_failed (the keep step failed, or the last look found work it did not save or a
+tip it did not record). An answer that names none of the three is remove_refused.
+
+AN ITEM THE REGISTRY HOLDS BACK (the action wait: an item inside it holds it, or its inside could not
+be read) is deferred as in_use and is never judged or handed to a remover. An item whose table
+version the registry does not hold is deferred as remove_refused. A rule, a probe or a remover that
+raises is a refusal too: the item is deferred as remove_refused with what was raised, or kept removing
+when the thing is under its marked name.
+
+NO CLOCK. This module imports nothing and reads no time, no age and no date. An item is removed
+because an event named it, and for no other reason: with the clock moved by any amount and no event,
+nothing changes.
 
 THE RULES (design section 7). `rules` judges one removal of one item. The seven rules run in the one
 order of ORDER, and the first that refuses ends the run and names the deferral:
@@ -25,7 +77,8 @@ order of ORDER, and the first that refuses ends the run and names the deferral:
   5 unique_work   unique_work     the five cases of a worktree; an agent repository's branches
   6 children      in_use          an item inside this one is there in any state but removed or gone,
                                   or something on disk inside it is not recorded, or cannot be read
-  7 tool          remove_refused  the owning tool's remove refuses
+  7 tool          remove_refused  the owning tool's remove refuses; or in_use or keep_failed, when the
+                                  remover names that as its own deferral
 
 The answer is {ok: True, passed} or {ok: False, reason: space_deferred:<deferral>, rule, order,
 deferral, found, passed}. Every fact is read by the probes at the moment of the call; none is carried
@@ -70,13 +123,22 @@ the item, and so does a folder that could not be listed. `inside` is also the lo
 due is given.
 
 THE TOOL (rule 7) is the callable `tool(identity, record)` the caller gives: the remover. It is called
-only after every other rule of the removal has passed, and anything but {ok: True} is its refusal. With
-no tool the call judges and removes nothing.
+only after every other rule of the removal has passed, and anything but {ok: True} is its refusal. Its
+refusal is named by the deferral its answer holds when that is one of TOOL_DEFERRALS, and remove_refused
+otherwise. With no tool the call judges and removes nothing.
 
-WHAT IS NOT HERE. `carry_out(identity, record)` is the carrying out of one due item: the remover and
-the outcome it writes. Those are VELDO-0300 and 0301, and this module is given the callable. The
-installation's switch, an item that carries the owner's confirmation, a deferred item's retry and an item
-whose thing is missing are VELDO-0301 and 0320. No clock is read here.
+A CALLER'S OWN CARRYING OUT. `signal` given `carry_out(identity, record)` hands each carried item to
+it, in the ledger's order, and writes no outcome itself: that caller writes them. The switch, the mode
+and the confirmation are read the same way.
+
+WHAT IS NOT HERE. The modules are given, not imported: the probes, the kind registry and the removers
+(with the keep step the removers are given, VELDO-0345). The owner's Confirm, which writes an item's
+confirmation, is VELDO-0320. The decision request an item with unique work raises is VELDO-0318, a
+review worktree's scratch is VELDO-0336, the evidence files a copy holds are VELDO-0347 (their action
+has no remover yet and is deferred as remove_refused), and the measuring of a measure cell and the
+mark of a contained branch are their own tickets: here each of those items is kept, with the action
+named. Reconcile, which finishes a removing item and an item left due by a process that died, is
+VELDO-0315.
 
 Standard library only. The ledger is the control_space.Ledger the caller passes in.
 """
@@ -84,22 +146,159 @@ Standard library only. The ledger is the control_space.Ledger the caller passes 
 SCHEMA = 'veldo.control_space_signal/v1'
 
 
-def signal(ledger, event, subject, carry_out, principal=None, command_id=None):
-    """Mark every item the event ends as due, then carry out those of a scope in act mode and leave
-    those of a scope in report mode due. Returns the ledger's answer with two lists added: carried (the
-    items handed to `carry_out`) and left (the items left due)."""
+REMOVALS = ('remove', 'stop_then_remove', 'remove_tag')  # the actions that take the item away
+TOOLED = REMOVALS + ('drop_caches', 'remove_held')  # the actions a remover carries out, through the rules
+NAMED = 20  # the most entries of one list written into an outcome
+
+
+def signal(ledger, event, subject, carry_out=None, principal=None, command_id=None, probe=None, kinds=None,
+           remover=None, emitter=None, free=None, keep=None, owner_live=None, landed=(), queued=None, run=None,
+           proc=None, borrow_root=None):
+    """Mark every item the event ends as due, carry out those that may be carried out, and write each
+    outcome, all before returning.
+
+    `probe`, `kinds` and `remover` are the control_space_probe, control_space_kinds and
+    control_space_remove modules; without all three nothing is carried out and every item stays due.
+    `emitter` names the process that called (written into each outcome). `free(pool record)` and
+    `keep(identity, record)` are the removers' own parameters, the reader of free space and the keep
+    step; `owner_live`, `landed`, `run`, `proc` and `borrow_root` are the rules'; `queued` is the kind
+    registry's. `carry_out(identity, record)`, when given, is a caller's own carrying out (above).
+
+    Returns the ledger's answer with carried (the items carried out), left (the items left due),
+    outcomes (one entry per carried item: item, action, outcome, and for a deferral its name and rule)
+    and counts (removed, gone, kept, removing, left, and deferred by deferral)."""
     result = ledger.signal(event, subject, principal=principal, command_id=command_id)
     if not result['ok']:
         return result
+    enabled = ledger.config.get('enabled') is True
     carried, left = [], []
     for identity in result['items']:
         record = ledger.item(identity) or {}
-        if record.get('state') == 'due' and ledger.acts((record.get('owner') or {}).get('scope')):
-            carry_out(identity, record)
+        if enabled and record.get('state') == 'due' and (
+                ledger.acts((record.get('owner') or {}).get('scope')) or record.get('confirmed')):
             carried.append(identity)
         else:
             left.append(identity)
-    return dict(result, carried=carried, left=left)
+    if carry_out is not None:
+        for identity in carried:
+            carry_out(identity, ledger.item(identity) or {})
+        return dict(result, carried=carried, left=left)
+    if probe is None or kinds is None or remover is None:
+        carried, left = [], left + carried
+    outcomes = _carry(ledger, probe, kinds, remover, event, carried, emitter=emitter, free=free, keep=keep,
+                      owner_live=owner_live, landed=landed, queued=queued, run=run, proc=proc,
+                      borrow_root=borrow_root) if carried else []
+    counts = {'removed': 0, 'gone': 0, 'kept': 0, 'removing': 0, 'left': len(left), 'deferred': {}}
+    for entry in outcomes:
+        if entry['outcome'] == 'deferred':
+            counts['deferred'][entry['deferral']] = counts['deferred'].get(entry['deferral'], 0) + 1
+        elif entry['outcome'] in counts:
+            counts[entry['outcome']] += 1
+    return dict(result, carried=carried, left=left, outcomes=outcomes, counts=counts)
+
+
+def _plain(value, depth=0):
+    """A value as plain data an outcome can hold: text, numbers, lists and dictionaries, a long list
+    cut at NAMED entries, anything else as its text."""
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if depth > 6:
+        return str(value)[:300]
+    if isinstance(value, dict):
+        return {str(key): _plain(item, depth + 1) for key, item in value.items() if key != 'commands'}
+    if isinstance(value, (list, tuple, set, frozenset)):
+        items = sorted(value, key=str) if isinstance(value, (set, frozenset)) else list(value)
+        return [_plain(item, depth + 1) for item in items[:NAMED]]
+    return str(value)[:300]
+
+
+def _carry(ledger, probe, kinds, remover, event, carried, emitter=None, free=None, keep=None, owner_live=None,
+           landed=(), queued=None, run=None, proc=None, borrow_root=None):
+    """Carry out the due items `carried`, in the kind registry's order, and write the outcome of each.
+    Returns one entry per item."""
+    def look(identity, record):
+        return inside(ledger, probe, identity, record, run)
+
+    entries = {entry['item']: entry
+               for entry in kinds.due(event, list(ledger.items().items()), queued=queued, look=look)}
+    order = [identity for identity in entries if identity in carried]
+    order += [identity for identity in carried if identity not in entries]
+    given = {'emitter': emitter, 'free': free, 'keep': keep, 'owner_live': owner_live, 'landed': landed,
+             'run': run, 'proc': proc, 'borrow_root': borrow_root}
+    return [_carry_one(ledger, probe, remover, event, identity, entries.get(identity) or {'action': None}, given)
+            for identity in order]
+
+
+def _missing(probe, record, run):
+    """Whether nothing is at the item's locator, read again now. A Docker object is missing only when
+    its engine was read and said it holds no such object; a path, when nothing is there."""
+    facts = probe.located(record['kind'], record['locator'], run)
+    if 'engine' in facts:
+        return facts['read'] is True and facts['id'] is None and facts['said'] is not None
+    return facts['exists'] is False
+
+
+def _carry_one(ledger, probe, remover, event, identity, entry, given):
+    """Carry out one due item by the registry's entry for it, and write its outcome."""
+    action = entry.get('action')
+    record = ledger.item(identity)
+    done = {'item': identity, 'action': action, 'outcome': None}
+    if record is None or record.get('state') != 'due':
+        return dict(done, reason='not_due')
+    facts = {'event': event, 'emitter': _plain(given['emitter']), 'action': action}
+    retry = list((record.get('ends_on') or {}).get('events') or ())
+
+    def write(outcome, more, **noted):
+        wrote = (ledger.gone(identity) if outcome == 'gone'
+                 else ledger.outcome(identity, outcome, dict(facts, **more)))
+        if not wrote.get('ok'):
+            return dict(done, refused=wrote.get('reason'), meant=outcome, **noted)
+        return dict(done, outcome=outcome, **noted)
+
+    if action == 'wait':
+        held = bool(entry.get('held_by')) or entry.get('reason') in ('children_not_read', 'children_not_passed')
+        name = DEFERRAL['children'] if held else DEFERRAL['tool']
+        return write('deferred', {'rule': name, 'refused_by': 'registry', 'order': None, 'retry': retry,
+                                  'reason': entry.get('reason') or 'held', 'held_by': _plain(entry.get('held_by'))},
+                     deferral=name, rule='registry')
+    if action not in TOOLED:
+        return write('kept', {})
+
+    seen = {}
+
+    def tool(identity, record):
+        seen['said'] = remover.remove(ledger, probe, identity, record, action=action, free=given['free'],
+                                      keep=given['keep'], run=given['run'], proc=given['proc'])
+        return seen['said']
+
+    try:
+        judged = rules(ledger, probe, identity, record, purpose=REMOVE, tool=tool, owner_live=given['owner_live'],
+                       landed=given['landed'], run=given['run'], proc=given['proc'],
+                       borrow_root=given['borrow_root'])
+    except Exception as error:  # noqa: BLE001 - what could not be judged is refused, never removed
+        judged = {'ok': False, 'rule': 'error', 'order': None, 'deferral': DEFERRAL['tool'],
+                  'found': {'raised': '%s: %s' % (type(error).__name__, str(error)[:300])}}
+    if judged['ok']:
+        said = seen.get('said') or {}
+        return write('removed' if action in REMOVALS else 'kept',
+                     {key: _plain(said.get(key)) for key in ('method', 'bytes', 'bytes_source', 'pool',
+                                                             'pool_free_before', 'pool_free_after', 'freed',
+                                                             'host')})
+    found = judged.get('found') or {}
+    said = found.get('said') if judged['rule'] == 'tool' and isinstance(found.get('said'), dict) else {}
+    path = record['locator'].get('path') if record.get('kind') in DISK_KINDS else None
+    # The remover's own word, or the look under the marked name when nothing is at the locator. A thing
+    # still at its path is not left anywhere, whatever sits at its marked name.
+    left_at = said.get('left_at') or (
+        remover.left(path, identity) if path and _missing(probe, record, given['run']) else None)
+    refusal = {'rule': judged['deferral'], 'refused_by': judged['rule'], 'order': judged['order'],
+               'retry': retry, 'found': _plain(found)}
+    if left_at and (judged['rule'] in ('tool', 'error') or found.get('missing') is True):
+        return write('removing', dict(refusal, left_at=left_at), left_at=left_at, deferral=judged['deferral'],
+                     rule=judged['rule'])
+    if judged['rule'] == 'ledger' and found.get('missing') is True and _missing(probe, record, given['run']):
+        return write('gone', {})
+    return write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])
 
 
 # ---------------------------------------------------------------------------------------------
@@ -110,6 +309,8 @@ def signal(ledger, event, subject, carry_out, principal=None, command_id=None):
 ORDER = ('ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children', 'tool')
 DEFERRAL = {'ledger': 'not_in_ledger', 'protect': 'protected', 'owner_live': 'in_use', 'process_use': 'in_use',
             'unique_work': 'unique_work', 'children': 'in_use', 'tool': 'remove_refused'}
+# What the remover means by its own refusal (VELDO-0300). Rule 7's deferral is the one it names.
+TOOL_DEFERRALS = ('remove_refused', 'in_use', 'keep_failed')
 
 REMOVE, DISCARD, REVIEW_SCRATCH = 'remove', 'discard', 'review_scratch'
 # The rules a removal passes, by what it is for. The order is always ORDER's.
@@ -320,8 +521,11 @@ def rules(ledger, probe, identity, record, purpose=REMOVE, tool=None, owner_live
             continue
         found = RULES[name](ledger, probe, identity, record, given)
         if found is not None:
-            return {'ok': False, 'reason': 'space_deferred:' + DEFERRAL[name], 'item': identity,
-                    'purpose': purpose, 'rule': name, 'order': order, 'deferral': DEFERRAL[name],
+            named = DEFERRAL[name]
+            if name == 'tool' and isinstance(found['said'], dict) and found['said'].get('deferral') in TOOL_DEFERRALS:
+                named = found['said']['deferral']
+            return {'ok': False, 'reason': 'space_deferred:' + named, 'item': identity,
+                    'purpose': purpose, 'rule': name, 'order': order, 'deferral': named,
                     'found': found, 'passed': passed}
         passed.append(name)
     return {'ok': True, 'item': identity, 'purpose': purpose, 'passed': passed}

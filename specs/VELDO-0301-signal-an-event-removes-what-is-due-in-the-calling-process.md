@@ -143,3 +143,22 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   accepting those three deferrals for a removing item, is VELDO-0345 AC6. Four criteria became five. AC5
   is not in section 12 of the design, whose text this change does not edit; the criteria of AC1 to AC4
   are still the design's word for word.
+- 2026-11-14: built. No acceptance criterion changed. Three things the build decided, recorded here
+  because the criteria do not say them:
+  - The item stays due while its remover runs, and removing is written only for a thing left under its
+    marked name (the remover's answer holds left_at, or the look control_space_remove.left finds it).
+    The ledger as built refuses any deferral but remove_refused for a removing item (VELDO-0345 AC6 is
+    not built), so an item written removing ahead of its remover could not be deferred as keep_failed
+    or in_use, and would be left for reconcile to finish "to the end" with its folder back at its
+    path. Written this way AC5 holds on today's ledger and no ledger code is changed. When VELDO-0345
+    AC6 is built nothing here has to change. What this gives up: a process killed inside a remover
+    leaves its item due, not removing, with the thing under its marked name; VELDO-0315 looks under
+    the marked name for any item with nothing at its locator, so reconcile still finds it.
+  - An item is marked gone only after two looks: rule 1 finds nothing at the locator, and
+    control_space_remove.left finds nothing under the marked name. A Docker object is gone only when
+    its engine was read and answered that it holds no such object; a volume the engine shows (it has
+    no Id, which rule 1 reads as missing) is deferred, not gone.
+  - The owner's confirmation is read from the item's record (confirmed). No ledger command writes it
+    until VELDO-0320, so the suite reads the real ledger through a view that returns one item with
+    it. A measure cell, a contained branch and an event with no cell for the item's row leave the item
+    kept, with the action named: the measuring and the mark are their own tickets.

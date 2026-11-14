@@ -12926,6 +12926,51 @@ def cases():
         "        if field in locator and field != 'run_label' and (labels or {}).get(label) != locator[field]:\n",
         ['work/docker-object-made-again'])
     result[-1]['siblings'] = True
+    # VELDO-0301: Signal. The declared falsifier of each acceptance criterion. AC1 the call returns
+    # after marking due and removes nothing itself; AC2 a refused item gets no deferral record (the
+    # ledger has no move back to present: kept is the state that, like present, holds none and is
+    # signalled again); AC3 the switch and the mode are ignored; AC4 an age rule removes old scratch;
+    # AC5 every tool refusal is named remove_refused, and an answer with left_at is written as any
+    # other deferral. And the spec's falsifier of the look: the kind registry is given a look that
+    # answers {}.
+    space301 = '139_veldo_0301_space_signal.py'
+    add(301, 'space301-returns-after-marking-due', space301, 'control_space_signal.py',
+        "                      borrow_root=borrow_root) if carried else []\n",
+        "                      borrow_root=borrow_root) if False else []\n",
+        ['ac1/removes-before-return'])
+    add(301, 'space301-refused-item-not-deferred', space301, 'control_space_signal.py',
+        "    return write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
+        "    return write('kept', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
+        ['ac2/deferred-then-retried'])
+    add(301, 'space301-mode-ignored', space301, 'control_space_signal.py',
+        "        if enabled and record.get('state') == 'due' and (\n"
+        "                ledger.acts((record.get('owner') or {}).get('scope')) or record.get('confirmed')):\n",
+        "        if record.get('state') == 'due':\n",
+        ['ac3/report-mode', 'ac3/switch-off'])
+    add(301, 'space301-age-rule-for-scratch', space301, 'control_space_signal.py',
+        "    result = ledger.signal(event, subject, principal=principal, command_id=command_id)\n"
+        "    if not result['ok']:\n",
+        "    for _aged in ledger.items().values():\n"
+        "        _where = (_aged.get('locator') or {}).get('path')\n"
+        "        if (_aged['kind'] == 'scratch' and _aged['state'] == 'present'\n"
+        "                and __import__('os').path.isdir(_where) and __import__('time').time()\n"
+        "                - __import__('os').stat(_where).st_mtime > 30 * 86400):\n"
+        "            __import__('shutil').rmtree(_where)\n"
+        "    result = ledger.signal(event, subject, principal=principal, command_id=command_id)\n"
+        "    if not result['ok']:\n",
+        ['ac4/no-clock'])
+    add(301, 'space301-every-tool-refusal-remove-refused', space301, 'control_space_signal.py',
+        "            if name == 'tool' and isinstance(found['said'], dict) and found['said'].get('deferral') in TOOL_DEFERRALS:\n",
+        "            if False:\n",
+        ['ac5/keep-failed-passed-through'])
+    add(301, 'space301-left-at-as-any-deferral', space301, 'control_space_signal.py',
+        "    if left_at and (judged['rule'] in ('tool', 'error') or found.get('missing') is True):\n",
+        "    if False:\n",
+        ['ac5/left-at-stays-removing'])
+    add(301, 'space301-look-answers-nothing', space301, 'control_space_signal.py',
+        "        return inside(ledger, probe, identity, record, run)\n\n    entries = ",
+        "        return {}\n\n    entries = ",
+        ['look/agent-repository-held'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
