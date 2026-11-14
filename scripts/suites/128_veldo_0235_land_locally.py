@@ -205,7 +205,9 @@ def _v235_suite():
         def keep_fetch(argv):
             """VELDO-0303 (review): the keep step's own fetch at the candidate's discard. It reads the
             candidate workspace, a folder on this host, by hash into the caller's repository, so that the
-            candidate's commits are on kept refs before the workspace is deleted. It names no remote."""
+            candidate's commits are on kept refs before the workspace is deleted. It names no remote.
+            VELDO-0303 fix: a candidate that landed holds no only copy (its commits are on the caller's
+            trunk), so its discard runs no keep step and this land shows no such fetch."""
             return (command_of(argv) == 'fetch' and '--stdin' in argv and 'uploadpack.allowAnySHA1InWant=true' in argv
                     and os.path.isabs(argv[-1])
                     and os.path.basename(os.path.dirname(argv[-1])).startswith('veldo-candidate-'))
@@ -513,9 +515,10 @@ def _v235_suite():
         check(LL, 'the bare origin is byte for byte unchanged', snapshot(bare) == bare_before)
         check(LL, 'the logging Git shows no push, fetch or ls-remote [%s]' % remote_cmds[:3], not remote_cmds)
         kept_fetches = [a for a in invocations()[since:] if keep_fetch(a)]
-        check(LL, 'the one fetch it shows is the keep step\'s, from the candidate workspace on this host into the '
-                  'caller [%d]' % len(kept_fetches),
-              len(kept_fetches) == 1 and str(caller) in kept_fetches[0])
+        check(LL, 'nor the keep step\'s fetch from the candidate workspace into the caller: the landed candidate '
+                  'holds nothing the trunk does not, and no kept ref is written for it [%d %s]'
+              % (len(kept_fetches), git(caller, 'for-each-ref', 'refs/veldo/kept/')[:120]),
+              kept_fetches == [] and git(caller, 'for-each-ref', 'refs/veldo/kept/') == '')
         check(LL, 'the effect executor was never called and no identity transport ran (no push credential read)',
               len(calls) == calls_before
               and (len(wire.log.read_text().splitlines()) if wire.log.is_file() else 0) == wire_before)

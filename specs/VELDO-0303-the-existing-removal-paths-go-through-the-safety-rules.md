@@ -221,3 +221,55 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   Suite 142 rows ac3/deferred-then-swept and f3/consumer-holds-clone were changed there to say so:
   no second event from the sweep, and the run directory of a run that still has its clone goes
   with the clone's teardown. No acceptance criterion of this ticket changed.
+- 2026-11-14: fix, after the review of 66b943b2 (review-veldo-0350-and-suites.md, part B) and the
+  lead's decision. The review commit of this ticket (e9e70768) broke suite 67_veldo_0056: with no
+  ledger the lander's discard gave every candidate workspace to the keep step, which wrote
+  refs/veldo/kept refs into the caller's repository on every land, refused or not, and left a
+  candidate stopped in a conflicted merge on disk. VELDO-0056's contract is that a refused land
+  leaves the caller as it was and nothing left over. No acceptance criterion of this ticket changed.
+  - The lead's decision. A landing candidate holds only commits that can be made again, so it is
+    removed with no kept ref written, but only after a check, and it fails closed: a commit that
+    nothing else holds is kept on a kept ref as before.
+  - The check is control_space_standalone.candidate, reached from the lander as space_rebuildable.
+    It writes nothing. The workspace goes with no kept ref only when every commit it names (by its
+    HEAD, a ref, a log or an operation head) is reachable from a branch, a tag, a remote-tracking
+    ref or a kept ref of the caller's repository, or from the workspace's trunk ref (the trunk as
+    the lander fetched it), or is one of the lander's own: a merge or the projection commit the
+    candidate's record names, or the one commit the lander had made and not yet recorded, which
+    must be the HEAD with exactly the parents the record's next step has. Its work tree must hold
+    no ignored file that is work, and what git's status lists must be nothing, or the tracked
+    paths of the merge the record's next step is, in progress, or the projected paths while the
+    projection is the next step. A stash, a linked worktree, a repository beneath it, another
+    operation, a file git does not track beside a merge, or anything git could not read: the
+    answer is no state, and the workspace is given to space_standalone exactly as before (kept
+    refs, or it stays with space_deferred:unique_work). lander.py and control_space_standalone.py,
+    canon and copy.
+  - What the lead should know. The lander's own merge and projection commits are reachable from
+    no ref of the caller: they are accepted because the record names them and each is made again
+    from held parents on every land. Read strictly ("every commit reachable from a kept ref, a
+    branch or the trunk"), a built candidate that was refused at the gate would still write kept
+    refs and suite 67's rejection row would stay red; this is the reading that makes it green. The
+    trunk is taken from the workspace's own trunk ref, not asked of the remote again.
+  - Suite 67_veldo_0056 is green again, 11 rows, 37 passed, unchanged. Suite 142 is 33 rows:
+    fix/candidate-rebuildable (a built candidate, one stopped in the conflicted merge, one whose
+    last merge was not recorded yet: each removed, no ref of the repository written or moved) and
+    fix/candidate-fail-closed (a commit the record does not name, a commit on the head with other
+    parents than the next step's, a commit only the log names: each on a kept ref, its file read
+    from the repository alone; a file git does not track beside the conflict, a merge of another
+    commit, a changed tracked file, an ignored file: each workspace stays, byte for byte).
+  - Nine falsifiers added under finding 303 (33 now), each applied once and red on its row:
+    space303-lander-keeps-every-candidate, space303-lander-removes-a-candidate-without-either-look,
+    space303-candidate-fetched-trunk-holds-nothing, space303-candidate-unaccounted-commit-goes,
+    space303-candidate-any-head-commit-is-the-landers, space303-candidate-untracked-file-goes,
+    space303-candidate-any-merge-is-the-landers, space303-candidate-changed-file-goes,
+    space303-candidate-ignored-work-goes. space303-lander-deletes-a-workspace-without-the-look is
+    re-anchored, unchanged in meaning (its line moved one level in).
+  - One older row changed back. 128_veldo_0235 local/lands asserted, since the review commit, that
+    the keep step's fetch from the candidate into the caller is the one fetch of a local land. A
+    landed candidate holds nothing the caller's trunk does not, so there is no such fetch and no
+    kept ref; the row asserts that.
+  - One row of VELDO-0310 changed. 147_veldo_0310 f1/remote-branch-contained read the candidate of
+    a remote landing in the project's own repository only because the discard had put it on a kept
+    ref there. It is no longer there, so the landed step brings the candidate's objects into the
+    project's repository as well as the other one (the path f1/project-repository-brought already
+    covers); the row asserts both, and every other check of the suite is unchanged.

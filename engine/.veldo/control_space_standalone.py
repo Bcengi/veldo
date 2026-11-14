@@ -48,6 +48,19 @@ standalone, the folder's name and a digest of its path, so a second look at the 
 refs of the first and writes nothing, and a worktree made again at the same path gets the next
 attempt. The refs are the record: no keep record is written, for there is no ledger to hold one.
 
+THE LANDING CANDIDATE (VELDO-0303 fix, `candidate`). The lander's candidate workspace is the one
+private repository whose commits can be made again: each is an input another repository holds (the
+watermark, which is the trunk as the lander fetched it, and the build's implementation and evidence)
+or a commit the lander makes from those on every land (its two merges and its projection commit). So
+the lander may remove it with no kept ref written, and a refused land then leaves the caller's
+repository as it was (VELDO-0056). It may do so only after this look, which writes nothing and fails
+closed: the answer is the state rebuildable only when every commit the workspace names, by its HEAD,
+a ref, a log or an operation, is reachable from a kept ref, a branch, a tag or a remote-tracking ref
+of the main repository or from the workspace's trunk ref, or is one the candidate's own record
+accounts for; and nothing in its work tree is outside the lander's own unfinished step. Any other
+answer and the lander asks `standalone` as before: the commits go to kept refs, and a workspace with
+work in no commit stays.
+
 Standard library only. The probes, the keeper and the removers' readers are loaded as siblings.
 """
 import hashlib
@@ -57,6 +70,9 @@ from pathlib import Path
 
 SCHEMA = 'veldo.control_space_standalone/v1'
 SAFE = ('gone', 'clear', 'kept')  # the states of a thing the caller may delete, or need not
+REBUILDABLE = 'rebuildable'  # the state of a landing candidate that may go with no kept ref written
+HELD_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/', 'refs/veldo/kept/')  # what holds a commit in the main
+HEX = frozenset('0123456789abcdef')
 KINDS = ('folder', 'worktree', 'agent_repository')
 GIT_FOLDER = frozenset(('HEAD', 'objects', 'refs'))  # a folder holding these is a git folder
 NAMED = 20  # the most names written into one answer
@@ -198,6 +214,152 @@ def standalone(path, kind, main=None, event='no event', ticket=None, skip=()):
             raise _Stays('keep_failed', 'the keep step did not keep it: %s' % kept.get('said'),
                          ref=kept.get('ref'), git=kept.get('git'))
         return dict(answer, state='kept', refs=kept['refs'], repository=kept['repository'])
+    except _Stays as stays:
+        return dict(answer, deferral=stays.deferral, said=stays.said, facts=stays.facts)
+    except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
+        return dict(answer, deferral='remove_refused', said='%s: %s' % (type(error).__name__, str(error)[:300]))
+
+
+def _commit(value):
+    return isinstance(value, str) and len(value) in (40, 64) and set(value) <= HEX
+
+
+def _next_step(record, trunk):
+    """What the lander's record says its next commit is made of, for the one commit it may have made
+    and not yet recorded: (the parents that commit has, the commit a merge in progress merges, whether
+    the projection is what is being made). The lander merges the implementation, then the evidence,
+    then commits the projection, each onto the one before, from the trunk it fetched."""
+    merges = record.get('merges')
+    merges = merges if isinstance(merges, list) else []
+    made = [step.get('merge') if isinstance(step, dict) else None for step in merges]
+    if len(made) > 2 or not all(_commit(commit) for commit in made) or 'projected_from' in record:
+        return None, None, False  # the record names every commit the lander made
+    onto = made[-1] if made else trunk
+    if not _commit(onto):
+        return None, None, False
+    if len(made) == 2:
+        return [onto], None, True
+    merged = record.get(('implementation', 'evidence')[len(made)])
+    return ([onto, merged], merged, False) if _commit(merged) else (None, None, False)
+
+
+def candidate(path, main, record, trunk_ref, projected=()):
+    """Look at the landing candidate workspace at `path` before the lander removes it with no kept ref
+    written (THE LANDING CANDIDATE, above). `main` is the caller's repository, `record` the lander's
+    own record of the candidate (merges, implementation, evidence, commit, projection_commit,
+    projected_from), `trunk_ref` the ref of the workspace the lander wrote the fetched trunk on, and
+    `projected` the paths the lander's projection writes. Nothing is written, here or in `main`.
+
+    The answer is {path, item, state, deferral, said, refs}. state is REBUILDABLE, with own (the
+    commits only the workspace has, each one the record accounts for) when all of this holds, and None
+    with the deferral and the sentence otherwise:
+
+      - it is a repository with a work tree, no linked worktree, no repository beneath it and no stash;
+      - every commit its HEAD, its refs, its logs and its operation heads reach is reachable from a
+        ref of `main` under HELD_REFS or from `trunk_ref`, or is a merge or the projection commit the
+        record names, or is the one commit the lander had made and not yet recorded: the HEAD, with
+        exactly the parents the record's next step has;
+      - its work tree holds no ignored file that is work, and what git's status lists is either
+        nothing, or the tracked paths of the merge the record's next step is, in progress, or the
+        projected paths while the projection is the next step. No other operation is in progress.
+
+    Whatever raises answers None with the deferral remove_refused."""
+    path = os.path.normpath(str(path))
+    answer = {'path': path, 'item': None, 'state': None, 'deferral': None, 'said': None, 'refs': {}}
+    try:
+        record = record if isinstance(record, dict) else {}
+        if os.path.realpath(path) != path or not os.path.isdir(path) or '.git' not in os.listdir(path):
+            raise _Stays('remove_refused', 'not a repository with a work tree at a plain path: ' + path)
+        if not isinstance(main, str) or not main or not os.path.isdir(main):
+            raise _Stays('keep_failed', 'no main repository is named for it: nothing says what holds its commits')
+        main = os.path.realpath(main)
+        remove, probe = _sibling('control_space_remove'), _sibling('control_space_probe')
+        identity = identity_of(path)
+        item = {'kind': 'agent_repository', 'locator': {'path': path}, 'state': 'present', 'owner': {}}
+        commands = []
+        answer['item'] = identity
+
+        def read(where, *argv, feed=None, absent=False):
+            code, out = remove._git(commands, '-C', where, *argv, feed=feed)
+            if absent and code == 1 and not str(out).strip():
+                return None
+            if code != 0:
+                raise _Stays('unique_work', 'git could not read %s: %s' % (where, str(out)[:200]))
+            return out
+
+        if read(path, 'rev-parse', '--is-bare-repository').strip() != 'false':
+            raise _Stays('unique_work', 'the repository has no work tree: not a candidate workspace')
+        folder = os.path.realpath(read(path, 'rev-parse', '--absolute-git-dir').rstrip('\n'))
+        if folder != os.path.join(path, '.git'):
+            raise _Stays('unique_work', 'the repository at the path is not the workspace\'s own: ' + folder)
+        try:
+            linked = remove._linked({'commands': commands}, path)
+        except remove._Stop as stopped:
+            raise _Stays('in_use', str(stopped))
+        if linked:
+            raise _Stays('in_use', 'the repository has linked worktrees: ' + ', '.join(linked[:3]), linked=linked[:NAMED])
+        _beneath(path, ())
+        tips = remove.tips(path, 'agent_repository', commands)
+        if tips is None:
+            raise _Stays('unique_work', 'git could not read the tips of the workspace')
+        if tips['stash']:
+            raise _Stays('unique_work', 'the workspace holds a stash entry, which the lander never makes')
+        trunk = read(path, 'rev-parse', '--verify', '--quiet', trunk_ref + '^{commit}', absent=True)
+        trunk = trunk.strip() if trunk else None
+        parents, merged, projecting = _next_step(record, trunk)
+
+        # The commits: what the workspace names, less what the main repository and the trunk hold.
+        named = set(line.partition(' ')[0] for line in tips['refs']) | set(tips['log']) | set(tips['operations'].values())
+        if tips['head']:
+            named.add(tips['head'])
+        holding = set(line.partition(' ')[0] for line in read(
+            main, 'for-each-ref', '--format=%(objectname) %(refname)', *HELD_REFS).split('\n')[:-1])
+        if trunk:
+            holding.add(trunk)
+        unheld = {}
+        if named:
+            listed = read(path, 'rev-list', '--parents', '--stdin',
+                          feed=('\n'.join(sorted(named) + ['--not'] + sorted(holding)) + '\n').encode())
+            for line in listed.split('\n')[:-1]:
+                commit, _, above = line.partition(' ')
+                unheld[commit] = above.split()
+        made = set(step.get('merge') for step in record.get('merges') or () if isinstance(step, dict))
+        made |= {record.get('commit'), record.get('projection_commit')}
+        beyond = sorted(commit for commit in unheld if commit not in made)
+        if beyond and not (beyond == [tips['head']] and parents is not None and unheld[beyond[0]] == parents):
+            raise _Stays('unique_work', 'the workspace holds a commit that nothing else holds and that the '
+                         'candidate\'s record does not account for: ' + ', '.join(beyond[:3]), commits=beyond[:NAMED])
+
+        # The work tree: nothing, or the lander's own unfinished step.
+        operations = sorted(set(name for name, marker in probe.OPERATIONS if os.path.lexists(os.path.join(folder, marker))))
+        try:
+            changed, work = remove._looked({'ledger': _NoLedger(identity, item, main), 'commands': commands}, item, path)
+        except remove._Stop as stopped:
+            raise _Stays('unique_work', str(stopped))
+        if work:
+            raise _Stays('unique_work', 'the work tree holds ignored files that are in no commit: '
+                         + ', '.join(work[:3]), ignored_work=work[:NAMED])
+        entries = read(path, 'status', '--porcelain=v1', '-z', '--untracked-files=all').split('\0')[:-1]
+        untracked, tracked = [], []
+        while entries:
+            entry = entries.pop(0)
+            if 'R' in entry[:2] or 'C' in entry[:2]:
+                tracked.append(entries.pop(0))
+            (untracked if entry[:2] == '??' else tracked).append(entry[3:])
+        if operations:
+            merging = (operations == ['merge'] and merged is not None and not beyond
+                       and tips['operations'].get('MERGE_HEAD') == merged)
+            if not merging or untracked:
+                raise _Stays('unique_work', 'an operation the candidate\'s record does not account for is in '
+                             'progress, or it left files git does not track: %s' % ', '.join(operations + untracked[:3]),
+                             operation=operations, untracked=untracked[:NAMED])
+        elif changed or tracked or untracked:
+            outside = sorted(set(name for name in changed + tracked + untracked if name not in projected))
+            if outside or not projecting:
+                raise _Stays('unique_work', 'the work tree holds files that are in no commit: '
+                             + ', '.join((outside or changed + tracked + untracked)[:3]),
+                             changed=(outside or changed + tracked + untracked)[:NAMED])
+        return dict(answer, state=REBUILDABLE, own=sorted(unheld))
     except _Stays as stays:
         return dict(answer, deferral=stays.deferral, said=stays.said, facts=stays.facts)
     except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed

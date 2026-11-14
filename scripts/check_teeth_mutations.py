@@ -13564,9 +13564,51 @@ def cases():
     path303('space303-landing-line-deletes-a-candidate-without-the-look', 'control_launch_work.py',
             "                found = space_standalone(directory, 'agent_repository', main=self.root)\n",
             "                found = {'state': 'kept'}\n", ['loss/candidate-commits'])
+    # Re-anchored under the VELDO-0303 fix, unchanged in meaning: the look with the keep step is now what
+    # a candidate the first look did not clear is given, one level in.
     path303('space303-lander-deletes-a-workspace-without-the-look', 'lander.py',
-            "            found = space_standalone(c[\"workspace\"], \"agent_repository\", main=self.repo_root)\n",
-            "            found = {\"state\": \"kept\"}\n", ['loss/candidate-commits'])
+            "                found = space_standalone(c[\"workspace\"], \"agent_repository\", main=self.repo_root)\n",
+            "                found = {\"state\": \"kept\"}\n", ['loss/candidate-commits'])
+    # VELDO-0303 fix (the review of 66b943b2, suite 67): a landing candidate goes with no kept ref
+    # written only when nothing in it is the only copy. The lander keeps every candidate on kept refs
+    # as it did (a refused land writes into the caller); the lander removes every candidate without
+    # either look; the trunk the lander fetched holds nothing; and each thing the look fails closed
+    # on, let through: a commit the record does not account for, a commit on the head with other
+    # parents than the record's next step, a file git does not track beside the lander's merge, a
+    # merge of another commit, a changed tracked file, an ignored file that is work.
+    path303('space303-lander-keeps-every-candidate', 'lander.py',
+            "            if found[\"state\"] != SPACE_REBUILDABLE:\n", "            if True:\n",
+            ['fix/candidate-rebuildable'])
+    path303('space303-lander-removes-a-candidate-without-either-look', 'lander.py',
+            "            found = space_rebuildable(c[\"workspace\"], self.repo_root, c, WATERMARK_REF, REGEN_PATHS)\n",
+            "            found = {\"state\": SPACE_REBUILDABLE}\n",
+            ['fix/candidate-fail-closed', 'loss/candidate-commits'])
+    path303('space303-candidate-fetched-trunk-holds-nothing', 'control_space_standalone.py',
+            "        if trunk:\n            holding.add(trunk)\n",
+            "        if False:\n            holding.add(trunk)\n",
+            ['fix/candidate-rebuildable'])
+    path303('space303-candidate-unaccounted-commit-goes', 'control_space_standalone.py',
+            "        if beyond and not (beyond == [tips['head']] and parents is not None and unheld[beyond[0]] == parents):\n",
+            "        if False:\n",
+            ['fix/candidate-fail-closed', 'loss/candidate-commits'])
+    path303('space303-candidate-any-head-commit-is-the-landers', 'control_space_standalone.py',
+            "        if beyond and not (beyond == [tips['head']] and parents is not None and unheld[beyond[0]] == parents):\n",
+            "        if beyond and not (beyond == [tips['head']] and parents is not None):\n",
+            ['fix/candidate-fail-closed'])
+    path303('space303-candidate-untracked-file-goes', 'control_space_standalone.py',
+            "            if not merging or untracked:\n", "            if not merging:\n",
+            ['fix/candidate-fail-closed'])
+    path303('space303-candidate-any-merge-is-the-landers', 'control_space_standalone.py',
+            "                       and tips['operations'].get('MERGE_HEAD') == merged)\n",
+            "                       and True)\n",
+            ['fix/candidate-fail-closed'])
+    path303('space303-candidate-changed-file-goes', 'control_space_standalone.py',
+            "            if outside or not projecting:\n", "            if False:\n",
+            ['fix/candidate-fail-closed', 'loss/candidate-commits'])
+    path303('space303-candidate-ignored-work-goes', 'control_space_standalone.py',
+            "        if work:\n            raise _Stays('unique_work', 'the work tree holds ignored files that are in no commit: '\n",
+            "        if False:\n            raise _Stays('unique_work', 'the work tree holds ignored files that are in no commit: '\n",
+            ['fix/candidate-fail-closed'])
     path303('space303-receiver-signals-under-a-consumer', 'control_launch.py',
             "            if users:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}\n",
             "            if False:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}\n",

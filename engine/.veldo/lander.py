@@ -175,6 +175,7 @@ def taxonomy(code):
 
 SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
 SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger that allow a delete
+SPACE_REBUILDABLE = 'rebuildable'  # a landing candidate that may go with no kept ref written
 _SPACE = {}
 
 
@@ -290,6 +291,23 @@ def space_standalone(path, kind, main=None, event='run_finished', ticket=None, s
         return _SPACE['standalone'](str(path), kind, main=None if main is None else str(main), event=event,
                                     ticket=ticket, skip=tuple(str(where) for where in skip))
     except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
+        return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
+                'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
+
+
+def space_rebuildable(path, main, record, trunk_ref, projected=()):
+    """VELDO-0303 fix: the look at a landing candidate workspace before it is removed with no kept ref
+    written (control_space_standalone.candidate), {path, item, state, deferral, said, refs}. The state
+    is SPACE_REBUILDABLE only when every commit the workspace holds is reachable from a ref of `main`
+    or from the trunk the lander fetched, or is one the candidate's record accounts for, and its work
+    tree holds nothing outside the lander's own unfinished step. Any other answer, and whatever raises,
+    leaves the workspace to space_standalone: the kept refs, or the workspace left where it is."""
+    try:
+        if 'candidate' not in _SPACE:
+            _SPACE['candidate'] = _load("veldo_space_standalone_ld", "control_space_standalone.py").candidate
+        return _SPACE['candidate'](str(path), None if main is None else str(main), record, trunk_ref,
+                                   projected=tuple(projected))
+    except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed this way
         return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
                 'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
 
@@ -657,7 +675,10 @@ class GitLandOps(LandOps):
 
     def discard(self):
         """Remove the candidate workspace. A candidate is disposable, and its commits are still work: with
-        no ledger they are first written on kept refs in the caller's repository (space_standalone).
+        no ledger it goes with no kept ref written only when every commit it holds is held elsewhere or
+        is one the lander makes again (space_rebuildable), so that a refused land leaves the caller's
+        repository as it was (VELDO-0056); any other workspace has its commits written on kept refs in
+        the caller's repository first (space_standalone).
         With a space ledger (VELDO-0303) the workspace, a private repository, and the observation
         folder go through Signal: the rules, the keep step for the workspace, then the folder remover.
         What a rule keeps stays on disk, deferred on the record, and the candidate says so under space."""
@@ -676,9 +697,14 @@ class GitLandOps(LandOps):
         # No ledger: the unique work probe and the keep step by themselves, before either delete. The
         # workspace is a private repository of the caller's: its commits go to kept refs there first, and
         # one that holds unsaved files stays, as the candidate says under space.
+        # VELDO-0303 fix: but first the look that writes nothing. A candidate whose every commit is held
+        # by the caller's refs or the fetched trunk, or is the lander's own merge or projection, is
+        # removed with no kept ref; whatever that look does not clear takes the path above (fail closed).
         if c and c.get("workspace") and os.path.isdir(c["workspace"]):
-            found = space_standalone(c["workspace"], "agent_repository", main=self.repo_root)
-            if found["state"] in SPACE_SAFE:
+            found = space_rebuildable(c["workspace"], self.repo_root, c, WATERMARK_REF, REGEN_PATHS)
+            if found["state"] != SPACE_REBUILDABLE:
+                found = space_standalone(c["workspace"], "agent_repository", main=self.repo_root)
+            if found["state"] == SPACE_REBUILDABLE or found["state"] in SPACE_SAFE:
                 shutil.rmtree(c["workspace"], ignore_errors=True)
             else:
                 c.setdefault("space", {})[c["workspace"]] = dict(found, refusal=space_refusal(found))

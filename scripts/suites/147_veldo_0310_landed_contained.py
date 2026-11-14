@@ -62,7 +62,9 @@ Then, with the remote at the landing, the unit's worktree is removed after the k
 commit, no branch of the project's repository holding the candidate; another branch of that repository
 which the remote's new tip contains is contained, its worktree removed after the keep step, the branch kept
 and marked; and a branch recorded in another repository, which holds nothing of the landing, is contained
-after the candidate's objects were brought into it, with no ref written there and nothing fetched).
+after the candidate's objects were brought into it, with no ref written there and nothing fetched; since
+the VELDO-0303 fix the lander's discard writes no kept ref for a landed candidate, so the objects are
+brought into the project's own repository too).
 f1/project-repository-brought (the re-review's case 3: a unit lands at the remote with the lander's
 workspace discard disabled, so no kept ref gives the project's own repository the candidate; the step
 copies the candidate's objects into that repository, writes no ref and fetches nothing; landed is sent for
@@ -1283,9 +1285,13 @@ def _v310_suite():
               % state_of(apart['branch_item']),
               state_of(apart['branch_item']) == 'kept' and tip(caller, 'side/remote') == SEED
               and len(of(arrived.get('marked') or [], item=apart['branch_item'], event='contained')) == 1)
-        check(R, 'the candidate\'s objects were brought from the landing\'s clone into the repository that did not '
-                 'hold them, before the reads, and the record names it [%s]' % (arrived.get('brought'),),
-              arrived.get('brought') == [{'repository': str(agent), 'how': 'copied'}]
+        # VELDO-0303 fix: the lander's discard writes no kept ref for a candidate that landed, so the project's
+        # own repository does not hold the candidate either, and it is brought there as well.
+        check(R, 'the candidate\'s objects were brought from the landing\'s clone into each repository that did not '
+                 'hold them, the project\'s own and the other one, before the reads, and the record names both [%s]'
+              % (arrived.get('brought'),),
+              arrived.get('brought') == [{'repository': str(caller), 'how': 'copied'},
+                                         {'repository': str(agent), 'how': 'copied'}]
               and AT_SIGNAL.get('agent') is True and has(agent, candidate5))
         check(R, 'no ref was written by that and nothing was fetched: the refs of that repository are exactly those '
                  'before, at the first event and after the step, and no ref there holds the candidate; the refs of '
