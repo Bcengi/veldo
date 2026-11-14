@@ -8668,9 +8668,14 @@ def cases():
                      "            config = json.load(handle)\n"
                      "        if not isinstance(config, dict):\n"
                      "            raise ValueError('receiver config must be an object')\n"
-                     "        records = ER.directory(config)\n")
+                     "        records = ER.directory(config)\n"
+                     # Re-anchored under the VELDO-0350 fix, unchanged in meaning: the receiver's log is opened
+                     # with the configuration's records directory, and the spawn names it.
+                     "        # VELDO-0350: what the receiver writes on standard error is kept beside the run's execution record.\n"
+                     "        errors, place = _receiver_errors(records, contract['dispatch_id'])\n")
     record_spawn = ("        child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,\n"
-                    "                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)\n")
+                    "                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL if errors is None else errors,\n"
+                    "                                 env=environment)\n")
     record141('record141e-config-read-after-spawn', 'control_launch.py',
               record_config + record_spawn, record_spawn + record_config,
               ['config/malformed', 'config/incomplete', 'config/missing-file'])
@@ -14724,6 +14729,33 @@ def cases():
     add(350, 'end350-failed-receiver-never-exits-zero', end350, 'control_launch.py', retry350[2],
         "        status = END_UNRECORDED\n",
         ['ac3/zero-with-an-end'])
+    # VELDO-0350 fix (the review of 66b943b2, finding F1: the status reached nobody). The launch drops
+    # the receiver's status; every receiver that left a running record is recorded as one that said it
+    # left no end; a receiver whose output has ended is killed before it exits; the receiver's
+    # standard error goes to /dev/null as it did.
+    def kept350(name, old, new, rows):
+        add(350, name, end350, 'control_launch.py', old, new, rows)
+
+    kept350('end350-launch-drops-the-status',
+            "        self.returncode = self.child.returncode\n",
+            "        pass  # defect: the receiver's status is thrown away\n",
+            ['f1/launch-records-the-status'])
+    kept350('end350-every-silent-receiver-recorded-unrecorded',
+            "            reason = END_UNRECORDED_REASON if self.returncode == END_UNRECORDED else 'outcome_unknown'\n",
+            "            reason = END_UNRECORDED_REASON  # defect: a killed receiver is recorded the same\n",
+            ['f1/launch-records-the-status'])
+    kept350('end350-ending-receiver-killed-for-its-status',
+            "        if self.child.poll() is None and (self.closed or self.lost):\n",
+            "        if False:\n",
+            ['f1/launch-records-the-status'])
+    kept350('end350-receiver-errors-discarded',
+            "                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL if errors is None else errors,\n",
+            "                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,\n",
+            ['f1/receiver-errors-in-the-log'])
+    kept350('end350-receiver-says-nothing-of-its-failure',
+            "            sys.stderr.write('receiver failed: %s %s; the dispatch\\'s record shows %s (exit %d)\\n' % (\n",
+            "            ''.join('receiver failed: %s %s; the dispatch\\'s record shows %s (exit %d)\\n' % (\n",
+            ['f1/launch-records-the-status', 'f1/receiver-errors-in-the-log'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

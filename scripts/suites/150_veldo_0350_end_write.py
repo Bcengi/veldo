@@ -72,6 +72,7 @@ def _v350_end_write_suite():
             'ac1/other-writes-refused-as-before',
             'ac2/never-two-ends', 'ac2/retry-is-bounded',
             'ac3/failed-without-an-end', 'ac3/zero-with-an-end',
+            'f1/launch-records-the-status', 'f1/receiver-errors-in-the-log',
             'paths/canon')
     rows = {name: [] for name in ROWS}
 
@@ -369,8 +370,9 @@ class Moving:
         self.serial += 1
         if self.serial > 40:  # a write that never gave up ends here, and the row says what it found
             return S.execute(conn, command, *given)
-        S.execute(self.conn, dict(command_id='moving-%%d' %% self.serial, principal='owner', operation='upsert_entity',
-                                  nonce='moving-%%d' %% self.serial, artifact_digests=[], expected_versions={identity: version},
+        name = 'moving-%%s-%%d' %% (identity, self.serial)  # one per dispatch: two receivers use this store
+        S.execute(self.conn, dict(command_id=name, principal='owner', operation='upsert_entity',
+                                  nonce=name, artifact_digests=[], expected_versions={identity: version},
                                   parameters=dict(entity_id=identity, kind=D.RECORD_KIND,
                                                   data=dict(json.loads(data), touched=self.serial))), 'owner', sign, 1)
         return S.execute(conn, command, *given)
@@ -453,6 +455,103 @@ L.main()
               and L.end_recorded(type('Held', (), {'dispatches': running})(), {'contract': {}}) is False
               and L.end_recorded(type('Held', (), {'dispatches': running})(),
                                  {'contract': {'dispatch_id': 'dispatch/none'}}) is False)
+
+        # ---- The fix after the review (F1): whoever starts the receiver keeps its exit status ---------
+        R = 'f1/launch-records-the-status'
+        records = base / 'records'
+
+        def launched(argv, contract, feed=True):
+            """The runner's end of a receiver process that is running `contract`'s dispatch: the real
+            Launch, its standard error opened as invoke opens it."""
+            errors, place = L._receiver_errors(str(records), contract['dispatch_id'])
+            child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=errors,
+                                     env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'))
+            os.close(errors)
+            made = L.Launch(child, dict(contract, deadline=time.time() + 600), running, time.time, records=str(records))
+            made.receiver_log, made.result, made.record = place, 'accepted', record(contract['dispatch_id'])
+            if feed:
+                child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
+                child.stdin.flush()
+            return made
+
+        def shown(made, dispatch_id):
+            after = record(dispatch_id)
+            return (made.returncode, after['state'], after['reason'], ends(dispatch_id))
+
+        dispatch_id, contract = planted('kept-11')
+        made = launched([sys.executable, '-B', str(driver), str(mods), 'stale', str(config)], contract)
+        made.wait(timeout=120)
+        refused = shown(made, dispatch_id)
+        check(R, 'a receiver whose end write was refused after its retries exits END_UNRECORDED, and the launch keeps '
+                 'that status [%s %s]' % (refused[0], made.messages),
+              refused[0] == L.END_UNRECORDED and made.messages == [{'event': 'failed', 'error': 'Refused'}])
+        check(R, 'the runner records the dispatch unknown once, and the record itself says the receiver left no end: '
+                 'its reason is an unknown outcome and names end_unrecorded [%s]' % (refused[1:],),
+              refused[1:] == ('unknown', L.END_UNRECORDED_REASON, [('unknown', 'runner')])
+              and L.END_UNRECORDED_REASON.split(':')[0] == 'outcome_unknown'
+              and L.END_UNRECORDED_REASON != 'outcome_unknown'
+              and D.taxonomy(L.END_UNRECORDED_REASON) == 'unknown_outcome' and holder(contract) == dispatch_id)
+        log = Path(made.receiver_log).read_text() if made.receiver_log else None
+        check(R, 'the receiver\'s own words are in its log beside the run\'s execution record: the refusal and the '
+                 'status [%s]' % (log,),
+              made.receiver_log == L.receiver_log(str(records), dispatch_id)
+              and os.path.dirname(made.receiver_log) == os.path.dirname(L.ER.path(str(records), dispatch_id))
+              and log is not None and 'receiver failed: Refused stale_version' in log
+              and 'no end (exit %d)' % L.END_UNRECORDED in log)
+        dispatch_id, contract = planted('dead-12')
+        made = launched([sys.executable, '-c', 'import time; time.sleep(600)'], contract, feed=False)
+        made.wait(timeout=0.3)
+        killed = shown(made, dispatch_id)
+        dispatch_id, contract = planted('gone-13')
+        made = launched([sys.executable, '-c', 'import sys; sys.exit(1)'], contract, feed=False)
+        made.wait(timeout=60)
+        gone = shown(made, dispatch_id)
+        check(R, 'a silent receiver the runner had to kill, and one that ended with another status, are recorded '
+                 'unknown as before, outcome_unknown: told apart from the one that said it left no end [%s %s]'
+              % (killed, gone),
+              killed[0] is not None and killed[0] < 0 and killed[1:] == ('unknown', 'outcome_unknown', [('unknown', 'runner')])
+              and gone == (1, 'unknown', 'outcome_unknown', [('unknown', 'runner')]))
+        dispatch_id, contract = planted('slow-14')
+        made = launched([sys.executable, '-c', 'import os, sys, time; os.close(1); time.sleep(0.6); sys.exit(%d)'
+                         % L.END_UNRECORDED], contract, feed=False)
+        made.wait(timeout=60)
+        slow = shown(made, dispatch_id)
+        check(R, 'a receiver whose output ended before it exited is given its exit: its status is its own, never '
+                 'the kill\'s [%s]' % (slow,),
+              slow == (L.END_UNRECORDED, 'unknown', L.END_UNRECORDED_REASON, [('unknown', 'runner')]))
+        dispatch_id, contract = planted('done-15')
+        made = launched([sys.executable, '-B', str(driver), str(mods), 'clean', str(config)], contract)
+        made.wait(timeout=120)
+        clean = shown(made, dispatch_id)
+        check(R, 'control: a receiver that recorded its end is not written over: exited, no reason, one end, the '
+                 'receiver\'s [%s]' % (clean,),
+              clean[1:] == ('exited', None, [('exit', 'launch-receiver')]))
+
+        R = 'f1/receiver-errors-in-the-log'
+        dispatch_id, contract = planted('real-16')
+        real_config = base / 'receiver-real.json'
+        real_config.write_text(json.dumps({'store': str(db), 'domain': DOMAIN, 'repository': REPOSITORY,
+                                           'principal': 'launch-receiver', 'records': str(records)}))
+        made = L.invoke(str(real_config), dict(contract, deadline=time.time() + 600), running, accept_seconds=60,
+                        environment=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'))
+        made.wait(timeout=60)
+        real = shown(made, dispatch_id)
+        log = Path(made.receiver_log).read_text() if made.receiver_log and os.path.exists(made.receiver_log) else None
+        check(R, 'invoke starts the real receiver with its standard error on the log beside the run\'s execution '
+                 'record, a file of the owner alone, not on /dev/null [%s %s]' % (made.receiver_log, log),
+              made.receiver_log == L.receiver_log(str(records), dispatch_id) and log is not None
+              and os.stat(made.receiver_log).st_mode & 0o777 == 0o600
+              and os.stat(str(records)).st_mode & 0o777 == 0o700)
+        check(R, 'the real receiver, which could not launch with this configuration, wrote there why it failed and '
+                 'the status it exits with, and the launch holds that status and recorded it [%s %s]'
+              % (real, made.messages),
+              log is not None and log.startswith('receiver failed: ') and 'no end (exit %d)' % L.END_UNRECORDED in log
+              and real == (L.END_UNRECORDED, 'unknown', L.END_UNRECORDED_REASON, [('unknown', 'runner')]))
+        blocked = base / 'blocked'
+        blocked.write_text('a file where the records directory would be')
+        unopened = L._receiver_errors(str(blocked), dispatch_id)
+        check(R, 'a log that cannot be opened refuses no launch: no descriptor and no path are given [%s]' % (unopened,),
+              unopened == (None, None))
         writer.close()
 
         R = 'paths/canon'

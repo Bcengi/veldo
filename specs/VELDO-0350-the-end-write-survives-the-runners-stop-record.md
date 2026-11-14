@@ -29,10 +29,17 @@ observability:
     retried, the refusal stale_version, the attempt number and the versions the refused command expected.
     The accepted or refused record that follows is as before. A receiver that failed still writes its
     failed event on standard output; its exit status now says whether the dispatch's record shows an end.
+    The launch that started the receiver keeps that status (Launch.returncode). A receiver that failed
+    writes one line on its standard error, with the error's class, its refusal code and the status; the
+    launch sends the receiver's standard error to a file beside the run's execution record
+    (Launch.receiver_log, the record's name with .receiver.log), of the owner alone.
   error_taxonomy: >
     No new refusal. An end write that could not be recorded after its retries is refused stale_version
     (stale_subject), as before. The receiver's exit status END_UNRECORDED (3) means it failed and the
-    dispatch's record shows no end; 0 after a failed event means the end is on the record.
+    dispatch's record shows no end; 0 after a failed event means the end is on the record. When the
+    runner records unknown for a receiver that exited END_UNRECORDED with its dispatch still running, the
+    record's reason is outcome_unknown:end_unrecorded (unknown_outcome, as outcome_unknown is); for a
+    receiver that was killed, vanished or ended with any other status it is outcome_unknown, as before.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -64,11 +71,18 @@ acceptance_criteria:
     text: >
       The receiver's main() exits with a status other than 0 when it failed and the record of the
       dispatch it was asked to launch shows no end, also when that record cannot be read. It exits 0
-      when it failed after the end was recorded, and when it ended cleanly
+      when it failed after the end was recorded, and when it ended cleanly. The launch that started the
+      receiver reads the status: when it records unknown for a receiver that left its dispatch running
+      and exited with that status, the record's reason says so (outcome_unknown:end_unrecorded), apart
+      from a receiver that was killed or ended any other way (outcome_unknown), and the receiver's
+      standard error is kept in a file beside the run's execution record
     falsified_by: >
       Each of these turns a row of its own red. Exit 0 after every failure, as it was: the row's
       receiver, whose end write was refused, exits 0 with the record still running. Exit non-zero after
-      every failure: the row's receiver, which failed after its end was recorded, exits non-zero
+      every failure: the row's receiver, which failed after its end was recorded, exits non-zero. Drop
+      the status in the launch: the row's dispatch, whose receiver exited with it, is recorded
+      outcome_unknown. Send the receiver's standard error to /dev/null, as it was: the row's log holds
+      nothing of the real receiver that failed
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. An end write refused stale_version is refused at once again, and a receiver that
@@ -125,9 +139,22 @@ The receiver's exit status (AC3), in control_launch.py. After a failure main() r
 dispatch its request named (end_recorded). An end is one of exited, refused, unknown. With an end on
 the record it exits 0, as a failure after the end was recorded changes nothing the runner must settle.
 With none, or with a record it cannot read (no receiver was made, the request names no dispatch, the
-read raises), it exits END_UNRECORDED (3). The failed event is written as before. The runner does not
-read the status today; it reads the record and settles it, which is unchanged. The status is for the
-log and for whoever reads why a receiver ended.
+read raises), it exits END_UNRECORDED (3). The failed event is written as before.
+
+Who reads the status (the fix after the review, finding F1). Launch._end_receiver keeps the reaped
+receiver's status in Launch.returncode. Launch.wait still settles from the record; when the record
+says running and the receiver is gone it records unknown as before, and the reason it writes is
+outcome_unknown:end_unrecorded when the status is END_UNRECORDED and outcome_unknown otherwise. The
+part before the colon is the code every reader already has (the service writes
+outcome_unknown:service_restart the same way), so nothing that holds or frees a unit changes. A receiver
+whose output has reached its end of file is given RECEIVER_EXIT_SECONDS (2) to exit before the kill, so
+the kill does not replace the status of a receiver that is ending by itself; one that is silent and
+alive is killed at once, as before. invoke opens a file beside the run's execution record
+(receiver_log: the record's path with .receiver.log, mode 0600 in the 0700 records directory) and
+gives it to the receiver as its standard error, which was /dev/null. main() writes one line there
+when it fails: the error's class, its refusal code (never the error's text) and the status. The file
+is no part of the execution record and of no digest. A log that cannot be opened refuses no launch:
+the receiver then gets /dev/null as before.
 
 Not done here. The other fix the review named, keeping the stop bookkeeping off the dispatch record's
 version, would change what the record of a stop is and who reads it (VELDO-0131). The retry closes the
@@ -175,3 +202,30 @@ The owner's recorded approval is needed at landing.
     accept and run need the reservation and the claim; in the AC3 rows the Receiver class is a stand-in
     around the real Dispatches. The whole path with a real receiver, a real worker and the real runner
     is suite 62's dispatch/owner-stop, unchanged.
+- 2026-11-14: fix, after the independent review of 66b943b2 (review-veldo-0350-and-suites.md, part A,
+  verdict FIX: one finding; the retry sound). AC3 says more than it did: who reads the status. No other
+  criterion changed.
+  - F1: the new status reached nobody. invoke sent the receiver's standard error to /dev/null,
+    Launch._end_receiver threw the status away, and the runner recorded outcome_unknown for a receiver
+    whose end write was refused exactly as for one that died. Now the launch keeps the status, the
+    unknown record's reason is outcome_unknown:end_unrecorded for a receiver that exited END_UNRECORDED,
+    and the receiver's standard error is a file beside the run's execution record (the Design's "Who
+    reads the status"). control_launch.py only, canon and copy.
+  - Suite 150 is 10 rows, 36 passed. f1/launch-records-the-status: through the real Launch, a receiver
+    whose end write was refused after its retries (the launch module's own main()) leaves status 3 on the
+    launch, one end on the record, the runner's, with the reason outcome_unknown:end_unrecorded, and its
+    line in the log; a silent receiver the runner killed and one that exited 1 are outcome_unknown; a
+    receiver whose output ended 0.6 seconds before it exited keeps its own status; a receiver that
+    recorded its end is not written over. f1/receiver-errors-in-the-log: the real invoke starts the real
+    receiver, which cannot launch with the row's configuration; its line is in the log, a file of mode
+    0600, the status is on the launch and in the record; a log that cannot be opened gives no descriptor.
+  - One fixture change: the stand-in store that moves the record names its commands per dispatch, since
+    two receivers now use it on one store.
+  - Five falsifiers added under finding 350 (11 now), each applied once and red on its row, its no-op
+    copy green: end350-launch-drops-the-status, end350-every-silent-receiver-recorded-unrecorded,
+    end350-ending-receiver-killed-for-its-status, end350-receiver-errors-discarded,
+    end350-receiver-says-nothing-of-its-failure. Two cases of finding 141 (record141e-config-read-after-
+    spawn and its spawn anchor) are re-anchored, unchanged in meaning, because the lines they name gained
+    the log; applied once, red on their rows.
+  - Not done here, from the review's notes: N1 (two guards of the retry that no row holds), N2 (the
+    runner's stop_result is not retried), N3. Each is for a ticket or a later round.

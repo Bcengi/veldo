@@ -1958,6 +1958,13 @@ class Launch:
         # VELDO-0154: the run's end seen on the launch pipe, and whether it was the pipe's end of file.
         self.ended = False
         self.lost = False
+        # VELDO-0350: the receiver's exit status once it is reaped (None before, a negative number when a
+        # signal ended it), whether a wait found its output at its end of file (as `lost` says for the pump),
+        # and the file its standard error is written to, beside the run's execution record (None when none
+        # could be opened).
+        self.returncode = None
+        self.closed = False
+        self.receiver_log = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -1981,6 +1988,7 @@ class Launch:
                 return None
             chunk = os.read(self.child.stdout.fileno(), 65536)
             if not chunk:
+                self.closed = True
                 return None
             self.pending += chunk
         return self._take()
@@ -2038,9 +2046,15 @@ class Launch:
         """Make the receiver's silence conclusive: it is stopped and reaped, so it writes no more."""
         if self.child is None:
             return
+        if self.child.poll() is None and (self.closed or self.lost):
+            # VELDO-0350: its output reached its end of file, so it is ending by itself: its own exit status
+            # is waited for, briefly, before the kill that would replace it.
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                self.child.wait(timeout=RECEIVER_EXIT_SECONDS)
         if self.child.poll() is None:
             self.child.kill()
         self.child.wait(timeout=10)
+        self.returncode = self.child.returncode
         with contextlib.suppress(OSError, ValueError):
             if self.child.stdin is not None:
                 self.child.stdin.close()
@@ -2115,30 +2129,59 @@ class Launch:
         self._end_receiver()
         record = self.dispatches.record(self.dispatch_id)
         if record and record['state'] == 'running':
-            # The receiver that owned the worker has ended without recording its end.
-            record = self.dispatches.unknown(self.dispatch_id, record['contract_digest'], 'outcome_unknown',
+            # The receiver that owned the worker has ended without recording its end. VELDO-0350: one that
+            # said so itself (it failed, its end write refused after its retries or never sent, and it exited
+            # END_UNRECORDED) is recorded apart from one that was killed, vanished or was stopped here.
+            reason = END_UNRECORDED_REASON if self.returncode == END_UNRECORDED else 'outcome_unknown'
+            record = self.dispatches.unknown(self.dispatch_id, record['contract_digest'], reason,
                                              now=self.clock(), expected_state='running',
                                              execution_record=self._record_commitment())
         self.record = record
         return record
 
 
+def receiver_log(records, dispatch_id):
+    """VELDO-0350: the file a dispatch's receiver writes its standard error to, beside the run's execution
+    record and named as it is. It is no part of that record and of no digest."""
+    return ER.path(records, dispatch_id)[:-len('.jsonl')] + '.receiver.log'
+
+
+def _receiver_errors(records, dispatch_id):
+    """The open descriptor of `receiver_log` and its path, or (None, None) when it cannot be opened: a
+    launch is never refused for its log."""
+    try:
+        os.makedirs(str(records), mode=0o700, exist_ok=True)
+        place = receiver_log(records, dispatch_id)
+        return os.open(place, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600), place
+    except (OSError, ValueError, TypeError):
+        return None, None
+
+
 def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, environment=None, clock=None):
     """Hand the prepared contract to the trusted receiver process named by the installed config."""
+    errors, place = None, None
     try:
         with open(config_path) as handle:
             config = json.load(handle)
         if not isinstance(config, dict):
             raise ValueError('receiver config must be an object')
         records = ER.directory(config)
+        # VELDO-0350: what the receiver writes on standard error is kept beside the run's execution record.
+        errors, place = _receiver_errors(records, contract['dispatch_id'])
         child = subprocess.Popen([sys.executable, '-B', RECEIVER, str(config_path)], stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment)
+                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL if errors is None else errors,
+                                 env=environment)
     except (OSError, ValueError, KeyError, TypeError):
         # No receiver ran, so nothing was launched: a conclusive refusal, never a held unit.
+        if errors is not None:
+            os.close(errors)
         launch = Launch(None, contract, dispatches, clock or time.time)
         launch._settle(lost=True)
         return launch
+    if errors is not None:
+        os.close(errors)  # the receiver holds its own
     launch = Launch(child, contract, dispatches, clock or time.time, records=records)
+    launch.receiver_log = place
     try:
         # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
         child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
@@ -3834,6 +3877,10 @@ def _request(fd, seconds):
 
 
 END_UNRECORDED = 3  # the receiver's exit status when it failed and the dispatch's record shows no end
+# What Launch.wait records for a receiver that exited END_UNRECORDED with its dispatch still running: an
+# unknown outcome as every other (its code before the colon), and why.
+END_UNRECORDED_REASON = 'outcome_unknown:end_unrecorded'
+RECEIVER_EXIT_SECONDS = 2  # how long a receiver whose output has ended is given to exit by itself
 
 
 def end_recorded(receiver, request):
@@ -3869,6 +3916,13 @@ def main():
         # VELDO-0350: a receiver that failed and left no end on the dispatch's record does not end as a
         # clean one does.
         status = 0 if end_recorded(receiver, request) else END_UNRECORDED
+        # The receiver's standard error is the run's receiver log (Launch.receiver_log): the error's class and
+        # its refusal code, never its text, and what the status means.
+        with contextlib.suppress(OSError, ValueError):
+            sys.stderr.write('receiver failed: %s %s; the dispatch\'s record shows %s (exit %d)\n' % (
+                type(error).__name__, getattr(error, 'code', None) or '-',
+                'its end' if status == 0 else 'no end', status))
+            sys.stderr.flush()
     finally:
         if receiver is not None:
             receiver.close()
