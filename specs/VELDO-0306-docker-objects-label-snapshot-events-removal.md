@@ -140,3 +140,44 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     network, so a network removed by hand is deferred as not_in_ledger and never marked gone by
     Signal (safe, and the adapter's destroy event marks it gone); and a client that cannot reach the
     engine can say "no such file", which the adapter does not take for an answer (absent).
+- 2026-11-14: fixed from the review of this build (review-veldo-0306.md, verdict FIX, findings 1 to 5),
+  under the owner's rule that no work is ever lost and that the host's real data is never touched. No
+  acceptance criterion changed.
+  - Finding 1 (high). The suite's real-engine row could reach objects of the host: it read the whole
+    event stream of the engine and gave Signal the real client, and the registered mutants ran that row
+    too. Three things now hold it, each on its own. The row's event client is started with the row's own
+    label as a filter (control_space_docker.events_argv), and the row takes no snapshot. Signal, the
+    removers and the adapter are given the row's client, which passes ls, inspect and info and, beyond
+    them, only a stop or a remove of one object with no option on the row's context, when the engine
+    shows under that word the very object the row created (the Id, or a volume's name and CreatedAt,
+    read when the row made it); everything else is refused and reds the row. And the row never runs
+    under a mutant: the mutation driver's worker says in the environment that it is running
+    (VELDO_MUTATION_DRIVER), and the row also refuses when a production module was loaded from anywhere
+    but .veldo or differs from its engine canon. The same procedure runs on a second stand-in engine in
+    every run (review/own-row-on-a-stand-in), with a host-like unlabelled container, volume and network
+    planted on it and their events in the row's stream (review/host-object-untouched): they are
+    untouched, also under the mutant that gives an unlabelled object to a live run. Because a label
+    filter lets no volume event through (an engine puts a volume's labels in no event), the object the
+    row makes for its event is a container.
+  - Finding 2. A container that mounts what the protect list covers (a volume by its name or by its
+    compose project label, or a bind source at, above or beneath a protected path) is protected: the
+    adapter gives it neither an item nor a report, and rule 2 reads the mounts from the engine again
+    before any removal (control_space_probe.mounts). Mounts that cannot be read refuse at both points.
+    VELDO-0341 still owns the protect list of Docker objects; this closes the gap from the first commit
+    that records and removes containers.
+  - Finding 3. Before each snapshot, at start and at end of file, the adapter asks the engine for its
+    own time (system info), and the subscription after the snapshot is made with --since that time. An
+    engine whose time cannot be read is down and gets no snapshot. The adapter still imports no clock.
+  - Finding 4. A context that goes down is said: in the answer of start and of readable, in unread(),
+    to the adapter's listener, in the service's observation log (unavailable:engine_not_read) and in
+    Service.docker_unread.
+  - Finding 5. Rule 1 also compares each owner label a volume's record holds with the labels the
+    engine shows now (located returns them), so a volume made again in the same second without the
+    label is not_in_ledger.
+  - The footprint grew by scripts/check_teeth_mutations.py (the worker's one line, the cases of the
+    review). Twelve cases were added and two anchors of the build's cases moved with the code.
+  - Not as it should be, and said here: the four .veldo files of this fix (control_space_docker.py,
+    control_service.py, control_space_probe.py, control_space_signal.py) were taken into commit
+    fe486efb (VELDO-0305, review) by the run that was fixing VELDO-0305 in the same worktree at the
+    same time, before their engine copies were synced. This fix's own commit holds the synced engine
+    copies, the suite, the driver and the rest; between the two commits the template-sync check is red.

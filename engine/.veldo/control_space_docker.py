@@ -7,14 +7,15 @@ WHAT IS HERE. An Adapter on one space ledger, for the engine contexts the instal
   snapshot(engine)   reads every container, network and volume of the context with its labels and
                      records each: an item for an object a run owns, a report for one nobody can be
                      shown to own
-  start()            for each context, the snapshot and then the subscription to its event stream
+  start()            for each context, the engine's time, the snapshot, and then the subscription to
+                     its event stream since that time
   pipes()            {descriptor: engine}: the output pipe of each context's one client process, for
                      the service loop's poll set (control_service.serve)
   readable(fd)       the poll set found a pipe readable: every whole event line it holds is handled,
                      and end of file takes a new snapshot before a new subscription
 
 THIS MODULE REMOVES NOTHING. It runs no stop, no remove and no prune, and it has no way to delete: the
-only commands it gives an engine are ls, inspect and events. A run's objects are removed where
+only commands it gives an engine are ls, inspect, system info and events. A run's objects are removed where
 everything is removed: the event is sent through Signal (control_space_signal.signal), the kind
 registry gives the order (containers stopped and removed first, then networks, then volumes: design
 6.4 and section 5), the safety rules judge each item, and the removers (control_space_remove) name one
@@ -52,6 +53,14 @@ name or by its compose project label, as space_protected. This module asks for b
 object and puts each one the object carries in the locator, so a protected compose project is seen
 whatever else the object carries. A protected object gets neither an item nor a report from here.
 
+A CONTAINER THAT MOUNTS WHAT IS PROTECTED IS PROTECTED (design section 7, the protect list; the review
+of VELDO-0306, finding 2). Before a container is recorded its mounts are read from the record the
+engine showed: a volume the protect list covers by its name or by its compose project label, or a
+bind source at, above or beneath a protected path, makes the container protected, whatever labels it
+carries: it gets neither an item nor a report. A container whose mounts could not be read, or one
+whose mounted volume could not be asked for while a compose project is protected, is not recorded
+either. Rule 2 reads the mounts again before any removal (control_space_signal).
+
 THE IDENTITY IN THE LOCATOR (control_space_remove.IDENTITY; the third review of VELDO-0300, finding
 E). A name proves nothing: a volume can be removed and made again under the same name, holding new
 data. So each record holds what the engine said of the object when it was found:
@@ -79,7 +88,15 @@ cannot be read, nothing is recorded.
 
 EVENTS. The subscription is one client process per context, `docker --context <engine> events`, whose
 output pipe is non-blocking and is read only when the poll set says it is readable. There is no
-thread, no timer and no interval: this module imports no clock. Each create, start, stop and destroy
+thread, no timer and no interval: this module imports no clock.
+
+NOTHING MADE BETWEEN THE SNAPSHOT AND THE SUBSCRIPTION IS MISSED (the review of VELDO-0306, finding
+3). Before each snapshot, at start and at end of file, the engine is asked for its own time (`system
+info`), and the subscription that follows the snapshot is made with `--since` that time: the engine
+then prints again every event from before the snapshot's first read on, and goes on with the new
+ones. An event of an object the snapshot recorded writes nothing new. A context whose time could not
+be read is down: it gets no snapshot and no subscription, because a subscription with no start would
+miss what was made meanwhile. Each create, start, stop and destroy
 event of a container, a network or a volume makes the adapter ask the engine for that one object and
 record it as the snapshot would (a ledger write or a report), or mark its record gone when the engine
 no longer holds it. An event of any other action is counted and nothing is asked. A line that is not
@@ -92,6 +109,12 @@ whose new snapshot could not be read is not subscribed again, and neither is one
 twice in a row without one byte. Such a context is down, with the reason, until start() is called
 again; an event, never a timer, does that.
 
+A CONTEXT THAT IS DOWN IS SAID, NEVER SILENT (the review of VELDO-0306, finding 4). The answer of
+start() and of readable() names the context and the reason under `down`, `unread()` returns every
+context that is not read now with its reason, and `tell`, when the caller gave one, is called once
+for each context that goes down. The service writes it to its observation log (control_service
+docker_readable) and shows it as an engine not read (docker_unread).
+
 WHAT IS NOT HERE. Images (a built tag is an item and a pulled image is kept: VELDO-0328). The
 adoption rule for an object inside a recorded worktree and the list of protected objects (VELDO-0307,
 VELDO-0341). Reconcile's counts and its record (VELDO-0315). Giving a run its label and its compose
@@ -99,6 +122,7 @@ project name in its environment is the receiver's (design 6.3); `given` says wha
 
 Standard library only. The ledger is the control_space.Ledger the caller passes in.
 """
+import fnmatch
 import hashlib
 import json
 import os
@@ -123,6 +147,8 @@ IDENTITY = {'container': ('id', 'Id'), 'network': ('id', 'Id'), 'volume': ('crea
 ENGINE_NETWORKS = ('bridge', 'host', 'none')
 EVENTS = ('events', '--format', '{{json .}}', '--filter', 'type=container', '--filter', 'type=network',
           '--filter', 'type=volume')
+SINCE = '--since'  # the option that makes the engine print again what happened from a time on
+ENGINE_TIME = ('system', 'info', '--format', '{{.SystemTime}}')  # the engine's own time, read by its client
 ACTIONS = ('create', 'start', 'stop', 'destroy')  # the events that become a ledger write or a report
 ENDED = ('removed', 'gone')  # the states of a record whose thing is no longer there
 SECONDS = 600  # the longest one read of an engine may take
@@ -194,11 +220,23 @@ def _run(argv, cwd=None):
     return 0, done.stdout.decode('utf-8', 'replace')
 
 
-def _spawn(engine):
-    """Start the one client process that prints the events of `engine`, one JSON record a line."""
+def events_argv(engine, since=None, own=None):
+    """The client command that prints the events of `engine`, one JSON record a line: from the engine
+    time `since` on when one is given, and of the objects that carry the label `own` alone when one
+    is given."""
+    argv = ['docker', '--context', str(engine)] + list(EVENTS)
+    if own:
+        argv += ['--filter', 'label=' + str(own)]
+    if since:
+        argv += [SINCE, str(since)]
+    return argv
+
+
+def _spawn(engine, since=None):
+    """Start the one client process that prints the events of `engine` from the engine time `since`."""
     environment = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
     environment['LC_ALL'] = 'C'
-    return subprocess.Popen(['docker', '--context', str(engine)] + list(EVENTS), env=environment,
+    return subprocess.Popen(events_argv(engine, since), env=environment,
                             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                             close_fds=True)
 
@@ -247,6 +285,50 @@ def locator_of(engine, kind, shown):
     return locator
 
 
+def _beneath(path, root):
+    return path.startswith(root.rstrip('/') + '/')
+
+
+def mount_protected(engine, shown, protect, volume=None):
+    """Whether a container mounts what the protect list covers: (entry, mount), (None, None) when it
+    mounts nothing protected, or ('unread', why) when that could not be told. `shown` is the
+    container's inspect record and `protect` the protect list in force, [{type, value, engines}].
+    `volume(name)` returns the inspect record of a volume of this engine, or None when the engine
+    could not show it; it is asked only while a compose project is protected on this engine."""
+    mounts = shown.get('Mounts')
+    if not isinstance(mounts, list) or not all(isinstance(mount, dict) for mount in mounts):
+        return 'unread', 'the engine showed the container without its mounts'
+    entries = [entry for entry in protect if engine in entry.get('engines', ())]
+    composed = [entry['value'] for entry in entries if entry['type'] == 'compose_project']
+    for mount in mounts:
+        name, source = mount.get('Name'), mount.get('Source')
+        if mount.get('Type') == 'volume' or (isinstance(name, str) and name):
+            if not (isinstance(name, str) and name):
+                return 'unread', 'a volume mount has no name'
+            for entry in entries:
+                if entry['type'] == 'volume' and fnmatch.fnmatchcase(name, entry['value']):
+                    return 'volume:' + entry['value'], name
+            if composed:
+                held = volume(name) if volume is not None else None
+                if not isinstance(held, dict):
+                    return 'unread', 'the mounted volume %s could not be read' % name
+                labels = held.get('Labels')
+                project = labels.get(COMPOSE_PROJECT) if isinstance(labels, dict) else None
+                if project in composed:
+                    return 'compose_project:' + project, name
+        elif mount.get('Type') == 'bind':
+            if not (isinstance(source, str) and source.startswith('/')):
+                return 'unread', 'a bind mount has no source path'
+            for entry in entries:
+                if entry['type'] != 'path':
+                    continue
+                for mine in {os.path.normpath(source), os.path.realpath(source)}:
+                    for theirs in {os.path.normpath(entry['value']), os.path.realpath(entry['value'])}:
+                        if mine == theirs or _beneath(mine, theirs) or _beneath(theirs, mine):
+                            return 'path:' + entry['value'], source
+    return None, None
+
+
 def owner_of(locator, runs):
     """Whose the object at `locator` is, by its labels alone: (space label, owner, rule), or
     (None, None, why) when no rule gives it an owner. `runs` is {space label: owner}. Nothing but the
@@ -273,17 +355,19 @@ class Adapter:
 
     `engines` are the contexts read; the default is every context the installation names. `run(argv,
     cwd)` runs the engine's client and returns (exit code, output). `runs()` returns {space label:
-    owner} for runs the ledger does not show yet; they are added to `known_runs`. `spawn(engine)`
-    starts the client that prints a context's events and returns its process, whose stdout is the
-    pipe. `pool` names the pool a Docker item counts against on an engine that has no image pool.
+    owner} for runs the ledger does not show yet; they are added to `known_runs`. `spawn(engine,
+    since)` starts the client that prints a context's events from the engine time `since` on and
+    returns its process, whose stdout is the pipe. `pool` names the pool a Docker item counts against
+    on an engine that has no image pool. `tell(engine, why)` is called for each context that goes down.
 
     observations holds one entry for each object recorded or reported, each event handled and each
     snapshot and subscription, in order."""
 
-    def __init__(self, ledger, engines=None, run=None, runs=None, spawn=None, pool=None):
+    def __init__(self, ledger, engines=None, run=None, runs=None, spawn=None, pool=None, tell=None):
         self.ledger = ledger
         self.engines = list(ledger.engines if engines is None else engines)
         self.run, self.spawn, self.more_runs, self.pool = run or _run, spawn or _spawn, runs, pool
+        self.tell = tell
         self.streams = {}  # engine: {process, fd, buffer, bytes}
         self.down = {}  # engine: why it has no subscription
         self.barren = {}  # engine: how many streams in a row ended without one byte
@@ -307,6 +391,34 @@ class Adapter:
 
     def _client(self, engine, *argv):
         return self.run(['docker', '--context', str(engine)] + [str(word) for word in argv])
+
+    def _down(self, engine, said):
+        """The context has no subscription from now on, and it is said: in the observations, to the
+        caller's `tell`, and in every answer that names the context."""
+        self.down[engine] = said
+        self._note('down', engine=engine, said=said)
+        if self.tell is not None:
+            try:
+                self.tell(engine, said)
+            except Exception:  # noqa: BLE001 - a listener that fails never ends the adapter
+                pass
+
+    def unread(self):
+        """{engine: why}: every context that is not read now. Its objects are not being recorded."""
+        return dict(self.down)
+
+    def engine_time(self, engine):
+        """The engine's own time, as its client prints it, or None when it could not be read."""
+        code, out = self._client(engine, *ENGINE_TIME)
+        words = str(out).split() if code == 0 else []
+        return words[0] if len(words) == 1 and words[0][:1].isdigit() else None
+
+    def _mounts(self, engine, shown):
+        """mount_protected for a container of `engine`, against the ledger's protect list."""
+        def volume(name):
+            records, _said_ = self._records(engine, 'volume', [name])
+            return records[0] if records else None
+        return mount_protected(engine, shown, list(self.ledger.protect or ()), volume)
 
     def _records(self, engine, kind, names):
         """The inspect records of `names`, or (None, what was said)."""
@@ -358,7 +470,8 @@ class Adapter:
 
     def _record(self, engine, kind, shown, runs):
         """Record the object the engine showed: an item when its labels name a known run, a report
-        otherwise. Returns what was done: matched, adopted, reported, protected, held or refused."""
+        otherwise. Returns what was done: matched, adopted, reported, protected, held or refused. A
+        container that mounts what is protected is protected, and nothing is written for it."""
         locator = locator_of(engine, kind, shown)
         if locator is None:
             self._note('unnamed', engine=engine, kind=kind, id=_text(shown.get('Id')))
@@ -368,6 +481,15 @@ class Adapter:
         field = IDENTITY[kind][0]
         facts = {'engine': engine, 'kind': kind, 'name': locator['name'], 'id': locator.get('id'),
                  'created_at': locator.get('created_at')}
+        if kind == 'container':
+            entry, mount = self._mounts(engine, shown)
+            if entry == 'unread':
+                self._note('refused', refusal='mounts_unread: ' + str(mount), **facts)
+                return 'refused'
+            if entry is not None:
+                # It mounts what is protected: neither an item nor a report, whatever it carries.
+                self._note('protected', refusal='space_protected:' + entry, mount=mount, **facts)
+                return 'protected'
         held = self._held(engine, kind, name=locator['name'])
         if held is not None:
             item, record = held
@@ -465,22 +587,22 @@ class Adapter:
 
     # The event stream.
 
-    def subscribe(self, engine):
-        """Start the client that prints the events of `engine` and hold its output pipe, non-blocking.
-        Returns the descriptor, or None when the client could not be started (the context is then
-        down)."""
+    def subscribe(self, engine, since=None):
+        """Start the client that prints the events of `engine` from the engine time `since` on, and
+        hold its output pipe, non-blocking. Returns the descriptor, or None when the client could not
+        be started (the context is then down). start() and the end of a stream give the time they
+        read before their snapshot."""
         self.unsubscribe(engine)
         try:
-            process = self.spawn(engine)
+            process = self.spawn(engine, since)
             fd = process.stdout.fileno()
             os.set_blocking(fd, False)
         except Exception as error:  # noqa: BLE001 - a client that does not start is a context that is down
-            self.down[engine] = _said(error)
-            self._note('down', engine=engine, said=self.down[engine])
+            self._down(engine, _said(error))
             return None
         self.streams[engine] = {'process': process, 'fd': fd, 'buffer': b'', 'bytes': 0}
         self.down.pop(engine, None)
-        self._note('subscribe', engine=engine)
+        self._note('subscribe', engine=engine, since=since)
         return fd
 
     def unsubscribe(self, engine):
@@ -501,15 +623,25 @@ class Adapter:
             pass
 
     def start(self):
-        """For each context that has no subscription: the snapshot, then the subscription. Returns
-        {engine: the snapshot's answer}."""
+        """For each context that has no subscription: the engine's time, the snapshot, then the
+        subscription since that time. Returns {engine: the snapshot's answer}; the answer of a
+        context that is down names why under `down`."""
         done = {}
         for engine in self.engines:
             if engine in self.streams:
                 continue
             self.barren[engine] = 0
+            since = self.engine_time(engine)
+            if since is None:
+                # No start for the subscription: what is made meanwhile would be missed.
+                self._down(engine, 'the time of the engine could not be read')
+                done[engine] = {'engine': engine, 'read': False, 'said': self.down[engine], 'objects': 0,
+                                'counts': {}, 'down': self.down[engine]}
+                continue
             done[engine] = self.snapshot(engine)
-            self.subscribe(engine)
+            self.subscribe(engine, since)
+            if engine in self.down:
+                done[engine]['down'] = self.down[engine]
         return done
 
     def stop(self):
@@ -531,9 +663,9 @@ class Adapter:
             return self._readable(engine)
         except Exception as error:  # noqa: BLE001 - a stream that cannot be read is ended, never read in a loop
             self.unsubscribe(engine)
-            self.down[engine] = _said(error)
-            self._note('down', engine=engine, said=self.down[engine])
-            return {'engine': engine, 'events': 0, 'ended': True, 'said': self.down[engine]}
+            self._down(engine, _said(error))
+            return {'engine': engine, 'events': 0, 'ended': True, 'said': self.down[engine],
+                    'down': self.down[engine]}
 
     def _readable(self, engine):
         stream = self.streams[engine]
@@ -564,22 +696,28 @@ class Adapter:
             self.snapshot(engine)  # something happened that was not seen: the context is read again
         if ended:
             self._ended(engine, stream)
-        return {'engine': engine, 'events': handled, 'unreadable': unreadable, 'ended': ended}
+        answer = {'engine': engine, 'events': handled, 'unreadable': unreadable, 'ended': ended}
+        if engine in self.down:
+            answer['down'] = self.down[engine]  # said to the caller: the context is not read any more
+        return answer
 
     def _ended(self, engine, stream):
-        """End of file on a context's pipe: a new snapshot, and then a new subscription."""
+        """End of file on a context's pipe: the engine's time, a new snapshot, and then a new
+        subscription since that time."""
         self.barren[engine] = 0 if stream['bytes'] else self.barren.get(engine, 0) + 1
         self.unsubscribe(engine)
         self._note('end_of_file', engine=engine, bytes=stream['bytes'])
+        since = self.engine_time(engine)
+        if since is None:
+            self._down(engine, 'the time of the engine could not be read after the end of the stream')
+            return
         taken = self.snapshot(engine)
         if not taken['read']:
-            self.down[engine] = 'the snapshot after the end of the stream could not be read: %s' % taken['said']
+            self._down(engine, 'the snapshot after the end of the stream could not be read: %s' % taken['said'])
         elif self.barren[engine] >= BARREN:
-            self.down[engine] = 'the event stream ended %d times in a row without one byte' % self.barren[engine]
+            self._down(engine, 'the event stream ended %d times in a row without one byte' % self.barren[engine])
         else:
-            self.subscribe(engine)
-            return
-        self._note('down', engine=engine, said=self.down[engine])
+            self.subscribe(engine, since)
 
     def event(self, engine, line):
         """Handle one line of a context's event stream. Returns what was done with it, or None when

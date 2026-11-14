@@ -67,11 +67,49 @@ marks nothing gone; a client that cannot reach the engine and says "no such file
 
 integration/real-engine runs against a real engine with objects the row itself creates, when a
 context of the fixture's names answers and holds an image: a labelled volume, network and container
-(created, never started) and an unlabelled volume, each under a name made for this run of the row. It
-reads no other object of the host: the adapter is asked for those objects by name and for the event
-stream. The labelled three are removed at run finished by the real client, non-forced; the unlabelled
-volume is a report and is still there, and the row then removes it itself. Elsewhere it prints a
-SELFTEST SKIP line and adds no row.
+(created, never started) and an unlabelled volume, each under a name made for this run of the row. The
+labelled three are removed at run finished by the real client, non-forced; the unlabelled volume is a
+report and is still there, and the row then removes it itself. Elsewhere it prints a SELFTEST SKIP
+line and adds no row.
+
+THE REAL-ENGINE ROW CAN ACT ON ITS OWN OBJECTS ONLY (the review of VELDO-0306, finding 1). Three things
+hold that, each on its own:
+
+  the events it reads   the client that prints the events is started with the row's own label as a
+                        filter (the label's value is made for this run of the row), so no object of
+                        the host is read from the stream; the adapter is asked for the row's objects
+                        by name and takes no snapshot of the host
+  the client it acts by Signal, the removers and the adapter are given the row's client (Own.client).
+                        It passes ls, inspect and info; of everything else it passes a stop or a
+                        remove of one object, with no option, on the row's context, when the engine
+                        shows under that word the very object the row created (its Id, or a volume's
+                        name and CreatedAt, read when the row made it). Every other command is
+                        refused, is not given to the engine, and reds the row.
+  never under a mutant  the row does not run when the mutation driver is running the suite (the
+                        driver says so in the environment), when a production module was loaded from
+                        anywhere but this repository's .veldo, or when one differs from its engine
+                        canon. It then prints a SELFTEST SKIP line and asks the engine nothing.
+
+The same procedure runs on a second stand-in engine in every run of the suite, the gate's among them:
+review/own-row-on-a-stand-in (the row's objects are recorded, the one created between the engine's
+time and the subscription becomes an item from its replayed event, the labelled ones are removed in
+order, the unlabelled one stays), and review/host-object-untouched: a host-like container, its volume
+with data and its network, none labelled and none on the protect list, are planted on that stand-in
+and their events are put in the row's stream, as a stream with no filter would hold them. Whatever
+the adapter makes of them, the stand-in is given no stop and no remove that names them, and they are
+there with their data; that row stays green under the mutants that give an unlabelled object to a
+live run, where the client's refusals are what kept them. review/never-under-a-mutant: the row's own
+refusal to run.
+
+The review's other rows: review/protected-mount (a container that mounts a protected volume, a volume
+of a protected compose project or a protected path gets neither an item nor a report, with the run's
+label on it; one recorded before it mounted a protected volume, and one whose mounts cannot be read,
+are refused by rule 2 at removal), review/events-since-the-snapshot (the engine's time is read before
+the snapshot, at start and at end of file, the client is started since that time, and an object made
+between the snapshot and the subscription is an item), review/engine-down-reported (a context that
+goes down is in the service's observation log, in docker_unread and told to the adapter's listener),
+review/volume-labels-rule-1 (a volume made again in the same second without the run's label is
+deferred by rule 1 as not_in_ledger).
 
 docker/canon (each engine canon equals this repository copy).
 """
@@ -114,7 +152,10 @@ def _v306_space_docker_suite():
             'ac3/adapter-removes-nothing',
             'ac4/event-with-the-clock-stopped', 'ac4/poll-set', 'ac4/end-of-file', 'ac4/events',
             'ac4/broken-engine',
-            'loss/volume-made-again', 'loss/engine-unreadable', 'docker/canon')
+            'loss/volume-made-again', 'loss/engine-unreadable', 'docker/canon',
+            'review/protected-mount', 'review/volume-labels-rule-1', 'review/events-since-the-snapshot',
+            'review/engine-down-reported', 'review/own-row-on-a-stand-in', 'review/host-object-untouched',
+            'review/never-under-a-mutant')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -133,7 +174,7 @@ def _v306_space_docker_suite():
         return done.stdout.decode().strip()
 
     temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0306-')))
-    connections, children, real_made = [], [], []
+    connections, children = [], []
     real_time, real_monotonic = time.time, time.monotonic
     CONTEXTS = ('default', 'desktop-linux')
     try:
@@ -252,6 +293,8 @@ def _v306_space_docker_suite():
                 self.held = {name: {'container': [], 'network': [], 'volume': []} for name in CONTEXTS}
                 self.calls, self.forced, self.unreadable, self.said = [], [], set(), {}
                 self.made = 0
+                # What was made, and when by the engine's own time: (time, kind, name) for each context.
+                self.journal = {name: [] for name in CONTEXTS}
                 for name in CONTEXTS:
                     for own in ('bridge', 'host', 'none'):
                         self.network(name, own)
@@ -260,25 +303,42 @@ def _v306_space_docker_suite():
                 self.made += 1
                 return self.made
 
-            def container(self, context, name, labels=None, volumes=(), networks=(), status='running'):
+            def time(self):
+                """The engine's own time, as `system info` prints it: it moves when something is made."""
+                return '2026-11-14T10:00:00.%09dZ' % self.made
+
+            def since(self, context, since):
+                """What the engine prints again for a subscription since the time `since`: the create
+                event of each object made after it. With no time nothing is printed again."""
+                if since is None:
+                    return []
+                after = int(str(since).split('.')[1].rstrip('Z'))
+                return [(kind, name) for at, kind, name in self.journal[context] if at > after]
+
+            def container(self, context, name, labels=None, volumes=(), networks=(), status='running', binds=()):
                 record = {'Id': '%064x' % (0xc000 + self._new()), 'Name': '/' + name, 'State': {'Status': status},
                           'Config': {'Labels': dict(labels or {})}, 'SizeRw': 0,
                           'Mounts': [{'Type': 'volume', 'Name': volume, 'Source': '', 'Destination': '/data'}
-                                     for volume in volumes],
+                                     for volume in volumes]
+                          + [{'Type': 'bind', 'Source': str(source), 'Destination': '/host'} for source in binds],
                           'NetworkSettings': {'Networks': {network: {} for network in networks}}}
                 self.held[context]['container'].append(record)
+                self.journal[context].append((self.made, 'container', record['Id']))
                 return record
 
             def network(self, context, name, labels=None):
                 record = {'Id': '%064x' % (0xa000 + self._new()), 'Name': name, 'Labels': dict(labels or {})}
                 self.held[context]['network'].append(record)
+                self.journal[context].append((self.made, 'network', record['Id']))
                 return record
 
             def volume(self, context, name, labels=None, data='data', created=True):
                 record = {'Name': name, 'Labels': dict(labels or {}), 'Mountpoint': '', 'Data': data}
+                stamp = self._new()
                 if created:
-                    record['CreatedAt'] = '2026-11-14T10:00:%02dZ' % (self._new() % 60)
+                    record['CreatedAt'] = '2026-11-14T10:00:%02dZ' % (stamp % 60)
                 self.held[context]['volume'].append(record)
+                self.journal[context].append((self.made, 'volume', name))
                 return record
 
             def find(self, context, kind, name):
@@ -310,6 +370,8 @@ def _v306_space_docker_suite():
                 if context in self.unreadable:
                     return 1, self.said.get(context, 'Cannot connect to the Docker daemon at '
                                                      'unix:///var/run/docker.sock. Is the docker daemon running?')
+                if kind == 'system':
+                    return (0, self.time() + '\n') if verb == 'info' else (1, 'the stand-in engine does not know it')
                 held = self.held[context][kind]
                 if verb == 'ls':
                     return 0, ''.join((record.get('Id') or record['Name']) + '\n' for record in held)
@@ -334,8 +396,8 @@ def _v306_space_docker_suite():
                                                  for other in containers):
                         return 1, ('Error response from daemon: error while removing network: network %s has '
                                    'active endpoints' % record['Name'])
-                    if kind == 'volume' and any(mount['Name'] == record['Name'] for other in containers
-                                                for mount in other['Mounts']):
+                    if kind == 'volume' and any(mount.get('Name') == record['Name'] for other in containers
+                                                for mount in other.get('Mounts') or ()):
                         return 1, 'Error response from daemon: remove %s: volume is in use' % record['Name']
                     held.remove(record)
                     return 0, names[0] + '\n'
@@ -353,21 +415,39 @@ def _v306_space_docker_suite():
 
         STREAMS = {}
         NO_STREAM = set()  # the contexts whose client ends at once, without a byte
+        SINCE = {}  # context: the time each client of it was started since, in order
+        GAP = {}  # context: what happens once, after the snapshot and before the client subscribes
+        TOLD = []  # what the adapter told its listener: (engine, why) for each context that went down
 
-        def spawn(engine):
-            LOG.append(('spawn', engine))
+        def event_line(kind, action, name):
+            return (json.dumps({'Type': kind, 'Action': action, 'Actor': {'ID': name, 'Attributes': {}}}) + '\n').encode()
+
+        def stream(engine_held, context, since):
+            """The client that prints a context's events: a real child process whose pipe first holds
+            what the stand-in engine prints again for a subscription since `since`."""
             child = subprocess.Popen(['cat'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
             children.append(child)
+            for kind, name in engine_held.since(context, since):
+                child.stdin.write(event_line(kind, 'create', name))
+            child.stdin.flush()
+            return child
+
+        def spawn(engine, since=None):
+            LOG.append(('spawn', engine))
+            SINCE.setdefault(engine, []).append(since)
+            if engine in GAP:
+                GAP.pop(engine)()  # the snapshot is taken, and this client has not subscribed yet
+            child = stream(ENGINE, engine, since)
             STREAMS[engine] = child
             if engine in NO_STREAM:
                 child.stdin.close()
             return child
 
         def emit(engine, kind, action, name, whole=True):
-            text = json.dumps({'Type': kind, 'Action': action, 'Actor': {'ID': name, 'Attributes': {}}}) + '\n'
-            STREAMS[engine].stdin.write(text.encode() if whole else text.encode()[:20])
+            text = event_line(kind, action, name)
+            STREAMS[engine].stdin.write(text if whole else text[:20])
             STREAMS[engine].stdin.flush()
-            return text.encode()[20:]
+            return text[20:]
 
         PROC = temp / 'proc'
         PROC.mkdir()
@@ -431,7 +511,8 @@ def _v306_space_docker_suite():
         def compose_label(run):
             return {D.COMPOSE_PROJECT: D.compose_project(run)}
 
-        ADAPTER = D.Adapter(L, run=logged_client, spawn=spawn, pool='host')
+        ADAPTER = D.Adapter(L, run=logged_client, spawn=spawn, pool='host',
+                            tell=lambda engine, why: TOLD.append((engine, why)))
 
         def snapshots():
             return {context: ADAPTER.snapshot(context) for context in CONTEXTS}
@@ -719,9 +800,10 @@ def _v306_space_docker_suite():
               and prot_volume['Data'] == 'the real database' and prot_compose['State']['Status'] == 'running')
 
         ROW = 'ac3/adapter-removes-nothing'
-        check(ROW, 'the adapter gave the engine only ls and inspect [%s]'
-              % sorted({entry[3] for entry in LOG if entry[0] == 'client'}),
-              {entry[3] for entry in LOG if entry[0] == 'client'} == {'ls', 'inspect'})
+        check(ROW, 'the adapter gave the engine only ls, inspect and the question of its time [%s]'
+              % sorted({entry[2:] for entry in LOG if entry[0] == 'client'}),
+              {entry[3] for entry in LOG if entry[0] == 'client'} == {'ls', 'inspect', 'info'}
+              and {entry[2] for entry in LOG if entry[0] == 'client' and entry[3] == 'info'} == {'system'})
         source = ast.parse(Path(PRODUCTION['control_space_docker.py']).read_text())
         words = {node.value for node in ast.walk(source)
                  if isinstance(node, ast.Constant) and isinstance(node.value, str) and len(node.value) < 20}
@@ -732,9 +814,110 @@ def _v306_space_docker_suite():
               and 'stop' not in D.EVENTS)
 
         # ------------------------------------------------------------------------------------
+        # The review, finding 2: a container that mounts what is protected
+        # ------------------------------------------------------------------------------------
+        ROW = 'review/protected-mount'
+        R9 = 'run-306-mounts'
+        live_run(R9)
+        ledger_files = ENGINE.volume('desktop-linux', 'ledger_files', {D.COMPOSE_PROJECT: 'ledgerdb'},
+                                     data='the ledger\'s files')
+        ENGINE.volume('default', 'plain_cache', run_label(R9))
+        MOUNTING = {
+            'uses-atlas-db-1': ENGINE.container('default', 'uses-atlas-db-1', run_label(R9),
+                                                volumes=['atlas_pg_main']),
+            'uses-ledger-files-1': ENGINE.container('desktop-linux', 'uses-ledger-files-1', compose_label(R9),
+                                                    volumes=['ledger_files']),
+            'uses-vm-disks-1': ENGINE.container('default', 'uses-vm-disks-1', run_label(R9),
+                                                binds=[str(STATE / 'vms' / 'disks')]),
+            'nobodys-uses-atlas-1': ENGINE.container('default', 'nobodys-uses-atlas-1', volumes=['atlas_pg_main']),
+        }
+        CONTEXT_OF = {'uses-ledger-files-1': 'desktop-linux'}
+        never_read = ENGINE.container('default', 'mounts-never-shown-1', run_label(R9))
+        never_read['Mounts'] = None
+        plain = ENGINE.container('default', 'mounts-plain-1', run_label(R9), volumes=['plain_cache'],
+                                 binds=[str(SCRATCH / 'elsewhere')])
+        later = ENGINE.container('default', 'mounts-later-1', run_label(R9))
+        blind = ENGINE.container('default', 'mounts-unread-1', run_label(R9))
+        seen = len(ADAPTER.observations)
+        snapshots()
+        said = {entry['name']: entry for entry in ADAPTER.observations[seen:] if entry['what'] in ('protected', 'refused')}
+        for name, entry in (('uses-atlas-db-1', 'space_protected:volume:atlas_pg_*'),
+                            ('uses-ledger-files-1', 'space_protected:compose_project:ledgerdb'),
+                            ('uses-vm-disks-1', 'space_protected:path:'),
+                            ('nobodys-uses-atlas-1', 'space_protected:volume:atlas_pg_*')):
+            check(ROW, 'the container %s mounts what is protected: it gets neither an item nor a report [%s %s]'
+                  % (name, last_at(CONTEXT_OF.get(name, 'default'), 'container', name), said.get(name)),
+                  last_at(CONTEXT_OF.get(name, 'default'), 'container', name) == []
+                  and (said.get(name) or {}).get('what') == 'protected'
+                  and str((said.get(name) or {}).get('refusal')).startswith(entry))
+        check(ROW, 'a container the engine shows without its mounts is not recorded [%s]'
+              % (said.get('mounts-never-shown-1'),),
+              last_at('default', 'container', 'mounts-never-shown-1') == []
+              and str((said.get('mounts-never-shown-1') or {}).get('refusal')).startswith('mounts_unread'))
+        item_plain = record_at('default', 'container', 'mounts-plain-1')[0]
+        item_later = record_at('default', 'container', 'mounts-later-1')[0]
+        item_blind = record_at('default', 'container', 'mounts-unread-1')[0]
+        check(ROW, 'a container of the run that mounts nothing protected is an item, and so are two that mount '
+              'nothing yet', None not in (item_plain, item_later, item_blind))
+        # After they were recorded: one now mounts the protected volume, one shows no mounts any more.
+        later['Mounts'] = [{'Type': 'volume', 'Name': 'atlas_pg_main', 'Source': '', 'Destination': '/data'}]
+        blind['Mounts'] = None
+        done = send('run_finished', {'run': R9})
+        check(ROW, 'at removal rule 2 reads the mounts again: the recorded container that now mounts a protected '
+              'volume is deferred as protected [%s %s]'
+              % (named(done, item_later), item_later and (L.item(item_later).get('deferral') or {}).get('found')),
+              item_later is not None and named(done, item_later) == ('deferred', 'protected', 'protect')
+              and (L.item(item_later)['deferral'].get('found') or {}).get('entry') == 'volume:atlas_pg_*'
+              and (L.item(item_later)['deferral'].get('found') or {}).get('how') == 'mounted_volume')
+        check(ROW, 'one whose mounts cannot be read is deferred as protected too [%s]' % (named(done, item_blind),),
+              item_blind is not None and named(done, item_blind) == ('deferred', 'protected', 'protect')
+              and (L.item(item_blind)['deferral'].get('found') or {}).get('how') == 'mounts_unread')
+        check(ROW, 'neither was named to a stop or a remove, and both run [%s %s]'
+              % (ENGINE.asked(later['Id']), ENGINE.asked(blind['Id'])),
+              ENGINE.asked(later['Id']) == [] and ENGINE.asked(blind['Id']) == []
+              and later['State']['Status'] == 'running' and blind['State']['Status'] == 'running')
+        check(ROW, 'the container that mounts nothing protected is removed [%s]' % (named(done, item_plain),),
+              item_plain is not None and named(done, item_plain)[0] == 'removed'
+              and ENGINE.find('default', 'container', 'mounts-plain-1') is None)
+        check(ROW, 'no container that mounts what is protected was named to a stop or a remove, and the '
+              'protected volumes hold their data',
+              all(ENGINE.asked(record['Id']) == [] and ENGINE.asked(name) == []
+                  and record['State']['Status'] == 'running' for name, record in MOUNTING.items())
+              and ENGINE.asked(never_read['Id']) == [] and ENGINE.asked('atlas_pg_main') == []
+              and ENGINE.asked('ledger_files') == [] and prot_volume['Data'] == 'the real database'
+              and ENGINE.find('desktop-linux', 'volume', 'ledger_files') is ledger_files
+              and ledger_files['Data'] == 'the ledger\'s files')
+        blind['Mounts'] = []
+
+        # ------------------------------------------------------------------------------------
+        # The review, finding 5: rule 1 compares a volume's labels
+        # ------------------------------------------------------------------------------------
+        ROW = 'review/volume-labels-rule-1'
+        R10 = 'run-306-twin'
+        live_run(R10)
+        first_twin = ENGINE.volume('default', 'twin_data', run_label(R10), data='the run\'s cache')
+        snapshots()
+        twin_item = record_at('default', 'volume', 'twin_data')[0]
+        ENGINE.drop('default', 'volume', 'twin_data')
+        twin = ENGINE.volume('default', 'twin_data', data='somebody\'s data, made in the same second')
+        twin['CreatedAt'] = first_twin['CreatedAt']
+        done = send('run_finished', {'run': R10})
+        found = (L.item(twin_item).get('deferral') or {}).get('found') or {} if twin_item else {}
+        check(ROW, 'a volume made again in the same second, without the run\'s label, is deferred by rule 1 as '
+              'not_in_ledger [%s %s]' % (named(done, twin_item), found),
+              twin_item is not None and named(done, twin_item) == ('deferred', 'not_in_ledger', 'ledger')
+              and found.get('labels_differ') == [D.RUN_LABEL]
+              and found.get('created_at') == found.get('recorded_created_at') == first_twin['CreatedAt'])
+        check(ROW, 'the engine was asked to remove nothing, and the volume holds its data [%s]'
+              % (ENGINE.asked('twin_data'),),
+              ENGINE.asked('twin_data') == [] and ENGINE.find('default', 'volume', 'twin_data') is twin
+              and twin['Data'] == 'somebody\'s data, made in the same second')
+
+        # ------------------------------------------------------------------------------------
         # AC4
         # ------------------------------------------------------------------------------------
-        service = types.SimpleNamespace(space_docker=ADAPTER, domain='dom-306', _log=lambda observation: None)
+        LOGGED = []  # the service's observation log
+        service = types.SimpleNamespace(space_docker=ADAPTER, domain='dom-306', _log=LOGGED.append)
 
         def pump(seconds=5.0, rounds=1):
             """One turn of the poll set for the adapter's pipes: select, then the service's own
@@ -895,11 +1078,36 @@ def _v306_space_docker_suite():
               '[%s]' % (ADAPTER.down.get('desktop-linux'),),
               ('spawn', 'desktop-linux') not in LOG[mark:] and 'desktop-linux' in ADAPTER.down
               and sorted(SVC.Service.docker_pipes(service).values()) == ['default'])
+        ROW = 'review/engine-down-reported'
+        down_logged = [entry for entry in LOGGED if entry.get('engine') == 'desktop-linux']
+        check(ROW, 'the context that went down is in the service\'s observation log, with the reason [%s]'
+              % (down_logged,),
+              len(down_logged) == 1 and down_logged[0].get('kind') == 'space'
+              and down_logged[0].get('operation') == 'docker_events' and down_logged[0].get('outcome') == 'refused'
+              and down_logged[0].get('refusal') == 'unavailable:engine_not_read'
+              and down_logged[0].get('detail') == ADAPTER.down.get('desktop-linux')
+              and down_logged[0].get('domain_uuid') == 'dom-306')
+        check(ROW, 'the service shows it as an engine not read, and the adapter told its listener [%s %s]'
+              % (SVC.Service.docker_unread(service), TOLD),
+              SVC.Service.docker_unread(service) == {'desktop-linux': ADAPTER.down.get('desktop-linux')}
+              and TOLD == [('desktop-linux', ADAPTER.down.get('desktop-linux'))]
+              and SVC.Service.docker_unread(types.SimpleNamespace(space_docker=None)) == {})
+        mark = len(LOG)
+        again = ADAPTER.start()
+        check(ROW, 'start on an engine whose time cannot be read says it is down, takes no snapshot and starts no '
+              'client [%s]' % (again,),
+              sorted(again) == ['desktop-linux'] and again['desktop-linux']['read'] is False
+              and bool(again['desktop-linux'].get('down')) and ('spawn', 'desktop-linux') not in LOG[mark:]
+              and not [entry for entry in LOG[mark:] if entry[3:] == ('ls',)] and len(TOLD) == 2)
+        ROW = 'ac4/broken-engine'
         ENGINE.unreadable.discard('desktop-linux')
         NO_STREAM.add('desktop-linux')
         mark = len(LOG)
         ADAPTER.start()
         pump(seconds=0.5, rounds=4)
+        check('review/engine-down-reported', 'a context whose stream ended twice without a byte is logged too [%s]'
+              % ([entry.get('detail') for entry in LOGGED],),
+              len([entry for entry in LOGGED if entry.get('engine') == 'desktop-linux']) == 2 and len(TOLD) == 3)
         check(ROW, 'a context whose stream ends twice without a byte is not started a third time [%s]'
               % (LOG[mark:].count(('spawn', 'desktop-linux')),),
               LOG[mark:].count(('spawn', 'desktop-linux')) == 2 and 'desktop-linux' in ADAPTER.down
@@ -909,104 +1117,410 @@ def _v306_space_docker_suite():
         check(ROW, 'start subscribes it again',
               sorted(SVC.Service.docker_pipes(service).values()) == sorted(CONTEXTS)
               and 'desktop-linux' not in ADAPTER.down)
+        check('review/engine-down-reported', 'once it is read again no engine is shown as not read',
+              SVC.Service.docker_unread(service) == {})
         ADAPTER.stop()
         check(ROW, 'stop ends every subscription and reaps every client',
               SVC.Service.docker_pipes(service) == {} and all(child.poll() is not None for child in children))
 
         # ------------------------------------------------------------------------------------
-        # integration: a real engine, with objects the row itself creates
+        # The review, finding 3: nothing made between the snapshot and the subscription is missed
         # ------------------------------------------------------------------------------------
-        def real(context, *argv, seconds=60):
-            try:
-                done = subprocess.run(['docker', '--context', context] + list(argv), stdin=subprocess.DEVNULL,
-                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=seconds)
-            except (OSError, subprocess.SubprocessError) as error:
-                return None, str(error)
-            return done.returncode, (done.stdout if done.returncode == 0 else done.stderr).decode('utf-8', 'replace')
+        ROW = 'review/events-since-the-snapshot'
+        GAP['default'] = lambda: ENGINE.volume('default', 'made_in_the_gap', run_label(R7))
+        mark, before = len(LOG), ENGINE.time()
+        ADAPTER.start()
+        after = [entry for entry in LOG[mark:] if entry[1:2] == ('default',) or entry == ('spawn', 'default')]
+        asked_time = [index for index, entry in enumerate(after) if entry[2:] == ('system', 'info')]
+        listed = [index for index, entry in enumerate(after) if entry[3:] == ('ls',)]
+        started = [index for index, entry in enumerate(after) if entry == ('spawn', 'default')]
+        check(ROW, 'at start the engine\'s time is read before the snapshot, and the client is started after it, '
+              'since that time [%s %s]' % (after, SINCE['default'][-1:]),
+              len(asked_time) == 1 and len(started) == 1 and listed and asked_time[0] < min(listed)
+              and max(listed) < started[0] and SINCE['default'][-1] == before)
+        check(ROW, 'the volume made after the snapshot and before the subscription was not in the snapshot',
+              ENGINE.find('default', 'volume', 'made_in_the_gap') is not None
+              and record_at('default', 'volume', 'made_in_the_gap')[0] is None)
+        drain(1)
+        check(ROW, 'it is an item of its run, from the event the engine printed again [%s]'
+              % (record_at('default', 'volume', 'made_in_the_gap')[1].get('owner'),),
+              ((record_at('default', 'volume', 'made_in_the_gap')[1].get('owner') or {}).get('run') or {}).get('id')
+              == R7)
+        GAP['default'] = lambda: ENGINE.network('default', 'made_in_the_second_gap', run_label(R7))
+        mark, before = len(LOG), ENGINE.time()
+        STREAMS['default'].stdin.close()
+        ended = pump()
+        after = [entry for entry in LOG[mark:] if entry[1:2] == ('default',) or entry == ('spawn', 'default')]
+        asked_time = [index for index, entry in enumerate(after) if entry[2:] == ('system', 'info')]
+        listed = [index for index, entry in enumerate(after) if entry[3:] == ('ls',)]
+        check(ROW, 'at end of file too: the time, the snapshot, then the client since that time [%s %s]'
+              % (ended, SINCE['default'][-1:]),
+              [entry.get('ended') for entry in ended] == [True] and len(asked_time) == 1 and listed
+              and asked_time[0] < min(listed) and SINCE['default'][-1] == before
+              and record_at('default', 'network', 'made_in_the_second_gap')[0] is None)
+        drain(1)
+        check(ROW, 'the network made in that gap is an item of its run [%s]'
+              % (record_at('default', 'network', 'made_in_the_second_gap')[1].get('owner'),),
+              ((record_at('default', 'network', 'made_in_the_second_gap')[1].get('owner') or {}).get('run') or {})
+              .get('id') == R7)
+        check(ROW, 'the client\'s own command names the time after the option, and none without a time [%s]'
+              % (D.events_argv('default', 'T1'),),
+              D.events_argv('default', 'T1') == ['docker', '--context', 'default'] + list(D.EVENTS) + ['--since', 'T1']
+              and '--since' not in D.events_argv('default'))
+        ADAPTER.stop()
 
-        REAL, IMAGE = None, None
-        for context in CONTEXTS:
-            code, out = real(context, 'image', 'ls', '--quiet', '--no-trunc', seconds=15)
-            if code == 0 and out.split():
-                REAL, IMAGE = context, out.split()[0]
-                break
-        if REAL is None:
-            print('  SELFTEST SKIP: VELDO-0306 integration/real-engine: no engine context of %s answers the client '
-                  'here with an image to create a container from' % (', '.join(CONTEXTS),))
-        else:
-            ROW = 'integration/real-engine'
+        # ------------------------------------------------------------------------------------
+        # The row's own objects on an engine, and the one client that may act on that engine
+        # (the review of VELDO-0306, finding 1)
+        # ------------------------------------------------------------------------------------
+        READS = ('inspect', 'ls', 'info')
+        ACTS = (('container', 'stop'), ('container', 'rm'), ('network', 'rm'), ('volume', 'rm'))
+        SHOWN_BY = {'container': 'Id', 'network': 'Id', 'volume': 'CreatedAt'}
+        CANON = ('control_space_docker.py', 'control_service.py', 'control_space_signal.py',
+                 'control_space_probe.py', 'control_space_kinds.py', 'control_space_remove.py')
+
+        class Own:
+            """What the row created on one engine context, and the client it gives Signal, the removers
+            and the adapter. `raw(argv, cwd)` is the engine's client itself."""
+
+            def __init__(self, context, raw):
+                self.context, self.raw = context, raw
+                self.wanted = []  # (kind, name): what the row set out to create, in order
+                self.identity = {}  # (kind, name): the Id, or a volume's CreatedAt, read when the row made it
+                self.refused, self.acted = [], []
+
+            def shown(self, kind, word):
+                code, out = self.raw(['docker', '--context', self.context, kind, 'inspect', word])
+                try:
+                    records = json.loads(out) if code == 0 else None
+                except ValueError:
+                    records = None
+                if isinstance(records, list) and len(records) == 1 and isinstance(records[0], dict):
+                    return records[0]
+                return None
+
+            def created(self, kind, name):
+                """The row has just created this object: what the engine shows it by is read now."""
+                shown = self.shown(kind, name)
+                if shown is None or not shown.get(SHOWN_BY[kind]):
+                    raise RuntimeError('the row could not read the %s it created' % kind)
+                self.identity[(kind, name)] = shown[SHOWN_BY[kind]]
+
+            def words(self):
+                """Every word that names an object of the row: its names and the Ids read for them."""
+                return ({name for _kind, name in self.identity}
+                        | {identity for (kind, _name), identity in self.identity.items() if kind != 'volume'})
+
+            def mine(self, kind, word):
+                """Whether `word` names, by name or by Id, an object the row created, and the engine
+                shows under it now that very object."""
+                for (made, name), identity in self.identity.items():
+                    if made != kind or word not in ((name,) if kind == 'volume' else (name, identity)):
+                        continue
+                    shown = self.shown(kind, word)
+                    return (shown is not None and shown.get(SHOWN_BY[kind]) == identity
+                            and str(shown.get('Name') or '').lstrip('/') == name)
+                return False
+
+            def refuse(self, argv, why):
+                self.refused.append((why,) + tuple(argv[2:]))
+                return 1, 'refused by the row: %s' % why
+
+            def client(self, argv, cwd=None):
+                argv = [str(word) for word in argv]
+                if argv[:1] != ['docker']:
+                    return P._run(argv, cwd)
+                if len(argv) < 5 or argv[1] != '--context':
+                    return self.refuse(argv, 'not a command of one kind on one context')
+                context, kind, verb, rest = argv[2], argv[3], argv[4], argv[5:]
+                if verb in READS:
+                    return self.raw(argv, cwd)
+                if (kind, verb) not in ACTS or context != self.context:
+                    return self.refuse(argv, 'the row stops and removes on its own context and does nothing else')
+                if len(rest) != 1 or rest[0].startswith('-'):
+                    return self.refuse(argv, 'one object and no option')
+                if not self.mine(kind, rest[0]):
+                    return self.refuse(argv, 'not an object the row created')
+                self.acted.append((context, kind, verb, rest[0]))
+                return self.raw(argv, cwd)
+
+        def not_on_a_real_engine(environ, production, canon=None):
+            """Why the real-engine row must not run now, or None. It never runs under a mutant: not when
+            the mutation driver runs the suite, not when a production module was loaded from anywhere
+            but this repository's .veldo, and not when one differs from its engine canon."""
+            if environ.get('VELDO_MUTATION_DRIVER'):
+                return 'the mutation driver is running the suite'
+            for name in CANON:
+                loaded = Path(production.get(name, VELDO / name))
+                if loaded.resolve() != (VELDO / name).resolve():
+                    return 'the module %s was not loaded from the .veldo of this repository' % name
+                if loaded.read_bytes() != (Path(canon or ROOT / 'engine' / '.veldo') / name).read_bytes():
+                    return 'the module %s differs from its engine canon' % name
+            return None
+
+        def own_row(ROW, context, raw, create, events, run_id, in_gap=None, then=None):
+            """The row's own objects on one engine: created, recorded, seen from the event stream,
+            removed at run finished by Signal through the row's client, and none left behind.
+            `create(kind, name, run, network, volume)` creates one object, with the run's label when
+            `run` is given; `events(argv, since)` starts the client that prints the events."""
             tag = 'veldo-0306-' + uuid.uuid4().hex[:12]
-            R8 = 'run-306-real-' + tag[-12:]
-            # The run is named to the adapter by its caller, and owns no folder: nothing but the row's
-            # own objects is read on the real engine.
-            OWNER8 = {'scope': A, 'ticket': 'VELDO-9306', 'run': {'id': R8, 'station': 'build'}}
-            label = '%s=%s' % (D.RUN_LABEL, R8)
+            # The run is named to the adapter by its caller, and owns no folder.
+            owner = {'scope': A, 'ticket': 'VELDO-9306', 'run': {'id': run_id, 'station': 'build'}}
+            label = '%s=%s' % (D.RUN_LABEL, run_id)
             names = {'volume': tag + '-vol', 'network': tag + '-net', 'container': tag + '-app',
                      'loose': tag + '-loose', 'event': tag + '-evt'}
+            own = Own(context, raw)
+            spawned = []
 
-            def make(kind, *argv):
-                code, out = real(REAL, *argv)
-                if code != 0:
-                    raise RuntimeError('the row could not create its own %s: %s' % (kind, out[-200:]))
-                real_made.append((REAL, kind, argv[-1] if kind != 'container' else names['container']))
+            def spawn_own(engine, since=None):
+                # Only the events of objects that carry the row's own label are asked for.
+                argv = D.events_argv(engine, since, own=label)
+                spawned.append(argv)
+                return events(argv, since)
 
-            adapter = D.Adapter(L, engines=[REAL], pool='host', runs=lambda: {R8: OWNER8})
+            def make(kind, key, labelled=True, network=None, volume=None):
+                own.wanted.append((kind, names[key]))
+                create(kind, names[key], run_id if labelled else None, network, volume)
+                own.created(kind, names[key])
+
+            adapter = D.Adapter(L, engines=[context], pool='host', runs=lambda: {run_id: owner}, run=own.client,
+                                spawn=spawn_own)
+            # The row takes no snapshot: it asks for its own objects by name, and a stream that ends
+            # is not followed by a read of everything the engine holds.
+            adapter.snapshot = lambda engine: {'engine': engine, 'read': False, 'objects': 0, 'counts': {},
+                                               'said': 'the row takes no snapshot of the engine'}
             try:
-                make('volume', 'volume', 'create', '--label', label, names['volume'])
-                make('network', 'network', 'create', '--label', label, names['network'])
-                real_made.append((REAL, 'container', names['container']))
-                code, out = real(REAL, 'create', '--name', names['container'], '--label', label, '--network',
-                                 names['network'], '--volume', names['volume'] + ':/data', IMAGE, 'true')
-                if code != 0:
-                    raise RuntimeError('the row could not create its own container: %s' % out[-200:])
-                make('volume', 'volume', 'create', names['loose'])
-                done = {kind: adapter.observe(REAL, kind, names[key])
+                make('volume', 'volume')
+                make('network', 'network')
+                make('container', 'container', network=names['network'], volume=names['volume'])
+                make('volume', 'loose', labelled=False)
+                done = {kind: adapter.observe(context, kind, names[key])
                         for kind, key in (('container', 'container'), ('network', 'network'), ('volume', 'volume'))}
-                done['loose'] = adapter.observe(REAL, 'volume', names['loose'])
+                done['loose'] = adapter.observe(context, 'volume', names['loose'])
                 check(ROW, 'on the engine %s the row\'s labelled container, network and volume are items of the run, '
-                      'and its unlabelled volume is a report [%s]' % (REAL, done),
+                      'and its unlabelled volume is a report [%s]' % (context, done),
                       done == {'container': 'adopted', 'network': 'adopted', 'volume': 'adopted', 'loose': 'reported'})
-                items = {kind: record_at(REAL, kind, names[kind])[0] for kind in ('container', 'network', 'volume')}
+                items = {kind: record_at(context, kind, names[kind])[0] for kind in ('container', 'network', 'volume')}
                 volume_record = L.item(items['volume']) if items['volume'] else {}
-                check(ROW, 'the volume is recorded with the real engine\'s CreatedAt and the run\'s label [%s]'
+                check(ROW, 'the volume is recorded with the engine\'s CreatedAt and the run\'s label [%s]'
                       % (volume_record.get('locator'),),
                       bool((volume_record.get('locator') or {}).get('created_at'))
-                      and volume_record['locator'].get('run_label') == R8 and 'id' not in volume_record['locator'])
-                # the real event stream, read as a pipe
-                fd = adapter.subscribe(REAL)
-                time.sleep(2.0)
-                make('volume', 'volume', 'create', '--label', label, names['event'])
-                seen = None
-                for _turn in range(40):
-                    if fd is None or seen is not None:
+                      and volume_record['locator'].get('run_label') == run_id and 'id' not in volume_record['locator'])
+                # The event stream, read as a pipe: the engine's time, then an object of the row (and,
+                # on the stand-in, objects of the host), then the subscription since that time.
+                since = adapter.engine_time(context)
+                make('container', 'event')
+                if in_gap is not None:
+                    in_gap()
+                fd = adapter.subscribe(context, since)
+                seen, quiet = None, False
+                for _turn in range(60):
+                    if fd is None or (seen is not None and quiet):
                         break
-                    for ready in select.select([fd], [], [], 0.5)[0]:
-                        adapter.readable(ready)
-                    seen = record_at(REAL, 'volume', names['event'])[0]
+                    ready = select.select([fd], [], [], 0.5)[0]
+                    for one in ready:
+                        adapter.readable(one)
+                    quiet = not ready
+                    fd = next(iter(adapter.pipes()), None)
+                    seen = record_at(context, 'container', names['event'])[0]
                 adapter.stop()
-                check(ROW, 'a volume created while the real event stream is read becomes an item from its event',
-                      seen is not None and ((L.item(seen).get('owner') or {}).get('run') or {}).get('id') == R8)
-                done = send('run_finished', {'run': R8}, run=RM._run)
-                check(ROW, 'at run finished the three are removed by the real client [%s]'
+                check(ROW, 'the client that prints the events was started with the row\'s own label as a filter, '
+                      'since the engine\'s time [%s]' % (spawned,),
+                      len(spawned) == 1 and bool(since) and spawned[0][-2:] == ['--since', since]
+                      and any(spawned[0][index:index + 2] == ['--filter', 'label=' + label]
+                              for index in range(len(spawned[0]))))
+                check(ROW, 'a container created after the engine\'s time was read and before the subscription '
+                      'becomes an item from its event',
+                      seen is not None and ((L.item(seen).get('owner') or {}).get('run') or {}).get('id') == run_id)
+                done = send('run_finished', {'run': run_id}, run=own.client)
+                check(ROW, 'at run finished the three are removed by the engine\'s client [%s]'
                       % ({kind: named(done, identity) for kind, identity in items.items()},),
                       all(named(done, identity)[0] == 'removed' for identity in items.values()))
-                gone = {kind: real(REAL, kind, 'inspect', names[kind]) for kind in ('container', 'network', 'volume')}
-                check(ROW, 'the real engine holds none of the three any more',
+                gone = {kind: raw(['docker', '--context', context, kind, 'inspect', names[kind]])
+                        for kind in ('container', 'network', 'volume')}
+                check(ROW, 'the engine holds none of the three any more',
                       all(D.absent(kind, code, out) for kind, (code, out) in gone.items()))
                 order = [entry.get('item') for entry in done.get('outcomes') or ()]
                 check(ROW, 'the container went first, then the network, then the volumes',
-                      order.index(items['container']) < order.index(items['network']) < order.index(items['volume']))
-                loose_item, loose_record = record_at(REAL, 'volume', names['loose'])
-                check(ROW, 'the unlabelled volume is still in the real engine, a report with no owner',
-                      real(REAL, 'volume', 'inspect', names['loose'])[0] == 0 and loose_record.get('owner') is None
+                      all(identity in order for identity in items.values())
+                      and order.index(items['container']) < order.index(items['network'])
+                      < order.index(items['volume']))
+                loose_item, loose_record = record_at(context, 'volume', names['loose'])
+                check(ROW, 'the unlabelled volume is still in the engine, a report with no owner',
+                      own.shown('volume', names['loose']) is not None and loose_record.get('owner') is None
                       and loose_record.get('state') == 'present')
+                check(ROW, 'the row\'s client refused nothing, and every stop and remove it passed named an object '
+                      'the row created [%s %s]' % (own.refused, own.acted),
+                      own.refused == [] and len(own.acted) >= 4
+                      and all(word in own.words() for _context, _kind, _verb, word in own.acted))
+            except Exception as error:  # noqa: BLE001 - a raised row is a red row, and what follows still runs
+                check(ROW, 'raised %s: %s' % (type(error).__name__, str(error)[:200]), False)
             finally:
                 adapter.stop()
-                # The row's own objects, by the names it made, with no force option: whatever a red row left.
-                for context, kind, name in reversed(real_made):
-                    real(context, kind, 'rm', name)
-                left = [name for context, kind, name in real_made if real(context, kind, 'inspect', name)[0] == 0]
-                check(ROW, 'the row left none of its own objects in the real engine [%s]' % (left,), not left)
+                try:
+                    if then is not None:
+                        then(own, names, adapter, spawned, label)
+                except Exception as error:  # noqa: BLE001 - a raised row is a red row, and what follows still runs
+                    check('review/host-object-untouched', 'raised %s: %s' % (type(error).__name__, str(error)[:200]),
+                          False)
+                finally:
+                    # The row's own objects, through the row's client, with no force option: whatever a
+                    # red row left.
+                    for kind, name in reversed(own.wanted):
+                        if own.shown(kind, name) is not None:
+                            own.client(['docker', '--context', context, kind, 'rm', name])
+                    left = [name for kind, name in own.wanted if own.shown(kind, name) is not None]
+                    check(ROW, 'the row left none of its own objects in the engine [%s]' % (left,), not left)
+
+        # ------------------------------------------------------------------------------------
+        # The same procedure on a second stand-in engine, with a host-like object planted on it
+        # ------------------------------------------------------------------------------------
+        STUB = Engine()
+        HOST = {}
+
+        def stub_create(kind, name, run, network=None, volume=None):
+            labels = run_label(run) if run else None
+            if kind == 'container':
+                STUB.container('default', name, labels, volumes=[volume] if volume else (),
+                               networks=[network] if network else (), status='created')
+            elif kind == 'network':
+                STUB.network('default', name, labels)
+            else:
+                STUB.volume('default', name, labels)
+
+        def plant():
+            """Objects like a host's own: no label of any run, and not on the fixture's protect list.
+            They are made while the row waits for its events, so the stand-in prints their events
+            into the row's stream, as a real stream with no filter would."""
+            HOST['volume'] = STUB.volume('default', 'hostlike_pg_data', data='the database of the host')
+            HOST['network'] = STUB.network('default', 'hostlike_default')
+            HOST['container'] = STUB.container('default', 'hostlike-postgres-1', volumes=['hostlike_pg_data'],
+                                               networks=['hostlike_default'])
+
+        def untouched(own, names, adapter, spawned, label):
+            ROW = 'review/host-object-untouched'
+            words = (HOST['container']['Id'], 'hostlike-postgres-1', 'hostlike_pg_data', HOST['network']['Id'],
+                     'hostlike_default')
+            made_of = {entry['name']: entry.get('done') for entry in adapter.observations
+                       if entry['what'] == 'event' and entry['name'] in words}
+            check(ROW, 'the host-like container, volume and network were in the row\'s stream and the adapter '
+                  'read each [%s]' % (made_of,),
+                  sorted(made_of) == sorted((HOST['container']['Id'], 'hostlike_pg_data', HOST['network']['Id']))
+                  and all(done in ('reported', 'adopted', 'matched') for done in made_of.values()))
+            trace = os.environ.get('VELDO_0306_GUARD_LOG')
+            if trace:
+                with open(trace, 'a') as out:
+                    out.write(json.dumps({'adapter_made_of_the_host_objects': made_of,
+                                          'refused_by_the_rows_client': own.refused,
+                                          'passed_by_the_rows_client': own.acted}, sort_keys=True) + '\n')
+
+            def acts():
+                return [call for call in STUB.calls if call[2] not in READS]
+
+            check(ROW, 'the engine was given no stop and no remove that names one of them [%s]'
+                  % ([STUB.asked(word) for word in words],),
+                  all(STUB.asked(word, verbs=('stop', 'rm', 'kill', 'prune')) == [] for word in words))
+            check(ROW, 'every command the engine was given beyond ls, inspect and info is a stop or a remove of one '
+                  'object the row created [%s]' % (acts(),),
+                  all(call[1:3] in ACTS and len(call) == 4 and call[3] in own.words() and call[0] == 'default'
+                      for call in acts()) and STUB.forced == [])
+            before = len(acts())
+            host, mine = HOST['container']['Id'], names['loose']
+            for argv in (['container', 'stop', host], ['container', 'rm', host], ['container', 'kill', host],
+                         ['container', 'rm', 'hostlike-postgres-1'], ['volume', 'rm', 'hostlike_pg_data'],
+                         ['network', 'rm', HOST['network']['Id']], ['volume', 'rm', mine, 'hostlike_pg_data'],
+                         ['volume', 'rm', '--force', mine], ['volume', 'prune'], ['system', 'prune'],
+                         ['container', 'rm', '--volumes', host]):
+                count = len(own.refused)
+                code, _out = own.client(['docker', '--context', 'default'] + argv)
+                check(ROW, 'the row\'s client refuses "%s" and gives the engine nothing [%s]'
+                      % (' '.join(argv[:2]), acts()[before:]),
+                      code != 0 and len(own.refused) == count + 1 and len(acts()) == before)
+            code, _out = own.client(['docker', '--context', 'desktop-linux', 'volume', 'rm', mine])
+            check(ROW, 'and a remove on another context, also of a name the row made',
+                  code != 0 and len(acts()) == before)
+            check(ROW, 'the host-like container runs, its volume holds its data and its network is there',
+                  STUB.find('default', 'container', 'hostlike-postgres-1') is HOST['container']
+                  and HOST['container']['State']['Status'] == 'running'
+                  and STUB.find('default', 'volume', 'hostlike_pg_data') is HOST['volume']
+                  and HOST['volume']['Data'] == 'the database of the host'
+                  and STUB.find('default', 'network', 'hostlike_default') is HOST['network'])
+
+        own_row('review/own-row-on-a-stand-in', 'default', STUB.client, stub_create,
+                lambda argv, since: stream(STUB, 'default', since), 'run-306-0-stand-in', in_gap=plant,
+                then=untouched)
+
+        # ------------------------------------------------------------------------------------
+        # integration: a real engine, with objects the row itself creates. Never under a mutant.
+        # ------------------------------------------------------------------------------------
+        REAL_ASKED = []  # every command this suite gave a real engine's client
+
+        def real_raw(argv, cwd=None):
+            REAL_ASKED.append(tuple(str(word) for word in argv))
+            return RM._run(argv, cwd)
+
+        ROW = 'review/never-under-a-mutant'
+        WHY_NOT = not_on_a_real_engine(os.environ, PRODUCTION)
+        elsewhere = temp / 'elsewhere'
+        elsewhere.mkdir()
+        shutil.copyfile(str(VELDO / 'control_space_docker.py'), str(elsewhere / 'control_space_docker.py'))
+        other_canon = temp / 'other-canon'
+        other_canon.mkdir()
+        for name in CANON:
+            shutil.copyfile(str(VELDO / name), str(other_canon / name))
+        with open(str(other_canon / 'control_space_kinds.py'), 'a') as changed:
+            changed.write('# changed\n')
+        plain_production = {name: VELDO / name for name in PRODUCTION}
+        check(ROW, 'the row refuses to run when the mutation driver runs the suite',
+              not_on_a_real_engine({'VELDO_MUTATION_DRIVER': '1'}, plain_production) is not None)
+        check(ROW, 'and when a production module was loaded from anywhere but the .veldo of this repository, '
+              'whatever its bytes [%s]' % (not_on_a_real_engine({}, dict(
+                  plain_production, **{'control_space_docker.py': elsewhere / 'control_space_docker.py'})),),
+              not_on_a_real_engine({}, dict(plain_production, **{
+                  'control_space_docker.py': elsewhere / 'control_space_docker.py'})) is not None)
+        check(ROW, 'and when a module differs from its engine canon',
+              not_on_a_real_engine({}, plain_production, canon=other_canon) is not None)
+        driver = next(node for node in ast.parse((ROOT / 'scripts' / 'check_teeth_mutations.py').read_text()).body
+                      if isinstance(node, ast.FunctionDef) and node.name == 'worker')
+        driver_text = ast.unparse(driver)
+        check(ROW, 'the mutation driver says it is running, before it runs any suite, in every mode',
+              "os.environ['VELDO_MUTATION_DRIVER'] = '1'" in ast.unparse(driver.body[1])
+              and driver_text.index("os.environ['VELDO_MUTATION_DRIVER'] = '1'") < driver_text.index('exec('))
+
+        REAL, IMAGE = None, None
+        if WHY_NOT is None:
+            for context in CONTEXTS:
+                code, out = real_raw(['docker', '--context', context, 'image', 'ls', '--quiet', '--no-trunc'])
+                if code == 0 and out.split():
+                    REAL, IMAGE = context, out.split()[0]
+                    break
+        if WHY_NOT is not None:
+            print('  SELFTEST SKIP: VELDO-0306 integration/real-engine: %s: the row never runs under a mutant, '
+                  'and no real engine is asked anything' % WHY_NOT)
+        elif REAL is None:
+            print('  SELFTEST SKIP: VELDO-0306 integration/real-engine: no engine context of %s answers the client '
+                  'here with an image to create a container from' % (', '.join(CONTEXTS),))
+        else:
+            def real_create(kind, name, run, network=None, volume=None):
+                labelled = ['--label', '%s=%s' % (D.RUN_LABEL, run)] if run else []
+                if kind == 'container':
+                    argv = (['container', 'create', '--name', name] + labelled
+                            + (['--network', network] if network else [])
+                            + (['--volume', volume + ':/data'] if volume else []) + [IMAGE, 'true'])
+                else:
+                    argv = [kind, 'create'] + labelled + [name]
+                code, out = real_raw(['docker', '--context', REAL] + argv)
+                if code != 0:
+                    raise RuntimeError('the row could not create its own %s: %s' % (kind, str(out)[-200:]))
+
+            def real_events(argv, since):
+                return subprocess.Popen(argv, env=dict(ENVIRONMENT), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                        stderr=subprocess.DEVNULL, close_fds=True)
+
+            own_row('integration/real-engine', REAL, real_raw, real_create, real_events,
+                    'run-306-real-' + uuid.uuid4().hex[:12])
+        check('review/never-under-a-mutant', 'a refused row gave no real engine one command [%s %s]'
+              % (WHY_NOT, len(REAL_ASKED)), WHY_NOT is None or REAL_ASKED == [])
 
         for name in ('control_space_docker.py', 'control_service.py', 'control_space_signal.py',
                      'control_space_probe.py', 'control_space_kinds.py', 'control_space_remove.py'):

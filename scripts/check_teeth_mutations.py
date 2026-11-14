@@ -13709,7 +13709,7 @@ def cases():
               "ORDER = ('scratch', 'build_output', 'volume', 'network', 'container', 'image_tag', 'evidence', 'worktree',\n",
               ['ac3/order-and-non-forced'], module='control_space_kinds.py')
     docker306('space306-volume-made-again-not-seen-by-rule-1',
-              "            if facts['said'] is None and made == locator['created_at']:\n",
+              "            if facts['said'] is None and made == locator['created_at'] and not other:\n",
               "            if facts['said'] is None:\n",
               ['loss/volume-made-again'], module='control_space_signal.py')
     docker306('space306-volume-made-again-not-seen-by-the-snapshot',
@@ -13725,10 +13725,10 @@ def cases():
               "        return {stream['fd']: engine for engine, stream in self.streams.items()}\n",
               ['ac4/event-with-the-clock-stopped'])
     docker306('space306-subscribe-before-the-snapshot',
-              "        self._note('end_of_file', engine=engine, bytes=stream['bytes'])\n"
+              "            return\n"
               "        taken = self.snapshot(engine)\n",
-              "        self._note('end_of_file', engine=engine, bytes=stream['bytes'])\n"
-              "        self.subscribe(engine)\n"
+              "            return\n"
+              "        self.subscribe(engine, since)\n"
               "        taken = self.snapshot(engine)\n",
               ['ac4/end-of-file'])
     docker306('space306-no-snapshot-at-end-of-file',
@@ -13742,6 +13742,66 @@ def cases():
     docker306('space306-pipes-not-in-the-poll-set',
               "                    pipes = {**pipes, **dockers}\n", "",
               ['ac4/poll-set'], module='control_service.py', siblings=True)
+    # The review of VELDO-0306. Finding 2: a container that mounts what is protected adopted all the
+    # same, its mounts not read again at removal, and unread mounts let through. Finding 3: the
+    # client started with no time, at start and at end of file. Finding 4: a context that went down
+    # not said in the adapter's answer, and not logged by the service. Finding 5: rule 1 not
+    # comparing a volume's labels. Finding 1: the suite's own client letting every command through,
+    # and its event client started without the row's label; both are mutations of the suite itself.
+    # No case here or above runs the suite's real-engine row: worker() says the driver is running,
+    # and the row refuses.
+    docker306('space306-review-protected-mount-adopted',
+              "            if entry is not None:\n"
+              "                # It mounts what is protected: neither an item nor a report, whatever it carries.\n",
+              "            if False:\n", ['review/protected-mount'])
+    docker306('space306-review-unread-mounts-adopted',
+              "            if entry == 'unread':\n", "            if False:\n", ['review/protected-mount'])
+    docker306('space306-review-mounts-not-read-at-removal',
+              "        if held['protected']:\n"
+              "            return {'entry': held['entry'], 'how': held['how'], 'mount': held['mount']}\n", "",
+              ['review/protected-mount'], module='control_space_signal.py')
+    docker306('space306-review-unread-mounts-removed',
+              "        if not held['read']:\n"
+              "            return {'entry': None, 'how': 'mounts_unread', 'unread': held['said']}\n", "",
+              ['review/protected-mount'], module='control_space_signal.py')
+    docker306('space306-review-start-without-since',
+              "            done[engine] = self.snapshot(engine)\n            self.subscribe(engine, since)\n",
+              "            done[engine] = self.snapshot(engine)\n            self.subscribe(engine)\n",
+              ['review/events-since-the-snapshot'])
+    docker306('space306-review-end-of-file-without-since',
+              "        else:\n            self.subscribe(engine, since)\n",
+              "        else:\n            self.subscribe(engine)\n",
+              ['review/events-since-the-snapshot'])
+    docker306('space306-review-down-not-in-the-answer',
+              "        if engine in self.down:\n"
+              "            answer['down'] = self.down[engine]  # said to the caller: the context is not read any more\n",
+              "", ['review/engine-down-reported'])
+    docker306('space306-review-down-not-logged',
+              "            if isinstance(answer, dict) and answer.get('down'):\n", "            if False:\n",
+              ['review/engine-down-reported'], module='control_service.py', siblings=True)
+    docker306('space306-review-rule-1-labels-not-compared',
+              "            if facts['said'] is None and made == locator['created_at'] and not other:\n",
+              "            if facts['said'] is None and made == locator['created_at']:\n",
+              ['review/volume-labels-rule-1'], module='control_space_signal.py')
+    docker306('space306-review-row-client-lets-everything-through',
+              "                if (kind, verb) not in ACTS or context != self.context:\n"
+              "                    return self.refuse(argv, 'the row stops and removes on its own context and does nothing else')\n"
+              "                if len(rest) != 1 or rest[0].startswith('-'):\n"
+              "                    return self.refuse(argv, 'one object and no option')\n"
+              "                if not self.mine(kind, rest[0]):\n"
+              "                    return self.refuse(argv, 'not an object the row created')\n",
+              "", ['review/host-object-untouched'], module=space306)
+    result[-1]['dir'] = 'scripts/suites'
+    docker306('space306-review-row-client-takes-any-object',
+              "                if not self.mine(kind, rest[0]):\n"
+              "                    return self.refuse(argv, 'not an object the row created')\n",
+              "", ['review/host-object-untouched'], module=space306)
+    result[-1]['dir'] = 'scripts/suites'
+    docker306('space306-review-row-events-not-filtered',
+              "                argv = D.events_argv(engine, since, own=label)\n",
+              "                argv = D.events_argv(engine, since)\n",
+              ['review/own-row-on-a-stand-in'], module=space306)
+    result[-1]['dir'] = 'scripts/suites'
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
@@ -13812,6 +13872,7 @@ def materialize(case, mode, directory, root=ROOT):
 
 def worker(case, mutant=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
+    os.environ['VELDO_MUTATION_DRIVER'] = '1'  # a row that asks a real engine never runs here (VELDO-0306)
     shared = ROOT / 'scripts/suites/shared.py'
     rows = []
     details = []  # a false row's own words after its colon: what the check saw, kept beside the row

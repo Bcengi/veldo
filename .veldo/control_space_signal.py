@@ -107,6 +107,8 @@ order of ORDER, and the first that refuses ends the run and names the deferral:
 
   1 ledger        not_in_ledger   the thing at the locator is not the item recorded
   2 protect       protected       the locator is at, above or beneath a protect entry
+                                  (a container: or it mounts a protected volume or path, read
+                                  from the engine again; mounts that cannot be read refuse)
   3 owner_live    in_use          the owning run is not conclusive or its containment group is not
                                   empty; or the owning session's recorded process is the same live one
   4 process_use   in_use          a process, a container or git uses the path; a launcher's scratch

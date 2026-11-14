@@ -107,6 +107,8 @@ order of ORDER, and the first that refuses ends the run and names the deferral:
 
   1 ledger        not_in_ledger   the thing at the locator is not the item recorded
   2 protect       protected       the locator is at, above or beneath a protect entry
+                                  (a container: or it mounts a protected volume or path, read
+                                  from the engine again; mounts that cannot be read refuse)
   3 owner_live    in_use          the owning run is not conclusive or its containment group is not
                                   empty; or the owning session's recorded process is the same live one
   4 process_use   in_use          a process, a container or git uses the path; a launcher's scratch
@@ -438,6 +440,10 @@ NOT_HOLDING_STATES = ('removed', 'gone')
 REVIEW_SCRATCH_CASE = 3  # an untracked file git does not ignore: not unique work in a review worktree
 
 
+# The labels that say whose a Docker object is, as (locator field, label): control_space_remove.OWNER_LABELS.
+OWNER_LABELS = (('run_label', 'veldo.space.run'), ('compose_project', 'com.docker.compose.project'))
+
+
 def _scope_repository(ledger, record):
     """The repository the declarations name for the item's scope: its plain repository, or its
     project's. None when they name none."""
@@ -474,11 +480,17 @@ def _rule_ledger(ledger, probe, identity, record, given):
             # An engine gives a volume no Id (VELDO-0306): the volume under the name is the one recorded
             # when the engine shows one made at the recorded time. A recorded time that differs is a
             # volume made again; one the engine does not hold is missing.
+            # CreatedAt is to the second, so a volume made again inside it has the same one (the review
+            # of VELDO-0306, finding 5): each owner label the record holds is compared with the labels
+            # the engine shows now. A volume that does not carry them is not the one recorded.
             made = facts.get('created_at')
-            if facts['said'] is None and made == locator['created_at']:
+            shown = facts.get('labels') if isinstance(facts.get('labels'), dict) else {}
+            other = sorted(label for field, label in OWNER_LABELS
+                           if field in locator and shown.get(label) != locator[field])
+            if facts['said'] is None and made == locator['created_at'] and not other:
                 return None
             return {'recorded_created_at': locator['created_at'], 'created_at': made,
-                    'missing': facts['said'] is not None}
+                    'missing': facts['said'] is not None, 'labels_differ': other}
         if facts['id'] is None or locator.get('id') is None or facts['id'] != locator['id']:
             return {'recorded_id': locator.get('id'), 'id': facts['id'], 'missing': facts['id'] is None}
         return None
@@ -498,7 +510,18 @@ def _rule_ledger(ledger, probe, identity, record, given):
 
 def _rule_protect(ledger, probe, identity, record, given):
     facts = probe.protected(record['kind'], record['locator'], ledger.protect)
-    return {'entry': facts['entry'], 'how': facts['how']} if facts['protected'] else None
+    if facts['protected']:
+        return {'entry': facts['entry'], 'how': facts['how']}
+    if record['kind'] == 'container':
+        # A container that mounts what is protected is protected (design section 7; the review of
+        # VELDO-0306, finding 2). Its mounts are read from the engine again, now, whatever was seen
+        # when it was recorded; mounts that could not be read refuse the removal.
+        held = probe.mounts(record['locator'], ledger.protect, given['run'])
+        if held['protected']:
+            return {'entry': held['entry'], 'how': held['how'], 'mount': held['mount']}
+        if not held['read']:
+            return {'entry': None, 'how': 'mounts_unread', 'unread': held['said']}
+    return None
 
 
 def _rule_owner_live(ledger, probe, identity, record, given):
