@@ -1186,5 +1186,63 @@
   "finding": "applied again: its lines or rows were touched in fix round 3",
   "commit": "5114f4ae9eb3",
   "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-live-clone-holds-the-send-back",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n1/live-clone-holds-nothing-back"
+  ],
+  "red_rows": [
+   "n1/live-clone-holds-nothing-back",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 4",
+  "finding": "the lead's decision on N1's open point",
+  "commit": "0f70e32ac334",
+  "applied": "once by hand before the commit, to the repository copy the suite loads, with a stub engine; and by the registered run on the tree of 353a60eb (registered=36 executed=36 rejected=36)"
+ },
+ {
+  "falsifier": "space308-teardown-names-the-owner",
+  "module": "control_clone.py",
+  "expected_red": [
+   "n1/teardown-names-its-clone-only"
+  ],
+  "red_rows": [
+   "f1/sweep-never-resends",
+   "n1/teardown-changed-between-judge-and-send",
+   "n1/teardown-names-its-clone-only"
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 4",
+  "finding": "the lead's decision on N1's open point",
+  "commit": "0f70e32ac334",
+  "applied": "once by hand before the commit, to the repository copy the suite loads, with a stub engine; and by the registered run on the tree of 353a60eb (registered=36 executed=36 rejected=36)"
+ },
+ {
+  "falsifier": "space308-teardown-refused-send-falls-back-to-the-owner",
+  "module": "control_clone.py",
+  "expected_red": [
+   "n1/teardown-changed-between-judge-and-send"
+  ],
+  "red_rows": [
+   "n1/teardown-changed-between-judge-and-send"
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 4",
+  "finding": "the lead's decision on N1's open point",
+  "commit": "0f70e32ac334",
+  "applied": "once by hand before the commit, to the repository copy the suite loads, with a stub engine; and by the registered run on the tree of 353a60eb (registered=36 executed=36 rejected=36)"
  }
 ]

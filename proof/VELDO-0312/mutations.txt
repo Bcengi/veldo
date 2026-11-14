@@ -59,3 +59,4 @@ space312-host-principal-signs-a-signal-that-names-items noop rows 66 targets {"r
 space312-host-principal-signs-a-signal-that-names-items mutant rows 66 targets {"r2/runner-names-no-items": [false]} failed ['VELDO-0312 r2/runner-names-no-items']
 space312-abandon-defaults-to-the-owners noop rows 66 targets {"r2/abandon-names-its-cause": [true]} failed []
 space312-abandon-defaults-to-the-owners mutant rows 66 targets {"r2/abandon-names-its-cause": [false]} failed ['VELDO-0312 r2/abandon-names-its-cause']
+# THE REGISTERED FALSIFIER SET WAS RUN, 2026-11-14 (no code of this ticket changed since its last fix round; control_launch.py and control_clone.py changed under VELDO-0308 fix 4). python3 scripts/check_teeth_mutations.py --finding 312, run under nice -n 10 on the tree of commit 353a60eb (clean), with a stub engine that was never called and no cargo involved: mutations: passed registered=30 executed=30 reused=0 rejected=30.
