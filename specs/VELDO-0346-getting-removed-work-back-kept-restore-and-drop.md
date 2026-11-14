@@ -187,3 +187,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   An item deferred after its keep step and kept again later has more than one attempt, each with a head
   of its own. The listing shows every attempt, restore takes the newest attempt's head unless the owner
   names another, and drop takes the refs of every attempt of the item.
+- 2026-11-14: from the review of VELDO-0345 (its History of this date, finding 3). No acceptance criterion
+  changed. A file of an attempt now has the permission bits of the file it was saved from, so a plain
+  copy brings an executable back executable. The manifest still holds the whole mode, and restore
+  must set each file's mode from the manifest: the owner's read bit is always set in the store, and
+  set-id and sticky bits never are. A row of this ticket should read the mode after a restore. The keep
+  record also holds its attempt, {number, head}; restore and drop read it and never write it.

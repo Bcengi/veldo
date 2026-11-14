@@ -34,7 +34,8 @@ AN ITEM'S STATES AND THE ONLY MOVES (design 4.1):
   signal             present, kept or deferred to due
   outcome removing   due to removing (the rules passed; the decision to remove is recorded)
   outcome removed    due or removing to removed; refused for a worktree and an agent repository that
-                     has no keep record (space_no_keep_record)
+                     has no keep record (space_no_keep_record), or whose keep record was written
+                     before the item last became due or removing (space_keep_stale)
   outcome deferred   due to deferred; removing to deferred only with one of the three deferrals a remover
                      names (TOOL_REFUSALS: remove_refused, in_use, keep_failed; design section 7 rule 7),
                      which are read while the remover runs
@@ -96,8 +97,13 @@ its uncommitted files are in a snapshot under the state root. keep writes that o
   repository   the main repository: the one the declarations name for the item's scope, never a private
                repository
   path         the path the item had
-  refs         {kept ref: commit}, each under refs/veldo/kept/<ticket>/<item>/ (kept_prefix)
+  refs         {kept ref: commit}, each under refs/veldo/kept/<ticket>/<item>/<attempt>/ (kept_prefix,
+               then the number of the keep attempt that wrote the ref)
   snapshots    one entry per snapshot attempt: path, number, size and the digest of its manifest
+  attempt      the keep attempt this removal stands on: {number, head}, the number of the attempt whose
+               refs the last keep write named and the commit the Ledger itself read as the item's HEAD
+               then (each None for an item with no commit at all). None from the moment the item is
+               marked due, or written removing, until its keep step writes again
 
 THE LEDGER READS WHAT IT RECORDS. keep trusts nothing its caller says. Inside the command's own transaction
 it reads the main repository with git, through the one Git boundary, and refuses a ref that is not there
@@ -106,6 +112,18 @@ name for the item or is not at its path (space_keep_repository), one that is, or
 repository (space_keep_private), a snapshot path that is not the numbered folder of that item in the
 snapshot store (space_keep_snapshot), and a manifest whose bytes do not have the digest named
 (space_keep_manifest). An item that is not due or removing is space_item_state:<state>.
+
+THE LEDGER READS THE ITEM'S HEAD ITSELF. keep runs git in the item, at its locator, and reads the commit
+HEAD names. That commit must be the one the write names as <attempt>/head, a ref the Ledger has just read
+in the main repository: a write without it is space_keep_head, and so is an empty record for an item
+that has a HEAD commit. Only an item git reads no HEAD commit in may have a record with no kept head. An
+item git cannot read at its locator is space_keep_item. The refs of one write are those of one attempt.
+
+A KEEP RECORD IS OF ONE REMOVAL. signal, which marks the item due, and the outcome removing for a due
+item both clear the record's attempt; only a keep write sets it. The outcome removed is refused,
+space_keep_stale, while it is clear. So a record an earlier attempt wrote, before the item was deferred
+and went on changing, never stands for a later removal: a process killed after removing was written and
+before its keep step leaves a record that neither the Ledger nor control_space_keep.verify accepts.
 
 A KEEP WRITE ADDS AND NEVER REMOVES. For an item that has a record, the refs and the attempt are added to
 it. A ref the record holds at another commit is space_keep_ref_moved:<ref>, an attempt number the record
@@ -516,6 +534,28 @@ def kept_parts(identity, record):
 def kept_prefix(identity, record):
     """refs/veldo/kept/<ticket>/<item>/: what every kept ref of the item begins with."""
     return KEPT_REFS + '%s/%s/' % kept_parts(identity, record)
+
+
+def _one_attempt(refs, prefix):
+    """The number of the keep attempt the refs of one keep write belong to: each is named
+    <prefix><n>/<what>, with one n from 1 for all of them. None for a write that names no ref."""
+    numbers = set()
+    for name in refs:
+        number, _, what = name[len(prefix):].partition('/')
+        if not (number.isascii() and number.isdigit() and number[0] != '0' and what):
+            raise _invalid('refs', 'each kept ref under %s<attempt>/, the attempt numbered from 1' % prefix)
+        numbers.add(int(number))
+    if len(numbers) > 1:
+        raise _invalid('refs', 'the kept refs of one attempt: these are of attempts %s'
+                       % ', '.join(str(number) for number in sorted(numbers)))
+    return numbers.pop() if numbers else None
+
+
+def _new_removal(record):
+    """A removal of the item begins: its keep record, when it has one, is of no attempt until the
+    keep step writes again. Nothing else of the record is touched."""
+    if record.get('kept'):
+        record['kept'] = dict(record['kept'], attempt=None)
 
 
 def inside_roots(kind, locator, roots, engines):
@@ -1545,6 +1585,27 @@ class Ledger:
         lines = done.stdout.decode('utf-8', 'surrogateescape').split('\n')[:-1]
         return {name: commit for commit, _, name in (line.partition(' ') for line in lines)}
 
+    def _item_head(self, path):
+        """The commit HEAD names in the item at `path`, read now by git through the one Git boundary, or
+        None when git reads the item and its HEAD names no commit. Raises Refused when git cannot read
+        the item there: what could not be read is never taken for an item with no commit."""
+        global _git_process
+        if _git_process is None:
+            _git_process = _sibling('git_process')
+        try:
+            done = _git_process.run(['git', '-C', path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}'],
+                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                    timeout=GIT_SECONDS)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            raise Refused('space_keep_item', 'git could not read the item: %s' % error)
+        out = done.stdout.decode('utf-8', 'replace').strip()
+        said = done.stderr.decode('utf-8', 'replace').strip()
+        if done.returncode == 0 and out:
+            return out
+        if done.returncode == 1 and not out and not said and os.path.isdir(path):
+            return None
+        raise Refused('space_keep_item', 'git could not read the item at its locator: ' + (said[-300:] or path))
+
     def _checked_snapshot(self, identity, record, snapshot):
         """The snapshot attempt a keep command names, read from the store by the Ledger itself."""
         if not isinstance(snapshot, dict) or set(snapshot) != {'path', 'number', 'size', 'manifest'}:
@@ -1715,6 +1776,7 @@ class Ledger:
         for identity, _version, record in self._matching(event, _checked_subject(params.get('subject'))):
             record['state'] = 'due'
             record['due'] = {'event': event}
+            _new_removal(record)
             changes[identity] = {'kind': ITEM_KIND, 'data': record}
         return changes
 
@@ -1736,6 +1798,11 @@ class Ledger:
         if outcome == 'removed' and record['kind'] in KEEP_KINDS and not record.get('kept'):
             raise Refused('space_no_keep_record', 'a worktree and a private repository are removed only after '
                           'their commits were recorded: the item has no keep record')
+        if outcome == 'removed' and record['kind'] in KEEP_KINDS and not (record.get('kept') or {}).get('attempt'):
+            raise Refused('space_keep_stale', 'the keep record was written before the item last became due or '
+                          'removing: it is not the record of this removal')
+        if outcome == 'removing' and record['state'] == 'due':
+            _new_removal(record)
         if outcome == 'deferred':
             if not _is_str(facts.get('rule')):
                 raise _invalid('facts.rule', 'the rule that refused')
@@ -1770,6 +1837,7 @@ class Ledger:
                                        'snapshots': []}
         if prior['repository'] != repository:
             raise Refused('space_keep_repository', 'the keep record names another main repository')
+        number = _one_attempt(refs, prefix)
         found = self._kept_refs(repository, prefix) if refs else {}
         merged = dict(prior['refs'])
         for name in sorted(refs):
@@ -1787,7 +1855,12 @@ class Ledger:
                 raise Refused('space_keep_snapshot_replaced', 'the keep record holds this attempt with other figures')
             if not same:
                 snapshots = sorted(snapshots + [attempt], key=lambda entry: entry['number'])
-        record['kept'] = {'repository': repository, 'path': prior['path'], 'refs': merged, 'snapshots': snapshots}
+        head = self._item_head(record['locator']['path'])
+        if head is not None and refs.get('%s%d/head' % (prefix, number or 0)) != head:
+            raise Refused('space_keep_head', 'the item\'s HEAD is %s, and the write names no kept head of its '
+                          'attempt at that commit' % head)
+        record['kept'] = {'repository': repository, 'path': prior['path'], 'refs': merged, 'snapshots': snapshots,
+                          'attempt': {'number': number, 'head': head}}
         return {identity: {'kind': ITEM_KIND, 'data': record}}
 
     def _t_gone(self, conn, params, before):

@@ -4,7 +4,7 @@
  "commit": "0ceda28f8b620ddfef4e4d0a04ca875f1ca3549c",
  "tree": "f5386c2d4bea33201976f42690ef36bbce742d63",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-14T05:24:48.674778+00:00",
+ "produced_at": "2026-11-14T05:39:08.563122+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -24,6 +24,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0345/falsifiers.json",
      "detail": "space345-refs-after-the-remove (the keep step is called after git's remove): ac1/kept-before-remove red, no kept ref before the remove. space345-agent-worktree-kept-in-agent-repository: ac1/agent-worktree-in-shared red; the ledger refuses a keep record that names the agent repository, so the worktree is not removed at all, one step before the loss the falsifier describes. space345-removed-with-no-keep-record (the ledger's refusal taken out): ac1/removed-needs-keep-record red."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "From the independent review (finding 2, the ledger accepted an empty keep record and then removed). Row ac1/ledger-reads-the-head: for a due worktree with a HEAD commit the Ledger refuses, by name and with nothing written, an empty keep record (space_keep_head), a record with a ref and no kept head (space_keep_head), a kept head the main repository holds at another commit than the HEAD the Ledger itself reads in the item (space_keep_head), refs of two attempts in one write and a head of no numbered attempt (invalid_input:refs), and an item it cannot read at its locator (space_keep_item); the outcome removed stays refused, space_no_keep_record. With the kept head of one attempt at the item's HEAD the record is written, names the attempt and that head, and removed is accepted. A private repository git reads no HEAD commit in is the one item whose record may hold no kept head; once it has a commit an empty record is refused for it too."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-empty-keep-record-accepted (the Ledger's head check taken out): ac1/ledger-reads-the-head red, an empty record is accepted."
     }
    ]
   },
@@ -76,6 +86,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0345/falsifiers.json",
      "detail": "space345-attempt-takes-the-newest-names-again (the attempt writes under the newest attempt's number again): ac3/kept-ref-per-attempt red, the worktree is keep_failed at its new head, which is the builder's report this change answers."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "From the independent review (finding 1, a stale keep record passed). Row ac3/record-of-this-attempt: a detached worktree is kept by attempt 1 and deferred as in_use; a commit is made (a branch holds it, so rule 5 lets the removal begin); the process is killed between Signal's removing write and the keep step. The item is removing, its record is of no attempt (the Ledger cleared it when the item became due), the commit is on no kept ref; verify refuses, keep_failed; the ledger refuses the outcome removed as space_keep_stale with nothing written; both still refuse with the worktree moved away from both names. Reconcile's attempt, the remover with the keeper, keeps the commit on <item>/2/head and only then removes; the record is of attempt 2 and reads true. Row ac3/verify-reads-current-tips: killed after the record with nothing changed verify is ok; after a commit it refuses and names head <commit>; after a reset it names the commit left behind too; with the worktree under its marked name it reads it there and refuses the same way; the worktree is whole with both commits; reconcile's attempt keeps both under attempt 2 and removes."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-removal-keeps-the-old-record (the Ledger leaves the record's attempt when a removal begins): ac3/record-of-this-attempt red. space345-removed-on-a-stale-record (the ledger's refusal taken out): ac3/record-of-this-attempt red, removed is accepted on the earlier record. space345-verify-reads-no-tips (verify does not act on the item's tips): ac3/verify-reads-current-tips red, verify is ok with a commit on no kept ref."
     }
    ]
   },
@@ -97,6 +117,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0345/falsifiers.json",
      "detail": "space345-snapshot-in-the-object-store (the snapshot's files written into the main repository's object store, the detectable part of a commit on a kept ref): ac4/outside-git red. space345-snapshot-by-git-stash: ac4/nothing-touched red. space345-store-off-the-protect-list: ac4/store-protected red, the folder is declared and its ending event removes the snapshot."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "From the independent review (finding 3, saved files were 0600). Row ac4/modes-kept: a worktree whose work is five ignored files of modes 0755, 0600, 0664, 0444 and 0750 (one in a folder, one of 2304 bytes of every byte value) is removed once they are saved; each saved file has the mode of its source and the manifest the same st_mode; the design's plain restore (git worktree add at the kept head, cp -a of the attempt's work folder) brings the executable back as 0755 and every file with its mode and its bytes exact. In a second worktree an untracked executable, a tracked edit and the staged content have their modes in the store, the staged file that of its index entry (100755), and the manifest file is 0600; an attempt one of whose files lost its mode is reported missing by verify and a retry saves it again under the next number."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-saved-files-0600 (every saved file gets 0600, as before the review): ac4/modes-kept red, the executable is 0600 in the store."
     }
    ]
   },
@@ -118,6 +148,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0345/falsifiers.json",
      "detail": "space345-goes-on-after-a-short-write: ac5/failed-save-removes-nothing red, the item is removed after a short write. space345-deletes-the-folder-to-make-room: ac5/never-replaced red, no copy of the deleted file. space345-recorded-snapshot-used-without-comparing: ac5/retry-compares red. space345-only-the-newest-attempt-on-the-record: ac5/every-attempt-listed red."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/140_veldo_0345_space_keep.py",
+     "detail": "From the independent review (finding 4, new store folders were not synced into the folder above them). Row ac5/folders-synced, with the keeper's own sync and rename watched by device and inode: for a ticket with no folder in the store, a failing sync of the store (the sync that puts the ticket's new folder on the disk) defers the item keep_failed, whole, with no attempt listed; on the next attempt the state root is synced, the store after the ticket's folder was made in it, the ticket's folder after the item's was made in it, the item's folder after the temporary folder was made in it and again after the rename, and at the rename every file and folder of the attempt had been synced. Row ac5/failed-save-removes-nothing now fails a sync of the attempt's own files (a descriptor under <n>.partial); its counts are unchanged."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0345/falsifiers.json",
+     "detail": "space345-new-folder-not-synced (the folder above a store folder is not synced): ac5/folders-synced red."
     }
    ]
   },
@@ -147,7 +187,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 140_veldo_0345_space_keep (26 rows). Suites 130 to 139, each on its own, are green after the change (proof/VELDO-0345/suite-green.txt)."
+   "command": "python3 scripts/selftest.py --suite 140_veldo_0345_space_keep (31 rows). Suites 130 to 140, each on its own, are green on the code of this commit (proof/VELDO-0345/suite-green.txt)."
   },
   {
    "name": "integration",
@@ -157,12 +197,12 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The sixteen registered cases of finding 345 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, after the per-attempt kept refs and the fix of VELDO-0301: every noop green, every mutant turns its target rows red (proof/VELDO-0345/mutations.txt, falsifiers.json). space345-branches-only is anchored at the renamed call. The cases of finding 301 are in proof/VELDO-0301."
+   "command": "The twenty-two registered cases of finding 345 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, all run again on the code of this commit: every noop green (57 observations, none red), every mutant turns its target rows red (proof/VELDO-0345/mutations.txt, falsifiers.json). Six are from the independent review. space345-snapshot-in-the-object-store is anchored at the call that now passes the file's mode. The cases of finding 301 are in proof/VELDO-0301 and were not run again."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_git_boundary.py. All pass."
+   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_git_boundary.py. All pass, run again after the review fix."
   },
   {
    "name": "gate",
@@ -178,7 +218,10 @@
   "RECONCILE IS NOT BUILT (VELDO-0315). \"By reconcile\" in AC3 is shown by control_space_keep.verify, the check reconcile must pass before it completes an item, and by a second attempt made the way reconcile will make it. The snapshot is written only when the keeper is made with snapshot=True; the removals that ask for one are VELDO-0318, 0336 and 0347, and no remover here forces a removal.",
   "The full gate, the heavy suites and the teeth stage were not run by the builder.",
   "A KEPT REF IS NEVER MOVED, AND EVERY ATTEMPT WRITES ITS OWN (spec History 2026-11-14). The name holds the attempt's number, <item>/<attempt>/<what>. An attempt whose refs the newest attempt already holds writes nothing; any other writes its whole set under the next number. An item tried many times with something changed each time gains one set of refs per attempt; they cost nothing and only the owner's drop takes them (VELDO-0346, whose History names the new names). commit and tree name the first build (0ceda28f); this change is in the commit that carries this bundle, made as one commit with the fix of VELDO-0301 by the lead's instruction.",
-  "The registered case space331-signal-reads-no-mode is anchored again and red (proof/VELDO-0301/mutations.txt)."
+  "The registered case space331-signal-reads-no-mode is anchored again and red (proof/VELDO-0301/mutations.txt).",
+  "THE REVIEW FIX (review-veldo-0345.md, verdict FIX, findings 1 to 4; spec History 2026-11-14). It is in the commit that carries this bundle; commit and tree still name the first build (0ceda28f). The keep record gained a field, attempt {number, head}: the Ledger clears it when the item becomes due or removing and a keep write sets it, the outcome removed is refused as space_keep_stale while it is clear, and verify also reads the item's tips now. The Ledger reads the item's HEAD itself and requires it as the kept head of the write's attempt. Saved files keep their permission bits. The folders of the store are synced into the folder above them.",
+  "WHAT THE REVIEW FIX DOES NOT PROVE. The syncs are shown as calls made in the right order on the right folders (device and inode); no power was cut and no filesystem without ordered metadata was used. In the store the owner's read bit is always set and set-id and sticky bits never are: for a file without the owner's read bit, or with one of those bits, the manifest holds the mode and a plain copy does not; restore from the manifest is VELDO-0346. An attempt written before this change (files of mode 0600) reads as missing and is saved again under the next number. The Ledger reads the item's HEAD at its locator only: a keep write for an item that is under its marked name is refused as space_keep_item, and the keeper itself reads the item at its locator. The ledger's check at removed is the attempt on the record; it cannot read an item that is gone, so a commit made between the keep record and the remove is the remover's last look (VELDO-0300) and verify, not the ledger.",
+  "The reviewer ran a real kernel short write (RLIMIT_FSIZE) and a real SIGKILL at the three kill points against the first build and found nothing lost (review-veldo-0345.md, Tests run). Those runs are the reviewer's and were not repeated here; the suite's own full pool and kill are still stand-ins."
  ],
  "rollback": "Revert the change. Removers then run without the keep step, as before this ticket. Kept refs already written stay in their repositories and are still read by plain git."
 }

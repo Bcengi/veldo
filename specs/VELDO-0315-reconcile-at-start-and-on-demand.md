@@ -181,3 +181,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   (the switch off, report mode, a caller with no removers) is matched by no later event, so reconcile
   carries those that may now be carried out; the owner's Confirm (VELDO-0320 AC1) carries the confirmed
   ones. AC5 and AC6 are not in section 12 of the design, whose text this change does not edit.
+- 2026-11-14: from the review of VELDO-0345 (its History of this date, finding 1). No acceptance criterion
+  changed. control_space_keep.verify, which AC2 asks before a removing item is completed, now also
+  refuses a keep record no keep step of this removal wrote (the Ledger clears the record's attempt
+  when the item becomes due or removing) and an item that names a commit no kept ref of that attempt
+  holds, read at its locator or under its marked name. The ledger refuses the outcome removed on such
+  a record as space_keep_stale. So reconcile completes a removing item by running the remover with
+  the keeper, which writes the record of this removal, and never from an earlier record alone.

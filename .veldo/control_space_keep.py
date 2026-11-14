@@ -7,7 +7,8 @@ removed.
 
 WHAT IS HERE. `keep` carries out the keep step for one item and answers. `keeper` gives the same thing
 in the form the removers are given, keep(identity, record) (control_space_remove.remove). `verify`
-reads an item's keep record against the disk: what reconcile asks before it completes a removing item.
+reads an item's keep record against the disk and against the item as it is now: what reconcile asks
+before it completes a removing item.
 `attempts` counts every folder an item has in the snapshot store, and `listing` reads what a snapshot
 of a work tree would hold.
 
@@ -61,7 +62,8 @@ write is a failure, and is not moved.
 
 THE SNAPSHOT (design 0.3), written when the keeper is made with snapshot=True, by the removals that
 save uncommitted state first. Plain files in the snapshot store, <state root>/space-saved/<ticket>/
-<item>/<n>/, outside every repository; the store and every folder in it have mode 0700:
+<item>/<n>/, outside every repository; the store and every folder in it have mode 0700, and a saved
+file has the permission bits of the file it was copied from (below):
 
   manifest.json   the item, its ticket, its main repository, the path it had, the checked-out commit,
                   the event; one row per saved path with what it is (tracked_edit, untracked,
@@ -79,6 +81,23 @@ the item's own file, every file and folder is synced, the folder is renamed to <
 folder is synced. Any failure is keep_failed, and what the attempt wrote stays under its temporary
 name: nothing in the store is ever deleted, replaced or written a second time by this module. n is the
 next number no folder of the item has, whole or temporary.
+
+A SAVED FILE KEEPS ITS MODE. A file of work/ is given the permission bits of the item's file (the low
+nine, rwx for owner, group and others), so an executable comes back executable from a plain copy of
+the attempt (design 0.5) as well as from the manifest, which holds the whole st_mode. A file of
+staged/ gets the bits of its index entry (100755 or 100644). Two things differ, and the manifest is
+the word on both: the owner's read bit is always set, because the store reads every file back, and
+the set-id and sticky bits are never set in the store. The mode is set on the open file before its
+sync and read back with the content; an attempt whose file has other bits is not used by a retry
+and is reported missing by verify.
+
+WHAT A POWER CUT LEAVES. A folder that is new is nothing until the folder above it is synced. So each
+folder the store is made of (the store in the state root, the ticket's folder, the item's folder) has
+the folder above it synced each time an attempt begins, whether this attempt made it or an earlier
+one that may have died before its sync; the temporary folder is synced into the item's folder when it
+is made; every file is synced, after its mode is set, and every folder of the attempt, before the
+rename; and the item's folder is synced after it. A failed sync is keep_failed like any failed write.
+The keep record, and with it the removal, comes after all of them.
 
 A RETRY first looks at the newest attempt the keep record lists. When that attempt's manifest has the
 recorded digest, its files are as the manifest says and the item equals it path by path, in mode and
@@ -384,8 +403,20 @@ def _comparable(found):
     return files, list(found.get('deleted_worktree') or ()), list(found.get('deleted_index') or ())
 
 
-def _folder(path):
-    """Make one folder of the store, mode 0700, or find it there as a real folder."""
+def _sync_folder(path):
+    """Sync one folder: the names in it are on the disk when this returns."""
+    descriptor = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+    try:
+        _sync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _folder(path, synced=True):
+    """Make one folder of the store, mode 0700, or find it there as a real folder. With `synced` the
+    folder above it is synced, made now or found: a folder an earlier attempt made and died before
+    syncing is as new as one made now. Without it the caller syncs the folder above before it
+    relies on this one (the folders inside an attempt, which _sync_folders syncs before the rename)."""
     try:
         os.mkdir(path, FOLDER_MODE)
     except FileExistsError:
@@ -393,6 +424,8 @@ def _folder(path):
     found = os.lstat(path)
     if not stat.S_ISDIR(found.st_mode):
         raise _Failed('a folder of the snapshot store is not a folder: ' + path)
+    if synced:
+        _sync_folder(os.path.dirname(path))
 
 
 def _folders(top, name):
@@ -400,12 +433,23 @@ def _folders(top, name):
     at = top
     for part in name.split('/')[:-1]:
         at = os.path.join(at, part)
-        _folder(at)
+        _folder(at, synced=False)
 
 
-def _put(target, blocks):
-    """Write one file of an attempt, new, block by block, and sync it. Returns (size, SHA-256) of what
-    it was given. A write that comes back short stops the attempt."""
+def kept_mode(mode):
+    """The permission bits a file of the store has for a file whose st_mode is `mode`: its own low
+    nine, with the owner's read bit set. For anything but a regular file, 0600."""
+    return (stat.S_IMODE(mode) & 0o777) | 0o400 if stat.S_ISREG(mode) else FILE_MODE
+
+
+def _mode_of(path):
+    """The permission bits of one file of the store, no link followed."""
+    return stat.S_IMODE(os.lstat(path).st_mode)
+
+
+def _put(target, blocks, mode=FILE_MODE):
+    """Write one file of an attempt, new, block by block, give it the permission bits `mode` and sync
+    it. Returns (size, SHA-256) of what it was given. A write that comes back short stops the attempt."""
     descriptor = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, FILE_MODE)
     digest, size = hashlib.sha256(), 0
     try:
@@ -414,10 +458,19 @@ def _put(target, blocks):
             size += len(block)
             if _write(descriptor, block) != len(block):
                 raise _Failed('a write to the snapshot store came back short: ' + target)
+        os.fchmod(descriptor, mode)
         _sync(descriptor)
     finally:
         os.close(descriptor)
     return size, digest.hexdigest()
+
+
+def _staged_mode(row):
+    """The permission bits of a staged file of the store: those of its index entry."""
+    try:
+        return kept_mode(int(row['staged']['mode'], 8))
+    except (KeyError, TypeError, ValueError):
+        return FILE_MODE
 
 
 def _blocks(source):
@@ -434,11 +487,7 @@ def _stored(path):
 
 def _sync_folders(top):
     for at, _folders, _files in os.walk(top):
-        descriptor = os.open(at, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
-        try:
-            _sync(descriptor)
-        finally:
-            os.close(descriptor)
+        _sync_folder(at)
 
 
 def _save(ledger, identity, path, found, header, commands):
@@ -455,6 +504,7 @@ def _save(ledger, identity, path, found, header, commands):
     number = 1 + max(taken + [0])
     partial, final = os.path.join(folder, str(number) + PARTIAL), os.path.join(folder, str(number))
     os.mkdir(partial, FOLDER_MODE)
+    _sync_folder(folder)
     manifest = dict(header, schema=SNAPSHOT_SCHEMA, number=number, files={},
                     deleted_worktree=found['deleted_worktree'], deleted_index=found['deleted_index'])
     total = 0
@@ -467,12 +517,14 @@ def _save(ledger, identity, path, found, header, commands):
             if stat.S_ISLNK(row['mode']):
                 os.symlink(os.readlink(source), target)
             else:
-                size, digest = _put(target, _blocks(source))
+                size, digest = _put(target, _blocks(source), kept_mode(row['mode']))
                 if digest != row['sha256'] or size != row['size']:
                     raise _Failed('a file changed while it was saved: ' + name)
             _seam('in_snapshot')
             if _stored(target) != row['sha256']:
                 raise _Failed('a file of the snapshot reads back as other content: ' + name)
+            if not stat.S_ISLNK(row['mode']) and _mode_of(target) != kept_mode(row['mode']):
+                raise _Failed('a file of the snapshot reads back with another mode: ' + name)
             now = _remove._digest(source)
             if now != {'mode': row['mode'], 'sha256': row['sha256']}:
                 raise _Failed('a file changed while it was saved: ' + name)
@@ -481,9 +533,11 @@ def _save(ledger, identity, path, found, header, commands):
             target = os.path.join(partial, 'staged', name)
             _folders(partial, 'staged/' + name)
             content = _read(commands, path, 'cat-file', 'blob', row['staged']['blob']).encode('utf-8', 'surrogateescape')
-            size, digest = _put(target, [content])
+            size, digest = _put(target, [content], _staged_mode(row))
             if _stored(target) != digest:
                 raise _Failed('a staged file of the snapshot reads back as other content: ' + name)
+            if _mode_of(target) != _staged_mode(row):
+                raise _Failed('a staged file of the snapshot reads back with another mode: ' + name)
             row['staged'] = dict(row['staged'], size=size, sha256=digest)
             total += size
         manifest['files'][name] = row
@@ -495,11 +549,7 @@ def _save(ledger, identity, path, found, header, commands):
     if os.path.lexists(final):
         raise _Failed('a folder is already at the attempt\'s number: ' + final)
     _rename(partial, final)
-    descriptor = os.open(folder, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
-    try:
-        _sync(descriptor)
-    finally:
-        os.close(descriptor)
+    _sync_folder(folder)
     if _stored(os.path.join(final, MANIFEST)) != digest:
         raise _Failed('the manifest of the snapshot reads back as other content')
     return {'path': final, 'number': number, 'size': total, 'manifest': digest}
@@ -507,7 +557,7 @@ def _save(ledger, identity, path, found, header, commands):
 
 def _manifest(attempt):
     """The manifest of an attempt a keep record lists, when its bytes still have the recorded digest
-    and every file it names is in the attempt with its digest. None otherwise."""
+    and every file it names is in the attempt with its digest and its permission bits. None otherwise."""
     try:
         descriptor = os.open(os.path.join(attempt['path'], MANIFEST), os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
         with os.fdopen(descriptor, 'rb') as file:
@@ -516,11 +566,17 @@ def _manifest(attempt):
             return None
         manifest = json.loads(text.decode())
         for name, row in manifest['files'].items():
-            if row['sha256'] is not None and _stored(os.path.join(attempt['path'], 'work', name)) != row['sha256']:
-                return None
+            if row['sha256'] is not None:
+                saved = os.path.join(attempt['path'], 'work', name)
+                if _stored(saved) != row['sha256']:
+                    return None
+                if not stat.S_ISLNK(row['mode']) and _mode_of(saved) != kept_mode(row['mode']):
+                    return None
             held = row.get('staged')
-            if held and held.get('saved') and _stored(os.path.join(attempt['path'], 'staged', name)) != held['sha256']:
-                return None
+            if held and held.get('saved'):
+                saved = os.path.join(attempt['path'], 'staged', name)
+                if _stored(saved) != held['sha256'] or _mode_of(saved) != _staged_mode(row):
+                    return None
     except (OSError, ValueError, KeyError, TypeError):
         return None
     return manifest
@@ -650,13 +706,59 @@ def attempts(ledger, identity):
     return sorted(found, key=lambda entry: (entry['number'], entry['partial']))
 
 
+def _places(record, identity):
+    """Where the item is now: its locator, its marked name, both or neither. Raises OSError when a
+    name could not be read: that is not a name with nothing under it."""
+    path = (record.get('locator') or {}).get('path')
+    found = []
+    try:
+        os.lstat(path)
+        found.append(path)
+    except FileNotFoundError:
+        pass
+    under = _remove.left(path, identity)
+    if under is not None:
+        found.append(under)
+    return found
+
+
+def _unkept(record, identity, kept, commands):
+    """What the item names now that no kept ref of the record's attempt holds: [what and commit], read
+    from the item wherever it is, at its locator or under its marked name. Empty for an item that is
+    at neither. Raises _Failed when it cannot be read."""
+    current = kept['attempt']
+    own = '%s%s/' % (name_prefix(kept['refs']), current.get('number')) if kept['refs'] else None
+    on = set(commit for name, commit in kept['refs'].items() if own and name.startswith(own))
+    unkept = []
+    for where in _places(record, identity):
+        tips = _remove.tips(where, record.get('kind'), commands)
+        if tips is None:
+            raise _Failed('git could not read the tips of the item at ' + where)
+        unkept += ['%s %s' % (what.rstrip('/'), commit) for what, commit in _plan(commands, where, tips)
+                   if commit not in on]
+    return unkept
+
+
 def verify(ledger, identity):
-    """An item's keep record read against the disk: {ok, missing}. ok only when the record exists, the
-    main repository is at its path, every kept ref the record lists resolves to its commit there, and
-    every snapshot attempt it lists is in the store with the recorded manifest digest. Reconcile
-    completes a removing worktree or private repository only when this is ok, and defers any other as
-    keep_failed (design 0.2 and 4.1). Reads only."""
-    kept = (ledger.item(identity) or {}).get('kept')
+    """An item's keep record read against the disk and against the item: {ok, missing}. ok only when
+
+      the record exists and the main repository is at its path;
+      every kept ref the record lists resolves to its commit there;
+      every snapshot attempt it lists is in the store with the recorded manifest digest, each file
+      with its digest and its mode;
+      the record is of this removal: a keep step wrote it since the item last became due or removing
+      (the record's attempt, which the Ledger clears at both moments);
+      and every commit the item names NOW, read with control_space_remove.tips at its locator or
+      under its marked name, is at a kept ref of that attempt. An item that is at neither name has
+      nothing left to read; an item the ledger holds as removed is not read, since another may have
+      its path.
+
+    So a record an earlier attempt wrote does not pass for an item that went on changing: a commit
+    made after it is on no kept ref of the attempt, and `missing` names it. Reconcile completes a
+    removing worktree or private repository only when this is ok, and defers any other as keep_failed
+    (design 0.2 and 4.1). Reads only."""
+    record = ledger.item(identity) or {}
+    kept = record.get('kept')
     if not kept:
         return {'ok': False, 'deferral': KEEP_FAILED, 'said': 'the item has no keep record', 'missing': []}
     missing, commands = [], []
@@ -672,4 +774,19 @@ def verify(ledger, identity):
     if missing:
         return {'ok': False, 'deferral': KEEP_FAILED, 'said': 'kept work is missing: ' + ', '.join(missing[:3]),
                 'missing': missing}
+    if not isinstance(kept.get('attempt'), dict):
+        return {'ok': False, 'deferral': KEEP_FAILED, 'missing': [],
+                'said': 'the keep record was written before the item last became due or removing: no keep '
+                        'step of this removal wrote it'}
+    if record.get('state') != 'removed':
+        try:
+            unkept = _unkept(record, identity, kept, commands)
+        except _Failed as failed:
+            return {'ok': False, 'deferral': KEEP_FAILED, 'said': failed.said, 'missing': []}
+        except (OSError, ValueError, RecursionError) as error:
+            return {'ok': False, 'deferral': KEEP_FAILED, 'missing': [],
+                    'said': 'the item could not be read: ' + _remove._said(error)}
+        if unkept:
+            return {'ok': False, 'deferral': KEEP_FAILED, 'missing': unkept,
+                    'said': 'the item names commits no kept ref of this attempt holds: ' + ', '.join(unkept[:3])}
     return {'ok': True, 'missing': []}

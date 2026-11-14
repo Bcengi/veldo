@@ -80,6 +80,23 @@ ac6/removing-put-back (the declared falsifier row: a worktree that was removing 
 and was put back with an unsaved file is recorded deferred keep_failed, not left removing; a folder
 put back because it was in use is recorded in_use).
 
+Rows from the independent review of this ticket (review-veldo-0345.md, findings 1 to 4), each with a
+registered falsifier: ac3/record-of-this-attempt (finding 1: a worktree kept and deferred, a commit
+made, then the process killed between Signal's removing write and the keep step: the record is of no
+attempt, verify refuses, the ledger refuses removed as space_keep_stale, also with the worktree gone
+from both names; reconcile's attempt keeps the new commit and removes), ac3/verify-reads-current-tips
+(finding 1: killed after the record, then a commit and a commit a reset left behind: verify reads
+the item's tips now, at its locator and under its marked name, and names each commit no kept ref of
+the attempt holds), ac1/ledger-reads-the-head (finding 2: the Ledger reads the item's HEAD itself and
+refuses an empty record, a record with no kept head, a kept head at another commit, refs of two
+attempts and an item it cannot read; an item with no commit at all may have an empty record),
+ac4/modes-kept (finding 3: an executable, a private and a read-only file come back from a plain copy
+of the attempt with their modes and their bytes; the staged file has its index mode; a file of the
+store whose mode was changed is reported missing and not used), ac5/folders-synced (finding 4: each
+new folder of the store is synced into the folder above it after it is made, every file and folder of
+the attempt before the rename, the item's folder after it; a failing sync of a store folder is
+keep_failed with nothing removed).
+
 signal/removing-while-the-remover-runs (VELDO-0301 back at design 4.1, with its falsifier: the item is
 written removing before its remover is called; a process killed inside the remover leaves it removing;
 when the ledger does not record the decision the remover is not handed the item),
@@ -143,6 +160,11 @@ def _v345_space_keep_suite():
             'ac5/every-attempt-listed',
             'ac6/three-deferrals',
             'ac6/removing-put-back',
+            'ac3/record-of-this-attempt',
+            'ac3/verify-reads-current-tips',
+            'ac1/ledger-reads-the-head',
+            'ac4/modes-kept',
+            'ac5/folders-synced',
             'signal/removing-while-the-remover-runs',
             'keep/ledger-reads-itself',
             'keep/names',
@@ -1043,6 +1065,12 @@ def _v345_space_keep_suite():
                 raise OSError(code, os.strerror(code))
             return failing
 
+        def attempt_sync_fails(descriptor):
+            """A sync of the attempt's own files and folders fails; the store's folders above it sync."""
+            if '.partial' in os.readlink('/proc/self/fd/%d' % descriptor):
+                raise OSError(errno.EIO, os.strerror(errno.EIO))
+            return real['sync'](descriptor)
+
         def unwritable():
             os.chmod(str(STORE), 0o500)
 
@@ -1050,7 +1078,7 @@ def _v345_space_keep_suite():
                  ('the pool fills in the middle of a file', '_write', fills, 1),
                  ('a write comes back short', '_write', short, 2),
                  ('a read back differs', '_stored', lambda target: 'not the digest', 3),
-                 ('a sync fails', '_sync', raises(errno.EIO), 4),
+                 ('a sync fails', '_sync', attempt_sync_fails, 4),
                  ('the rename fails', '_rename', raises(errno.EIO), 5))
         try:
             for label, name, stand_in, partials in MODES:
@@ -1294,6 +1322,320 @@ def _v345_space_keep_suite():
               named(done, item) == ('deferred', 'in_use', 'tool') and state_of(item) == 'deferred'
               and ((L.item(item) or {}).get('deferral') or {}).get('rule') == 'in_use' and whole(path))
 
+        # ---- the independent review of this ticket: findings 1 to 4 ---------------------------------
+        ROW = 'ac3/record-of-this-attempt'
+
+        class DyingRemover:
+            """The removers, killed as they are handed the item: before the keep step."""
+            left = staticmethod(RM.left)
+
+            @staticmethod
+            def remove(ledger, probe, identity, record, **given):
+                raise Killed()
+
+        item, path = worktree('stale-record', {'scope': A, 'ticket': 'VELDO-9240'}, branch=False)
+        first_head = git(path, 'rev-parse', 'HEAD')
+        entry = process_entry(5240, RM.marked(str(path), item))  # a user the remover's second probe finds
+        done = send('landed', {'ticket': 'VELDO-9240'})
+        shutil.rmtree(entry)
+        first_refs = dict(record_of(item).get('refs') or {})
+        check(ROW, 'the first attempt wrote the keep record, of attempt 1 at the head the Ledger read, and was '
+              'deferred as in_use [%s %s %s]' % (named(done, item), record_of(item).get('attempt'), sorted(first_refs)),
+              named(done, item) == ('deferred', 'in_use', 'tool') and listed(path)
+              and record_of(item).get('attempt') == {'number': 1, 'head': first_head}
+              and first_refs.get(prefix_of(item, 1) + 'head') == first_head
+              and all(name.startswith(prefix_of(item, 1)) for name in first_refs))
+        later = commit(path, 'later.txt', 'made after the first keep record\n', 'made after the record')
+        # A branch that may be deleted the next day holds the commit, so rule 5 lets the removal begin.
+        git(REPOSITORY, 'branch', 'passing-by-9240', later)
+        try:
+            send('landed', {'ticket': 'VELDO-9240'}, remover=DyingRemover)
+            died = False
+        except Killed:
+            died = True
+        check(ROW, 'a commit is made, and the process is killed between Signal\'s removing write and the keep step: '
+              'the item is removing with the record of the earlier attempt, and the commit is on no kept ref, '
+              'only on a branch '
+              '[%s %s]' % (died, state_of(item)),
+              died and state_of(item) == 'removing' and record_of(item).get('refs') == first_refs
+              and git(path, 'rev-parse', 'HEAD') == later and not reached(REPOSITORY, later, L.kept_prefix(item)))
+        check(ROW, 'that record is of no attempt of this removal: the Ledger cleared it when the item became due '
+              '[%s]' % (record_of(item).get('attempt'),),
+              'attempt' in record_of(item) and record_of(item).get('attempt') is None)
+        checked = KP.verify(L, item)
+        check(ROW, 'what reconcile asks refuses it: keep_failed [%s]' % (checked,),
+              checked.get('ok') is False and checked.get('deferral') == 'keep_failed')
+        before = L.item(item)
+        wrote = L.outcome(item, 'removed', {'event': 'landed'})
+        check(ROW, 'the ledger refuses the outcome removed on that record by name, with nothing written [%s]'
+              % (wrote.get('reason') or 'accepted',),
+              wrote.get('ok') is False and wrote.get('reason') == 'space_keep_stale' and L.item(item) == before)
+        aside = path.with_name('stale-record.aside')
+        path.rename(aside)
+        try:
+            checked = KP.verify(L, item)
+            wrote = L.outcome(item, 'removed', {'event': 'landed'})
+        finally:
+            aside.rename(path)
+        check(ROW, 'with the worktree at neither of its names both still refuse: nothing shows that a keep step of '
+              'this removal ran [%s %s]' % (checked.get('said'), wrote.get('reason') or 'accepted'),
+              checked.get('ok') is False and 'no keep step of this removal' in str(checked.get('said'))
+              and wrote.get('reason') == 'space_keep_stale' and state_of(item) == 'removing')
+        answer = attempt(item)
+        check(ROW, 'reconcile\'s attempt, the remover with the keeper, keeps the new commit on a ref of attempt 2 '
+              'and only then removes the worktree [%s %s]' % (answer.get('said'), (answer.get('wrote') or {}).get('reason')),
+              answer.get('ok') is True and state_of(item) == 'removed' and not os.path.lexists(str(path))
+              and kept_refs(REPOSITORY).get(prefix_of(item, 2) + 'head') == later and holds(REPOSITORY, later)
+              and record_of(item).get('attempt') == {'number': 2, 'head': later}
+              and kept_refs(REPOSITORY).get(prefix_of(item, 1) + 'head') == first_head
+              and KP.verify(L, item).get('ok') is True)
+
+        ROW = 'ac3/verify-reads-current-tips'
+        item, path = worktree('moved-after-keep', {'scope': A, 'ticket': 'VELDO-9241'}, branch=False)
+        KP.SEAM['after_record'] = die
+        try:
+            send('landed', {'ticket': 'VELDO-9241'})
+            died = False
+        except Killed:
+            died = True
+        finally:
+            KP.SEAM['after_record'] = None
+        checked = KP.verify(L, item)
+        check(ROW, 'control: killed after the record and before the remover, with nothing changed, the record is '
+              'of this removal and the item is as it says [%s %s]' % (died, checked),
+              died and state_of(item) == 'removing' and (record_of(item).get('attempt') or {}).get('number') == 1
+              and checked.get('ok') is True)
+        later = commit(path, 'later.txt', 'made after the keep record\n', 'made after the record')
+        checked = KP.verify(L, item)
+        check(ROW, 'a commit made after the record: verify reads the item\'s head now, finds it at no kept ref of '
+              'the attempt, and refuses with its name [%s]' % (checked,),
+              checked.get('ok') is False and checked.get('deferral') == 'keep_failed'
+              and checked.get('missing') == ['head ' + later])
+        behind = left_behind(path, 'behind.txt')
+        checked = KP.verify(L, item)
+        check(ROW, 'a commit a reset then left behind, named by ORIG_HEAD and the HEAD log, is named too [%s]'
+              % (checked.get('missing'),),
+              checked.get('ok') is False and sorted(checked.get('missing') or ()) == sorted(
+                  ['head ' + later, 'op/ORIG_HEAD ' + behind]))
+        under = RM.marked(str(path), item)
+        git(REPOSITORY, 'worktree', 'move', str(path), under)
+        try:
+            checked = KP.verify(L, item)
+        finally:
+            git(REPOSITORY, 'worktree', 'move', under, str(path))
+        check(ROW, 'left under its marked name, as a killed remover leaves it, the worktree is read there and '
+              'refused the same way [%s]' % (checked.get('missing'),),
+              checked.get('ok') is False and 'head ' + later in (checked.get('missing') or ()))
+        check(ROW, 'the worktree is whole at its path with both commits, and neither is in a kept ref yet',
+              listed(path) and git(path, 'rev-parse', 'HEAD') == later
+              and behind in git(path, 'rev-list', '--walk-reflogs', 'HEAD').split()
+              and not reached(REPOSITORY, later, L.kept_prefix(item))
+              and not reached(REPOSITORY, behind, L.kept_prefix(item)))
+        answer = attempt(item)
+        check(ROW, 'reconcile\'s attempt keeps both under attempt 2 and removes the worktree; the record then reads '
+              'true [%s]' % (answer.get('said'),),
+              answer.get('ok') is True and state_of(item) == 'removed' and not os.path.lexists(str(path))
+              and kept_refs(REPOSITORY).get(prefix_of(item, 2) + 'head') == later
+              and reached(REPOSITORY, behind, prefix_of(item, 2)) and KP.verify(L, item).get('ok') is True)
+
+        ROW = 'ac1/ledger-reads-the-head'
+        item, path = worktree('empty-record', {'scope': A, 'ticket': 'VELDO-9242'}, branch=False)
+        head = git(path, 'rev-parse', 'HEAD')
+        elder = git(REPOSITORY, 'rev-parse', head + '~1')
+        one, two = prefix_of(item, 1), prefix_of(item, 2)
+        L.signal('landed', {'ticket': 'VELDO-9242'})
+        length = journal_length()
+        git(REPOSITORY, 'update-ref', one + 'log/1', elder)
+        git(REPOSITORY, 'update-ref', one + 'head', elder)
+        git(REPOSITORY, 'update-ref', two + 'head', head)
+        git(REPOSITORY, 'update-ref', L.kept_prefix(item) + 'head', head)
+        for label, expected, refs in (
+                ('an empty keep record for a worktree that has a HEAD commit', 'space_keep_head', {}),
+                ('a record with a ref and no kept head', 'space_keep_head', {one + 'log/1': elder}),
+                ('a kept head the repository holds at another commit than the item\'s HEAD', 'space_keep_head',
+                 {one + 'head': elder}),
+                ('the kept head of one attempt with a ref of another', 'invalid_input:refs',
+                 {one + 'log/1': elder, two + 'head': head}),
+                ('a kept head that is of no numbered attempt', 'invalid_input:refs',
+                 {L.kept_prefix(item) + 'head': head})):
+            wrote = L.keep(item, str(REPOSITORY), refs)
+            check(ROW, '%s is refused by name, with nothing written [%s]' % (label, wrote.get('reason') or 'accepted'),
+                  wrote.get('ok') is False and wrote.get('reason') == expected and not record_of(item)
+                  and journal_length() == length)
+        wrote = L.outcome(item, 'removed', {'event': 'landed'})
+        check(ROW, 'and the outcome removed is still refused: the item has no keep record [%s]'
+              % (wrote.get('reason') or 'accepted',),
+              wrote.get('reason') == 'space_no_keep_record' and state_of(item) == 'due')
+        aside = path.with_name('empty-record.aside')
+        path.rename(aside)
+        try:
+            wrote = L.keep(item, str(REPOSITORY), {two + 'head': head})
+        finally:
+            aside.rename(path)
+        check(ROW, 'an item the Ledger cannot read at its locator gets no record: what could not be read is not an '
+              'item with no commit [%s]' % (wrote.get('reason') or 'accepted',),
+              wrote.get('ok') is False and wrote.get('reason') == 'space_keep_item' and not record_of(item))
+        wrote = L.keep(item, str(REPOSITORY), {two + 'head': head})
+        check(ROW, 'control: the kept head of one attempt at the commit the Ledger reads as the item\'s HEAD is '
+              'written, and the record names the attempt and that head [%s %s]'
+              % (wrote.get('reason'), record_of(item).get('attempt')),
+              wrote.get('ok') is True and record_of(item).get('attempt') == {'number': 2, 'head': head}
+              and record_of(item).get('refs') == {two + 'head': head})
+        wrote = L.outcome(item, 'removed', {'event': 'landed'})
+        check(ROW, 'control: with that record the outcome removed is accepted [%s]' % (wrote.get('reason'),),
+              wrote.get('ok') is True)
+        unborn_path = WORKTREES / 'agents' / 'unborn'
+        unborn_path.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(['git', 'init', '-q', '-b', 'main', str(unborn_path)], env=ENVIRONMENT, check=True,
+                       capture_output=True, timeout=120)
+        unborn = declared('agent_repository', {'path': str(unborn_path)}, {'scope': A, 'ticket': 'VELDO-9242b'})
+        L.signal('ticket_ended', {'ticket': 'VELDO-9242b'})
+        answer = KP.keep(L, unborn, L.item(unborn))
+        check(ROW, 'a private repository git reads no HEAD commit in, read by the Ledger itself, is the one item '
+              'whose record may hold no kept head [%s %s]' % (answer.get('said'), record_of(unborn)),
+              answer.get('ok') is True and record_of(unborn).get('refs') == {}
+              and record_of(unborn).get('attempt') == {'number': None, 'head': None})
+        made = commit(unborn_path, 'first.txt', 'the first commit\n', 'the first commit')
+        wrote = L.keep(unborn, str(REPOSITORY), {})
+        check(ROW, 'once it has a commit an empty record is refused for it too [%s]' % (wrote.get('reason') or 'accepted',),
+              wrote.get('reason') == 'space_keep_head' and bool(made))
+        L.outcome(unborn, 'deferred', {'rule': 'keep_failed', 'event': 'ticket_ended'})
+
+        ROW = 'ac4/modes-kept'
+        item, path = worktree('modes', {'scope': A, 'ticket': 'VELDO-9243'}, branch=False)
+        kept_head = git(path, 'rev-parse', 'HEAD')
+        PLANTED = (('run.local', 0o755, b'#!/bin/sh\necho ran\n'), ('secret.local', 0o600, b'token = 9243\n'),
+                   ('shared.local', 0o664, b'shared\n'), ('readonly.local', 0o444, bytes(range(256)) * 9),
+                   ('deep/tool.local', 0o750, b'#!/bin/sh\n'))
+        for name, mode, content in PLANTED:
+            (path / name).parent.mkdir(exist_ok=True)
+            (path / name).write_bytes(content)
+            os.chmod(str(path / name), mode)
+        before = tree_of(path)
+        done = send('landed', {'ticket': 'VELDO-9243'}, keep=SAVING)
+        saved = Path(L.snapshot_folder(item)) / '1'
+        try:
+            manifest = json.loads((saved / 'manifest.json').read_text())
+        except (OSError, ValueError):
+            manifest = {'files': {}}
+        check(ROW, 'a worktree whose work is five ignored files, an executable among them, is removed once they are '
+              'saved [%s]' % (outcome_of(done, item),),
+              named(done, item)[0] == 'removed' and not os.path.lexists(str(path)))
+        check(ROW, 'each saved file has the mode of the file it was copied from, and the manifest names the same '
+              '[%s]' % ([(name, oct(stat_mode(saved / 'work' / name)) if (saved / 'work' / name).exists() else None)
+                         for name, _mode, _content in PLANTED],),
+              all((saved / 'work' / name).is_file() and stat_mode(saved / 'work' / name) == mode
+                  and ((manifest.get('files') or {}).get(name) or {}).get('mode') == before[name][0]
+                  for name, mode, _content in PLANTED))
+        code, _out = raw(REPOSITORY, 'worktree', 'add', '-q', '--detach', str(path), kept_refs(REPOSITORY).get(
+            prefix_of(item) + 'head') or 'no-kept-head')
+        copied = subprocess.run(['cp', '-a', str(saved / 'work') + '/.', str(path) + '/'], stdin=subprocess.DEVNULL,
+                                capture_output=True, timeout=120)
+        after = tree_of(path) if path.is_dir() else {}
+        check(ROW, 'the design\'s plain restore, a worktree at the kept head and a copy of the attempt, brings the '
+              'executable back executable [%s %s]' % (code, oct((after.get('run.local') or (0,))[0])),
+              code == 0 and copied.returncode == 0 and git(path, 'rev-parse', 'HEAD') == kept_head
+              and (after.get('run.local') or (0,))[0] & 0o777 == 0o755)
+        check(ROW, 'and every file with its mode and its bytes exact [%s]'
+              % (sorted(name for name in before if after.get(name) != before[name]),),
+              bool(before) and after == before)
+        shutil.rmtree(str(path))
+        git(REPOSITORY, 'worktree', 'prune')
+        item, path = worktree('modes-staged', {'scope': A, 'ticket': 'VELDO-9243b'}, branch=False)
+        (path / 'tracked.txt').write_text('staged as an executable\n')
+        os.chmod(str(path / 'tracked.txt'), 0o755)
+        git(path, 'add', 'tracked.txt')
+        (path / 'tracked.txt').write_text('edited after the add\n')
+        (path / 'tool.sh').write_text('#!/bin/sh\n')
+        os.chmod(str(path / 'tool.sh'), 0o700)
+        L.signal('landed', {'ticket': 'VELDO-9243b'})
+        answer = KP.keep(L, item, L.item(item), snapshot=True)
+        saved = Path(L.snapshot_folder(item)) / '1'
+        check(ROW, 'an untracked executable, a tracked edit and the staged content each have their mode in the '
+              'store: the staged file that of its index entry [%s]' % (answer.get('said'),),
+              answer.get('ok') is True and stat_mode(saved / 'work' / 'tool.sh') == 0o700
+              and stat_mode(saved / 'work' / 'tracked.txt') == 0o755
+              and stat_mode(saved / 'staged' / 'tracked.txt') == 0o755
+              and text_of(saved / 'staged' / 'tracked.txt') == 'staged as an executable\n'
+              and stat_mode(saved / 'manifest.json') == 0o600)
+        check(ROW, 'control: the record reads true against the disk', KP.verify(L, item).get('ok') is True)
+        os.chmod(str(saved / 'work' / 'tool.sh'), 0o600)
+        checked = KP.verify(L, item)
+        check(ROW, 'an attempt one of whose files lost its mode is reported missing [%s]' % (checked.get('missing'),),
+              checked.get('ok') is False and str(saved) in (checked.get('missing') or ()))
+        again = KP.keep(L, item, L.item(item), snapshot=True)
+        check(ROW, 'and a retry does not use it: it saves the file again, with its mode, under the next number [%s]'
+              % (numbers(item),),
+              again.get('ok') is True and numbers(item) == [1, 2]
+              and stat_mode(Path(L.snapshot_folder(item)) / '2' / 'work' / 'tool.sh') == 0o700)
+        L.outcome(item, 'deferred', {'rule': 'keep_failed', 'event': 'landed'})
+
+        ROW = 'ac5/folders-synced'
+        item, path = settings_tree('synced', 'VELDO-9244')
+        item_folder = Path(L.snapshot_folder(item))
+        ticket_folder = item_folder.parent
+        real_sync, real_rename = KP._sync, KP._rename
+
+        def identity_of(at):
+            found = os.lstat(str(at))
+            return (found.st_dev, found.st_ino)
+
+        def store_sync_fails(descriptor):
+            found = os.fstat(descriptor)
+            if (found.st_dev, found.st_ino) == identity_of(STORE):
+                raise OSError(errno.EIO, os.strerror(errno.EIO))
+            return real_sync(descriptor)
+
+        check(ROW, 'the ticket has no folder in the store yet', not ticket_folder.exists())
+        KP._sync = store_sync_fails
+        try:
+            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING)
+        finally:
+            KP._sync = real_sync
+        check(ROW, 'when the sync that puts the ticket\'s new folder on the disk fails the item is deferred as '
+              'keep_failed, whole, and the record lists no attempt [%s]' % (named(done, item),),
+              named(done, item) == ('deferred', 'keep_failed', 'tool') and listed(path)
+              and text_of(path / 'settings.local') == 'key = SECRET\n' and not numbers(item))
+        synced, seen = [], {}
+
+        def watching_sync(descriptor):
+            real_sync(descriptor)
+            found = os.fstat(descriptor)
+            synced.append(((found.st_dev, found.st_ino),
+                           {'ticket': ticket_folder.is_dir(), 'item': item_folder.is_dir(),
+                            'partial': (item_folder / '1.partial').is_dir(), 'whole': (item_folder / '1').is_dir()}))
+
+        def watching_rename(source, target):
+            done_now = set(found for found, _there in synced)
+            inside = []
+            for at, _folders, files in os.walk(source):
+                inside.append(at)
+                inside.extend(os.path.join(at, name) for name in files if not os.path.islink(os.path.join(at, name)))
+            seen['source'], seen['count'] = source, len(inside)
+            seen['unsynced'] = [at for at in inside if identity_of(at) not in done_now]
+            real_rename(source, target)
+
+        def synced_when(at, what):
+            return any(found == identity_of(at) and (what is None or there[what]) for found, there in synced)
+
+        KP._sync, KP._rename = watching_sync, watching_rename
+        try:
+            done = send('landed', {'ticket': 'VELDO-9244'}, keep=SAVING)
+        finally:
+            KP._sync, KP._rename = real_sync, real_rename
+        check(ROW, 'the next attempt saves the file and removes the item [%s %s]' % (named(done, item), numbers(item)),
+              named(done, item)[0] == 'removed' and numbers(item) == [1]
+              and text_of(item_folder / '1' / 'work' / 'settings.local') == 'key = SECRET\n')
+        check(ROW, 'the state root is synced, which holds the store; the store after the ticket\'s folder was made in '
+              'it; the ticket\'s folder after the item\'s was made in it',
+              synced_when(STATE, None) and synced_when(STORE, 'ticket') and synced_when(ticket_folder, 'item'))
+        check(ROW, 'the item\'s folder is synced after the temporary folder was made in it, and again after the '
+              'rename', synced_when(item_folder, 'partial') and synced_when(item_folder, 'whole'))
+        check(ROW, 'at the rename every file and every folder of the attempt had been synced [%s of %s not synced]'
+              % (len(seen.get('unsynced') or ()), seen.get('count')),
+              seen.get('source') == str(item_folder / '1.partial') and seen.get('count', 0) >= 4
+              and seen.get('unsynced') == [])
+
         # ---- Signal, back to design 4.1: the item is removing while its remover runs ------------------
         ROW = 'signal/removing-while-the-remover-runs'
         del states[:]
@@ -1411,9 +1753,10 @@ def _v345_space_keep_suite():
               wrote.get('ok') is True and journal_length() == length + 1 and state_of(item) == 'due'
               and record_of(item) == {'repository': str(REPOSITORY), 'path': str(path), 'refs': {prefix + 'head': head},
                                       'snapshots': [{'path': str(store_folder / '1'), 'number': 1, 'size': 0,
-                                                     'manifest': digest}]})
+                                                     'manifest': digest}],
+                                      'attempt': {'number': 1, 'head': head}})
         git(REPOSITORY, 'update-ref', prefix + 'log/1', elder)
-        wrote = L.keep(item, str(REPOSITORY), {prefix + 'log/1': elder})
+        wrote = L.keep(item, str(REPOSITORY), {prefix + 'head': head, prefix + 'log/1': elder})
         check(ROW, 'a later keep write adds its ref and removes none; the journal holds each version [%s]'
               % (sorted(record_of(item).get('refs') or ()),),
               wrote.get('ok') is True and record_of(item).get('refs') == {prefix + 'head': head, prefix + 'log/1': elder}

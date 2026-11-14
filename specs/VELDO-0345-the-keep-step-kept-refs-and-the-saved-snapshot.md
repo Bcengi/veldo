@@ -286,3 +286,42 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   keeps its meaning and is anchored at the renamed call. VELDO-0346 reads these names (its History).
   Design sections 0.2 and 0.5 still show the name without the attempt; this change does not edit the
   design's text.
+- 2026-11-14: from the independent review of this ticket (review-veldo-0345.md, verdict FIX, findings 1
+  to 4), under the owner's rule that no work is ever lost. No acceptance criterion's text changed. Each
+  finding has a row and a registered falsifier.
+  - Finding 1, a stale keep record passed. The keep record now holds its attempt, {number, head}: the
+    number of the keep attempt whose refs the last keep write named. The Ledger clears it when the
+    item is marked due and when the outcome removing is written for a due item, and only a keep write
+    sets it. The outcome removed is refused, space_keep_stale, while it is clear. verify refuses a
+    record that is of no attempt, and for an item that is at its locator or under its marked name it
+    reads the item's tips now (control_space_remove.tips) and refuses, naming each one, unless every
+    commit they name is at a kept ref of that attempt. So a process killed after removing was written
+    and before its keep step leaves nothing reconcile may complete: the record of the earlier attempt
+    does not stand for this removal, and a commit made since is named. An item at neither name has
+    nothing left to read, and one the ledger holds as removed is not read. Rows
+    ac3/record-of-this-attempt and ac3/verify-reads-current-tips; falsifiers
+    space345-removal-keeps-the-old-record, space345-removed-on-a-stale-record and
+    space345-verify-reads-no-tips.
+  - Finding 2, the ledger accepted an empty keep record. keep now runs git in the item, at its
+    locator, reads the commit HEAD names, and refuses the write, space_keep_head, unless it names
+    <attempt>/head at that commit, a ref the Ledger has just read in the main repository. An empty
+    record is accepted only for an item git reads no HEAD commit in; an item git cannot read there is
+    space_keep_item. The refs of one write are those of one attempt (invalid_input:refs otherwise).
+    Row ac1/ledger-reads-the-head; falsifier space345-empty-keep-record-accepted.
+  - Finding 3, saved files were 0600. A file of work/ has the permission bits of the item's file and a
+    file of staged/ those of its index entry, set before the file's sync and read back; the owner's
+    read bit is always set, because the store reads its files back, and set-id and sticky bits are
+    never set there; the manifest holds the whole mode as before. An attempt one of whose files has
+    other bits is not used by a retry and verify reports it missing. The row restores the design's
+    plain way (0.5: a worktree at the kept head, cp -a of the attempt) and finds every mode and every
+    byte. Row ac4/modes-kept; falsifier space345-saved-files-0600. An attempt written before this
+    change has files of mode 0600 and so reads as missing: a retry saves it again under the next
+    number, and nothing is deleted.
+  - Finding 4, new store folders were not synced into the folder above them. The folder above each
+    folder of the store (the state root, the store, the ticket's folder) is synced each time an
+    attempt begins, the item's folder when the temporary folder is made in it and again after the
+    rename, and every file, after its mode is set, and every folder of the attempt before the rename.
+    A failed sync is keep_failed. Row ac5/folders-synced; falsifier space345-new-folder-not-synced.
+    The row ac5/failed-save-removes-nothing now fails a sync of the attempt's own files, since a
+    failing sync of a store folder stops the attempt before it has a temporary folder (the new row).
+  - VELDO-0315 and VELDO-0346 each have a History line of this date for what they read from here.

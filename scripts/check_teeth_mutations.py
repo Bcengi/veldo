@@ -13067,9 +13067,9 @@ def cases():
             "            return {'ok': True, 'tips': _remove.tips(path, kind, commands)}\n",
             ['ac3/main-repository-gone'])
     keep345('space345-snapshot-in-the-object-store', 'control_space_keep.py',
-            "                size, digest = _put(target, _blocks(source))\n",
+            "                size, digest = _put(target, _blocks(source), kept_mode(row['mode']))\n",
             "                _git(commands, header['repository'], 'hash-object', '-w', '--', source)\n"
-            "                size, digest = _put(target, _blocks(source))\n",
+            "                size, digest = _put(target, _blocks(source), kept_mode(row['mode']))\n",
             ['ac4/outside-git'])
     keep345('space345-snapshot-by-git-stash', 'control_space_keep.py',
             "    found = listing(ledger, record, path, commands)\n    listed = sorted(",
@@ -13117,6 +13117,36 @@ def cases():
             "        if action in REMOVALS:\n            # Rules 1 to 6 have passed",
             "        if False:\n            # Rules 1 to 6 have passed",
             ['signal/removing-while-the-remover-runs'])
+
+    # The independent review of VELDO-0345 (review-veldo-0345.md, findings 1 to 4). Finding 1, a stale
+    # keep record passes: verify does not read the item's tips; the Ledger leaves the record's attempt
+    # as it was when a removal begins; the Ledger accepts removed on a record of no attempt. Finding
+    # 2: the Ledger accepts a record with no kept head. Finding 3: a saved file gets 0600 whatever
+    # mode it had. Finding 4: a new folder of the store is not synced into the folder above it.
+    keep345('space345-verify-reads-no-tips', 'control_space_keep.py',
+            "        if unkept:\n            return {'ok': False, 'deferral': KEEP_FAILED, 'missing': unkept,\n",
+            "        if False:\n            return {'ok': False, 'deferral': KEEP_FAILED, 'missing': unkept,\n",
+            ['ac3/verify-reads-current-tips'])
+    keep345('space345-removal-keeps-the-old-record', 'control_space.py',
+            "    if record.get('kept'):\n        record['kept'] = dict(record['kept'], attempt=None)\n",
+            "    if False:\n        record['kept'] = dict(record['kept'], attempt=None)\n",
+            ['ac3/record-of-this-attempt'])
+    keep345('space345-removed-on-a-stale-record', 'control_space.py',
+            "        if outcome == 'removed' and record['kind'] in KEEP_KINDS and not (record.get('kept') or {}).get('attempt'):\n",
+            "        if False:\n",
+            ['ac3/record-of-this-attempt'])
+    keep345('space345-empty-keep-record-accepted', 'control_space.py',
+            "        if head is not None and refs.get('%s%d/head' % (prefix, number or 0)) != head:\n",
+            "        if False:\n",
+            ['ac1/ledger-reads-the-head'])
+    keep345('space345-saved-files-0600', 'control_space_keep.py',
+            "    return (stat.S_IMODE(mode) & 0o777) | 0o400 if stat.S_ISREG(mode) else FILE_MODE\n",
+            "    return FILE_MODE\n",
+            ['ac4/modes-kept'])
+    keep345('space345-new-folder-not-synced', 'control_space_keep.py',
+            "    if synced:\n        _sync_folder(os.path.dirname(path))\n",
+            "    if False:\n        _sync_folder(os.path.dirname(path))\n",
+            ['ac5/folders-synced'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'

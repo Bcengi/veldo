@@ -8,16 +8,21 @@
   "red_rows": [
    "ac1/agent-worktree-in-shared",
    "ac1/kept-before-remove",
+   "ac1/ledger-reads-the-head",
    "ac3/fetch-fails",
    "ac3/kept-ref-per-attempt",
    "ac3/main-repository-gone",
+   "ac3/record-of-this-attempt",
    "ac3/ref-at-another-commit",
    "ac3/ref-unwritable",
    "ac3/second-attempt-after-crash",
+   "ac3/verify-reads-current-tips",
+   "ac4/modes-kept",
    "ac4/outside-git",
    "ac4/store-protected",
    "ac5/every-attempt-listed",
    "ac5/failed-save-removes-nothing",
+   "ac5/folders-synced",
    "ac5/kill-points",
    "ac5/never-replaced",
    "ac5/retry-compares",
@@ -51,7 +56,7 @@
   "red_details": [
    [
     "VELDO-0345 ac1/agent-worktree-in-shared",
-    "the agent's worktree is removed [{'item': 'space:item:3c9262eb8f124f6bba231236427f4bbd', 'action': 'remove', 'outcome': 'deferred', 'deferral': 'keep_failed', 'rule': 'tool'}]"
+    "the agent's worktree is removed [{'item': 'space:item:fe401f0b2cf2419aa254bd60da9b3287', 'action': 'remove', 'outcome': 'deferred', 'deferral': 'keep_failed', 'rule': 'tool'}]"
    ]
   ],
   "noop_red_rows": [],
@@ -64,12 +69,13 @@
    "ac1/removed-needs-keep-record"
   ],
   "red_rows": [
+   "ac1/ledger-reads-the-head",
    "ac1/removed-needs-keep-record"
   ],
   "red_details": [
    [
     "VELDO-0345 ac1/removed-needs-keep-record",
-    "the outcome removed for a worktree that is due and has no keep record is refused by name, nothing written [accepted]"
+    "the outcome removed for a worktree that is due and has no keep record is refused by name, nothing written [space_keep_stale]"
    ]
   ],
   "noop_red_rows": [],
@@ -82,12 +88,13 @@
    "ac2/private-repository"
   ],
   "red_rows": [
+   "ac1/agent-worktree-in-shared",
    "ac2/private-repository"
   ],
   "red_details": [
    [
     "VELDO-0345 ac2/private-repository",
-    "afterwards the first commit only a log names is read from the main repository alone, under the item's kept refs"
+    "the private repository is removed after the keep step [the keep step did not keep the item None]"
    ]
   ],
   "noop_red_rows": [],
@@ -158,12 +165,17 @@
   ],
   "red_rows": [
    "ac1/kept-before-remove",
+   "ac1/ledger-reads-the-head",
+   "ac3/record-of-this-attempt",
+   "ac3/verify-reads-current-tips",
+   "ac4/modes-kept",
    "ac4/nothing-touched",
    "ac4/outside-git",
    "ac4/plain-files-with-manifest",
    "ac4/store-protected",
    "ac5/every-attempt-listed",
    "ac5/failed-save-removes-nothing",
+   "ac5/folders-synced",
    "ac5/kill-points",
    "ac5/never-replaced",
    "ac5/retry-compares",
@@ -226,6 +238,7 @@
    "ac5/never-replaced"
   ],
   "red_rows": [
+   "ac4/modes-kept",
    "ac5/every-attempt-listed",
    "ac5/failed-save-removes-nothing",
    "ac5/kill-points",
@@ -268,6 +281,7 @@
    "ac5/every-attempt-listed"
   ],
   "red_rows": [
+   "ac4/modes-kept",
    "ac5/every-attempt-listed",
    "ac5/retry-compares"
   ],
@@ -284,16 +298,18 @@
   "falsifier": "space345-remove-refused-alone",
   "criterion": "AC6",
   "expected_red": [
-   "ac6/removing-put-back",
-   "ac6/three-deferrals"
+   "ac6/three-deferrals",
+   "ac6/removing-put-back"
   ],
   "red_rows": [
    "ac3/fetch-fails",
    "ac3/kept-ref-per-attempt",
    "ac3/main-repository-gone",
+   "ac3/record-of-this-attempt",
    "ac3/ref-at-another-commit",
    "ac3/ref-unwritable",
    "ac5/failed-save-removes-nothing",
+   "ac5/folders-synced",
    "ac6/removing-put-back",
    "ac6/three-deferrals"
   ],
@@ -317,7 +333,9 @@
    "ac3/kept-ref-per-attempt"
   ],
   "red_rows": [
-   "ac3/kept-ref-per-attempt"
+   "ac3/kept-ref-per-attempt",
+   "ac3/record-of-this-attempt",
+   "ac3/verify-reads-current-tips"
   ],
   "red_details": [
    [
@@ -336,7 +354,9 @@
   ],
   "red_rows": [
    "ac1/kept-before-remove",
+   "ac3/record-of-this-attempt",
    "ac3/second-attempt-after-crash",
+   "ac3/verify-reads-current-tips",
    "ac5/kill-points",
    "ac6/removing-put-back",
    "signal/removing-while-the-remover-runs"
@@ -344,7 +364,115 @@
   "red_details": [
    [
     "VELDO-0345 signal/removing-while-the-remover-runs",
-    "the item is written removing before its remover is called, then removed [[('space:item:8b4ce70b161640dbaba61fe58cd83a01', 'due')] ('removed', None, None)]"
+    "the item is written removing before its remover is called, then removed [[('space:item:78209e3a2a0740bfb8018933cd1a1fff', 'due')] ('removed', None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-verify-reads-no-tips",
+  "criterion": "AC3 (review finding 1)",
+  "expected_red": [
+   "ac3/verify-reads-current-tips"
+  ],
+  "red_rows": [
+   "ac3/verify-reads-current-tips"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac3/verify-reads-current-tips",
+    "a commit made after the record: verify reads the item's head now, finds it at no kept ref of the attempt, and refuses with its name [{'ok': True, 'missing': []}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-removal-keeps-the-old-record",
+  "criterion": "AC3 (review finding 1)",
+  "expected_red": [
+   "ac3/record-of-this-attempt"
+  ],
+  "red_rows": [
+   "ac3/record-of-this-attempt"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac3/record-of-this-attempt",
+    "that record is of no attempt of this removal: the Ledger cleared it when the item became due [{'head': '64d1650b2d15ad8d32a2e4f7beeb1b6e6fbb17d6', 'number': 1}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-removed-on-a-stale-record",
+  "criterion": "AC3 (review finding 1)",
+  "expected_red": [
+   "ac3/record-of-this-attempt"
+  ],
+  "red_rows": [
+   "ac3/record-of-this-attempt"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac3/record-of-this-attempt",
+    "the ledger refuses the outcome removed on that record by name, with nothing written [accepted]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-empty-keep-record-accepted",
+  "criterion": "AC1 (review finding 2)",
+  "expected_red": [
+   "ac1/ledger-reads-the-head"
+  ],
+  "red_rows": [
+   "ac1/ledger-reads-the-head"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac1/ledger-reads-the-head",
+    "an empty keep record for a worktree that has a HEAD commit is refused by name, with nothing written [accepted]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-saved-files-0600",
+  "criterion": "AC4 (review finding 3)",
+  "expected_red": [
+   "ac4/modes-kept"
+  ],
+  "red_rows": [
+   "ac4/modes-kept"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac4/modes-kept",
+    "each saved file has the mode of the file it was copied from, and the manifest names the same [[('run.local', '0o600'), ('secret.local', '0o600'), ('shared.local', '0o600'), ('readonly.local', '0o600'), ('deep/tool.local', '0o600')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space345-new-folder-not-synced",
+  "criterion": "AC5 (review finding 4)",
+  "expected_red": [
+   "ac5/folders-synced"
+  ],
+  "red_rows": [
+   "ac5/folders-synced"
+  ],
+  "red_details": [
+   [
+    "VELDO-0345 ac5/folders-synced",
+    "when the sync that puts the ticket's new folder on the disk fails the item is deferred as keep_failed, whole, and the record lists no attempt [('removed', None, None)]"
    ]
   ],
   "noop_red_rows": [],
