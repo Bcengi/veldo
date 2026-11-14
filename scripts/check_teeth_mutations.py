@@ -14103,6 +14103,71 @@ def cases():
                 "        if found is None:\n            return {'item': None, 'state': None}\n",
                 ['ac4/not-handed-over-keeps-the-slot'])
 
+    # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
+    # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the
+    # worktree. AC3: drop the start commit test. And the steps beside them, each a way a branch is
+    # counted as landed or contained when it is not: landed sent with the trunk put back before the
+    # landing, landed sent for a unit whose branch was built on after the evidence commit, a branch
+    # with no start commit or one the trunk does not hold taken for contained, contained sent for an
+    # owner who also has a branch that is not contained, a branch that moved after the check named
+    # marked, and a branch marked at an earlier landing sent the event again.
+    space310 = '147_veldo_0310_landed_contained.py'
+
+    def landed310(name, module, old, new, rows):
+        add(310, name, space310, module, old, new, rows)
+        result[-1]['siblings'] = True
+
+    landed310('space310-sent-when-the-landing-starts', 'control_landing_station.py',
+              "        subject = {'spec': unit, 'dispatch': dispatch, 'holder': holder, 'generation': generation}\n",
+              "        subject = {'spec': unit, 'dispatch': dispatch, 'holder': holder, 'generation': generation}\n"
+              "        if getattr(self, 'space', None) is not None:\n"
+              "            LG._SPACE.get('signal', LG._organ('control_space_signal').signal)(\n"
+              "                self.space['ledger'], 'landed',\n"
+              "                {'scope': {'type': 'project', 'id': destination['project']}, 'ticket': unit},\n"
+              "                emitter={'process': 'landing_station', 'unit': unit, 'dispatch': dispatch},\n"
+              "                **dict({k: v for k, v in self.space.items() if k != 'ledger'}, landed=(evidence,)))\n",
+              ['ac1/failed-landing-sends-nothing'])
+    landed310('space310-branch-removed-with-the-worktree', 'control_landing.py',
+              "            after = ledger.items()\n            tips = {}\n",
+              "            after = ledger.items()\n            for branch in mine:\n"
+              "                self._git(branch['repository'], 'update-ref', '-d', branch['ref'])\n"
+              "            tips = {}\n",
+              ['ac2/branch-kept-and-marked'])
+    landed310('space310-start-commit-test-dropped', 'control_landing.py',
+              "        if tip == start:\n            return 'at_start'\n",
+              "        if False:\n            return 'at_start'\n",
+              ['ac3/fresh-branch-left'])
+    landed310('space310-sent-with-the-trunk-put-back', 'control_landing.py',
+              "        if not holds:\n            out['reason'] = 'trunk_not_at_the_landing",
+              "        if False:\n            out['reason'] = 'trunk_not_at_the_landing",
+              ['ac1/undone-landing-sends-nothing'])
+    landed310('space310-landed-for-a-branch-built-on', 'control_landing.py',
+              "        if others:\n            out['reason'] = 'not_landed:",
+              "        if False:\n            out['reason'] = 'not_landed:",
+              ['ac2/unlanded-work-stays'])
+    landed310('space310-no-start-taken-for-contained', 'control_landing.py',
+              "        if not _hex(start):\n            return 'no_start'\n",
+              "        if not _hex(start):\n            return None\n",
+              ['ac3/no-start-left'])
+    landed310('space310-not-in-trunk-taken-for-contained', 'control_landing.py',
+              "                None if in_trunk is True else 'unread' if in_trunk is None else 'not_in_trunk')\n",
+              "                None)\n",
+              ['ac3/not-in-trunk-left'])
+    landed310('space310-contained-for-an-owner-not-alone', 'control_landing.py',
+              "            if others:\n                out['left'].extend({'item': branch['item'], 'at': branch['ref'], "
+              "'event': SPACE_CONTAINED,\n",
+              "            if False:\n                out['left'].extend({'item': branch['item'], 'at': branch['ref'], "
+              "'event': SPACE_CONTAINED,\n",
+              ['ac3/not-alone-left'])
+    landed310('space310-moved-branch-named-marked', 'control_landing.py',
+              "                  and done.get('item') in by_item and tips[done['item']] == by_item[done['item']]['tip']):\n",
+              "                  and done.get('item') in by_item):\n",
+              ['ac3/moved-after-the-check'])
+    landed310('space310-marked-branch-sent-again', 'control_landing.py',
+              "                continue  # marked at an earlier landing, and nothing else for the event to reach\n",
+              "                pass\n",
+              ['ac3/marked-once'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

@@ -91,6 +91,36 @@ trunk_checkout_restore_failed:<working tree> (an unknown outcome, never re-lande
 brief that tells the owner it was not put back. A repository where no tree has the trunk checked out lands
 exactly as above, with no working tree read or written.
 
+LANDED AND CONTAINED (VELDO-0310, design sections 5 and 8.3). When the installation has a space ledger, the
+land station calls Landing.landed once the completion receipt of a landing is recorded. Nothing here deletes
+anything and no branch is ever deleted: every removal is Signal's (control_space_signal), after the safety
+rules and the keep step, by the removers. landed does this, in order, and returns the record of it:
+
+  1. it reads the receipt back from the store: the revision_landed receipt of exactly this unit and dispatch,
+     naming the candidate commit (the new trunk tip) and the evidence commit (the landing's source). With no
+     such receipt nothing is sent: a landing that was refused, failed or is unknown sends nothing;
+  2. it reads the trunk now (the local ref, or the remote's answer) and sends nothing unless the trunk is at
+     the receipt's candidate or contains it: a landing that was undone since is not a landing;
+  3. it reads every recorded branch of the unit's project with git, in the repository the branch is recorded
+     in. A branch of the unit is landed when its tip is in the new trunk tip, or is the source commit or one
+     of its ancestors (a squash). Another branch is contained when it has a start commit, its tip is not that
+     commit, the start commit is an ancestor of the tip, and the new trunk tip contains the tip. What git
+     cannot read is neither;
+  4. landed is sent for the unit (the subject is the project and the ticket) only when every branch, and the
+     branch of every worktree, the event would reach is landed. A unit with a branch that holds commits the
+     landing does not (rebased since, or built on after the evidence commit) is sent nothing, by name;
+  5. contained is sent once for each owner of a contained branch, and only when the event would reach nothing
+     but contained branches and worktrees on them that have themselves moved past their start commit. An
+     owner whose event would also end a branch or a worktree that is not contained is sent nothing, and the
+     branch is named as left. A branch already kept, with nothing else for the event to reach, is not sent again;
+  6. after each event the tip of every branch it counted is read again: a branch that moved since the check
+     is named as moved and is not listed as marked.
+
+Signal is given the source commit and the new trunk tip as the landings rule 5 reads, the receipt in the
+emitter of every outcome, and every other argument as the installation wired it. The record names the receipt,
+each item removed, each deferred with its deferral, and each branch marked contained (the branch item's
+outcome kept, with the action mark_contained). Whatever raises sends nothing more and is named.
+
 WHAT IT IS NOT. Release 1 function only: a lost or ambiguous publication stays stopped under its
 original identity with no recovery (Release 2), the receipt is replicated only into the local signed
 journal (off-host replication is Release 2), and a remote tip that moves between the publication and
@@ -399,6 +429,148 @@ def _receipt_transition(store, params, before):
     if unit.get('kind') != 'execution_unit' or (unit.get('data') or {}).get('revision') != revision:
         raise refused('transition_refused', 'the unit is not at the receipt\'s revision')
     return {rid: {'kind': RECEIPT_KIND, 'data': receipt}}
+
+
+# VELDO-0310: landed and contained, from the landing station (design sections 5 and 8.3). Nothing here
+# deletes anything: Signal's removers remove, after the safety rules and the keep step.
+SPACE_LANDED, SPACE_CONTAINED = 'landed', 'contained'
+SPACE_SIGNALLED = ('present', 'kept', 'deferred')  # the states the ledger's signal reaches
+SPACE_ENDED = ('removed', 'gone')
+SPACE_NAMED = 50  # the most entries of one list in a landing's space record
+_SPACE = {}
+
+
+def _space_ref(ref):
+    return ref if str(ref).startswith('refs/') else 'refs/heads/' + str(ref)
+
+
+def _space_subject(owner):
+    """An item's owner as a signal's subject: every part of it, a run by its id."""
+    subject = dict(owner or {})
+    if isinstance(subject.get('run'), dict):
+        subject['run'] = subject['run'].get('id')
+    return subject
+
+
+def _space_owned(record, subject):
+    owner = record.get('owner') or {}
+    return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
+               for part, wanted in subject.items())
+
+
+def _space_at(record):
+    locator = record.get('locator') or {}
+    return locator.get('path') or locator.get('ref') or locator.get('name')
+
+
+def space_branches(ledger, items, scope, trunk, source, reaches, tip_of):
+    """What git says of every recorded branch and worktree of `scope` now (VELDO-0310).
+
+    `items` is the ledger's {identity: record}; `trunk` is the new trunk tip and `source` the landing's
+    source commit; reaches(repository, commit, tip) is True when tip contains commit, False when it does
+    not and None when git could not say; tip_of(repository, ref) is the commit the ref holds, or None.
+
+    Returns (branches, worktrees). branches maps (repository, full ref) to {item, ref, repository, ticket,
+    state, start, tip, landed, contained, why}: landed is True when the trunk tip contains the tip or the
+    tip is the source commit or an ancestor of it; contained is True when the branch also has a start
+    commit, is not at it, has it as an ancestor, and the trunk tip contains the tip; why names the first
+    test that failed. worktrees maps each live worktree item to {branch (the key, None when detached or
+    not recorded), past_start}."""
+    def repository_of(record):
+        parent = items.get(record.get('parent')) if record.get('parent') else None
+        if parent is not None and parent.get('kind') == 'agent_repository':
+            return os.path.normpath(parent['locator']['path'])
+        where = (record.get('owner') or {}).get('scope') or {}
+        if where.get('type') == 'plain_repository':
+            return os.path.normpath(where['id'])
+        for project in ledger.projects:
+            if where.get('type') == 'project' and project.get('project') == where.get('id'):
+                return os.path.normpath(project['repository'])
+        return None
+
+    def past(repository, start, tip):
+        """Whether `tip` has moved past the start commit, and why not."""
+        if not _hex(start):
+            return 'no_start'
+        if tip == start:
+            return 'at_start'
+        return None if reaches(repository, start, tip) is True else 'not_past_start'
+
+    branches, worktrees = {}, {}
+    for identity, record in sorted(items.items()):
+        if (record.get('kind') != 'branch' or record.get('state') in SPACE_ENDED
+                or (record.get('owner') or {}).get('scope') != scope):
+            continue
+        locator = record.get('locator') or {}
+        repository, ref = os.path.normpath(str(locator.get('repository'))), _space_ref(locator.get('ref'))
+        tip = tip_of(repository, ref)
+        entry = {'item': identity, 'ref': ref, 'repository': repository, 'ticket': (record.get('owner') or {}).get('ticket'),
+                 'state': record.get('state'), 'start': record.get('start'), 'tip': tip, 'landed': False,
+                 'contained': False, 'why': None}
+        if tip is None:
+            entry['why'] = 'unread'
+        else:
+            in_trunk = reaches(repository, tip, trunk)
+            in_source = tip == source or reaches(repository, tip, source) is True
+            entry['landed'] = in_trunk is True or in_source
+            entry['why'] = past(repository, record.get('start'), tip) or (
+                None if in_trunk is True else 'unread' if in_trunk is None else 'not_in_trunk')
+            entry['contained'] = entry['why'] is None
+        branches[(repository, ref)] = entry
+    for identity, record in sorted(items.items()):
+        if (record.get('kind') != 'worktree' or record.get('state') in SPACE_ENDED
+                or (record.get('owner') or {}).get('scope') != scope):
+            continue
+        key = (repository_of(record), _space_ref(record['branch'])) if _text(record.get('branch')) else None
+        branch = branches.get(key)
+        worktrees[identity] = {'branch': key if branch else None, 'detached': not _text(record.get('branch')),
+                               'past_start': bool(branch and branch['tip']
+                                                  and past(key[0], record.get('start'), branch['tip']) is None)}
+    return branches, worktrees
+
+
+def space_reach(items, event, subject, branches, worktrees, counted):
+    """What the ledger's signal of `event` for `subject` would make due, judged before it is sent (VELDO-0310):
+    (matched, others). matched holds every item the event reaches; others names the branches, worktrees and
+    agent repositories among them that `counted` does not cover. counted(branch entry) says whether a
+    branch is landed (for landed) or contained (for contained). A worktree is covered when its branch is, and
+    for contained when it has itself moved past its start commit; a detached worktree is covered at landed
+    and never at contained (design section 5); an agent repository when every branch recorded in it and
+    every worktree inside it is."""
+    def branch_ok(key):
+        return key in branches and counted(branches[key]) is True
+
+    def worktree_ok(identity):
+        seen = worktrees.get(identity)
+        if seen is None:
+            return False
+        if seen['detached']:
+            return event == SPACE_LANDED
+        return branch_ok(seen['branch']) and (event == SPACE_LANDED or seen['past_start'])
+
+    matched, others = [], []
+    for identity, record in sorted(items.items()):
+        if (record.get('state') not in SPACE_SIGNALLED or event not in ((record.get('ends_on') or {}).get('events') or ())
+                or not _space_owned(record, subject)):
+            continue
+        matched.append(identity)
+        kind = record.get('kind')
+        if kind == 'branch':
+            locator = record.get('locator') or {}
+            ok = branch_ok((os.path.normpath(str(locator.get('repository'))), _space_ref(locator.get('ref'))))
+        elif kind == 'worktree':
+            ok = worktree_ok(identity)
+        elif kind == 'agent_repository':
+            path = os.path.normpath(str((record.get('locator') or {}).get('path')))
+            ok = (all(branch_ok(key) for key in branches if key[0] == path)
+                  and all(worktree_ok(child) for child, inner in items.items()
+                          if inner.get('kind') == 'worktree' and inner.get('parent') == identity
+                          and inner.get('state') not in SPACE_ENDED))
+        else:
+            ok = True
+        if not ok:
+            others.append(identity)
+    return matched, others
 
 
 class Landing:
@@ -1174,6 +1346,166 @@ class Landing:
         except PJ.Refused as error:
             return {'refused': error.code, 'taxonomy': PJ.taxonomy(error.code)}
         return {'watermark': report['watermark'], 'published': report['published'], 'duplicates': report['duplicates']}
+
+    # VELDO-0310: landed and contained.
+
+    def receipt(self, unit, dispatch):
+        """The recorded completion receipt of this landing, {id, candidate, source, data}, or None: the
+        revision_landed receipt of exactly this unit and dispatch, read from the store now."""
+        if not _text(unit) or not _text(dispatch):
+            return None
+        row = self._row(receipt_id(unit, dispatch))
+        data = row['data'] if row and row['kind'] == RECEIPT_KIND and isinstance(row['data'], dict) else {}
+        chain = data.get('publication_receipt') if isinstance(data.get('publication_receipt'), dict) else {}
+        if (data.get('fact') != LANDED or (data.get('subject') or {}).get('id') != unit or chain.get('unit_id') != unit
+                or chain.get('dispatch_id') != dispatch or not _hex(chain.get('candidate_commit'))
+                or not _hex(chain.get('evidence_commit'))):
+            return None
+        return {'id': row['id'], 'candidate': chain['candidate_commit'], 'source': chain['evidence_commit'], 'data': data}
+
+    def _reaches(self, repo, commit, tip):
+        """Whether `tip` contains `commit`, read by git in `repo`: True, False, or None when git could not
+        say (a commit that is not there, a repository it cannot read)."""
+        if not _hex(commit) or not _hex(tip) or not _text(repo):
+            return None
+        if commit == tip:
+            found = self._git(repo, 'cat-file', '-e', commit + '^{commit}')
+            return True if found.returncode == 0 else None
+        found = self._git(repo, 'rev-list', '--max-count=1', commit, '--not', tip)
+        return None if found.returncode else not found.stdout.strip()
+
+    def _tip_of(self, repo, ref):
+        found = self._git(repo, 'rev-parse', '--verify', '--quiet', ref + '^{commit}')
+        value = found.stdout.strip()
+        return value if found.returncode == 0 and _hex(value) else None
+
+    def _trunk_holds(self, candidate):
+        """Whether the trunk, read now, is at the landing's candidate or contains it: (holds, tip)."""
+        tip = self._local_tip() if self.destination == LAND_LOCALLY else self._remote_tip()
+        return (tip is not None and self._reaches(self.clone, candidate, tip) is True), tip
+
+    def landed(self, space, unit, dispatch):
+        """VELDO-0310: send landed for the unit whose completion receipt is recorded, then contained for
+        every other recorded branch of its project that the new trunk tip contains (the module's
+        LANDED AND CONTAINED). `space` is what the installation wires in when it has a space ledger: a
+        mapping with ledger (the control_space.Ledger) and, under their own names, the arguments Signal
+        is given. Returns {sent, reason, receipt, unit, dispatch, scope, trunk, source, events, removed,
+        deferred, marked, moved, left, due, branches, raised}; never raises, and deletes nothing itself."""
+        out = {'sent': False, 'reason': None, 'receipt': None, 'unit': unit, 'dispatch': dispatch, 'scope': None,
+               'trunk': None, 'source': None, 'events': [], 'removed': [], 'deferred': [], 'marked': [], 'moved': [],
+               'left': [], 'due': 0, 'branches': {}, 'raised': None}
+        try:
+            self._landed(space, unit, dispatch, out)
+        except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
+            out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+        for part in ('removed', 'deferred', 'marked', 'moved', 'left'):
+            if len(out[part]) > SPACE_NAMED:
+                out[part] = out[part][:SPACE_NAMED] + [{'more': len(out[part]) - SPACE_NAMED}]
+        self._emit('space', unit, dispatch, None, outcome='sent' if out['sent'] else 'not_sent', reason=out['reason'],
+                   receipt=out['receipt'], removed=len(out['removed']), deferred=len(out['deferred']),
+                   marked=len(out['marked']), left=len(out['left']), raised=out['raised'])
+        return out
+
+    def _landed(self, space, unit, dispatch, out):
+        receipt = self.receipt(unit, dispatch)
+        if receipt is None:
+            out['reason'] = 'no_receipt'
+            return
+        out.update(receipt=receipt['id'], trunk=receipt['candidate'], source=receipt['source'])
+        holds, tip = self._trunk_holds(receipt['candidate'])
+        if not holds:
+            out['reason'] = 'trunk_not_at_the_landing:%s' % (tip,)
+            return
+        ledger = space['ledger']
+        name, _project = unit_project(self.conn, unit)
+        if not _text(name) or not any(project.get('project') == name for project in ledger.projects):
+            out['reason'] = 'no_project:%s' % (name,)
+            return
+        scope = {'type': 'project', 'id': name}
+        out['scope'] = scope
+        given = {key: value for key, value in space.items() if key not in ('ledger', 'emitter')}
+        given['landed'] = tuple(given.get('landed') or ()) + (receipt['source'], receipt['candidate'])
+        emitter = {'process': 'landing_station', 'unit': unit, 'dispatch': dispatch, 'receipt': receipt['id']}
+        if 'signal' not in _SPACE:
+            _SPACE['signal'] = _organ('control_space_signal').signal
+
+        def view():
+            items = ledger.items()
+            return (items,) + space_branches(ledger, items, scope, receipt['candidate'], receipt['source'],
+                                             self._reaches, self._tip_of)
+
+        def send(event, subject, mine):
+            """One event through Signal, and what became of every item it reached. `mine` are the
+            branch entries the event was sent for, each read again after it."""
+            answer = _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
+            entry = {'event': event, 'subject': subject, 'ok': answer.get('ok') is True,
+                     'reason': answer.get('reason'), 'items': len(answer.get('items') or ()),
+                     'left': len(answer.get('left') or ())}
+            out['events'].append(entry)
+            out['due'] += entry['left']
+            after = ledger.items()
+            tips = {}
+            for branch in mine:
+                tips[branch['item']] = self._tip_of(branch['repository'], branch['ref'])
+                if tips[branch['item']] != branch['tip']:
+                    out['moved'].append({'item': branch['item'], 'ref': branch['ref'], 'event': event,
+                                         'tip': branch['tip'], 'now': tips[branch['item']]})
+            by_item = {branch['item']: branch for branch in mine}
+            for done in answer.get('outcomes') or ():
+                record = after.get(done.get('item')) or {}
+                named = {'item': done.get('item'), 'kind': record.get('kind'), 'at': _space_at(record), 'event': event}
+                if done.get('outcome') == 'removed':
+                    out['removed'].append(named)
+                elif done.get('outcome') == 'deferred':
+                    out['deferred'].append(dict(named, deferral=done.get('deferral'), rule=done.get('rule')))
+                elif (done.get('outcome') == 'kept' and done.get('action') == 'mark_contained'
+                      and done.get('item') in by_item and tips[done['item']] == by_item[done['item']]['tip']):
+                    branch = by_item[done['item']]
+                    out['marked'].append({'item': branch['item'], 'ref': branch['ref'], 'event': event,
+                                          'repository': branch['repository'], 'tip': branch['tip']})
+                elif done.get('outcome') not in ('kept', 'gone'):
+                    out['deferred'].append(dict(named, deferral=None, rule=done.get('reason') or done.get('refused')))
+            return entry
+
+        # Landed, for the unit: only when everything the event would reach is in the landing.
+        items, branches, worktrees = view()
+        subject = {'scope': scope, 'ticket': unit}
+        matched, others = space_reach(items, SPACE_LANDED, subject, branches, worktrees,
+                                      lambda branch: branch['landed'])
+        if others:
+            out['reason'] = 'not_landed:%s' % ','.join(str(_space_at(items[other])) for other in others[:3])
+            out['left'].extend({'item': other, 'at': _space_at(items[other]), 'event': SPACE_LANDED,
+                                'why': 'not_landed'} for other in others)
+        else:
+            out['sent'] = True
+            if matched:
+                send(SPACE_LANDED, subject, [branch for branch in branches.values() if branch['item'] in matched])
+        # Contained, for every other recorded branch of the project the new trunk tip contains.
+        items, branches, worktrees = view()
+        tally, subjects = {}, []
+        for key, branch in sorted(branches.items()):
+            if branch['ticket'] == unit:
+                continue
+            word = 'contained' if branch['contained'] else branch['why']
+            tally[word] = tally.get(word, 0) + 1
+            subject = _space_subject(items[branch['item']].get('owner'))
+            if branch['contained'] and subject not in subjects:
+                subjects.append(subject)
+        out['branches'] = tally
+        for subject in subjects:
+            matched, others = space_reach(items, SPACE_CONTAINED, subject, branches, worktrees,
+                                          lambda branch: branch['contained'])
+            mine = [branch for branch in branches.values() if branch['item'] in matched]
+            if others:
+                out['left'].extend({'item': branch['item'], 'at': branch['ref'], 'event': SPACE_CONTAINED,
+                                    'why': 'not_alone', 'with': [str(_space_at(items[other])) for other in others[:3]]}
+                                   for branch in mine if branch['contained'])
+                continue
+            if all(items[identity].get('kind') == 'branch' and items[identity].get('state') == 'kept'
+                   for identity in matched):
+                continue  # marked at an earlier landing, and nothing else for the event to reach
+            send(SPACE_CONTAINED, subject, mine)
+            items, branches, worktrees = view()
 
     # Observability.
 

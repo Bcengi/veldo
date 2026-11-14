@@ -60,6 +60,15 @@ runs at a time (the unit's index, kind `land_dispatch_unit`, names its latest la
 its attempts); a dispatch that follows another must follow the unit's latest one, and only one that ended
 trunk_moved or awaiting_approval. So each refused land is followed by at most one re-land.
 
+LANDED AND CONTAINED (VELDO-0310, design sections 5 and 8.3). An installation with a space ledger wires it in
+as `space` (the mapping Signal's callers are given: ledger, probe, kinds, remover, keep and the rest). A land
+dispatch whose outcome is landed, and no other, then sends landed for the unit and contained for the project's
+other recorded branches (control_landing.Landing.landed), after the completion receipt is recorded and before
+the dispatch's own record is ended, so the record ends with what the landing removed, deferred and marked
+contained under `space`, beside the receipt it is joined to. A land that ended any other way sends nothing:
+the unit's worktree, its build output and its branch are as they were. The station deletes nothing itself and
+no branch is ever deleted; with no ledger wired in nothing is sent and the record has no such field.
+
 WHAT IT IS NOT. No bound or backoff for a trunk that keeps moving (hardening), no recovery of a land whose
 process died mid-run (its record stays running, a stop), no recovery of an unknown publication (Release 2).
 Standard library only. The store connection, coordinates, the land configuration (the work configuration's
@@ -244,7 +253,7 @@ class LandStation:
                        (control_effect_executor.call by default); observe receives one event per land step."""
 
     def __init__(self, store, conn, *, domain, repository, land, principal, signer, sign, generation=1,
-                 settlement_trust=None, call=None, observe=None, clock=None):
+                 settlement_trust=None, call=None, observe=None, clock=None, space=None):
         problem = config_problem(land)
         if problem:
             raise Refused('invalid_input:land:' + problem)
@@ -258,6 +267,8 @@ class LandStation:
         self.clock = clock or time.time
         self.floor = FloorRecords(conn, repository)
         self.counts = {'opened': 0, 'refused': 0}
+        # VELDO-0310: what an installation with a space ledger wires in; None sends nothing.
+        self.space = space
         conn.command_registry[OPERATION] = {'transaction_transition': transition, 'writes': WRITES}
 
     # Reads.
@@ -367,12 +378,28 @@ class LandStation:
             result = {'ok': False, 'stage': 'raised', 'detail': {'refusal': 'unknown_outcome:land/' + type(error).__name__}}
         outcome, end = self.classify(result, ops.record(), dispatch)
         self.counts[outcome] = self.counts.get(outcome, 0) + 1
+        if outcome == LANDED and getattr(self, 'space', None) is not None:
+            # VELDO-0310 AC1: landed is sent here, after the completion receipt is recorded, and nowhere before.
+            end = dict(end, space=self.landed(unit, dispatch, ops.landing))
         ended = self._run('end', unit, dispatch, {'outcome': outcome, 'end': end})
         self._emit('end', unit, dispatch, outcome=outcome, follows=follows, destination=destination['destination'],
                    watermark=end.get('watermark'),
                    candidate=end.get('candidate'), refusal=end.get('refusal'), taxonomy=taxonomy(end.get('refusal'))
                    if end.get('refusal') else None, observed=end.get('observed'))
         return ended
+
+    def landed(self, unit, dispatch, landing):
+        """VELDO-0310: landed for the unit and contained for the project's other recorded branches, sent through
+        Signal by the landing (control_landing.Landing.landed), which first reads the completion receipt of this
+        unit and dispatch back from the store and sends nothing without it. Returns its record; whatever raises
+        sends nothing and is named there."""
+        try:
+            sent = landing.landed(self.space, unit, dispatch)
+        except Exception as error:  # noqa: BLE001 - a landing is a fact whatever became of its space step
+            sent = {'sent': False, 'reason': 'raised', 'raised': '%s: %s' % (type(error).__name__, str(error)[:300])}
+        self.counts['space_sent' if sent.get('sent') else 'space_not_sent'] = self.counts.get(
+            'space_sent' if sent.get('sent') else 'space_not_sent', 0) + 1
+        return sent
 
     def _checkout_wait(self, unit, follows, landing):
         """VELDO-0260: a re-land of a land refused for a working tree that has the trunk checked out waits, cheaply,
