@@ -492,5 +492,62 @@
   "fix_round": 2,
   "commit": "03172b82df4d",
   "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-owner-signalled-after-the-check",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f3/declared-after-the-check"
+  ],
+  "red_rows": [
+   "f3/changed-after-the-check",
+   "f3/declared-after-the-check",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 f3/declared-after-the-check",
+    "the owner's branch, past its start commit and in the new trunk tip, was judged contained with its worktree, and contained was sent once, naming exactly the three items judged, each at the version read at the check [['contained'] []]"
+   ],
+   [
+    "VELDO-0310 f3/changed-after-the-check",
+    "contained was sent once for the other owner, naming its three items at the versions read at the check; inside the stand-in its worktree was switched to a new branch at its start commit and the switch recorded, so the worktree's item is at a later version [['contained'] True []]"
+   ],
+   [
+    "VELDO-0310 paths/no-delete-and-canon",
+    "the engine canon of control_landing.py equals this repository's copy"
+   ]
+  ],
+  "red_as_expected": true,
+  "review_finding": "the review, finding 3",
+  "fix_round": 3,
+  "commit": "eaf5e38957be",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads, the suite run, the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space310-refused-event-sent-for-the-owner",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f3/changed-after-the-check"
+  ],
+  "red_rows": [
+   "f3/changed-after-the-check",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 f3/changed-after-the-check",
+    "contained was sent once for the other owner, naming its three items at the versions read at the check; inside the stand-in its worktree was switched to a new branch at its start commit and the switch recorded, so the worktree's item is at a later version [['contained', 'contained'] True [{'item': 's"
+   ],
+   [
+    "VELDO-0310 paths/no-delete-and-canon",
+    "the engine canon of control_landing.py equals this repository's copy"
+   ]
+  ],
+  "red_as_expected": true,
+  "review_finding": "the review, finding 3",
+  "fix_round": 3,
+  "commit": "eaf5e38957be",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads, the suite run, the copy put back and compared with the engine canon. Not the teeth run."
  }
 ]
