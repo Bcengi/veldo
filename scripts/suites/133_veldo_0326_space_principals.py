@@ -897,6 +897,7 @@ def _v326_space_principals_suite():
             SP.ADOPT: {'kind': 'worktree', 'locator': place(WORKTREES), 'owner': project_owner(), 'rule': 'fixture'},
             SP.REPORT: {'kind': 'worktree', 'locator': place(WORKTREES), 'found': {}},
             SP.GONE: {'item': theirs[0]},
+            SP.KEEP: {'item': theirs[0], 'repository': str(temp), 'refs': {}},
             SP.POOL: {'name': 'host', 'type': 'filesystem', 'device': 'dev-other'},
             SP.RECONCILE: {'started_by': 'cli', 'roots': [], 'engines': [], 'counts': {}},
             SP.ISSUE: {'to': 'space-observer'},

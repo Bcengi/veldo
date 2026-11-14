@@ -20,7 +20,12 @@ footprint:
   - ".veldo/control_space.py"
   - "engine/.veldo/control_space_probe.py"
   - ".veldo/control_space_probe.py"
+  - "engine/.veldo/control_space_signal.py"
+  - ".veldo/control_space_signal.py"
   - "scripts/suites/*_veldo_0345_*.py"
+  - "scripts/suites/132_veldo_0297_space_ledger.py"
+  - "scripts/suites/133_veldo_0326_space_principals.py"
+  - "scripts/suites/139_veldo_0301_space_signal.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -220,3 +225,44 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   that has any linked worktree, because the index of a linked worktree lives inside the repository's
   folder and nothing saves it. Removing such a repository needs a keep step that saves each linked
   worktree's index; until this ticket or a later one adds it, such a repository waits.
+- 2026-11-14: built. No acceptance criterion changed. What the build decided, recorded here because
+  a reviewer will meet each of them:
+  - Footprint. On the lead's instruction this ticket also puts VELDO-0301 back at design 4.1, so
+    control_space_signal.py (both copies) is added. Three older suites are added because this ticket
+    changes what they assert: 132 (a removing item deferred as in_use was a refusal; AC6 accepts it),
+    133 (its row sends every ledger command the observer may not sign, and keep is a new one) and 139
+    (its keep step was a stand-in; since AC1 the ledger refuses the outcome removed for a worktree
+    with no keep record, so the suite now runs the keeper itself, and its journal count holds the
+    removing outcome). No check of those suites was removed.
+  - Signal (design 4.1). When rules 1 to 6 have passed for an action that takes the item away, the
+    outcome removing is written and only then is the remover called. A remover that refuses leaves
+    the item deferred with its own deferral, which AC6 lets the ledger accept; a process killed inside
+    the remover leaves the item removing. When the ledger refuses that write the remover is not
+    called. The row is signal/removing-while-the-remover-runs in this ticket's suite and its
+    falsifier is space345-due-while-the-remover-runs.
+  - The ledger accepts the outcome removing for an item that is already removing only when the facts
+    hold left_at, so Signal can still record where a thing was left (VELDO-0301 AC5). Every other
+    second write of removing is refused as before.
+  - The keep command is the ledger's own: neither host principal may sign it. It checks the refs, the
+    repository and the manifest itself, inside its transaction, with git run through the one Git
+    boundary. The main repository must be the one the declarations name for the item's scope.
+  - A snapshot is written when the keeper is made with snapshot=True. The removals that ask for it
+    (Discard, review scratch, a dead run's worker clone) are VELDO-0318, 0336 and 0347; no remover of
+    this ticket forces a removal. Signal's plain removal asks for none, so a worktree with an ignored
+    file that is work is still deferred as keep_failed by the remover's last look.
+  - What reconcile asks before it completes a removing item is control_space_keep.verify; reconcile
+    itself is VELDO-0315. The AC3 row that "runs reconcile" calls verify and makes the second attempt
+    the way reconcile will: the remover with the keeper, on the removing item.
+  - A kept ref is created and never moved (design 0.2). So an item whose head moved after an attempt
+    that wrote its kept head and was then deferred is keep_failed at every later attempt, until the
+    owner drops that item's kept refs (VELDO-0346). Nothing is lost by it, and it is the design's
+    word, but it can leave a worktree waiting. A later ticket may want a numbered head.
+  - How three falsifiers were applied. The agent worktree's refs written in its agent repository:
+    the ledger's own check refuses that keep record, so the row goes red one step before the story
+    the falsifier tells (the worktree is not removed at all). The snapshot as a commit on a kept ref:
+    applied as the snapshot's files written into the main repository's object store, which is what
+    the row detects (the marker in an object). A full pool and a kill are made inside the suite's own
+    process: the keeper's write returns short or raises no space left, and a kill is an exception no
+    handler catches, raised at the named point.
+  - Found and left alone: the registered case space331-signal-reads-no-mode (VELDO-0331) has had no
+    anchor in control_space_signal.py since VELDO-0301 rewrote that line. It is not this ticket's.

@@ -40,15 +40,22 @@ THE OUTCOMES, one per carried item, written before the call returns:
   removing   the thing is not at its locator and is under its marked name: the remover's answer
              holds left_at (it could not put the folder back), or nothing is at the locator and the
              look under the marked name (the remover's `left`) found it. The record holds left_at. Such an item is never marked
-             gone and never deferred: it is not at its path, and reconcile finishes it (design 8.8)
+             gone and never deferred: it is not at its path, and reconcile finishes it (design 8.8).
+             It is also what a process killed inside a remover leaves, with no left_at
   kept       the table's action removes nothing (keep, measure, mark_contained, pass, or no cell for
              this event), or the action dropped caches and the item stays
 
-THE ITEM IS DUE WHILE ITS REMOVER RUNS. Removing is written only for a thing left under its marked
-name, and it is never written ahead of the remover. A remover that puts the thing back and refuses
-(in_use at its second probe, keep_failed at the keep step or its last look) leaves an item that is
-whole at its path. Were it recorded as removing first, it would be finished "to the end" by reconcile
-(design 4.1), which is the loss the review of VELDO-0300 named (finding 6).
+THE ITEM IS REMOVING WHILE ITS REMOVER RUNS (design 4.1, VELDO-0345). When rules 1 to 6 have passed
+for an action that takes the item away, the outcome removing is written, with the event, the emitter
+and the action, and only then is the remover called: the keep step first, then the owning tool. A
+remover that is not handed the item (the ledger refused that write) removes nothing, and the item is
+deferred as remove_refused. A remover that puts the thing back and refuses (in_use at its second
+probe, keep_failed at the keep step or its last look) leaves an item that is whole at its path, and
+the item is written deferred with that deferral: the ledger accepts the three deferrals a remover
+names for a removing item (VELDO-0345 AC6), so such an item is recorded as what it is and reconcile
+does not finish it "to the end" (the review of VELDO-0300, finding 6). A process killed inside the
+remover leaves the item removing, and reconcile completes it only with its keep record (design 0.2).
+An action that drops caches takes nothing away, and its item stays due while it runs.
 
 THE REMOVER'S OWN DEFERRAL IS PASSED THROUGH. Rule 7's refusal is named by the remover: remove_refused
 (the tool, or the remover by itself, refused), in_use (its second probe found a user and the item was
@@ -267,6 +274,13 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
     seen = {}
 
     def tool(identity, record):
+        if action in REMOVALS:
+            # Rules 1 to 6 have passed: the decision to remove is recorded before the remover runs.
+            began = ledger.outcome(identity, 'removing', dict(facts))
+            if not began.get('ok'):
+                seen['said'] = {'ok': False, 'deferral': DEFERRAL['tool'],
+                                'said': 'the ledger did not record the removal: %s' % (began.get('reason'),)}
+                return seen['said']
         seen['said'] = remover.remove(ledger, probe, identity, record, action=action, free=given['free'],
                                       keep=given['keep'], run=given['run'], proc=given['proc'])
         return seen['said']

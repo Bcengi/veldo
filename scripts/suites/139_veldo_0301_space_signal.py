@@ -3,13 +3,14 @@
 Run: python3 scripts/selftest.py --suite 139_veldo_0301_space_signal
 
 Only shared ROOT and expect are consumed. Signal is loaded by path; the Ledger, the store, the
-membership module, the declarations reader, the kind registry, the probes and the removers are loaded
-from this repository's .veldo. The ledger is a real one on a real store under one temporary folder, and
+membership module, the declarations reader, the kind registry, the probes, the removers and the keeper
+are loaded from this repository's .veldo. The ledger is a real one on a real store under one temporary folder, and
 every item is declared and confirmed by its own commands. The folders, repositories and worktrees are
 real, made with plain git, and a removal really deletes them. The project orchard is put in act mode by
 the owner's own signed command, with a real key; the project meadow has no mode record and is in report
-mode. Stand-ins: the two checks of a switch to act (VELDO-0332 and 0339 are not built), which allow;
-the keep step (VELDO-0345 is not built), which answers ok with the tips the removers' own `tips` read;
+mode. The keep step is the keeper's own (VELDO-0345): since that ticket the ledger refuses the outcome
+removed for a worktree that has no keep record, and the item is written removing before its remover
+runs. Stand-ins: the two checks of a switch to act (VELDO-0332 and 0339 are not built), which allow;
 the owner's Confirm (VELDO-0320 is not built, and no command of the ledger writes an item's
 confirmation yet): for one row Signal reads the real ledger through a view that returns that one item
 with its confirmation, every other read and every write being the ledger's own; the docker client, a
@@ -20,7 +21,7 @@ Every row plants the thing it is about on disk and reads the disk again as the c
 AC1 rows: ac1/removes-before-return (the declared falsifier row: a run's scratch folder is on disk, the
 event is signalled, and when the call returns the folder is not there, the item is removed and its
 removal record holds the event, the emitter, the method, the bytes and the pool's free space; the
-journal grew by the one signal record and one outcome), ac1/children-first (a worktree with a build
+journal grew by the one signal record and the two outcomes, removing and removed), ac1/children-first (a worktree with a build
 output folder inside it, both due at one event: the folder goes first, then the worktree by git's own
 remove, and both outcomes are written), ac1/kept-and-unknown (an evidence folder whose action is keep
 is kept and still on disk; an event the table does not hold is refused by name with nothing written).
@@ -135,6 +136,7 @@ def _v301_space_signal_suite():
         K = load('v301_control_space_kinds', VELDO / 'control_space_kinds.py')
         P = load('v301_control_space_probe', VELDO / 'control_space_probe.py')
         RM = load('v301_control_space_remove', VELDO / 'control_space_remove.py')
+        KP = load('v301_control_space_keep', VELDO / 'control_space_keep.py')
         AC = CM.AC
         NOW = 1000.0
 
@@ -275,9 +277,9 @@ def _v301_space_signal_suite():
         kept_log = []
 
         def keep(identity, record):
-            """The keep step's stand-in: ok, with the tips the removers' own `tips` read in the item."""
+            """The keep step, the keeper's own (VELDO-0345), with every item it was given recorded."""
             kept_log.append(identity)
-            return {'ok': True, 'tips': RM.tips(record['locator']['path'], record['kind'])}
+            return KP.keep(L, identity, record)
 
         ENDED = {'conclusive': True, 'group_empty': True}
         EMITTER = {'process': 'receiver', 'pid': 4242}
@@ -389,8 +391,8 @@ def _v301_space_signal_suite():
               and isinstance(removal.get('bytes'), int) and removal['bytes'] >= 9000
               and isinstance(removal.get('pool_free_before'), int)
               and isinstance(removal.get('pool_free_after'), int) and removal.get('pool') == 'host')
-        check(ROW, 'the journal grew by the signal record and one outcome [%d]' % (journal_length() - length),
-              journal_length() - length == 2)
+        check(ROW, 'the journal grew by the signal record and the two outcomes, removing and removed [%d]'
+              % (journal_length() - length), journal_length() - length == 3)
 
         ROW = 'ac1/children-first'
         del handed[:]

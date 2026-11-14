@@ -12972,6 +12972,107 @@ def cases():
         "        return {}\n\n    entries = ",
         ['look/agent-repository-held'])
 
+    # VELDO-0345: the keep step. The declared falsifiers of its acceptance criteria, each one a way to
+    # lose the work its row plants. AC1: the kept refs are written after git's worktree remove; an
+    # agent worktree's kept refs are written in its agent repository; and, for the ledger's part, the
+    # outcome removed is accepted with no keep record. AC2: only the branches are fetched. AC3: the
+    # remover is called after a keep step that failed; the keeper goes on when the main repository
+    # is gone. AC4: the snapshot's files are written into the main repository's object store; the
+    # snapshot is made with git's stash command; the store is left off the protect list. AC5: the
+    # save goes on after a short write; the existing snapshot folder is deleted to make room; the
+    # recorded snapshot is used without comparing; only the newest attempt stays on the record.
+    # AC6: the ledger accepts remove_refused alone for a removing item. And Signal's part (design
+    # 4.1): the item is left due while its remover runs.
+    space345 = '140_veldo_0345_space_keep.py'
+
+    def keep345(name, module, old, new, rows, also=()):
+        add(345, name, space345, module, old, new, rows, also)
+        result[-1]['siblings'] = True
+
+    keep345('space345-refs-after-the-remove', 'control_space_remove.py',
+            "    path = _plain(record['locator']['path'])\n"
+            "    kept = _kept(ctx, identity, record)\n"
+            "    repository = ctx['probe'].repository(path, ctx['run'])\n",
+            "    path = _plain(record['locator']['path'])\n"
+            "    kept = {'tips': tips(path, 'worktree', ctx['commands'])}\n"
+            "    repository = ctx['probe'].repository(path, ctx['run'])\n",
+            ['ac1/kept-before-remove'],
+            also=(("        raise\n    _after(ctx, pools, answer)\n\n\ndef _r_drop_caches",
+                   "        raise\n    _kept(ctx, identity, record)\n    _after(ctx, pools, answer)\n\n\n"
+                   "def _r_drop_caches"),))
+    keep345('space345-agent-worktree-kept-in-agent-repository', 'control_space_keep.py',
+            "        main = ledger.main_repository(identity)\n",
+            "        main = ledger.main_repository(identity)\n"
+            "        if kind == 'worktree' and main is not None:\n"
+            "            main = os.path.dirname(_common(commands, path) or main + '/.git')\n",
+            ['ac1/agent-worktree-in-shared'])
+    keep345('space345-removed-with-no-keep-record', 'control_space.py',
+            "        if outcome == 'removed' and record['kind'] in KEEP_KINDS and not record.get('kept'):\n",
+            "        if False:\n",
+            ['ac1/removed-needs-keep-record'])
+    keep345('space345-branches-only', 'control_space_keep.py',
+            "        refs = _numbered(_plan(commands, path, tips), prefix, held)\n",
+            "        refs = _numbered([entry for entry in _plan(commands, path, tips) if kind == 'worktree'\n"
+            "                          or entry[0].startswith('ref/refs/heads/')], prefix, held)\n",
+            ['ac2/private-repository'])
+    keep345('space345-remover-called-after-failed-keep', 'control_space_remove.py',
+            "    if not isinstance(said, dict) or said.get('ok') is not True:\n"
+            "        raise _Refusal(KEEP_FAILED, 'the keep step did not keep the item', keep=said)\n",
+            "    if not isinstance(said, dict) or said.get('ok') is not True:\n"
+            "        return {'tips': tips(record['locator']['path'], record.get('kind'), ctx['commands'])}\n",
+            ['ac3/ref-unwritable'])
+    keep345('space345-goes-on-with-main-repository-gone', 'control_space_keep.py',
+            "        if store is None:\n"
+            "            raise _Failed('the main repository is not at its path: ' + main, git='no repository at ' + main)\n",
+            "        if store is None:\n"
+            "            return {'ok': True, 'tips': _remove.tips(path, kind, commands)}\n",
+            ['ac3/main-repository-gone'])
+    keep345('space345-snapshot-in-the-object-store', 'control_space_keep.py',
+            "                size, digest = _put(target, _blocks(source))\n",
+            "                _git(commands, header['repository'], 'hash-object', '-w', '--', source)\n"
+            "                size, digest = _put(target, _blocks(source))\n",
+            ['ac4/outside-git'])
+    keep345('space345-snapshot-by-git-stash', 'control_space_keep.py',
+            "    found = listing(ledger, record, path, commands)\n    listed = sorted(",
+            "    _git(commands, path, '-c', 'user.name=Veldo', '-c', 'user.email=veldo@localhost', 'stash',\n"
+            "         '--include-untracked', '--all')\n"
+            "    found = listing(ledger, record, path, commands)\n    listed = sorted(",
+            ['ac4/nothing-touched'])
+    keep345('space345-store-off-the-protect-list', 'control_space.py',
+            "        self.protect = protect_list(config, self.projects) + [\n"
+            "            {'type': 'path', 'value': self.snapshot_store, 'engines': []}]\n",
+            "        self.protect = protect_list(config, self.projects)\n",
+            ['ac4/store-protected'])
+    keep345('space345-goes-on-after-a-short-write', 'control_space_keep.py',
+            "            if _write(descriptor, block) != len(block):\n"
+            "                raise _Failed('a write to the snapshot store came back short: ' + target)\n",
+            "            _write(descriptor, block)\n",
+            ['ac5/failed-save-removes-nothing'],
+            also=(("            if _stored(target) != row['sha256']:\n"
+                   "                raise _Failed('a file of the snapshot reads back as other content: ' + name)\n",
+                   "            _stored(target)\n"),))
+    keep345('space345-deletes-the-folder-to-make-room', 'control_space_keep.py',
+            "    number = 1 + max(taken + [0])\n",
+            "    number = max([found for found in taken if os.path.isdir(os.path.join(folder, str(found)))] + [1])\n"
+            "    __import__('shutil').rmtree(os.path.join(folder, str(number)), ignore_errors=True)\n",
+            ['ac5/never-replaced'])
+    keep345('space345-recorded-snapshot-used-without-comparing', 'control_space_keep.py',
+            "        if manifest is not None and _comparable(manifest) == _comparable(found):\n",
+            "        if manifest is not None:\n",
+            ['ac5/retry-compares'])
+    keep345('space345-only-the-newest-attempt-on-the-record', 'control_space.py',
+            "                snapshots = sorted(snapshots + [attempt], key=lambda entry: entry['number'])\n",
+            "                snapshots = [attempt]\n",
+            ['ac5/every-attempt-listed'])
+    keep345('space345-remove-refused-alone', 'control_space.py',
+            "                outcome == 'deferred' and facts.get('rule') not in TOOL_REFUSALS)):\n",
+            "                outcome == 'deferred' and facts.get('rule') != TOOL_REFUSALS[0])):\n",
+            ['ac6/three-deferrals', 'ac6/removing-put-back'])
+    keep345('space345-due-while-the-remover-runs', 'control_space_signal.py',
+            "        if action in REMOVALS:\n            # Rules 1 to 6 have passed",
+            "        if False:\n            # Rules 1 to 6 have passed",
+            ['signal/removing-while-the-remover-runs'])
+
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
     # AC1 (declared falsifier): the units are merged without running the project's renumber hook, so the batch tip

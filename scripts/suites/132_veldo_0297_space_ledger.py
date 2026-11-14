@@ -274,7 +274,7 @@ def _v297_space_ledger_suite():
             for outcome in ('removed', 'deferred', 'kept'):
                 identity, run = made(state)
                 before = L.item(identity)
-                step = L.outcome(identity, outcome, {'rule': 'in_use', 'event': 'run_finished'})
+                step = L.outcome(identity, outcome, {'rule': 'unique_work', 'event': 'run_finished'})
                 if state == 'due' or (state == 'removing' and outcome == 'removed'):
                     check('ac1/outcome-only-from-due-or-removing', 'outcome %s from %s is accepted [%s]'
                           % (outcome, state, step.get('reason')), step['ok'] and state_of(identity) == outcome)
@@ -292,7 +292,9 @@ def _v297_space_ledger_suite():
               and step.get('reason') == 'space_item_state:removing')
         check('ac1/removing-is-final', 'and the item is still removing, nothing written [%s]' % state_of(identity),
               L.item(identity) == before and journal_length() == length)
-        for rule in ('in_use', 'unique_work', 'protected', 'not_in_ledger'):
+        # VELDO-0345 AC6: a removing item is deferred with one of the three deferrals a remover names,
+        # remove_refused, in_use and keep_failed (suite 140 holds those rows), and with no other.
+        for rule in ('unique_work', 'protected', 'not_in_ledger'):
             step = L.outcome(identity, 'deferred', {'rule': rule, 'event': 'run_finished'})
             check('ac1/removing-is-final', 'deferred as %s for a removing item is refused by the state [%s]'
                   % (rule, step.get('reason') or 'accepted'), step['ok'] is False

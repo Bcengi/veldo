@@ -10,7 +10,8 @@ one transaction, one signed journal record, no second database. The journal reco
 THE RECORDS, each an entity kind this module owns (design 4.1 to 4.4 and 4.7):
 
   space_item       space:item:<new id>. One per thing. kind, host, pool, locator, parent, owner, creator,
-                   adopted, branch, start, process, state, ends_on, size, confirmed, deferral, removal, report.
+                   adopted, branch, start, process, state, ends_on, size, confirmed, deferral, removal, report,
+                   and kept once a keep record was written.
   space_pool       space:pool:<host>:<name>. type (filesystem or engine_image), device, engine, floor,
                    returns_space, backing.
   space_hold       space:hold:<identity>. scope, needs and source per pool, state, reason, used, retry_asked,
@@ -32,11 +33,14 @@ AN ITEM'S STATES AND THE ONLY MOVES (design 4.1):
   confirm            declared to present
   signal             present, kept or deferred to due
   outcome removing   due to removing (the rules passed; the decision to remove is recorded)
-  outcome removed    due or removing to removed
-  outcome deferred   due to deferred; removing to deferred only when the rule that refused is the owning
-                     tool's own refusal (remove_refused, design section 7 rule 7), which is read while the
-                     remover runs
+  outcome removed    due or removing to removed; refused for a worktree and an agent repository that
+                     has no keep record (space_no_keep_record)
+  outcome deferred   due to deferred; removing to deferred only with one of the three deferrals a remover
+                     names (TOOL_REFUSALS: remove_refused, in_use, keep_failed; design section 7 rule 7),
+                     which are read while the remover runs
   outcome kept       due to kept. A removing item is removed to the end: the decision was recorded
+  outcome removing   written again for a removing item only to record where its thing was left (left_at)
+  keep               writes the keep record of a due or removing worktree or agent repository; moves nothing
   gone               declared, present, due or deferred to gone
   adopt              nothing (or a report record) to present, adopted
   measure, rebranch  write fields and move nothing
@@ -84,6 +88,33 @@ returned (control_space_config.read and read_project); this module opens no decl
 THE POOL of a disk item is the filesystem pool whose device identity is the device the item's path is on,
 so two paths on one filesystem count against one pool. A Docker item counts against its engine's image
 pool when the engine has one, else against the pool its caller names.
+
+THE KEEP RECORD (VELDO-0345, design 0.2, 0.3, 4.1 and 6.1). Before a worktree or a private repository is
+removed, every commit it reaches is on a kept ref in its main repository and, where the removal saves one,
+its uncommitted files are in a snapshot under the state root. keep writes that on the item, as kept:
+
+  repository   the main repository: the one the declarations name for the item's scope, never a private
+               repository
+  path         the path the item had
+  refs         {kept ref: commit}, each under refs/veldo/kept/<ticket>/<item>/ (kept_prefix)
+  snapshots    one entry per snapshot attempt: path, number, size and the digest of its manifest
+
+THE LEDGER READS WHAT IT RECORDS. keep trusts nothing its caller says. Inside the command's own transaction
+it reads the main repository with git, through the one Git boundary, and refuses a ref that is not there
+at the commit named (space_keep_ref:<ref>); it refuses a repository that is not the one the declarations
+name for the item or is not at its path (space_keep_repository), one that is, or lies inside, an agent
+repository (space_keep_private), a snapshot path that is not the numbered folder of that item in the
+snapshot store (space_keep_snapshot), and a manifest whose bytes do not have the digest named
+(space_keep_manifest). An item that is not due or removing is space_item_state:<state>.
+
+A KEEP WRITE ADDS AND NEVER REMOVES. For an item that has a record, the refs and the attempt are added to
+it. A ref the record holds at another commit is space_keep_ref_moved:<ref>, an attempt number the record
+holds with other figures is space_keep_snapshot_replaced, and nothing a keep command is given takes a ref
+or an attempt off the record. The journal holds each version.
+
+THE SNAPSHOT STORE IS PROTECTED IN EVERY INSTALLATION. <state root>/space-saved is on this Ledger's protect
+list whatever the declarations say: it is put there by the Ledger and not by a file. So declare, adopt and
+report refuse a locator at, above or beneath it as space_protected, and rule 2 refuses any removal there.
 
 WHAT IS NOT HERE. The lifecycle table is the kind registry's (VELDO-0298); this module is given it as
 plain data and copies an item's events from it at declaration, with its version. Rules, probes and
@@ -191,6 +222,7 @@ Standard library only. The store is the control_store module the caller passes i
 control_membership module the same way.
 """
 import fnmatch
+import hashlib
 import json
 import os
 import sqlite3
@@ -200,6 +232,7 @@ import uuid
 
 SCHEMA = 'veldo.control_space/v1'
 OWNER = 'space_ledger'
+_git_process = None  # the one Git boundary, the sibling of this file, loaded when keep first reads a ref
 
 ITEM_KIND, POOL_KIND, HOLD_KIND, RECONCILE_KIND = 'space_item', 'space_pool', 'space_hold', 'space_reconcile'
 ITEM_PREFIX, POOL_PREFIX, HOLD_PREFIX, RECONCILE_PREFIX = ('space:item:', 'space:pool:', 'space:hold:',
@@ -233,8 +266,17 @@ STATES = ('declared', 'present', 'due', 'deferred', 'removing', 'removed', 'gone
 LIVE = ('declared', 'present', 'due', 'deferred', 'removing', 'kept')
 SIGNALLED = ('present', 'kept', 'deferred')
 OUTCOMES = ('removing', 'removed', 'deferred', 'kept')
-# The one deferral a removing item can still get: the owning tool's refusal (design section 7, rule 7).
-TOOL_REFUSAL = 'remove_refused'
+# The deferrals a removing item can still get: the three a remover names (design section 7, rule 7;
+# VELDO-0345 AC6). The tool refused; the second probe found a user and the thing was put back; the keep
+# step failed, or the last look found work it did not save.
+TOOL_REFUSALS = ('remove_refused', 'in_use', 'keep_failed')
+# The keep record (VELDO-0345): the kinds that hold commits, where kept refs live in a main repository,
+# and the snapshot store under the state root with the name of an attempt's manifest.
+KEEP_KINDS = ('worktree', 'agent_repository')
+KEPT_REFS = 'refs/veldo/kept/'
+SNAPSHOT_STORE = 'space-saved'
+MANIFEST = 'manifest.json'
+GIT_SECONDS = 600
 GONE_FROM = ('present', 'declared', 'due', 'deferred')
 REBRANCHED = ('present', 'kept', 'deferred')
 
@@ -256,7 +298,8 @@ DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH = (
     'space_report', 'space_gone', 'space_rebranch')
 POOL, HOLD, ADMIT, RELEASE, RECONCILE = ('space_pool', 'space_hold', 'space_admit', 'space_release',
                                          'space_reconcile')
-ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH)
+KEEP = 'space_keep'
+ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH, KEEP)
 # Issue is the authority's: the run or gate identity a principal may then hold, declare for and signal.
 ISSUE = 'space_issue'
 OPERATIONS = ITEM_OPERATIONS + (POOL, HOLD, ADMIT, RELEASE, RECONCILE, ISSUE)
@@ -431,6 +474,48 @@ def protected_by(kind, locator, protect, resolve=None):
         if path == value or beneath(path, value) or beneath(value, path):
             return 'path:' + entry['value']
     return None
+
+
+def snapshot_store(state_root):
+    """The snapshot store of an installation: the folder under the state root where what was never
+    committed is saved before a removal (design 0.3)."""
+    return os.path.join(canonical_path(state_root), SNAPSHOT_STORE)
+
+
+REFUSED_IN_REF = frozenset(' ~^:?*[\\/')
+
+
+def kept_part(text):
+    """One part of a kept ref's name, and of a folder's name in the snapshot store, made from `text`:
+    every character git refuses in a ref name is replaced by '-' (design 0.2)."""
+    part = ''.join('-' if c in REFUSED_IN_REF or ord(c) < 32 or ord(c) == 127 else c for c in str(text))
+    while '..' in part:
+        part = part.replace('..', '.-')
+    part = part.replace('@{', '@-')
+    if part.startswith('.'):
+        part = '-' + part[1:]
+    if part.endswith('.lock'):
+        part = part[:-5] + '-lock'
+    if part.endswith('.'):
+        part = part[:-1] + '-'
+    return part if part and part != '@' else '-'
+
+
+def kept_parts(identity, record):
+    """(ticket, item): the two parts that name an item's kept refs and its folder in the snapshot store.
+    ticket is the item's ticket; for an item with no ticket, run- and the run's label when a run owns it,
+    otherwise the word none. item is the item's identifier in the ledger, without its prefix."""
+    owner = record.get('owner') if isinstance(record.get('owner'), dict) else {}
+    run = owner.get('run') if isinstance(owner.get('run'), dict) else {}
+    ticket = owner.get('ticket') if _is_str(owner.get('ticket')) else (
+        'run-' + run['id'] if _is_str(run.get('id')) else 'none')
+    own = identity[len(ITEM_PREFIX):] if identity.startswith(ITEM_PREFIX) else identity
+    return kept_part(ticket), kept_part(own)
+
+
+def kept_prefix(identity, record):
+    """refs/veldo/kept/<ticket>/<item>/: what every kept ref of the item begins with."""
+    return KEPT_REFS + '%s/%s/' % kept_parts(identity, record)
 
 
 def inside_roots(kind, locator, roots, engines):
@@ -621,7 +706,11 @@ class Ledger:
         self.resolved_roots = {part: sorted({resolved_path(path) for path in paths})
                                for part, paths in self.roots.items()}
         self.engines = list(config['engines'])
-        self.protect = protect_list(config, self.projects)
+        self.state_root = canonical_path(state_root)
+        # The snapshot store is protected in every installation: by the Ledger, not by a file.
+        self.snapshot_store = snapshot_store(state_root)
+        self.protect = protect_list(config, self.projects) + [
+            {'type': 'path', 'value': self.snapshot_store, 'engines': []}]
         self.lifecycle = checked_lifecycle(lifecycle)
         self.device = device
         self.new_id = new_id or (lambda: uuid.uuid4().hex)
@@ -639,7 +728,7 @@ class Ledger:
                        REPORT: self._t_report, GONE: self._t_gone, REBRANCH: self._t_rebranch,
                        POOL: self._t_pool, HOLD: self._t_hold, ADMIT: self._t_admit, RELEASE: self._t_release,
                        RECONCILE: self._t_reconcile, MODE: self._t_mode, ISSUE: self._t_issue,
-                       PACKET: self._t_packet}
+                       PACKET: self._t_packet, KEEP: self._t_keep}
         # A command a host principal may send writes the record of its packet in its own transaction.
         for operation in COMMAND_PARAMETERS:
             transitions[operation] = self._with_packet(transitions[operation])
@@ -871,8 +960,35 @@ class Ledger:
     def outcome(self, item, outcome, facts=None, principal=None, command_id=None):
         """Write what became of a due or removing item: removing, removed, deferred or kept, with the
         facts (the removal fields for removed, the deferral fields for deferred). A removing item is
-        removed, or deferred as remove_refused; nothing else."""
+        removed, or deferred with one of the three deferrals a remover names (TOOL_REFUSALS); nothing
+        else. A worktree and an agent repository are removed only with a keep record."""
         return self._item_command(OUTCOME, item, {'outcome': outcome, 'facts': facts or {}}, principal, command_id)
+
+    def kept_prefix(self, item):
+        """What every kept ref of the item begins with, or None when there is no such item."""
+        record = self.item(item)
+        return kept_prefix(item, record) if record else None
+
+    def snapshot_folder(self, item):
+        """The item's own folder in the snapshot store, <state root>/space-saved/<ticket>/<item>, or None
+        when there is no such item. Each attempt is a numbered folder in it."""
+        record = self.item(item)
+        return os.path.join(self.snapshot_store, *kept_parts(item, record)) if record else None
+
+    def main_repository(self, item):
+        """The main repository of a worktree or an agent repository item: the repository the declarations
+        name for its scope, which is never a private repository (design section 0). None when they name
+        none, and for any other item."""
+        record = self.item(item)
+        return self._main_of(record) if record and record.get('kind') in KEEP_KINDS else None
+
+    def keep(self, item, repository, refs, snapshot=None, principal=None, command_id=None):
+        """Write the keep record of a due or removing worktree or agent repository: its main
+        repository, each kept ref with its commit, and the snapshot attempt {path, number, size, manifest}
+        when one was written. The Ledger reads each ref and the manifest itself before it writes. For an
+        item that has a record the refs and the attempt are added; none is replaced or removed."""
+        return self._item_command(KEEP, item, {'repository': repository, 'refs': refs, 'snapshot': snapshot},
+                                  principal, command_id)
 
     def gone(self, item, principal=None, command_id=None):
         """present, declared, due or deferred to gone: nothing is at the locator any more."""
@@ -1389,6 +1505,69 @@ class Ledger:
                 return canonical_path(project['repository'])
         return None
 
+    def _main_of(self, record):
+        """The repository the declarations name for an item's scope, in its canonical form, or None."""
+        scope = (record.get('owner') or {}).get('scope') or {}
+        if scope.get('type') == 'plain_repository' and _is_str(scope.get('id')):
+            return canonical_path(scope['id'])
+        for project in self.projects:
+            if scope.get('type') == 'project' and project.get('project') == scope.get('id'):
+                return canonical_path(project['repository'])
+        return None
+
+    def _private(self, repository):
+        """The live agent repository item that `repository` is, or lies inside, or None."""
+        for identity, record in self.items().items():
+            if record.get('kind') == 'agent_repository' and record.get('state') in LIVE:
+                path = record['locator']['path']
+                if repository == path or beneath(repository, path):
+                    return identity
+        return None
+
+    def _kept_refs(self, repository, prefix):
+        """{ref: commit} of the refs of `repository` under `prefix`, read now by git through the one
+        Git boundary. Raises Refused when the repository is not at its path or git cannot read it."""
+        global _git_process
+        if _git_process is None:
+            _git_process = _sibling('git_process')
+        if resolved_path(repository) != repository or not os.path.isdir(repository):
+            raise Refused('space_keep_repository', 'the main repository is not at its path: ' + repository)
+        try:
+            done = _git_process.run(['git', '-C', repository, 'for-each-ref',
+                                     '--format=%(objectname) %(refname)', prefix],
+                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                    timeout=GIT_SECONDS)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            raise Refused('space_keep_repository', 'git could not read the main repository: %s' % error)
+        if done.returncode:
+            raise Refused('space_keep_repository', 'git could not read the main repository: '
+                          + done.stderr.decode('utf-8', 'replace').strip()[-300:])
+        lines = done.stdout.decode('utf-8', 'surrogateescape').split('\n')[:-1]
+        return {name: commit for commit, _, name in (line.partition(' ') for line in lines)}
+
+    def _checked_snapshot(self, identity, record, snapshot):
+        """The snapshot attempt a keep command names, read from the store by the Ledger itself."""
+        if not isinstance(snapshot, dict) or set(snapshot) != {'path', 'number', 'size', 'manifest'}:
+            raise _invalid('snapshot', 'the path, the number, the size and the manifest digest of one attempt')
+        number, path = snapshot['number'], snapshot['path']
+        if not _is_bytes(number) or number < 1 or not _is_bytes(snapshot['size']) or not _is_str(snapshot['manifest']):
+            raise _invalid('snapshot', 'an attempt number from 1, a size and a digest')
+        folder = os.path.join(self.snapshot_store, *kept_parts(identity, record))
+        if path != os.path.join(folder, str(number)):
+            raise Refused('space_keep_snapshot', 'not a numbered folder of this item in the snapshot store')
+        try:
+            if resolved_path(path) != path or not os.path.isdir(path):
+                raise Refused('space_keep_snapshot', 'the attempt is not a folder at its own path')
+            manifest = os.path.join(path, MANIFEST)
+            descriptor = os.open(manifest, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+            with os.fdopen(descriptor, 'rb') as file:
+                digest = hashlib.sha256(file.read()).hexdigest()
+        except OSError as error:
+            raise Refused('space_keep_snapshot', 'the attempt could not be read: %s' % error)
+        if digest != snapshot['manifest']:
+            raise Refused('space_keep_manifest', 'the manifest of the attempt does not have the digest named')
+        return {'path': path, 'number': number, 'size': snapshot['size'], 'manifest': digest}
+
     def _pool_for(self, kind, locator, device, named):
         """The name of the pool an item's bytes count against."""
         pools = self._pools()
@@ -1546,12 +1725,17 @@ class Ledger:
             raise _invalid('outcome', 'one of %s, with the facts' % ', '.join(OUTCOMES))
         if record['state'] not in ('due', 'removing'):
             raise Refused('space_item_state:' + record['state'], 'outcome is written for an item that is due or removing')
-        if outcome == 'removing' and record['state'] != 'due':
-            raise Refused('space_item_state:' + record['state'], 'removing follows due')
+        if outcome == 'removing' and record['state'] != 'due' and not (
+                record['state'] == 'removing' and _is_str(facts.get('left_at'))):
+            raise Refused('space_item_state:' + record['state'], 'removing follows due; it is written again '
+                          'only to record where the thing was left')
         if record['state'] == 'removing' and (outcome == 'kept' or (
-                outcome == 'deferred' and facts.get('rule') != TOOL_REFUSAL)):
+                outcome == 'deferred' and facts.get('rule') not in TOOL_REFUSALS)):
             raise Refused('space_item_state:removing', 'a removing item is removed to the end; it is deferred '
-                          'only when the owning tool refuses the remove')
+                          'only with a deferral its remover names: ' + ', '.join(TOOL_REFUSALS))
+        if outcome == 'removed' and record['kind'] in KEEP_KINDS and not record.get('kept'):
+            raise Refused('space_no_keep_record', 'a worktree and a private repository are removed only after '
+                          'their commits were recorded: the item has no keep record')
         if outcome == 'deferred':
             if not _is_str(facts.get('rule')):
                 raise _invalid('facts.rule', 'the rule that refused')
@@ -1563,6 +1747,47 @@ class Ledger:
         elif outcome == 'removing':
             record['removal'] = dict(facts)
         record['state'] = outcome
+        return {identity: {'kind': ITEM_KIND, 'data': record}}
+
+    def _t_keep(self, conn, params, before):
+        identity, record = self._stored(params, before)
+        if record['kind'] not in KEEP_KINDS:
+            raise Refused('space_keep_kind', 'a keep record is written for a worktree or an agent repository')
+        if record['state'] not in ('removing', 'due'):
+            raise Refused('space_item_state:' + record['state'], 'keep is written for an item that is due or removing')
+        repository, refs = params.get('repository'), params.get('refs')
+        if not _is_str(repository) or self._main_of(record) != repository:
+            raise Refused('space_keep_repository', 'not the repository the declarations name for this item')
+        private = self._private(repository)
+        if private is not None:
+            raise Refused('space_keep_private', 'a main repository is never a private repository: ' + private)
+        prefix = kept_prefix(identity, record)
+        if not isinstance(refs, dict) or not all(
+                _is_str(name) and name.startswith(prefix) and len(name) > len(prefix) and _is_str(commit)
+                for name, commit in refs.items()):
+            raise _invalid('refs', 'each kept ref of this item, under %s, with its commit' % prefix)
+        prior = record.get('kept') or {'repository': repository, 'path': record['locator']['path'], 'refs': {},
+                                       'snapshots': []}
+        if prior['repository'] != repository:
+            raise Refused('space_keep_repository', 'the keep record names another main repository')
+        found = self._kept_refs(repository, prefix) if refs else {}
+        merged = dict(prior['refs'])
+        for name in sorted(refs):
+            if found.get(name) != refs[name]:
+                raise Refused('space_keep_ref:' + name, 'the main repository does not hold this ref at the commit '
+                              'named: %s' % (found.get(name),))
+            if merged.get(name, refs[name]) != refs[name]:
+                raise Refused('space_keep_ref_moved:' + name, 'the keep record holds this ref at another commit')
+            merged[name] = refs[name]
+        snapshots = [dict(entry) for entry in prior['snapshots']]
+        if params.get('snapshot') is not None:
+            attempt = self._checked_snapshot(identity, record, params['snapshot'])
+            same = [entry for entry in snapshots if entry['number'] == attempt['number']]
+            if same and same[0] != attempt:
+                raise Refused('space_keep_snapshot_replaced', 'the keep record holds this attempt with other figures')
+            if not same:
+                snapshots = sorted(snapshots + [attempt], key=lambda entry: entry['number'])
+        record['kept'] = {'repository': repository, 'path': prior['path'], 'refs': merged, 'snapshots': snapshots}
         return {identity: {'kind': ITEM_KIND, 'data': record}}
 
     def _t_gone(self, conn, params, before):
