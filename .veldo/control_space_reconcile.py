@@ -25,7 +25,17 @@ and no adoption:
 
   path_unread     a path that is not absolute or holds a .. segment: nothing is placed by the others
   two_worktrees   the paths lead into more than one recorded worktree
+  conflict        only a bind source leads into one, while the folder compose ran in or a file it read
+                  leads outside every recorded worktree
   outside         no path leads into one
+
+THE CONFLICT (the review of VELDO-0307, the lead's decision). Compose's labels are the record of who
+made the object; a bind mount says only what the object reads. A compose stack run from the main
+checkout that mounts one folder of a worktree is not that worktree's: adopted, it would be stopped and
+removed at the worktree's ending event, with whatever its writable layer holds. So a bind source never
+places an object whose compose labels lead outside every recorded worktree. It is a report with no
+proposed owner, and the owner can still adopt it by their own word. An object with no compose label is
+placed by its bind source, and one whose compose label leads into the worktree is placed by that label.
 
 One path inside two recorded worktrees, one within the other, is inside the inner one.
 
@@ -43,6 +53,9 @@ SCHEMA = 'veldo.control_space_reconcile/v1'
 RULE = 'inside_recorded_worktree'
 KINDS = ('container', 'volume', 'network')
 ENDED = ('removed', 'gone')
+# The paths compose stamped on an object, as control_space_docker.placed names them. Any other path is
+# a bind source: what the object reads, never who made it.
+COMPOSED = ('compose_working_dir', 'compose_config_file')
 
 
 def recorded_worktrees(ledger):
@@ -67,6 +80,7 @@ def worktree_inside(ledger, paths):
     read where it leads; see the module's text for what gives no worktree."""
     worktrees = None
     placed = {}
+    composed_inside = composed_outside = False
     for how, path in paths:
         if not isinstance(path, str) or not path.startswith('/') or '..' in path.split('/'):
             return None, 'path_unread', None
@@ -76,8 +90,13 @@ def worktree_inside(ledger, paths):
         within = [root for root in worktrees if _inside(leads, root)]
         if within:
             placed.setdefault(worktrees[max(within, key=len)], (how, path))
+            composed_inside = composed_inside or how in COMPOSED
+        elif how in COMPOSED:
+            composed_outside = True
     if len(placed) > 1:
         return None, 'two_worktrees', None
+    if placed and composed_outside and not composed_inside:
+        return None, 'conflict', None
     for identity, (how, path) in placed.items():
         return identity, how, path
     return None, 'outside', None

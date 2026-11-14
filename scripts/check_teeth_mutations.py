@@ -13966,6 +13966,34 @@ def cases():
               LATER_ROW, module='control_space_probe.py')
     result[-1]['siblings'] = True
 
+    # The review of VELDO-0307. A labelled path that is not absolute is let through as free, at rule 2
+    # and in the adapter (finding 1, as it was); a bind source places an object whose compose label
+    # leads outside every worktree (finding 2, as it was); a digest name is not among an image's names
+    # (finding 3, as it was), and an image nothing covers takes away its namesake's listing.
+    RELATIVE_ROW, SPLIT_ROW, DIGEST_ROW = (['review/relative-label-refused'], ['review/split-owner-is-a-conflict'],
+                                           ['review/digest-pattern-listed'])
+    docker307('space307-relative-label-passes-rule-2',
+              "                unplaced = unplaced or 'the label %s holds a path that is not absolute: %s' % (label, path[:200])\n",
+              "", RELATIVE_ROW, module='control_space_probe.py')
+    result[-1]['siblings'] = True
+    docker307('space307-relative-label-passes-the-adapter',
+              "            unplaced = unplaced or 'a labelled path (%s) is not absolute: %s' % (how, path[:200])\n",
+              "", RELATIVE_ROW)
+    docker307('space307-split-owner-placed-by-its-bind-source',
+              "    if placed and composed_outside and not composed_inside:\n        return None, 'conflict', None\n",
+              "", SPLIT_ROW, module='control_space_reconcile.py')
+    docker307('space307-compose-label-outside-not-seen',
+              "        elif how in COMPOSED:\n            composed_outside = True\n",
+              "", SPLIT_ROW, module='control_space_reconcile.py')
+    docker307('space307-digest-name-not-listed',
+              "            names += [name]\n",
+              "            names += [name] if field == 'RepoTags' else []\n",
+              DIGEST_ROW)
+    docker307('space307-uncovered-image-unlists-its-namesake',
+              "                if (self.protected.get((engine, 'image', name)) or {}).get('id') == identity:\n",
+              "                if True:\n",
+              DIGEST_ROW)
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

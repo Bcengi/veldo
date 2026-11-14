@@ -162,3 +162,44 @@ the result in the proof (design 6.4).
     nothing covers is removed.
   - Cost: one more inspect of the object at each judged removal of a Docker item.
   - Ten mutation cases are registered for the two rows (finding 307), five for each.
+- 2026-11-14: the independent review (verdict FIX, three findings) is answered here, by the lead's
+  instruction. No acceptance criterion changed. The owner's rule: no work is ever lost, and the protect
+  list is never touched.
+  - Finding 1, a labelled path that is not absolute. A compose working folder or configuration file
+    label that is not an absolute path cannot be placed, so the object is not known to be free. It
+    was skipped, and the object was judged not protected. Now it is refused as labels unread, the
+    way a bind mount with no source path already is. At removal (control_space_probe.labelled) rule 2
+    refuses the removal as labels_unread. In the adapter (control_space_docker.covered) the answer is
+    unread, and nothing is written for the object: no item, no report, no proposal, whatever else it
+    carries, a known run's label included; the adapter says labels_unread. A protected path among the
+    object's other paths, its name or its compose project still answers protected. An empty label
+    names no path and is read as a label the object does not carry. Row
+    review/relative-label-refused. The container relative-1 of the build's row
+    ac1/no-proposal-when-undecided, a report that said path_unread, moved to this row: it has no
+    record now. A snapshot counts such an object as refused each time it is read, so the second
+    snapshot of row ac2/report-mode shows three refusals and writes nothing.
+  - Finding 2, the lead's decision: a split owner is a conflict. When a bind source leads into a
+    recorded worktree while the folder compose ran in, or a file it read, leads outside every recorded
+    worktree, and no compose label leads into one, the reconciler answers conflict
+    (control_space_reconcile.worktree_inside). The object is a report with no proposed owner in both
+    modes and is never adopted by this rule, so the owner's own stack, run from the main checkout,
+    that mounts a folder of a worktree is never stopped or removed with that worktree. The owner can
+    still adopt it by their own word. Compose's labels are the record of who made the object; a bind
+    mount says only what it reads. This narrows the design's 6.4, where either a label or a bind
+    source places the object; section 0 holds over 6.4 where they disagree, and the design text is
+    outside this ticket's footprint and was not edited. Row review/split-owner-is-a-conflict.
+    LEFT FOR THE LEAD: an object whose working folder leads outside every worktree while one of its
+    configuration files leads into one is still placed by that file, as AC1 says and as the build's
+    rows meadow-cf-1 and late-cf-1 show. The review's wider wording would make that a conflict too;
+    the lead's decision names the bind source, so only that was built.
+  - Finding 3, a digest pattern in the listing. The adapter's names of an image (image_names) now
+    hold each digest name in full beside each tag, so a protect entry that names a digest lists the
+    image that carries it, as the Ledger and rule 2 read the entry. Found with it and fixed in the
+    same listing: two images of one repository are listed under one name, and an image nothing
+    covered took away the listing of its covered namesake; it now takes away only its own. Row
+    review/digest-pattern-listed, and the build's check of image_names in ac3/protected-image.
+  - Six mutation cases are registered for the three rows (finding 307): two, two and two. One line of
+    the adapter's image listing is written so that the anchor of the earlier case
+    space306-review-unread-mounts-adopted still occurs once.
+  - The review's observation on a volume placed only by a path label (no engine writes it today) is
+    the lead's to decide and was not built.

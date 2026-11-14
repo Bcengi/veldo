@@ -401,8 +401,9 @@ def placed(kind, shown):
 
 
 def image_names(shown):
-    """The names an image carries: each tag in full, and the repository of each tag and each digest
-    without the tag or the digest."""
+    """The names an image carries: each tag and each digest name in full, and the repository of each
+    without the tag or the digest. A protect entry that names a digest covers the image by the digest
+    name, as the Ledger and rule 2 at removal read it."""
     names = []
     for field in ('RepoTags', 'RepoDigests'):
         held = shown.get(field)
@@ -412,7 +413,7 @@ def image_names(shown):
             plain = name.split('@')[0]
             if ':' in plain and '/' not in plain.rsplit(':', 1)[1]:
                 plain = plain.rsplit(':', 1)[0]
-            names += [name] if field == 'RepoTags' else []
+            names += [name]
             names += [plain] if plain else []
     return sorted(set(names))
 
@@ -420,7 +421,10 @@ def image_names(shown):
 def covered(engine, kind, names, labels, protect):
     """The protect entry that covers an object, with what it was found by: (type:value, by), or
     (None, None). `names` are the names the object carries, `labels` its labels and `protect` the
-    protect list in force. By its name, by its compose project label or by its labelled path."""
+    protect list in force. By its name, by its compose project label or by its labelled path. When
+    nothing covers it and a labelled path is not an absolute path, the answer is ('unread', what was
+    said): such a path cannot be placed, so the object is not known to be free, and the caller writes
+    nothing for it."""
     for entry in protect:
         if engine not in entry.get('engines', ()):
             continue
@@ -428,8 +432,10 @@ def covered(engine, kind, names, labels, protect):
             return entry['type'] + ':' + entry['value'], 'name'
         if entry['type'] == 'compose_project' and labels.get(COMPOSE_PROJECT) == entry['value']:
             return entry['type'] + ':' + entry['value'], 'compose_project'
+    unplaced = None
     for how, path in labelled_paths(labels):
         if not path.startswith('/'):
+            unplaced = unplaced or 'a labelled path (%s) is not absolute: %s' % (how, path[:200])
             continue
         # A protected path is protected on every engine, as it is for a mount.
         for entry in protect:
@@ -439,6 +445,8 @@ def covered(engine, kind, names, labels, protect):
                 for theirs in {os.path.normpath(entry['value']), os.path.realpath(entry['value'])}:
                     if mine == theirs or _beneath(mine, theirs) or _beneath(theirs, mine):
                         return 'path:' + entry['value'], how
+    if unplaced is not None:
+        return 'unread', unplaced
     return None, None
 
 
@@ -561,8 +569,17 @@ class Adapter:
             if name is None:
                 continue
             entry, by = covered(engine, 'image', carried, labels_of('image', shown), list(self.ledger.protect or ()))
+            unplaced = entry == 'unread'
+            if unplaced:
+                # Not known to be free and not known to be covered: said, and the listing is left as it was.
+                self._note('refused', refusal='labels_unread: ' + str(by), engine=engine, kind='image',
+                           name=name, id=identity)
+                continue
             if entry is None:
-                self.protected.pop((engine, 'image', name), None)
+                # Two images of one repository are listed under one name: an image nothing covers
+                # takes away only its own listing, never the listing of another image.
+                if (self.protected.get((engine, 'image', name)) or {}).get('id') == identity:
+                    self.protected.pop((engine, 'image', name), None)
                 continue
             self._listed(engine, 'image', name, identity, entry, by)
             answer['protected'].append(name)
@@ -652,6 +669,11 @@ class Adapter:
                 self._note('protected', refusal='space_protected:' + entry, mount=mount, **facts)
                 return 'protected'
         entry, by = covered(engine, kind, [locator['name']], labels_of(kind, shown), list(self.ledger.protect or ()))
+        if entry == 'unread':
+            # A labelled path that cannot be placed: as with mounts that cannot be read, nothing is
+            # written for the object, and it gets no owner and no proposal.
+            self._note('refused', refusal='labels_unread: ' + str(by), **facts)
+            return 'refused'
         held = self._held(engine, kind, name=locator['name'])
         if entry is not None:
             # The protect list comes first: no item, no report and no proposed owner, whatever it carries.
@@ -690,7 +712,8 @@ class Adapter:
                  'compose_project': locator.get('compose_project'),
                  'live_runs': sorted(runs)[:NAMED], 'more_runs': max(0, len(runs) - NAMED)}
         if worktree is None and how is not None:
-            found['not_placed'] = how  # why its paths gave no worktree: outside, two_worktrees or path_unread
+            # why its paths gave no worktree: outside, two_worktrees, conflict or path_unread
+            found['not_placed'] = how
         before = (held[1].get('report') or {}).get('found', {}) if held is not None else {}
         if owner is not None:
             wrote = self.ledger.adopt(kind, locator, owner, rule, pool=self.pool)

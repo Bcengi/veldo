@@ -593,7 +593,9 @@ def labelled(kind, locator, protect, run=None):
     folder or one of the files compose read is at, above or beneath a protected path, as written or
     where it leads (how compose_working_dir or compose_config_file, with the path). A protected path
     is protected on every engine. read is False, with what was said, when the engine did not show the
-    object: the caller refuses then."""
+    object, and when a path one of the two labels holds is not an absolute path and no other path of
+    the object is protected: such a path cannot be placed, so it is not known to be free, as a bind
+    mount with no source path is not. The caller refuses then."""
     facts = {'read': False, 'protected': False, 'entry': None, 'how': None, 'path': None, 'said': None}
     seen = located(kind, locator, run)
     if not seen['read'] or seen['said'] is not None:
@@ -606,11 +608,15 @@ def labelled(kind, locator, protect, run=None):
                         how='compose_project')
     # A protected path is protected on every engine, as it is for a mount.
     paths = [entry for entry in protect if entry['type'] == 'path']
+    unplaced = None
     for how, label in COMPOSE_PATHS:
         held = labels.get(label)
         for path in (held.split(',') if how == 'compose_config_file' else [held]) if isinstance(held, str) else ():
             path = path.strip()
+            if not path:
+                continue  # the label holds nothing here: it names no path
             if not path.startswith('/'):
+                unplaced = unplaced or 'the label %s holds a path that is not absolute: %s' % (label, path[:200])
                 continue
             for entry in paths:
                 value = os.path.normpath(entry['value'])
@@ -619,6 +625,8 @@ def labelled(kind, locator, protect, run=None):
                         if mine == theirs or _beneath(theirs, mine) or _beneath(mine, theirs):
                             return dict(facts, read=True, protected=True, entry='path:' + entry['value'],
                                         how=how, path=path)
+    if unplaced is not None:
+        return dict(facts, said=unplaced)
     return dict(facts, read=True)
 
 

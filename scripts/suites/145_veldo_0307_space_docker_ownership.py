@@ -75,6 +75,20 @@ refuses each removal by the path its labels or its mount name now, the ticket's 
 none of them, and the container nothing covers is removed, which shows the removal is live; labels
 the engine does not show refuse too).
 
+THE REVIEW OF VELDO-0307 (three findings, each with its row). review/relative-label-refused (a compose
+working folder or configuration file label that is not an absolute path cannot be placed, so the object
+is not known to be free: the adapter writes nothing for it, whether it would have been reported,
+proposed or adopted by a run label, and says labels_unread; rule 2 at removal refuses an adopted item
+whose label is such a path as labels_unread, and the ticket's end stops and removes nothing; a
+protected path among the others still answers protected, and an empty label names nothing),
+review/split-owner-is-a-conflict (the lead's decision: a container whose bind source leads into a
+worktree while compose's working folder leads outside every worktree is a conflict, a report with no
+proposed owner; in the act-mode project it is no item, and at the worktree's ending event it is neither
+stopped nor removed; one with no compose label is placed by its bind source as before, and one whose
+configuration file leads inside is placed by that file), review/digest-pattern-listed (a protect entry
+that names a digest lists the image that carries that digest, as the Ledger and rule 2 read the entry;
+another digest of the same repository is not covered and does not take the listing away).
+
 ownership/removes-nothing (the adapter gave the engine only ls, inspect and info, and the sources of
 the adapter and of the reconciler name no stop, no remove, no prune and no force option),
 ownership/canon (each engine canon equals this repository copy).
@@ -113,6 +127,7 @@ def _v307_space_docker_ownership_suite():
             'ac2/report-mode', 'ac2/act-mode', 'ac2/report-then-act',
             'ac3/protected-volume', 'ac3/protected-container', 'ac3/protected-image', 'ac3/covered-later',
             'loss/nothing-of-theirs-touched', 'protect/image-pattern-every-tag', 'protect/covered-after-adoption',
+            'review/relative-label-refused', 'review/split-owner-is-a-conflict', 'review/digest-pattern-listed',
             'ownership/removes-nothing', 'ownership/canon')
     rows = {name: [] for name in ROWS}
 
@@ -475,6 +490,18 @@ def _v307_space_docker_ownership_suite():
         # Orchard, act mode: inside wt-a.
         web_a = ENGINE.container('default', 'orchard-web-1', composed(PATH_A / 'app'))
         bind_a = ENGINE.container('desktop-linux', 'orchard-bind-1', binds=[PATH_A / 'data'])
+        # The review. A label that is not an absolute path: one that would have been reported (relative-1,
+        # above), one a bind source would have tied to the act-mode worktree, one a known run's label
+        # would have made that run's item.
+        relative_a = ENGINE.container('default', 'relative-a-1', {WD: 'app', CF: 'app/compose.yaml'},
+                                      binds=[PATH_A / 'data'])
+        relative_run = ENGINE.container('default', 'relative-run-1', {D.RUN_LABEL: R1, WD: 'svc'})
+        # The review. The owner's own stack, run from a folder outside every worktree, that mounts a
+        # folder of a worktree: in the act-mode project and in the report-mode one.
+        split_a = ENGINE.container('default', 'split-a-1', composed(ELSEWHERE / 'far'), binds=[PATH_A / 'data'])
+        split_b = ENGINE.container('default', 'split-b-1', composed(ELSEWHERE / 'far'), binds=[PATH_B / 'data'])
+        split_cf = ENGINE.container('default', 'split-cf-1', {CF: str(ELSEWHERE / 'far' / 'compose.yaml')},
+                                    binds=[PATH_B / 'data'])
         # Protected, each with a path that places it inside a recorded worktree.
         pv_name = ENGINE.volume('default', 'atlas_pg_main', {WD: str(PATH_A / 'app')}, data='the real database')
         pv_compose = ENGINE.volume('desktop-linux', 'renamed_store',
@@ -562,7 +589,6 @@ def _v307_space_docker_ownership_suite():
 
         ROW = 'ac1/no-proposal-when-undecided'
         for name, kind, why, not_placed in (('dotdot-1', 'container', 'no_label', 'path_unread'),
-                                            ('relative-1', 'container', 'no_label', 'path_unread'),
                                             ('two-1', 'container', 'no_label', 'two_worktrees'),
                                             ('ended-1', 'container', 'no_label', 'outside'),
                                             ('unstamped', 'volume', 'no_identity', None)):
@@ -595,6 +621,76 @@ def _v307_space_docker_ownership_suite():
               and found.get('why') == 'unknown_run' and 'not_placed' not in found)
 
         # ------------------------------------------------------------------------------------
+        # The review, finding 1: a labelled path that is not absolute is not known to be free.
+        # ------------------------------------------------------------------------------------
+        ROW = 'review/relative-label-refused'
+        for name, what in (('relative-1', 'a configuration file label that is not an absolute path'),
+                           ('relative-a-1', 'a working folder label that is not one, and a bind source inside '
+                                            'the act-mode worktree'),
+                           ('relative-run-1', 'a working folder label that is not one, and a known run\'s label')):
+            said = [entry for entry in ADAPTER.observations if entry.get('name') == name]
+            check(ROW, 'the container %s (%s) has no record, neither an item nor a report, and the adapter said '
+                  'labels_unread [%s %s]' % (name, what, every_record('default', 'container', name),
+                                             [(entry['what'], entry.get('refusal')) for entry in said]),
+                  every_record('default', 'container', name) == [] and len(said) == 1
+                  and said[0]['what'] == 'refused' and said[0]['refusal'].startswith('labels_unread: ')
+                  and listed('default', 'container', name) == {})
+        LIST = list(L.protect)
+        check(ROW, 'the adapter\'s reading: a path that is not absolute is unread, a protected path among the '
+              'others still covers, an empty label names nothing',
+              D.covered('default', 'container', ['c'], {WD: 'prot/sub'}, LIST)[0] == 'unread'
+              and D.covered('default', 'volume', ['v'], {WD: str(PATH_B / 'app'), CF: '/etc/a.yaml, compose.yaml'},
+                            LIST)[0] == 'unread'
+              and D.covered('default', 'image', ['i'], {CF: './compose.yaml'}, LIST)[0] == 'unread'
+              and D.covered('default', 'container', ['c'], {WD: str(VAULT / 'db'), CF: 'compose.yaml'}, LIST)
+              == ('path:' + str(VAULT), 'compose_working_dir')
+              and D.covered('default', 'container', ['atlas-c'], {WD: 'prot/sub'}, LIST)
+              == ('container:atlas-*', 'name')
+              and D.covered('default', 'container', ['c'], {WD: '', CF: str(PATH_B / 'compose.yaml')}, LIST)
+              == (None, None)
+              and D.covered('default', 'container', ['c'], {}, LIST) == (None, None))
+
+        # ------------------------------------------------------------------------------------
+        # The review, finding 2: a bind source inside, compose's folder outside: a conflict.
+        # ------------------------------------------------------------------------------------
+        ROW = 'review/split-owner-is-a-conflict'
+        for name, project_name in (('split-a-1', 'act'), ('split-b-1', 'report'), ('split-cf-1', 'report')):
+            identity, record = record_at('default', 'container', name)
+            proposed, found = report_of(record)
+            check(ROW, 'in the %s-mode project the container %s, whose bind source is inside a worktree while '
+                  'compose\'s label leads outside every worktree, is a report with no owner, no proposed owner '
+                  'and no parent: a conflict [owner %s, proposed %s, parent %s, %s]'
+                  % (project_name, name, record.get('owner'), proposed, record.get('parent'), found.get('not_placed')),
+                  identity is not None and record.get('owner') is None and proposed is None
+                  and record.get('parent') is None and record.get('adopted') is False
+                  and record['ends_on']['events'] == [] and found.get('why') == 'no_label'
+                  and found.get('not_placed') == 'conflict' and 'worktree' not in found)
+        said = [entry for entry in ADAPTER.observations if entry.get('name') == 'split-a-1']
+        check(ROW, 'the adapter reported it, and said of it neither proposed nor adopted [%s]'
+              % ([entry['what'] for entry in said],), [entry['what'] for entry in said] == ['reported'])
+        OUT, IN_A = str(ELSEWHERE / 'far'), str(PATH_A / 'data')
+        check(ROW, 'the reconciler, asked itself: compose\'s folder or file outside with a bind source inside is '
+              'a conflict, in either order',
+              REC.worktree_inside(L, [('compose_working_dir', OUT), ('bind_source', IN_A)]) == (None, 'conflict', None)
+              and REC.worktree_inside(L, [('bind_source', IN_A), ('compose_working_dir', OUT)])
+              == (None, 'conflict', None)
+              and REC.worktree_inside(L, [('compose_config_file', OUT + '/compose.yaml'), ('bind_source', IN_A)])
+              == (None, 'conflict', None)
+              and REC.worktree_inside(L, [('compose_working_dir', str(PATH_A / 'app')),
+                                          ('compose_config_file', OUT + '/base.yaml'), ('bind_source', IN_A),
+                                          ('bind_source', OUT)])[:2] == (WT_A, 'compose_working_dir'))
+        check(ROW, 'a bind source alone still places, a configuration file inside still places although the '
+              'working folder is outside, and two worktrees are still two worktrees',
+              REC.worktree_inside(L, [('bind_source', IN_A), ('bind_source', OUT)]) == (WT_A, 'bind_source', IN_A)
+              and REC.worktree_inside(L, [('compose_working_dir', OUT),
+                                          ('compose_config_file', str(PATH_A / 'compose.yaml')),
+                                          ('bind_source', IN_A)])[:2] == (WT_A, 'compose_config_file')
+              and REC.worktree_inside(L, [('compose_working_dir', OUT), ('bind_source', IN_A),
+                                          ('bind_source', str(PATH_B / 'data'))]) == (None, 'two_worktrees', None)
+              and REC.worktree_inside(L, [('compose_working_dir', OUT), ('bind_source', 'data')])
+              == (None, 'path_unread', None))
+
+        # ------------------------------------------------------------------------------------
         # AC2
         # ------------------------------------------------------------------------------------
         ROW = 'ac2/report-mode'
@@ -622,8 +718,12 @@ def _v307_space_docker_ownership_suite():
         check(ROW, 'a second snapshot writes nothing [%s]' % ({name: answer['counts'] for name, answer in again.items()},),
               {identity: json.dumps(record, sort_keys=True) for identity, record in L.items().items()}
               == records_before
-              and all(not set(answer['counts']) - {'matched', 'protected'} for answer in again.values())
-              and all(entry['what'] in ('protected', 'snapshot') for entry in ADAPTER.observations[notes_before:]))
+              and all(not set(answer['counts']) - {'matched', 'protected', 'refused'} for answer in again.values())
+              and [answer['counts'].get('refused', 0) for answer in again.values()] == [3, 0]
+              and all(entry['what'] in ('protected', 'snapshot')
+                      or (entry['what'] == 'refused' and entry['refusal'].startswith('labels_unread: ')
+                          and entry['name'] in ('relative-1', 'relative-a-1', 'relative-run-1'))
+                      for entry in ADAPTER.observations[notes_before:]))
 
         ROW = 'ac2/act-mode'
         for context, name, shown, how, path in (('default', 'orchard-web-1', web_a, 'compose_working_dir',
@@ -700,11 +800,43 @@ def _v307_space_docker_ownership_suite():
         check(ROW, 'the engine was asked to list and to show its images, and nothing else [%s]'
               % sorted(set(LOG[log_before:])),
               {entry[1:] for entry in LOG[log_before:]} == {('image', 'ls'), ('image', 'inspect')})
-        check(ROW, 'the names of an image: each tag, and each repository without its tag or its digest',
+        check(ROW, 'the names of an image: each tag and each digest name, and each repository without its tag '
+              'or its digest',
               D.image_names({'RepoTags': ['registry.example:5000/store/objects:2024'],
                              'RepoDigests': ['store/objects@sha256:00']})
               == ['registry.example:5000/store/objects', 'registry.example:5000/store/objects:2024',
-                  'store/objects'] and D.image_names({'RepoTags': None}) == [])
+                  'store/objects', 'store/objects@sha256:00'] and D.image_names({'RepoTags': None}) == [])
+
+        # The review, finding 3: a protect entry that names a digest lists the image that carries it.
+        ROW = 'review/digest-pattern-listed'
+        SEALED, UNSEALED = 'tools/sealed@sha256:' + 'cd' * 32, 'tools/sealed@sha256:' + 'ef' * 32
+        sealed = ENGINE.image('desktop-linux', digests=[SEALED])
+        ENGINE.image('desktop-linux', digests=[UNSEALED])
+        ENGINE.image('default', tags=['tools/sealed:1'])
+        L.protect.append({'type': 'image', 'value': SEALED, 'engines': list(CONTEXTS)})
+        seen_default, seen_desktop = ADAPTER.images('default'), ADAPTER.images('desktop-linux')
+        seen = listed('desktop-linux', 'image', 'tools/sealed')
+        check(ROW, 'the image known by the digest a protect entry names is listed as protected, by its name '
+              '[%s %s %s]' % (seen_desktop.get('said'), seen.get('entry'), seen.get('by')),
+              seen_desktop['read'] and seen_desktop['images'] == 3 and seen.get('entry') == 'image:' + SEALED
+              and seen.get('by') == 'name' and seen.get('id') == sealed['Id'])
+        check(ROW, 'another digest of the same repository is not covered, and does not take the listing away; '
+              'neither is a tag of it on the other context [%s %s]'
+              % (seen_desktop['protected'], seen_default['protected']),
+              seen_desktop['protected'] == ['store/objects', 'tools/sealed']
+              and 'tools/sealed' not in seen_default['protected']
+              and listed('default', 'image', 'tools/sealed') == {}
+              and D.covered('desktop-linux', 'image', D.image_names({'RepoDigests': [UNSEALED]}), {},
+                            list(L.protect)) == (None, None))
+        check(ROW, 'the Ledger and rule 2 at removal read the entry the same way',
+              all(SP.protected_by('image_tag', {'engine': 'desktop-linux', 'name': name}, L.protect) == entry
+                  and P.protected('image_tag', {'engine': 'desktop-linux', 'name': name}, L.protect)['entry'] == entry
+                  and D.covered('desktop-linux', 'image', D.image_names({'RepoDigests': [name]}), {},
+                                list(L.protect))[0] == entry
+                  for name, entry in ((SEALED, 'image:' + SEALED), (UNSEALED, None))))
+        check(ROW, 'no image has a record, and the engine was asked nothing but ls and inspect of its images',
+              not any(record.get('kind') == 'image_tag' for record in L.items().values())
+              and not [call for call in ENGINE.calls if call[1] == 'image' and call[2] not in ('ls', 'inspect')])
 
         ROW = 'ac3/covered-later'
         later = ENGINE.container('desktop-linux', 'later-1', composed(PATH_C / 'app'))
@@ -772,6 +904,21 @@ def _v307_space_docker_ownership_suite():
         check(ROW, 'the file of work in each worktree folder is on disk',
               all((path / 'work.txt').read_text() == 'the only copy of %s\n' % path.name
                   for path in (PATH_A, PATH_B, PATH_C, PATH_GONE)))
+
+        # The review, findings 1 and 2, once the tickets and the run ended.
+        for row, shown, name in (('review/split-owner-is-a-conflict', split_a, 'split-a-1'),
+                                 ('review/split-owner-is-a-conflict', split_b, 'split-b-1'),
+                                 ('review/split-owner-is-a-conflict', split_cf, 'split-cf-1'),
+                                 ('review/relative-label-refused', relative_a, 'relative-a-1'),
+                                 ('review/relative-label-refused', relative_run, 'relative-run-1')):
+            identity, record = record_at('default', 'container', name)
+            check(row, 'after the ticket of its worktree and its run ended, the container %s was named to no '
+                  'stop and no remove, is running, and nobody owns it [%s %s]'
+                  % (name, ENGINE.asked(shown['Id']) + ENGINE.asked(name), record.get('owner')),
+                  ENGINE.asked(shown['Id']) == [] and ENGINE.asked(name) == []
+                  and ENGINE.find('default', 'container', name) is shown
+                  and shown['State']['Status'] == 'running' and record.get('owner') is None
+                  and record.get('state') in (None, 'present'))
 
         # ------------------------------------------------------------------------------------
         # AC2: what was proposed in report mode is adopted once the project acts.
@@ -861,6 +1008,7 @@ def _v307_space_docker_ownership_suite():
             'late_net': ('network', ENGINE.network('default', 'late_net', {CF: str(PATH_D / 'app' / 'compose.yaml')})),
         }
         late_free = ENGINE.container('default', 'late-free-1', composed(PATH_D / 'free'))
+        late_rel = ENGINE.container('default', 'late-rel-1', composed(PATH_D / 'rel'))
         ADAPTER.snapshot('default')
 
         def judged(kind, name, client=ENGINE.client):
@@ -889,6 +1037,38 @@ def _v307_space_docker_ownership_suite():
               % (blind.get('rule'), blind.get('found')),
               blind.get('ok') is False and blind.get('rule') == 'protect'
               and (blind.get('found') or {}).get('how') == 'labels_unread' and calls['inspect'] == 3)
+        # The review, finding 1, at removal. The adapter never records an object whose label is not an
+        # absolute path, so the item is adopted first and the stand-in engine is then made to show such a
+        # label: rule 2 reads the labels again and must not answer that the object is free.
+        REL = 'review/relative-label-refused'
+        rel_item, rel_record = record_at('default', 'container', 'late-rel-1')
+        rel_before = judged('container', 'late-rel-1')
+        check(REL, 'at removal: while its labels are absolute paths the container late-rel-1 is adopted to the '
+              'worktree and rule 2 passes it [%s %s]' % (rel_record.get('owner'), rel_before.get('passed')),
+              rel_item is not None and rel_record.get('owner') == WHO_D and rel_record.get('parent') == WT_D
+              and 'protect' in (rel_before.get('passed') or ()))
+        ABSOLUTE = dict(late_rel['Config']['Labels'])
+        shapes = (('a working folder that is not an absolute path', {WD: 'rel', CF: ABSOLUTE[CF]}, False, None),
+                  ('a second configuration file that is not one', {WD: ABSOLUTE[WD], CF: ABSOLUTE[CF] + ', compose.yaml'},
+                   False, None),
+                  ('such a file beside a protected working folder', {WD: str(VAULT / 'db'), CF: 'compose.yaml'},
+                   True, 'path:' + str(VAULT)),
+                  ('an empty working folder label, which names nothing', {WD: '', CF: ABSOLUTE[CF]}, True, None))
+        for label, labels, read, entry in shapes:
+            late_rel['Config']['Labels'] = dict(labels)
+            facts = P.labelled('container', rel_record['locator'], L.protect, ENGINE.client)
+            check(REL, 'the probe\'s reading of %s [read %s, protected %s, %s]'
+                  % (label, facts['read'], facts['protected'], facts['said']),
+                  facts['read'] is read and facts['entry'] == entry and facts['protected'] is (entry is not None)
+                  and (facts['said'] is None) is read)
+        late_rel['Config']['Labels'] = {WD: 'rel', CF: ABSOLUTE[CF]}
+        rel_after = judged('container', 'late-rel-1')
+        check(REL, 'rule 2 refuses the removal of the container whose working folder label is not an absolute '
+              'path: labels_unread [%s %s %s]' % (rel_after.get('reason'), rel_after.get('rule'),
+                                                  rel_after.get('found')),
+              rel_after.get('ok') is False and rel_after.get('rule') == 'protect'
+              and (rel_after.get('found') or {}).get('how') == 'labels_unread'
+              and (rel_after.get('found') or {}).get('entry') is None)
         # The owner edits the protect list after the adoption: the three folders.
         for folder in ('app', 'conf', 'data'):
             L.protect.append({'type': 'path', 'value': str(PATH_D / folder), 'engines': []})
@@ -932,6 +1112,14 @@ def _v307_space_docker_ownership_suite():
               (L.item(free_item) or {}).get('state') == 'removed'
               and ENGINE.find('default', 'container', 'late-free-1') is None
               and [call[2] for call in ENGINE.asked(late_free['Id'])] == ['stop', 'rm'])
+        rel_record = L.item(rel_item) or {}
+        check(REL, 'at the ticket\'s end that container was named to no stop and no remove and is running; its '
+              'item is not removed [%s %s %s]' % (ENGINE.asked(late_rel['Id']) + ENGINE.asked('late-rel-1'),
+                                                  rel_record.get('state'), (rel_record.get('deferral') or {})),
+              ENGINE.asked(late_rel['Id']) == [] and ENGINE.asked('late-rel-1') == []
+              and ENGINE.find('default', 'container', 'late-rel-1') is late_rel
+              and late_rel['State']['Status'] == 'running' and rel_record.get('state') not in ('removed', 'gone')
+              and ((rel_record.get('deferral') or {}).get('found') or {}).get('how') == 'labels_unread')
         check(ROW, 'no forced command was given, and the worktree\'s file of work is on disk',
               len(ENGINE.forced) == forced_before
               and (PATH_D / 'work.txt').read_text() == 'the only copy of wt-d\n')
