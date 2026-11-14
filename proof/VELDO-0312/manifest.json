@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0312",
- "commit": "e4678ecfcdcb2eab2dd72981f2cb96c9b4df3a9d",
- "tree": "8c6116df32a115a91b97d767852c3a223289f748",
- "producer": "Claude implementation agent (build); not an independent reviewer",
- "produced_at": "2026-11-14T16:08:47.841956+00:00",
+ "commit": "70198635218b0eb0bc12b313d71f2b968e817a07",
+ "tree": "bf65fbc5ae61e23896720e5b9a7178d102cc32f5",
+ "producer": "Claude implementation agent (build, and the fix round after the review); not an independent reviewer",
+ "produced_at": "2026-11-14T16:52:11.091258+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -76,7 +76,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/149_veldo_0312_ticket_ended.py",
-     "detail": "Rows ac4/provisioned-in-another-worktree (space_provisioned for a worktree whose item is declared: the ticket's earlier worktree is sent worktree abandoned and removed after the keep step; the new worktree is untouched; a later run in the same worktree abandons nothing), ac4/owner-abandon (space_abandon at the version shown: removed after the keep step, the removal record naming the Abandon and who pressed it; a stale version, an item that is no worktree, an unknown item and a removed one send nothing), ac4/abandon-keeps-unique-work (an untracked file: deferred as unique_work, the file byte for byte; a locked index: deferred as in_use), ac4/second-worktree-stays (a ticket with two recorded worktrees: nothing is sent and both stay), ac4/scope-owner-reaches-nothing-else, ac4/month-idle-sends-nothing (a worktree whose files are 31 days old is sent nothing by any pass), paths/no-delete-and-canon (this ticket's part of the service deletes nothing, runs no process and reads no clock to decide)."
+     "detail": "Rows ac4/provisioned-in-another-worktree (the ticket's earlier worktree is abandoned by item and removed after the keep step; the new worktree and the ticket's scratch elsewhere are untouched), ac4/owner-abandon (at the version shown and by the owner: removed after the keep step; a stale version, no version, no owner, an item that is no worktree, an unknown and a removed one send nothing), ac4/abandon-keeps-unique-work (an untracked file: deferred as unique_work, byte for byte, named under discard_required; a locked index: in_use), ac4/one-of-two-worktrees (one of a ticket's two worktrees goes, the other and the scratch stay; another ticket's item beneath is not named and holds the worktree), ac4/scope-owner-reaches-nothing-else, ac4/month-idle-sends-nothing, paths/no-delete-and-canon. Fix round: f1/kept-worktree-next-run-elsewhere (F1: kept, nothing sent), f2/kept-at-run-finished, -landed, -contained, -ticket-ended, -project-ended and -every-event (F2: the item the owner marked Keep is untouched while its unmarked twin is reached; only signal writes due), f2/only-the-owners-abandon-ends-keep, f6/signal-names-items (F6: exactly the items named, a changed version refuses all), f3/route-owner-abandon, f3/route-refusals and f3/unique-work-needs-discard (F3: the signed route; unsigned, another key, not the owner, the host principals, a stale and a missing version refused with nothing due; unique work stays until Discard), f5/agent-worktree (F5: the agent repository goes with its worktree)."
     },
     {
      "type": "integration",
@@ -86,7 +86,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0312/falsifiers.json",
-     "detail": "space312-idle-worktree-abandoned is the declared falsifier: an age rule in the pass; ac4/month-idle-sends-nothing finds the event sent and the worktree gone, and is red. Beside it: space312-abandon-sent-past-another-worktree reds ac4/second-worktree-stays and ac4/scope-owner-reaches-nothing-else, space312-stale-version-accepted reds ac4/owner-abandon, space312-provisioned-worktree-abandoned reds ac4/provisioned-in-another-worktree. NOT PROVEN HERE: the console's signed route and the provisioner's call (assumptions 1 and 2)."
+     "detail": "space312-idle-worktree-abandoned is the declared falsifier: an age rule in the pass reds ac4/month-idle-sends-nothing. Fix round, one or more per finding, each red on its row: F1 space312-kept-worktree-abandoned-at-provisioning; F2 space312-keep-matched-by-an-owners-signal (all six f2/kept-at rows), space312-keep-ended-by-any-named-signal, space312-host-principal-writes-the-owners-keep; F6 space312-named-item-taken-at-any-version, space312-abandon-names-the-whole-owner; F8 space312-abandon-names-another-tickets-item; F3 space312-stale-version-accepted, space312-abandon-without-a-version-accepted, space312-abandon-without-an-owner-sent, space312-abandon-by-anyone-signed-in, space312-route-not-dispatched, space312-assertion-without-the-version, space312-discard-not-required; F5 space312-agent-repository-not-named. Beside them space312-provisioned-worktree-abandoned. NOT PROVEN HERE: assumptions 1, 2, 3 and 5."
     }
    ]
   }
@@ -95,17 +95,17 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "On the committed tree (commit e4678ecfcdcb): python3 scripts/selftest.py --suite 149_veldo_0312_ticket_ended (22 rows, 48 passed with the shared preamble, 0 failed) (proof/VELDO-0312/suite-green.txt). A partial run, not the gate."
+   "command": "On the committed tree (commit 70198635218b): python3 scripts/selftest.py --suite 149_veldo_0312_ticket_ended (35 rows, 61 passed with the shared preamble, 0 failed) (proof/VELDO-0312/suite-green.txt). A partial run, not the gate."
   },
   {
    "name": "integration",
    "status": "passed",
-   "command": "The same suite: the real Service, store, OpenSSH signatures, project and backlog organs, Ledger, Signal, probes, removers and keeper, and real git worktrees. Beside it, on the same tree, the three suites that exercise the service: 66_veldo_0047_authority (56 passed), 144_veldo_0306_space_docker (55 passed), 83_veldo_0154_factory_loop (40 passed), 0 failed each."
+   "command": "The same suite: the real Service, store, OpenSSH signatures, project and backlog organs, Ledger, Signal, probes, removers and keeper, real git worktrees and a real agent repository; the route rows run the real API authority with assertions an edge key signed. Beside it, on the same tree, 0 failed each: 71_veldo_0076_projects (58 passed), 71_veldo_0130_api (71 passed), 71_veldo_0138_channel_service (39 passed), 66_veldo_0042_clones (46 passed), 66_veldo_0047_authority (56 passed), 66_veldo_0051_events (37 passed), 144_veldo_0306_space_docker (55 passed), 83_veldo_0154_factory_loop (40 passed), 83_veldo_0166_usage_windows (45 passed), 146_veldo_0308_run_finished (58 passed), 147_veldo_0310_landed_contained (56 passed), 148_veldo_0311_git_hooks (54 passed), 132_veldo_0297_space_ledger (57 passed), 133_veldo_0326_space_principals (56 passed), 139_veldo_0301_space_signal (44 passed), 113_veldo_0145_ui (33 passed), 134_veldo_0331_space_mode (42 passed)."
   },
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The 10 cases of finding 312, each applied once on the committed tree, noop copy green and mutant copy red on its target rows (proof/VELDO-0312/mutations.txt, falsifiers.json). Not the teeth run."
+   "command": "The 23 cases of finding 312 (8 of the build, 15 of the fix round), each applied once on the committed tree, noop copy green and mutant copy red on its target rows (proof/VELDO-0312/mutations.txt, falsifiers.json). Not the teeth run."
   },
   {
    "name": "fast checks",
@@ -119,13 +119,14 @@
   }
  ],
  "assumptions": [
-  "1. THE CONSOLE'S SIGNED ROUTE space.abandon IS NOT BUILT. A write route needs its operation in control_api_assertion.OPERATIONS and its dispatch in control_api_authority.ApiAuthority._apply; neither file is in this footprint, and a route in control_api.py alone would be refused at the assertion's shape and turn suite 71_veldo_0130 red. control_api.py, its synced copy and engine/ui/src/api/routes.json are unchanged. The authority's side, Service.space_abandon, is built and the rows call it directly. NOT PROVEN HERE: that an owner's press reaches it, and that a session without the owner's passkey is refused (VELDO-0319 AC3).",
-  "2. THE PROVISIONER DOES NOT CALL space_provisioned YET (control_launch.py and control_clone.py are outside this footprint). The rows call the entry directly, before the new worktree's item is confirmed.",
-  "3. NOTHING BUILDS Service.space YET (the installation's ledger is built at start by VELDO-0315). The suite gives the service its ledger. Until that wiring lands an installation sends nothing. A service that starts reads the journal from its head: an end committed while no service ran waits for reconcile.",
+  "1. THE CONSOLE'S ROUTE IS BUILT TO THE AUTHORITY, NOT TO A SCREEN. space.abandon is a write route of control_api.py with its operation in the assertion and its dispatch in the API authority; rows f3/* drive the real authority with edge-signed assertions, and suite 71_veldo_0130 holds the route to its handler, its operation and its command. NOT PROVEN HERE: one request through the API process, its session and the protected signer to a ledger (suite 71 has no service entry wired, so its route answers unavailable_service:space_ledger); the Space screen that shows the version and the Abandon button is VELDO-0319's.",
+  "2. THE PROVISIONER DOES NOT CALL space_provisioned YET. VELDO-0302 now carries the criterion (AC4). The rows call the entry directly, before the new worktree's item is confirmed.",
+  "3. NOTHING BUILDS Service.space YET. VELDO-0315 now carries the criterion (AC7). The suite gives the service its ledger; until that wiring lands an installation sends nothing and the route answers unavailable_service:space_ledger. A service that starts reads the journal from its head: an end committed while no service ran waits for reconcile.",
   "4. THE UNIT'S dispose_unit AND THE ASSIGNMENT'S CLOSE ARE STAND-IN RECORDS: journal records a fixture command commits on the real store, holding the entities control_backlog._dispose_unit and control_assignment._dispose_changes write, signed by the service. The real commands need the owner's settled answer through the settlement chain. NOT PROVEN HERE: those two against the real organs. The units, the items and their authorized alternative outcomes are fixture records.",
-  "5. THE LEDGER'S SIGNAL NAMES AN OWNER, NOT AN ITEM. Worktree abandoned is sent only when it would reach no other worktree or agent repository of the owner, so a ticket with two recorded worktrees cannot have one abandoned; and the event reaches what the ticket owns elsewhere (its scratch), as the table's column says. Ticket ended and project ended reach an item in the state kept (the ledger's to settle with VELDO-0318).",
+  "5. THE OWNER'S KEEP IS A MARK, AND NOTHING WRITES IT YET FROM THE OWNER. The ledger state kept is also what Signal writes for a table action that removes nothing, so the owner's Keep is the item's owner_keep mark, written by the outcome kept that carries it; the suite writes it as the authority. The owner's settled Keep that must write it is VELDO-0318's. NOT PROVEN HERE: that an owner's answer Keep sets the mark. Design 6.1's signal row still says kept items are signalled; section 0 holds and the row is the lead's to amend.",
   "6. THE TWO CHECKS OF A SWITCH TO ACT (VELDO-0332 and 0339) are stand-ins that allow, so the fixture projects can be in act mode; the docker client and the process table are fixtures; the items are declared by the suite (VELDO-0302). Signal runs in the service's own process (the space worker is VELDO-0323's).",
-  "7. Suite 86_veldo_0127 was not run (52 of 54 by a known recapture; left as it is). The full gate, the heavy suites and the teeth run were not run by the builder."
+  "7. NOT DONE IN THE FIX ROUND: F7 (an event whose send raised is passed over until reconcile; it loses no work). VELDO-0308 and VELDO-0310 do not use the signal that names items yet; their History records that they adopt it next.",
+  "8. Suite 86_veldo_0127 was not run (52 of 54 by a known recapture; left as it is). The full gate, the heavy suites and the teeth run were not run by the builder."
  ],
  "rollback": "Revert the change. The six transitions commit as before and send no event."
 }
