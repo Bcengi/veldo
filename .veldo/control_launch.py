@@ -668,6 +668,7 @@ def space_standalone(path, kind, main=None, event='run_finished', ticket=None, s
 # VELDO-0308: run finished, from the receiver (design section 5, 6.7 and 8.1 steps 6 to 10). Nothing here
 # deletes anything.
 SPACE_CONCLUSIVE = ('exited', 'refused')  # a dispatch record with a recorded end (VELDO-0041)
+SPACE_HELD = ('due', 'deferred', 'removing', 'kept')  # an item an ending event reached and did not remove
 
 
 def _space_run_of(record):
@@ -685,6 +686,51 @@ def space_run_items(space, dispatch_id):
                 if _space_run_of(record) == dispatch_id}
     except Exception:  # noqa: BLE001 - a record of what happened, never a reason to stop the end
         return {}
+
+
+def space_held(space, path):
+    """VELDO-0308: whether the ledger already answers for the thing at `path`: {item, state} when the live
+    item recorded there is due, deferred, removing or kept, which is where an ending event leaves an item
+    it reached and did not remove; None when no live item is there or the one there is declared or present
+    (no event has reached it). From then on the item is retried by the ledger's own retries (design
+    section 7, Retry) and never by a sweep. Raises when the ledger cannot be read: the caller then sends
+    nothing and forgets nothing."""
+    where = os.path.normpath(str(path))
+    for identity, record in sorted(space['ledger'].items().items()):
+        if (record.get('locator') or {}).get('path') == where and record.get('state') not in SPACE_ENDED:
+            return {'item': identity, 'state': record.get('state')} if record.get('state') in SPACE_HELD else None
+    return None
+
+
+def space_apart(space, paths):
+    """VELDO-0308: the live worktree and agent repository items that an event sent for the things at `paths`
+    would also end, because they have the owner of a live item at or beneath `paths` and are not there
+    themselves: a clone's work tree, which its own teardown ends and a retirement may have handed to the
+    ledger. The caller sends nothing while there is one; space_signal's `alone` is the same test, made
+    again at the send. A ledger that cannot be read answers nothing here, and the send then refuses by
+    itself."""
+    try:
+        paths = [os.path.normpath(str(path)) for path in paths]
+
+        def beneath(record):
+            where = (record.get('locator') or {}).get('path')
+            return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
+
+        def owner(record):
+            found = dict(record.get('owner') or {})
+            if isinstance(found.get('run'), dict):
+                found['run'] = found['run'].get('id')
+            return found
+
+        live = {identity: record for identity, record in space['ledger'].items().items()
+                if record.get('state') not in SPACE_ENDED}
+        owners = [owner(record) for record in live.values() if beneath(record) and owner(record)]
+        return sorted(identity for identity, record in live.items()
+                      if not beneath(record) and record.get('kind') in ('worktree', 'agent_repository')
+                      and any(all(owner(record).get(part) == wanted for part, wanted in subject.items())
+                              for subject in owners))
+    except Exception:  # noqa: BLE001 - the send's own test refuses what this could not read
+        return []
 
 
 def space_release(space, identity):
@@ -1443,11 +1489,38 @@ class Runner:
         if self.runs and os.path.lexists(run_directory(self.runs, dispatch_id)):
             self.leftovers[dispatch_id] = {'group': group, 'process': process}
 
+    def _handed_over(self, dispatch_id, place, at):
+        """VELDO-0308: whether the space ledger already holds the run directory `place` (space_held), recorded
+        as the observation remove_run with outcome handed_over when it does. True: the caller forgets the
+        leftover and sends nothing. False: no ending event has reached it. None: the ledger could not be
+        read, and the caller sends nothing and keeps what it knows."""
+        try:
+            held = space_held(self.space, place)
+        except Exception as error:  # noqa: BLE001 - an unread ledger is never taken for "not held"
+            self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                      'refusal': 'unavailable_service:space_ledger', 'at': at,
+                                      'raised': '%s: %s' % (type(error).__name__, str(error)[:300])})
+            return None
+        if held is None:
+            return False
+        self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'handed_over',
+                                  'at': at, 'space': held})
+        return True
+
     def clear_runs(self):
         """VELDO-0158: remove the run directory of every leftover dispatch whose run the kernel shows gone: its
         recorded process ended, its reported group empty or gone, and no live group of this profile's slice its
         scope. A run still alive, or one whose groups cannot be read, keeps its directory until a later call. The
-        dispatches whose directories were removed, in order."""
+        dispatches whose directories were removed, in order.
+
+        VELDO-0308: with a space ledger a sweep is no retry. Run finished is sent for a leftover at most once,
+        and only while no ending event has reached its run directory (the item is declared or present). A run
+        directory the ledger already holds (due, deferred, removing or kept: the receiver, a teardown or an
+        earlier sweep sent the event) is handed over: the leftover is dropped, nothing is sent, and the item
+        waits for the ledger's own retries (design section 7, Retry). The event is sent for the run directory
+        alone: while the run's owner also has a work tree or an agent repository elsewhere nothing is sent,
+        because the event would judge that too (a clone's teardown sends it). A ledger that cannot be read
+        sends nothing and forgets nothing."""
         removed, live = [], None
         for dispatch_id, entry in sorted(self.leftovers.items()):
             seen = C.retirement(entry['group'], entry['process'])
@@ -1470,8 +1543,28 @@ class Runner:
                     self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
                                               'refusal': 'clone_in_use', 'users': users})
                     continue
+                # VELDO-0308: a run directory an ending event has reached is the ledger's, and no sweep's.
+                handed = self._handed_over(dispatch_id, place, 'sweep')
+                if handed is not False:
+                    if handed:
+                        del self.leftovers[dispatch_id]
+                    continue
+                apart = space_apart(self.space, [place])
+                if apart or entry.get('sent'):
+                    # Not alone: the event would also judge a work tree of the same owner. Sent already: once.
+                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                              'refusal': 'not_alone' if apart else 'run_finished_sent', 'with': apart[:3]})
+                    continue
                 # VELDO-0303: the kernel test above is rule 3's answer for this run; the rest is Signal's.
-                found = space_signal(self.space, 'run_finished', [place], 'runner.sweep', ended=True)[os.path.normpath(place)]
+                found = space_signal(self.space, 'run_finished', [place], 'runner.sweep', ended=True,
+                                     alone=True)[os.path.normpath(place)]
+                entry['sent'] = found.get('item') is not None
+                if found['state'] in SPACE_HELD:
+                    # The event reached it and a rule or the mode kept it: the ledger's from now on.
+                    del self.leftovers[dispatch_id]
+                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id,
+                                              'outcome': 'handed_over', 'at': 'sweep', 'space': found})
+                    continue
                 if found['state'] not in SPACE_ENDED:
                     self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
                                               'refusal': space_refusal(found), 'space': found})
@@ -1497,7 +1590,8 @@ class Runner:
         """VELDO-0158: the start sweep. Every run directory under `runs` whose dispatch, of this Runner's domain and
         repository, is settled (exited, refused or unknown) is a leftover, and each whose run the kernel shows gone
         is removed now (clear_runs); one whose run is still alive is kept until a later sweep finds it gone. The
-        dispatches whose directories were removed."""
+        dispatches whose directories were removed. VELDO-0308: with a space ledger a run directory the ledger
+        already holds is no leftover, at start as at every sweep: a restart does not send its event again."""
         if not self.runs or not os.path.isdir(self.runs):
             return []
         present = set(os.listdir(self.runs))
@@ -1509,6 +1603,9 @@ class Runner:
                     or not isinstance(record.get('dispatch_id'), str)):
                 continue
             if os.path.basename(run_directory(self.runs, record['dispatch_id'])) in present:
+                if self.space is not None and self._handed_over(
+                        record['dispatch_id'], run_directory(self.runs, record['dispatch_id']), 'start'):
+                    continue
                 self._left(record['dispatch_id'], process=record.get('process'))
         return self.clear_runs()
 
@@ -1667,6 +1764,10 @@ class Runner:
             # The one completion gate (control_dispatch.completed): the exit record's clean exit and, for an
             # engine, the complete artifact it binds (THE ENGINE PROTOCOL).
             clean = D.completed(record)
+            if self.space is not None:
+                # VELDO-0308: a run directory its receiver sent nothing for (a group it could not read, a work
+                # tree of the same owner elsewhere) is the sweep's: it reads the kernel again (clear_runs).
+                self._left(record['dispatch_id'], getattr(launch, 'group', None), record.get('process'))
             self._retire(record['dispatch_id'], 'completed' if clean else 'failed', 'worker_reaped')
         elif record and record['state'] == 'unknown':
             # Its outcome is an open obligation: the retirement keeps it, and the slot, until it is known. Its run
@@ -2126,10 +2227,18 @@ class Receiver:
             if users:
                 self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}
                 return
+            # VELDO-0308: the event is sent for the run's own folders alone. While the run's owner also has a
+            # work tree or an agent repository elsewhere (its clone), nothing is sent from here: the clone's
+            # teardown sends run finished for that owner, behind its own clone_in_use test.
+            folders = [run] + [path for path in (given.get('scratch'),) if path]
+            apart = space_apart(self.space, folders)
+            if apart:
+                self.run_removal = {'item': None, 'state': None, 'deferral': 'not_alone', 'with': apart[:3]}
+                return
             self.run_sent = True
             self.run_removal = space_signal(
-                self.space, 'run_finished', [run] + [path for path in (given.get('scratch'),) if path], 'receiver',
-                ended=empty is True)[os.path.normpath(run)]
+                self.space, 'run_finished', folders, 'receiver',
+                ended=empty is True, alone=True)[os.path.normpath(run)]
         elif not stays:
             # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
             # for close() alone could survive into the clone (VELDO-0127).
@@ -2161,7 +2270,8 @@ class Receiver:
         A dispatch whose record is not conclusive, or whose group still has a process, is sent nothing:
         nothing of it is judged, its items stay as they are and its hold stays held, because what is left of
         the run may still write. Its run directory is the sweep's (Runner.clear_runs). A group nobody could
-        read is left to the answer the installation wired in for rule 3, as in _remove_run.
+        read is not known to be empty and gets the same (reason group_unread): the sweep's kernel test, which
+        reads the group again, takes over.
 
         The hold is the one the contract's space field names (design 6.7), else the one placed under the
         dispatch's own identity. Returns, and keeps in run_end, {dispatch_id, sent, reason, census, removal,
@@ -2182,6 +2292,9 @@ class Receiver:
             end['reason'] = 'not_conclusive:%s' % (state,)
         elif self._group_empty() is False:
             end['reason'] = 'group_not_empty'
+        elif self._group_empty() is not True:
+            # Nobody could read the group: not known to be empty, so not empty (design 0.6).
+            end['reason'] = 'group_unread'
         if end['reason'] is not None:
             self._unstage_skills()
             return end

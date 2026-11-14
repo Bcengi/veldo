@@ -13516,8 +13516,8 @@ def cases():
             "                # The consumer first: run finished never ends a clone another dispatch still uses.\n",
             ['ac3/sweep-leftover'])
     path303('space303-receiver-answers-for-an-unread-group', 'control_launch.py',
-            "                ended=empty is True)[os.path.normpath(run)]\n",
-            "                ended=True)[os.path.normpath(run)]\n",
+            "                ended=empty is True, alone=True)[os.path.normpath(run)]\n",
+            "                ended=True, alone=True)[os.path.normpath(run)]\n",
             ['ac3/deferred-then-swept'])
     path303('space303-landing-line-direct-delete', 'control_launch_work.py',
             "            if self.space is None:\n                # No ledger: the unique work probe and the keep step by themselves; a candidate folder whose\n",
@@ -14087,8 +14087,8 @@ def cases():
                 "        if not obligations['clone'].get('present') or any(obligations[n]['open'] for n in ('termination', 'group', 'outcome')):\n",
                 ['ac4/one-run-finished-per-clone'])
     finished308('space308-pins-released-at-the-teardown-only', 'control_retirement.py',
-                "        following = sorted(clone_id for clone_id, handed in self.handed.items() if handed['pins'])\n",
-                "        following = []\n", ['ac4/pins-follow-the-removal'])
+                "            pinned = self._pinned()\n",
+                "            pinned = {}\n", ['ac4/pins-follow-the-removal'])
     finished308('space308-pins-released-at-hand-over', 'control_retirement.py',
                 "            'pins': list(before['pins']) if tracked is not None else []}\n",
                 "            'pins': list(before['pins']) if tracked is not None else []}\n"
@@ -14102,6 +14102,64 @@ def cases():
                 "        if found is None or found[1].get('state') not in SPACE_TRACKED:\n            return None\n",
                 "        if found is None:\n            return {'item': None, 'state': None}\n",
                 ['ac4/not-handed-over-keeps-the-slot'])
+
+    # VELDO-0308, the fix round (the review of this ticket). Finding 1: the sweep sends run finished
+    # again for a run already handed over (the defect as it was: no look at the ledger first, and an
+    # event that reaches the clone); the sweep's event, or the receiver's, reaches the clone of the
+    # same owner; the sweep sends at every call for a leftover its event did not remove; the start
+    # sweep forgets the rule. Finding 3: an unread group is sent run finished. Finding 4: the pins
+    # are followed from memory, so a restart forgets them; a clone being made (no item, nothing at
+    # the path) is released. Finding 5: a refusal of Receiver.launch is reported before the space
+    # end, before the spawn and at a failed spawn.
+    finished308('space308-sweep-resends-for-a-handed-over-run', 'control_launch.py',
+                "                handed = self._handed_over(dispatch_id, place, 'sweep')\n",
+                "                handed = False\n", ['f1/sweep-never-resends'])
+    result[-1]['also'] = [["                if apart or entry.get('sent'):\n", "                if False:\n"],
+                          ["                                     alone=True)[os.path.normpath(place)]\n",
+                           "                                     )[os.path.normpath(place)]\n"]]
+    finished308('space308-sweep-event-reaches-the-clone', 'control_launch.py',
+                "                if apart or entry.get('sent'):\n", "                if entry.get('sent'):\n",
+                ['f1/sent-once-and-alone'])
+    result[-1]['also'] = [["                                     alone=True)[os.path.normpath(place)]\n",
+                           "                                     )[os.path.normpath(place)]\n"]]
+    finished308('space308-sweep-sends-at-every-sweep', 'control_launch.py',
+                "                entry['sent'] = found.get('item') is not None\n", "                entry['sent'] = False\n",
+                ['f1/sent-once-and-alone'])
+    finished308('space308-start-sweep-without-the-rule', 'control_launch.py',
+                "                if self.space is not None and self._handed_over(\n",
+                "                if False and self._handed_over(\n", ['f1/start-sweep-applies-the-rule'])
+    finished308('space308-receiver-event-reaches-the-clone', 'control_launch.py',
+                "            if apart:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'not_alone', 'with': apart[:3]}\n",
+                "            if False:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'not_alone', 'with': apart[:3]}\n",
+                ['f1/sent-once-and-alone'])
+    result[-1]['also'] = [["                ended=empty is True, alone=True)[os.path.normpath(run)]\n",
+                           "                ended=empty is True)[os.path.normpath(run)]\n"]]
+    finished308('space308-unread-group-sent', 'control_launch.py',
+                "        elif self._group_empty() is not True:\n", "        elif False:\n",
+                ['f3/unread-group-sends-nothing'])
+    finished308('space308-pins-followed-from-memory', 'control_retirement.py',
+                "        for clone_id in sorted(pinned):\n",
+                "        for clone_id in sorted(set(pinned) & set(self.handed)):\n",
+                ['f4/pins-followed-after-a-restart'])
+    finished308('space308-pins-released-with-no-item', 'control_retirement.py',
+                "                if not recorded:\n                    continue  # no item records a removal: a clone being made is pinned before its work tree\n",
+                "                if not recorded:\n                    pass\n",
+                ['f4/clone-being-made-keeps-its-pin'])
+    finished308('space308-refusal-reported-before-the-space-end', 'control_launch.py',
+                "                                   expected_state='prepared')\n"
+                "            self._space_end(dispatch_id, contract)\n"
+                "            self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,\n",
+                "                                   expected_state='prepared')\n"
+                "            self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,\n",
+                ['f5/refused-before-spawn'])
+    finished308('space308-spawn-failure-reported-before-the-space-end', 'control_launch.py',
+                "            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n"
+                "            self._space_end(dispatch_id, contract)\n"
+                "            self.emit({'event': 'refused', 'refusal': refusal})\n",
+                "            self.dispatches.refuse(dispatch_id, contract_digest, refusal, now=time.time(), expected_state='accepted')\n"
+                "            self.emit({'event': 'refused', 'refusal': refusal})\n"
+                "            self._space_end(dispatch_id, contract)\n",
+                ['f5/spawn-failed'])
 
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the

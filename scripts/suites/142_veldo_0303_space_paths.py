@@ -52,8 +52,10 @@ through Signal; the item is removed, never present with its folder gone, and its
 run finished, the receiver and the folder remover), ac3/sweep-leftover (the declared falsifier row for
 the sweep: a leftover whose run the kernel shows gone is removed through Signal, the item is removed
 and the observation says removed), ac3/deferred-then-swept (a run directory a process sits in is
-deferred as in_use at the receiver's end, whole; the sweep's next event removes it once the process is
-gone; a run whose group could not be emptied is not signalled at all).
+deferred as in_use at the receiver's end, whole; the sweep then drops it as handed over to the ledger
+and sends no second event, also once the process is gone, and a retry of the ledger's removes it
+(narrowed by VELDO-0308: a sweep is no retry); a run whose group could not be emptied is not signalled
+at all).
 
 AC4 rows, the landing line (control_launch_work.Runtime.close and lander.GitLandOps.discard):
 ac4/landing-line-close (the declared falsifier row: a candidate folder, a private repository, is
@@ -78,7 +80,9 @@ at the sweep; one that holds none is removed as before), loss/candidate-commits 
 a candidate workspace go only after their own commits are on kept refs of the repository; each stays
 with a file in no commit). f3/consumer-holds-clone (the worker's receiver ends, and then the sweep runs,
 while a consumer attached to the worker's clone has no process: nothing is signalled, the clone is whole
-and the refusal is clone_in_use; once the consumer has ended the sweep removes the run directory).
+and the refusal is clone_in_use; once the consumer has ended the sweep still sends nothing while the
+clone of the same owner is there (not_alone, VELDO-0308), and the clone's teardown removes the run
+directory with the clone).
 f5/clones-given-space (every clone provisioner the two launch modules build is given space; read from
 their sources, the one row here that drives nothing).
 
@@ -1017,8 +1021,21 @@ def _v303_space_paths_suite():
             RECORDS[consumer_id] = {'state': 'exited', 'process': None}
             with with_ledger(row):
                 removed = N.clear_runs()
-            check(row, 'once the consumer has ended the sweep\'s event removes the run directory [%s]' % (removed,),
-                  removed == [worker_id] and not os.path.lexists(shared_run) and state_of(run_item) == 'removed')
+            # VELDO-0308 (the review's finding 1): the sweep's event is for the run directory alone. While the
+            # run's owner still has its clone, the sweep sends nothing; the clone's teardown sends the event.
+            check(row, 'once the consumer has ended the sweep still sends nothing, for the event would judge the clone '
+                       'of the same owner too: not_alone, nothing written, the clone whole [%s]' % (N.observations[-1:],),
+                  removed == [] and journal_length() == length and N.observations[-1].get('refusal') == 'not_alone'
+                  and (work / 'tracked.txt').is_file() and os.path.isdir(shared_run) and state_of(run_item) == 'present'
+                  and [state_of(items[name]) for name in ('root', 'work', 'scratch')] == ['present'] * 3)
+            with with_ledger(row):
+                C.retire(C.handle(clone_id))
+            with with_ledger(row):
+                removed = N.clear_runs()
+            check(row, 'the clone\'s teardown sends run finished for that owner and the run directory goes with the '
+                       'clone; the sweep then finds nothing left [%s %s]' % (removed, removal_of(run_item).get('emitter')),
+                  removed == [worker_id] and not os.path.lexists(shared_run) and state_of(run_item) == 'removed'
+                  and removal_of(run_item).get('emitter') == 'clone.teardown' and not os.path.lexists(root))
         except Exception as error:
             stopped(row, error)
 
@@ -1107,21 +1124,32 @@ def _v303_space_paths_suite():
                   text_of(place / LA.RUN_CONFIG / 'settings.json') == '{"generated": true}\n'
                   and state_of(item) == 'deferred' and deferral_of(item) == 'in_use'
                   and (R.run_removal or {}).get('deferral') == 'in_use')
+            # VELDO-0308 (the review's finding 1, the lead's decision): a sweep is no retry. A run directory an
+            # ending event has reached is the ledger's: the sweep drops the leftover and sends nothing.
             N = runner(space())
             N._left(dispatch_id)
+            length = journal_length()
             with with_ledger(row):
                 removed = N.clear_runs()
-            check(row, 'the sweep finds it left, and while the process sits there it stays, refused by name [%s]'
-                  % (N.observations[-1:],),
-                  removed == [] and os.path.isdir(place) and dispatch_id in N.leftovers
-                  and N.observations[-1].get('outcome') == 'refused'
-                  and N.observations[-1].get('refusal') == 'space_deferred:in_use')
+            check(row, 'the sweep finds it left and already held by the ledger: the leftover is dropped as handed over, '
+                       'and nothing is sent or written [%s]' % (N.observations[-1:],),
+                  removed == [] and os.path.isdir(place) and N.leftovers == {}
+                  and N.observations[-1].get('outcome') == 'handed_over'
+                  and (N.observations[-1].get('space') or {}).get('state') == 'deferred'
+                  and journal_length() == length and state_of(item) == 'deferred')
             shutil.rmtree(holder)
+            N._left(dispatch_id)  # as the start sweep of a restarted runner finds it
             with with_ledger(row):
                 removed = N.clear_runs()
-            check(row, 'once the process is gone the sweep\'s next event removes it, and the removal names the sweep [%s]'
-                  % (removed,), removed == [dispatch_id] and not os.path.lexists(place) and state_of(item) == 'removed'
-                  and removal_of(item).get('emitter') == 'runner.sweep')
+            check(row, 'once the process is gone a second sweep sends no second event: the journal is unchanged and the '
+                       'directory stays deferred, whole [%s %s]' % (removed, journal_length() - length),
+                  removed == [] and journal_length() == length and N.leftovers == {} and state_of(item) == 'deferred'
+                  and text_of(place / LA.RUN_CONFIG / 'settings.json') == '{"generated": true}\n')
+            with with_ledger(row):
+                retried = LA.space_retry(space(), dispatch_id, 'runner.retirement', ended=True)
+            check(row, 'a retry of the ledger\'s (here the retirement\'s) removes it, and the removal names that retry [%s]'
+                  % (retried.get('states'),), not os.path.lexists(place) and state_of(item) == 'removed'
+                  and removal_of(item).get('emitter') == 'runner.retirement')
             dispatch_id, place, item = run_directory('group-04')
             length = journal_length()
             R = receiver(space(), place, {'empty': False})

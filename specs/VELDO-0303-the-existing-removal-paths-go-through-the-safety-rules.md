@@ -213,3 +213,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   - Not closed here: between the look and the delete nothing holds the thing, where the wired
     removers move it to a marked name and look once more. The callers have just read that the
     run's processes are gone, and the fleet's worktree is the retiring worker's own.
+- 2026-11-14: AC3's sweep behaviour narrowed by VELDO-0308 (the review of that ticket, finding 1,
+  and the lead's decision). A sweep is no retry: Runner.clear_runs sends run finished for a
+  leftover run directory only while no ending event has reached its item, at most once, and for
+  the run directory alone; one the ledger already holds (due, deferred, removing or kept) is
+  dropped as handed over and is retried by the ledger's own retries (design section 7, Retry).
+  Suite 142 rows ac3/deferred-then-swept and f3/consumer-holds-clone were changed there to say so:
+  no second event from the sweep, and the run directory of a run that still has its clone goes
+  with the clone's teardown. No acceptance criterion of this ticket changed.

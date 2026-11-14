@@ -60,6 +60,27 @@ after the cache was collected the work tree's commit is readable; a work tree th
 while its item is not removed releases nothing), ac4/not-handed-over-keeps-the-slot (a clone no item
 records, and an installation with no ledger: the obligation stays open and the slot held).
 
+Rows of the fix round (the review of this ticket, findings 1 and 3 to 5). f1/sweep-never-resends (the
+reviewer's probe row with the expectation reversed: a clone a process holds and the run directory of
+the same run, both deferred and the clone handed over; the run is a leftover of a whole Runner, and
+three Runner.sweep calls send no event, drop the leftover as handed over and write nothing, the clone's
+items still deferred), f1/start-sweep-applies-the-rule (the start sweep of a restarted runner: a run
+directory the ledger holds is no leftover and is sent nothing, and the observation says it was found
+at start; one no event has reached is sent its one event and removed), f1/sent-once-and-alone (a
+leftover the event reaches and does not remove is sent run finished once over three sweeps; one a
+process sits in is deferred by that one event, handed over and never sent another; while the run's
+owner still has its clone, neither the sweep nor the receiver sends anything, the clone's items stay
+present, and the clone's teardown sends the one event that removes the run directory with the
+clone), f3/unread-group-sends-nothing (a group nobody could read is not known to be empty: nothing is
+sent, nothing is written, the hold stays, the reason is group_unread; the sweep, which reads the
+kernel itself, then removes the folders), f4/pins-followed-after-a-restart (a clone handed over, the
+retirement service made anew: it remembers nothing and still releases the pin after the work tree's
+removal, at a sweep and at its own start, and not before), f4/clone-being-made-keeps-its-pin (a pin
+on disk for a clone whose work tree is not made yet: no item and nothing at the path releases
+nothing, and neither do items that are only declared), f5/refused-before-spawn and f5/spawn-failed
+(Receiver.launch itself: the refusal is recorded first, with the folders on disk and the hold held;
+the space end runs next; the refusal is reported last, with the folders gone and the hold released).
+
 paths/no-delete-and-canon: no drive of this suite made the launch module or the clone provisioner
 delete by itself, and the engine canon equals this repository's copies.
 
@@ -75,7 +96,10 @@ holds the file. The dispatch records, a mapping. The reservation service, as far
 it: a worker slot, the calls reserved under a dispatch, and a retire transition that takes its
 observation from the lifecycle it is given. The receiver, the runner and the clone provisioner are made
 without their stores (object.__new__ and the attributes the driven paths read). The clone is laid out
-on disk as the provisioner's own _create lays it out, with its own _cache, _pin and _write.
+on disk as the provisioner's own _create lays it out, with its own _cache, _pin and _write. In the two
+f5 rows the stations of Receiver.launch before the spawn (the recheck, the qualification, the login,
+the binding, the memory handoff) answer that nothing is wrong, and the spawn raises as a missing
+program does; the dispatch records of f1/start-sweep-applies-the-rule are a table of two rows.
 """
 
 
@@ -114,6 +138,10 @@ def _v308_run_finished_suite():
             'ac4/deferred-releases-the-slot', 'ac4/retired-releases-the-slot', 'ac4/clone-in-use-keeps-the-slot',
             'ac4/one-run-finished-per-clone', 'ac4/handed-over-for-every-user', 'ac4/pins-follow-the-removal',
             'ac4/pins-held-while-deferred', 'ac4/not-handed-over-keeps-the-slot',
+            'f1/sweep-never-resends', 'f1/start-sweep-applies-the-rule', 'f1/sent-once-and-alone',
+            'f3/unread-group-sends-nothing',
+            'f4/pins-followed-after-a-restart', 'f4/clone-being-made-keeps-its-pin',
+            'f5/refused-before-spawn', 'f5/spawn-failed',
             'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
 
@@ -1193,6 +1221,336 @@ def _v308_run_finished_suite():
             answer = N.retry_deferred(dispatch_id)
             check(row, 'once the record shows the end and the kernel shows nothing of the run, the retry removes it [%s]'
                   % (answer.get('states'),), state_of(items['run']) == 'removed' and not os.path.lexists(place))
+        except Exception as error:
+            stopped(row, error)
+
+        # =====================================================================================
+        # The fix round: the review's findings 1, 3, 4 and 5
+        # =====================================================================================
+        try:
+            import errno
+            import sqlite3
+
+            def run_place(dispatch_id, ticket, scope=A, confirm=True):
+                """The run directory of a run that has a clone, or of one given nothing else: a scratch
+                item the run owns."""
+                place = Path(LA.run_directory(str(RUNS), dispatch_id))
+                (place / LA.RUN_CONFIG).mkdir(parents=True)
+                (place / LA.RUN_CONFIG / 'settings.json').write_text('{"generated": true}\n')
+                return place, declared('scratch', {'path': str(place)}, {
+                    'scope': scope, 'ticket': ticket, 'run': {'id': dispatch_id, 'station': 'build'}}, confirm=confirm)
+
+            def handed_over(made, dispatch_id):
+                return [event for event in made.observations if event.get('operation') == 'remove_run'
+                        and event.get('dispatch_id') == dispatch_id and event.get('outcome') == 'handed_over']
+
+            def pin_events(made, clone_id):
+                return [event for event in made.observations
+                        if event.get('operation') == 'release_pins' and event.get('clone_id') == clone_id]
+
+            C5 = provisioner(space())
+
+            row = 'f1/sweep-never-resends'
+            clone_id, dispatch_id, root, work, head, items = clone(C5, 'resend-51')
+            holders = [process_entry(5851, '/', opened=str(work / 'tracked.txt'))]
+            place, run_item = run_place(dispatch_id, 'VELDO-9251')
+            holders.append(process_entry(5852, str(place / LA.RUN_CONFIG)))
+            N = runner(C5)
+            N.reservations.slot(dispatch_id)
+            first = N._retire(dispatch_id, 'completed', 'worker_reaped')
+            before = states(items)
+            check(row, 'the clone a process holds is handed to the ledger and the slot released; the run directory of '
+                       'the same run, which a process sits in, is deferred by the same event [%s %s %s %s]'
+                  % (first, before, state_of(run_item), sent_for(dispatch_id)),
+                  first is True and (N.retirements.handed.get(clone_id) or {}).get('teardown') == 'deferred'
+                  and state_of(items['work']) == 'deferred' and state_of(run_item) == 'deferred'
+                  and sent_for(dispatch_id) == [('clone.teardown', 'run_finished', dispatch_id)])
+            # The run is a leftover, as the start sweep makes it after any restart, in a whole Runner.
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            mark, length = len(sent_for(dispatch_id)), journal_length()
+            swept = [N.sweep() for _ in range(3)]
+            check(row, 'three Runner.sweep calls send no event for the run [%s]' % (sent_for(dispatch_id)[mark:],),
+                  swept == [[], [], []] and sent_for(dispatch_id)[mark:] == [])
+            check(row, 'the leftover is dropped as handed over, once, and nothing was written [%s %s]'
+                  % (handed_over(N, dispatch_id), journal_length() - length),
+                  dispatch_id not in N.leftovers and len(handed_over(N, dispatch_id)) == 1
+                  and handed_over(N, dispatch_id)[0].get('space') == {'item': run_item, 'state': 'deferred'}
+                  and journal_length() == length)
+            check(row, 'the clone\'s items are still deferred as they were, the clone whole and its pin held, the run '
+                       'directory whole [%s]' % (states(items),),
+                  states(items) == before and state_of(items['work']) == 'deferred' and state_of(run_item) == 'deferred'
+                  and (work / 'tracked.txt').is_file() and len(C5._pins_held(clone_id)) == 1
+                  and text_of(place / LA.RUN_CONFIG / 'settings.json') == '{"generated": true}\n')
+
+            row = 'f1/start-sweep-applies-the-rule'
+
+            class Stored(Dispatches):
+                """The dispatch records as the start sweep reads them: a table of records of this domain
+                and repository."""
+                repository = 'repo-308'
+
+                def __init__(self, records):
+                    self.conn = sqlite3.connect(':memory:')
+                    self.conn.execute('CREATE TABLE entities (kind TEXT, data TEXT)')
+                    for identity, state in records:
+                        self.conn.execute('INSERT INTO entities VALUES (?, ?)', (LA.D.RECORD_KIND, json.dumps({
+                            'dispatch_id': identity, 'state': state, 'process': None,
+                            'contract': {'domain': 'dom-308', 'repository': 'repo-308'}})))
+
+            fresh_id, fresh_owner, fresh_place, fresh_scratch, fresh_items = run_folders('fresh-52', hold=False)
+            RECORDS[fresh_id] = {'state': 'unknown', 'process': None}
+            N = runner(C5)  # a runner made anew: it remembers no leftover and no hand-over
+            N.dispatches = Stored([(dispatch_id, 'exited'), (fresh_id, 'unknown')])
+            mark, sent = len(sent_for(dispatch_id)), len(SENT)
+            removed = N.sweep_runs()
+            found = handed_over(N, dispatch_id)
+            check(row, 'at start a run directory the ledger holds is no leftover: it is sent nothing, and the '
+                       'observation says it was found at start [%s %s]' % (found, sent_for(dispatch_id)[mark:]),
+                  dispatch_id not in N.leftovers and len(found) == 1 and found[0].get('at') == 'start'
+                  and sent_for(dispatch_id)[mark:] == [] and state_of(run_item) == 'deferred' and place.is_dir())
+            check(row, 'a run directory no event has reached is a leftover, is sent its one event and is removed [%s %s]'
+                  % (removed, SENT[sent:]),
+                  removed == [fresh_id] and SENT[sent:] == [('runner.sweep', 'run_finished', fresh_id)]
+                  and not os.path.lexists(fresh_place) and state_of(fresh_items['run']) == 'removed')
+            sent = len(SENT)
+            swept = [N.sweep() for _ in range(3)]
+            check(row, 'and three sweeps after the start send nothing [%s]' % (SENT[sent:],),
+                  swept == [[], [], []] and len(SENT) == sent)
+            for holder in holders:
+                shutil.rmtree(holder)
+
+            row = 'f1/sent-once-and-alone'
+            dispatch_id = 'dispatch/once-53'
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            place, run_item = run_place(dispatch_id, 'VELDO-9453', confirm=False)
+            N = runner()
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            swept = [N.sweep() for _ in range(3)]
+            check(row, 'a leftover the event reaches and does not remove (its item was never confirmed) is sent run '
+                       'finished once over three sweeps, and stays [%s %s]'
+                  % (sent_for(dispatch_id), N.observations[-1:]),
+                  sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)] and dispatch_id in N.leftovers
+                  and N.observations[-1].get('refusal') == 'run_finished_sent' and place.is_dir()
+                  and state_of(run_item) == 'declared')
+            dispatch_id, owner, place, scratch, items = run_folders('once-54', hold=False)
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            holder = process_entry(5854, str(place / LA.RUN_CONFIG))
+            N = runner()
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            swept = [N.sweep() for _ in range(3)]
+            check(row, 'a leftover a process sits in is deferred by the sweep\'s one event, handed over and never sent '
+                       'another [%s %s]' % (sent_for(dispatch_id), deferral_of(items['run'])),
+                  sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+                  and state_of(items['run']) == 'deferred' and deferral_of(items['run']) == 'in_use'
+                  and dispatch_id not in N.leftovers and len(handed_over(N, dispatch_id)) == 1
+                  and handed_over(N, dispatch_id)[0].get('at') == 'sweep' and place.is_dir())
+            shutil.rmtree(holder)
+            # Not alone: the run's owner still has its clone, which only the clone's teardown ends.
+            clone_id, dispatch_id, root, work, head, items = clone(C5, 'alone-55')
+            place, run_item = run_place(dispatch_id, 'VELDO-9255')
+            N = runner(C5)
+            N.reservations.slot(dispatch_id)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            length = journal_length()
+            removed = N.clear_runs()
+            check(row, 'while the run\'s owner still has its clone the sweep sends nothing for the run directory: '
+                       'not_alone, nothing written, the clone\'s items present [%s %s]' % (N.observations[-1:], states(items)),
+                  removed == [] and sent_for(dispatch_id) == [] and journal_length() == length
+                  and N.observations[-1].get('refusal') == 'not_alone' and N.observations[-1].get('with') == [items['work']]
+                  and states(items) == ['present'] * 3 and state_of(run_item) == 'present' and dispatch_id in N.leftovers)
+            R = receiver(dispatch_id, place, None, None, supervision={'empty': True}, clones=C5)
+            end = R._space_end(dispatch_id)
+            check(row, 'the receiver\'s own send is for its run\'s folders alone too: with the clone there it sends '
+                       'nothing and judges nothing [%s %s %s]' % (end.get('sent'), end.get('reason'), states(items)),
+                  end.get('sent') is False and end.get('reason') == 'not_alone' and sent_for(dispatch_id) == []
+                  and journal_length() == length and states(items) == ['present'] * 3 and state_of(run_item) == 'present'
+                  and (work / 'tracked.txt').is_file() and place.is_dir())
+            first = N._retire(dispatch_id, 'completed', 'worker_reaped')
+            after = N.sweep()
+            check(row, 'the clone\'s teardown sends the one event for that owner: the clone and the run directory go, '
+                       'and the sweep finds nothing left [%s %s %s]' % (first, sent_for(dispatch_id), states(items)),
+                  first is True and sent_for(dispatch_id) == [('clone.teardown', 'run_finished', dispatch_id)]
+                  and states(items) == ['removed'] * 3 and state_of(run_item) == 'removed'
+                  and removal_of(run_item).get('emitter') == 'clone.teardown' and not os.path.lexists(place)
+                  and not os.path.lexists(root) and N.leftovers == {})
+
+            row = 'f3/unread-group-sends-nothing'
+            dispatch_id, owner, place, scratch, items = run_folders('unread-56')
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None, 'dispatch_id': dispatch_id,
+                                    'termination': {'returncode': 0, 'signal': None, 'deadline_stop': False}}
+            R = receiver(dispatch_id, place, scratch, owner, supervision={'empty': None, 'cause': 'unreadable'})
+            length = journal_length()
+            end = R._space_end(dispatch_id)
+            check(row, 'a group nobody could read is not known to be empty: run finished is not sent, and the end says '
+                       'group_unread [%s %s]' % (end.get('sent'), end.get('reason')),
+                  end.get('sent') is False and end.get('reason') == 'group_unread' and sent_for(dispatch_id) == [])
+            check(row, 'nothing was judged or written: both folders on disk, both items present with no deferral, the '
+                       'hold still held [%s %s]' % (journal_length() - length, hold_state(dispatch_id)),
+                  journal_length() == length and place.is_dir() and (scratch / 'tmp.bin').is_file()
+                  and [state_of(items[name]) for name in ('run', 'scratch')] == ['present'] * 2
+                  and deferral_of(items['run']) is None and hold_state(dispatch_id) == 'admitted')
+            # The sweep's kernel test takes over: the runner reads the end, keeps the run as a leftover, and
+            # its sweep, which asks the kernel itself, sends the one event.
+            N = runner()
+            N.reservations.slot(dispatch_id)
+            record = N.wait(types.SimpleNamespace(dispatch_id=dispatch_id, group=None,
+                                                  wait=lambda timeout=None: RECORDS[dispatch_id]))
+            check(row, 'the runner\'s sweep, which reads the kernel itself, then sends the one event and the folders go '
+                       '[%s %s]' % (sent_for(dispatch_id), (record or {}).get('state')),
+                  sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+                  and not os.path.lexists(place) and not os.path.lexists(scratch)
+                  and [state_of(items[name]) for name in ('run', 'scratch')] == ['removed'] * 2 and N.leftovers == {})
+
+            row = 'f4/pins-followed-after-a-restart'
+            clone_id, dispatch_id, root, work, head, items = clone(C5, 'restart-57')
+            holder = process_entry(5857, '/', opened=str(work / 'tracked.txt'))
+            N = runner(C5)
+            N.reservations.slot(dispatch_id)
+            first = N._retire(dispatch_id, 'completed', 'worker_reaped')
+            check(row, 'the clone is handed over with its work tree deferred and its pin held [%s %s]'
+                  % (first, state_of(items['work'])),
+                  first is True and clone_id in N.retirements.handed and state_of(items['work']) == 'deferred'
+                  and len(C5._pins_held(clone_id)) == 1)
+            # The restart: the retirement service is made anew and remembers no hand-over.
+            N = runner(C5)
+            N.sweep()
+            check(row, 'the service made anew remembers nothing of it, and while the work tree is deferred its start '
+                       'and its sweep release nothing [%s]' % (N.retirements.handed,),
+                  N.retirements.handed == {} and N.retirements.entries == {} and len(C5._pins_held(clone_id)) == 1
+                  and pin_events(N, clone_id) == [] and readable(work, head))
+            shutil.rmtree(holder)
+            LA.space_signal(space(owner_live=lambda found: dict(ENDED)), 'run_finished', [str(root), str(work)],
+                            'owner.confirm')
+            check(row, 'the work tree is then removed from outside, its commit kept, and the pin is still in the cache '
+                       '[%s]' % (states(items),),
+                  not os.path.lexists(work) and state_of(items['work']) == 'removed'
+                  and kept_at(items['work'], REPOSITORY, head) and len(C5._pins_held(clone_id)) == 1)
+            N.sweep()
+            check(row, 'the next sweep of the restarted service releases the pin, from the refs on disk [%s]'
+                  % (pin_events(N, clone_id),),
+                  C5._pins_held(clone_id) == [] and len(pin_events(N, clone_id)) == 1
+                  and pin_events(N, clone_id)[0].get('outcome') == 'released'
+                  and len(pin_events(N, clone_id)[0].get('released') or ()) == 1 and N.retirements.handed == {})
+            clone_id, dispatch_id, root, work, head, items = clone(C5, 'start-58')
+            holder = process_entry(5858, '/', opened=str(work / 'tracked.txt'))
+            N = runner(C5)
+            N.reservations.slot(dispatch_id)
+            first = N._retire(dispatch_id, 'completed', 'worker_reaped')
+            shutil.rmtree(holder)
+            LA.space_signal(space(owner_live=lambda found: dict(ENDED)), 'run_finished', [str(root), str(work)],
+                            'owner.confirm')
+            held = len(C5._pins_held(clone_id))
+            N = runner(C5)  # the restart, after the removal: the start itself looks
+            check(row, 'a service started after the removal releases the pin at its start, before any sweep [%s %s]'
+                  % (held, pin_events(N, clone_id)),
+                  first is True and held == 1 and state_of(items['work']) == 'removed' and C5._pins_held(clone_id) == []
+                  and len(pin_events(N, clone_id)) == 1)
+
+            row = 'f4/clone-being-made-keeps-its-pin'
+            # A clone as _create has it between its pins and the git init of its work tree: the root is
+            # there, the pin is in the cache, the work tree is not made, and no item records it.
+            clone_id = 'clone-making-59'
+            root = CLONES / clone_id
+            root.mkdir(mode=0o700)
+            work = root / 'work'
+            head = git(REPOSITORY, 'rev-parse', 'main')
+            pin = C5._pin(C5._cache('dom-308', ORCHARD['project']), ORCHARD['project'], str(REPOSITORY), head, clone_id)
+            N = runner(C5)
+            swept = [N.sweep() for _ in range(2)]
+            check(row, 'no item and nothing at the path releases nothing: the pin of a clone being made is held through '
+                       'the start and two sweeps [%s %s]' % (C5._pins_held(clone_id), pin_events(N, clone_id)),
+                  not os.path.lexists(work) and len(C5._pins_held(clone_id)) == 1 and pin_events(N, clone_id) == []
+                  and git(pin['cache'], 'rev-parse', pin['ref']) == head)
+            making = {'scope': A, 'ticket': 'VELDO-9259', 'run': {'id': 'dispatch/making-59', 'station': 'build'}}
+            made_root = declared('scratch', {'path': str(root)}, making, confirm=False)
+            made_work = declared('agent_repository', {'path': str(work)}, making, confirm=False, parent=made_root)
+            N = runner(C5)
+            swept = [N.sweep() for _ in range(2)]
+            check(row, 'nor do its items once they are declared and the work tree is still not made [%s %s]'
+                  % (state_of(made_work), C5._pins_held(clone_id)),
+                  state_of(made_work) == 'declared' and not os.path.lexists(work)
+                  and len(C5._pins_held(clone_id)) == 1 and pin_events(N, clone_id) == [])
+
+            # Receiver.launch itself, on its refusal paths: refuse, then the space end, then the report.
+            LOG = []
+
+            class Refusing(Dispatches):
+                """The dispatch records, with what was on disk and in the ledger at each write."""
+
+                def refuse(self, dispatch, digest, refusal, now=None, expected_state=None):
+                    LOG.append(('refuse', refusal, expected_state, os.path.isdir(self.place),
+                                state_of(self.items['run']), state_of(self.items['scratch']), hold_state(dispatch),
+                                len(sent_for(dispatch))))
+                    RECORDS[dispatch] = dict(RECORDS[dispatch], state='refused')
+
+                def accept(self, dispatch, digest, me, now=None):
+                    LOG.append(('accept',))
+                    RECORDS[dispatch] = dict(RECORDS[dispatch], state='accepted')
+
+                @staticmethod
+                def receipt(dispatch, what):
+                    return {'digest': 'acceptance-digest'}
+
+            def launching(name, adapters):
+                dispatch_id, owner, place, scratch, items = run_folders(name)
+                made = receiver(dispatch_id, place, scratch, owner, supervision=None)
+                made.dispatches = Refusing(conn)
+                made.dispatches.place, made.dispatches.items = place, items
+                made.config = {'adapters': adapters, 'store': str(store_path), 'principal': 'receiver',
+                               'repository': 'repo-308'}
+                made.runner, made.confined_checked, made.metering, made.host = (
+                    {'runner': 'default', 'why': None}, {}, None, 'fixture-host')
+                made.emit = lambda event: LOG.append((
+                    'emit', event.get('event'), event.get('refusal'), os.path.lexists(place), os.path.lexists(scratch),
+                    hold_state(dispatch_id), len(sent_for(dispatch_id))))
+                contract = {'dispatch_id': dispatch_id, 'repository': 'repo-308', 'capability': {'adapter': 'engine'},
+                            'reservation': {'project': ORCHARD['project']}, 'input': {'context': {}}}
+                RECORDS[dispatch_id] = {'state': 'prepared', 'process': None, 'contract_digest': LA.D.digest(contract)}
+                del LOG[:]
+                return made, contract, dispatch_id, place, scratch, items
+
+            row = 'f5/refused-before-spawn'
+            R, contract, dispatch_id, place, scratch, items = launching('refused-60', {})
+            R.launch(contract)
+            check(row, 'a launch whose adapter is not registered is refused before any spawn, and the refusal is '
+                       'recorded first: the folders on disk, their items present, the hold held, no event sent [%s]'
+                  % (LOG[:1],),
+                  LOG[:1] == [('refuse', 'unregistered_adapter:engine', 'prepared', True, 'present', 'present',
+                               'admitted', 0)])
+            check(row, 'the refusal is reported last, after the space end: the folders gone, the hold released, run '
+                       'finished sent once [%s]' % (LOG[1:],),
+                  LOG[1:] == [('emit', 'refused', 'unregistered_adapter:engine', False, False, 'released', 1)]
+                  and [state_of(items[name]) for name in ('run', 'scratch')] == ['removed'] * 2
+                  and (R.run_end or {}).get('sent') is True)
+
+            row = 'f5/spawn-failed'
+            R, contract, dispatch_id, place, scratch, items = launching('spawn-61', {'engine': {'argv': ['/nonexistent/engine']}})
+            R._recheck = lambda offered: None
+            R._qualify = lambda adapter: None
+            R._login = lambda offered, adapter: None
+            R._bind = lambda adapter, dispatch: None
+
+            def failing(offered, acceptance, adapter):
+                LOG.append(('spawn', os.path.isdir(place), hold_state(dispatch_id)))
+                raise OSError(errno.ENOENT, 'No such file or directory')
+            R._invoke = failing
+            real_organ = LA._organ
+            LA._organ = lambda name: (types.SimpleNamespace(handoff=lambda reader, host: None, Refused=RuntimeError)
+                                      if name == 'control_memory' else real_organ(name))
+            try:
+                R.launch(contract)
+            finally:
+                LA._organ = real_organ
+            check(row, 'the launch is accepted, the spawn fails, and the refusal is recorded with nothing of the run '
+                       'judged: the folders on disk, their items present, the hold held, no event sent [%s]' % (LOG[:4],),
+                  LOG[:4] == [('accept',), ('emit', 'accepted', None, True, True, 'admitted', 0),
+                              ('spawn', True, 'admitted'),
+                              ('refuse', 'spawn_failed:ENOENT', 'accepted', True, 'present', 'present', 'admitted', 0)])
+            check(row, 'the refusal is reported last, after the space end: the folders gone, the hold released, run '
+                       'finished sent once [%s]' % (LOG[4:],),
+                  LOG[4:] == [('emit', 'refused', 'spawn_failed:ENOENT', False, False, 'released', 1)]
+                  and [state_of(items[name]) for name in ('run', 'scratch')] == ['removed'] * 2
+                  and (R.run_end or {}).get('sent') is True)
         except Exception as error:
             stopped(row, error)
 

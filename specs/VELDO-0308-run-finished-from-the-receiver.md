@@ -17,6 +17,9 @@ footprint:
   - "engine/.veldo/control_retirement.py"
   - ".veldo/control_retirement.py"
   - "scripts/suites/*_veldo_0308_*.py"
+  - "scripts/suites/142_veldo_0303_space_paths.py"
+  - "scripts/suites/129_veldo_0254_canary_launch.py"
+  - "specs/VELDO-0303-the-existing-removal-paths-go-through-the-safety-rules.md"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -179,3 +182,66 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   - Two registered falsifiers of earlier tickets were re-anchored, unchanged in meaning, because
     _remove_run now reads the group in one place: space303-receiver-answers-for-an-unread-group and
     space305-no-census-at-the-receivers-end. Each was applied again and turns its row red.
+- 2026-11-14: fix round, after the review of this ticket (verdict FIX, five findings) and the lead's
+  decisions on them. No acceptance criterion changed. The footprint gained three files by the lead's
+  decision: suite 142 (its rows stated the sweep as a retry), suite 129_veldo_0254 (the race in its
+  own read, finding 2) and the VELDO-0303 spec (a History line). What changed, and what it replaces
+  in the entry above:
+  - Finding 1, a sweep is no retry. The entry above left Runner.clear_runs sending run finished at
+    every sweep for a leftover whose run directory stays deferred, FOR THE LEAD. The decision: a
+    sweep never sends run finished again for a run already handed over. Now clear_runs reads the
+    ledger first. A run directory whose item is due, deferred, removing or kept is the ledger's (an
+    ending event reached it): the leftover is dropped with the observation remove_run, outcome
+    handed_over, and nothing is sent; its retries are the ledger's (design section 7, Retry). Run
+    finished is sent only while the item is declared or present, and at most once for a leftover:
+    after its own event a held item is dropped the same way, and one the event did not move is not
+    sent another (refusal run_finished_sent). sweep_runs applies the same rule at start, so a
+    restart does not make a deferred run directory a leftover again. A ledger that cannot be read
+    sends nothing and forgets nothing.
+  - Finding 1, the event is for the run's own folders alone. The sweep and the receiver both send
+    with `alone`, and both look first (space_apart): while the run's owner also has a live work
+    tree or agent repository that is not at or beneath the run's folders (its clone), nothing is
+    sent, the reason is not_alone, and the clone's own teardown sends the one run finished for that
+    owner, behind its clone_in_use test; that event removes the run directory with the clone. So
+    the receiver's send can no longer judge a clone, handed over or not. The cost, for the lead: a
+    run that owns a worktree or an agent repository elsewhere which no teardown ends (none is
+    declared that way today; VELDO-0302 decides the owners) is sent nothing by its receiver, and its
+    run directory and scratch stay until that worktree's own event or reconcile. That costs space
+    and loses nothing. The ledger's signal takes an owner and no single item, and the ledger module
+    is outside this footprint, so `alone` is the limit used.
+  - The consequence the review asked to be recorded: until VELDO-0315 or 0316 lands, a deferred run
+    directory of a run whose outcome is unknown (no retirement completes) stays on disk until
+    reconcile. That costs space and loses nothing.
+  - Suite 142 changed with it: ac3/deferred-then-swept now expects the leftover dropped as handed
+    over, no second event with the journal unchanged, and the removal by a retry of the ledger's;
+    f3/consumer-holds-clone now expects not_alone once the consumer has ended and the removal of
+    the run directory by the clone's teardown. Runner.wait keeps an exited run as a leftover when a
+    ledger is wired, so a run directory its receiver sent nothing for is the sweep's in the same
+    runner and not only after a restart.
+  - Finding 2, the test. Suite 129_veldo_0254 read /proc/<pid>/environ right after Popen and an
+    asynchronous SIGSTOP, before the kernel had laid out the new image. It now waits, with a
+    deadline, until /proc/<pid>/stat shows state T, reads only then, and is red when the process
+    never stops. Measured on this host: the old row red in 4 of 60 runs of the suite, the fixed row
+    in 0 of 200. No product code changed for it.
+  - Finding 3, fail closed. The entry above said a group nobody could read is not held back by the
+    receiver. It is now: an unread group is not known to be empty, so _space_end sends nothing,
+    judges nothing and keeps the hold, with the reason group_unread (design 0.6). The sweep's kernel
+    test, which reads the group itself, takes over the run directory. The hold of such a run stays
+    held until VELDO-0315 or 0316 gives the sweep or reconcile that release, as the entry above
+    already says of an unknown outcome.
+  - Finding 4, the pins survive a restart. The entry above said what follow_pins follows is in
+    memory. It now reads the pin refs in the caches at each call (refs/veldo/pins/<clone id>/...),
+    takes the work tree's path from the clone id, and releases a clone's pins only when the ledger
+    records an item at that path, every item it records there is removed or gone, and nothing is at
+    the path. Never on "no item and nothing at the path": a clone being made holds its pins before
+    its work tree exists. It runs when the service is made (the start), at every sweep and at every
+    retire call.
+  - Finding 5, coverage. Two rows drive Receiver.launch itself, one refusal before any spawn and
+    one failed spawn, and show the order: the refusal recorded, the space end, the report.
+  - Rows added to suite 146, each with a registered falsifier applied once and seen red:
+    f1/sweep-never-resends (the reviewer's probe row with the expectation reversed),
+    f1/start-sweep-applies-the-rule, f1/sent-once-and-alone, f3/unread-group-sends-nothing,
+    f4/pins-followed-after-a-restart, f4/clone-being-made-keeps-its-pin, f5/refused-before-spawn,
+    f5/spawn-failed. Two registered falsifiers were re-anchored, unchanged in meaning, and applied
+    again: space303-receiver-answers-for-an-unread-group and
+    space308-pins-released-at-the-teardown-only.

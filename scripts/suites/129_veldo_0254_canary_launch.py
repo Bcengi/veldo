@@ -29,7 +29,8 @@ them, as a substring and through secret_scan.scan holding the canaries. Kinds an
 dispatch through Runner.submit) and a conversation turn (ConversationLine.offer), each on claude_code and codex; a
 workflow step's engine reasoning is a coordination dispatch on the same Runner.submit and receiver launch
 (control_workflow_cycle_pm), so the engine-run launches cover it; a project process (the repository provisioner)
-runs no engine, so its environment and command line are read from /proc as it starts. No real engine runs, nothing
+runs no engine, so its environment and command line are read from /proc as it starts, once the kernel shows it
+stopped (a read before that can find an empty environment in a live process). No real engine runs, nothing
 logs in and no real credential exists. Writes only temporary fixtures in the owner's runtime directory.
 """
 
@@ -755,11 +756,28 @@ out.close()
             provisioners.append(process)
             with contextlib.suppress(OSError):
                 os.kill(process.pid, signal.SIGSTOP)
-            try:
-                project_process['environ'] = (Path('/proc') / str(process.pid) / 'environ').read_bytes()
-                project_process['cmdline'] = (Path('/proc') / str(process.pid) / 'cmdline').read_bytes()
-            except OSError:
-                project_process['environ'] = project_process['cmdline'] = b''
+            # The stop is asynchronous, and Popen returns at the exec's point of no return, before the
+            # kernel has laid out the new image: a read made now can find an empty environment in a
+            # process that is alive. The stop takes effect only once the exec has finished, so the row
+            # waits, with a deadline, until the kernel says the process is stopped (state T), and only
+            # then reads. A process that never stops is not read at all: the row is refused, red.
+            project_process['state'], end = None, time.time() + 30
+            while time.time() < end:
+                try:
+                    stat = (Path('/proc') / str(process.pid) / 'stat').read_text()
+                    project_process['state'] = stat.rsplit(')', 1)[1].split()[0]
+                except (OSError, IndexError):
+                    project_process['state'] = None
+                if project_process['state'] in ('T', 'Z', None):
+                    break
+                time.sleep(0.001)
+            project_process['environ'] = project_process['cmdline'] = b''
+            if project_process['state'] == 'T':
+                try:
+                    project_process['environ'] = (Path('/proc') / str(process.pid) / 'environ').read_bytes()
+                    project_process['cmdline'] = (Path('/proc') / str(process.pid) / 'cmdline').read_bytes()
+                except OSError:
+                    project_process['environ'] = project_process['cmdline'] = b''
             with contextlib.suppress(OSError):
                 os.kill(process.pid, signal.SIGCONT)
             feed_provisioner(process)
@@ -885,6 +903,9 @@ out.close()
         with region('ac1/canary-project-process'):
             environ = project_process.get('environ') or b''
             cmdline = project_process.get('cmdline') or b''
+            check('ac1/canary-project-process', 'project process: the kernel showed it stopped before its environment '
+                  'and command line were read (the row reads nothing of a process it could not stop) [state %s]'
+                  % (project_process.get('state'),), project_process.get('state') == 'T')
             check('ac1/canary-project-process', 'project process (repository provisioner, no engine): '
                   'NewProjectPass.provision started it and its environment and command line were read from /proc '
                   '[%s, %d environment bytes, %s]' % (project_process['event'].get('outcome'), len(environ),

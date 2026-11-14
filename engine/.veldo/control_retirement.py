@@ -75,13 +75,17 @@ Those are attempted again as before.
 
 THE PINS FOLLOW THE WORK TREE (VELDO-0308 AC4). The provisioner releases a clone's pins inside its
 teardown call, and only when the work tree's removal outcome is written there. After a hand-over
-nothing calls that teardown again, so `follow_pins` releases them here: for each clone handed over
-whose pins are still held, when the ledger says the work tree's item is removed or gone and the
-kernel says nothing is at its path. Whoever removed it, and whenever: every sweep and every retire
-call looks. Not before: while the work tree is on disk its objects are the caches', and a pin is what
-keeps them, so a work tree that is deferred, due or removing, an item or a path that cannot be read,
-and a clone whose work tree no item recorded and that is still on disk release nothing. What is
-followed is in memory, like every entry here.
+nothing calls that teardown again, so `follow_pins` releases them here. What it follows is read from
+disk at each call, and nothing of it is kept in memory, so a restart of the runner forgets no pin: the
+pin refs in the caches (refs/veldo/pins/<clone id>/...) name the clones, and a clone's work tree is
+at <clones>/<clone id>/work. A clone's pins are released when the ledger records an item at that path
+and every one it records there is removed or gone, and the kernel says nothing is at the path. Both,
+never one: a clone being made holds its pins before its work tree exists, so "no item and nothing at
+the path" releases nothing. Whoever removed the work tree, and whenever: the start (the making of
+this service), every sweep and every retire call look. Not before: while the work tree is on disk its
+objects are the caches', and a pin is what keeps them, so a work tree that is deferred, due or
+removing, an item, a path or a cache that cannot be read, and a work tree no item records release
+nothing.
 
 THE DISPATCH'S DEFERRED ITEMS (VELDO-0308 AC3, design section 7, Retry). When a pending retirement is
 carried out, the call that released the slot hands the dispatch to `deferred(dispatch_id, but)`, the
@@ -105,6 +109,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import subprocess
 import time
 import weakref
 
@@ -118,6 +123,7 @@ def _organ(name):
 
 C = _organ('control_containment')
 RES = _organ('control_reservations')
+_git_process = _organ('git_process')  # every git call of the engine goes through it
 
 SCHEMA = 'veldo.retirement/v1'
 OBSERVER = 'launch_runner'
@@ -141,6 +147,8 @@ HANDED = ('retired', 'deferred')
 SPACE_DEFERRED = 'space_deferred'
 SPACE_ENDED = ('removed', 'gone')
 SPACE_TRACKED = ('due', 'deferred', 'removing', 'kept')
+PIN_PREFIX = 'refs/veldo/pins/'  # control_clone.PIN_PREFIX: a clone's pin refs, in each cache
+GIT_SECONDS = 120
 
 
 def taxonomy(code):
@@ -191,7 +199,8 @@ class Retirements:
     def __init__(self, reservations, dispatches, *, clones=None, clock=None, observations=None, deferred=None):
         self.reservations, self.dispatches, self.clones = reservations, dispatches, clones
         # VELDO-0308: the runner's seam into Signal for a dispatch's deferred items (AC3), and the clones
-        # handed to the space ledger, by clone: {teardown, refusal, by, root, item, work, pins} (AC4).
+        # handed to the space ledger, by clone: {teardown, refusal, by, root, item, work, pins} (AC4). The
+        # pins are followed from the refs on disk (follow_pins), never from this.
         self.deferred = deferred
         self.handed = {}
         self.store = reservations.store
@@ -201,6 +210,11 @@ class Retirements:
         self.counts = {'accepted': 0, 'refused': 0, 'retried': 0}
         # Accounting is completed by a call's final report, which the reservation service accepts.
         _listen(reservations, self)
+        # VELDO-0308 AC4: the pins a clone handed over before a restart still holds are followed from the start.
+        try:
+            self.follow_pins()
+        except Exception:  # noqa: BLE001 - the next sweep looks again; a service that cannot look still starts
+            pass
 
     def _entry(self, dispatch_id):
         return self.entries.setdefault(dispatch_id, {'group': None, 'stop_requested': False, 'supervision': None,
@@ -337,48 +351,67 @@ class Retirements:
         return {'item': found[0], 'state': found[1].get('state')}
 
     def _hand_over(self, dispatch_id, clone, before, tracked):
-        """Record that the clone is the ledger's from now on, with what `follow_pins` needs: the work
-        tree's path and the pins the clone held."""
+        """Record that the clone is the ledger's from now on, with its work tree's path and the pins it
+        held then. `follow_pins` does not read this: it follows the pin refs on disk."""
         self.handed[clone['clone_id']] = {
             'teardown': clone['teardown'], 'refusal': clone['refusal'], 'by': dispatch_id, 'root': before['root'],
             'item': (tracked or {}).get('item'), 'work': before['work'],
             # A retired teardown released its pins itself; a deferred one left them for the work tree.
             'pins': list(before['pins']) if tracked is not None else []}
 
+    def _pinned(self):
+        """Every pin ref the caches hold now, by clone: {clone id: [{cache, ref}]}. Read from disk at each
+        call, so nothing depends on what this service remembers. Raises when a cache cannot be listed."""
+        found = {}
+        caches = getattr(self.clones, 'caches', None)
+        for cache in sorted(Path(caches).glob('*.git')) if caches else ():
+            done = _git_process.run(['git', '-C', str(cache), 'for-each-ref', '--format=%(refname)', PIN_PREFIX],
+                                    capture_output=True, text=True, timeout=GIT_SECONDS, stdin=subprocess.DEVNULL)
+            if done.returncode:
+                raise OSError('the pins of %s could not be listed' % cache.name)
+            for ref in done.stdout.split():
+                clone_id = ref[len(PIN_PREFIX):].split('/', 1)[0]
+                if ref.startswith(PIN_PREFIX) and clone_id not in ('', '.', '..'):
+                    found.setdefault(clone_id, []).append({'cache': str(cache), 'ref': ref})
+        return found
+
     def follow_pins(self):
-        """VELDO-0308 AC4: release the pins of each clone handed to the ledger whose work tree is gone:
-        every item the ledger records at the work tree's path is removed or gone, and the kernel says
-        nothing is at that path (not found, and no other answer). A work tree no item ever recorded is
-        followed by its path alone. An item there in any other state (deferred, due, removing under
-        its marked name, kept), a path that is still there, and anything that cannot be read release
-        nothing, and the clone is looked at again at the next call. Returns the refs released."""
+        """VELDO-0308 AC4: release the pins of each clone whose work tree the ledger records as gone. The
+        clones are the ones the pin refs on disk name (_pinned), read at this call, so a clone handed
+        over before a restart is followed like any other. A clone's pins go when the ledger records
+        an item at its work tree's path (<clones>/<clone id>/work), every item it records there is
+        removed or gone, and the kernel says nothing is at that path (not found, and no other answer).
+        An item there in any other state (declared, present, deferred, due, removing under its marked
+        name, kept), a path that is still there, and anything that cannot be read release nothing. A
+        work tree no item records releases nothing either, whatever is at the path: a clone being
+        made holds its pins before its work tree exists. Each is looked at again at the next call.
+        Returns the refs released."""
         released = []
-        following = sorted(clone_id for clone_id, handed in self.handed.items() if handed['pins'])
-        if not following:
+        if self.clones is None or self._space() is None:
             return released
         try:
-            every = list(self._space()['ledger'].items().values())
-        except Exception as error:  # noqa: BLE001 - a ledger that cannot be read releases nothing
+            pinned = self._pinned()
+            every = list(self._space()['ledger'].items().values()) if pinned else []
+        except Exception as error:  # noqa: BLE001 - pins or a ledger that cannot be read release nothing
             self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': None,
                                       'outcome': 'refused', 'refusal': 'unavailable_service:' + type(error).__name__})
             return released
-        for clone_id in following:
-            handed, done = self.handed[clone_id], []
+        for clone_id in sorted(pinned):
+            done = []
             try:
-                if not handed['work']:
-                    continue
-                where = os.path.normpath(str(handed['work']))
-                if any((record.get('locator') or {}).get('path') == where and record.get('state') not in SPACE_ENDED
-                       for record in every):
+                where = os.path.normpath(str(Path(self.clones.clones) / clone_id / 'work'))
+                recorded = [record for record in every if (record.get('locator') or {}).get('path') == where]
+                if any(record.get('state') not in SPACE_ENDED for record in recorded):
                     continue  # the ledger still holds the work tree: not before its removal
+                if not recorded:
+                    continue  # no item records a removal: a clone being made is pinned before its work tree
                 try:
                     os.lstat(where)
                     continue  # the work tree is on disk: its objects are the caches'
                 except FileNotFoundError:
                     pass
-                for pin in list(handed['pins']):
+                for pin in pinned[clone_id]:
                     self.clones._release(Path(pin['cache']), pin['ref'])
-                    handed['pins'].remove(pin)
                     done.append(pin['ref'])
             except Exception as error:  # noqa: BLE001 - what could not be read or released stays pinned
                 self.observations.append({'schema': SCHEMA, 'operation': 'release_pins', 'clone_id': clone_id,
