@@ -101,8 +101,12 @@ rules and the keep step, by the removers. landed does this, in order, and return
      such receipt nothing is sent: a landing that was refused, failed or is unknown sends nothing;
   2. it reads the trunk now (the local ref, or the remote's answer) and sends nothing unless the trunk is at
      the receipt's candidate or contains it: a landing that was undone since is not a landing;
-  3. it reads every recorded branch of the unit's project with git, in the repository the branch is recorded
-     in. A branch of the unit is landed when its tip is in the new trunk tip, or is the source commit or one
+  3. it brings the objects of the new trunk tip from the landing's own clone into every repository a branch
+     of the project is recorded in that does not hold them (a landing to the remote leaves the project's
+     repository without them): pack-objects there, unpack-objects here, and no ref is written, nothing is
+     fetched and nothing is removed. A repository they could not be brought into is read as it is, and its
+     branches are unread. Then it reads every recorded branch of the unit's project with git, in the
+     repository the branch is recorded in. A branch of the unit is landed when its tip is in the new trunk tip, or is the source commit or one
      of its ancestors (a squash). Another branch is contained when it has a start commit, its tip is not that
      commit, the start commit is an ancestor of the tip, and the new trunk tip contains the tip. What git
      cannot read is neither;
@@ -116,8 +120,10 @@ rules and the keep step, by the removers. landed does this, in order, and return
   6. after each event the tip of every branch it counted is read again: a branch that moved since the check
      is named as moved and is not listed as marked.
 
-Signal is given the source commit and the new trunk tip as the landings rule 5 reads, the receipt in the
-emitter of every outcome, and every other argument as the installation wired it. The record names the receipt,
+Signal is given the landing's source commit as a landing rule 5 reads, and nothing of the trunk: rule 5
+reads the trunk itself at each removal (design section 7: no fact is carried over), so a trunk put back after
+the check holds nothing for it. Signal is also given the receipt in the emitter of every outcome, and every
+other argument as the installation wired it. The record names the receipt,
 each item removed, each deferred with its deferral, and each branch marked contained (the branch item's
 outcome kept, with the action mark_contained). Whatever raises sends nothing more and is named.
 
@@ -1380,9 +1386,54 @@ class Landing:
         return value if found.returncode == 0 and _hex(value) else None
 
     def _trunk_holds(self, candidate):
-        """Whether the trunk, read now, is at the landing's candidate or contains it: (holds, tip)."""
-        tip = self._local_tip() if self.destination == LAND_LOCALLY else self._remote_tip()
+        """Whether the trunk, read now, is at the landing's candidate or contains it: (holds, tip). For a
+        landing that lands locally the trunk is the project's own ref; for any other it is the remote's own
+        answer now, and a remote that does not answer holds nothing."""
+        if self.destination == LAND_LOCALLY:
+            tip = self._local_tip()
+        else:
+            tip = self._remote_tip()  # the remote's own answer, read now
         return (tip is not None and self._reaches(self.clone, candidate, tip) is True), tip
+
+    def _has(self, repo, commit):
+        return self._git(repo, 'cat-file', '-e', commit + '^{commit}').returncode == 0
+
+    def _bring(self, repository, commit):
+        """VELDO-0310: the objects of `commit` (the new trunk tip) from the landing's clone into `repository`,
+        so that git can say there what the new trunk tip contains. No ref is written, nothing is fetched and
+        nothing is removed: pack-objects in the clone, unpack-objects in the repository, as _copy_objects does
+        (VELDO-0235). The pack leaves out what the repository's own refs already hold. Returns 'held' when the
+        repository has the commit already, 'copied' when it has it now, and None when it could not be brought:
+        a repository git cannot read, one that shares no commit with the clone, a transfer that failed. Its
+        branches are then unread, and an unread branch is never contained."""
+        if not _hex(commit) or not _text(repository):
+            return None
+        try:
+            if self._has(repository, commit):
+                return 'held'
+            if not self._has(self.clone, commit):
+                return None
+            refs = self._git(repository, 'for-each-ref', '--format=%(objectname)')
+            tips = sorted({line.strip() for line in refs.stdout.splitlines() if _hex(line.strip())})
+            if refs.returncode or not tips:
+                return None
+            known = _git_process.run(['git', '-C', str(self.clone), 'cat-file', '--batch-check'],
+                                     input=''.join(tip + '\n' for tip in tips).encode(), capture_output=True,
+                                     timeout=GIT_SECONDS)
+            shared = [words[0] for words in (line.split() for line in known.stdout.decode('utf-8', 'replace').splitlines())
+                      if len(words) == 3 and words[1] in ('commit', 'tag') and _hex(words[0])]
+            if known.returncode or not shared:
+                return None
+            wanted = (commit + '\n' + ''.join('^%s\n' % tip for tip in shared)).encode()
+            packed = _git_process.run(['git', '-C', str(self.clone), 'pack-objects', '--revs', '--stdout', '-q'],
+                                      input=wanted, capture_output=True, timeout=GIT_SECONDS)
+            if packed.returncode:
+                return None
+            unpacked = _git_process.run(['git', '-C', str(repository), 'unpack-objects', '-q'], input=packed.stdout,
+                                        capture_output=True, timeout=GIT_SECONDS)
+            return 'copied' if unpacked.returncode == 0 and self._has(repository, commit) else None
+        except (Refused, OSError, subprocess.SubprocessError):
+            return None
 
     def landed(self, space, unit, dispatch):
         """VELDO-0310: send landed for the unit whose completion receipt is recorded, then contained for
@@ -1390,15 +1441,16 @@ class Landing:
         LANDED AND CONTAINED). `space` is what the installation wires in when it has a space ledger: a
         mapping with ledger (the control_space.Ledger) and, under their own names, the arguments Signal
         is given. Returns {sent, reason, receipt, unit, dispatch, scope, trunk, source, events, removed,
-        deferred, marked, moved, left, due, branches, raised}; never raises, and deletes nothing itself."""
+        deferred, marked, moved, left, due, branches, brought, raised}; brought names each repository the new
+        trunk tip's objects were copied into, or could not be; never raises, and deletes nothing itself."""
         out = {'sent': False, 'reason': None, 'receipt': None, 'unit': unit, 'dispatch': dispatch, 'scope': None,
                'trunk': None, 'source': None, 'events': [], 'removed': [], 'deferred': [], 'marked': [], 'moved': [],
-               'left': [], 'due': 0, 'branches': {}, 'raised': None}
+               'left': [], 'due': 0, 'branches': {}, 'brought': [], 'raised': None}
         try:
             self._landed(space, unit, dispatch, out)
         except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
             out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
-        for part in ('removed', 'deferred', 'marked', 'moved', 'left'):
+        for part in ('removed', 'deferred', 'marked', 'moved', 'left', 'brought'):
             if len(out[part]) > SPACE_NAMED:
                 out[part] = out[part][:SPACE_NAMED] + [{'more': len(out[part]) - SPACE_NAMED}]
         self._emit('space', unit, dispatch, None, outcome='sent' if out['sent'] else 'not_sent', reason=out['reason'],
@@ -1424,7 +1476,16 @@ class Landing:
         scope = {'type': 'project', 'id': name}
         out['scope'] = scope
         given = {key: value for key, value in space.items() if key not in ('ledger', 'emitter')}
-        given['landed'] = tuple(given.get('landed') or ()) + (receipt['source'], receipt['candidate'])
+        # Rule 5 is given the landing's source commit and reads the trunk itself, at each removal.
+        given['landed'] = tuple(given.get('landed') or ()) + (receipt['source'],)
+        # The new trunk tip's objects, into each repository a branch of the project is recorded in: no ref.
+        for repository in sorted({os.path.normpath(str((record.get('locator') or {}).get('repository')))
+                                  for record in ledger.items().values()
+                                  if record.get('kind') == 'branch' and record.get('state') not in SPACE_ENDED
+                                  and (record.get('owner') or {}).get('scope') == scope}):
+            how = self._bring(repository, receipt['candidate'])
+            if how != 'held':
+                out['brought'].append({'repository': repository, 'how': how or 'not_brought'})
         emitter = {'process': 'landing_station', 'unit': unit, 'dispatch': dispatch, 'receipt': receipt['id']}
         if 'signal' not in _SPACE:
             _SPACE['signal'] = _organ('control_space_signal').signal

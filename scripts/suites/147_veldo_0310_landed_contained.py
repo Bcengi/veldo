@@ -54,6 +54,27 @@ the commit is on the branch, and the record names the branch moved, not marked).
 ac3/other-project-untouched (a branch and worktree of another project). ac3/marked-once (a branch marked at
 one landing, with nothing else to reach, is not sent the event again).
 
+Rows of the fix round (the review of this ticket). f1/remote-trunk-put-back, f1/remote-unit-landed and
+f1/remote-branch-contained (finding 1: the project's destination is set to the remote one, the default, and
+a unit lands at the bare origin through the publication clone. The station's own step runs with the remote's
+trunk put back just before it: the remote's own answer is read, nothing is sent and nothing is brought.
+Then, with the remote at the landing, the unit's worktree is removed after the keep step through the source
+commit, no branch of the project's repository holding the candidate; another branch of that repository
+which the remote's new tip contains is contained, its worktree removed after the keep step, the branch kept
+and marked; and a branch recorded in another repository, which holds nothing of the landing, is contained
+after the candidate's objects were brought into it, with no ref written there and nothing fetched).
+f2/trunk-read-at-the-attempt (finding 2: a clean worktree whose commit only the
+trunk holds counts as contained at the check; the trunk is put back inside the Signal stand-in; rule 5,
+given the source commit only, reads the trunk itself and defers the worktree as unique_work).
+f4/squash-landing (a branch whose tip is the source commit and not in the trunk, the trunk at a squash
+commit made with plain git: landed through the source commit, removed after the keep step),
+f4/one-landed-one-unlanded (a unit with a second branch the landing does not hold, which is not the first
+of its branch items: landed is not sent and the record names that branch), f4/detached-worktree-at-landed
+(a detached worktree of the unit at the source commit counts as landed and is removed after the keep step).
+f5/space-step-failed (finding 5: the Signal stand-in raises after a landing; the land dispatch's record is
+ended landed, it was ended before the step ran, and the space step's own record is failed with what was
+raised; nothing is removed).
+
 paths/no-delete-and-canon: neither module deletes by itself, and the engine canon equals the copies.
 
 STAND-INS. The creators declare nothing yet (VELDO-0302) and the git hooks are not built (VELDO-0311): the
@@ -61,7 +82,10 @@ suite declares each worktree, branch, build output and image tag item itself. Th
 act (VELDO-0332 and 0339). The docker client, a function holding one image. The process table, an empty
 folder shaped as the kernel's. The units, the floor handoffs and the project records are fixture records,
 and the authority's candidate policy accepts, as in VELDO-0235's suite. The station is given its ledger by
-the suite, as an installation will give it (the wiring in the service is not this ticket's).
+the suite, as an installation will give it (the wiring in the service is not this ticket's). In
+f4/squash-landing the receipt is a stand-in (the lander makes no squash): it names a squash commit made
+with plain git as the candidate and the branch's commit as the source, and the trunk is moved to that
+commit by the row; the unit U8 is a fixture record with no build.
 """
 
 
@@ -92,6 +116,10 @@ def _v310_suite():
             'ac3/contained-worktree-removed', 'ac3/fresh-branch-left', 'ac3/no-start-left',
             'ac3/not-in-trunk-left', 'ac3/work-in-contained-worktree-stays', 'ac3/not-alone-left',
             'ac3/moved-after-the-check', 'ac3/other-project-untouched', 'ac3/marked-once',
+            'f1/remote-trunk-put-back', 'f1/remote-unit-landed', 'f1/remote-branch-contained',
+            'f2/trunk-read-at-the-attempt',
+            'f4/squash-landing', 'f4/one-landed-one-unlanded', 'f4/detached-worktree-at-landed',
+            'f5/space-step-failed',
             'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
@@ -170,10 +198,12 @@ def _v310_suite():
 
         # The units, all of the project orchard: U1 lands; U2 is refused once and re-landed; U3 was built
         # on after its evidence commit; U4 lands with no ledger wired in.
-        U1, U2, U3, U4 = ('VELDO-97%02d' % n for n in range(1, 5))
-        UNITS = (U1, U2, U3, U4)
-        T_CONT, T_FRESH, T_NOSTART, T_AHEAD, T_DIRTY, T_MIXED, T_MOVED, T_MEADOW = (
-            'VELDO-98%02d' % n for n in range(1, 9))
+        # The fix round: U5 lands at the remote; U6 has a second branch the landing does not hold; U7's
+        # space step fails, and it has a detached worktree; U8 is landed as a squash (a stand-in receipt).
+        U1, U2, U3, U4, U5, U6, U7, U8 = ('VELDO-97%02d' % n for n in range(1, 9))
+        UNITS = (U1, U2, U3, U4, U5, U6, U7)
+        T_CONT, T_FRESH, T_NOSTART, T_AHEAD, T_DIRTY, T_MIXED, T_MOVED, T_MEADOW, T_HELD, T_REMOTE, T_AGENT = (
+            'VELDO-98%02d' % n for n in range(1, 12))
 
         seed = base / 'seed'
         seed.mkdir()
@@ -304,6 +334,10 @@ def _v310_suite():
                 'source': {'commit': builds[sid]['evidence']}, 'proof': {'digest': builds[sid]['proof']},
                 'handoff': {'reviewers': ['reviewer-b'], 'required': 1, 'risk': 'standard', 'attempt': 1,
                             'source': {'commit': builds[sid]['evidence']}, 'proof': {'digest': builds[sid]['proof']}}})
+
+        put(U8, 'execution_unit', {'state': 'READY', 'repository_uuid': REPO, 'revision': 1, 'project': 'orchard',
+                                   'backlog_item_uuid': 'backlog:' + U8, 'requirements': [], 'depends_on': [],
+                                   'approvals_required': []})
 
         projects = PJ.Projects(S, CM, writer, ids, 'authority', sign, stop=lambda dispatch, reason: True)
 
@@ -462,6 +496,18 @@ def _v310_suite():
             except OSError:
                 return None
 
+        def bytes_of(path):
+            try:
+                return Path(path).read_bytes()
+            except OSError:
+                return None
+
+        def head_of(path):
+            """The commit a worktree has checked out, or None when it is gone or its HEAD does not resolve."""
+            if not os.path.isdir(str(path)) or git(path, 'rev-parse', '--verify', '--quiet', 'HEAD', ok=False) != 0:
+                return None
+            return git(path, 'rev-parse', '--verify', '--quiet', 'HEAD')
+
         def planted(name, branch, ticket, scope=A, repository=caller, root=WORKTREES, start='read', build_output=True,
                     record_branch=True):
             """A linked worktree on `branch`, made with plain git, and its items as the creators and the
@@ -528,18 +574,26 @@ def _v310_suite():
         # Every event the landing sends through Signal, as it is sent, with what the store held then.
         SENT = []
         MOVES = {}
+        # What a row has happen inside the stand-in, once, as the event for (event, ticket) is sent.
+        INSIDE = {}
 
         def counted(ledger, event, subject, **given):
             unit = (given.get('emitter') or {}).get('unit')
             dispatch = (given.get('emitter') or {}).get('dispatch')
             receipt = row(LG.receipt_id(unit, dispatch)) if unit and dispatch else None
             record = row(LS.record_id(dispatch)) if dispatch else None
+            step = row(LS.space_record_id(dispatch)) if dispatch else None
+            inside = INSIDE.pop((event, subject.get('ticket')), None)
+            if inside is not None:
+                inside({'record': ((record or {}).get('data') or {}).get('state'),
+                        'step': ((step or {}).get('data') or {}).get('state')})
             if event == 'contained' and subject.get('ticket') == T_MOVED and 'commit' not in MOVES:
                 # Between the landing's check and Signal, the branch gains a commit.
                 MOVES['commit'] = commit_in(moving['path'], 'late.txt', 'made after the check\n', 'After the check')
             SENT.append({'event': event, 'ticket': subject.get('ticket'), 'unit': unit, 'dispatch': dispatch,
                          'receipt': bool(receipt and receipt['kind'] == 'completion_receipt'),
                          'record': ((record or {}).get('data') or {}).get('state'),
+                         'step': ((step or {}).get('data') or {}).get('state'),
                          'landed': tuple(given.get('landed') or ())})
             return SIG.signal(ledger, event, subject, **given)
 
@@ -593,6 +647,13 @@ def _v310_suite():
         def candidate_of(record):
             return (record.get('candidate') or {}).get('commit')
 
+        def step_of(record):
+            """The record of the space step of a land dispatch: its own entity, joined to the dispatch."""
+            return station.space_record(str((record or {}).get('dispatch_id'))) or {}
+
+        def space_of(record):
+            return step_of(record).get('space') or {}
+
         def kinds_of(entries):
             return [entry.get('kind') for entry in entries]
 
@@ -601,7 +662,7 @@ def _v310_suite():
 
         # ---- the first landing: U1 ---------------------------------------------------------------------------------
         first = land(U1)
-        done = first.get('space') or {}
+        done = space_of(first)
         receipt_id = LG.receipt_id(U1, str(first.get('dispatch_id')))
         R = 'ac1/after-the-receipt'
         check(R, 'the land of U1 landed and its receipt is committed [%s %s]' % (first.get('state'), first.get('refusal')),
@@ -613,13 +674,19 @@ def _v310_suite():
         check(R, 'every event of this landing was sent while its receipt was in the store [%s]'
               % [(e['event'], e['ticket'], e['receipt']) for e in SENT],
               bool(SENT) and all(entry['receipt'] is True and entry['unit'] == U1 for entry in SENT))
-        check(R, 'and before the land dispatch\'s own record was ended, so the record ends with what was done [%s]'
-              % sorted({entry['record'] for entry in SENT}),
-              all(entry['record'] == 'running' for entry in SENT) and done.get('sent') is True
-              and done.get('receipt') == receipt_id and first.get('receipt') == receipt_id)
-        check(R, 'Signal was given the landing\'s source commit and the new trunk tip, read from the receipt [%s]'
-              % (mine[0]['landed'] if mine else None,),
-              bool(mine) and mine[0]['landed'][-2:] == (builds[U1]['evidence'], candidate_of(first)))
+        check(R, 'and after the land dispatch\'s own record was ended landed, while the space step\'s own record '
+                 'was running [%s]' % sorted({(entry['record'], entry['step']) for entry in SENT}),
+              all(entry['record'] == 'landed' and entry['step'] == 'running' for entry in SENT))
+        check(R, 'the space step\'s record ends done with what was done, joined to the dispatch and to the receipt, '
+                 'and the dispatch\'s record holds no space step [%s %s]'
+              % (step_of(first).get('state'), step_of(first).get('receipt')),
+              step_of(first).get('state') == 'done' and step_of(first).get('receipt') == receipt_id
+              and step_of(first).get('unit') == U1 and done.get('sent') is True
+              and done.get('receipt') == receipt_id and first.get('receipt') == receipt_id and 'space' not in first)
+        check(R, 'Signal was given the landing\'s source commit, read from the receipt, and nothing of the trunk: '
+                 'rule 5 reads the trunk itself [%s]' % (mine[0]['landed'] if mine else None,),
+              bool(mine) and mine[0]['landed'][-1:] == (builds[U1]['evidence'],)
+              and candidate_of(first) not in mine[0]['landed'])
 
         R = 'ac2/worktree-after-build-output'
         u1 = own[U1]
@@ -689,7 +756,7 @@ def _v310_suite():
         def untouched(made, repository=caller):
             return (os.path.isdir(str(made['path'])) and listed(repository, made['path'])
                     and state_of(made['worktree']) == 'present' and state_of(made['build']) == 'present'
-                    and (made['path'] / 'build' / 'out.bin').read_bytes() == b'b' * 4096
+                    and bytes_of(made['path'] / 'build' / 'out.bin') == b'b' * 4096
                     and (made['branch_item'] is None or state_of(made['branch_item']) == 'present'))
 
         R = 'ac3/fresh-branch-left'
@@ -767,7 +834,7 @@ def _v310_suite():
               and row(LG.receipt_id(U2, str(refused.get('dispatch_id')))) is None)
         check(R, 'the unit\'s worktree is on the disk and in git\'s list, with its build output byte for byte',
               os.path.isdir(str(u2['path'])) and listed(caller, u2['path'])
-              and (u2['path'] / 'build' / 'out.bin').read_bytes() == b'b' * 4096)
+              and bytes_of(u2['path'] / 'build' / 'out.bin') == b'b' * 4096)
         check(R, 'its items are present: nothing was made due, deferred or removed [%s %s %s]'
               % (state_of(u2['worktree']), state_of(u2['build']), state_of(u2['branch_item'])),
               state_of(u2['worktree']) == 'present' and state_of(u2['build']) == 'present'
@@ -775,9 +842,10 @@ def _v310_suite():
         check(R, 'no event was sent and the ledger was written nothing [%d %d]'
               % (len(SENT) - sent_before, len(L.observations) - observed_before),
               len(SENT) == sent_before and len(L.observations) == observed_before)
-        check(R, 'the record of the refused land has no space step', 'space' not in refused)
+        check(R, 'the refused land has no space step: none in its record, and no space record',
+              'space' not in refused and station.space_record(str(refused.get('dispatch_id'))) is None)
         relanded = land(U2, follows=refused.get('dispatch_id'))
-        again = relanded.get('space') or {}
+        again = space_of(relanded)
         check(R, 'the re-land landed, and only then was landed sent, under the re-land\'s receipt [%s %s]'
               % (relanded.get('state'), [(e['event'], e['receipt']) for e in sent_for(U2)]),
               relanded.get('state') == 'landed'
@@ -813,7 +881,7 @@ def _v310_suite():
         u3 = own[U3]
         sent_before, observed_before = len(SENT), len(L.observations)
         third = land(U3)
-        partly = third.get('space') or {}
+        partly = space_of(third)
         check(R, 'the land of U3 landed its evidence commit, and its receipt is committed [%s]' % third.get('state'),
               third.get('state') == 'landed'
               and (row(LG.receipt_id(U3, str(third.get('dispatch_id')))) or {}).get('kind') == 'completion_receipt')
@@ -833,8 +901,10 @@ def _v310_suite():
         station.space = None
         sent_before, observed_before = len(SENT), len(L.observations)
         fourth = land(U4)
-        check(R, 'with no ledger the land lands as before, with no space step in its record [%s]' % fourth.get('state'),
-              fourth.get('state') == 'landed' and 'space' not in fourth)
+        check(R, 'with no ledger the land lands as before, with no space step in its record and no space record [%s]'
+              % fourth.get('state'),
+              fourth.get('state') == 'landed' and 'space' not in fourth
+              and station.space_record(str(fourth.get('dispatch_id'))) is None)
         check(R, 'no event was sent, the ledger was written nothing, and the worktree is as it was',
               len(SENT) == sent_before and len(L.observations) == observed_before and untouched(u4)
               and text_of(u4['path'] / 'notes.txt') == 'notes of U4, in no commit\n')
@@ -878,6 +948,319 @@ def _v310_suite():
         check(R, 'the record names the deferral and the build output removed [%s]' % (late.get('deferred'),),
               [e.get('deferral') for e in of(late.get('deferred') or [], item=u4['worktree'])] == ['unique_work']
               and len(of(late.get('removed') or [], item=u4['build'])) == 1)
+
+        # =========================================================================================================
+        # The fix round (the review of this ticket)
+        # =========================================================================================================
+        def has(repository, commit):
+            return git(repository, 'cat-file', '-e', commit + '^{commit}', ok=False) == 0
+
+        def refs_of(repository):
+            return git(repository, 'for-each-ref', '--format=%(refname) %(objectname)')
+
+        def within(repository, commit, tip):
+            """Whether `tip` contains `commit`, by git's own list of what `commit` has that `tip` has not."""
+            if not commit or not tip or not has(repository, commit) or not has(repository, tip):
+                return False
+            return git(repository, 'rev-list', '--max-count=1', commit, '--not', tip) == ''
+
+        def new_commit(repository, parent, message):
+            """A commit on `parent` with its tree, made with plain git and held by no ref."""
+            env = dict(clean, GIT_AUTHOR_NAME='Mover', GIT_AUTHOR_EMAIL='mover@example.invalid',
+                       GIT_COMMITTER_NAME='Mover', GIT_COMMITTER_EMAIL='mover@example.invalid')
+            return subprocess.run(['git', '-C', str(repository), 'commit-tree', parent + '^{tree}', '-p', parent, '-m',
+                                   message], capture_output=True, text=True, env=env, check=True).stdout.strip()
+
+        # ---- finding 2: rule 5 reads the trunk itself, at the attempt ------------------------------------------
+        R = 'f2/trunk-read-at-the-attempt'
+        watermark4 = str(fourth.get('watermark'))
+        git(caller, 'branch', 'side/held', FIRST)
+        held = planted('held', 'side/held', T_HELD)
+        moved_past(held, landed_tip)
+        check(R, 'a clean worktree on a branch whose commit only the trunk holds: the landing\'s candidate, the '
+                 'trunk tip, which no other branch and no landing\'s source commit contains',
+              tip(caller, 'side/held') == landed_tip == local_tip()
+              and not within(caller, landed_tip, builds[U4]['evidence'])
+              and git(caller, 'for-each-ref', '--contains', landed_tip, '--format=%(refname)', 'refs/heads',
+                      'refs/remotes', 'refs/tags').split() == ['refs/heads/main', 'refs/heads/side/held'])
+        RESET = {}
+
+        def put_back(seen):
+            # Inside the Signal stand-in: after the landing's check, before the removal's own rules.
+            git(caller, 'update-ref', 'refs/heads/main', watermark4, landed_tip)
+            RESET['trunk'] = local_tip()
+        INSIDE[('contained', T_HELD)] = put_back
+        reread = station.landed(U4, dispatch4, landing)
+        INSIDE.pop(('contained', T_HELD), None)
+        mine = sent_for(T_HELD)
+        check(R, 'the branch counted as contained at the check and contained was sent for its owner; the trunk was '
+                 'put back inside the stand-in, after the check [%s %s]' % ([e['event'] for e in mine], RESET.get('trunk')),
+              [e['event'] for e in mine] == ['contained'] and RESET.get('trunk') == watermark4
+              and reread.get('sent') is True)
+        check(R, 'Signal was not given the candidate: rule 5 was given the source commit only [%s]'
+              % (mine[0]['landed'] if mine else None,),
+              bool(mine) and landed_tip not in mine[0]['landed'] and mine[0]['landed'][-1:] == (builds[U4]['evidence'],))
+        check(R, 'rule 5 read the trunk at the attempt: the worktree is deferred as unique_work, on the disk and in '
+                 'git\'s list, its branch at its commit [%s %s]' % (state_of(held['worktree']), deferral_of(held['worktree'])),
+              state_of(held['worktree']) == 'deferred' and deferral_of(held['worktree']) == 'unique_work'
+              and os.path.isdir(str(held['path'])) and listed(caller, held['path'])
+              and tip(caller, 'side/held') == landed_tip and head_of(held['path']) == landed_tip)
+        check(R, 'the record names the deferral [%s]' % of(reread.get('deferred') or [], item=held['worktree']),
+              [e.get('deferral') for e in of(reread.get('deferred') or [], item=held['worktree'])] == ['unique_work'])
+        if local_tip() == watermark4:
+            git(caller, 'update-ref', 'refs/heads/main', landed_tip, watermark4)
+
+        # ---- finding 4: a squash landing --------------------------------------------------------------------------
+        R = 'f4/squash-landing'
+        git(caller, 'branch', 'squash/' + U8, SEED)
+        squash = planted('squash', 'squash/' + U8, U8, start=SEED)
+        SQUASH_SOURCE = commit_in(squash['path'], 'squash.txt', 'lands as one commit\n', 'Work that lands as a squash')
+        before_squash = local_tip()
+        # The squash, with plain git: the branch's change as one new commit whose only parent is the trunk tip.
+        git(caller, 'checkout', '-q', '--detach', before_squash)
+        git(caller, 'cherry-pick', SQUASH_SOURCE)
+        SQUASH = git(caller, 'rev-parse', 'HEAD')
+        git(caller, 'checkout', '-q', '--detach', SEED)
+        git(caller, 'update-ref', 'refs/heads/main', SQUASH, before_squash)
+        real_receipt = landing.receipt
+        # A stand-in: the lander makes no squash, so the receipt of one is given here, naming the squash
+        # commit as the candidate and the branch's commit as the source. Everything else is the landing's own.
+        landing.receipt = lambda unit, dispatch: (
+            {'id': 'receipt:stand-in/' + unit, 'candidate': SQUASH, 'source': SQUASH_SOURCE, 'data': {}}
+            if unit == U8 else real_receipt(unit, dispatch))
+        squashed = station.landed(U8, 'dispatch/%s/land-1-squash' % U8, landing)
+        landing.receipt = real_receipt
+        check(R, 'the trunk is at the squash commit, which does not contain the branch\'s commit: the branch tip is '
+                 'the source commit and not in the trunk',
+              local_tip() == SQUASH and not within(caller, SQUASH_SOURCE, SQUASH)
+              and (squashed.get('trunk'), squashed.get('source')) == (SQUASH, SQUASH_SOURCE))
+        check(R, 'the branch counts as landed through the source commit: landed is sent for the unit [%s %s]'
+              % (squashed.get('sent'), squashed.get('reason')),
+              squashed.get('sent') is True and [e['event'] for e in sent_for(U8)] == ['landed'])
+        check(R, 'its build output and then its worktree are removed, after the keep step: the kept ref is in the '
+                 'main repository at the source commit [%s]' % state_of(squash['worktree']),
+              state_of(squash['build']) == 'removed' and state_of(squash['worktree']) == 'removed'
+              and not os.path.lexists(str(squash['path'])) and not listed(caller, squash['path'])
+              and kept_at(squash['worktree'], caller, SQUASH_SOURCE))
+        check(R, 'the branch is kept, in the repository at the source commit, and named marked [%s]'
+              % state_of(squash['branch_item']),
+              state_of(squash['branch_item']) == 'kept' and tip(caller, 'squash/' + U8) == SQUASH_SOURCE
+              and len(of(squashed.get('marked') or [], item=squash['branch_item'])) == 1)
+
+        # ---- finding 4: a unit with one landed branch and one the landing does not hold --------------------------
+        R = 'f4/one-landed-one-unlanded'
+        own[U6] = planted(U6.lower(), 'build/' + U6, U6, start=SEED)
+        u6 = own[U6]
+        for name in ('extra/a', 'extra/b'):
+            git(caller, 'branch', name, SEED)
+        extras = {name: declared('branch', {'repository': str(caller), 'ref': name}, {'scope': A, 'ticket': U6}, start=FIRST)
+                  for name in ('extra/a', 'extra/b')}
+        # The branch the landing does not hold is not the first of the unit's branch items, in the ledger's
+        # own order (by identity): a judgement of the first branch alone would pass the unit.
+        unlanded = max(extras, key=lambda name: extras[name])
+        UNLANDED = new_commit(caller, SEED, 'Work on a second branch of the unit, in no landing')
+        git(caller, 'update-ref', 'refs/heads/' + unlanded, UNLANDED, SEED)
+        sixth = land(U6)
+        mixed = space_of(sixth)
+        check(R, 'the land of the unit landed, and its space step ran to its end [%s %s]'
+              % (sixth.get('state'), step_of(sixth).get('state')),
+              sixth.get('state') == 'landed' and step_of(sixth).get('state') == 'done'
+              and min([u6['branch_item']] + sorted(extras.values())) != extras[unlanded])
+        check(R, 'landed is not sent for a unit with a branch the landing does not hold, and the record names that '
+                 'branch and no other [%s %s]' % (mixed.get('sent'), mixed.get('reason')),
+              mixed.get('sent') is False and str(mixed.get('reason')).startswith('not_landed:')
+              and not sent_for(U6)
+              and {entry.get('item') for entry in of(mixed.get('left') or [], why='not_landed')} == {extras[unlanded]})
+        check(R, 'the unit\'s worktree, its build output and its items are as they were, and each branch is at its commit',
+              untouched(u6) and tip(caller, 'build/' + U6) == builds[U6]['evidence']
+              and tip(caller, unlanded) == UNLANDED and all(state_of(item) == 'present' for item in extras.values()))
+
+        # ---- finding 5: a space step that fails after a landing; finding 4: a detached worktree at landed --------
+        R = 'f5/space-step-failed'
+        own[U7] = planted(U7.lower(), 'build/' + U7, U7, start=SEED)
+        u7 = own[U7]
+        detached_path = WORKTREES / 'detached'
+        git(caller, 'worktree', 'add', '-q', '--detach', str(detached_path), builds[U7]['evidence'])
+        detached = declared('worktree', {'path': str(detached_path)}, {'scope': A, 'ticket': U7},
+                            start=builds[U7]['evidence'])
+        FAILED_AT = {}
+
+        def fail(seen):
+            FAILED_AT.update(seen)
+            if seen.get('step') == 'running':  # inside the space step, and nowhere else
+                raise RuntimeError('the space step fails here')
+        INSIDE[('landed', U7)] = fail
+        seventh = land(U7)
+        INSIDE.pop(('landed', U7), None)
+        dispatch7 = str(seventh.get('dispatch_id'))
+        failed_step = station.space_record(dispatch7) or {}
+        check(R, 'the land landed and its record is ended: the dispatch is no stop [%s %s]'
+              % (seventh.get('state'), station.status().get('running')),
+              seventh.get('state') == 'landed' and (station.record(dispatch7) or {}).get('state') == 'landed'
+              and bool(seventh.get('ended_at')) and station.status().get('running') == []
+              and (row(LG.receipt_id(U7, dispatch7)) or {}).get('kind') == 'completion_receipt')
+        check(R, 'when the space step failed the dispatch\'s record was already ended landed, and the step\'s own '
+                 'record was running [%s]' % (FAILED_AT,),
+              FAILED_AT == {'record': 'landed', 'step': 'running'})
+        check(R, 'the space step\'s own record is failed, joined to the dispatch and to the receipt, with what was '
+                 'raised [%s %s]' % (failed_step.get('state'), (failed_step.get('space') or {}).get('raised')),
+              failed_step.get('state') == 'failed' and failed_step.get('dispatch_id') == dispatch7
+              and failed_step.get('receipt') == LG.receipt_id(U7, dispatch7)
+              and 'the space step fails here' in str((failed_step.get('space') or {}).get('raised'))
+              and 'space' not in seventh)
+        check(R, 'nothing was removed: the unit\'s worktrees and their items are as they were',
+              untouched(u7) and os.path.isdir(str(detached_path)) and state_of(detached) == 'present')
+
+        R = 'f4/detached-worktree-at-landed'
+        landing7 = opened[-1].landing
+        check(R, 'the unit has a detached worktree at the landing\'s source commit, clean, recorded with no branch',
+              head_of(detached_path) == builds[U7]['evidence']
+              and git(detached_path, 'symbolic-ref', '-q', 'HEAD', ok=False) != 0
+              and not (L.item(detached) or {}).get('branch'))
+        whole = station.landed(U7, dispatch7, landing7)
+        check(R, 'a detached worktree counts as landed: landed is sent for the unit [%s %s]'
+              % (whole.get('sent'), whole.get('reason')),
+              whole.get('sent') is True and [e['event'] for e in sent_for(U7)] == ['landed'])
+        check(R, 'the detached worktree is removed by the rules and the tool, after the keep step: the kept ref is '
+                 'in the main repository at its commit [%s]' % state_of(detached),
+              state_of(detached) == 'removed' and not os.path.lexists(str(detached_path))
+              and not listed(caller, detached_path) and kept_at(detached, caller, builds[U7]['evidence'])
+              and len(of(whole.get('removed') or [], item=detached)) == 1)
+        check(R, 'the unit\'s own worktree went the same way and its branch is kept at its commit',
+              state_of(u7['worktree']) == 'removed' and state_of(u7['branch_item']) == 'kept'
+              and tip(caller, 'build/' + U7) == builds[U7]['evidence'])
+
+        # ---- finding 1: a landing at the remote, the default destination -----------------------------------------
+        REMOTE = [name for name in LG.DESTINATIONS if name != LG.LAND_LOCALLY][0]
+        remote = projects.apply(packet('set_landing_destination', 'orchard',
+                                       project_version=(PJ.read(S, writer, 'orchard') or {}).get('version'),
+                                       landing_destination=REMOTE))
+        own[U5] = planted(U5.lower(), 'build/' + U5, U5, start=SEED)
+        u5 = own[U5]
+        git(caller, 'branch', 'side/remote', FIRST)
+        apart = planted('remote', 'side/remote', T_REMOTE)
+        moved_past(apart, SEED)
+        # A branch of the project recorded in another repository, a private one made before the landing: it
+        # holds the branch's commits and nothing of the landing.
+        agent = STATE / 'agents' / 'one'
+        agent.parent.mkdir()
+        GP.run(['git', 'clone', '-q', str(caller), str(agent)], check=True, capture_output=True)
+        git(agent, 'branch', 'agent/side', SEED)
+        agent_branch = declared('branch', {'repository': str(agent), 'ref': 'agent/side'}, {'scope': A, 'ticket': T_AGENT},
+                                start=FIRST)
+        remote_before = git(bare, 'rev-parse', 'refs/heads/main')
+        STEP = {}
+        real_landed = station.landed
+
+        def with_the_remote_put_back(unit, dispatch, held_landing):
+            """The station's own landed step, with the remote's trunk put back just before it and set to the
+            landing again after it: what another factory, or a person, may do between the landing and the step."""
+            if unit != U5:
+                return real_landed(unit, dispatch, held_landing)
+            candidate = held_landing.receipt(unit, dispatch)['candidate']
+            STEP.update(candidate=candidate, remote=git(bare, 'rev-parse', 'refs/heads/main'),
+                        kept=has(caller, candidate), agent=has(agent, candidate), refs=refs_of(caller),
+                        agent_refs=refs_of(agent), sent=len(SENT), observed=len(L.observations),
+                        record=(station.record(dispatch) or {}).get('state'))
+            git(bare, 'update-ref', 'refs/heads/main', remote_before, candidate)
+            try:
+                return real_landed(unit, dispatch, held_landing)
+            finally:
+                git(bare, 'update-ref', 'refs/heads/main', candidate, remote_before)
+                STEP.update(after=(len(SENT), len(L.observations), refs_of(caller), refs_of(agent), has(agent, candidate)))
+        station.landed = with_the_remote_put_back
+        fifth = land(U5)
+        del station.landed
+        landing5, dispatch5 = opened[-1].landing, str(fifth.get('dispatch_id'))
+        candidate5 = str(candidate_of(fifth))
+        back = space_of(fifth)
+
+        R = 'f1/remote-trunk-put-back'
+        check(R, 'the unit landed at the remote, the default destination: the bare origin\'s trunk was at the '
+                 'candidate when the step began, and the publication clone holds it [%s %s %s; in the project\'s '
+                 'repository then: %s]' % (remote.get('ok'), fifth.get('state'), STEP.get('record'), STEP.get('kept')),
+              remote.get('ok') is True and fifth.get('state') == 'landed' and fifth.get('destination') == REMOTE
+              and landing5.destination == REMOTE and STEP.get('candidate') == candidate5
+              and STEP.get('remote') == candidate5 and str(fifth.get('watermark')) == remote_before
+              and has(publisher, candidate5) and STEP.get('record') == 'landed')
+        check(R, 'with the remote\'s trunk put back before the step, nothing is sent: the remote\'s own answer is '
+                 'read, and it does not hold the landing [%s %s %s]' % (step_of(fifth).get('state'), back.get('sent'), back.get('reason')),
+              step_of(fifth).get('state') == 'done' and back.get('sent') is False
+              and back.get('reason') == 'trunk_not_at_the_landing:' + remote_before
+              and (STEP.get('after') or ())[:2] == (STEP.get('sent'), STEP.get('observed')) and not sent_for(U5))
+        check(R, 'the unit\'s worktree and the other branch\'s worktree are as they were, no ref of either repository '
+                 'changed, and nothing was brought into the repository that does not hold the candidate',
+              untouched(u5) and untouched(apart) and back.get('brought') == []
+              and (STEP.get('after') or ())[2:] == (STEP.get('refs'), STEP.get('agent_refs'), False)
+              and STEP.get('agent') is False and state_of(agent_branch) == 'present')
+
+        R = 'f1/remote-unit-landed'
+        AT_SIGNAL = {}
+
+        def look(seen):
+            AT_SIGNAL.update(agent=has(agent, candidate5), refs=refs_of(caller), agent_refs=refs_of(agent))
+        INSIDE[('landed', U5)] = look
+        refs_before, agent_refs_before = refs_of(caller), refs_of(agent)
+        fetched = [where / '.git' / 'FETCH_HEAD' for where in (caller, agent)]
+        fetched_before = [path.read_bytes() if path.exists() else None for path in fetched]
+        arrived = station.landed(U5, dispatch5, landing5)
+        INSIDE.pop(('landed', U5), None)
+        mine = sent_for(U5)
+        check(R, 'with the remote\'s trunk at the landing, landed is sent for the unit, and Signal is given the '
+                 'source commit only [%s %s]' % (arrived.get('sent'), arrived.get('reason')),
+              arrived.get('sent') is True and [e['event'] for e in mine] == ['landed']
+              and mine[0]['landed'][-1:] == (builds[U5]['evidence'],) and candidate5 not in mine[0]['landed'])
+        check(R, 'no branch, tag or remote-tracking ref of the project\'s repository holds the candidate: the unit\'s '
+                 'branch counts as landed through the source commit, which is its tip',
+              (not has(caller, candidate5)
+               or git(caller, 'for-each-ref', '--contains', candidate5, '--format=%(refname)', 'refs/heads',
+                      'refs/remotes', 'refs/tags') == '')
+              and tip(caller, 'build/' + U5) == builds[U5]['evidence'] == arrived.get('source'))
+        check(R, 'the unit\'s build output and then its worktree are removed [%s]'
+              % kinds_of(of(arrived.get('removed') or [], event='landed')),
+              [k for k in kinds_of(of(arrived.get('removed') or [], event='landed')) if k in ('build_output', 'worktree')]
+              == ['build_output', 'worktree'] and not os.path.lexists(str(u5['path']))
+              and not listed(caller, u5['path']) and state_of(u5['worktree']) == 'removed')
+        check(R, 'after the keep step: the kept ref is in the main repository at the source commit, and the branch '
+                 'is kept at it [%s]' % state_of(u5['branch_item']),
+              u5['worktree'] in kept_log and kept_at(u5['worktree'], caller, builds[U5]['evidence'])
+              and state_of(u5['branch_item']) == 'kept' and tip(caller, 'build/' + U5) == builds[U5]['evidence'])
+
+        R = 'f1/remote-branch-contained'
+        check(R, 'another branch of the project\'s repository that the remote\'s new tip contains, past its start '
+                 'commit, counted as contained: contained was sent once for its owner [%s]'
+              % [e['event'] for e in sent_for(T_REMOTE)],
+              [e['event'] for e in sent_for(T_REMOTE)] == ['contained']
+              and within(caller, tip(caller, 'side/remote'), candidate5)
+              and (L.item(apart['branch_item']) or {}).get('start') == FIRST)
+        gone = [entry for entry in of(arrived.get('removed') or [], event='contained')
+                if entry.get('item') in (apart['build'], apart['worktree'])]
+        check(R, 'its build output and then its worktree are removed, after the keep step [%s]' % kinds_of(gone),
+              kinds_of(gone) == ['build_output', 'worktree'] and not os.path.lexists(str(apart['path']))
+              and not listed(caller, apart['path']) and state_of(apart['worktree']) == 'removed'
+              and kept_at(apart['worktree'], caller, SEED))
+        check(R, 'the branch is kept, in the repository at its commit, and named marked contained [%s]'
+              % state_of(apart['branch_item']),
+              state_of(apart['branch_item']) == 'kept' and tip(caller, 'side/remote') == SEED
+              and len(of(arrived.get('marked') or [], item=apart['branch_item'], event='contained')) == 1)
+        check(R, 'the candidate\'s objects were brought from the landing\'s clone into the repository that did not '
+                 'hold them, before the reads, and the record names it [%s]' % (arrived.get('brought'),),
+              arrived.get('brought') == [{'repository': str(agent), 'how': 'copied'}]
+              and AT_SIGNAL.get('agent') is True and has(agent, candidate5))
+        check(R, 'no ref was written by that and nothing was fetched: the refs of that repository are exactly those '
+                 'before, at the first event and after the step, and no ref there holds the candidate; the refs of '
+                 'the project\'s repository at the first event were those before',
+              AT_SIGNAL.get('agent_refs') == agent_refs_before and refs_of(agent) == agent_refs_before
+              and AT_SIGNAL.get('refs') == refs_before
+              and [path.read_bytes() if path.exists() else None for path in fetched] == fetched_before
+              and has(agent, candidate5)
+              and git(agent, 'for-each-ref', '--contains', candidate5, '--format=%(refname)') == '')
+        marked = of(arrived.get('marked') or [], item=agent_branch, event='contained')
+        check(R, 'so the branch recorded there, which the remote\'s new tip contains, is contained: sent once, its '
+                 'item kept and named marked, the branch at its commit [%s %s]' % (state_of(agent_branch), marked),
+              [e['event'] for e in sent_for(T_AGENT)] == ['contained'] and state_of(agent_branch) == 'kept'
+              and len(marked) == 1 and marked[0].get('repository') == str(agent) and marked[0].get('tip') == SEED
+              and tip(agent, 'agent/side') == SEED)
 
         R = 'ac3/other-project-untouched'
         check(R, 'after every landing the other project\'s branch and worktree are as they were',

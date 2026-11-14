@@ -63,14 +63,21 @@ trunk_moved or awaiting_approval. So each refused land is followed by at most on
 LANDED AND CONTAINED (VELDO-0310, design sections 5 and 8.3). An installation with a space ledger wires it in
 as `space` (the mapping Signal's callers are given: ledger, probe, kinds, remover, keep and the rest). A land
 dispatch whose outcome is landed, and no other, then sends landed for the unit and contained for the project's
-other recorded branches (control_landing.Landing.landed), after the completion receipt is recorded and before
-the dispatch's own record is ended, so the record ends with what the landing removed, deferred and marked
-contained under `space`, beside the receipt it is joined to. A land that ended any other way sends nothing:
-the unit's worktree, its build output and its branch are as they were. The station deletes nothing itself and
-no branch is ever deleted; with no ledger wired in nothing is sent and the record has no such field.
+other recorded branches (control_landing.Landing.landed), after the completion receipt is recorded and after
+the dispatch's own record is ended: a landing is a fact whatever becomes of its space step, so the dispatch
+record ends landed first and the space step has a record of its own (kind land_dispatch_space, space_record_id),
+joined to the dispatch and to the receipt. That record is opened running before anything is sent and ended
+done, with what the landing removed, deferred and marked contained under `space`, or failed, with what was
+raised. A space step that raises, or a process that dies or hangs in it, leaves the land dispatch ended and
+landed: the stop is the space record's (running or failed), never the landing's. A land that ended any other
+way sends nothing and has no space record: the unit's worktree, its build output and its branch are as they
+were. The station deletes nothing itself and no branch is ever deleted; with no ledger wired in nothing is
+sent and no space record is written.
 
 WHAT IT IS NOT. No bound or backoff for a trunk that keeps moving (hardening), no recovery of a land whose
-process died mid-run (its record stays running, a stop), no recovery of an unknown publication (Release 2).
+process died mid-run (its record stays running, a stop), no recovery of an unknown publication (Release 2), and
+no retry of a space step that failed or whose process died (its space record stays failed or running; the
+worktrees then end at a later event or by reconcile).
 Standard library only. The store connection, coordinates, the land configuration (the work configuration's
 `land` entry, config_problem) and the journal signer are arguments; nothing is routed from the current
 directory.
@@ -100,6 +107,11 @@ LG = _sibling('control_landing')
 SCHEMA = 'veldo.land_dispatch/v1'
 KIND = 'land_dispatch'
 UNIT_KIND = 'land_dispatch_unit'
+# VELDO-0310: the space step of a land dispatch that landed, a record of its own beside the dispatch's.
+SPACE_SCHEMA = 'veldo.land_dispatch_space/v1'
+SPACE_KIND = 'land_dispatch_space'
+SPACE_RUNNING, SPACE_DONE, SPACE_FAILED = 'running', 'done', 'failed'
+SPACE_ACTIONS = ('space_open', 'space_end')
 OPERATION = 'land_dispatch_transition'
 WRITES = ('entities', 'journal', 'commands', 'nonces')
 STATION = 'land'
@@ -146,6 +158,10 @@ def record_id(dispatch_id):
     return 'land:' + dispatch_id
 
 
+def space_record_id(dispatch_id):
+    return 'land-space:' + dispatch_id
+
+
 def unit_index_id(domain, repository, unit):
     return 'land-unit:' + json.dumps([domain, repository, unit], separators=(',', ':'))
 
@@ -183,15 +199,37 @@ def _authorize(conn, principal, repository, now):
 
 
 def transition(conn, params, before):
-    """THE ONE TRANSITION of a land dispatch, `open` or `end`, inside its store transaction."""
+    """THE ONE TRANSITION of a land dispatch, `open` or `end`, inside its store transaction; and, for a
+    dispatch that ended landed, of its space step's own record, `space_open` or `space_end` (VELDO-0310),
+    which never writes the dispatch's record."""
     action, now = params.get('action'), params.get('now')
     domain, repository, unit, dispatch = (params.get(k) for k in ('domain', 'repository', 'unit', 'dispatch_id'))
-    if (action not in ('open', 'end') or isinstance(now, bool) or not isinstance(now, (int, float))
+    if (action not in ('open', 'end') + SPACE_ACTIONS or isinstance(now, bool) or not isinstance(now, (int, float))
             or not math.isfinite(now) or not all(_text(v) for v in (domain, repository, unit, dispatch))):
         raise Refused('invalid_input:land_dispatch', 'an action, a time, the coordinates, the unit and the dispatch')
     _authorize(conn, params.get('principal'), repository, now)
     rid, xid = record_id(dispatch), unit_index_id(domain, repository, unit)
     record = (before.get(rid) or {}).get('data')
+    if action in SPACE_ACTIONS:
+        sid = space_record_id(dispatch)
+        step = (before.get(sid) or {}).get('data')
+        if action == 'space_open':
+            # Only for a dispatch whose own record is ended and landed, with its receipt named.
+            if (record is None or record.get('state') != LANDED or record.get('unit') != unit
+                    or not _text(record.get('receipt'))):
+                raise Refused('stale_subject:land_space/not_landed', dispatch)
+            if step is not None:
+                raise Refused('stale_subject:land_space/exists', dispatch)
+            step = {'schema': SPACE_SCHEMA, 'dispatch_id': dispatch, 'domain': domain, 'repository': repository,
+                    'unit': unit, 'receipt': record['receipt'], 'state': SPACE_RUNNING, 'opened_at': now}
+        else:
+            if step is None or step.get('state') != SPACE_RUNNING:
+                raise Refused('stale_subject:land_space/ended', dispatch)
+            if params.get('outcome') not in (SPACE_DONE, SPACE_FAILED):
+                raise Refused('invalid_input:land_space/outcome', str(params.get('outcome')))
+            step = dict(step, state=params['outcome'], ended_at=now,
+                        space=params.get('space') if isinstance(params.get('space'), dict) else {})
+        return {sid: {'kind': SPACE_KIND, 'data': step}}
     index = dict((before.get(xid) or {}).get('data') or {})
     if action == 'open':
         target = _entity(conn, unit)
@@ -287,6 +325,12 @@ class LandStation:
                 found.append(record)
         return sorted(found, key=lambda r: (r.get('unit'), r.get('attempt') or 0))
 
+    def space_record(self, dispatch_id):
+        """VELDO-0310: the record of the space step of the land dispatch `dispatch_id`, or None: {dispatch_id,
+        unit, receipt, state (running, done or failed), opened_at, ended_at, space}."""
+        row = _entity(self.conn, space_record_id(dispatch_id)) if _text(dispatch_id) else None
+        return row['data'] if row and row['kind'] == SPACE_KIND else None
+
     def latest(self, unit):
         """The unit's latest land dispatch record, as its index names it, or None."""
         index = _entity(self.conn, unit_index_id(self.domain, self.repository, unit))
@@ -299,7 +343,8 @@ class LandStation:
         now = self.clock()
         params = dict(fields, action=action, now=now, principal=self.signer, domain=self.domain,
                       repository=self.repository, unit=unit, dispatch_id=dispatch)
-        ids = (record_id(dispatch), unit_index_id(self.domain, self.repository, unit))
+        ids = ((space_record_id(dispatch), record_id(dispatch)) if action in SPACE_ACTIONS
+               else (record_id(dispatch), unit_index_id(self.domain, self.repository, unit)))
         expected = {}
         for identity in ids:
             row = self.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
@@ -315,7 +360,7 @@ class LandStation:
                 self.store_class(error.code), error.code)
             self._emit(action, unit, dispatch, outcome='refused', refusal=code, taxonomy=taxonomy(code))
             raise Refused(code, getattr(error, 'detail', '')) from None
-        return self.record(dispatch)
+        return self.space_record(dispatch) if action in SPACE_ACTIONS else self.record(dispatch)
 
     @staticmethod
     def store_class(code):
@@ -378,14 +423,41 @@ class LandStation:
             result = {'ok': False, 'stage': 'raised', 'detail': {'refusal': 'unknown_outcome:land/' + type(error).__name__}}
         outcome, end = self.classify(result, ops.record(), dispatch)
         self.counts[outcome] = self.counts.get(outcome, 0) + 1
-        if outcome == LANDED and getattr(self, 'space', None) is not None:
-            # VELDO-0310 AC1: landed is sent here, after the completion receipt is recorded, and nowhere before.
-            end = dict(end, space=self.landed(unit, dispatch, ops.landing))
         ended = self._run('end', unit, dispatch, {'outcome': outcome, 'end': end})
         self._emit('end', unit, dispatch, outcome=outcome, follows=follows, destination=destination['destination'],
                    watermark=end.get('watermark'),
                    candidate=end.get('candidate'), refusal=end.get('refusal'), taxonomy=taxonomy(end.get('refusal'))
                    if end.get('refusal') else None, observed=end.get('observed'))
+        if outcome == LANDED and getattr(self, 'space', None) is not None:
+            # VELDO-0310 AC1: landed is sent here, after the completion receipt is recorded, and nowhere before;
+            # and after the dispatch's own record is ended, so nothing in the space step can make it a stop.
+            self.space_step(unit, dispatch, ops.landing)
+        return ended
+
+    def space_step(self, unit, dispatch, landing):
+        """VELDO-0310: the space step of a land dispatch that has ended landed, as a record of its own
+        (space_record). The record is opened running, which the store refuses unless the dispatch's record
+        is ended landed with its receipt; then landed and contained are sent (self.landed); then the record
+        is ended done with what was sent, or failed when the step raised. Returns the space record, or None
+        when it could not be opened, in which case nothing is sent. Never raises: the landing stands."""
+        try:
+            self._run('space_open', unit, dispatch, {})
+        except Exception as error:  # noqa: BLE001 - a step with no record of its own is not run
+            self.counts['space_not_opened'] = self.counts.get('space_not_opened', 0) + 1
+            self._emit('space', unit, dispatch, outcome='not_opened',
+                       refusal=getattr(error, 'code', 'unknown_outcome:land_space/' + type(error).__name__))
+            return None
+        sent = self.landed(unit, dispatch, landing)
+        failed = bool(sent.get('raised')) or sent.get('reason') == 'raised'
+        try:
+            ended = self._run('space_end', unit, dispatch, {'outcome': SPACE_FAILED if failed else SPACE_DONE,
+                                                            'space': sent})
+        except Exception as error:  # noqa: BLE001 - the record stays running, and says so by its state
+            self._emit('space', unit, dispatch, outcome='not_ended',
+                       refusal=getattr(error, 'code', 'unknown_outcome:land_space/' + type(error).__name__))
+            return self.space_record(dispatch)
+        self._emit('space', unit, dispatch, outcome=ended.get('state'), receipt=ended.get('receipt'),
+                   sent=sent.get('sent'), reason=sent.get('reason'), raised=sent.get('raised'))
         return ended
 
     def landed(self, unit, dispatch, landing):

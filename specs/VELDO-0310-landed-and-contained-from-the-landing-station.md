@@ -137,3 +137,69 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     trunk there, which is the ref hook's event (VELDO-0311). The suite's landings land locally
     (VELDO-0235), where the project's repository holds the new tip; the pushing path's read of the
     remote is not driven by a row. FOR THE LEAD.
+- 2026-11-14: fix round, after the review of this ticket (verdict FIX, five findings) and the lead's
+  decisions on them. No acceptance criterion changed and the footprint is as it was. What changed, and
+  what it replaces in the entry above:
+  - Finding 1, AC3 at the remote destination, which is the default. The entry above said a repository
+    does not hold the new trunk tip after a landing to the remote, and that its branches are unread
+    until a fetch. Now the landing brings the objects of the new trunk tip from its own clone into
+    every repository a live branch of the project is recorded in and that does not hold them, before
+    the reads: pack-objects in the clone, unpack-objects in the repository, the way VELDO-0235 copies
+    a candidate. No ref is written, nothing is fetched and nothing is removed, and the pack leaves out
+    what the repository's own refs already hold. A repository the objects could not be brought into
+    (git cannot read it, it shares no commit with the clone, the transfer failed) is read as it is:
+    its branches are unread, never contained. It is done after the trunk read, so a landing that was
+    undone brings nothing. The record names each repository under `brought`.
+  - What the rows found, FOR THE LEAD. In the suite the project's own repository already holds the
+    candidate when the step begins, also at the remote destination: the lander's discard of its
+    candidate workspace keeps the workspace's commits on a kept ref in the project's repository
+    (VELDO-0303), and the candidate is one of them. So AC3 already held for a branch of the project's
+    repository at the remote destination, and the review's finding (read from the code, not run) does
+    not reproduce there. The transfer is what makes it hold where that kept ref is not: a branch
+    recorded in another repository (an agent repository), and a workspace whose discard kept nothing.
+    The row drives it with a branch recorded in a second repository that holds nothing of the
+    landing.
+  - The remote side of the trunk read is driven by a row now: the station's own step runs with the
+    bare origin's trunk put back just before it, the remote's own answer is read, and nothing is sent.
+  - Finding 2, rule 5 reads the trunk itself. The entry above said rule 5 is given the source commit
+    and the new trunk tip. It is given the source commit only, beside whatever the installation wired
+    in as landed. The trunk is rule 5's own read at each removal (design section 7: no fact is carried
+    over), so a trunk put back between the landing's check and a removal holds nothing: a worktree
+    whose commit only the old candidate held is deferred as unique_work.
+  - Finding 3, a known gap, not closed here. The landing judges a snapshot of the ledger's items
+    (space_reach) and the ledger matches again when the event is sent. An item declared for the same
+    owner in between, for example a fresh worktree on a branch at its start commit, is reached by the
+    event though the check never judged it, and a clean worktree at the trunk passes rule 5: it is
+    removed, against the start commit rule. No work is lost: rule 5 holds any file that is in no
+    commit, the keep step writes the worktree's commits to kept refs before the remove, and no branch
+    is deleted. Closing it needs a signal that names the items it is sent for (or expected versions),
+    which is the ledger's: the item-naming signal follow-up, the same one that lets contained be sent
+    for one branch of an owner and leave the others (note A of the review, and design section 5's
+    branch-switch case above). FOR THE LEAD.
+  - Finding 4, three paths the entry above claimed and no row drove: a squash landing (the branch tip
+    is the source commit and not in the trunk), a unit with one landed branch and one the landing
+    does not hold (landed is not sent, and the record names that branch), and a detached worktree at
+    landed (it counts as landed and is removed by the rules and the tool, after the keep step). Each
+    has its row and a falsifier. The lander makes no squash, so that row's receipt is a stand-in.
+  - Finding 5, the space step no longer runs inside the land dispatch's running window. The entry
+    above said landed is sent before the land dispatch's own record is ended. Now the dispatch's
+    record is ended first, landed, and the space step has a record of its own (kind
+    land_dispatch_space, id land-space:<dispatch>), written by the station's one transition: opened
+    running, which the store refuses unless the dispatch's record is ended landed with its receipt,
+    and ended done with what was sent, or failed with what was raised. The dispatch's record holds no
+    `space` field any more. A step that raises, or a process that dies or hangs in it, leaves the
+    landing ended and landed; the stop is the space record's. A failed or interrupted step is not
+    retried by the station: the worktrees end at a later event or by reconcile (VELDO-0315).
+  - The ledger's state kept is one the signal reaches (the review's other note): when the owner's Keep
+    (design 0.4) is built on that state, landed and contained will make an owner-kept item due. That
+    is the ledger ticket's to settle, and this change inherits it.
+  - Rows added to suite 147, each with a registered falsifier applied once to the copy the suite loads
+    and seen red: f1/remote-trunk-put-back (space310-remote-trunk-not-read, on the remote side of
+    _trunk_holds), f1/remote-unit-landed and f1/remote-branch-contained
+    (space310-candidate-not-brought, and space310-transfer-writes-a-ref for the rule that the transfer
+    writes no ref), f2/trunk-read-at-the-attempt (space310-candidate-given-to-rule-5),
+    f4/squash-landing (space310-source-commit-not-counted), f4/one-landed-one-unlanded
+    (space310-first-branch-judged-alone), f4/detached-worktree-at-landed
+    (space310-detached-refused-at-landed) and f5/space-step-failed
+    (space310-space-step-inside-the-running-window). The ten falsifiers of the build keep their
+    anchors and were applied again: all red.

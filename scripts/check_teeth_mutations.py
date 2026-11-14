@@ -14246,6 +14246,51 @@ def cases():
               "                pass\n",
               ['ac3/marked-once'])
 
+    # VELDO-0310, the fix round (the review of this ticket). Finding 1: the remote's trunk is not read
+    # at the step, so a remote trunk put back still counts as holding the landing; the new trunk tip's
+    # objects are not brought into a repository that does not hold them, so its branches are never
+    # contained; the transfer writes a ref. Finding 2: rule 5 is handed the candidate again, a trunk
+    # fact read at the check. Finding 4: the source commit is not counted (a squash), only the first
+    # branch of the unit is judged, a detached worktree is refused at landed. Finding 5: the space
+    # step runs inside the land dispatch's running window again.
+    landed310('space310-remote-trunk-not-read', 'control_landing.py',
+              "            tip = self._remote_tip()  # the remote's own answer, read now\n",
+              "            tip = candidate  # the remote is not asked\n",
+              ['f1/remote-trunk-put-back'])
+    landed310('space310-candidate-not-brought', 'control_landing.py',
+              "            how = self._bring(repository, receipt['candidate'])\n",
+              "            how = 'held'\n",
+              ['f1/remote-branch-contained'])
+    landed310('space310-transfer-writes-a-ref', 'control_landing.py',
+              "            return 'copied' if unpacked.returncode == 0 and self._has(repository, commit) else None\n",
+              "            self._git(repository, 'update-ref', 'refs/veldo/landed/tip', commit)\n"
+              "            return 'copied' if unpacked.returncode == 0 and self._has(repository, commit) else None\n",
+              ['f1/remote-branch-contained'])
+    landed310('space310-candidate-given-to-rule-5', 'control_landing.py',
+              "        given['landed'] = tuple(given.get('landed') or ()) + (receipt['source'],)\n",
+              "        given['landed'] = tuple(given.get('landed') or ()) + (receipt['source'], receipt['candidate'])\n",
+              ['f2/trunk-read-at-the-attempt'])
+    landed310('space310-source-commit-not-counted', 'control_landing.py',
+              "            entry['landed'] = in_trunk is True or in_source\n",
+              "            entry['landed'] = in_trunk is True\n",
+              ['f4/squash-landing'])
+    landed310('space310-first-branch-judged-alone', 'control_landing.py',
+              "        if kind == 'branch':\n            locator = record.get('locator') or {}\n",
+              "        if kind == 'branch' and any(items[seen].get('kind') == 'branch' for seen in matched[:-1]):\n"
+              "            ok = True\n"
+              "        elif kind == 'branch':\n            locator = record.get('locator') or {}\n",
+              ['f4/one-landed-one-unlanded'])
+    landed310('space310-detached-refused-at-landed', 'control_landing.py',
+              "            return event == SPACE_LANDED\n",
+              "            return False\n",
+              ['f4/detached-worktree-at-landed'])
+    landed310('space310-space-step-inside-the-running-window', 'control_landing_station.py',
+              "        ended = self._run('end', unit, dispatch, {'outcome': outcome, 'end': end})\n",
+              "        if outcome == LANDED and getattr(self, 'space', None) is not None:\n"
+              "            self.landed(unit, dispatch, ops.landing)\n"
+              "        ended = self._run('end', unit, dispatch, {'outcome': outcome, 'end': end})\n",
+              ['f5/space-step-failed'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
