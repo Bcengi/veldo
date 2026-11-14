@@ -12,12 +12,15 @@
    "ac1/fleet-not-recorded",
    "ac1/fleet-removed-through-signal",
    "ac1/fleet-untracked-stays",
+   "loss/fleet-ignored-file",
+   "loss/fleet-nested-repository",
+   "loss/fleet-reset-commit",
    "paths/no-delete-with-a-ledger"
   ],
   "red_details": [
    [
     "VELDO-0303 ac1/fleet-removed-through-signal",
-    "the item is removed and the answer says so [deferred {'item': 'space:item:551bb5cdfa384c3bb960476f141ee0c2', 'state': 'deferred', 'deferral': 'in_use', 'path': '/tmp/veldo-0303-jucvk9ld/projects/orchard-worktrees/worker-1'}]"
+    "the item is removed and the answer says so [deferred {'item': 'space:item:802a789f179548ccba845123b0ae1223', 'state': 'deferred', 'deferral': 'in_use', 'path': '/tmp/veldo-0303-fj94wie9/projects/orchard-worktrees/worker-1'}]"
    ],
    [
     "VELDO-0303 ac1/fleet-untracked-stays",
@@ -25,7 +28,7 @@
    ],
    [
     "VELDO-0303 ac1/fleet-commit-stays",
-    "the worktree stays, deferred as unique_work [{'item': 'space:item:64bee55439b94ba78361c3475a31494c', 'state': 'deferred', 'deferral': 'in_use', 'path': '/tmp/veldo-0303-jucvk9ld/projects/orchard-worktrees/worker-3'}]"
+    "the worktree stays, deferred as unique_work [{'item': 'space:item:25de2a6364b5460b91f78b6b88a7c95d', 'state': 'deferred', 'deferral': 'in_use', 'path': '/tmp/veldo-0303-fj94wie9/projects/orchard-worktrees/worker-3'}]"
    ]
   ],
   "noop_red_rows": [],
@@ -61,21 +64,20 @@
    "ac2/report-mode-removes-nothing",
    "ac2/teardown-through-signal",
    "ac2/uncommitted-stays",
-   "paths/absent-only-when-not-found",
-   "paths/no-delete-with-a-ledger"
+   "paths/absent-only-when-not-found"
   ],
   "red_details": [
    [
     "VELDO-0303 ac2/teardown-through-signal",
-    "the three items are removed, the scratch folder and the work tree before the root [['present', 'present', 'present']]"
+    "the teardown is accepted and the clone is not on disk as it returns [space_deferred:keep_failed]"
    ],
    [
     "VELDO-0303 ac2/open-file-stays",
-    "the work tree and the file the process holds are on disk as the teardown returns [None]"
+    "the teardown is refused as space_deferred:in_use [space_deferred:keep_failed]"
    ],
    [
     "VELDO-0303 ac2/pins-after-outcome",
-    "each pin was released with the work tree's item already removed and its folder gone [None [('present', False)]]"
+    "each pin was released with the work tree's item already removed and its folder gone [space_deferred:keep_failed []]"
    ]
   ],
   "noop_red_rows": [],
@@ -98,7 +100,7 @@
    ],
    [
     "VELDO-0303 paths/no-delete-with-a-ledger",
-    "in ac2/failed-provision no module called its recursive delete and the fleet ran no git remove [[('control_clone.py', '/tmp/veldo-0303-11o5sila/state/clones/clone-failed0000000000000000000000007')] []]"
+    "in ac2/failed-provision no module called its recursive delete and the fleet ran no git remove [[('control_clone.py', '/tmp/veldo-0303-ueipincb/state/clones/clone-failed0000000000000000000000007/work'), ('control_clone.py', '/tmp/veldo-0303-ueipincb/state/clones/clone-failed0000000000000000000000007/scratch')] []]"
    ]
   ],
   "noop_red_rows": [],
@@ -162,6 +164,7 @@
    "ac3/deferred-then-swept",
    "ac3/receiver-end",
    "ac3/sweep-leftover",
+   "f3/consumer-holds-clone",
    "paths/no-delete-with-a-ledger"
   ],
   "red_details": [
@@ -190,6 +193,7 @@
   "red_rows": [
    "ac3/deferred-then-swept",
    "ac3/sweep-leftover",
+   "f3/consumer-holds-clone",
    "paths/no-delete-with-a-ledger"
   ],
   "red_details": [
@@ -202,8 +206,8 @@
     "the sweep finds it left, and while the process sits there it stays, refused by name [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/run-held-03', 'outcome': 'removed'}]]"
    ],
    [
-    "VELDO-0303 paths/no-delete-with-a-ledger",
-    "in ac3/sweep-leftover no module called its recursive delete and the fleet ran no git remove [[('control_launch.py', '/tmp/veldo-0303-vid6xtlv/state/runs/4a84240975f71a9a3621f5ef0898f528')] []]"
+    "VELDO-0303 f3/consumer-holds-clone",
+    "the sweep does not signal either, and says clone_in_use with the consumer [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/shared-11', 'outcome': 'removed'}]]"
    ]
   ],
   "noop_red_rows": [],
@@ -221,7 +225,7 @@
   "red_details": [
    [
     "VELDO-0303 ac3/deferred-then-swept",
-    "a run whose group nobody could read is left to the wired answer: here none, so it is deferred as in_use by the owner rule and whole [{'item': 'space:item:fa24a777496c47669eb5e172e557cafc', 'state': 'removed', 'deferral': None}]"
+    "a run whose group nobody could read is left to the wired answer: here none, so it is deferred as in_use by the owner rule and whole [{'item': 'space:item:858eb0b7629c4a578b92d46e0155adf7', 'state': 'removed', 'deferral': None}]"
    ]
   ],
   "noop_red_rows": [],
@@ -235,21 +239,15 @@
   ],
   "red_rows": [
    "ac4/candidate-with-work-stays",
+   "ac4/lander-discard",
    "ac4/landing-line-close",
-   "paths/no-delete-with-a-ledger"
+   "f5/clones-given-space",
+   "loss/candidate-commits"
   ],
   "red_details": [
    [
     "VELDO-0303 ac4/landing-line-close",
-    "its item is removed, never present with its folder gone [present]"
-   ],
-   [
-    "VELDO-0303 ac4/candidate-with-work-stays",
-    "a candidate folder with a file nobody saved stays, the file byte for byte [[]]"
-   ],
-   [
-    "VELDO-0303 paths/no-delete-with-a-ledger",
-    "in ac4/landing-line-close no module called its recursive delete and the fleet ran no git remove [[('control_launch_work.py', '/tmp/veldo-0303-ol_y7r29/state/candidates/candidate-close-01')] []]"
+    "raised AttributeError: 'Runtime' object has no attribute 'root' File \"/tmp/tmpbvx1q7ao/veldo/control_launch_work.py\", line 235, in close | found = space_standalone(directory, 'agent_repository', main=self.root) | ^^^^^^^^^ | AttributeError: 'Runtime' object has no attribute 'root'"
    ]
   ],
   "noop_red_rows": [],
@@ -264,20 +262,13 @@
   "red_rows": [
    "ac4/candidate-with-work-stays",
    "ac4/lander-discard",
-   "paths/no-delete-with-a-ledger"
+   "f5/clones-given-space",
+   "loss/candidate-commits"
   ],
   "red_details": [
    [
     "VELDO-0303 ac4/lander-discard",
-    "both items are removed, never present with their folders gone, and the candidate says discarded [present present]"
-   ],
-   [
-    "VELDO-0303 ac4/candidate-with-work-stays",
-    "a workspace a process holds a file in stays whole, with its own commit checked out [{}]"
-   ],
-   [
-    "VELDO-0303 paths/no-delete-with-a-ledger",
-    "in ac4/lander-discard no module called its recursive delete and the fleet ran no git remove [[('lander.py', '/tmp/veldo-0303-cporv06l/state/landing/veldo-candidate-discard-02'), ('lander.py', '/tmp/veldo-0303-cporv06l/scratch/observation-discard-02')] []]"
+    "raised AttributeError: 'GitLandOps' object has no attribute 'repo_root' File \"/tmp/tmpmylrvklu/veldo/lander.py\", line 680, in discard | found = space_standalone(c[\"workspace\"], \"agent_repository\", main=self.repo_root) | ^^^^^^^^^^^^^^ | AttributeError: 'GitLandOps' object has no attribute 'repo_root'"
    ]
   ],
   "noop_red_rows": [],
@@ -296,6 +287,240 @@
    [
     "VELDO-0303 paths/absent-only-when-not-found",
     "control_clone.py: the folder that could not be read is not gone, and the path with nothing at it is [{'item': None, 'state': 'gone', 'deferral': None} {'item': None, 'state': 'gone', 'deferral': None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-standalone-ignored-work-not-looked-for",
+  "criterion": "AC1",
+  "expected_red": [
+   "loss/fleet-ignored-file"
+  ],
+  "red_rows": [
+   "loss/fleet-ignored-file"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 loss/fleet-ignored-file",
+    "a worktree holding an ignored local settings file stays, the file byte for byte [{'path': '/tmp/veldo-0303-dg2e93cw/plain-worktrees/secret', 'item': 'standalone-secret-bb6a8a0045be4500', 'state': 'removed', 'deferral': None, 'said': None, 'refs': {'refs/veldo/kept/none/standalone-secret-bb6a8a0045be4500/1/head': '365fbc85e35f3e600ec3fbc4e1f972403e098eef', 'refs/veldo/kept/none/standalone-secret-bb6a8a0045be4500/1/op/ORIG_HEAD': '365fbc85e35f3e600ec3fbc4e1f972403e098eef'}, 'repository': '/tmp/veldo-0303-dg2e93cw/projects/orchard'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-standalone-nested-repository-not-looked-for",
+  "criterion": "AC1",
+  "expected_red": [
+   "loss/fleet-nested-repository"
+  ],
+  "red_rows": [
+   "loss/fleet-nested-repository",
+   "loss/fleet-reset-commit"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 loss/fleet-nested-repository",
+    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-87hdtdg6/plain-worktrees/outer/build/dependency': No such file or directory\n File \"/home/dmitry/projects/veldo-worktrees/space-management/scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-87hdtdg6/plain-worktrees/outer/build/dependency': No such file or directory |"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-fleet-removes-without-the-keep-step",
+  "criterion": "AC1",
+  "expected_red": [
+   "loss/fleet-reset-commit"
+  ],
+  "red_rows": [
+   "ac1/fleet-no-ledger",
+   "loss/fleet-ignored-file",
+   "loss/fleet-nested-repository",
+   "loss/fleet-reset-commit"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac1/fleet-no-ledger",
+    "with no ledger an untracked file stays: the look refuses as unique_work and no git remove is run [{'path': '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/dirty', 'item': None, 'state': None, 'deferral': 'remove_refused', 'refs': {}, 'said': \"git worktree remove failed (rc=128): fatal: '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/dirty' contains modified or untracked files, use --force to delete it\"}]"
+   ],
+   [
+    "VELDO-0303 loss/fleet-ignored-file",
+    "a worktree holding an ignored local settings file stays, the file byte for byte [{'path': '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/secret', 'item': None, 'state': 'removed', 'deferral': None, 'refs': {}}]"
+   ],
+   [
+    "VELDO-0303 loss/fleet-nested-repository",
+    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/outer/build/dependency': No such file or directory\n File \"/home/dmitry/projects/veldo-worktrees/space-management/scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/outer/build/dependency': No such file or directory |"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-clone-teardown-deletes-without-the-look",
+  "criterion": "AC2",
+  "expected_red": [
+   "loss/clone-refused-build"
+  ],
+  "red_rows": [
+   "ac2/no-ledger-clean-clone",
+   "f3/consumer-holds-clone",
+   "loss/clone-refused-build"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 ac2/no-ledger-clean-clone",
+    "and only after the keep step: its head is on a kept ref of the bound repository [[]]"
+   ],
+   [
+    "VELDO-0303 loss/clone-refused-build",
+    "the commits of the refused build are read from the bound repository alone, on kept refs filed under the clone's unit [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-receiver-deletes-a-run-directory-without-the-look",
+  "criterion": "AC3",
+  "expected_red": [
+   "loss/run-directory-repository"
+  ],
+  "red_rows": [
+   "loss/run-directory-repository"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 loss/run-directory-repository",
+    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-8lo16gjj/state/runs/f2be06c9a6199d11b134712ea672a1ba/config/checkout': No such file or directory\n File \"/home/dmitry/projects/veldo-worktrees/space-management/scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-8lo16gjj/state/runs/f2be06c9a6199d11b134712ea672a1ba/config/checkout': No such file or directory |"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-sweep-deletes-a-run-directory-without-the-look",
+  "criterion": "AC3",
+  "expected_red": [
+   "loss/run-directory-repository"
+  ],
+  "red_rows": [
+   "loss/run-directory-repository"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 loss/run-directory-repository",
+    "the sweep leaves it too, refused by name, and keeps it among the leftovers [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/plain-holds-07', 'outcome': 'removed'}]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-landing-line-deletes-a-candidate-without-the-look",
+  "criterion": "AC4",
+  "expected_red": [
+   "loss/candidate-commits"
+  ],
+  "red_rows": [
+   "loss/candidate-commits"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 loss/candidate-commits",
+    "with no ledger the landing line's close removes a candidate folder only after its commits are on kept refs of the repository [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-lander-deletes-a-workspace-without-the-look",
+  "criterion": "AC4",
+  "expected_red": [
+   "loss/candidate-commits"
+  ],
+  "red_rows": [
+   "loss/candidate-commits"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 loss/candidate-commits",
+    "the lander's discard removes the workspace only after its commit is on a kept ref of the repository, read there alone [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-receiver-signals-under-a-consumer",
+  "criterion": "AC2",
+  "expected_red": [
+   "f3/consumer-holds-clone"
+  ],
+  "red_rows": [
+   "f3/consumer-holds-clone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 f3/consumer-holds-clone",
+    "the worker's receiver ends while a consumer is attached and idle: nothing is signalled [{'item': 'space:item:6f58241af73e472b98ceddd60286dd72', 'state': 'removed', 'deferral': None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-sweep-signals-under-a-consumer",
+  "criterion": "AC2",
+  "expected_red": [
+   "f3/consumer-holds-clone"
+  ],
+  "red_rows": [
+   "f3/consumer-holds-clone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 f3/consumer-holds-clone",
+    "the sweep does not signal either, and says clone_in_use with the consumer [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/shared-11', 'outcome': 'removed'}]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-landing-line-clones-without-space",
+  "criterion": "AC2",
+  "expected_red": [
+   "f5/clones-given-space"
+  ],
+  "red_rows": [
+   "f5/clones-given-space"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 f5/clones-given-space",
+    "control_launch_work.py: each clone provisioner it builds is given space [0 of 1]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space303-receiver-clones-without-space",
+  "criterion": "AC2",
+  "expected_red": [
+   "f5/clones-given-space"
+  ],
+  "red_rows": [
+   "f5/clones-given-space"
+  ],
+  "red_details": [
+   [
+    "VELDO-0303 f5/clones-given-space",
+    "control_launch.py: each clone provisioner it builds is given space [2 of 3]"
    ]
   ],
   "noop_red_rows": [],

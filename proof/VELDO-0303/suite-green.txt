@@ -1,8 +1,26 @@
-# Each suite run on its own with python3 scripts/selftest.py --suite NAME, at commit cd4acb20. Partial runs: none is the gate.
-  142_veldo_0303_space_paths                      23 passed    3.20s
-  06_capabilities_manifest_honesty_veldo         262 passed   10.44s
-  66_veldo_0042_clones                            20 passed    4.00s
-  70_veldo_0057_landing                           31 passed   16.03s
-  85_veldo_0158_credential_delivery               23 passed    5.13s
-  128_veldo_0235_land_locally                      9 passed   13.69s
-  139_veldo_0301_space_signal                     18 passed    3.14s
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit e9e70768. Partial runs: none is the gate.
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 212 suites): 57 passed, 0 failed in 3.67s
+130_veldo_0296_space_section: selftest (PARTIAL, 1 of 212 suites): 48 passed, 0 failed in 0.03s
+131_veldo_0338_project_space_file: selftest (PARTIAL, 1 of 212 suites): 40 passed, 0 failed in 0.02s
+132_veldo_0297_space_ledger: selftest (PARTIAL, 1 of 212 suites): 57 passed, 0 failed in 2.63s
+133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 212 suites): 56 passed, 0 failed in 31.44s
+134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 212 suites): 42 passed, 0 failed in 1.56s
+135_veldo_0298_space_kinds: selftest (PARTIAL, 1 of 212 suites): 150 passed, 0 failed in 0.02s
+136_veldo_0299_space_probe: selftest (PARTIAL, 1 of 212 suites): 72 passed, 0 failed in 7.42s
+137_veldo_0330_space_rules: selftest (PARTIAL, 1 of 212 suites): 49 passed, 0 failed in 2.81s
+138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 212 suites): 65 passed, 0 failed in 3.38s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 212 suites): 44 passed, 0 failed in 1.83s
+140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 212 suites): 57 passed, 0 failed in 6.26s
+141_veldo_0344_process_reader: selftest (PARTIAL, 1 of 212 suites): 85 passed, 0 failed in 23.43s
+06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 212 suites): 1414 passed, 0 failed in 44.43s
+66_veldo_0042_clones: selftest (PARTIAL, 1 of 212 suites): 46 passed, 0 failed in 2.73s
+66_veldo_0047_authority: selftest (PARTIAL, 1 of 212 suites): 56 passed, 0 failed in 14.82s
+66_veldo_0051_events: selftest (PARTIAL, 1 of 212 suites): 37 passed, 0 failed in 8.07s
+70_veldo_0057_landing: selftest (PARTIAL, 1 of 212 suites): 57 passed, 0 failed in 17.25s
+70_veldo_0069_bindings: selftest (PARTIAL, 1 of 212 suites): 36 passed, 0 failed in 6.85s
+70_veldo_0073_activation: selftest (PARTIAL, 1 of 212 suites): 37 passed, 0 failed in 4.12s
+85_veldo_0158_credential_delivery: selftest (PARTIAL, 1 of 212 suites): 49 passed, 0 failed in 6.18s
+85_veldo_0171_setup_api: selftest (PARTIAL, 1 of 212 suites): 44 passed, 0 failed in 12.95s
+128_veldo_0235_land_locally: selftest (PARTIAL, 1 of 212 suites): 35 passed, 0 failed in 15.83s
+128_veldo_0247_check_join: selftest (PARTIAL, 1 of 212 suites): 46 passed, 0 failed in 18.07s
+128_veldo_0254_confined_runner: selftest (PARTIAL, 1 of 212 suites): 27 passed, 0 failed in 0.81s
