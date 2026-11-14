@@ -23,6 +23,16 @@ same as enabled false, and is not refused. When the section is present, every ke
   protect             paths (path prefixes), volumes, containers, images and networks (Docker name
                       patterns) and compose_projects (compose project names).
 
+ONE KEY MAY BE LEFT OUT (VELDO-0344):
+
+  process_reader      the word none, or the SHA-256 digest (64 lowercase hexadecimal digits, written
+                      as a string) of the process reader: the one recorded for the reviewed source
+                      and installed by the owner (design section 7.1). The reader's path and its
+                      socket's path are fixed in the probe and are not keys. A section without the
+                      key reads as none: no reader is used, and every process the probe cannot read
+                      is judged by the bound, which is the answer that removes less. Anything else
+                      than none or a digest is refused as malformed.
+
 NOBODY IS A DEFAULT, as in the installation reader. A missing key is refused by name as
 installation_missing:<key>; a malformed key and an unknown key are refused by name as
 installation_invalid:<key>. No key has a built-in value.
@@ -80,6 +90,10 @@ SECTION = 'space'
 STATIONS = ('build', 'review', 'gate')
 KEYS = ('enabled', 'time_zone', 'pools', 'engines', 'scratch_roots', 'build_roots', 'plain_repositories',
         'client_accounts', 'protect')
+# The one key a section may leave out: left out, it reads as none (the process reader is not used).
+OPTIONAL_KEYS = ('process_reader',)
+NO_READER = 'none'
+_DIGEST = re.compile(r'[0-9a-f]{64}\Z')
 # The protect list's keys, with the entry type each one gives.
 PROTECT_KEYS = (('paths', 'path'), ('volumes', 'volume'), ('containers', 'container'), ('images', 'image'),
                 ('networks', 'network'), ('compose_projects', 'compose_project'))
@@ -138,6 +152,15 @@ def _closed(value, key, allowed, required=None):
         if value.get(name) is None:
             raise _missing(key + '.' + name)
     return value
+
+
+def _process_reader(value, key):
+    """none, or the digest of the process reader. A key that is left out is none."""
+    if value is None or value == NO_READER:
+        return NO_READER
+    if isinstance(value, str) and _DIGEST.match(value):
+        return value
+    raise _malformed(key, 'none or a SHA-256 digest as a string of 64 lowercase hexadecimal digits')
 
 
 def _enabled(value, key):
@@ -265,6 +288,11 @@ def _protect(value, key, engines):
 
 def check(section):
     """The checked section as the reader returns it. Raises _Refusal on the first refused key."""
+    reader = None
+    if isinstance(section, dict):
+        # The key that may be left out is read apart; the nine required keys stay a closed set.
+        reader = section.get(OPTIONAL_KEYS[0])
+        section = {name: value for name, value in section.items() if name not in OPTIONAL_KEYS}
     _closed(section, SECTION, KEYS)
     engines = _engines(section['engines'], SECTION + '.engines')
     return {
@@ -279,6 +307,7 @@ def check(section):
                                                   SECTION + '.plain_repositories'),
         'client_accounts': _paths(section['client_accounts'], SECTION + '.client_accounts'),
         'protect': _protect(section['protect'], SECTION + '.protect', engines),
+        'process_reader': _process_reader(reader, SECTION + '.process_reader'),
     }
 
 

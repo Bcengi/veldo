@@ -13338,6 +13338,133 @@ def cases():
         ['store/busy-store-named'])
     result[-1]['siblings'] = True
 
+    # VELDO-0344: the process reader. The declared falsifiers of its acceptance criteria. AC1: the
+    # digest is not compared; any capability set that holds cap_sys_ptrace is accepted; version 3 of
+    # the attribute with any root id; the file is checked and not its folders; the header's cap
+    # field is ignored; the output is taken whoever wrote it; the process id is trusted without the
+    # pidfd; bytes written before the writer was seen locked are taken. AC2: the working directory
+    # only; the maps left out; the first thread's working directory only; the first thread's
+    # descriptors only; device and inode matched. AC3: a block with an unread fact taken as read; a
+    # folder that cannot be listed skipped. AC4, in the reader's source: the filter allows kill,
+    # pidfd_getfd, process_vm_readv, an open for writing. AC5: the blocks before a cut are used; the
+    # reader goes on after a failed write; it exits straight after its end line. AC6: the probe
+    # executes the reader itself (shown here by a row with no socket; the installed row, which
+    # would read cap=0 under NoNewPrivileges, runs only where the reader is installed and is
+    # registered nowhere, because a case whose row is missing is an error); the entry checks the
+    # path and executes the path. AC7, in the setup text: no prefix map; the compiler from the
+    # path; setcap before the comparison; the blob read with git show. AC8: the first thread only.
+    space344 = '141_veldo_0344_process_reader.py'
+
+    def reader344(name, module, old, new, rows, also=(), where=None):
+        add(344, name, space344, module, old, new, rows, also)
+        if where:
+            result[-1]['dir'] = where
+        else:
+            result[-1]['siblings'] = True
+
+    probe344 = 'control_space_probe.py'
+    reader344('space344-digest-not-compared', probe344,
+              "        if digest.hexdigest() != pin:\n", "        if False:\n", ['ac1/digest'])
+    reader344('space344-any-set-with-ptrace', probe344,
+              "    if permitted != PTRACE or inheritable != 0 or flags != CAPABILITY_EFFECTIVE:\n",
+              "    if not permitted & PTRACE or inheritable != 0 or flags != CAPABILITY_EFFECTIVE:\n",
+              ['ac1/capability-exact'])
+    reader344('space344-version-3-any-root-id', probe344,
+              "    if version == CAPABILITY_VERSION_3 and words[5] != 0:\n", "    if False:\n",
+              ['ac1/capability-root-id'])
+    reader344('space344-file-and-not-its-folders', probe344,
+              "    if owner != 0 or mode & 0o022:\n        raise _Refused('folder', '%s: owner",
+              "    if False:\n        raise _Refused('folder', '%s: owner", ['ac1/folder'])
+    reader344('space344-header-cap-ignored', probe344,
+              "            if header.group(1) != b'1':\n", "            if False:\n", ['ac1/header-cap'])
+    reader344('space344-output-whoever-wrote-it', probe344,
+              "    if seen != {'uid': [me] * 4, 'permitted': PTRACE, 'effective': PTRACE, 'no_new_privs': 1, "
+              "'seccomp': 2}:\n", "    if False:\n", ['ac1/writer'])
+    reader344('space344-process-id-without-the-pidfd', probe344,
+              "    if pid is None or _pidfd_pid(pidfd) != pid:\n        return False\n"
+              "    return not select.select([pidfd], [], [], 0)[0]\n",
+              "    return True\n", ['ac1/writer-gone'])
+    reader344('space344-bytes-from-before-the-lock', probe344,
+              "            if header is None or early:\n", "            if header is None:\n",
+              ['ac1/bytes-before-the-byte'],
+              also=(("            if waiting is not None:\n", "            if waiting == b'':\n"),
+                    ("            table = bytearray()\n", "            table = bytearray(early)\n")))
+    matched344 = "            for how, tid, device, inode in block['facts'] if inode in inodes], None\n"
+    for name, test, rows in (
+            ('space344-working-directory-only', "inode in inodes and how == 'cwd'",
+             ['ac2/open-file-only', 'ac2/directory-descriptor']),
+            ('space344-maps-left-out', "inode in inodes and how != 'maps'", ['ac2/mapped-only']),
+            ('space344-first-thread-working-directory', "inode in inodes and (how != 'cwd' or tid == pid)",
+             ['ac2/second-thread-cwd']),
+            ('space344-first-thread-descriptors', "inode in inodes and (how != 'fd' or tid == pid)",
+             ['ac2/second-thread-descriptor']),
+            ('space344-device-and-inode', "inodes.get(inode) == device", ['ac2/inode-alone'])):
+        reader344(name, probe344, matched344, matched344.replace('inode in inodes', test), rows)
+    reader344('space344-unread-fact-taken-as-read', probe344,
+              "                return None, ('refused:output', 'line %d is in no task' % (number + 1))\n"
+              "            block['whole'] = False\n",
+              "                return None, ('refused:output', 'line %d is in no task' % (number + 1))\n"
+              "            pass\n", ['ac3/unread-fact'])
+    reader344('space344-unlistable-folder-skipped', probe344,
+              "                    inodes, folders = _inodes(root)\n",
+              "                    inodes, folders = _inodes(root)[0], None\n", ['ac3/unlistable-folder'])
+    reader344('space344-blocks-before-the-cut-used', probe344,
+              "                    raise _Refused('output', 'the connection ended with no end line')\n",
+              "                    break\n", ['ac5/cut'],
+              also=(("    if ended is None:\n        return None, ('refused:output', 'no end line')\n",
+                     "    if ended is None:\n        return blocks, None\n"),))
+    reader344('space344-probe-executes-the-reader', probe344,
+              "        data, answer['writer'] = _converse(seam, os.geteuid())\n",
+              "        data = subprocess.run([seam.get('path', READER)], stdin=subprocess.DEVNULL,\n"
+              "                              stdout=subprocess.PIPE).stdout.split(b'\\n', 1)[-1]\n",
+              ['ac6/reads-through-the-socket'])
+    reader344('space344-checks-the-path-executes-the-path', probe344,
+              "    os.execve(descriptor, ['veldo-procread'], {})\n",
+              "    os.execve(seam.get('path', READER), ['veldo-procread'], {})\n",
+              ['ac6/executes-the-checked-descriptor'])
+    reader344('space344-first-thread-only-in-the-probe', probe344,
+              "    for task in _tasks(base, KCMP_FS):\n", "    for task in _tasks(base, KCMP_FS)[:1]:\n",
+              ['ac8/second-thread-cwd'])
+    reader344('space344-every-task-taken-as-sharing', probe344,
+              "        return _libc().syscall(_KCMP, int(first), int(other), what, 0, 0) == 0\n",
+              "        return True\n", ['ac8/second-thread-cwd', 'ac8/second-thread-descriptor'])
+    source344 = 'veldo_procread.c'
+    for call in ('kill', 'pidfd_getfd', 'process_vm_readv'):
+        reader344('space344-filter-allows-' + call, source344, "    ALLOW(__NR_exit_group),\n",
+                  "    ALLOW(__NR_exit_group),\n    ALLOW(__NR_%s),\n" % call, ['ac4/filter'], where='scripts')
+    reader344('space344-filter-allows-an-open-for-writing', source344,
+              "    BPF_JUMP(BPF_JMP | BPF_JSET | BPF_K, WRITING, 1, 0),\n",
+              "    BPF_JUMP(BPF_JMP | BPF_JSET | BPF_K, WRITING, 0, 0),\n", ['ac4/filter'], where='scripts')
+    reader344('space344-reader-first-task-only', source344,
+              "        for (index = 0; index < task_count; index++)\n",
+              "        for (index = 0; index < task_count && index < 1; index++)\n",
+              ['reader/facts-of-every-thread'], where='scripts')
+    reader344('space344-reader-maps-not-read', source344,
+              "    error = read_maps(proc, pid);\n", "    error = 0;\n", ['reader/maps'], where='scripts')
+    reader344('space344-goes-on-after-a-failed-write', source344,
+              "            leave(3);\n        }\n        done += (size_t)n;\n",
+              "            break;\n        }\n        done += (size_t)n;\n", ['ac5/failed-write'], where='scripts')
+    reader344('space344-exits-straight-after-the-end-line', source344,
+              "    /* Stay until the probe has looked: it shuts down its side after its last look. */\n"
+              "    syscall(SYS_read, 1, &byte, 1);\n",
+              "    /* Stay until the probe has looked: it shuts down its side after its last look. */\n",
+              ['ac5/waits-after-end'], where='scripts')
+    setup344 = 'veldo-procread-setup.txt'
+    reader344('space344-no-prefix-map', setup344,
+              ' -static -ffile-prefix-map="$d"=. -o ', ' -static -o ', ['ac7/reproducible'], where='docs')
+    reader344('space344-compiler-from-the-path', setup344,
+              'env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11', 'cc -std=c11', ['ac7/compiler-not-from-path'],
+              where='docs')
+    reader344('space344-setcap-before-the-comparison', setup344,
+              "echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c - && "
+              "setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread",
+              "setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread && "
+              "echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c -",
+              ['ac7/setcap-after-digest'], where='docs')
+    reader344('space344-blob-read-with-git-show', setup344,
+              '/usr/bin/git --no-replace-objects cat-file blob C:scripts/veldo_procread.c',
+              '/usr/bin/git show C:scripts/veldo_procread.c', ['ac7/no-replace-objects'], where='docs')
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

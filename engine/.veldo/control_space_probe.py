@@ -20,6 +20,7 @@ kept from an earlier call.
                                beneath the path, or above it, on each named engine context
   git_lock(path)               rule 4: the lock files git holds on a worktree
   in_use(path, engines)        rule 4: the three above together
+  reader_read()                rule 4: the process reader's table, or why it is not used (VELDO-0344)
   worktrees(path)              rule 6: the worktrees a repository's own git folder registers
   nested(path, skip)           rule 6: the git repositories on disk beneath a path
   scratch(path)                rule 4, a sandbox launcher's scratch: its scratch lock and its borrowed
@@ -158,9 +159,82 @@ The lock is tested by asking for it without waiting and giving it back at once. 
 there, or is a link, is one no launcher locked. A folder the probe cannot open reads as locked, and a
 journal it cannot look into reads as not settled; read is False and said names what failed.
 
+EVERY THREAD (VELDO-0344 AC8). The entries directly under /proc/<pid> are the first thread's. A thread
+that left the shared file system state has a working directory of its own, and one that left the shared
+descriptor table has open files of its own. So the working directory and the open files are read for
+every task under /proc/<pid>/task, and a process with a task that cannot be read is unread. A task that
+ended while it was read holds nothing. A table with no task folders (a test's) is read at the process's
+own entries. Most threads share both with the first thread, and reading the same table once per thread
+costs as many reads as the process has threads times descriptors. So the kernel is asked, with kcmp,
+whether a task shares its file system state or its descriptor table with the first thread, and a task
+that does is not read a second time. Only the kernel's plain answer that the two are the same one
+leaves a task out: any other answer, an error or a kernel without the call has it read.
+
+THE PROCESS READER (design section 7.1, VELDO-0344). A process the probe may not read (root's, another
+user's, the owner's own that is not dumpable) is read through a separate program, the process reader:
+/usr/local/lib/veldo/veldo-procread, which holds the one file capability cap_sys_ptrace and prints, for
+every process and every task, the device and inode numbers of its working directory, its open files
+and its mapped files. The probe never executes it. It connects to the socket of the reader's own user
+unit, /run/user/<uid>/veldo-procread.sock; both paths are fixed here and come from no environment,
+installation or project. The reader's answer is used only when every check holds, and reader_read says
+which state it is in:
+
+  used                    every check held and the table was read
+  absent                  nothing is at the reader's path
+  refused:not_regular     the path is a link, or no regular file
+  refused:owner           the file's owner is not root
+  refused:mode            its group is not the probing user's own, or its mode is not exactly 0750
+  refused:folder          a folder from / down to it is a link, belongs to another account than root
+                          or may be written by one
+  refused:capability      its capability attribute is not exactly cap_sys_ptrace, permitted and
+                          effective, nothing inheritable, in version 2 or in version 3 with root id 0
+  refused:no_pin          the installation's space section names no digest (process_reader)
+  refused:digest          the file's SHA-256 digest, read through the same descriptor, is another one
+  refused:no_socket       the socket cannot be connected to
+  refused:writer          the kernel does not name one writer for the whole output that is a process of
+                          the probing user's, holds exactly cap_sys_ptrace permitted and effective,
+                          shows NoNewPrivs 1 and Seccomp 2, and that a pidfd names as alive before and
+                          after its status was read, at the header and at the end line; or anything
+                          but the one header line arrived before the probe sent its byte
+  refused:no_capability   the header says cap=0
+  refused:failed          the connection failed or gave no answer in time, or a reader that was run
+                          directly ended with another status than 0
+  refused:output          the output is not whole: a line outside the format, no end line, an end
+                          count other than the number of blocks, bytes after the end line
+
+The file's facts are read from one open descriptor, reached folder by folder with no link followed.
+The probe sets SO_PASSCRED and SO_PASSPIDFD before it connects, so the kernel attaches to each part it
+receives the writer's process id and uid and a pidfd, which stands for that one process and for no
+later one of the same number. The reader writes its header only once it has locked itself (no_new_privs
+and its seccomp filter) and then waits for one byte; the probe sends that byte only after it has seen
+the header's writer locked and nothing more waiting, and it takes the table that follows. After the
+end line the probe looks at the writer once more, shuts down its side and reads to the end of the
+connection, which must give nothing more.
+
+A reader that is not used changes nothing: every unread process is judged by the bound below, as
+before. With the reader used, an unread process whose block is whole (no x line, not ended, and the
+start time the probe itself reads for that process id) is read: it uses the path when the working
+directory or a descriptor of any of its tasks, or a mapped file, has the inode number of the path or of
+something beneath it, and otherwise it does not count, whatever its uid. It is named by process id,
+task and fact, with the device and inode number the reader printed. The match is by inode number
+alone: a file held through an overlay shows another device. The item's own numbers are read by listing
+its folder and everything beneath it, following no link, and a folder that cannot be listed makes the
+path in use. A process with no block, a block with an unread fact or another start time stays unread.
+
+THE COMMANDS (the owner's, docs/veldo-procread-setup.txt): `reader` runs the reader check, which prints
+the reader's state and reads one undumpable process it starts itself, whose second thread sits in
+another folder; `reader-units` lays the two unit templates into the owner's systemd user unit folder,
+through install(1), and is the one thing in this file that writes; `reader-exec` is the unit's entry:
+it opens the reader once, makes the file's checks on that descriptor and executes that same descriptor
+with an empty environment, or executes nothing. No probe function calls any of the three.
+
 THE TEST SEAM. SEAM['after_in_use'], when set, is called with the facts of every in_use call before
-they are returned. It is for tests that need something to happen between two probes. Nothing in the
-engine sets it.
+they are returned. It is for tests that need something to happen between two probes. SEAM['reader'],
+when set, gives the reader's checks what a suite cannot have without root: path and socket (where the
+reader and its socket are), pin (the digest), file (the owner, group and mode read for the file),
+folder (the owner and mode read for a folder of the way), capability (the capability attribute),
+status (the status text read for the writer) and before_exec (called between the check and the
+execution in the unit's entry). Nothing in the engine sets either.
 
 GIT is run through the one Git boundary (git_process.py, the sibling of this file), in its isolated
 profile: no GIT_ variable of the caller's environment and no system or global configuration reaches
@@ -176,12 +250,20 @@ Standard library only, and the Git boundary beside this file.
 import errno
 import fcntl
 import fnmatch
+import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
 import re
+import select
+import socket
+import stat
+import struct
 import subprocess
+import sys
+import time
 
 
 def _sibling(name):
@@ -224,7 +306,29 @@ NO_LOGIN = 4294967295  # the loginuid of a process no login started
 CONTAINER = re.compile(r'[0-9a-f]{64}')  # a container's id, in the cgroup a process is in
 GIT_FOLDER = frozenset(('HEAD', 'objects', 'refs'))
 
-SEAM = {'after_in_use': None}
+# The process reader (VELDO-0344). Both paths are fixed here; {uid} is the probing user's uid.
+READER = '/usr/local/lib/veldo/veldo-procread'
+READER_SOCKET = '/run/user/{uid}/veldo-procread.sock'
+READER_MODE = 0o750
+READER_SECONDS = 60  # the longest one answer of the reader is waited for
+READER_BYTES = 1 << 30  # an output longer than this is not one table
+READER_UNITS = ('veldo-procread.socket', 'veldo-procread@.service')
+PTRACE = 1 << 19  # CAP_SYS_PTRACE
+CAPABILITY_ATTRIBUTE = 'security.capability'
+CAPABILITY_VERSION_2, CAPABILITY_VERSION_3 = 0x02000000, 0x03000000  # VFS_CAP_REVISION_2 and _3
+CAPABILITY_EFFECTIVE = 0x000001  # VFS_CAP_FLAGS_EFFECTIVE
+SO_PASSPIDFD, SCM_PIDFD = 76, 4  # the socket option and the message type of the writer's pidfd
+HEADER = re.compile(rb'veldo-procread 1 cap=([01])')
+TABLE_LINE = re.compile(rb'p (\d+) (\d+)|t (\d+)|c (\d+:\d+) (\d+)|f (\d+) (\d+) (\d+:\d+|-) (\d+)'
+                        rb'|m (\d+:\d+) (\d+)|x (cwd|fd|stat|mnt|maps|task) (\d+)|(g)|end (\d+)')
+END_LINE = re.compile(rb'(?:\A|\n)end [^\n]*\n')
+
+# kcmp, by its call number on the two machines the reader is built for; None elsewhere.
+_KCMP = {'x86_64': 312, 'aarch64': 272}.get(os.uname().machine)
+KCMP_FILES, KCMP_FS = 2, 3
+_LIBC = {}
+
+SEAM = {'after_in_use': None, 'reader': None}
 
 
 def _run(argv, cwd=None, via=None):
@@ -375,18 +479,70 @@ def protected(kind, locator, protect):
 
 # Process use.
 
+def _same(first, other, what):
+    """Whether the kernel says the tasks `first` and `other` share `what` (KCMP_FILES, the descriptor
+    table, or KCMP_FS, the file system state): True only on its plain answer 0."""
+    if _KCMP is None:
+        return False
+    try:
+        return _libc().syscall(_KCMP, int(first), int(other), what, 0, 0) == 0
+    except Exception:  # no such call, or no library to make it with: not known to be the same
+        return False
+
+
+def _libc():
+    if 'libc' not in _LIBC:
+        import ctypes
+        _LIBC['libc'] = ctypes.CDLL(None, use_errno=True)
+    return _LIBC['libc']
+
+
+def _tasks(base, shared=None):
+    """The entries of every task of the process at `base`: /proc/<pid>/task/<tid>, the first thread
+    first. A table that holds no task folder (a test's) is read at the process's own entries. With
+    `shared` (KCMP_FS or KCMP_FILES) a task that shares that with the first thread is left out: what
+    it holds was read at the first thread."""
+    try:
+        names = os.listdir(os.path.join(base, 'task'))
+    except FileNotFoundError:
+        os.lstat(base)  # raises when the process itself is gone
+        return [base]
+    names = sorted((name for name in names if name.isdigit()), key=int)
+    leader = os.path.basename(base)
+    if leader in names:
+        names = [leader] + [name for name in names if name != leader]
+    if shared is not None:
+        names = names[:1] + [name for name in names[1:] if not _same(names[0], name, shared)]
+    return [os.path.join(base, 'task', name) for name in names]
+
+
 def _cwd(base):
-    return [os.readlink(os.path.join(base, 'cwd'))]
+    found = []
+    for task in _tasks(base, KCMP_FS):
+        try:
+            where = os.readlink(os.path.join(task, 'cwd'))
+        except GONE:
+            continue  # the task ended meanwhile: it holds nothing
+        if where not in found:
+            found.append(where)
+    if not found:
+        raise FileNotFoundError(base)  # every task ended: the process did
+    return found
 
 
 def _open(base):
-    found = []
-    for name in os.listdir(os.path.join(base, 'fd')):
+    found = {}
+    for task in _tasks(base, KCMP_FILES):
         try:
-            found.append(os.readlink(os.path.join(base, 'fd', name)))
-        except FileNotFoundError:
-            continue  # closed meanwhile
-    return found
+            names = os.listdir(os.path.join(task, 'fd'))
+        except GONE:
+            continue  # the task ended meanwhile
+        for name in names:
+            try:
+                found[os.readlink(os.path.join(task, 'fd', name))] = True
+            except FileNotFoundError:
+                continue  # closed meanwhile
+    return list(found)
 
 
 def _mapped(base):
@@ -578,14 +734,443 @@ def _table(proc, mountinfo=None):
     return {'read': True, 'hidden': hidden, 'said': None}
 
 
-def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None, containers=()):
+# The process reader (VELDO-0344, design section 7.1).
+
+class _Refused(Exception):
+    """The reader is not used: the check that failed, and what was seen."""
+
+    def __init__(self, check, said=''):
+        self.check, self.said = check, str(said)[:300]
+        super().__init__(check)
+
+
+class _Absent(Exception):
+    """Nothing is at the reader's path."""
+
+
+def _reader_seam():
+    return SEAM.get('reader') or {}
+
+
+def _config():
+    return _sibling('control_space_config')
+
+
+def _reader_pin(seam):
+    """The digest the installation's space section names for the reader, or None when it names none
+    or cannot be read. A suite's seam gives its own."""
+    if 'pin' in seam:
+        pin = seam['pin']
+    else:
+        try:
+            pin = _config().read(stream=io.StringIO()).get('process_reader')
+        except Exception:  # an installation that cannot be read names no digest
+            pin = None
+    return pin if isinstance(pin, str) and re.fullmatch(r'[0-9a-f]{64}', pin) else None
+
+
+def _folder_checked(descriptor, where, seam):
+    """Check 2 for one folder of the way: root owns it and nobody else may write it."""
+    found = os.fstat(descriptor)
+    owner, mode = seam['folder'](where, found) if seam.get('folder') else (found.st_uid, stat.S_IMODE(found.st_mode))
+    if owner != 0 or mode & 0o022:
+        raise _Refused('folder', '%s: owner %s, mode %o' % (where, owner, mode))
+
+
+def _capability_checked(descriptor, seam):
+    """Check 3: the capability attribute holds exactly cap_sys_ptrace, permitted and effective, and
+    nothing inheritable, in version 2 or in version 3 with root id 0."""
+    try:
+        value = seam['capability'](descriptor) if seam.get('capability') else os.getxattr(descriptor,
+                                                                                         CAPABILITY_ATTRIBUTE)
+    except OSError as error:
+        raise _Refused('capability', 'no capability attribute: ' + _said(error)) from None
+    if not isinstance(value, bytes) or len(value) not in (20, 24):
+        raise _Refused('capability', 'a capability attribute of another form')
+    words = struct.unpack('<%dI' % (len(value) // 4), value)
+    version, flags = words[0] & 0xff000000, words[0] & 0x00ffffff
+    if (version, len(value)) not in ((CAPABILITY_VERSION_2, 20), (CAPABILITY_VERSION_3, 24)):
+        raise _Refused('capability', 'version %#x' % version)
+    if version == CAPABILITY_VERSION_3 and words[5] != 0:
+        raise _Refused('capability', 'version 3 with root id %d' % words[5])
+    permitted, inheritable = words[1] | words[3] << 32, words[2] | words[4] << 32
+    if permitted != PTRACE or inheritable != 0 or flags != CAPABILITY_EFFECTIVE:
+        raise _Refused('capability', 'permitted %#x, inheritable %#x, flags %#x' % (permitted, inheritable, flags))
+
+
+def _reader_checked(seam):
+    """Checks 2 to 4 on the reader's file, read from one open descriptor that is reached folder by
+    folder with no link followed: (the descriptor, its digest). The caller closes the descriptor.
+    Raises _Absent when nothing is at the path and _Refused with the check that failed."""
+    path = seam.get('path', READER)
+    names = [name for name in str(path).split('/') if name]
+    if not str(path).startswith('/') or not names or '..' in names or '.' in names:
+        raise _Refused('not_regular', 'the path is not a plain absolute one')
+    walked, descriptor = '/', os.open('/', os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+    try:
+        for name in names[:-1]:
+            _folder_checked(descriptor, walked, seam)
+            walked = os.path.join(walked, name)
+            try:
+                inner = os.open(name, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=descriptor)
+            except FileNotFoundError:
+                raise _Absent(walked) from None
+            except OSError as error:
+                raise _Refused('folder', '%s: %s' % (walked, _said(error))) from None
+            os.close(descriptor)
+            descriptor = inner
+        _folder_checked(descriptor, walked, seam)
+        try:
+            opened = os.open(names[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC, dir_fd=descriptor)
+        except FileNotFoundError:
+            raise _Absent(path) from None
+        except OSError as error:
+            raise _Refused('not_regular' if error.errno == errno.ELOOP else 'mode', _said(error)) from None
+    finally:
+        os.close(descriptor)
+    try:
+        found = os.fstat(opened)
+        if not stat.S_ISREG(found.st_mode):
+            raise _Refused('not_regular', 'not a regular file')
+        owner, group, mode = (seam['file'](found) if seam.get('file')
+                              else (found.st_uid, found.st_gid, stat.S_IMODE(found.st_mode)))
+        if owner != 0:
+            raise _Refused('owner', 'owner %s' % owner)
+        if group != os.getgid() or mode != READER_MODE:
+            raise _Refused('mode', 'group %s, mode %o' % (group, mode))
+        _capability_checked(opened, seam)
+        pin = _reader_pin(seam)
+        if pin is None:
+            raise _Refused('no_pin', 'the space section names no digest for the reader')
+        digest, at = hashlib.sha256(), 0
+        while True:
+            block = os.pread(opened, 1 << 20, at)
+            if not block:
+                break
+            digest.update(block)
+            at += len(block)
+        if digest.hexdigest() != pin:
+            raise _Refused('digest', 'the file reads %s' % digest.hexdigest())
+        return opened, digest.hexdigest()
+    except BaseException:
+        os.close(opened)
+        raise
+
+
+def _pidfd_pid(pidfd):
+    """The process id a pidfd names, from its own fdinfo entry; None once that process has ended (the
+    kernel writes -1 there) or when the entry cannot be read."""
+    try:
+        with open('/proc/self/fdinfo/%d' % pidfd, 'rb') as about:
+            for row in about.read().split(b'\n'):
+                if row.startswith(b'Pid:'):
+                    found = int(row[4:])
+                    return found if found > 0 else None
+    except (OSError, ValueError):
+        pass
+    return None
+
+
+def _alive(pidfd, pid):
+    """Whether the pidfd names the live process `pid` now: its fdinfo gives that id and it does not
+    poll as ended."""
+    if pid is None or _pidfd_pid(pidfd) != pid:
+        return False
+    return not select.select([pidfd], [], [], 0)[0]
+
+
+def _locked(pidfd, pid, me, seam):
+    """Check 5 for the writer the pidfd names: alive before and after its status file was read, and
+    that file shows the probing user's uid, exactly cap_sys_ptrace permitted and effective,
+    NoNewPrivs 1 and Seccomp 2. Raises _Refused('writer')."""
+    if not _alive(pidfd, pid):
+        raise _Refused('writer', 'the writer has ended')
+    try:
+        with open(os.path.join(PROC, str(pid), 'status'), 'rb') as status:
+            text = status.read().decode('utf-8', 'replace')
+    except OSError as error:
+        text = ''
+        if not seam.get('status'):
+            raise _Refused('writer', 'the status of the writer cannot be read: ' + _said(error)) from None
+    if seam.get('status'):
+        text = seam['status'](pid, text)
+    fields = dict((key, value.split()) for key, _, value in (row.partition(':') for row in text.split('\n')))
+    try:
+        seen = {'uid': [int(uid) for uid in fields['Uid']], 'permitted': int(fields['CapPrm'][0], 16),
+                'effective': int(fields['CapEff'][0], 16), 'no_new_privs': int(fields['NoNewPrivs'][0]),
+                'seccomp': int(fields['Seccomp'][0])}
+    except (KeyError, ValueError, IndexError):
+        raise _Refused('writer', 'the status of the writer does not show what it is') from None
+    if seen != {'uid': [me] * 4, 'permitted': PTRACE, 'effective': PTRACE, 'no_new_privs': 1, 'seccomp': 2}:
+        raise _Refused('writer', 'the writer is not the locked reader: %s' % seen)
+    if not _alive(pidfd, pid):
+        raise _Refused('writer', 'the writer ended while its status was read')
+
+
+def _part(connection, held):
+    """One part of what the connection gives: (bytes, the writer's process id and uid, its pidfd).
+    Every descriptor received is put into `held`, which the caller closes."""
+    data, ancillary, _, _ = connection.recvmsg(1 << 16, socket.CMSG_SPACE(12) + socket.CMSG_SPACE(4) * 4,
+                                               socket.MSG_CMSG_CLOEXEC)
+    writer, pidfd = None, None
+    for level, kind, value in ancillary:
+        if level != socket.SOL_SOCKET:
+            continue
+        if kind == socket.SCM_CREDENTIALS and len(value) >= 12:
+            writer = struct.unpack('3i', value[:12])[:2]
+        elif kind in (SCM_PIDFD, socket.SCM_RIGHTS):
+            received = [number for (number,) in struct.iter_unpack('i', value[:len(value) - len(value) % 4])]
+            held.extend(received)
+            if kind == SCM_PIDFD and len(received) == 1:
+                pidfd = received[0]
+    return data, writer, pidfd
+
+
+def _one_writer(writer, pidfd, first, pid, me):
+    """Whether a part came from the writer the first part named: the kernel's process id and uid for
+    it, and a pidfd that names the same live process."""
+    if writer is None or pidfd is None or writer != (pid, me):
+        return False
+    if os.fstat(pidfd).st_ino != os.fstat(first).st_ino:
+        return False
+    return _alive(pidfd, pid) and _alive(first, pid)
+
+
+def _converse(seam, me):
+    """Checks 5 and 6 on one connection to the reader's socket: the table's bytes and what was seen of
+    the writer. Raises _Refused."""
+    where = seam.get('socket', READER_SOCKET.replace('{uid}', str(me)))
+    held = []
+    connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM | socket.SOCK_CLOEXEC)
+    try:
+        connection.settimeout(READER_SECONDS)
+        try:
+            connection.setsockopt(socket.SOL_SOCKET, socket.SO_PASSCRED, 1)
+            connection.setsockopt(socket.SOL_SOCKET, SO_PASSPIDFD, 1)
+        except OSError as error:
+            raise _Refused('writer', 'the kernel does not hand over the writer: ' + _said(error)) from None
+        try:
+            connection.connect(where)
+        except OSError as error:
+            raise _Refused('no_socket', _said(error)) from None
+        try:
+            # The header: one line, and nothing else, before the probe's byte.
+            data, writer, first = _part(connection, held)
+            if not data:
+                raise _Refused('failed', 'the connection gave nothing')
+            pid = _pidfd_pid(first) if first is not None else None
+            if writer is None or first is None or pid is None or writer != (pid, me):
+                raise _Refused('writer', 'the kernel names no live writer of the probing user: %s' % (writer,))
+            before = bytearray(data)
+            while b'\n' not in before and len(before) < 64:
+                data, writer, pidfd = _part(connection, held)
+                if not data:
+                    raise _Refused('failed', 'the connection ended in the header')
+                if not _one_writer(writer, pidfd, first, pid, me):
+                    raise _Refused('writer', 'a second writer in the header')
+                before += data
+            head, _, early = bytes(before).partition(b'\n')
+            header = HEADER.fullmatch(head) if b'\n' in before else None
+            if header is None or early:
+                raise _Refused('writer', 'more than the one header line before the byte: %r' % bytes(before[:60]))
+            _locked(first, pid, me, seam)
+            # Nothing may be waiting behind the header once its writer has been seen locked.
+            connection.setblocking(False)
+            try:
+                waiting = connection.recv(1, socket.MSG_PEEK)
+            except (BlockingIOError, InterruptedError):
+                waiting = None
+            finally:
+                connection.settimeout(READER_SECONDS)
+            if waiting is not None:
+                raise _Refused('writer', 'bytes after the header before the byte' if waiting
+                               else 'the connection ended before the byte')
+            if header.group(1) != b'1':
+                raise _Refused('no_capability', 'the header says cap=0')
+            connection.sendall(b'\n')
+            # The table, to its end line.
+            table = bytearray()
+            while not END_LINE.search(table, max(0, len(table) - (1 << 16) - 32)):
+                data, writer, pidfd = _part(connection, held)
+                if not data:
+                    raise _Refused('output', 'the connection ended with no end line')
+                if not _one_writer(writer, pidfd, first, pid, me):
+                    raise _Refused('writer', 'a second writer in the table')
+                table += data
+                if len(table) > READER_BYTES:
+                    raise _Refused('output', 'the output is longer than a table')
+            _locked(first, pid, me, seam)  # the last look, while the reader waits
+            connection.shutdown(socket.SHUT_WR)
+            while True:
+                data, writer, pidfd = _part(connection, held)
+                if not data:
+                    break
+                raise _Refused('output', 'bytes after the end line')
+        except socket.timeout:
+            raise _Refused('failed', 'the reader gave no answer in %d seconds' % READER_SECONDS) from None
+        except OSError as error:
+            raise _Refused('failed', _said(error)) from None
+        return bytes(table), {'pid': pid, 'uid': me}
+    finally:
+        connection.close()
+        for descriptor in held:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+
+
+def reader_table(data, status=None, header=False):
+    """Check 6: the reader's table from its bytes, as (blocks, None), or (None, the refused state and
+    what was seen) when the output is not whole. Nothing of an output that is not whole is used.
+    blocks is {pid: {start, whole, facts}}: whole is False when the block holds an x line or a g line
+    or the process id opens two blocks, and facts are (how, tid, device, inode) with how cwd, fd or
+    maps. `status` is the exit status of a reader that was run directly, and `header` says the bytes
+    start with the header line, which must say cap=1."""
+    if status not in (None, 0):
+        return None, ('refused:failed', 'the reader ended with status %s' % status)
+    rows = bytes(data).split(b'\n')
+    if rows[-1] != b'':
+        return None, ('refused:output', 'the output does not end in a line feed')
+    rows.pop()
+    if header:
+        found = HEADER.fullmatch(rows.pop(0)) if rows else None
+        if found is None:
+            return None, ('refused:output', 'no header line')
+        if found.group(1) != b'1':
+            return None, ('refused:no_capability', 'the header says cap=0')
+    blocks, block, task, count, ended = {}, None, None, 0, None
+    for number, row in enumerate(rows):
+        found = TABLE_LINE.fullmatch(row)
+        if found is None:
+            return None, ('refused:output', 'line %d is outside the format' % (number + 1))
+        if ended is not None:
+            return None, ('refused:output', 'bytes after the end line')
+        kind = row[:1]
+        if kind == b'p':
+            pid = int(found.group(1))
+            block, task = {'start': int(found.group(2)), 'whole': pid not in blocks, 'facts': []}, None
+            if pid in blocks:
+                blocks[pid]['whole'] = False  # one id, two blocks: neither is that process for certain
+            else:
+                blocks[pid] = block
+            count += 1
+        elif kind == b'e':
+            ended = int(found.group(15))
+        elif block is None:
+            return None, ('refused:output', 'line %d is in no block' % (number + 1))
+        elif kind == b't':
+            task = int(found.group(3))
+        elif kind == b'c' or kind == b'f':
+            if task is None:
+                return None, ('refused:output', 'line %d is in no task' % (number + 1))
+            block['facts'].append(('cwd', task, found.group(4).decode(), int(found.group(5))) if kind == b'c'
+                                  else ('fd', task, found.group(8).decode(), int(found.group(9))))
+        elif kind == b'm':
+            block['facts'].append(('maps', None, found.group(10).decode(), int(found.group(11))))
+        elif kind == b'x':
+            if found.group(12) in (b'cwd', b'fd') and task is None:
+                return None, ('refused:output', 'line %d is in no task' % (number + 1))
+            block['whole'] = False
+        else:  # g: the process ended while it was read, and its block is closed
+            block['whole'] = False
+            block = task = None
+    if ended is None:
+        return None, ('refused:output', 'no end line')
+    if ended != count:
+        return None, ('refused:output', 'the end line counts %d blocks of %d' % (ended, count))
+    return blocks, None
+
+
+def reader_read(proc=PROC):
+    """The process reader's table, or why it is not used: {state, said, blocks, writer, seconds}. state
+    is used, absent, or refused:<the check that failed> (THE PROCESS READER); said is what was seen;
+    blocks is the table when the state is used and None otherwise. Without a suite's seam the reader
+    is asked only about the host's own process table."""
+    seam, started = _reader_seam(), time.monotonic()
+    answer = {'state': 'absent', 'said': None, 'blocks': None, 'writer': None, 'digest': None}
+    try:
+        if not seam and os.path.realpath(proc) != os.path.realpath(PROC):
+            raise _Absent('the reader reads the host\'s process table, and %s is another' % proc)
+        descriptor, answer['digest'] = _reader_checked(seam)
+        os.close(descriptor)
+        data, answer['writer'] = _converse(seam, os.geteuid())
+        blocks, refused = reader_table(data)
+        if refused:
+            raise _Refused(refused[0][len('refused:'):], refused[1])
+        answer.update(state='used', blocks=blocks)
+    except _Absent as absent:
+        answer.update(state='absent', said=str(absent)[:300])
+    except _Refused as refused:
+        answer.update(state='refused:' + refused.check, said=refused.said)
+    except Exception as error:  # a check that could not be made is a check that failed
+        answer.update(state='refused:failed', said=_said(error))
+    answer['seconds'] = round(time.monotonic() - started, 3)
+    return answer
+
+
+def _device(found):
+    return '%d:%d' % (os.major(found.st_dev), os.minor(found.st_dev))
+
+
+def _inodes(root):
+    """The inode number of `root` and of everything beneath it, following no link, each with the
+    device of that entry for the record: ({inode: device}, None), or (what was read, what was said)
+    when a folder could not be listed or an entry not read."""
+    found, said = {}, None
+    try:
+        top = os.lstat(root)
+    except OSError as error:
+        return found, 'the path %s cannot be read: %s' % (root, _said(error))
+    found[top.st_ino] = _device(top)
+    waiting = [root] if stat.S_ISDIR(top.st_mode) else []
+    while waiting:
+        folder = waiting.pop()
+        try:
+            with os.scandir(folder) as listed:
+                for entry in listed:
+                    seen = entry.stat(follow_symlinks=False)
+                    found[seen.st_ino] = _device(seen)
+                    if stat.S_ISDIR(seen.st_mode):
+                        waiting.append(entry.path)
+        except OSError as error:
+            said = said or 'the folder %s cannot be listed: %s' % (folder, _said(error))
+    return found, said
+
+
+def _by_reader(reader, pid, proc, inodes):
+    """How the reader's table judges the unread process `pid`: (uses, None) when its block is whole
+    and is this process's, uses being the facts whose inode number is one of `inodes`; (None, why)
+    when the process stays unread: no_block, unread_fact or start_time."""
+    block = reader['blocks'].get(pid)
+    if block is None:
+        return None, 'no_block'
+    if not block['whole']:
+        return None, 'unread_fact'
+    seen = process(pid, proc)
+    if seen is None or seen['start'] != block['start']:
+        return None, 'start_time'
+    # By inode number alone: a file held through an overlay shows another device. item_device is the
+    # device of the item's own entry of that number, kept beside the device the reader printed.
+    return [{'how': how, 'tid': tid, 'device': device, 'inode': inode, 'item_device': inodes[inode]}
+            for how, tid, device, inode in block['facts'] if inode in inodes], None
+
+
+def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None, containers=(), reader=None):
     """The processes that use `path`: {users: [{pid, command, uses: [{how, path}], more}], unread:
     [{pid, uid, command, reach}], table: {read, hidden, said}}. how is cwd, open or mapped. unread
     lists every process the probe could not read in full: its uid (None when its status cannot be
     read either), its name (None when that cannot be read) and reach, why it could hold the path, or
     None when it could not. table says whether the table shows every process. `containers` holds the
     ids of the containers whose mounts the caller read: an unread process of any other container
-    counts. A kernel thread and a helper (HELPERS) are left out."""
+    counts. A kernel thread and a helper (HELPERS) are left out.
+
+    `reader` is what reader_read returned. When its state is used, a process the probe could not read
+    is judged by its block (THE PROCESS READER): one that holds the path is a user, {pid, uid, command,
+    by: reader, uses: [{how, tid, device, inode, item_device}], more}, how being cwd, fd or maps; one that does not
+    is in neither list; and one that stays unread carries reader, the reason. folders is what was
+    said when the path's own folders could not all be listed, which makes the path in use; read is
+    the number of processes the reader's table judged."""
     root = os.path.realpath(path)
     me, known = os.geteuid(), {}
     table = _table(proc, mountinfo)
@@ -595,6 +1180,8 @@ def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None, containers=()):
         names, table = [], {'read': False, 'hidden': table['hidden'],
                             'said': 'the process table cannot be listed: ' + _said(error)}
     users, unread = [], []
+    used = bool(reader) and reader.get('state') == 'used' and isinstance(reader.get('blocks'), dict)
+    inodes, folders, judged = None, None, 0
     for name in names:
         base = os.path.join(proc, name)
         command, denied = None, False
@@ -621,9 +1208,20 @@ def processes(path, proc=PROC, helpers=HELPERS, mountinfo=None, containers=()):
                           'more': max(0, len(uses) - NAMED)})
         if denied:
             who = _identity(base)
-            unread.append({'pid': int(name), 'uid': who['uid'] if who else None, 'command': command,
-                           'reach': _could_hold(proc, int(name), root, me, known, containers)})
-    return {'users': users, 'unread': unread, 'table': table}
+            entry = {'pid': int(name), 'uid': who['uid'] if who else None, 'command': command}
+            if used:
+                if inodes is None:
+                    inodes, folders = _inodes(root)
+                held, why = _by_reader(reader, int(name), proc, inodes)
+                if why is None:
+                    judged += 1
+                    if held:
+                        users.append(dict(entry, by='reader', uses=held[:NAMED], more=max(0, len(held) - NAMED)))
+                    continue  # where it is has been read
+                entry['reader'] = why
+            entry['reach'] = _could_hold(proc, int(name), root, me, known, containers)
+            unread.append(entry)
+    return {'users': users, 'unread': unread, 'table': table, 'folders': folders, 'read': judged}
 
 
 def containers(path, engines=(), run=None):
@@ -746,7 +1344,7 @@ def nested(path, skip=()):
     return {'read': said is None, 'said': said, 'repositories': found}
 
 
-def in_use(path, engines=(), proc=PROC, helpers=HELPERS, run=None, mountinfo=None):
+def in_use(path, engines=(), proc=PROC, helpers=HELPERS, run=None, mountinfo=None, reader=None):
     """Rule 4's facts for a path: the processes, the containers and the git locks that use it, and
     what could not be read. found is true when a user was seen. unknown is true when something that
     could not be read could hold the path: an unread process that could reach it, a process table that
@@ -754,19 +1352,28 @@ def in_use(path, engines=(), proc=PROC, helpers=HELPERS, run=None, mountinfo=Non
     cannot be read is in use. unread names all of it: every unread process with its uid and its reach
     (container_mount added here, when a container mount is a way to the path or an engine is unread),
     the table, the engines and what git said. The containers are read first: an unread process of a
-    container they hold is judged by the mounts alone."""
+    container they hold is judged by the mounts alone.
+
+    reader is the process reader's state for this call, {state, said, writer, digest, seconds, read}:
+    used, absent or refused with the check that failed (THE PROCESS READER); read is the number of
+    unread processes its table judged. `reader` may give what reader_read returned; without it the
+    reader is asked here. unread also names folders, what was said when the reader was used and a
+    folder of the path could not be listed: the path is then in use."""
     mounted, lock = containers(path, engines, run), git_lock(path, run)
-    found = processes(path, proc, helpers, mountinfo, mounted['known'])
+    asked = reader if isinstance(reader, dict) else reader_read(proc)
+    found = processes(path, proc, helpers, mountinfo, mounted['known'], asked)
     way_in = 'container_mount' if mounted['users'] or mounted['above'] or mounted['unread'] else None
     unread = {'processes': [dict(entry, reach=entry['reach'] or way_in) for entry in found['unread']],
-              'table': found['table']['said'], 'engines': mounted['unread'], 'git': lock['said']}
+              'table': found['table']['said'], 'engines': mounted['unread'], 'git': lock['said'],
+              'folders': found['folders']}
     seen = bool(found['users'] or mounted['users'] or lock['files'] or lock['worktree_locked'])
     unknown = bool(any(entry['reach'] for entry in unread['processes']) or not found['table']['read']
-                   or mounted['unread'] or not lock['read'])
+                   or mounted['unread'] or not lock['read'] or found['folders'] is not None)
     facts = {'path': str(path), 'resolved': os.path.realpath(path), 'in_use': seen or unknown,
              'found': seen, 'unknown': unknown,
              'processes': found['users'], 'containers': mounted['users'], 'mounted_above': mounted['above'],
-             'git': lock, 'table': found['table'], 'unread': unread}
+             'git': lock, 'table': found['table'], 'unread': unread,
+             'reader': dict({key: value for key, value in asked.items() if key != 'blocks'}, read=found['read'])}
     if SEAM['after_in_use']:
         SEAM['after_in_use'](facts)
     return facts
@@ -968,3 +1575,118 @@ def agent_repository(path, shared, run=None):
             'not_across': not_across[:NAMED], 'more': max(0, len(not_across) - NAMED),
             'refs': others[:NAMED], 'stashes': stashes,
             'unique_work': bool(not_across or others or stashes)}
+
+
+# The owner's commands for the process reader (docs/veldo-procread-setup.txt).
+
+# The process the reader check starts: not dumpable, in the folder it is started in, with a second
+# thread that leaves the shared file system state and sits in the folder it is given.
+_CHECK_PROCESS = """
+import ctypes, os, sys, threading
+libc = ctypes.CDLL(None, use_errno=True)
+libc.prctl(4, 0, 0, 0, 0)  # PR_SET_DUMPABLE, 0
+def second():
+    if libc.unshare(0x200) != 0:  # CLONE_FS: a working directory of this thread's own
+        raise OSError(ctypes.get_errno(), 'unshare')
+    os.chdir(sys.argv[1])
+    print(threading.get_native_id(), flush=True)
+    threading.Event().wait()
+threading.Thread(target=second, daemon=True).start()
+sys.stdin.read()
+"""
+
+
+def reader_check(out=None):
+    """The reader check: prints the reader's state, starts one process that is not dumpable, in a
+    folder, whose second thread sits in another, and reads it through the reader's socket as every
+    probe does. 0 when the state is used and each thread was found in its folder and in no other."""
+    import tempfile
+    out = out or sys.stdout
+    with tempfile.TemporaryDirectory(prefix='veldo-procread-check-') as first, \
+            tempfile.TemporaryDirectory(prefix='veldo-procread-check-') as second, \
+            tempfile.TemporaryDirectory(prefix='veldo-procread-check-') as other:
+        started = subprocess.Popen([sys.executable, '-I', '-c', _CHECK_PROCESS, second], cwd=first,
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        try:
+            thread = int(started.stdout.readline().strip() or 0)
+            seen = {where: in_use(where) for where in (first, second, other)}
+        finally:
+            started.stdin.close()
+            started.wait()
+            started.stdout.close()
+        reader = seen[first]['reader']
+        print('veldo-procread: state %s%s%s, read in %s seconds, %d processes judged by it'
+              % (reader['state'], ' cap=1' if reader['state'] == 'used' else '',
+                 ' (%s)' % reader['said'] if reader['said'] else '', reader['seconds'], reader['read']), file=out)
+
+        def tasks(where):
+            return sorted(use['tid'] for user in seen[where]['processes']
+                          if user['pid'] == started.pid and user.get('by') == 'reader'
+                          for use in user['uses'] if use['how'] == 'cwd')
+
+        rows = (('the reader is used', reader['state'] == 'used'),
+                ('the first thread of the undumpable process is read in its folder', tasks(first) == [started.pid]),
+                ('its second thread is read in the other folder', thread > 0 and tasks(second) == [thread]),
+                ('it is not counted in a folder it does not hold', tasks(other) == []
+                 and not any(entry['pid'] == started.pid for entry in seen[other]['unread']['processes'])))
+        for label, passed in rows:
+            print('%s: %s' % ('PASS' if passed else 'FAIL', label), file=out)
+    return 0 if all(passed for _, passed in rows) else 1
+
+
+def reader_units(folder=None, out=None):
+    """Lay the two unit templates of the reader into the owner's systemd user unit folder, with the
+    interpreter and this file's own path filled in. Written through install(1). Starts nothing."""
+    out = out or sys.stdout
+    if folder is None:
+        home = os.environ.get('XDG_CONFIG_HOME', '')
+        if not os.path.isabs(home):
+            home = os.path.join(os.path.expanduser('~'), '.config')
+        folder = os.path.join(home, 'systemd', 'user')
+    here = Path(__file__).resolve()
+    for name in READER_UNITS:
+        with open(here.with_name('services') / name, 'rb') as template:
+            text = template.read().decode('utf-8')
+        text = text.replace('@PYTHON@', os.path.realpath(sys.executable)).replace('@EXECUTABLE@', str(here))
+        target = os.path.join(str(folder), name)
+        done = subprocess.run(['/usr/bin/install', '-D', '-m', '0644', '/dev/stdin', target],
+                              input=text.encode('utf-8'), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              timeout=SECONDS)
+        if done.returncode:
+            print('veldo-procread: %s was not installed: %s'
+                  % (target, done.stderr.decode('utf-8', 'replace').strip()[-300:]), file=sys.stderr)
+            return 1
+        print('veldo-procread: installed %s' % target, file=out)
+    return 0
+
+
+def reader_exec():
+    """The entry of veldo-procread@.service: open the reader once, make checks 2 to 4 on that
+    descriptor and execute that same descriptor, with an empty environment and the standard output
+    the unit gave, which is the connection. When a check fails nothing is executed: 1 is returned
+    and the connection closes with the process."""
+    seam = _reader_seam()
+    try:
+        descriptor, _ = _reader_checked(seam)
+    except (_Absent, _Refused):
+        return 1
+    if seam.get('before_exec'):
+        seam['before_exec']()
+    os.execve(descriptor, ['veldo-procread'], {})
+    return 1
+
+
+def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv == ['reader']:
+        return reader_check()
+    if argv[:1] == ['reader-units'] and len(argv) <= 2:
+        return reader_units(*argv[1:])
+    if argv == ['reader-exec']:
+        return reader_exec()
+    print('usage: control_space_probe.py reader | reader-units [FOLDER] | reader-exec', file=sys.stderr)
+    return 2
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,0 +1,27 @@
+# veldo.procread_unit/v1: one run of the process reader, started by veldo-procread.socket for one
+# connection (VELDO-0344, design section 7.1). This file is a TEMPLATE.
+# `control_space_probe.py reader-units` fills the two fields named between at signs and writes the
+# result into the owner's systemd user unit directory.
+#
+# The command is the probe's own entry reader-exec. It opens the installed reader once, checks the
+# file on that descriptor (root-owned, the owner's group, mode 0750, root-owned folders, exactly
+# cap_sys_ptrace, the pinned digest) and executes that same descriptor with an empty environment.
+# When a check fails it executes nothing and the connection closes.
+#
+# THIS UNIT SETS NO NoNewPrivileges AND NONE OF systemd's SANDBOXING SETTINGS, AND MUST NOT GAIN ONE.
+# The kernel grants a file capability only to a process without no_new_privs, and a user manager
+# applies several sandboxing settings by setting it. The reader shuts itself in after it has been
+# executed: it sets no_new_privs and installs its own seccomp filter before it reads anything. The
+# authority unit keeps NoNewPrivileges=yes; neither it nor any child of it holds the capability.
+#
+# RuntimeMaxSec ends a reader that hangs and one whose probe never closes the connection; its
+# output is then cut, and the probe refuses a cut output.
+[Unit]
+Description=Veldo process reader (one read)
+
+[Service]
+ExecStart=@PYTHON@ -I -B @EXECUTABLE@ reader-exec
+StandardInput=null
+StandardOutput=socket
+StandardError=null
+RuntimeMaxSec=60

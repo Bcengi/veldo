@@ -1,0 +1,74 @@
+The process reader of space management: the owner's one-time setup
+
+Run once per host, as the owner, from the root of the authority checkout. The first line needs no
+sudo, the second is the one sudo command, the third and fourth need none.
+
+Two values are yours to fill in before you run anything:
+
+  C  the commit you approved, written as its full hash. Not a branch name and not a short form.
+  H  the SHA-256 digest of that commit's build of the reader. Copy H from the review record you
+     approved for C. Do not read it back from the checkout: not from what line 1 prints, and not
+     from proof/VELDO-0344/reader.sha256 as the checkout shows it. A digest read from the place
+     the source is read from would follow a substitution made there.
+
+Line 1 builds the reader from the blob of commit C, not from the working tree, and prints the
+digest of the build. It must print H. It reads the blob with git's cat-file under
+--no-replace-objects, because git show follows replace refs and any process of your account can
+add one:
+
+d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob C:scripts/veldo_procread.c > "$d/veldo_procread.c" && (cd "$d" && env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c) && sha256sum "$d/veldo-procread"
+
+Line 2 is the sudo command, in the same shell, with H written into it. Root installs the build,
+compares the installed copy with H, and only then sets the capability:
+
+sudo sh -c "install -D -m 0750 '$d/veldo-procread' /usr/local/lib/veldo/veldo-procread && chown root:'$g' /usr/local/lib/veldo/veldo-procread && chmod 0750 /usr/local/lib/veldo/veldo-procread && echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c - && setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread" && rm -r "$d"
+
+Line 3 installs the two user units and starts the socket. Then write H into the installation's
+space section as process_reader (a string of 64 hexadecimal digits), and run line 4, the reader
+check:
+
+python3 -I .veldo/control_space_probe.py reader-units && systemctl --user daemon-reload && systemctl --user enable --now veldo-procread.socket
+python3 -I .veldo/control_space_probe.py reader
+
+What it does, in order:
+1. Reads scripts/veldo_procread.c as commit C holds it and builds it statically and reproducibly
+   in a temporary directory, with the compiler at /usr/bin/cc and an empty environment.
+2. Installs the build as /usr/local/lib/veldo/veldo-procread, owner root, group your own group,
+   mode 0750, so that your account can run it and no other account can.
+3. Compares the installed copy with H. When they differ the line stops there and the copy is left
+   with no capability, whatever a process of your account did to the compiler, the source, the
+   checkout's refs or the built file.
+4. Sets the one file capability, cap_sys_ptrace=ep. It is set last because a change of owner
+   clears it.
+5. Writes veldo-procread.socket and veldo-procread@.service into your systemd user unit
+   directory and starts the socket. They are user units: no sudo, no system service, no second
+   account. The service unit carries no NoNewPrivileges and no sandboxing setting, because the
+   kernel grants a file capability only without them; the reader locks itself in after it has
+   been executed. The authority unit is not changed and never holds the capability.
+6. Runs the reader check, which reads through the socket as every probe does. It prints the
+   reader's state and one PASS or FAIL line per row, and exits 0 only when the state is used and
+   it read an undumpable process it started itself, whose second thread sits in another folder.
+
+What the reader is: a static program that reads entries of the process table and prints numbers,
+the device and inode numbers of each process's working directories, open files and mapped files.
+It takes no input, attaches to no process, signals none and writes nothing but that table. An
+agent running as you can connect to the socket and learn those numbers for every process on the
+host; it learns no path, no file name, no content and no memory.
+
+Without the reader, or with one that fails a check, nothing is removed that would have stayed:
+every process the probe cannot read is judged as before, and the probe's answer names the
+reader's state (absent, or refused with the check that failed).
+
+What a change costs. An upgrade of the compiler or of the C library changes nothing that is
+installed. It changes what line 1 prints on this host, so a new install waits until a gate run on
+that compiler has recorded the new digest and you have approved it. An edit of the reader's
+source leaves the installed binary working with its old pin. When the edit changes the output
+format, the probe refuses the old binary's output, and every item under your home folder defers
+until you have installed and pinned the new build.
+
+Undo: any one of these three lines is enough, and after it the probe reports the reader as
+refused or absent. Then set process_reader to none.
+
+systemctl --user disable --now veldo-procread.socket
+sudo setcap -r /usr/local/lib/veldo/veldo-procread
+sudo rm /usr/local/lib/veldo/veldo-procread

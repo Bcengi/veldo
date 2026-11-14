@@ -348,3 +348,45 @@ proves all three.
   probe sends that byte only after it has seen the header's writer locked; anything but the header before
   the byte is refused. AC1 gains one falsifier, bytes taken from before the writer was seen locked. Still
   eight criteria. VELDO-0299's AC1 is not edited, as this check confirmed again. Status ready.
+- 2026-11-14: built. The reader's source with its synced copy, the two unit templates, the setup text,
+  the probe's checks, socket conversation, table reading and matching with the three owner commands
+  (reader, reader-units, reader-exec), the process_reader key, Signal's deferral facts, suite
+  141_veldo_0344_process_reader and proof/VELDO-0344. No acceptance criterion was edited. What the build
+  found, each recorded in the proof bundle's assumptions:
+  - NOT DONE, the policy file. This spec's footprint and protected_paths name .veldo/policy.yaml, which is
+    itself a protected path, and the builder was told to touch none and to report. The three entries
+    (the reader's source, with its engine copy, and the two unit templates, with theirs) are written out
+    in proof/VELDO-0344/owner-install.txt for the owner or the lead to add. Until then those files are
+    not protected paths.
+  - NOT RUN, the installed rows. Nothing here could install the file capability. Row ac6/installed runs
+    only where the reader is at /usr/local/lib/veldo/veldo-procread and prints a skip line elsewhere.
+    Its falsifier (the probe executes the reader itself, and reads cap=0 under NoNewPrivileges) is shown
+    here by another row, ac6/reads-through-the-socket, and is not shown by the installed row. The three
+    assumptions of the Design section (the capability read from the owner's side, the task entries read
+    with it, the two unit files as written) stay assumptions until the owner's host runs that row.
+  - requires.json is derived by scripts/run_scope.py and holds suite closures only, so it cannot name a
+    row. The installed-only row is declared the way the namespace helper's are in fact declared: by its
+    skip line in the suite, and in the suite's requires_note in scripts/suites/manifest.json.
+  - AC7, the prefix map. Dropping -ffile-prefix-map from the build line does not change the digest on
+    this compiler: the line compiles a relative file name with no debug information, so no folder name
+    reaches the binary (measured: one digest in two folders, with the map and without). The falsifier as
+    worded ("the two folders give two digests") does not turn red. The row instead requires the map in
+    the line, and the registered case turns it red on that. The map stays, for a build line that later
+    gains debug information.
+  - "An empty table" (falsifiers of AC1 and AC5). A process with no block stays unread and is counted by
+    the bound, so a table with no blocks cannot make an item read free. The rows' stand-ins print a table
+    that shows the process elsewhere, a whole block with facts outside the item, which is the table that
+    would. For AC5's cut, the row reads the process whose block came before the cut: it must still be
+    judged by the bound.
+  - process_reader may be left out of the space section, and then reads as none. Design 6.8 says every key
+    is required. Nine reviewed suites outside this ticket's footprint write sections without it, and one
+    of them holds the required keys to the nine it names. Left out, no reader is used, which is the answer
+    that removes less.
+  - Every thread, at a cost the build measured: reading each task's descriptors separately took the probe
+    from 0.1 to 1.7 seconds per call on this host (2,454 tasks, 766,000 descriptor reads). The probe now
+    asks the kernel, with kcmp, whether a task shares its descriptor table or its file system state with
+    the first thread and reads it separately only when the kernel does not say they are the same one. Any
+    error has it read. Rows ac8/second-thread-cwd and ac8/second-thread-descriptor cover both, with a
+    falsifier of their own.
+  - The reader keeps everything in static storage, so its filter allows no call for memory, which design
+    7.1 lists among the allowed ones. That is narrower than the design, not wider.

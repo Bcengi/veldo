@@ -1,0 +1,6 @@
+bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035  veldo-procread
+cc: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+libc: ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39
+machine: x86_64
+source: scripts/veldo_procread.c sha256 233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c
+build: env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c, in the temporary folder $d that holds the source; built twice in two folders, one digest

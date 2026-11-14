@@ -518,8 +518,11 @@ def _rule_process_use(ledger, probe, identity, record, given):
     reaching = [entry for entry in unread['processes'] if entry.get('reach') is not None]
     if (facts['in_use'] or reaching or unread['engines'] or unread['table'] is not None
             or unread['git'] is not None or not facts['git']['read']):
+        # The reader's state goes with every deferral for process use: used, absent or refused with
+        # the check that failed (VELDO-0344). A process the reader's table judged is in processes,
+        # named by process id, task and fact; one that stayed unread carries the reason.
         return {'processes': facts['processes'], 'containers': facts['containers'], 'git': facts['git'],
-                'unread': dict(unread, processes=reaching)}
+                'unread': dict(unread, processes=reaching), 'reader': facts.get('reader')}
     if record['kind'] == 'scratch':
         held = probe.scratch(path, given['borrow_root'])
         if held['in_use'] or not held['read']:

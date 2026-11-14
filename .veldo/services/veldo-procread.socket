@@ -1,0 +1,19 @@
+# veldo.procread_unit/v1: the socket of the process reader (VELDO-0344, design section 7.1). This
+# file is a TEMPLATE with nothing to fill in. `control_space_probe.py reader-units` writes it into
+# the owner's systemd user unit directory beside veldo-procread@.service; the owner enables it
+# (systemctl --user enable --now veldo-procread.socket). It is a user unit, installed without sudo,
+# and it runs under the owner's uid. Each connection starts one instance of the service, and the
+# connection is that instance's standard output. The probe does not trust this socket: any process
+# of the owner's can listen at the path, so the probe takes an output only from the writer the
+# kernel names (control_space_probe.py, THE PROCESS READER).
+[Unit]
+Description=Veldo process reader socket
+
+[Socket]
+ListenStream=%t/veldo-procread.sock
+SocketMode=0600
+Accept=yes
+MaxConnections=4
+
+[Install]
+WantedBy=sockets.target
