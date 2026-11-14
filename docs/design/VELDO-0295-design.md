@@ -2497,7 +2497,7 @@ command, with H written into it:
 
 ```
 d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob C:scripts/veldo_procread.c > "$d/veldo_procread.c" && (cd "$d" && env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c) && sha256sum "$d/veldo-procread"
-sudo sh -c "install -D -m 0750 '$d/veldo-procread' /usr/local/lib/veldo/veldo-procread && chown root:'$g' /usr/local/lib/veldo/veldo-procread && chmod 0750 /usr/local/lib/veldo/veldo-procread && echo 'H  /usr/local/lib/veldo/veldo-procread' | sha256sum -c - && setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread" && rm -r "$d"
+(the sudo command is written once, in docs/veldo-procread-setup.txt and proof/VELDO-0344/owner-install.txt: root reads only the owner shell standard input into its own temporary file, compares it with H before anything else, and removes it when the comparison fails; see the review of VELDO-0344, finding 1)
 ```
 
 The capability is set last, because a change of owner clears it, and only after root has compared the
