@@ -46,12 +46,50 @@ live when it appeared. It is never given to the one live run, or to any run. The
   two_runs      its label names one run and its compose name another
   no_identity   the engine showed it without the identity an item is known by (below)
 
-Attribution by compose's working folder and by a bind source is VELDO-0307, and is not here.
+AN OBJECT WITH NO RUN LABEL INSIDE A RECORDED WORKTREE (design 6.4, the last two mechanisms;
+VELDO-0307). An object that carries neither the run's label nor a known run's compose name can still be
+tied to a worktree by what the engine says of it (`placed`):
 
-THE PROTECT LIST IS THE LEDGER'S. adopt and report refuse a locator the protect list covers, by its
-name or by its compose project label, as space_protected. This module asks for both labels of every
-object and puts each one the object carries in the locator, so a protected compose project is seen
-whatever else the object carries. A protected object gets neither an item nor a report from here.
+  compose's working folder   the label com.docker.compose.project.working_dir: the folder compose ran in
+  compose's files            the label com.docker.compose.project.config_files: the files it read
+  a bind mount's source      for a container, the host source of each bind mount
+
+When one of these leads inside a recorded worktree, that worktree is the proposed owner. Which worktree
+a path is inside is the reconciler's to say (control_space_reconcile.worktree_inside): by where the
+path leads, never by a folder's name, and paths that lead into two worktrees, or one that cannot be
+read as a path, give none. What is then written depends on the mode of the worktree's scope, and the
+reconciler's rule reads it (adopt_inside_worktree): in report mode a report that shows the worktree's
+owner as the proposed owner, with the label or the mount that gave it, and no item; in act mode an
+item adopted with the worktree as its parent, by the rule inside_recorded_worktree. An object the
+engine showed without its identity gets no proposal. A report with no proposal says why its paths
+gave no worktree (not_placed). The adapter applies this rule only when it was
+given the reconciler (`reconcile`); without one such an object is a report with no proposed owner.
+
+MEASURED, 2026-11-14, on both engines of the host (contexts default, engine 29.3.0, and desktop-linux,
+29.2.1; compose 5.0.2), with a project made for the check and taken down after it: compose writes both
+labels on a container, as absolute paths, and the engine reports a bind mount's source as the host
+path. It writes neither label on a network or a volume. So on these engines a container is placed by
+this rule and a network or a volume is not: it stays a report with no proposed owner. The labels are
+read on every kind all the same, and an engine that writes them gets the adoptions.
+
+THE PROTECT LIST COMES FIRST (design section 7, the protect list; VELDO-0307 AC3). Before anything is
+written, proposed or adopted for an object, `covered` reads the protect list in force (the ledger's):
+
+  its name             a name pattern for its type, on an engine the entry names
+  its compose project  the label com.docker.compose.project equals a protected project name
+  its labelled path    compose's working folder or one of its files is at, above or beneath a protected
+                       path, as written or where it leads; a protected path is protected on every engine
+
+A covered object is listed as protected (`protected_objects`) and gets nothing else: no item, no
+report, no proposed owner. A report written for it before it was covered is marked gone, a ledger
+write that removes nothing. The ledger's adopt and report refuse a protected name or compose project
+again, as space_protected. This module asks for both owner labels of every object and puts each one
+the object carries in the locator, so a protected compose project is seen whatever else it carries.
+
+IMAGES ARE READ FOR THE PROTECT LIST ONLY. `images(engine)` reads the images of a context and lists
+those the protect list covers: by a name it carries (a tag in full, or its repository without the tag
+or the digest), by its compose project label or by its labelled path. Nothing is written for any
+image, protected or not: an image tag as an item is VELDO-0328. The snapshot does not read images.
 
 A CONTAINER THAT MOUNTS WHAT IS PROTECTED IS PROTECTED (design section 7, the protect list; the review
 of VELDO-0306, finding 2). Before a container is recorded its mounts are read from the record the
@@ -115,9 +153,9 @@ context that is not read now with its reason, and `tell`, when the caller gave o
 for each context that goes down. The service writes it to its observation log (control_service
 docker_readable) and shows it as an engine not read (docker_unread).
 
-WHAT IS NOT HERE. Images (a built tag is an item and a pulled image is kept: VELDO-0328). The
-adoption rule for an object inside a recorded worktree and the list of protected objects (VELDO-0307,
-VELDO-0341). Reconcile's counts and its record (VELDO-0315). Giving a run its label and its compose
+WHAT IS NOT HERE. Images as items (a built tag is an item and a pulled image is kept: VELDO-0328).
+The image a protected container was made from and the networks it is attached to (VELDO-0341).
+Reconcile's counts and its record (VELDO-0315). Giving a run its label and its compose
 project name in its environment is the receiver's (design 6.3); `given` says what the two are.
 
 Standard library only. The ledger is the control_space.Ledger the caller passes in.
@@ -132,6 +170,12 @@ SCHEMA = 'veldo.control_space_docker/v1'
 
 RUN_LABEL = 'veldo.space.run'  # control_space_remove.RUN_LABEL: the run's label on an object
 COMPOSE_PROJECT = 'com.docker.compose.project'  # the label compose stamps on what it creates
+COMPOSE_WORKING_DIR = 'com.docker.compose.project.working_dir'  # the folder compose ran in
+COMPOSE_CONFIG_FILES = 'com.docker.compose.project.config_files'  # the files compose read, comma separated
+INSIDE_WORKTREE = 'inside_recorded_worktree'  # control_space_reconcile.RULE: the rule of an adoption by a path
+IMAGES = ('image', 'ls', '--quiet', '--no-trunc')
+# The protect list's entry type that holds the name patterns of each kind of object.
+PROTECT_NAME = {'container': 'container', 'network': 'network', 'volume': 'volume', 'image': 'image'}
 LABEL_VARIABLE, COMPOSE_VARIABLE = 'VELDO_SPACE_LABEL', 'COMPOSE_PROJECT_NAME'
 
 KINDS = ('container', 'network', 'volume')
@@ -260,7 +304,7 @@ def absent(kind, code, out):
 
 def labels_of(kind, shown):
     """The labels the engine shows on an object: a container's are in its configuration."""
-    held = (shown.get('Config') or {}).get('Labels') if kind == 'container' else shown.get('Labels')
+    held = (shown.get('Config') or {}).get('Labels') if kind in ('container', 'image') else shown.get('Labels')
     return held if isinstance(held, dict) else {}
 
 
@@ -331,6 +375,73 @@ def mount_protected(engine, shown, protect, volume=None):
     return None, None
 
 
+def labelled_paths(labels):
+    """The paths compose stamped on an object: [(how, path)], the folder it ran in and each file it
+    read. A label the object does not carry gives nothing."""
+    found = []
+    folder = labels.get(COMPOSE_WORKING_DIR)
+    if isinstance(folder, str) and folder.strip():
+        found.append(('compose_working_dir', folder.strip()))
+    files = labels.get(COMPOSE_CONFIG_FILES)
+    if isinstance(files, str):
+        found += [('compose_config_file', name.strip()) for name in files.split(',') if name.strip()]
+    return found
+
+
+def placed(kind, shown):
+    """Every path the engine says of an object that can tie it to a worktree: [(how, path)]. The
+    paths compose stamped on it, and for a container the host source of each bind mount."""
+    found = labelled_paths(labels_of(kind, shown))
+    if kind == 'container':
+        mounts = shown.get('Mounts')
+        for mount in mounts if isinstance(mounts, list) else ():
+            if isinstance(mount, dict) and mount.get('Type') == 'bind':
+                found.append(('bind_source', mount.get('Source')))
+    return found
+
+
+def image_names(shown):
+    """The names an image carries: each tag in full, and the repository of each tag and each digest
+    without the tag or the digest."""
+    names = []
+    for field in ('RepoTags', 'RepoDigests'):
+        held = shown.get(field)
+        for name in held if isinstance(held, list) else ():
+            if not (isinstance(name, str) and name):
+                continue
+            plain = name.split('@')[0]
+            if ':' in plain and '/' not in plain.rsplit(':', 1)[1]:
+                plain = plain.rsplit(':', 1)[0]
+            names += [name] if field == 'RepoTags' else []
+            names += [plain] if plain else []
+    return sorted(set(names))
+
+
+def covered(engine, kind, names, labels, protect):
+    """The protect entry that covers an object, with what it was found by: (type:value, by), or
+    (None, None). `names` are the names the object carries, `labels` its labels and `protect` the
+    protect list in force. By its name, by its compose project label or by its labelled path."""
+    for entry in protect:
+        if engine not in entry.get('engines', ()):
+            continue
+        if entry['type'] == PROTECT_NAME[kind] and any(fnmatch.fnmatchcase(name, entry['value']) for name in names):
+            return entry['type'] + ':' + entry['value'], 'name'
+        if entry['type'] == 'compose_project' and labels.get(COMPOSE_PROJECT) == entry['value']:
+            return entry['type'] + ':' + entry['value'], 'compose_project'
+    for how, path in labelled_paths(labels):
+        if not path.startswith('/'):
+            continue
+        # A protected path is protected on every engine, as it is for a mount.
+        for entry in protect:
+            if entry['type'] != 'path':
+                continue
+            for mine in {os.path.normpath(path), os.path.realpath(path)}:
+                for theirs in {os.path.normpath(entry['value']), os.path.realpath(entry['value'])}:
+                    if mine == theirs or _beneath(mine, theirs) or _beneath(theirs, mine):
+                        return 'path:' + entry['value'], how
+    return None, None
+
+
 def owner_of(locator, runs):
     """Whose the object at `locator` is, by its labels alone: (space label, owner, rule), or
     (None, None, why) when no rule gives it an owner. `runs` is {space label: owner}. Nothing but the
@@ -361,15 +472,20 @@ class Adapter:
     since)` starts the client that prints a context's events from the engine time `since` on and
     returns its process, whose stdout is the pipe. `pool` names the pool a Docker item counts against
     on an engine that has no image pool. `tell(engine, why)` is called for each context that goes down.
+    `reconcile` is the reconciler (control_space_reconcile): with it, an object with no run label
+    inside a recorded worktree is proposed to that worktree or adopted by it; without it, it is a
+    report with no proposed owner.
 
     observations holds one entry for each object recorded or reported, each event handled and each
     snapshot and subscription, in order."""
 
-    def __init__(self, ledger, engines=None, run=None, runs=None, spawn=None, pool=None, tell=None):
+    def __init__(self, ledger, engines=None, run=None, runs=None, spawn=None, pool=None, tell=None,
+                 reconcile=None):
         self.ledger = ledger
         self.engines = list(ledger.engines if engines is None else engines)
         self.run, self.spawn, self.more_runs, self.pool = run or _run, spawn or _spawn, runs, pool
-        self.tell = tell
+        self.tell, self.reconcile = tell, reconcile
+        self.protected = {}  # (engine, kind, name): what the protect list covers, as it was last seen
         self.streams = {}  # engine: {process, fd, buffer, bytes}
         self.down = {}  # engine: why it has no subscription
         self.barren = {}  # engine: how many streams in a row ended without one byte
@@ -414,6 +530,46 @@ class Adapter:
         code, out = self._client(engine, *ENGINE_TIME)
         words = str(out).split() if code == 0 else []
         return words[0] if len(words) == 1 and words[0][:1].isdigit() else None
+
+    def protected_objects(self):
+        """Every object the protect list covered when it was last seen: [{engine, kind, name, id,
+        entry, by}], in order. A protected object is here and has no record."""
+        return [dict(self.protected[key]) for key in sorted(self.protected)]
+
+    def _listed(self, engine, kind, name, identity, entry, by):
+        self.protected[(engine, kind, name)] = {'engine': engine, 'kind': kind, 'name': name, 'id': identity,
+                                                'entry': entry, 'by': by}
+
+    def images(self, engine):
+        """Read the images of one context and list those the protect list covers. Nothing is written
+        for any image. Returns {engine, read, said, images, protected}; with read False nothing was
+        listed."""
+        answer = {'engine': engine, 'read': False, 'said': None, 'images': 0, 'protected': []}
+        code, out = self._client(engine, *IMAGES)
+        if code != 0:
+            answer['said'] = str(out)[:300] or 'the client gave no answer'
+            return answer
+        names = sorted(set(str(out).split()))
+        records, said = self._records(engine, 'image', names) if names else ([], None)
+        if records is None:
+            answer['said'] = said
+            return answer
+        for shown in records:
+            carried = image_names(shown)
+            identity = _text(shown.get('Id'))
+            name = carried[0] if carried else identity
+            if name is None:
+                continue
+            entry, by = covered(engine, 'image', carried, labels_of('image', shown), list(self.ledger.protect or ()))
+            if entry is None:
+                self.protected.pop((engine, 'image', name), None)
+                continue
+            self._listed(engine, 'image', name, identity, entry, by)
+            answer['protected'].append(name)
+            self._note('protected', refusal='space_protected:' + entry, by=by, engine=engine, kind='image',
+                       name=name, id=identity)
+        answer.update(read=True, images=len(records))
+        return answer
 
     def _mounts(self, engine, shown):
         """mount_protected for a container of `engine`, against the ledger's protect list."""
@@ -471,9 +627,11 @@ class Adapter:
     # Recording one object.
 
     def _record(self, engine, kind, shown, runs):
-        """Record the object the engine showed: an item when its labels name a known run, a report
-        otherwise. Returns what was done: matched, adopted, reported, protected, held or refused. A
-        container that mounts what is protected is protected, and nothing is written for it."""
+        """Record the object the engine showed: an item when its labels name a known run; with the
+        reconciler, a proposal to the recorded worktree it is inside, or an item of that worktree in
+        act mode; a report otherwise. Returns what was done: matched, adopted, proposed, reported,
+        protected, held or refused. An object the protect list covers, and a container that mounts
+        what is protected, is listed as protected, and nothing is written for it."""
         locator = locator_of(engine, kind, shown)
         if locator is None:
             self._note('unnamed', engine=engine, kind=kind, id=_text(shown.get('Id')))
@@ -490,9 +648,19 @@ class Adapter:
                 return 'refused'
             if entry is not None:
                 # It mounts what is protected: neither an item nor a report, whatever it carries.
+                self._listed(engine, kind, locator['name'], locator.get('id'), entry, 'mount')
                 self._note('protected', refusal='space_protected:' + entry, mount=mount, **facts)
                 return 'protected'
+        entry, by = covered(engine, kind, [locator['name']], labels_of(kind, shown), list(self.ledger.protect or ()))
         held = self._held(engine, kind, name=locator['name'])
+        if entry is not None:
+            # The protect list comes first: no item, no report and no proposed owner, whatever it carries.
+            self._listed(engine, kind, locator['name'], locator.get('id'), entry, by)
+            if held is not None and held[1].get('owner') is None:
+                self.ledger.gone(held[0])  # a report from before it was covered: withdrawn, nothing removed
+            self._note('protected', refusal='space_protected:' + entry, by=by, **facts)
+            return 'protected'
+        self.protected.pop((engine, kind, locator['name']), None)
         if held is not None:
             item, record = held
             same = field in locator and (record.get('locator') or {}).get(field) == locator[field]
@@ -511,17 +679,37 @@ class Adapter:
         label, owner, rule = owner_of(locator, runs)
         if owner is not None and field not in locator:
             label, owner, rule = None, None, 'no_identity'
+        worktree, how, path = None, None, None
+        if owner is None and rule == 'no_label' and self.reconcile is not None:
+            # No run label: the worktree its compose labels or a bind source place it in, when one does.
+            worktree, how, path = self.reconcile.worktree_inside(self.ledger, placed(kind, shown))
+            if worktree is not None and field not in locator:
+                worktree, how, rule = None, None, 'no_identity'
+        found = {'why': rule, 'engine': engine, 'id': locator.get('id'), 'name': locator['name'],
+                 'created_at': locator.get('created_at'), 'run_label': locator.get('run_label'),
+                 'compose_project': locator.get('compose_project'),
+                 'live_runs': sorted(runs)[:NAMED], 'more_runs': max(0, len(runs) - NAMED)}
+        if worktree is None and how is not None:
+            found['not_placed'] = how  # why its paths gave no worktree: outside, two_worktrees or path_unread
+        before = (held[1].get('report') or {}).get('found', {}) if held is not None else {}
         if owner is not None:
             wrote = self.ledger.adopt(kind, locator, owner, rule, pool=self.pool)
             done = 'adopted'
+        elif worktree is not None:
+            rule = INSIDE_WORKTREE
+            proposed = ((self.ledger.item(worktree) or {}).get('owner') or {})
+            if (before.get('why') == rule and before.get('worktree') == worktree and before.get('path') == path
+                    and not self.ledger.acts(proposed.get('scope'))):
+                return 'matched'  # proposed to this worktree before, and its project still reports
+            wrote = self.reconcile.adopt_inside_worktree(
+                self.ledger, kind, locator, worktree, dict(found, why=rule, placed_by=how, path=path),
+                pool=self.pool)
+            done = 'adopted' if wrote.get('adopted') else 'proposed'
+            facts = dict(facts, worktree=worktree, placed_by=how, path=path, proposed_owner=proposed)
         else:
-            if held is not None and (held[1].get('report') or {}).get('found', {}).get('why') == rule:
+            if before.get('why') == rule:
                 return 'matched'  # the same object, reported before, and still nobody's
-            wrote = self.ledger.report(kind, locator, {
-                'why': rule, 'engine': engine, 'id': locator.get('id'), 'name': locator['name'],
-                'created_at': locator.get('created_at'), 'run_label': locator.get('run_label'),
-                'compose_project': locator.get('compose_project'),
-                'live_runs': sorted(runs)[:NAMED], 'more_runs': max(0, len(runs) - NAMED)}, pool=self.pool)
+            wrote = self.ledger.report(kind, locator, found, pool=self.pool)
             done = 'reported'
         if not wrote.get('ok'):
             reason = str(wrote.get('reason'))

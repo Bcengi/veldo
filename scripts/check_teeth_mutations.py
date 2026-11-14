@@ -13717,6 +13717,11 @@ def cases():
     docker306('space306-compose-project-not-in-the-locator',
               "    if _text(labels.get(COMPOSE_PROJECT)):\n        locator['compose_project'] = labels[COMPOSE_PROJECT]\n",
               "", ['ac1/protected'])
+    # Since VELDO-0307 the adapter reads the compose project label against the protect list itself,
+    # before the ledger does: the defect needs both readings gone.
+    result[-1]['also'] = [[
+        "        if entry['type'] == 'compose_project' and labels.get(COMPOSE_PROJECT) == entry['value']:\n"
+        "            return entry['type'] + ':' + entry['value'], 'compose_project'\n", ""]]
     docker306('space306-volumes-first',
               "ORDER = ('scratch', 'build_output', 'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',\n",
               "ORDER = ('scratch', 'build_output', 'volume', 'network', 'container', 'image_tag', 'evidence', 'worktree',\n",
@@ -13824,6 +13829,84 @@ def cases():
               "                argv = D.events_argv(engine, since)\n",
               ['review/own-row-on-a-stand-in'], module=space306)
     result[-1]['dir'] = 'scripts/suites'
+
+    # VELDO-0307: Docker ownership by compose's working folder and by bind source. The three declared
+    # falsifiers (the folder's name alone, adoption in report mode, the adoption rule before the
+    # protect list), then what else would give an object a wrong owner: a link not followed, a ..
+    # segment read, two worktrees, a worktree that is gone, a run label ignored, an object without its
+    # identity, a labelled path or an image's name the protect list no longer sees, a proposal kept
+    # after the list covered it, a proposal never adopted, and a label or a mount not read.
+    space307 = '145_veldo_0307_space_docker_ownership.py'
+
+    def docker307(name, old, new, rows, module='control_space_docker.py'):
+        add(307, name, space307, module, old, new, rows)
+
+    docker307('space307-folder-name-only',
+              "        within = [root for root in worktrees if _inside(leads, root)]\n",
+              "        within = [root for root in worktrees if os.path.basename(root) in leads.split('/')]\n",
+              ['ac1/inside-a-recorded-worktree'], module='control_space_reconcile.py')
+    docker307('space307-adopts-in-report',
+              "    if ledger.acts(owner.get('scope')):\n",
+              "    if owner:\n",
+              ['ac2/report-mode'], module='control_space_reconcile.py')
+    docker307('space307-adoption-before-the-protect-list',
+              "        entry, by = covered(engine, kind, [locator['name']], labels_of(kind, shown), list(self.ledger.protect or ()))\n",
+              "        entry, by = ((None, None) if self.reconcile is not None and self.reconcile.worktree_inside(\n"
+              "            self.ledger, placed(kind, shown))[0] else covered(\n"
+              "            engine, kind, [locator['name']], labels_of(kind, shown), list(self.ledger.protect or ())))\n",
+              ['ac3/protected-container'])
+    docker307('space307-link-not-followed',
+              "        leads = os.path.realpath(path)\n",
+              "        leads = os.path.normpath(path)\n",
+              ['ac1/by-where-the-path-leads'], module='control_space_reconcile.py')
+    docker307('space307-parent-segment-read',
+              "        if not isinstance(path, str) or not path.startswith('/') or '..' in path.split('/'):\n",
+              "        if not isinstance(path, str) or not path.startswith('/'):\n",
+              ['ac1/no-proposal-when-undecided'], module='control_space_reconcile.py')
+    docker307('space307-two-worktrees-one-taken',
+              "    if len(placed) > 1:\n        return None, 'two_worktrees', None\n", "",
+              ['ac1/no-proposal-when-undecided'], module='control_space_reconcile.py')
+    docker307('space307-gone-worktree-still-recorded',
+              "                and record.get('state') not in ENDED and isinstance(path, str) and path.startswith('/')):\n",
+              "                and isinstance(path, str) and path.startswith('/')):\n",
+              ['ac1/no-proposal-when-undecided'], module='control_space_reconcile.py')
+    docker307('space307-run-label-ignored',
+              "        if owner is None and rule == 'no_label' and self.reconcile is not None:\n",
+              "        if owner is None and self.reconcile is not None:\n",
+              ['ac1/a-run-label-comes-first'])
+    docker307('space307-no-identity-still-proposed',
+              "            if worktree is not None and field not in locator:\n"
+              "                worktree, how, rule = None, None, 'no_identity'\n", "",
+              ['ac1/no-proposal-when-undecided'])
+    docker307('space307-bind-source-not-read',
+              "                found.append(('bind_source', mount.get('Source')))\n",
+              "                pass\n",
+              ['ac1/inside-a-recorded-worktree'])
+    docker307('space307-configuration-files-not-read',
+              "        found += [('compose_config_file', name.strip()) for name in files.split(',') if name.strip()]\n",
+              "        found += []\n",
+              ['ac1/inside-a-recorded-worktree'])
+    docker307('space307-labelled-path-not-protected',
+              "    for how, path in labelled_paths(labels):\n        if not path.startswith('/'):\n",
+              "    for how, path in ():\n        if not path.startswith('/'):\n",
+              ['ac3/protected-volume', 'ac3/protected-container', 'ac3/protected-image'])
+    docker307('space307-compose-project-not-protected',
+              "        if entry['type'] == 'compose_project' and labels.get(COMPOSE_PROJECT) == entry['value']:\n"
+              "            return entry['type'] + ':' + entry['value'], 'compose_project'\n", "",
+              ['ac3/protected-image'])
+    docker307('space307-image-known-by-its-tag-alone',
+              "            names += [plain] if plain else []\n",
+              "            names += []\n",
+              ['ac3/protected-image'])
+    docker307('space307-covered-report-stays',
+              "            if held is not None and held[1].get('owner') is None:\n"
+              "                self.ledger.gone(held[0])  # a report from before it was covered: withdrawn, nothing removed\n",
+              "", ['ac3/covered-later'])
+    docker307('space307-proposal-never-adopted',
+              "and before.get('path') == path\n"
+              "                    and not self.ledger.acts(proposed.get('scope'))):\n",
+              "and before.get('path') == path):\n",
+              ['ac2/report-then-act'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

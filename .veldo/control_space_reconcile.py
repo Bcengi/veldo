@@ -14,13 +14,28 @@ installation, so one reconcile adopts the object of an act-mode project and repo
 report-mode project. A reported object is adopted by a later reconcile once its project is in act mode:
 the ledger turns the report record into the item.
 
-WHAT IS NOT HERE. Finding the object and the worktree it is inside (the labels compose writes, the bind
-sources an engine reports) is VELDO-0307. The snapshot, the comparison, every other row of the table and
-the reconcile record's counts are VELDO-0315. Marking an adopted item due and carrying it out is Signal.
-No clock is read here.
+WHICH WORKTREE A PATH IS INSIDE (VELDO-0307). `worktree_inside` is given the paths an engine said of one
+object (control_space_docker.placed reads them: the folder compose ran in, the files it read, the host
+source of each bind mount) and answers with the one recorded worktree they place it in. A path counts by
+where it leads, never by its name: every link in it is followed, and what it resolves to is compared
+with the worktree's recorded path, whole segment by whole segment. A folder that only carries a
+worktree's name, somewhere else, is inside nothing. A recorded worktree is a worktree item with an
+owner that is neither removed nor gone. What cannot be decided gives no worktree, and so no proposal
+and no adoption:
+
+  path_unread     a path that is not absolute or holds a .. segment: nothing is placed by the others
+  two_worktrees   the paths lead into more than one recorded worktree
+  outside         no path leads into one
+
+One path inside two recorded worktrees, one within the other, is inside the inner one.
+
+WHAT IS NOT HERE. The snapshot, the comparison, every other row of the table and the reconcile record's
+counts are VELDO-0315. Marking an adopted item due and carrying it out is Signal. This module removes
+nothing and names no remover. No clock is read here.
 
 Standard library only. The ledger is the control_space.Ledger the caller passes in.
 """
+import os
 
 SCHEMA = 'veldo.control_space_reconcile/v1'
 
@@ -28,6 +43,44 @@ SCHEMA = 'veldo.control_space_reconcile/v1'
 RULE = 'inside_recorded_worktree'
 KINDS = ('container', 'volume', 'network')
 ENDED = ('removed', 'gone')
+
+
+def recorded_worktrees(ledger):
+    """{path: identity} of every recorded worktree: a worktree item with an owner that is neither
+    removed nor gone. The path is the one the ledger holds, which goes through no link."""
+    found = {}
+    for identity, record in sorted(ledger.items().items()):
+        path = (record.get('locator') or {}).get('path')
+        if (record.get('kind') == 'worktree' and record.get('owner') is not None
+                and record.get('state') not in ENDED and isinstance(path, str) and path.startswith('/')):
+            found[os.path.normpath(path)] = identity
+    return found
+
+
+def _inside(path, root):
+    return path == root or path.startswith(root.rstrip('/') + '/')
+
+
+def worktree_inside(ledger, paths):
+    """The recorded worktree the paths of one object place it in: (identity, how, path) for the path
+    that placed it, or (None, why, None). `paths` is [(how, path)], as an engine gave them. A path is
+    read where it leads; see the module's text for what gives no worktree."""
+    worktrees = None
+    placed = {}
+    for how, path in paths:
+        if not isinstance(path, str) or not path.startswith('/') or '..' in path.split('/'):
+            return None, 'path_unread', None
+        if worktrees is None:
+            worktrees = recorded_worktrees(ledger)
+        leads = os.path.realpath(path)
+        within = [root for root in worktrees if _inside(leads, root)]
+        if within:
+            placed.setdefault(worktrees[max(within, key=len)], (how, path))
+    if len(placed) > 1:
+        return None, 'two_worktrees', None
+    for identity, (how, path) in placed.items():
+        return identity, how, path
+    return None, 'outside', None
 
 
 def adopt_inside_worktree(ledger, kind, locator, worktree, found, pool=None, principal=None, command_id=None):

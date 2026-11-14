@@ -90,3 +90,43 @@ the result in the proof (design 6.4).
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-14: built. No acceptance criterion changed. What the build found and decided:
+  - What compose writes, measured on both engines of the host (contexts default, engine 29.3.0, and
+    desktop-linux, 29.2.1; compose 5.0.2) with a project made for the check and taken down after it
+    (proof/VELDO-0307/compose-labels.json): a container carries com.docker.compose.project.working_dir
+    and com.docker.compose.project.config_files, both as absolute paths, and the engine reports a bind
+    mount's source as the host path. A network and a volume carry neither label. So on these engines
+    this rule places containers only; a network or a volume of the same compose project stays a report
+    with no proposed owner. The adapter reads the labels on every kind all the same. Tying a volume to
+    a worktree through its compose project name is not in this ticket and was not built.
+  - Which worktree a path is inside is the reconciler's (control_space_reconcile.worktree_inside): by
+    where the path leads, every link followed, compared with the worktree's recorded path by whole
+    segments. What cannot be decided gives no proposal: a path that is not absolute or holds a ..
+    segment (and then nothing is placed by the object's other paths either), paths that lead into two
+    recorded worktrees, a worktree that is removed or gone. An object the engine showed without its
+    identity gets no proposal, as it gets no item in VELDO-0306.
+  - The rule is for an object with no run label: one that carries the run's label, known or not, or a
+    known run's compose name, is judged as VELDO-0306 judges it and is never proposed to a worktree.
+  - The adapter applies the rule only when it is given the reconciler (Adapter(reconcile=...)). Without
+    it an object is a report with no proposed owner, which is the rollback. Nothing sets
+    Service.space_docker yet, so no adapter runs in a service; the ticket that builds it passes both.
+  - The protect list comes first, in the adapter (covered): by name, by compose project label and by
+    labelled path (compose's working folder or one of its files at, above or beneath a protected path,
+    on every engine). A covered object is listed (Adapter.protected_objects) and gets nothing else; a
+    report written before the list covered it is marked gone, which removes nothing. The ledger still
+    refuses a protected name or compose project at adopt and at report.
+  - Images are read for the protect list only (Adapter.images): an image the list covers by a name it
+    carries (a tag in full, or its repository without the tag or the digest), by its compose project
+    label or by its labelled path is listed as protected. Nothing is written for any image, and the
+    snapshot does not read images: image tags as items are VELDO-0328.
+  - This ticket adds no way to delete. The adapter and the reconciler give an engine ls and inspect
+    only. An object adopted in act mode is an item like any other and goes at its owner's ending event
+    through Signal, the safety rules, the keep step where it applies and the removers.
+  - Seen and left alone, outside this ticket's footprint, for the lead: (1) rule 2 at removal
+    (control_space_signal) reads a Docker item's name, compose project and mounts, and not its labelled
+    path. A container adopted while nothing covered it, whose compose folder a later edit of the
+    protect list covers, is listed as protected by the adapter from its next snapshot on, but its item
+    stays and rule 2 would not refuse it. VELDO-0341 or 0330 owns rule 2. (2) The ledger matches an
+    image tag item against the image patterns by the tag in full, so the pattern minio/minio does not
+    match the tag minio/minio:latest there; the adapter's listing matches the repository too. VELDO-0328
+    records image tags and should match the same way.
