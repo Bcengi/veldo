@@ -10,11 +10,15 @@ lane: standalone
 parent: VELDO-0295
 depends_on: [VELDO-0296, VELDO-0299, VELDO-0330]
 placement: [engine, loop]
-protected_paths: ["engine/scripts/veldo_procread.c", "scripts/veldo_procread.c", ".veldo/policy.yaml"]
+protected_paths: ["engine/scripts/veldo_procread.c", "scripts/veldo_procread.c", "engine/.veldo/services/veldo-procread.socket", "engine/.veldo/services/veldo-procread@.service", ".veldo/services/veldo-procread.socket", ".veldo/services/veldo-procread@.service", ".veldo/policy.yaml"]
 footprint:
   - "engine/scripts/veldo_procread.c"
   - "scripts/veldo_procread.c"
   - "docs/veldo-procread-setup.txt"
+  - "engine/.veldo/services/veldo-procread.socket"
+  - "engine/.veldo/services/veldo-procread@.service"
+  - ".veldo/services/veldo-procread.socket"
+  - ".veldo/services/veldo-procread@.service"
   - "engine/.veldo/control_space_probe.py"
   - ".veldo/control_space_probe.py"
   - "engine/.veldo/control_space_config.py"
@@ -33,64 +37,126 @@ behavior_bearing: true
 observability:
   logs: >
     Every in_use answer carries the reader's state: used, absent or refused, and for refused the check
-    that failed. A deferral for process use names each process that counted by process id, uid and the
-    fact that matched (cwd, fd or maps) or the reason it stayed unread. Numbers are recorded; no path of
-    another process is.
+    that failed. A deferral for process use names each process that counted by process id, thread id,
+    uid and the fact that matched (cwd, fd or maps) with the device and inode number read, or the reason
+    it stayed unread. Numbers are recorded; no path of another process is.
   error_taxonomy: >
     None of its own. Rule 4 defers as space_deferred:in_use. The reader's state is one of used, absent,
-    refused:not_regular, refused:owner, refused:mode, refused:capability, refused:no_pin, refused:digest,
-    refused:no_capability, refused:failed and refused:output.
+    refused:not_regular, refused:owner, refused:mode, refused:folder, refused:capability, refused:no_pin,
+    refused:digest, refused:no_socket, refused:writer, refused:no_capability, refused:failed and
+    refused:output.
 acceptance_criteria:
   - id: AC1
     text: >
       With no reader at the fixed path, or one that fails a check (not a regular file, an owner other than
-      root, a group or mode other than the installed ones, a capability set other than exactly
-      cap_sys_ptrace permitted and effective, no digest in the installation's space section, a digest
-      other than that one, or a header that says it holds no capability), the probe does not use it,
-      every unread process is judged as before this ticket, and the in_use facts name the reader's state
-      and the check that failed
+      root, a group or mode other than the installed ones, a folder on the way to it that another account
+      owns or may write, a capability attribute other than exactly cap_sys_ptrace permitted and effective
+      in version 2 or in version 3 with root id 0, no digest in the installation's space section, a digest
+      other than that one, no socket, an output the kernel does not show as written by one process of the
+      owner's that holds exactly that capability, or a header that says it holds no capability), the probe
+      does not use it, every unread process is judged as before this ticket, and the in_use facts name the
+      reader's state and the check that failed
     falsified_by: >
-      Skip the digest check; the row puts a program that prints an empty table in the reader's place, the
-      undumpable process in the item is not counted, the item reads free and the row fails
+      Each of these turns a row of its own red. Skip the digest check: the row puts a program that prints
+      an empty table in the reader's place, the undumpable process in the item is not counted and the item
+      reads free. Accept any capability set that holds cap_sys_ptrace: the row's copy with
+      cap_dac_read_search added is used. Check the file and not its folders: the row's reader in a folder
+      the owner may write is used. Ignore the header's cap field: the row's reader that says cap=0 is
+      used. Take the output whoever wrote it: the row's stand-in listens on the socket, answers with an
+      empty table, and the item reads free
   - id: AC2
     text: >
       With the reader in use, a process of the owner's that is not dumpable counts for an item exactly
-      when its working directory, an open file or a mapped file is the item or beneath it: the one in the
-      item holds it, named by process id and fact, and the one outside it no longer counts
+      when the working directory or an open descriptor of any of its threads, or a mapped file, is the
+      item or beneath it, matched by inode number alone: the one in the item holds it, named by process
+      id, thread id and fact with the device and inode number read, and the one outside it no longer
+      counts
     falsified_by: >
-      Match the working directory only; the row whose undumpable process holds nothing but an open file
-      beneath the item reads free and fails
+      Each of these turns a row of its own red. Match the working directory only: the process that holds
+      nothing but an open file beneath the item reads free, and so does the one that holds only a
+      directory descriptor on the item. Leave out the maps: the process that only maps a file of the item
+      reads free. Read the first thread's working directory only: the process whose second thread sits in
+      the item with a file system state of its own reads free. Read the first thread's descriptors only:
+      the process whose second thread holds a file of the item in a descriptor table of its own reads
+      free. Match on device and inode: the row's descriptor that the reader printed with another device,
+      or with a hyphen, reads free
   - id: AC3
     text: >
       A root-owned process a login started is judged by the same facts: in the item it holds it, and
       elsewhere it does not count. A process with any fact the reader could not read (an x line, no block,
       or a start time other than the one the probe reads) stays unread and is judged by the bound of
-      VELDO-0299
+      VELDO-0299. A folder of the item that the probe cannot list makes the item in use
     falsified_by: >
-      Take a block with an unread fact as read; the row's root-owned process, whose descriptors could not
-      be listed and which holds a file in the item, reads free and fails
+      Each of these turns a row of its own red. Take a block with an unread fact as read: the row's
+      root-owned process, whose descriptors could not be listed and which holds a file in the item, reads
+      free. Skip a folder that cannot be listed: the row's item, with a process holding a file inside a
+      folder of mode 000, reads free
   - id: AC4
     text: >
-      The reader takes no argument and reads only the stat, cwd, fdinfo, mountinfo and maps entries of
-      each process. It prints numbers only, in the format of design section 7.1, and its seccomp filter
-      ends it on any call that attaches to a process, signals one, writes to one or opens a file for
-      writing
+      The reader takes no argument and reads only the stat, mountinfo and maps entries of each process and
+      the cwd and fdinfo entries of each of its tasks. It prints numbers only, in the format of design
+      section 7.1. Its seccomp filter ends it on ptrace, process_vm_readv, process_vm_writev, pidfd_open,
+      pidfd_getfd, kcmp, kill, tkill, tgkill, rt_sigqueueinfo and pidfd_send_signal, on an open with a
+      write, create or truncate flag, on a write to any descriptor but 1, and on a call of another
+      architecture. The filter does not limit which entries are opened for reading; the reviewed source
+      does, and the digest ties the binary to it
     falsified_by: >
       Allow kill in the filter; the row's patched copy of the reader, which signals itself after the
-      filter is in place, exits normally and the row fails
+      filter is in place, exits normally and the row fails. The row runs three more patched copies, for
+      pidfd_getfd on a descriptor opened before the filter, for process_vm_readv and for an open for
+      writing, and allowing any one of them in the filter lets that copy exit normally
   - id: AC5
     text: >
-      An output with no end line, an end count other than the number of blocks, a line outside the format
-      or an exit status other than 0 is not used at all: the reader's state is refused, and every unread
-      process is judged as before this ticket
+      An output with no end line, an end count other than the number of blocks, a line outside the format,
+      bytes after the end line or, where the reader is run directly, an exit status other than 0 is not
+      used at all: the reader's state is refused, and every unread process is judged as before this
+      ticket. The reader itself ends with no end line when a write fails
     falsified_by: >
-      Use the blocks read before the cut; the row cuts the output before the block of the process in the
-      item, the item reads free and the row fails
+      Each of these turns a row of its own red. Use the blocks read before the cut: the row cuts the
+      output before the block of the process in the item, and the item reads free. Go on after a failed
+      write: the row gives the built reader a standard output that takes no more bytes, and finds an end
+      line after the gap
+  - id: AC6
+    text: >
+      The reader runs in a socket-started systemd user unit of its own, with no NoNewPrivileges and no
+      sandboxing setting; the authority unit keeps NoNewPrivileges=yes, and every probe reads through the
+      socket and executes no reader itself. The unit's entry checks the installed binary through one open
+      descriptor and executes that descriptor. Where the reader is installed (requires.json), the reader
+      check, run in a transient user unit with the authority unit's properties, reports the state used
+      with cap=1 and reads an undumpable process it started in a folder, whose second thread sits in
+      another
+    falsified_by: >
+      Each of these turns a row of its own red. Have the probe execute the reader itself, so that the
+      check passes from the owner's shell only: the installed row, which runs the check under
+      NoNewPrivileges=yes, reads cap=0. Check the path and then execute the path: the row swaps the file
+      between the two and finds that the other program ran
+  - id: AC7
+    text: >
+      The reader built twice from the source of the commit under test, in two temporary folders, with
+      /usr/bin/cc, an empty environment and the house build line, has one SHA-256 digest, and the proof
+      bundle records it with the versions of the compiler and the C library
+      (proof/VELDO-0344/reader.sha256). The owner's install lines in the setup text build from the blob of
+      a named commit, and root's line compares the installed copy with a digest written into it before it
+      sets the capability
+    falsified_by: >
+      Each of these turns a row of its own red. Drop the prefix map from the build line: the two folders
+      give two digests. Take the compiler from the path: the row puts a stand-in cc first in the path and
+      finds the stand-in's output. Put setcap before the digest comparison in the setup text: the row that
+      reads the lines finds the order wrong
+  - id: AC8
+    text: >
+      The probe's own reading of a process it may read covers every thread: the working directory and the
+      open files of each task under /proc/<pid>/task. A process with a task it cannot read is unread. This
+      widens VELDO-0299 AC1, whose text is not edited; the change is in that spec's History
+    falsified_by: >
+      Read the first thread's working directory only; the row whose second thread sits in the path with a
+      file system state of its own reads not in use and fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change and set process_reader to none in the installation's space section. The probe then
-  judges unread processes by the bound alone, as before. The installed binary is the owner's to remove
-  (sudo rm /usr/local/lib/veldo/veldo-procread); left in place it is used by nothing.
+  judges unread processes by the bound alone, as before. The installed binary and the two user units are
+  the owner's to remove (systemctl --user disable --now veldo-procread.socket; sudo rm
+  /usr/local/lib/veldo/veldo-procread); left in place they are used by nothing.
 ---
 
 ## Intent
@@ -99,20 +165,21 @@ The in-use probe cannot read some processes: root's, other users', and the owner
 themselves not dumpable. Today each of those counts as use when it could reach the item, and on the
 measured host that defers every item under the home folder. The owner decided how they are read: through
 a small separate program, the process reader, that holds one file capability and only reads. This ticket
-builds the reader, the probe's check that it is the binary the owner installed, and the matching of its
-facts against an item.
+builds the reader, the user unit it runs in, the reproducible build and its recorded digest, the probe's
+check that the output comes from the binary the owner installed, and the matching of its facts against
+an item.
 
 ## Design
 
 This is the forty-ninth build ticket of VELDO-0295, added after the first forty-eight by the owner's
 decision of 2026-11-13 (Telegram 41204 and 41205). The design is docs/design/VELDO-0295-design.md.
-Design sections this ticket builds: 7.1 (the process reader), the process_reader key of 6.8, and the
-Process reader row of section 3. Section 12 of the design holds the ticket itself; its acceptance
-criteria and falsifiers are copied here word for word.
+Design sections this ticket builds: 7.1 (the process reader, in its second revision), the process_reader
+key of 6.8, and the Process reader and Reader units rows of section 3. Section 12 of the design holds the
+ticket itself; its acceptance criteria and falsifiers are copied here word for word.
 
 What section 12 says about this ticket:
 
-> Components: Process reader, Probes, Declarations reader. Depends on 0296, 0299 and 0330.
+> Components: Process reader, Reader units, Probes, Declarations reader. Depends on 0296, 0299 and 0330.
 
 The decision, as the owner gave it. The in-use probe reads every process through a tiny separate reader
 that holds exactly one file capability, cap_sys_ptrace (=ep), installed once by the owner with one sudo
@@ -127,9 +194,37 @@ cap_sys_ptrace alone the kernel gives the working directory, the maps and the fd
 process, and refuses to list its fd folder. That folder is mode 0500 and listing it is an ordinary
 permission check, which this capability does not pass. So the reader reads fdinfo, which gives each open
 descriptor's mount id and inode number, and prints device and inode numbers for all three facts. The
-probe matches them against the device and inode numbers of the item's own files. One capability stays
-one. Design 7.1 has the measurements, and section 15 puts the other way (a second capability) to the
-owner.
+probe matches the inode numbers against those of the item's own files. One capability stays one: the
+validation accepted it and the lead confirmed it.
+
+What the validation changed (design-veldo-0344-validation-2026-11-14.md, verdict CHANGES; design 14.6).
+
+Where the reader runs. The authority unit sets NoNewPrivileges=yes, and under it the kernel grants no
+file capability, so a reader started by the service's own child would hold nothing. The lead decided:
+the reader runs in a socket-started systemd user unit of its own, beside the authority unit, with no
+NoNewPrivileges. The owner installs it without sudo. It is not a system service and there is no second
+account. The authority unit is not touched. Every probe connects to the socket and reads the same
+output; no probe executes the reader. Because any process of the owner's can listen on a socket in the
+owner's runtime folder, the probe takes the output only when the kernel names its writer as one process
+of the owner's that holds exactly cap_sys_ptrace (SO_PASSCRED; measured on this host on 2026-11-13).
+The validation did not ask for that check; without it the digest of the installed file would say
+nothing about who answers.
+
+Every thread. The entries under /proc/<pid> are the first thread's. The reader reads the working
+directory and the fdinfo entries of every task, and so does the probe's own reading of the processes it
+may read, which had the same gap (AC8, recorded on VELDO-0299's spec).
+
+The build. The reader is built from the blob of the approved commit, with /usr/bin/cc and an empty
+environment, reproducibly. The gate builds it twice and records the digest in the proof bundle, and
+root's install line compares the installed copy with that digest before it sets the capability. The
+owner's shell, which is also the agent's, no longer vouches for the binary.
+
+Matching. By inode number alone in every case, because a file held through an overlay shows another
+device. The device stays in the deferral record.
+
+The filter. It ends the reader on every call that attaches, signals, writes to a process, takes a
+descriptor from one or opens a file for writing. It cannot limit which entries are opened for reading;
+the reviewed source does that, and the spec says so.
 
 The language. C11, built static, with the build line of the repository's one other compiled helper,
 veldo-userns (scripts/veldo_userns.c, VELDO-0210). A file capability must sit on a binary of its own: on
@@ -142,24 +237,31 @@ toolchain.
 Build order. It is built after 0301 and before 0302, so before any ticket that removes on a real host
 and long before 0332, the switch to act. It can be built as soon as 0299 and 0330 have landed.
 
-Footprint. The reader's source with its synced copy; the owner's setup text beside the namespace
-helper's; Probes, which checks, runs and matches; the Declarations reader, which gains the
-process_reader key; Signal, where rule 4 reads the unread list; the policy file, which gains the
-reader's source as a protected path; and the ticket's suite, proof and spec.
+Footprint. The reader's source with its synced copy; the two unit templates with their synced copies;
+the owner's setup text beside the namespace helper's; Probes, which checks, connects, matches and holds
+the unit's entry; the Declarations reader, which gains the process_reader key; Signal, where rule 4 reads
+the unread list; the policy file, which gains the reader's source and the two unit templates as protected
+paths; and the ticket's suite, proof and spec. The proof bundle holds reader.sha256.
 
 What a row can and cannot do. Installing the reader needs root, and a suite has none. The rows for AC1,
-AC2, AC3 and AC5 give the probe a reader through its seam: a program the row writes, with the check's
-file facts (owner, mode, capability) supplied by the row. The row for AC4 builds the real reader from
-its source and runs it without the capability, where it prints x lines for what it may not read. One
-more row runs only where the reader is installed (declared in requires.json as the namespace helper's
-rows are): it starts a real undumpable process in a folder and one outside it and reads both through
-the installed reader. That row is the proof on the owner's host that the installed form reads what the
-measurement says.
+AC2, AC3 and AC5 give the probe a reader through its seam: a program the row writes, served on a socket
+the row makes, with the check's file facts (owner, mode, capability) and the writer's capability supplied
+by the row. One AC1 row leaves the writer check real and answers from a stand-in, which must be refused.
+The rows for AC4 and AC7 build the real reader from its source and run it without the capability, where
+it prints x lines for what it may not read. The row for AC8 needs no reader. One row of AC6 runs only
+where the reader is installed (declared in requires.json as the namespace helper's rows are): it runs the
+reader check in a transient user unit with the authority unit's properties, NoNewPrivileges=yes among
+them, and that check starts a real undumpable process in a folder, with a second thread in another, and
+reads it through the installed reader. That row is the proof on the owner's host that the installed form
+reads what the measurement says, from the place the service reads it.
 
-Assumption, marked as one. The measurement was made in a container that shares the host's process
-table, as uid 0 holding cap_sys_ptrace and no other capability, against a process of the owner's. The
-installed reader runs as the owner against root-owned entries. Both are the same permission check from
-opposite sides, and the installed row above is what proves it.
+Assumptions, marked as such. Three things were not measured. The measurement of what the capability
+reads was made in a container that shares the host's process table, as uid 0 holding cap_sys_ptrace and
+no other capability, against a process of the owner's; the installed reader runs as the owner against
+root-owned entries, which is the same permission check from the other side. The task entries were not
+read with the capability. And the two unit files were not run as written: a transient unit does not take
+Accept=yes, and the capability arriving in the unit needs the installed binary. The installed row of AC6
+proves all three.
 
 ## History
 
@@ -167,3 +269,21 @@ opposite sides, and the installed row above is what proves it.
   recommendation (review2-veldo-0298-0299-0330.md, "The open point"), with design section 7.1 added in
   the same change. No spec file on any of the repository's 508 refs or in any worktree, and no commit
   message, held the number VELDO-0344. Status ready.
+- 2026-11-13: design revision 2 of section 7.1, after its validation
+  (design-veldo-0344-validation-2026-11-14.md, verdict CHANGES; one capability accepted). Every required
+  change is taken, by the lead's decisions. B1: the reader runs in its own socket-started systemd user
+  unit with no NoNewPrivileges, installed without sudo; the authority unit keeps NoNewPrivileges=yes and
+  never holds the capability; every probe reads through the socket; new AC6 with the installed-only row
+  that runs the reader check under the authority unit's properties. B2: the reader reads cwd and fdinfo of
+  every task, prints a t line per task and each equal line once; AC2 names the thread and gains the two
+  thread falsifiers; new AC8 gives the probe's own reading the same fix. B3: built from the blob of the
+  approved commit with /usr/bin/cc and an empty environment, reproducibly, and compared by root with the
+  digest the gate recorded in proof/VELDO-0344/reader.sha256; new AC7. R1: matched by inode number alone,
+  the device kept in the deferral record, the xino overlay named as unseen. R2: AC4 lists the calls the
+  filter ends the reader on and says the filter does not limit which entries are read; its row also runs
+  pidfd_getfd and process_vm_readv. R3: AC1, AC2 and AC3 carry a falsifier for each check they name, and
+  the capability attribute's version is stated. R4: the unit's entry checks one open descriptor and
+  executes it (AC6). Added beyond the validation: the probe takes the output only from the writer the
+  kernel names (AC1), because a socket in the owner's runtime folder can be answered by any process of the
+  owner's; and the reader ends with no end line when a write fails (AC5). The footprint and the protected
+  paths gain the two unit templates. Five criteria became eight. Status ready.

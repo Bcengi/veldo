@@ -31,7 +31,7 @@ behavior_bearing: true
 observability:
   logs: >
     The keep record on the item, one journal record: the main repository, each kept ref with its commit,
-    the saved ref when a snapshot was written, and the path the item had. Each kept ref's own log names
+    the snapshot's path, size and manifest digest when one was written, and the path the item had. Each kept ref's own log names
     the event that wrote it.
   error_taxonomy: >
     space_deferred:keep_failed, with the ref and what git said, when a kept ref or a snapshot cannot be
@@ -67,13 +67,19 @@ acceptance_criteria:
       the worktree gone and its commit unreachable, and fails
   - id: AC4
     text: >
-      The saved snapshot is a commit in git's stash layout on the item's saved ref, holding the tracked
-      edits, the staged state and the untracked files, the ignored ones that are work included. Writing it
-      changes neither the worktree, nor its index, nor the repository's stash entries, and git's stash
-      apply with the index option brings every file back byte for byte with its mode
+      The saved snapshot is plain files with a manifest in the snapshot store under the state root,
+      outside every repository: the tracked edits, the staged state and the untracked files, the ignored
+      ones that are work included, each with its mode and its SHA-256. Writing it changes neither the
+      worktree, nor its index, nor the repository's stash entries, and adds no object to any repository's
+      object store. It is read back and compared before the keep record is written. The snapshot store is
+      protected in every installation, and no rule lets a remover take a path in it
     falsified_by: >
-      Write it with git's stash command; the row compares the worktree and the stash entries before and
-      after, finds the worktree emptied and an entry added, and fails
+      Each of these turns a row of its own red. Write it as a commit on a kept ref: the row plants a
+      marker in an ignored settings file and finds the marker in an object of the main repository after
+      the Discard. Write it with git's stash command: the row compares the worktree and the stash entries
+      before and after, and finds the worktree emptied and an entry added. Leave the store off the protect
+      list: the row declares a folder of the store as scratch, sends its ending event and finds the
+      snapshot gone
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. Removers then run without the keep step, as before this ticket. Kept refs already
@@ -83,8 +89,9 @@ rollback: >
 ## Intent
 
 Before a worktree or a private repository is removed, every commit it reaches is recorded on a kept ref in
-its main repository, and before a Discard or a review's scratch removal the uncommitted state is saved as
-one commit on a kept ref. When either write fails, nothing is removed. This is the part of the owner's
+its main repository, and before a Discard, a review's scratch removal or the removal of a dead run's
+worker clone the uncommitted state is saved as a snapshot outside git. When either write fails, nothing
+is removed. This is the part of the owner's
 rule, no work is ever lost, that every remover runs.
 
 ## Design
@@ -107,10 +114,9 @@ repository on a real host. depends_on holds the dependencies the design states f
 
 Measured on git 2.43.0 on 2026-11-13, and to be repeated as rows: a commit left behind by a reset in a
 detached worktree is named only by that worktree's HEAD log, and git's worktree remove takes the log; a
-fetch by hash from a local path works when the call sets uploadpack.allowAnySHA1InWant for itself; a
-commit built in the stash layout through index files of the caller's own leaves the worktree's status
-unchanged, and git's stash apply with the index option restores a tracked edit, a staged file, an
-untracked file with its executable bit and an ignored file from it.
+fetch by hash from a local path works when the call sets uploadpack.allowAnySHA1InWant for itself. The
+third measurement of the first form, a commit built in git's stash layout, no longer applies: the
+snapshot is not a commit (History).
 
 Footprint. The files are the ones the design's component table (section 3) gives for this ticket's
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
@@ -120,3 +126,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-13: written from design section 0, added that day for the owner's rule (Telegram 41209). The
   number follows VELDO-0344, the highest a spec file or a proof folder held on any ref or in any worktree;
   nothing on any ref named 0345 to 0349. Status ready.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC4 is rewritten: the snapshot is plain
+  files with a manifest (each file's mode and SHA-256) in <state root>/space-saved/<ticket>/<item>/,
+  written without adding an object to any repository, read back before the keep record is written, and the
+  store is protected in every installation. The first form, a commit in git's stash layout on a saved ref,
+  is withdrawn. AC4 has three falsifiers: the snapshot written as a commit (a marker planted in an ignored
+  settings file is then found in the main repository's objects), the snapshot written with git's stash
+  command, and the store left off the protect list. The keep record holds the snapshot's path, size and
+  manifest digest. The same snapshot is written for a dead run's worker clone (VELDO-0347 AC3).

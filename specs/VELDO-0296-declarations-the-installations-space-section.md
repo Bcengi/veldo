@@ -94,3 +94,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-13: VELDO-0344 adds one key to the installation's space section, process_reader: the word
   none or the SHA-256 digest of the process reader the owner installed (design 6.8 and 7.1). It is
   built by that ticket, not here. No acceptance criterion changed.
+- 2026-11-13: design section 7.1 was revised after its validation. The process_reader key is unchanged in
+  form. Its digest is now the one the gate recorded for the reviewed reader
+  (proof/VELDO-0344/reader.sha256), not one the owner's shell printed, and the socket's path, like the
+  reader's, is fixed in the probe and is not a key. No acceptance criterion changed.

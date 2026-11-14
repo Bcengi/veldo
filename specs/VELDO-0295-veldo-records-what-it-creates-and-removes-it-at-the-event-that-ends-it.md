@@ -54,9 +54,10 @@ acceptance_criteria:
       its main repository and read back, and the removal is refused as keep_failed when that write fails.
       A kept ref stays until the owner drops it with a signed command, and it is never counted as a reason
       to remove. Uncommitted, untracked and stashed changes are never removed without the owner's explicit
-      Discard. Discard first saves them as a commit on a kept ref, in the layout of git's stash, and runs
-      only while the worktree still equals what was saved; a review's scratch is saved the same way before
-      it is deleted. An evidence file is removed only when a copy with the same digest, read again at the
+      Discard. Discard first saves them as a snapshot outside git, plain files with a manifest under the
+      state root and never an object in a repository, and runs only while the worktree still equals what
+      was saved; a review's scratch, and a dead run's worker clone, are saved the same way before they
+      are removed. An evidence file is removed only when a copy with the same digest, read again at the
       removal, is held by the store or by a commit the trunk or a kept ref reaches. Every probe and every
       rule fails closed: what cannot be read, written or decided keeps the item. The owner gets a removed
       item's work back with veldo space restore, or with plain git from the kept refs. A suite that plants
@@ -417,3 +418,14 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   and four tickets are added, VELDO-0345 to VELDO-0348, numbered after 0344, the highest number a spec
   file or a proof folder held on any ref. The build order gains them and VELDO-0344. Six points are put to
   the owner in section 15 of the design. Still a draft.
+- 2026-11-13: the lead answered the six questions section 15 of the design put about section 0, and design
+  section 7.1 was revised after its validation (verdict CHANGES). AC0 changes in one place: a snapshot of
+  uncommitted, untracked or ignored files is stored outside git, under the state root, so a secret in an
+  ignored file never enters a repository's object store; a dead run's worker clone with uncommitted files
+  is saved the same way and removed with no request. Review scratch, unlanded commits, session scratch and
+  growth stay as designed, and the console shows the count and the size of kept refs and snapshots. The
+  criteria of nine unbuilt tickets follow (0318, 0327, 0336, 0340, 0343, 0345, 0346, 0347, 0348 for one
+  mutation). VELDO-0344 goes from five criteria to eight: the reader runs in a socket-started user unit of
+  its own, reads every thread, is built from the approved commit against a digest the gate recorded, and
+  is matched by inode number alone. One capability stays. Section 15 of the design is empty. Still a
+  draft.

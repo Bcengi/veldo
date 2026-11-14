@@ -41,11 +41,11 @@ acceptance_criteria:
       request, and the row that waits for the presentation fails
   - id: AC2
     text: >
-      The request's terms state what Discard removes from disk, that it is saved on a kept ref first, and
-      the command that brings it back. They hold, for each worktree, the list of files Discard would
-      remove and, for a detached worktree with commits no ref holds, the name of the kept branch those
-      commits go to. The presentation shows both, and the Ledger raises no request that offers the discard
-      pick without that list. The control path has no tier field and none is added
+      The request's terms state what Discard removes from disk, that it is saved first, and the command
+      that brings it back. They hold, for each worktree, the list of files Discard would remove and, for a
+      detached worktree with commits no ref holds, the name of the kept branch those commits go to. The
+      presentation shows both, and the Ledger raises no request that offers the discard pick without that
+      list. The control path has no tier field and none is added
     falsified_by: >
       Raise the request with an empty list; the row that reads the presentation finds discard offered with
       nothing listed and fails
@@ -104,3 +104,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   AC2: the request's terms no longer state that Discard cannot be undone. They state what Discard removes
   from disk, that it is saved on a kept ref first, and the command that brings it back. The falsifier is
   unchanged.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC2: the terms state that the files are
+  saved first, and no longer say on a kept ref. The falsifier is unchanged.

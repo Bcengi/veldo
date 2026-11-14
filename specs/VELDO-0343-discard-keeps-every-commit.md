@@ -57,9 +57,8 @@ acceptance_criteria:
       and fails
   - id: AC4
     text: >
-      Creating the kept branch makes no commit, Discard makes no commit on any branch, and neither sends a
-      landing event: the row counts the same commits reachable from branches and the same event records
-      before and after
+      Creating the kept branch makes no commit, Discard makes no commit, and neither sends a landing
+      event: the row counts the same commits in the repository and the same event records before and after
     falsified_by: >
       Commit the worktree's files on the kept branch in Discard as Save does; the row finds a new commit
       on a branch and fails
@@ -101,3 +100,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   AC1: the worktree's uncommitted file is gone from disk and is in the saved snapshot. AC4: Discard makes
   no commit on any branch; its snapshot is a commit on a kept ref, so the row counts the commits reachable
   from branches, and the falsifier commits on the kept branch. depends_on gains VELDO-0345.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC4: Discard makes no commit at all, where
+  it said none on any branch, because its snapshot is no longer a commit; the row counts the commits in
+  the repository. The falsifier is unchanged.

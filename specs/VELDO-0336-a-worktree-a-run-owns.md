@@ -52,8 +52,8 @@ acceptance_criteria:
   - id: AC3
     text: >
       A review worktree with an untracked file git does not ignore is removed at run finished with no
-      decision request and no force option; the file is saved on a kept ref (VELDO-0345) and then deleted,
-      as review scratch
+      decision request and no force option; the file is saved in the snapshot store (VELDO-0345) and then
+      deleted, as review scratch
     falsified_by: >
       Defer it as unique work; the row finds the worktree present and a request raised and fails
   - id: AC4
@@ -103,3 +103,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   AC3: review scratch is saved on a kept ref before it is deleted. No request is raised, as before; the
   lead's decision (e) stands. The falsifier is unchanged. depends_on gains VELDO-0345, which builds the
   snapshot. Design section 15 puts the stricter reading, a request for every stray file, to the owner.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC3: review scratch is saved in the snapshot
+  store before it is deleted, where it said on a kept ref. The lead confirmed decision (e): saved first,
+  then removed with no request, because saved means not lost. The falsifier is unchanged.

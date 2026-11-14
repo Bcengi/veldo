@@ -52,9 +52,9 @@ acceptance_criteria:
     text: >
       A group pick applies to every member still in the group and closes the group. Save commits each
       worktree's changes on a kept branch named space-saved and the review run's label and removes it
-      without force; Keep sets each to kept; Discard saves each member's uncommitted state on a kept ref
-      first, removes each member whose file list equals the list shown and defers a changed one again,
-      into a new group (VELDO-0342 AC3)
+      without force; Keep sets each to kept; Discard saves each member's uncommitted state in the snapshot
+      store first, removes each member whose file list equals the list shown and defers a changed one
+      again, into a new group (VELDO-0342 AC3)
     falsified_by: >
       Skip the comparison per worktree; the row adds a file to one member after the request was shown,
       loses it and fails
@@ -101,3 +101,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
   AC3: a group's Discard saves each member's uncommitted state on a kept ref before it removes that
   member. The falsifier is unchanged.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC3: a group's Discard saves each member's
+  uncommitted state in the snapshot store, where it said on a kept ref. The falsifier is unchanged.

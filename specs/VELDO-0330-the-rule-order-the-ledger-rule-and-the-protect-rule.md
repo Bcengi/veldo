@@ -147,3 +147,7 @@ the rules, and Probes, which holds the protect list.
   keep step runs after rule 6 has passed and before the tool of rule 7 is called, inside the removers,
   with the deferral keep_failed (VELDO-0345). Rule 6's look beneath a scratch item and a build output
   item, with the clean clone exception, is VELDO-0347 AC2. No acceptance criterion changed.
+- 2026-11-13: design section 7.1 was revised after its validation. Rule 4 keeps its reading. Two things
+  reach what it records: a deferral for process use now names the thread as well as the process, with the
+  device and inode number that matched, and the probe reads every thread of a process (VELDO-0344 AC2 and
+  AC8). No acceptance criterion changed.

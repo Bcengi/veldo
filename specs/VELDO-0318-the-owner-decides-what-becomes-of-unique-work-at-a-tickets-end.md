@@ -46,16 +46,16 @@ acceptance_criteria:
     text: >
       Save commits the changes on a kept branch named for the ticket, or for the owning run when the
       worktree has no ticket, authored as the owner's configured identity, and then removes the worktree
-      without force. Ignored files that are work go to the saved ref and never to the branch. Without a
-      settled Save answer Veldo makes no commit
+      without force. Ignored files that are work go to the snapshot store, outside git, and never to the
+      branch. Without a settled Save answer Veldo makes no commit
     falsified_by: >
       Commit at the deferral; the row finds a commit with no settled answer and fails
   - id: AC3
     text: >
       Discard removes that one worktree with git's force option, only on a settled discard answer, only
       while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass. It first writes the
-      snapshot of the uncommitted state to the saved ref (VELDO-0345), runs only while the worktree still
-      equals that snapshot, and does not run when the snapshot cannot be written. The branch and its
+      snapshot of the uncommitted state to the snapshot store (VELDO-0345), runs only while the worktree
+      still equals that snapshot, and does not run when the snapshot cannot be written. The branch and its
       commits are still there afterwards, and no commit is lost (VELDO-0343)
     falsified_by: >
       Skip the list comparison; the row that adds a file after the request was shown loses it and fails
@@ -107,3 +107,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   first writes the snapshot of the uncommitted state to the saved ref, runs only while the worktree still
   equals it, and does not run when the snapshot cannot be written, so a Discard can be undone with veldo
   space restore. Both falsifiers are unchanged. depends_on gains VELDO-0345, which builds the snapshot.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC2: Save writes ignored files that are work
+  to the snapshot store. AC3: Discard writes its snapshot to the snapshot store. Both said the saved ref.
+  Both falsifiers are unchanged.

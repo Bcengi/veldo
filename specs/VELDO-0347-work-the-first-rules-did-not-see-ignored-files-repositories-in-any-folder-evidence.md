@@ -64,12 +64,15 @@ acceptance_criteria:
   - id: AC3
     text: >
       A worker clone, a batch clone and a candidate workspace are removed as private repositories: the
-      keep step records every commit in the main repository first, and one whose work tree holds an
-      uncommitted or untracked file that is work is deferred as unique work and raises one request on the
-      space disposition touchpoint, as a worktree does
+      keep step records every commit in the main repository first. A batch clone or a candidate workspace
+      whose work tree holds an uncommitted or untracked file that is work is deferred as unique work and
+      raises one request on the space disposition touchpoint, as a worktree does. A worker clone of a run
+      that has ended is not deferred for such files: they are saved in the snapshot store, and the clone
+      is removed with no request
     falsified_by: >
-      Remove a clone by the folder remover alone; the row's commit that the runner never brought across is
-      in no repository and the row fails
+      Each of these turns a row of its own red. Remove a clone by the folder remover alone: the row's
+      commit that the runner never brought across is in no repository. Remove a worker clone without the
+      snapshot: the row's uncommitted file is neither in place nor restored
   - id: AC4
     text: >
       An evidence file is removed only when its digest, read again at the removal, is the digest of a blob
@@ -121,3 +124,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-13: written from design section 0, added that day for the owner's rule (Telegram 41209). The
   number follows VELDO-0344, the highest a spec file or a proof folder held on any ref or in any worktree;
   nothing on any ref named 0345 to 0349. Status ready.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC3, from the lead's answer on worker
+  clones: a worker clone of a run that has ended is not deferred for uncommitted or untracked files. They
+  are saved in the snapshot store and the clone is removed with no request, as review scratch is. The
+  answer names worker clones, so a batch clone and a candidate workspace still raise one request. AC3
+  gains a second falsifier: a worker clone removed without the snapshot.

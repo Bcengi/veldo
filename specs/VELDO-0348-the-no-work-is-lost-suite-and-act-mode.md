@@ -59,7 +59,8 @@ acceptance_criteria:
       check: a kept child that does not hold, a stash counted as a holding ref, no look beneath a
       worktree, a private repository compared with itself, an unreadable worktree read as unlocked, an
       unopenable scratch read as free, the keep step skipped, the remove run after a failed keep, Discard
-      without the snapshot, and a removing item completed with no keep record
+      without the snapshot, a snapshot written into a repository's object store, and a removing item
+      completed with no keep record
     falsified_by: >
       Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree
       leaves the suite green and the mutation check fails
@@ -117,3 +118,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-13: written from design section 0, added that day for the owner's rule (Telegram 41209). The
   number follows VELDO-0344, the highest a spec file or a proof folder held on any ref or in any worktree;
   nothing on any ref named 0345 to 0349. Status ready.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC3 gains one mutation: a snapshot written
+  into a repository's object store. The suite plants a marker in the ignored file and searches every
+  repository's objects for it after each drive (design 0.7). The falsifier is unchanged.

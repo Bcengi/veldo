@@ -154,3 +154,16 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   (VELDO-0347 AC1); no probe counts a ref under refs/veldo/kept as a ref that holds a commit, as none
   counts a stash (VELDO-0345 AC3); and the clean clone reading for a repository beneath scratch or build
   output (VELDO-0347 AC2). No acceptance criterion changed.
+- 2026-11-13: an acceptance criterion changes, recorded here and built by VELDO-0344 (its AC8). The
+  validation of design section 7.1 measured that /proc/<pid>/cwd and /proc/<pid>/fd show the first thread
+  only: a process whose second thread had moved into a folder, with a file system state of its own, read
+  as not using it. This ticket's probe has that gap for the processes it reads itself. AC1 is from now
+  read as: a path is in use when any thread of a live process has its working directory or an open file at
+  or beneath it, or the process has a mapped file there, or a running or stopped container has a bind
+  mount there. The probe reads /proc/<pid>/task/<tid>/cwd and /proc/<pid>/task/<tid>/fd for every task,
+  and a process with a task it cannot read is unread. The new falsifier: read the first thread's working
+  directory only; the row whose second thread sits in the path with a file system state of its own reads
+  not in use and fails. This ticket is built and its proof bundle answers AC1 as written above, so the
+  frontmatter text is not edited; the row, the falsifier and the proof are VELDO-0344's. The same
+  validation moved the reader into a user unit of its own and made its matching by inode number alone
+  (design 7.1); neither changes this ticket.

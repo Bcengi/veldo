@@ -49,29 +49,31 @@ acceptance_criteria:
   - id: AC2
     text: >
       veldo space restore adds a worktree at the path the item had, or at the path given, at the kept
-      head, and applies the saved snapshot: after a Discard and a restore the tracked edits, the staged
-      state, the untracked files and the ignored files that are work are back byte for byte. It refuses
-      when something is at the path, and it leaves the kept refs in place
+      head, and applies the saved snapshot from the snapshot store: after a Discard and a restore the
+      tracked edits, the staged state, the untracked files and the ignored files that are work are back
+      byte for byte with their modes. It refuses when something is at the path or when a saved file does
+      not match its manifest, and it leaves the kept refs and the snapshot in place
     falsified_by: >
       Restore the head without the snapshot; the row's untracked file is missing and the row fails
   - id: AC3
     text: >
-      Only veldo space kept drop removes a kept ref. It is the owner's signed command, it lists the
-      commits that would no longer be reachable before it acts, and it is refused from every host
-      principal
+      Only veldo space kept drop removes a kept ref or a snapshot. It is the owner's signed command, it
+      lists the commits that would no longer be reachable and the snapshot's files before it acts, and it
+      is refused from every host principal
     falsified_by: >
       Accept drop from space-runner; the row that sends it finds the refs gone and fails
   - id: AC4
     text: >
       The console's Removed section and the space.kept read show, for each removal, the number of kept
-      refs, whether a snapshot was saved and the restore command with the item filled in
+      refs, whether a snapshot was saved and its size, and the restore command with the item filled in;
+      and for the installation the count and the size of all kept refs and of all snapshots
     falsified_by: >
       Leave the kept refs out of the read; the row that expects the restore command beside the removed
       worktree finds none and fails
 required_evidence: [unit, integration, ui_states]
 rollback: >
-  Revert the change. The kept refs stay and are restored with plain git: git worktree add at the kept
-  head, then git stash apply with the index option on the saved ref.
+  Revert the change. The kept refs and the snapshots stay. They are restored by hand: git worktree add
+  at the kept head, then a copy of the snapshot's work folder into it.
 ---
 
 ## Intent
@@ -108,3 +110,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 - 2026-11-13: written from design section 0, added that day for the owner's rule (Telegram 41209). The
   number follows VELDO-0344, the highest a spec file or a proof folder held on any ref or in any worktree;
   nothing on any ref named 0345 to 0349. Status ready.
+- 2026-11-13: amended for the lead's answers to the six questions of design section 15 (section 13 records
+  them). A snapshot of uncommitted, untracked or ignored files is stored outside git, in the snapshot
+  store under the state root, and never in a repository's object store, so a secret in an ignored file
+  does not enter git; commits stay on kept refs (design 0.3). AC2: restore applies the snapshot from the
+  snapshot store, with modes, and refuses when a saved file does not match its manifest; it leaves the
+  snapshot in place. AC3: drop also removes the item's snapshot and lists its files first. AC4, from the
+  lead's answer on growth: the read and the console also show each snapshot's size and, for the
+  installation, the count and the size of all kept refs and of all snapshots; nothing drops them without
+  the owner's rule. The three falsifiers are unchanged. Plain git no longer restores a snapshot; without
+  Veldo its working files are copied back by hand (design 0.5).
