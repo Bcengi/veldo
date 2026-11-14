@@ -1,8 +1,8 @@
-# Each run on the tree of commit bf5e95057e83, python3 scripts/selftest.py --suite NAME. Partial runs: none is the gate.
+# Each run on the tree of commit 90cc1fc8ffd4, python3 scripts/selftest.py --suite NAME. Partial runs: none is the gate.
 selector    --suite 148_veldo_0311_git_hooks
-running     1 of 218 suites: 148_veldo_0311_git_hooks
-148_veldo_0311_git_hooks                        18 passed    4.66s
-selftest (PARTIAL, 1 of 218 suites): 44 passed, 0 failed in 4.66s
-147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 218 suites): 56 passed, 0 failed in 24.04s
-133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 218 suites): 56 passed, 0 failed in 26.34s
+running     1 of 219 suites: 148_veldo_0311_git_hooks
+148_veldo_0311_git_hooks                        28 passed    7.28s
+selftest (PARTIAL, 1 of 219 suites): 54 passed, 0 failed in 7.28s
+147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 219 suites): 56 passed, 0 failed in 25.27s
+133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 219 suites): 56 passed, 0 failed in 27.62s
 # 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is).

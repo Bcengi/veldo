@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0311",
- "commit": "bf5e95057e83904c960c0b77ec9586dfa6165fa9",
- "tree": "12051cbfd981563743da70f5fdc167c5366b80f1",
- "producer": "Claude implementation agent (build); not an independent reviewer",
- "produced_at": "2026-11-14T15:43:08.956585+00:00",
+ "commit": "90cc1fc8ffd41613e2591d974cbb6a2047ad4712",
+ "tree": "3de9bcf58eeefa0553f9770c0d5a5a13f9140c49",
+ "producer": "Claude implementation agent (build, and the fix round after the review); not an independent reviewer",
+ "produced_at": "2026-11-14T16:28:02.344985+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -24,6 +24,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0311/falsifiers.json",
      "detail": "space311-recorded-only-by-the-record-verb is the declared falsifier: git's own worktree add records nothing; ac1/plain-git-worktree-has-item finds no item and is red. Beside it, each applied once and red on its row: space311-refused-entry-dropped (a refused entry is unlinked and not set aside) reds ac1/refused-is-set-aside; space311-hook-status-reaches-git (the hook exits with the CLI's status) reds hooks/never-fail-git, with git worktree add returning 127."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Fix round rows. f3/path-reused-by-another-repository (review finding 3): a path whose live item is another repository's; git returns 0, the item is as it was, no branch item is made, the entry is set aside with space_path_of_another_repository and the item's id. f2/commit-not-on-ref-is-nothing (finding 2c, worktree part): a worktree that repository's own list does not hold is recorded as nothing; an entry naming another branch and commit for a real worktree records the branch and commit git reads. f4/paths-as-the-ledger-compares (finding 4): about compares by the Ledger's own canonical_path; a repository named through a link is nothing, with an observation."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "Fix round, each applied once and seen red: space311-item-found-by-path-alone reds f3/path-reused-by-another-repository; space311-paths-compared-by-a-copy reds f4/paths-as-the-ledger-compares. The declared falsifier was applied again and is still red on its row."
     }
    ]
   },
@@ -45,6 +55,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0311/falsifiers.json",
      "detail": "space311-recorded-at-worktree-add-only is the declared falsifier: a switch is not recorded; the row lands X after the switch, contained is sent for the worktree's owner, the real removers take the worktree after the keep step, and ac2/landing-of-old-branch-leaves-worktree is red. Beside it: space311-rebase-checkout-taken-for-a-switch reds ac2/rebase-keeps-the-branch (the item's branch is None after the rebase)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Fix round: no row of AC2 changed. A switch is now recorded with the branch git reads at the replay (f2/commit-not-on-ref-is-nothing shows the rule); ac2 rows are green on the fixed tree."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "Fix round: the declared falsifier space311-recorded-at-worktree-add-only and space311-rebase-checkout-taken-for-a-switch were applied again and are still red on their rows."
     }
    ]
   },
@@ -66,6 +86,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0311/falsifiers.json",
      "detail": "space311-removed-inside-the-hook is the declared falsifier: what follows the event runs before the hook has its answer; with the remover held on the latch the git command is still waiting after four seconds and ac3/git-returns-while-remover-held is red. Beside it: space311-every-ref-change-sent reds ac3/one-event-record."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Fix round rows. f1/trunk-master-main-moved (finding 1): declared trunk master, a branch main moved by hand onto a worktree's branch: no entry, no event, the item present and the worktree on disk; a commit on master leaves one event; with the git configuration wrongly naming main the authority records nothing (ref_not_declared). f1/no-declaration-nothing-sent: no declared trunk, a commit on main writes no entry and the repository is noted once (trunk_undeclared); a hook made to name main is answered trunk_undeclared. f2/commit-not-on-ref-is-nothing (finding 2c): an entry whose commit is not on its ref is recorded as nothing with one observation; the same entry with a commit on the ref is one event."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "Fix round, each applied once and seen red: space311-trunk-guessed-by-the-hook and space311-trunk-guessed-as-main red f1/no-declaration-nothing-sent; space311-ref-not-judged-against-the-declared-trunk reds f1/trunk-master-main-moved; space311-entry-taken-at-its-word reds f2/commit-not-on-ref-is-nothing. The declared falsifier was applied again and is still red on its row."
     }
    ]
   },
@@ -87,6 +117,16 @@
      "type": "falsifier",
      "ref": "proof/VELDO-0311/falsifiers.json",
      "detail": "space311-dropped-when-the-authority-is-down is the declared falsifier: an entry the authority cannot be reached for is unlinked; after start reconcile finds the worktree with no item and ac4/service-start-before-reconcile is red. Beside it: space311-waiting-entry-passed-by-a-later-one reds ac4/waiting-keeps-order; space311-entry-sent-again-as-a-new-packet reds ac4/delivered-twice-recorded-once (the journal grows)."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/148_veldo_0311_git_hooks.py",
+     "detail": "Fix round rows. f2/unsafe-folder-refused (finding 2a, the reviewer's probe): a spool folder of mode 0777 with a planted entry; replay, put, listen, start, the replay verb and a hook refuse it, nothing is signed or recorded, the folder and the file are untouched, and it is noted beside the folder; a folder of another account is refused. f2/unsafe-entry-set-aside: an entry file others can write, and a link, are set aside with why and never sent. f2/server-identity-checked (2b): nothing is sent to a socket the kernel says another account serves. f4/nothing-leaves-a-trace (finding 4): one observation with the entry whole. f5/replay-stops-at-its-deadline (finding 5): a replay stops between two entries at its deadline, the third stays whole and the next replay delivers it."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0311/falsifiers.json",
+     "detail": "Fix round, each applied once and seen red: space311-spool-folder-of-any-mode-taken reds f2/unsafe-folder-refused; space311-entry-file-of-any-mode-read reds f2/unsafe-entry-set-aside; space311-server-identity-not-asked reds f2/server-identity-checked; space311-nothing-dropped-without-a-trace reds f4/nothing-leaves-a-trace; space311-replay-without-a-deadline reds f5/replay-stops-at-its-deadline. The declared falsifier was applied again and is still red on its row."
     }
    ]
   }
@@ -95,7 +135,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "On the committed tree (commit bf5e95057e83): python3 scripts/selftest.py --suite 148_veldo_0311_git_hooks (18 rows, 44 passed with the shared preamble, 0 failed) (proof/VELDO-0311/suite-green.txt). A partial run, not the gate."
+   "command": "On the committed tree (commit 90cc1fc8ffd4): python3 scripts/selftest.py --suite 148_veldo_0311_git_hooks (28 rows, 54 passed with the shared preamble, 0 failed); suites 147_veldo_0310_landed_contained and 133_veldo_0326_space_principals, 56 passed and 0 failed each (proof/VELDO-0311/suite-green.txt). Partial runs, not the gate."
   },
   {
    "name": "integration",
@@ -105,12 +145,12 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The 10 cases of finding 311, each applied once on the committed tree, noop copy green and mutant copy red on its target rows (proof/VELDO-0311/mutations.txt, falsifiers.json). Not the teeth run."
+   "command": "The 21 cases of finding 311 (10 of the build applied again, 11 of the fix round), each applied once on the committed tree, noop copy green and mutant copy red on its target rows (proof/VELDO-0311/mutations.txt, falsifiers.json). Not the teeth run."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "python3 .veldo/validate.py all (exit 0); bash scripts/check_docs.sh (pass); bash scripts/check_template_sync.sh (pass, 320 pairs); bash scripts/check_generated.sh (pass); python3 scripts/check_git_boundary.py (pass); bash scripts/check_lint.sh (pass)."
+   "command": "python3 .veldo/validate.py all (exit 0); bash scripts/check_docs.sh (pass); bash scripts/check_template_sync.sh (pass, 321 pairs); bash scripts/check_generated.sh (pass); python3 scripts/check_git_boundary.py (pass); bash scripts/check_lint.sh (pass)."
   },
   {
    "name": "gate",
@@ -123,8 +163,9 @@
   "2. THE SERVICE NEITHER SERVES THE SPOOL'S SOCKET NOR CALLS start YET (VELDO-0323 and VELDO-0315; control_service.py is outside this footprint). The suite serves the socket in its own process with the module's serve_one, and calls start itself with a stand-in for reconcile. In production no authority answers until that wiring lands, so every entry waits in the spool. NOT PROVEN HERE: the wiring, and the event consumer, for which the suite's consumer (the landing station's own decision, then the real Signal) stands in.",
   "3. THE HOOKS ARE NOT INSTALLED BY ANYTHING YET (VELDO-0329). The suite copies them into the hooks folder and sets veldo.space.stateroot, veldo.space.cli and veldo.space.installation in the repository's git configuration.",
   "4. THE TWO CHECKS OF A SWITCH TO ACT (VELDO-0332 and 0339) are stand-ins that allow, so the fixture project can be in act mode; the docker client and the process table are fixtures.",
-  "5. THE TRUNK IS main unless veldo.space.trunk names another: no declaration names a project's trunk.",
-  "6. Suite 86_veldo_0127 was not run (52 of 54 by a known recapture; left as it is). scripts/check_pack_drift.py reports the pack's engine copy missing in this worktree (417 files, none of this ticket's); it is not one of the gate's checks and was left as found."
+  "5. THE TRUNK IS NEVER GUESSED (fix round). The hook reads veldo.space.trunk, which VELDO-0329 is to set from the declared land trunk, and the authority reads the land entry through Local's landing argument; the suite gives both. NOT PROVEN HERE: the service handing its own land entry (control_service.landing_names) to Local, which is the wiring of VELDO-0323 and 0315. A plain repository has no land entry today and gets no trunk events.",
+  "6. Suite 86_veldo_0127 was not run (52 of 54 by a known recapture; left as it is). scripts/check_pack_drift.py reports the pack's engine copy missing in this worktree (417 files, none of this ticket's); it is not one of the gate's checks and was left as found.",
+  "7. FIX ROUND LIMITS. Another account cannot be played in a suite: the other-owner refusal is shown by making this account read as another, and the socket check by expecting another account than the one that serves. The old commit of a ref change is the hook's word and is not verified. No key authenticates an entry (owner rule: single-user setup); VELDO-0323 has the duty the spec's History records. The builder did not read the reviewer's own probe file; row f2/unsafe-folder-refused rebuilds it from the review's description."
  ],
  "rollback": "Revert the change. The hooks record nothing, and a worktree made with plain git is found by reconcile."
 }

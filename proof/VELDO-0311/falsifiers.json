@@ -23,6 +23,16 @@
    "ac4/replayed-in-order-at-next-call",
    "ac4/service-start-before-reconcile",
    "ac4/waiting-keeps-order",
+   "f1/no-declaration-nothing-sent",
+   "f1/trunk-master-main-moved",
+   "f2/commit-not-on-ref-is-nothing",
+   "f2/server-identity-checked",
+   "f2/unsafe-entry-set-aside",
+   "f2/unsafe-folder-refused",
+   "f3/path-reused-by-another-repository",
+   "f4/nothing-leaves-a-trace",
+   "f4/paths-as-the-ledger-compares",
+   "f5/replay-stops-at-its-deadline",
    "hooks/never-fail-git",
    "paths/no-delete-and-canon"
   ],
@@ -33,7 +43,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -58,6 +68,16 @@
    "ac4/replayed-in-order-at-next-call",
    "ac4/service-start-before-reconcile",
    "ac4/waiting-keeps-order",
+   "f1/no-declaration-nothing-sent",
+   "f1/trunk-master-main-moved",
+   "f2/commit-not-on-ref-is-nothing",
+   "f2/server-identity-checked",
+   "f2/unsafe-entry-set-aside",
+   "f2/unsafe-folder-refused",
+   "f3/path-reused-by-another-repository",
+   "f4/nothing-leaves-a-trace",
+   "f4/paths-as-the-ledger-compares",
+   "f5/replay-stops-at-its-deadline",
    "hooks/never-fail-git",
    "paths/no-delete-and-canon"
   ],
@@ -68,7 +88,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -90,7 +110,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -107,6 +127,7 @@
    "ac4/down-git-unchanged-and-spooled",
    "ac4/replayed-in-order-at-next-call",
    "ac4/service-start-before-reconcile",
+   "f5/replay-stops-at-its-deadline",
    "paths/no-delete-and-canon"
   ],
   "red_details": [
@@ -116,7 +137,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -138,7 +159,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -152,6 +173,7 @@
   "noop_red_rows": [],
   "red_rows": [
    "ac1/refused-is-set-aside",
+   "f3/path-reused-by-another-repository",
    "paths/no-delete-and-canon"
   ],
   "red_details": [
@@ -161,7 +183,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -175,24 +197,26 @@
   "noop_red_rows": [],
   "red_rows": [
    "ac1/plain-git-worktree-has-item",
-   "ac3/no-event-command-waits",
    "ac3/one-event-record",
    "ac4/delivered-twice-recorded-once",
    "ac4/down-git-unchanged-and-spooled",
    "ac4/replayed-in-order-at-next-call",
    "ac4/service-start-before-reconcile",
-   "ac4/waiting-keeps-order",
+   "f1/no-declaration-nothing-sent",
+   "f1/trunk-master-main-moved",
+   "f4/nothing-leaves-a-trace",
+   "f5/replay-stops-at-its-deadline",
    "hooks/never-fail-git",
    "paths/no-delete-and-canon"
   ],
   "red_details": [
    [
     "VELDO-0311 ac3/one-event-record",
-    "another branch, and a ref under refs/veldo/, leave none"
+    "another branch, and a ref under refs/veldo/, leave none, and no entry was written for them"
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -210,11 +234,11 @@
   "red_details": [
    [
     "VELDO-0311 ac2/rebase-keeps-the-branch",
-    "the item still names the branch and its start [None 6380a39c3ba396c5fc2b66f81035f594c3f238dd]"
+    "a checkout during a rebase is no entry, and a file checkout is none"
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
@@ -236,12 +260,12 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  },
  {
   "falsifier": "space311-hook-status-reaches-git",
-  "module": "engine/hooks/post-checkout",
+  "module": "post-checkout",
   "criterion": "AC1",
   "declared": false,
   "expected_red": [
@@ -259,7 +283,271 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "bf5e95057e83",
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-trunk-guessed-by-the-hook",
+  "module": "reference-transaction",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "f1/no-declaration-nothing-sent"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f1/no-declaration-nothing-sent"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f1/no-declaration-nothing-sent",
+    "with no declared trunk a commit on main returns 0 and nothing is sent or spooled [0 0]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-trunk-guessed-as-main",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "f1/no-declaration-nothing-sent"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f1/no-declaration-nothing-sent"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f1/no-declaration-nothing-sent",
+    "with no declared trunk a commit on main returns 0 and nothing is sent or spooled [0 0]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-ref-not-judged-against-the-declared-trunk",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "f1/trunk-master-main-moved"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f1/no-declaration-nothing-sent",
+   "f1/trunk-master-main-moved"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f1/trunk-master-main-moved",
+    "with the hook wrongly naming main the authority reads the land entry and records nothing []"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-spool-folder-of-any-mode-taken",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "f2/unsafe-folder-refused"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f2/unsafe-entry-set-aside",
+   "f2/unsafe-folder-refused",
+   "hooks/never-fail-git"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f2/unsafe-folder-refused",
+    "a replay, a put, a listen and start in a spool folder of mode 0777 are refused [None, None, None, None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-entry-file-of-any-mode-read",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "f2/unsafe-entry-set-aside"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f2/unsafe-entry-set-aside"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f2/unsafe-entry-set-aside",
+    "an entry file others can write, and one that is a link, are never replayed [('recorded', None), ('refused', 'unsafe')]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-server-identity-not-asked",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "f2/server-identity-checked"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f2/server-identity-checked"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f2/server-identity-checked",
+    "when the kernel names another account than the expected one nothing is sent {'answer': {'scope': {'type': 'project', 'id': 'orchard'}, 'patterns': ['agent/{agent}/{ticket}'], 'trunk': 'main', 'landing_refs': ['release'], 'item': None, 'stat"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-entry-taken-at-its-word",
+  "module": "control_space_spool.py",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "f2/commit-not-on-ref-is-nothing"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f2/commit-not-on-ref-is-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f2/commit-not-on-ref-is-nothing",
+    "an entry whose commit is not on the named ref is recorded as nothing [('recorded', None)]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-item-found-by-path-alone",
+  "module": "control_space_spool.py",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 3,
+  "expected_red": [
+   "f3/path-reused-by-another-repository"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f3/path-reused-by-another-repository"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f3/path-reused-by-another-repository",
+    "the item is not given the other repository's branch: it is as it was [topic/pier {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'T-140'}]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-nothing-dropped-without-a-trace",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "review_finding": 4,
+  "expected_red": [
+   "f4/nothing-leaves-a-trace"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/plain-git-worktree-has-item",
+   "f1/no-declaration-nothing-sent",
+   "f1/trunk-master-main-moved",
+   "f2/commit-not-on-ref-is-nothing",
+   "f4/nothing-leaves-a-trace",
+   "f4/paths-as-the-ledger-compares",
+   "f5/replay-stops-at-its-deadline",
+   "hooks/never-fail-git",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f4/nothing-leaves-a-trace",
+    "it leaves one observation, with the entry whole and why []"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-paths-compared-by-a-copy",
+  "module": "control_space_spool.py",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 4,
+  "expected_red": [
+   "f4/paths-as-the-ledger-compares"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f4/paths-as-the-ledger-compares"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f4/paths-as-the-ledger-compares",
+    "the form is the Ledger's own function, not a copy of it [None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
+  "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
+ },
+ {
+  "falsifier": "space311-replay-without-a-deadline",
+  "module": "control_space_spool.py",
+  "criterion": "AC4",
+  "declared": false,
+  "review_finding": 5,
+  "expected_red": [
+   "f5/replay-stops-at-its-deadline"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "f5/replay-stops-at-its-deadline"
+  ],
+  "red_details": [
+   [
+    "VELDO-0311 f5/replay-stops-at-its-deadline",
+    "a replay with a deadline of one second stops after the second entry [('worktree_added', 'recorded'), ('worktree_added', 'recorded'), ('worktree_added', 'recorded')]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "90cc1fc8ffd4",
   "applied": "once: noop copy then mutant copy, by the registry case and the driver materialize and worker"
  }
 ]
