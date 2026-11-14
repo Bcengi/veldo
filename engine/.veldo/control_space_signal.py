@@ -108,7 +108,10 @@ order of ORDER, and the first that refuses ends the run and names the deferral:
   1 ledger        not_in_ledger   the thing at the locator is not the item recorded
   2 protect       protected       the locator is at, above or beneath a protect entry
                                   (a container: or it mounts a protected volume or path, read
-                                  from the engine again; mounts that cannot be read refuse)
+                                  from the engine again; mounts that cannot be read refuse.
+                                  A Docker object: or the compose folder, compose file or
+                                  compose project its labels name now is protected; labels
+                                  that cannot be read refuse)
   3 owner_live    in_use          the owning run is not conclusive or its containment group is not
                                   empty; or the owning session's recorded process is the same live one
   4 process_use   in_use          a process, a container or git uses the path; a launcher's scratch
@@ -521,6 +524,16 @@ def _rule_protect(ledger, probe, identity, record, given):
             return {'entry': held['entry'], 'how': held['how'], 'mount': held['mount']}
         if not held['read']:
             return {'entry': None, 'how': 'mounts_unread', 'unread': held['said']}
+    if 'engine' in record['locator']:
+        # A Docker object whose compose folder, compose file or compose project the protect list covers
+        # is protected (design section 7; VELDO-0307). The locator holds what was seen when the item was
+        # recorded, and the list may have been edited since: the labels are read from the engine again,
+        # now, and every entry is read against them. Labels that could not be read refuse the removal.
+        stamped = probe.labelled(record['kind'], record['locator'], ledger.protect, given['run'])
+        if stamped['protected']:
+            return {'entry': stamped['entry'], 'how': stamped['how'], 'path': stamped['path']}
+        if not stamped['read']:
+            return {'entry': None, 'how': 'labels_unread', 'unread': stamped['said']}
     return None
 
 

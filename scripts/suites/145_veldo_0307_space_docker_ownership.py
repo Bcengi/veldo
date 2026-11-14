@@ -63,6 +63,18 @@ or a remove and are there; so is every proposed object of the report-mode projec
 protected object with its data; no forced command was given; and the file of work in each worktree
 folder is on disk.
 
+THE PROTECT LIST AT THE LEDGER AND AT REMOVAL (the two defects the build found outside its footprint).
+protect/image-pattern-every-tag (the patterns minio/minio and minio/mc, which name no tag and no
+digest, cover that repository's :latest, another tag and a digest: declare, adopt and report refuse
+each as space_protected on both contexts with nothing written, and rule 2 at removal names the same
+entry; a repository whose name only begins the same is not covered; a pattern that names a tag covers
+that tag and no other), protect/covered-after-adoption (a container adopted by its compose working
+folder, one by its configuration file and one by its bind source, and a volume and a network adopted
+by their labels, while nothing covered them; the folders are then added to the protect list; rule 2
+refuses each removal by the path its labels or its mount name now, the ticket's end stops and removes
+none of them, and the container nothing covers is removed, which shows the removal is live; labels
+the engine does not show refuse too).
+
 ownership/removes-nothing (the adapter gave the engine only ls, inspect and info, and the sources of
 the adapter and of the reconciler name no stop, no remove, no prune and no force option),
 ownership/canon (each engine canon equals this repository copy).
@@ -84,6 +96,9 @@ def _v307_space_docker_ownership_suite():
     PRODUCTION = {
         'control_space_docker.py': ROOT / ".veldo" / "control_space_docker.py",
         'control_space_reconcile.py': ROOT / ".veldo" / "control_space_reconcile.py",
+        'control_space.py': ROOT / ".veldo" / "control_space.py",
+        'control_space_probe.py': ROOT / ".veldo" / "control_space_probe.py",
+        'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
     }
     VELDO = ROOT / '.veldo'
 
@@ -97,7 +112,8 @@ def _v307_space_docker_ownership_suite():
             'ac1/a-run-label-comes-first',
             'ac2/report-mode', 'ac2/act-mode', 'ac2/report-then-act',
             'ac3/protected-volume', 'ac3/protected-container', 'ac3/protected-image', 'ac3/covered-later',
-            'loss/nothing-of-theirs-touched', 'ownership/removes-nothing', 'ownership/canon')
+            'loss/nothing-of-theirs-touched', 'protect/image-pattern-every-tag', 'protect/covered-after-adoption',
+            'ownership/removes-nothing', 'ownership/canon')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -123,13 +139,13 @@ def _v307_space_docker_ownership_suite():
         D = load('v307_control_space_docker', PRODUCTION['control_space_docker.py'])
         REC = load('v307_control_space_reconcile', PRODUCTION['control_space_reconcile.py'])
         K = load('v307_control_space_kinds', VELDO / 'control_space_kinds.py')
-        SIG = load('v307_control_space_signal', VELDO / 'control_space_signal.py')
-        SP = load('v307_control_space', VELDO / 'control_space.py')
+        SIG = load('v307_control_space_signal', PRODUCTION['control_space_signal.py'])
+        SP = load('v307_control_space', PRODUCTION['control_space.py'])
         S = load('v307_control_store', VELDO / 'control_store.py')
         CM = load('v307_control_membership', VELDO / 'control_membership.py')
         CFG = load('v307_control_space_config', VELDO / 'control_space_config.py')
         YAML = load('v307_yamlish', VELDO / 'yamlish.py')
-        P = load('v307_control_space_probe', VELDO / 'control_space_probe.py')
+        P = load('v307_control_space_probe', PRODUCTION['control_space_probe.py'])
         RM = load('v307_control_space_remove', VELDO / 'control_space_remove.py')
         KP = load('v307_control_space_keep', VELDO / 'control_space_keep.py')
         AC = CM.AC
@@ -168,7 +184,9 @@ def _v307_space_docker_ownership_suite():
                 'plain_repositories': [],
                 'client_accounts': [str(temp / 'client-a')],
                 'protect': {'paths': [str(STATE / 'vms'), str(VAULT)], 'volumes': ['atlas_pg_*'], 'containers': ['atlas-*'],
-                            'images': ['store/objects'], 'networks': ['atlas_*'],
+                            'images': ['store/objects', 'minio/minio', 'minio/mc',
+                                       'registry.example:5000/tools/pinned:1.2'],
+                            'networks': ['atlas_*'],
                             'compose_projects': ['ledgerdb']},
             }}))
         CONFIG = CFG.read(environ={'VELDO_INSTALLATION': str(folder), 'HOME': str(temp / 'home')},
@@ -781,6 +799,144 @@ def _v307_space_docker_ownership_suite():
               identity is not None and record.get('owner') is None and report_of(record)[0] is None)
 
         # ------------------------------------------------------------------------------------
+        # The protect list at the ledger: an image pattern with no tag covers every tag and digest.
+        # ------------------------------------------------------------------------------------
+        ROW = 'protect/image-pattern-every-tag'
+        DIGEST = '@sha256:' + '5' * 64
+        image_owner = {'scope': A, 'ticket': 'VELDO-9313'}
+        records_before = len(L.items())
+        for pattern in ('minio/minio', 'minio/mc'):
+            for label, name in (('the tag latest', pattern + ':latest'),
+                                ('another tag', pattern + ':RELEASE.2024-06-13'),
+                                ('a digest', pattern + DIGEST),
+                                ('no tag at all', pattern)):
+                for context in CONTEXTS:
+                    locator = {'engine': context, 'name': name}
+                    steps = [L.declare('image_tag', dict(locator), image_owner, 'seam', pool='host'),
+                             L.adopt('image_tag', dict(locator), image_owner, 'run_label', pool='host'),
+                             L.report('image_tag', dict(locator), {'what': 'image'}, pool='host')]
+                    check(ROW, 'the pattern %s covers %s on %s: declare, adopt and report refuse it [%s]'
+                          % (pattern, label, context, [step.get('reason') or 'accepted' for step in steps]),
+                          all(step.get('ok') is False and step.get('reason') == 'space_protected:image:' + pattern
+                              for step in steps))
+                    at_removal = P.protected('image_tag', locator, L.protect)
+                    check(ROW, 'and rule 2 at removal names the same entry for %s of %s on %s [%s]'
+                          % (label, pattern, context, at_removal),
+                          at_removal == {'protected': True, 'entry': 'image:' + pattern, 'how': 'name'})
+        check(ROW, 'nothing was written for a protected image [%s]' % (len(L.items()) - records_before,),
+              len(L.items()) == records_before)
+        PINNED = 'registry.example:5000/tools/pinned'
+        for label, name, entry in (
+                ('a repository whose name only begins the same', 'minio/minio-console:latest', None),
+                ('another repository of the same owner', 'minio/mcli' + DIGEST, None),
+                ('the same repository on another registry', 'registry.example:5000/minio/minio:latest', None),
+                ('the tag a tagged pattern names', PINNED + ':1.2', 'image:' + PINNED + ':1.2'),
+                ('another tag of a tagged pattern', PINNED + ':1.3', None),
+                ('a digest of a tagged pattern', PINNED + DIGEST, None),
+                ('a tagged pattern\'s repository with no tag', PINNED, None)):
+            locator = {'engine': 'default', 'name': name}
+            at_ledger, at_removal = SP.protected_by('image_tag', locator, L.protect), P.protected('image_tag', locator, L.protect)
+            check(ROW, '%s: the ledger and rule 2 both say %s [%s %s]' % (label, entry, at_ledger, at_removal.get('entry')),
+                  at_ledger == entry and at_removal.get('entry') == entry and at_removal['protected'] is (entry is not None))
+        check(ROW, 'a volume, a container and a network are matched by the name in full, as before',
+              SP.protected_by('volume', {'engine': 'default', 'name': 'minio/minio:latest'},
+                              L.protect + [{'type': 'volume', 'value': 'minio/minio', 'engines': list(CONTEXTS)}]) is None
+              and not P.protected('container', {'engine': 'default', 'name': 'minio/mc:latest'},
+                                  L.protect + [{'type': 'container', 'value': 'minio/mc',
+                                                'engines': list(CONTEXTS)}])['protected'])
+
+        # ------------------------------------------------------------------------------------
+        # The protect list at removal: a later entry stops the removal of what was adopted before it.
+        # ------------------------------------------------------------------------------------
+        ROW = 'protect/covered-after-adoption'
+        TICKET_D = 'VELDO-9312'
+        WT_D, WHO_D, PATH_D = worktree(A, ORCHARD, 'wt-d', TICKET_D)
+        late = {
+            'late-web-1': ('container', ENGINE.container('default', 'late-web-1', composed(PATH_D / 'app'))),
+            'late-cf-1': ('container', ENGINE.container('default', 'late-cf-1', composed(
+                ELSEWHERE / 'far', '/etc/veldo-0307-base.yaml,%s' % (PATH_D / 'conf' / 'compose.yaml')))),
+            'late-bind-1': ('container', ENGINE.container('default', 'late-bind-1', binds=[PATH_D / 'data'])),
+            'late_cache': ('volume', ENGINE.volume('default', 'late_cache', {WD: str(PATH_D / 'app')},
+                                                   data='what the late volume holds')),
+            'late_net': ('network', ENGINE.network('default', 'late_net', {CF: str(PATH_D / 'app' / 'compose.yaml')})),
+        }
+        late_free = ENGINE.container('default', 'late-free-1', composed(PATH_D / 'free'))
+        ADAPTER.snapshot('default')
+
+        def judged(kind, name, client=ENGINE.client):
+            identity, record = record_at('default', kind, name)
+            return SIG.rules(L, P, identity, record, owner_live=lambda owner: {'conclusive': True, 'group_empty': True},
+                             run=client, proc=str(PROC), borrow_root=str(temp / 'borrowed')) if identity else {}
+
+        for name, (kind, shown) in sorted(late.items()):
+            identity, record = record_at('default', kind, name)
+            before = judged(kind, name)
+            check(ROW, 'while nothing covers it the %s %s is adopted to the worktree, and rule 2 passes it [%s %s %s]'
+                  % (kind, name, record.get('owner'), before.get('rule'), before.get('passed')),
+                  identity is not None and record.get('owner') == WHO_D and record.get('parent') == WT_D
+                  and record.get('adopted') is True and 'protect' in (before.get('passed') or ()))
+        calls = {'inspect': 0}
+
+        def third_inspect_fails(argv, cwd=None):
+            if argv[0] == 'docker' and list(argv[3:5]) == ['container', 'inspect']:
+                calls['inspect'] += 1
+                if calls['inspect'] == 3:
+                    return 1, 'the engine is not answering'
+            return ENGINE.client(argv, cwd)
+
+        blind = judged('container', 'late-free-1', third_inspect_fails)
+        check(ROW, 'labels the engine does not show at rule 2 refuse the removal [%s %s]'
+              % (blind.get('rule'), blind.get('found')),
+              blind.get('ok') is False and blind.get('rule') == 'protect'
+              and (blind.get('found') or {}).get('how') == 'labels_unread' and calls['inspect'] == 3)
+        # The owner edits the protect list after the adoption: the three folders.
+        for folder in ('app', 'conf', 'data'):
+            L.protect.append({'type': 'path', 'value': str(PATH_D / folder), 'engines': []})
+        LATE = (('late-web-1', 'app', 'compose_working_dir', 'path', PATH_D / 'app'),
+                ('late-cf-1', 'conf', 'compose_config_file', 'path', PATH_D / 'conf' / 'compose.yaml'),
+                ('late-bind-1', 'data', 'mounted_path', 'mount', PATH_D / 'data'),
+                ('late_cache', 'app', 'compose_working_dir', 'path', PATH_D / 'app'),
+                ('late_net', 'app', 'compose_config_file', 'path', PATH_D / 'app' / 'compose.yaml'))
+        for name, folder, how, field, path in LATE:
+            kind, shown = late[name]
+            after = judged(kind, name)
+            found = after.get('found') or {}
+            check(ROW, 'once the folder is on the protect list rule 2 refuses the removal of the %s %s, by the '
+                  'path it names now [%s %s %s %s]' % (kind, name, after.get('reason'), found.get('entry'),
+                                                      found.get('how'), found.get(field)),
+                  after.get('ok') is False and after.get('rule') == 'protect'
+                  and after.get('reason') == 'space_deferred:protected'
+                  and found.get('entry') == 'path:' + str(PATH_D / folder) and found.get('how') == how
+                  and found.get(field) == str(path))
+        free_item = record_at('default', 'container', 'late-free-1')[0]
+        late_items = {name: record_at('default', kind, name)[0] for name, (kind, shown) in late.items()}
+        forced_before = len(ENGINE.forced)
+        done = send('ticket_ended', {'ticket': TICKET_D})
+        check(ROW, 'the ticket\'s end was taken [%s]' % (done.get('reason'),), done.get('ok') is True)
+        for name, folder, how, field, path in LATE:
+            kind, shown = late[name]
+            record = L.item(late_items[name]) or {}
+            found = (record.get('deferral') or {}).get('found') or {}
+            check(ROW, 'at the ticket\'s end the %s %s was named to no stop and no remove and is there; its item is '
+                  'deferred as protected [%s %s %s]' % (kind, name, record.get('state'),
+                                                        (record.get('deferral') or {}).get('rule'), found.get('entry')),
+                  ENGINE.find('default', kind, name) is shown and ENGINE.asked(name) == []
+                  and ENGINE.asked(shown.get('Id') or name) == []
+                  and (kind != 'container' or shown['State']['Status'] == 'running')
+                  and record.get('state') not in ('removed', 'gone')
+                  and (record.get('deferral') or {}).get('rule') == 'protected'
+                  and found.get('entry') == 'path:' + str(PATH_D / folder))
+        check(ROW, 'the late volume holds its data', late['late_cache'][1]['Data'] == 'what the late volume holds')
+        check(ROW, 'the container nothing covers was stopped and removed: the removal is live [%s %s]'
+              % ((L.item(free_item) or {}).get('state'), ENGINE.asked(late_free['Id'])),
+              (L.item(free_item) or {}).get('state') == 'removed'
+              and ENGINE.find('default', 'container', 'late-free-1') is None
+              and [call[2] for call in ENGINE.asked(late_free['Id'])] == ['stop', 'rm'])
+        check(ROW, 'no forced command was given, and the worktree\'s file of work is on disk',
+              len(ENGINE.forced) == forced_before
+              and (PATH_D / 'work.txt').read_text() == 'the only copy of wt-d\n')
+
+        # ------------------------------------------------------------------------------------
         # Nothing here removes.
         # ------------------------------------------------------------------------------------
         ROW = 'ownership/removes-nothing'
@@ -802,7 +958,7 @@ def _v307_space_docker_ownership_suite():
                   ast.parse(Path(PRODUCTION['control_space_reconcile.py']).read_text()))
                   if isinstance(node, ast.Import) for alias in node.names})
 
-        for name in ('control_space_docker.py', 'control_space_reconcile.py'):
+        for name in sorted(PRODUCTION):
             check('ownership/canon', 'the engine canon engine/.veldo/%s equals this repository copy' % name,
                   (ROOT / 'engine' / '.veldo' / name).is_file()
                   and (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes())

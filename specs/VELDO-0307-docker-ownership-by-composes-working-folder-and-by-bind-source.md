@@ -16,6 +16,12 @@ footprint:
   - ".veldo/control_space_docker.py"
   - "engine/.veldo/control_space_reconcile.py"
   - ".veldo/control_space_reconcile.py"
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
+  - "engine/.veldo/control_space_probe.py"
+  - ".veldo/control_space_probe.py"
+  - "engine/.veldo/control_space_signal.py"
+  - ".veldo/control_space_signal.py"
   - "scripts/suites/*_veldo_0307_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -133,3 +139,26 @@ the result in the proof (design 6.4).
   - One earlier mutation case moved with the code: space306-compose-project-not-in-the-locator carries
     a second edit, because the adapter now reads the compose project label against the protect list
     itself before the ledger does, and the defect needs both readings gone. Its row is red as before.
+- 2026-11-14: the two defects the build left for the lead are fixed here, by the lead's instruction, and
+  the footprint is extended to the files the fix changes: the Ledger (control_space.py), the probes
+  (control_space_probe.py) and Signal (control_space_signal.py), each with its engine canon. No
+  acceptance criterion changed. The owner's rule is that the protect list is never touched in any mode.
+  - Image patterns. The Ledger (protected_by, at declare, adopt and report) and rule 2 at removal
+    (control_space_probe.protected) read an image pattern the same way, through name_matches: a
+    pattern that names no tag and no digest covers every tag and every digest of its repository, and
+    the repository with no tag; a pattern that names a tag or a digest covers that one only. The tag
+    is what follows the last colon when no / comes after it, so a registry's port is no tag. A
+    volume, a container and a network are matched by the name in full, as before. Row
+    protect/image-pattern-every-tag: minio/minio and minio/mc with :latest, another tag and a digest,
+    on both contexts.
+  - Rule 2 at removal. For every Docker item, rule 2 reads the object's labels from the engine again
+    (control_space_probe.labelled) and reads every protect entry against them as they are now: the
+    compose project label, compose's working folder and each file compose read, at, above or beneath
+    a protected path, as written or where it leads. Labels the engine does not show refuse the
+    removal (labels_unread). A container's bind sources were already read again by
+    control_space_probe.mounts; the row covers them too. Row protect/covered-after-adoption: three
+    containers, a volume and a network are adopted, their folders are then added to the protect
+    list, and each removal is refused, by the rules and at the ticket's end, while the container
+    nothing covers is removed.
+  - Cost: one more inspect of the object at each judged removal of a Docker item.
+  - Ten mutation cases are registered for the two rows (finding 307), five for each.

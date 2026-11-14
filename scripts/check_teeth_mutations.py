@@ -13908,6 +13908,64 @@ def cases():
               "and before.get('path') == path):\n",
               ['ac2/report-then-act'])
 
+    # The two defects the build of VELDO-0307 found outside its footprint, fixed after it. An image
+    # pattern with no tag covers every tag and digest of its repository, at the ledger and at rule 2;
+    # and rule 2 at removal reads the object's labelled paths again, so a protect entry written after
+    # an adoption stops the removal.
+    IMAGE_ROW, LATER_ROW = ['protect/image-pattern-every-tag'], ['protect/covered-after-adoption']
+    docker307('space307-ledger-image-pattern-by-the-full-tag',
+              "            if entry['type'] == PROTECT_TYPE[kind] and name_matches(kind, locator['name'], entry['value']):\n",
+              "            if entry['type'] == PROTECT_TYPE[kind] and fnmatch.fnmatchcase(locator['name'], entry['value']):\n",
+              IMAGE_ROW, module='control_space.py')
+    result[-1]['siblings'] = True
+    docker307('space307-ledger-digest-read-as-a-tag',
+              "    plain, _, digest = name.partition('@')\n",
+              "    plain, digest = name, ''\n",
+              IMAGE_ROW, module='control_space.py')
+    result[-1]['siblings'] = True
+    docker307('space307-ledger-tagged-pattern-covers-every-tag',
+              "    if kind != 'image_tag' or image_repository(pattern)[1]:\n        return False\n"
+              "    return fnmatch.fnmatchcase(image_repository(name)[0], pattern)\n",
+              "    if kind != 'image_tag':\n        return False\n"
+              "    return fnmatch.fnmatchcase(image_repository(name)[0], image_repository(pattern)[0])\n",
+              IMAGE_ROW, module='control_space.py')
+    result[-1]['siblings'] = True
+    docker307('space307-rule-2-image-pattern-by-the-full-tag',
+              "            if entry['type'] == DOCKER_TYPE[kind] and name_matches(kind, str(locator.get('name')), entry['value']):\n",
+              "            if entry['type'] == DOCKER_TYPE[kind] and fnmatch.fnmatchcase(str(locator.get('name')), entry['value']):\n",
+              IMAGE_ROW, module='control_space_probe.py')
+    result[-1]['siblings'] = True
+    docker307('space307-rule-2-tagged-pattern-covers-every-tag',
+              "    if kind != 'image_tag' or image_repository(pattern)[1]:\n        return False\n"
+              "    return fnmatch.fnmatchcase(image_repository(name)[0], pattern)\n",
+              "    if kind != 'image_tag':\n        return False\n"
+              "    return fnmatch.fnmatchcase(image_repository(name)[0], image_repository(pattern)[0])\n",
+              IMAGE_ROW, module='control_space_probe.py')
+    result[-1]['siblings'] = True
+    docker307('space307-rule-2-reads-no-labelled-path',
+              "        if stamped['protected']:\n", "        if False:\n",
+              LATER_ROW, module='control_space_signal.py')
+    docker307('space307-rule-2-unread-labels-pass',
+              "        if not stamped['read']:\n", "        if False:\n",
+              LATER_ROW, module='control_space_signal.py')
+    docker307('space307-rule-2-labelled-paths-not-read',
+              "    for how, label in COMPOSE_PATHS:\n", "    for how, label in ():\n",
+              LATER_ROW, module='control_space_probe.py')
+    result[-1]['siblings'] = True
+    docker307('space307-rule-2-configuration-files-not-split',
+              "(held.split(',') if how == 'compose_config_file' else [held])", "[held]",
+              LATER_ROW, module='control_space_probe.py')
+    result[-1]['siblings'] = True
+    docker307('space307-rule-2-labelled-path-beneath-only',
+              "                        if mine == theirs or _beneath(theirs, mine) or _beneath(mine, theirs):\n"
+              "                            return dict(facts, read=True, protected=True, entry='path:' + entry['value'],\n"
+              "                                        how=how, path=path)\n",
+              "                        if _beneath(theirs, mine):\n"
+              "                            return dict(facts, read=True, protected=True, entry='path:' + entry['value'],\n"
+              "                                        how=how, path=path)\n",
+              LATER_ROW, module='control_space_probe.py')
+    result[-1]['siblings'] = True
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

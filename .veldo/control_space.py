@@ -53,6 +53,8 @@ DECLARE REFUSES, each by name, with nothing written:
   space_protected:<entry>   the locator is on the protect list. A path is protected when it is at, above
                             or beneath a protected path; a Docker object when its name matches a pattern
                             for its type on its engine, or its compose project is a protected one.
+                            An image pattern with no tag and no digest covers every tag and every
+                            digest of its repository; one with a tag or a digest covers that one only.
   space_outside_roots       a path outside every known root, a branch of a repository nobody declared,
                             or a Docker object on an engine the installation does not name.
   space_locator_taken:<id>  a second live item at the same locator. Live is every state but removed and
@@ -471,6 +473,26 @@ def protect_list(config, projects):
     return entries
 
 
+def image_repository(name):
+    """(repository, whether a tag or a digest follows it) of an image name or pattern. The digest is
+    what follows @; the tag is what follows the last colon when no / comes after it, so the port of a
+    registry is no tag."""
+    plain, _, digest = name.partition('@')
+    tagged = ':' in plain and '/' not in plain.rsplit(':', 1)[1]
+    return (plain.rsplit(':', 1)[0] if tagged else plain), bool(tagged or digest)
+
+
+def name_matches(kind, name, pattern):
+    """Whether a protect pattern for the type of `kind` covers the name of an object. An image pattern
+    with no tag and no digest covers every tag and every digest of the repository it names; one that
+    names a tag or a digest covers that one only. Every other name is matched in full."""
+    if fnmatch.fnmatchcase(name, pattern):
+        return True
+    if kind != 'image_tag' or image_repository(pattern)[1]:
+        return False
+    return fnmatch.fnmatchcase(image_repository(name)[0], pattern)
+
+
 def protected_by(kind, locator, protect, resolve=None):
     """The protect entry that covers a canonical locator, as type:value, or None. With `resolve`, each
     protected path is read where it leads (for a locator that was resolved the same way)."""
@@ -478,7 +500,7 @@ def protected_by(kind, locator, protect, resolve=None):
         for entry in protect:
             if locator['engine'] not in entry['engines']:
                 continue
-            if entry['type'] == PROTECT_TYPE[kind] and fnmatch.fnmatchcase(locator['name'], entry['value']):
+            if entry['type'] == PROTECT_TYPE[kind] and name_matches(kind, locator['name'], entry['value']):
                 return entry['type'] + ':' + entry['value']
             if entry['type'] == 'compose_project' and locator.get('compose_project') == entry['value']:
                 return entry['type'] + ':' + entry['value']

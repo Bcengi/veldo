@@ -458,6 +458,27 @@ def located(kind, locator, run=None):
     return facts
 
 
+def image_repository(name):
+    """(repository, whether a tag or a digest follows it) of an image name or pattern. The digest is
+    what follows @; the tag is what follows the last colon when no / comes after it, so the port of a
+    registry is no tag."""
+    plain, _, digest = name.partition('@')
+    tagged = ':' in plain and '/' not in plain.rsplit(':', 1)[1]
+    return (plain.rsplit(':', 1)[0] if tagged else plain), bool(tagged or digest)
+
+
+def name_matches(kind, name, pattern):
+    """Whether a protect pattern for the type of `kind` covers the name of an object, as the Ledger
+    reads it (control_space.name_matches). An image pattern with no tag and no digest covers every tag
+    and every digest of the repository it names; one that names a tag or a digest covers that one
+    only. Every other name is matched in full."""
+    if fnmatch.fnmatchcase(name, pattern):
+        return True
+    if kind != 'image_tag' or image_repository(pattern)[1]:
+        return False
+    return fnmatch.fnmatchcase(image_repository(name)[0], pattern)
+
+
 def protected(kind, locator, protect):
     """Rule 2's facts: {protected, entry, how}. entry is the covering protect entry as type:value and
     how is at, above or beneath for a path, name or compose_project for a Docker object. `protect` is
@@ -467,7 +488,7 @@ def protected(kind, locator, protect):
             if locator.get('engine') not in entry.get('engines', ()):
                 continue
             how = None
-            if entry['type'] == DOCKER_TYPE[kind] and fnmatch.fnmatchcase(str(locator.get('name')), entry['value']):
+            if entry['type'] == DOCKER_TYPE[kind] and name_matches(kind, str(locator.get('name')), entry['value']):
                 how = 'name'
             elif entry['type'] == 'compose_project' and locator.get('compose_project') == entry['value']:
                 how = 'compose_project'
@@ -556,6 +577,48 @@ def mounts(locator, protect, run=None):
                         if mine == theirs or _beneath(theirs, mine) or _beneath(mine, theirs):
                             return dict(facts, read=True, protected=True, entry='path:' + entry['value'],
                                         how='mounted_path', mount=source)
+    return dict(facts, read=True)
+
+
+# The labels compose stamps with a path: the folder it ran in, and the files it read (comma separated).
+COMPOSE_PATHS = (('compose_working_dir', 'com.docker.compose.project.working_dir'),
+                 ('compose_config_file', 'com.docker.compose.project.config_files'))
+
+
+def labelled(kind, locator, protect, run=None):
+    """Rule 2's facts for the labels of a Docker object (design section 7, the protect list;
+    VELDO-0307), read from the engine now, whatever was seen when it was recorded:
+    {read, protected, entry, how, path, said}. The object is protected when the compose project label
+    it carries now is a protected one on its engine (how compose_project), or when compose's working
+    folder or one of the files compose read is at, above or beneath a protected path, as written or
+    where it leads (how compose_working_dir or compose_config_file, with the path). A protected path
+    is protected on every engine. read is False, with what was said, when the engine did not show the
+    object: the caller refuses then."""
+    facts = {'read': False, 'protected': False, 'entry': None, 'how': None, 'path': None, 'said': None}
+    seen = located(kind, locator, run)
+    if not seen['read'] or seen['said'] is not None:
+        return dict(facts, said=seen['said'] or 'the engine did not show the object')
+    labels = seen['labels'] if isinstance(seen['labels'], dict) else {}
+    for entry in protect:
+        if (entry['type'] == 'compose_project' and locator.get('engine') in entry.get('engines', ())
+                and labels.get(COMPOSE_PROJECT) == entry['value']):
+            return dict(facts, read=True, protected=True, entry='compose_project:' + entry['value'],
+                        how='compose_project')
+    # A protected path is protected on every engine, as it is for a mount.
+    paths = [entry for entry in protect if entry['type'] == 'path']
+    for how, label in COMPOSE_PATHS:
+        held = labels.get(label)
+        for path in (held.split(',') if how == 'compose_config_file' else [held]) if isinstance(held, str) else ():
+            path = path.strip()
+            if not path.startswith('/'):
+                continue
+            for entry in paths:
+                value = os.path.normpath(entry['value'])
+                for mine in (os.path.normpath(path), os.path.realpath(path)):
+                    for theirs in (value, os.path.realpath(value)):
+                        if mine == theirs or _beneath(theirs, mine) or _beneath(mine, theirs):
+                            return dict(facts, read=True, protected=True, entry='path:' + entry['value'],
+                                        how=how, path=path)
     return dict(facts, read=True)
 
 
