@@ -1,17 +1,36 @@
-# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 070e7d41. Partial runs: none is the gate.
-143_veldo_0305_space_census: selftest (PARTIAL, 1 of 213 suites): 45 passed, 0 failed in 1.91s
-142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 213 suites): 57 passed, 0 failed in 3.07s
-139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 213 suites): 44 passed, 0 failed in 1.55s
-138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 213 suites): 65 passed, 0 failed in 2.92s
-140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 213 suites): 57 passed, 0 failed in 5.71s
-66_veldo_0042_clones: selftest (PARTIAL, 1 of 213 suites): 46 passed, 0 failed in 2.13s
-66_veldo_0047_authority: selftest (PARTIAL, 1 of 213 suites): 56 passed, 0 failed in 14.00s
-66_veldo_0051_events: selftest (PARTIAL, 1 of 213 suites): 37 passed, 0 failed in 7.21s
-70_veldo_0057_landing: selftest (PARTIAL, 1 of 213 suites): 57 passed, 0 failed in 15.16s
-70_veldo_0069_bindings: selftest (PARTIAL, 1 of 213 suites): 36 passed, 0 failed in 6.27s
-70_veldo_0073_activation: selftest (PARTIAL, 1 of 213 suites): 37 passed, 0 failed in 3.11s
-85_veldo_0158_credential_delivery: selftest (PARTIAL, 1 of 213 suites): 49 passed, 0 failed in 5.01s
-87_veldo_0170_receiver_trust: selftest (PARTIAL, 1 of 213 suites): 38 passed, 0 failed in 7.81s
-128_veldo_0235_land_locally: selftest (PARTIAL, 1 of 213 suites): 35 passed, 0 failed in 13.78s
-128_veldo_0254_confined_runner: selftest (PARTIAL, 1 of 213 suites): 27 passed, 0 failed in 0.69s
-# NOT GREEN, and not from this ticket: 86_veldo_0127_agent_configuration: 52 passed, 2 failed (live/claude, live/codex). The same two rows were red at b146a50a before this build; its live captures wait for the lead's recapture, and this build did not touch them.
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit fe486efb. Partial runs: none is the gate.
+143_veldo_0305_space_census: selftest (PARTIAL, 1 of 214 suites): 50 passed, 0 failed in 2.96s
+106_veldo_0185_dispatch_setup: selftest (PARTIAL, 1 of 214 suites): 46 passed, 0 failed in 13.42s
+127_veldo_0259_installation: selftest (PARTIAL, 1 of 214 suites): 46 passed, 0 failed in 16.80s
+128_veldo_0235_land_locally: selftest (PARTIAL, 1 of 214 suites): 35 passed, 0 failed in 13.66s
+128_veldo_0254_confined_runner: selftest (PARTIAL, 1 of 214 suites): 27 passed, 0 failed in 0.68s
+129_veldo_0254_canary_launch: selftest (PARTIAL, 1 of 214 suites): 33 passed, 0 failed in 2.77s
+130_veldo_0296_space_section: selftest (PARTIAL, 1 of 214 suites): 48 passed, 0 failed in 0.02s
+131_veldo_0338_project_space_file: selftest (PARTIAL, 1 of 214 suites): 40 passed, 0 failed in 0.02s
+132_veldo_0297_space_ledger: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 2.20s
+133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 214 suites): 56 passed, 0 failed in 27.88s
+134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 214 suites): 42 passed, 0 failed in 1.31s
+135_veldo_0298_space_kinds: selftest (PARTIAL, 1 of 214 suites): 150 passed, 0 failed in 0.01s
+136_veldo_0299_space_probe: selftest (PARTIAL, 1 of 214 suites): 72 passed, 0 failed in 6.03s
+137_veldo_0330_space_rules: selftest (PARTIAL, 1 of 214 suites): 49 passed, 0 failed in 2.33s
+138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 214 suites): 65 passed, 0 failed in 2.77s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 214 suites): 44 passed, 0 failed in 1.97s
+140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 6.76s
+141_veldo_0344_process_reader: selftest (PARTIAL, 1 of 214 suites): 85 passed, 0 failed in 20.75s
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 3.93s
+144_veldo_0306_space_docker: selftest (PARTIAL, 1 of 214 suites): 47 passed, 0 failed in 5.76s
+62_veldo_0039_dispatch: selftest (PARTIAL, 1 of 214 suites): 51 passed, 0 failed in 10.20s
+63_veldo_0040_containment: selftest (PARTIAL, 1 of 214 suites): 85 passed, 0 failed in 7.52s
+66_veldo_0042_clones: selftest (PARTIAL, 1 of 214 suites): 46 passed, 0 failed in 2.31s
+67_veldo_0041_heartbeat: selftest (PARTIAL, 1 of 214 suites): 49 passed, 0 failed in 11.72s
+78_veldo_0060_claude_adapter: selftest (PARTIAL, 1 of 214 suites): 61 passed, 0 failed in 24.37s
+79_veldo_0061_codex_adapter: selftest (PARTIAL, 1 of 214 suites): 47 passed, 0 failed in 16.72s
+82_veldo_0129_worker_wiring: selftest (PARTIAL, 1 of 214 suites): 55 passed, 0 failed in 40.07s
+82_veldo_0141_execution_record: selftest (PARTIAL, 1 of 214 suites): 66 passed, 0 failed in 21.63s
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 214 suites): 40 passed, 0 failed in 41.27s
+85_veldo_0158_credential_delivery: selftest (PARTIAL, 1 of 214 suites): 49 passed, 0 failed in 5.01s
+86_veldo_0189_engine_upgrade: selftest (PARTIAL, 1 of 214 suites): 60 passed, 0 failed in 62.47s
+87_veldo_0127_codex_delivery: selftest (PARTIAL, 1 of 214 suites): 220 passed, 0 failed in 79.28s
+87_veldo_0170_receiver_trust: selftest (PARTIAL, 1 of 214 suites): 38 passed, 0 failed in 7.87s
+# NOT GREEN, and not from this ticket: 82_veldo_0165_launch_hygiene: 47 passed, 2 failed (evidence/completeness, evidence/outside-scan). The review found the same two rows red on a clone at the base b146a50a; they are VELDO-0165's, and this fix did not touch that suite.
+# Not run here: 86_veldo_0127_agent_configuration (52 of 54 at the build, its two live rows wait for the lead's recapture).

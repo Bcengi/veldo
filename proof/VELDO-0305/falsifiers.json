@@ -10,12 +10,13 @@
    "ac1/declared-pattern",
    "ac1/each-event",
    "ac1/keep-entry",
-   "ac1/uncommitted-rule",
    "ac2/ignored-uncovered",
    "ac2/repository-in-build-output",
    "ac2/untracked-never-recorded",
    "ac3/run-end",
-   "ac4/adopted-patterns-only"
+   "ac4/adopted-patterns-only",
+   "review/local-excludes-file",
+   "review/run-commits-ignore-rule"
   ],
   "red_details": [
    [
@@ -28,11 +29,11 @@
    ],
    [
     "VELDO-0305 ac1/keep-entry",
-    "a folder that is a keep entry and a folder a keep entry lies in get no item, and the census says it left them out [['/tmp/veldo-0305-fr6cqq9c/projects/orchard-worktrees/run-03'] ['models', 'vendor-cache']]"
+    "a folder that is a keep entry and a folder a keep entry lies in get no item, and the census says it left them out [['<fixture>/projects/orchard-worktrees/run-03'] ['models', 'vendor-cache']]"
    ],
    [
-    "VELDO-0305 ac1/uncommitted-rule",
-    "once the rule is committed the folder is a build output item [[]]"
+    "VELDO-0305 ac1/each-event",
+    "the second census declares only what is new and keeps the first item [0 0]"
    ]
   ],
   "noop_red_rows": [],
@@ -46,16 +47,26 @@
   ],
   "red_rows": [
    "ac1/personal-rule",
-   "ac2/untracked-never-recorded"
+   "ac2/untracked-never-recorded",
+   "review/local-excludes-file",
+   "review/run-commits-ignore-rule"
   ],
   "red_details": [
    [
     "VELDO-0305 ac1/personal-rule",
-    "a folder only info/exclude ignores and one only a global excludes file ignores get no item, and both are named as work [['/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-04', '/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-04/journal'] ['journal/day.md', 'private-notes/']]"
+    "a folder only info/exclude ignores and one only a global excludes file ignores get no item, and both are named as work [['<fixture>/projects/orchard-worktrees/run-04', '<fixture>/projects/orchard-worktrees/run-04/journal'] ['journal/day.md', 'private-notes/']]"
    ],
    [
     "VELDO-0305 ac2/untracked-never-recorded",
-    "the new source folder has no item at it or inside it [['/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-07', '/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-07/build', '/tmp/veldo-0305-_pg2fieu/projects/orchard-worktrees/run-07/newsrc']]"
+    "the new source folder has no item at it or inside it [['<fixture>/projects/orchard-worktrees/run-07', '<fixture>/projects/orchard-worktrees/run-07/build', '<fixture>/projects/orchard-worktrees/run-07/newsrc']]"
+   ],
+   [
+    "VELDO-0305 review/run-commits-ignore-rule",
+    "before the run touches the ignore file its results are untracked work and build is an item [['analysis/results.csv'] ['<fixture>/projects/orchard-worktrees/run-19/analysis', '<fixture>/projects/orchard-worktrees/run-19/build']]"
+   ],
+   [
+    "VELDO-0305 review/local-excludes-file",
+    "the census does not read the excludes file: the folder at the top is untracked work, file by file, with no item [['precious/plan.md'] ['<fixture>/projects/orchard-worktrees/run-22/precious', '<fixture>/projects/orchard-worktrees/run-22/tools/precious']]"
    ]
   ],
   "noop_red_rows": [],
@@ -78,7 +89,7 @@
    ],
    [
     "VELDO-0305 ac3/run-end",
-    "the scratch root and the build root were measured at run finished before they went [{'space:item:523953272ebd455a96a66321e2396c1c': 8192, 'space:item:35dbea0fc7974f178bf123eabbe5ce2a': 32768, 'space:item:e943c3b8097d45138591551ade368b45': 8192}]"
+    "the scratch root and the build root were measured at run finished before they went [{'space:item:d84779f670fe4f99b11f6df64bd76940': 8192, 'space:item:55de3639df74491d81a50762f3f3af73': 32768, 'space:item:fa3293a4b2ae4ee0abdc5c781ee8e1a5': 8192}]"
    ]
   ],
   "noop_red_rows": [],
@@ -96,7 +107,7 @@
   "red_details": [
    [
     "VELDO-0305 ac4/adopted-patterns-only",
-    "the ignored data folder, which the committed ignore file covers, gets no item [['/tmp/veldo-0305-8k_11go2/projects/orchard-worktrees/run-17', '/tmp/veldo-0305-8k_11go2/projects/orchard-worktrees/run-17/build', '/tmp/veldo-0305-8k_11go2/projects/orchard-worktrees/run-17/data', '/tmp/veldo-0305-8k_11g"
+    "the ignored data folder, which the committed ignore file covers, gets no item [['<fixture>/projects/orchard-worktrees/run-17', '<fixture>/projects/orchard-worktrees/run-17/build', '<fixture>/projects/orchard-worktrees/run-17/data', '<fixture>/projects/orchard-worktrees/run-17/dist-app']]"
    ]
   ],
   "noop_red_rows": [],
@@ -114,7 +125,7 @@
   "red_details": [
    [
     "VELDO-0305 ac1/keep-entry",
-    "a folder that is a keep entry and a folder a keep entry lies in get no item, and the census says it left them out [['/tmp/veldo-0305-w7j13ez6/projects/orchard-worktrees/run-03', '/tmp/veldo-0305-w7j13ez6/projects/orchard-worktrees/run-03/build', '/tmp/veldo-0305-w7j13ez6/projects/orchard-worktrees/r"
+    "a folder that is a keep entry and a folder a keep entry lies in get no item, and the census says it left them out [['<fixture>/projects/orchard-worktrees/run-03', '<fixture>/projects/orchard-worktrees/run-03/build', '<fixture>/projects/orchard-worktrees/run-03/models', '<fixture>/projects/orchard-worktrees/run-03/vendor-cache'] []]"
    ]
   ],
   "noop_red_rows": [],
@@ -132,7 +143,7 @@
   "red_details": [
    [
     "VELDO-0305 ac1/uncommitted-rule",
-    "a rule added to the ignore file and not committed covers nothing: no item, named as work [['/tmp/veldo-0305-y2_issyf/projects/orchard-worktrees/run-05/drafts'] []]"
+    "a rule added to the ignore file and not committed covers nothing: no item, named as work [['<fixture>/projects/orchard-worktrees/run-05/drafts'] []]"
    ]
   ],
   "noop_red_rows": [],
@@ -149,24 +160,26 @@
    "ac1/personal-rule",
    "ac1/uncommitted-rule",
    "ac2/ignored-uncovered",
-   "ac4/adopted-patterns-only"
+   "ac4/adopted-patterns-only",
+   "review/local-excludes-file",
+   "review/run-commits-ignore-rule"
   ],
   "red_details": [
    [
     "VELDO-0305 ac1/personal-rule",
-    "a folder only info/exclude ignores and one only a global excludes file ignores get no item, and both are named as work [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-04', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-04/private-notes'] ['journal/day.md']]"
+    "a folder only info/exclude ignores and one only a global excludes file ignores get no item, and both are named as work [['<fixture>/projects/orchard-worktrees/run-04', '<fixture>/projects/orchard-worktrees/run-04/private-notes'] ['journal/day.md']]"
    ],
    [
     "VELDO-0305 ac1/uncommitted-rule",
-    "a rule added to the ignore file and not committed covers nothing: no item, named as work [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-05/drafts'] []]"
+    "a rule added to the ignore file and not committed covers nothing: no item, named as work [['<fixture>/projects/orchard-worktrees/run-05/drafts'] []]"
    ],
    [
     "VELDO-0305 ac2/ignored-uncovered",
-    "an ignored folder nothing of the project covers and two loose ignored files get no item [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-08', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-08/build', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-08/experiments']]"
+    "an ignored folder nothing of the project covers and two loose ignored files get no item [['<fixture>/projects/orchard-worktrees/run-08', '<fixture>/projects/orchard-worktrees/run-08/build', '<fixture>/projects/orchard-worktrees/run-08/experiments']]"
    ],
    [
     "VELDO-0305 ac4/adopted-patterns-only",
-    "the ignored data folder, which the committed ignore file covers, gets no item [['/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-17', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-17/build', '/tmp/veldo-0305-nm4ry2x_/projects/orchard-worktrees/run-17/data', '/tmp/veldo-0305-nm4ry2"
+    "the ignored data folder, which the committed ignore file covers, gets no item [['<fixture>/projects/orchard-worktrees/run-17', '<fixture>/projects/orchard-worktrees/run-17/build', '<fixture>/projects/orchard-worktrees/run-17/data', '<fixture>/projects/orchard-worktrees/run-17/dist-app']]"
    ]
   ],
   "noop_red_rows": [],
@@ -203,6 +216,160 @@
    [
     "VELDO-0305 ac3/engine-strip",
     "after the trusted wrapper's strip the engine still has the temporary folder and the build variables at the declared folders [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-start-commit-not-asked",
+  "criterion": "AC1",
+  "expected_red": [
+   "review/run-commits-ignore-rule"
+  ],
+  "red_rows": [
+   "ac1/uncommitted-rule",
+   "review/run-commits-ignore-rule"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac1/uncommitted-rule",
+    "committed by the run on its own branch the rule still covers nothing [['<fixture>/projects/orchard-worktrees/run-05/drafts'] []]"
+   ],
+   [
+    "VELDO-0305 review/run-commits-ignore-rule",
+    "the rule the run committed covers nothing: the results folder gets no item and is named as work [['<fixture>/projects/orchard-worktrees/run-19', '<fixture>/projects/orchard-worktrees/run-19/analysis', '<fixture>/projects/orchard-worktrees/run-19/build'] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-negation-not-read",
+  "criterion": "AC1",
+  "expected_red": [
+   "review/negation-keeps-folder"
+  ],
+  "red_rows": [
+   "review/negation-keeps-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 review/negation-keeps-folder",
+    "the folder a negation with a path reaches into gets no item and is named as work [['<fixture>/projects/orchard-worktrees/run-21', '<fixture>/projects/orchard-worktrees/run-21/generated', '<fixture>/projects/orchard-worktrees/run-21/out', '<fixture>/projects/orchard-worktrees/run-21/target'] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-excludes-file-read",
+  "criterion": "AC1",
+  "expected_red": [
+   "review/local-excludes-file"
+  ],
+  "red_rows": [
+   "review/local-excludes-file"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 review/local-excludes-file",
+    "the census does not read the excludes file: the folder at the top is untracked work, file by file, with no item [['precious/'] ['<fixture>/projects/orchard-worktrees/run-22/tools/precious']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-rule-of-another-directory",
+  "criterion": "AC1",
+  "expected_red": [
+   "review/local-excludes-file"
+  ],
+  "red_rows": [
+   "review/local-excludes-file"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 review/local-excludes-file",
+    "and when git applies the file anyway, a rule read from tools/.gitignore still covers nothing outside tools [{'build': ['precious', 'tools/precious'], 'kept': [], 'work': []}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-refusal-says-unavailable",
+  "criterion": "AC3",
+  "expected_red": [
+   "review/refusal-names-the-folder"
+  ],
+  "red_rows": [
+   "ac3/refused-not-pointed",
+   "review/refusal-names-the-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 ac3/refused-not-pointed",
+    "a build root folder that is already there with no item refuses the launch by name [unavailable_service:space_ledger the build folder <fixture>/build/run-11-476cf5ca84d0 is there and no item records it]"
+   ],
+   [
+    "VELDO-0305 review/refusal-names-the-folder",
+    "a folder that is there with no item is refused as a state of the folder, not as a service that is unavailable [unavailable_service:space_ledger]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-refused-event-without-path",
+  "criterion": "AC3",
+  "expected_red": [
+   "review/refusal-names-the-folder"
+  ],
+  "red_rows": [
+   "review/refusal-names-the-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 review/refusal-names-the-folder",
+    "the detail keeps the folder's path, and the receiver's refused event carries it [[['event', 'group', 'refusal']]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-scratch-named-runs",
+  "criterion": "AC3",
+  "expected_red": [
+   "review/scratch-apart-from-run-directory"
+  ],
+  "red_rows": [
+   "review/scratch-apart-from-run-directory"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 review/scratch-apart-from-run-directory",
+    "raised Refused: invalid_state:space_folder_run_directory: the scratch folder <fixture>/state/runs/62b38878c44c98bf5277c1b03164a962 and the run directory <fixture>/state/runs/62b38878c44c98bf5277c1b03164a962 are not apart ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | File \"/tmp/veldo-mutations-iium_q5u/17/veldo/control_launch.py\", line 2683, in _space_given | raise C.Refused(given['refusal'], given.get('detail') or '') | launch_control_containment.Refused: invalid_state:space_folder_run_directory: the scratch folder <fixture>/state/runs/62b38"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space305-review-run-directory-not-looked-at",
+  "criterion": "AC3",
+  "expected_red": [
+   "review/scratch-apart-from-run-directory"
+  ],
+  "red_rows": [
+   "review/scratch-apart-from-run-directory"
+  ],
+  "red_details": [
+   [
+    "VELDO-0305 review/scratch-apart-from-run-directory",
+    "a temporary folder that would be the run directory is refused by name, with both paths in the detail [invalid_state:space_folder_unrecorded: the scratch folder <fixture>/scratch/run-scratch/b52f5f386d3f178cab93633f6c610af8 is there and no item records it]"
    ]
   ],
   "noop_red_rows": [],
