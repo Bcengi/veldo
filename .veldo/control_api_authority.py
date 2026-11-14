@@ -131,7 +131,7 @@ WORK_OPERATIONS = ('reprioritize_backlog', 'stop_worker', 'set_account_cap')
 ABANDON = 'abandon_worktree'
 SPACE_OWNER_ROLE, SPACE_SCOPE, SPACE_SIGNAL = 'project_owner', 'space', 'space_signal'
 ABANDON_REFUSALS = {'no_ledger': 'unavailable_service:space_ledger', 'stale_version': 'stale_version:space_item',
-                    'no_owner': 'unauthorized:not_owner'}
+                    'no_owner': 'unauthorized:not_owner', 'not_authorized': 'unauthorized:not_owner'}
 RECORD_SCHEMA = 'veldo.api_execution_record/v1'
 RECORD_LIMIT = 512
 # A dispatch's states once its run has ended (control_dispatch.STATES): its record grows no more.

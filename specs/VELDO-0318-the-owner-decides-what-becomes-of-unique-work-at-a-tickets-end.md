@@ -78,10 +78,21 @@ acceptance_criteria:
       restored
   - id: AC4
     text: >
-      Keep sets the item to kept; no later event retries it and no second request is raised until the
-      owner presses Abandon
+      Keep writes the owner's mark owner_keep, {by: the verified owner}, on the item and moves it from
+      deferred to kept in one ledger command, space_disposition. The ledger accepts that command only as
+      the owner's signed packet, verified as set_mode verifies the mode switch: the signature against
+      the owner's active key in the ledger's own store, the owner an active person holding project_owner
+      over the space scope, checked again by the transition inside the transaction, and `by` taken from
+      that verified principal and never from the request. There is no step in which the item is due
+      without the mark. No later event retries the item, none makes it due, and no second request is
+      raised until the owner presses Abandon (VELDO-0312)
     falsified_by: >
-      Leave a kept item deferred; the next event's row raises a second request and fails
+      Each of these turns a row of its own red. Leave a kept item deferred: the next event's row raises
+      a second request. Write Keep as the state kept without the owner_keep mark: the row's ticket ended
+      makes the item due, and its clean worktree is removed. Write the mark in two commands, a signal
+      that makes the item due and then an outcome: the row stops between the two and finds the item due
+      with no mark. Accept the command without the owner's signature: the row sends it signed by a
+      person who is not the owner and by the authority's own principal, and finds the mark written
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. A worktree with unique work stays deferred and raises no request.
@@ -149,3 +160,17 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   path. A crash while it is under the marked name is set right with git's worktree repair at reconcile
   (VELDO-0315 AC2). AC2 gains a third falsifier and AC3 a second: the last look made at the worktree's own
   path. What stays outside is in design 0.9: a process that finds the marked name. Still four criteria.
+- 2026-11-14: AC4 amended, from the re-review of VELDO-0312's fix round (rereview-veldo-0312.md, findings
+  F1 and F2), by the lead's decision, under the owner's rule that no work is ever lost. VELDO-0312 made the
+  owner's Keep its own mark on the item, owner_keep, because the state kept alone is also what Signal
+  writes for a table action that removes nothing, and every later event reaches such an item. AC4 said
+  "Keep sets the item to kept": a builder following it would have written the plain state, which ticket
+  ended, project ended and every later event make due again, and AC4's one falsifier would not have seen
+  it, because a clean kept worktree is simply removed. AC4 now says that Keep writes the mark, in one
+  command from deferred to kept (the ledger's outcome is written only for an item that is due or
+  removing, so today the mark needs two commands with a window in which the item is due and has no
+  mark), accepted only as the owner's signed packet, verified as the mode switch is. Three falsifiers
+  are added to the one it had. Until this ticket is built the ledger already refuses the mark, and the
+  owner's Abandon, from anyone its own membership does not name as the owner, and writes who kept or
+  abandoned from that principal (VELDO-0312 fix round 2); what this criterion adds to that is the owner's
+  signature and the single command. Still four criteria.

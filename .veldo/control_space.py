@@ -136,7 +136,7 @@ or an attempt off the record. The journal holds each version.
 THE OWNER'S KEEP IS ABSOLUTE (design 0.4, VELDO-0312 fix round). The state kept is two things: an item
 whose table action at its last event removes nothing (a worktree measured at run finished, a branch),
 which the next event must reach, and an item the owner answered Keep for, which nothing may reach. So
-the owner's Keep is its own mark on the item, owner_keep: {by, and what the writer says of the answer}.
+the owner's Keep is its own mark on the item, owner_keep: {by, at, and what the writer says of the answer}.
 It is written by the outcome kept whose facts hold owner_keep, and by nothing a host principal may sign
 (space_not_permitted:space_disposition). An item that holds the mark is never made due by a signal that
 names an owner, whatever the event: run finished, verdict recorded, landed, contained, ticket ended,
@@ -144,10 +144,24 @@ project ended, worktree abandoned, released or session ended. Signal is the only
 so a retry, a Confirm, a sweep and a reconcile, which all make an item due through it, do not reach the
 item either. Only one command ends it: a signal of worktree abandoned whose subject names that exact
 item, at the version the owner saw, and says it is the owner's Abandon of that item (owner_abandon:
-{item, by}). The mark is then cleared, who abandoned it is written on the item (abandoned), and the item
+{item, at}). The mark is then cleared, who abandoned it is written on the item (abandoned), and the item
 is due and meets every rule again: one with unique work is deferred and stays until the owner's Discard,
 which saves first. A named item that holds the mark and is not that exact item refuses the whole command
 as space_owner_keep:<item>.
+
+THE LEDGER CHECKS THE OWNER ITSELF (VELDO-0312 fix round 2). The mark and the Abandon are not trusted to
+their caller. The transition that writes owner_keep, and the one that takes an owner_abandon, each read
+the membership of this store inside the command's own transaction, with the control_membership module
+beside this file, and refuse not_authorized unless the command the store is running is the one this
+Ledger sent for it (such a command given to the store directly is refused, whoever it names) and its
+principal is an active person member holding project_owner whose scope covers the space scope, at the
+time the request gives as `at`: the owner of the mode switch. So the authority's own principal, a person
+who is not the owner, a service and a command with no principal write no Keep and end none, whoever
+calls. Who is written on the item (owner_keep.by, abandoned.by) is that verified principal and nothing
+else: a request that carries a `by` of its own is refused as invalid input. What is not checked here is
+a signature of the owner over the command: the Abandon's signature is the API edge's, verified by the API
+authority, and the owner's signed Keep is the disposition command of VELDO-0318 (its AC4), which is
+verified as set_mode verifies the mode switch.
 
 A SIGNAL THAT NAMES ITEMS (VELDO-0312 fix round; a capability of the ledger, for every sender). The
 subject of a signal is either the parts of an owner, and then every item of that owner the event ends
@@ -684,7 +698,9 @@ def owner_matches(owner, subject):
 
 def _checked_items(subject):
     """The subject of a signal that names items: {items: [{item, version}, ...]} and, for the owner's
-    Abandon of one of them, owner_abandon: {item, by}. Returns it in its recorded form."""
+    Abandon of one of them, owner_abandon: {item, at}: the item and the time the sender read. Who the
+    owner is comes from the command's verified principal, never from the subject: a `by` is refused.
+    Returns it in its recorded form."""
     if not set(subject) <= {'items', 'owner_abandon'}:
         raise _invalid('subject', 'a list of items names no part of an owner')
     named = subject['items']
@@ -697,10 +713,11 @@ def _checked_items(subject):
     out = {'items': [{'item': one['item'], 'version': one['version']} for one in named]}
     abandon = subject.get('owner_abandon')
     if abandon is not None:
-        if not isinstance(abandon, dict) or set(abandon) != {'item', 'by'} or not _is_str(abandon['by']) \
+        if not isinstance(abandon, dict) or set(abandon) != {'item', 'at'} or not _is_time(abandon['at']) \
                 or abandon['item'] not in [one['item'] for one in named]:
-            raise _invalid('subject.owner_abandon', 'the item abandoned, one of those named, and who abandoned it')
-        out['owner_abandon'] = {'item': abandon['item'], 'by': abandon['by']}
+            raise _invalid('subject.owner_abandon', 'the item abandoned, one of those named, and the time '
+                           'read; who abandoned it is the command\'s principal')
+        out['owner_abandon'] = {'item': abandon['item'], 'at': abandon['at']}
     return out
 
 
@@ -1132,8 +1149,9 @@ class Ledger:
 
         A subject that names items, {items: [{item, version}, ...]}, marks exactly those items and nothing
         else, and is refused whole when one of them changed, is in no state a signal reaches, does not
-        end on the event or holds the owner's Keep; with owner_abandon: {item, by} and the event
-        worktree abandoned it ends the Keep of that one item (the module's A SIGNAL THAT NAMES ITEMS)."""
+        end on the event or holds the owner's Keep; with owner_abandon: {item, at} and the event
+        worktree abandoned it ends the Keep of that one item (the module's A SIGNAL THAT NAMES ITEMS),
+        and then `principal` must be the owner, which the transition reads from this store itself."""
         about = {'item': None, 'event': event, 'subject': subject}
         try:
             if event not in self.lifecycle['events']:
@@ -1344,6 +1362,27 @@ class Ledger:
                 contract.allowed_signers_line(principal, key['public_key'], NAMESPACE), principal, NAMESPACE)[0]:
             raise Refused('not_authorized', 'the command signature is not the owner\'s')
         return state, member, key
+
+    def _owner(self, params, at, what):
+        """The owner behind the command the store is running, for the owner's Keep and the owner's Abandon
+        (the module's THE LEDGER CHECKS THE OWNER ITSELF): the principal of that command, when the command
+        is the one this Ledger sent with these very parameters and that principal is an active person
+        member holding project_owner whose scope covers the space scope at `at`. Refused not_authorized
+        otherwise. Called by the transition, inside the transaction; `what` names the act refused."""
+        outer = self._outer
+        if outer is None or outer['parameters'] is not params:
+            raise Refused('not_authorized', what + ' is sent through this Ledger, as the owner\'s own command')
+        if not _is_time(at):
+            raise _invalid('at', 'the time the sender read')
+        membership, principal = self._membership(), outer['principal']
+        contract = membership.AC
+        member = contract.membership_entry(membership.authority_state(self.store, self.conn)['membership'], principal)
+        active, why = contract.active_member(member, at)
+        if (not active or member.get('principal_type') != MODE_SIGNER_TYPE
+                or MODE_SIGNER_ROLE not in (member.get('roles') or [])
+                or not membership.scope_covers(member.get('scope'), SCOPE)):
+            raise Refused('not_authorized', why or what + ' is the owner\'s: %s is not the owner' % (principal,))
+        return principal
 
     def _membership(self):
         """The control_membership module beside this file: what the mode transition reads the owner
@@ -1897,12 +1936,16 @@ class Ledger:
                                   if before[one['item']]['kind'] == ITEM_KIND else None)
                     for one in subject['items'] if one['item'] in before}
             abandon = subject.get('owner_abandon')
-            for identity, record in self._named(event, subject, rows):
+            named = self._named(event, subject, rows)
+            # Who abandons is the owner this store's membership names, whoever the caller is.
+            by = self._owner(params, abandon['at'], 'the owner\'s Abandon') if abandon is not None else None
+            for identity, record in named:
                 record['state'] = 'due'
                 record['due'] = {'event': event}
                 if abandon is not None and abandon['item'] == identity:
                     # Only here is the owner's Keep ended: by the owner's Abandon of this exact item.
-                    record['abandoned'] = {'by': abandon['by'], 'ended_keep': record.get('owner_keep') or None}
+                    record['abandoned'] = {'by': by, 'at': abandon['at'],
+                                           'ended_keep': record.get('owner_keep') or None}
                     record['owner_keep'] = None
                 _new_removal(record)
                 changes[identity] = {'kind': ITEM_KIND, 'data': record}
@@ -1950,9 +1993,12 @@ class Ledger:
         if 'owner_keep' in facts:
             # The owner's Keep (design 0.4): its own mark, which no signal that names an owner passes.
             mark = facts['owner_keep']
-            if outcome != 'kept' or not isinstance(mark, dict) or not _is_str(mark.get('by')):
-                raise _invalid('facts.owner_keep', 'who answered Keep, written with the outcome kept')
-            record['owner_keep'] = dict(mark)
+            if outcome != 'kept' or not isinstance(mark, dict) or 'by' in mark or not _is_time(mark.get('at')):
+                raise _invalid('facts.owner_keep', 'the time read, written with the outcome kept; who answered '
+                               'Keep is the command\'s principal')
+            # Who keeps is the owner this store's membership names, whoever the caller is.
+            by = self._owner(params, mark['at'], 'the owner\'s Keep')
+            record['owner_keep'] = dict(mark, by=by)
         record['state'] = outcome
         return {identity: {'kind': ITEM_KIND, 'data': record}}
 

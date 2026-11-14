@@ -107,6 +107,22 @@ acceptance_criteria:
     falsified_by: >
       Start the service without building Service.space; the row's item completes, its ticket's scratch
       stays present with no event sent, and the row fails
+  - id: AC8
+    text: >
+      An ending event whose send raised is recorded and retried by reconcile. When the service's send of
+      ticket ended, project ended or worktree abandoned raises (a locked store, a fault in a remover),
+      the service writes a record of the event, with its subject, the transition and the command that
+      committed it, before it passes on to the next journal record. Reconcile, at start and on demand,
+      sends each recorded event again through Signal's rules and removers and no other way, and clears
+      the record only when the send returned. An event that raises again stays recorded with its count
+      of attempts and holds nothing else back: every other recorded event is still sent. Nothing is
+      removed on the strength of the record alone (VELDO-0312)
+    falsified_by: >
+      Each of these turns a row of its own red. Pass over an event whose send raised without recording
+      it: the row's ticket ends while the store is locked, and after reconcile its scratch is still
+      present with no event sent. Stop at the first recorded event that raises again: the row records
+      two events, the first still raises, and after reconcile the second ticket's scratch is still
+      present
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. The ledger is no longer compared with the disk, and existing things are not adopted.
@@ -200,3 +216,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   sends ticket ended, project ended and worktree abandoned only through Service.space, and nothing built
   it: the service's start, where the ledger is replayed and reconciled, is where it is built. Without
   this criterion no ticket would fail for an installation that sends nothing. No code in that round.
+- 2026-11-14: AC8 added, from the re-review of VELDO-0312's fix round (rereview-veldo-0312.md, the note on
+  the first review's F7), by the lead's decision. VELDO-0312's service moves past a journal record whose
+  event's send raised, so the event is never sent again; its History said the items "wait for reconcile",
+  and no criterion here sent a missed event again. It removes nothing, so no work is lost: the cost is
+  space that is never freed. AC8 gives that sentence its home: the event is recorded where the send
+  raised and reconcile sends it again, one event that keeps raising holding nothing else back. Seven
+  criteria became eight. No code in that round.

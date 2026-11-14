@@ -14572,6 +14572,47 @@ def cases():
              "            pass  # defect: the agent repository is left behind\n",
              ['f5/agent-worktree'])
 
+    # VELDO-0312 fix round 2 (the re-review of b93f9967). F2: the ledger takes the owner's identity on
+    # trust, for the mark and for the Abandon, and reads who kept or abandoned from the request. F3, the
+    # reviewer's two falsifiers that survived: the service names an item the owner marked Keep beneath
+    # the worktree it abandons; a host principal signs a signal that names items. F4: space_abandon
+    # defaults its cause to the owner's Abandon.
+    ledger312('space312-keep-written-on-the-callers-word',
+              "            by = self._owner(params, mark['at'], 'the owner\\'s Keep')\n",
+              "            by = self._outer['principal']  # defect: the caller is taken at its word\n",
+              ['r2/ledger-checks-the-owner'])
+    ledger312('space312-keep-ended-on-the-callers-word',
+              "            by = self._owner(params, abandon['at'], 'the owner\\'s Abandon') if abandon is not None else None\n",
+              "            by = self._outer['principal'] if abandon is not None else None  # defect: taken at its word\n",
+              ['r2/ledger-checks-the-owner'])
+    ledger312('space312-keep-by-read-from-the-request',
+              "            if outcome != 'kept' or not isinstance(mark, dict) or 'by' in mark or not _is_time(mark.get('at')):\n",
+              "            if outcome != 'kept' or not isinstance(mark, dict) or not _is_time(mark.get('at')):\n",
+              ['r2/by-is-the-verified-principal'],
+              also=[("            record['owner_keep'] = dict(mark, by=by)\n",
+                     "            record['owner_keep'] = dict({'by': by}, **mark)  # defect: the request's by wins\n")])
+    ledger312('space312-abandon-by-read-from-the-request',
+              "        if not isinstance(abandon, dict) or set(abandon) != {'item', 'at'} or not _is_time(abandon['at']) \\\n",
+              "        if not isinstance(abandon, dict) or not {'item', 'at'} <= set(abandon) or not _is_time(abandon['at']) \\\n",
+              ['r2/by-is-the-verified-principal'],
+              also=[("        out['owner_abandon'] = {'item': abandon['item'], 'at': abandon['at']}\n",
+                     "        out['owner_abandon'] = dict(abandon)  # defect: the request's by is kept\n"),
+                    ("                    record['abandoned'] = {'by': by, 'at': abandon['at'],\n",
+                     "                    record['abandoned'] = {'by': abandon.get('by', by), 'at': abandon['at'],\n")])
+    ended312('space312-abandon-names-a-kept-item-beneath',
+             "            return (other.get('state') in SPACE_SIGNALLED and not other.get('owner_keep')\n",
+             "            return (other.get('state') in SPACE_SIGNALLED\n",
+             ['r2/kept-beneath-abandoned-worktree'])
+    ledger312('space312-host-principal-signs-a-signal-that-names-items',
+              "            if not (isinstance(subject, dict) and len(subject) == 1 and set(subject) <= {'run', 'gate'}\n",
+              "            if not (isinstance(subject, dict) and 'items' in subject) and not ("
+              "isinstance(subject, dict) and len(subject) == 1 and set(subject) <= {'run', 'gate'}\n",
+              ['r2/runner-names-no-items'])
+    ended312('space312-abandon-defaults-to-the-owners',
+             "    def space_abandon(self, item, version=None, by=None, *, cause):\n",
+             "    def space_abandon(self, item, version=None, by=None, cause=SPACE_OWNER_ABANDON):\n",
+             ['r2/abandon-names-its-cause'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

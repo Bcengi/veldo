@@ -205,7 +205,9 @@ THE OWNER'S KEEP (design 0.4). A worktree the owner marked Keep is sent nothing 
 provisioned elsewhere (the answer says kept), and the ledger refuses it from every signal but one: the owner's
 Abandon of that exact item. An item beneath the worktree that holds the owner's Keep is never named; it holds
 the worktree. The owner's Abandon needs the version the owner's screen showed and who the owner is: without
-either nothing is sent (stale_version, no_owner). Abandon removes no unique work: a worktree with uncommitted or
+either nothing is sent (stale_version, no_owner). The owner is sent to the ledger as the command's principal,
+and the ledger checks it against the membership itself: a `by` that is not the owner is refused there
+(not_authorized), whoever called. space_abandon has no default cause: its caller names why. Abandon removes no unique work: a worktree with uncommitted or
 untracked work, or a commit only its branch holds, is deferred by rule 5 and stays, and the answer names it under
 discard_required, because only the owner's Discard, which saves first, takes such a worktree away.
 
@@ -2288,13 +2290,14 @@ class Service:
         pid = objective.get('project_uuid') if kind == 'objective' and isinstance(objective, dict) else None
         return pid[len('project:'):] if isinstance(pid, str) and pid.startswith('project:') and pid != 'project:' else None
 
-    def _space_signal(self, out, event, subjects, emitter):
+    def _space_signal(self, out, event, subjects, emitter, principal=None):
         """Send `event` through Signal once for each subject, and write into `out` what became of every item
-        it reached: sent, subjects, removed, deferred and left. Nothing here removes anything."""
+        it reached: sent, subjects, removed, deferred and left. Nothing here removes anything. `principal`
+        is who the ledger's signal command is sent as: the owner, for the owner's Abandon."""
         ledger = self.space['ledger']
-        given = {key: value for key, value in self.space.items() if key not in ('ledger', 'emitter')}
+        given = {key: value for key, value in self.space.items() if key not in ('ledger', 'emitter', 'principal')}
         for subject in subjects:
-            answer = SPACE_SIGNAL.signal(ledger, event, subject, emitter=emitter, **given)
+            answer = SPACE_SIGNAL.signal(ledger, event, subject, emitter=emitter, principal=principal, **given)
             out['subjects'].append({'subject': subject, 'ok': answer.get('ok') is True, 'reason': answer.get('reason'),
                                     'items': len(answer.get('items') or ()), 'left': len(answer.get('left') or ())})
             out['sent'] = out['sent'] or answer.get('ok') is True
@@ -2351,10 +2354,11 @@ class Service:
             out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
         return self._space_logged(out)
 
-    def space_abandon(self, item, version=None, by=None, cause=SPACE_OWNER_ABANDON):
+    def space_abandon(self, item, version=None, by=None, *, cause):
         """VELDO-0312: worktree abandoned for the one worktree whose item is `item` (the module's ONE WORKTREE,
         BY ITEM). `cause` says why: the owner's Abandon, or the ticket's next run provisioned in another
-        worktree. For the owner's Abandon `version` is the item's version as the owner's screen showed it and
+        worktree. It has no default: a caller that does not name its cause is a programming error and gets
+        Python's TypeError before anything is read, never the owner's power. For the owner's Abandon `version` is the item's version as the owner's screen showed it and
         `by` the owner: a version that is missing or is not the item's now is refused stale_version, and no
         owner no_owner. For any other cause a worktree the owner marked Keep is sent nothing (kept).
         The signal names the worktree, the items of its own scope and ticket at or beneath it, and its own agent
@@ -2424,9 +2428,11 @@ class Service:
             named.append(home)
         subject = {'items': [{'item': identity, 'version': held(identity)} for identity in named]}
         if owner_abandon:
-            subject['owner_abandon'] = {'item': item, 'by': by}
+            # The ledger reads who the owner is from the command's principal, and checks it itself.
+            subject['owner_abandon'] = {'item': item, 'at': time.time()}
         self._space_signal(out, SPACE_ABANDONED, [subject],
-                           {'process': 'authority_service', 'transition': cause, 'item': item, 'by': by})
+                           {'process': 'authority_service', 'transition': cause, 'item': item, 'by': by},
+                           principal=by if owner_abandon else None)
         if not out['sent']:
             out['reason'] = next((one.get('reason') for one in out['subjects'] if one.get('reason')), None)
         out['discard_required'] = [one.get('item') for one in out['deferred']

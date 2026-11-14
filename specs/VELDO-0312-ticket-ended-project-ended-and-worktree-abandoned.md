@@ -30,6 +30,7 @@ footprint:
   - "specs/VELDO-0308-run-finished-from-the-receiver.md"
   - "specs/VELDO-0310-landed-and-contained-from-the-landing-station.md"
   - "specs/VELDO-0315-reconcile-at-start-and-on-demand.md"
+  - "specs/VELDO-0318-the-owner-decides-what-becomes-of-unique-work-at-a-tickets-end.md"
   - "scripts/suites/*_veldo_0312_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -217,3 +218,37 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     is gone (space312-abandon-sent-past-another-worktree, and space312-stale-version-accepted, written
     again), and fifteen of this round. Each was applied once, by the registry's own case and the
     driver's own materialize and worker, and seen red on its rows; the bundle lists them.
+- 2026-11-14: fix round 2, after the re-review of b93f9967 (rereview-veldo-0312.md, verdict FIX: one
+  blocking finding in a spec, the code of the first round sound), by the lead's decisions. No acceptance
+  criterion of this ticket changed. The footprint is amended: the spec of VELDO-0318, whose AC4 is the
+  blocking finding. Nothing here removes anything, and nothing here makes a removal possible that was
+  not: every change refuses more than before.
+  - F1 (blocking, spec): VELDO-0318 AC4 said "Keep sets the item to kept" and did not know the mark. It
+    now says Keep writes owner_keep, in one command from deferred to kept, accepted only as the owner's
+    signed packet verified as the mode switch is, with the falsifier the re-review named (Keep without
+    the mark: ticket ended makes the item due) and two more. That spec's History holds the reason.
+  - F2: the ledger checks the owner itself. The transition that writes owner_keep and the one that takes
+    an owner_abandon read this store's membership inside the command's transaction and refuse
+    not_authorized unless the command is the one the Ledger sent and its principal is an active person
+    holding project_owner over the space scope, at the time the request gives (owner_keep.at,
+    owner_abandon.at; the Ledger reads no clock). So the authority's own principal, a person who is not
+    the owner, a service and a command given to the store directly write no Keep and end none. Who is
+    written on the item is that principal: a request that carries a `by` is refused as invalid input.
+    The service sends the owner's Abandon with the owner as the command's principal, and the API
+    authority reads the ledger's not_authorized as unauthorized:not_owner. FOR THE LEAD, what this is
+    not: a check of the owner's signature. An in-process caller that names the owner as its principal
+    is still believed; the Abandon's signature is the edge's, checked by the API authority, and the
+    owner's signed Keep is VELDO-0318 AC4.
+  - F3: rows for the two guards the re-review's falsifiers Fe and Fi survived. An item the owner marked
+    Keep beneath an abandoned worktree is not named, stays kept at its version and holds the worktree,
+    which is deferred. The runner and the observer sign no signal that names items, also for a run
+    issued to the runner and for the runner's own events; today the runner is allowed to name none.
+  - F4: Service.space_abandon has no default cause. The cause is a keyword of its own; a caller that
+    leaves it out gets Python's TypeError and not the owner's Abandon.
+  - F7: VELDO-0315 gets AC8 (an ending event whose send raised is recorded and retried by reconcile).
+    No code here: the service still passes over such an event, which loses no work.
+  - Rows and falsifiers. Suite 149 is 40 rows (five added: r2/ledger-checks-the-owner,
+    r2/by-is-the-verified-principal, r2/kept-beneath-abandoned-worktree, r2/runner-names-no-items,
+    r2/abandon-names-its-cause). Finding 312 holds 30 falsifiers, seven of this round, each applied once
+    by the registry's own case and the driver's own materialize and worker and seen red on its row; the
+    bundle lists them.

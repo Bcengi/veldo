@@ -83,6 +83,15 @@ nothing: deferred, the file byte for byte, named under discard_required). f5/age
 worktree is abandoned with its own agent repository; with a second live worktree in it the repository is
 not named).
 
+FIX ROUND 2 (re-review of b93f9967). r2/ledger-checks-the-owner (F2: the ledger itself reads who the owner
+is: the authority's own principal, a person who is not the owner, a command given to the store directly
+and the service's entry called with someone else write no Keep and end none; the owner does both).
+r2/by-is-the-verified-principal (F2: who is written on the item is the command's principal; a request that
+carries a `by` of its own is refused). r2/kept-beneath-abandoned-worktree (F3: an item the owner marked
+Keep beneath an abandoned worktree is not named, stays kept and holds the worktree). r2/runner-names-no-items
+(F3: the runner and the observer sign no signal that names items, also for a run issued to the runner and
+its own event). r2/abandon-names-its-cause (F4: space_abandon has no default cause).
+
 paths/no-delete-and-canon: this ticket's part of the service deletes nothing by itself, the three call
 sites of the pass are there, and the engine canon equals the repository's copy.
 
@@ -134,6 +143,8 @@ def _v312_suite():
             'f2/kept-at-contained', 'f2/kept-at-ticket-ended', 'f2/kept-at-project-ended', 'f2/kept-at-every-event',
             'f2/only-the-owners-abandon-ends-keep', 'f6/signal-names-items', 'f3/route-owner-abandon',
             'f3/route-refusals', 'f3/unique-work-needs-discard', 'f5/agent-worktree',
+            'r2/ledger-checks-the-owner', 'r2/by-is-the-verified-principal', 'r2/kept-beneath-abandoned-worktree',
+            'r2/runner-names-no-items', 'r2/abandon-names-its-cause',
             'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
     started = time.monotonic()
@@ -303,7 +314,7 @@ def _v312_suite():
         (T_DONE, T_DONE2, T_CANCEL, T_DISPOSE, T_STAYS, T_CLOSE, T_SIBLING, T_OTHER, T_LATE, T_REFUSED, T_ROLLBACK,
          T_PACKET, T_PROV, T_ABANDON, T_DIRTY, T_LOCKED, T_TWO, T_IDLE, T_QUIET, T_MEADOW, T_GROVE,
          T_POND, T_KEPT, T_KRUN, T_KLAND, T_KCONT, T_KEND, T_KALL, T_NAMED, T_ROUTE, T_RDIRTY, T_AGENT, T_BENEATH,
-         T_HEATH) = ('VELDO-97%02d' % n for n in range(1, 35))
+         T_HEATH, T_ROUND2) = ('VELDO-97%02d' % n for n in range(1, 36))
         ITEMS = {'backlog:done': ('orchard', [T_DONE, T_DONE2]), 'backlog:cancel': ('orchard', [T_CANCEL]),
                  'backlog:dispose': ('orchard', [T_DISPOSE, T_STAYS]), 'backlog:close': ('orchard', [T_CLOSE, T_SIBLING]),
                  'backlog:other': ('orchard', [T_OTHER]), 'backlog:late': ('orchard', [T_LATE]),
@@ -313,7 +324,7 @@ def _v312_suite():
                  'backlog:meadow': ('meadow', [T_MEADOW]), 'backlog:grove': ('grove', [T_GROVE]),
                  'backlog:pond': ('pond', [T_POND]),
                  'backlog:kept': ('orchard', [T_KEPT, T_KRUN, T_KLAND, T_KCONT, T_KALL, T_NAMED, T_ROUTE, T_RDIRTY,
-                                              T_AGENT, T_BENEATH]),
+                                              T_AGENT, T_BENEATH, T_ROUND2]),
                  'backlog:keep-end': ('orchard', [T_KEND]), 'backlog:heath': ('heath', [T_HEATH])}
 
         def unit_data(unit, item, project, **more):
@@ -460,9 +471,10 @@ def _v312_suite():
 
         def owner_kept(identity):
             """The owner marked the item Keep: it is made due by a signal that names it and written kept with
-            the owner's mark (the owner's settled answer is VELDO-0318's). Returns its version afterwards."""
+            the owner's mark, as the owner: the ledger reads who the owner is from the command's principal (the
+            owner's settled answer, in one command, is VELDO-0318's). Returns its version afterwards."""
             due = L.signal('ticket_ended', {'items': [{'item': identity, 'version': version(identity)}]})
-            marked = L.outcome(identity, 'kept', {'owner_keep': {'by': 'olga', 'answer': 'keep'}})
+            marked = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')
             if not (due.get('ok') and marked.get('ok')):
                 raise RuntimeError('the fixture could not mark Keep: %s %s' % (due.get('reason'), marked.get('reason')))
             return version(identity)
@@ -916,7 +928,7 @@ def _v312_suite():
               % state_of(prov_scratch['item']), scratch_there(prov_scratch))
         wired_in, service.space = service.space, None
         nothing = service.space_provisioned(T_PROV, str(base / 'elsewhere'))
-        unwired = service.space_abandon(second['worktree'], by='olga')
+        unwired = service.space_abandon(second['worktree'], by='olga', cause='owner_abandon')
         service.space = wired_in
         check(R, 'a unit that names no project, a path that is not absolute and a service with no ledger send nothing '
                  '[%s]' % unwired.get('reason'),
@@ -928,22 +940,22 @@ def _v312_suite():
         R = 'ac4/owner-abandon'
         mine = planted('orchard', 'abandon', T_ABANDON)
         before = len(logged())
-        stale = service.space_abandon(mine['worktree'], version=version(mine['worktree']) - 1, by='olga')
-        wrong_kind = service.space_abandon(mine['build'], by='olga')
-        unknown = service.space_abandon('space:item:none', by='olga')
+        stale = service.space_abandon(mine['worktree'], version=version(mine['worktree']) - 1, by='olga', cause='owner_abandon')
+        wrong_kind = service.space_abandon(mine['build'], by='olga', cause='owner_abandon')
+        unknown = service.space_abandon('space:item:none', by='olga', cause='owner_abandon')
         check(R, 'a stale version, an item that is no worktree and an unknown item send nothing, each by name [%s %s %s]'
               % (stale.get('reason'), wrong_kind.get('reason'), unknown.get('reason')),
               stale.get('sent') is False and stale.get('reason') == 'stale_version'
               and wrong_kind.get('sent') is False and wrong_kind.get('reason') == 'not_a_worktree'
               and unknown.get('sent') is False and unknown.get('reason') == 'not_a_worktree' and untouched(mine))
-        blind = service.space_abandon(mine['worktree'], by='olga')
-        nobody = service.space_abandon(mine['worktree'], version=version(mine['worktree']))
+        blind = service.space_abandon(mine['worktree'], by='olga', cause='owner_abandon')
+        nobody = service.space_abandon(mine['worktree'], version=version(mine['worktree']), cause='owner_abandon')
         check(R, 'the owner\'s Abandon with no version, and with no owner, sends nothing: the version the screen '
                  'showed and who the owner is are required [%s %s]' % (blind.get('reason'), nobody.get('reason')),
               blind.get('sent') is False and blind.get('reason') == 'stale_version'
               and nobody.get('sent') is False and nobody.get('reason') == 'no_owner' and untouched(mine)
               and not [i for i, r in L.items().items() if r.get('state') == 'due'])
-        pressed = service.space_abandon(mine['worktree'], version=version(mine['worktree']), by='olga')
+        pressed = service.space_abandon(mine['worktree'], version=version(mine['worktree']), by='olga', cause='owner_abandon')
         check(R, 'the owner\'s Abandon at the version shown sends worktree abandoned for that worktree [%s %s %s]'
               % (pressed.get('sent'), pressed.get('reason'), pressed.get('raised')),
               pressed.get('sent') is True and pressed.get('event') == 'worktree_abandoned'
@@ -955,14 +967,14 @@ def _v312_suite():
         check(R, 'its removal record names the owner\'s Abandon and who pressed it [%s]' % (emitter,),
               emitter.get('transition') == 'owner_abandon' and emitter.get('by') == 'olga'
               and emitter.get('item') == mine['worktree'])
-        gone = service.space_abandon(mine['worktree'], by='olga')
+        gone = service.space_abandon(mine['worktree'], by='olga', cause='owner_abandon')
         check(R, 'Abandon of a worktree that is already removed sends nothing [%s]' % gone.get('reason'),
               gone.get('sent') is False and gone.get('reason') == 'item_state:removed')
 
         R = 'ac4/abandon-keeps-unique-work'
         dirty = planted('orchard', 'dirty', T_DIRTY)
         (dirty['path'] / 'notes.txt').write_text('notes in the abandoned worktree, in no commit\n')
-        pressed = service.space_abandon(dirty['worktree'], version=version(dirty['worktree']), by='olga')
+        pressed = service.space_abandon(dirty['worktree'], version=version(dirty['worktree']), by='olga', cause='owner_abandon')
         check(R, 'Abandon of a worktree with an untracked file is sent, and the worktree is deferred as unique_work: it '
                  'stays, the file byte for byte, and no keep step ran for it [%s %s %s]'
               % (pressed.get('sent'), state_of(dirty['worktree']), deferral_of(dirty['worktree'])),
@@ -975,7 +987,7 @@ def _v312_suite():
         locked = planted('orchard', 'locked', T_LOCKED, build_output=False)
         lock = Path(git(locked['path'], 'rev-parse', '--absolute-git-dir')) / 'index.lock'
         lock.write_text('')
-        pressed = service.space_abandon(locked['worktree'], version=version(locked['worktree']), by='olga')
+        pressed = service.space_abandon(locked['worktree'], version=version(locked['worktree']), by='olga', cause='owner_abandon')
         check(R, 'Abandon of a worktree whose index git holds locked is deferred as in_use: it stays [%s %s %s]'
               % (pressed.get('sent'), state_of(locked['worktree']), deferral_of(locked['worktree'])),
               state_of(locked['worktree']) == 'deferred' and deferral_of(locked['worktree']) == 'in_use'
@@ -986,7 +998,7 @@ def _v312_suite():
         R = 'ac4/one-of-two-worktrees'
         one, two = planted('orchard', 'two-a', T_TWO), planted('orchard', 'two-b', T_TWO)
         two_scratch = scratch('orchard', T_TWO)
-        pressed = service.space_abandon(one['worktree'], version=version(one['worktree']), by='olga')
+        pressed = service.space_abandon(one['worktree'], version=version(one['worktree']), by='olga', cause='owner_abandon')
         named = [n.get('item') for sub in pressed.get('subjects') or () for n in (sub.get('subject') or {}).get('items') or ()]
         check(R, 'Abandon of one of a ticket\'s two recorded worktrees is sent, naming that worktree and its build '
                  'output and nothing else [%s %s %s]' % (pressed.get('sent'), pressed.get('reason'), len(named)),
@@ -1008,7 +1020,7 @@ def _v312_suite():
         (host['path'] / 'build' / 'out.bin').write_bytes(b'b' * 4096)
         guest = declared('build_output', {'path': str(host['path'] / 'build')},
                          {'scope': scopes['orchard'], 'ticket': T_OTHER}, parent=host['worktree'])
-        pressed = service.space_abandon(host['worktree'], version=version(host['worktree']), by='olga')
+        pressed = service.space_abandon(host['worktree'], version=version(host['worktree']), by='olga', cause='owner_abandon')
         named = [n.get('item') for sub in pressed.get('subjects') or () for n in (sub.get('subject') or {}).get('items') or ()]
         check(R, 'another ticket\'s item beneath the worktree is not named and is not due; it holds the worktree, '
                  'which is deferred as in_use and stays [%s %s %s]'
@@ -1020,7 +1032,7 @@ def _v312_suite():
 
         R = 'ac4/scope-owner-reaches-nothing-else'
         loose = planted('orchard', 'loose')
-        pressed = service.space_abandon(loose['worktree'], version=version(loose['worktree']), by='olga')
+        pressed = service.space_abandon(loose['worktree'], version=version(loose['worktree']), by='olga', cause='owner_abandon')
         check(R, 'Abandon of a worktree owned by the project alone is sent for that worktree and removes it after the '
                  'keep step [%s %s]' % (pressed.get('sent'), pressed.get('reason')),
               pressed.get('sent') is True and removed_after_keep(loose))
@@ -1152,15 +1164,17 @@ def _v312_suite():
         him = {'item': other_tree['worktree'], 'version': version(other_tree['worktree'])}
         head = journal_head()
         bare = L.signal('worktree_abandoned', {'items': [me]})
-        for_other = L.signal('worktree_abandoned', {'items': [me, him], 'owner_abandon': {'item': him['item'], 'by': 'olga'}})
-        other_event = L.signal('ticket_ended', {'items': [me], 'owner_abandon': {'item': me['item'], 'by': 'olga'}})
-        by_runner = L.signal('worktree_abandoned', {'items': [me], 'owner_abandon': {'item': me['item'], 'by': 'olga'}},
+        for_other = L.signal('worktree_abandoned', {'items': [me, him], 'owner_abandon': {'item': him['item'], 'at': time.time()}},
+                             principal='olga')
+        other_event = L.signal('ticket_ended', {'items': [me], 'owner_abandon': {'item': me['item'], 'at': time.time()}},
+                               principal='olga')
+        by_runner = L.signal('worktree_abandoned', {'items': [me], 'owner_abandon': {'item': me['item'], 'at': time.time()}},
                              principal='space-runner')
-        by_observer = L.signal('worktree_abandoned', {'items': [me], 'owner_abandon': {'item': me['item'], 'by': 'olga'}},
+        by_observer = L.signal('worktree_abandoned', {'items': [me], 'owner_abandon': {'item': me['item'], 'at': time.time()}},
                                principal='space-observer')
         runner_keep = L.apply({'principal': 'space-runner', 'operation': 'space_outcome', 'command_id': 'runner-keep',
                                'parameters': {'item': other_tree['worktree'], 'outcome': 'kept',
-                                              'facts': {'owner_keep': {'by': 'olga'}}}})
+                                              'facts': {'owner_keep': {'at': time.time()}}}})
         check(R, 'a signal that names the kept item without the owner\'s Abandon, the Abandon of another item, the '
                  'Abandon under another event and one a host principal signs are refused, each by name [%s %s %s %s %s]'
               % (bare.get('reason'), for_other.get('reason'), other_event.get('reason'), by_runner.get('reason'),
@@ -1174,7 +1188,8 @@ def _v312_suite():
               % (state_of(other_tree['worktree']), runner_keep.get('reason')),
               journal_head() == head and still_kept(guarded['worktree'], guarded_at) and untouched(other_tree)
               and runner_keep.get('ok') is False and runner_keep.get('reason') == 'space_not_permitted:space_disposition')
-        ended = L.signal('worktree_abandoned', {'items': [me], 'owner_abandon': {'item': me['item'], 'by': 'olga'}})
+        ended = L.signal('worktree_abandoned', {'items': [me], 'owner_abandon': {'item': me['item'], 'at': time.time()}},
+                         principal='olga')
         after = L.item(guarded['worktree']) or {}
         check(R, 'the owner\'s Abandon of that exact item ends the Keep: the item is due, the mark is cleared and who '
                  'abandoned it is on the record [%s %s %s]' % (ended.get('reason'), after.get('state'), after.get('abandoned')),
@@ -1371,7 +1386,7 @@ def _v312_suite():
 
         solo, pair = agent('a1', ['t1']), agent('a2', ['t1', 't2'])
         tree = solo['trees'][0]
-        pressed = service.space_abandon(tree['item'], version=version(tree['item']), by='olga')
+        pressed = service.space_abandon(tree['item'], version=version(tree['item']), by='olga', cause='owner_abandon')
         named = [n.get('item') for sub in pressed.get('subjects') or () for n in (sub.get('subject') or {}).get('items') or ()]
         check(R, 'Abandon of an agent\'s worktree is sent, and names the worktree and its own agent repository: the '
                  'repository is part of the same thing, not another worktree [%s %s %s]'
@@ -1387,7 +1402,7 @@ def _v312_suite():
               state_of(solo['item']) == 'removed' and not os.path.lexists(str(solo['home']))
               and solo['item'] in kept_log and tip(repos['orchard'], tree['branch']) == BASE['orchard'])
         tree = pair['trees'][0]
-        pressed = service.space_abandon(tree['item'], version=version(tree['item']), by='olga')
+        pressed = service.space_abandon(tree['item'], version=version(tree['item']), by='olga', cause='owner_abandon')
         named = [n.get('item') for sub in pressed.get('subjects') or () for n in (sub.get('subject') or {}).get('items') or ()]
         check(R, 'with a second live worktree recorded in the agent repository, Abandon of one names that worktree '
                  'alone: the repository and the other worktree are present [%s %s]'
@@ -1395,6 +1410,204 @@ def _v312_suite():
               pressed.get('sent') is True and named == [tree['item']] and state_of(tree['item']) == 'removed'
               and state_of(pair['item']) == 'present' and state_of(pair['trees'][1]['item']) == 'present'
               and os.path.isdir(str(pair['trees'][1]['path'])) and (pair['home'] / '.git').is_dir())
+
+        # FIX ROUND 2 (the re-review of b93f9967).
+        def due_now():
+            return sorted(i for i, r in L.items().items() if r.get('state') == 'due')
+
+        # F2: the ledger itself checks who the owner is.
+        R = 'r2/ledger-checks-the-owner'
+        subject_tree = planted('orchard', 'r2-owner', T_ROUND2, build_output=False)
+        tree_item = subject_tree['worktree']
+        L.signal('ticket_ended', {'items': [{'item': tree_item, 'version': version(tree_item)}]})
+        due_at, head = version(tree_item), journal_head()
+
+        def keep_as(who, **mark):
+            return L.outcome(tree_item, 'kept', {'owner_keep': dict({'at': time.time()}, **mark)}, principal=who)
+        as_authority, as_pavel, as_edge = keep_as(None), keep_as('pavel'), keep_as('api-edge')
+        serial[0] += 1
+        try:
+            direct = S.execute(conn, dict(command_id='direct-keep-%d' % serial[0], principal='olga',
+                                          operation='space_outcome', nonce='direct-keep-%d' % serial[0], artifact_digests=[],
+                                          expected_versions={tree_item: due_at},
+                                          parameters={'item': tree_item, 'outcome': 'kept',
+                                                      'facts': {'owner_keep': {'at': time.time()}}}), 'authority', sign, 1)
+            direct = 'accepted: %s' % (direct,)
+        except Exception as refusal:  # noqa: BLE001 - the store's refusal, by its code
+            direct = getattr(refusal, 'code', type(refusal).__name__)
+        check(R, 'the outcome kept with the owner\'s mark is refused as not_authorized from the authority\'s own '
+                 'principal, from a person who is not the owner and from a service, and so is the same command given '
+                 'to the store directly in the owner\'s name [%s %s %s %s]'
+              % (as_authority.get('reason'), as_pavel.get('reason'), as_edge.get('reason'), direct),
+              as_authority.get('reason') == 'not_authorized' and as_pavel.get('reason') == 'not_authorized'
+              and as_edge.get('reason') == 'not_authorized' and direct == 'not_authorized')
+        check(R, 'none of them wrote anything: the item is due with no mark at the version it had [%s %s]'
+              % (state_of(tree_item), (L.item(tree_item) or {}).get('owner_keep')),
+              journal_head() == head and state_of(tree_item) == 'due' and version(tree_item) == due_at
+              and (L.item(tree_item) or {}).get('owner_keep') is None)
+        as_owner = keep_as('olga', answer='keep')
+        mark = (L.item(tree_item) or {}).get('owner_keep') or {}
+        check(R, 'the owner writes it: the item is kept and the mark names the owner [%s %s]' % (as_owner.get('reason'), mark),
+              as_owner.get('ok') is True and state_of(tree_item) == 'kept' and mark.get('by') == 'olga'
+              and mark.get('answer') == 'keep')
+        kept_version, head = version(tree_item), journal_head()
+        named_tree = {'item': tree_item, 'version': kept_version}
+
+        def abandon_as(who):
+            return L.signal('worktree_abandoned', {'items': [named_tree], 'owner_abandon': {'item': tree_item, 'at': time.time()}},
+                            principal=who)
+        end_authority, end_pavel, end_edge = abandon_as(None), abandon_as('pavel'), abandon_as('api-edge')
+        through_service = service.space_abandon(tree_item, version=kept_version, by='pavel', cause='owner_abandon')
+        check(R, 'the owner\'s Abandon of the kept item is refused as not_authorized from the authority\'s own principal, '
+                 'from a person who is not the owner and from a service, and the service\'s entry called with someone '
+                 'who is not the owner sends nothing [%s %s %s %s]'
+              % (end_authority.get('reason'), end_pavel.get('reason'), end_edge.get('reason'), through_service.get('reason')),
+              end_authority.get('reason') == 'not_authorized' and end_pavel.get('reason') == 'not_authorized'
+              and end_edge.get('reason') == 'not_authorized' and through_service.get('sent') is False
+              and through_service.get('reason') == 'not_authorized' and not through_service.get('raised'))
+        check(R, 'none of them wrote anything: the item is kept, with the owner\'s mark, at the version the Keep left; '
+                 'the worktree is on disk and in git\'s list [%s]' % state_of(tree_item),
+              journal_head() == head and version(tree_item) == kept_version and state_of(tree_item) == 'kept'
+              and ((L.item(tree_item) or {}).get('owner_keep') or {}).get('by') == 'olga'
+              and os.path.isdir(str(subject_tree['path'])) and listed(repos['orchard'], subject_tree['path'])
+              and due_now() == [])
+        end_owner = abandon_as('olga')
+        after = L.item(tree_item) or {}
+        check(R, 'the owner ends it: the item is due, the mark is cleared, and the record names the owner [%s %s]'
+              % (end_owner.get('reason'), after.get('abandoned')),
+              end_owner.get('ok') is True and after.get('state') == 'due' and after.get('owner_keep') is None
+              and (after.get('abandoned') or {}).get('by') == 'olga')
+        L.outcome(tree_item, 'kept', {})
+
+        R = 'r2/by-is-the-verified-principal'
+        claimed = planted('orchard', 'r2-by', T_ROUND2, build_output=False)
+        claimed_item = claimed['worktree']
+        L.signal('ticket_ended', {'items': [{'item': claimed_item, 'version': version(claimed_item)}]})
+        head, due_at = journal_head(), version(claimed_item)
+        with_by = L.outcome(claimed_item, 'kept', {'owner_keep': {'at': time.time(), 'by': 'pavel'}}, principal='olga')
+        no_time = L.outcome(claimed_item, 'kept', {'owner_keep': {'answer': 'keep'}}, principal='olga')
+        check(R, 'a Keep whose request names who kept it, and one with no time, are refused as invalid input even '
+                 'from the owner, and write nothing [%s %s]' % (with_by.get('reason'), no_time.get('reason')),
+              str(with_by.get('reason')).startswith('invalid_input') and str(no_time.get('reason')).startswith('invalid_input')
+              and journal_head() == head and state_of(claimed_item) == 'due' and version(claimed_item) == due_at
+              and (L.item(claimed_item) or {}).get('owner_keep') is None)
+        plain_keep = L.outcome(claimed_item, 'kept', {'owner_keep': {'at': time.time()}}, principal='olga')
+        check(R, 'the mark the ledger writes names the command\'s principal [%s %s]'
+              % (plain_keep.get('reason'), (L.item(claimed_item) or {}).get('owner_keep')),
+              plain_keep.get('ok') is True and ((L.item(claimed_item) or {}).get('owner_keep') or {}).get('by') == 'olga')
+        head, kept_version = journal_head(), version(claimed_item)
+        named_claim = {'item': claimed_item, 'version': kept_version}
+        abandon_by = L.signal('worktree_abandoned', {'items': [named_claim], 'owner_abandon': {
+            'item': claimed_item, 'at': time.time(), 'by': 'pavel'}}, principal='olga')
+        abandon_old = L.signal('worktree_abandoned', {'items': [named_claim], 'owner_abandon': {
+            'item': claimed_item, 'by': 'olga'}}, principal='olga')
+        check(R, 'an Abandon whose subject names who abandoned, with the time and without it, is refused as invalid '
+                 'input even from the owner, and the item stays kept at its version [%s %s]'
+              % (abandon_by.get('reason'), abandon_old.get('reason')),
+              str(abandon_by.get('reason')).startswith('invalid_input') and str(abandon_old.get('reason')).startswith('invalid_input')
+              and journal_head() == head and state_of(claimed_item) == 'kept' and version(claimed_item) == kept_version)
+        pressed = service.space_abandon(claimed_item, version=kept_version, by='olga', cause='owner_abandon')
+        after = L.item(claimed_item) or {}
+        sent_subject = ((pressed.get('subjects') or [{}])[0].get('subject') or {}).get('owner_abandon') or {}
+        check(R, 'the service sends the owner as the command\'s principal and no `by` in the subject; the record of '
+                 'who abandoned, and of the Keep it ended, names that principal [%s %s %s]'
+              % (pressed.get('reason'), sorted(sent_subject), after.get('abandoned')),
+              pressed.get('sent') is True and sorted(sent_subject) == ['at', 'item']
+              and (after.get('abandoned') or {}).get('by') == 'olga'
+              and ((after.get('abandoned') or {}).get('ended_keep') or {}).get('by') == 'olga'
+              and after.get('owner_keep') is None)
+
+        # F3: the two guards the re-review found no row for.
+        R = 'r2/kept-beneath-abandoned-worktree'
+        above = planted('orchard', 'r2-above', T_ROUND2)
+        beneath_at = owner_kept(above['build'])
+        shown = version(above['worktree'])
+        pressed = service.space_abandon(above['worktree'], version=shown, by='olga', cause='owner_abandon')
+        named = [n.get('item') for sub in pressed.get('subjects') or () for n in (sub.get('subject') or {}).get('items') or ()]
+        check(R, 'the owner\'s Abandon of a worktree with an item the owner marked Keep beneath it is sent, and names '
+                 'the worktree alone [%s %s %s]' % (pressed.get('sent'), pressed.get('reason'), len(named)),
+              pressed.get('sent') is True and named == [above['worktree']])
+        check(R, 'the item beneath is still kept, with the owner\'s mark, at the version the Keep left, its file byte '
+                 'for byte [%s %s]' % (state_of(above['build']), version(above['build']) - beneath_at),
+              still_kept(above['build'], beneath_at) and bytes_of(above['path'] / 'build' / 'out.bin') == b'b' * 4096)
+        check(R, 'it holds the worktree: the worktree is deferred and stays, on disk and in git\'s list, with no keep '
+                 'step run [%s %s]' % (state_of(above['worktree']), deferral_of(above['worktree'])),
+              state_of(above['worktree']) == 'deferred' and deferral_of(above['worktree']) == 'in_use'
+              and os.path.isdir(str(above['path'])) and listed(repos['orchard'], above['path'])
+              and above['worktree'] not in kept_log and pressed.get('removed') == [])
+
+        R = 'r2/runner-names-no-items'
+        issued = L.issue('space-runner', label='r2-run')
+        run_identity = issued.get('run')
+        run_owner = {'scope': scopes['orchard'], 'ticket': T_ROUND2, 'run': {'id': run_identity, 'station': 'build'}}
+        counter[0] += 1
+        own_path = SCRATCH / ('s%02d-r2-run' % counter[0])
+        own_path.mkdir()
+        (own_path / 'notes.tmp').write_bytes(b's' * 2048)
+        own_item = declared('scratch', {'path': str(own_path)}, run_owner)
+        foreign = scratch('orchard', T_ROUND2)
+        head = journal_head()
+        at = {own_item: version(own_item), foreign['item']: version(foreign['item'])}
+
+        def names(*identities):
+            return {'items': [{'item': identity, 'version': at[identity]} for identity in identities]}
+        own_named = L.apply({'principal': 'space-runner', 'operation': 'space_signal', 'command_id': 'r2-runner-own',
+                             'parameters': {'event': 'run_finished', 'subject': names(own_item)}})
+        foreign_named = L.signal('run_finished', names(foreign['item']), principal='space-runner')
+        both_named = L.signal('verdict_recorded', names(own_item, foreign['item']), principal='space-runner')
+        observer_named = L.signal('run_finished', names(own_item), principal='space-observer')
+        check(R, 'the run is issued to the runner, and the runner signing run finished or verdict recorded with a '
+                 'subject that names items is refused by name, for an item of its own run as for another\'s; so is '
+                 'the observer [%s %s %s %s %s]' % (L.issued_to(run_identity), own_named.get('reason'),
+                                                   foreign_named.get('reason'), both_named.get('reason'),
+                                                   observer_named.get('reason')),
+              issued.get('ok') is True and L.issued_to(run_identity) == 'space-runner'
+              and own_named.get('reason') == 'space_not_permitted:space_signal'
+              and foreign_named.get('reason') == 'space_not_permitted:space_signal'
+              and both_named.get('reason') == 'space_not_permitted:space_signal'
+              and observer_named.get('reason') == 'space_not_permitted:space_signal')
+        check(R, 'nothing was written: both items are present at the versions read, their files in place',
+              journal_head() == head and all(state_of(i) == 'present' and version(i) == v for i, v in at.items())
+              and bytes_of(own_path / 'notes.tmp') == b's' * 2048 and scratch_there(foreign))
+        control = L.signal('run_finished', {'run': run_identity}, principal='space-runner')
+        check(R, 'control: the same runner\'s run finished for exactly the run issued to it is accepted and reaches '
+                 'that run\'s item alone [%s %s]' % (control.get('reason'), control.get('items')),
+              control.get('ok') is True and control.get('items') == [own_item] and state_of(own_item) == 'due'
+              and scratch_there(foreign))
+        L.outcome(own_item, 'kept', {})
+
+        # F4: the service's entry has no default cause.
+        R = 'r2/abandon-names-its-cause'
+        import inspect
+        causeless = planted('orchard', 'r2-cause', T_ROUND2, build_output=False)
+        causeless_at = owner_kept(causeless['worktree'])
+        head, before = journal_head(), len(logged())
+        try:
+            answer = service.space_abandon(causeless['worktree'], version=causeless_at, by='olga')
+            raised = 'answered: sent %s %s' % (answer.get('sent'), answer.get('transition'))
+        except TypeError as error:
+            raised = 'TypeError'
+        try:
+            service.space_abandon(causeless['worktree'], causeless_at, 'olga', 'owner_abandon')
+            positional = 'answered'
+        except TypeError as error:
+            positional = 'TypeError'
+        check(R, 'space_abandon called with the item, its version and the owner but no cause is a TypeError, and so is '
+                 'a cause given by position: nobody gets the owner\'s Abandon by leaving the cause out [%s %s]'
+              % (raised, positional), raised == 'TypeError' and positional == 'TypeError')
+        parameter = inspect.signature(service.space_abandon).parameters.get('cause')
+        check(R, 'the cause is a keyword of its own with no default [%s]' % (parameter,),
+              parameter is not None and parameter.kind is inspect.Parameter.KEYWORD_ONLY
+              and parameter.default is inspect.Parameter.empty)
+        check(R, 'nothing was sent or written: the worktree the owner marked Keep is still kept at its version, on '
+                 'disk and in git\'s list, and no event was logged [%s]' % state_of(causeless['worktree']),
+              journal_head() == head and len(logged()) == before and still_kept(causeless['worktree'], causeless_at)
+              and os.path.isdir(str(causeless['path'])) and listed(repos['orchard'], causeless['path']))
+        named_cause = service.space_abandon(causeless['worktree'], version=causeless_at, by='olga', cause='owner_abandon')
+        check(R, 'control: the same call that names the owner\'s Abandon as its cause is sent [%s %s]'
+              % (named_cause.get('sent'), named_cause.get('reason')),
+              named_cause.get('sent') is True and named_cause.get('transition') == 'owner_abandon'
+              and (L.item(causeless['worktree']) or {}).get('owner_keep') is None)
 
         R = 'ac1/other-ticket-untouched'
         check(R, 'after every row the ticket nothing ended has its worktree, its build output and its scratch',
@@ -1408,7 +1621,8 @@ def _v312_suite():
         part = text[begin:text.index('    def _receiver_configuration(self', begin)]
         check(R, 'this ticket\'s part of the service calls no remove, unlink, rmtree or rmdir, runs no process and no git',
               not re.search(r'\b(os\.remove|os\.unlink|unlink\(|rmtree|os\.rmdir|shutil\.|subprocess\.|_git|git_process)', part))
-        check(R, 'it reads no clock to decide: time is read only for the time of an observation',
+        check(R, 'it reads no clock to decide: time is read only for the time of an observation and of the owner\'s '
+                 'Abandon, which the ledger checks the owner at',
               set(re.findall(r'time\.\w+\(\)', part)) <= {'time.time()'}
               and all("'at': time.time()" in line for line in part.splitlines() if 'time.time()' in line))
         check(R, 'the pass is called after a packet, after a channel pass and after a factory loop pass',
