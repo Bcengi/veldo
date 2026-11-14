@@ -1157,8 +1157,12 @@ def _v311_suite():
         class Slow:
             """The authority, each of whose accepted commands takes one second of the replay's clock: three
             for a worktree, so the deadline passes between the second entry and the third."""
-            about = staticmethod(AUTH.about)
-            asked = []
+            asked, begun = [], []
+
+            @staticmethod
+            def about(repository, path=None):
+                Slow.begun.append(path)
+                return AUTH.about(repository, path)
 
             @staticmethod
             def accept(packet):
@@ -1174,6 +1178,8 @@ def _v311_suite():
               [(entry['type'], entry['outcome']) for entry in done] == [('worktree_added', 'recorded')] * 2
               and Slow.asked == [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
               and item_at(SLOW[0])[1].get('state') == 'present' and item_at(SLOW[1])[1].get('state') == 'present')
+        check(ROW, 'the third entry is never started: the authority is not asked about it %s' % (Slow.begun,),
+              Slow.begun == [str(path) for path in SLOW[:2]])
         check(ROW, 'the third is in the spool, whole, and has no item yet',
               [one['subject']['path'] for one in left] == [str(SLOW[2])] and left[0]['tries'] == 0
               and item_at(SLOW[2])[0] is None and SLOW[2].is_dir())
