@@ -1,0 +1,19 @@
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit b7fa05f4. Partial runs: none is the gate.
+144_veldo_0306_space_docker: selftest (PARTIAL, 1 of 214 suites): 47 passed, 0 failed in 5.38s
+132_veldo_0297_space_ledger: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 2.46s
+134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 214 suites): 42 passed, 0 failed in 1.44s
+135_veldo_0298_space_kinds: selftest (PARTIAL, 1 of 214 suites): 150 passed, 0 failed in 0.01s
+136_veldo_0299_space_probe: selftest (PARTIAL, 1 of 214 suites): 72 passed, 0 failed in 6.06s
+137_veldo_0330_space_rules: selftest (PARTIAL, 1 of 214 suites): 49 passed, 0 failed in 2.33s
+138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 214 suites): 65 passed, 0 failed in 2.89s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 214 suites): 44 passed, 0 failed in 1.69s
+140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 6.06s
+141_veldo_0344_process_reader: selftest (PARTIAL, 1 of 214 suites): 85 passed, 0 failed in 21.51s
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 3.09s
+143_veldo_0305_space_census: selftest (PARTIAL, 1 of 214 suites): 45 passed, 0 failed in 1.63s
+66_veldo_0047_authority: selftest (PARTIAL, 1 of 214 suites): 56 passed, 0 failed in 13.86s
+109_veldo_0161_adoption: selftest (PARTIAL, 1 of 214 suites): 81 passed, 0 failed in 28.19s
+113_veldo_0112_registered_clients: selftest (PARTIAL, 1 of 214 suites): 29 passed, 0 failed in 5.88s
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 214 suites): 40 passed, 0 failed in 60.45s
+# NOT GREEN, and not from this ticket: 127_veldo_0259_installation: 45 passed, 1 failed (ac1/fresh-clone). Its personal setup stage finds three paths of a home folder in proof/VELDO-0303/falsifiers.json (lines 326, 355 and 397), a file committed before this build, which this build did not touch; scripts/check_personal_setup.py reports the same three on its own. This bundle holds no such path.
+# NOT RUN: 86_veldo_0127_agent_configuration (52 of 54 on this branch before this build: its two live rows wait for the lead's recapture, and this build did not touch them or their captures).

@@ -1,0 +1,380 @@
+[
+ {
+  "falsifier": "space306-read-one-context-only",
+  "criterion": "AC1",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac1/label-and-compose-name"
+  ],
+  "red_rows": [
+   "ac1/label-and-compose-name",
+   "ac4/broken-engine",
+   "ac4/end-of-file",
+   "ac4/event-with-the-clock-stopped",
+   "ac4/events",
+   "ac4/poll-set",
+   "docker/canon",
+   "loss/engine-unreadable"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac1/label-and-compose-name",
+    "start reads every context the installation names [['default']]"
+   ],
+   [
+    "VELDO-0306 ac4/event-with-the-clock-stopped",
+    "each context has one event pipe [['default']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-given-to-a-live-run",
+  "criterion": "AC2",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac2/unattributable-is-a-report"
+  ],
+  "red_rows": [
+   "ac2/never-removed",
+   "ac2/one-live-run",
+   "ac2/unattributable-is-a-report",
+   "ac3/order-and-non-forced",
+   "integration/real-engine",
+   "loss/volume-made-again"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac2/one-live-run",
+    "with one run live, a volume with no label is a report and no item [{'run': {'id': 'run-306-one', 'station': 'build'}, 'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9306'} None]"
+   ],
+   [
+    "VELDO-0306 ac2/unattributable-is-a-report",
+    "with two runs live, the volume unlabelled_data has no owner: it is a report that names both runs [owner {'run': {'id': 'run-306-one', 'station': 'build'}, 'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9306'}, None]"
+   ],
+   [
+    "VELDO-0306 ac2/never-removed",
+    "after every run finished the reported volume unlabelled_data is in its engine, was named to no stop and no remove, and its record has no owner [deferred]"
+   ],
+   [
+    "VELDO-0306 ac3/order-and-non-forced",
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c011')"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-given-to-the-only-live-run",
+  "criterion": "AC2",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac2/one-live-run"
+  ],
+  "red_rows": [
+   "ac2/never-removed",
+   "ac2/one-live-run"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac2/one-live-run",
+    "with one run live, a volume with no label is a report and no item [{'run': {'id': 'run-306-one', 'station': 'build'}, 'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9306'} None]"
+   ],
+   [
+    "VELDO-0306 ac2/never-removed",
+    "after every run finished the reported volume somebodys_notes is in its engine, was named to no stop and no remove, and its record has no owner [deferred]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-two-runs-given-to-the-label",
+  "criterion": "AC2",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac2/unknown-run-and-two-runs"
+  ],
+  "red_rows": [
+   "ac2/never-removed",
+   "ac2/unknown-run-and-two-runs",
+   "ac3/order-and-non-forced"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac2/unknown-run-and-two-runs",
+    "the label of one run and the compose name of another: a report, no owner [None]"
+   ],
+   [
+    "VELDO-0306 ac2/never-removed",
+    "after every run finished the reported volume two_names is in its engine, was named to no stop and no remove, and its record has no owner [None]"
+   ],
+   [
+    "VELDO-0306 ac3/order-and-non-forced",
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-no-identity-still-an-item",
+  "criterion": "AC1",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac1/identity-recorded"
+  ],
+  "red_rows": [
+   "ac1/identity-recorded",
+   "ac2/never-removed"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac1/identity-recorded",
+    "a volume the engine shows without CreatedAt is reported and is no item [None]"
+   ],
+   [
+    "VELDO-0306 ac2/never-removed",
+    "after every run finished the reported volume orchard_unstamped is in its engine, was named to no stop and no remove, and its record has no owner [deferred]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-compose-project-not-in-the-locator",
+  "criterion": "AC1",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac1/protected"
+  ],
+  "red_rows": [
+   "ac1/identity-recorded",
+   "ac1/label-and-compose-name",
+   "ac1/protected",
+   "ac2/never-removed",
+   "ac2/unknown-run-and-two-runs",
+   "ac3/order-and-non-forced"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac1/label-and-compose-name",
+    "the network orchard_net on the context default is an item owned by the run, on that context [space:item:83399b93ad7447558f1ca56bdd919c33 None]"
+   ],
+   [
+    "VELDO-0306 ac1/identity-recorded",
+    "a network with its Id and its compose project"
+   ],
+   [
+    "VELDO-0306 ac1/protected",
+    "a container of a protected compose project gets neither, with the run's label on it"
+   ],
+   [
+    "VELDO-0306 ac2/unknown-run-and-two-runs",
+    "the label of one run and the compose name of another: a report, no owner [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-volumes-first",
+  "criterion": "AC3",
+  "module": "control_space_kinds.py",
+  "expected_red": [
+   "ac3/order-and-non-forced"
+  ],
+  "red_rows": [
+   "ac3/order-and-non-forced",
+   "integration/real-engine"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac3/order-and-non-forced",
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'volume', 'rm', 'orchard_shared'), ('default', 'volume', 'rm', 'orchard_cache'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default"
+   ],
+   [
+    "VELDO-0306 integration/real-engine",
+    "at run finished the three are removed by the real client [{'container': ('removed', None, None), 'network': ('removed', None, None), 'volume': ('deferred', 'remove_refused', 'tool')}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-volume-made-again-not-seen-by-rule-1",
+  "criterion": "AC3",
+  "module": "control_space_signal.py",
+  "expected_red": [
+   "loss/volume-made-again"
+  ],
+  "red_rows": [
+   "loss/volume-made-again"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 loss/volume-made-again",
+    "with no new snapshot, rule 1 defers the item: the volume under its name was made at another time [('deferred', 'remove_refused', 'tool')]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-volume-made-again-not-seen-by-the-snapshot",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "loss/volume-made-again"
+  ],
+  "red_rows": [
+   "loss/volume-made-again"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 loss/volume-made-again",
+    "after a snapshot the old record is gone and the new volume is a report with no owner [deferred {'run': {'id': 'run-306-again', 'station': 'build'}, 'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9306'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-stream-read-on-an-interval",
+  "criterion": "AC4",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac4/event-with-the-clock-stopped"
+  ],
+  "red_rows": [
+   "ac1/label-and-compose-name",
+   "ac4/broken-engine",
+   "ac4/end-of-file",
+   "ac4/event-with-the-clock-stopped",
+   "ac4/events",
+   "docker/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac1/label-and-compose-name",
+    "raised TypeError: 'NoneType' object is not subscriptable File \"./scripts/suites/144_veldo_0306_space_docker.py\", line 851, in _v306_space_docker_suite | % (L.item(kept_item)['state'],), | ~~~~~~~~~~~~~~~~~^^^^^^^^^ | TypeError: 'NoneType' object is not subscriptable"
+   ],
+   [
+    "VELDO-0306 ac4/event-with-the-clock-stopped",
+    "each context has one event pipe [[]]"
+   ],
+   [
+    "VELDO-0306 ac4/events",
+    "half a line is not an event; the whole line is handled once [[] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-subscribe-before-the-snapshot",
+  "criterion": "AC4",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac4/end-of-file"
+  ],
+  "red_rows": [
+   "ac4/broken-engine",
+   "ac4/end-of-file"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac4/end-of-file",
+    "the context was read whole before the new client was started [[('spawn', 'default'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'inspect'), ('spawn', 'default')]]"
+   ],
+   [
+    "VELDO-0306 ac4/broken-engine",
+    "a context whose snapshot cannot be read after the end of its stream is not subscribed again [the snapshot after the end of the stream could not be read: container: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-no-snapshot-at-end-of-file",
+  "criterion": "AC4",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac4/end-of-file"
+  ],
+  "red_rows": [
+   "ac4/broken-engine",
+   "ac4/end-of-file"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac4/end-of-file",
+    "the context was read whole before the new client was started [[('spawn', 'default')]]"
+   ],
+   [
+    "VELDO-0306 ac4/broken-engine",
+    "a context whose snapshot cannot be read after the end of its stream is not subscribed again [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-broken-engine-asked-without-end",
+  "criterion": "AC4",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac4/broken-engine"
+  ],
+  "red_rows": [
+   "ac4/broken-engine"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac4/broken-engine",
+    "a context whose stream ends twice without a byte is not started a third time [5]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-gone-without-the-engines-answer",
+  "criterion": "AC4",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "loss/engine-unreadable"
+  ],
+  "red_rows": [
+   "loss/engine-unreadable"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 loss/engine-unreadable",
+    "a context that cannot be read: the snapshot says so and writes nothing [{'engine': 'default', 'read': False, 'said': 'container: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?', 'objects': 0, 'counts': {}}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space306-pipes-not-in-the-poll-set",
+  "criterion": "AC4",
+  "module": "control_service.py",
+  "expected_red": [
+   "ac4/poll-set"
+  ],
+  "red_rows": [
+   "ac4/poll-set"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 ac4/poll-set",
+    "the service loop has one select, on the listener and the pipes, and the adapter's pipes are read in each iteration and put among them before it [['select.select([listener] + sorted(pipes), [], [], wait)']]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

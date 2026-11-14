@@ -1,0 +1,131 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0306",
+ "commit": "b7fa05f44dc35e2d90c0e46fbf5436ac5b77720b",
+ "tree": "8b0050035281de5bb6bb09e032f6fb976cdb0de4",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-14T09:30:28.319650+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "Rows ac1/label-and-compose-name (a container with the run's label, a network and a volume with the run's compose project name on the first context, a volume with the label, a container with the compose name and a volume with both on the second: each is an item owned by that run, on the context it was found on, present, adopted by the rule that proved it and ending on run finished; a second snapshot writes nothing), ac1/identity-recorded (the locator holds the Id of a container and a network, the CreatedAt of a volume and no Id, and each owner label carried; a labelled volume the engine shows without CreatedAt is a report and no item; the compose project name is derived from the label), ac1/protected (a volume the protect list covers by name and a container of a protected compose project, each with the run's label on it, get neither an item nor a report, and after every run finished neither was named to a stop or a remove and the volume holds its data). Green: proof/VELDO-0306/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled volume created while the real event stream was read became an item from its event, the labelled ones were removed at run finished by the real client in the order container, network, volume, the unlabelled volume stayed as a report, and the row left none of its objects behind. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0306/falsifiers.json",
+     "detail": "space306-read-one-context-only (the declared falsifier): ac1/label-and-compose-name red, the objects on the second context have no item. Beside it: space306-no-identity-still-an-item reds ac1/identity-recorded; space306-compose-project-not-in-the-locator reds ac1/protected. Each noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "Rows ac2/one-live-run (with one run live, a volume with no label is a report with no owner and no ending event), ac2/unattributable-is-a-report (with two runs live, a volume with no label, a container of somebody else's compose project and a network with no label are reports that name both runs, have no owner, no proposed owner and no ending event; the engine's own networks are not recorded), ac2/unknown-run-and-two-runs (a label of a run the ledger does not know, and the label of one run with the compose name of another, are reports), ac2/never-removed (after every run finished each of the seven reported objects is in its engine, was named to no stop and no remove, its record has no owner, and each volume holds its data). Green: proof/VELDO-0306/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled volume created while the real event stream was read became an item from its event, the labelled ones were removed at run finished by the real client in the order container, network, volume, the unlabelled volume stayed as a report, and the row left none of its objects behind. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0306/falsifiers.json",
+     "detail": "space306-given-to-a-live-run (the declared falsifier): ac2/unattributable-is-a-report red, the unlabelled volume has an owner with two runs live; ac2/never-removed is red beside it, because the volume is then removed. Beside it: space306-given-to-the-only-live-run reds ac2/one-live-run; space306-two-runs-given-to-the-label reds ac2/unknown-run-and-two-runs. Each noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "Rows ac3/order-and-non-forced (at run finished the engine's own log shows, on the first context, container stop, container rm, network rm, volume rm, and on the second the container before the volumes it mounts; each command names one object, none is forced, all six objects are gone and their items removed with the engine's method), ac3/volume-of-another-run (a volume of the run that a container of another live run mounts is deferred as remove_refused with the engine's own words, is in the engine with its data, the other container was asked nothing; that run's own end removes its container, and the volume's next event removes it), ac3/run-not-ended (while the run is not conclusive its container is deferred as in_use and nothing is stopped or removed), ac3/report-mode (in a project in report mode the run's container is an item, stays due and is asked nothing), ac3/adapter-removes-nothing (the adapter gave the engine only ls and inspect; its source names no remove, no prune and no force option), loss/volume-made-again (a recorded volume removed and made again under its name with new data: rule 1 defers the item as not_in_ledger, the engine is asked to remove nothing, and after a snapshot the old record is gone and the new volume is a report). Green: proof/VELDO-0306/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled volume created while the real event stream was read became an item from its event, the labelled ones were removed at run finished by the real client in the order container, network, volume, the unlabelled volume stayed as a report, and the row left none of its objects behind. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0306/falsifiers.json",
+     "detail": "space306-volumes-first (the declared falsifier, applied to the kind registry's order, which is where the order is): ac3/order-and-non-forced red, the engine refuses the volume its container still mounts and the item is deferred. Beside it: space306-volume-made-again-not-seen-by-rule-1 and space306-volume-made-again-not-seen-by-the-snapshot each red loss/volume-made-again. Each noop copy green."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "Rows ac4/event-with-the-clock-stopped (time.time and time.monotonic replaced by constants: a create event written to a context's pipe is found by select and handled by docker_readable, and the new volume is an item of its run with its CreatedAt; the adapter imports no clock, no thread and no timer), ac4/poll-set (read from the source of serve: one select, on the listener and the pipes, the adapter's pipes read in each iteration and put among them before it, a ready one handed to docker_readable; a service with no adapter has no such pipe), ac4/end-of-file (end of file ends the stream; the context is read whole before the new client is started; a volume made while the stream was broken is an item; the old client is reaped; an event on the new pipe is handled), ac4/events (half a line waits for its rest; a stop and a start of a recorded container write nothing; a destroy marks the record gone on the engine's answer; a line that cannot be read makes the context be read again), ac4/broken-engine (a context whose snapshot cannot be read after its stream ended is not subscribed again; one whose stream ends twice without a byte is not started a third time; start subscribes again; stop reaps every client), loss/engine-unreadable (a context that cannot be read writes nothing; a destroy event on it marks nothing gone, also when the client says \"no such file\"). Green: proof/VELDO-0306/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled volume created while the real event stream was read became an item from its event, the labelled ones were removed at run finished by the real client in the order container, network, volume, the unlabelled volume stayed as a report, and the row left none of its objects behind. Stand-ins: assumptions 1 to 3."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0306/falsifiers.json",
+     "detail": "space306-stream-read-on-an-interval (the declared falsifier): ac4/event-with-the-clock-stopped red, with the clock stopped the event is never handled. Beside it: space306-subscribe-before-the-snapshot and space306-no-snapshot-at-end-of-file each red ac4/end-of-file; space306-broken-engine-asked-without-end reds ac4/broken-engine; space306-gone-without-the-engines-answer reds loss/engine-unreadable; space306-pipes-not-in-the-poll-set reds ac4/poll-set. Each noop copy green."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 144_veldo_0306_space_docker (21 rows, the real-engine row among them). Each on its own, green: 132, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143 and the suites that load the service module that were run (proof/VELDO-0306/suite-green.txt, which also names what is not green and why)."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, Signal, rules and removers, a real pipe of a real child process, and in integration/real-engine a real engine, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The fifteen registered cases of finding 306 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy: every noop green, every mutant turns its target rows red (proof/VELDO-0306/mutations.txt, falsifiers.json). Every anchor of the cases other tickets registered against the modules this build touched still occurs exactly once. Not run: those other cases; the gate's mutation stage runs them."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py; python3 .veldo/validate.py all: exit 0."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "Not run, by the lead's instruction. The single suites, the registered cases of finding 306 through the driver's own functions and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "1. THE ENGINE OF THE ROWS IS A STAND-IN, a class in the suite that holds containers, networks and volumes for two contexts and refuses as an engine does without a force option. Only integration/real-engine asks a real engine, and it runs only where the docker client answers on the context default or desktop-linux with an image there; in the gate's confinement it prints a SELFTEST SKIP line and adds no row, so the gate does not prove it. It ran green on the build host.",
+  "2. NOTHING SETS Service.space_docker YET. The service has no space ledger of its own, so no adapter is built for it in this repository: the pipes are in the poll set from the moment a later ticket sets the attribute. The loop of serve is not driven by a row; its select is read from its source (ac4/poll-set), and the rows call the Service class's own docker_pipes and docker_readable on a namespace that holds the adapter.",
+  "3. A RUN IS NOT GIVEN ITS LABEL YET. Putting the space label and the compose project name in a run's environment is the receiver's (design 6.3) and is not in this ticket's footprint; control_space_docker.given says what the two are. The rows label their objects themselves. Other stand-ins: the two checks of a switch to act (VELDO-0332, 0339), the process table (an empty fixture folder), the client that prints events (a real cat process).",
+  "4. THE FOOTPRINT GREW by control_space_signal.py and control_space_probe.py with their synced copies, for rule 1: it knew a Docker object by its engine Id alone, an engine gives a volume no Id, and so no volume could go at run finished. Rule 1 now passes a volume whose locator holds created_at when the engine shows a volume made at that time. Neither file is a protected path. The spec's History records it; it is the lead's to confirm.",
+  "5. IMAGES ARE NOT READ (VELDO-0328), and the adoption rule by compose's working folder and by bind source is VELDO-0307. An object those would give an owner is a report here.",
+  "6. A VOLUME'S IDENTITY IS ITS CreatedAt, which an engine gives to the second (the residual VELDO-0300 names): a volume removed and made again inside the same second under the same name is not told apart by it. Such a volume still has to carry the run's label or compose name to be the run's.",
+  "7. SEEN AND NOT CHANGED: control_space_probe.located takes \"no such\" in a client's words for the engine's answer that an object is absent. A real engine says \"network <name> not found\", so Signal defers a network removed by hand as not_in_ledger and never marks it gone (nothing is lost by that). The adapter reads the engine's own answer for each kind (absent)."
+ ],
+ "rollback": "Revert the change. Docker objects are neither recorded nor removed by Veldo."
+}
