@@ -14,7 +14,12 @@
    "ac4/events",
    "ac4/poll-set",
    "docker/canon",
-   "loss/engine-unreadable"
+   "loss/engine-unreadable",
+   "review/engine-down-reported",
+   "review/events-since-the-snapshot",
+   "review/host-object-untouched",
+   "review/never-under-a-mutant",
+   "review/own-row-on-a-stand-in"
   ],
   "red_details": [
    [
@@ -27,7 +32,9 @@
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "not_run: the suite raised before the row under this mutant"
  },
  {
   "falsifier": "space306-given-to-a-live-run",
@@ -41,8 +48,8 @@
    "ac2/one-live-run",
    "ac2/unattributable-is-a-report",
    "ac3/order-and-non-forced",
-   "integration/real-engine",
-   "loss/volume-made-again"
+   "loss/volume-made-again",
+   "review/own-row-on-a-stand-in"
   ],
   "red_details": [
    [
@@ -59,11 +66,82 @@
    ],
    [
     "VELDO-0306 ac3/order-and-non-forced",
-    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c011')"
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c012'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c012'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'conta"
+   ],
+   [
+    "VELDO-0306 loss/volume-made-again",
+    "after a snapshot the old record is gone and the new volume is a report with no owner [gone {'run': {'id': 'run-306-again', 'station': 'build'}, 'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9306'}]"
+   ],
+   [
+    "VELDO-0306 review/own-row-on-a-stand-in",
+    "on the engine default the row's labelled container, network and volume are items of the run, and its unlabelled volume is a report [{'container': 'adopted', 'network': 'adopted', 'volume': 'adopted', 'loose': 'adopted'}]"
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": {
+    "000000000000000000000000000000000000000000000000000000000000a00d": "adopted",
+    "000000000000000000000000000000000000000000000000000000000000c00e": "adopted",
+    "hostlike_pg_data": "adopted"
+   },
+   "passed_by_the_rows_client": [
+    [
+     "default",
+     "container",
+     "stop",
+     "000000000000000000000000000000000000000000000000000000000000c009"
+    ],
+    [
+     "default",
+     "container",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000c009"
+    ],
+    [
+     "default",
+     "container",
+     "stop",
+     "000000000000000000000000000000000000000000000000000000000000c00b"
+    ],
+    [
+     "default",
+     "container",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000c00b"
+    ],
+    [
+     "default",
+     "network",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000a008"
+    ],
+    [
+     "default",
+     "volume",
+     "rm",
+     "veldo-0306-80ebb69baf35-vol"
+    ]
+   ],
+   "refused_by_the_rows_client": [
+    [
+     "not an object the row created",
+     "default",
+     "container",
+     "stop",
+     "000000000000000000000000000000000000000000000000000000000000c00e"
+    ],
+    [
+     "not an object the row created",
+     "default",
+     "network",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000a00d"
+    ]
+   ]
+  }
  },
  {
   "falsifier": "space306-given-to-the-only-live-run",
@@ -87,7 +165,16 @@
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-two-runs-given-to-the-label",
@@ -112,11 +199,20 @@
    ],
    [
     "VELDO-0306 ac3/order-and-non-forced",
-    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('"
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('default', 'volume', "
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-no-identity-still-an-item",
@@ -140,7 +236,16 @@
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-compose-project-not-in-the-locator",
@@ -160,7 +265,7 @@
   "red_details": [
    [
     "VELDO-0306 ac1/label-and-compose-name",
-    "the network orchard_net on the context default is an item owned by the run, on that context [space:item:83399b93ad7447558f1ca56bdd919c33 None]"
+    "the network orchard_net on the context default is an item owned by the run, on that context [space:item:e2ee19752a144d9bb6aa081a5cee4ea3 None]"
    ],
    [
     "VELDO-0306 ac1/identity-recorded",
@@ -173,10 +278,27 @@
    [
     "VELDO-0306 ac2/unknown-run-and-two-runs",
     "the label of one run and the compose name of another: a report, no owner [None]"
+   ],
+   [
+    "VELDO-0306 ac2/never-removed",
+    "after every run finished the reported volume two_names is in its engine, was named to no stop and no remove, and its record has no owner [None]"
+   ],
+   [
+    "VELDO-0306 ac3/order-and-non-forced",
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'volume', 'rm', 'orchard_shared'), ('default', 'volume', 'rm', 'two_names')]]"
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-volumes-first",
@@ -187,20 +309,29 @@
   ],
   "red_rows": [
    "ac3/order-and-non-forced",
-   "integration/real-engine"
+   "review/own-row-on-a-stand-in"
   ],
   "red_details": [
    [
     "VELDO-0306 ac3/order-and-non-forced",
-    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'volume', 'rm', 'orchard_shared'), ('default', 'volume', 'rm', 'orchard_cache'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default"
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'volume', 'rm', 'orchard_cache'), ('default', 'volume', 'rm', 'orchard_shared'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm'"
    ],
    [
-    "VELDO-0306 integration/real-engine",
-    "at run finished the three are removed by the real client [{'container': ('removed', None, None), 'network': ('removed', None, None), 'volume': ('deferred', 'remove_refused', 'tool')}]"
+    "VELDO-0306 review/own-row-on-a-stand-in",
+    "at run finished the three are removed by the engine's client [{'container': ('removed', None, None), 'network': ('deferred', 'remove_refused', 'tool'), 'volume': ('deferred', 'remove_refused', 'tool')}]"
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-volume-made-again-not-seen-by-rule-1",
@@ -210,16 +341,30 @@
    "loss/volume-made-again"
   ],
   "red_rows": [
-   "loss/volume-made-again"
+   "loss/volume-made-again",
+   "review/volume-labels-rule-1"
   ],
   "red_details": [
    [
     "VELDO-0306 loss/volume-made-again",
     "with no new snapshot, rule 1 defers the item: the volume under its name was made at another time [('deferred', 'remove_refused', 'tool')]"
+   ],
+   [
+    "VELDO-0306 review/volume-labels-rule-1",
+    "a volume made again in the same second, without the run's label, is deferred by rule 1 as not_in_ledger [('deferred', 'remove_refused', 'tool') {'said': {'action': 'remove', 'bytes': None, 'bytes_source': None, 'deferral': 'remove_refused', 'freed': None, 'host': None, 'item': 'space:item:6feb03a0fcd44c85831947aafba4ca6c', 'kind': 'volume', 'method': 'engine_volume_remove', 'ok': False, 'pool': 'host', 'pool_free_aft"
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-volume-made-again-not-seen-by-the-snapshot",
@@ -238,7 +383,16 @@
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-stream-read-on-an-interval",
@@ -253,12 +407,17 @@
    "ac4/end-of-file",
    "ac4/event-with-the-clock-stopped",
    "ac4/events",
-   "docker/canon"
+   "docker/canon",
+   "review/engine-down-reported",
+   "review/events-since-the-snapshot",
+   "review/host-object-untouched",
+   "review/never-under-a-mutant",
+   "review/own-row-on-a-stand-in"
   ],
   "red_details": [
    [
     "VELDO-0306 ac1/label-and-compose-name",
-    "raised TypeError: 'NoneType' object is not subscriptable File \"./scripts/suites/144_veldo_0306_space_docker.py\", line 851, in _v306_space_docker_suite | % (L.item(kept_item)['state'],), | ~~~~~~~~~~~~~~~~~^^^^^^^^^ | TypeError: 'NoneType' object is not subscriptable"
+    "raised TypeError: 'NoneType' object is not subscriptable File \"./scripts/suites/144_veldo_0306_space_docker.py\", line 1034, in _v306_space_docker_suite | % (L.item(kept_item)['state'],), | ~~~~~~~~~~~~~~~~~^^^^^^^^^ | TypeError: 'NoneType' object is not subscriptable"
    ],
    [
     "VELDO-0306 ac4/event-with-the-clock-stopped",
@@ -270,7 +429,9 @@
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "not_run: the suite raised before the row under this mutant"
  },
  {
   "falsifier": "space306-subscribe-before-the-snapshot",
@@ -281,20 +442,39 @@
   ],
   "red_rows": [
    "ac4/broken-engine",
-   "ac4/end-of-file"
+   "ac4/end-of-file",
+   "review/engine-down-reported",
+   "review/events-since-the-snapshot"
   ],
   "red_details": [
    [
     "VELDO-0306 ac4/end-of-file",
-    "the context was read whole before the new client was started [[('spawn', 'default'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'inspect'), ('spawn', 'default')]]"
+    "the context was read whole before the new client was started [[('client', 'default', 'system', 'info'), ('spawn', 'default'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'inspect'), ('client', 'default', 'volume', 'insp"
    ],
    [
     "VELDO-0306 ac4/broken-engine",
-    "a context whose snapshot cannot be read after the end of its stream is not subscribed again [the snapshot after the end of the stream could not be read: container: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?]"
+    "a context whose stream ends twice without a byte is not started a third time [6]"
+   ],
+   [
+    "VELDO-0306 review/events-since-the-snapshot",
+    "at end of file too: the time, the snapshot, then the client since that time [[{'engine': 'default', 'events': 0, 'unreadable': 0, 'ended': True}] ['2026-11-14T10:00:00.000000050Z']]"
+   ],
+   [
+    "VELDO-0306 review/engine-down-reported",
+    "a context whose stream ended twice without a byte is logged too [['the time of the engine could not be read after the end of the stream', 'the event stream ended 2 times in a row without one byte', 'the event stream ended 3 times in a row without one byte', 'the event stream ended 4 times in a row without one byte']]"
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-no-snapshot-at-end-of-file",
@@ -304,21 +484,30 @@
    "ac4/end-of-file"
   ],
   "red_rows": [
-   "ac4/broken-engine",
-   "ac4/end-of-file"
+   "ac4/end-of-file",
+   "review/events-since-the-snapshot"
   ],
   "red_details": [
    [
     "VELDO-0306 ac4/end-of-file",
-    "the context was read whole before the new client was started [[('spawn', 'default')]]"
+    "the context was read whole before the new client was started [[('client', 'default', 'system', 'info'), ('spawn', 'default')]]"
    ],
    [
-    "VELDO-0306 ac4/broken-engine",
-    "a context whose snapshot cannot be read after the end of its stream is not subscribed again [None]"
+    "VELDO-0306 review/events-since-the-snapshot",
+    "at end of file too: the time, the snapshot, then the client since that time [[{'engine': 'default', 'events': 0, 'unreadable': 0, 'ended': True}] ['2026-11-14T10:00:00.000000050Z']]"
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-broken-engine-asked-without-end",
@@ -328,16 +517,30 @@
    "ac4/broken-engine"
   ],
   "red_rows": [
-   "ac4/broken-engine"
+   "ac4/broken-engine",
+   "review/engine-down-reported"
   ],
   "red_details": [
    [
     "VELDO-0306 ac4/broken-engine",
     "a context whose stream ends twice without a byte is not started a third time [5]"
+   ],
+   [
+    "VELDO-0306 review/engine-down-reported",
+    "a context whose stream ended twice without a byte is logged too [['the time of the engine could not be read after the end of the stream']]"
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-gone-without-the-engines-answer",
@@ -356,7 +559,16 @@
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  },
  {
   "falsifier": "space306-pipes-not-in-the-poll-set",
@@ -375,6 +587,441 @@
    ]
   ],
   "noop_red_rows": [],
-  "red_as_expected": true
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-protected-mount-adopted",
+  "criterion": "AC1",
+  "review_finding": 2,
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/protected-mount"
+  ],
+  "red_rows": [
+   "review/protected-mount"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/protected-mount",
+    "the container uses-atlas-db-1 mounts what is protected: it gets neither an item nor a report [[('space:item:b6b82f621ef445e7904f43bd1d7838a4', {'adopted': True, 'adoption': {'rule': 'run_label'}, 'branch': None, 'confirmed': None, 'creator': 'reconcile', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-unread-mounts-adopted",
+  "criterion": "AC1",
+  "review_finding": 2,
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/protected-mount"
+  ],
+  "red_rows": [
+   "review/protected-mount"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/protected-mount",
+    "a container the engine shows without its mounts is not recorded [{'refusal': 'space_protected:unread', 'mount': 'the engine showed the container without its mounts', 'engine': 'default', 'kind': 'container', 'name': 'mounts-never-shown-1', 'id': '000000000000000000000000000000000000000000000000000000000000c028', 'created_at': None, 'schema': 'veldo.control_space_docker/v1', 'what': 'protected'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-mounts-not-read-at-removal",
+  "criterion": "AC3",
+  "review_finding": 2,
+  "module": "control_space_signal.py",
+  "expected_red": [
+   "review/protected-mount"
+  ],
+  "red_rows": [
+   "review/protected-mount"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/protected-mount",
+    "at removal rule 2 reads the mounts again: the recorded container that now mounts a protected volume is deferred as protected [('removed', None, None) None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-unread-mounts-removed",
+  "criterion": "AC3",
+  "review_finding": 2,
+  "module": "control_space_signal.py",
+  "expected_red": [
+   "review/protected-mount"
+  ],
+  "red_rows": [
+   "review/protected-mount"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/protected-mount",
+    "one whose mounts cannot be read is deferred as protected too [('removed', None, None)]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-start-without-since",
+  "criterion": "AC4",
+  "review_finding": 3,
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/events-since-the-snapshot"
+  ],
+  "red_rows": [
+   "review/events-since-the-snapshot"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/events-since-the-snapshot",
+    "at start the engine's time is read before the snapshot, and the client is started after it, since that time [[('client', 'default', 'system', 'info'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'inspect'), ('client', '"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-end-of-file-without-since",
+  "criterion": "AC4",
+  "review_finding": 3,
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/events-since-the-snapshot"
+  ],
+  "red_rows": [
+   "review/events-since-the-snapshot"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/events-since-the-snapshot",
+    "at end of file too: the time, the snapshot, then the client since that time [[{'engine': 'default', 'events': 0, 'unreadable': 0, 'ended': True}] [None]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-down-not-in-the-answer",
+  "criterion": "AC4",
+  "review_finding": 4,
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "review/engine-down-reported"
+  ],
+  "red_rows": [
+   "review/engine-down-reported"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/engine-down-reported",
+    "the context that went down is in the service's observation log, with the reason [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-down-not-logged",
+  "criterion": "AC4",
+  "review_finding": 4,
+  "module": "control_service.py",
+  "expected_red": [
+   "review/engine-down-reported"
+  ],
+  "red_rows": [
+   "review/engine-down-reported"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/engine-down-reported",
+    "the context that went down is in the service's observation log, with the reason [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-rule-1-labels-not-compared",
+  "criterion": "AC3",
+  "review_finding": 5,
+  "module": "control_space_signal.py",
+  "expected_red": [
+   "review/volume-labels-rule-1"
+  ],
+  "red_rows": [
+   "review/volume-labels-rule-1"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/volume-labels-rule-1",
+    "a volume made again in the same second, without the run's label, is deferred by rule 1 as not_in_ledger [('deferred', 'remove_refused', 'tool') {'said': {'action': 'remove', 'bytes': None, 'bytes_source': None, 'deferral': 'remove_refused', 'freed': None, 'host': None, 'item': 'space:item:532fc8f88f894777a1184e9986e58c9c', 'kind': 'volume', 'method': 'engine_volume_remove', 'ok': False, 'pool': 'host', 'pool_free_aft"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-review-row-client-lets-everything-through",
+  "criterion": "AC2",
+  "review_finding": 1,
+  "module": "144_veldo_0306_space_docker.py",
+  "expected_red": [
+   "review/host-object-untouched"
+  ],
+  "red_rows": [
+   "review/host-object-untouched"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/host-object-untouched",
+    "the row's client refuses \"container stop\" and gives the engine nothing [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c00e')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "red",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": {
+    "000000000000000000000000000000000000000000000000000000000000a00d": "reported",
+    "000000000000000000000000000000000000000000000000000000000000c00e": "reported",
+    "hostlike_pg_data": "reported"
+   },
+   "passed_by_the_rows_client": [
+    [
+     "default",
+     "container",
+     "stop",
+     "000000000000000000000000000000000000000000000000000000000000c00b"
+    ],
+    [
+     "default",
+     "container",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000c00b"
+    ],
+    [
+     "default",
+     "container",
+     "stop",
+     "000000000000000000000000000000000000000000000000000000000000c009"
+    ],
+    [
+     "default",
+     "container",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000c009"
+    ],
+    [
+     "default",
+     "network",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000a008"
+    ],
+    [
+     "default",
+     "volume",
+     "rm",
+     "veldo-0306-2d3addf2ec38-vol"
+    ]
+   ],
+   "refused_by_the_rows_client": []
+  }
+ },
+ {
+  "falsifier": "space306-review-row-client-takes-any-object",
+  "criterion": "AC2",
+  "review_finding": 1,
+  "module": "144_veldo_0306_space_docker.py",
+  "expected_red": [
+   "review/host-object-untouched"
+  ],
+  "red_rows": [
+   "review/host-object-untouched"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/host-object-untouched",
+    "the row's client refuses \"container stop\" and gives the engine nothing [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c00e')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "red",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": {
+    "000000000000000000000000000000000000000000000000000000000000a00d": "reported",
+    "000000000000000000000000000000000000000000000000000000000000c00e": "reported",
+    "hostlike_pg_data": "reported"
+   },
+   "passed_by_the_rows_client": [
+    [
+     "default",
+     "container",
+     "stop",
+     "000000000000000000000000000000000000000000000000000000000000c00b"
+    ],
+    [
+     "default",
+     "container",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000c00b"
+    ],
+    [
+     "default",
+     "container",
+     "stop",
+     "000000000000000000000000000000000000000000000000000000000000c009"
+    ],
+    [
+     "default",
+     "container",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000c009"
+    ],
+    [
+     "default",
+     "network",
+     "rm",
+     "000000000000000000000000000000000000000000000000000000000000a008"
+    ],
+    [
+     "default",
+     "volume",
+     "rm",
+     "veldo-0306-2650f3a521a1-vol"
+    ]
+   ],
+   "refused_by_the_rows_client": []
+  }
+ },
+ {
+  "falsifier": "space306-review-row-events-not-filtered",
+  "criterion": "AC2",
+  "review_finding": 1,
+  "module": "144_veldo_0306_space_docker.py",
+  "expected_red": [
+   "review/own-row-on-a-stand-in"
+  ],
+  "red_rows": [
+   "review/own-row-on-a-stand-in"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 review/own-row-on-a-stand-in",
+    "the client that prints the events was started with the row's own label as a filter, since the engine's time [[['docker', '--context', 'default', 'events', '--format', '{{json .}}', '--filter', 'type=container', '--filter', 'type=network', '--filter', 'type=volume', '--since', '2026-11-14T10:00:00.000000010Z']]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
  }
 ]
