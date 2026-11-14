@@ -162,19 +162,37 @@ THE TEST SEAM. SEAM['after_in_use'], when set, is called with the facts of every
 they are returned. It is for tests that need something to happen between two probes. Nothing in the
 engine sets it.
 
-GIT is run with optional locks off, so a status never writes the index, with the file monitor off, and
-with no GIT_ variable of the caller's environment. A repository git cannot read comes back with read
-False and what git said; it is never reported as having no unique work.
+GIT is run through the one Git boundary (git_process.py, the sibling of this file), in its isolated
+profile: no GIT_ variable of the caller's environment and no system or global configuration reaches
+it. So a file that only a personal global excludes file ignores is an untracked file to rule 5, as it
+is to the removers' git, and design section 0.1 calls it work. Optional locks are off, so a status
+never writes the index, and the file monitor is off. A runner a caller gives is handed the same
+argument vector; the default runner, and the removers' own, send a git vector through the boundary. A
+repository git cannot read comes back with read False and what git said; it is never reported as
+having no unique work.
 
-Standard library only.
+Standard library only, and the Git boundary beside this file.
 """
 import errno
 import fcntl
 import fnmatch
+import importlib.util
 import json
 import os
+from pathlib import Path
 import re
 import subprocess
+
+
+def _sibling(name):
+    spec = importlib.util.spec_from_file_location('veldo_space_probe_' + name,
+                                                  Path(__file__).resolve().with_name(name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_git_process = _sibling('git_process')
 
 SCHEMA = 'veldo.control_space_probe/v1'
 
@@ -209,15 +227,22 @@ GIT_FOLDER = frozenset(('HEAD', 'objects', 'refs'))
 SEAM = {'after_in_use': None}
 
 
-def _run(argv, cwd=None):
+def _run(argv, cwd=None, via=None):
     """Run a client and return (exit code, output). A client that is missing or does not end in time
-    gives (None, what happened)."""
-    environment = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
-    environment.update(GIT_OPTIONAL_LOCKS='0', GIT_TERMINAL_PROMPT='0', LC_ALL='C')
+    gives (None, what happened). A git argument vector is run through the one Git boundary and by
+    nothing else. `via` is the runner a caller gave: it is handed the vector as it is."""
+    if via is not None and via is not _run:
+        return via(argv)
+    environment = dict(os.environ, LC_ALL='C')
+    given = dict(cwd=cwd, env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                 stderr=subprocess.PIPE, timeout=SECONDS)
     try:
-        done = subprocess.run(argv, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=SECONDS)
-    except (OSError, subprocess.SubprocessError) as error:
+        if argv and argv[0] == 'git':
+            done = _git_process.run([str(word) for word in argv], **given)  # the isolated profile
+        else:
+            environment = {key: value for key, value in environment.items() if not key.startswith('GIT_')}
+            done = subprocess.run(argv, **dict(given, env=environment))
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         return None, type(error).__name__ + ': ' + str(error)[:200]
     if done.returncode:
         return done.returncode, done.stderr.decode('utf-8', 'replace').strip()[-300:]
@@ -225,7 +250,8 @@ def _run(argv, cwd=None):
 
 
 def _git(run, repository, *argv):
-    return run(['git', '-c', 'core.fsmonitor=false', '-C', str(repository)] + list(argv))
+    return _run(['git', '--no-optional-locks', '-c', 'core.fsmonitor=false', '-C', str(repository)] + list(argv),
+                via=run)
 
 
 def _beneath(candidate, root):

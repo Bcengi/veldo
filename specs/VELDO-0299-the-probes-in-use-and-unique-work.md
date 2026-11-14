@@ -181,3 +181,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   acceptance criterion changes" is to be read as: AC1 is read more strictly. AC1's text was not edited
   then and is not edited now, the built code and its proof bundle still answer it, and the stricter
   reading is VELDO-0344 AC8. That entry is left as it was written. No acceptance criterion changed.
+- 2026-11-14: from the independent review of VELDO-0300 (finding 7), under the owner's rule that no work is
+  ever lost. No acceptance criterion changed. The probes built their git argument vector outside the one
+  Git boundary: the default runner was a plain subprocess that read the user's global and system
+  configuration, so a file hidden by a personal core.excludesFile was no untracked file to rule 5,
+  which design 0.1 calls work, and scripts/check_git_boundary.py failed on the module. Now _git hands
+  its vector to the module's _run, whose git arm calls git_process.run in the isolated profile, with
+  --no-optional-locks (the flag form of GIT_OPTIONAL_LOCKS=0, since the boundary strips every GIT_
+  variable) and core.fsmonitor=false; a runner a caller gives is handed the same vector.
+  scripts/check_git_boundary.py allows the module as a funnel (FUNNELS); that file is not a protected
+  path. New row closed/personal-excludes-is-work and falsifier space299-git-outside-the-boundary. Every
+  registered case of this module now runs beside a copy of git_process.py (companions).

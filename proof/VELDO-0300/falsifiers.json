@@ -24,7 +24,15 @@
    "ac4/engine-image-pool",
    "ac4/folder-figures",
    "ac4/free-unread",
-   "remove/canon"
+   "remove/canon",
+   "work/agent-repository-files",
+   "work/commit-in-the-gap",
+   "work/ignored-files",
+   "work/link-and-dotdot",
+   "work/marked-name",
+   "work/probes-through-the-boundary",
+   "work/repository-in-a-folder",
+   "work/worktree-second-probe"
   ],
   "red_details": [
    [
@@ -55,7 +63,15 @@
    "ac4/engine-image-pool",
    "ac4/folder-figures",
    "ac4/free-unread",
-   "remove/canon"
+   "remove/canon",
+   "work/agent-repository-files",
+   "work/commit-in-the-gap",
+   "work/ignored-files",
+   "work/link-and-dotdot",
+   "work/marked-name",
+   "work/probes-through-the-boundary",
+   "work/repository-in-a-folder",
+   "work/worktree-second-probe"
   ],
   "red_details": [
    [
@@ -138,7 +154,7 @@
   "red_details": [
    [
     "VELDO-0300 ac2/keep-step",
-    "a keep step that answers no: deferred keep_failed [(True, None, None)]"
+    "a keep step that read the tips and kept nothing: deferred keep_failed [(True, None, None)]"
    ]
   ],
   "red_as_expected": true
@@ -153,12 +169,212 @@
   "red_rows": [
    "ac1/cannot-put-back",
    "ac1/delete-stops",
-   "ac1/rename-probe-delete"
+   "ac1/rename-probe-delete",
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon",
+   "work/agent-repository-files",
+   "work/commit-in-the-gap",
+   "work/link-and-dotdot",
+   "work/marked-name",
+   "work/probes-through-the-boundary",
+   "work/repository-in-a-folder"
   ],
   "red_details": [
    [
     "VELDO-0300 ac1/delete-stops",
     "what is left is back at its path and nothing is under the marked name"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-ignored-work-not-compared",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/ignored-files"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon",
+   "work/agent-repository-files",
+   "work/commit-in-the-gap",
+   "work/ignored-files",
+   "work/link-and-dotdot",
+   "work/marked-name",
+   "work/probes-through-the-boundary",
+   "work/repository-in-a-folder",
+   "work/worktree-second-probe"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/ignored-files",
+    "rules 1 to 6 pass and the remover refuses, keep_failed [(True, None, 7, None)]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-tips-not-read-again",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/commit-in-the-gap"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/commit-in-the-gap"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/commit-in-the-gap",
+    "a commit made after the keep step answered: rules 1 to 6 pass, the remover refuses, keep_failed [(True, None, 7, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-agent-repository-files-not-read",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/agent-repository-files"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon",
+   "work/agent-repository-files",
+   "work/link-and-dotdot",
+   "work/marked-name",
+   "work/probes-through-the-boundary",
+   "work/repository-in-a-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/agent-repository-files",
+    "every branch is across, rules 1 to 6 pass, and the remover refuses, keep_failed [(True, None, 7, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-repository-in-a-folder-deleted",
+  "criterion": "AC1",
+  "expected_red": [
+   "work/repository-in-a-folder"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/commands",
+   "ac3/drop-caches",
+   "ac3/engine-refusal",
+   "ac3/no-remover",
+   "ac4/docker-bytes",
+   "ac4/engine-image-pool",
+   "ac4/folder-figures",
+   "ac4/free-unread",
+   "remove/canon",
+   "work/link-and-dotdot",
+   "work/marked-name",
+   "work/probes-through-the-boundary",
+   "work/repository-in-a-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/repository-in-a-folder",
+    "a scratch folder that is a git repository: rules 1 to 6 pass and the remover refuses [(True, None, 7, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-follows-a-link-or-dotdot",
+  "criterion": "AC1",
+  "expected_red": [
+   "work/link-and-dotdot"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/link-and-dotdot"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/link-and-dotdot",
+    "the folder remover, called by itself on a path whose parent is a link, refuses and the target is whole [None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-worktree-no-second-probe",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/worktree-second-probe"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/worktree-second-probe"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/worktree-second-probe",
+    "a process found in the worktree under its marked name: rules 1 to 6 pass, the remover defers in_use [(True, None, 7, None)]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-marked-name-shared",
+  "criterion": "AC1",
+  "expected_red": [
+   "work/marked-name"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/marked-name"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/marked-name",
+    "two ids that differ in one character have two marked names [/s/folder.veldo-removing.a-b /s/folder.veldo-removing.a-b]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-probe-reads-outside-the-boundary",
+  "criterion": "AC2",
+  "expected_red": [
+   "work/probes-through-the-boundary"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/probes-through-the-boundary"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/probes-through-the-boundary",
+    "rule 5, read through the remover's runner, sees the file as untracked work and refuses [tool None]"
    ]
   ],
   "red_as_expected": true

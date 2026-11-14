@@ -98,3 +98,49 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   kept refs and has the keep record written before it calls its tool, and a failure is the deferral
   keep_failed. The discard remover and the review scratch remover write the snapshot first (VELDO-0318
   AC3, VELDO-0336 AC3).
+- 2026-11-14: fixed after the independent review (verdict FIX; review-veldo-0300.md, nine findings), under the
+  owner's rule that no work is ever lost (Telegram 41209). No acceptance criterion changed. The reviewer
+  planted work and lost four kinds of it through the whole rule chain with a keep step that answered ok.
+  Each now has a row that plants that work and a registered falsifier that loses it:
+  - Finding 1, ignored files that are work. The worktree remover enforces the save itself, as design 0.3
+    has Save and Discard do: after the keep step it moves the worktree to its marked name with git's
+    non-forced worktree move, runs the in-use probe there, and reads git's status with every ignored
+    path. An ignored folder that a committed ignore file or a declared build output pattern covers is
+    build output; every other ignored path (a file only info/exclude ignores, a loose ignored file) is
+    work and must be in the keep step's snapshot with the same mode and digest. Otherwise the worktree is
+    moved back and deferred keep_failed. git's remove then runs on the marked name; its refusal moves
+    the worktree back. Row work/ignored-files; row work/worktree-second-probe for the probe there.
+  - Finding 2, a commit made after the keep step. The keep step answers {ok, tips}, tips being what
+    control_space_remove.tips read in the item (head, branch, the commits an operation names, its own
+    refs, its log; for a private repository every ref, stash entry and log). The remover reads them
+    again as its last look under the marked name; any difference is keep_failed. An answer with no tips
+    is keep_failed with nothing touched. Row work/commit-in-the-gap.
+  - Finding 3, an agent repository's files. Under its marked name, after the second probe, a repository
+    with a work tree is refused keep_failed on any modified, staged or untracked entry and on any
+    ignored path that is work. The exception for a worker clone with a snapshot is VELDO-0347's and is
+    not built: until then every such repository waits. Row work/agent-repository-files.
+  - Finding 4, a repository in a folder. The walk that measures a folder before the first delete stops
+    on a folder that holds a .git entry or is a git folder; the folder is put back, remove_refused.
+    Scratch, build output and a cache hold none; an agent repository and a worktree hold their own and no
+    other. The clean clone of design 0.1 is not excepted here: that is VELDO-0347. Row
+    work/repository-in-a-folder.
+  - Finding 5, a link or .. in the path. Every remover refuses a path that is not absolute, plain and
+    free of links, by itself and before the keep step; the folder remover opens the folder's parent from
+    / down with no link followed and renames, deletes and puts back by name inside that descriptor. Row
+    work/link-and-dotdot.
+  - Finding 8, a folder left under its marked name. The marked name now writes the item's id without
+    loss (two ids never share one), unmarked reads it back and left(path, id) finds what a killed
+    removal left. Looking there before an item is marked gone is reconcile's, VELDO-0315 AC2, which
+    already says so; its History has the pointer. Row work/marked-name.
+  - Finding 7 is VELDO-0299's and is fixed with this change (its History). The removers' own runner
+    sends the probes' git reads through the Git boundary too. Row work/probes-through-the-boundary.
+  - Finding 6 (Signal names every tool refusal remove_refused) is recorded in VELDO-0301's History:
+    its spec did not say it, and control_space_signal.py is not this ticket's.
+  - Finding 9 (the Docker removers do not read the object's label again at the remove; low) is NOT
+    fixed here. What an engine says of an object is VELDO-0341; it stays open and is named in the proof.
+  What changed for a caller: a worktree is on disk under <name>.veldo-removing.<id> between git's move
+  and git's remove, so a kill there leaves a whole worktree under that name (design 0.2's table row for
+  Save and Discard now holds for every worktree removal); and the plain remove of a worktree asks for a
+  snapshot where the design's 6.5 row asks for one only after a Save. The design text is not edited by
+  this change. Outside the footprint above, on the lead's instruction: .veldo/control_space_probe.py
+  with its engine copy, scripts/check_git_boundary.py, suite 136 and proof/VELDO-0299.

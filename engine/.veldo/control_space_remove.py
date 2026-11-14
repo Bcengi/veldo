@@ -10,8 +10,9 @@ to the ledger: the outcome is the caller's (VELDO-0301).
 THE REMOVERS, by the table's action and the item's kind (REMOVERS):
 
   remove            scratch, build_output   the folder remover
-  remove            worktree                the keep step, then git's worktree remove, never forced
-  remove            agent_repository        the keep step, then the folder remover
+  remove            worktree                the keep step, git's worktree move to a marked name, the last
+                                            look there, then git's worktree remove, never forced
+  remove            agent_repository        the keep step, then the folder remover with a last look
   remove            volume                  the engine's volume remove
   remove            network                 the engine's network remove
   remove            container               the engine's stop, then its container remove
@@ -39,28 +40,61 @@ THE FOLDER REMOVER. Rename, second probe, delete, in that order:
   3. the folder is measured and then deleted, through descriptors and without following a link.
      Directories a confined process left unreadable or unwritable are opened up first, the same way.
 
-It refuses by itself, before the rename, when the path is not a folder (a link is not one), when it
-is a mount point, when it is not on the item's pool, and when something is already at the marked name.
-It stops, and puts back what is there, when another filesystem is mounted inside the folder or a
-delete fails. When the folder cannot be put back (something has appeared at its path), it stays under
-the marked name, the answer names it in left_at, and nothing touches what is at the path. The marked
-name holds the item's id so that reconcile finds a folder left under it.
+It refuses by itself, before the rename, when the path is not a plain one (it is relative, it holds
+`..`, or a link is on its way: the remover does not rely on rule 1 for that), when it is not a folder
+(a link is not one), when it is a mount point, when it is not on the item's pool, and when something
+is already at the marked name. The folder its path is in is opened from / down with no link followed,
+and the rename, the delete and the put back are made by name inside that one descriptor, so a parent
+swapped for a link afterwards leads nowhere else. It stops, and puts back what is there, when another
+filesystem is mounted inside the folder, when a delete fails, and when the folder is a git repository
+or holds one: a folder with a .git entry, or one that is itself a git folder (HEAD, objects and refs),
+found by the walk that measures the folder before the first delete. Scratch, build output and a cache
+hold no repository; an agent repository holds its own and no other. When the folder cannot be put
+back (something has appeared at its path), it stays under the marked name, the answer names it in
+left_at, and nothing touches what is at the path. The marked name holds the item's id, written so
+that no two ids share a name (marked, unmarked), and `left` finds a folder left under it: reconcile
+looks there before it marks an item gone (VELDO-0315).
 
 THE KEEP STEP IS GIVEN, AND WITHOUT IT NOTHING THAT HOLDS COMMITS IS REMOVED (design section 0.2). A
 worktree and an agent repository are removed only after `keep(identity, record)` has answered
-{ok: True}: the keeper has recorded every commit on kept refs in the main repository, read them back
-and had the keep record written. With no keeper, or any other answer, the item is deferred as
-keep_failed and nothing is touched. The keeper itself is VELDO-0345. This module only refuses to run
-without it.
+{ok: True, tips: ...}: the keeper has recorded every commit on kept refs in the main repository, read
+them back and had the keep record written. With no keeper, or any other answer, the item is deferred
+as keep_failed and nothing is touched. The keeper itself is VELDO-0345. This module only refuses to
+run without it.
 
-THE WORKTREE REMOVER runs git's worktree remove in the worktree's repository, with no force option,
-through the one Git boundary (git_process.py, the sibling of this file): no GIT_ variable of the caller
-and no system or global configuration reaches it, so a file only a personal excludes file ignores is an
-untracked file to it. git
-refuses a worktree with a modified tracked file, an untracked file, a lock or a submodule, and that
-refusal is the deferral remove_refused with the worktree untouched. git's non-forced remove does delete
-ignored files without a word (measured in this ticket's proof); what an ignored file is worth is
-rule 5's to say before this remover is called.
+THE KEEP STEP'S ANSWER IS CHECKED AGAINST THE ITEM AT THE MOMENT OF THE REMOVE. tips is what `tips`
+of this module read in the item when the keeper recorded it: the checked-out commit and branch, the
+commits an operation in progress names, the item's own refs and every commit its log names; for an
+agent repository every ref, every stash entry and every log. The remover reads them again as its last
+look, under the marked name, and any difference is keep_failed with the item moved back: a commit
+made after the keep step is on no kept ref. snapshot, when the answer holds one, is {files: {path:
+{mode, sha256}}}, the files the keep step saved outside git.
+
+THE WORKTREE REMOVER enforces the save itself. git's non-forced worktree remove refuses a modified
+tracked file, an untracked file, a lock and a submodule, and it deletes ignored files without a word
+(measured in this ticket's proof). So, after the keep step:
+
+  1. the worktree is moved to its marked name by git's worktree move, with no force option. A refusal
+     (a locked worktree, a submodule) is remove_refused with the worktree at its path;
+  2. the in-use probe is run again there; a user moves it back, in_use;
+  3. git's status is read there with every ignored path. An ignored folder that a committed ignore
+     file of the worktree or a build output pattern the project declares covers is build output. Every
+     other ignored path is work (design 0.1): a file only info/exclude ignores, a loose ignored file
+     such as a local settings file, whatever rule covers it. Each such file must be in the keep
+     step's snapshot with the same mode and digest, or the worktree is moved back, keep_failed;
+  4. the tips are read again and compared with the keep step's;
+  5. git's worktree remove is run on the marked name, with no force option. Its refusal moves the
+     worktree back and is remove_refused.
+
+A repository inside the worktree stops it as it stops a folder. Every git command is run through the
+one Git boundary (git_process.py, the sibling of this file): no GIT_ variable of the caller and no
+system or global configuration reaches it, so a file only a personal excludes file ignores is an
+untracked file to it. The probes' git reads go through the same boundary.
+
+THE AGENT REPOSITORY REMOVER makes its last look under the marked name too, after the second probe:
+a repository with a work tree is refused, keep_failed, on any modified, staged or untracked entry and
+on any ignored path that is work, because nothing has saved them (the snapshot of a worker clone and
+its file by file comparison are VELDO-0347); then the tips are compared.
 
 THE DOCKER REMOVERS name one object to the engine, on the item's engine context: a container by its
 id, an image by its tag, a volume by its name, a network by its id. The engine's refusal (a container
@@ -78,11 +112,14 @@ reading that fails before the removal refuses it; one that fails after it leaves
 
 A REFUSAL is {ok: False, reason: space_deferred:<deferral>, deferral, said} with the figures read so
 far. The deferrals: remove_refused (the tool refused, or the remover refused by itself), in_use (the
-second probe), keep_failed (the keep step).
+second probe), keep_failed (the keep step, and a last look that finds work the keep step did not
+save).
 
 Standard library only. The ledger is the control_space.Ledger and the probe the control_space_probe
 module the caller passes in.
 """
+import fnmatch
+import hashlib
 import importlib.util
 import json
 import os
@@ -107,6 +144,13 @@ MARK = '.veldo-removing.'  # between a folder's own name and its item's id, in i
 SECONDS = 3600  # the longest one command of a tool may take
 REFUSED, IN_USE, KEEP_FAILED = 'remove_refused', 'in_use', 'keep_failed'
 BLOCK = 512  # the unit of st_blocks
+DIRECTORY = os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+NAMED = 20  # the most paths named in one refusal
+GIT_FOLDER = frozenset(('HEAD', 'objects', 'refs'))  # a folder holding these is a git folder
+# What an operation in progress names, and the refs a worktree has of its own.
+OPERATION_REFS = ('ORIG_HEAD', 'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD', 'REBASE_HEAD', 'BISECT_HEAD')
+OWN_REFS = ('refs/bisect', 'refs/worktree', 'refs/rewritten')
+PLAIN = frozenset('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_')
 
 
 class _Refusal(Exception):
@@ -121,13 +165,18 @@ class _Stop(Exception):
 
 def _run(argv, cwd=None):
     """Run a client and return (exit code, output). A client that is missing or does not end in time
-    gives (None, what happened)."""
-    environment = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
-    environment.update(GIT_TERMINAL_PROMPT='0', LC_ALL='C')
+    gives (None, what happened). A git argument vector, which the probes hand to this runner, is run
+    through the one Git boundary and by nothing else."""
+    environment = dict(os.environ, LC_ALL='C')
+    given = dict(cwd=cwd, env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                 stderr=subprocess.PIPE, timeout=SECONDS)
     try:
-        done = subprocess.run(argv, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=SECONDS)
-    except (OSError, subprocess.SubprocessError) as error:
+        if argv and argv[0] == 'git':
+            done = _git_process.run([str(word) for word in argv], **given)  # the isolated profile
+        else:
+            environment = {key: value for key, value in environment.items() if not key.startswith('GIT_')}
+            done = subprocess.run(argv, **dict(given, env=environment))
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         return None, type(error).__name__ + ': ' + str(error)[:200]
     if done.returncode:
         return done.returncode, done.stderr.decode('utf-8', 'replace').strip()[-300:]
@@ -138,11 +187,103 @@ def _said(error):
     return type(error).__name__ + ': ' + str(error)[:300]
 
 
+def _git(commands, *argv, feed=None):
+    """One git command of the remover's own, through the Git boundary: (exit code, output). The
+    command the process was given is added to `commands`."""
+    given = dict(env=dict(os.environ, LC_ALL='C'), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                 timeout=SECONDS)
+    given.update({'stdin': subprocess.DEVNULL} if feed is None else {'input': feed})
+    try:
+        done = _git_process.run(['git', '--no-optional-locks', '-c', 'core.fsmonitor=false']
+                                + [str(word) for word in argv], **given)
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        if commands is not None and getattr(error, 'cmd', None):
+            commands.append([str(word) for word in error.cmd])
+        return None, _said(error)
+    if commands is not None:
+        commands.append([str(word) for word in done.args])
+    if done.returncode:
+        return done.returncode, done.stderr.decode('utf-8', 'replace').strip()[-300:]
+    return 0, done.stdout.decode('utf-8', 'surrogateescape')
+
+
 def marked(path, identity):
-    """The marked name of the folder `path` of the item `identity`: beside it, with the item's id."""
+    """The marked name of the folder `path` of the item `identity`: beside it, with the item's id. A
+    character of the id that is not a letter, a digit, - or _ is written as ~ and its code in
+    hexadecimal, so two ids never share a marked name and `unmarked` reads the id back."""
     path = path.rstrip('/')
-    tail = ''.join(c if c.isalnum() or c in '-_' else '-' for c in str(identity).rsplit(':', 1)[-1])
+    tail = ''.join(c if c in PLAIN else ''.join('~%02x' % byte for byte in c.encode('utf-8'))
+                   for c in str(identity).rsplit(':', 1)[-1])
     return os.path.join(os.path.dirname(path), os.path.basename(path) + MARK + tail)
+
+
+def unmarked(name):
+    """The path and the id's last part a marked name was made from: (path, id part), or None when
+    `name` is not a marked name."""
+    folder, base = os.path.split(name.rstrip('/'))
+    own, mark, tail = base.rpartition(MARK)
+    if not mark or not own or not tail:
+        return None
+    try:
+        raw = bytearray()
+        while tail:
+            if tail[0] == '~':
+                raw.append(int(tail[1:3], 16))
+                tail = tail[3:]
+            elif tail[0] in PLAIN:
+                raw.extend(tail[0].encode())
+                tail = tail[1:]
+            else:
+                return None
+        return os.path.join(folder, own), raw.decode('utf-8')
+    except (ValueError, IndexError):
+        return None
+
+
+def left(path, identity):
+    """The marked name of the item when something is there now, a folder or a worktree a removal that
+    stopped or was killed left under it; None when nothing is. Reconcile asks before it marks an item
+    gone (design 8.8)."""
+    name = marked(path, identity)
+    return name if os.path.lexists(name) else None
+
+
+def _plain(path):
+    """The path, when it is absolute and leads where its own text says: no `.`, no `..`, no doubled
+    slash and no link on the way. Anything else is refused: the remover follows no link by itself."""
+    if not isinstance(path, str) or not path:
+        raise _Refusal(REFUSED, 'the locator names no path')
+    path = path.rstrip('/')
+    if not os.path.isabs(path) or os.path.normpath(path) != path:
+        raise _Refusal(REFUSED, 'the path is not a plain absolute path: ' + path)
+    if os.path.realpath(path) != path:
+        raise _Refusal(REFUSED, 'the path is reached through a link: ' + path)
+    return path
+
+
+def _parent(path):
+    """A descriptor of the folder the plain path `path` is in, opened from / down with no link
+    followed. The caller closes it."""
+    descriptor = os.open('/', os.O_PATH | DIRECTORY)
+    try:
+        for part in os.path.dirname(path).split('/'):
+            if part:
+                inner = os.open(part, os.O_PATH | DIRECTORY, dir_fd=descriptor)
+                os.close(descriptor)
+                descriptor = inner
+    except OSError as error:
+        os.close(descriptor)
+        raise _Refusal(REFUSED, 'the folder the path is in could not be opened with no link followed: '
+                       + _said(error))
+    return descriptor
+
+
+def _there(name, dir_fd):
+    try:
+        os.lstat(name, dir_fd=dir_fd)
+    except FileNotFoundError:
+        return False
+    return True
 
 
 def mount_point(path):
@@ -153,9 +294,6 @@ def mount_point(path):
 # ---------------------------------------------------------------------------------------------
 # Measuring and deleting a folder, through descriptors and without following a link.
 # ---------------------------------------------------------------------------------------------
-
-DIRECTORY = os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
-
 
 def _open_up(name, dir_fd=None):
     """Give the owner every permission on a directory, through a descriptor of the directory itself."""
@@ -168,7 +306,7 @@ def _open_up(name, dir_fd=None):
         os.close(inner)
 
 
-def _walk(name, dir_fd, device, seen, open_up):
+def _walk(name, dir_fd, device, seen, open_up, own=None, depth=0):
     if open_up:
         _open_up(name, dir_fd)
     descriptor = os.open(name, os.O_RDONLY | DIRECTORY, dir_fd=dir_fd)
@@ -179,9 +317,14 @@ def _walk(name, dir_fd, device, seen, open_up):
         total = here.st_blocks * BLOCK
         with os.scandir(descriptor) as entries:
             listing = list(entries)
+        names = set(entry.name for entry in listing)
+        if own is not None and ('.git' in names or GIT_FOLDER <= names):
+            # The item's own repository is its top, and the git folder right beneath its top.
+            if not (own and (depth == 0 or (depth == 1 and name == '.git'))):
+                raise _Stop('a git repository is in the folder, at %s' % name)
         for entry in listing:
             if entry.is_dir(follow_symlinks=False):
-                total += _walk(entry.name, descriptor, device, seen, open_up)
+                total += _walk(entry.name, descriptor, device, seen, open_up, own, depth + 1)
                 continue
             found = entry.stat(follow_symlinks=False)
             if found.st_nlink > 1:
@@ -194,12 +337,15 @@ def _walk(name, dir_fd, device, seen, open_up):
         os.close(descriptor)
 
 
-def measure(path, device=None, open_up=False):
+def measure(path, device=None, open_up=False, own=None, dir_fd=None):
     """The bytes the folder `path` takes on disk: every file and directory in it, a file with several
     names counted once, no link followed. With `open_up`, directories the owner cannot enter are opened
-    up on the way. Raises OSError for what cannot be read and _Stop for a filesystem mounted inside."""
-    device = os.lstat(path).st_dev if device is None else device
-    return _walk(path, None, device, set(), open_up)
+    up on the way. `own` says what the walk does with a git repository: None, nothing; False, any
+    folder that is one or holds one stops it; True, the same but for the folder's own, at its top.
+    `path` is a name inside `dir_fd` when one is given. Raises OSError for what cannot be read and
+    _Stop for a filesystem mounted inside and for a repository."""
+    device = os.lstat(path, dir_fd=dir_fd).st_dev if device is None else device
+    return _walk(path, dir_fd, device, set(), open_up, own)
 
 
 def _delete(name, dir_fd, device):
@@ -281,61 +427,78 @@ def _second_probe(ctx, path):
     return None
 
 
-def _put_back(name, path):
-    """Rename what is left under the marked name back to its path. None, or why it could not be."""
-    if not os.path.lexists(name):
-        return None
+def _put_back(parent, tail, base):
+    """Rename what is left under the marked name back to its own name, both names inside the one
+    folder `parent` is a descriptor of. None, or why it could not be."""
     try:
-        if os.path.lexists(path):
-            raise FileExistsError('something is at the path now: ' + path)
-        os.rename(name, path)
+        if not _there(tail, parent):
+            return None
+        if _there(base, parent):
+            raise FileExistsError('something is at the path now')
+        os.rename(tail, base, src_dir_fd=parent, dst_dir_fd=parent)
     except OSError as error:
         return _said(error)
     return None
 
 
-def _folder(ctx, identity, record, path):
-    """Rename, second probe, delete. Returns the bytes measured just before the delete."""
+def _folder(ctx, identity, record, path, own=False, look=None):
+    """Rename, second probe, last look, delete. Returns the bytes measured just before the delete.
+    `own` is measure's: whether the folder may be a repository of its own. `look(marked name)`, when
+    given, is the last look at the folder under its marked name; its refusal puts the folder back."""
     ledger = ctx['ledger']
-    path = path.rstrip('/')
-    try:
-        found = os.lstat(path)
-    except OSError as error:
-        raise _Refusal(REFUSED, 'the path could not be read: ' + _said(error))
-    if not stat.S_ISDIR(found.st_mode):
-        raise _Refusal(REFUSED, 'the path is not a folder')
-    if mount_point(path):
-        raise _Refusal(REFUSED, 'the folder is a mount point')
-    pool = ledger.pool(record.get('pool'))
-    if pool is None or pool.get('type') != 'filesystem' or ledger.device(path) != pool.get('device'):
-        raise _Refusal(REFUSED, 'the folder is not on the item\'s pool')
+    path = _plain(path)
     name = marked(path, identity)
-    if os.path.lexists(name):
-        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)
+    base, tail = os.path.basename(path), os.path.basename(name)
+    parent = _parent(path)
     try:
-        os.rename(path, name)
-    except OSError as error:
-        raise _Refusal(REFUSED, 'the folder could not be renamed: ' + _said(error))
-    try:
-        use = _second_probe(ctx, name)
-        if use is None:
-            size = measure(name, found.st_dev, open_up=True)
-            _delete(name, None, found.st_dev)
-            return size
-        refusal = _Refusal(IN_USE, 'the folder is in use under its marked name', found=use)
-    except (OSError, RecursionError, _Stop) as error:
-        refusal = _Refusal(REFUSED, 'the delete stopped: ' + _said(error))
-    except BaseException:
-        _put_back(name, path)
-        raise
-    stuck = _put_back(name, path)
-    if stuck is not None:
-        refusal.more.update(left_at=name, not_put_back=stuck)
-    raise refusal
+        try:
+            found = os.lstat(base, dir_fd=parent)
+        except OSError as error:
+            raise _Refusal(REFUSED, 'the path could not be read: ' + _said(error))
+        if not stat.S_ISDIR(found.st_mode):
+            raise _Refusal(REFUSED, 'the path is not a folder')
+        if mount_point(path):
+            raise _Refusal(REFUSED, 'the folder is a mount point')
+        pool = ledger.pool(record.get('pool'))
+        if pool is None or pool.get('type') != 'filesystem' or ledger.device(path) != pool.get('device'):
+            raise _Refusal(REFUSED, 'the folder is not on the item\'s pool')
+        if _there(tail, parent):
+            raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)
+        try:
+            os.rename(base, tail, src_dir_fd=parent, dst_dir_fd=parent)
+        except OSError as error:
+            raise _Refusal(REFUSED, 'the folder could not be renamed: ' + _said(error))
+        try:
+            use = _second_probe(ctx, name)
+            if use is None:
+                if look is not None:
+                    look(name)
+                size = measure(tail, found.st_dev, open_up=True, own=own, dir_fd=parent)
+                _delete(tail, parent, found.st_dev)
+                return size
+            refusal = _Refusal(IN_USE, 'the folder is in use under its marked name', found=use)
+        except _Refusal as refused:
+            refusal = refused
+        except (OSError, RecursionError, _Stop) as error:
+            refusal = _Refusal(REFUSED, 'the delete stopped: ' + _said(error))
+        except BaseException:
+            _put_back(parent, tail, base)
+            raise
+        stuck = _put_back(parent, tail, base)
+        if stuck is not None:
+            refusal.more.update(left_at=name, not_put_back=stuck)
+        raise refusal
+    finally:
+        os.close(parent)
 
+
+# ---------------------------------------------------------------------------------------------
+# The keep step, given, and the last look that holds it to its answer.
+# ---------------------------------------------------------------------------------------------
 
 def _kept(ctx, identity, record):
-    """The keep step, given. Anything but {ok: True} is keep_failed and nothing is touched."""
+    """The keep step, given. Anything but {ok: True, tips: {...}} is keep_failed and nothing is
+    touched. Returns the answer."""
     if ctx['keep'] is None:
         raise _Refusal(KEEP_FAILED, 'no keep step was given: the commits of this item are recorded nowhere')
     try:
@@ -344,6 +507,151 @@ def _kept(ctx, identity, record):
         raise _Refusal(KEEP_FAILED, 'the keep step failed: ' + _said(error))
     if not isinstance(said, dict) or said.get('ok') is not True:
         raise _Refusal(KEEP_FAILED, 'the keep step did not keep the item', keep=said)
+    if not isinstance(said.get('tips'), dict):
+        raise _Refusal(KEEP_FAILED, 'the keep step did not say which tips it recorded', keep=said)
+    return said
+
+
+def tips(path, kind='worktree', commands=None):
+    """What names a commit in the item at `path`, read now through the Git boundary: {head, branch,
+    operations: {name: commit}, refs: [commit and ref], log: [commits], stash: [commits]}. For a
+    worktree refs are its own (OWN_REFS) and log is its HEAD log; for an agent repository, or any
+    other private repository, refs are every ref, log is every log and stash is every stash entry.
+    None when git could not read any of it. The keeper answers with what this read when it recorded
+    the commits, and the remover reads it again just before it removes."""
+    private = kind != 'worktree'
+
+    def read(*argv, absent=False):
+        code, out = _git(commands, '-C', path, *argv)
+        if code == 0:
+            return out
+        if absent and code == 1 and not str(out).strip():
+            return None
+        raise _Stop('git could not read the item: ' + str(out)[:200])
+
+    def one(*argv):
+        out = read(*argv, absent=True)
+        return out.strip() if out is not None else None
+
+    try:
+        found = {'head': one('rev-parse', '--verify', '--quiet', 'HEAD^{commit}'),
+                 'branch': one('symbolic-ref', '--quiet', 'HEAD'), 'operations': {}}
+        for name in OPERATION_REFS:
+            commit = one('rev-parse', '--verify', '--quiet', name)
+            if commit is not None:
+                found['operations'][name] = commit
+        found['refs'] = sorted(read('for-each-ref', '--format=%(objectname) %(refname)',
+                                    *(() if private else OWN_REFS)).split('\n')[:-1])
+        found['log'] = sorted(set(read('rev-list', '--walk-reflogs', *(['--all'] if private else ['HEAD'])).split()))
+        stashed = private and any(line.endswith(' refs/stash') for line in found['refs'])
+        found['stash'] = read('rev-list', '--walk-reflogs', 'refs/stash').split() if stashed else []
+    except _Stop:
+        return None
+    return found
+
+
+def _declared(ctx, record, key):
+    """What the project that owns the item declares under `key`."""
+    scope = (record.get('owner') or {}).get('scope') or {}
+    declared = [project.get(key) or [] for project in ctx['ledger'].projects
+                if scope.get('type') == 'project' and project.get('project') == scope.get('id')]
+    return list(declared[0]) if declared else []
+
+
+def _digest(path):
+    """The mode and the SHA-256 of one file, no link followed; a link's digest is of where it points."""
+    found = os.lstat(path)
+    digest = hashlib.sha256()
+    if stat.S_ISLNK(found.st_mode):
+        digest.update(os.fsencode(os.readlink(path)))
+    elif stat.S_ISREG(found.st_mode):
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        with os.fdopen(descriptor, 'rb') as file:
+            for block in iter(lambda: file.read(1 << 20), b''):
+                digest.update(block)
+    return {'mode': found.st_mode, 'sha256': digest.hexdigest()}
+
+
+def _looked(ctx, record, where):
+    """The work tree at `where` as git reads it now, every ignored path included: (changed, work).
+    changed names the modified, staged and untracked entries. work names every ignored file that is
+    work: all but what lies in an ignored folder that a committed ignore file of this work tree or a
+    build output pattern the project declares covers (design 0.1). Raises _Stop when git cannot say."""
+    commands = ctx['commands']
+
+    def read(*argv, feed=None):
+        code, out = _git(commands, '-C', where, *argv, feed=feed)
+        if code != 0:
+            raise _Stop('git could not read the work tree: ' + str(out)[:200])
+        return out
+
+    entries = read('status', '--porcelain=v1', '-z', '--ignored=matching', '--untracked-files=all').split('\0')[:-1]
+    changed, ignored = [], []
+    while entries:
+        entry = entries.pop(0)
+        state, name = entry[:2], entry[3:]
+        if 'R' in state or 'C' in state:
+            entries.pop(0)  # the name it was renamed or copied from
+        (ignored if state == '!!' else changed).append(name)
+    folders = [name for name in ignored if name.endswith('/')]
+    work = [name for name in ignored if not name.endswith('/')]  # a loose ignored file is work
+    if folders:
+        rules = read('check-ignore', '-v', '-z', '--stdin',
+                     feed=b''.join(os.fsencode(name) + b'\0' for name in folders)).split('\0')[:-1]
+        source = {rules[at + 3]: rules[at] for at in range(0, len(rules) - 3, 4)}
+        named = sorted(set(found for found in source.values()
+                           if not os.path.isabs(found) and os.path.basename(found) == '.gitignore'))
+        committed = set(read('ls-files', '-z', '--', *named).split('\0')[:-1]) if named else set()
+        patterns = _declared(ctx, record, 'build_output')
+        for folder in folders:
+            base = os.path.basename(folder.rstrip('/'))
+            if source.get(folder) in committed or any(fnmatch.fnmatchcase(base, pattern) for pattern in patterns):
+                continue  # build output: a build makes it again
+            top, inside = os.path.join(where, folder.rstrip('/')), []
+            for at, _, files in os.walk(top, onerror=_raise):
+                inside.extend(os.path.relpath(os.path.join(at, name), where) for name in files)
+            work.extend(inside)  # an empty folder holds no work
+    return changed, sorted(work)
+
+
+def _raise(error):
+    raise error
+
+
+def _unsaved(where, work, snapshot):
+    """The paths of `work` the keep step's snapshot does not hold with the same mode and digest."""
+    files = snapshot.get('files') if isinstance(snapshot, dict) else None
+    files = files if isinstance(files, dict) else {}
+    return [name for name in work
+            if not isinstance(files.get(name), dict)
+            or {key: files[name].get(key) for key in ('mode', 'sha256')} != _digest(os.path.join(where, name))]
+
+
+def _last_look(ctx, record, kept, where):
+    """The last look at a worktree or an agent repository under its marked name `where`, after the
+    in-use probe: the work nothing saved, then the tips against the keep step's. Raises the refusal."""
+    private = record.get('kind') != 'worktree'
+    try:
+        bare = False
+        if private:
+            code, out = _git(ctx['commands'], '-C', where, 'rev-parse', '--is-bare-repository')
+            if code != 0:
+                raise _Stop('git could not read the repository: ' + str(out)[:200])
+            bare = out.strip() == 'true'
+        changed, work = ([], []) if bare else _looked(ctx, record, where)
+        # git's own remove refuses a worktree's changed entries; nothing refuses a repository's.
+        unsaved = (changed + work) if private else _unsaved(where, work, kept.get('snapshot'))
+    except (OSError, ValueError, RecursionError, _Stop) as error:
+        raise _Refusal(KEEP_FAILED, 'the last look could not be made: ' + _said(error))
+    if unsaved:
+        raise _Refusal(KEEP_FAILED, 'files that are work are in no snapshot of the keep step: '
+                       + ', '.join(unsaved[:3]), unsaved=unsaved[:NAMED], more=max(0, len(unsaved) - NAMED))
+    now = tips(where, record.get('kind'), ctx['commands'])
+    if now is None or now != kept['tips']:
+        differ = sorted(key for key in set(now or {}) | set(kept['tips'])
+                        if (now or {}).get(key) != kept['tips'].get(key))
+        raise _Refusal(KEEP_FAILED, 'the item is not as the keep step recorded it: ' + ', '.join(differ),
+                       differ=differ, tips=now)
 
 
 def _r_folder(ctx, identity, record, answer):
@@ -355,57 +663,73 @@ def _r_folder(ctx, identity, record, answer):
 
 def _r_agent_repository(ctx, identity, record, answer):
     answer['method'] = 'keep_then_rename_probe_delete'
-    _kept(ctx, identity, record)
+    _plain(record['locator']['path'])
+    kept = _kept(ctx, identity, record)
     pools = _before(ctx, record, answer)
-    answer['bytes'], answer['bytes_source'] = _folder(ctx, identity, record, record['locator']['path']), 'measured'
+    answer['bytes'], answer['bytes_source'] = _folder(
+        ctx, identity, record, record['locator']['path'], own=True,
+        look=lambda name: _last_look(ctx, record, kept, name)), 'measured'
     _after(ctx, pools, answer)
 
 
 def _worktree_remove(ctx, repository, path):
-    """git's own worktree remove, with no force option: (exit code, output). The command recorded is
-    the one the process was given."""
-    try:
-        done = _git_process.run(['git', '-C', repository, 'worktree', 'remove', path], stdin=subprocess.DEVNULL,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=SECONDS)
-    except (OSError, subprocess.SubprocessError) as error:
-        if getattr(error, 'cmd', None):
-            ctx['commands'].append([str(word) for word in error.cmd])
-        return None, _said(error)
-    ctx['commands'].append([str(word) for word in done.args])
-    if done.returncode:
-        return done.returncode, done.stderr.decode('utf-8', 'replace').strip()[-300:]
-    return 0, done.stdout.decode('utf-8', 'surrogateescape')
+    """git's own worktree remove, with no force option: (exit code, output)."""
+    return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', path)
+
+
+def _worktree_move(ctx, repository, path, to):
+    """git's own worktree move, with no force option: None, or why it was not made. git moves a
+    worktree into a folder that is at the target, so a target that is there refuses first."""
+    if os.path.lexists(to):
+        return 'something is at ' + to
+    code, out = _git(ctx['commands'], '-C', repository, 'worktree', 'move', path, to)
+    if code != 0:
+        return str(out)[:300] or 'git gave no answer'
+    return None if os.path.isdir(to) and not os.path.lexists(path) else 'git said it moved the worktree and it is not there'
 
 
 def _r_worktree(ctx, identity, record, answer):
     answer['method'] = 'keep_then_git_worktree_remove'
-    path = record['locator']['path']
-    _kept(ctx, identity, record)
+    path = _plain(record['locator']['path'])
+    kept = _kept(ctx, identity, record)
     repository = ctx['probe'].repository(path, ctx['run'])
     if repository is None:
         raise _Refusal(REFUSED, 'git reads no repository at the worktree')
+    name = marked(path, identity)
+    if os.path.lexists(name):
+        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)
     try:
-        answer['bytes'], answer['bytes_source'] = measure(path), 'measured'
+        answer['bytes'], answer['bytes_source'] = measure(path, own=True), 'measured'
     except (OSError, RecursionError, _Stop) as error:
         raise _Refusal(REFUSED, 'the worktree could not be measured: ' + _said(error))
     pools = _before(ctx, record, answer)
-    code, out = _worktree_remove(ctx, repository, path)
-    if code != 0:
-        raise _Refusal(REFUSED, 'git refused the remove: ' + str(out)[:300], code=code)
-    if os.path.lexists(path):
-        raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')
+    refused = _worktree_move(ctx, repository, path, name)
+    if refused is not None:
+        raise _Refusal(REFUSED, 'git refused the move to the marked name: ' + refused)
+    try:
+        use = _second_probe(ctx, name)
+        if use is not None:
+            raise _Refusal(IN_USE, 'the worktree is in use under its marked name', found=use)
+        _last_look(ctx, record, kept, name)
+        code, out = _worktree_remove(ctx, repository, name)
+        if code != 0:
+            raise _Refusal(REFUSED, 'git refused the remove: ' + str(out)[:300], code=code)
+        if os.path.lexists(name):
+            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')
+    except BaseException as stopped:
+        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) else None
+        if stuck is not None and isinstance(stopped, _Refusal):
+            stopped.more.update(left_at=name, not_put_back=stuck)
+        raise
     _after(ctx, pools, answer)
 
 
 def _r_drop_caches(ctx, identity, record, answer):
     answer['method'] = 'drop_caches'
-    scope = (record.get('owner') or {}).get('scope') or {}
-    declared = [project.get('evidence_caches') or [] for project in ctx['ledger'].projects
-                if scope.get('type') == 'project' and project.get('project') == scope.get('id')]
-    root = record['locator']['path'].rstrip('/')
+    root = _plain(record['locator']['path'])
     pools = _before(ctx, record, answer)
     answer['bytes'], answer['bytes_source'], answer['dropped'] = 0, 'measured', []
-    for relative in (declared[0] if declared else []):
+    for relative in _declared(ctx, record, 'evidence_caches'):
         cache = os.path.normpath(os.path.join(root, relative))
         if not cache.startswith(root + '/'):
             raise _Refusal(REFUSED, 'a declared cache leads out of the evidence folder: ' + str(relative))
@@ -515,9 +839,11 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
 
     `probe` is the control_space_probe module. `free(pool record)` returns the free bytes of one pool
     at the moment of the call; without it nothing is removed. `keep(identity, record)` is the keep
-    step of a worktree and an agent repository; without it neither is removed. `run` and `proc` are the
-    probes' own parameters, the client runner and the process table; `run` also runs the engine's
-    client. git's worktree remove is run through the Git boundary and not through `run`.
+    step of a worktree and an agent repository; without it neither is removed, and it answers
+    {ok: True, tips: what `tips` read in the item when its commits were recorded, snapshot: the files
+    it saved, when it saved any}. `run` and `proc` are the probes' own parameters, the client runner
+    and the process table; `run` also runs the engine's client. The remover's own git commands, the
+    worktree move and remove among them, are run through the Git boundary and not through `run`.
 
     Returns {ok: True, ...} or the refusal {ok: False, reason, deferral, said, ...}, each with item,
     action, kind, method, bytes, bytes_source, pool, pool_free_before, pool_free_after, freed, host and

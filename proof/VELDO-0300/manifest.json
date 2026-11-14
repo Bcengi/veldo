@@ -4,7 +4,7 @@
  "commit": "c29021001a404d3122d32f6922645ac317d21669",
  "tree": "badad0ad6d4a53d0ec10084e600070410a3155b5",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-14T03:17:29.500556+00:00",
+ "produced_at": "2026-11-14T03:44:17.357144+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -24,6 +24,16 @@
      "type": "unit",
      "ref": "proof/VELDO-0300/falsifiers.json",
      "detail": "Falsifier space300-delete-after-first-probe (the second probe is not run): ac1/rename-probe-delete red, the remover removed the folder a process holds a file in. Also space300-left-under-its-marked-name (no put back): ac1/delete-stops red. Applied once through the registered teeth case (scripts/check_teeth_mutations.py, finding 300) with the driver's own materialize() and worker(): the unchanged copy is green, the mutant turns the named row red. Runs: proof/VELDO-0300/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Review (verdict FIX), no work is ever lost. Rows work/repository-in-a-folder (finding 4: a scratch folder that is a git repository with an only commit, run through control_space_signal.rules with this remover as rule 7: rules 1 to 6 pass, the remover refuses remove_refused, the folder is back at its path and the commit is still its HEAD; a folder with a repository deep inside and one with a bare repository inside are refused whole; an agent repository with a second repository in its ignored build folder and a worktree with one there are refused, the worktree before git is asked to move it), work/link-and-dotdot (finding 5: the folder remover called by itself on a path whose parent is a link, on one with .., on a relative one and on one with a doubled slash refuses, runs no command and leaves the target whole; the worktree remover on a link and on a path with .. refuses before the keep step is asked), work/marked-name (finding 8: two ids that differ in one character have two marked names, unmarked reads the path and the id back, left finds a folder a killed removal left under its marked name). Green: proof/VELDO-0300/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Review falsifiers: space300-repository-in-a-folder-deleted (the walk does not stop on a repository): work/repository-in-a-folder red, the rules answer ok and the folder with its only commit is gone. space300-follows-a-link-or-dotdot (the two textual checks and the no-link walk to the parent all removed; each alone is held by the others): work/link-and-dotdot red, the target behind the link is deleted. space300-marked-name-shared (the id written with - for every other character): work/marked-name red, a.b and a-b share one name. Existing cases re-anchored to the new code and still red: space300-delete-after-first-probe, space300-left-under-its-marked-name. Runs: proof/VELDO-0300/mutations.txt."
     }
    ]
   },
@@ -45,6 +55,21 @@
      "type": "unit",
      "ref": "proof/VELDO-0300/falsifiers.json",
      "detail": "Falsifier space300-worktree-forced (the force option is passed): ac2/non-forced red, the untracked file is lost. Also space300-removes-with-no-keep-step and space300-removes-after-a-failed-keep: ac2/keep-step red, the worktree with its detached commit is removed. Applied once through the registered teeth case (scripts/check_teeth_mutations.py, finding 300) with the driver's own materialize() and worker(): the unchanged copy is green, the mutant turns the named row red. Runs: proof/VELDO-0300/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "Review (verdict FIX), no work is ever lost. Each row plants the work the reviewer lost and runs the whole rule chain (control_space_signal.rules, this remover as rule 7, a keep step that answers ok with the tips it read). work/ignored-files (finding 1: a worktree holding a file only info/exclude ignores, a loose settings.local the committed *.local covers, and build output; git reads it clean; rules 1 to 6 pass and the remover refuses keep_failed naming exactly the two files, both byte for byte in the worktree back at its path, git's record of it right, nothing under the marked name; a snapshot one file changed after is refused too; with a snapshot holding both with their mode and digest the worktree goes). work/commit-in-the-gap (finding 2: a commit made in a detached worktree after the keep step read its tips: keep_failed, differ names head and log, the worktree is back with that commit checked out; a commit written onto a new ref of an agent repository the same way: keep_failed, the ref still holds it). work/worktree-second-probe (a process whose working directory is the worktree's marked name: in_use, the worktree moved back whole). work/agent-repository-files (finding 3: an agent repository with a work tree, every branch across, holding an untracked draft and an edited tracked file: rules 1 to 6 pass, keep_failed, both byte for byte; a loose ignored file alone refuses the same way; clean with only committed-ignored build output, it goes). work/probes-through-the-boundary (finding 7 on the remover's side: with a personal global excludes file hiding a file, a plain git sees a clean worktree and rule 5, read through the remover's own runner, sees untracked work and refuses). ac2/keep-step gained two keepers: one that says ok and names no tips, one that read the tips and answers ok False; both keep_failed with neither move nor remove run. ac2/non-forced now reads git's remove on the marked name and the two moves, none forced. Green: proof/VELDO-0300/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/138_veldo_0300_space_remove.py",
+     "detail": "The same rows: a real ledger and store, the real probes and rules, real git 2.43.0 through the one Git boundary (worktree move, status with ignored paths, check-ignore, ls-files, rev-parse, for-each-ref, rev-list of the logs, worktree remove), real files really left or really deleted. MEASURED for this fix on git 2.43.0: git's non-forced worktree move keeps the worktree's HEAD log unchanged, refuses a locked worktree, and moves a worktree INTO a folder that already exists at the target, so the remover refuses a taken target itself before it asks git."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0300/falsifiers.json",
+     "detail": "Review falsifiers, each losing the work its row plants: space300-ignored-work-not-compared (the ignored files that are work not compared with the snapshot): work/ignored-files red, the rules answer ok and both files are gone with the worktree. space300-tips-not-read-again: work/commit-in-the-gap red, the worktree is removed and the commit is on no ref. space300-agent-repository-files-not-read: work/agent-repository-files red, the repository is deleted with the draft and the edit. space300-worktree-no-second-probe: work/worktree-second-probe red. space300-probe-reads-outside-the-boundary (the remover's runner runs the probes' git as a plain subprocess): work/probes-through-the-boundary red, rule 5 passes the hidden file. Existing cases re-anchored and still red: space300-worktree-forced, space300-removes-with-no-keep-step (now a keep answer made up with no keeper), space300-removes-after-a-failed-keep. Runs: proof/VELDO-0300/mutations.txt."
     }
    ]
   },
@@ -95,7 +120,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 138_veldo_0300_space_remove (21 rows, 47 checks counted with the shared preamble)."
+   "command": "python3 scripts/selftest.py --suite 138_veldo_0300_space_remove (29 rows, 55 checks counted with the shared preamble). After the review fix every space suite was rerun green, each on its own: 130 (48 checks), 131 (40), 132 (57), 133 (56), 134 (42), 135 (150), 136 (72), 137 (49), 138 (55)."
   },
   {
    "name": "integration",
@@ -105,25 +130,25 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "Seven registered cases, finding 300, each applied once: noop green, mutant red on its row (proof/VELDO-0300/falsifiers.json, mutations.txt)."
+   "command": "Fifteen registered cases, finding 300 (seven from the build, eight from the review), each applied once after the review fix: noop green, mutant red on its row (proof/VELDO-0300/falsifiers.json, mutations.txt)."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh (314 pairs); bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py (no change); python3 .veldo/validate.py spec specs/VELDO-0300-the-removers.md; python3 .veldo/validate.py all; each exit 0. python3 scripts/check_git_boundary.py names no line of control_space_remove.py."
+   "command": "After the review fix: bash scripts/check_template_sync.sh (314 pairs); bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py (no change); python3 .veldo/validate.py spec specs/VELDO-0300-the-removers.md; python3 .veldo/validate.py all; each exit 0. python3 scripts/check_git_boundary.py: pass, for the whole tree (it failed on the probe module before this fix)."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build ran the single suite and the fast checks only. The lead runs ./scripts/verify.sh through the gate lock. The teeth cases were run here through the driver's own functions, not through the teeth run."
+   "reason": "The build and the review fix ran single suites and the fast checks only, as instructed. The lead runs ./scripts/verify.sh through the gate lock. The teeth cases were run here through the driver's own functions, not through the teeth run."
   }
  ],
  "assumptions": [
   "The removers are control_space_remove.remove(ledger, probe, identity, record, action, free, keep, run, proc) and tool(...), which gives the same in the form rule 7 calls. Nothing calls them yet: Signal's carry out and the outcome it writes are VELDO-0301. A remover writes nothing to the ledger.",
   "NO WORK LOST, as built here. The spec's History says the keep step is added inside the worktree and private repository removers by VELDO-0345. Until then those two removers do not run without it: keep(identity, record) is a parameter, and with none, or any answer but {ok: True}, the item is deferred keep_failed and nothing is touched. This is beyond the four criteria and is built so that no path of this module can remove commits unrecorded; it has its own row and two falsifiers. What the keeper does and the check of the keep record are VELDO-0345.",
   "Not built here, because each saves first and belongs to a later ticket: the discard remover (VELDO-0318, the one forced removal), the review scratch remover (VELDO-0336) and the removal of evidence files a copy holds (remove_held). So AC3's exception for the discard remover has nothing to except yet: no command of this module carries a force option. Mark a branch contained is a ledger write and is not a remover.",
-  "A refusal reaches Signal as rule 7's found.said. The rules name every tool refusal remove_refused (control_space_signal.DEFERRAL, not in this ticket's footprint); the remover's own answer names the deferral it means (in_use for the second probe, keep_failed for the keep step) in said.deferral and said.reason. VELDO-0301 has to write that one.",
-  "The folder remover deletes what the rules passed. It does not look whether a scratch or build output folder is itself a git repository or holds one: that is rule 6's look, VELDO-0347 AC2 and AC5, and it is not built. Until it is, such a folder is protected only by the mode: nothing is in act.",
+  "A refusal reaches Signal as rule 7's found.said. The rules name every tool refusal remove_refused (control_space_signal.DEFERRAL, not in this ticket's footprint); the remover's own answer names the deferral it means (remove_refused, in_use, keep_failed) in said.deferral and said.reason. Review finding 6: VELDO-0301's spec did not say Signal passes that through, so it is recorded in VELDO-0301's History with the row and the falsifier it must have; no code of Signal was changed.",
+  "REVIEW FIX, finding 4. The folder remover now holds the line by itself: the walk that measures the folder before the first delete stops on any folder that is a git repository or holds one, and the folder is put back. An agent repository and a worktree may hold their own and no other. The clean clone exception of design 0.1 and rule 6's own-folder look are still VELDO-0347 (its History says the remover refuses until then).",
   "free(pool record) is given, as admission is given it; reading free space from a filesystem or an engine is VELDO-0316. With no reader, or a reading that fails before the removal, nothing is removed. In the suite the reader is a stand-in: the host pool answers a fixed capacity minus the measured size of the fixture folders, the engine image pool answers the stand-in engine's figure, so freed can be compared exactly.",
   "The container engine is a stand-in function given as the client runner: it keeps containers, images, volumes and networks in memory and refuses what an engine refuses. No container engine was asked anything, so the engines' real refusal texts and the real effect of image rm on a last tag (the engine deletes the image with it) are not measured here; they are VELDO-0306's to check on both engines.",
   "bytes for a volume is measured only where the engine names a folder this user can read; otherwise the ledger's last measurement, named as that, or None. bytes for a folder counts blocks on disk, a file with several names once.",
@@ -131,9 +156,16 @@
   "drop_caches removes the declared sub-folders one by one. When a later one refuses, the earlier ones are gone; they are caches by the project's own declaration.",
   "One command of a tool may run for an hour (SECONDS). A git remove that is killed at that bound can leave a worktree partly removed; that is reconcile's case (design 0.2), not handled here.",
   "The process table of the rows is a fixture folder, because this host's table holds processes this user may not read and they count as use (design section 7).",
-  "FOUND, NOT FIXED (outside this ticket's footprint): python3 scripts/check_git_boundary.py exits 1 on this branch for .veldo/control_space_probe.py:228 and its engine copy (the probes' _git builds a git argument vector outside git_process.py). Suite 50_git_environment's row git-boundary/no-private-git-invocations reads that check, so it is expected red in the gate until the probe module goes through the Git boundary. The removers do.",
+  "REVIEW FIX, finding 7 (VELDO-0299's module, changed with this fix on the lead's instruction): the probes' git goes through the Git boundary, scripts/check_git_boundary.py allows control_space_probe.py as a funnel (that file is not a protected path in .veldo/policy.yaml) and passes for the whole tree, so suite 50's row git-boundary/no-private-git-invocations is no longer expected red for this reason. Suite 50_git_environment was run alone after the fix: 30 checks passed, 0 failed. The remover's own runner sends a git vector it is handed through the boundary as well.",
   "Because git runs in the Git boundary's isolated profile, a file that only a personal global excludes file ignores is an untracked file to git's worktree remove, and git refuses. That is the direction design 0.1 asks for.",
-  "python3 scripts/check_first_use.py was started once by mistake during the fast checks (it is a heavy check) and was stopped; no result of it is claimed."
+  "python3 scripts/check_first_use.py was started once by mistake during the fast checks (it is a heavy check) and was stopped; no result of it is claimed.",
+  "REVIEW FIX, the keep step's answer. keep(identity, record) must answer {ok: True, tips, snapshot}: tips is what control_space_remove.tips(path, kind) read in the item, snapshot is {files: {relative path: {mode, sha256}}}. The keeper is VELDO-0345 and is not built; its History has this contract. In the suite the keeper is a stand-in that calls tips itself and names the snapshot the row gives it.",
+  "REVIEW FIX, what is build output to the last look: an ignored FOLDER whose rule git traces (check-ignore) to a .gitignore that is tracked in that work tree, or whose name matches a build_output pattern the owning project declares. Every other ignored path is work, a loose ignored file whatever rule covers it (design 0.1). The cost is the design's: a worktree with loose ignored files (a local settings file, object files beside sources) waits until a keep step saves them. An empty ignored folder is no work.",
+  "REVIEW FIX, deferrals chosen where the review left a choice: work the keep step did not save, and a tip it did not record, are keep_failed; a user under the marked name is in_use; a repository in the folder, a link or .. in the path and git's own refusals are remove_refused.",
+  "What the last look does not close (design 0.9 names it): a process that finds the marked name and writes there between the last look and git's one remove command. The rename has no no-replace flag from the standard library: an EMPTY folder that appears at the marked name between the check and the rename is replaced.",
+  "A worktree on a branch with no commit yet, or whose log git cannot walk, is deferred keep_failed (the tips cannot be read) and stays. A worktree removal killed between git's move and git's remove leaves the whole worktree under its marked name with git's record pointing there; finding it is reconcile's (VELDO-0315 AC2, whose History names left, marked and unmarked). Nothing calls left yet.",
+  "NOT FIXED, review finding 9 (low): the Docker removers do not read the object's id and label again at the remove; a volume removed and made again under the same name in the gap would be taken. It is VELDO-0341's reading of what an engine says of an object, and it is open.",
+  "The design text is not edited by the review fix. Its 6.5 row for a worktree moves it to a marked name only after a Save; the remover now does so at every worktree removal. The spec's History says it. commit and tree above still name the build commit c2902100; the review fix is the commit that carries this bundle."
  ],
  "rollback": "Revert the change. Removers are called only through Signal, and nothing calls them yet, so without them nothing is removed."
 }

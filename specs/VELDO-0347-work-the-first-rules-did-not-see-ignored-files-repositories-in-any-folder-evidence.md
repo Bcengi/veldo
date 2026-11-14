@@ -182,3 +182,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   folder back to its locator before the item is deferred, so the item keeps its id, the next attempt saves
   what is left, and reconcile does not mark it gone. AC3 gains a fourth falsifier: the folder left under
   its marked name. The reconcile side is VELDO-0315 AC2. Still five criteria.
+- 2026-11-14: from the independent review of VELDO-0300 (findings 3 and 4). No acceptance criterion changed.
+  Two things this ticket builds are now refused outright by the removers, so that nothing depends on
+  the order the tickets land in, and this ticket opens them again where its criteria say so. The folder
+  remover stops on any folder that is a git repository or holds one (an agent repository and a
+  worktree hold their own and no other): the clean clone of design 0.1 is not excepted there, and the
+  own-folder look of rule 6 is still this ticket's. The agent repository remover refuses, keep_failed,
+  a repository whose work tree has any modified, staged or untracked entry or any ignored path that is
+  work: a dead run's worker clone with a snapshot (AC3) needs the per-file comparison with the manifest
+  before each delete, which this ticket adds to that remover together with the exception.

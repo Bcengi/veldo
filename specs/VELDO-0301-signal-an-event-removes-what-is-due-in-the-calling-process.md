@@ -104,3 +104,21 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   acceptance criterion changed. Signal calls the removers and no tool itself, so the keep step of
   VELDO-0345, which is inside the removers, cannot be passed by. The ledger also refuses the outcome
   removed for a worktree or a private repository that has no keep record.
+- 2026-11-14: from the independent review of VELDO-0300 (finding 6), recorded here because this spec did not
+  say it and no code of Signal was changed for it. No acceptance criterion changed. The rules name every
+  refusal of rule 7 remove_refused (control_space_signal.DEFERRAL), and the remover's own deferral
+  survives only in found.said.deferral. The remover means three different things: remove_refused (the
+  tool, or the remover by itself, refused), in_use (its second probe found a user under the marked
+  name and the item was put back) and keep_failed (the keep step failed, or the last look found work
+  it did not save or a tip it did not record). This ticket must pass the remover's own deferral
+  through: when rule 7 refuses and said.deferral is one of remove_refused, in_use or keep_failed, the
+  outcome is written with that deferral, and with remove_refused otherwise. The ledger's refusal of any
+  deferral but remove_refused for a removing item has to accept those three (a ledger change, with
+  VELDO-0345). Without it a keep_failed item is recorded as remove_refused, and reconcile's completion
+  of a removing item "to the end" (design 4.1) would remove a folder that was put back because it was
+  in use or held unsaved work. It must have a row: a worktree with an ignored file that is work, due at
+  an event, is deferred keep_failed, not remove_refused, and is still on disk. Falsifier: name every
+  tool refusal remove_refused; the row finds the wrong deferral and fails. Also from that review: when
+  the remover's answer holds left_at, the item's thing is under its marked name and not at its locator;
+  the outcome keeps the item removing and never gone (design 8.8), and
+  control_space_remove.left(path, id) is the look.

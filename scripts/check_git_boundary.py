@@ -51,11 +51,16 @@ def problems(source, funnel=False):
     return bad
 
 
+# The stages that funnel Git and non-Git commands through one _run. check_install_and_run.py runs an
+# installed project's commands; control_space_probe.py (VELDO-0299) runs git and the container client.
+FUNNELS = ("check_install_and_run.py", "control_space_probe.py")
+
+
 def check(root):
     return [f"{path.relative_to(root)}:{line}: Git must use git_process"
             for directory in (".veldo", "engine/.veldo", "scripts", "engine/scripts")
             for path in (Path(root) / directory).glob("*.py") if path.name != "git_process.py"
-            for line in problems(path.read_text(), funnel=path.name == "check_install_and_run.py")]
+            for line in problems(path.read_text(), funnel=path.name in FUNNELS)]
 
 
 if __name__ == "__main__":

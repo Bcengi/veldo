@@ -190,3 +190,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   write for the item adds refs and attempts and removes none, also a write that saves nothing; a retry
   uses the newest listed attempt when it still equals the item, and otherwise adds the next number to the
   record. AC5 gains a fourth falsifier, the newest attempt alone on the record. Still five criteria.
+- 2026-11-14: from the independent review of VELDO-0300 (findings 1 and 2). No acceptance criterion changed.
+  The removers now hold the keep step to its answer, so the answer has a form this ticket must give:
+  {ok: True, tips: ..., snapshot: ...}. tips is what control_space_remove.tips(path, kind) read in the
+  item at the moment its commits were recorded; the keeper calls that one function, because the
+  remover reads the same thing again under the marked name and refuses, keep_failed, on any difference
+  (a commit made after the keep step). An answer with no tips is keep_failed. snapshot, when the step
+  saved files, is {files: {path relative to the item: {mode: the st_mode, sha256}}}; the worktree
+  remover refuses while any ignored file that is work is not in it with the same mode and digest.

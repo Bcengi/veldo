@@ -135,3 +135,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   its path; each is deferred as keep_failed. Before, a worker clone's folder left under its marked name
   read as nothing at the locator and its item was marked gone. AC2 gains a second falsifier: gone by the
   locator alone. Still four criteria.
+- 2026-11-14: from the independent review of VELDO-0300 (finding 8). No acceptance criterion changed: AC2
+  already has reconcile look under the marked name before it marks an item gone. What the removers now
+  give it: control_space_remove.left(path, id) returns the marked name when something is there,
+  marked(path, id) writes the id without loss so that two items never share a name, and
+  unmarked(name) reads the path and the id back. Since that review every worktree removal, not only
+  the one after a Save or a Discard, moves the worktree to its marked name with git's worktree move
+  before git's remove, so a removal killed in between leaves a whole worktree there with git's record
+  pointing at it: reconcile reads it there, and moves it back with git's non-forced worktree move
+  unless it completes the removal as AC2 says. Nothing in the tree calls left yet.

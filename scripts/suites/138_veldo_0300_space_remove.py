@@ -56,6 +56,29 @@ reading that fails before the removal refuses it; a missing reader refuses), ac4
 image's size, a container's own layer, a volume's folder measured, the ledger's last measurement when
 the engine gives none).
 
+NO WORK IS EVER LOST (the review of VELDO-0300; owner rule, Telegram 41209). Each row plants one kind of
+work, runs the removal through the whole rule chain (control_space_signal.rules with this remover as rule
+7 and a keep step that answers ok) and finds the work still there:
+
+work/ignored-files (a worktree with a file only info/exclude ignores and a loose ignored settings file:
+rules 1 to 6 pass, the remover moves the worktree to its marked name, finds the two files in no snapshot
+and moves it back, keep_failed, both files byte for byte; a snapshot one file has changed since refuses
+too; with a snapshot that holds both as they are the worktree goes, and its build output with it),
+work/commit-in-the-gap (a commit made in a worktree after the keep step answered, and one written into an
+agent repository the same way: the tips read again under the marked name differ, keep_failed, the commit
+is still checked out or still on its ref), work/worktree-second-probe (a process found in the worktree
+under its marked name: in_use, the worktree moved back whole), work/agent-repository-files (an agent repository with a work
+tree, every branch across, holding an untracked draft and an edited tracked file, and then a loose
+ignored file: keep_failed, every file byte for byte; clean, it goes), work/repository-in-a-folder (a
+scratch folder that is a git repository with an only commit, one that holds a repository deep inside,
+an agent repository with a second repository inside and a worktree with one in its ignored build
+folder: refused, the commits still there), work/link-and-dotdot (the remover, called by itself on a
+path whose parent is a link, on one with .. and on a relative one, for a folder and for a worktree:
+refused, the target untouched, the keep step not asked), work/marked-name (two ids that differ in one
+character have two marked names, the id is read back from the name, and left finds a folder a killed
+removal left under it), work/probes-through-the-boundary (the probes' git reads that the remover's own
+runner is handed go through the Git boundary: a personal global excludes file hides nothing).
+
 remove/writes-nothing (a removal writes no journal record), remove/canon (the engine canon equals this
 repository copy).
 """
@@ -63,6 +86,7 @@ repository copy).
 
 def _v300_space_remove_suite():
     import ast
+    import hashlib
     import importlib.util
     import io
     import json
@@ -91,6 +115,9 @@ def _v300_space_remove_suite():
             'ac2/ignored-files-measured',
             'ac3/commands', 'ac3/engine-refusal', 'ac3/drop-caches', 'ac3/no-remover',
             'ac4/folder-figures', 'ac4/engine-image-pool', 'ac4/free-unread', 'ac4/docker-bytes',
+            'work/ignored-files', 'work/commit-in-the-gap', 'work/worktree-second-probe', 'work/agent-repository-files',
+            'work/repository-in-a-folder', 'work/link-and-dotdot', 'work/marked-name',
+            'work/probes-through-the-boundary',
             'remove/writes-nothing', 'remove/canon')
     rows = {name: [] for name in ROWS}
 
@@ -233,7 +260,11 @@ def _v300_space_remove_suite():
             """The client runner: docker from the stand-in engine, git by the removers' own runner."""
             ran.append([str(word) for word in argv])
             if argv[0] != 'docker':
-                return RM._run(argv, cwd)  # the probes' reads
+                handed[0] += 1
+                try:
+                    return RM._run(argv, cwd)  # the probes' reads, which that runner sends through the boundary
+                finally:
+                    handed[0] -= 1
             if ENGINE['unreadable']:
                 return 1, 'Cannot connect to the Docker daemon at unix:///var/run/docker.sock'
             engine, kind, verb = argv[2], argv[3], argv[4]
@@ -273,9 +304,13 @@ def _v300_space_remove_suite():
 
         boundary = RM._git_process.run
 
+        handed = [0]
+
         def recorded_git(args, **kwargs):
-            """The Git boundary the worktree remover calls, with the command it was given recorded."""
-            ran.append([str(word) for word in args])
+            """The Git boundary the removers call, with the command it was given recorded. A read the
+            client runner handed on is already in the record."""
+            if not handed[0]:
+                ran.append([str(word) for word in args])
             return boundary(args, **kwargs)
 
         RM._git_process.run = recorded_git
@@ -292,11 +327,41 @@ def _v300_space_remove_suite():
         PROC = temp / 'proc'
         PROC.mkdir()
 
-        def keeper(log, said=None):
+        def keeper(log, said=None, then=None, snapshot=None, ok=True):
+            """A keep step that answers ok with the tips it read in the item, as VELDO-0345's will.
+            `snapshot` is the snapshot it names; `then(path)` is what happens after it has read."""
             def keep(identity, record):
-                log.append(('keep', identity, os.path.isdir(record['locator']['path'])))
-                return {'ok': True} if said is None else said
+                where = record['locator']['path']
+                log.append(('keep', identity, os.path.isdir(where)))
+                if said is not None:
+                    return said
+                mark = len(ran)
+                answer = {'ok': ok, 'tips': RM.tips(where, record['kind'])}
+                del ran[mark:]  # the keeper's own reads are not the remover's commands
+                if snapshot is not None:
+                    answer['snapshot'] = snapshot
+                if then is not None:
+                    then(where)
+                return answer
             return keep
+
+        def saved(where, *names):
+            """A snapshot's manifest of the named files of `where`, by the row's own reading."""
+            return {'files': {name: {'mode': os.lstat(os.path.join(str(where), name)).st_mode,
+                                     'sha256': hashlib.sha256((Path(where) / name).read_bytes()).hexdigest()}
+                              for name in names}}
+
+        def through(identity, keep=None):
+            """The removal through the whole rule chain, this remover as rule 7."""
+            return SIG.rules(L, P, identity, L.item(identity),
+                             tool=RM.tool(L, P, free=free, keep=keep, run=client, proc=str(PROC)),
+                             owner_live=lambda owner: ENDED, run=client, proc=str(PROC),
+                             borrow_root=str(temp / 'borrowed'))
+
+        def refused_by_tool(answer):
+            """(the rules that passed, the remover's deferral) for a refusal by rule 7."""
+            said = (answer.get('found') or {}).get('said') or {}
+            return (answer.get('ok'), answer.get('rule'), len(answer.get('passed') or ()), said.get('deferral')), said
 
         def drive(identity, action='remove', record=None, **given):
             given.setdefault('free', free)
@@ -494,7 +559,11 @@ def _v300_space_remove_suite():
         deleter = RM._delete
 
         def stops_part_way(name, dir_fd, device):
-            os.unlink(os.path.join(name, 'leftover.bin'))
+            inner = os.open(name, os.O_RDONLY, dir_fd=dir_fd)
+            try:
+                os.unlink('leftover.bin', dir_fd=inner)
+            finally:
+                os.close(inner)
             raise PermissionError(13, 'Permission denied', 'deep')
 
         RM._delete = stops_part_way
@@ -526,8 +595,14 @@ def _v300_space_remove_suite():
               text_of(path / 'tracked.txt') == 'base\n' and listed(path)
               and git(path, 'status', '--porcelain') == '?? notes.txt')
         removes = [argv for argv in ran if 'worktree' in argv and 'remove' in argv]
-        check(ROW, 'git was asked once, for its worktree remove, with no force option [%s]' % removes,
-              len(removes) == 1 and removes[0][-3:] == ['worktree', 'remove', str(path)] and not forced(removes[0]))
+        check(ROW, 'git was asked once, for its worktree remove, on the marked name, with no force option [%s]' % removes,
+              len(removes) == 1 and removes[0][-3:] == ['worktree', 'remove', RM.marked(str(path), item)]
+              and not forced(removes[0]))
+        moves = [argv[-3:] for argv in ran if 'worktree' in argv and 'move' in argv]
+        check(ROW, 'git moved the worktree to its marked name and back, with no force option, and nothing is left there [%s]'
+              % len(moves), moves == [['move', str(path), RM.marked(str(path), item)],
+                                      ['move', RM.marked(str(path), item), str(path)]]
+              and not [argv for argv in ran if forced(argv)] and not os.path.lexists(RM.marked(str(path), item)))
         check(ROW, 'what git said is in the refusal [%s]' % (answer.get('said'),),
               'untracked' in str(answer.get('said')))
         (path / 'notes.txt').unlink()
@@ -561,13 +636,15 @@ def _v300_space_remove_suite():
             raise OSError('the main repository cannot be written')
 
         for label, keep in (('no keep step', None), ('a keep step that answers no', keeper(log, {'ok': False})),
-                            ('a keep step that fails', raising), ('a keep step that answers nothing', keeper(log, {}))):
+                            ('a keep step that fails', raising), ('a keep step that answers nothing', keeper(log, {})),
+                            ('a keep step that says ok and names no tips', keeper(log, {'ok': True})),
+                            ('a keep step that read the tips and kept nothing', keeper(log, ok=False))):
             del ran[:]
             answer = drive(item, keep=keep)
             check(ROW, '%s: deferred keep_failed [%s]' % (label, named(answer)),
                   named(answer) == (False, 'keep_failed', 'space_deferred:keep_failed'))
-            check(ROW, '%s: git\'s remove was not run and the worktree is whole at its commit' % label,
-                  not [argv for argv in ran if 'remove' in argv] and listed(path)
+            check(ROW, '%s: git\'s remove and move were not run and the worktree is whole at its commit' % label,
+                  not [argv for argv in ran if 'remove' in argv or 'move' in argv] and listed(path)
                   and text_of(path / 'work.txt') == 'a commit no branch holds\n'
                   and git(path, 'rev-parse', 'HEAD') == planted)
         log = []
@@ -607,6 +684,234 @@ def _v300_space_remove_suite():
         check(ROW, 'git %s: the non-forced worktree remove ends with status 0 and the ignored files are gone '
               'with the worktree [status %s]' % (git(REPOSITORY, 'version'), code),
               code == 0 and not measured.exists())
+
+        # No work is ever lost: each row plants one kind of work and runs the whole rule chain.
+        ROW = 'work/ignored-files'
+        item, path = worktree('ignored-work')
+        mark = RM.marked(str(path), item)
+        exclude = Path(git(path, 'rev-parse', '--path-format=absolute', '--git-path', 'info/exclude'))
+        exclude.parent.mkdir(exist_ok=True)
+        with open(exclude, 'a') as rules_file:
+            rules_file.write('notes-private.md\n')
+        (path / 'notes-private.md').write_text('notes only info/exclude ignores\n')
+        (path / 'settings.local').write_text('a loose ignored settings file\n')
+        (path / 'build').mkdir()
+        (path / 'build' / 'output.bin').write_bytes(b'o' * 100)
+        check(ROW, 'git sees the worktree as clean: all three are ignored [%r]' % git(path, 'status', '--porcelain'),
+              git(path, 'status', '--porcelain') == '')
+        answer, said = refused_by_tool(through(item, keeper([])))
+        check(ROW, 'rules 1 to 6 pass and the remover refuses, keep_failed [%s]' % (answer,),
+              answer == (False, 'tool', 6, 'keep_failed'))
+        check(ROW, 'it names the two files that are work and not the build output [%s]' % (said.get('unsaved'),),
+              said.get('unsaved') == ['notes-private.md', 'settings.local'])
+        check(ROW, 'both files are still there, byte for byte, in the worktree at its own path',
+              text_of(path / 'notes-private.md') == 'notes only info/exclude ignores\n'
+              and text_of(path / 'settings.local') == 'a loose ignored settings file\n'
+              and (path / 'build' / 'output.bin').is_file() and listed(path) and not os.path.lexists(mark))
+        stale = saved(path, 'notes-private.md', 'settings.local')
+        answer, said = refused_by_tool(through(item, keeper([], snapshot=stale, then=lambda where: (
+            Path(where) / 'settings.local').write_text('changed after the snapshot\n'))))
+        check(ROW, 'a file changed after the snapshot refuses too, and the change is still there [%s %s]'
+              % (answer, said.get('unsaved')), answer == (False, 'tool', 6, 'keep_failed')
+              and said.get('unsaved') == ['settings.local']
+              and text_of(path / 'settings.local') == 'changed after the snapshot\n' and listed(path))
+        answer = through(item, keeper([], snapshot=saved(path, 'notes-private.md', 'settings.local')))
+        check(ROW, 'with a snapshot that holds both as they are, the worktree goes [%s]' % (answer.get('passed'),),
+              answer.get('ok') is True and not path.exists() and not os.path.lexists(mark) and not listed(path))
+
+        ROW = 'work/commit-in-the-gap'
+        item, path = worktree('gap', detached=True)
+        late = []
+        answer, said = refused_by_tool(through(item, keeper([], then=lambda where: late.append(
+            commit(where, 'late.txt', 'committed after the keep step\n', 'in the gap')))))
+        check(ROW, 'a commit made after the keep step answered: rules 1 to 6 pass, the remover refuses, keep_failed [%s %s]'
+              % (answer, said.get('differ')), answer == (False, 'tool', 6, 'keep_failed')
+              and 'head' in (said.get('differ') or ()) and 'log' in (said.get('differ') or ()))
+        check(ROW, 'the worktree is back at its path with that commit checked out, and git lists it',
+              len(late) == 1 and listed(path) and git(path, 'rev-parse', 'HEAD') == late[0]
+              and text_of(path / 'late.txt') == 'committed after the keep step\n'
+              and not os.path.lexists(RM.marked(str(path), item)))
+        gap_agent = WORKTREES / 'agents' / 'gap.git'
+        subprocess.run(['git', 'clone', '-q', '--bare', str(REPOSITORY), str(gap_agent)], env=ENVIRONMENT,
+                       check=True, capture_output=True, timeout=120)
+        agent = declared('agent_repository', {'path': str(gap_agent)})
+
+        def writes_a_ref(where):
+            made = git(where, 'commit-tree', '-m', 'in the gap', '-p', 'main', 'main^{tree}')
+            git(where, 'update-ref', 'refs/heads/late', made)
+            late.append(made)
+
+        answer = drive(agent, keep=keeper([], then=writes_a_ref))
+        check(ROW, 'a commit written into an agent repository after the keep step: keep_failed [%s %s]'
+              % (named(answer)[:2], answer.get('differ')),
+              named(answer)[:2] == (False, 'keep_failed') and 'refs' in (answer.get('differ') or ()))
+        check(ROW, 'the repository is back at its path and its ref holds the commit',
+              len(late) == 2 and gap_agent.is_dir() and git(gap_agent, 'rev-parse', 'refs/heads/late') == late[1]
+              and not os.path.lexists(RM.marked(str(gap_agent), agent)))
+
+        ROW = 'work/worktree-second-probe'
+        item, path = worktree('entered')
+        mark = RM.marked(str(path), item)
+        (PROC / '4343' / 'fd').mkdir(parents=True)
+        (PROC / '4343' / 'comm').write_text('holder\n')
+        (PROC / '4343' / 'maps').write_text('')
+        (PROC / '4343' / 'cwd').symlink_to(mark)
+        (path / 'settings.local').write_text('ignored work in a worktree someone is in\n')
+        answer, said = refused_by_tool(through(item, keeper([], snapshot=saved(path, 'settings.local'))))
+        shutil.rmtree(PROC / '4343')
+        check(ROW, 'a process found in the worktree under its marked name: rules 1 to 6 pass, the remover defers in_use [%s]'
+              % (answer,), answer == (False, 'tool', 6, 'in_use')
+              and [user.get('pid') for user in (said.get('found') or {}).get('processes') or ()] == [4343])
+        check(ROW, 'the worktree is back at its path, whole, and git lists it',
+              listed(path) and not os.path.lexists(mark)
+              and text_of(path / 'settings.local') == 'ignored work in a worktree someone is in\n')
+
+        ROW = 'work/agent-repository-files'
+        files_agent = WORKTREES / 'agents' / 'with-files'
+        subprocess.run(['git', 'clone', '-q', str(REPOSITORY), str(files_agent)], env=ENVIRONMENT,
+                       check=True, capture_output=True, timeout=120)
+        agent = declared('agent_repository', {'path': str(files_agent)})
+        (files_agent / 'draft.md').write_text('an untracked draft\n')
+        (files_agent / 'tracked.txt').write_text('edited and not committed\n')
+        answer, said = refused_by_tool(through(agent, keeper([])))
+        check(ROW, 'every branch is across, rules 1 to 6 pass, and the remover refuses, keep_failed [%s %s]'
+              % (answer, said.get('unsaved')), answer == (False, 'tool', 6, 'keep_failed')
+              and sorted(said.get('unsaved') or ()) == ['draft.md', 'tracked.txt'])
+        check(ROW, 'the repository is at its path with the draft and the edit, byte for byte',
+              text_of(files_agent / 'draft.md') == 'an untracked draft\n'
+              and text_of(files_agent / 'tracked.txt') == 'edited and not committed\n'
+              and not os.path.lexists(RM.marked(str(files_agent), agent)))
+        (files_agent / 'draft.md').unlink()
+        git(files_agent, 'checkout', '-q', '--', 'tracked.txt')
+        (files_agent / 'settings.local').write_text('a loose ignored file of the agent\n')
+        (files_agent / 'build').mkdir()
+        (files_agent / 'build' / 'made.bin').write_bytes(b'm' * 50)
+        answer, said = refused_by_tool(through(agent, keeper([])))
+        check(ROW, 'a loose ignored file alone refuses the same way, and it is still there [%s %s]'
+              % (answer, said.get('unsaved')), answer == (False, 'tool', 6, 'keep_failed')
+              and said.get('unsaved') == ['settings.local']
+              and text_of(files_agent / 'settings.local') == 'a loose ignored file of the agent\n')
+        (files_agent / 'settings.local').unlink()
+        answer = through(agent, keeper([]))
+        check(ROW, 'clean, with only build output a committed ignore file covers, it goes [%s]' % (answer.get('passed'),),
+              answer.get('ok') is True and not files_agent.exists())
+
+        ROW = 'work/repository-in-a-folder'
+        item, path = scratch('is-a-repository')
+        git(path, 'init', '-q', '-b', 'main')
+        only = commit(path, 'only.txt', 'the only copy of this commit\n', 'held nowhere else')
+        answer, said = refused_by_tool(through(item))
+        check(ROW, 'a scratch folder that is a git repository: rules 1 to 6 pass and the remover refuses [%s %s]'
+              % (answer, said.get('said')), answer == (False, 'tool', 6, 'remove_refused')
+              and 'git repository' in str(said.get('said')))
+        check(ROW, 'the folder is back at its path and its only commit is still there',
+              git(path, 'rev-parse', 'HEAD') == only and text_of(path / 'only.txt') == 'the only copy of this commit\n'
+              and not os.path.lexists(RM.marked(str(path), item)))
+        item, path = scratch('holds-a-repository')
+        inner = path / 'deep' / 'deeper' / 'clone'
+        inner.mkdir()
+        git(inner, 'init', '-q', '-b', 'main')
+        only = commit(inner, 'only.txt', 'deep inside\n', 'held nowhere else')
+        subprocess.run(['git', 'clone', '-q', '--bare', str(REPOSITORY), str(path / 'deep' / 'bare.git')],
+                       env=ENVIRONMENT, check=True, capture_output=True, timeout=120)
+        answer = drive(item)
+        check(ROW, 'a scratch folder with a repository deep inside is refused and whole [%s]' % (answer.get('said'),),
+              named(answer)[:2] == (False, 'remove_refused') and git(inner, 'rev-parse', 'HEAD') == only
+              and (path / 'leftover.bin').is_file())
+        shutil.rmtree(inner)
+        answer = drive(item)
+        check(ROW, 'a bare repository inside is one too [%s]' % (answer.get('said'),),
+              named(answer)[:2] == (False, 'remove_refused') and (path / 'deep' / 'bare.git' / 'HEAD').is_file())
+        nesting = WORKTREES / 'agents' / 'nesting'
+        subprocess.run(['git', 'clone', '-q', str(REPOSITORY), str(nesting)], env=ENVIRONMENT,
+                       check=True, capture_output=True, timeout=120)
+        agent = declared('agent_repository', {'path': str(nesting)})
+        (nesting / 'build').mkdir()
+        git(nesting / 'build', 'init', '-q', '-b', 'main')
+        only = commit(nesting / 'build', 'only.txt', 'in ignored build output\n', 'held nowhere else')
+        answer = drive(agent, keep=keeper([]))
+        check(ROW, 'an agent repository goes with its own repository and with no other inside it [%s]'
+              % (answer.get('said'),), named(answer)[:2] == (False, 'remove_refused')
+              and git(nesting / 'build', 'rev-parse', 'HEAD') == only and (nesting / 'tracked.txt').is_file())
+        item, path = worktree('nesting-tree')
+        (path / 'build').mkdir()
+        git(path / 'build', 'init', '-q', '-b', 'main')
+        only = commit(path / 'build', 'only.txt', 'in ignored build output\n', 'held nowhere else')
+        del ran[:]
+        answer = drive(item, keep=keeper([]))
+        check(ROW, 'a worktree with a repository in its ignored build folder is refused before git is asked to move it [%s]'
+              % (answer.get('said'),), named(answer)[:2] == (False, 'remove_refused')
+              and git(path / 'build', 'rev-parse', 'HEAD') == only and listed(path)
+              and not [argv for argv in ran if 'move' in argv or 'remove' in argv])
+
+        ROW = 'work/link-and-dotdot'
+        item, path = scratch('victim', root=SCRATCH / 'real-parent')
+        (SCRATCH / 'via-a-link').symlink_to(SCRATCH / 'real-parent')
+        (SCRATCH / 'aside').mkdir()
+        for label, text in (('whose parent is a link', str(SCRATCH / 'via-a-link' / 'victim')),
+                            ('with ..', str(SCRATCH / 'aside' / '..' / 'real-parent' / 'victim')),
+                            ('that is relative', os.path.relpath(str(path))),
+                            ('with a doubled slash', str(SCRATCH / 'real-parent') + '//victim')):
+            answer = drive(item, record=dict(L.item(item), locator={'path': text}))
+            check(ROW, 'the folder remover, called by itself on a path %s, refuses and the target is whole [%s]'
+                  % (label, answer.get('said')), named(answer)[:2] == (False, 'remove_refused')
+                  and (path / 'leftover.bin').is_file() and text_of(path / 'deep' / 'deeper' / 'file.txt') == 'deep\n'
+                  and answer.get('commands') == [])
+        item, path = worktree('linked-tree')
+        (WORKTREES / 'tree-link').symlink_to(path)
+        log = []
+        for label, text in (('that is a link', str(WORKTREES / 'tree-link')),
+                            ('with ..', str(WORKTREES / 'agents' / '..' / 'linked-tree'))):
+            answer = drive(item, record=dict(L.item(item), locator={'path': text}), keep=keeper(log))
+            check(ROW, 'the worktree remover on a path %s refuses, asks no keep step and runs nothing [%s]'
+                  % (label, answer.get('said')), named(answer)[:2] == (False, 'remove_refused') and log == []
+                  and answer.get('commands') == [] and (path / 'tracked.txt').is_file() and listed(path))
+        answer = drive(item, keep=keeper(log))
+        check(ROW, 'by its own plain path the same worktree goes', answer.get('ok') is True and not path.exists())
+
+        ROW = 'work/marked-name'
+        first, second = RM.marked('/s/folder', 'space:item:a.b'), RM.marked('/s/folder', 'space:item:a-b')
+        check(ROW, 'two ids that differ in one character have two marked names [%s %s]' % (first, second),
+              first != second and first.startswith('/s/folder.veldo-removing.')
+              and second == '/s/folder.veldo-removing.a-b')
+        check(ROW, 'the path and the id are read back from the name, and a name that is not marked reads as none',
+              RM.unmarked(first) == ('/s/folder', 'a.b') and RM.unmarked(second) == ('/s/folder', 'a-b')
+              and RM.unmarked('/s/folder') is None and RM.unmarked('/s/folder.veldo-removing.') is None)
+        item, path = scratch('killed')
+        check(ROW, 'nothing is left under the marked name of a folder at its path', RM.left(str(path), item) is None)
+        path.rename(RM.marked(str(path), item))  # where a removal killed after its rename leaves the folder
+        check(ROW, 'a folder a killed removal left under its marked name is found by the item\'s path and id [%s]'
+              % RM.left(str(path), item), RM.left(str(path), item) == RM.marked(str(path), item)
+              and not path.exists() and (Path(RM.left(str(path), item)) / 'leftover.bin').is_file()
+              and RM.unmarked(RM.left(str(path), item)) == (str(path), item.rsplit(':', 1)[-1]))
+        Path(RM.marked(str(path), item)).rename(path)
+
+        ROW = 'work/probes-through-the-boundary'
+        item, path = worktree('personal')
+        (path / 'personal.txt').write_text('work a personal ignore rule hides\n')
+        home = temp / 'personal-home'
+        home.mkdir()
+        (home / 'excludes').write_text('personal.txt\n')
+        (home / '.gitconfig').write_text('[core]\n\texcludesFile = %s\n' % (home / 'excludes'))
+        kept_environment = {key: os.environ.get(key) for key in ('HOME', 'XDG_CONFIG_HOME', 'GIT_CONFIG_GLOBAL')}
+        os.environ.update(HOME=str(home), XDG_CONFIG_HOME=str(home / 'none'), GIT_CONFIG_GLOBAL=str(home / '.gitconfig'))
+        try:
+            plain = subprocess.run(['git', '-C', str(path), 'status', '--porcelain'], stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, timeout=120).stdout.decode()
+            answer = through(item, keeper([]))
+        finally:
+            for key, value in kept_environment.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+        check(ROW, 'a plain git, reading the personal global excludes file, sees a clean worktree [%r]' % plain,
+              plain == '')
+        check(ROW, 'rule 5, read through the remover\'s runner, sees the file as untracked work and refuses [%s %s]'
+              % (answer.get('rule'), (answer.get('found') or {}).get('untracked')),
+              answer.get('ok') is False and answer.get('rule') == 'unique_work'
+              and (answer.get('found') or {}).get('untracked') == ['personal.txt']
+              and text_of(path / 'personal.txt') == 'work a personal ignore rule hides\n')
 
         # AC3: every command every remover ran
         ROW = 'ac3/commands'

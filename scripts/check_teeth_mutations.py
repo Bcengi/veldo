@@ -12724,6 +12724,17 @@ def cases():
         "        return True\n",
         ['closed/helper-pinned'])
 
+    # The review of VELDO-0300, finding 7: the probes' git is run outside the Git boundary, and a file
+    # the user's global excludes file hides is no work to rule 5.
+    add(299, 'space299-git-outside-the-boundary', space299, 'control_space_probe.py',
+        "            done = _git_process.run([str(word) for word in argv], **given)  # the isolated profile\n",
+        "            done = subprocess.run([str(word) for word in argv], **given)\n",
+        ['closed/personal-excludes-is-work'])
+    # The probes load the Git boundary beside their own file: each copy runs beside an unchanged one.
+    for case in result:
+        if case['module'] == 'control_space_probe.py':
+            case['companions'] = ['git_process.py']
+
     # VELDO-0330: the rule order, the ledger rule and the protect rule. The declared falsifier of each
     # acceptance criterion: AC1 unique work runs before protect; AC2 rule 1 compares the locator's text
     # only; AC3 the discard remover's rules skip the protect rule.
@@ -12761,13 +12772,13 @@ def cases():
     # is reported as freed.
     space300 = '138_veldo_0300_space_remove.py'
     add(300, 'space300-delete-after-first-probe', space300, 'control_space_remove.py',
-        "        use = _second_probe(ctx, name)\n",
-        "        use = None\n",
+        "        try:\n            use = _second_probe(ctx, name)\n",
+        "        try:\n            use = None\n",
         ['ac1/rename-probe-delete'])
     result[-1]['siblings'] = True
     add(300, 'space300-worktree-forced', space300, 'control_space_remove.py',
-        "        done = _git_process.run(['git', '-C', repository, 'worktree', 'remove', path], stdin=subprocess.DEVNULL,\n",
-        "        done = _git_process.run(['git', '-C', repository, 'worktree', 'remove', '--force', path], stdin=subprocess.DEVNULL,\n",
+        "    return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', path)\n",
+        "    return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)\n",
         ['ac2/non-forced'])
     result[-1]['siblings'] = True
     add(300, 'space300-volume-prune', space300, 'control_space_remove.py',
@@ -12785,7 +12796,7 @@ def cases():
     # under its marked name, where its item no longer finds it.
     add(300, 'space300-removes-with-no-keep-step', space300, 'control_space_remove.py',
         "        raise _Refusal(KEEP_FAILED, 'no keep step was given: the commits of this item are recorded nowhere')\n",
-        "        return\n",
+        "        return {'tips': tips(record['locator']['path'], record.get('kind'), ctx['commands'])}\n",
         ['ac2/keep-step'])
     result[-1]['siblings'] = True
     add(300, 'space300-removes-after-a-failed-keep', space300, 'control_space_remove.py',
@@ -12794,9 +12805,57 @@ def cases():
         ['ac2/keep-step'])
     result[-1]['siblings'] = True
     add(300, 'space300-left-under-its-marked-name', space300, 'control_space_remove.py',
-        "    stuck = _put_back(name, path)\n",
-        "    stuck = None\n",
+        "        stuck = _put_back(parent, tail, base)\n",
+        "        stuck = None\n",
         ['ac1/delete-stops'])
+    result[-1]['siblings'] = True
+    # The review of VELDO-0300 (owner rule: no work is ever lost). Each case loses the work its row
+    # plants: ignored files that are work go with git's non-forced remove; a commit made after the keep
+    # step goes unrecorded; an agent repository goes with its uncommitted and untracked files; a scratch
+    # folder that is a git repository goes with its only commit; the remover follows a link or .. by
+    # itself; a user under the worktree's marked name is not looked for; two ids share one marked name;
+    # the probes' git reads handed to the remover's runner read the user's global configuration.
+    saved_line = "        unsaved = (changed + work) if private else _unsaved(where, work, kept.get('snapshot'))\n"
+    add(300, 'space300-ignored-work-not-compared', space300, 'control_space_remove.py',
+        saved_line, "        unsaved = (changed + work) if private else []\n",
+        ['work/ignored-files'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-tips-not-read-again', space300, 'control_space_remove.py',
+        "    if now is None or now != kept['tips']:\n",
+        "    if False:\n",
+        ['work/commit-in-the-gap'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-agent-repository-files-not-read', space300, 'control_space_remove.py',
+        saved_line, "        unsaved = [] if private else _unsaved(where, work, kept.get('snapshot'))\n",
+        ['work/agent-repository-files'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-repository-in-a-folder-deleted', space300, 'control_space_remove.py',
+        "            if not (own and (depth == 0 or (depth == 1 and name == '.git'))):\n",
+        "            if False:\n",
+        ['work/repository-in-a-folder'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-follows-a-link-or-dotdot', space300, 'control_space_remove.py',
+        "    if not os.path.isabs(path) or os.path.normpath(path) != path:\n",
+        "    if not os.path.isabs(path):\n",
+        ['work/link-and-dotdot'],
+        also=[("    if os.path.realpath(path) != path:\n", "    if False:\n"),
+              ("                inner = os.open(part, os.O_PATH | DIRECTORY, dir_fd=descriptor)\n",
+               "                inner = os.open(part, os.O_PATH | os.O_DIRECTORY, dir_fd=descriptor)\n")])
+    result[-1]['siblings'] = True
+    add(300, 'space300-worktree-no-second-probe', space300, 'control_space_remove.py',
+        "        use = _second_probe(ctx, name)\n        if use is not None:\n",
+        "        use = None\n        if use is not None:\n",
+        ['work/worktree-second-probe'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-marked-name-shared', space300, 'control_space_remove.py',
+        "    tail = ''.join(c if c in PLAIN else ''.join('~%02x' % byte for byte in c.encode('utf-8'))\n",
+        "    tail = ''.join(c if c in PLAIN else '-'\n",
+        ['work/marked-name'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-probe-reads-outside-the-boundary', space300, 'control_space_remove.py',
+        "            done = _git_process.run([str(word) for word in argv], **given)  # the isolated profile\n",
+        "            done = subprocess.run([str(word) for word in argv], **given)\n",
+        ['work/probes-through-the-boundary'])
     result[-1]['siblings'] = True
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.

@@ -4,7 +4,7 @@
  "commit": "8a5618274954dfbfbe4fda61fd53f9b10931bad9",
  "tree": "e9d6e126a4ed33412843a8802d4a1116ea7ed219",
  "producer": "Claude implementation agent; not an independent reviewer",
- "produced_at": "2026-11-13T23:38:52.549618+00:00",
+ "produced_at": "2026-11-14T03:44:44.137748+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -85,6 +85,16 @@
      "type": "unit",
      "ref": "proof/VELDO-0299/falsifiers.json",
      "detail": "Falsifier space299-stash-holds-a-commit (every ref that reaches the commit counted, as before the review): closed/stash-hides-unlanded-commit red; noop green. proof/VELDO-0299/mutations.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/136_veldo_0299_space_probe.py",
+     "detail": "The review of VELDO-0300, finding 7, under the owner's rule that no work is ever lost. Row closed/personal-excludes-is-work: a worktree holding personal.txt, with HOME and GIT_CONFIG_GLOBAL set to a configuration whose core.excludesFile hides that file. A plain git status there prints nothing (the reviewer's reproduction, where unique_work read cases [] and untracked []); unique_work now reads untracked ['personal.txt'], case 3, unique work. The same row reads scripts/check_git_boundary.py: no git vector outside the module's _run when it is read as a funnel, the module is in FUNNELS, and read as no funnel the vector is still found, so the allowance is the only thing that passes it. Green: proof/VELDO-0299/suite-green.txt."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0299/falsifiers.json",
+     "detail": "Falsifier space299-git-outside-the-boundary (the git arm of _run runs a plain subprocess, as before the fix): closed/personal-excludes-is-work red, the hidden file is no untracked file; noop green. All eighteen registered cases of finding 299 were rerun after the fix, each beside a copy of git_process.py (companions), each red on its row. proof/VELDO-0299/mutations.txt."
     }
    ]
   },
@@ -155,17 +165,17 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 136_veldo_0299_space_probe (45 rows, 71 checks). After the re-review's fix every space suite was rerun green, each on its own: 130 (48 checks), 131 (40), 132 (57), 133 (56), 134 (42), 135 (150), 136 (71), 137 (49)."
+   "command": "python3 scripts/selftest.py --suite 136_veldo_0299_space_probe (46 rows, 72 checks). After the fix for the review of VELDO-0300 every space suite was rerun green, each on its own: 130 (48 checks), 131 (40), 132 (57), 133 (56), 134 (42), 135 (150), 136 (72), 137 (49), 138 (55)."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py; python3 .veldo/validate.py spec on the spec and all, exit 0."
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; bash scripts/check_lint.sh; python3 scripts/check_personal_setup.py; python3 scripts/update_index.py; python3 .veldo/validate.py spec on the spec and all, exit 0. After the fix for the review of VELDO-0300: python3 scripts/check_git_boundary.py passes for the whole tree."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The build, the review fix and the re-review fix ran single suites and fast checks only, as instructed. The lead runs ./scripts/verify.sh through the gate lock; the seventeen registered teeth cases (finding 299) were run here through the driver's own materialize() and worker(), not through the teeth run."
+   "reason": "The build, the review fix and the re-review fix ran single suites and fast checks only, as instructed. The lead runs ./scripts/verify.sh through the gate lock; the eighteen registered teeth cases (finding 299) were run here through the driver's own materialize() and worker(), not through the teeth run."
   }
  ],
  "assumptions": [
@@ -195,7 +205,8 @@
   "Re-review, kernel threads. A process whose stat flags carry PF_KTHREAD (0x00200000) is left out of users and of unread before anything else of it is read; a stat that cannot be read leaves nothing out.",
   "Not built, by the lead's instruction: the owner-approved list of process names and the narrow capability reader. The lead decides between them with the owner. Until then the user's own undumpable processes count as same_uid. Measured on this host, 2026-11-13, for an item under the owner's home folder with both engines named: 355 unread listed, 347 excluded, 8 counted: five of the user's own (the systemd user manager, its PAM helper, two of the desktop engine's backend, ssh-agent) and three root-owned whose loginuid is the user's (a session worker, two mount helpers). So every such item is still in use here. The earlier measurement's sixth same-uid process was a container's health check, not the user's; the design's paragraph is corrected.",
   "nested(path, skip) is added to this module for VELDO-0330's rule 6 and is proven there (suite 137, ac1/nested-repository-holds-worktree). It reads names only: os.scandir, no git, no link followed.",
-  "The spec's History has the re-review's line; specs/index.md regenerated with no change."
+  "The spec's History has the re-review's line; specs/index.md regenerated with no change.",
+  "The review of VELDO-0300, finding 7: git is run through the one Git boundary (git_process.py beside the module, isolated profile), so the module is no longer standard library only in the strict sense: it loads that one sibling by its own path. --no-optional-locks stands for GIT_OPTIONAL_LOCKS=0, which the boundary would strip. A runner a caller gives is handed the vector as it is; the default runner and the removers' runner send it through the boundary. scripts/check_git_boundary.py was changed to allow the module as a funnel; it is not a protected path. commit and tree above still name the earlier build; this fix is the commit that carries this bundle."
  ],
  "rollback": "Revert the change. Nothing is removed by this ticket, so nothing on disk changes."
 }

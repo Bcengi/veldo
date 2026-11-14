@@ -89,6 +89,11 @@ when its cgroup cannot be read).
 
 probe/facts-only (the module calls nothing that removes, renames or writes), probe/canon (the engine
 canon equals this repository copy).
+
+closed/personal-excludes-is-work (the review of VELDO-0300, finding 7: a file that only the user's global
+excludes file ignores is hidden from a plain git and is an untracked file, case 3, to the probe, whose git
+runs through the one Git boundary; scripts/check_git_boundary.py allows the module as a funnel and finds
+no git vector outside its _run).
 """
 
 
@@ -126,7 +131,7 @@ def _v299_space_probe_suite():
             'closed/stash-hides-unlanded-commit', 'closed/no-shared-repository',
             'closed/git-unreadable-is-locked', 'closed/scratch-unopenable-is-locked',
             'closed/unnamed-process-counts', 'closed/unread-names-pids-and-uids', 'closed/hidden-table',
-            'closed/helper-pinned', 'closed/kernel-thread-left-out',
+            'closed/helper-pinned', 'closed/kernel-thread-left-out', 'closed/personal-excludes-is-work',
             'reach/other-uid-shut-out-excluded', 'reach/other-uid-let-through-counted',
             'reach/root-with-container-mount-counted', 'reach/same-uid-and-inherited',
             'reach/root-login-counted', 'reach/capability-counted', 'reach/container-by-its-mounts',
@@ -1182,6 +1187,40 @@ def _v299_space_probe_suite():
         entry(103, uid=ME, comm='virtiofsd', cgroup='0::/user.slice/user-%d.slice/session-3.scope' % ME)
         check(ROW, 'one that cannot be read, named virtiofsd outside that unit, is unread and counts',
               unread_of(P.in_use(item, proc=str(table))) == [(103, ME, 'same_uid')])
+
+        ROW = 'closed/personal-excludes-is-work'
+        hidden = temporary / 'hidden-work'
+        git(repo, 'worktree', 'add', '-q', '--detach', str(hidden), 'main')
+        (hidden / 'personal.txt').write_text('work a personal ignore rule hides\n')
+        home = temporary / 'personal-home'
+        home.mkdir()
+        (home / 'excludes').write_text('personal.txt\n')
+        (home / '.gitconfig').write_text('[core]\n\texcludesFile = %s\n' % (home / 'excludes'))
+        saved = {key: os.environ.get(key) for key in ('HOME', 'XDG_CONFIG_HOME', 'GIT_CONFIG_GLOBAL',
+                                                      'GIT_CONFIG_NOSYSTEM', 'GIT_CONFIG_SYSTEM')}
+        os.environ.update(HOME=str(home), XDG_CONFIG_HOME=str(home / 'none'),
+                          GIT_CONFIG_GLOBAL=str(home / '.gitconfig'))
+        try:
+            plain = subprocess.run(['git', '-C', str(hidden), 'status', '--porcelain'], stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, timeout=120).stdout.decode()
+            facts = P.unique_work(hidden)
+        finally:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+        check(ROW, 'the planted file is hidden from a plain git by the personal global excludes file [%r]' % plain,
+              plain == '')
+        check(ROW, 'to the probe it is an untracked file, and the worktree has unique work, case 3 [%s %s]'
+              % (facts.get('untracked'), facts.get('cases')),
+              facts['read'] is True and facts['untracked'] == ['personal.txt'] and 3 in facts['cases']
+              and facts['unique_work'] is True)
+        boundary_check = load('v299_check_git_boundary', ROOT / 'scripts' / 'check_git_boundary.py')
+        check(ROW, 'git is run through the one Git boundary and nowhere else in the probes',
+              boundary_check.problems(PRODUCTION['control_space_probe.py'].read_text(), funnel=True) == []
+              and 'control_space_probe.py' in boundary_check.FUNNELS
+              and boundary_check.problems(PRODUCTION['control_space_probe.py'].read_text()) != [])
 
         source = PRODUCTION['control_space_probe.py'].read_text()
         called = set()
