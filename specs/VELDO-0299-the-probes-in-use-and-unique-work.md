@@ -142,3 +142,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   undumpable processes still count. Measured on this host with both engines named: 355 unread listed,
   8 count (five of the user's own, three root-owned that a login started). Still open from the first
   review: 8b to 8d. No acceptance criterion changed.
+- 2026-11-13: the owner's decision on the open point (Telegram 41204 and 41205): neither the list of
+  process names nor a capability on the service. The probe reads the processes it cannot read itself
+  through the process reader, a separate program with the one file capability cap_sys_ptrace, which is
+  VELDO-0344 and design section 7.1. Nothing here changes until that ticket lands: without the reader,
+  or with one that fails its check, unread processes are judged by the bound of this ticket, and the
+  user's own undumpable processes still count. No acceptance criterion changed.

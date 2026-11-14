@@ -91,3 +91,6 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: VELDO-0344 adds one key to the installation's space section, process_reader: the word
+  none or the SHA-256 digest of the process reader the owner installed (design 6.8 and 7.1). It is
+  built by that ticket, not here. No acceptance criterion changed.

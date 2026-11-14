@@ -136,3 +136,9 @@ the rules, and Probes, which holds the protect list.
   for both, and its measurement paragraph is corrected: of the six unread processes with the user's uid
   number, five are the user's own and one is a container's. VELDO-0301's History now says it must pass
   look=signal.inside to the kind registry's due, with a falsifier. No acceptance criterion changed.
+- 2026-11-13: the owner's decision (Telegram 41204 and 41205) adds the process reader, VELDO-0344,
+  design section 7.1. Rule 4 keeps its reading: it refuses on a process that uses the item and on an
+  unread process that could reach it. What changes with VELDO-0344 is which processes are still
+  unread: one the reader read in full is a user of the item or is not counted, and one it could not
+  read is judged as now. The deferral then also names the reader's state. No acceptance criterion
+  changed.

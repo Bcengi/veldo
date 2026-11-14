@@ -46,6 +46,16 @@ in the same places of section 7:
   one, with its only commit, through an ignored folder.
 - The "nine processes" measurement is corrected: one of the six was a container's, not the user's.
 
+Amended a third time 2026-11-13, by the owner's decision (Telegram 41204 and 41205), in the new
+section 7.1, in 6.8, in sections 3, 12, 13 and 15:
+
+- The probe reads the processes it cannot read itself through the process reader, a small separate
+  program with the one file capability cap_sys_ptrace, installed by the owner. No list of process
+  names, and the service never holds the capability. Without the reader the bound decides as before.
+- One capability does not list a process's open files by path; that was measured. The reader prints
+  device and inode numbers, and the probe matches them against the item's own files.
+- It is one more ticket, VELDO-0344, built before anything removes on a real host.
+
 What changed in revision 6:
 
 - One answer still covers a day's whole review group, and the request now also offers an answer for one
@@ -220,6 +230,7 @@ repositories initialized after it and no others. Existing projects are covered b
 | Declarations reader | engine/.veldo/control_space_config.py | New | Reads the installation's space section through the one installation reader, and each project's space file. Refuses a malformed one by name |
 | Kind registry | engine/.veldo/control_space_kinds.py | New | Plain data and one pure function. For each kind: how an item is identified, its lifecycle table, which safety rules apply, which remover carries out each action |
 | Probes | engine/.veldo/control_space_probe.py | New | The observers the safety rules read: process working directories, open and mapped files, container mounts, git state of a worktree and a branch, the protect list. Each returns facts; none decides |
+| Process reader | engine/scripts/veldo_procread.c, added to the protected paths; installed by the owner at /usr/local/lib/veldo/veldo-procread | New | A static C program with the one file capability cap_sys_ptrace. Prints, for every process, the device and inode numbers of its working directory, open files and mapped files. Takes no input, attaches to nothing, signals nothing, writes nothing (7.1) |
 | Removers | engine/.veldo/control_space_remove.py | New | One remover per action. Each uses the owning tool's own remove and reports what it measured |
 | Signal | engine/.veldo/control_space_signal.py | New | The one entry point an emitting process calls with an event. Finds due items, runs rules and removers in line, writes the outcomes |
 | Docker adapter | engine/.veldo/control_space_docker.py | New | Per engine context: the run label and compose project name, the snapshot, the event subscription, the census, the object removers |
@@ -841,6 +852,7 @@ installation_missing.
 | build roots | Folders outside worktrees where build output is kept under a worktree's name |
 | plain repositories | Git repositories that do not run Veldo and whose worktrees are to be recorded, each with its worktree root |
 | client accounts | The client configuration folders the session hooks are installed into |
+| process reader | The word none, or the SHA-256 digest of the process reader the owner installed (7.1). The reader's path is fixed in the probe and is not a key |
 | protect | Path prefixes; Docker name patterns for volumes, containers, images and networks; compose project names. Every entry applies on every engine the installation names. An object is protected by its name or by its compose project label, either one (section 7) |
 
 Mode is not a key of this section. It is a ledger record per scope (4.7), written only by the owner's
@@ -1170,11 +1182,11 @@ file a process holds open does not take the data from that process.
 What the probe needs, and how it gets it without root: read access to the status, stat, cgroup and
 loginuid files of every process (the kernel gives that to every user; a kernel built without audit has
 no loginuid file, and there every privileged process counts), os.stat on the item's directories (the
-owner of the item has it), and a process table that shows every process. Under hidepid the table shows only the user's own, the
-probe cannot list what it must judge, and rule 4 refuses every removal until the table is mounted to
-show them or the service is given the capability to read them (CAP_SYS_PTRACE, which also makes every
-process readable and the bound unneeded). The deferral names each process that counted, by process id,
-uid and the reason, so the owner can see why.
+owner of the item has it), and a process table that shows every process. Under hidepid the table shows
+only the user's own, the probe cannot list what it must judge, and rule 4 refuses every removal until
+the table is mounted to show them. (This sentence first offered giving the service CAP_SYS_PTRACE
+instead. The owner decided against that on 2026-11-13: the service never holds the capability, 7.1.) The
+deferral names each process that counted, by process id, uid and the reason, so the owner can see why.
 
 Measured on this host, 2026-11-13, for an item under the owner's home folder (mode 750): of 536 unread
 processes 527 are excluded and 9 count. Six run under the user's uid number and are not readable. Five
@@ -1198,6 +1210,180 @@ point. A systemd user
 manager is there on every host with a user session, nothing short of CAP_SYS_PTRACE reads it, and the
 decision above says it counts. Whether the service is given that capability, or such processes are
 bounded another way, is the lead's to decide; nothing is removed on this host until it is.
+
+### 7.1 The process reader (VELDO-0344)
+
+The owner's decision of 2026-11-13 (Telegram 41204 and 41205) closes the open point above. The probe
+reads every process through a small separate program, the process reader. The reader holds one file
+capability, cap_sys_ptrace, which the owner installs once with one sudo command. It reads entries of
+the kernel's process table and prints facts. It never attaches to a process, never signals one and
+never writes. There is no list of trusted process names. The Veldo service never holds the capability:
+the reader is a program of its own, which the probe runs and which exits when it has printed. Without
+the reader, or with one that is not the binary the owner installed, unread processes are judged by the
+bound above as before, and the probe says so.
+
+What one capability reads. Measured on this host on 2026-11-13 (kernel 7.0), against a process the
+probe cannot read today:
+
+| Entry of /proc/<pid> | Without the capability | With cap_sys_ptrace alone | What it gives |
+| :- | :- | :- | :- |
+| cwd, by stat through the link | Refused | Read | The device and inode number of the working directory |
+| maps | Refused | Read | The device and inode number of every mapped file |
+| fdinfo/<n> | Refused | Read | The mount id and the inode number of every open descriptor |
+| mountinfo | Read | Read | The device of every mount id |
+| fd, the folder of links | Refused | Refused | The paths of the open files |
+
+The last row changes one word of the decision. The decision lists fd among what the reader reads. The
+fd folder is mode 0500 and belongs to the process's uid, or to root when the process is not dumpable.
+Listing it is an ordinary permission check, and cap_sys_ptrace does not pass it; it took
+cap_dac_read_search as well before the folder could be listed. So the reader reads fdinfo in its place
+and stays at one capability. The measurement ran in a container that shares the host's process table,
+as uid 0 holding cap_sys_ptrace and nothing else, against a process of the owner's. The installed
+reader runs as the owner against entries that belong to root, which is the same check from the other
+side. A row that runs where the reader is installed proves it on the host (VELDO-0344).
+
+Numbers, not paths. The reader prints device and inode numbers for all three facts and never a path.
+There are three reasons. One capability gives no path for an open descriptor. A path is also the wrong
+thing to compare: a process in a container or in a sandbox has its own mounts, and the path the kernel
+prints for its working directory is not a host path, while the device and inode number are the same in
+every mount namespace. And numbers disclose less to whoever runs the reader (below).
+
+The reader:
+
+- One C file, engine/scripts/veldo_procread.c with its synced copy, built static with the build line
+  of veldo-userns, the repository's one other compiled helper (VELDO-0210). It has to be a compiled
+  binary of its own: a file capability on an interpreter would be held by every script that
+  interpreter runs. C because that is what the house already builds, reviews and gates for a helper of
+  this kind; no second toolchain is added.
+- Installed at /usr/local/lib/veldo/veldo-procread, owner root, group the installation owner's own
+  group, mode 0750, capability cap_sys_ptrace=ep. So the owner's account can run it and no other
+  account on the host can.
+- It takes no argument, reads no input and no environment variable. With any argument it prints
+  nothing and exits 2.
+- Before it reads anything it sets no_new_privs and installs a seccomp filter that allows only what
+  reading needs: open for reading, read, list a folder, stat, close, memory for its own buffers, write
+  to its own standard output and exit. A call off that list ends the process. So "never attaches,
+  signals or writes" is enforced by the kernel and not only by the source.
+- For every process in the table that is not a kernel thread it reads stat (the start time and the
+  flags), cwd by stat, every fdinfo entry, mountinfo and maps. It opens nothing outside /proc.
+- The decision also lists cgroup and loginuid. Every user may read those two, and the probe keeps
+  reading them itself, so the reader does not.
+
+The output, exactly. ASCII lines ending in a line feed, fields separated by one space, every number
+decimal:
+
+| Line | Meaning |
+| :- | :- |
+| veldo-procread 1 cap=C | The first line. 1 is the format's version. C is 1 when the reader holds cap_sys_ptrace in its effective set, else 0 |
+| p PID START | Opens the block of one process. START is field 22 of its stat file, its start time in clock ticks |
+| c MAJOR:MINOR INODE | Its working directory |
+| f FD MOUNT MAJOR:MINOR INODE | One open descriptor: its number, its mount id, the device mountinfo gives for that mount id, its inode number. The device is a single hyphen when the process's mountinfo has no row for the mount id |
+| m MAJOR:MINOR INODE | One mapped file. Lines of maps with inode 0 are left out; a pair may repeat |
+| x FACT ERRNO | A fact that could not be read. FACT is one of stat, cwd, fd, mnt, maps; ERRNO is the kernel's error number |
+| g | The process ended while it was read. Closes its block |
+| end COUNT | The last line. COUNT is the number of p lines |
+
+Nothing else is written to standard output, nothing to standard error, and the exit status is 0. A
+block for the user manager might read:
+
+```
+p 2114 5127
+c 259:2 2
+f 0 30 0:5 5
+f 4 19 - 1058
+m 259:2 19937837
+```
+
+How the probe checks that it is the expected binary, before every run:
+
+1. The path is fixed in the probe. It is never taken from the environment, the installation or the
+   project.
+2. The file is a regular file and no link, its owner is root, its group is the installation owner's
+   group, its mode is exactly 0750, and every folder from / down to it belongs to root and is writable
+   by root alone.
+3. Its capability attribute holds exactly cap_sys_ptrace, permitted and effective, and nothing
+   inheritable.
+4. Its SHA-256 digest equals the one in the installation's space section, key process_reader (6.8).
+5. Its first output line says version 1 and cap=1. A reader started under no_new_privs or from a
+   mount that drops capabilities gets none, says cap=0 and is not used.
+6. Its output is whole: every line is in the format, the end line is there with the right count, and
+   the exit status is 0.
+
+A reader that fails a check is not run, or its output is not used, not even in part. The probe's
+answer then carries the reader's state (absent, or refused with the check that failed) and every
+unread process is judged by the bound. The digest is not what stops the owner's own account from
+changing the binary; root ownership of the file and its folders does that. The digest ties the
+installed binary to the build the owner made from the reviewed source, so a binary built from another
+source, or replaced by another root act, is refused. An agent that edits the digest in the
+installation's file can only make the check fail.
+
+How the probe uses the facts. For an item it lists the item's folder and everything beneath it,
+following no link, and keeps the device and inode number of each entry. On this worktree that is 9,011
+entries in 0.3 seconds. A folder it cannot list makes the item in use. Then, for each process it could
+not read itself:
+
+- The reader's block is taken only when its process id and start time are the ones the probe reads
+  for that process. A block with an x line, a missing block or another start time leaves the process
+  unread, and the bound judges it.
+- A process whose block is whole is read. It uses the item when its working directory, a descriptor
+  or a mapped file has a device and inode number in the item's set, and it is named with the fact that
+  matched. Otherwise it does not count, whatever its uid, its login or its parents: where it is has
+  been read.
+- A descriptor whose device is a hyphen (a pipe, a socket, or a file on a mount that was detached) is
+  matched by inode number alone. A pipe whose number happens to equal a file's in the item defers the
+  item once more than needed; nothing is ever freed by it.
+- On a filesystem where a file's device number is not the one its mount row gives (the probe compares
+  the two for the item itself), descriptors and maps are matched by inode number alone, the same way.
+- A process the probe can read itself is judged from its paths as before. A process table mounted with
+  hidepid still makes the path in use; this ticket does not change that.
+
+A deleted file that a process still holds open is not in the item's set and is not use: removing the
+item takes nothing from that process.
+
+Install, by the owner, once, from the authority checkout's root. The first line builds the reader and
+prints its digest; the second is the one sudo command:
+
+```
+d=$(mktemp -d) && g=$(id -gn) && cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$PWD"=. -o "$d/veldo-procread" scripts/veldo_procread.c && h=$(sha256sum "$d/veldo-procread" | cut -d' ' -f1) && echo "$h"
+sudo sh -c "install -D -m 0750 '$d/veldo-procread' /usr/local/lib/veldo/veldo-procread && chown root:'$g' /usr/local/lib/veldo/veldo-procread && chmod 0750 /usr/local/lib/veldo/veldo-procread && echo '$h  /usr/local/lib/veldo/veldo-procread' | sha256sum -c - && setcap cap_sys_ptrace=ep /usr/local/lib/veldo/veldo-procread"
+```
+
+The capability is set last, because a change of owner clears it, and only after root has checked that
+the installed copy has the digest the owner saw. If a process of the owner's account swapped the built
+file between the two lines, the check fails and the copy is left with no capability. The owner then
+writes the digest into the installation's space section as process_reader, and runs the probe's reader
+check (python3 -I .veldo/control_space_probe.py reader), which prints the state and reads one
+undumpable process it starts itself. docs/veldo-procread-setup.txt carries the same lines.
+
+Uninstall, also the owner's. Either line is enough, and after either the probe reports the reader as
+refused or absent and judges by the bound:
+
+```
+sudo setcap -r /usr/local/lib/veldo/veldo-procread
+sudo rm /usr/local/lib/veldo/veldo-procread
+```
+
+Then process_reader is set to none.
+
+What an agent running as the owner can do with it. It can run the reader, since it has the owner's
+group. It learns, for every process on the host: the process id and start time, and the device and
+inode numbers of its working directory, its open files and its mapped files, with descriptor numbers
+and mount ids. It learns no path, no file name, no content, no memory, no command line, no environment
+and no address from maps, so nothing about the memory layout of a root process. A number becomes a
+name only for a file the agent can already reach and stat. So what it can newly answer is "does some
+process, root's included, have this file of mine, or this file I can already see, open or mapped". That
+is what lsof tells root, without the names, and it is accepted.
+
+It cannot make the reader do anything else. The reader takes no input, so there is nothing to steer. It
+is static, so no library can be loaded into it. The kernel does not let a process attach to one that
+holds a capability it lacks, so the agent cannot take the capability over through the reader. It can
+kill the reader or starve it of descriptors; the output is then cut or short, check 6 refuses it, and
+the item stays. An agent inside Veldo's sandbox gets even less: the sandbox sets no_new_privs, under
+which the kernel grants no file capability, and gives the agent a process table of its own.
+
+What stays unread with the reader in use: a process that ends or changes while it is read, a kernel
+too old to show inode numbers in fdinfo (before 5.14; every block then has an x fd line), and a hidden
+process table. Each is judged as before.
 
 A child holds its parent (amended 2026-11-13). Rule 6 was written as "present, due or deferred". The
 review of VELDO-0298 reproduced the data loss that wording allows: an agent repository due at ticket
@@ -1867,9 +2053,18 @@ Revision 5 kept the numbers of revision 4 and added 0339 to 0341. Revision 6 kee
 and 0343, which no spec file and no commit on any ref held, so nothing that already cites a number
 changes meaning. "Row" is a row of a suite; each falsifier is the one change that must turn its row red.
 
-Build order: 0296, 0338, 0297, 0326, 0331, then 0298, 0299, 0330 and 0300 together, 0301, then 0302,
+VELDO-0344, the process reader, was added on 2026-11-13 by the owner's decision, the forty-ninth
+ticket. On that day no spec file on any of the repository's 508 refs or in any worktree, and no commit
+message, held that number.
+
+Build order: 0296, 0338, 0297, 0326, 0331, then 0298, 0299, 0330 and 0300 together, 0301, 0344, then 0302,
 0303 and 0305 to 0314 with 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341 in any order, then
 0304, then 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0320, 0332, 0325, 0339, 0321, 0322.
+
+0344, the process reader, comes straight after 0301: before any ticket that removes on a real host,
+and long before 0320 (Confirm in report mode) and 0332 (the switch to act). Until the owner has
+installed it, the probe judges unread processes by the bound, and on the measured host that defers
+every item under the home folder.
 
 0304, the boundary check, comes after 0302, 0303, 0324 and 0333 on purpose. Until those four have landed,
 the paths in the Replaced table of 6.10 still hold removal primitives and the two removals by age, none
@@ -1877,7 +2072,8 @@ of them on the reviewed list, and the check would turn the gate red on its first
 
 Tickets that touch protected paths and need the owner's recorded approval: 0302 and 0324 (the sandbox),
 0309 (the gate script template, and the new helper added to the protected list), 0304 (its check is
-called from scripts/verify.sh, policy.yaml:83), 0333 (the gate's leg timing). 0325 produces a change to
+called from scripts/verify.sh, policy.yaml:83), 0333 (the gate's leg timing), 0344 (the process reader's
+source, which it adds to the protected list). 0325 produces a change to
 the gate script of each bound project, approved by the owner in that project.
 
 ### VELDO-0296 Declarations: the installation's space section
@@ -2420,6 +2616,23 @@ Components: Removers (discard), Ledger. Depends on 0318; the group answers are 0
 | AC3 | Discard of an agent's worktree leaves the agent repository and its branch in place, kept, with every commit on that branch | Remove the agent repository with the worktree; the row finds the branch's commit in no repository and fails |
 | AC4 | Creating the kept branch makes no commit and sends no landing event: the row counts the same commit objects and the same event records before and after | Commit the worktree's files in Discard as Save does; the row finds a new commit and fails |
 
+### VELDO-0344 The process reader
+
+Components: Process reader, Probes, Declarations reader. Depends on 0296, 0299 and 0330.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | With no reader at the fixed path, or one that fails a check (not a regular file, an owner other than root, a group or mode other than the installed ones, a capability set other than exactly cap_sys_ptrace permitted and effective, no digest in the installation's space section, a digest other than that one, or a header that says it holds no capability), the probe does not use it, every unread process is judged as before this ticket, and the in_use facts name the reader's state and the check that failed | Skip the digest check; the row puts a program that prints an empty table in the reader's place, the undumpable process in the item is not counted, the item reads free and the row fails |
+| AC2 | With the reader in use, a process of the owner's that is not dumpable counts for an item exactly when its working directory, an open file or a mapped file is the item or beneath it: the one in the item holds it, named by process id and fact, and the one outside it no longer counts | Match the working directory only; the row whose undumpable process holds nothing but an open file beneath the item reads free and fails |
+| AC3 | A root-owned process a login started is judged by the same facts: in the item it holds it, and elsewhere it does not count. A process with any fact the reader could not read (an x line, no block, or a start time other than the one the probe reads) stays unread and is judged by the bound of VELDO-0299 | Take a block with an unread fact as read; the row's root-owned process, whose descriptors could not be listed and which holds a file in the item, reads free and fails |
+| AC4 | The reader takes no argument and reads only the stat, cwd, fdinfo, mountinfo and maps entries of each process. It prints numbers only, in the format of design section 7.1, and its seccomp filter ends it on any call that attaches to a process, signals one, writes to one or opens a file for writing | Allow kill in the filter; the row's patched copy of the reader, which signals itself after the filter is in place, exits normally and the row fails |
+| AC5 | An output with no end line, an end count other than the number of blocks, a line outside the format or an exit status other than 0 is not used at all: the reader's state is refused, and every unread process is judged as before this ticket | Use the blocks read before the cut; the row cuts the output before the block of the process in the item, the item reads free and the row fails |
+
+The four cases the owner named, and the row that holds each: the reader absent, fail closed (AC1); the
+reader present and an undumpable process of the owner's in the item holds it (AC2); a root-owned
+process the owner started holds it (AC3); a tampered reader is refused (AC1's falsifier, and AC5 for
+its output).
+
 ## 13. Decisions taken in this design
 
 | Decision | Why |
@@ -2443,6 +2656,10 @@ Components: Removers (discard), Ledger. Depends on 0318; the group answers are 0
 | Discard never loses a commit | The lead's decision (g). A detached worktree's commits are put on a kept branch before the worktree goes, and a discard that cannot make the branch does not run. Only uncommitted changes are discarded. The branch is a ref write, not a removal and not a commit |
 | seoeng_cms-postgres-data and docker_minio_data stay on the protect list | The lead's decision (h). Each is protected by exact name. Their compose project names are not added, because docker as a project name is too broad |
 | A review group is keyed by scope, day and a sequence number | With the day alone as the key, a worktree deferred after the owner answered that day's group had no group to join and could get no request. One open group per scope and day; an answered group closes and the next deferral that day opens a new one. The day stays a key of the deferral event, and no clock is added |
+| Unread processes are read by a separate reader with one file capability, not excused by a list of names and not by a capability on the service | The owner's decision (Telegram 41204 and 41205). A name is whatever a process calls itself, and the re-review excused a renamed process with one. CAP_SYS_PTRACE on the service would let the whole service attach to any process; on a reader that takes no input and is shut in by a seccomp filter it can only read |
+| The reader prints device and inode numbers, never paths | Measured: cap_sys_ptrace alone gives the working directory, the maps and each descriptor's inode number, and does not list the descriptors' paths. Numbers are also the same in every mount namespace, where a path is not, and they tell whoever runs the reader no file name. The price is that the probe lists the item's files to compare, 0.3 seconds for a worktree of 9,011 entries |
+| The reader is C, static, built like veldo-userns | A file capability needs a binary of its own. The repository already builds, reviews and gates one static C helper, and a second toolchain for 200 lines would be a dependency with no gain |
+| The reader's digest is in the installation's space section, and its path is fixed in the probe | The path cannot be pointed elsewhere by a file an agent can edit. Root ownership is what keeps the binary from being changed; the digest refuses a binary that is not the build the owner made |
 | Hooks sign as a host principal, never as the owner | A git hook runs in any shell. It may record what it saw; it may not answer for the owner |
 | A hook never fails or waits on the service; it spools | A landing or a session must not break because the authority is down |
 | Admission is asked before a dispatch is prepared | A prepared dispatch holds a slot and has a deadline |
@@ -2620,4 +2837,12 @@ revision: the lead limited revision 6 to decisions (f), (g) and (h) and the grou
 
 ## 15. Open questions for the lead
 
-None. Every question is decided and carried (section 13), (f), (g) and (h) included.
+Every question of revision 6 is decided and carried (section 13), (f), (g) and (h) included.
+
+One point for the owner, from 7.1. The decision said one capability, cap_sys_ptrace, and listed fd
+among what the reader reads. Measured: that one capability does not list the fd folder. This design
+keeps the one capability and reads each descriptor's inode number from fdinfo, which costs a listing
+of the item's files at every attempt. The other way is a second capability, cap_dac_read_search: the
+reader could then print paths and the probe would compare paths as it does today, but that capability
+lets its holder read every file on the host, and a mistake in the reader would be worth that much. The
+design takes the first way. VELDO-0344 is written for it and changes only if the owner says so.
