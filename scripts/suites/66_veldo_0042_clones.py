@@ -730,20 +730,34 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                     if proc is not None:
                         proc.wait(timeout=30)
                     empty.append(group.wait_empty(10) if group is not None else None)
+                # VELDO-0303 (review): the worker's probe left a file in no commit in the work tree. That is
+                # work, so the first teardown after every user ended leaves the clone whole, with its pins;
+                # the clone goes once the file is gone, after its commits are on kept refs.
+                refused_with_work, left_c = 'no-clone', []
                 if handle_c is not None:
+                    try:
+                        C.teardown(handle_c)
+                        refused_with_work = None
+                    except CL.Refused as error:
+                        refused_with_work = error.code
+                    left_c = sorted(Path(work_c).glob('own-file-*'))
+                    pins_with_work = len(C._pins_held(handle_c.env_id))
+                    for path in left_c:
+                        path.unlink()
                     with contextlib.suppress(CL.Refused):
                         C.teardown(handle_c)
                 pins_after = C._pins_held(handle_c.env_id) if handle_c else ['unprovisioned']
                 observed['retire_after_users_end'] = {
                     'attach_problems': problems, 'states_alive': states_alive, 'refused_alive': refused_alive,
                     'pins_while_alive': len(pins_while_alive), 'accept_available_alive': accept_available_alive,
-                    'groups_empty': empty,
+                    'groups_empty': empty, 'refused_with_work': refused_with_work, 'files_left': len(left_c),
                     'clone_removed': handle_c is not None and not (clones_root / handle_c.env_id).exists(),
                     'pins_after': len(pins_after)}
                 check('clone/retire-after-users-end',
                       handle_c is not None and problems == {'worker': [], 'consumer': []}
                       and states_alive == [False, False] and refused_alive == 'clone_in_use'
                       and len(pins_while_alive) >= 1 and accept_available_alive is True and empty == [True, True]
+                      and refused_with_work == 'space_deferred:unique_work' and len(left_c) >= 1 and pins_with_work >= 1
                       and not (clones_root / handle_c.env_id).exists() and pins_after == [])
 
             with region('clone/retire-waits-for-group'):
@@ -777,6 +791,10 @@ while spec.get('mode') == 'hold' and not os.path.exists(spec['release']):
                 empty_g = g_group.wait_empty(10) if g_group is not None else None
                 retired_g = 'no-clone'
                 if handle_g is not None:
+                    # VELDO-0303 (review): the file the worker's probe left in no commit is work, and a clone
+                    # that holds it stays. It is taken away here so that the row reads the group's part alone.
+                    for path in sorted(Path(work_g).glob('own-file-*')):
+                        path.unlink()
                     try:
                         C.teardown(handle_g)
                         retired_g = 'retired'

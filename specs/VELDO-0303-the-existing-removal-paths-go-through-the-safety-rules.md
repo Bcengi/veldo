@@ -22,6 +22,15 @@ footprint:
   - ".veldo/lander.py"
   - "engine/.veldo/control_launch_work.py"
   - ".veldo/control_launch_work.py"
+  - "engine/.veldo/control_space_standalone.py"
+  - ".veldo/control_space_standalone.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
+  - "scripts/suites/66_veldo_0042_clones.py"
+  - "scripts/suites/128_veldo_0235_land_locally.py"
+  - "specs/VELDO-0308-run-finished-from-the-receiver.md"
   - "scripts/suites/*_veldo_0303_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -149,3 +158,58 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     while its root is on disk or a pin is held. In report mode every clone is left due, so once a
     ledger is wired every dispatch would keep its slot until the owner's Confirm. The same holds for
     a clone a rule defers. This needs a decision before `space` is wired into the clone provisioner.
+- 2026-11-14: fixed from the review (verdict FIX, five findings), by the lead's decisions. No
+  acceptance criterion changed. The footprint gained the files named below.
+  - Withdrawn, from the entry above: "With no ledger each path removes as it did" and the fleet's
+    rule "only for a worktree this provisioner added whose checked-out commit has not moved since".
+    The review reproduced losses in that branch, which is the only branch any installation runs
+    today: git's non-forced worktree remove took an ignored local file and a repository in an
+    ignored folder with its only commit, and a commit made and reset away was left named by
+    nothing; and the clone's teardown deleted the commits and files of a build whose result was
+    refused. The owner's rule holds with a ledger or without one.
+  - Finding 2 and the review's table of direct deletes. With no ledger every one of these paths now
+    looks first and deletes only what the look answers for: the fleet's worktree remove, the
+    clone's teardown and failed-provision cleanup, the receiver's and the sweep's run directory
+    removal, the landing line's close and the lander's discard. The look is one new module,
+    control_space_standalone.py, which runs the unique work probe (VELDO-0299), the removers' own
+    reading of ignored files that are work, the probe for repositories beneath the thing, and the
+    keep step (VELDO-0345) with no ledger: the kept refs in the main repository are the record. A
+    worktree or a private repository whose work tree holds anything in no commit stays (with no
+    ledger there is no Discard and no request). So does anything with a git repository beneath it,
+    a private repository with linked worktrees, a thing whose main repository cannot be named, and
+    anything the look could not read. A folder (a run directory, a clone's root, an observation
+    folder) goes only when it is no repository and holds none. What stays is named where each
+    module already names a refusal: the fleet's answer and deferred list, the clone's retire event
+    and its Refused (space_deferred and the rule), the runner's observations, the receiver's
+    run_removal, the runtime's kept list, the candidate's space entry. The main repository of a
+    clone is the repository the store binds for its domain and repository; of a candidate folder,
+    the runtime's root; of a candidate workspace, the lander's repository.
+  - What that costs, for the lead. A worker clone whose work tree holds an untracked or modified
+    file is no longer deleted when its users end. The clone obligation of its retirement stays
+    open, so its dispatch keeps its worker slot until the file is committed or taken away. That is
+    finding 4's case reached without a ledger, and VELDO-0308 AC4 is its fix. Every teardown,
+    close and discard also writes kept refs in the main repository, and they are never deleted.
+  - Two older rows changed because they stated the old behaviour. 66_veldo_0042
+    clone/retire-after-users-end and clone/retire-waits-for-group retired a clone in which the
+    worker's probe had left an untracked file; the first now also asserts that this teardown is
+    refused as space_deferred:unique_work with the pins held, and both take the file away before the
+    teardown that removes the clone. 128_veldo_0235 local/lands asserted that the logging git
+    shows no fetch; the keep step's fetch from the candidate workspace, a folder on this host, into
+    the caller is now told apart and asserted to be the only one. Nothing else in either row moved.
+  - Finding 1. The scaffold lays down control_space_signal.py and the look with the modules it
+    loads (the probes, the keeper, the removers' readers, the ledger module, the declarations
+    reader): the service's closure reads them from the five modules. The ledger module's loader was
+    spelled so that the closure's reader can name the files it loads; it loads what it loaded.
+  - Finding 3. Before the receiver or the sweep signals run finished for a run directory, the other
+    users of the clone that run's dispatch uses are read (clone_users). While one has not ended,
+    nothing is signalled: the run directory stays, the refusal is clone_in_use with their names,
+    and the sweep comes back. A clone that cannot be read counts as in use.
+  - Finding 5. `space` is passed to the three places that build a clone provisioner.
+  - Finding 4. Not built here. VELDO-0308 has it as AC4, with the pin rule.
+  - Rows added to the suite, each with a registered falsifier: loss/fleet-ignored-file,
+    loss/fleet-nested-repository, loss/fleet-reset-commit, loss/clone-refused-build,
+    loss/run-directory-repository, loss/candidate-commits, f3/consumer-holds-clone,
+    f5/clones-given-space. ac2/no-ledger-as-before is now ac2/no-ledger-clean-clone.
+  - Not closed here: between the look and the delete nothing holds the thing, where the wired
+    removers move it to a marked name and look once more. The callers have just read that the
+    run's processes are gone, and the fleet's worktree is the retiring worker's own.

@@ -2107,8 +2107,8 @@ def signed(principal, operation, parameters, folder, canonical, issued_at, comma
 
 def _sibling(name):
     import importlib.util
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), name + '.py')
-    spec = importlib.util.spec_from_file_location('veldo_space_' + name, path)
+    spec = importlib.util.spec_from_file_location(
+        'veldo_space_' + name, os.path.join(os.path.dirname(os.path.abspath(__file__)), name + '.py'))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

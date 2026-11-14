@@ -413,6 +413,7 @@ def _file_digest(path):
 # The provisioner.
 
 SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger that allow a delete
 _SPACE = {}
 
 
@@ -514,6 +515,22 @@ def space_refusal(entry):
     deferred it; for an item no rule deferred, the state it is in (due in report mode, removing when
     it was left under its marked name, kept, present); not_in_ledger when no item records it."""
     return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
+
+
+def space_standalone(path, kind, main=None, event='run_finished', ticket=None, skip=()):
+    """VELDO-0303: the look before a delete where no ledger is wired (control_space_standalone): the
+    unique work probe and the keep step for the thing at `path`, {path, item, state, deferral, said,
+    refs}. This module deletes the thing only when the state is one of SPACE_SAFE: nothing is there
+    (gone), a folder holds no repository (clear), or the commits of a worktree or a private repository
+    are on kept refs in `main` (kept). Anything else stays where it is. Whatever raises removes nothing."""
+    try:
+        if 'standalone' not in _SPACE:
+            _SPACE['standalone'] = _organ('control_space_standalone').standalone
+        return _SPACE['standalone'](str(path), kind, main=None if main is None else str(main), event=event,
+                                    ticket=ticket, skip=tuple(str(where) for where in skip))
+    except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
+        return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
+                'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
 
 
 class Clones(EP.EnvProvisioner):
@@ -710,9 +727,9 @@ class Clones(EP.EnvProvisioner):
             self._write(manifest)
         except BaseException as error:
             if self.space is None:
-                for pin in pins:
-                    self._release(Path(pin['cache']), pin['ref'])
-                shutil.rmtree(root, ignore_errors=True)
+                # No ledger: the unique work probe and the keep step by themselves, then the delete; a
+                # clone the look does not answer for stays, with its pins.
+                self._standalone(root, work, pins, accepted.get('path'), accepted.get('unit'))
             else:
                 # VELDO-0303: the declared items go as at teardown, through Signal. No worker has entered.
                 self._through_space(root, work, pins, confirm=True)
@@ -856,7 +873,9 @@ class Clones(EP.EnvProvisioner):
 
     def _teardown(self, handle):
         """Retire a clone: once every worker and consumer has ended, remove it and release its pins.
-        Idempotent; a clone still in use is refused clone_in_use and keeps its pins. With a space ledger
+        Idempotent; a clone still in use is refused clone_in_use and keeps its pins. With no ledger the
+        unique work probe and the keep step run by themselves first (_standalone), and a clone that holds
+        work they cannot keep is refused as space_deferred and stays, with its pins. With a space ledger
         (VELDO-0303) the removal is Signal's: clone_in_use stays first and unchanged, a thing a safety
         rule keeps is refused as space_deferred with the rule's name, and the pins are released only
         after the work tree's removal outcome is written."""
@@ -879,13 +898,43 @@ class Clones(EP.EnvProvisioner):
                 raise Refused(refusal, str(root))
             self._event('retire', manifest, 'retired', clone_id=handle.env_id, users=users, released=released)
             return
-        shutil.rmtree(root / 'work', ignore_errors=True)
-        shutil.rmtree(root / 'scratch', ignore_errors=True)
-        for pin in manifest['pins']:
-            self._release(Path(pin['cache']), pin['ref'])
-        shutil.rmtree(root, ignore_errors=True)
-        self._event('retire', manifest, 'retired', clone_id=handle.env_id, users=users,
-                    released=[p['ref'] for p in manifest['pins']])
+        # No ledger: the unique work probe and the keep step by themselves, before any delete. A build whose
+        # result was refused leaves its commits and files only here, so nothing goes that the look did not
+        # answer for: the commits are first read back from the bound repository's kept refs.
+        try:
+            main = self.store.bound_repository(self.conn, manifest['domain'], manifest['repository'])
+        except Exception:  # noqa: BLE001 - a repository that cannot be named keeps the clone
+            main = None
+        looked, released = self._standalone(root, manifest['work'], manifest['pins'], main, manifest.get('unit'))
+        stays = [entry for entry in looked if entry['state'] not in SPACE_SAFE] or (
+            [{'path': str(root), 'state': None, 'deferral': 'remove_refused', 'said': 'the folder is still there'}]
+            if not space_absent(root) else [])
+        if stays:
+            refusal = space_refusal(stays[0])
+            self._event('retire', manifest, 'refused', refusal=refusal, clone_id=handle.env_id, users=users,
+                        space=stays, released=released)
+            raise Refused(refusal, '%s: %s' % (stays[0]['path'], stays[0].get('said')))
+        self._event('retire', manifest, 'retired', clone_id=handle.env_id, users=users, released=released,
+                    kept=looked[0].get('refs') or {})
+
+    def _standalone(self, root, work, pins, main, ticket):
+        """VELDO-0303, with no ledger: look at the clone's work tree as a private repository of `main` (its
+        commits go to kept refs there) and at its root as a folder, and only when both are answered for
+        delete the work tree, release the pins and delete the rest. Returns (the two answers, the refs
+        released). A clone the look does not answer for is left whole, with its pins."""
+        root = Path(root)
+        looked = [space_standalone(work, 'agent_repository', main=main, ticket=ticket),
+                  space_standalone(root, 'folder', skip=[work])]
+        released = []
+        if all(entry['state'] in SPACE_SAFE for entry in looked):
+            shutil.rmtree(work, ignore_errors=True)
+            if space_absent(work):
+                shutil.rmtree(root / 'scratch', ignore_errors=True)
+                for pin in pins:
+                    self._release(Path(pin['cache']), pin['ref'])
+                    released.append(pin['ref'])
+                shutil.rmtree(root, ignore_errors=True)
+        return looked, released
 
     def _through_space(self, root, work, pins, confirm=False):
         """VELDO-0303: send run finished through Signal for the clone's items (its work tree, its scratch

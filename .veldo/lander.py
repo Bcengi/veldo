@@ -174,6 +174,7 @@ def taxonomy(code):
 
 
 SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger that allow a delete
 _SPACE = {}
 
 
@@ -275,6 +276,22 @@ def space_refusal(entry):
     deferred it; for an item no rule deferred, the state it is in (due in report mode, removing when
     it was left under its marked name, kept, present); not_in_ledger when no item records it."""
     return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
+
+
+def space_standalone(path, kind, main=None, event='run_finished', ticket=None, skip=()):
+    """VELDO-0303: the look before a delete where no ledger is wired (control_space_standalone): the
+    unique work probe and the keep step for the thing at `path`, {path, item, state, deferral, said,
+    refs}. This module deletes the thing only when the state is one of SPACE_SAFE: nothing is there
+    (gone), a folder holds no repository (clear), or the commits of a worktree or a private repository
+    are on kept refs in `main` (kept). Anything else stays where it is. Whatever raises removes nothing."""
+    try:
+        if 'standalone' not in _SPACE:
+            _SPACE['standalone'] = _load("veldo_space_standalone_ld", "control_space_standalone.py").standalone
+        return _SPACE['standalone'](str(path), kind, main=None if main is None else str(main), event=event,
+                                    ticket=ticket, skip=tuple(str(where) for where in skip))
+    except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
+        return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
+                'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
 
 
 class LandOps:
@@ -639,7 +656,8 @@ class GitLandOps(LandOps):
         return json.loads(json.dumps(self.candidate)) if self.candidate is not None else None
 
     def discard(self):
-        """Remove the candidate workspace. A candidate is disposable: nothing is kept after its land.
+        """Remove the candidate workspace. A candidate is disposable, and its commits are still work: with
+        no ledger they are first written on kept refs in the caller's repository (space_standalone).
         With a space ledger (VELDO-0303) the workspace, a private repository, and the observation
         folder go through Signal: the rules, the keep step for the workspace, then the folder remover.
         What a rule keeps stays on disk, deferred on the record, and the candidate says so under space."""
@@ -655,11 +673,22 @@ class GitLandOps(LandOps):
                 if c.get("workspace") in paths:
                     c["discarded"] = found[os.path.normpath(c["workspace"])]["state"] in SPACE_ENDED
             return
+        # No ledger: the unique work probe and the keep step by themselves, before either delete. The
+        # workspace is a private repository of the caller's: its commits go to kept refs there first, and
+        # one that holds unsaved files stays, as the candidate says under space.
         if c and c.get("workspace") and os.path.isdir(c["workspace"]):
-            shutil.rmtree(c["workspace"], ignore_errors=True)
+            found = space_standalone(c["workspace"], "agent_repository", main=self.repo_root)
+            if found["state"] in SPACE_SAFE:
+                shutil.rmtree(c["workspace"], ignore_errors=True)
+            else:
+                c.setdefault("space", {})[c["workspace"]] = dict(found, refusal=space_refusal(found))
             c["discarded"] = not os.path.exists(c["workspace"])
         if c and c.get("observation_dir") and self.observations is None and os.path.isdir(c["observation_dir"]):
-            shutil.rmtree(c["observation_dir"], ignore_errors=True)
+            found = space_standalone(c["observation_dir"], "folder")
+            if found["state"] in SPACE_SAFE:
+                shutil.rmtree(c["observation_dir"], ignore_errors=True)
+            else:
+                c.setdefault("space", {})[c["observation_dir"]] = dict(found, refusal=space_refusal(found))
 
     # The stages.
 

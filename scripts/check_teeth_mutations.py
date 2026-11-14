@@ -13498,8 +13498,8 @@ def cases():
             "            # VELDO-0303: every user has ended, as the kernel says: run finished, through Signal.\n",
             ['ac2/open-file-stays'])
     path303('space303-clone-provision-direct-delete', 'control_clone.py',
-            "            if self.space is None:\n                for pin in pins:\n",
-            "            if True:\n                for pin in pins:\n",
+            "            if self.space is None:\n                # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n",
+            "            if True:\n                # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n",
             ['ac2/failed-provision'])
     path303('space303-pins-released-whatever-the-outcome', 'control_clone.py',
             "        if tree['state'] in SPACE_ENDED:\n", "        if True:\n",
@@ -13511,17 +13511,17 @@ def cases():
             ['ac3/receiver-end'])
     path303('space303-sweep-direct-delete', 'control_launch.py',
             "            if self.space is not None:\n"
-            "                # VELDO-0303: the kernel test above is rule 3's answer for this run; the rest is Signal's.\n",
+            "                # The consumer first: run finished never ends a clone another dispatch still uses.\n",
             "            if False:\n"
-            "                # VELDO-0303: the kernel test above is rule 3's answer for this run; the rest is Signal's.\n",
+            "                # The consumer first: run finished never ends a clone another dispatch still uses.\n",
             ['ac3/sweep-leftover'])
     path303('space303-receiver-answers-for-an-unread-group', 'control_launch.py',
             "                ended=(self.supervision or {}).get('empty', True) is True)[os.path.normpath(run)]\n",
             "                ended=True)[os.path.normpath(run)]\n",
             ['ac3/deferred-then-swept'])
     path303('space303-landing-line-direct-delete', 'control_launch_work.py',
-            "            if self.space is None:\n                shutil.rmtree(directory, ignore_errors=True)\n",
-            "            if True:\n                shutil.rmtree(directory, ignore_errors=True)\n",
+            "            if self.space is None:\n                # No ledger: the unique work probe and the keep step by themselves; a candidate folder whose\n",
+            "            if True:\n                # No ledger: the unique work probe and the keep step by themselves; a candidate folder whose\n",
             ['ac4/landing-line-close'])
     path303('space303-lander-direct-delete', 'lander.py',
             "        if c and self.space is not None:\n", "        if False:\n",
@@ -13531,6 +13531,55 @@ def cases():
             "    except OSError:\n        return False\n    return False\n",
             "    return not os.path.lexists(path)\n",
             ['paths/absent-only-when-not-found'])
+    # The review of VELDO-0303: with no ledger no path deletes unique work either. Each loss the review
+    # reproduced, put back: the look for an ignored file that is work left out, the look for a
+    # repository beneath the thing left out, the fleet removing without the keep step, the clone's
+    # teardown deleting without the look, the receiver's and the sweep's delete of a run directory
+    # without it, the landing line's and the lander's delete of a candidate without it. And the
+    # receiver and the sweep signalling under a consumer of the run's clone, and a clone provisioner
+    # built without space.
+    path303('space303-standalone-ignored-work-not-looked-for', 'control_space_standalone.py',
+            "    if changed or work:\n", "    if changed:\n", ['loss/fleet-ignored-file'])
+    path303('space303-standalone-nested-repository-not-looked-for', 'control_space_standalone.py',
+            "        _beneath(path, skip)\n        kept = keep.keep(ledger, identity, record, event=event)\n",
+            "        kept = keep.keep(ledger, identity, record, event=event)\n",
+            ['loss/fleet-nested-repository'])
+    path303('space303-fleet-removes-without-the-keep-step', 'fleet.py',
+            "            entry = dict(space_standalone(path, \"worktree\", main=self.repo_root, event=\"worktree_abandoned\"),\n"
+            "                         path=path)\n",
+            "            entry = {\"path\": path, \"item\": None, \"state\": \"kept\", \"deferral\": None, \"refs\": {}}\n",
+            ['loss/fleet-reset-commit'])
+    path303('space303-clone-teardown-deletes-without-the-look', 'control_clone.py',
+            "        looked = [space_standalone(work, 'agent_repository', main=main, ticket=ticket),\n"
+            "                  space_standalone(root, 'folder', skip=[work])]\n",
+            "        looked = [{'path': str(work), 'state': 'kept', 'refs': {}}, {'path': str(root), 'state': 'clear'}]\n",
+            ['loss/clone-refused-build'])
+    path303('space303-receiver-deletes-a-run-directory-without-the-look', 'control_launch.py',
+            "            found = space_standalone(run, 'folder')\n", "            found = {'state': 'clear'}\n",
+            ['loss/run-directory-repository'])
+    path303('space303-sweep-deletes-a-run-directory-without-the-look', 'control_launch.py',
+            "                found = space_standalone(place, 'folder')\n", "                found = {'state': 'clear'}\n",
+            ['loss/run-directory-repository'])
+    path303('space303-landing-line-deletes-a-candidate-without-the-look', 'control_launch_work.py',
+            "                found = space_standalone(directory, 'agent_repository', main=self.root)\n",
+            "                found = {'state': 'kept'}\n", ['loss/candidate-commits'])
+    path303('space303-lander-deletes-a-workspace-without-the-look', 'lander.py',
+            "            found = space_standalone(c[\"workspace\"], \"agent_repository\", main=self.repo_root)\n",
+            "            found = {\"state\": \"kept\"}\n", ['loss/candidate-commits'])
+    path303('space303-receiver-signals-under-a-consumer', 'control_launch.py',
+            "            if users:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}\n",
+            "            if False:\n                self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}\n",
+            ['f3/consumer-holds-clone'])
+    path303('space303-sweep-signals-under-a-consumer', 'control_launch.py',
+            "                users = clone_users(self.clones, self.dispatches, dispatch_id, self.space)\n",
+            "                users = []\n", ['f3/consumer-holds-clone'])
+    path303('space303-landing-line-clones-without-space', 'control_launch_work.py',
+            "        self.clones = CL.Clones(self.dispatches, space=space, **c['clones'])\n",
+            "        self.clones = CL.Clones(self.dispatches, **c['clones'])\n", ['f5/clones-given-space'])
+    path303('space303-receiver-clones-without-space', 'control_launch.py',
+            "                            provisioner = clone.Clones(self.dispatches, space=self.space, **self.config['clones'])\n",
+            "                            provisioner = clone.Clones(self.dispatches, **self.config['clones'])\n",
+            ['f5/clones-given-space'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

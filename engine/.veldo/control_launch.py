@@ -314,7 +314,8 @@ def run_roots(receiver, dispatch_id):
     """A run's workspace roots: its clone's work tree and scratch, and its conversation directory."""
     config, roots = getattr(receiver, 'config', None) or {}, []
     if config.get('clones'):
-        clones = _organ('control_clone').Clones(receiver.dispatches, **config['clones'])
+        clones = _organ('control_clone').Clones(receiver.dispatches, space=getattr(receiver, 'space', None),
+                                                **config['clones'])
         handle = clones.clone_of(dispatch_id)
         if handle is not None:
             paths = clones._paths(handle)
@@ -536,6 +537,7 @@ ENGINE_OVERRIDES = 'VELDO_ENGINE_ENVIRONMENT'
 
 
 SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger that allow a delete
 _SPACE = {}
 
 
@@ -637,6 +639,46 @@ def space_refusal(entry):
     deferred it; for an item no rule deferred, the state it is in (due in report mode, removing when
     it was left under its marked name, kept, present); not_in_ledger when no item records it."""
     return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
+
+
+def space_standalone(path, kind, main=None, event='run_finished', ticket=None, skip=()):
+    """VELDO-0303: the look before a delete where no ledger is wired (control_space_standalone): the
+    unique work probe and the keep step for the thing at `path`, {path, item, state, deferral, said,
+    refs}. This module deletes the thing only when the state is one of SPACE_SAFE: nothing is there
+    (gone), a folder holds no repository (clear), or the commits of a worktree or a private repository
+    are on kept refs in `main` (kept). Anything else stays where it is. Whatever raises removes nothing."""
+    try:
+        if 'standalone' not in _SPACE:
+            _SPACE['standalone'] = _organ('control_space_standalone').standalone
+        return _SPACE['standalone'](str(path), kind, main=None if main is None else str(main), event=event,
+                                    ticket=ticket, skip=tuple(str(where) for where in skip))
+    except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
+        return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
+                'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
+
+
+def clone_users(clones, dispatches, dispatch_id, space=None):
+    """VELDO-0303: the other users of the clone the dispatch `dispatch_id` uses that have not ended, read
+    before run finished is signalled for that dispatch's run directory. The event ends every item the run
+    owns, and a clone may be among them; a consumer attached to it that has no process at this moment is
+    seen by no rule, so the clone would go under it. `clones` is the clone provisioner, or the receiver
+    configuration's clones section (the arguments of control_clone.Clones), or None for an installation
+    without clones. Returns
+    their dispatch identities, in order; a clone that cannot be read answers with the word unread, for
+    what cannot be read is in use."""
+    if not clones:
+        return []
+    try:
+        provisioner = (_organ('control_clone').Clones(dispatches, space=space, **clones)
+                       if isinstance(clones, dict) else clones)
+        handle = provisioner.clone_of(dispatch_id)
+        manifest = provisioner._manifest(handle.env_id) if handle is not None else None
+        if manifest is None:
+            return []
+        return sorted(user['dispatch_id'] for user in manifest['users'] if user['dispatch_id'] != dispatch_id
+                      and not provisioner.user_state(user, manifest['root'])['ended'])
+    except Exception:  # noqa: BLE001 - a clone that cannot be read is not ended under its users
+        return ['unread']
 
 
 def runs_root(config):
@@ -794,6 +836,7 @@ class Runner:
         # VELDO-0158: settled dispatches whose run directory is left, by dispatch: {group, process}.
         self.runs, self.profile = runs, profile
         self.leftovers = {}
+        self.clones = clones  # VELDO-0303: read before run finished, for a consumer of the run's clone
         self.retirements = RT.Retirements(reservations, dispatches, clones=clones, clock=self.clock,
                                           observations=self.observations)
 
@@ -887,6 +930,12 @@ class Runner:
                     continue
             place = run_directory(self.runs, dispatch_id)
             if self.space is not None:
+                # The consumer first: run finished never ends a clone another dispatch still uses.
+                users = clone_users(self.clones, self.dispatches, dispatch_id, self.space)
+                if users:
+                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                              'refusal': 'clone_in_use', 'users': users})
+                    continue
                 # VELDO-0303: the kernel test above is rule 3's answer for this run; the rest is Signal's.
                 found = space_signal(self.space, 'run_finished', [place], 'runner.sweep', ended=True)[os.path.normpath(place)]
                 if found['state'] not in SPACE_ENDED:
@@ -894,6 +943,13 @@ class Runner:
                                               'refusal': space_refusal(found), 'space': found})
                     continue
             else:
+                # No ledger: a run directory is the run's scratch, and it goes only when no git repository is
+                # in it (the look of space_standalone): a repository's commits may be nowhere else.
+                found = space_standalone(place, 'folder')
+                if found['state'] not in SPACE_SAFE:
+                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                              'refusal': space_refusal(found), 'space': found})
+                    continue
                 shutil.rmtree(place, ignore_errors=True)
             if os.path.lexists(place):
                 self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused'})
@@ -1419,7 +1475,7 @@ class Receiver:
         self.config, self.emit = config, emit
         # VELDO-0303: the space ledger and what Signal is given (space_signal), or None where there is none;
         # and what Signal answered for this receiver's run directory.
-        self.space, self.run_removal = space, None
+        self.space, self.run_removal, self.run_dispatch = space, None, None
         self.profile = config.get('profile')
         self.qualification = None
         self.supervision = None
@@ -1516,12 +1572,25 @@ class Receiver:
             # started; a group nobody could read is left to the answer the installation wired in. A directory
             # a rule keeps is deferred on the record, and the sweep sends its next event (clear_runs).
             self._unstage_skills()
+            # The consumer first: the event ends every item this run owns, and a clone another dispatch
+            # still uses must not be among them. Such a run directory stays, and the sweep comes back.
+            users = clone_users(self.config.get('clones'), self.dispatches, self.run_dispatch, self.space)
+            if users:
+                self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}
+                return
             self.run_removal = space_signal(
                 self.space, 'run_finished', [run], 'receiver',
                 ended=(self.supervision or {}).get('empty', True) is True)[os.path.normpath(run)]
         elif not stays:
             # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
             # for close() alone could survive into the clone (VELDO-0127).
+            # No ledger: a run directory is the run's scratch, and it goes only when no git repository is in
+            # it (the look of space_standalone). One that holds a repository stays and is named here.
+            found = space_standalone(run, 'folder')
+            if found['state'] not in SPACE_SAFE:
+                self._unstage_skills()
+                self.run_removal = dict(found, refusal=space_refusal(found))
+                return
             self._unstage_skills()
             shutil.rmtree(run, ignore_errors=True)
 
@@ -1968,7 +2037,7 @@ class Receiver:
         os.makedirs(runs, mode=0o700, exist_ok=True)
         run = run_directory(runs, dispatch_id)
         os.mkdir(run, 0o700)
-        self.run = run
+        self.run, self.run_dispatch = run, dispatch_id
         for name in (RUN_CONFIG, RUN_RUNTIME):
             os.mkdir(os.path.join(run, name), 0o700)
         return {'root': run, 'config': os.path.join(run, RUN_CONFIG), 'runtime': os.path.join(run, RUN_RUNTIME)}
@@ -2231,7 +2300,7 @@ class Receiver:
                         HB.make_group(group.cgroup)
                         if self.config.get('clones'):
                             clone = _organ('control_clone')
-                            provisioner = clone.Clones(self.dispatches, **self.config['clones'])
+                            provisioner = clone.Clones(self.dispatches, space=self.space, **self.config['clones'])
                             provisioner.record_group(dispatch_id, group.report())
                 except (OSError, ValueError, TypeError, KeyError, AttributeError, subprocess.SubprocessError):
                     problems = ['spawn_failed:containment:unavailable']

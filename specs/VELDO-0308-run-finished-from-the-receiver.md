@@ -53,6 +53,22 @@ acceptance_criteria:
     falsified_by: >
       Retry on every sweep call; the row counts retries over three sweeps with an unchanged obligation,
       finds three and fails
+  - id: AC4
+    text: >
+      The clone obligation of a retirement closes when the clone's teardown has been handed to the
+      ledger: when the teardown answers retired, and when it is refused as space_deferred, for the
+      ledger then tracks the clone's items and retries them itself. The worker slot is released then. A
+      teardown refused as clone_in_use keeps the obligation open and the slot held, unchanged. A sweep
+      does not attempt a deferred teardown again. The clone's pins are released when the work tree's
+      item is removed, whoever removes it and whenever, and not before
+    falsified_by: >
+      Each of these turns a row of its own red. Keep the obligation open on space_deferred: the row's
+      dispatch, whose clone is left due in report mode, still holds its worker slot after the sweep,
+      and the row fails. Attempt the teardown on every sweep: the row counts the run finished events
+      sent for the same clone over three sweeps, finds three and fails. Release the pins at the
+      teardown call only: the row has the owner's Confirm remove the work tree after the slot was
+      released, finds the pin still held in the cache, and fails. Release them at hand-over: the row
+      collects the cache while the work tree is deferred, finds its commit unreadable, and fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. The receiver sends no run finished, and the run's items stay present until another
@@ -88,3 +104,25 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-14: AC4 added, from the review of VELDO-0303 (finding 4) and the lead's decision on it. Not
+  built yet, here or in VELDO-0303. What the review found in control_retirement.py: the clone
+  obligation is open while the clone is on disk or a pin is held (_observe), lifecycle refuses the
+  release of the worker slot while clone is the first open obligation, _complete_clone turns every
+  refused teardown into teardown refused, and _due answers true for it at every sweep. So once a
+  ledger is wired into the clone provisioner, a clone that a rule defers, and in report mode every
+  clone, would keep its dispatch's worker slot until the owner's Confirm, and every sweep would
+  send run finished again for the same items, which is the falsifier of AC3. The decision: the slot
+  is compute, and the clone's files are a deferred item the ledger tracks. So the obligation closes
+  on hand-over to the ledger (retired, or a refusal whose code is space_deferred), the slot is
+  released then, and a deferred teardown is recorded as deferred with the ledger's item and is not
+  attempted again by a sweep. clone_in_use is live compute and keeps the obligation open. Two things
+  follow and are part of AC4 and of this ticket's build. The pins: today the provisioner releases
+  them only inside the teardown call (control_clone.Clones._through_space), and after the slot is
+  released nothing calls the teardown again, so the release has to follow the work tree item's
+  removal outcome wherever it is written (the next event, admission, reconcile, the owner's
+  Confirm). AC3: its "a pending retirement's obligation completes" now includes the clone
+  obligation closing at hand-over, and the design's Retry paragraph of section 7 and the Retirement
+  row of the component table need the same wording when the design is next revised. This ticket
+  must land before `space` is wired into the clone provisioner: VELDO-0303 threads `space` through
+  to the three places that build one (control_launch.py twice, control_launch_work.py once), and
+  nothing gives them a ledger yet.

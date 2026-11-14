@@ -117,6 +117,7 @@ def _git_worktree(args, cwd=None):
 
 
 SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger that allow a delete
 _SPACE = {}
 
 
@@ -220,6 +221,22 @@ def space_refusal(entry):
     return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
 
 
+def space_standalone(path, kind, main=None, event='run_finished', ticket=None, skip=()):
+    """VELDO-0303: the look before a delete where no ledger is wired (control_space_standalone): the
+    unique work probe and the keep step for the thing at `path`, {path, item, state, deferral, said,
+    refs}. This module deletes the thing only when the state is one of SPACE_SAFE: nothing is there
+    (gone), a folder holds no repository (clear), or the commits of a worktree or a private repository
+    are on kept refs in `main` (kept). Anything else stays where it is. Whatever raises removes nothing."""
+    try:
+        if 'standalone' not in _SPACE:
+            _SPACE['standalone'] = _load("veldo_space_standalone_fl", ".veldo/control_space_standalone.py").standalone
+        return _SPACE['standalone'](str(path), kind, main=None if main is None else str(main), event=event,
+                                    ticket=ticket, skip=tuple(str(where) for where in skip))
+    except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
+        return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
+                'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
+
+
 class WorktreeProvisioner:
     """Provisions a git-worktree-isolated workspace per worker and tears it down on retire. A git
     worktree is a real checkout on its own path sharing the one .git, so each worker edits in
@@ -244,16 +261,21 @@ class WorktreeProvisioner:
                       non-forced remove takes it. A worktree with an untracked file, or anything
                       else a rule keeps, stays on disk and is deferred on the record. A worktree
                       no item records stays too. This module runs no git remove of its own then.
-      without one     there is no keep step, so remove runs git's non-forced worktree remove only
-                      for a worktree this provisioner added and whose checked-out commit has not
-                      moved since: a commit made in it could be named by nothing else. git itself
-                      refuses a modified or an untracked file. Anything else stays.
+      without one     remove first runs the unique work probe and the keep step by themselves
+                      (space_standalone). A worktree with a modified, staged or untracked file, an
+                      ignored file that is work (a local settings file), an operation in progress
+                      or a git repository beneath it stays: git's non-forced remove would take an
+                      ignored file and a repository in an ignored folder without a word. For any
+                      other, its head, its own refs and each commit only its HEAD log names (one a
+                      reset left behind) are written on kept refs in the repository and read back,
+                      and only then does git's non-forced worktree remove run. When the look or
+                      the keep step fails, the worktree stays.
 
     remove returns what became of the worktree, {path, item, state, deferral}, and `deferred` lists
     every worktree a remove left in place, with the reason."""
 
     def __init__(self, repo_root=None, base_dir=None, space=None):
-        self.space, self.deferred, self._added = space, [], {}
+        self.space, self.deferred = space, []
         self.repo_root = str(repo_root or ROOT)
         self.base_dir = base_dir or os.environ.get("VELDO_WORKTREE_DIR") or os.path.join(
             tempfile.gettempdir(), "veldo-worktrees",
@@ -266,18 +288,7 @@ class WorktreeProvisioner:
         path = self.path_for(worker_id)
         os.makedirs(self.base_dir, exist_ok=True)
         _git_worktree(["add", "--detach", path], cwd=self.repo_root)
-        self._added[path] = self._head(path)
         return path
-
-    def _head(self, path):
-        """The commit git's worktree list shows checked out at `path`, or None."""
-        at, wanted = None, os.path.realpath(path)
-        for line in _git_worktree(["list", "--porcelain"], cwd=self.repo_root).splitlines():
-            if line.startswith("worktree "):
-                at = os.path.realpath(line[len("worktree "):])
-            elif line.startswith("HEAD ") and at == wanted:
-                return line[len("HEAD "):].strip()
-        return None
 
     def remove(self, path):
         if not path:
@@ -289,15 +300,18 @@ class WorktreeProvisioner:
         elif space_absent(path):
             entry = {"path": path, "item": None, "state": "gone", "deferral": None}  # idempotent
         else:
-            entry = {"path": path, "item": None, "state": "removed", "deferral": None}
-            try:
-                started = self._added.get(path)
-                if started is None or self._head(path) != started:
-                    raise WorktreeError("the worktree's checked-out commit is not the one it was added at, "
-                                        "or this provisioner did not add it: nothing else may name its commits")
-                _git_worktree(["remove", path], cwd=self.repo_root)
-            except WorktreeError as error:
-                entry.update(state=None, deferral="remove_refused", said=str(error))
+            # No ledger: nothing judges this removal but the look made here, and nothing is removed
+            # that it did not answer for. git's non-forced remove runs only after the keep step.
+            entry = dict(space_standalone(path, "worktree", main=self.repo_root, event="worktree_abandoned"),
+                         path=path)
+            if entry["state"] == "kept":
+                try:
+                    _git_worktree(["remove", path], cwd=self.repo_root)
+                    entry["state"] = "removed"
+                except WorktreeError as error:
+                    entry.update(state=None, deferral="remove_refused", said=str(error))
+            elif entry["state"] != "gone":
+                entry.update(state=None, deferral=entry.get("deferral") or "remove_refused")
         if entry["state"] not in SPACE_ENDED:
             self.deferred.append(entry)
         return entry

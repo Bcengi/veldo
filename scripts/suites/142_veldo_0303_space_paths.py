@@ -24,8 +24,8 @@ detached head that no ref holds: the worktree stays, deferred as unique_work, an
 checked out), ac1/fleet-alone (an owner that also owns another worktree: nothing is signalled and both
 stay present), ac1/fleet-not-recorded (with a ledger, a worktree no item records stays, not_in_ledger),
 ac1/fleet-no-ledger (with no ledger there is no force option either: an untracked file stays, a
-worktree whose checked-out commit moved stays with its commit, a clean one is removed, and a path that
-is not there is answered gone).
+worktree with a commit on its detached head goes only after that commit is on a kept ref, a clean one is
+removed, and a path that is not there is answered gone).
 
 AC2 rows, the clone (control_clone.Clones): ac2/teardown-through-signal (a clone whose users have
 ended is retired through Signal: scratch folder, work tree and root are removed in that order, the work
@@ -42,8 +42,9 @@ byte for byte, the pins are held and the teardown is refused), ac2/failed-provis
 that fails after the work tree was made: the declared items are confirmed and go through Signal, the
 root is gone, the pins are released after it, and the error raised is the provisioning's own),
 ac2/report-mode-removes-nothing (a clone of the project in report mode: the teardown writes due,
-removes nothing, keeps the pins and is refused as space_deferred:due), ac2/no-ledger-as-before (with no
-ledger the provisioner retires a clone as before this ticket).
+removes nothing, keeps the pins and is refused as space_deferred:due), ac2/no-ledger-clean-clone (with no
+ledger a clean clone is retired after its head is on a kept ref of the bound repository, and a clone whose
+bound repository cannot be named stays).
 
 AC3 rows, the run directory (control_launch.Receiver._remove_run and Runner.clear_runs):
 ac3/receiver-end (the declared falsifier row for the receiver: at its end the run directory is removed
@@ -63,12 +64,30 @@ merge commit on a kept ref, discarded true), ac4/candidate-with-work-stays (a ca
 file nobody saved, and a workspace a process holds a file in: each stays, deferred on the record, and
 the caller is told).
 
+THE REVIEW'S ROWS: with no ledger no path deletes unique work either. Each loss the review reproduced is
+a row that keeps the work. loss/fleet-ignored-file (a fleet worktree holding a local settings file that
+a personal ignore rule hides stays, the file byte for byte), loss/fleet-nested-repository (a worktree
+with a repository in a folder the project's committed ignore file covers stays, the repository with its
+only commit), loss/fleet-reset-commit (a commit made in a worktree and reset away, named by nothing but
+the worktree's HEAD log, is on a kept ref of the repository before git's remove runs, and its file is
+read from the repository alone), loss/clone-refused-build (the commits a worker made in a clone, one of
+them reset away, are read from the bound repository alone after the teardown; a clone with a file in no
+commit stays whole with its pin, refused as space_deferred:unique_work, and goes once the file is gone),
+loss/run-directory-repository (a run directory that holds a repository stays at the receiver's end and
+at the sweep; one that holds none is removed as before), loss/candidate-commits (a candidate folder and
+a candidate workspace go only after their own commits are on kept refs of the repository; each stays
+with a file in no commit). f3/consumer-holds-clone (the worker's receiver ends, and then the sweep runs,
+while a consumer attached to the worker's clone has no process: nothing is signalled, the clone is whole
+and the refusal is clone_in_use; once the consumer has ended the sweep removes the run directory).
+f5/clones-given-space (every clone provisioner the two launch modules build is given space; read from
+their sources, the one row here that drives nothing).
+
 paths/absent-only-when-not-found (a path no live item records is answered gone only when the kernel
 says nothing is there: a folder under a parent of mode 000 is not gone and is answered not_in_ledger,
 in each of the five modules; a clone whose work tree no item records keeps its pins),
 paths/no-delete-with-a-ledger (in every drive above that had a ledger, none of the four modules that
 import shutil called its recursive delete, and the fleet module ran no git remove), paths/canon (each
-engine canon equals this repository copy).
+engine canon equals this repository copy, and the scaffold lays down the modules the removal paths load).
 
 STAND-INS, each named in the proof manifest. The creators' declare and confirm calls (VELDO-0302 is not
 built): the suite declares each item itself, with the kind and the parent design 6.10 gives it. The
@@ -79,7 +98,8 @@ docker client, a function. The process table, a folder shaped as the kernel's. T
 mapping. The clone provisioner, the receiver, the runner and the landing line's runtime are made
 without their stores (object.__new__ and the attributes the removal path reads): only their removal
 methods are driven. The clone is laid out on disk as the provisioner's own _create lays it out, with
-its own _cache, _pin and _write.
+its own _cache, _pin and _write. For the rows that retire a clone with no ledger, the store's answer
+for the clone's bound repository is a stand-in that names the project's repository.
 """
 
 
@@ -102,6 +122,7 @@ def _v303_space_paths_suite():
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_launch_work.py': ROOT / ".veldo" / "control_launch_work.py",
         'lander.py': ROOT / ".veldo" / "lander.py",
+        'control_space_standalone.py': ROOT / ".veldo" / "control_space_standalone.py",
     }
     VELDO = ROOT / '.veldo'
     CHANGED = tuple(PRODUCTION)
@@ -124,9 +145,12 @@ def _v303_space_paths_suite():
             'ac1/fleet-alone', 'ac1/fleet-not-recorded', 'ac1/fleet-no-ledger',
             'ac2/teardown-through-signal', 'ac2/open-file-stays', 'ac2/clone-in-use-first',
             'ac2/pins-after-outcome', 'ac2/uncommitted-stays', 'ac2/failed-provision',
-            'ac2/report-mode-removes-nothing', 'ac2/no-ledger-as-before',
+            'ac2/report-mode-removes-nothing', 'ac2/no-ledger-clean-clone',
             'ac3/receiver-end', 'ac3/sweep-leftover', 'ac3/deferred-then-swept',
             'ac4/landing-line-close', 'ac4/lander-discard', 'ac4/candidate-with-work-stays',
+            'loss/fleet-ignored-file', 'loss/fleet-nested-repository', 'loss/fleet-reset-commit',
+            'loss/clone-refused-build', 'loss/run-directory-repository', 'loss/candidate-commits',
+            'f3/consumer-holds-clone', 'f5/clones-given-space',
             'paths/absent-only-when-not-found', 'paths/no-delete-with-a-ledger', 'paths/canon')
     rows = {name: [] for name in ROWS}
 
@@ -173,6 +197,10 @@ def _v303_space_paths_suite():
         LA = load('v303_control_launch', PRODUCTION['control_launch.py'])
         LW = load('v303_control_launch_work', PRODUCTION['control_launch_work.py'])
         LD = load('v303_lander', PRODUCTION['lander.py'])
+        # The look made where no ledger is wired, given to the five modules as the copy under test.
+        SA = load('v303_control_space_standalone', PRODUCTION['control_space_standalone.py'])
+        for module in (FL, CL, LA, LW, LD):
+            module._SPACE['standalone'] = SA.standalone
         SIG = load('v303_control_space_signal', VELDO / 'control_space_signal.py')
         SP = load('v303_control_space', VELDO / 'control_space.py')
         S = load('v303_control_store', VELDO / 'control_store.py')
@@ -428,6 +456,13 @@ def _v303_space_paths_suite():
         def readable(work, commit_id):
             return git(work, 'cat-file', '-e', commit_id + '^{commit}', ok=False) == 0
 
+        def kept_in(repository, commit_id):
+            """The kept refs of `repository` that hold the commit, read from that repository alone."""
+            if git(repository, 'cat-file', '-e', commit_id + '^{commit}', ok=False) != 0:
+                return []
+            return git(repository, 'for-each-ref', '--format=%(refname)', '--contains', commit_id,
+                       'refs/veldo/kept/').splitlines()
+
         def listed(repository, path):
             return ('worktree ' + str(path)) in git(repository, 'worktree', 'list', '--porcelain').splitlines()
 
@@ -541,27 +576,91 @@ def _v303_space_paths_suite():
             dirty = Path(PLAIN.add('dirty'))
             (dirty / 'notes.txt').write_text(NOTES)
             answer = PLAIN.remove(str(dirty))
-            check(row, 'with no ledger an untracked file stays: git refuses and no force option is passed [%s]' % (answer,),
-                  text_of(dirty / 'notes.txt') == NOTES and answer.get('deferral') == 'remove_refused'
-                  and answer.get('state') is None and 'untracked' in str(answer.get('said')))
+            check(row, 'with no ledger an untracked file stays: the look refuses as unique_work and no git remove is run '
+                       '[%s]' % (answer,),
+                  text_of(dirty / 'notes.txt') == NOTES and answer.get('deferral') == 'unique_work'
+                  and answer.get('state') is None and 'notes.txt' in str(answer.get('facts'))
+                  and not any(argv[0] == 'remove' and str(dirty) in argv for argv in FLEET_GIT[before:]))
             moved = Path(PLAIN.add('moved'))
             made = commit(moved, 'feature.txt', 'committed\n', 'unlanded work')
             answer = PLAIN.remove(str(moved))
-            check(row, 'a worktree whose checked-out commit moved since it was added stays, with its commit [%s]' % (answer,),
-                  git(moved, 'rev-parse', 'HEAD') == made and answer.get('deferral') == 'remove_refused'
-                  and not any(argv[0] == 'remove' and str(moved) in argv for argv in FLEET_GIT[before:]))
+            check(row, 'a worktree with a commit on its detached head goes only after the keep step: the commit is on '
+                       'a kept ref of the repository, read there alone [%s]' % (answer,),
+                  answer.get('state') == 'removed' and not os.path.lexists(moved)
+                  and any(ref.endswith('/head') and at == made for ref, at in (answer.get('refs') or {}).items())
+                  and [ref for ref in kept_in(REPOSITORY, made) if ref.endswith('/head')] != [])
             clean = Path(PLAIN.add('clean'))
             answer = PLAIN.remove(str(clean))
-            check(row, 'a clean worktree at the commit it was added at is removed by git\'s non-forced remove [%s]' % (answer,),
-                  not os.path.lexists(clean) and answer.get('state') == 'removed')
+            check(row, 'a clean worktree is removed by git\'s non-forced remove, after its head was kept [%s]' % (answer,),
+                  not os.path.lexists(clean) and answer.get('state') == 'removed'
+                  and [argv for argv in FLEET_GIT[before:] if argv[0] == 'remove' and str(clean) in argv]
+                  == [['remove', str(clean)]])
             answer = PLAIN.remove(str(clean))
             check(row, 'a path that is not there is answered gone, and no git remove is run for it [%s]' % (answer,),
-                  answer.get('state') == 'gone')
+                  answer.get('state') == 'gone'
+                  and len([argv for argv in FLEET_GIT[before:] if argv[0] == 'remove' and str(clean) in argv]) == 1)
             check(row, 'no git command of the fleet held a force option, with a ledger or without [%s]'
                   % [argv for argv in FLEET_GIT if '--force' in argv or '-f' in argv],
                   not [argv for argv in FLEET_GIT if '--force' in argv or '-f' in argv])
-            check(row, 'the deferred list names the two that stayed',
-                  [entry.get('path') for entry in PLAIN.deferred] == [str(dirty), str(moved)])
+            check(row, 'the deferred list names the one that stayed',
+                  [entry.get('path') for entry in PLAIN.deferred] == [str(dirty)])
+
+            # The losses the review of this ticket reproduced with no ledger, each now a row that keeps the work.
+            row = 'loss/fleet-ignored-file'
+            exclude = REPOSITORY / '.git' / 'info' / 'exclude'
+            exclude.parent.mkdir(parents=True, exist_ok=True)
+            exclude.write_text('.env\n')  # a personal rule: the file is hidden from git's status, and is work
+            secret = Path(PLAIN.add('secret'))
+            (secret / '.env').write_text('TOKEN=only-here\n')
+            check(row, 'git\'s status names nothing in the worktree: its own remove would take the file without a word',
+                  git(secret, 'status', '--porcelain') == '')
+            answer = PLAIN.remove(str(secret))
+            check(row, 'a worktree holding an ignored local settings file stays, the file byte for byte [%s]' % (answer,),
+                  text_of(secret / '.env') == 'TOKEN=only-here\n' and listed(REPOSITORY, secret))
+            check(row, 'the answer is the deferral unique_work and names the file, and the deferred list has it',
+                  answer.get('state') is None and answer.get('deferral') == 'unique_work'
+                  and '.env' in str(answer.get('facts')) and PLAIN.deferred[-1].get('path') == str(secret)
+                  and not any(argv[0] == 'remove' and str(secret) in argv for argv in FLEET_GIT[before:]))
+
+            row = 'loss/fleet-nested-repository'
+            outer = Path(PLAIN.add('outer'))
+            inner = outer / 'build' / 'dependency'  # build/ is ignored by the project's committed ignore file
+            inner.mkdir(parents=True)
+            git(inner, 'init', '-q', '-b', 'main')
+            only = commit(inner, 'only.txt', 'the only copy\n', 'the only commit of a nested repository')
+            check(row, 'git\'s status names nothing in the worktree, the nested repository included',
+                  git(outer, 'status', '--porcelain') == '')
+            answer = PLAIN.remove(str(outer))
+            check(row, 'a worktree with a repository in an ignored folder stays, and the repository has its only commit '
+                       '[%s]' % (answer,),
+                  git(inner, 'rev-parse', 'HEAD') == only and text_of(inner / 'only.txt') == 'the only copy\n'
+                  and listed(REPOSITORY, outer))
+            check(row, 'the answer is the deferral in_use and names the repository',
+                  answer.get('state') is None and answer.get('deferral') == 'in_use'
+                  and str(inner) in str(answer.get('facts'))
+                  and not any(argv[0] == 'remove' and str(outer) in argv for argv in FLEET_GIT[before:]))
+
+            row = 'loss/fleet-reset-commit'
+            rewound = Path(PLAIN.add('rewound'))
+            started = git(rewound, 'rev-parse', 'HEAD')
+            left = commit(rewound, 'attempt.txt', 'a commit that was reset away\n', 'left behind by a reset')
+            git(rewound, 'reset', '-q', '--hard', started)
+            git(rewound, 'reset', '-q', '--hard', started)  # a second reset: ORIG_HEAD no longer names the commit
+            check(row, 'the worktree is clean at the commit it was added at, and nothing but its HEAD log names the '
+                       'commit the reset left behind',
+                  git(rewound, 'status', '--porcelain') == '' and git(rewound, 'rev-parse', 'HEAD') == started
+                  and git(rewound, 'rev-parse', 'ORIG_HEAD') == started
+                  and git(REPOSITORY, 'for-each-ref', '--contains', left) == ''
+                  and left in git(rewound, 'rev-list', '--walk-reflogs', 'HEAD').split())
+            answer = PLAIN.remove(str(rewound))
+            check(row, 'the worktree is removed, and the commit a reset left behind is on a kept ref of the repository '
+                       '[%s %s]' % (answer.get('state'), sorted(answer.get('refs') or {})),
+                  answer.get('state') == 'removed' and not os.path.lexists(rewound)
+                  and any('/log/' in ref and at == left for ref, at in (answer.get('refs') or {}).items())
+                  and kept_in(REPOSITORY, left) != [])
+            check(row, 'its file is read from the repository alone, by the kept ref',
+                  [git(REPOSITORY, 'show', ref + ':attempt.txt') for ref in kept_in(REPOSITORY, left)[:1]]
+                  == ['a commit that was reset away'])
         except Exception as error:
             stopped(row, error)
 
@@ -816,13 +915,110 @@ def _v303_space_paths_suite():
                   [state_of(items[name]) for name in ('root', 'work', 'scratch')] == ['due'] * 3
                   and refused == 'space_deferred:due')
 
-            row = 'ac2/no-ledger-as-before'
+            row = 'ac2/no-ledger-clean-clone'
+
+            class Bound:
+                """The store's answer for a clone's bound repository: the project's own."""
+                @staticmethod
+                def bound_repository(connection, domain, repository):
+                    return str(REPOSITORY)
+
             BARE = provisioner(None)
+            BARE.store = Bound
             clone_id, root, work, head, _ = clone(BARE, 'plain-09', declare=False)
             refused = retire(BARE, clone_id)
-            check(row, 'with no ledger the clone is retired as before: its root is gone and its pin released [%s]' % (refused,),
+            check(row, 'with no ledger a clean clone is retired: its root is gone and its pin released [%s]' % (refused,),
                   refused is None and not os.path.lexists(root) and BARE._pins_held(clone_id) == []
                   and BARE.observations[-1].get('outcome') == 'retired')
+            check(row, 'and only after the keep step: its head is on a kept ref of the bound repository [%s]'
+                  % sorted(BARE.observations[-1].get('kept') or {}),
+                  any(ref.endswith('/head') and at == head for ref, at in (BARE.observations[-1].get('kept') or {}).items())
+                  and set(BARE.observations[-1].get('kept') or {'none': 0}) <= set(kept_in(REPOSITORY, head)))
+            UNBOUND = provisioner(None)  # the fixture store binds no repository: nowhere to keep the commits
+            clone_id, root, work, head, _ = clone(UNBOUND, 'unbound-14', declare=False)
+            refused = retire(UNBOUND, clone_id)
+            check(row, 'a clone whose bound repository cannot be named stays whole, refused as keep_failed [%s]' % (refused,),
+                  refused == 'space_deferred:keep_failed' and (work / 'tracked.txt').is_file()
+                  and len(UNBOUND._pins_held(clone_id)) == 1)
+
+            row = 'loss/clone-refused-build'
+            clone_id, root, work, head, _ = clone(BARE, 'refused-12', declare=False)
+            built = commit(work, 'built.txt', 'the work of a build whose result was refused\n', 'the build')
+            git(work, 'branch', 'side', built)
+            dropped = commit(work, 'second.txt', 'a second try, reset away\n', 'second try')
+            git(work, 'reset', '-q', '--hard', built)
+            check(row, 'the worker\'s commits are in the clone and nowhere in the bound repository',
+                  readable(work, built) and readable(work, dropped)
+                  and not readable(REPOSITORY, built) and not readable(REPOSITORY, dropped))
+            refused = retire(BARE, clone_id)
+            check(row, 'the clone is retired: its root is gone and its pin released [%s]' % (refused,),
+                  refused is None and not os.path.lexists(root) and BARE._pins_held(clone_id) == [])
+            check(row, 'the commits of the refused build are read from the bound repository alone, on kept refs filed '
+                       'under the clone\'s unit [%s]' % (kept_in(REPOSITORY, built)[:3],),
+                  kept_in(REPOSITORY, built) != [] and kept_in(REPOSITORY, dropped) != []
+                  and all(ref.startswith('refs/veldo/kept/VELDO-9212/') for ref in kept_in(REPOSITORY, built))
+                  and [git(REPOSITORY, 'show', ref + ':built.txt') for ref in kept_in(REPOSITORY, built)[:1]]
+                  == ['the work of a build whose result was refused'])
+            clone_id, root, work, head, _ = clone(BARE, 'unsaved-13', declare=False)
+            built = commit(work, 'built.txt', 'committed by the worker\n', 'the build')
+            (work / 'draft.txt').write_text('written and never committed\n')
+            refused = retire(BARE, clone_id)
+            check(row, 'a clone whose work tree holds a file in no commit stays whole, the file byte for byte, its pin '
+                       'held [%s]' % (refused,),
+                  text_of(work / 'draft.txt') == 'written and never committed\n' and git(work, 'rev-parse', 'HEAD') == built
+                  and (root / CL.MANIFEST).is_file() and len(BARE._pins_held(clone_id)) == 1)
+            check(row, 'the teardown is refused as space_deferred:unique_work and the retire event names the file',
+                  refused == 'space_deferred:unique_work' and BARE.observations[-1].get('outcome') == 'refused'
+                  and 'draft.txt' in str(BARE.observations[-1].get('space')))
+            (work / 'draft.txt').unlink()
+            refused = retire(BARE, clone_id)
+            check(row, 'once the file is gone the next teardown keeps the commit and retires the clone [%s]' % (refused,),
+                  refused is None and not os.path.lexists(root) and kept_in(REPOSITORY, built) != [])
+
+            row = 'f3/consumer-holds-clone'
+            C = provisioner(space())
+            clone_id, root, work, head, items = clone(C, 'shared-11')
+            worker_id, consumer_id = 'dispatch/shared-11', 'dispatch/consumer-11'
+            manifest = C._manifest(clone_id)
+            consumer_scratch = CL._scratch(root, consumer_id)
+            consumer_scratch.mkdir(parents=True, exist_ok=True)
+            manifest['users'].append({'dispatch_id': consumer_id, 'role': 'consumer', 'scratch': str(consumer_scratch),
+                                      'group': None})
+            C._write(manifest)
+            RECORDS[consumer_id] = {'state': 'running', 'process': None}  # attached, and no process at this moment
+            shared_run = Path(LA.run_directory(str(STATE / 'runs-shared'), worker_id))
+            (shared_run / LA.RUN_CONFIG).mkdir(parents=True)
+            run_item = declared('scratch', {'path': str(shared_run)},
+                                {'scope': A, 'ticket': 'VELDO-9211', 'run': {'id': worker_id, 'station': 'build'}})
+            R = object.__new__(LA.Receiver)
+            R.space, R.run_removal, R.run, R.supervision, R.role_skills = space(), None, str(shared_run), {'empty': True}, []
+            R.config, R.dispatches, R.run_dispatch = {'clones': C}, C.dispatches, worker_id
+            length = journal_length()
+            with with_ledger(row):
+                R._remove_run()
+            check(row, 'the worker\'s receiver ends while a consumer is attached and idle: nothing is signalled [%s]'
+                  % (R.run_removal,),
+                  journal_length() == length and (R.run_removal or {}).get('deferral') == 'clone_in_use'
+                  and (R.run_removal or {}).get('users') == [consumer_id])
+            check(row, 'the clone stays whole under its consumer, its items present and its pin held',
+                  (work / 'tracked.txt').is_file() and (root / CL.MANIFEST).is_file()
+                  and [state_of(items[name]) for name in ('root', 'work', 'scratch')] == ['present'] * 3
+                  and len(C._pins_held(clone_id)) == 1 and os.path.isdir(shared_run) and state_of(run_item) == 'present')
+            N = object.__new__(LA.Runner)
+            N.space, N.runs, N.profile, N.leftovers, N.observations = space(), str(STATE / 'runs-shared'), None, {}, []
+            N.clones, N.dispatches = C, C.dispatches
+            N.leftovers[worker_id] = {'group': None, 'process': None}
+            with with_ledger(row):
+                removed = N.clear_runs()
+            check(row, 'the sweep does not signal either, and says clone_in_use with the consumer [%s]' % (N.observations[-1:],),
+                  removed == [] and journal_length() == length and (work / 'tracked.txt').is_file()
+                  and N.observations[-1].get('refusal') == 'clone_in_use'
+                  and N.observations[-1].get('users') == [consumer_id] and worker_id in N.leftovers)
+            RECORDS[consumer_id] = {'state': 'exited', 'process': None}
+            with with_ledger(row):
+                removed = N.clear_runs()
+            check(row, 'once the consumer has ended the sweep\'s event removes the run directory [%s]' % (removed,),
+                  removed == [worker_id] and not os.path.lexists(shared_run) and state_of(run_item) == 'removed')
         except Exception as error:
             stopped(row, error)
 
@@ -847,11 +1043,13 @@ def _v303_space_paths_suite():
             def receiver(wired, run, supervision):
                 made = object.__new__(LA.Receiver)
                 made.space, made.run_removal, made.run, made.supervision, made.role_skills = wired, None, str(run), supervision, []
+                made.config, made.dispatches, made.run_dispatch = {}, None, None  # an installation without clones
                 return made
 
             def runner(wired):
                 made = object.__new__(LA.Runner)
                 made.space, made.runs, made.profile, made.leftovers, made.observations = wired, str(RUNS), None, {}, []
+                made.clones, made.dispatches = None, None  # an installation without clones
                 return made
 
             row = 'ac3/receiver-end'
@@ -940,6 +1138,42 @@ def _v303_space_paths_suite():
                        'as in_use by the owner rule and whole [%s]' % (R.run_removal,),
                   os.path.isdir(place) and state_of(item) == 'deferred'
                   and ((L.item(item) or {}).get('deferral') or {}).get('refused_by') == 'owner_live')
+
+            row = 'loss/run-directory-repository'
+
+            def plain_run(name, repository):
+                dispatch_id = 'dispatch/plain-' + name
+                place = Path(LA.run_directory(str(RUNS), dispatch_id))
+                (place / LA.RUN_CONFIG).mkdir(parents=True)
+                (place / LA.RUN_CONFIG / 'settings.json').write_text('{"generated": true}\n')
+                made = None
+                if repository:
+                    git(place / LA.RUN_CONFIG, 'init', '-q', '-b', 'main', 'checkout')
+                    made = commit(place / LA.RUN_CONFIG / 'checkout', 'only.txt', 'the only copy\n', 'the only commit')
+                return dispatch_id, place, made
+
+            dispatch_id, place, only = plain_run('holds-07', True)
+            R = receiver(None, place, {'empty': True})
+            R._remove_run()
+            check(row, 'with no ledger a run directory that holds a repository stays at the receiver\'s end, with its only '
+                       'commit [%s]' % (R.run_removal,),
+                  git(place / LA.RUN_CONFIG / 'checkout', 'rev-parse', 'HEAD') == only
+                  and (R.run_removal or {}).get('refusal') == 'space_deferred:in_use')
+            N = runner(None)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            removed = N.clear_runs()
+            check(row, 'the sweep leaves it too, refused by name, and keeps it among the leftovers [%s]' % (N.observations[-1:],),
+                  removed == [] and git(place / LA.RUN_CONFIG / 'checkout', 'rev-parse', 'HEAD') == only
+                  and N.observations[-1].get('refusal') == 'space_deferred:in_use' and dispatch_id in N.leftovers)
+            dispatch_id, place, _ = plain_run('scratch-08', False)
+            R = receiver(None, place, {'empty': True})
+            R._remove_run()
+            check(row, 'a run directory that holds no repository is removed at the receiver\'s end as before',
+                  not os.path.lexists(place) and R.run_removal is None)
+            dispatch_id, place, _ = plain_run('scratch-09', False)
+            N = runner(None)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            check(row, 'and by the sweep', N.clear_runs() == [dispatch_id] and not os.path.lexists(place))
         except Exception as error:
             stopped(row, error)
 
@@ -1061,6 +1295,57 @@ def _v303_space_paths_suite():
                   state_of(item) == 'deferred' and deferral_of(item) == 'in_use'
                   and O.candidate.get('discarded') is False and told.get('refusal') == 'space_deferred:in_use')
             shutil.rmtree(holder)
+
+            row = 'loss/candidate-commits'
+            directory, _, head = candidate('plain-05')
+            verified = commit(directory, 'verified.txt', 'a commit made in the candidate folder\n', 'in the candidate')
+            W = runtime(None, [directory])
+            W.root = REPOSITORY
+            W.close()
+            check(row, 'with no ledger the landing line\'s close removes a candidate folder only after its commits are on '
+                       'kept refs of the repository [%s]' % (kept_in(REPOSITORY, verified)[:2],),
+                  not os.path.lexists(directory) and W.kept == [] and kept_in(REPOSITORY, verified) != []
+                  and W.floor.closed and W.conn.closed)
+            directory, _, head = candidate('plain-06')
+            (directory / 'report.txt').write_text('a verification report nobody saved\n')
+            W = runtime(None, [directory])
+            W.root = REPOSITORY
+            W.close()
+            check(row, 'a candidate folder with a file nobody saved stays, and the runtime lists it [%s]' % (W.kept,),
+                  text_of(directory / 'report.txt') == 'a verification report nobody saved\n'
+                  and [entry.get('refusal') for entry in W.kept] == ['space_deferred:unique_work'])
+            place, _, _, observed, _ = workspace('plain-07')
+            merged = commit(place, 'own.txt', 'a commit only this workspace has\n', 'the candidate of plain-07')
+            O = lander(None, place, observed)
+            O.repo_root = str(REPOSITORY)
+            check(row, 'the candidate\'s own commit is in the workspace and not in the repository',
+                  readable(place, merged) and not readable(REPOSITORY, merged))
+            O.discard()
+            check(row, 'the lander\'s discard removes the workspace only after its commit is on a kept ref of the '
+                       'repository, read there alone [%s]' % (kept_in(REPOSITORY, merged)[:2],),
+                  not os.path.lexists(place) and not os.path.lexists(observed) and O.candidate.get('discarded') is True
+                  and kept_in(REPOSITORY, merged) != []
+                  and [git(REPOSITORY, 'show', ref + ':own.txt') for ref in kept_in(REPOSITORY, merged)[:1]]
+                  == ['a commit only this workspace has'])
+            place, _, merged, observed, _ = workspace('plain-08')
+            (place / 'conflict.txt').write_text('a resolution nobody committed\n')
+            O = lander(None, place, observed)
+            O.repo_root = str(REPOSITORY)
+            O.discard()
+            told = (O.candidate.get('space') or {}).get(str(place)) or {}
+            check(row, 'a workspace with a file in no commit stays, and the candidate says so [%s]' % (told.get('refusal'),),
+                  text_of(place / 'conflict.txt') == 'a resolution nobody committed\n'
+                  and O.candidate.get('discarded') is False and told.get('refusal') == 'space_deferred:unique_work')
+
+            row = 'f5/clones-given-space'
+            import ast
+            for name in ('control_launch.py', 'control_launch_work.py'):
+                tree = ast.parse(Path(PRODUCTION[name]).read_text())
+                made = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
+                        and isinstance(node.func, ast.Attribute) and node.func.attr == 'Clones']
+                check(row, '%s: each clone provisioner it builds is given space [%d of %d]'
+                      % (name, len([node for node in made if any(word.arg == 'space' for word in node.keywords)]), len(made)),
+                      made and all(any(word.arg == 'space' for word in node.keywords) for node in made))
         except Exception as error:
             stopped(row, error)
 
@@ -1119,6 +1404,10 @@ def _v303_space_paths_suite():
                 check(row, 'the engine canon engine/.veldo/%s equals this repository copy' % name,
                       (ROOT / 'engine' / '.veldo' / name).is_file()
                       and (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes())
+            laid = set(load('v303_init_scaffold', VELDO / 'init_scaffold.py')._FILES)
+            for name in ('control_space_signal.py', 'control_space_standalone.py', 'control_space_probe.py',
+                         'control_space_keep.py', 'control_space_remove.py', 'control_space.py', 'control_space_config.py'):
+                check(row, 'the scaffold lays down .veldo/%s, which the removal paths load' % name, '.veldo/' + name in laid)
         except Exception as error:
             stopped(row, error)
 

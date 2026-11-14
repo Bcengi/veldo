@@ -66,6 +66,7 @@ def artifact(record, reference):
 
 
 SPACE_ENDED = ('removed', 'gone')  # the states of an item whose thing is no longer on disk
+SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger that allow a delete
 _SPACE = {}
 
 
@@ -169,6 +170,22 @@ def space_refusal(entry):
     return 'space_deferred:' + str(entry.get('deferral') or entry.get('state') or 'not_in_ledger')
 
 
+def space_standalone(path, kind, main=None, event='run_finished', ticket=None, skip=()):
+    """VELDO-0303: the look before a delete where no ledger is wired (control_space_standalone): the
+    unique work probe and the keep step for the thing at `path`, {path, item, state, deferral, said,
+    refs}. This module deletes the thing only when the state is one of SPACE_SAFE: nothing is there
+    (gone), a folder holds no repository (clear), or the commits of a worktree or a private repository
+    are on kept refs in `main` (kept). Anything else stays where it is. Whatever raises removes nothing."""
+    try:
+        if 'standalone' not in _SPACE:
+            _SPACE['standalone'] = organ('control_space_standalone').standalone
+        return _SPACE['standalone'](str(path), kind, main=None if main is None else str(main), event=event,
+                                    ticket=ticket, skip=tuple(str(where) for where in skip))
+    except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
+        return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
+                'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
+
+
 def configured(root, path=None, space=None):
     path = Path(path) if path is not None else Path(root) / '.veldo' / 'worker.json'
     if not path.is_file():
@@ -205,7 +222,7 @@ class Runtime:
         self.floor = F.FloorAuthority(L.S, self.conn, repo=self.root, projections=c['work']['projections'], **common)
         self.dispatches = L.D.Dispatches(L.S, self.conn, **common)
         self.reservations = L.D.RES.Reservations(L.S, self.conn, authorize=L.D.RES.service_authority, **common)
-        self.clones = CL.Clones(self.dispatches, **c['clones'])
+        self.clones = CL.Clones(self.dispatches, space=space, **c['clones'])
         self.last = None
         self.events = []
         self.candidates = []
@@ -213,7 +230,13 @@ class Runtime:
     def close(self):
         for directory in self.candidates:
             if self.space is None:
-                shutil.rmtree(directory, ignore_errors=True)
+                # No ledger: the unique work probe and the keep step by themselves; a candidate folder whose
+                # commits are not on kept refs in the repository, or that holds unsaved files, stays.
+                found = space_standalone(directory, 'agent_repository', main=self.root)
+                if found['state'] in SPACE_SAFE:
+                    shutil.rmtree(directory, ignore_errors=True)
+                else:
+                    self.kept.append(dict(found, path=directory, refusal=space_refusal(found)))
                 continue
             # VELDO-0303: a candidate folder is a private repository. It goes through Signal, after the rules
             # and the keep step, or it stays and the deferral is on the record.

@@ -212,6 +212,18 @@ _FILES = [
     # the keys, the authority's Git metadata and the caches; the lifecycle base it builds on
     # (env_provision). Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_clone.py",
+    # VELDO-0303: what the removal paths of the service's own programs load. Signal, which a wired
+    # ledger's removal goes through, and the look made where no ledger is wired
+    # (control_space_standalone: the unique work probe and the keep step before any delete), with the
+    # modules that look loads: the probes, the keeper, the removers' readers, the ledger module and
+    # the declarations reader. Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
+    ".veldo/control_space_signal.py",
+    ".veldo/control_space_standalone.py",
+    ".veldo/control_space_probe.py",
+    ".veldo/control_space_keep.py",
+    ".veldo/control_space_remove.py",
+    ".veldo/control_space.py",
+    ".veldo/control_space_config.py",
     ".veldo/control_git_identity.py",
     ".veldo/control_git_identity_transport.py",
     ".veldo/env_provision.py",
