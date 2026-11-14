@@ -98,3 +98,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   space_act_unbuilt:VELDO-0332,VELDO-0339, until the checks of VELDO-0332 (three clean report days) and
   VELDO-0339 (no unconfirmed pending group) exist; each of those tickets removes its part when it lands,
   and its spec says so. No acceptance criterion changed.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. This
+  ticket is built and its criteria are not edited. The space_act_unbuilt refusal also names VELDO-0348
+  until that ticket lands, and from then a scope in act with no proof record for the space modules and the
+  git in use writes due and removes nothing (VELDO-0348 AC4). No acceptance criterion changed.

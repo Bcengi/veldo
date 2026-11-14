@@ -44,8 +44,8 @@ acceptance_criteria:
       Write a project name into either document; the docs check row fails
   - id: AC3
     text: >
-      docs/runbook.md gains the situations "the disk is full or a run is waiting for space" and "a
-      worktree is waiting for the owner's answer", and passes the docs check
+      docs/runbook.md gains the situations "the disk is full or a run is waiting for space", "a worktree
+      is waiting for the owner's answer" and "getting removed work back", and passes the docs check
     falsified_by: >
       Name the measured host's project in the runbook; the docs check row fails
 required_evidence: [unit, integration]
@@ -81,3 +81,6 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC3: the runbook gains a third situation, getting removed work back, with the kept, restore and drop
+  commands of VELDO-0346 and the plain git lines of design 0.5. The falsifier is unchanged.

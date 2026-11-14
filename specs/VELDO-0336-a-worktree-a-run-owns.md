@@ -8,7 +8,7 @@ owner: dmitry
 human_approval: required
 lane: standalone
 parent: VELDO-0295
-depends_on: [VELDO-0311, VELDO-0313]
+depends_on: [VELDO-0311, VELDO-0313, VELDO-0345]
 placement: [engine, loop]
 protected_paths: []
 footprint:
@@ -52,7 +52,8 @@ acceptance_criteria:
   - id: AC3
     text: >
       A review worktree with an untracked file git does not ignore is removed at run finished with no
-      decision request and no force option; the file is deleted first, as review scratch
+      decision request and no force option; the file is saved on a kept ref (VELDO-0345) and then deleted,
+      as review scratch
     falsified_by: >
       Defer it as unique work; the row finds the worktree present and a request raised and fails
   - id: AC4
@@ -85,7 +86,7 @@ word for word.
 
 What section 12 says about this ticket:
 
-> Components: Git hooks, Kind registry, CLI (the run wrapper). Depends on 0311 and 0313.
+> Components: Git hooks, Kind registry, CLI (the run wrapper). Depends on 0311, 0313 and 0345.
 
 Build order. It is built after 0301, in any order with the other tickets of that step (0302, 0303, 0305 to
 0314, 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341). depends_on holds the dependencies the
@@ -98,3 +99,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC3: review scratch is saved on a kept ref before it is deleted. No request is raised, as before; the
+  lead's decision (e) stands. The falsifier is unchanged. depends_on gains VELDO-0345, which builds the
+  snapshot. Design section 15 puts the stricter reading, a request for every stray file, to the owner.

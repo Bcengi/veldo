@@ -108,3 +108,7 @@ act_checks) and so removes its part of that refusal; VELDO-0339's part stays unt
 - 2026-11-13: after the review of VELDO-0331 (lead decision): act is refused outright until this
   ticket's check and VELDO-0339's exist. Added to Design that this ticket removes its part of the
   space_act_unbuilt refusal when it lands. No acceptance criterion changed.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. No
+  acceptance criterion changed. The switch to act has a fourth condition beside this ticket's,
+  VELDO-0339's and the process reader's ticket: a proof record of the no-work-is-lost suite for the space
+  modules and the git in use (VELDO-0348 AC4).

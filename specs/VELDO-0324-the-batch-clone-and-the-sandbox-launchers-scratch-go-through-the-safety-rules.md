@@ -103,3 +103,7 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. No
+  acceptance criterion changed. A batch clone is a private repository (VELDO-0347 AC3), and a repository
+  found beneath a sandbox launcher's scratch holds that scratch unless it is a clean clone (VELDO-0347
+  AC2).

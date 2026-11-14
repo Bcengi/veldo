@@ -110,3 +110,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   whose repository is declared through a link is refused at declare and adopt (space_locator_link, the
   reason asks for the resolved path), never accepted there and refused at rebranch. A repository
   declared by its resolved path rebranches, and its branch items are recorded under that path.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. This
+  ticket is built and its criteria are not edited. What the rule adds to the ledger is built elsewhere:
+  the keep record on a worktree or private repository item, the keep command, and the refusal of the
+  outcome removed for such an item with no keep record (VELDO-0345); the restore and drop kept commands
+  (VELDO-0346); the proof record and its command (VELDO-0348). No acceptance criterion changed.

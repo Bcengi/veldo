@@ -8,7 +8,7 @@ owner: dmitry
 human_approval: required
 lane: standalone
 parent: VELDO-0295
-depends_on: [VELDO-0327]
+depends_on: [VELDO-0327, VELDO-0345]
 placement: [engine, loop]
 protected_paths: []
 footprint:
@@ -46,13 +46,16 @@ acceptance_criteria:
     text: >
       Save commits the changes on a kept branch named for the ticket, or for the owning run when the
       worktree has no ticket, authored as the owner's configured identity, and then removes the worktree
-      without force. Without a settled Save answer Veldo makes no commit
+      without force. Ignored files that are work go to the saved ref and never to the branch. Without a
+      settled Save answer Veldo makes no commit
     falsified_by: >
       Commit at the deferral; the row finds a commit with no settled answer and fails
   - id: AC3
     text: >
       Discard removes that one worktree with git's force option, only on a settled discard answer, only
-      while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass; the branch and its
+      while the file list equals the list shown and rules 1, 2, 3, 4 and 6 pass. It first writes the
+      snapshot of the uncommitted state to the saved ref (VELDO-0345), runs only while the worktree still
+      equals that snapshot, and does not run when the snapshot cannot be written. The branch and its
       commits are still there afterwards, and no commit is lost (VELDO-0343)
     falsified_by: >
       Skip the list comparison; the row that adds a file after the request was shown loses it and fails
@@ -84,7 +87,8 @@ word.
 
 What section 12 says about this ticket:
 
-> Components: Signal, Removers (discard), Ledger (the effects). Depends on 0327 for the touchpoint. Review
+> Components: Signal, Removers (discard), Ledger (the effects). Depends on 0327 for the touchpoint and on
+> 0345 for the snapshot. Review
 > worktrees are VELDO-0336, VELDO-0340 and VELDO-0342. The kept branch Discard makes for a detached worktree
 > is VELDO-0343.
 
@@ -98,3 +102,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC2: Save writes ignored files that are work to the saved ref and never to the branch. AC3: Discard
+  first writes the snapshot of the uncommitted state to the saved ref, runs only while the worktree still
+  equals it, and does not run when the snapshot cannot be written, so a Discard can be undone with veldo
+  space restore. Both falsifiers are unchanged. depends_on gains VELDO-0345, which builds the snapshot.

@@ -105,3 +105,7 @@ is refused only by a check that fails.
 - 2026-11-13: after the review of VELDO-0331 (lead decision): act is refused outright until
   VELDO-0332's check and this ticket's exist. Added to Design that this ticket removes its part of the
   space_act_unbuilt refusal when it lands. No acceptance criterion changed.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. No
+  acceptance criterion changed. The switch to act has one more condition, built by VELDO-0348: a proof
+  record of the no-work-is-lost suite, passed on this host, for the space modules and the git in use.
+  space.modes shows it with the other conditions.

@@ -8,7 +8,7 @@ owner: dmitry
 human_approval: required
 lane: standalone
 parent: VELDO-0295
-depends_on: [VELDO-0318]
+depends_on: [VELDO-0318, VELDO-0345]
 placement: [engine, loop]
 protected_paths: []
 footprint:
@@ -36,7 +36,8 @@ acceptance_criteria:
     text: >
       Discard of a detached worktree whose checked-out commit no ref holds first creates a kept branch at
       that commit, named as Save names one, and records it as a branch item in state kept; afterwards the
-      commit is reachable from that branch and the worktree's uncommitted file is gone
+      commit is reachable from that branch, and the worktree's uncommitted file is gone from disk and is
+      in the saved snapshot (VELDO-0345)
     falsified_by: >
       Discard without creating the branch; the row finds the commit unreachable and fails
   - id: AC2
@@ -56,10 +57,12 @@ acceptance_criteria:
       and fails
   - id: AC4
     text: >
-      Creating the kept branch makes no commit and sends no landing event: the row counts the same commit
-      objects and the same event records before and after
+      Creating the kept branch makes no commit, Discard makes no commit on any branch, and neither sends a
+      landing event: the row counts the same commits reachable from branches and the same event records
+      before and after
     falsified_by: >
-      Commit the worktree's files in Discard as Save does; the row finds a new commit and fails
+      Commit the worktree's files on the kept branch in Discard as Save does; the row finds a new commit
+      on a branch and fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. Discard of a detached worktree removes it without first making a branch, so a commit
@@ -82,7 +85,7 @@ copied here word for word.
 
 What section 12 says about this ticket:
 
-> Components: Removers (discard), Ledger. Depends on 0318; the group answers are 0340 and 0342.
+> Components: Removers (discard), Ledger. Depends on 0318 and 0345; the group answers are 0340 and 0342.
 
 Build order. It is in the closing sequence 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319,
 0320, 0332, 0325, 0339, 0321, 0322. depends_on holds the dependencies the design states for this ticket.
@@ -94,3 +97,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC1: the worktree's uncommitted file is gone from disk and is in the saved snapshot. AC4: Discard makes
+  no commit on any branch; its snapshot is a commit on a kept ref, so the row counts the commits reachable
+  from branches, and the falsifier commits on the kept branch. depends_on gains VELDO-0345.

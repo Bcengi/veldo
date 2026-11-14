@@ -52,8 +52,9 @@ acceptance_criteria:
     text: >
       A group pick applies to every member still in the group and closes the group. Save commits each
       worktree's changes on a kept branch named space-saved and the review run's label and removes it
-      without force; Keep sets each to kept; Discard removes each member whose file list equals the list
-      shown and defers a changed one again, into a new group (VELDO-0342 AC3)
+      without force; Keep sets each to kept; Discard saves each member's uncommitted state on a kept ref
+      first, removes each member whose file list equals the list shown and defers a changed one again,
+      into a new group (VELDO-0342 AC3)
     falsified_by: >
       Skip the comparison per worktree; the row adds a file to one member after the request was shown,
       loses it and fails
@@ -97,3 +98,6 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC3: a group's Discard saves each member's uncommitted state on a kept ref before it removes that
+  member. The falsifier is unchanged.

@@ -92,3 +92,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. No
+  acceptance criterion changed. The keep step is added inside the worktree remover and the private
+  repository remover by VELDO-0345, which is built after this ticket: each records the item's commits on
+  kept refs and has the keep record written before it calls its tool, and a failure is the deferral
+  keep_failed. The discard remover and the review scratch remover write the snapshot first (VELDO-0318
+  AC3, VELDO-0336 AC3).

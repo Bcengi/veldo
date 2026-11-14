@@ -41,10 +41,11 @@ acceptance_criteria:
       request, and the row that waits for the presentation fails
   - id: AC2
     text: >
-      The request's terms state that Discard cannot be undone and hold, for each worktree, the list of
-      files it would lose and, for a detached worktree with commits no ref holds, the name of the kept
-      branch those commits go to. The presentation shows both, and the Ledger raises no request that
-      offers the discard pick without that list. The control path has no tier field and none is added
+      The request's terms state what Discard removes from disk, that it is saved on a kept ref first, and
+      the command that brings it back. They hold, for each worktree, the list of files Discard would
+      remove and, for a detached worktree with commits no ref holds, the name of the kept branch those
+      commits go to. The presentation shows both, and the Ledger raises no request that offers the discard
+      pick without that list. The control path has no tier field and none is added
     falsified_by: >
       Raise the request with an empty list; the row that reads the presentation finds discard offered with
       nothing listed and fails
@@ -99,3 +100,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC2: the request's terms no longer state that Discard cannot be undone. They state what Discard removes
+  from disk, that it is saved on a kept ref first, and the command that brings it back. The falsifier is
+  unchanged.

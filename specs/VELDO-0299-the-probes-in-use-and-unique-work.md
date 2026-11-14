@@ -148,3 +148,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   VELDO-0344 and design section 7.1. Nothing here changes until that ticket lands: without the reader,
   or with one that fails its check, unread processes are judged by the bound of this ticket, and the
   user's own undumpable processes still count. No acceptance criterion changed.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. This
+  ticket is built and its criteria are not edited. Three readings are added by other tickets: rule 5's
+  case 3 counts an ignored file that is not build output, and a path whose ignore rule cannot be traced
+  (VELDO-0347 AC1); no probe counts a ref under refs/veldo/kept as a ref that holds a commit, as none
+  counts a stash (VELDO-0345 AC3); and the clean clone reading for a repository beneath scratch or build
+  output (VELDO-0347 AC2). No acceptance criterion changed.

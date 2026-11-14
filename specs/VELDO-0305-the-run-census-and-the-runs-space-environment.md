@@ -31,14 +31,16 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      At each run event every ignored folder git reports in the run's worktree becomes a build output
-      item, whatever its name and depth; a keep entry is left out
+      At each run event every ignored folder git reports in the run's worktree that a committed ignore
+      file of the project or a declared pattern covers becomes a build output item, whatever its name and
+      depth; a keep entry is left out, and so is a folder only a personal ignore rule covers
     falsified_by: >
       Match the name target; the row's folder named otherwise has no item and fails
   - id: AC2
     text: >
       An untracked path git does not ignore is never recorded as build output and makes the worktree
-      unique work
+      unique work. So does an ignored path that no committed ignore file and no declared pattern covers,
+      and a loose ignored file outside every build output folder
     falsified_by: >
       Record every untracked folder; the row's new source folder becomes build output and fails
   - id: AC3
@@ -85,3 +87,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC1: an ignored folder is build output only when a committed ignore file of the project or a declared
+  pattern covers it; a folder only a personal ignore rule covers is left out. AC2: an ignored path that
+  nothing of the project covers, and a loose ignored file outside every build output folder, make the
+  worktree unique work, because git's non-forced worktree remove deletes ignored files without refusing.
+  Both falsifiers are unchanged. Rule 5's reading of such a path is VELDO-0347 AC1.

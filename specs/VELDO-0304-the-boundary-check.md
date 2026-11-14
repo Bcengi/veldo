@@ -39,7 +39,9 @@ acceptance_criteria:
       fails
   - id: AC2
     text: >
-      The check refuses a removal primitive outside the removers and the reviewed list of 6.10
+      The check refuses a removal primitive outside the removers and the reviewed list of 6.10. A ref
+      delete, a stash drop or clear, a reflog expire and a prune of objects are removal primitives, and
+      each is refused everywhere but the owner's kept drop command
     falsified_by: >
       Restore the forced remove in the fleet module; the check stays green and its mutation row fails
   - id: AC3
@@ -91,3 +93,7 @@ approval, bound to the commit and the proof, is required.
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC2: a ref delete, a stash drop or clear, a reflog expire and a prune of objects are removal primitives,
+  refused everywhere but the owner's kept drop command (VELDO-0346), so no later change can delete a kept
+  ref or the commits behind it. The falsifier is unchanged.

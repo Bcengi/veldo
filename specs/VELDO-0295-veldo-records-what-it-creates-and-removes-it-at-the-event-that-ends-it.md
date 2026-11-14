@@ -33,11 +33,47 @@ observability:
   error_taxonomy: >
     A removal that a safety rule refuses is a deferral, never an error: space_deferred:in_use,
     space_deferred:unique_work, space_deferred:protected, space_deferred:not_in_ledger,
-    space_deferred:remove_refused. A run that cannot be admitted waits as space_wait:<pool>. A run or gate
+    space_deferred:remove_refused, and space_deferred:keep_failed when an item's commits or its
+    uncommitted state could not be saved first. A run that cannot be admitted waits as
+    space_wait:<pool>. A run or gate
     that ended on a full pool is environment_failure:no_space, in the unavailable_service class, and is
     never a red verdict. A creator that cannot reach the ledger refuses as
     unavailable_service:space_ledger before it creates anything.
 acceptance_criteria:
+  - id: AC0
+    text: >
+      Claim: no work is ever lost. Space management never removes the only copy of work: before a removal
+      it saves the work where the owner can get it back with one command, and when it cannot save it, it
+      does not remove. This is the first requirement, and every other criterion is read under it. Set:
+      work is a commit no kept ref holds, an uncommitted change, an untracked file (an ignored one
+      included, unless a committed ignore rule or a declared pattern of the project makes it build
+      output), a stash, an unpushed branch or tag, an evidence or proof file, and anything the owner
+      marked Keep. Before a worktree, a branch or a private repository (an agent repository, a worker
+      clone, a batch clone, a candidate workspace) is removed, every commit reachable from it, the ones
+      only a log or a stash names included, is recorded on a kept ref refs/veldo/kept/<ticket>/<item> in
+      its main repository and read back, and the removal is refused as keep_failed when that write fails.
+      A kept ref stays until the owner drops it with a signed command, and it is never counted as a reason
+      to remove. Uncommitted, untracked and stashed changes are never removed without the owner's explicit
+      Discard. Discard first saves them as a commit on a kept ref, in the layout of git's stash, and runs
+      only while the worktree still equals what was saved; a review's scratch is saved the same way before
+      it is deleted. An evidence file is removed only when a copy with the same digest, read again at the
+      removal, is held by the store or by a commit the trunk or a kept ref reaches. Every probe and every
+      rule fails closed: what cannot be read, written or decided keeps the item. The owner gets a removed
+      item's work back with veldo space restore, or with plain git from the kept refs. A suite that plants
+      each kind of work, nested, linked, locked, unreadable, changed mid-removal and with the process
+      killed between steps, and drives every removal path at it, must pass, in the gate and on the host
+      for the space modules and the git in use, before any project can be switched to act. Rows: after
+      every removal path each planted commit is reachable from a ref of the main repository; a commit that
+      only a detached worktree's HEAD log named is on a kept ref after the worktree is gone; after Discard
+      and restore the tracked edit, the staged file, the untracked file and the ignored settings file are
+      back byte for byte; with the main repository's refs unwritable the worktree is still there, deferred
+      as keep_failed; a worker clone with a commit the runner never brought across leaves that commit in
+      the main repository; a repository with an unpushed commit in a session's scratch keeps that scratch;
+      a process killed between the kept refs and the remove loses nothing after reconcile; the switch to
+      act is refused with no proof record for the modules in use.
+    falsified_by: >
+      Remove a worktree before its kept refs are written; the row that kills the process between the two
+      finds the commit its HEAD log named in no ref and fails.
   - id: AC1
     text: >
       Claim: everything a Veldo process creates on disk or in Docker has a ledger record before it exists,
@@ -227,6 +263,11 @@ rollback: >
 
 ## Intent
 
+The first requirement is the owner's (Telegram 41209): "It's very important no work is ever lost. Space
+management needs to ensure this very clearly". Everything below removes things to free space. None of it
+may remove the only copy of work: a removal saves the work first, where the owner can get it back with one
+command, or it does not happen. AC0 states it, and section 0 of the design says how.
+
 Veldo makes worktrees, branches, build folders, scratch folders, logs, containers, volumes, networks and
 image tags, and today nothing in Veldo knows which of them still matter. The disk fills, a run dies with
 its work uncommitted, a gate goes red for a reason that has nothing to do with the change, and someone
@@ -240,6 +281,10 @@ space it needs and waits when the disk cannot cover it.
 
 ## Context
 
+- Section 0 of the design is the rule that no work is ever lost: what work is, the kept refs under
+  refs/veldo/kept in each main repository, the snapshot Discard saves first, the recovery commands, the
+  suite that must pass before act mode, and the list of tickets the rule changes. Four tickets were added
+  for it, VELDO-0345 to VELDO-0348, and VELDO-0344, the process reader, was added before them.
 - The design is docs/design/VELDO-0295-design.md. It holds the components, the data model, the lifecycle
   table, the event sources outside the service, the table of existing removal paths, the flows, the
   deployment view and the forty-eight build tickets, VELDO-0296 to VELDO-0343.
@@ -280,15 +325,17 @@ space it needs and waits when the disk cannot cover it.
 ## Build order
 
 The order of section 12 of the design. Each ticket is its own spec, specs/VELDO-0296 to
-specs/VELDO-0343.
+specs/VELDO-0348.
 
 1. 0296, 0338, 0297, 0326, 0331.
 2. 0298, 0299, 0330 and 0300 together.
-3. 0301.
+3. 0301, then 0345 (the keep step), then 0344 (the process reader).
 4. 0302, 0303 and 0305 to 0314 with 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341, in any
    order.
-5. 0304.
-6. 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0320, 0332, 0325, 0339, 0321, 0322.
+5. 0347, then 0304.
+6. 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0346, 0320, 0332, 0325, 0339, 0321, 0322.
+7. 0348, the no-work-is-lost suite. Until it lands and has passed on the host, no project can be
+   switched to act.
 
 0304, the boundary check, comes after 0302, 0303, 0324 and 0333 on purpose. Until those four have landed,
 the paths in the Replaced table of section 6.10 still hold removal primitives and the two removals by
@@ -304,7 +351,8 @@ holds the step before the ticket in this order, so that a ticket cannot be claim
 
 ## What the reviewer judges
 
-Whether the design can be built from the document alone, whether every removal path passes through the
+First, whether any path in the design can remove work that was not saved first (section 0, AC0). Then
+whether the design can be built from the document alone, whether every removal path passes through the
 safety rules in section 7 of the design, and whether any mechanism in it is a timer under another name.
 
 ## History
@@ -355,3 +403,17 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   VELDO-0296 to VELDO-0343, were written from design revision 6, and the build order of section 12 was
   added here. One citation in section 7 of the design was corrected from that validation's note N2.
   Still a draft.
+- 2026-11-13: the owner's rule (Telegram 41209): "It's very important no work is ever lost. Space
+  management needs to ensure this very clearly". Added as AC0, the first requirement, and as section 0 of
+  the design. What it adds: every commit a worktree, a branch or a private repository reaches is recorded
+  on a kept ref, refs/veldo/kept/<ticket>/<item>, in its main repository before the removal, which is
+  refused when that write fails; Discard saves the uncommitted state on a kept ref first, so it can be
+  undone; an ignored file that is not build output is work, and a clone is a private repository and not
+  scratch; every probe and rule fails closed; the owner restores with veldo space restore or plain git;
+  and a suite that plants work and drives every removal path must pass before any project goes to act. The
+  error taxonomy gains space_deferred:keep_failed. Every ticket from VELDO-0296 to VELDO-0344 was read
+  against the rule: the criteria of ten change (0302, 0304, 0305, 0315, 0318, 0322, 0327, 0336, 0340,
+  0343), the eight built tickets keep theirs and carry a History note where the rule reaches their code,
+  and four tickets are added, VELDO-0345 to VELDO-0348, numbered after 0344, the highest number a spec
+  file or a proof folder held on any ref. The build order gains them and VELDO-0344. Six points are put to
+  the owner in section 15 of the design. Still a draft.

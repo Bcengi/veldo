@@ -107,3 +107,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   repository for removal. Row ac2/looks-for-children. Not changed: the review's low finding 3 (the row
   of a worktree is read from fields that can change later) is left for the lead. No acceptance
   criterion changed; AC2's words are still true and the function now does more than they ask.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. This
+  ticket is built and its criteria are not edited. The table is unchanged. A worker clone, a batch clone
+  and a candidate workspace take the agent repository's row as private repositories (VELDO-0347), and the
+  review scratch action saves a snapshot before it deletes, inside the remover (VELDO-0345, VELDO-0336
+  AC3). No acceptance criterion changed.

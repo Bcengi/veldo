@@ -46,7 +46,9 @@ acceptance_criteria:
     text: >
       Each creator's thing has a declared item before it exists and a present item after, with project,
       ticket, run and lane as owner; the rows cover the clone, the fleet worktree, the run directory, the
-      candidate workspace, the batch clone and the batch's observation folder
+      candidate workspace, the batch clone and the batch's observation folder. The clone, the batch clone
+      and the candidate workspace are declared with their main repository, and the receiver's artifacts,
+      receipts and token records are declared as evidence, never as scratch
     falsified_by: >
       Declare after creating; the row that kills the creator between the two finds a folder with no item
       and fails
@@ -101,3 +103,8 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC1: a clone, a batch clone and a candidate workspace are declared with their main repository, because
+  each is a private repository whose commits the keep step must bring across before it goes; the
+  receiver's artifacts, receipts and token records are declared as evidence and never as scratch. The
+  falsifier is unchanged.

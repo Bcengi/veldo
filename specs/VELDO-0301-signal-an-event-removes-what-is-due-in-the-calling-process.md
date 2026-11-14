@@ -100,3 +100,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   event, with a kept worktree inside it, is not carried out and its files are still on disk when the
   call returns. Falsifier: pass a stub look that returns {}; the row finds the agent repository handed
   to the remover and fails. No acceptance criterion changed.
+- 2026-11-13: from the owner's rule that no work is ever lost (Telegram 41209), design section 0. No
+  acceptance criterion changed. Signal calls the removers and no tool itself, so the keep step of
+  VELDO-0345, which is inside the removers, cannot be passed by. The ledger also refuses the outcome
+  removed for a worktree or a private repository that has no keep record.

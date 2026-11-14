@@ -43,7 +43,8 @@ acceptance_criteria:
   - id: AC2
     text: >
       Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was
-      not already due
+      not already due. A removing worktree or private repository is completed only when its keep record
+      exists and every ref in it resolves; otherwise it is deferred as keep_failed
     falsified_by: >
       Remove reported things; the reported fixture folder is gone and the row fails
   - id: AC3
@@ -93,3 +94,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
+  AC2: reconcile completes a removing worktree or private repository only when its keep record exists and
+  every ref in it resolves (design 0.2); otherwise it is deferred as keep_failed and what is left of it
+  stays. The falsifier is unchanged.
