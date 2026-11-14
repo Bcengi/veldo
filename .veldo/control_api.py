@@ -13,7 +13,8 @@ session, its exact body fields and the authority operation it asks for. The hand
 route name, and `route_problems` compares the two, so a route without a handler or a handler without a
 route is a defect the suite names. The families are auth, messages, decisions, reads (the published
 contract and every read model of control_api_models.READ_MODELS), configuration (a workflow revision's
-read and its save), work (VELDO-0131: the owner's backlog priority, worker stop and account cap) and events
+read and its save), work (VELDO-0131: the owner's backlog priority, worker stop and account cap; VELDO-0312:
+space.abandon, the owner's Abandon of one worktree at the version the screen showed) and events
 (the event read and the live stream). A GET's query parameters are its
 exact fields, judged like a write's body.
 
@@ -202,6 +203,10 @@ ROUTES = (
           ('dispatch', 'dispatch_version'), (), 'stop_worker'),
     Route('workers.cap', 'POST', '/api/v1/domains/{domain}/workers/cap', 'work', True,
           ('account', 'account_version', 'concurrency'), (), 'set_account_cap'),
+    # VELDO-0312 (design 6.6): the owner's Abandon of one worktree, by its ledger item at the version the screen
+    # showed. It emits worktree abandoned for that worktree and removes nothing by itself.
+    Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,
+          ('item', 'version'), (), 'abandon_worktree'),
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -468,6 +473,7 @@ class ControlApi:
                               'mcp.credential_set': self._write, 'mcp.credential_delete': self._write,
                               'mcp.credential_read': self._credential_read_refused})
         self.handlers.update({'backlog.reprioritize': self._write, 'workers.stop': self._write, 'workers.cap': self._write})
+        self.handlers.update({'space.abandon': self._write})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
         self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
@@ -771,13 +777,16 @@ class ControlApi:
             expected = {'dispatch:' + str(parameters['dispatch']): parameters['dispatch_version']}
         elif route.operation == 'set_account_cap':
             expected = {'account:' + str(parameters['account']): parameters['account_version']}
+        elif route.operation == 'abandon_worktree':
+            expected = {str(parameters['item']): parameters['version']}
         target = {'save_capability_configuration': 'agent_configuration', 'propose_team': str(parameters.get('project')),
                   'save_default_team': 'default_team', 'send_message': self.domain, 'answer_decision': str(parameters.get('request_id')),
                   'revoke_credential': 'api_credential', 'save_workflow': str(parameters.get('workflow')),
                   'save_mcp_server': 'mcp_catalog', 'set_mcp_credential': 'mcp_credential',
                   'delete_mcp_credential': 'mcp_credential', 'reprioritize_backlog': str(parameters.get('item')),
                   'stop_worker': 'dispatch:' + str(parameters.get('dispatch')),
-                  'set_account_cap': 'account:' + str(parameters.get('account'))}[route.operation]
+                  'set_account_cap': 'account:' + str(parameters.get('account')),
+                  'abandon_worktree': str(parameters.get('item'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -811,7 +820,8 @@ class ControlApi:
         keep = ('outcome', 'proposal_id', 'question_id', 'question', 'project', 'repeated', 'request_id', 'answer',
                 'settlement', 'ruling', 'workflow', 'version', 'revision', 'entity_digest', 'definition_digest',
                 'layout_digest', 'server', 'id', 'reference', 'seq', 'role', 'digest', 'team_id', 'owner_request',
-                'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency')
+                'team_application', 'set_at', 'set_by', 'rank', 'dispatch', 'state', 'stop', 'account', 'concurrency',
+                'item', 'removed', 'deferred', 'discard_required')
         return 200, dict({k: result[k] for k in keep if k in result}, api_request_id=request_id)
 
     @staticmethod

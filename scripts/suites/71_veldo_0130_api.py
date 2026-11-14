@@ -603,6 +603,16 @@ def _v130_checks(base):
                                           principal='runner', signer='authority', sign=journal_sign),
             accounts=AUTH.AA.Accounts(S, conn, principal='owner', signer='authority', sign=journal_sign))
         phase2.update(work_writers)
+    # VELDO-0312 adds the owner's Abandon of one worktree to the published contract. Its command is the space
+    # ledger's signal, which a ledger registers on the authority's connection (an installation with a space
+    # section); no service entry is wired here, so the route answers unavailable_service:space_ledger.
+    if here and hasattr(AUTH, 'ABANDON'):
+        SPL = _v130_load('v130_space_ledger', organs / 'control_space.py')
+        SPK = _v130_load('v130_space_kinds', organs / 'control_space_kinds.py')
+        SPL.Ledger(S, conn, 'authority', journal_sign, lifecycle=SPK.LIFECYCLE, host='fixture-host',
+                   state_root=str(base / 'space-state'), device=lambda path: 'fixture-device',
+                   config={'present': True, 'engines': [], 'scratch_roots': {'roots': []}, 'build_roots': [],
+                           'plain_repositories': [], 'protect': []})
     # Phase 3: the judge runs only in the process holding the authority's lock beside the store; this
     # fixture is that authority for its own store, so it takes the lock as the service would.
     lock_held = _v130_os.open(str(base / 'authority' / 'authority.lock'), _v130_os.O_RDWR | _v130_os.O_CREAT, 0o600)
@@ -1225,6 +1235,8 @@ def _v130_checks(base):
             bodies.update({'backlog.reprioritize': {'item': 'backlog:none', 'item_version': 1, 'rank': 2},
                            'workers.stop': {'dispatch': 'dispatch/none/x', 'dispatch_version': 1},
                            'workers.cap': {'account': 'none', 'account_version': 1, 'concurrency': 2}})
+        if 'abandon_worktree' in getattr(AS, 'OPERATIONS', {}):
+            bodies.update({'space.abandon': {'item': 'space:item:none', 'version': 1}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)

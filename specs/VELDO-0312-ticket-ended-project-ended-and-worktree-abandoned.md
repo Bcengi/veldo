@@ -17,6 +17,19 @@ footprint:
   - "engine/.veldo/control_api.py"
   - ".veldo/control_api.py"
   - "engine/ui/src/api/routes.json"
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
+  - "engine/.veldo/control_api_assertion.py"
+  - ".veldo/control_api_assertion.py"
+  - "engine/.veldo/control_api_authority.py"
+  - ".veldo/control_api_authority.py"
+  - "engine/.veldo/control_api_models.py"
+  - ".veldo/control_api_models.py"
+  - "scripts/suites/71_veldo_0130_api.py"
+  - "specs/VELDO-0302-veldos-own-creators-declare-before-they-create.md"
+  - "specs/VELDO-0308-run-finished-from-the-receiver.md"
+  - "specs/VELDO-0310-landed-and-contained-from-the-landing-station.md"
+  - "specs/VELDO-0315-reconcile-at-start-and-on-demand.md"
   - "scripts/suites/*_veldo_0312_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -149,3 +162,58 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     fixture command commits on the real store, holding the entities those transitions write. The two
     need the owner's settled answer through the settlement chain, which this suite does not build. The
     item's complete and cancel and the project's four commands are the real organs' own.
+- 2026-11-14: fix round, after the independent review of bf5ed110 (review-veldo-0312.md, verdict FIX,
+  findings F1 to F8), by the lead's decisions. No acceptance criterion changed. The footprint is amended:
+  control_space.py (F1, F2, F6: the fix is the ledger's), control_api_assertion.py and
+  control_api_authority.py (F3: the signed route), each with its synced copy, and the History lines and
+  criteria the lead asked for in the specs of VELDO-0302, 0308, 0310 and 0315. Two more files were needed
+  for the route and are in the amendment, FOR THE LEAD: control_api_models.py (and its copy), because
+  suite 71_veldo_0130 holds every write route to an action of the published contract, and that suite's
+  own file, which lists the body of each write route by name and wants the route's command registered on
+  its connection. No protected path is touched.
+  - F1 and F2, the owner's Keep is absolute, in the ledger. FOR THE LEAD, a fact the review did not have:
+    the state kept is not the owner's Keep alone. Signal writes kept for every table action that removes
+    nothing (a worktree measured at run finished, a branch marked contained), and the next event must
+    reach those items: a rule on the state would have kept every measured worktree for ever. So the
+    owner's Keep is its own mark on the item, owner_keep, written by the outcome kept whose facts carry
+    it and by nothing a host principal may sign. An item that holds the mark is never matched by a signal
+    that names an owner, whatever the event; signal is the only command that writes due, so a retry, a
+    Confirm, a sweep and a reconcile have no other way to it. Only the owner's Abandon of that exact item
+    ends it (a signal of worktree abandoned that names the item at its version and says owner_abandon
+    for it). The service also sends nothing for a kept worktree when the ticket's next run is
+    provisioned elsewhere (the answer says kept). Who writes the mark from the owner's settled Keep is
+    VELDO-0318's; until then nothing in the engine writes it, so nothing is kept by the owner yet.
+    Design 6.1's signal row ("present, kept or deferred") still reads as before; section 0 holds, and
+    the row is the lead's to amend.
+  - F6, and the gap VELDO-0308 (N1) and VELDO-0310 (finding 3) recorded: the ledger's signal can name
+    items. Its subject is either the parts of an owner, as before, or a list of items, each with the
+    version its sender read. The ledger then acts on exactly those items, with no matching by owner, and
+    refuses the whole command, writing nothing, when one of them changed, is in no state a signal
+    reaches, does not end on the event or holds the owner's Keep. One stale item refuses all: an Abandon
+    is one decision on one screen. Abandon uses it: the worktree, the items of its own scope and ticket
+    at or beneath it, and its own agent repository. So one of a ticket's two worktrees can be abandoned,
+    the ticket's scratch and its runs' things elsewhere are no longer reached by an Abandon (the review's
+    F6 route; the earlier build reached them), not_alone is gone, and another ticket's item beneath the
+    worktree is not named and holds it by rule 6 (F8).
+  - F3, the signed route. space.abandon is a write route of the API (operation abandon_worktree, the item
+    and its version), verified by the API authority like every owner action: the edge's signature, a
+    current credential, a person, and of persons only the owner (project_owner whose scope covers the
+    space scope, the rule of the ledger's own mode switch). The version is required at the authority and
+    again in the service; a missing or stale one sends nothing. An instance that serves the API hands its
+    space_abandon to the authority at start. Abandon removes no unique work: a worktree with uncommitted
+    or untracked work, or a commit only its branch holds, is deferred by rule 5 and stays, and the answer
+    names it under discard_required, because only the owner's Discard, which saves first (design 0.3),
+    takes it away. The route is refused unavailable_service:space_ledger until VELDO-0315 builds
+    Service.space.
+  - F5: an agent's worktree is named with its own agent repository, unless another live worktree is
+    recorded in that repository. The worktree goes first, by the ledger's child rule.
+  - F4: VELDO-0315 gets the criterion that builds Service.space and VELDO-0302 the one that calls
+    space_provisioned; no code here.
+  - F7 is not done, FOR THE LEAD: an event whose send raised is still passed over until reconcile. It
+    loses no work. Stopping the pass on a raise would hold every later event behind one that keeps
+    raising, and that choice is not this round's.
+  - Rows and falsifiers. Suite 149 is 35 rows (thirteen added, ac4/second-worktree-stays replaced by
+    ac4/one-of-two-worktrees). Finding 312 holds 23 falsifiers: the build's ten less the two whose code
+    is gone (space312-abandon-sent-past-another-worktree, and space312-stale-version-accepted, written
+    again), and fifteen of this round. Each was applied once, by the registry's own case and the
+    driver's own materialize and worker, and seen red on its rows; the bundle lists them.

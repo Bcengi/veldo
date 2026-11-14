@@ -53,6 +53,17 @@ for the verified principal, each refusing by name and writing nothing on a refus
   - set_account_cap: control_accounts.Accounts.cap, a versioned change of the account's run concurrency.
 A missing writer is unavailable_service by name.
 
+THE OWNER'S ABANDON (VELDO-0312, design 6.6 and 6.11). abandon_worktree is the console's space.abandon: worktree
+abandoned for one worktree, by its item at the version the owner's screen showed. It is the owner's action and
+nobody else's: the verified principal must be a current person member holding project_owner whose scope covers
+the space scope (the rule of the ledger's own mode switch), else unauthorized:not_owner; a host principal of the
+space ledger is a service and is refused at the boundary before that. The version is required: one that is
+missing or not a positive whole number is invalid_input:version, and one that is not the item's now is
+stale_version:space_item. The authority's service does the rest (`space_abandon`, set by the instance that
+serves the API: control_service.Service.space_abandon, with the cause owner_abandon and the signing owner); with
+none, or with no space ledger, the answer is unavailable_service:space_ledger. Abandon removes no unique work:
+the answer names under discard_required each item that stays until the owner's Discard, which saves first.
+
 READS (AC2). `inspect` is the read the API's session checks go through: named committed entities and the
 journal watermark, as the VELDO-0047 service's inspect answers them. `read` serves one published read
 model (control_api_models.read_model) from this connection for a principal who is a current person
@@ -114,6 +125,13 @@ BL = organ('control_backlog')
 DP = organ('control_dispatch')
 AA = organ('control_accounts')
 WORK_OPERATIONS = ('reprioritize_backlog', 'stop_worker', 'set_account_cap')
+# VELDO-0312: the owner's Abandon. Who the owner of a space command is (control_space.MODE_SIGNER_ROLE and
+# SCOPE: the rule of the ledger's own mode switch), the ledger command the service sends for it
+# (control_space.SIGNAL), and what the service's refusals are called here.
+ABANDON = 'abandon_worktree'
+SPACE_OWNER_ROLE, SPACE_SCOPE, SPACE_SIGNAL = 'project_owner', 'space', 'space_signal'
+ABANDON_REFUSALS = {'no_ledger': 'unavailable_service:space_ledger', 'stale_version': 'stale_version:space_item',
+                    'no_owner': 'unauthorized:not_owner'}
 RECORD_SCHEMA = 'veldo.api_execution_record/v1'
 RECORD_LIMIT = 512
 # A dispatch's states once its run has ended (control_dispatch.STATES): its record grows no more.
@@ -216,6 +234,9 @@ class ApiAuthority:
         # VELDO-0235 AC3: `landing()`, the work configuration's land remote and trunk by execution repository,
         # which the factory loop's service sets when it serves one; the objectives read names them per project.
         self.landing = None
+        # VELDO-0312: `space_abandon(item, version=, by=, cause=)`, the service's entry for the owner's Abandon
+        # (control_service.Service.space_abandon), which the instance that serves the API sets.
+        self.space_abandon = None
 
     # the read the API's session checks use
 
@@ -514,6 +535,8 @@ class ApiAuthority:
             return self._save_workflow(a)
         if a['operation'] in WORK_OPERATIONS:
             return self._work(a, packet, provenance)
+        if a['operation'] == ABANDON:
+            return self._abandon(a, person)
         done = self.credentials.revoke_as_member(a['principal'], a['parameters']['credential_id'], provenance)
         if done['refusal']:
             return {'outcome': 'refused', 'reason': '%s:%s' % (CLASSES.get(done['error_class'], 'unknown_outcome'), done['refusal'])}
@@ -606,6 +629,37 @@ class ApiAuthority:
                 'missing_authority') else 'invalid_input' if str(c).startswith('invalid_input') else 'unknown_outcome')
             return {'outcome': 'refused', 'reason': _named(code, classify)}
 
+    def _abandon(self, a, person):
+        """VELDO-0312: the owner's Abandon of one worktree, at the version the owner saw (the module's THE
+        OWNER'S ABANDON). Nothing here removes anything, and neither does the service's entry: the rules, the
+        keep step and the removers are Signal's."""
+        p = a['parameters']
+        if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'),
+                                                                                         SPACE_SCOPE):
+            raise Refused('unauthorized:not_owner', 'Abandon is the owner\'s action')
+        if not isinstance(p['item'], str) or not p['item']:
+            return {'outcome': 'refused', 'reason': 'invalid_input:item'}
+        if type(p['version']) is not int or p['version'] < 1:
+            return {'outcome': 'refused', 'reason': 'invalid_input:version'}
+        if self.space_abandon is None:
+            return {'outcome': 'refused', 'reason': 'unavailable_service:space_ledger'}
+        done = self.space_abandon(p['item'], version=p['version'], by=a['principal'], cause='owner_abandon')
+        done = done if isinstance(done, dict) else {}
+        if done.get('sent') is not True:
+            reason = str(done.get('reason'))
+            if done.get('raised') or not done.get('reason'):
+                return {'outcome': 'unknown_outcome', 'reason': 'unknown_outcome:space_abandon'}
+            if reason.startswith('space_item_version:'):
+                reason = 'stale_version'
+            return {'outcome': 'refused', 'reason': ABANDON_REFUSALS.get(reason, 'invalid_input:' + reason)}
+        row = self.conn.execute('SELECT version, data FROM entities WHERE id=?', (p['item'],)).fetchone()
+        return {'outcome': 'abandoned', 'item': p['item'], 'version': row[0] if row else None,
+                'state': json.loads(row[1]).get('state') if row else None,
+                'removed': [one.get('item') for one in done.get('removed') or () if isinstance(one, dict)],
+                'deferred': [{'item': one.get('item'), 'deferral': one.get('deferral')}
+                             for one in done.get('deferred') or () if isinstance(one, dict) and one.get('item')],
+                'discard_required': list(done.get('discard_required') or ())}
+
     def _save_workflow(self, a):
         """VELDO-0132's save for the verified principal: its transaction judges the editor and the base."""
         p = a['parameters']
@@ -631,7 +685,7 @@ class ApiAuthority:
                 'save_workflow': WF.SAVE, MC.SAVE: MC.SAVE, CV.SET: CV.SET, CV.DELETE: CV.DELETE,
                 'save_capability_configuration': 'save_agent_configuration', 'propose_team': 'team_operation',
                 'save_default_team': 'save_default_team_revision', 'reprioritize_backlog': BL.OPERATION,
-                'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION}
+                'stop_worker': DP.OPERATION, 'set_account_cap': AA.OPERATION, ABANDON: SPACE_SIGNAL}
 
     def _observe(self, about, ok, refusal, result):
         self.counts['accepted' if ok else 'refused'] += 1

@@ -192,14 +192,26 @@ terminal states have no exit (entity_contract), so no record is read as an end t
 Signal writes on every outcome, and the line in the observation log name the transition and the command that
 committed it. A project the ledger does not name is sent nothing.
 
-ONE WORKTREE. The ledger's signal names an owner, not an item. So worktree abandoned is sent with the whole owner
-of each live item at or beneath the worktree, and only when the event would then reach, anywhere else, no
-worktree and no agent repository, and, where the owner is a scope alone (a worktree on a branch no pattern maps
-to a ticket), nothing at all that the event removes: such an owner is every ticket's, and the event would end
-their scratch, build output, containers, networks and volumes. Otherwise nothing is sent and the answer says
-not_alone with what it would have reached. What a ticket's own runs left elsewhere is reached, as the table of
-section 5 says, and a run that has not ended holds its things by rule 3. A worktree no live item records is sent
-nothing. Abandon takes the item's version as the owner's screen showed it, and a stale one is refused.
+ONE WORKTREE, BY ITEM (the fix round of 2026-11-14). Worktree abandoned is sent with a subject that names
+items, each with the version read (the ledger's A SIGNAL THAT NAMES ITEMS): the worktree; the items at or beneath
+it that the event ends and that have the worktree's own scope and ticket; and the worktree's own agent
+repository, which is part of the same thing and not another worktree, when no other live worktree is recorded in
+it. Nothing else of the ticket is reached: its other worktrees, its scratch elsewhere and what its runs left
+elsewhere stay, so one of a ticket's two worktrees can be abandoned. An item of another owner beneath the
+worktree is not named, and holds the worktree by the children rule. The ledger refuses the whole signal when a
+named item changed since it was read.
+
+THE OWNER'S KEEP (design 0.4). A worktree the owner marked Keep is sent nothing when the ticket's next run is
+provisioned elsewhere (the answer says kept), and the ledger refuses it from every signal but one: the owner's
+Abandon of that exact item. An item beneath the worktree that holds the owner's Keep is never named; it holds
+the worktree. The owner's Abandon needs the version the owner's screen showed and who the owner is: without
+either nothing is sent (stale_version, no_owner). Abandon removes no unique work: a worktree with uncommitted or
+untracked work, or a commit only its branch holds, is deferred by rule 5 and stays, and the answer names it under
+discard_required, because only the owner's Discard, which saves first, takes such a worktree away.
+
+THE CONSOLE'S ROUTE. space.abandon (control_api.py) is the owner's signed command abandon_worktree; the API
+authority verifies it and calls space_abandon with the cause owner_abandon and the signing owner. An instance
+that serves the API hands its space_abandon to that authority when it starts.
 
 NO AGE. Nothing here reads a clock to decide. A worktree nobody touched for a month is sent nothing until one of
 the two things above happens.
@@ -378,13 +390,12 @@ SPACE_PRINCIPALS = ('space-observer', 'space-runner')
 SPACE_SCOPE = 'space'
 SPACE_KEYS = 'keys'
 # VELDO-0312: the three events the service sends (design section 5), the item states an event reaches and those
-# of a thing that is no longer there, the kinds an Abandon is never sent past, the kinds the worktree abandoned
-# column removes beside them, and the most entries of one list in an event's observation.
+# of a thing that is no longer there, the cause that is the owner's Abandon, and the most entries of one list in
+# an event's observation.
 SPACE_TICKET_ENDED, SPACE_PROJECT_ENDED, SPACE_ABANDONED = 'ticket_ended', 'project_ended', 'worktree_abandoned'
 SPACE_SIGNALLED = ('present', 'kept', 'deferred')
 SPACE_ENDED = ('removed', 'gone')
-SPACE_WORKTREES = ('worktree', 'agent_repository')
-SPACE_ABANDON_TAKES = ('scratch', 'build_output', 'container', 'network', 'volume')
+SPACE_OWNER_ABANDON = 'owner_abandon'
 SPACE_NAMED = 50
 EXIT_LOCK_HELD = 75
 EXIT_REFUSED = 78
@@ -2340,17 +2351,19 @@ class Service:
             out['raised'] = '%s: %s' % (type(error).__name__, str(error)[:300])
         return self._space_logged(out)
 
-    def space_abandon(self, item, version=None, by=None, cause='owner_abandon'):
-        """VELDO-0312: worktree abandoned for the one worktree whose item is `item` (the module's ONE WORKTREE).
-        `version` is the item's version as the owner's screen showed it; one that is not the item's now is
-        refused stale_version. `by` names who asked and `cause` why: the owner's Abandon, or the ticket's next
-        run provisioned in another worktree. The event is sent with the whole owner of each live item at or
-        beneath the worktree, and only when it would reach no worktree and no agent repository anywhere else
-        (and, for an owner that is a scope alone, nothing else the event removes).
-        Returns the observation {sent, reason, item, path, subjects, removed, deferred, left, others, raised},
-        which is logged; it never raises. Nothing here removes anything: the rules, the keep step and the
-        removers are Signal's, and a worktree with unique work, or one a process uses, is deferred and stays."""
-        out = self._space_observation(SPACE_ABANDONED, cause, item=item, path=None, by=by, others=[])
+    def space_abandon(self, item, version=None, by=None, cause=SPACE_OWNER_ABANDON):
+        """VELDO-0312: worktree abandoned for the one worktree whose item is `item` (the module's ONE WORKTREE,
+        BY ITEM). `cause` says why: the owner's Abandon, or the ticket's next run provisioned in another
+        worktree. For the owner's Abandon `version` is the item's version as the owner's screen showed it and
+        `by` the owner: a version that is missing or is not the item's now is refused stale_version, and no
+        owner no_owner. For any other cause a worktree the owner marked Keep is sent nothing (kept).
+        The signal names the worktree, the items of its own scope and ticket at or beneath it, and its own agent
+        repository when no other live worktree is recorded in it, each at the version read here.
+        Returns the observation {sent, reason, item, path, subjects, removed, deferred, left, discard_required,
+        raised}, which is logged; it never raises. Nothing here removes anything: the rules, the keep step and
+        the removers are Signal's, and a worktree with unique work, or one a process uses, is deferred and stays
+        (discard_required names the items only the owner's Discard takes away)."""
+        out = self._space_observation(SPACE_ABANDONED, cause, item=item, path=None, by=by, discard_required=[])
         try:
             self._space_abandon(out, item, version, by, cause)
         except Exception as error:  # noqa: BLE001 - what could not be sent removes nothing, and is named
@@ -2371,54 +2384,62 @@ class Service:
         if record.get('state') not in SPACE_SIGNALLED:
             out['reason'] = 'item_state:%s' % (record.get('state'),)
             return
-        if version is not None:
-            held = self.conn.execute('SELECT version FROM entities WHERE id=?', (item,)).fetchone()
-            if held is None or type(version) is not int or held[0] != version:
-                out['reason'] = 'stale_version'
-                return
+
+        def held(identity):
+            found = self.conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()
+            return found[0] if found else None
+        owner_abandon = cause == SPACE_OWNER_ABANDON
+        if owner_abandon and not (isinstance(by, str) and by):
+            out['reason'] = 'no_owner'
+            return
+        # The owner's Abandon acts on the screen the owner saw: the version is required, and it is the item's.
+        if (owner_abandon or version is not None) and (type(version) is not int or held(item) != version):
+            out['reason'] = 'stale_version'
+            return
+        if record.get('owner_keep') and not owner_abandon:
+            # Only the owner's Abandon of this item ends the owner's Keep (design 0.4).
+            out['reason'] = 'kept'
+            return
 
         def here(other):
             where = (other.get('locator') or {}).get('path')
             return isinstance(where, str) and (where == path or where.startswith(path.rstrip('/') + '/'))
 
-        def owned(other, subject):
-            owner = other.get('owner') or {}
-            return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
-                       for part, wanted in subject.items())
-
-        every = ledger.items()
-        subjects = []
-        for identity, other in sorted(every.items()):
-            if other.get('state') in SPACE_SIGNALLED and here(other):
-                subject = dict(other.get('owner') or {})
-                if isinstance(subject.get('run'), dict):
-                    subject['run'] = subject['run'].get('id')
-                if subject and subject not in subjects:
-                    subjects.append(subject)
-        # The ledger's signal ends every item of an owner. Another worktree or agent repository of the same
-        # owner would go with this one, so nothing is sent while there is one the event would reach. An owner
-        # that is a scope alone is every ticket's: nothing the event removes may be reached elsewhere by it.
-        others = [identity for identity, other in sorted(every.items())
-                  if other.get('state') in SPACE_SIGNALLED and not here(other)
-                  and SPACE_ABANDONED in ((other.get('ends_on') or {}).get('events') or ())
-                  and any(owned(other, subject) and (other.get('kind') in SPACE_WORKTREES or (
-                      set(subject) <= {'scope'} and other.get('kind') in SPACE_ABANDON_TAKES))
-                      for subject in subjects)]
-        if others:
-            out['reason'] = 'not_alone'
-            out['others'] = [{'item': other, 'at': (every[other].get('locator') or {}).get('path')}
-                             for other in others[:SPACE_NAMED]]
-            return
-        self._space_signal(out, SPACE_ABANDONED, subjects,
+        def ends(other):
+            return (other.get('state') in SPACE_SIGNALLED and not other.get('owner_keep')
+                    and SPACE_ABANDONED in ((other.get('ends_on') or {}).get('events') or ()))
+        every, owner = ledger.items(), record.get('owner') or {}
+        named = [item] + [identity for identity, other in sorted(every.items())
+                          if identity != item and here(other) and ends(other)
+                          and (other.get('owner') or {}).get('scope') == owner.get('scope')
+                          and (other.get('owner') or {}).get('ticket') == owner.get('ticket')]
+        # An agent's worktree and its own agent repository are one thing: the repository is named with it,
+        # unless another live worktree is recorded in it. The ledger's child rule orders the worktree first.
+        home = record.get('parent')
+        inside = every.get(home) if isinstance(home, str) else None
+        if (isinstance(inside, dict) and inside.get('kind') == 'agent_repository' and ends(inside)
+                and home not in named and not any(
+                    other.get('kind') == 'worktree' and other.get('parent') == home and identity != item
+                    and other.get('state') not in SPACE_ENDED for identity, other in every.items())):
+            named.append(home)
+        subject = {'items': [{'item': identity, 'version': held(identity)} for identity in named]}
+        if owner_abandon:
+            subject['owner_abandon'] = {'item': item, 'by': by}
+        self._space_signal(out, SPACE_ABANDONED, [subject],
                            {'process': 'authority_service', 'transition': cause, 'item': item, 'by': by})
+        if not out['sent']:
+            out['reason'] = next((one.get('reason') for one in out['subjects'] if one.get('reason')), None)
+        out['discard_required'] = [one.get('item') for one in out['deferred']
+                                   if isinstance(one, dict) and one.get('deferral') == 'unique_work']
 
     def space_provisioned(self, unit, worktree, dispatch=None):
         """VELDO-0312: the ticket `unit`'s next run is provisioned in the worktree at `worktree` (the entry a
         provisioner calls, before it confirms that worktree's own item). Every other worktree the ledger
         records as present, kept or deferred for that ticket of its project is sent worktree abandoned, each
-        through space_abandon and so each only when it is alone. The worktree named, and one above or beneath
-        it, is never one of them. Returns the observations, one per worktree; [] when there is none, no
-        ledger, or the unit names no project. It never raises."""
+        through space_abandon and so each by item. One the owner marked Keep is sent nothing and stays kept
+        (its observation says kept). The worktree named, and one above or beneath it, is never one of them.
+        Returns the observations, one per worktree; [] when there is none, no ledger, or the unit names no
+        project. It never raises."""
         sent = []
         try:
             if getattr(self, 'space', None) is None or not isinstance(unit, str) or not unit \
@@ -3993,6 +4014,9 @@ def serve(config_path):
             if service.api is not None and service.loop is not None:
                 # VELDO-0235 AC3: the project view names the remote and trunk each project lands on.
                 service.api.authority.landing = lambda: landing_names(service.loop)
+            if service.api is not None:
+                # VELDO-0312: the console's signed Abandon reaches this instance's space ledger, when it has one.
+                service.api.authority.space_abandon = service.space_abandon
             if service.loop_refusal:
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})

@@ -99,6 +99,14 @@ acceptance_criteria:
     falsified_by: >
       Leave due items alone; the row's folder was left due with the switch off, the switch is on, and
       after reconcile the folder is still on disk and the row fails
+  - id: AC7
+    text: >
+      The service's start builds the installation's space ledger and gives it to the service as
+      Service.space, with what Signal is given, so an installation started with a central ledger sends
+      ticket ended after a backlog item's complete and serves the owner's Abandon (VELDO-0312)
+    falsified_by: >
+      Start the service without building Service.space; the row's item completes, its ticket's scratch
+      stays present with no event sent, and the row fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. The ledger is no longer compared with the disk, and existing things are not adopted.
@@ -188,3 +196,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   holds, read at its locator or under its marked name. The ledger refuses the outcome removed on such
   a record as space_keep_stale. So reconcile completes a removing item by running the remover with
   the keeper, which writes the record of this removal, and never from an earlier record alone.
+- 2026-11-14: AC7 added, from the review of VELDO-0312 (finding F4), by the lead's decision. VELDO-0312
+  sends ticket ended, project ended and worktree abandoned only through Service.space, and nothing built
+  it: the service's start, where the ledger is replayed and reconciled, is where it is built. Without
+  this criterion no ticket would fail for an installation that sends nothing. No code in that round.

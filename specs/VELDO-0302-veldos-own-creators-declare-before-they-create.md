@@ -66,6 +66,14 @@ acceptance_criteria:
       with no central installation it creates as today
     falsified_by: >
       Create anyway on a refused declare; the row finds the folder and fails
+  - id: AC4
+    text: >
+      A creator that provisions a ticket's next run in another worktree calls the service's
+      space_provisioned for that ticket before it confirms the new worktree's item, so the ticket's
+      earlier worktree is sent worktree abandoned (VELDO-0312)
+    falsified_by: >
+      Provision the second worktree without the call; the row's first worktree, clean and landed
+      nowhere else, stays present with no event sent, and the row fails
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. Creators create without declaring, as before. Items already recorded stay in the
@@ -116,3 +124,8 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
   candidate workspace are declared as items of the kind agent repository, each with its form and its main
   repository, and never as scratch; the design still said scratch in four places an implementer builds
   from. AC1 gains a second falsifier: the batch clone declared as scratch.
+- 2026-11-14: AC4 added, from the review of VELDO-0312 (finding F4), by the lead's decision. VELDO-0312
+  built the entry space_provisioned and nothing called it: the creators of this ticket (the fleet
+  worktrees, the sandbox's prepare) are what provision a ticket's next run in a worktree. The call comes
+  before the new worktree's item is confirmed; a declared item is not signalled, so the order is safe. A
+  worktree the owner marked Keep is sent nothing by it. No code in that round.

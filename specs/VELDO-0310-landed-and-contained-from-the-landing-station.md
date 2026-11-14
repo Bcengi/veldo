@@ -238,3 +238,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     space310-project-repository-left-to-the-discard (a repository that has kept refs is not brought
     to). space310-candidate-not-brought and space310-transfer-writes-a-ref were applied again and
     are red on this row and on f1/remote-branch-contained. Suite 147 is 30 rows, 56 passed.
+- 2026-11-14: recorded from the fix round of VELDO-0312, by the lead's decision. The ledger's signal can
+  now name items: a subject that is a list of items, each with the version its sender read, on which the
+  ledger acts exactly and which it refuses whole when one of them changed (control_space.py, A SIGNAL
+  THAT NAMES ITEMS). This ticket adopts it next: it closes finding 3 above, the landing that judged a
+  snapshot of the ledger's items and then signalled their owner, so landed and contained act on the
+  items judged, at the versions judged. No behaviour of this ticket changed in that round.

@@ -331,3 +331,9 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     commit readable and its pin held, and the run directory and the agent repository are present
     on disk and in the ledger, the repository at its commit. 146 is 58 passed. Its falsifier
     (space308-event-reaches-a-handed-over-clone) was applied again and is red on the row.
+- 2026-11-14: recorded from the fix round of VELDO-0312, by the lead's decision. The ledger's signal can
+  now name items: a subject that is a list of items, each with the version its sender read, on which the
+  ledger acts exactly and which it refuses whole when one of them changed (control_space.py, A SIGNAL
+  THAT NAMES ITEMS). This ticket adopts it next: it closes what N1 left open above, the signal that
+  named an owner and no item, so run finished can be sent for exactly the items the receiver judged. No
+  behaviour of this ticket changed in that round.

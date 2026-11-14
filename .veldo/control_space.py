@@ -31,7 +31,8 @@ AN ITEM'S STATES AND THE ONLY MOVES (design 4.1):
 
   declare            nothing to declared
   confirm            declared to present
-  signal             present, kept or deferred to due
+  signal             present, kept or deferred to due; never an item the owner marked Keep, unless the
+                     signal names that item and is the owner's Abandon of it (THE OWNER'S KEEP, below)
   outcome removing   due to removing (the rules passed; the decision to remove is recorded)
   outcome removed    due or removing to removed; refused for a worktree and an agent repository that
                      has no keep record (space_no_keep_record), or whose keep record was written
@@ -132,6 +133,32 @@ it. A ref the record holds at another commit is space_keep_ref_moved:<ref>, an a
 holds with other figures is space_keep_snapshot_replaced, and nothing a keep command is given takes a ref
 or an attempt off the record. The journal holds each version.
 
+THE OWNER'S KEEP IS ABSOLUTE (design 0.4, VELDO-0312 fix round). The state kept is two things: an item
+whose table action at its last event removes nothing (a worktree measured at run finished, a branch),
+which the next event must reach, and an item the owner answered Keep for, which nothing may reach. So
+the owner's Keep is its own mark on the item, owner_keep: {by, and what the writer says of the answer}.
+It is written by the outcome kept whose facts hold owner_keep, and by nothing a host principal may sign
+(space_not_permitted:space_disposition). An item that holds the mark is never made due by a signal that
+names an owner, whatever the event: run finished, verdict recorded, landed, contained, ticket ended,
+project ended, worktree abandoned, released or session ended. Signal is the only command that writes due,
+so a retry, a Confirm, a sweep and a reconcile, which all make an item due through it, do not reach the
+item either. Only one command ends it: a signal of worktree abandoned whose subject names that exact
+item, at the version the owner saw, and says it is the owner's Abandon of that item (owner_abandon:
+{item, by}). The mark is then cleared, who abandoned it is written on the item (abandoned), and the item
+is due and meets every rule again: one with unique work is deferred and stays until the owner's Discard,
+which saves first. A named item that holds the mark and is not that exact item refuses the whole command
+as space_owner_keep:<item>.
+
+A SIGNAL THAT NAMES ITEMS (VELDO-0312 fix round; a capability of the ledger, for every sender). The
+subject of a signal is either the parts of an owner, and then every item of that owner the event ends
+is made due, or a list of items: {items: [{item, version}, ...]}, each with the version its sender read.
+The ledger then acts on exactly those items and on nothing else of their owners. The command is refused
+whole, with nothing written, when a named item is not an item (space_no_item), is at another version
+than the one named (space_item_version:<item>), is not present, kept or deferred
+(space_item_state:<state>), does not end on the event (space_item_event:<item>), or holds the owner's
+Keep (space_owner_keep:<item>). The store commits against the versions named, so an item that changes
+between the read and the commit refuses too. A host principal signs no such signal.
+
 THE SNAPSHOT STORE IS PROTECTED IN EVERY INSTALLATION. <state root>/space-saved is on this Ledger's protect
 list whatever the declarations say: it is put there by the Ledger and not by a file. So declare, adopt and
 report refuse a locator at, above or beneath it as space_protected, and rule 2 refuses any removal there.
@@ -213,7 +240,8 @@ attempt, however predictable), and an item space-observer declares into a run ma
 Every other command is refused from both as space_not_permitted:<the command's name>, with nothing
 written, and so is every owner action: adopt, abandon (worktree abandoned sent as a signal is
 space_abandon), confirm of a group, reconcile, marking a proposal wrong, the mode switch, a change to the
-protect list and an answer to a space disposition request. The rule is a list of what each may sign, so a
+protect list and an answer to a space disposition request (the owner's Keep written with an outcome is
+one: space_disposition). The rule is a list of what each may sign, so a
 command a later ticket adds is refused until this list names it.
 
 accept() takes the packet a hook or helper sent: it verifies the signature against the principal's active
@@ -654,7 +682,31 @@ def owner_matches(owner, subject):
     return True
 
 
+def _checked_items(subject):
+    """The subject of a signal that names items: {items: [{item, version}, ...]} and, for the owner's
+    Abandon of one of them, owner_abandon: {item, by}. Returns it in its recorded form."""
+    if not set(subject) <= {'items', 'owner_abandon'}:
+        raise _invalid('subject', 'a list of items names no part of an owner')
+    named = subject['items']
+    if not isinstance(named, list) or not named or not all(
+            isinstance(one, dict) and set(one) == {'item', 'version'} and _is_str(one['item'])
+            and type(one['version']) is int and one['version'] > 0 for one in named):
+        raise _invalid('subject.items', 'a list of {item, version}, each version the one its sender read')
+    if len({one['item'] for one in named}) != len(named):
+        raise _invalid('subject.items', 'each item once')
+    out = {'items': [{'item': one['item'], 'version': one['version']} for one in named]}
+    abandon = subject.get('owner_abandon')
+    if abandon is not None:
+        if not isinstance(abandon, dict) or set(abandon) != {'item', 'by'} or not _is_str(abandon['by']) \
+                or abandon['item'] not in [one['item'] for one in named]:
+            raise _invalid('subject.owner_abandon', 'the item abandoned, one of those named, and who abandoned it')
+        out['owner_abandon'] = {'item': abandon['item'], 'by': abandon['by']}
+    return out
+
+
 def _checked_subject(subject):
+    if isinstance(subject, dict) and 'items' in subject:
+        return _checked_items(subject)
     if not isinstance(subject, dict) or not subject or not set(subject) <= {'scope', 'run'} | set(OWNER_PARTS):
         raise _invalid('subject', 'a mapping naming at least one part of an owner')
     out = {}
@@ -1076,7 +1128,12 @@ class Ledger:
     def signal(self, event, subject, principal=None, command_id=None):
         """Mark every present, kept or deferred item whose owner matches the subject and that ends on this
         event as due. Returns their identities under items. The order is the ledger's own (by identity);
-        removal order is the kind registry's."""
+        removal order is the kind registry's. An item the owner marked Keep is never one of them.
+
+        A subject that names items, {items: [{item, version}, ...]}, marks exactly those items and nothing
+        else, and is refused whole when one of them changed, is in no state a signal reaches, does not
+        end on the event or holds the owner's Keep; with owner_abandon: {item, by} and the event
+        worktree abandoned it ends the Keep of that one item (the module's A SIGNAL THAT NAMES ITEMS)."""
         about = {'item': None, 'event': event, 'subject': subject}
         try:
             if event not in self.lifecycle['events']:
@@ -1085,7 +1142,14 @@ class Ledger:
             self.permit(principal, SIGNAL, {'event': event, 'subject': subject})
         except Refused as refusal:
             return self._refuse(SIGNAL, refusal, about, principal)
-        versions = {identity: version for identity, version, _record in self._matching(event, subject)}
+        try:
+            if 'items' in subject:
+                versions = {one['item']: one['version'] for one in subject['items']}
+                self._named(event, subject, {identity: self._row(identity, ITEM_KIND) for identity in versions})
+            else:
+                versions = {identity: version for identity, version, _record in self._matching(event, subject)}
+        except Refused as refusal:
+            return self._refuse(SIGNAL, refusal, about, principal)
         if not versions:
             return self._observed({'ok': True, 'items': [], 'seq': None, 'replayed': False},
                                   dict(about, schema=SCHEMA, operation=SIGNAL, command_id=None, principal=None))
@@ -1324,6 +1388,8 @@ class Ledger:
             return
         parameters = parameters if isinstance(parameters, dict) else {}
         name = ABANDON if operation == SIGNAL and parameters.get('event') == ABANDON_EVENT else operation
+        if operation == OUTCOME and isinstance(parameters.get('facts'), dict) and 'owner_keep' in parameters['facts']:
+            name = DISPOSITION  # the owner's Keep is an answer to a disposition request: no host principal's
 
         def refuse(why):
             return Refused('space_not_permitted:%s' % name, '%s may not sign it: %s' % (principal, why))
@@ -1548,9 +1614,38 @@ class Ledger:
         for identity, version, data in self.conn.execute(
                 'SELECT id, version, data FROM entities WHERE kind=? ORDER BY id', (ITEM_KIND,)):
             record = json.loads(data)
-            if (record['state'] in SIGNALLED and event in record['ends_on']['events']
-                    and owner_matches(record['owner'], subject)):
+            # An item the owner marked Keep is never matched by an owner's signal, whatever the event.
+            if (record['state'] in SIGNALLED and not record.get('owner_keep')
+                    and event in record['ends_on']['events'] and owner_matches(record['owner'], subject)):
                 out.append((identity, version, record))
+        return out
+
+    def _named(self, event, subject, rows):
+        """The items a signal names, as (identity, record) in the order named, each judged: `rows` is
+        {identity: (version, record or None)} as read. Refuses the whole signal by the first item that is
+        not one, changed, is in no state a signal reaches, does not end on the event, or holds the
+        owner's Keep and is not the one item the owner's Abandon names."""
+        abandon = subject.get('owner_abandon')
+        if abandon is not None and event != ABANDON_EVENT:
+            raise Refused('space_owner_abandon_event', 'the owner\'s Abandon is the event ' + ABANDON_EVENT)
+        out = []
+        for one in subject['items']:
+            identity = one['item']
+            version, record = rows.get(identity) or (0, None)
+            if record is None:
+                raise Refused('space_no_item', 'no such record: %r' % (identity,))
+            if version != one['version']:
+                raise Refused('space_item_version:' + identity, 'the item is at version %r, the signal names %r'
+                              % (version, one['version']))
+            if record['state'] not in SIGNALLED:
+                raise Refused('space_item_state:' + record['state'], 'a signal reaches a present, kept or '
+                              'deferred item: %s' % identity)
+            if event not in record['ends_on']['events']:
+                raise Refused('space_item_event:' + identity, 'the item does not end on ' + event)
+            if record.get('owner_keep') and not (abandon is not None and abandon['item'] == identity):
+                raise Refused('space_owner_keep:' + identity, 'the owner marked this item Keep: only the '
+                              'owner\'s Abandon of this item ends that')
+            out.append((identity, dict(record)))
         return out
 
     def _repository_of(self, record):
@@ -1795,7 +1890,24 @@ class Ledger:
         if event not in self.lifecycle['events']:
             raise Refused('space_unknown_event', 'not an event of the lifecycle table')
         changes = {}
-        for identity, _version, record in self._matching(event, _checked_subject(params.get('subject'))):
+        subject = _checked_subject(params.get('subject'))
+        if 'items' in subject:
+            # Exactly the items named, each read in this transaction at the version the store checked.
+            rows = {one['item']: (before[one['item']]['version'], dict(before[one['item']]['data'])
+                                  if before[one['item']]['kind'] == ITEM_KIND else None)
+                    for one in subject['items'] if one['item'] in before}
+            abandon = subject.get('owner_abandon')
+            for identity, record in self._named(event, subject, rows):
+                record['state'] = 'due'
+                record['due'] = {'event': event}
+                if abandon is not None and abandon['item'] == identity:
+                    # Only here is the owner's Keep ended: by the owner's Abandon of this exact item.
+                    record['abandoned'] = {'by': abandon['by'], 'ended_keep': record.get('owner_keep') or None}
+                    record['owner_keep'] = None
+                _new_removal(record)
+                changes[identity] = {'kind': ITEM_KIND, 'data': record}
+            return changes
+        for identity, _version, record in self._matching(event, subject):
             record['state'] = 'due'
             record['due'] = {'event': event}
             _new_removal(record)
@@ -1835,6 +1947,12 @@ class Ledger:
             record['confirmed'] = None
         elif outcome == 'removing':
             record['removal'] = dict(facts)
+        if 'owner_keep' in facts:
+            # The owner's Keep (design 0.4): its own mark, which no signal that names an owner passes.
+            mark = facts['owner_keep']
+            if outcome != 'kept' or not isinstance(mark, dict) or not _is_str(mark.get('by')):
+                raise _invalid('facts.owner_keep', 'who answered Keep, written with the outcome kept')
+            record['owner_keep'] = dict(mark)
         record['state'] = outcome
         return {identity: {'kind': ITEM_KIND, 'data': record}}
 

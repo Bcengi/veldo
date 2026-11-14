@@ -69,6 +69,9 @@ OPERATIONS = {
     'reprioritize_backlog': {'parameters': ('item', 'item_version', 'rank'), 'boundary': 'command_acceptance'},
     'stop_worker': {'parameters': ('dispatch', 'dispatch_version'), 'boundary': 'command_acceptance'},
     'set_account_cap': {'parameters': ('account', 'account_version', 'concurrency'), 'boundary': 'command_acceptance'},
+    # VELDO-0312 (design 6.6, space.abandon): the owner's Abandon of one worktree, by its item and the version
+    # the owner's screen showed. The authority admits a person only, and of persons only the owner.
+    'abandon_worktree': {'parameters': ('item', 'version'), 'boundary': 'command_acceptance'},
 }
 
 CALL = 'api_call'
@@ -129,8 +132,8 @@ def time_problem(a, now):
 
 def domain_request(a):
     """The one signed domain request an assertion's operation carries, or None for the operations that execute
-    from the verified assertion itself (revoke_credential, save_workflow, stop_worker, set_account_cap and the
-    configuration saves)."""
+    from the verified assertion itself (revoke_credential, save_workflow, stop_worker, set_account_cap,
+    abandon_worktree and the configuration saves)."""
     p = a['parameters']
     if a['operation'] == 'propose_team':
         return dict({f: a[f] for f in IDS}, operation='propose', project=p['project'], team=p['team'],

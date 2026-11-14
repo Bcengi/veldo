@@ -38,6 +38,7 @@
     "backlog.reprioritize": {"method": "POST", "path": "/api/v1/domains/{domain}/backlog/reprioritize", "required": ["item", "item_version", "rank"], "optional": []},
     "workers.stop": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/stop", "required": ["dispatch", "dispatch_version"], "optional": []},
     "workers.cap": {"method": "POST", "path": "/api/v1/domains/{domain}/workers/cap", "required": ["account", "account_version", "concurrency"], "optional": []},
+    "space.abandon": {"method": "POST", "path": "/api/v1/domains/{domain}/space/abandon", "required": ["item", "version"], "optional": []},
     "events.read": {"method": "GET", "path": "/api/v1/domains/{domain}/events", "required": [], "optional": ["after"]},
     "events.stream": {"method": "GET", "path": "/api/v1/domains/{domain}/events/stream", "required": [], "optional": ["after"]}
   }

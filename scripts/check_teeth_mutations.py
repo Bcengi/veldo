@@ -14449,9 +14449,8 @@ def cases():
              "                    sent.append(self.space_abandon(identity, cause='age'))\n",
              ['ac4/month-idle-sends-nothing'])
     # Beside them: a pause is taken for an end; an authorization recorded on a unit that had ended, and
-    # a later record of another command, are taken for an end again; Abandon is sent although another
-    # worktree of the owner would go with it; a stale version is accepted; the worktree a run is
-    # provisioned in is itself abandoned.
+    # a later record of another command, are taken for an end again; the worktree a run is provisioned
+    # in is itself abandoned.
     ended312('space312-pause-taken-for-an-end', project312,
              "                if kind == 'project' and state in FACTORY_ENDED + ('PAUSED',) and moved:\n",
              ['ac2/pause-sends-nothing'])
@@ -14463,18 +14462,91 @@ def cases():
              "                entry = entry if entry.get('command_id') == command else {}\n",
              "                entry = entry if entry.get('command_id') else {}\n",
              ['ac1/closed-unit-authorized-later'])
-    ended312('space312-abandon-sent-past-another-worktree',
-             "        if others:\n            out['reason'] = 'not_alone'\n",
-             "        if False:\n            out['reason'] = 'not_alone'\n",
-             ['ac4/second-worktree-stays', 'ac4/scope-owner-reaches-nothing-else'])
-    ended312('space312-stale-version-accepted',
-             "            if held is None or type(version) is not int or held[0] != version:\n",
-             "            if held is None:\n",
-             ['ac4/owner-abandon'])
     ended312('space312-provisioned-worktree-abandoned',
              "                if where == new or where.startswith(new + '/') or new.startswith(where.rstrip('/') + '/'):\n",
              "                if False:\n",
              ['ac4/provisioned-in-another-worktree'])
+
+    # VELDO-0312 fix round (the review of bf5ed110). Each is the defect its finding names.
+    # F1 and F2, the owner's Keep. In the service: a worktree the owner marked Keep is sent worktree
+    # abandoned when the ticket's next run is provisioned elsewhere. In the ledger: an owner's signal
+    # matches an item that holds the owner's Keep; a signal that names the item ends its Keep without
+    # the owner's Abandon of that item; a host principal's outcome writes the owner's Keep.
+    def ledger312(name, old, new, rows, also=()):
+        add(312, name, space312, 'control_space.py', old, new, rows, also=also)
+
+    def api312(name, module, old, new, rows):
+        add(312, name, space312, module, old, new, rows)
+
+    ended312('space312-kept-worktree-abandoned-at-provisioning',
+             "        if record.get('owner_keep') and not owner_abandon:\n",
+             "        if False:\n",
+             ['f1/kept-worktree-next-run-elsewhere'])
+    ledger312('space312-keep-matched-by-an-owners-signal',
+              "            if (record['state'] in SIGNALLED and not record.get('owner_keep')\n",
+              "            if (record['state'] in SIGNALLED\n",
+              ['f2/kept-at-run-finished', 'f2/kept-at-landed', 'f2/kept-at-contained', 'f2/kept-at-ticket-ended',
+               'f2/kept-at-project-ended', 'f2/kept-at-every-event'])
+    ledger312('space312-keep-ended-by-any-named-signal',
+              "            if record.get('owner_keep') and not (abandon is not None and abandon['item'] == identity):\n",
+              "            if False:\n",
+              ['f2/only-the-owners-abandon-ends-keep'])
+    ledger312('space312-host-principal-writes-the-owners-keep',
+              "            name = DISPOSITION  # the owner's Keep is an answer to a disposition request: no host principal's\n",
+              "            return  # defect: a host principal's outcome may carry the owner's Keep\n",
+              ['f2/only-the-owners-abandon-ends-keep'])
+    # F6, the signal that names items: a named item is taken at whatever version it has; Abandon names
+    # every item of the worktree's owner, wherever it is; and it names another ticket's item beneath.
+    ledger312('space312-named-item-taken-at-any-version',
+              "            if version != one['version']:\n",
+              "            if False:\n",
+              ['f6/signal-names-items'])
+    ended312('space312-abandon-names-the-whole-owner',
+             "                          if identity != item and here(other) and ends(other)\n",
+             "                          if identity != item and ends(other)\n",
+             ['ac4/one-of-two-worktrees', 'ac4/provisioned-in-another-worktree'])
+    ended312('space312-abandon-names-another-tickets-item',
+             "                          and (other.get('owner') or {}).get('ticket') == owner.get('ticket')]\n",
+             "                          and True]\n",
+             ['ac4/one-of-two-worktrees'])
+    # F3, the signed route: a stale version is accepted; the owner's Abandon is accepted with no version,
+    # and with no owner; anyone who signed in may abandon; the assertion carries no version; and the
+    # answer does not say that a worktree with unique work waits for the owner's Discard.
+    ended312('space312-stale-version-accepted',
+             "        if (owner_abandon or version is not None) and (type(version) is not int or held(item) != version):\n",
+             "        if (owner_abandon or version is not None) and type(version) is not int:\n",
+             ['ac4/owner-abandon', 'f3/route-refusals'])
+    ended312('space312-abandon-without-a-version-accepted',
+             "        if (owner_abandon or version is not None) and (type(version) is not int or held(item) != version):\n",
+             "        if version is not None and (type(version) is not int or held(item) != version):\n",
+             ['ac4/owner-abandon'])
+    ended312('space312-abandon-without-an-owner-sent',
+             "        if owner_abandon and not (isinstance(by, str) and by):\n",
+             "        if False:\n",
+             ['ac4/owner-abandon'])
+    ended312('space312-discard-not-required',
+             "        out['discard_required'] = [one.get('item') for one in out['deferred']\n"
+             "                                   if isinstance(one, dict) and one.get('deferral') == 'unique_work']\n",
+             "        out['discard_required'] = []  # defect: the answer does not say the owner's Discard is needed\n",
+             ['f3/unique-work-needs-discard', 'ac4/abandon-keeps-unique-work'])
+    api312('space312-abandon-by-anyone-signed-in', 'control_api_authority.py',
+           "        if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'),\n"
+           "                                                                                         SPACE_SCOPE):\n",
+           "        if False:\n",
+           ['f3/route-refusals'])
+    api312('space312-route-not-dispatched', 'control_api_authority.py',
+           "        if a['operation'] == ABANDON:\n            return self._abandon(a, person)\n",
+           "        if a['operation'] == ABANDON:\n            return {'outcome': 'refused', 'reason': 'unavailable_service:space_ledger'}\n",
+           ['f3/route-owner-abandon'])
+    api312('space312-assertion-without-the-version', 'control_api_assertion.py',
+           "    'abandon_worktree': {'parameters': ('item', 'version'), 'boundary': 'command_acceptance'},\n",
+           "    'abandon_worktree': {'parameters': ('item',), 'boundary': 'command_acceptance'},\n",
+           ['f3/route-owner-abandon'])
+    # F5: an agent's worktree is abandoned without its own agent repository.
+    ended312('space312-agent-repository-not-named',
+             "            named.append(home)\n",
+             "            pass  # defect: the agent repository is left behind\n",
+             ['f5/agent-worktree'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
