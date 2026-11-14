@@ -113,6 +113,24 @@ strictly; the suite plants five more shapes; the probe holds the reader's writer
 reader waits for the probe before it exits; the install line reads the source past git's replace refs
 (0.2, 0.1, 0.7, 7.1).
 
+Amended a seventh time 2026-11-13, after the final check of the sixth amendment
+(design-veldo-nowork-r2-validation-2026-11-14.md, verdict CHANGES; 14.8), in sections 0, 3, 4.1, 6.1,
+6.6, 7.1, 8.8, 12, 13, 14.8 and 15. The check found every earlier point resolved and two new defects,
+one in each addition:
+
+- The keep record named one snapshot, and a retry wrote the record again. When a removal that deletes
+  file by file had stopped part way, the retry's snapshot took the first one's place in the record. A
+  restore then brought back only the second and said success. The record now lists every attempt and
+  no later write takes one off; restore applies them all, the oldest first (0.3, 0.5).
+- A process could write a fake table to the probe and then execute the real reader in its own place,
+  and the probe read the real reader's status for the fake bytes. The reader now writes its header
+  only after it has locked itself, and the table only after the probe has seen it locked and sent one
+  byte (7.1).
+
+The lead also answered the one open question: the guard hook refuses a shell command that names the
+snapshot store or the kept refs. That is one more ticket, VELDO-0349, built after 0346 (0.3, sections
+12, 13 and 15).
+
 What changed in revision 6:
 
 - One answer still covers a day's whole review group, and the request now also offers an answer for one
@@ -353,7 +371,8 @@ A crash between the steps loses nothing, whichever step it falls on:
 | After the refs, before the record | The refs and the item | Finds each ref at the same commit and passes; writes the record |
 | Inside the snapshot write, where the removal writes one (0.3) | The refs, the item untouched, and a folder with a temporary name in the snapshot store | Starts again from rule 1 and writes a new attempt under the next number. The temporary folder stays, is counted in the console's totals and is reported by reconcile |
 | After the snapshot's rename, before the record | The refs, the item untouched, and a whole snapshot folder that no keep record names | The same: a new attempt under the next number. The folder no record names stays, counted and reported |
-| After the record, before the remover | The refs, the record, the snapshot it names, the item | The next attempt, or reconcile reading the record from the ledger, starts again from rule 1. It uses the snapshot the record names when that still has the recorded digest and the item still equals it, and otherwise writes the next attempt and a new record. Then it removes |
+| After the record, before the remover | The refs, the record, the snapshot it names, the item | The next attempt, or reconcile reading the record from the ledger, starts again from rule 1. It uses the snapshot the record names when that still has the recorded digest and the item still equals it, and otherwise writes the next attempt and adds it to the record. Then it removes |
+| Inside a remover that deletes file by file, stopped by a file that changed | The refs, the record with the attempt that holds every file, and what is left of the item | The next attempt saves what is left under the next number and adds that attempt to the record. The first attempt stays on the record, and a restore applies both (0.3, 0.5) |
 | Inside the remover | The refs, the record, and a folder half removed under its marked name, or a worktree git has partly removed | Reconcile completes it, and only because the record is there and every ref in it still resolves (4.1, 8.8) |
 | After the remover, before the outcome | The refs and the record | Reconcile finds nothing at the locator and writes the outcome |
 
@@ -432,15 +451,28 @@ deleted, because a remover that deletes in the snapshot store is the one thing t
 from, and the next attempt takes the next number.
 
 A retry is idempotent. However many times an attempt is made, by a next event, by reconcile or after
-a crash, the result is the same: the item is removed at most once, the keep record names one whole
-snapshot that equals the item at the moment it was removed, and every earlier attempt is still in the
-store. A retry starts from rule 1. It finds each kept ref at the same commit and passes (0.2). For the
-snapshot it first looks at the attempt the keep record names, when there is one: when the manifest
-still has the recorded digest and the item equals the snapshot path by path, in mode and in digest, it
-uses that attempt and writes nothing. In every other case it writes the next number and a new keep
-record. A crash between the save and the removal is recovered the same way, and what tells reconcile
-to do it is the ledger: the item is due or removing, its keep record names a snapshot, and the item is
-still whole at its locator (0.2's table, 8.8).
+a crash, the result is the same: the item is removed at most once, the keep record lists every
+attempt it was given, and every attempt ever written is still in the store. A retry starts from rule
+1. It finds each kept ref at the same commit and passes (0.2). For the snapshot it first looks at the
+newest attempt the keep record lists, when there is one: when the manifest still has the recorded
+digest and the item equals the snapshot path by path, in mode and in digest, it uses that attempt and
+writes nothing. In every other case it writes the next number and adds that attempt to the record. A
+crash between the save and the removal is recovered the same way, and what tells reconcile to do it
+is the ledger: the item is due or removing, its keep record lists a snapshot, and the item is still
+whole at its locator (0.2's table, 8.8).
+
+The keep record lists attempts, and no later write takes one off the list. Until the final check
+(14.8) the record named one snapshot, and a later save wrote the record again. That loses work when a
+removal that deletes file by file stops part way. A review worktree holds scratch files a and b. The
+first attempt saves both, deletes a, finds b rewritten and stops, as it should. The retry finds that
+the worktree no longer equals the first snapshot, saves b alone under number 2, and removes the rest.
+With one snapshot in the record, a restore applied number 2, did not bring a back, and said success.
+So the record's snapshot field is a list: one entry per attempt, with its path, its number, its size
+and its manifest digest. A keep write for an item that already has a record adds refs and attempts
+and removes none. That holds for a write that saves nothing as well: the worktree's own non-forced
+remove after its review scratch has gone, and Save's remove after Save's snapshot, leave the list as
+it was. An attempt whose write failed, and one that was whole but never reached the record, are not
+on the list. No delete followed either of them, so the item still held everything they saved.
 
 An operation in progress is saved as its files and the commits it names (the op/ refs of 0.2); the
 state of the operation itself is not rebuilt by a restore.
@@ -458,10 +490,10 @@ failed or killed attempt left.
 The store is watched, and its loss is never silent. The protect list and the boundary check bind
 Veldo's own code. They do not bind a process of the owner's account, and an agent outside the sandbox
 is one: it can delete the store, or delete a kept ref and let git collect the commits. Veldo cannot
-stop that (0.9), so it looks for it. Reconcile, at every service start and whenever it is asked, and
+stop every way of doing that (0.9), so it looks for it. Reconcile, at every service start and whenever it is asked, and
 veldo space kept, each time it is run, check every keep record against the disk: each kept ref
-resolves to the commit the record names, the snapshot folder the record names is there, and its
-manifest has the recorded digest. A restore makes the same check for its item before it writes
+resolves to the commit the record names, every snapshot attempt the record lists is there, and each
+manifest has its recorded digest. A restore makes the same check for its item before it writes
 anything (0.5). Whatever fails is reported under space.reports as kept work missing, with the item,
 the ticket, the path the item had and what is missing. The console shows the report at the top of the
 Space screen and on the overview, and it stays until the ref or the snapshot is back or the owner
@@ -470,6 +502,26 @@ the installation owner's and 0700, is one more report of the same kind. The keep
 time it writes a snapshot: a store that is gone while keep records name snapshots in it is reported
 before the new one is written. A snapshot's folders that no keep record names are listed in the same
 read as information, with their sizes; nothing is proposed for them.
+
+The guard keeps an agent's own commands off the store and the kept refs (the lead's decision,
+2026-11-13; VELDO-0349). The guard hook, scripts/veldo-guard.sh, already reads every shell command an
+agent is about to run and refuses some of them. It gains one rule: a command whose text names the
+snapshot store or refs/veldo/kept is refused before it runs, and the refusal says why and names veldo
+space kept, veldo space restore and veldo space kept drop. The store is named by its path under the
+state root, written in full or with the home folder written as ~ or $HOME. The guard takes the state
+root from where the keeper takes it. When it cannot read it, it refuses any command that holds the
+word space-saved.
+
+One command passes even when it names them: veldo space kept drop, as the whole command with nothing
+joined to it. Letting it through is safe because the Ledger refuses a drop the owner did not sign
+(0.5). veldo space kept and veldo space restore name an item and not the store, so the rule does not
+touch them; restore's option ref takes the short name the listing shows, not the full ref name. A
+command that names neither the store nor the kept refs is judged exactly as before.
+
+The rule refuses reading as well as deleting, and it refuses a mention: a commit message that quotes
+the ref name has to come from a file. It reads the text of a command and nothing else. So it does not
+stop a program the agent writes and runs, a path put together from a variable, or a link that points
+at the store. The watch above stays for those.
 
 Save is unchanged for tracked and untracked source files: they are committed on a kept branch by the
 owner's answer. Ignored files that are work do not belong on a branch, because the project said they
@@ -480,7 +532,7 @@ Save then removes the worktree by git's non-forced remove, which deletes ignored
 word, and rule 5's case 3 refuses a worktree that holds an ignored file that is work. Left like that,
 Save could never finish, or would have to skip the rule and lose an ignored file written after the
 snapshot. So before Save's remove the remover reads the worktree's ignored files that are work once
-more and compares them with the snapshot the keep record names, by path, mode and digest. Rule 5's
+more and compares them with the newest snapshot the keep record lists, by path, mode and digest. Rule 5's
 case 3 counts as saved exactly the files that are in that snapshot and unchanged, for this one remove
 and for no other. A new ignored file, a changed one, or any other case of rule 5 refuses the remove;
 the worktree is deferred with everything in it, and the next attempt saves again under the next
@@ -506,8 +558,8 @@ written between the snapshot and its own delete would go unsaved, and rule 4 doe
 that wrote it and closed it. So both removers compare each file with the manifest immediately before
 they delete it: its path is in the manifest, and its mode and SHA-256 are the ones recorded. A file
 that is not in the manifest, or differs from it, stops the removal there. The item is deferred as
-keep_failed, what is left of it stays, and what was already deleted is in the snapshot, which a
-restore brings back. For a folder of review scratch the comparison is made for each file in it. For a
+keep_failed, what is left of it stays, and what was already deleted is in that attempt's snapshot. The
+attempt stays on the keep record whatever a retry saves, and a restore brings its files back. For a folder of review scratch the comparison is made for each file in it. For a
 worker clone it is made for each file of the work tree that is work; the clone's git folder is
 covered by the kept refs and the read back of 0.2.
 
@@ -550,7 +602,7 @@ them with the path the item had. The owner needs one command:
 | Get a removed worktree back | veldo space restore and the item, or the path it had. It adds a worktree at that path at the kept head, on its branch when the branch still points there and is checked out nowhere, otherwise detached, and applies the saved snapshot when the keep record names one: it checks the manifest against the digest the record holds and every saved file against the manifest, copies the working files in with their modes, removes the tracked files the manifest lists as deleted, and stages what was staged. An untracked or ignored file is copied and never added to git. The option to and a path puts it somewhere else |
 | Get a removed worker clone's uncommitted files back | The same command and the clone's item. It adds a worktree at the clone's kept head and applies the clone's snapshot |
 | Get one commit of a removed private repository back | veldo space restore, the item, the option ref and one of the names the listing shows. It adds a worktree at that commit |
-| Let kept work go | veldo space kept drop and the item. It lists every commit that would no longer be reachable and every file of the item's snapshot with the size, and removes the refs and the snapshot only on the owner's signed command. No host principal may send it |
+| Let kept work go | veldo space kept drop and the item. It lists every commit that would no longer be reachable and every file of every attempt folder of the item with the size, the folders no record lists and the temporary ones included, and removes the refs and the item's whole folder in the store only on the owner's signed command. No host principal may send it |
 
 Restore never overwrites: it refuses when something is at the path. It leaves the kept refs and the
 snapshot where they are, so a restore can be repeated. It is the owner's signed command, and what it
@@ -558,9 +610,10 @@ makes is recorded like any worktree added by hand.
 
 A restore that cannot find or verify its snapshot fails loudly. Whether an item has a snapshot is
 read from its keep record and from nowhere else, never from what happens to be on disk. The record
-names the attempt's folder and the digest of its manifest. When the record names a snapshot, restore
-checks all of this before it adds the worktree, and refuses, with exit status 1 and the item and the
-reason in words, when any of it fails:
+lists each attempt's folder and the digest of its manifest. Restore applies every attempt on the list,
+the oldest first, so that where two attempts hold the same path the later one wins. Before it adds the
+worktree it checks all of this for every listed attempt, and it refuses, with exit status 1 and the
+item and the reason in words, when any of it fails for any of them:
 
 - the snapshot folder the record names is there, and its manifest is in it;
 - the manifest's digest is the one the record holds;
@@ -575,6 +628,10 @@ ref. That adds a worktree at the commit, applies no snapshot, and says so in its
 record names no snapshot, because the removal needed none, restore says that too. A kept ref that no
 longer resolves refuses the same way.
 
+Restore's output names the attempts it applied. A file that only an earlier attempt holds comes back,
+also when the owner had deleted it from the worktree between two attempts. Of the two mistakes a
+restore can make, bringing back a file too many is the cheap one.
+
 The same with plain git, when Veldo is not running. The names say what they hold:
 
 ```
@@ -583,9 +640,10 @@ git worktree add <path> refs/veldo/kept/<ticket>/<item>/head
 cp -a <state root>/space-saved/<ticket>/<item>/<n>/work/. <path>/
 ```
 
-The third line is a plain copy, because a snapshot is ordinary files. n is the attempt the keep record
-names; without the ledger it is the highest number in the item's folder that has no .partial ending, and
-its manifest says what it holds. It brings back every working file. The staged contents are in the
+The third line is a plain copy, because a snapshot is ordinary files. It is run once for each attempt
+the keep record lists, the lowest number first. Without the ledger that is every numbered folder of the
+item that has no .partial ending, in order, and each manifest says what it holds. It brings back every
+working file. The staged contents are in the
 snapshot's staged folder and the deleted paths are in its manifest, for the owner to apply by hand. The
 first form restored a snapshot with one git command; that is the price of keeping snapshots out of git,
 and the lead took it.
@@ -615,7 +673,8 @@ and they follow the same line:
 | The snapshot cannot be written, synced, read back or renamed into place, or the store has no room or cannot be written | keep_failed; the discard, Save's remove, the scratch removal or the clone's removal does not run, and what the attempt wrote stays |
 | The item changed after its snapshot: a worktree before the forced remove, an ignored file before Save's remove, a file of review scratch or of a worker clone before its own delete | keep_failed; the removal stops there |
 | A snapshot folder already exists for the item | It is left as it is; the attempt writes the next number |
-| At a restore, the keep record names a snapshot and its folder or manifest is missing, the manifest's digest is not the recorded one, a saved file does not match the manifest, or a manifest path leads outside the target | The restore is refused and says why; nothing is added, the snapshot stays, and kept work missing is reported |
+| The item's keep record already lists a snapshot attempt | It stays on the list; the new attempt is added to it |
+| At a restore, any snapshot attempt the keep record lists has its folder or manifest missing, a manifest's digest is not the recorded one, a saved file does not match the manifest, or a manifest path leads outside the target | The restore is refused and says why; nothing is added, the snapshot stays, and kept work missing is reported |
 | A kept ref that does not resolve to its recorded commit, or a snapshot that is missing or not whole, found by reconcile or by veldo space kept | Reported as kept work missing until it is back or the owner drops it. Never passed over |
 | A repository beneath scratch or build output whose logs, or whose local remote, cannot be read | Not a clean clone; it holds the item |
 | An item of a kind other than worktree and agent repository whose own folder is a git repository | It holds itself |
@@ -666,7 +725,7 @@ And in each of these shapes:
 | Unreadable | A folder of mode 000; a repository git refuses to read; an engine that cannot be read; a process table that hides processes; a main repository that cannot be written |
 | Main repository gone | A worktree, and a private repository, whose main repository was moved, and one whose main repository was deleted. Each ending event and each reconcile path is driven at it |
 | Snapshot store | A store whose pool fills in the middle of a file; a store that is not writable; a read back that differs; a rename that fails; a sync that fails |
-| Retry | A snapshot folder that already exists for the item, whole, and one left under its temporary name; the attempt is made again, and again after that |
+| Retry | A snapshot folder that already exists for the item, whole, and one left under its temporary name; the attempt is made again, and again after that. A review worktree whose scratch removal stopped after its first delete, is retried, and is then restored |
 | Restore | The snapshot folder deleted; the manifest deleted; the manifest changed; one saved file changed; a manifest path that is absolute, one with a ".." part and one that leads out through a link; a kept ref deleted |
 | Mid-removal | A file added after the probe; a process that opens a file after the first probe; a branch that moves between the probe and the remove; a file added between the snapshot and the forced remove; an ignored settings file added between Save's snapshot and its remove; a file of review scratch, and a file of a dead run's worker clone, rewritten between the snapshot and its own delete |
 | Crash between steps | The process is killed at each boundary of the table in 0.2, the two snapshot boundaries included, and at each step of the folder remover, and reconcile then runs |
@@ -681,7 +740,8 @@ remove run after a failed snapshot, review scratch deleted without the snapshot,
 without the comparison with its manifest, an existing snapshot folder replaced on a retry, Save's
 remove run with an ignored file the snapshot does not hold, a restore that applies the snapshot only
 when its folder is there, a clone adopted as scratch, no look at an item's own folder, an agent
-worktree's kept refs written into its agent repository, and a clean clone read without its logs.
+worktree's kept refs written into its agent repository, and a clean clone read without its logs. The
+final check (14.8) added one: a keep record that holds only the newest attempt.
 
 A row that restores passes only on the command's own word and the files together: restore said it
 succeeded and every planted file is back, or restore refused and said what is missing. A restore that
@@ -753,6 +813,18 @@ The validation of this section (14.7) changed criteria a third time. None of the
 | VELDO-0347 Work the first rules did not see | AC2, AC3, new AC5 | The clean clone reads logs and a local remote. The clones are agent repository items, and a worker clone's files are compared before each delete. AC5 is the look at the item's own folder and the adopted batch clone |
 | VELDO-0348 The suite | AC1, AC2, AC3 | The new shapes and the ten new mutations of 0.7 |
 
+The final check of that amendment (14.8) changed criteria a fourth time, and the lead's decision on
+the guard hook added one ticket. None of these tickets is built.
+
+| Ticket | Criterion | The change |
+| :- | :- | :- |
+| VELDO-0315 Reconcile | AC2 | A removing item is completed only when every snapshot attempt its keep record lists is there |
+| VELDO-0344 The process reader | AC1 | The writer's status must also show NoNewPrivs 1 and Seccomp 2. The reader writes its header after it has locked itself and the table only after the probe's byte. One more falsifier |
+| VELDO-0345 The keep step | AC5 | The keep record lists every attempt, and a later write removes none. One more falsifier |
+| VELDO-0346 Kept, restore and drop | AC1, AC2, AC3, AC5 | The listing, the restore and the check cover every listed attempt, and restore applies them oldest first. Drop lists every attempt folder of the item. Three more falsifiers |
+| VELDO-0348 The suite | AC3 | One more mutation: a keep record that holds only the newest attempt |
+| VELDO-0349 The guard (new) | AC1 to AC4 | The guard hook refuses a shell command that names the snapshot store or the kept refs, and lets veldo space kept drop through |
+
 Eight tickets are built and have proof bundles: VELDO-0296, 0297, 0298, 0299, 0326, 0330, 0331 and
 0338. Their criteria are not edited, because a proof bundle answers the criteria it was written for.
 What the rule asks of their code is carried by the new tickets and noted in their History:
@@ -799,11 +871,13 @@ What the owner removes is the owner's: a kept ref dropped with the drop command,
 by hand. And a kept ref is as safe as the disk the main repository is on, and a snapshot as safe as the
 disk the state root is on. This rule is not a backup.
 
-What a process of the owner's account removes outside Veldo is not stopped either. An agent that runs
-outside the sandbox can delete the snapshot store, or delete a kept ref and run git's garbage
-collection; the protect list and the boundary check bind only Veldo's own code. What Veldo does about
-it is detection: the loss is reported at the next reconcile, at the next veldo space kept and at any
-restore of that item, and never passed over (0.3, 0.5).
+What a process of the owner's account removes outside Veldo is stopped only in part. An agent that
+runs outside the sandbox can delete the snapshot store, or delete a kept ref and run git's garbage
+collection; the protect list and the boundary check bind only Veldo's own code. The guard hook refuses
+the shell command an agent types when it names the store or the kept refs (0.3, VELDO-0349). It does
+not see a program the agent writes and runs, or a command that reaches them without naming them. For
+those there is detection: the loss is reported at the next reconcile, at the next veldo space kept and
+at any restore of that item, and never passed over (0.3, 0.5).
 
 A clean clone whose remote is on another host is judged by its remote-tracking refs alone. A ref says
 what that remote had at the last fetch, and it can be written by hand, so a commit the remote has
@@ -917,6 +991,7 @@ repositories initialized after it and no others. Existing projects are covered b
 | Reader units | engine/.veldo/services/veldo-procread.socket and veldo-procread@.service, added to the protected paths; installed by the owner into the systemd user unit folder, without sudo | New | A socket in the owner's runtime folder and the unit it starts, one instance per read. The unit sets no NoNewPrivileges, so the reader gets its capability there and nowhere in the service. The authority unit is not changed (7.1) |
 | Removers | engine/.veldo/control_space_remove.py | New | One remover per action. Each uses the owning tool's own remove and reports what it measured |
 | Keeper | engine/.veldo/control_space_keep.py | New | The keep step and the snapshot of section 0: writes an item's kept refs in its main repository, reads them back, hands the Ledger the keep record, and writes the saved snapshot to the snapshot store without touching the worktree or any object store. Also the reads behind kept and restore |
+| Guard hook | engine/scripts/veldo-guard.sh, with its copies scripts/veldo-guard.sh and packs/claude/scripts/veldo-guard.sh. The first two are protected paths already | Changed | Gains one rule: it refuses an agent's shell command that names the snapshot store or refs/veldo/kept, and lets veldo space kept drop through (0.3, VELDO-0349) |
 | Signal | engine/.veldo/control_space_signal.py | New | The one entry point an emitting process calls with an event. Finds due items, runs rules and removers in line, writes the outcomes |
 | Docker adapter | engine/.veldo/control_space_docker.py | New | Per engine context: the run label and compose project name, the snapshot, the event subscription, the census, the object removers |
 | Reconciler | engine/.veldo/control_space_reconcile.py | New | Snapshot of roots and engines, comparison with the ledger, adoption rules, the report. Also the check of every keep record against the kept refs and the snapshot store (0.3) |
@@ -1020,7 +1095,7 @@ Identity: space:item: followed by a new identifier. One record per thing.
 | confirmed | For an item made due in report mode: the owner's Confirm command that covered it. It stands until the item is removed or the owner marks it wrong |
 | deferral | The rule that refused, the event it was refused at, the event that retries it, the number of attempts, and the decision request when one was raised, or the review group when the item is in one |
 | removal | The event, the emitting process, the method, bytes just before, pool free before and after, and for an engine pool the host figure apart |
-| kept | For a worktree and a private repository: the keep record. The main repository, each kept ref with its commit, the snapshot's path with its attempt number, its size and its manifest digest when one was written, and the path the item had. Written before the remover runs (0.2). A later attempt that saves again writes it again, and the journal holds each version |
+| kept | For a worktree and a private repository: the keep record. The main repository, each kept ref with its commit, the list of snapshot attempts, each with its path, its number, its size and its manifest digest, and the path the item had. Written before the remover runs (0.2). A later write adds refs and attempts and removes none (0.3), and the journal holds each version |
 | report | For an item reconcile could not give an owner: what was found, why no rule adopted it, and the owner a rule proposes when one does |
 
 States and the moves between them:
@@ -1303,10 +1378,10 @@ Each is a registered command of the control store, journaled and signed like eve
 | report | what reconcile found, and a proposed owner when a rule gives one | Creates or refreshes a report record; never an owner | |
 | gone | item | present, declared, due or deferred to gone | |
 | rebranch | worktree item, new branch, new start commit | Writes the item's branch and start; declares a branch item for the new branch when it has none | An item that is not a worktree, or is not present, kept or deferred |
-| keep | a worktree or a private repository item that is due, its main repository, each kept ref with its commit, the snapshot's path with its attempt number, its size and its manifest digest when there is one | Writes the keep record on the item (4.1). A later attempt writes it again | An item that is not due or removing; a main repository that is a private repository; a ref that does not resolve to the commit named, a snapshot path that is not a numbered folder of that item in the snapshot store, or a manifest that does not have the digest named, each read by the Ledger itself |
+| keep | a worktree or a private repository item that is due, its main repository, each kept ref with its commit, the snapshot's path with its attempt number, its size and its manifest digest when there is one | Writes the keep record on the item (4.1). For an item that already has one it adds the refs and the snapshot attempt to the record. Nothing this command is given replaces or removes a ref or an attempt the record holds | An item that is not due or removing; a main repository that is a private repository; a ref that does not resolve to the commit named, a snapshot path that is not a numbered folder of that item in the snapshot store, or a manifest that does not have the digest named, each read by the Ledger itself |
 | proved | host, modules digest, git version, result | Writes a proof record (4.10) | A command not signed by the owner |
-| restore | a removed item, and optionally a path and one of its kept refs | Adds a worktree at the kept commit and applies the snapshot the keep record names (0.5). Removes nothing | A command not signed by the owner; a path where something exists; an item with no keep record; a kept ref that does not resolve to its commit; a snapshot the record names whose folder or manifest is missing, whose manifest has another digest, or one of whose files does not match the manifest; a manifest path that leads outside the target |
-| drop kept | a removed item | Deletes that item's kept refs and its snapshot and marks the keep record dropped (0.5) | A command not signed by the owner |
+| restore | a removed item, and optionally a path and one of its kept refs | Adds a worktree at the kept commit and applies every snapshot attempt the keep record lists, the oldest first (0.5). Removes nothing | A command not signed by the owner; a path where something exists; an item with no keep record; a kept ref that does not resolve to its commit; any snapshot attempt the record lists whose folder or manifest is missing, whose manifest has another digest, or one of whose files does not match the manifest; a manifest path that leads outside the target |
+| drop kept | a removed item | Deletes that item's kept refs and its whole folder in the snapshot store, every attempt in it, and marks the keep record dropped (0.5) | A command not signed by the owner |
 | event | type, subject, emitter | Creates an event record in state received | An unknown type; a ref changed event for a repository that is neither bound nor plain; a released event that names an item a Veldo seam declared, or no item |
 | consumed | event record, result | received to consumed | A record already consumed |
 | reject | an item that is due, an adopted item, or a report with a proposed owner; the owner's reason | Writes a wrong-proposal record and applies its effect (4.8) | A command not signed by the owner; a subject that is none of the three |
@@ -1498,7 +1573,7 @@ Reads, all from ledger records, live through the existing record stream:
 | space.usage | Bytes and item counts grouped by project, by ticket and by kind; filters for each. Plain repositories are rows beside the projects, and "no project" is a row of its own |
 | space.pending | Due and deferred items: owner, kind, locator, size, reason, the event that retries it, and the decision request when there is one. The review worktrees of one group share one request, and each is shown with the index its member picks use |
 | space.removed | Removed items, newest first: owner, kind, locator, event, emitter, size, free before and after |
-| space.kept | For each removed worktree and private repository: its ticket, the path it had, the event, each kept ref with its commit and whether it still resolves, whether a snapshot was saved, its attempt number and size, whether it is still there and whole, and the restore command (0.5). For the installation: the count and the size of all kept refs and of all snapshots. The size of the kept refs is that of the objects only they reach, measured at reconcile |
+| space.kept | For each removed worktree and private repository: its ticket, the path it had, the event, each kept ref with its commit and whether it still resolves, each snapshot attempt its keep record lists with its number and size and whether it is still there and whole, and the restore command (0.5). For the installation: the count and the size of all kept refs and of all snapshots. The size of the kept refs is that of the objects only they reach, measured at reconcile |
 | space.reports | What reconcile found and could not adopt, with the proposed owner when a rule gives one; repositories whose hooks are missing; bound projects whose gate script lacks the space steps. Kept work missing: each kept ref that does not resolve to its recorded commit and each snapshot that is missing or not whole, with the item, and a snapshot store that is gone or has another owner or mode (0.3). Snapshot folders no keep record names, with their sizes, as information |
 | space.protected | The protect list in force, where each entry comes from, and the objects each entry matches on each engine. A protected thing appears here and in no other read |
 | space.modes | Each scope's mode and since when; for a scope in report mode, the last three calendar days with what made each one clean or not, its wrong-proposal records, its unconfirmed pending groups by kind with their counts, and for a bound project whether its gate script has the space steps |
@@ -1997,6 +2072,11 @@ points resolved and kept the writer check this revision had added. It closed two
 and one in the install line: the writer is now held by a pidfd, the reader waits for the probe before
 it exits, and the source is read past git's replace refs.
 
+The final check (design-veldo-nowork-r2-validation-2026-11-14.md; 14.8) found one more hole in the
+writer check: a process that writes first and then executes the reader in its own place. The reader
+now locks itself before it writes its header, and it writes the table only after the probe has sent
+it one byte.
+
 What one capability reads. Measured on this host on 2026-11-13 (kernel 7.0), against a process the
 probe cannot read today:
 
@@ -2119,6 +2199,31 @@ before and after the status was read, and when it is the same process at the hea
 line. A writer that has ended, a part with no pidfd, or a kernel that does not know SO_PASSPIDFD
 (before 6.5) refuses the output as refused:writer, and the bound judges.
 
+A writer that becomes the reader. The writer has to be the locked reader at the moment it writes, and
+not only at the moment the probe looks. Executing a program keeps the process: the same id, the same
+pidfd, the same start time. The reader's unit files are in the owner's user unit folder, so any
+process of the owner's can change the unit's start line to run a wrapper. The wrapper writes a whole
+fake table to the connection, moves its standard output to a socket pair of its own, and executes the
+installed reader. The reader gets its capability, writes its real table into the socket pair and
+waits there. The probe then sees one writer, alive before and after, with the owner's uid and exactly
+cap_sys_ptrace, and it would take the fake table. The final check found this. It follows from how the
+kernel defines execve; it was not run on this host, and ticket 0344's row is where it is shown.
+
+Two things close it. The first is a fact only the locked reader can show. The probe also requires
+NoNewPrivs 1 and Seccomp 2 in the writer's status. A process holds cap_sys_ptrace and a seccomp filter
+together only when it executed the installed binary first and filtered itself afterwards. A filter
+installed before the execution needs no_new_privs, which stops the capability, or CAP_SYS_ADMIN, which
+a process of the owner's does not have. The reader's filter refuses execve, so from that moment the
+process cannot become another program.
+
+The second is the order of the bytes. The reader writes only its header line once it is locked, and
+then reads one byte on descriptor 1. The probe checks the header's writer, by the pidfd and by the
+status with those two fields, and only then sends the byte. The reader writes the table after it has
+read it. The probe refuses the output as refused:writer when anything but the one header line arrives
+before it has sent its byte. So bytes written before the execution cannot be the table. The wrapper
+gains nothing from the real reader either: a locked reader writes to its descriptor 1 and nowhere
+else, and when that is the wrapper's socket pair, the connection gets nothing after the byte.
+
 The reader stays until the probe has looked. Its whole output can fit in the socket's buffer: on this
 host the table is 2,767 tasks. A reader that wrote and exited at once could be gone, and reaped by the
 user manager, before the probe read its status, and the check above would then refuse a good output
@@ -2130,7 +2235,8 @@ reader sends nothing after the end line and uses nothing it reads there.
 A process of the owner's with that capability can come only from executing the installed binary, which
 checks 2 to 4 tie to the reviewed source. It takes no input, and nothing without the capability can
 attach to it. A stand-in has no capability. A program that runs the real reader and passes its output
-on writes under its own process id. Measured on this host on 2026-11-13: with SO_PASSCRED set, each
+on writes under its own process id. A program that writes first and then becomes the reader is
+stopped by the lock and the order of the bytes (above). Measured on this host on 2026-11-13: with SO_PASSCRED set, each
 part received carried its writer's process id; a child's write and its parent's writes on one
 connection arrived as separate parts with different ids; and the socket's peer credentials name the
 user manager, which is why they are not used. Measured the same day for the pidfd (kernel 7.0, a
@@ -2171,6 +2277,11 @@ The reader:
   and every fdinfo entry. After the last task it lists the task folder again, and a task it has not
   read is an unread fact. A task that has ended when it is read holds nothing and gets no line. The
   reader opens nothing outside /proc.
+- After the header line it makes one blocking read on descriptor 1, and it reads the process table
+  only when that read has returned (above, "A writer that becomes the reader"). It goes on whatever
+  the read returns, a byte, the end of the stream or an error, because the probe is the side that
+  refuses a table sent too early. Run with a pipe or a file as standard output, the read returns at
+  once.
 - A write that fails ends the reader at once, with exit status 3 and no end line. A short write is
   continued until every byte is out. So a full or closed connection cannot drop a line from the middle
   of an output that still ends well.
@@ -2188,7 +2299,7 @@ decimal:
 
 | Line | Meaning |
 | :- | :- |
-| veldo-procread 1 cap=C | The first line, written before the table is read. 1 is the format's version. C is 1 when the reader holds cap_sys_ptrace in its effective set, else 0 |
+| veldo-procread 1 cap=C | The first line, written after the reader has locked itself and before the table is read. The reader then waits for one byte. 1 is the format's version. C is 1 when the reader holds cap_sys_ptrace in its effective set, else 0 |
 | p PID START | Opens the block of one process. START is field 22 of its stat file, its start time in clock ticks |
 | t TID | Opens the facts of one task of the process. The first is the first thread, whose TID is the PID |
 | c MAJOR:MINOR INODE | The working directory of the task |
@@ -2230,9 +2341,11 @@ the descriptor it executes.
 4. Its SHA-256 digest, read through the same descriptor, equals the one in the installation's space
    section, key process_reader (6.8).
 5. The kernel names one writer for the whole output: a process of the owner's uid whose status file
-   shows exactly cap_sys_ptrace permitted and effective. The pidfd the kernel attached names that
-   process alive before and after its status was read, at the header and at the end line. The first
-   line says version 1 and cap=1.
+   shows exactly cap_sys_ptrace permitted and effective, NoNewPrivs 1 and Seccomp 2. The pidfd the
+   kernel attached names that process alive before and after its status was read, at the header and
+   at the end line. The first line says version 1 and cap=1. It is all that arrives before the probe
+   sends its byte, and the probe sends the byte only after this check has passed for the header's
+   writer.
 6. The output is whole: every line is in the format, the end line is there with the right count, and
    after the probe has shut down its writing side the connection ends with nothing more. Where a row
    runs the reader directly, the exit status is 0 as well.
@@ -2739,7 +2852,7 @@ A hook that fails or cannot reach the authority spools and returns; it never blo
    worktree found, the census of section 6.3. For each engine, the adapter's snapshot. The snapshot
    store under the state root is not such an entry: reconcile measures it, with the kept refs, for the
    console's totals, and it adopts and proposes nothing in it. What it does there is check: every keep
-   record against the kept refs and the snapshot folder it names (0.3). A ref that does not resolve to
+   record against the kept refs and every snapshot attempt it lists (0.3). A ref that does not resolve to
    its commit, a snapshot that is missing or whose manifest has another digest, and a store that is
    gone are reported as kept work missing. Folders no keep record names, the temporary ones included,
    are listed with their sizes.
@@ -2751,7 +2864,7 @@ A hook that fails or cannot reach the authority spools and returns; it never blo
 | :- | :- | :- |
 | Thing | Matching item | Matched; size refreshed |
 | Nothing | Item present, declared, due or deferred | gone |
-| Half-removed folder under its marked name | Item removing | Removal completed. For a worktree or a private repository only when its keep record exists, every kept ref resolves and the snapshot it names is there with its digest; otherwise deferred as keep_failed (0.2). Where the removal compares files with a manifest, the completion compares them too |
+| Half-removed folder under its marked name | Item removing | Removal completed. For a worktree or a private repository only when its keep record exists, every kept ref resolves and every snapshot attempt it lists is there with its digest; otherwise deferred as keep_failed (0.2). Where the removal compares files with a manifest, the completion compares them too |
 | Worktree in a bound repository's list, under the project's worktree root, on a branch the branch pattern maps to a ticket | None | Adopted, owner that ticket |
 | Worktree as above, branch maps to no ticket | None | Adopted, owner the project only. It ends on contained, project ended and Abandon |
 | Worktree in a plain repository's list, under its worktree root | None | Adopted, owner the repository only |
@@ -2759,7 +2872,7 @@ A hook that fails or cannot reach the authority spools and returns; it never blo
 | Folder matching the project's build output patterns inside an adopted or recorded worktree | None | Adopted, parent that worktree |
 | Folder directly under a declared build root whose name is the name of a worktree item | None | Adopted as build output, parent that worktree |
 | Clone folder with a valid manifest under the state root | None | Its work tree is adopted as an agent repository with the form worker clone, owner the manifest's dispatch, main repository the one the manifest and the declarations name. Its root and its scratch folder are adopted as scratch, the root as the work tree's parent. Never the work tree as scratch |
-| Item due or removing with a keep record, and the thing still whole at its locator | Item due or removing | The removal is attempted again from rule 1. It uses the snapshot the record names when that still has its digest and the item still equals it, and otherwise saves again under the next number (0.3). In report mode only for an item the owner confirmed or answered for |
+| Item due or removing with a keep record, and the thing still whole at its locator | Item due or removing | The removal is attempted again from rule 1. It uses the newest attempt the record lists when that still has its digest and the item still equals it, and otherwise saves again under the next number and adds that attempt to the record (0.3). In report mode only for an item the owner confirmed or answered for |
 | Run directory under the runs root named for a dispatch the store holds | None | Adopted as scratch, owner that dispatch |
 | Session scratch folder matching the installation's pattern | None | Adopted as scratch, owner the session id in its name, with the project or plain repository the folder's name gives; when the name gives none, no project |
 | Batch clone under the workspace root, named by a batch record the store holds | None | Adopted as an agent repository with the form batch clone, owner that batch, main repository the batch's. Never as scratch |
@@ -3084,14 +3197,19 @@ files on two remote refs name 0350 to 0390, which are another repository's specs
 numbers from 0401 up as examples. Nothing on any ref, in any commit message and in any ref name names
 0345 to 0349.
 
+VELDO-0349, the guard's rule, was added on 2026-11-13 by the lead's decision (section 13), the
+fifty-fourth ticket. The count above had found the number free, and a second look that day found no
+spec file, proof folder, ref name or commit message that holds it.
+
 Build order: 0296, 0338, 0297, 0326, 0331, then 0298, 0299, 0330 and 0300 together, 0301, 0345, 0344,
 then 0302, 0303 and 0305 to 0314 with 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341 in any
 order, then 0347, then 0304, then 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0346,
-0320, 0332, 0325, 0339, 0321, 0322, 0348.
+0349, 0320, 0332, 0325, 0339, 0321, 0322, 0348.
 
 0345, the keep step, comes straight after 0301 and before every ticket that removes a worktree or a
 private repository on a real host. 0347 comes after the creators and the census it corrects (0302,
-0303, 0305, 0324). 0346 needs the console of 0319. 0348, the suite, is last because it drives every
+0303, 0305, 0324). 0346 needs the console of 0319. 0349, the guard's rule, comes straight after
+0346, because the one command it lets through is 0346's drop. 0348, the suite, is last because it drives every
 removal path, and until it lands no scope can be switched to act.
 
 The validation of section 0 added no ticket. Its criteria went into the tickets that build the parts
@@ -3113,7 +3231,8 @@ of them on the reviewed list, and the check would turn the gate red on its first
 Tickets that touch protected paths and need the owner's recorded approval: 0302 and 0324 (the sandbox),
 0309 (the gate script template, and the new helper added to the protected list), 0304 (its check is
 called from scripts/verify.sh, policy.yaml:83), 0333 (the gate's leg timing), 0344 (the process reader's
-source and its two unit files, which it adds to the protected list). 0325 produces a change to
+source and its two unit files, which it adds to the protected list), 0349 (scripts/veldo-guard.sh and
+its engine copy, both on the protected list already). 0325 produces a change to
 the gate script of each bound project, approved by the owner in that project.
 
 ### VELDO-0296 Declarations: the installation's space section
@@ -3350,7 +3469,7 @@ Components: Reconciler, Authority service.
 | AC | Claim | Falsifier |
 | :- | :- | :- |
 | AC1 | Each row of the table in 8.8 gives its result, including the agent repository, the build root folder named for a worktree, the plain repository and the session scratch. A clone folder's work tree, a batch clone and a candidate workspace are adopted as agent repository items with their form, and a folder that is itself a git repository is never adopted as scratch or as build output | Each of these turns a row of its own red. Adopt every folder under a root: the row with no provable owner gets an item. Adopt a batch clone as scratch: the row's clone holds a commit its main repository does not, its batch has ended and its scope is in act, and after reconcile the clone is gone and the commit is in no repository |
-| AC2 | Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was not already due. A removing worktree or private repository is completed only when its keep record exists, every ref in it resolves and the snapshot it names is there with its digest; otherwise it is deferred as keep_failed. An item that is due or removing with a keep record, and whose thing is still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5) | Remove reported things; the reported fixture folder is gone and the row fails |
+| AC2 | Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was not already due. A removing worktree or private repository is completed only when its keep record exists, every ref in it resolves and every snapshot attempt it lists is there with its digest; otherwise it is deferred as keep_failed. An item that is due or removing with a keep record, and whose thing is still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5) | Remove reported things; the reported fixture folder is gone and the row fails |
 | AC3 | The service replays the spool and reconciles before it accepts its first dispatch, and a failed reconcile is reported by name while everything else is served | Reconcile in the background; the row that sends a dispatch at once is admitted against an empty ledger and fails |
 | AC4 | Nothing runs reconcile on a schedule: the only callers are service start, the API action and the CLI. The row advances the fixture clock by a year with no event and counts one reconcile | Add a periodic call with any period; the row counts more than one and fails |
 
@@ -3668,7 +3787,7 @@ Components: Process reader, Reader units, Probes, Declarations reader. Depends o
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
-| AC1 | With no reader at the fixed path, or one that fails a check (not a regular file, an owner other than root, a group or mode other than the installed ones, a folder on the way to it that another account owns or may write, a capability attribute other than exactly cap_sys_ptrace permitted and effective in version 2 or in version 3 with root id 0, no digest in the installation's space section, a digest other than that one, no socket, an output the kernel does not show as written by one process of the owner's that holds exactly that capability and that a pidfd names as alive before and after its status was read, or a header that says it holds no capability), the probe does not use it, every unread process is judged as before this ticket, and the in_use facts name the reader's state and the check that failed | Each of these turns a row of its own red. Skip the digest check: the row puts a program that prints an empty table in the reader's place, the undumpable process in the item is not counted and the item reads free. Accept any capability set that holds cap_sys_ptrace: the row's copy with cap_dac_read_search added is used. Accept version 3 of the capability attribute with any root id: the row's copy with another root id is used. Check the file and not its folders: the row's reader in a folder the owner may write is used. Ignore the header's cap field: the row's reader that says cap=0 is used. Take the output whoever wrote it: the row's stand-in listens on the socket, answers with an empty table, and the item reads free. Trust the process id without the pidfd: the row's stand-in writes an empty table and exits, the row answers the status read for its number as a real reader's, and the item reads free |
+| AC1 | With no reader at the fixed path, or one that fails a check (not a regular file, an owner other than root, a group or mode other than the installed ones, a folder on the way to it that another account owns or may write, a capability attribute other than exactly cap_sys_ptrace permitted and effective in version 2 or in version 3 with root id 0, no digest in the installation's space section, a digest other than that one, no socket, an output the kernel does not show as written by one process of the owner's that holds exactly that capability, whose status shows NoNewPrivs 1 and Seccomp 2, and that a pidfd names as alive before and after its status was read, anything but the one header line received before the probe has sent its byte, or a header that says it holds no capability), the probe does not use it, every unread process is judged as before this ticket, and the in_use facts name the reader's state and the check that failed. The reader writes its header only after it has set no_new_privs and installed its filter, and it writes the table only after it has read one byte on descriptor 1; the probe sends that byte only after it has seen the header's writer locked | Each of these turns a row of its own red. Skip the digest check: the row puts a program that prints an empty table in the reader's place, the undumpable process in the item is not counted and the item reads free. Accept any capability set that holds cap_sys_ptrace: the row's copy with cap_dac_read_search added is used. Accept version 3 of the capability attribute with any root id: the row's copy with another root id is used. Check the file and not its folders: the row's reader in a folder the owner may write is used. Ignore the header's cap field: the row's reader that says cap=0 is used. Take the output whoever wrote it: the row's stand-in listens on the socket, answers with an empty table, and the item reads free. Trust the process id without the pidfd: the row's stand-in writes an empty table and exits, the row answers the status read for its number as a real reader's, and the item reads free. Take bytes written before the writer was seen locked: the row's wrapper writes an empty table and then executes the real reader with its output on a socket pair, and the item reads free |
 | AC2 | With the reader in use, a process of the owner's that is not dumpable counts for an item exactly when the working directory or an open descriptor of any of its threads, or a mapped file, is the item or beneath it, matched by inode number alone: the one in the item holds it, named by process id, thread id and fact with the device and inode number read, and the one outside it no longer counts | Each of these turns a row of its own red. Match the working directory only: the process that holds nothing but an open file beneath the item reads free, and so does the one that holds only a directory descriptor on the item. Leave out the maps: the process that only maps a file of the item reads free. Read the first thread's working directory only: the process whose second thread sits in the item with a file system state of its own reads free. Read the first thread's descriptors only: the process whose second thread holds a file of the item in a descriptor table of its own reads free. Match on device and inode: the row's descriptor that the reader printed with another device, or with a hyphen, reads free |
 | AC3 | A root-owned process a login started is judged by the same facts: in the item it holds it, and elsewhere it does not count. A process with any fact the reader could not read (an x line, no block, or a start time other than the one the probe reads) stays unread and is judged by the bound of VELDO-0299. A folder of the item that the probe cannot list makes the item in use | Each of these turns a row of its own red. Take a block with an unread fact as read: the row's root-owned process, whose descriptors could not be listed and which holds a file in the item, reads free. Skip a folder that cannot be listed: the row's item, with a process holding a file inside a folder of mode 000, reads free |
 | AC4 | The reader takes no argument and reads only the stat, mountinfo and maps entries of each process and the cwd and fdinfo entries of each of its tasks. It prints numbers only, in the format of design section 7.1. Its seccomp filter ends it on ptrace, process_vm_readv, process_vm_writev, pidfd_open, pidfd_getfd, kcmp, kill, tkill, tgkill, rt_sigqueueinfo and pidfd_send_signal, on an open with a write, create or truncate flag, on a write to any descriptor but 1, and on a call of another architecture. The filter does not limit which entries are opened for reading; the reviewed source does, and the digest ties the binary to it | Allow kill in the filter; the row's patched copy of the reader, which signals itself after the filter is in place, exits normally and the row fails. The row runs three more patched copies, for pidfd_getfd on a descriptor opened before the filter, for process_vm_readv and for an open for writing, and allowing any one of them in the filter lets that copy exit normally |
@@ -3683,7 +3802,8 @@ process the owner started holds it (AC3); a tampered reader is refused (AC1's fa
 its output). The validation's points: B1 is AC6, B2 is AC2 and AC8, B3 is AC7, R1 is in AC2, R2 is
 AC4, R3 is the falsifiers of AC1 to AC3, R4 is in AC6. The second validation's points: the pidfd is
 in AC1, the reader's wait and the short output are in AC5, the run time is recorded by AC6's row, and
-the replace refs and the source of the digest are in AC7.
+the replace refs and the source of the digest are in AC7. The final check's point, a writer that
+executes the reader in its own place, is in AC1.
 
 ### VELDO-0345 The keep step: kept refs and the saved snapshot
 
@@ -3698,7 +3818,7 @@ failure, crash and retry paths.
 | AC2 | Before a private repository is removed, every ref it has, every stash entry, its HEAD and each commit only a log names is fetched into the main repository under the item's kept refs, and afterwards each of those commits is read from the main repository alone | Fetch the branches only; the row's second stash entry is in no repository after the removal and the row fails |
 | AC3 | When a ref cannot be written, exists at another commit or reads back as another commit, when the fetch fails, when the main repository is not at its path any more, or when a private repository names no main repository, nothing is removed, by an event or by reconcile, and the item is deferred as keep_failed with the ref and git's words. A second attempt after a crash finds the refs it wrote and passes. Rule 5 does not count a kept ref as a ref that holds a commit | Each of these turns a row of its own red. Call the remover after a failed write: the row makes the main repository's refs unwritable, and finds the worktree gone and its commit unreachable. Go on when the main repository is gone: the row moves the main repository away, sends the ending event, runs reconcile, and finds the worktree gone |
 | AC4 | The saved snapshot is plain files with a manifest in the snapshot store under the state root, outside every repository: the tracked edits, the staged state and the untracked files, the ignored ones that are work included, each with its mode and its SHA-256. Writing it changes neither the worktree, nor its index, nor the repository's stash entries, and adds no object to any repository's object store. It is read back and compared before the keep record is written. The snapshot store is protected in every installation, and no rule lets a remover take a path in it | Each of these turns a row of its own red. Write it as a commit on a kept ref: the row plants a marker in an ignored settings file and finds the marker in an object of the main repository after the Discard. Write it with git's stash command: the row compares the worktree and the stash entries before and after, and finds the worktree emptied and an entry added. Leave the store off the protect list: the row declares a folder of the store as scratch, sends its ending event and finds the snapshot gone |
-| AC5 | A save that fails or stops half way removes nothing: when the store cannot be written, when its pool fills in the middle of a file, when a write is short, when a read back differs, when a sync or the rename fails, the item is deferred as keep_failed with everything in place, and what the attempt wrote stays under its temporary name. Each attempt writes a numbered folder of its own, <state root>/space-saved/<ticket>/<item>/<n>/, that is never replaced and never deleted; the keep record names the one it used, and a folder no record names and a temporary one are kept and counted. A retry uses the snapshot the keep record names when its manifest has the recorded digest and the item still equals it, and otherwise writes the next number. With the process killed inside the snapshot write, after the rename and before the keep record, and after the record and before the remover, the next attempt ends with the item removed once and its snapshot whole, or with the item in place; reconcile's part in that is VELDO-0315 AC2 | Each of these turns a row of its own red. Go on after a short write: the row fills the store's pool in the middle of a file, and finds the worktree gone and the file in no place. Make room for a retry by deleting the existing snapshot folder: the row kills the remover between the delete and the rename and finds no copy of the file. Use the snapshot the record names without comparing: the row changes a file after the kill, and finds the new content neither in place nor restored |
+| AC5 | A save that fails or stops half way removes nothing: when the store cannot be written, when its pool fills in the middle of a file, when a write is short, when a read back differs, when a sync or the rename fails, the item is deferred as keep_failed with everything in place, and what the attempt wrote stays under its temporary name. Each attempt writes a numbered folder of its own, <state root>/space-saved/<ticket>/<item>/<n>/, that is never replaced and never deleted; the keep record lists every attempt it was given, a later keep write for the item adds refs and attempts and removes none, and a folder no record lists and a temporary one are kept and counted. A retry uses the newest attempt the keep record lists when its manifest has the recorded digest and the item still equals it, and otherwise writes the next number and adds that attempt to the record. With the process killed inside the snapshot write, after the rename and before the keep record, and after the record and before the remover, the next attempt ends with the item removed once and its snapshot whole, or with the item in place; reconcile's part in that is VELDO-0315 AC2 | Each of these turns a row of its own red. Go on after a short write: the row fills the store's pool in the middle of a file, and finds the worktree gone and the file in no place. Make room for a retry by deleting the existing snapshot folder: the row kills the remover between the delete and the rename and finds no copy of the file. Use the snapshot the record names without comparing: the row changes a file after the kill, and finds the new content neither in place nor restored. Keep only the newest attempt on the record: the row stops a review scratch removal after its first delete, retries, restores, and finds the first deleted file missing while restore said success |
 
 ### VELDO-0346 Getting removed work back: kept, restore and drop
 
@@ -3707,11 +3827,11 @@ Console. Depends on 0319 and 0345. It builds section 0.5 and the watch on the sn
 
 | AC | Claim | Falsifier |
 | :- | :- | :- |
-| AC1 | veldo space kept lists, for each removed worktree and private repository, its ticket, the path it had, the event that removed it and each kept ref with its commit, and says of each ref whether it still resolves and of each snapshot whether it is still there and whole. With no ledger reachable it lists the same refs from the repository alone | Read the ledger only; the row with the authority down gets an empty list and fails |
-| AC2 | veldo space restore adds a worktree at the path the item had, or at the path given, at the kept head, and applies the snapshot the keep record names: after a Discard and a restore the tracked edits, the staged state, the untracked files and the ignored files that are work are back byte for byte with their modes. Whether there is a snapshot is read from the keep record alone. It refuses, adding nothing and saying what is missing, when something is at the path, when the record names a snapshot whose folder or manifest is missing or whose manifest has another digest than the record holds, when a saved file does not match its manifest, and when a manifest path is absolute, holds a .. part or resolves outside the target path. It leaves the kept refs and the snapshot in place | Each of these turns a row of its own red. Restore the head without the snapshot: the row's untracked file is missing. Apply the snapshot only when the folder is there: the row deletes the snapshot, restores, finds the head without the untracked file, and the command said success. Copy a manifest path as it is written: the row's manifest names a path with a .. part, and a file is written outside the target |
-| AC3 | Only veldo space kept drop removes a kept ref or a snapshot. It is the owner's signed command, it lists the commits that would no longer be reachable and the snapshot's files before it acts, and it is refused from every host principal | Accept drop from space-runner; the row that sends it finds the refs gone and fails |
+| AC1 | veldo space kept lists, for each removed worktree and private repository, its ticket, the path it had, the event that removed it and each kept ref with its commit, and says of each ref whether it still resolves and of each snapshot attempt the keep record lists whether it is still there and whole. With no ledger reachable it lists the same refs from the repository alone | Read the ledger only; the row with the authority down gets an empty list and fails |
+| AC2 | veldo space restore adds a worktree at the path the item had, or at the path given, at the kept head, and applies every snapshot attempt the keep record lists, the oldest first, so that the later one wins where two hold the same path: after a Discard and a restore the tracked edits, the staged state, the untracked files and the ignored files that are work are back byte for byte with their modes. Whether there is a snapshot is read from the keep record alone. It refuses, adding nothing and saying what is missing, when something is at the path, when any attempt the record lists has its folder or manifest missing or a manifest with another digest than the record holds, when a saved file does not match its manifest, and when a manifest path is absolute, holds a .. part or resolves outside the target path. It leaves the kept refs and the snapshots in place | Each of these turns a row of its own red. Restore the head without the snapshot: the row's untracked file is missing. Apply the snapshot only when the folder is there: the row deletes the snapshot, restores, finds the head without the untracked file, and the command said success. Copy a manifest path as it is written: the row's manifest names a path with a .. part, and a file is written outside the target. Apply the newest attempt only: the row's review scratch removal stopped after its first delete and was retried, and the restore leaves the first deleted file missing |
+| AC3 | Only veldo space kept drop removes a kept ref or a snapshot. It is the owner's signed command, it lists the commits that would no longer be reachable and every file of every attempt folder of the item, the folders no record lists and the temporary ones included, before it acts, it removes the item's whole folder in the store, and it is refused from every host principal | Each of these turns a row of its own red. Accept drop from space-runner: the row that sends it finds the refs gone. List only the attempts the record lists: the row's item has one more attempt folder that no record lists, and drop removes a file its listing did not show |
 | AC4 | The console's Removed section and the space.kept read show, for each removal, the number of kept refs, whether a snapshot was saved and its size, and the restore command with the item filled in; and for the installation the count and the size of all kept refs and of all snapshots | Leave the kept refs out of the read; the row that expects the restore command beside the removed worktree finds none and fails |
-| AC5 | Reconcile and veldo space kept check every keep record against the disk: each kept ref resolves to its recorded commit, the snapshot folder the record names is there, and its manifest has the recorded digest. What fails is reported under space.reports as kept work missing, with the item, and is shown at the top of the console's Space screen until the ref or the snapshot is back or the owner drops that item's kept work. A snapshot store that is gone, or whose owner or mode is not the installation owner's and 0700, is reported the same way. Snapshot folders no keep record names are listed with their sizes, and nothing is proposed for them | Check the kept refs only; the row deletes the snapshot store, runs reconcile, finds no report and fails |
+| AC5 | Reconcile and veldo space kept check every keep record against the disk: each kept ref resolves to its recorded commit, every snapshot attempt the record lists is there, and each manifest has its recorded digest. What fails is reported under space.reports as kept work missing, with the item, and is shown at the top of the console's Space screen until the ref or the snapshot is back or the owner drops that item's kept work. A snapshot store that is gone, or whose owner or mode is not the installation owner's and 0700, is reported the same way. Snapshot folders no keep record names are listed with their sizes, and nothing is proposed for them | Each of these turns a row of its own red. Check the kept refs only: the row deletes the snapshot store, runs reconcile and finds no report. Check the newest attempt only: the row deletes the first of an item's two listed attempts, runs reconcile and finds no report |
 
 ### VELDO-0347 Work the first rules did not see: ignored files, repositories in any folder, evidence
 
@@ -3737,8 +3857,25 @@ be there before any scope can be switched to act.
 | :- | :- | :- |
 | AC1 | The suite drives every removal path of section 0.7 at every kind of work of section 0.1, in every shape of that section's table: nested, adopted, an agent worktree and then its repository, linked, locked, unreadable, main repository gone, snapshot store, retry and restore. After each drive every planted thing is in its place byte for byte, or comes back byte for byte through veldo space restore from what the removal left; a restore that says it succeeded while a planted file is absent fails the row; the suite's own copies are never read. The paths, kinds and shapes are data, and a remover or a kind of work with no row fails the suite | Run Discard without the snapshot; the Discard rows find the untracked file neither in place nor restored and fail |
 | AC2 | A file added after the probe, a process that opens a file after the first probe, a branch moved between the probe and the remove, a file added between the snapshot and the forced remove, an ignored file added between Save's snapshot and its remove, and a file of review scratch or of a dead run's worker clone rewritten between the snapshot and its own delete each leave the work in place. With the process killed at each step boundary of section 0.2, the two snapshot boundaries included, and of the folder remover, and reconcile run afterwards, every planted thing is in place or comes back | Complete a removing item at reconcile without its keep record; the row killed before the refs were written finds the worktree gone and its commit unreachable, and fails |
-| AC3 | Each mutation of section 0.7 turns a row of the suite red and is registered with the gate's mutation check: a kept child that does not hold, a stash counted as a holding ref, no look beneath a worktree, a private repository compared with itself, an unreadable worktree read as unlocked, an unopenable scratch read as free, the keep step skipped, the remove run after a failed keep, Discard without the snapshot, a snapshot written into a repository's object store, a removing item completed with no keep record, the remove run after a failed snapshot, review scratch deleted without the snapshot, a file deleted without the comparison with its manifest, an existing snapshot folder replaced on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore that applies the snapshot only when its folder is there, a clone adopted as scratch, no look at an item's own folder, an agent worktree's kept refs written into its agent repository, and a clean clone read without its logs | Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree leaves the suite green and the mutation check fails |
+| AC3 | Each mutation of section 0.7 turns a row of the suite red and is registered with the gate's mutation check: a kept child that does not hold, a stash counted as a holding ref, no look beneath a worktree, a private repository compared with itself, an unreadable worktree read as unlocked, an unopenable scratch read as free, the keep step skipped, the remove run after a failed keep, Discard without the snapshot, a snapshot written into a repository's object store, a removing item completed with no keep record, the remove run after a failed snapshot, review scratch deleted without the snapshot, a file deleted without the comparison with its manifest, an existing snapshot folder replaced on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore that applies the snapshot only when its folder is there, a clone adopted as scratch, no look at an item's own folder, an agent worktree's kept refs written into its agent repository, a clean clone read without its logs, and a keep record that holds only the newest attempt | Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree leaves the suite green and the mutation check fails |
 | AC4 | The switch to act is refused as space_act_unbuilt naming VELDO-0348 until this ticket lands. From then it is refused unless the ledger holds a proof record that passed, written by the owner's veldo space prove on this host, whose digest of the space modules and whose git version are the ones in use; the refusal names what does not match. A scope already in act with no matching record writes due and removes nothing | Accept any proof record that passed; the row changes one space module after the proof, switches a scope to act and fails |
+
+### VELDO-0349 The guard keeps hands off the kept store
+
+Components: Guard hook. Depends on 0346. It builds the guard's rule of section 0.3, by the lead's
+decision of 2026-11-13 (section 13). scripts/veldo-guard.sh and engine/scripts/veldo-guard.sh are
+protected paths, so the change lands with the owner's recorded approval.
+
+| AC | Claim | Falsifier |
+| :- | :- | :- |
+| AC1 | The guard hook refuses, with exit status 2 and before the command runs, a shell command whose text names the snapshot store: its path under the state root, written in full or with the home folder written as ~ or $HOME. The refusal says that the store is kept work and names veldo space kept, veldo space restore and veldo space kept drop. When the guard cannot read the state root, it refuses a command that holds the word space-saved | Each of these turns a row of its own red. Leave the rule out: the row's planted command, a recursive delete of the store's path, is allowed. Stand down when the state root cannot be read: the row hides the state root from the guard, plants the same command, and it is allowed |
+| AC2 | The guard hook refuses the same way a shell command whose text holds refs/veldo/kept, whatever the command does with it | Refuse only a ref delete: the row's planted command that points a kept ref at another commit is allowed |
+| AC3 | veldo space kept drop is allowed when it is the whole command, also when it names the store or a kept ref. A command that joins anything to it, by a separator, a pipe, a new line or a substitution, is judged like any other | Each of these turns a row of its own red. Refuse every command that names them: the row's drop command, with its item given by its kept ref, is refused. Allow any command that holds the words veldo space kept drop: the row's command that follows them with a delete of the store is allowed |
+| AC4 | A command that names neither the store nor the kept refs is untouched: for a command the guard has never judged and for one it judges today, the exit status and the output are those of the guard before this ticket. veldo space kept and veldo space restore with an item are allowed. The three copies of the guard are byte for byte the same | Refuse on the word kept alone: the row's veldo space kept command, and its git command on a branch named kept-notes, are refused |
+
+The three cases the lead named, and the row that holds each: a planted command that names the store
+is refused (AC1, and AC2 for the kept refs); veldo space kept drop is allowed (AC3); a command that
+names neither is untouched (AC4).
 
 ## 13. Decisions taken in this design
 
@@ -3805,6 +3942,9 @@ be there before any scope can be switched to act.
 | A clean clone is judged on its logs too, and a local remote is read | A reset leaves a commit named by a log alone. A remote-tracking ref is a claim about the last fetch that anyone can write. A remote on another host is not read, and 0.9 says what that leaves |
 | The probe holds the reader's writer by a pidfd, and the reader waits for the probe before it exits | From the second validation of 7.1. A process id can be handed out again between the write and the look; a pidfd cannot. Measured on this host: the kernel attaches one to each part, and it reads as ended for a writer that has gone |
 | The install line reads the source with replace refs off, and the digest comes from the review record | git show follows a replace ref that any process of the owner's can add. A digest read back from the same checkout would follow the same substitution |
+| The keep record lists every snapshot attempt, and no later write takes one off | From the final check (14.8). With one snapshot in the record, a retry after a removal that had already deleted some files replaced the attempt that held them, and a restore said success without them. Restore applies every listed attempt, the oldest first. It may bring back a file the owner had deleted between two attempts, and that is the cheaper mistake |
+| The reader locks itself before its header and writes the table only after the probe's byte, and the probe requires NoNewPrivs 1 and Seccomp 2 of the writer | From the final check. Executing a program keeps the process and its pidfd, so bytes written before the execution were credited to the reader. A process holds the capability and a filter together only by executing the installed binary first, and the filter refuses another execution. The writer check stays, as the check asked |
+| The guard hook refuses a shell command that names the snapshot store or refs/veldo/kept, except veldo space kept drop. One ticket, VELDO-0349, after 0346 | The lead's decision of 2026-11-13 on the question section 15 held. The cost is one rule in a hook that already reads every command, and the owner's rule is about exactly this work. Detection stays, because the guard reads the text of a command and does not see what a program the agent wrote does. scripts/veldo-guard.sh is a protected path, so the change lands with the owner's approval |
 | An ignored file that cannot be shown to be build output is work | git's non-forced remove deletes ignored files silently. The project's committed ignore rules and its declared patterns say what a build makes again; a person's own ignore rule does not |
 | Worker clones, batch clones and candidate workspaces are private repositories | Each holds commits the shared repository may not have. Removed as scratch, a failed run's commits went with the folder |
 | The criteria of the eight built tickets are not edited | A proof bundle answers the criteria it was written for. What the rule asks of built code is in VELDO-0345, 0347 and 0348, and noted in each built ticket's History |
@@ -4033,18 +4173,32 @@ fails is how the rename call is defined, and ticket 0345's retry row is where it
 reader's blocking read after its end line was not run inside the unit; the installed row of 0344 AC6
 is where it is proved.
 
+### 14.8 The final check of section 0 and of 7.1 (design-veldo-nowork-r2-validation-2026-11-14.md)
+
+Verdict CHANGES. It found every point of 14.7 and of 14.6 resolved and the lead's answers taken as
+given. It found again that VELDO-0299's AC1 needs no edit and must not get one, and that text is not
+edited. It found two new defects, one in each addition of the sixth amendment. Both are taken, and
+both were changes of text.
+
+| Point | Checked | Where it is fixed |
+| :- | :- | :- |
+| F1 a retry's snapshot replaces the record of an earlier attempt whose files were already deleted | True. The record held one snapshot and a later save wrote it again, so after a review scratch removal that stopped at its second file, the retry's snapshot was the only one a restore applied. The record now lists every attempt and a later write removes none, also a write that saves nothing. Restore applies every listed attempt, the oldest first, and refuses when any is missing or not whole. The listing and the watch check every listed attempt. Drop lists every attempt folder of the item, the ones no record lists included | 0.2 (one row), 0.3, 0.5, 0.6, 0.7, 4.1, 6.1, 6.6, 8.8; ticket 0345 AC5, ticket 0346 AC1, AC2, AC3 and AC5, ticket 0315 AC2, ticket 0348 AC3 |
+| F2 a writer that writes first and then executes the reader | True by the kernel's definition of execve. It was not run on this host; ticket 0344's row shows it. Closed as the check says: the probe requires NoNewPrivs 1 and Seccomp 2 of the writer, the reader writes its header only after it has locked itself, and it writes the table only after the probe's byte. The writer check stays | 7.1 ("A writer that becomes the reader", the reader's bullets, the header line, check 5); ticket 0344 AC1 |
+
+Not in this amendment, because the lead's brief for it named F1 and F2: F3, where the folder remover
+leaves a worker clone's folder when the comparison with the manifest stops it, and two points of F4,
+the gap between the last look and git's one remove command in Discard and in Save, and the wording
+of the second History entry of VELDO-0299. By the check's own reading F3 deletes nothing. F4's other
+point, that drop takes the attempt folders no record lists, went in with F1.
+
 ## 15. Open questions for the lead
 
-One is open, from the validation of section 0 (14.7, N3.2).
+None is open.
 
-A process of the owner's account can delete the snapshot store or a kept ref outside Veldo. The
-design detects that and reports it; it does not prevent it. The validation recommended, and did not
-require, one more thing: the guard hook (scripts/veldo-guard.sh) refuses a shell command that names
-the snapshot store or refs/veldo/kept, outside veldo space kept drop. It would stop an agent's own
-command before it runs. It would not stop a program the agent writes and runs, and the guard is a
-protected file. Recommendation: take it, as one small ticket after 0346, because the cost is one
-pattern in a hook that already runs and the owner's rule is about exactly this work. It is not in the
-tickets until the lead says so.
+The one question the validation of section 0 left (14.7, N3.2) was whether the guard hook should
+refuse a shell command that names the snapshot store or the kept refs. The lead answered on
+2026-11-13: take it, as one small ticket after 0346. It is VELDO-0349; section 13 records the
+decision and 0.3 holds the rule.
 
 The six points this section put about section 0, and the one about 7.1 (one capability or two), were
 answered by the lead on 2026-11-13. Section 13 records each answer with its reason, and sections 0 and

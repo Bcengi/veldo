@@ -31,9 +31,9 @@ behavior_bearing: true
 observability:
   logs: >
     The keep record on the item, one journal record: the main repository, each kept ref with its commit,
-    the snapshot's path with its attempt number, its size and its manifest digest when one was written,
-    and the path the item had. Each kept ref's own log names the event that wrote it. A later attempt that
-    saves again writes the record again.
+    the list of snapshot attempts, each with its path, its number, its size and its manifest digest, and
+    the path the item had. Each kept ref's own log names the event that wrote it. A later write adds refs
+    and attempts to the record and removes none.
   error_taxonomy: >
     space_deferred:keep_failed, with the ref and what git said, when a kept ref or a snapshot cannot be
     written or read back, when the fetch from a private repository fails, when the main repository is not
@@ -97,18 +97,21 @@ acceptance_criteria:
       rename fails, the item is deferred as keep_failed with everything in place, and what the attempt
       wrote stays under its temporary name. Each attempt writes a numbered folder of its own, <state
       root>/space-saved/<ticket>/<item>/<n>/, that is never replaced and never deleted; the keep record
-      names the one it used, and a folder no record names and a temporary one are kept and counted. A
-      retry uses the snapshot the keep record names when its manifest has the recorded digest and the item
-      still equals it, and otherwise writes the next number. With the process killed inside the snapshot
-      write, after the rename and before the keep record, and after the record and before the remover, the
-      next attempt ends with the item removed once and its snapshot whole, or with the item in place;
-      reconcile's part in that is VELDO-0315 AC2
+      lists every attempt it was given, a later keep write for the item adds refs and attempts and removes
+      none, and a folder no record lists and a temporary one are kept and counted. A retry uses the newest
+      attempt the keep record lists when its manifest has the recorded digest and the item still equals
+      it, and otherwise writes the next number and adds that attempt to the record. With the process
+      killed inside the snapshot write, after the rename and before the keep record, and after the record
+      and before the remover, the next attempt ends with the item removed once and its snapshot whole, or
+      with the item in place; reconcile's part in that is VELDO-0315 AC2
     falsified_by: >
       Each of these turns a row of its own red. Go on after a short write: the row fills the store's pool
       in the middle of a file, and finds the worktree gone and the file in no place. Make room for a retry
       by deleting the existing snapshot folder: the row kills the remover between the delete and the
       rename and finds no copy of the file. Use the snapshot the record names without comparing: the row
-      changes a file after the kill, and finds the new content neither in place nor restored
+      changes a file after the kill, and finds the new content neither in place nor restored. Keep only
+      the newest attempt on the record: the row stops a review scratch removal after its first delete,
+      retries, restores, and finds the first deleted file missing while restore said success
 required_evidence: [unit, integration]
 rollback: >
   Revert the change. Removers then run without the keep step, as before this ticket. Kept refs already
@@ -179,3 +182,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   used; a retry uses it only when it still equals the item; the three kill points around the snapshot are
   rows. AC5 has three falsifiers: the remove after a short write, an existing folder deleted to make room,
   and the recorded snapshot used without comparing. AC4 is unchanged. Four criteria became five.
+- 2026-11-13: amended from the final check of design section 0
+  (design-veldo-nowork-r2-validation-2026-11-14.md, verdict CHANGES; design 14.8). F1: the keep record
+  named one snapshot, and a retry wrote the record again. After a review scratch removal that had deleted
+  one file and stopped at the next, the retry's snapshot replaced the first in the record, and a restore
+  brought back only the second. AC5: the keep record lists every attempt it was given, and a later keep
+  write for the item adds refs and attempts and removes none, also a write that saves nothing; a retry
+  uses the newest listed attempt when it still equals the item, and otherwise adds the next number to the
+  record. AC5 gains a fourth falsifier, the newest attempt alone on the record. Still five criteria.

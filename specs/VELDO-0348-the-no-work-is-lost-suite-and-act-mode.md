@@ -69,8 +69,8 @@ acceptance_criteria:
       snapshot, a file deleted without the comparison with its manifest, an existing snapshot folder
       replaced on a retry, Save's remove run with an ignored file the snapshot does not hold, a restore
       that applies the snapshot only when its folder is there, a clone adopted as scratch, no look at an
-      item's own folder, an agent worktree's kept refs written into its agent repository, and a clean
-      clone read without its logs
+      item's own folder, an agent worktree's kept refs written into its agent repository, a clean clone
+      read without its logs, and a keep record that holds only the newest attempt
     falsified_by: >
       Drop the nested rows from the suite's data; the mutation that skips the look beneath a worktree
       leaves the suite green and the mutation check fails
@@ -148,3 +148,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   the snapshot only when its folder is there, a clone adopted as scratch, no look at an item's own folder,
   an agent worktree's kept refs written into its agent repository, and a clean clone read without its
   logs. The three falsifiers are unchanged.
+- 2026-11-13: amended from the final check of design section 0
+  (design-veldo-nowork-r2-validation-2026-11-14.md, verdict CHANGES; design 14.8). F1: AC3 gains one
+  mutation, a keep record that holds only the newest attempt, and design 0.7's Retry shape gains the case
+  that turns it red: a review worktree whose scratch removal stopped after its first delete, is retried
+  and is then restored. The falsifier is unchanged.

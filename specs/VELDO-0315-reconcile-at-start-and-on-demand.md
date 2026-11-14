@@ -49,9 +49,9 @@ acceptance_criteria:
     text: >
       Reconcile completes a removing item and marks a missing one gone, and removes nothing else that was
       not already due. A removing worktree or private repository is completed only when its keep record
-      exists, every ref in it resolves and the snapshot it names is there with its digest; otherwise it is
-      deferred as keep_failed. An item that is due or removing with a keep record, and whose thing is
-      still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5)
+      exists, every ref in it resolves and every snapshot attempt it lists is there with its digest;
+      otherwise it is deferred as keep_failed. An item that is due or removing with a keep record, and
+      whose thing is still whole at its locator, is attempted again from rule 1 (VELDO-0345 AC5)
     falsified_by: >
       Remove reported things; the reported fixture folder is gone and the row fails
   - id: AC3
@@ -115,3 +115,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   there with its digest, and an item that is due or removing with a keep record and still whole at its
   locator is attempted again from rule 1, which is how a crash between the save and the removal is
   recovered. AC2's falsifier is unchanged.
+- 2026-11-13: amended from the final check of design section 0
+  (design-veldo-nowork-r2-validation-2026-11-14.md, verdict CHANGES; design 14.8). F1: the keep record
+  lists every snapshot attempt (VELDO-0345 AC5). AC2 completes a removing item only when every attempt its
+  keep record lists is there with its digest, where it said the snapshot the record names. The falsifier
+  is unchanged.

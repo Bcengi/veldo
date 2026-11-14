@@ -53,10 +53,13 @@ acceptance_criteria:
       owns or may write, a capability attribute other than exactly cap_sys_ptrace permitted and effective
       in version 2 or in version 3 with root id 0, no digest in the installation's space section, a digest
       other than that one, no socket, an output the kernel does not show as written by one process of the
-      owner's that holds exactly that capability and that a pidfd names as alive before and after its
-      status was read, or a header that says it holds no capability), the probe does not use it, every
-      unread process is judged as before this ticket, and the in_use facts name the reader's state and the
-      check that failed
+      owner's that holds exactly that capability, whose status shows NoNewPrivs 1 and Seccomp 2, and that
+      a pidfd names as alive before and after its status was read, anything but the one header line
+      received before the probe has sent its byte, or a header that says it holds no capability), the
+      probe does not use it, every unread process is judged as before this ticket, and the in_use facts
+      name the reader's state and the check that failed. The reader writes its header only after it has
+      set no_new_privs and installed its filter, and it writes the table only after it has read one byte
+      on descriptor 1; the probe sends that byte only after it has seen the header's writer locked
     falsified_by: >
       Each of these turns a row of its own red. Skip the digest check: the row puts a program that prints
       an empty table in the reader's place, the undumpable process in the item is not counted and the item
@@ -67,7 +70,9 @@ acceptance_criteria:
       cap=0 is used. Take the output whoever wrote it: the row's stand-in listens on the socket, answers
       with an empty table, and the item reads free. Trust the process id without the pidfd: the row's
       stand-in writes an empty table and exits, the row answers the status read for its number as a real
-      reader's, and the item reads free
+      reader's, and the item reads free. Take bytes written before the writer was seen locked: the row's
+      wrapper writes an empty table and then executes the real reader with its output on a socket pair,
+      and the item reads free
   - id: AC2
     text: >
       With the reader in use, a process of the owner's that is not dumpable counts for an item exactly
@@ -231,6 +236,17 @@ probe has shut down its side. The install line reads the source with git's cat-f
 the digest root compares with is copied from the review record the owner approved, not read back from
 the checkout. The reader also checks that /proc is a process file system before it reads.
 
+What the final check changed (design-veldo-nowork-r2-validation-2026-11-14.md; design 14.8). Executing
+a program keeps the process, its pidfd and its start time. A wrapper put into the unit's start line
+could write a fake table, move its output to a socket pair and execute the installed reader, and the
+probe would read the reader's status for the wrapper's bytes. The writer check stays and is closed in
+two ways. The probe also requires NoNewPrivs 1 and Seccomp 2 in the writer's status: a process holds
+the capability and a filter together only when it executed the installed binary first, and the
+reader's filter refuses another execution. And the reader writes only its header once it is locked,
+reads one byte on descriptor 1, and writes the table after that; the probe sends the byte only after
+it has seen the header's writer locked, and refuses anything but the header before it. This follows
+from how the kernel defines execve and was not run on this host; the AC1 row shows it.
+
 Every thread. The entries under /proc/<pid> are the first thread's. The reader reads the working
 directory and the fdinfo entries of every task, and so does the probe's own reading of the processes it
 may read, which had the same gap (AC8, recorded on VELDO-0299's spec).
@@ -269,7 +285,8 @@ AC2, AC3 and AC5 give the probe a reader through its seam: a program the row wri
 the row makes, with the check's file facts (owner, mode, capability) and the writer's capability supplied
 by the row. One AC1 row leaves the writer check real and answers from a stand-in, which must be refused.
 Another has the stand-in write and exit while the row answers the status read as a real reader's; the
-pidfd must refuse it. One AC5 row serves the built reader on a socket, lets it finish a short output
+pidfd must refuse it. A third has a wrapper write an empty table and then execute the built reader with
+its output on a socket pair; the lock check and the order of the bytes must refuse it. One AC5 row serves the built reader on a socket, lets it finish a short output
 before it reads, and checks that the writer is still alive.
 The rows for AC4 and AC7 build the real reader from its source and run it without the capability, where
 it prints x lines for what it may not read. The row for AC8 needs no reader. One row of AC6 runs only
@@ -323,3 +340,11 @@ proves all three.
   falsifier for version 3 of the capability attribute with any root id, and AC6's installed row records
   the reader's run time. Still eight criteria. VELDO-0299's AC1 is not edited, as that validation
   confirmed. Status ready.
+- 2026-11-13: design 7.1 amended after the final check (design-veldo-nowork-r2-validation-2026-11-14.md,
+  verdict CHANGES; design 14.8), which found every earlier point resolved and one new hole in the writer
+  check: a process that writes a fake table and then executes the reader in its own place keeps its
+  process id and its pidfd. AC1: the writer's status must also show NoNewPrivs 1 and Seccomp 2, the reader
+  writes its header only after it has locked itself and the table only after it has read one byte, and the
+  probe sends that byte only after it has seen the header's writer locked; anything but the header before
+  the byte is refused. AC1 gains one falsifier, bytes taken from before the writer was seen locked. Still
+  eight criteria. VELDO-0299's AC1 is not edited, as this check confirmed again. Status ready.

@@ -40,42 +40,47 @@ observability:
     missing names the item, its ticket, the path it had and the ref or the snapshot that is missing.
   error_taxonomy: >
     restore is refused when it is not signed by the owner, when something is at the path, for an item
-    with no keep record, when a kept ref does not resolve, when the snapshot the keep record names is
-    missing or does not match its recorded digest or its manifest, and when a manifest path leads outside
-    the target. Each refusal says what is missing and adds nothing. drop kept is refused when it is not
-    signed by the owner.
+    with no keep record, when a kept ref does not resolve, when any snapshot attempt the keep record lists
+    is missing or does not match its recorded digest or its manifest, and when a manifest path leads
+    outside the target. Each refusal says what is missing and adds nothing. drop kept is refused when it
+    is not signed by the owner.
 acceptance_criteria:
   - id: AC1
     text: >
       veldo space kept lists, for each removed worktree and private repository, its ticket, the path it
       had, the event that removed it and each kept ref with its commit, and says of each ref whether it
-      still resolves and of each snapshot whether it is still there and whole. With no ledger reachable it
-      lists the same refs from the repository alone
+      still resolves and of each snapshot attempt the keep record lists whether it is still there and
+      whole. With no ledger reachable it lists the same refs from the repository alone
     falsified_by: >
       Read the ledger only; the row with the authority down gets an empty list and fails
   - id: AC2
     text: >
       veldo space restore adds a worktree at the path the item had, or at the path given, at the kept
-      head, and applies the snapshot the keep record names: after a Discard and a restore the tracked
-      edits, the staged state, the untracked files and the ignored files that are work are back byte for
-      byte with their modes. Whether there is a snapshot is read from the keep record alone. It refuses,
-      adding nothing and saying what is missing, when something is at the path, when the record names a
-      snapshot whose folder or manifest is missing or whose manifest has another digest than the record
-      holds, when a saved file does not match its manifest, and when a manifest path is absolute, holds a
-      .. part or resolves outside the target path. It leaves the kept refs and the snapshot in place
+      head, and applies every snapshot attempt the keep record lists, the oldest first, so that the later
+      one wins where two hold the same path: after a Discard and a restore the tracked edits, the staged
+      state, the untracked files and the ignored files that are work are back byte for byte with their
+      modes. Whether there is a snapshot is read from the keep record alone. It refuses, adding nothing
+      and saying what is missing, when something is at the path, when any attempt the record lists has its
+      folder or manifest missing or a manifest with another digest than the record holds, when a saved
+      file does not match its manifest, and when a manifest path is absolute, holds a .. part or resolves
+      outside the target path. It leaves the kept refs and the snapshots in place
     falsified_by: >
       Each of these turns a row of its own red. Restore the head without the snapshot: the row's untracked
       file is missing. Apply the snapshot only when the folder is there: the row deletes the snapshot,
       restores, finds the head without the untracked file, and the command said success. Copy a manifest
       path as it is written: the row's manifest names a path with a .. part, and a file is written outside
-      the target
+      the target. Apply the newest attempt only: the row's review scratch removal stopped after its first
+      delete and was retried, and the restore leaves the first deleted file missing
   - id: AC3
     text: >
       Only veldo space kept drop removes a kept ref or a snapshot. It is the owner's signed command, it
-      lists the commits that would no longer be reachable and the snapshot's files before it acts, and it
-      is refused from every host principal
+      lists the commits that would no longer be reachable and every file of every attempt folder of the
+      item, the folders no record lists and the temporary ones included, before it acts, it removes the
+      item's whole folder in the store, and it is refused from every host principal
     falsified_by: >
-      Accept drop from space-runner; the row that sends it finds the refs gone and fails
+      Each of these turns a row of its own red. Accept drop from space-runner: the row that sends it finds
+      the refs gone. List only the attempts the record lists: the row's item has one more attempt folder
+      that no record lists, and drop removes a file its listing did not show
   - id: AC4
     text: >
       The console's Removed section and the space.kept read show, for each removal, the number of kept
@@ -87,15 +92,16 @@ acceptance_criteria:
   - id: AC5
     text: >
       Reconcile and veldo space kept check every keep record against the disk: each kept ref resolves to
-      its recorded commit, the snapshot folder the record names is there, and its manifest has the
+      its recorded commit, every snapshot attempt the record lists is there, and each manifest has its
       recorded digest. What fails is reported under space.reports as kept work missing, with the item, and
       is shown at the top of the console's Space screen until the ref or the snapshot is back or the owner
       drops that item's kept work. A snapshot store that is gone, or whose owner or mode is not the
       installation owner's and 0700, is reported the same way. Snapshot folders no keep record names are
       listed with their sizes, and nothing is proposed for them
     falsified_by: >
-      Check the kept refs only; the row deletes the snapshot store, runs reconcile, finds no report and
-      fails
+      Each of these turns a row of its own red. Check the kept refs only: the row deletes the snapshot
+      store, runs reconcile and finds no report. Check the newest attempt only: the row deletes the first
+      of an item's two listed attempts, runs reconcile and finds no report
 required_evidence: [unit, integration, ui_states]
 rollback: >
   Revert the change. The kept refs and the snapshots stay. They are restored by hand: git worktree add
@@ -157,3 +163,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   work missing until it is back or dropped, so the loss of the store or of a kept ref is never silent. The
   footprint gains the reconciler, which calls the check. The guard hook the validation recommended is put
   to the lead in design section 15 and is not in this ticket. Four criteria became five.
+- 2026-11-13: amended from the final check of design section 0
+  (design-veldo-nowork-r2-validation-2026-11-14.md, verdict CHANGES; design 14.8). F1: a keep record that
+  named one snapshot lost the files of an earlier attempt when a removal that deletes file by file was
+  retried, and restore said success without them. The keep record now lists every attempt (VELDO-0345
+  AC5). AC1 says of each listed attempt whether it is there and whole. AC2 applies every listed attempt,
+  the oldest first, and refuses when any of them is missing or not whole; one more falsifier, the newest
+  attempt applied alone. AC3: drop lists every file of every attempt folder of the item, the ones no
+  record lists and the temporary ones included, and removes the item's whole folder in the store; one more
+  falsifier. AC5 checks every listed attempt; one more falsifier. The guard hook is the lead's decision of
+  the same day and is its own ticket, VELDO-0349, built after this one. Still five criteria.

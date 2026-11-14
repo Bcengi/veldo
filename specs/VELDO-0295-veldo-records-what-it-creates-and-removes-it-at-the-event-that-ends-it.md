@@ -285,7 +285,8 @@ space it needs and waits when the disk cannot cover it.
 - Section 0 of the design is the rule that no work is ever lost: what work is, the kept refs under
   refs/veldo/kept in each main repository, the snapshot Discard saves first, the recovery commands, the
   suite that must pass before act mode, and the list of tickets the rule changes. Four tickets were added
-  for it, VELDO-0345 to VELDO-0348, and VELDO-0344, the process reader, was added before them.
+  for it, VELDO-0345 to VELDO-0348, and VELDO-0344, the process reader, was added before them. VELDO-0349,
+  the guard's rule for the kept store, was added after them by the lead's decision.
 - The design is docs/design/VELDO-0295-design.md. It holds the components, the data model, the lifecycle
   table, the event sources outside the service, the table of existing removal paths, the flows, the
   deployment view and the forty-eight build tickets, VELDO-0296 to VELDO-0343.
@@ -326,7 +327,7 @@ space it needs and waits when the disk cannot cover it.
 ## Build order
 
 The order of section 12 of the design. Each ticket is its own spec, specs/VELDO-0296 to
-specs/VELDO-0348.
+specs/VELDO-0349.
 
 1. 0296, 0338, 0297, 0326, 0331.
 2. 0298, 0299, 0330 and 0300 together.
@@ -334,7 +335,8 @@ specs/VELDO-0348.
 4. 0302, 0303 and 0305 to 0314 with 0323, 0324, 0328, 0329, 0333, 0335, 0336, 0337 and 0341, in any
    order.
 5. 0347, then 0304.
-6. 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0346, 0320, 0332, 0325, 0339, 0321, 0322.
+6. 0315, 0316, 0334, 0317, 0327, 0318, 0343, 0340, 0342, 0319, 0346, 0349 (the guard's rule), 0320, 0332, 0325, 0339, 0321,
+   0322.
 7. 0348, the no-work-is-lost suite. Until it lands and has passed on the host, no project can be
    switched to act.
 
@@ -344,7 +346,8 @@ age, and the check would turn the gate red on its first run.
 
 Tickets that touch protected paths and need the owner's recorded approval: 0302 and 0324 (the sandbox),
 0309 (the gate script template, and the new helper added to the protected list), 0304 (its check is
-called from scripts/verify.sh) and 0333 (the gate's leg timing). 0325 produces a change to the gate
+called from scripts/verify.sh), 0333 (the gate's leg timing) and 0349 (scripts/veldo-guard.sh and its
+engine copy). 0325 produces a change to the gate
 script of each bound project, approved by the owner in that project.
 
 A ticket's depends_on holds the dependencies the design states for it. Where the design states none, it
@@ -445,3 +448,14 @@ safety rules in section 7 of the design, and whether any mechanism in it is a ti
   (0344). VELDO-0345, 0346 and 0347 have five criteria each. No ticket is added. One question is put to
   the lead in design section 15: a guard hook that refuses a shell command naming the snapshot store or
   the kept refs. Still a draft.
+- 2026-11-13: the final check of design section 0 and of 7.1
+  (design-veldo-nowork-r2-validation-2026-11-14.md, verdict CHANGES; design 14.8) found every earlier
+  point resolved and two new defects, both taken in the design (14.8) and in the tickets; AC0 is
+  unchanged. The keep record lists every snapshot attempt and no later write takes one off, so a retry
+  after a removal that had already deleted some files cannot drop the attempt that holds them; restore
+  applies every listed attempt, the oldest first (0315, 0345, 0346, 0348). The process reader writes its
+  table only after the probe has seen it locked and sent one byte, so a process that writes first and then
+  executes the reader is refused (0344). The lead answered the open question of design section 15: the
+  guard hook refuses a shell command that names the snapshot store or refs/veldo/kept, except veldo space
+  kept drop. That is one more ticket, VELDO-0349, built after 0346; scripts/veldo-guard.sh is a protected
+  path and the change lands with the owner's approval. Section 15 of the design is empty. Still a draft.
