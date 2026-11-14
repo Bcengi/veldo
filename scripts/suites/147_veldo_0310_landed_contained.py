@@ -63,6 +63,11 @@ commit, no branch of the project's repository holding the candidate; another bra
 which the remote's new tip contains is contained, its worktree removed after the keep step, the branch kept
 and marked; and a branch recorded in another repository, which holds nothing of the landing, is contained
 after the candidate's objects were brought into it, with no ref written there and nothing fetched).
+f1/project-repository-brought (the re-review's case 3: a unit lands at the remote with the lander's
+workspace discard disabled, so no kept ref gives the project's own repository the candidate; the step
+copies the candidate's objects into that repository, writes no ref and fetches nothing; landed is sent for
+the unit and another branch of that repository is contained, as with the discard; the workspace is still
+on disk).
 f2/trunk-read-at-the-attempt (finding 2: a clean worktree whose commit only the
 trunk holds counts as contained at the check; the trunk is put back inside the Signal stand-in; rule 5,
 given the source commit only, reads the trunk itself and defers the worktree as unique_work).
@@ -117,6 +122,7 @@ def _v310_suite():
             'ac3/not-in-trunk-left', 'ac3/work-in-contained-worktree-stays', 'ac3/not-alone-left',
             'ac3/moved-after-the-check', 'ac3/other-project-untouched', 'ac3/marked-once',
             'f1/remote-trunk-put-back', 'f1/remote-unit-landed', 'f1/remote-branch-contained',
+            'f1/project-repository-brought',
             'f2/trunk-read-at-the-attempt',
             'f4/squash-landing', 'f4/one-landed-one-unlanded', 'f4/detached-worktree-at-landed',
             'f5/space-step-failed',
@@ -200,10 +206,11 @@ def _v310_suite():
         # on after its evidence commit; U4 lands with no ledger wired in.
         # The fix round: U5 lands at the remote; U6 has a second branch the landing does not hold; U7's
         # space step fails, and it has a detached worktree; U8 is landed as a squash (a stand-in receipt).
-        U1, U2, U3, U4, U5, U6, U7, U8 = ('VELDO-97%02d' % n for n in range(1, 9))
-        UNITS = (U1, U2, U3, U4, U5, U6, U7)
-        T_CONT, T_FRESH, T_NOSTART, T_AHEAD, T_DIRTY, T_MIXED, T_MOVED, T_MEADOW, T_HELD, T_REMOTE, T_AGENT = (
-            'VELDO-98%02d' % n for n in range(1, 12))
+        # The second fix round: U9 lands at the remote with the lander's workspace discard disabled.
+        U1, U2, U3, U4, U5, U6, U7, U8, U9 = ('VELDO-97%02d' % n for n in range(1, 10))
+        UNITS = (U1, U2, U3, U4, U5, U6, U7, U9)
+        (T_CONT, T_FRESH, T_NOSTART, T_AHEAD, T_DIRTY, T_MIXED, T_MOVED, T_MEADOW, T_HELD, T_REMOTE, T_AGENT,
+         T_BROUGHT) = ('VELDO-98%02d' % n for n in range(1, 13))
 
         seed = base / 'seed'
         seed.mkdir()
@@ -1261,6 +1268,86 @@ def _v310_suite():
               [e['event'] for e in sent_for(T_AGENT)] == ['contained'] and state_of(agent_branch) == 'kept'
               and len(marked) == 1 and marked[0].get('repository') == str(agent) and marked[0].get('tip') == SEED
               and tip(agent, 'agent/side') == SEED)
+
+        # ---- the second fix round: the transfer into the project's own repository -------------------------------
+        R = 'f1/project-repository-brought'
+        own[U9] = planted(U9.lower(), 'build/' + U9, U9, start=SEED)
+        u9 = own[U9]
+        git(caller, 'branch', 'side/brought', FIRST)
+        beside = planted('brought', 'side/brought', T_BROUGHT)
+        moved_past(beside, SEED)
+        NINTH = {'discards': 0}
+
+        def no_discard(ops):
+            """The lander's workspace discard disabled for this landing: it is asked and does nothing, so no
+            kept ref carries the candidate into the project's repository and the workspace stays."""
+            def asked():
+                NINTH['discards'] += 1
+            ops.discard = asked
+        hooks[U9] = no_discard
+
+        def seen_before_the_step(unit, dispatch, held_landing):
+            if unit == U9:
+                candidate = held_landing.receipt(unit, dispatch)['candidate']
+                alternates = caller / '.git' / 'objects' / 'info' / 'alternates'
+                NINTH.update(candidate=candidate, held=has(caller, candidate), refs=refs_of(caller),
+                             alternates=alternates.exists(), remote=git(bare, 'rev-parse', 'refs/heads/main'),
+                             fetched=[path.read_bytes() if path.exists() else None for path in fetched],
+                             record=(station.record(dispatch) or {}).get('state'))
+            return real_landed(unit, dispatch, held_landing)
+
+        def at_the_first_event(seen):
+            NINTH.update(at_signal=has(caller, NINTH['candidate']), refs_at_signal=refs_of(caller))
+        INSIDE[('landed', U9)] = at_the_first_event
+        station.landed = seen_before_the_step
+        ninth = land(U9)
+        del station.landed
+        INSIDE.pop(('landed', U9), None)
+        candidate9 = str(candidate_of(ninth))
+        came = space_of(ninth)
+        workspace9 = str((getattr(opened[-1], 'candidate', None) or {}).get('workspace') or '')
+        check(R, 'the unit landed at the remote with the lander\'s workspace discard disabled: the discard was asked '
+                 'and did nothing, the workspace is still on disk, and when the step began the project\'s repository '
+                 'did not hold the candidate, by a ref or by an alternate [%s %s %s held=%s]'
+              % (ninth.get('state'), NINTH.get('record'), NINTH.get('discards'), NINTH.get('held')),
+              ninth.get('state') == 'landed' and ninth.get('destination') == REMOTE and NINTH.get('record') == 'landed'
+              and NINTH.get('discards', 0) >= 1 and bool(workspace9) and os.path.isdir(workspace9)
+              and NINTH.get('candidate') == candidate9 == NINTH.get('remote')
+              and NINTH.get('held') is False and NINTH.get('alternates') is False)
+        check(R, 'the candidate\'s objects were copied from the landing\'s clone into the project\'s repository before '
+                 'the reads, and the record names it copied [%s]' % (came.get('brought'),),
+              {'repository': str(caller), 'how': 'copied'} in (came.get('brought') or [])
+              and all(entry.get('how') == 'copied' for entry in came.get('brought') or [])
+              and NINTH.get('at_signal') is True and has(caller, candidate9))
+        check(R, 'no ref was written by that and nothing was fetched: the refs of the project\'s repository at the '
+                 'first event are exactly those before the step, and after the step no ref of it holds the candidate',
+              NINTH.get('refs_at_signal') == NINTH.get('refs') and bool(NINTH.get('refs'))
+              and [path.read_bytes() if path.exists() else None for path in fetched] == NINTH.get('fetched')
+              and has(caller, candidate9)
+              and git(caller, 'for-each-ref', '--contains', candidate9, '--format=%(refname)') == '')
+        mine = sent_for(U9)
+        check(R, 'landed is sent for the unit as with the discard: Signal is given the source commit only, the '
+                 'unit\'s build output and then its worktree are removed after the keep step, and its branch is kept '
+                 'at its commit [%s %s %s]' % (came.get('sent'), came.get('reason'), state_of(u9['branch_item'])),
+              step_of(ninth).get('state') == 'done' and came.get('sent') is True
+              and [e['event'] for e in mine] == ['landed']
+              and mine[0]['landed'][-1:] == (builds[U9]['evidence'],) and candidate9 not in mine[0]['landed']
+              and [k for k in kinds_of(of(came.get('removed') or [], event='landed')) if k in ('build_output', 'worktree')]
+              == ['build_output', 'worktree'] and not os.path.lexists(str(u9['path']))
+              and state_of(u9['worktree']) == 'removed' and kept_at(u9['worktree'], caller, builds[U9]['evidence'])
+              and state_of(u9['branch_item']) == 'kept' and tip(caller, 'build/' + U9) == builds[U9]['evidence'])
+        gone = [entry for entry in of(came.get('removed') or [], event='contained')
+                if entry.get('item') in (beside['build'], beside['worktree'])]
+        check(R, 'contained still holds: the other branch of the project\'s repository, which the remote\'s new tip '
+                 'contains past its start commit, is sent contained once; its build output and then its worktree are '
+                 'removed after the keep step, and the branch is kept at its commit and named marked [%s %s %s]'
+              % ([e['event'] for e in sent_for(T_BROUGHT)], kinds_of(gone), state_of(beside['branch_item'])),
+              [e['event'] for e in sent_for(T_BROUGHT)] == ['contained']
+              and within(caller, tip(caller, 'side/brought'), candidate9)
+              and kinds_of(gone) == ['build_output', 'worktree'] and not os.path.lexists(str(beside['path']))
+              and state_of(beside['worktree']) == 'removed' and kept_at(beside['worktree'], caller, SEED)
+              and state_of(beside['branch_item']) == 'kept' and tip(caller, 'side/brought') == SEED
+              and len(of(came.get('marked') or [], item=beside['branch_item'], event='contained')) == 1)
 
         R = 'ac3/other-project-untouched'
         check(R, 'after every landing the other project\'s branch and worktree are as they were',

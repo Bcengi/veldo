@@ -203,3 +203,38 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     (space310-detached-refused-at-landed) and f5/space-step-failed
     (space310-space-step-inside-the-running-window). The ten falsifiers of the build keep their
     anchors and were applied again: all red.
+- 2026-11-14: second fix round, after the re-review of the fix round (verdict FIX; its notes 3 and 4
+  are this ticket's). No acceptance criterion changed and no engine code changed.
+  - A space step that hangs, or a process that dies before the step's record is opened, leaves no
+    readable record (the re-review's note 4). Three cases, as the code stands:
+    a step that hangs, or whose process dies inside it, leaves its record running for good, and the
+    station never runs it again (the open is refused, the record exists);
+    a process that dies after the dispatch's record is ended landed and before the step's record is
+    opened leaves no space record at all;
+    and nothing reads a space record that is running or failed: the station's status lists
+    dispatch records only.
+    So nothing in this ticket tells an owner, or a later run, that a landed dispatch's space step
+    did not run to its end. No work is lost by it: the landing is a fact with its receipt, and the
+    unit's worktree, its branch and every other branch stay as they were, on disk and in the
+    ledger. It costs space. Where it is picked up: VELDO-0315 reconcile. A landed dispatch whose
+    space record is missing, running or failed is reconcile's to find, and what it then ends goes
+    through Signal, after the rules and the keep step, as every removal does. Until then the
+    worktrees wait for a later event, as the entry above says of a failed step.
+    Not built here, and left to the lead: the station's status naming running and failed space
+    records, the space record opened in the same transition that ends the dispatch landed, and a
+    stated deadline for a hung step.
+  - The transfer into the project's own repository has a row (the re-review's note 3 and its
+    case 3). Every row of the fix round had that repository answer held, through the kept ref the
+    lander's workspace discard writes there, so the copied path was driven only for the agent
+    repository. Row f1/project-repository-brought: a unit lands at the remote with the lander's
+    workspace discard disabled (it is asked and does nothing, and the workspace stays on disk); when
+    the step begins the project's repository does not hold the candidate, by a ref or by an
+    alternate; the step copies the candidate's objects into it and the record names it copied; the
+    refs of that repository at the first event are exactly those before, nothing is fetched, and
+    after the step no ref of it holds the candidate; landed is sent for the unit and its worktree
+    is removed after the keep step; and contained still holds for another branch of that
+    repository, its worktree removed after the keep step and the branch kept and marked. Its
+    falsifier, registered and applied once to the copy the suite loads, seen red on that row alone:
+    space310-project-repository-left-to-the-discard (a repository that has kept refs is not brought
+    to). space310-candidate-not-brought and space310-transfer-writes-a-ref were applied again and
+    are red on this row and on f1/remote-branch-contained. Suite 147 is 30 rows, 56 passed.

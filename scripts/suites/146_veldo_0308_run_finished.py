@@ -1681,17 +1681,28 @@ def _v308_run_finished_suite():
                   and (work / 'tracked.txt').is_file() and len(C5._pins_held(clone_id)) == 1
                   and [state_of(run_item), state_of(repository_item)] == ['present'] * 2
                   and refusals(N, dispatch_id) == ['not_alone'])
-            # Nothing is held for ever: the ledger's own retry of the clone is an event for that owner.
+            # What production does next, driven as production drives it: the retirement handed the clone over
+            # and released in the same attempt, so no retirement is pending and nothing calls the ledger's
+            # retry for this dispatch. Once the holder has gone, the runner's own sweeps send nothing: the
+            # run's items wait, deferred behind the clone, for the ledger's next retry (admission, reconcile).
             shutil.rmtree(holder)
-            answer = N.retry_deferred(dispatch_id)
-            check(row, 'the ledger\'s retry of the handed-over clone, once its holder has gone, ends the clone and '
-                       'the run\'s own items in one event, each after the rules and the keep step [%s %s %s]'
-                  % (answer.get('signals'), states(clone_items), [state_of(run_item), state_of(repository_item)]),
-                  answer.get('signals') == 1 and state_of(clone_items['work']) == 'removed'
-                  and kept_at(clone_items['work'], REPOSITORY, clone_head)
-                  and [state_of(run_item), state_of(repository_item)] == ['removed'] * 2
-                  and kept_at(repository_item, REPOSITORY, head)
-                  and not os.path.lexists(place) and not os.path.lexists(where) and not os.path.lexists(work))
+            swept = [N.sweep() for _ in range(5)]
+            check(row, 'after the holder has gone, five runner sweeps release nothing, send nothing, make no retry and '
+                       'write nothing: no retirement is pending, and the leftover keeps its one observation [%s %s %s %s]'
+                  % (swept, sent_for(dispatch_id)[mark:], retries(N), refusals(N, dispatch_id)),
+                  swept == [[]] * 5 and sent_for(dispatch_id)[mark:] == [] and retries(N) == []
+                  and journal_length() == length and refusals(N, dispatch_id) == ['not_alone']
+                  and dispatch_id in N.leftovers and not N.retirements.pending())
+            check(row, 'the items stay deferred and unharmed: the clone as it was at the version it had, whole, its '
+                       'commit readable and its pin held; the run directory and the agent repository present on disk '
+                       'and in the ledger, the repository at its commit [%s %s]'
+                  % (states(clone_items), [state_of(run_item), state_of(repository_item)]),
+                  states(clone_items) == was and versions(clone_items) == before
+                  and state_of(clone_items['work']) == 'deferred'
+                  and (work / 'tracked.txt').is_file() and readable(work, clone_head)
+                  and len(C5._pins_held(clone_id)) == 1
+                  and [state_of(run_item), state_of(repository_item)] == ['present'] * 2
+                  and os.path.isdir(place) and os.path.isdir(where) and git(where, 'rev-parse', 'HEAD') == head)
 
             row = 'n2/observations-bounded'
             dispatch_id = 'dispatch/bound-75'

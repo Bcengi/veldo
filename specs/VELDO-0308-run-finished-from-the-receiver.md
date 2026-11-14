@@ -266,14 +266,16 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     owner and not for others. While a clone of the run's own owner is live and present, or handed
     over and deferred or kept, an event for that owner would judge the clone, so nothing is sent
     from the receiver or the sweep (not_alone, as before) and the run's other items wait with it.
-    They are not held for ever: the clone's teardown, and for a clone handed over the ledger's own
-    retry (space_retry, when its retirement is carried out), send run finished for that owner, and
-    that event ends the run's own items with the clone, each after the rules and the keep step. The
-    lead's row (every item of the run that is no clone's ended, the handed-over clone untouched) is
-    therefore shown with the clone left due, and the deferred clone has its own row: nothing sent,
-    the clone not judged again, then one retry that ends both. Sending for the run's items alone
-    beside a deferred clone needs the signal that names items, the same follow-up VELDO-0310 names.
-    This costs space and loses nothing.
+    While the clone is live its teardown sends run finished for that owner, and that event ends
+    the run's own items with the clone, each after the rules and the keep step. For a clone handed
+    over and deferred, the run's items wait for the ledger's next retry (the retirement retry,
+    admission, reconcile), and nothing in production calls that retry for them today: see the
+    correction in the entry of the third round below. The lead's row (every item of the run that
+    is no clone's ended, the handed-over clone untouched) is therefore shown with the clone left
+    due, and the deferred clone has its own row: nothing sent, the clone not judged again, and the
+    run's items deferred and unharmed. Sending for the run's items alone beside a deferred clone
+    needs the signal that names items, the same follow-up VELDO-0310 names. This costs space and
+    loses nothing.
   - N2, bounded observations. A leftover that was sent its one event and is still there is recorded
     once (run_finished_sent) and dropped from the runner's memory: no sweep sends it another, so it
     is the ledger's and reconcile's. What a sweep finds of a leftover is recorded once for each
@@ -290,3 +292,42 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     n2/observations-bounded (space308-observation-at-every-sweep and
     space308-sent-leftover-stays-in-memory). The four falsifiers of the first fix round whose
     lines were touched keep their anchors and were applied again: all red.
+- 2026-11-14: third round, a correction after the re-review of the second fix round (verdict FIX,
+  finding 1). No acceptance criterion changed, no engine code changed, and the footprint is as it
+  was. What the entry above said of N1 and was not true, and what is true:
+  - What the entry said. That the run's items held back behind a handed-over, deferred clone "are
+    not held for ever", because the ledger's own retry (space_retry, when the clone's retirement is
+    carried out) sends run finished for that owner. Its row showed that by calling
+    Runner.retry_deferred by hand.
+  - What production does. space_retry has one production caller: Retirements._attempt, and only for
+    a retirement that was pending and is released (control_retirement.py, `if released and
+    pending`). A retirement that hands the clone over and releases the slot in the same attempt
+    was never pending, so that call is not made for it, then or later. Nothing else in production
+    calls retry_deferred for those items today. Every later sweep finds the clone still counted
+    and refuses not_alone, once on the record (N2). A runner that restarts forgets the leftover,
+    and then no sweep looks at all.
+  - So the run's items deferred behind a handed-over clone wait for the ledger's next retry: the
+    retirement retry (only where a retirement is still pending), admission (VELDO-0316, not built
+    on this branch) and reconcile (VELDO-0315, not built). Until one of the two lands, such items
+    stay as they are without bound. Nothing is ended wrongly and nothing is lost: the clone is
+    whole with its pin held, the run directory and the agent repository are on disk and present
+    in the ledger, and when an event does come it is run finished for an owner whose run is over,
+    after the rules and the keep step. It costs space, never work.
+  - How reachable it is. In the usual order the clone's teardown event (the same owner, ended)
+    already reaches the run directory, the scratch folder and any item that is no clone's, because
+    they are present then. The held-back case needs a run item that becomes reachable after the
+    hand-over (declared then and confirmed later, or declared later by a creator of VELDO-0302),
+    or a clone item in state kept.
+  - DEPENDENCY, FOR THE LEAD. Closing it needs one of: the signal that names items (the follow-up
+    VELDO-0310 also names), so run finished can be sent for the run's items beside a deferred
+    clone; or VELDO-0315 reconcile, which picks up what no event reached; or admission's retry
+    (VELDO-0316). The creators of VELDO-0302 that declare run items beside a clone depend on it.
+    A retry made by the sweep when a handed-over clone's work tree leaves deferred was not built:
+    finding 1 of the first review ruled that a sweep is no retry, so that is the lead's decision.
+  - Suite 146, row n1/handed-over-clone-untouched: the hand call of retry_deferred is gone. After
+    the holder has gone the row drives production, five Runner.sweep calls, and asserts that no
+    retirement is pending, nothing is sent, no retry is made, nothing is written, the leftover
+    keeps its one not_alone observation, the clone is deferred at the version it had, whole, its
+    commit readable and its pin held, and the run directory and the agent repository are present
+    on disk and in the ledger, the repository at its commit. 146 is 58 passed. Its falsifier
+    (space308-event-reaches-a-handed-over-clone) was applied again and is red on the row.

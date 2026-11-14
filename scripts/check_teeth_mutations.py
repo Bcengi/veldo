@@ -14291,6 +14291,16 @@ def cases():
               "        ended = self._run('end', unit, dispatch, {'outcome': outcome, 'end': end})\n",
               ['f5/space-step-failed'])
 
+    # VELDO-0310, the second fix round (the re-review's note 3). The transfer leaves a repository that
+    # has kept refs to the lander's workspace discard: with that discard disabled, or keeping nothing,
+    # the project's own repository is not given the candidate, and its branches are unread.
+    landed310('space310-project-repository-left-to-the-discard', 'control_landing.py',
+              "            if not self._has(self.clone, commit):\n                return None\n",
+              "            if (not self._has(self.clone, commit)\n"
+              "                    or self._git(repository, 'for-each-ref', '--count=1', 'refs/veldo/kept').stdout.strip()):\n"
+              "                return None\n",
+              ['f1/project-repository-brought'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
