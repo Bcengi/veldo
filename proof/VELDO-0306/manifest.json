@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0306",
- "commit": "9e479e21462076f921f61eb5fb3e0ef73f2d3f62",
- "tree": "253bc9d5bacf341278b47d4849c6521fd39b7cae",
- "producer": "Claude implementation agent (build, and the fix from the review); not an independent reviewer",
- "produced_at": "2026-11-14T09:56:31.681941+00:00",
+ "commit": "91b5b9baf994ccff9aacfcaf52df34b649db0480",
+ "tree": "d1109ff271bb6e2287bfa7f0dcfc0294689eecbb",
+ "producer": "Claude implementation agent (build, the fix from the review, and the fix from the second review); not an independent reviewer",
+ "produced_at": "2026-11-14T10:25:24.969703+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -18,7 +18,7 @@
     {
      "type": "integration",
      "ref": "scripts/suites/144_veldo_0306_space_docker.py",
-     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default; engine 29.2.1 as recorded at the build and the review, 29.3.0 in the run of the fix from the second review) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
     },
     {
      "type": "falsifier",
@@ -29,6 +29,11 @@
      "type": "unit",
      "ref": "scripts/suites/144_veldo_0306_space_docker.py",
      "detail": "From the review (finding 2), row review/protected-mount: a container with the run's label that mounts a volume the protect list covers by name, one that mounts a volume of a protected compose project, one that binds a folder beneath a protected path, and an unlabelled one that mounts the protected volume get neither an item nor a report; a container the engine shows without its mounts is not recorded. Falsifiers: space306-review-protected-mount-adopted, space306-review-unread-mounts-adopted."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "From the second review (N1), row rereview/snapshot-store-mount: the Ledger protects the snapshot store as a path that names no engine; a container with the run's label that binds the store on one context, and one with the run's compose name that binds a folder beneath it on the other, get neither an item nor a report, and neither was named to a stop or a remove; a container of the run that binds another folder is an item and is removed. The engine is the suite's stand-in. Falsifier: space306-rereview-store-mount-adopted (the mount check at adoption reads path entries by engine again: the container that binds the store is an item of the run)."
     }
    ]
   },
@@ -44,7 +49,7 @@
     {
      "type": "integration",
      "ref": "scripts/suites/144_veldo_0306_space_docker.py",
-     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default; engine 29.2.1 as recorded at the build and the review, 29.3.0 in the run of the fix from the second review) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
     },
     {
      "type": "falsifier",
@@ -70,7 +75,7 @@
     {
      "type": "integration",
      "ref": "scripts/suites/144_veldo_0306_space_docker.py",
-     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default; engine 29.2.1 as recorded at the build and the review, 29.3.0 in the run of the fix from the second review) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
     },
     {
      "type": "falsifier",
@@ -81,6 +86,11 @@
      "type": "unit",
      "ref": "scripts/suites/144_veldo_0306_space_docker.py",
      "detail": "From the review (findings 2 and 5), rows review/protected-mount and review/volume-labels-rule-1: a recorded container that now mounts a protected volume, and one whose mounts cannot be read, are deferred by rule 2 as protected, are named to no stop and no remove and run, while a container of the same run that mounts nothing protected is removed; a volume made again in the same second without the run's label is deferred by rule 1 as not_in_ledger, and the engine is asked to remove nothing. Falsifiers: space306-review-mounts-not-read-at-removal, space306-review-unread-mounts-removed, space306-review-rule-1-labels-not-compared."
+    },
+    {
+     "type": "unit",
+     "ref": "scripts/suites/144_veldo_0306_space_docker.py",
+     "detail": "From the second review (N1), row rereview/snapshot-store-mount: a container recorded before it bound the snapshot store is deferred as protected at run finished (entry path: the store, how mounted_path), is asked no stop and no remove, and runs. Falsifier: space306-rereview-store-mount-removed (the probe's mount check reads path entries by engine again: the container is removed)."
     }
    ]
   },
@@ -96,7 +106,7 @@
     {
      "type": "integration",
      "ref": "scripts/suites/144_veldo_0306_space_docker.py",
-     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default, engine 29.2.1) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
+     "detail": "The rows run the adapter against a real Ledger on a real control store, and send run finished through the real Signal, kind registry, probes, safety rules and removers; the project is in act mode by the owner's own signed command with a real key. The event stream is the output pipe of a real child process, waited on with the kernel's select and handed to the Service class's own docker_readable. Row integration/real-engine ran on this host against the real engine (context default; engine 29.2.1 as recorded at the build and the review, 29.3.0 in the run of the fix from the second review) with objects the row itself created under names made for that run: a labelled volume, network and container and an unlabelled volume were recorded from the real inspect records, a labelled container created after the engine's time was read and before the subscription became an item from the event the engine printed again (--since), the event client was started with the row's own label as a filter, the labelled ones were removed at run finished by the real client, through the row's client that passes only a stop or a remove of an object the row created, in the order container, network, volume, the unlabelled volume stayed as a report, the row's client refused nothing, and the row left none of its objects behind; the lists of the host's containers, volumes and networks were the same before and after (suite-green.txt). The same procedure runs on a second stand-in engine in every run (review/own-row-on-a-stand-in), so the gate proves it where no engine answers. Stand-ins: assumptions 1 to 3."
     },
     {
      "type": "falsifier",
@@ -115,7 +125,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 144_veldo_0306_space_docker (28 rows, 54 checks, the real-engine row among them; 27 rows where no engine answers). Each on its own, green: the space suites 130 to 144 (proof/VELDO-0306/suite-green.txt, which also names what was not run)."
+   "command": "python3 scripts/selftest.py --suite 144_veldo_0306_space_docker (29 rows, 55 checks, the real-engine row among them; 28 rows where no engine answers). Each on its own, green: the space suites 130 to 144 (proof/VELDO-0306/suite-green.txt, which also names what was not run)."
   },
   {
    "name": "integration",
@@ -125,7 +135,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "The 27 registered cases of finding 306 in scripts/check_teeth_mutations.py (15 of the build, 12 of the review), each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, each worker in its own process with a docker client on PATH that answers nothing: every noop green, every mutant turns its target rows red, no run holds the real-engine row, and the shim was asked nothing (proof/VELDO-0306/mutations.txt, falsifiers.json). Every anchor of the 204 cases registered against the modules and the suite this fix touched occurs exactly once. No mutant was run against a real engine. Not run: the cases of other findings; the gate's mutation stage runs them."
+   "command": "The 29 registered cases of finding 306 in scripts/check_teeth_mutations.py (15 of the build, 12 of the review, 2 of the second review), each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, each worker in its own process with a docker client on PATH that answers nothing: every noop green, every mutant turns its target rows red, no run holds the real-engine row, and the shim was asked nothing (proof/VELDO-0306/mutations.txt, falsifiers.json). All 29 were run again on the tree of this fix. Every anchor of the cases registered against the modules this ticket touched still occurs exactly once. Not run: the cases of other findings; the gate's mutation stage runs them."
   },
   {
    "name": "fast checks",
@@ -135,7 +145,7 @@
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "Not run, by the lead's instruction, in the build and in this fix. The suites 130 to 144, the registered cases of finding 306 through the driver's own functions and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
+   "reason": "Not run, by the lead's instruction, in the build and in both fixes. The suites 130 to 144, the registered cases of finding 306 through the driver's own functions and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
   }
  ],
  "assumptions": [
@@ -150,7 +160,8 @@
   "9. THE ROW'S LABEL FILTER LETS NO VOLUME EVENT THROUGH: an engine puts a container's labels in its events and a volume's and a network's in none. So the object the real-engine row makes for its event is a container. The adapter of the service asks for no label filter: it reads every event of the three types.",
   "10. A CONTAINER THAT MOUNTS A PROTECTED PATH IS JUDGED BY THE BIND SOURCE AS THE ENGINE SHOWS IT, at, above or beneath a protected path, read plainly and through links on this host. An engine on another host or in a machine of its own (a desktop engine) may show a source this host reads differently; such a container is then judged by its volumes and its own name and compose project alone. While any compose project is protected on an engine, each mounted volume is asked for once more (one inspect a volume) at each record and each removal.",
   "11. THE TIME OF THE SUBSCRIPTION IS THE ENGINE'S OWN, read through its client; the engine prints again every event from that time on, so an object recorded by the snapshot is asked for once more and writes nothing. An engine whose time cannot be read is down and is said so; nothing starts it again but start().",
-  "12. NOT FIXED HERE: the review's notes for the lead (nothing sets Service.space_docker yet; suites 127 and 86 not rerun). Service.docker_unread is there for reconcile and the console to read; neither reads it yet (VELDO-0315)."
+  "12. NOT FIXED HERE: the review's notes for the lead (nothing sets Service.space_docker yet; suites 127 and 86 not rerun). Service.docker_unread is there for reconcile and the console to read; neither reads it yet (VELDO-0315).",
+  "13. FROM THE SECOND REVIEW (N1): only path entries are read whatever engines they name. A volume or a compose project entry is still read by engine, as the protect list declares them. The suite now loads control_space_probe.py through its PRODUCTION map, so the real-engine row's guard compares the probe with its canon too. The real-engine row ran on this host in the run of this fix (context default); it binds no protected path, and the new row is on the stand-in engine only."
  ],
  "rollback": "Revert the change. Docker objects are neither recorded nor removed by Veldo."
 }

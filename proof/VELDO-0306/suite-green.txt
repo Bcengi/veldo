@@ -1,19 +1,19 @@
-# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 9e479e21. Partial runs: none is the gate. 144 ran with its real-engine row (context default): 28 rows, 54 checks.
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 91b5b9ba. Partial runs: none is the gate. 144 ran with its real-engine row (context default): 29 rows, 55 checks.
 130_veldo_0296_space_section: selftest (PARTIAL, 1 of 214 suites): 48 passed, 0 failed in 0.02s
 131_veldo_0338_project_space_file: selftest (PARTIAL, 1 of 214 suites): 40 passed, 0 failed in 0.02s
-132_veldo_0297_space_ledger: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 2.07s
-133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 214 suites): 56 passed, 0 failed in 26.75s
-134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 214 suites): 42 passed, 0 failed in 1.28s
+132_veldo_0297_space_ledger: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 1.44s
+133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 214 suites): 56 passed, 0 failed in 27.60s
+134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 214 suites): 42 passed, 0 failed in 1.07s
 135_veldo_0298_space_kinds: selftest (PARTIAL, 1 of 214 suites): 150 passed, 0 failed in 0.01s
-136_veldo_0299_space_probe: selftest (PARTIAL, 1 of 214 suites): 72 passed, 0 failed in 5.62s
-137_veldo_0330_space_rules: selftest (PARTIAL, 1 of 214 suites): 49 passed, 0 failed in 2.17s
-138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 214 suites): 65 passed, 0 failed in 2.73s
-139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 214 suites): 44 passed, 0 failed in 1.48s
-140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 5.54s
+136_veldo_0299_space_probe: selftest (PARTIAL, 1 of 214 suites): 72 passed, 0 failed in 6.29s
+137_veldo_0330_space_rules: selftest (PARTIAL, 1 of 214 suites): 49 passed, 0 failed in 2.01s
+138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 214 suites): 65 passed, 0 failed in 2.49s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 214 suites): 44 passed, 0 failed in 1.19s
+140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 4.61s
 141_veldo_0344_process_reader:   SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is not installed at /usr/local/lib/veldo/veldo-procread on this host; the row runs after the owner's setup (docs/veldo-procread-setup.txt)
-141_veldo_0344_process_reader: selftest (PARTIAL, 1 of 214 suites): 85 passed, 0 failed in 20.44s
-142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 2.95s
-143_veldo_0305_space_census: selftest (PARTIAL, 1 of 214 suites): 50 passed, 0 failed in 2.06s
-144_veldo_0306_space_docker: selftest (PARTIAL, 1 of 214 suites): 54 passed, 0 failed in 5.40s
-# The real-engine row, on this host: the names of the containers, the volumes and the networks of the context default were listed before and after the run of suite 144 (7 containers, 58 volumes, 18 networks): the three lists are the same.
-# NOT RUN in this fix: the suites outside 130 to 144 (the suites that load the service module among them: the change there is docker_unread and one log entry in docker_readable), 127_veldo_0259_installation, 86_veldo_0127_agent_configuration, and ./scripts/verify.sh, by the lead's instruction.
+141_veldo_0344_process_reader: selftest (PARTIAL, 1 of 214 suites): 85 passed, 0 failed in 22.80s
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 214 suites): 57 passed, 0 failed in 2.64s
+143_veldo_0305_space_census: selftest (PARTIAL, 1 of 214 suites): 52 passed, 0 failed in 1.81s
+144_veldo_0306_space_docker: selftest (PARTIAL, 1 of 214 suites): 55 passed, 0 failed in 5.49s
+# The real-engine row, on this host: suite 144 was run once more on the same tree (29 rows, 55 checks, green) with the names of the containers, the volumes and the networks of the context default listed before and after (23 containers, 67 volumes, 22 networks): the three lists are the same.
+# NOT RUN in this fix: the suites outside 130 to 144, and ./scripts/verify.sh, by the lead's instruction.

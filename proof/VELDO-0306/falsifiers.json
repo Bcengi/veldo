@@ -66,15 +66,7 @@
    ],
    [
     "VELDO-0306 ac3/order-and-non-forced",
-    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c012'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c012'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'conta"
-   ],
-   [
-    "VELDO-0306 loss/volume-made-again",
-    "after a snapshot the old record is gone and the new volume is a report with no owner [gone {'run': {'id': 'run-306-again', 'station': 'build'}, 'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9306'}]"
-   ],
-   [
-    "VELDO-0306 review/own-row-on-a-stand-in",
-    "on the engine default the row's labelled container, network and volume are items of the run, and its unlabelled volume is a report [{'container': 'adopted', 'network': 'adopted', 'volume': 'adopted', 'loose': 'adopted'}]"
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c012')"
    ]
   ],
   "noop_red_rows": [],
@@ -122,7 +114,7 @@
      "default",
      "volume",
      "rm",
-     "veldo-0306-80ebb69baf35-vol"
+     "veldo-0306-6e3130afb31f-vol"
     ]
    ],
    "refused_by_the_rows_client": [
@@ -199,7 +191,7 @@
    ],
    [
     "VELDO-0306 ac3/order-and-non-forced",
-    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('default', 'volume', "
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('"
    ]
   ],
   "noop_red_rows": [],
@@ -265,7 +257,7 @@
   "red_details": [
    [
     "VELDO-0306 ac1/label-and-compose-name",
-    "the network orchard_net on the context default is an item owned by the run, on that context [space:item:e2ee19752a144d9bb6aa081a5cee4ea3 None]"
+    "the network orchard_net on the context default is an item owned by the run, on that context [space:item:86200bc3aca946019c2e96373c2bb4fc None]"
    ],
    [
     "VELDO-0306 ac1/identity-recorded",
@@ -278,14 +270,6 @@
    [
     "VELDO-0306 ac2/unknown-run-and-two-runs",
     "the label of one run and the compose name of another: a report, no owner [None]"
-   ],
-   [
-    "VELDO-0306 ac2/never-removed",
-    "after every run finished the reported volume two_names is in its engine, was named to no stop and no remove, and its record has no owner [None]"
-   ],
-   [
-    "VELDO-0306 ac3/order-and-non-forced",
-    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'volume', 'rm', 'orchard_shared'), ('default', 'volume', 'rm', 'two_names')]]"
    ]
   ],
   "noop_red_rows": [],
@@ -314,7 +298,7 @@
   "red_details": [
    [
     "VELDO-0306 ac3/order-and-non-forced",
-    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'volume', 'rm', 'orchard_cache'), ('default', 'volume', 'rm', 'orchard_shared'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default', 'container', 'rm'"
+    "on the first context: the container is stopped, then removed, then the network, then the volume [[('default', 'volume', 'rm', 'orchard_shared'), ('default', 'volume', 'rm', 'orchard_cache'), ('default', 'network', 'rm', '000000000000000000000000000000000000000000000000000000000000a008'), ('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c007'), ('default"
    ],
    [
     "VELDO-0306 review/own-row-on-a-stand-in",
@@ -351,7 +335,7 @@
    ],
    [
     "VELDO-0306 review/volume-labels-rule-1",
-    "a volume made again in the same second, without the run's label, is deferred by rule 1 as not_in_ledger [('deferred', 'remove_refused', 'tool') {'said': {'action': 'remove', 'bytes': None, 'bytes_source': None, 'deferral': 'remove_refused', 'freed': None, 'host': None, 'item': 'space:item:6feb03a0fcd44c85831947aafba4ca6c', 'kind': 'volume', 'method': 'engine_volume_remove', 'ok': False, 'pool': 'host', 'pool_free_aft"
+    "a volume made again in the same second, without the run's label, is deferred by rule 1 as not_in_ledger [('deferred', 'remove_refused', 'tool') {'said': {'action': 'remove', 'bytes': None, 'bytes_source': None, 'deferral': 'remove_refused', 'freed': None, 'host': None, 'item': 'space:item:218103fbc77449bba1fdf17da0625c05', 'kind': 'volume', 'method': 'engine_volume_remove', 'ok': False, 'pool': 'h"
    ]
   ],
   "noop_red_rows": [],
@@ -417,7 +401,7 @@
   "red_details": [
    [
     "VELDO-0306 ac1/label-and-compose-name",
-    "raised TypeError: 'NoneType' object is not subscriptable File \"./scripts/suites/144_veldo_0306_space_docker.py\", line 1034, in _v306_space_docker_suite | % (L.item(kept_item)['state'],), | ~~~~~~~~~~~~~~~~~^^^^^^^^^ | TypeError: 'NoneType' object is not subscriptable"
+    "raised TypeError: 'NoneType' object is not subscriptable File \"./scripts/suites/144_veldo_0306_space_docker.py\", line 1092, in _v306_space_docker_suite | % (L.item(kept_item)['state'],), | ~~~~~~~~~~~~~~~~~^^^^^^^^^ | TypeError: 'NoneType' object is not subscriptable"
    ],
    [
     "VELDO-0306 ac4/event-with-the-clock-stopped",
@@ -449,7 +433,7 @@
   "red_details": [
    [
     "VELDO-0306 ac4/end-of-file",
-    "the context was read whole before the new client was started [[('client', 'default', 'system', 'info'), ('spawn', 'default'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'inspect'), ('client', 'default', 'volume', 'insp"
+    "the context was read whole before the new client was started [[('client', 'default', 'system', 'info'), ('spawn', 'default'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'inspect'), ('client', 'defau"
    ],
    [
     "VELDO-0306 ac4/broken-engine",
@@ -457,7 +441,7 @@
    ],
    [
     "VELDO-0306 review/events-since-the-snapshot",
-    "at end of file too: the time, the snapshot, then the client since that time [[{'engine': 'default', 'events': 0, 'unreadable': 0, 'ended': True}] ['2026-11-14T10:00:00.000000050Z']]"
+    "at end of file too: the time, the snapshot, then the client since that time [[{'engine': 'default', 'events': 0, 'unreadable': 0, 'ended': True}] ['2026-11-14T10:00:00.000000054Z']]"
    ],
    [
     "VELDO-0306 review/engine-down-reported",
@@ -494,7 +478,7 @@
    ],
    [
     "VELDO-0306 review/events-since-the-snapshot",
-    "at end of file too: the time, the snapshot, then the client since that time [[{'engine': 'default', 'events': 0, 'unreadable': 0, 'ended': True}] ['2026-11-14T10:00:00.000000050Z']]"
+    "at end of file too: the time, the snapshot, then the client since that time [[{'engine': 'default', 'events': 0, 'unreadable': 0, 'ended': True}] ['2026-11-14T10:00:00.000000054Z']]"
    ]
   ],
   "noop_red_rows": [],
@@ -607,12 +591,17 @@
    "review/protected-mount"
   ],
   "red_rows": [
+   "rereview/snapshot-store-mount",
    "review/protected-mount"
   ],
   "red_details": [
    [
     "VELDO-0306 review/protected-mount",
-    "the container uses-atlas-db-1 mounts what is protected: it gets neither an item nor a report [[('space:item:b6b82f621ef445e7904f43bd1d7838a4', {'adopted': True, 'adoption': {'rule': 'run_label'}, 'branch': None, 'confirmed': None, 'creator': 'reconcile', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'"
+    "the container uses-atlas-db-1 mounts what is protected: it gets neither an item nor a report [[('space:item:4b12740e26db4491a15d9ff2150290f2', {'adopted': True, 'adoption': {'rule': 'run_label'}, 'branch': None, 'confirmed': None, 'creator': 'reconcile', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_ab"
+   ],
+   [
+    "VELDO-0306 rereview/snapshot-store-mount",
+    "the container uses-store-1 binds the snapshot store: it gets neither an item nor a report [[('space:item:4fae3f5f283844f085b56edf8a94f9ce', {'adopted': True, 'adoption': {'rule': 'run_label'}, 'branch': None, 'confirmed': None, 'creator': 'reconcile', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_aband"
    ]
   ],
   "noop_red_rows": [],
@@ -665,12 +654,17 @@
    "review/protected-mount"
   ],
   "red_rows": [
+   "rereview/snapshot-store-mount",
    "review/protected-mount"
   ],
   "red_details": [
    [
     "VELDO-0306 review/protected-mount",
     "at removal rule 2 reads the mounts again: the recorded container that now mounts a protected volume is deferred as protected [('removed', None, None) None]"
+   ],
+   [
+    "VELDO-0306 rereview/snapshot-store-mount",
+    "at removal rule 2 reads the mounts again: the recorded container that now binds the snapshot store is deferred as protected [('removed', None, None) {}]"
    ]
   ],
   "noop_red_rows": [],
@@ -715,6 +709,64 @@
   }
  },
  {
+  "falsifier": "space306-rereview-store-mount-adopted",
+  "criterion": "AC1",
+  "review_finding": "N1 of the second review",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "rereview/snapshot-store-mount"
+  ],
+  "red_rows": [
+   "rereview/snapshot-store-mount"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 rereview/snapshot-store-mount",
+    "the container uses-store-1 binds the snapshot store: it gets neither an item nor a report [[('space:item:155ef3c7db3948b88ee518396a009f56', {'adopted': True, 'adoption': {'rule': 'run_label'}, 'branch': None, 'confirmed': None, 'creator': 'reconcile', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_aband"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
+  "falsifier": "space306-rereview-store-mount-removed",
+  "criterion": "AC3",
+  "review_finding": "N1 of the second review",
+  "module": "control_space_probe.py",
+  "expected_red": [
+   "rereview/snapshot-store-mount"
+  ],
+  "red_rows": [
+   "rereview/snapshot-store-mount"
+  ],
+  "red_details": [
+   [
+    "VELDO-0306 rereview/snapshot-store-mount",
+    "at removal rule 2 reads the mounts again: the recorded container that now binds the snapshot store is deferred as protected [('removed', None, None) {}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "real_engine_row_ran": false,
+  "host_object_untouched_row": "green",
+  "rows_client_on_the_stand_in": {
+   "adapter_made_of_the_host_objects": [
+    "reported"
+   ],
+   "refused_by_the_rows_client": [],
+   "passed_by_the_rows_client": 6
+  }
+ },
+ {
   "falsifier": "space306-review-start-without-since",
   "criterion": "AC4",
   "review_finding": 3,
@@ -728,7 +780,7 @@
   "red_details": [
    [
     "VELDO-0306 review/events-since-the-snapshot",
-    "at start the engine's time is read before the snapshot, and the client is started after it, since that time [[('client', 'default', 'system', 'info'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'inspect'), ('client', '"
+    "at start the engine's time is read before the snapshot, and the client is started after it, since that time [[('client', 'default', 'system', 'info'), ('client', 'default', 'container', 'ls'), ('client', 'default', 'container', 'inspect'), ('client', 'default', 'network', 'ls'), ('client', 'default', 'network', 'inspect'), ('client', 'default', 'volume', 'ls'), ('client', 'default', 'volume', 'ins"
    ]
   ],
   "noop_red_rows": [],
@@ -844,7 +896,7 @@
   "red_details": [
    [
     "VELDO-0306 review/volume-labels-rule-1",
-    "a volume made again in the same second, without the run's label, is deferred by rule 1 as not_in_ledger [('deferred', 'remove_refused', 'tool') {'said': {'action': 'remove', 'bytes': None, 'bytes_source': None, 'deferral': 'remove_refused', 'freed': None, 'host': None, 'item': 'space:item:532fc8f88f894777a1184e9986e58c9c', 'kind': 'volume', 'method': 'engine_volume_remove', 'ok': False, 'pool': 'host', 'pool_free_aft"
+    "a volume made again in the same second, without the run's label, is deferred by rule 1 as not_in_ledger [('deferred', 'remove_refused', 'tool') {'said': {'action': 'remove', 'bytes': None, 'bytes_source': None, 'deferral': 'remove_refused', 'freed': None, 'host': None, 'item': 'space:item:8000a81619a94058affd3c86576fbedc', 'kind': 'volume', 'method': 'engine_volume_remove', 'ok': False, 'pool': 'h"
    ]
   ],
   "noop_red_rows": [],
@@ -891,25 +943,25 @@
      "default",
      "container",
      "stop",
-     "000000000000000000000000000000000000000000000000000000000000c00b"
+     "000000000000000000000000000000000000000000000000000000000000c009"
     ],
     [
      "default",
      "container",
      "rm",
-     "000000000000000000000000000000000000000000000000000000000000c00b"
+     "000000000000000000000000000000000000000000000000000000000000c009"
     ],
     [
      "default",
      "container",
      "stop",
-     "000000000000000000000000000000000000000000000000000000000000c009"
+     "000000000000000000000000000000000000000000000000000000000000c00b"
     ],
     [
      "default",
      "container",
      "rm",
-     "000000000000000000000000000000000000000000000000000000000000c009"
+     "000000000000000000000000000000000000000000000000000000000000c00b"
     ],
     [
      "default",
@@ -921,7 +973,7 @@
      "default",
      "volume",
      "rm",
-     "veldo-0306-2d3addf2ec38-vol"
+     "veldo-0306-a5981e2fdb03-vol"
     ]
    ],
    "refused_by_the_rows_client": []
@@ -959,25 +1011,25 @@
      "default",
      "container",
      "stop",
-     "000000000000000000000000000000000000000000000000000000000000c00b"
+     "000000000000000000000000000000000000000000000000000000000000c009"
     ],
     [
      "default",
      "container",
      "rm",
-     "000000000000000000000000000000000000000000000000000000000000c00b"
+     "000000000000000000000000000000000000000000000000000000000000c009"
     ],
     [
      "default",
      "container",
      "stop",
-     "000000000000000000000000000000000000000000000000000000000000c009"
+     "000000000000000000000000000000000000000000000000000000000000c00b"
     ],
     [
      "default",
      "container",
      "rm",
-     "000000000000000000000000000000000000000000000000000000000000c009"
+     "000000000000000000000000000000000000000000000000000000000000c00b"
     ],
     [
      "default",
@@ -989,7 +1041,7 @@
      "default",
      "volume",
      "rm",
-     "veldo-0306-2650f3a521a1-vol"
+     "veldo-0306-a168d815fbd4-vol"
     ]
    ],
    "refused_by_the_rows_client": []
