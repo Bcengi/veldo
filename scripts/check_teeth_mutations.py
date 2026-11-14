@@ -14161,6 +14161,26 @@ def cases():
                 "            self._space_end(dispatch_id, contract)\n",
                 ['f5/spawn-failed'])
 
+    # VELDO-0308, the second fix round (the re-review's N1 and N2). N1: the look that holds the event
+    # back counts every worktree and agent repository of the owner again, as it did, so a run that
+    # owns one outside a clone is sent nothing; the clones folder is not looked at, so the event
+    # reaches a clone a retirement handed over. N2: a sweep records its refusal at every call; a
+    # leftover that was sent its one event stays in memory.
+    finished308('space308-any-repository-of-the-owner-holds-the-event-back', 'control_launch.py',
+                "                  and within(record)\n",
+                "                  and record.get('kind') in ('worktree', 'agent_repository')\n",
+                ['n1/own-items-ended'])
+    finished308('space308-event-reaches-a-handed-over-clone', 'control_launch.py',
+                "        return root is not None and beneath(record, [root])\n", "        return False\n",
+                ['n1/handed-over-clone-untouched'])
+    finished308('space308-observation-at-every-sweep', 'control_launch.py',
+                "            if what in seen:\n                return\n", "            if False:\n                return\n",
+                ['n2/observations-bounded'])
+    finished308('space308-sent-leftover-stays-in-memory', 'control_launch.py',
+                "                    if not apart:\n                        del self.leftovers[dispatch_id]",
+                "                    if False:\n                        del self.leftovers[dispatch_id]",
+                ['n2/observations-bounded'])
+
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the
     # worktree. AC3: drop the start commit test. And the steps beside them, each a way a branch is

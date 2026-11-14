@@ -549,7 +549,7 @@ SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger
 _SPACE = {}
 
 
-def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
+def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False, clones=None):
     """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
     and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
     whatever goes is removed by Signal's removers, after the safety rules and the keep step.
@@ -567,19 +567,17 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
     `ended` says the caller has just read from the kernel that the runs owning these items are over:
     rule 3 is answered conclusive for those runs and for no other owner. `confirm` first confirms the
     items still in state declared (a creation that failed part way), so the event reaches them.
-    `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
-    repository that is not at or beneath `paths`."""
+    `alone` refuses, with nothing signalled, when the subject would also reach an item of a clone that is
+    not at or beneath `paths` (space_apart): a clone is ended by its own teardown, and one a retirement
+    handed to the ledger is the ledger's. `clones` is what says where the clones are (clones_root). Every
+    other item of the owner, a worktree or an agent repository elsewhere among them, is reached by the
+    event: the ledger's signal names an owner and no single item."""
     paths = [os.path.normpath(str(path)) for path in paths]
     found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
 
     def beneath(record):
         where = (record.get('locator') or {}).get('path')
         return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
-
-    def owned(record, subject):
-        owner = record.get('owner') or {}
-        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
-                   for part, wanted in subject.items())
 
     try:
         ledger = space['ledger']
@@ -597,12 +595,9 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
                 runs.add(owner['run'])
             if owner and owner not in subjects:
                 subjects.append(owner)
-        others = [identity for identity, record in sorted(every.items())
-                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
-                  and record.get('kind') in ('worktree', 'agent_repository')
-                  and any(owned(record, subject) for subject in subjects)]
+        others = _space_apart(every, paths, clones_root(clones)) if alone else []
         if others:
-            raise ValueError('the owner of this thing also owns %s: the event would end it too'
+            raise ValueError('the owner of this thing also owns %s of a clone: the event would reach it too'
                              % ', '.join(others[:3]))
         if ended:
             wired = given.get('owner_live')
@@ -702,33 +697,61 @@ def space_held(space, path):
     return None
 
 
-def space_apart(space, paths):
-    """VELDO-0308: the live worktree and agent repository items that an event sent for the things at `paths`
-    would also end, because they have the owner of a live item at or beneath `paths` and are not there
-    themselves: a clone's work tree, which its own teardown ends and a retirement may have handed to the
-    ledger. The caller sends nothing while there is one; space_signal's `alone` is the same test, made
-    again at the send. A ledger that cannot be read answers nothing here, and the send then refuses by
-    itself."""
+SPACE_UNMATCHED = ('due', 'removing')  # the live states the ledger's signal does not take: a carrier has them
+
+
+def clones_root(clones):
+    """VELDO-0308: the folder every clone of this installation is under, as a path, or None for an
+    installation without clones. `clones` is the clone provisioner, or the receiver configuration's
+    clones section (the arguments of control_clone.Clones). Raises when clones are wired and their folder
+    cannot be read: the caller then sends nothing."""
+    if not clones:
+        return None
+    where = clones.get('clones') if isinstance(clones, dict) else getattr(clones, 'clones', None)
+    if not where:
+        raise ValueError('the clones are wired and their folder is not named')
+    return os.path.realpath(str(where))
+
+
+def _space_apart(every, paths, root):
+    """The items of `every` (the ledger's items) that an event sent for the things at `paths` would also
+    reach and that are a clone's: beneath the clones folder `root`, not at or beneath `paths`, owned by
+    the owner of a live item at or beneath `paths`, and in a state the ledger's signal takes or will
+    take (declared, present, deferred, kept). An item left due or removing is not matched by an event
+    and is not counted. With no clones folder there is no clone."""
+    def beneath(record, places):
+        where = (record.get('locator') or {}).get('path')
+        return bool(where) and any(where == path or where.startswith(path + '/') for path in places)
+
+    def owner(record):
+        found = dict(record.get('owner') or {})
+        if isinstance(found.get('run'), dict):
+            found['run'] = found['run'].get('id')
+        return found
+
+    def within(record):
+        return root is not None and beneath(record, [root])
+
+    live = {identity: record for identity, record in every.items() if record.get('state') not in SPACE_ENDED}
+    owners = [owner(record) for record in live.values() if beneath(record, paths) and owner(record)]
+    return sorted(identity for identity, record in live.items()
+                  if not beneath(record, paths) and record.get('state') not in SPACE_UNMATCHED
+                  and within(record)
+                  and any(all(owner(record).get(part) == wanted for part, wanted in subject.items())
+                          for subject in owners))
+
+
+def space_apart(space, paths, clones=None):
+    """VELDO-0308: the clone items that an event sent for the things at `paths` would also reach, because
+    they have the owner of a live item at or beneath `paths` and are not there themselves (_space_apart):
+    the items of the run's clone, which the clone's own teardown ends and a retirement may have handed to
+    the ledger. The caller sends nothing while there is one; space_signal's `alone` is the same test, made
+    again at the send. A worktree or an agent repository of the same owner that is no clone's is not
+    counted: run finished is its event too (design 6.10), and the send reaches it. A ledger or a clones
+    folder that cannot be read answers nothing here, and the send then refuses by itself."""
     try:
-        paths = [os.path.normpath(str(path)) for path in paths]
-
-        def beneath(record):
-            where = (record.get('locator') or {}).get('path')
-            return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
-
-        def owner(record):
-            found = dict(record.get('owner') or {})
-            if isinstance(found.get('run'), dict):
-                found['run'] = found['run'].get('id')
-            return found
-
-        live = {identity: record for identity, record in space['ledger'].items().items()
-                if record.get('state') not in SPACE_ENDED}
-        owners = [owner(record) for record in live.values() if beneath(record) and owner(record)]
-        return sorted(identity for identity, record in live.items()
-                      if not beneath(record) and record.get('kind') in ('worktree', 'agent_repository')
-                      and any(all(owner(record).get(part) == wanted for part, wanted in subject.items())
-                              for subject in owners))
+        return _space_apart(space['ledger'].items(), [os.path.normpath(str(path)) for path in paths],
+                            clones_root(clones))
     except Exception:  # noqa: BLE001 - the send's own test refuses what this could not read
         return []
 
@@ -1489,6 +1512,19 @@ class Runner:
         if self.runs and os.path.lexists(run_directory(self.runs, dispatch_id)):
             self.leftovers[dispatch_id] = {'group': group, 'process': process}
 
+    def _once(self, dispatch_id, observation):
+        """VELDO-0308: record what a sweep found of the leftover `dispatch_id`, once for each outcome and
+        refusal: a leftover that stays as it is adds one observation, and not one at every sweep. One
+        that is no leftover (the start sweep's look) is recorded as it is found."""
+        entry = self.leftovers.get(dispatch_id)
+        if entry is not None:
+            seen = entry.setdefault('observed', set())
+            what = (observation.get('outcome'), observation.get('refusal'))
+            if what in seen:
+                return
+            seen.add(what)
+        self.observations.append(observation)
+
     def _handed_over(self, dispatch_id, place, at):
         """VELDO-0308: whether the space ledger already holds the run directory `place` (space_held), recorded
         as the observation remove_run with outcome handed_over when it does. True: the caller forgets the
@@ -1497,9 +1533,9 @@ class Runner:
         try:
             held = space_held(self.space, place)
         except Exception as error:  # noqa: BLE001 - an unread ledger is never taken for "not held"
-            self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                      'refusal': 'unavailable_service:space_ledger', 'at': at,
-                                      'raised': '%s: %s' % (type(error).__name__, str(error)[:300])})
+            self._once(dispatch_id, {'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                     'refusal': 'unavailable_service:space_ledger', 'at': at,
+                                     'raised': '%s: %s' % (type(error).__name__, str(error)[:300])})
             return None
         if held is None:
             return False
@@ -1517,10 +1553,14 @@ class Runner:
         and only while no ending event has reached its run directory (the item is declared or present). A run
         directory the ledger already holds (due, deferred, removing or kept: the receiver, a teardown or an
         earlier sweep sent the event) is handed over: the leftover is dropped, nothing is sent, and the item
-        waits for the ledger's own retries (design section 7, Retry). The event is sent for the run directory
-        alone: while the run's owner also has a work tree or an agent repository elsewhere nothing is sent,
-        because the event would judge that too (a clone's teardown sends it). A ledger that cannot be read
-        sends nothing and forgets nothing."""
+        waits for the ledger's own retries (design section 7, Retry). The event is not sent while it would
+        reach the run's clone (space_apart): the clone's teardown sends it, and a clone handed over is the
+        ledger's. A worktree or an agent repository of the run that is no clone's does not hold the event
+        back: run finished is its event too, and the one send reaches it. A leftover that was sent its one
+        event and is still there is recorded once (run_finished_sent) and forgotten: no sweep sends it
+        another, so it is the ledger's and reconcile's. What a sweep finds of a leftover is recorded once
+        for each outcome, never once at every sweep (_once). A ledger that cannot be read sends nothing and
+        forgets nothing."""
         removed, live = [], None
         for dispatch_id, entry in sorted(self.leftovers.items()):
             seen = C.retirement(entry['group'], entry['process'])
@@ -1540,8 +1580,8 @@ class Runner:
                 # The consumer first: run finished never ends a clone another dispatch still uses.
                 users = clone_users(self.clones, self.dispatches, dispatch_id, self.space)
                 if users:
-                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                              'refusal': 'clone_in_use', 'users': users})
+                    self._once(dispatch_id, {'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                             'refusal': 'clone_in_use', 'users': users})
                     continue
                 # VELDO-0308: a run directory an ending event has reached is the ledger's, and no sweep's.
                 handed = self._handed_over(dispatch_id, place, 'sweep')
@@ -1549,14 +1589,16 @@ class Runner:
                     if handed:
                         del self.leftovers[dispatch_id]
                     continue
-                apart = space_apart(self.space, [place])
+                apart = space_apart(self.space, [place], self.clones)
                 if apart or entry.get('sent'):
-                    # Not alone: the event would also judge a work tree of the same owner. Sent already: once.
-                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                              'refusal': 'not_alone' if apart else 'run_finished_sent', 'with': apart[:3]})
+                    # Not alone: the event would also reach the run's clone. Sent already: once.
+                    self._once(dispatch_id, {'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                             'refusal': 'not_alone' if apart else 'run_finished_sent', 'with': apart[:3]})
+                    if not apart:
+                        del self.leftovers[dispatch_id]  # sent its one event: never a sweep's again
                     continue
                 # VELDO-0303: the kernel test above is rule 3's answer for this run; the rest is Signal's.
-                found = space_signal(self.space, 'run_finished', [place], 'runner.sweep', ended=True,
+                found = space_signal(self.space, 'run_finished', [place], 'runner.sweep', ended=True, clones=self.clones,
                                      alone=True)[os.path.normpath(place)]
                 entry['sent'] = found.get('item') is not None
                 if found['state'] in SPACE_HELD:
@@ -1566,8 +1608,8 @@ class Runner:
                                               'outcome': 'handed_over', 'at': 'sweep', 'space': found})
                     continue
                 if found['state'] not in SPACE_ENDED:
-                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                              'refusal': space_refusal(found), 'space': found})
+                    self._once(dispatch_id, {'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                             'refusal': space_refusal(found), 'space': found})
                     continue
             else:
                 # No ledger: a run directory is the run's scratch, and it goes only when no git repository is
@@ -1579,7 +1621,11 @@ class Runner:
                     continue
                 shutil.rmtree(place, ignore_errors=True)
             if os.path.lexists(place):
-                self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused'})
+                refused = {'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused'}
+                if self.space is not None:
+                    self._once(dispatch_id, refused)
+                else:
+                    self.observations.append(refused)
                 continue
             del self.leftovers[dispatch_id]
             self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'removed'})
@@ -2227,17 +2273,18 @@ class Receiver:
             if users:
                 self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}
                 return
-            # VELDO-0308: the event is sent for the run's own folders alone. While the run's owner also has a
-            # work tree or an agent repository elsewhere (its clone), nothing is sent from here: the clone's
-            # teardown sends run finished for that owner, behind its own clone_in_use test.
+            # VELDO-0308: the event is not sent from here while it would reach the run's clone: the clone's
+            # teardown sends run finished for that owner, behind its own clone_in_use test, and a clone a
+            # retirement handed over is the ledger's. A worktree or an agent repository of the run that is
+            # no clone's is reached by this event, as design 6.10 has it.
             folders = [run] + [path for path in (given.get('scratch'),) if path]
-            apart = space_apart(self.space, folders)
+            apart = space_apart(self.space, folders, self.config.get('clones'))
             if apart:
                 self.run_removal = {'item': None, 'state': None, 'deferral': 'not_alone', 'with': apart[:3]}
                 return
             self.run_sent = True
             self.run_removal = space_signal(
-                self.space, 'run_finished', folders, 'receiver',
+                self.space, 'run_finished', folders, 'receiver', clones=self.config.get('clones'),
                 ended=empty is True, alone=True)[os.path.normpath(run)]
         elif not stays:
             # Before the end is reported: the runner stops this receiver once it reads the end, so a link left

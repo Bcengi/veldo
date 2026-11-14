@@ -245,3 +245,48 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     f5/spawn-failed. Two registered falsifiers were re-anchored, unchanged in meaning, and applied
     again: space303-receiver-answers-for-an-unread-group and
     space308-pins-released-at-the-teardown-only.
+- 2026-11-14: second fix round, after the re-review of the fix round (verdict FIX, findings N1 and
+  N2) and the lead's decisions on them. No acceptance criterion changed and the footprint is as it
+  was. What changed, and what it replaces in the entry above:
+  - N1, alone no longer refuses the whole send. The entry above held run finished back while the
+    run's owner had any work tree or agent repository outside the run's folders, and named the cost
+    FOR THE LEAD. The decision: run finished is sent for the run's own items, and only what a
+    retirement handed to the ledger (the clone) is kept out of it. Now the look (space_apart, and
+    the same test made again at the send, space_signal's `alone`) counts only items of a clone:
+    beneath the installation's clones folder (clones_root), of the same owner, not at or beneath the
+    run's folders, and in a state an event takes (declared, present, deferred, kept). A run that
+    owns a worktree or an agent repository that is no clone's is sent run finished by its receiver,
+    and a leftover of such a run by the sweep, and the one event ends every item of the run, as
+    design 6.10 has it. A clone the teardown's event left due or removing is not matched by any
+    event, so it does not hold the run's event back and is not touched by it. An installation with
+    no clones has no clone to count. Clones that are wired and whose folder cannot be read send
+    nothing (the send refuses by itself).
+  - N1, what is not closed, FOR THE LEAD. The ledger's signal names an owner and no item
+    (control_space.py, outside this footprint), so an event cannot be sent for some items of an
+    owner and not for others. While a clone of the run's own owner is live and present, or handed
+    over and deferred or kept, an event for that owner would judge the clone, so nothing is sent
+    from the receiver or the sweep (not_alone, as before) and the run's other items wait with it.
+    They are not held for ever: the clone's teardown, and for a clone handed over the ledger's own
+    retry (space_retry, when its retirement is carried out), send run finished for that owner, and
+    that event ends the run's own items with the clone, each after the rules and the keep step. The
+    lead's row (every item of the run that is no clone's ended, the handed-over clone untouched) is
+    therefore shown with the clone left due, and the deferred clone has its own row: nothing sent,
+    the clone not judged again, then one retry that ends both. Sending for the run's items alone
+    beside a deferred clone needs the signal that names items, the same follow-up VELDO-0310 names.
+    This costs space and loses nothing.
+  - N2, bounded observations. A leftover that was sent its one event and is still there is recorded
+    once (run_finished_sent) and dropped from the runner's memory: no sweep sends it another, so it
+    is the ledger's and reconcile's. What a sweep finds of a leftover is recorded once for each
+    outcome and refusal (Runner._once), never once at every sweep: clone_in_use, not_alone, a
+    refusal of the send, a ledger that could not be read. A leftover held back by its clone stays
+    in memory, with its one observation, so the sweep still reports its removal after the teardown.
+    With no ledger the sweep records as it did.
+  - Suite 146: f1/sent-once-and-alone now expects the leftover dropped after run_finished_sent, and
+    the not_alone observation to name the clone's three items. Rows added, each with a registered
+    falsifier applied once to the copy the suite loads and seen red: n1/own-items-ended (the
+    re-review's probe row with the expectation reversed; falsifier
+    space308-any-repository-of-the-owner-holds-the-event-back, the look as it was),
+    n1/handed-over-clone-untouched (space308-event-reaches-a-handed-over-clone) and
+    n2/observations-bounded (space308-observation-at-every-sweep and
+    space308-sent-leftover-stays-in-memory). The four falsifiers of the first fix round whose
+    lines were touched keep their anchors and were applied again: all red.

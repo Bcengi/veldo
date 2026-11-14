@@ -81,6 +81,20 @@ nothing, and neither do items that are only declared), f5/refused-before-spawn a
 (Receiver.launch itself: the refusal is recorded first, with the folders on disk and the hold held;
 the space end runs next; the refusal is reported last, with the folders gone and the hold released).
 
+Rows of the second fix round (the re-review's N1 and N2). n1/own-items-ended (the re-review's probe row
+with the expectation reversed: a run with a run directory, a scratch folder and an agent repository of
+the same owner outside its folders and outside every clone is sent run finished once, by its receiver
+and, for a leftover, by the sweep, and all three items are removed, the repository after its commit was
+kept; with the run's clone handed to the ledger and left due, which no event takes, the run's own items
+are ended the same way and the clone's three items keep their state and their version),
+n1/handed-over-clone-untouched (a clone handed over and deferred, which an event for its owner would
+judge again: neither the receiver nor three sweeps send anything, nothing is written, the clone's items
+keep their state and version, one not_alone is recorded; the ledger's own retry of the clone then ends
+the clone and the run's own items in one event), n2/observations-bounded (a leftover whose one event
+did not move its item: one event and two observations over six sweeps, and it is dropped from memory;
+a leftover held back by a consumer and then by its clone: one observation for each outcome over twelve
+sweeps).
+
 paths/no-delete-and-canon: no drive of this suite made the launch module or the clone provisioner
 delete by itself, and the engine canon equals this repository's copies.
 
@@ -142,6 +156,7 @@ def _v308_run_finished_suite():
             'f3/unread-group-sends-nothing',
             'f4/pins-followed-after-a-restart', 'f4/clone-being-made-keeps-its-pin',
             'f5/refused-before-spawn', 'f5/spawn-failed',
+            'n1/own-items-ended', 'n1/handed-over-clone-untouched', 'n2/observations-bounded',
             'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
 
@@ -1327,9 +1342,10 @@ def _v308_run_finished_suite():
             N.leftovers[dispatch_id] = {'group': None, 'process': None}
             swept = [N.sweep() for _ in range(3)]
             check(row, 'a leftover the event reaches and does not remove (its item was never confirmed) is sent run '
-                       'finished once over three sweeps, and stays [%s %s]'
-                  % (sent_for(dispatch_id), N.observations[-1:]),
-                  sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)] and dispatch_id in N.leftovers
+                       'finished once over three sweeps, and stays on disk; sent its one event, it is no leftover of '
+                       'a sweep any more [%s %s]' % (sent_for(dispatch_id), N.observations[-1:]),
+                  sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+                  and dispatch_id not in N.leftovers
                   and N.observations[-1].get('refusal') == 'run_finished_sent' and place.is_dir()
                   and state_of(run_item) == 'declared')
             dispatch_id, owner, place, scratch, items = run_folders('once-54', hold=False)
@@ -1356,7 +1372,8 @@ def _v308_run_finished_suite():
             check(row, 'while the run\'s owner still has its clone the sweep sends nothing for the run directory: '
                        'not_alone, nothing written, the clone\'s items present [%s %s]' % (N.observations[-1:], states(items)),
                   removed == [] and sent_for(dispatch_id) == [] and journal_length() == length
-                  and N.observations[-1].get('refusal') == 'not_alone' and N.observations[-1].get('with') == [items['work']]
+                  and N.observations[-1].get('refusal') == 'not_alone'
+                  and N.observations[-1].get('with') == sorted(items.values())
                   and states(items) == ['present'] * 3 and state_of(run_item) == 'present' and dispatch_id in N.leftovers)
             R = receiver(dispatch_id, place, None, None, supervision={'empty': True}, clones=C5)
             end = R._space_end(dispatch_id)
@@ -1551,6 +1568,164 @@ def _v308_run_finished_suite():
                   LOG[4:] == [('emit', 'refused', 'spawn_failed:ENOENT', False, False, 'released', 1)]
                   and [state_of(items[name]) for name in ('run', 'scratch')] == ['removed'] * 2
                   and (R.run_end or {}).get('sent') is True)
+        except Exception as error:
+            stopped(row, error)
+
+        # =====================================================================================
+        # The second fix round: the re-review's N1 and N2
+        # =====================================================================================
+        try:
+            SANDBOXES = STATE / 'sandboxes'
+            SANDBOXES.mkdir()
+
+            def sandbox(name, owner):
+                """An agent repository the run owns outside its folders and outside every clone, as the
+                sandbox prepare of VELDO-0302 will declare one: a real repository with the project's commits."""
+                where = SANDBOXES / name
+                git(temp, 'clone', '-q', str(REPOSITORY), str(where))
+                return where, git(where, 'rev-parse', 'HEAD'), declared('agent_repository', {'path': str(where)}, owner)
+
+            def refusals(made, dispatch_id):
+                return [event.get('refusal') for event in made.observations if event.get('operation') == 'remove_run'
+                        and event.get('dispatch_id') == dispatch_id and event.get('outcome') == 'refused']
+
+            def versions(items):
+                return [conn.execute('SELECT version FROM entities WHERE id=?', (items[name],)).fetchone()[0]
+                        for name in ('root', 'work', 'scratch')]
+
+            row = 'n1/own-items-ended'
+            # The re-review's probe row with the expectation reversed: a run with its run directory and its
+            # scratch folder, and an agent repository of the same owner outside its folders. No clone.
+            dispatch_id, owner, place, scratch, items = run_folders('apart-71', hold=False)
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            where, head, repository_item = sandbox('apart-71', owner)
+            R = receiver(dispatch_id, place, scratch, owner, supervision={'empty': True}, clones=C5)
+            end = R._space_end(dispatch_id)
+            check(row, 'a run whose owner has an agent repository elsewhere is sent run finished by its receiver, '
+                       'once [%s %s %s]' % (end.get('sent'), end.get('reason'), sent_for(dispatch_id)),
+                  end.get('sent') is True and sent_for(dispatch_id) == [('receiver', 'run_finished', dispatch_id)])
+            check(row, 'every item of the run is ended by that event: the run directory, the scratch folder and the '
+                       'agent repository are removed, the repository after its commit was kept [%s]'
+                  % ([state_of(items['run']), state_of(items['scratch']), state_of(repository_item)],),
+                  [state_of(items['run']), state_of(items['scratch']), state_of(repository_item)] == ['removed'] * 3
+                  and not os.path.lexists(place) and not os.path.lexists(scratch) and not os.path.lexists(where)
+                  and kept_at(repository_item, REPOSITORY, head)
+                  and removal_of(repository_item).get('emitter') == 'receiver')
+            dispatch_id, owner, place, scratch, items = run_folders('apart-72', hold=False)
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            where, head, repository_item = sandbox('apart-72', owner)
+            N = runner(C5)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            removed = [N.clear_runs() for _ in range(3)]
+            check(row, 'the sweep does the same for a leftover of such a run: one event, and the three items removed '
+                       '[%s %s %s]' % (removed, sent_for(dispatch_id), refusals(N, dispatch_id)),
+                  removed == [[dispatch_id], [], []] and sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+                  and [state_of(items['run']), state_of(items['scratch']), state_of(repository_item)] == ['removed'] * 3
+                  and not os.path.lexists(where) and kept_at(repository_item, REPOSITORY, head)
+                  and refusals(N, dispatch_id) == [] and N.leftovers == {})
+            # A clone of the same owner that a teardown's event made due and whose carrying has not ended:
+            # the ledger's signal does not take a due item, so the run's event cannot reach it.
+            clone_id, dispatch_id, root, work, clone_head, clone_items = clone(C5, 'apart-73')
+            owner = {'scope': A, 'ticket': 'VELDO-9273', 'run': {'id': dispatch_id, 'station': 'build'}}
+            made_due = L.signal('run_finished', {'scope': A, 'ticket': 'VELDO-9273', 'run': dispatch_id})
+            place, run_item = run_place(dispatch_id, 'VELDO-9273')
+            where, head, repository_item = sandbox('apart-73', owner)
+            before, length = versions(clone_items), journal_length()
+            R = receiver(dispatch_id, place, None, None, supervision={'empty': True}, clones=C5)
+            end = R._space_end(dispatch_id)
+            check(row, 'with the run\'s clone handed to the ledger and left due, the receiver still sends run finished '
+                       'for the run, and every item of the run that is no clone\'s is ended by it [%s %s %s]'
+                  % (end.get('sent'), sorted(made_due.get('items') or ()) == sorted(clone_items.values()),
+                     [state_of(run_item), state_of(repository_item)]),
+                  sorted(made_due.get('items') or ()) == sorted(clone_items.values())
+                  and end.get('sent') is True and sent_for(dispatch_id) == [('receiver', 'run_finished', dispatch_id)]
+                  and [state_of(run_item), state_of(repository_item)] == ['removed'] * 2
+                  and not os.path.lexists(place) and not os.path.lexists(where)
+                  and kept_at(repository_item, REPOSITORY, head))
+            check(row, 'the handed-over clone is untouched: its three items due at the version they had, the clone '
+                       'whole and its pin held [%s %s]' % (states(clone_items), versions(clone_items) == before),
+                  states(clone_items) == ['due'] * 3 and versions(clone_items) == before
+                  and (work / 'tracked.txt').is_file() and readable(work, clone_head)
+                  and len(C5._pins_held(clone_id)) == 1 and journal_length() > length)
+
+            row = 'n1/handed-over-clone-untouched'
+            # A clone a retirement handed to the ledger, deferred: the ledger's signal takes a deferred item,
+            # and it names an owner and no item, so an event for this owner would judge the clone again.
+            clone_id, dispatch_id, root, work, clone_head, clone_items = clone(C5, 'apart-74')
+            holder = process_entry(5874, '/', opened=str(work / 'tracked.txt'))
+            N = runner(C5)
+            N.reservations.slot(dispatch_id)
+            first = N._retire(dispatch_id, 'completed', 'worker_reaped')
+            owner = {'scope': A, 'ticket': 'VELDO-9274', 'run': {'id': dispatch_id, 'station': 'build'}}
+            place, run_item = run_place(dispatch_id, 'VELDO-9274')
+            where, head, repository_item = sandbox('apart-74', owner)
+            before, was, length, mark = versions(clone_items), states(clone_items), journal_length(), len(sent_for(dispatch_id))
+            R = receiver(dispatch_id, place, None, None, supervision={'empty': True}, clones=C5)
+            end = R._space_end(dispatch_id)
+            check(row, 'the clone is handed over with its work tree deferred [%s %s]' % (first, was),
+                  first is True and (N.retirements.handed.get(clone_id) or {}).get('teardown') == 'deferred'
+                  and state_of(clone_items['work']) == 'deferred')
+            check(row, 'the receiver sends nothing that would reach it: not_alone, naming the clone\'s items, and '
+                       'nothing is written [%s %s %s]' % (end.get('sent'), end.get('reason'), (end.get('removal') or {}).get('with')),
+                  end.get('sent') is False and end.get('reason') == 'not_alone' and sent_for(dispatch_id)[mark:] == []
+                  and set((end.get('removal') or {}).get('with') or ()) <= set(clone_items.values())
+                  and clone_items['work'] in ((end.get('removal') or {}).get('with') or ())
+                  and journal_length() == length)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            removed = [N.clear_runs() for _ in range(3)]
+            check(row, 'nor does the sweep, over three calls; the clone\'s items are as they were, at the version they '
+                       'had, the clone whole, its pin held, and the run\'s own items present [%s %s %s]'
+                  % (removed, states(clone_items), refusals(N, dispatch_id)),
+                  removed == [[], [], []] and sent_for(dispatch_id)[mark:] == [] and journal_length() == length
+                  and states(clone_items) == was and versions(clone_items) == before
+                  and (work / 'tracked.txt').is_file() and len(C5._pins_held(clone_id)) == 1
+                  and [state_of(run_item), state_of(repository_item)] == ['present'] * 2
+                  and refusals(N, dispatch_id) == ['not_alone'])
+            # Nothing is held for ever: the ledger's own retry of the clone is an event for that owner.
+            shutil.rmtree(holder)
+            answer = N.retry_deferred(dispatch_id)
+            check(row, 'the ledger\'s retry of the handed-over clone, once its holder has gone, ends the clone and '
+                       'the run\'s own items in one event, each after the rules and the keep step [%s %s %s]'
+                  % (answer.get('signals'), states(clone_items), [state_of(run_item), state_of(repository_item)]),
+                  answer.get('signals') == 1 and state_of(clone_items['work']) == 'removed'
+                  and kept_at(clone_items['work'], REPOSITORY, clone_head)
+                  and [state_of(run_item), state_of(repository_item)] == ['removed'] * 2
+                  and kept_at(repository_item, REPOSITORY, head)
+                  and not os.path.lexists(place) and not os.path.lexists(where) and not os.path.lexists(work))
+
+            row = 'n2/observations-bounded'
+            dispatch_id = 'dispatch/bound-75'
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            place, run_item = run_place(dispatch_id, 'VELDO-9475', confirm=False)
+            N = runner()
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            removed = [N.clear_runs() for _ in range(6)]
+            check(row, 'a leftover that can never be sent again (its one event did not move its item) is recorded once '
+                       'and dropped from memory: one event and two observations over six sweeps [%s %s]'
+                  % (sent_for(dispatch_id), refusals(N, dispatch_id)),
+                  removed == [[]] * 6 and sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+                  and refusals(N, dispatch_id) == ['space_deferred:declared', 'run_finished_sent']
+                  and dispatch_id not in N.leftovers and place.is_dir() and state_of(run_item) == 'declared')
+            clone_id, dispatch_id, root, work, clone_head, clone_items = clone(C5, 'bound-76')
+            consumer_id = consumer(C5, clone_id, root, 'consumer-76')
+            place, run_item = run_place(dispatch_id, 'VELDO-9276')
+            N = runner(C5)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            length = journal_length()
+            removed = [N.clear_runs() for _ in range(6)]
+            check(row, 'a leftover held back by a consumer of its clone adds one observation over six sweeps, and stays '
+                       'a leftover [%s]' % (refusals(N, dispatch_id),),
+                  removed == [[]] * 6 and refusals(N, dispatch_id) == ['clone_in_use'] and dispatch_id in N.leftovers
+                  and sent_for(dispatch_id) == [] and journal_length() == length)
+            RECORDS[consumer_id] = {'state': 'exited', 'process': None}
+            removed = [N.clear_runs() for _ in range(6)]
+            check(row, 'once the consumer has ended the new outcome is recorded, once over six more sweeps: one '
+                       'observation for each leftover and outcome, never one for each sweep [%s %s]'
+                  % (refusals(N, dispatch_id), [event.get('operation') for event in N.observations]),
+                  removed == [[]] * 6 and refusals(N, dispatch_id) == ['clone_in_use', 'not_alone']
+                  and len([event for event in N.observations if event.get('operation') == 'remove_run']) == 2
+                  and dispatch_id in N.leftovers
+                  and sent_for(dispatch_id) == [] and journal_length() == length and states(clone_items) == ['present'] * 3)
         except Exception as error:
             stopped(row, error)
 
