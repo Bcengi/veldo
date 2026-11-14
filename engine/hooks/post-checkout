@@ -1,0 +1,30 @@
+#!/bin/sh
+# Veldo space management (VELDO-0311, design 6.9 and 8.5): git runs this at the end of a checkout.
+# It records a worktree added with plain git, and a branch switched in a recorded worktree, by
+# starting the CLI once. It records and returns. It removes nothing, and whatever happens it exits 0:
+# the git command ends as it would without it.
+#
+# Arguments, from git: the previous HEAD, the new HEAD, and 1 for a branch checkout.
+# Read from the repository's git configuration, set when the hook is installed (VELDO-0329):
+#   veldo.space.stateroot      the Veldo state root; without it the hook stands down
+#   veldo.space.cli            the veldo executable (default: veldo on PATH)
+#   veldo.space.installation   the installation folder (default: the one the CLI resolves)
+[ "$3" = 1 ] || exit 0
+root=$(git config --get veldo.space.stateroot 2>/dev/null) || exit 0
+[ -n "$root" ] || exit 0
+cli=$(git config --get veldo.space.cli 2>/dev/null) || cli=veldo
+installation=$(git config --get veldo.space.installation 2>/dev/null) || installation=
+worktree=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+gitdir=$(git rev-parse --absolute-git-dir 2>/dev/null) || exit 0
+common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || exit 0
+branch=$(git symbolic-ref -q --short HEAD 2>/dev/null) || branch=
+# The CLI starts with git's own variables cleared, so nothing it does is aimed at this repository.
+unset $(git rev-parse --local-env-vars 2>/dev/null)
+if [ -n "$installation" ]; then
+  "$cli" space record --state-root "$root" --installation "$installation" --worktree "$worktree" \
+    --git-dir "$gitdir" --common-dir "$common" --branch "$branch" "$1" "$2" "$3" </dev/null >/dev/null 2>&1
+else
+  "$cli" space record --state-root "$root" --worktree "$worktree" \
+    --git-dir "$gitdir" --common-dir "$common" --branch "$branch" "$1" "$2" "$3" </dev/null >/dev/null 2>&1
+fi
+exit 0

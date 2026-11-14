@@ -99,3 +99,53 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-14: built. engine/hooks/post-checkout and engine/hooks/reference-transaction start the CLI's new
+  verbs (veldo space record, veldo space event; veldo space replay delivers what is spooled), which call
+  engine/.veldo/control_space_spool.py. Suite scripts/suites/148_veldo_0311_git_hooks.py, 18 rows; ten
+  falsifiers registered under finding 311, the four declared ones among them, each applied once and seen
+  red on its row. What the build decided, and what it leaves to other tickets:
+  - Nothing here removes anything of anybody's. The hooks record and exit 0. The module runs no git
+    command and has two unlinks, both of its own spool files: one after the Ledger answered that it wrote
+    what the entry says, one after an entry the Ledger refused for good was written whole to
+    space-spool/refused/ with the reason. An entry is never dropped silently.
+  - Every entry is written into the spool first and delivered from there, so the record of a worktree is
+    on disk before anything is sent. The commands are the Ledger's own (declare, confirm, rebranch, event),
+    each a packet signed as space-observer that the Ledger's accept verifies. The module verifies no
+    signature and judges no command. A packet sent again after a crash carries the same nonce, and the
+    Ledger answers it with the original answer and writes nothing.
+  - AC3, for the lead. The Ledger has no event command yet: it is VELDO-0323's ("Ledger (event,
+    consumed)"), and control_space.py is not in this ticket's footprint. Today the Ledger answers the
+    event packet space_no_command:space_event, the entry stays in the spool as one file holding what the
+    event record would hold (design 4.6), and row ac3/no-event-command-waits shows that and its delivery
+    once the command exists. The rows that show one event record, and the git command returning while
+    every remover is held, run against a stand-in for that command which verifies the observer's
+    signature and keeps the record. Nothing is lost in between: the entries wait.
+  - AC4, for the lead. control_service.py is not in this ticket's footprint (it is VELDO-0323's and
+    VELDO-0315's), so the service neither serves the spool's socket nor calls start yet. The module holds
+    both halves: serve_one, which answers a hook and only then calls what follows (the consumer's place),
+    and start, which replays the spool and then calls reconcile. The suite serves the socket itself.
+    Until the service does, no authority answers and every entry waits in the spool. The "next CLI call"
+    of AC4 is any record, event or replay call; the CLI's other space verbs are VELDO-0313's and replay
+    nothing yet.
+  - The socket is <state root>/space-spool/authority.sock, not the workspace socket of control_client.py:
+    that one routes by an enrolled workspace, and a plain repository has no enrollment. The module uses
+    control_client's own bind and peer check. If the lead wants the hooks on the existing socket, it is a
+    change of Remote and serve_one only.
+  - What the hooks need to know comes from the repository's git configuration, which VELDO-0329 sets when
+    it installs them: veldo.space.stateroot (without it the hook stands down), veldo.space.cli,
+    veldo.space.installation and veldo.space.trunk.
+  - The trunk. No declaration names a project's trunk, so the hook takes main unless veldo.space.trunk
+    says otherwise. A wrong name sends no event, and nothing is removed on an event that was not sent.
+  - The owner. A branch that matches one of the project's branch patterns is owned by the project and
+    the ticket the pattern names. A branch no pattern matches, a detached worktree and a worktree of a
+    plain repository are owned by the scope alone. A worktree a run owns (the run's label in the hook's
+    environment) is VELDO-0336's and is not built here.
+  - A live item already at the path of a worktree that is added (one removed by hand and made again) is
+    given the new branch and start by rebranch. Its owner stays what it was: no Ledger command changes an
+    owner. An item a creator of Veldo's declared is never confirmed by the hook.
+  - A checkout git makes inside a rebase is not a switch: measured on git 2.43.0, a rebase runs
+    post-checkout with HEAD detached, and recording it would take the branch off the item for good.
+  - An entry that waits (no event command, the observer's key missing or not enrolled) keeps later
+    entries about the same worktree or ref behind it, so an add is never delivered after its own switch.
+  - How long a hook can wait: five seconds for an answer and two for another call's replay, then the
+    entry stays spooled and git goes on.

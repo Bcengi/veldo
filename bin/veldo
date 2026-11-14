@@ -32,6 +32,10 @@ this file and see only argument routing plus wiring.
     veldo space sign --as P  -> .veldo/control_space.py (signs one space command as a host
                             principal, space-observer or space-runner, with that principal's
                             own key from the installation folder; never the owner's, VELDO-0326)
+    veldo space record|event|replay -> .veldo/control_space_spool.py (what the git hooks run:
+                            a worktree added or a branch switched with plain git, a change of the
+                            trunk or a landing ref; recorded through the authority as
+                            space-observer, or left in the spool when it is not reachable, VELDO-0311)
     veldo jira init          -> .veldo/tracker_jira_init.py (bootstrap a
                             company-managed Jira project into the live board -
                             detect + provision the lifecycle statuses/workflow
@@ -384,6 +388,10 @@ def route(argv):
         if cmd == "memory":
             return _mod("veldo_cli_memory", ".veldo/control_factory_setup_memory.py").main(rest)
         if cmd == "space":
+            # record, event and replay are what the git hooks run (VELDO-0311): one entry for what git
+            # just did, handed to the authority or left in the spool. They never fail the git command.
+            if rest and rest[0] in ("record", "event", "replay"):
+                return _mod("veldo_cli_space_spool", ".veldo/control_space_spool.py").main(rest)
             # forward verbatim to the space ledger's own command surface (VELDO-0326): a hook or a helper
             # signs as its host principal with that principal's key, never the owner's.
             return _mod("veldo_cli_space", ".veldo/control_space.py").main(rest)

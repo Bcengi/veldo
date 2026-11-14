@@ -1,0 +1,32 @@
+#!/bin/sh
+# Veldo space management (VELDO-0311, design 6.9 and 8.4): git runs this for every ref change.
+# In the committed state it hands the changed refs to the CLI, which records one event for each
+# changed trunk or declared landing ref (repository, ref, old commit, new commit). It computes
+# nothing and removes nothing, and whatever happens it exits 0: no transaction is refused by it and
+# the git command ends as it would without it. A ref under refs/veldo/ is never sent.
+#
+# Argument, from git: prepared, committed or aborted. On standard input: "<old> <new> <ref>" lines.
+# Read from the repository's git configuration, set when the hook is installed (VELDO-0329):
+#   veldo.space.stateroot      the Veldo state root; without it the hook stands down
+#   veldo.space.cli            the veldo executable (default: veldo on PATH)
+#   veldo.space.installation   the installation folder (default: the one the CLI resolves)
+#   veldo.space.trunk          the trunk's branch name (default: main)
+[ "$1" = committed ] || exit 0
+root=$(git config --get veldo.space.stateroot 2>/dev/null) || exit 0
+[ -n "$root" ] || exit 0
+lines=$(grep ' refs/' | grep -v ' refs/veldo/') || exit 0
+[ -n "$lines" ] || exit 0
+cli=$(git config --get veldo.space.cli 2>/dev/null) || cli=veldo
+installation=$(git config --get veldo.space.installation 2>/dev/null) || installation=
+trunk=$(git config --get veldo.space.trunk 2>/dev/null) || trunk=main
+common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || exit 0
+# The CLI starts with git's own variables cleared, so nothing it does is aimed at this repository.
+unset $(git rev-parse --local-env-vars 2>/dev/null)
+if [ -n "$installation" ]; then
+  printf '%s\n' "$lines" | "$cli" space event --state-root "$root" --installation "$installation" \
+    --common-dir "$common" --trunk "$trunk" >/dev/null 2>&1
+else
+  printf '%s\n' "$lines" | "$cli" space event --state-root "$root" \
+    --common-dir "$common" --trunk "$trunk" >/dev/null 2>&1
+fi
+exit 0

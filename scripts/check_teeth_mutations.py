@@ -14301,6 +14301,67 @@ def cases():
               "                return None\n",
               ['f1/project-repository-brought'])
 
+    # VELDO-0311: git hooks, worktrees and landings made with plain git. The four declared falsifiers.
+    # AC1: record only through the CLI's record verb, so git's own worktree add records nothing. AC2:
+    # record at worktree add only, so a switch is not seen and a landing of the old branch takes the
+    # worktree. AC3: remove inside the hook, the consumer called before the hook has its answer. AC4:
+    # drop the entry when the authority is down. And the steps beside them, each a way a record is lost
+    # or made wrong: an entry that waits lets a later one about the same worktree pass it, an entry the
+    # Ledger refused is dropped and not set aside, every ref change is sent, a checkout inside a rebase
+    # is taken for a switch, and an entry delivered again is signed as a new packet.
+    space311 = '148_veldo_0311_git_hooks.py'
+
+    def hooks311(name, old, new, rows):
+        add(311, name, space311, 'control_space_spool.py', old, new, rows)
+
+    kind311 = "    kind = 'worktree_added' if _null(previous) else 'branch_switched'\n"
+    hooks311('space311-recorded-only-by-the-record-verb', kind311,
+             "    if _null(previous):\n        return None  # defect: git's own worktree add records nothing\n"
+             "    kind = 'branch_switched'\n",
+             ['ac1/plain-git-worktree-has-item'])
+    hooks311('space311-recorded-at-worktree-add-only', kind311,
+             "    if not _null(previous):\n        return None  # defect: a switch is not recorded\n"
+             "    kind = 'worktree_added'\n",
+             ['ac2/landing-of-old-branch-leaves-worktree'])
+    hooks311('space311-removed-inside-the-hook',
+             "        try:\n            connection.sendall(json.dumps(response).encode())\n"
+             "        except OSError:\n            pass\n    finally:\n        connection.close()\n"
+             "    if after is not None and response['served']:\n        after(request, response['answer'])\n",
+             "        if after is not None and response['served']:\n"
+             "            after(request, response['answer'])  # defect: what follows runs before the hook's answer\n"
+             "        try:\n            connection.sendall(json.dumps(response).encode())\n"
+             "        except OSError:\n            pass\n    finally:\n        connection.close()\n",
+             ['ac3/git-returns-while-remover-held'])
+    hooks311('space311-dropped-when-the-authority-is-down',
+             "                except Unreachable:\n                    return done\n",
+             "                except Unreachable:\n"
+             "                    os.unlink(os.path.join(folder, name))  # defect: the entry is dropped\n"
+             "                    continue\n",
+             ['ac4/service-start-before-reconcile'])
+    hooks311('space311-waiting-entry-passed-by-a-later-one',
+             "                    blocked.add(key)\n", "                    pass  # defect: later entries pass it\n",
+             ['ac4/waiting-keeps-order'])
+    hooks311('space311-refused-entry-dropped',
+             "                    _set_aside(folder, name, {'entry': one, 'refused': result})\n",
+             "                    os.unlink(os.path.join(folder, name))  # defect: dropped, not set aside\n",
+             ['ac1/refused-is-set-aside'])
+    hooks311('space311-every-ref-change-sent',
+             "        if parts[2] in refs:\n", "        if parts[2]:  # defect: every ref is taken for a landing ref\n",
+             ['ac3/one-event-record'])
+    hooks311('space311-rebase-checkout-taken-for-a-switch',
+             "    if any(os.path.lexists(os.path.join(git_dir, name)) for name in REBASING):\n",
+             "    if False:  # defect: a checkout git makes inside a rebase is recorded as a switch\n",
+             ['ac2/rebase-keeps-the-branch'])
+    hooks311('space311-entry-sent-again-as-a-new-packet',
+             "        token = hashlib.sha256(('%s:%s:%d' % (one['id'], step, one['tries'])).encode()).hexdigest()\n",
+             "        token = hashlib.sha256(('%s:%s:%d' % (one['id'], step, time.time_ns())).encode()).hexdigest()\n",
+             ['ac4/delivered-twice-recorded-once'])
+
+    # The hook itself: its exit status is the CLI's, so a CLI that is not there fails git's switch.
+    add(311, 'space311-hook-status-reaches-git', space311, 'post-checkout',
+        '2>&1\nfi\nexit 0\n', '2>&1\nfi\nexit $?\n', ['hooks/never-fail-git'])
+    result[-1]['dir'] = 'engine/hooks'
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
