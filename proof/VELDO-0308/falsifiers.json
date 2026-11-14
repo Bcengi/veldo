@@ -1244,5 +1244,51 @@
   "finding": "the lead's decision on N1's open point",
   "commit": "0f70e32ac334",
   "applied": "once by hand before the commit, to the repository copy the suite loads, with a stub engine; and by the registered run on the tree of 353a60eb (registered=36 executed=36 rejected=36)"
+ },
+ {
+  "falsifier": "space308-run-names-a-kept-item",
+  "module": "control_launch.py",
+  "expected_red": [
+   "keep/run-kept-item-not-named"
+  ],
+  "red_rows": [
+   "keep/run-kept-item-not-named"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 keep/run-kept-item-not-named",
+    "the receiver sends run finished once, naming exactly the run directory and the scratch folder at the versions read: the item the owner kept is left out [False remove_refused, three items named]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "declared": false,
+  "round": "fix 5",
+  "finding": "the review of the item naming, finding 1 (the owner_keep exclusion had no row)",
+  "applied": "once before the commit, on the tree of a803f77c with this round's rows, by the registry's own old and new text on a temporary copy of .veldo the suite loads (materialize and worker of scripts/check_teeth_mutations.py), a no-op copy first (green), with a stub engine that was never called; and by the registered driver, scripts/check_teeth_mutations.py --case, rejected",
+  "criterion": "AC1"
+ },
+ {
+  "falsifier": "space308-teardown-names-a-kept-item",
+  "module": "control_clone.py",
+  "expected_red": [
+   "keep/teardown-kept-item-not-named"
+  ],
+  "red_rows": [
+   "keep/teardown-kept-item-not-named"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 keep/teardown-kept-item-not-named",
+    "the teardown sends run finished once, naming exactly the clone's root and its work tree at the versions read: the scratch folder the owner kept is left out [three items named]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "declared": false,
+  "round": "fix 5",
+  "finding": "the review of the item naming, finding 1 (the owner_keep exclusion had no row)",
+  "applied": "once before the commit, on the tree of a803f77c with this round's rows, by the registry's own old and new text on a temporary copy of .veldo the suite loads (materialize and worker of scripts/check_teeth_mutations.py), a no-op copy first (green), with a stub engine that was never called; and by the registered driver, scripts/check_teeth_mutations.py --case, rejected",
+  "criterion": "AC4"
  }
 ]

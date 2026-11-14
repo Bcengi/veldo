@@ -31,3 +31,11 @@
 149_veldo_0312_ticket_ended: 66 passed, 0 failed
 # Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged); python3 scripts/check_personal_setup.py; python3 scripts/secret_inventory.py.
 # Not run in fix round 3: ./scripts/verify.sh, the teeth run, every suite not named in this section, and 86_veldo_0127_agent_configuration (52 of 54 by a known recapture; left as it is).
+# The review of the item naming, finding 1 (recorded with fix round 5 of VELDO-0308). No production code changed since commit eaf5e389. Each suite on its own with python3 scripts/selftest.py --suite, on the tree of a803f77c with the new row, before the commit, with a stub engine that was never called.
+147_veldo_0310_landed_contained: 59 passed, 0 failed (33 rows; new: keep/kept-item-not-named)
+146_veldo_0308_run_finished: 64 passed, 0 failed
+142_veldo_0303_space_paths: 57 passed, 0 failed
+148_veldo_0311_git_hooks: 57 passed, 0 failed
+149_veldo_0312_ticket_ended: 66 passed, 0 failed
+# Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged); python3 scripts/check_personal_setup.py; python3 scripts/secret_inventory.py.
+# Not run in this round: ./scripts/verify.sh, the whole registered set of finding 310, every suite not named in this section, and 86_veldo_0127_agent_configuration (52 of 54 by a known recapture; left as it is). The manifest still names commit eaf5e389: it was not bound again in this round.

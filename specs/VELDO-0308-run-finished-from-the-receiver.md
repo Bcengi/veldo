@@ -446,3 +446,25 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     space308-sent-leftover-stays-in-memory and space308-sweep-resends-for-a-handed-over-run (their
     anchors lost the look). 36 cases are registered under finding 308. The registered set is run whole
     in this round through scripts/check_teeth_mutations.py; the counts are in the proof bundle.
+- 2026-11-14: fix round 5, after the review of the item naming (verdict FIX, finding 1). No acceptance
+  criterion changed and no production code changed: rows and falsifiers only.
+  - The finding. The names of the run's send (space_named in control_launch.py) and of the teardown's
+    (space_named in control_clone.py) leave out an item the owner marked Keep, as fix rounds 3 and 4
+    say, and no row had such an item: with the exclusion deleted suite 146 stayed green. The ledger
+    refuses a named Keep item, so nothing would be lost, but every send for a run or a clone with one
+    Keep item would be refused whole and nothing else of it ended.
+  - Suite 146 is 38 rows, 64 passed. New row keep/run-kept-item-not-named: a run with its run directory,
+    its scratch folder and an agent repository of the same owner that the owner marked Keep (the
+    outcome kept with the owner's mark, as the owner). The receiver sends run finished once, naming
+    exactly the run directory and the scratch folder at the versions read; the ledger accepts it and
+    both are removed; the repository is on disk at its commit and its item is kept, the owner's mark on
+    it, at the version it had. The sweep does the same for a leftover of such a run. Falsifier
+    space308-run-names-a-kept-item (the exclusion deleted from the launch module's names). New row
+    keep/teardown-kept-item-not-named: a clone whose scratch folder the owner marked Keep. The teardown
+    sends run finished once, naming exactly the clone's root and its work tree at the versions read;
+    the ledger accepts it; the work tree is removed after its commit was kept and its pin released; the
+    folder the owner kept is on disk with its file, its item kept at the version it had; the root,
+    which holds it, is deferred and on disk, and the teardown hands the clone over as deferred by a
+    rule, not as a refused send. Falsifier space308-teardown-names-a-kept-item (the exclusion deleted
+    from the clone provisioner's names). Each falsifier was applied once to the copy the suite loads
+    and seen red on its row, its no-op copy green. 38 cases are registered under finding 308.

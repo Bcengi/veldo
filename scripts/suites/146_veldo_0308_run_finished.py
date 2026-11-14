@@ -123,6 +123,18 @@ and the clone goes). f1/sweep-never-resends now has the run directory deferred b
 event, f1/sent-once-and-alone no longer has a not_alone part, and the last check of
 n2/observations-bounded is as told above.
 
+Rows of the fifth fix round (the review of the item naming, finding 1: an item the owner marked Keep is
+judged with the others and never named). keep/run-kept-item-not-named (a run with its run directory, its
+scratch folder and an agent repository of the same owner, which the owner marked Keep: the receiver sends
+run finished once, naming exactly the run directory and the scratch folder at the versions read; the
+ledger accepts it and both are removed; the repository is on disk at its commit, its item kept with the
+owner's mark at the version it had. The sweep does the same for a leftover of such a run),
+keep/teardown-kept-item-not-named (a clone whose scratch folder the owner marked Keep: the teardown sends
+run finished once, naming exactly the clone's root and its work tree at the versions read, and the ledger
+accepts it; the work tree is removed after its commit was kept and its pin released; the folder the owner
+kept is on disk with its file, its item kept with the owner's mark at the version it had, and the clone's
+root, which holds it, is deferred and on disk: the teardown hands the clone over as deferred by a rule).
+
 paths/no-delete-and-canon: no drive of this suite made the launch module or the clone provisioner
 delete by itself, and the engine canon equals this repository's copies.
 
@@ -190,6 +202,7 @@ def _v308_run_finished_suite():
             'n1/own-items-ended', 'n1/handed-over-clone-untouched', 'n1/changed-between-judge-and-send',
             'n1/live-clone-holds-nothing-back', 'n1/teardown-names-its-clone-only',
             'n1/teardown-changed-between-judge-and-send',
+            'keep/run-kept-item-not-named', 'keep/teardown-kept-item-not-named',
             'n2/observations-bounded',
             'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
@@ -1985,6 +1998,115 @@ def _v308_run_finished_suite():
                   == read[clone_items['scratch']] + 1
                   and states(clone_items) == ['removed'] * 3 and not os.path.lexists(root)
                   and C5._pins_held(clone_id) == [] and state_of(run_item) == 'present' and place.is_dir())
+
+            def owner_kept(identity):
+                """The owner marked the item Keep: it is made due by a signal that names it and written kept
+                with the owner's mark, as the owner (the owner's settled answer, in one command, is
+                VELDO-0318's). Returns its version afterwards."""
+                due = L.signal('run_finished', {'items': [{'item': identity, 'version': version_of(identity)}]})
+                marked = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+                if not (due.get('ok') and marked.get('ok')):
+                    raise RuntimeError('the fixture could not mark Keep: %s %s' % (due.get('reason'), marked.get('reason')))
+                return version_of(identity)
+
+            def still_kept(identity, at):
+                """The item is as the owner's Keep left it: kept, the mark on it, ending on run finished as
+                before, and no command wrote it since."""
+                record = L.item(identity) or {}
+                return (record.get('state') == 'kept' and (record.get('owner_keep') or {}).get('by') == 'owner'
+                        and 'run_finished' in ((record.get('ends_on') or {}).get('events') or ())
+                        and version_of(identity) == at and removal_of(identity).get('method') is None)
+
+            row = 'keep/run-kept-item-not-named'
+            # The review's finding 1: an item of the run that the owner marked Keep. The event would reach
+            # it by its state and its owner; it is left out, and the send of the others goes through.
+            dispatch_id, owner, place, scratch, items = run_folders('keep-85', hold=False)
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            where, head, repository_item = sandbox('keep-85', owner)
+            kept_version = owner_kept(repository_item)
+            read = {identity: version_of(identity) for identity in (items['run'], items['scratch'])}
+            answered = len(ANSWERS)
+            R = receiver(dispatch_id, place, scratch, owner, supervision={'empty': True}, clones=C5)
+            end = R._space_end(dispatch_id)
+            named = named_by(dispatch_id, 'receiver')
+            check(row, 'an agent repository of the run is kept with the owner\'s mark: a state the event reaches, '
+                       'ending on run finished, of the run\'s own owner [%s]' % (state_of(repository_item),),
+                  still_kept(repository_item, kept_version)
+                  and LA._space_owner(L.item(repository_item)) == LA._space_owner(L.item(items['run'])))
+            check(row, 'the receiver sends run finished once, naming exactly the run directory and the scratch folder '
+                       'at the versions read: the item the owner kept is left out [%s %s %s]'
+                  % (end.get('sent'), end.get('reason'), named),
+                  sent_for(dispatch_id) == [('receiver', 'run_finished', dispatch_id)]
+                  and exactly(named, items['run'], items['scratch'])
+                  and {one['item']: one['version'] for one in named[0]} == read)
+            check(row, 'the ledger accepts the send and the others are ended: the run directory and the scratch '
+                       'folder are removed [%s %s]' % (ANSWERS[answered:], [state_of(items['run']), state_of(items['scratch'])]),
+                  [(run, ok) for run, ok, reason in ANSWERS[answered:]] == [(dispatch_id, True)]
+                  and end.get('sent') is True
+                  and [state_of(items['run']), state_of(items['scratch'])] == ['removed'] * 2
+                  and not os.path.lexists(place) and not os.path.lexists(scratch))
+            check(row, 'the item the owner kept is as it was: kept, the owner\'s mark on it, at the version it had, '
+                       'and the repository on disk at its commit [%s %s]'
+                  % (state_of(repository_item), version_of(repository_item) == kept_version),
+                  still_kept(repository_item, kept_version) and git(where, 'rev-parse', 'HEAD') == head
+                  and (where / 'tracked.txt').is_file())
+            # The sweep does the same for a leftover of such a run.
+            dispatch_id, owner, place, scratch, items = run_folders('keep-86', hold=False)
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            where, head, repository_item = sandbox('keep-86', owner)
+            kept_version = owner_kept(repository_item)
+            answered = len(ANSWERS)
+            N = runner(C5)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            removed = [N.clear_runs() for _ in range(3)]
+            named = named_by(dispatch_id, 'runner.sweep')
+            check(row, 'the sweep does the same for a leftover of such a run: one event over three sweeps, accepted, '
+                       'naming the run directory and the scratch folder; both are removed, and the repository the '
+                       'owner kept is as it was, on disk at its commit [%s %s %s %s]'
+                  % (removed, ANSWERS[answered:], refusals(N, dispatch_id), state_of(repository_item)),
+                  removed == [[dispatch_id], [], []]
+                  and sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+                  and [(run, ok) for run, ok, reason in ANSWERS[answered:]] == [(dispatch_id, True)]
+                  and exactly(named, items['run'], items['scratch'])
+                  and [state_of(items['run']), state_of(items['scratch'])] == ['removed'] * 2
+                  and not os.path.lexists(place) and not os.path.lexists(scratch)
+                  and refusals(N, dispatch_id) == [] and N.leftovers == {}
+                  and still_kept(repository_item, kept_version) and git(where, 'rev-parse', 'HEAD') == head)
+
+            row = 'keep/teardown-kept-item-not-named'
+            # The same for the clone's teardown: an item beneath the clone's root that the owner marked Keep.
+            clone_id, dispatch_id, root, work, clone_head, clone_items = clone(C5, 'keep-87')
+            kept_version = owner_kept(clone_items['scratch'])
+            read = {identity: version_of(identity) for identity in (clone_items['root'], clone_items['work'])}
+            answered, refused = len(ANSWERS), None
+            try:
+                C5.retire(C5.handle(clone_id))
+            except CL.Refused as refusal:
+                refused = refusal.code
+            named = named_by(dispatch_id, 'clone.teardown')
+            event = C5.observations[-1]
+            check(row, 'the teardown sends run finished once, naming exactly the clone\'s root and its work tree at '
+                       'the versions read: the scratch folder the owner kept is left out [%s]' % (named,),
+                  sent_for(dispatch_id) == [('clone.teardown', 'run_finished', dispatch_id)]
+                  and exactly(named, clone_items['root'], clone_items['work'])
+                  and {one['item']: one['version'] for one in named[0]} == read)
+            check(row, 'the ledger accepts the send: nothing raised, and the teardown hands the clone over as '
+                       'deferred by a rule, not as a send the ledger refused [%s %s %s]'
+                  % (ANSWERS[answered:], refused, (event.get('space') or {}).get('raised')),
+                  [(run, ok) for run, ok, reason in ANSWERS[answered:]] == [(dispatch_id, True)]
+                  and str(refused).startswith('space_deferred:') and refused != 'space_deferred:remove_refused'
+                  and not (event.get('space') or {}).get('raised'))
+            check(row, 'the work tree is ended by it: removed, after its commit was kept, and its pin released after '
+                       'that removal [%s %s]' % (states(clone_items), event.get('released')),
+                  state_of(clone_items['work']) == 'removed' and not os.path.lexists(work)
+                  and kept_at(clone_items['work'], REPOSITORY, clone_head)
+                  and len(event.get('released') or ()) == 1 and C5._pins_held(clone_id) == [])
+            check(row, 'the folder the owner kept is as it was: kept, the owner\'s mark on it, at the version it had, '
+                       'on disk with its file; the clone\'s root, which holds it, is deferred and on disk [%s %s]'
+                  % (states(clone_items), version_of(clone_items['scratch']) == kept_version),
+                  still_kept(clone_items['scratch'], kept_version)
+                  and (CL._scratch(root, dispatch_id) / 'tmp.bin').is_file()
+                  and state_of(clone_items['root']) == 'deferred' and root.is_dir())
 
             row = 'n2/observations-bounded'
             dispatch_id = 'dispatch/bound-75'

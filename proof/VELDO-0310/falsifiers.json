@@ -549,5 +549,28 @@
   "fix_round": 3,
   "commit": "eaf5e38957be",
   "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads, the suite run, the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space310-names-a-kept-item",
+  "module": "control_landing.py",
+  "expected_red": [
+   "keep/kept-item-not-named"
+  ],
+  "red_rows": [
+   "keep/kept-item-not-named"
+  ],
+  "red_details": [
+   [
+    "VELDO-0310 keep/kept-item-not-named",
+    "the branch, past its start commit and in the new trunk tip, was judged contained with its worktree, and contained was sent once, naming exactly the branch and the build output at the versions read: the worktree the owner kept is left out [contained, three items named]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "declared": false,
+  "round": "fix 5",
+  "finding": "the review of the item naming, finding 1 (the owner_keep exclusion had no row)",
+  "applied": "once before the commit, on the tree of a803f77c with this round's rows, by the registry's own old and new text on a temporary copy of .veldo the suite loads (materialize and worker of scripts/check_teeth_mutations.py), a no-op copy first (green), with a stub engine that was never called; and by the registered driver, scripts/check_teeth_mutations.py --case, rejected",
+  "criterion": "AC3"
  }
 ]

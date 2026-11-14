@@ -14221,6 +14221,18 @@ def cases():
                 "                [_SPACE['signal'](ledger, event, {'run': run}, emitter=emitter, **given) for run in sorted(runs)]\n",
                 ['n1/teardown-changed-between-judge-and-send'])
 
+    # VELDO-0308, the fifth fix round (the review of the item naming, finding 1): an item the owner
+    # marked Keep is judged with the others and never named. The exclusion left out of the run's
+    # names, and of the teardown's: the Keep item is named, the ledger refuses the whole send by it,
+    # and nothing of the run, or of the clone, is ended.
+    kept308 = ("                   if identity in versions and record.get('state') in SPACE_SIGNALLED"
+               " and not record.get('owner_keep')\n",
+               "                   if identity in versions and record.get('state') in SPACE_SIGNALLED\n")
+    finished308('space308-run-names-a-kept-item', 'control_launch.py', kept308[0], kept308[1],
+                ['keep/run-kept-item-not-named'])
+    finished308('space308-teardown-names-a-kept-item', 'control_clone.py', kept308[0], kept308[1],
+                ['keep/teardown-kept-item-not-named'])
+
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the
     # worktree. AC3: drop the start commit test. And the steps beside them, each a way a branch is
@@ -14357,6 +14369,14 @@ def cases():
               "            if answer.get('ok') is not True:\n"
               "                # Refused whole: nothing was written. The branches wait for a later landing's check.\n",
               ['f3/changed-after-the-check'])
+
+    # VELDO-0310, the review of the item naming (finding 1): an item the owner marked Keep is judged
+    # with the others and never named. The exclusion left out: the Keep worktree is named, the ledger
+    # refuses the whole event by it, and nothing of that owner is ended.
+    landed310('space310-names-a-kept-item', 'control_landing.py',
+              "                      if identity in versions and not (items.get(identity) or {}).get('owner_keep')]}\n",
+              "                      if identity in versions]}\n",
+              ['keep/kept-item-not-named'])
 
     # VELDO-0311: git hooks, worktrees and landings made with plain git. The four declared falsifiers.
     # AC1: record only through the CLI's record verb, so git's own worktree add records nothing. AC2:

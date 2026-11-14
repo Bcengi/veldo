@@ -80,6 +80,11 @@ f3/changed-after-the-check (inside the stand-in the judged worktree is switched 
 commit and the switch is recorded: the ledger refuses the whole event by the item that changed, the record
 names the branch as left, refused, and nothing of that owner is ended; a later check judges the owner as it
 is then and leaves it, by the start commit rule).
+keep/kept-item-not-named (the review of the item naming, finding 1: an owner's branch is contained with its
+worktree, and the owner marked the worktree Keep; contained is sent once, naming exactly the branch and the
+build output at the versions read, and the ledger accepts it: the build output is removed and the branch
+kept and named marked; the worktree is on disk on its branch, its item kept with the owner's mark at the
+version it had).
 f4/squash-landing (a branch whose tip is the source commit and not in the trunk, the trunk at a squash
 commit made with plain git: landed through the source commit, removed after the keep step),
 f4/one-landed-one-unlanded (a unit with a second branch the landing does not hold, which is not the first
@@ -134,6 +139,7 @@ def _v310_suite():
             'f1/project-repository-brought',
             'f2/trunk-read-at-the-attempt',
             'f3/declared-after-the-check', 'f3/changed-after-the-check',
+            'keep/kept-item-not-named',
             'f4/squash-landing', 'f4/one-landed-one-unlanded', 'f4/detached-worktree-at-landed',
             'f5/space-step-failed',
             'paths/no-delete-and-canon')
@@ -221,6 +227,7 @@ def _v310_suite():
         UNITS = (U1, U2, U3, U4, U5, U6, U7, U9)
         (T_CONT, T_FRESH, T_NOSTART, T_AHEAD, T_DIRTY, T_MIXED, T_MOVED, T_MEADOW, T_HELD, T_REMOTE, T_AGENT,
          T_BROUGHT, T_LATE, T_STALE) = ('VELDO-98%02d' % n for n in range(1, 15))
+        T_KEPT = 'VELDO-9815'  # the review of the item naming: an owner whose worktree is marked Keep
 
         seed = base / 'seed'
         seed.mkdir()
@@ -1482,6 +1489,51 @@ def _v310_suite():
               and [e.get('why') for e in of(later.get('left') or [], item=stale['branch_item'])] == ['not_alone']
               and [e.get('why') for e in of(later.get('left') or [], item=late['branch_item'])] == ['not_alone']
               and untouched(stale) and bool(fresh2) and untouched(fresh2))
+
+        R = 'keep/kept-item-not-named'
+        # The review's finding 1: a contained owner whose worktree the owner marked Keep. The check judges the
+        # worktree with the others; the event names the others and leaves it out.
+        git(caller, 'branch', 'side/kept', FIRST)
+        held = planted('kept', 'side/kept', T_KEPT)
+        moved_past(held, SEED)
+        due = L.signal('contained', {'items': [{'item': held['worktree'], 'version': version_of(held['worktree'])}]})
+        mark = L.outcome(held['worktree'], 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')
+        kept_version = version_of(held['worktree'])
+        read = {identity: version_of(identity) for identity in (held['branch_item'], held['build'])}
+        record = L.item(held['worktree']) or {}
+        check(R, 'the owner marked the worktree Keep: its item is kept with the owner\'s mark, a state the event '
+                 'reaches, ending on contained, of the branch\'s own owner [%s %s %s]'
+              % (due.get('reason'), mark.get('reason'), record.get('state')),
+              due.get('ok') is True and mark.get('ok') is True and record.get('state') == 'kept'
+              and (record.get('owner_keep') or {}).get('by') == 'olga'
+              and 'contained' in ((record.get('ends_on') or {}).get('events') or ())
+              and (record.get('owner') or {}).get('ticket') == T_KEPT)
+        kept_run = station.landed(U9, dispatch9, landing9)
+        mine = sent_for(T_KEPT)
+        named = (mine[0].get('named') or []) if mine else []
+        check(R, 'the branch, past its start commit and in the new trunk tip, was judged contained with its worktree, '
+                 'and contained was sent once, naming exactly the branch and the build output at the versions read: '
+                 'the worktree the owner kept is left out [%s %s]' % ([e['event'] for e in mine], named),
+              [e['event'] for e in mine] == ['contained']
+              and {one['item']: one['version'] for one in named} == read)
+        gone = [entry for entry in of(kept_run.get('removed') or [], event='contained') if entry.get('item') == held['build']]
+        check(R, 'the ledger accepted the event and the others are ended: the build output removed, the branch kept '
+                 'at its commit and named marked, and nothing of that owner named as left [%s %s %s %s]'
+              % (mine[0].get('ok') if mine else None, mine[0].get('reason') if mine else None,
+                 state_of(held['build']), state_of(held['branch_item'])),
+              bool(mine) and mine[0].get('ok') is True and kinds_of(gone) == ['build_output']
+              and state_of(held['build']) == 'removed' and not os.path.lexists(str(held['path'] / 'build'))
+              and state_of(held['branch_item']) == 'kept' and tip(caller, 'side/kept') == SEED
+              and len(of(kept_run.get('marked') or [], item=held['branch_item'], event='contained')) == 1
+              and not of(kept_run.get('left') or [], item=held['branch_item']))
+        record = L.item(held['worktree']) or {}
+        check(R, 'the worktree the owner kept is as it was: kept, the owner\'s mark on it, at the version it had, on '
+                 'disk and listed by git, on its branch at its commit [%s %s]'
+              % (record.get('state'), version_of(held['worktree']) == kept_version),
+              record.get('state') == 'kept' and (record.get('owner_keep') or {}).get('by') == 'olga'
+              and version_of(held['worktree']) == kept_version
+              and os.path.isdir(str(held['path'])) and listed(caller, held['path']) and head_of(held['path']) == SEED
+              and text_of(held['path'] / 'README.md') is not None)
 
         R = 'ac3/other-project-untouched'
         check(R, 'after every landing the other project\'s branch and worktree are as they were',

@@ -281,3 +281,15 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     later check leaves the owner by the start commit rule. Its falsifier, applied once and red, the
     switched worktree removed: space310-refused-event-sent-for-the-owner. The anchors of the nineteen
     earlier falsifiers are unchanged; they were not applied again in this round.
+- 2026-11-14: recorded with fix round 5 of VELDO-0308, after the review of the item naming (verdict FIX,
+  finding 1). No acceptance criterion changed and no production code changed: one row and its
+  falsifier. The names of landed and contained (space_names) leave out an item the owner marked Keep,
+  as fix round 3 says, and no row had such an item: with the exclusion deleted suite 147 stayed green.
+  Suite 147 is 33 rows, 59 passed. New row keep/kept-item-not-named: an owner's branch is contained
+  with its worktree, and the owner marked the worktree Keep (the outcome kept with the owner's mark, as
+  the owner). Contained is sent once, naming exactly the branch and the build output at the versions
+  read; the ledger accepts it; the build output is removed and the branch kept at its commit and named
+  marked; the worktree is on disk and listed by git, on its branch at its commit, its item kept, the
+  owner's mark on it, at the version it had. Its falsifier, registered and applied once to the copy
+  the suite loads, seen red, its no-op copy green: space310-names-a-kept-item (the exclusion deleted).
+  22 cases are registered under finding 310.
