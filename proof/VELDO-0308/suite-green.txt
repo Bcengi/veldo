@@ -1,0 +1,32 @@
+# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit f2ba3a17. Partial runs: none is the gate.
+146_veldo_0308_run_finished: selftest (PARTIAL, 1 of 216 suites): 47 passed, 0 failed in 1.51s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 216 suites): 44 passed, 0 failed in 1.05s
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 216 suites): 57 passed, 0 failed in 2.55s
+143_veldo_0305_space_census: selftest (PARTIAL, 1 of 216 suites): 52 passed, 0 failed in 2.18s
+60_veldo_0052_eligibility: selftest (PARTIAL, 1 of 216 suites): 80 passed, 0 failed in 1.21s
+62_veldo_0039_dispatch: selftest (PARTIAL, 1 of 216 suites): 51 passed, 0 failed in 9.93s
+63_veldo_0040_containment: selftest (PARTIAL, 1 of 216 suites): 85 passed, 0 failed in 7.30s
+66_veldo_0042_clones: selftest (PARTIAL, 1 of 216 suites): 46 passed, 0 failed in 2.31s
+66_veldo_0047_authority: selftest (PARTIAL, 1 of 216 suites): 56 passed, 0 failed in 14.28s
+67_veldo_0041_heartbeat: selftest (PARTIAL, 1 of 216 suites): 49 passed, 0 failed in 11.64s
+78_veldo_0060_claude_adapter: selftest (PARTIAL, 1 of 216 suites): 61 passed, 0 failed in 24.97s
+78_veldo_0160_account_pool: selftest (PARTIAL, 1 of 216 suites): 60 passed, 0 failed in 30.10s
+79_veldo_0061_codex_adapter: selftest (PARTIAL, 1 of 216 suites): 47 passed, 0 failed in 19.18s
+80_veldo_0155_claude_baseline: selftest (PARTIAL, 1 of 216 suites): 45 passed, 0 failed in 16.29s
+81_veldo_0156_codex_baseline: selftest (PARTIAL, 1 of 216 suites): 48 passed, 0 failed in 3.66s
+82_veldo_0129_worker_wiring: selftest (PARTIAL, 1 of 216 suites): 55 passed, 0 failed in 43.00s
+82_veldo_0141_execution_record: selftest (PARTIAL, 1 of 216 suites): 66 passed, 0 failed in 21.86s
+82_veldo_0165_launch_hygiene: selftest (PARTIAL, 1 of 216 suites): 47 passed, 2 failed in 8.65s
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 216 suites): 40 passed, 0 failed in 67.40s
+83_veldo_0166_usage_windows: selftest (PARTIAL, 1 of 216 suites): 45 passed, 0 failed in 0.66s
+85_veldo_0158_credential_delivery: selftest (PARTIAL, 1 of 216 suites): 49 passed, 0 failed in 4.99s
+86_veldo_0189_engine_upgrade: selftest (PARTIAL, 1 of 216 suites): 60 passed, 0 failed in 64.53s
+87_veldo_0127_codex_delivery: selftest (PARTIAL, 1 of 216 suites): 220 passed, 0 failed in 158.54s
+87_veldo_0170_receiver_trust: selftest (PARTIAL, 1 of 216 suites): 38 passed, 0 failed in 8.75s
+106_veldo_0185_dispatch_setup: selftest (PARTIAL, 1 of 216 suites): 46 passed, 0 failed in 13.38s
+127_veldo_0254_secret_scan: selftest (PARTIAL, 1 of 216 suites): 48 passed, 0 failed in 5.06s
+128_veldo_0254_confined_runner: selftest (PARTIAL, 1 of 216 suites): 27 passed, 0 failed in 0.97s
+129_veldo_0254_canary_launch: selftest (PARTIAL, 1 of 216 suites): 33 passed, 0 failed in 2.78s (three runs in a row, 33 passed each. The first run of this list was 32 passed, 1 failed: ac1/canary-project-process, which reads the /proc entry of a short-lived provisioner process while it lives; it does not load the two changed modules' new paths, was green before and after, and is recorded here as seen)
+06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 216 suites): 1414 passed, 0 failed in 38.76s
+# 82_veldo_0165_launch_hygiene is 47 passed, 2 failed: evidence/completeness and evidence/outside-scan, red at the base too (the review of VELDO-0305 measured it); VELDO-0165's, untouched here.
+# Not run: 86_veldo_0127_agent_configuration (52 of 54 on this branch: its live captures wait for the lead's recapture; left as it is).

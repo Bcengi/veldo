@@ -1,0 +1,442 @@
+[
+ {
+  "falsifier": "space308-sent-when-the-worker-exits",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac1/surviving-child"
+  ],
+  "red_rows": [
+   "ac1/surviving-child"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac1/surviving-child",
+    "while the group still has the child, run finished is not sent [True None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": true
+ },
+ {
+  "falsifier": "space308-sent-before-the-record",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac1/not-before-the-record"
+  ],
+  "red_rows": [
+   "ac1/not-before-the-record",
+   "ac1/removal-before-the-report"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac1/not-before-the-record",
+    "while the dispatch record says running nothing is sent, and the end says why [True None]"
+   ],
+   [
+    "VELDO-0308 ac1/removal-before-the-report",
+    "a run whose group could not be emptied is recorded unknown and sent nothing: the folders, the items and the hold stay [[('unknown', 'containment_not_empty'), ('emit', 'unknown', True, True, 'admitted', {'sent': False, 'reason': 'group_not_empty', 'items': {}, 'hold': None})]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-judged-before-the-record",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac1/removal-before-the-report"
+  ],
+  "red_rows": [
+   "ac1/removal-before-the-report"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac1/removal-before-the-report",
+    "when the worker has ended and the exit is being recorded nothing of the run has been judged: both folders there, both items present, the hold held, no event sent [[('exit', False, 'removed', 'removed', 'admitted', 1)]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-reported-before-the-space-end",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac1/removal-before-the-report"
+  ],
+  "red_rows": [
+   "ac1/removal-before-the-report"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac1/removal-before-the-report",
+    "the end is reported, and so the receiver exits, only after the removal is complete and the hold released [('emit', 'exited', False, False, 'released')]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-exit-without-releasing-the-hold",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac2/waiting-unit"
+  ],
+  "red_rows": [
+   "ac1/refused-never-started",
+   "ac1/removal-before-the-report",
+   "ac1/surviving-child",
+   "ac2/census-signal-release",
+   "ac2/hold-named-by-the-contract",
+   "ac2/waiting-unit"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac1/surviving-child",
+    "once the child has ended and the group is empty the same end removes the scratch and the run directory and releases the hold [True admitted]"
+   ],
+   [
+    "VELDO-0308 ac1/removal-before-the-report",
+    "the end is reported, and so the receiver exits, only after the removal is complete and the hold released [('emit', 'exited', False, False, 'admitted')]"
+   ],
+   [
+    "VELDO-0308 ac1/refused-never-started",
+    "a dispatch refused before any worker started is conclusive with no group: its folders go and its hold is released [True admitted]"
+   ],
+   [
+    "VELDO-0308 ac2/census-signal-release",
+    "the three are written in order: every measure of the census before the signal, every removal outcome after it, and the release of the hold last [['space_declare', 'space_confirm', 'space_measure', 'space_measure', 'space_measure', 'space_signal', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome']]"
+   ],
+   [
+    "VELDO-0308 ac2/waiting-unit",
+    "the run's end freed the bytes and released the hold [0 admitted]"
+   ],
+   [
+    "VELDO-0308 ac2/hold-named-by-the-contract",
+    "the hold the contract's space field names is the one released [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC2",
+  "declared": true
+ },
+ {
+  "falsifier": "space308-hold-released-before-signal",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac2/census-signal-release"
+  ],
+  "red_rows": [
+   "ac2/census-signal-release",
+   "ac2/waiting-unit"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac2/census-signal-release",
+    "the three are written in order: every measure of the census before the signal, every removal outcome after it, and the release of the hold last [['space_release', 'space_declare', 'space_confirm', 'space_measure', 'space_measure', 'space_measure', 'space_signal', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome']]"
+   ],
+   [
+    "VELDO-0308 ac2/waiting-unit",
+    "the run's end freed the bytes and released the hold [0 released]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC2",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-retry-under-a-consumer",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac3/not-under-a-consumer"
+  ],
+  "red_rows": [
+   "ac3/not-under-a-consumer"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac3/not-under-a-consumer",
+    "the retry is not sent while a consumer of the run's clone has not ended: the clone would end under it [removed {'retried': ['space:item:27b70fec259e47e3bad8b56299eefb24', 'space:item:45dd5419a27a4616978dd77defb66443', 'space:item:ca17abc462d84476996b6535a8e678e2'], 'signals': 1, 'states': {'space:item:27b70fec259e47e3bad8b56299eefb24': 'removed', 'space:item:45dd5419a27a4616978dd77defb66443': 'removed', 'space:item:ca17abc462d84476996b6535a8e678e2': 'removed'}, 'raised': None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-retry-answers-for-a-run-not-ended",
+  "module": "control_launch.py",
+  "expected_red": [
+   "ac3/not-for-a-run-not-ended"
+  ],
+  "red_rows": [
+   "ac3/not-for-a-run-not-ended"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac3/not-for-a-run-not-ended",
+    "a retry asked for a run whose record shows no end answers rule 3 for nobody: the item is judged, refused by the owner rule and whole [{'space:item:ccebacf2a75345b3b9608401a52c3804': 'removed'} process_use]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-retry-on-every-sweep",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac3/unchanged-sweeps-retry-nothing"
+  ],
+  "red_rows": [
+   "ac3/only-a-pending-retirement",
+   "ac3/retried-when-carried-out",
+   "ac3/unchanged-sweeps-retry-nothing",
+   "ac4/one-run-finished-per-clone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac3/unchanged-sweeps-retry-nothing",
+    "three sweeps that find the obligation unchanged retry nothing: no event is sent, nothing is written, no attempt is made [3 6 3]"
+   ],
+   [
+    "VELDO-0308 ac3/retried-when-carried-out",
+    "and in that call the dispatch's deferred items are retried, once [[('runner.retirement', 'run_finished', 'dispatch/retry-21'), ('runner.retirement', 'run_finished', 'dispatch/retry-21'), ('runner.retirement', 'run_finished', 'dispatch/retry-21'), ('runner.retirement', 'run_finished', 'dispatch/retry-21')] [{'retried': ['space:item:4758a33b2d534f89a3140754eaa0039a'], 'signals': 1, 'states': {'space:item:4758a33b2d534f89a3140754eaa0039a': 'deferred'}, 'raised': None}, {'retried': ['space:item:4758a33b2d534f89a3140754eaa0039a'], 'signals': 1, 'states': {'space:item:4758a33b2d534f89a3140754eaa0039a': 'deferred'}, 'raised': None}, {'retried': ['space:item:4758a33b2d534f89a3140754eaa0039a'], 'signals': 1, 'states': {'space:item:4758a33b2d534f89a3140754eaa0039a': 'deferred'}, 'raised': None}, {'retried': ['space:item:4758a33b2d534f89a3140754eaa0039a'], 'signals': 1, 'states': {'space:item:4758a33b2d534f89a3140754eaa0039a': 'removed'}, 'raised': None}, {'retried': [], 'signals': 0, 'states': {}, 'raised': None}]]"
+   ],
+   [
+    "VELDO-0308 ac3/only-a-pending-retirement",
+    "a pending retirement of a run with no deferred item is carried out and sends nothing [['dispatch/retry-23'] [{'retried': [], 'signals': 0, 'states': {}, 'raised': None}, {'retried': [], 'signals': 0, 'states': {}, 'raised': None}]]"
+   ],
+   [
+    "VELDO-0308 ac4/one-run-finished-per-clone",
+    "three sweeps attempt the retirement again and none attempts the teardown again: run finished was sent once for the clone [[('clone.teardown', 'run_finished', 'dispatch/once-34'), ('runner.retirement', 'run_finished', 'dispatch/once-34'), ('runner.retirement', 'run_finished', 'dispatch/once-34'), ('runner.retirement', 'run_finished', 'dispatch/once-34')] 3]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": true
+ },
+ {
+  "falsifier": "space308-no-retry-when-carried-out",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac3/retried-when-carried-out"
+  ],
+  "red_rows": [
+   "ac3/only-a-pending-retirement",
+   "ac3/retried-when-carried-out",
+   "ac4/one-run-finished-per-clone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac3/retried-when-carried-out",
+    "and in that call the dispatch's deferred items are retried, once [[] []]"
+   ],
+   [
+    "VELDO-0308 ac3/only-a-pending-retirement",
+    "a pending retirement of a run with no deferred item is carried out and sends nothing [['dispatch/retry-23'] []]"
+   ],
+   [
+    "VELDO-0308 ac4/one-run-finished-per-clone",
+    "when the retirement is carried out the teardown is still not called again; the one retry of the dispatch's deferred items is the retirement's own [['dispatch/once-34'] [('clone.teardown', 'run_finished', 'dispatch/once-34')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-retry-at-every-release",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac3/only-a-pending-retirement"
+  ],
+  "red_rows": [
+   "ac3/only-a-pending-retirement"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac3/only-a-pending-retirement",
+    "a retirement carried out at its first attempt was never pending: nothing is retried, and the deferred item waits for its next event [True 1]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-obligation-open-on-space-deferred",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac4/deferred-releases-the-slot"
+  ],
+  "red_rows": [
+   "ac4/deferred-releases-the-slot",
+   "ac4/handed-over-for-every-user",
+   "ac4/one-run-finished-per-clone",
+   "ac4/pins-follow-the-removal",
+   "ac4/pins-held-while-deferred"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac4/deferred-releases-the-slot",
+    "the teardown was handed to the ledger, so the worker slot is released: not held after the sweep [False [] {'dispatch/report-31': {'open': ['clone'], 'refusal': 'cleanup_incomplete:clone', 'attempts': 2}}]"
+   ],
+   [
+    "VELDO-0308 ac4/one-run-finished-per-clone",
+    "three sweeps attempt the retirement again and none attempts the teardown again: run finished was sent once for the clone [[('clone.teardown', 'run_finished', 'dispatch/once-34'), ('clone.teardown', 'run_finished', 'dispatch/once-34'), ('clone.teardown', 'run_finished', 'dispatch/once-34'), ('clone.teardown', 'run_finished', 'dispatch/once-34')] 3]"
+   ],
+   [
+    "VELDO-0308 ac4/handed-over-for-every-user",
+    "the worker's retirement waits while the consumer lives; the consumer's end hands the clone over and releases both slots in that call [False False []]"
+   ],
+   [
+    "VELDO-0308 ac4/pins-follow-the-removal",
+    "the slot is released while the work tree is deferred, and its pin is held [False deferred]"
+   ],
+   [
+    "VELDO-0308 ac4/pins-held-while-deferred",
+    "the slot is released and the work tree is deferred, on disk [False deferred]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": true
+ },
+ {
+  "falsifier": "space308-teardown-on-every-sweep",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac4/one-run-finished-per-clone"
+  ],
+  "red_rows": [
+   "ac4/handed-over-for-every-user",
+   "ac4/one-run-finished-per-clone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac4/one-run-finished-per-clone",
+    "three sweeps attempt the retirement again and none attempts the teardown again: run finished was sent once for the clone [[('clone.teardown', 'run_finished', 'dispatch/once-34'), ('clone.teardown', 'run_finished', 'dispatch/once-34'), ('clone.teardown', 'run_finished', 'dispatch/once-34'), ('clone.teardown', 'run_finished', 'dispatch/once-34')] 3]"
+   ],
+   [
+    "VELDO-0308 ac4/handed-over-for-every-user",
+    "the teardown ran once for the clone, whichever dispatch asked [[('clone.teardown', 'run_finished', 'dispatch/both-35'), ('clone.teardown', 'run_finished', 'dispatch/both-35')]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": true
+ },
+ {
+  "falsifier": "space308-pins-released-at-the-teardown-only",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac4/pins-follow-the-removal"
+  ],
+  "red_rows": [
+   "ac4/pins-follow-the-removal"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac4/pins-follow-the-removal",
+    "the next sweep finds the work tree's item removed and releases the pin [[{'cache': '<fixture>/caches/ccf64c6d9af8df3cd257192ad6e48f37.git', 'ref': 'refs/veldo/pins/clone-confirm-36/68566dc699f6bb9e', 'commit': '495f68679fb8392e612cde8a08d0994860c8fa7b'}] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": true
+ },
+ {
+  "falsifier": "space308-pins-released-at-hand-over",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac4/pins-held-while-deferred"
+  ],
+  "red_rows": [
+   "ac4/deferred-releases-the-slot",
+   "ac4/one-run-finished-per-clone",
+   "ac4/pins-follow-the-removal",
+   "ac4/pins-held-while-deferred"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac4/deferred-releases-the-slot",
+    "in a project in report mode the clone is left due: whole on disk, its items due, its pin held [['due', 'due', 'due']]"
+   ],
+   [
+    "VELDO-0308 ac4/one-run-finished-per-clone",
+    "the clone is whole, its pin held"
+   ],
+   [
+    "VELDO-0308 ac4/pins-follow-the-removal",
+    "the slot is released while the work tree is deferred, and its pin is held [True deferred]"
+   ],
+   [
+    "VELDO-0308 ac4/pins-held-while-deferred",
+    "its pin is held through the hand-over and the sweeps [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": true
+ },
+ {
+  "falsifier": "space308-pins-released-while-the-item-is-not-removed",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac4/pins-held-while-deferred"
+  ],
+  "red_rows": [
+   "ac4/pins-held-while-deferred"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac4/pins-held-while-deferred",
+    "a work tree that is not at its path while its item is not removed releases nothing"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": false
+ },
+ {
+  "falsifier": "space308-unrecorded-clone-taken-for-the-ledgers",
+  "module": "control_retirement.py",
+  "expected_red": [
+   "ac4/not-handed-over-keeps-the-slot"
+  ],
+  "red_rows": [
+   "ac4/not-handed-over-keeps-the-slot"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 ac4/not-handed-over-keeps-the-slot",
+    "a clone no item records is not the ledger's: the obligation stays open and the slot held [True {'clone_id': 'clone-unrecorded-38', 'teardown': 'deferred', 'refusal': 'space_deferred:not_in_ledger', 'removed_by': None}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC4",
+  "declared": false
+ }
+]

@@ -1,0 +1,134 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0308",
+ "commit": "f2ba3a17fd417be56409d72cbcbf867a07262a8b",
+ "tree": "d8e3ef3f67f74953bc84ba53b638545f6bddd9a3",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-14T12:33:30.869837+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "Rows ac1/not-before-the-record (while the dispatch record says running, or unknown, Receiver._space_end sends nothing and writes nothing: both folders on disk, both items present, the hold admitted; once the record says exited and the group is empty run finished is sent once, and the run directory and the scratch folder are gone from disk and removed in the ledger as the call returns, by the folder remover, at run finished from the receiver), ac1/surviving-child (the worker's end is on the record; a real child process lives on with a file under the scratch root open and its working directory at /; run finished is not sent, the scratch item is present with no deferral, the journal did not grow, the file is byte for byte, the hold is held; once the child has ended the same end removes both folders and releases the hold), ac1/removal-before-the-report (Receiver._finish itself: when the exit is recorded both folders are there, both items present, the hold held and no event sent; the end is emitted only with both folders gone and the hold released, and carries the space end; a run whose group could not be emptied is recorded unknown and sent nothing; the source order of _finish and report_end is read), ac1/refused-never-started (a refused dispatch with no worker and no group: its folders go and its hold is released; one with no folder writes the release alone)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "The rows drive the receiver's, the runner's and the retirement service's own methods against a real Ledger on a real control store, real folders, real git worktrees and clones with real pins in a real cache, and send every event through the real Signal, kind registry, probes, removers and keeper, which really delete. The project orchard is in act mode by the owner's own signed command with a real key; meadow is in report mode. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0308/falsifiers.json",
+     "detail": "space308-sent-when-the-worker-exits is the declared falsifier (the group is taken for empty once the worker's own process has exited): ac1/surviving-child red, the scratch is judged while the child lives and deferred as in_use. Applied once each, noop copy green, mutant copy red on its target rows: space308-sent-when-the-worker-exits reds ac1/surviving-child, space308-sent-before-the-record reds ac1/not-before-the-record, space308-judged-before-the-record reds ac1/removal-before-the-report, space308-reported-before-the-space-end reds ac1/removal-before-the-report."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "Rows ac2/census-signal-release (the ledger's committed commands of one space end, in order: every measure of the census, the one signal, every removal outcome, and the release of the hold last; the count of commands equals the growth of the journal; the build folder the worker left is an item of the run, measured, and removed; the worker's untracked notes are byte for byte and the worktree stays present), ac2/waiting-unit (a unit of the act-mode project waits with the numbers; the row shows by arithmetic that the freed bytes alone, and the released hold alone, leave it short; after the receiver's end, with the receiver object gone, admission admits it), ac2/hold-named-by-the-contract (the hold the contract's space field names is released; a hold released already and a run with no hold write nothing)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "The rows drive the receiver's, the runner's and the retirement service's own methods against a real Ledger on a real control store, real folders, real git worktrees and clones with real pins in a real cache, and send every event through the real Signal, kind registry, probes, removers and keeper, which really delete. The project orchard is in act mode by the owner's own signed command with a real key; meadow is in report mode. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0308/falsifiers.json",
+     "detail": "space308-exit-without-releasing-the-hold is the declared falsifier: ac2/waiting-unit red, the unit is still waiting after the receiver has gone. Applied once each, noop copy green, mutant copy red on its target rows: space308-exit-without-releasing-the-hold reds ac2/waiting-unit, space308-hold-released-before-signal reds ac2/census-signal-release."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "Rows ac3/unchanged-sweeps-retry-nothing (a retirement pending on its accounting and a run directory deferred as in_use: three Runner.sweep calls send no event, write nothing, make no attempt and record no retry), ac3/retried-when-carried-out (when the accounting completes the sweep releases the slot and in that call one run finished is sent by runner.retirement; the run directory, free now, is removed through the rules and the folder remover; three later sweeps send nothing), ac3/only-a-pending-retirement (a retirement carried out at its first attempt retries nothing and the deferred item waits for its next event; a pending one with no deferred item sends nothing and writes nothing; Runner.__init__ wires retry_deferred as the seam), ac3/not-under-a-consumer (the retry is not sent while a consumer of the run's clone has not ended), ac3/not-for-a-run-not-ended (a retry for a run whose record shows no end answers rule 3 for nobody: the item is refused by the owner rule and whole)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "The rows drive the receiver's, the runner's and the retirement service's own methods against a real Ledger on a real control store, real folders, real git worktrees and clones with real pins in a real cache, and send every event through the real Signal, kind registry, probes, removers and keeper, which really delete. The project orchard is in act mode by the owner's own signed command with a real key; meadow is in report mode. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0308/falsifiers.json",
+     "detail": "space308-retry-on-every-sweep is the declared falsifier: ac3/unchanged-sweeps-retry-nothing red, three sweeps with an unchanged obligation send three events. Applied once each, noop copy green, mutant copy red on its target rows: space308-retry-under-a-consumer reds ac3/not-under-a-consumer, space308-retry-answers-for-a-run-not-ended reds ac3/not-for-a-run-not-ended, space308-retry-on-every-sweep reds ac3/unchanged-sweeps-retry-nothing, space308-no-retry-when-carried-out reds ac3/retried-when-carried-out, space308-retry-at-every-release reds ac3/only-a-pending-retirement."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "Rows ac4/deferred-releases-the-slot (report mode: the clone is left due, whole, its pin held; the teardown is recorded as deferred with space_deferred:due and the ledger's root item; the slot is not held after the sweep; run finished was sent once), ac4/retired-releases-the-slot (act mode: the clone is gone, its commit on a kept ref, its pins released by the teardown, the slot released), ac4/clone-in-use-keeps-the-slot (a consumer that has not ended: clone_in_use, the obligation open, the slot held, the journal unchanged over two sweeps; once it ends the sweep tears down and releases), ac4/one-run-finished-per-clone (a clone deferred as in_use and handed over while the slot is kept by stale_version: three sweeps each attempt the retirement and none the teardown; one run finished for the clone from the teardown; when the retirement is carried out the one further event is the retirement's own retry of AC3), ac4/handed-over-for-every-user (a worker and a consumer of one clone: one teardown, both slots released in the call that handed it over), ac4/pins-follow-the-removal (the slot is released while the work tree is deferred and its pin held; a removal from outside the teardown removes the work tree, its commit kept, and the pin is still in the cache; the next sweep releases it, once), ac4/pins-held-while-deferred (through the hand-over and two sweeps the pin is held; after git gc with prune now in the cache the work tree's commit is readable through it; a work tree moved off its path while its item is not removed releases nothing), ac4/not-handed-over-keeps-the-slot (a clone no item records, and an installation with no ledger whose clone holds an uncommitted draft: the obligation stays open, the slot held, the clone whole with its pin)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/146_veldo_0308_run_finished.py",
+     "detail": "The rows drive the receiver's, the runner's and the retirement service's own methods against a real Ledger on a real control store, real folders, real git worktrees and clones with real pins in a real cache, and send every event through the real Signal, kind registry, probes, removers and keeper, which really delete. The project orchard is in act mode by the owner's own signed command with a real key; meadow is in report mode. The ledger and the disk are read after each call. Stand-ins: assumptions 1 to 6."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0308/falsifiers.json",
+     "detail": "The four declared falsifiers, each with a row of its own: space308-obligation-open-on-space-deferred (ac4/deferred-releases-the-slot: the slot is still held after the sweep), space308-teardown-on-every-sweep (ac4/one-run-finished-per-clone: four run finished events for the clone), space308-pins-released-at-the-teardown-only (ac4/pins-follow-the-removal: the pin is still held after the removal and the sweep), space308-pins-released-at-hand-over (ac4/pins-held-while-deferred: after the cache is collected the commit is unreadable). Applied once each, noop copy green, mutant copy red on its target rows: space308-obligation-open-on-space-deferred reds ac4/deferred-releases-the-slot, space308-teardown-on-every-sweep reds ac4/one-run-finished-per-clone, space308-pins-released-at-the-teardown-only reds ac4/pins-follow-the-removal, space308-pins-released-at-hand-over reds ac4/pins-held-while-deferred, space308-pins-released-while-the-item-is-not-removed reds ac4/pins-held-while-deferred, space308-unrecorded-clone-taken-for-the-ledgers reds ac4/not-handed-over-keeps-the-slot."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 146_veldo_0308_run_finished (21 rows). Each on its own, green on the committed tree: the space suites 139 (0301), 142 (0303) and 143 (0305), and the suites that drive the launch module and the retirement service: 60 (0052), 62 (0039), 63 (0040), 66 (0042, 0047), 67 (0041), 78 (0060, 0160), 79 (0061), 80 (0155), 81 (0156), 82 (0129, 0141), 83 (0154, 0166), 85 (0158), 86 (0189), 87 (0127 codex delivery, 0170), 106 (0185), 127 (0254), 128 (0254), 129 (0254; one red in the first of four runs, ac1/canary-project-process, a read of a short-lived process, green three times in a row after: recorded in suite-green.txt), and 06 (the suite manifest's honesty) (proof/VELDO-0308/suite-green.txt). 82_veldo_0165_launch_hygiene is 47 of 49: evidence/completeness and evidence/outside-scan, red at the base too, VELDO-0165's and untouched here. 86_veldo_0127_agent_configuration was not run: it is 52 of 54 on this branch until the lead recaptures its live captures."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, git, Signal, removers and keeper, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The 17 cases registered under finding 308 in scripts/check_teeth_mutations.py, each applied once with the observer's own materialize and worker (noop copy, then mutant copy): every noop green, every mutant turns its target rows red (proof/VELDO-0308/mutations.txt, falsifiers.json). The anchor of every case registered with module control_launch.py or control_retirement.py occurs exactly once in the file; two cases of earlier findings were re-anchored with their meaning unchanged (space303-receiver-answers-for-an-unread-group, space305-no-census-at-the-receivers-end) and each was applied again and turns its row red. Not run: python3 scripts/check_teeth_mutations.py --finding 308 as the teeth run, and the cases of other findings; the lead runs them through the gate lock."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_docs.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged); python3 .veldo/validate.py all: exit 0."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "Not run, by the lead's instruction. The single suites, the registered cases of finding 308 and the fast checks were run. The lead runs ./scripts/verify.sh through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "1. THE CREATORS DECLARE NOTHING YET (VELDO-0302 is not built). The suite declares and confirms each run directory, scratch folder, worktree and clone item itself, the clone's three items owned by the worker dispatch's run. In production nothing records them yet, so a receiver's space end finds no item and sends nothing.",
+  "2. NOTHING IN THE ENGINE BUILDS `space` YET. The receiver's main() passes none and no Runner is given one, so until a later ticket wires it every path here runs as before: the run directory goes where it went, no hold is released, no retry is made, the clone obligation closes when the files are gone. The suite wires the mapping itself.",
+  "3. NOTHING WRITES A HOLD YET (VELDO-0316: the Runner's hold, the contract's space field, the freed mark and the space wake). The suite places and admits each hold through the ledger's own commands and judges the waiting unit with control_space_admission.admit. The receiver releases the hold the contract's space field names, else the one under the dispatch's identity; the freed mark and the wake that 6.7 says the release raises are VELDO-0334 and are not here.",
+  "4. THE OWNER'S CONFIRM IS NOT BUILT (VELDO-0320). In ac4/pins-follow-the-removal it stands as what it will make: a removal of the deferred items through Signal, sent from outside the teardown and the retirement, after the slot was released.",
+  "5. THE RECEIVER, THE RUNNER AND THE CLONE PROVISIONER ARE MADE WITHOUT THEIR STORES (object.__new__ and the attributes the driven paths read). Receiver.launch itself is not driven: the calls of the space end on its refusal paths, each after its refuse record, are covered by no row; ac1/refused-never-started drives the space end itself for a refused record. Receiver._finish is driven with recording stand-ins for the dispatch records and the emit. The reservation service is a stand-in as far as a retirement reads it (a worker slot, the calls reserved under a dispatch, a retire transition that takes its observation from the lifecycle it is given); the real one is exercised with the changed retirement module by suites 63 and 67, which are green.",
+  "6. OTHER STAND-INS. The row VELDO-0347 adds to the kind registry (an agent repository at run finished: remove), on a copy. The two checks of a switch to act (VELDO-0332, 0339). The docker client (a function). The process table (a fixture folder shaped as the kernel's; in ac1/surviving-child its entry is that of a real child process that really holds the file, and the row reads the real /proc of that child to show it). The group's emptiness is the receiver's supervision as its reap leaves it, set by the row; no systemd scope is made.",
+  "7. WHAT IS FOLLOWED IS IN MEMORY. The clones handed over and their pins are entries of the retirement service, like every entry it has. After a restart of the runner a clone handed over before it keeps its pins until something else releases them. A held pin keeps objects and loses nothing.",
+  "8. THE SWEEP'S OWN RUN FINISHED IS UNCHANGED (VELDO-0303, Runner.clear_runs): for a leftover run directory it is sent once the kernel shows the run gone, whatever the dispatch record says, and again at each sweep while the directory stays deferred; the event reaches every item of that run. Suite 142 holds it to that and is outside this footprint. Recorded for the lead in the spec's History.",
+  "9. NARROWER THAN THE AMENDMENT'S WORDS, ON THE SAFE SIDE. The clone obligation closes on a space_deferred refusal only while the ledger records the clone's root as a live item in state due, deferred, removing or kept. A clone no item records, a root the event never reached, and an unreadable ledger keep the slot held. Recorded for the lead in the spec's History.",
+  "10. THE DESIGN'S RETRY PARAGRAPH (section 7) and the Retirement row of its component table still carry the wording from before AC4; the design is outside this footprint and is to be revised by the lead."
+ ],
+ "rollback": "Revert the change. The receiver sends no run finished, and the run's items stay present until another event ends them."
+}
