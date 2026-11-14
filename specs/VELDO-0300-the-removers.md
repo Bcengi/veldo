@@ -17,6 +17,8 @@ footprint:
   - "scripts/suites/*_veldo_0300_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0300-the-removers.md"
   - "specs/index.md"
@@ -180,3 +182,49 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   Not a finding, for the owner to know (the re-review's last table row): in a worktree recorded when it
   was made, a folder a committed rule such as *.local or .vscode/ covers is build output by design 0.1
   and 6.3 and goes with the worktree; a project keeps such a folder by its keep list.
+- 2026-11-14: fixed after the third review (verdict FIX; review3-veldo-0300.md, finding E), under the
+  owner's rule that no work is ever lost (Telegram 41209). No acceptance criterion changed. The reviewer
+  removed a volume that had been made again, with new data, under the name of an item recorded by its
+  name alone; an image tag recorded by name alone had the same gap. The rule now: a Docker object is
+  removed only when the object found now is provably the one recorded.
+  - The locator fields. A Docker locator is {engine, name} with, when known: id (the engine's Id of a
+    container or a network; for an image tag, the Id of the image the tag named), created_at (the
+    engine's CreatedAt of a volume, as the create event or the snapshot gave it), run_label (the value
+    of the run's label on the object, design 6.4) and compose_project. created_at and run_label are
+    new; control_space.canonical_locator accepts them (VELDO-0297's module, changed with this fix on
+    the lead's instruction, with its synced copy; added to the footprint above).
+  - The run's label is the engine label veldo.space.run (control_space_remove.RUN_LABEL), its value the
+    run's space label. Design 6.4's run-label mechanism puts it on every object Veldo itself or a
+    project's scripts create; the Docker adapter (VELDO-0306) applies it and records run_label and
+    created_at, and the image Id for a tag a run built. Its History has the pointer.
+  - The identity a record must hold (control_space_remove.IDENTITY): a container and a network, id; an
+    image tag, id, never the tag alone; a volume, created_at, and with it run_label or compose_project.
+    A record without it is deferred remove_refused with the reason, before the engine is asked
+    anything, and is never removed. A compose project label alone is no identity: the same project
+    makes the volume again under the same name and label, so created_at is required too.
+  - The comparison. The engine shows the object and every recorded field is compared: Id, CreatedAt,
+    the run's label, the compose project label. Any difference is remove_refused with nothing but the
+    inspect asked of the engine.
+  Rows, one for each line of the review's table and one for the image tag, each with a registered
+  falsifier that removes the object made again:
+  - work/docker-name-only-new-data and work/docker-name-only-other-project (lines 1 and 2: recorded by
+    name alone; the volume now with no labels and new data, or with another compose project's label).
+    Falsifier space300-docker-name-only-removed: a record with no identity is acted on.
+  - work/docker-compose-label-absent (line 3: recorded with a compose project, the volume now without
+    the label; also with CreatedAt recorded and equal). Falsifier
+    space300-docker-compose-label-not-compared.
+  - work/docker-compose-made-again (line 4: recorded with a compose project, made again by the same
+    project). Falsifiers space300-docker-compose-label-as-identity (the label alone counts) and
+    space300-docker-created-at-not-compared.
+  - work/docker-volume-id (line 5: a volume recorded with an id, which an engine gives no volume).
+    Falsifier space300-docker-volume-id-not-compared.
+  - work/docker-image-tag (a tag recorded by name alone; a tag whose image is now another one, a
+    committed container). Falsifier space300-docker-image-tag-alone.
+  - work/docker-object-made-again now plants a run-labelled volume. Falsifiers
+    space300-docker-object-not-compared, space300-docker-created-at-not-compared and
+    space300-docker-run-label-not-compared.
+  What changed for a caller: every Docker item recorded before the adapter records these fields waits,
+  remove_refused, and is shown; none is removed. What this does not close, named in the proof: an
+  engine gives CreatedAt to the second, so a volume removed and made again inside the same second by
+  the same owner reads the same; and the engine's image remove takes a tag, so a tag moved between the
+  inspect and the remove goes (the image it named stays while another tag or a container holds it).

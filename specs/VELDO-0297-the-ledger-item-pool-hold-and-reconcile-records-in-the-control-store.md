@@ -122,3 +122,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   number, written again by a later attempt, and the keep command's refusal of a main repository that is a
   private repository (VELDO-0345 AC5 and AC1); the restore command's refusals for a snapshot it cannot
   find or verify (VELDO-0346 AC2). No acceptance criterion changed.
+- 2026-11-14: from the third review of VELDO-0300 (review3-veldo-0300.md, finding E). No acceptance
+  criterion changed. canonical_locator accepts two more optional fields of a Docker locator, created_at
+  (the engine's CreatedAt of a volume) and run_label (the value of the run's label on the object),
+  beside id and compose_project. The ledger does not require them; the removers do (VELDO-0300's
+  History). The locator's key is unchanged: engine, type and name.

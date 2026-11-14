@@ -345,7 +345,10 @@ def _absolute(value, field):
 
 def canonical_locator(kind, locator):
     """The locator of an item of `kind` in its canonical form: {path} for a disk kind, {repository, ref}
-    for a branch, {engine, name} with id and compose_project when known for a Docker kind."""
+    for a branch, {engine, name} for a Docker kind, with what is known of: id (the engine's Id of the
+    object; for an image tag, of the image the tag named), created_at (the engine's CreatedAt of a volume),
+    run_label (the value of the run's label on it) and compose_project. The removers remove a Docker object
+    only when these prove it is the one recorded (control_space_remove.IDENTITY)."""
     if kind not in KINDS:
         raise _invalid('kind', 'one of ' + ', '.join(KINDS))
     if not isinstance(locator, dict):
@@ -358,7 +361,8 @@ def canonical_locator(kind, locator):
         if set(locator) != {'repository', 'ref'} or not _is_str(locator['ref']):
             raise _invalid('locator', 'a branch is located by its repository and ref name')
         return {'repository': _absolute(locator['repository'], 'locator.repository'), 'ref': locator['ref']}
-    if (not {'engine', 'name'} <= set(locator) <= {'engine', 'name', 'id', 'compose_project'}
+    if (not {'engine', 'name'} <= set(locator) <= {'engine', 'name', 'id', 'compose_project',
+                                                      'created_at', 'run_label'}
             or not all(_is_str(value) for value in locator.values())):
         raise _invalid('locator', 'a Docker object is located by its engine context and name')
     return {key: locator[key] for key in sorted(locator)}

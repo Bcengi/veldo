@@ -28,7 +28,13 @@
    "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/hidden-edits",
    "work/ignored-files",
    "work/link-and-dotdot",
@@ -71,7 +77,13 @@
    "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/hidden-edits",
    "work/ignored-files",
    "work/link-and-dotdot",
@@ -190,7 +202,13 @@
    "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/hidden-edits",
    "work/link-and-dotdot",
    "work/linked-worktrees",
@@ -226,7 +244,13 @@
    "work/adopted-build-output",
    "work/agent-repository-files",
    "work/commit-in-the-gap",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/hidden-edits",
    "work/ignored-files",
    "work/link-and-dotdot",
@@ -281,7 +305,13 @@
    "remove/canon",
    "work/adopted-build-output",
    "work/agent-repository-files",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/hidden-edits",
    "work/link-and-dotdot",
    "work/linked-worktrees",
@@ -315,7 +345,13 @@
    "ac4/free-unread",
    "remove/canon",
    "work/adopted-build-output",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/hidden-edits",
    "work/link-and-dotdot",
    "work/linked-worktrees",
@@ -421,7 +457,13 @@
    "ac4/free-unread",
    "remove/canon",
    "work/adopted-build-output",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/hidden-edits",
    "work/linked-worktrees"
   ],
@@ -451,7 +493,13 @@
    "ac4/free-unread",
    "remove/canon",
    "work/adopted-build-output",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
    "work/docker-object-made-again",
+   "work/docker-volume-id",
    "work/linked-worktrees"
   ],
   "red_details": [
@@ -480,7 +528,13 @@
    "ac4/free-unread",
    "remove/canon",
    "work/adopted-build-output",
-   "work/docker-object-made-again"
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
+   "work/docker-object-made-again",
+   "work/docker-volume-id"
   ],
   "red_details": [
    [
@@ -499,12 +553,159 @@
   "noop_red_rows": [],
   "red_rows": [
    "remove/canon",
+   "work/docker-compose-label-absent",
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project",
+   "work/docker-object-made-again",
+   "work/docker-volume-id"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-object-made-again",
+    "a volume made again under the item's name at another time, with the run's label is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-name-only-removed",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/docker-compose-made-again",
+   "work/docker-image-tag",
+   "work/docker-name-only-new-data",
+   "work/docker-name-only-other-project"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-name-only-new-data",
+    "a volume recorded by its name alone, made again with no labels and new data is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ],
+   [
+    "VELDO-0300 work/docker-name-only-other-project",
+    "a volume recorded by its name alone that now carries another compose project's label is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-compose-label-not-compared",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-compose-label-absent"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/docker-compose-label-absent"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-compose-label-absent",
+    "a volume recorded with a compose project and its CreatedAt, now with that time and no label is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-compose-label-as-identity",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-compose-made-again"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/docker-compose-made-again"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-compose-made-again",
+    "a volume recorded with a compose project and no CreatedAt, made again by the same project with the same label is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-volume-id-not-compared",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-volume-id"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/docker-image-tag",
+   "work/docker-volume-id"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-volume-id",
+    "a volume recorded with an id, its CreatedAt and the run's label, the last two equal is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-image-tag-alone",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-image-tag"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/docker-image-tag"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-image-tag",
+    "an image tag recorded by its name alone is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-created-at-not-compared",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-object-made-again",
+   "work/docker-compose-made-again"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/docker-compose-made-again",
    "work/docker-object-made-again"
   ],
   "red_details": [
    [
     "VELDO-0300 work/docker-object-made-again",
-    "a volume made again under the item's name with another Id and no label is remove_refused, the engine is not asked to remove it and it is still there [None]"
+    "a volume made again under the item's name at another time, with the run's label is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ],
+   [
+    "VELDO-0300 work/docker-compose-made-again",
+    "a volume recorded with a compose project and its CreatedAt, made again later by the same project is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space300-docker-run-label-not-compared",
+  "criterion": "AC3",
+  "expected_red": [
+   "work/docker-object-made-again"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "work/docker-object-made-again"
+  ],
+  "red_details": [
+   [
+    "VELDO-0300 work/docker-object-made-again",
+    "a volume made again under the item's name at the same time, with no label is remove_refused with the reason, the engine is asked for nothing but an inspect and the object is still there [(True, None) None]"
    ]
   ],
   "red_as_expected": true

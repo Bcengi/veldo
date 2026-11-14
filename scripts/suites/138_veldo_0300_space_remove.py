@@ -92,10 +92,25 @@ record away, and for a bare repository; with no linked worktree it goes), work/a
 (a worktree reconcile adopted, with a hand-written file in a folder a committed ignore file covers:
 keep_failed, the file byte for byte; the same file in a worktree recorded when it was made is build
 output; a folder a declared pattern covers is build output in both; with a snapshot the adopted one
-goes), work/docker-object-made-again (a volume removed and made again under the item's name, with
-another Id, with no compose project label or with another project's, and one the engine cannot show:
-remove_refused, the engine is not asked to remove anything and the volume is still there; the volume
-the item recorded goes).
+goes), work/docker-object-made-again (a volume recorded with its CreatedAt and the run's label, removed
+and made again under the item's name at another time, with no run label or with another run's, and one
+the engine cannot show: remove_refused, the engine is not asked to remove anything and the volume is
+still there; the volume the item recorded goes).
+
+A DOCKER OBJECT GOES ONLY WHEN IT IS PROVABLY THE ONE RECORDED (the third review, finding E). One row
+for each line of the review's table, and one for the image tag; in each the object is made again under
+the item's name, the answer is remove_refused, the engine is asked for nothing but an inspect at most
+and the object is still there: work/docker-name-only-new-data (a volume recorded by its name alone,
+made again with no labels and new data), work/docker-name-only-other-project (the same record, the
+volume now carrying another compose project's label), work/docker-compose-label-absent (recorded with a
+compose project, the volume now without the label; also with CreatedAt recorded and equal, so the label
+alone refuses), work/docker-compose-made-again (recorded with a compose project and no CreatedAt, made
+again by the same project with the same label: a label alone is no identity; with CreatedAt recorded the
+one made again is refused and the one recorded goes), work/docker-volume-id (a volume recorded with an
+id: an engine gives a volume none, so it is refused, with CreatedAt and the label equal too),
+work/docker-image-tag (a tag recorded by name alone; a tag recorded with its image Id that now names
+another image, a committed container: both refused, the image still there; the tag still on the image
+recorded goes).
 
 remove/writes-nothing (a removal writes no journal record), remove/canon (the engine canon equals this
 repository copy).
@@ -138,6 +153,9 @@ def _v300_space_remove_suite():
             'work/probes-through-the-boundary',
             'work/hidden-edits', 'work/linked-worktrees', 'work/adopted-build-output',
             'work/docker-object-made-again',
+            'work/docker-name-only-new-data', 'work/docker-name-only-other-project',
+            'work/docker-compose-label-absent', 'work/docker-compose-made-again', 'work/docker-volume-id',
+            'work/docker-image-tag',
             'remove/writes-nothing', 'remove/canon')
     rows = {name: [] for name in ROWS}
 
@@ -1081,6 +1099,7 @@ def _v300_space_remove_suite():
             ENGINE['image'].append({'_engine': engine, '_bytes': 70000, 'Id': 'sha256:' + tag * 64,
                                     'Name': 'run7/app:' + tag, 'Size': 70000})
             ENGINE['volume'].append({'_engine': engine, '_bytes': 20000, 'Name': 'run7_data_' + tag,
+                                     'CreatedAt': '2026-11-13T10:00:00Z', 'Labels': {RM.RUN_LABEL: 'run7'},
                                      'Mountpoint': str(pg) if engine == 'default' else '/var/lib/docker/volumes/x/_data'})
             ENGINE['volume'].append({'_engine': engine, '_bytes': 50000, 'Name': 'bystander_' + tag,
                                      'Mountpoint': '/var/lib/docker/volumes/y/_data'})
@@ -1091,7 +1110,8 @@ def _v300_space_remove_suite():
                 'container': declared('container', {'engine': engine, 'name': 'run7-web-' + tag, 'id': tag * 64}, **pool),
                 'image_tag': declared('image_tag', {'engine': engine, 'name': 'run7/app:' + tag,
                                                     'id': 'sha256:' + tag * 64}, **pool),
-                'volume': declared('volume', {'engine': engine, 'name': 'run7_data_' + tag}, **pool),
+                'volume': declared('volume', {'engine': engine, 'name': 'run7_data_' + tag,
+                                              'created_at': '2026-11-13T10:00:00Z', 'run_label': 'run7'}, **pool),
                 'network': declared('network', {'engine': engine, 'name': 'run7_net_' + tag, 'id': tag * 12}, **pool),
             }
 
@@ -1324,36 +1344,123 @@ def _v300_space_remove_suite():
 
         ROW = 'work/docker-object-made-again'
         LABEL = 'com.docker.compose.project'
-        volume = declared('volume', {'engine': 'default', 'name': 'run9_data', 'id': 'volume-first',
-                                     'compose_project': 'run9'}, pool='host')
+        FIRST, SECOND = '2026-11-13T10:00:00Z', '2026-11-13T18:30:00Z'
 
-        def made_again(**fields):
-            del ENGINE['volume'][:]
-            ENGINE['volume'].append(dict({'_engine': 'default', '_bytes': 100, 'Name': 'run9_data',
+        def made_again(name, **fields):
+            """The one volume `name` of the stand-in engine is now this one: made again, with new data."""
+            ENGINE['volume'][:] = [record for record in ENGINE['volume'] if record['Name'] != name]
+            ENGINE['volume'].append(dict({'_engine': 'default', '_bytes': 100, 'Name': name,
                                           'Mountpoint': '/var/lib/docker/volumes/z/_data'}, **fields))
 
-        for label, fields in (
-                ('with another Id and no label', {'Id': 'volume-second'}),
-                ('with the Id and no label', {'Id': 'volume-first', 'Labels': None}),
-                ('with the Id and another project\'s label', {'Id': 'volume-first', 'Labels': {LABEL: 'atlas'}}),
-                ('with the label and another Id', {'Id': 'volume-second', 'Labels': {LABEL: 'run9'}}),
-                ('with the label and no Id', {'Labels': {LABEL: 'run9'}})):
-            made_again(**fields)
+        def kept(row, label, item, kind='volume', name=None):
+            """The removal of `item` is remove_refused, the engine was asked for an inspect at most, and
+            the object under the name is still there."""
             del ran[:]
-            answer = drive(volume)
-            check(ROW, 'a volume made again under the item\'s name %s is remove_refused, the engine is not asked '
-                  'to remove it and it is still there [%s]' % (label, answer.get('said')),
-                  named(answer)[:2] == (False, 'remove_refused') and len(held('volume', 'default', 'run9_data')) == 1
-                  and ran and not [argv for argv in ran if argv[4] != 'inspect'])
+            answer = drive(item, action='remove_tag' if kind == 'image' else 'remove')
+            check(row, '%s is remove_refused with the reason, the engine is asked for nothing but an inspect and '
+                  'the object is still there [%s %s]' % (label, named(answer)[:2], answer.get('said')),
+                  named(answer)[:2] == (False, 'remove_refused') and bool(answer.get('said'))
+                  and len(held(kind, 'default', name)) == 1
+                  and not [argv for argv in ran if argv[0] != 'docker' or argv[4] != 'inspect'])
+            return answer
+
+        volume = declared('volume', {'engine': 'default', 'name': 'run9_data', 'created_at': FIRST,
+                                     'run_label': 'run9'}, pool='host')
+        for label, fields in (
+                ('at another time, with the run\'s label', {'CreatedAt': SECOND, 'Labels': {RM.RUN_LABEL: 'run9'}}),
+                ('at the same time, with no label', {'CreatedAt': FIRST, 'Labels': None}),
+                ('at the same time, with another run\'s label', {'CreatedAt': FIRST, 'Labels': {RM.RUN_LABEL: 'run8'}}),
+                ('with no time and the run\'s label', {'Labels': {RM.RUN_LABEL: 'run9'}}),
+                ('at another time, with a compose project\'s label', {'CreatedAt': SECOND, 'Labels': {LABEL: 'run9'}})):
+            made_again('run9_data', **fields)
+            answer = kept(ROW, 'a volume made again under the item\'s name ' + label, volume, name='run9_data')
+            check(ROW, 'and the engine was asked to show it first (%s)' % label,
+                  [argv[3:5] for argv in ran] == [['volume', 'inspect']])
         ENGINE['unreadable'] = True
         answer = drive(volume)
         ENGINE['unreadable'] = False
         check(ROW, 'a volume the engine cannot show is remove_refused and still there [%s]' % (answer.get('said'),),
               named(answer)[:2] == (False, 'remove_refused') and len(held('volume', 'default', 'run9_data')) == 1)
-        made_again(Id='volume-first', Labels={LABEL: 'run9'})
+        made_again('run9_data', CreatedAt=FIRST, Labels={RM.RUN_LABEL: 'run9', 'other': 'x'})
         answer = drive(volume)
-        check(ROW, 'the volume the item recorded, by its Id and its label, goes [%s]' % (named(answer)[:2],),
+        check(ROW, 'the volume the item recorded, by its CreatedAt and the run\'s label, goes [%s]' % (named(answer)[:2],),
               answer.get('ok') is True and not held('volume', 'default', 'run9_data'))
+
+        # The third review, finding E: the lines of its table, in its order, and the image tag.
+        ROW = 'work/docker-name-only-new-data'
+        bare = declared('volume', {'engine': 'default', 'name': 'bare_data'}, pool='host')
+        made_again('bare_data')
+        answer = kept(ROW, 'a volume recorded by its name alone, made again with no labels and new data', bare,
+                      name='bare_data')
+        check(ROW, 'the reason says the record holds no identity seen at creation [%s]' % (answer.get('said'),),
+              'created_at' in str(answer.get('said')))
+        made_again('bare_data', CreatedAt=FIRST, Labels={RM.RUN_LABEL: 'run9'})
+        kept(ROW, 'the same record, whatever the volume now says of itself', bare, name='bare_data')
+
+        ROW = 'work/docker-name-only-other-project'
+        made_again('bare_data', CreatedAt=SECOND, Labels={LABEL: 'other'})
+        kept(ROW, 'a volume recorded by its name alone that now carries another compose project\'s label', bare,
+             name='bare_data')
+
+        ROW = 'work/docker-compose-label-absent'
+        composed = declared('volume', {'engine': 'default', 'name': 'p_data', 'compose_project': 'p'}, pool='host')
+        made_again('p_data')
+        kept(ROW, 'a volume recorded with a compose project, now with no label', composed, name='p_data')
+        dated = declared('volume', {'engine': 'default', 'name': 'q_data', 'compose_project': 'q',
+                                    'created_at': FIRST}, pool='host')
+        made_again('q_data', CreatedAt=FIRST)
+        kept(ROW, 'a volume recorded with a compose project and its CreatedAt, now with that time and no label',
+             dated, name='q_data')
+        made_again('q_data', CreatedAt=FIRST, Labels={LABEL: 'other'})
+        kept(ROW, 'the same, now with another project\'s label', dated, name='q_data')
+
+        ROW = 'work/docker-compose-made-again'
+        made_again('p_data', CreatedAt=SECOND, Labels={LABEL: 'p'})
+        answer = kept(ROW, 'a volume recorded with a compose project and no CreatedAt, made again by the same '
+                      'project with the same label', composed, name='p_data')
+        check(ROW, 'the reason says the record holds no identity seen at creation [%s]' % (answer.get('said'),),
+              'created_at' in str(answer.get('said')))
+        made_again('q_data', CreatedAt=SECOND, Labels={LABEL: 'q'})
+        kept(ROW, 'a volume recorded with a compose project and its CreatedAt, made again later by the same project',
+             dated, name='q_data')
+        made_again('q_data', CreatedAt=FIRST, Labels={LABEL: 'q'})
+        answer = drive(dated)
+        check(ROW, 'the volume recorded, by its CreatedAt and the project\'s label, goes [%s]' % (named(answer)[:2],),
+              answer.get('ok') is True and not held('volume', 'default', 'q_data'))
+
+        ROW = 'work/docker-volume-id'
+        numbered = declared('volume', {'engine': 'default', 'name': 'n_data', 'id': 'volume-first'}, pool='host')
+        made_again('n_data')
+        kept(ROW, 'a volume recorded with an id, which an engine gives no volume', numbered, name='n_data')
+        both = declared('volume', {'engine': 'default', 'name': 'm_data', 'id': 'volume-first', 'created_at': FIRST,
+                                   'run_label': 'run9'}, pool='host')
+        made_again('m_data', CreatedAt=FIRST, Labels={RM.RUN_LABEL: 'run9'})
+        kept(ROW, 'a volume recorded with an id, its CreatedAt and the run\'s label, the last two equal', both,
+             name='m_data')
+
+        ROW = 'work/docker-image-tag'
+
+        def tagged(name, image):
+            """The tag `name` of the stand-in engine now names the image `image`."""
+            ENGINE['image'][:] = [record for record in ENGINE['image'] if record['Name'] != name]
+            ENGINE['image'].append({'_engine': 'default', '_bytes': 500, 'Id': image, 'Name': name, 'Size': 500})
+
+        built, committed = 'sha256:' + '1' * 64, 'sha256:' + '2' * 64
+        loose = declared('image_tag', {'engine': 'default', 'name': 'run9/app:dev'}, pool='host')
+        tagged('run9/app:dev', committed)
+        answer = kept(ROW, 'an image tag recorded by its name alone', loose, kind='image', name='run9/app:dev')
+        check(ROW, 'the reason says the record holds no image Id [%s]' % (answer.get('said'),),
+              '(id)' in str(answer.get('said')))
+        pinned = declared('image_tag', {'engine': 'default', 'name': 'run9/app:built', 'id': built}, pool='host')
+        tagged('run9/app:built', committed)
+        kept(ROW, 'a tag recorded with its image Id that now names another image, a committed container', pinned,
+             kind='image', name='run9/app:built')
+        check(ROW, 'the committed image is still there under the tag',
+              [record['Id'] for record in held('image', 'default', 'run9/app:built')] == [committed])
+        tagged('run9/app:built', built)
+        answer = drive(pinned, action='remove_tag')
+        check(ROW, 'the tag that still names the image recorded goes [%s]' % (named(answer)[:2],),
+              answer.get('ok') is True and not held('image', 'default', 'run9/app:built'))
 
         check('remove/canon', 'the engine canon engine/.veldo/control_space_remove.py equals this repository copy',
               (ROOT / 'engine' / '.veldo' / 'control_space_remove.py').is_file()

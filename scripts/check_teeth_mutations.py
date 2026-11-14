@@ -12883,6 +12883,49 @@ def cases():
         "        if False:\n",
         ['work/docker-object-made-again'])
     result[-1]['siblings'] = True
+    # The third review of VELDO-0300 (finding E): a Docker object goes only when it is provably the one
+    # recorded. Each case removes a volume or an image that was made again under the item's name, with
+    # new data: a record with no identity seen at creation is acted on (the name alone, the two table
+    # lines); the compose project label is not compared; a compose project label alone counts as
+    # identity, so a volume the same project made again goes; an Id recorded for a volume is not
+    # compared; an image tag alone counts; CreatedAt is not compared; the run's label is not compared.
+    add(300, 'space300-docker-name-only-removed', space300, 'control_space_remove.py',
+        "    if missing:\n",
+        "    if False:\n",
+        ['work/docker-name-only-new-data', 'work/docker-name-only-other-project'],
+        also=[("    if kind == 'volume' and not any(isinstance(locator.get(field), str) and locator[field]\n",
+               "    if False and not any(isinstance(locator.get(field), str) and locator[field]\n")])
+    result[-1]['siblings'] = True
+    add(300, 'space300-docker-compose-label-not-compared', space300, 'control_space_remove.py',
+        "        if field in locator and (labels or {}).get(label) != locator[field]:\n",
+        "        if field in locator and field != 'compose_project' and (labels or {}).get(label) != locator[field]:\n",
+        ['work/docker-compose-label-absent'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-docker-compose-label-as-identity', space300, 'control_space_remove.py',
+        "    if missing:\n",
+        "    if missing and 'compose_project' not in locator:\n",
+        ['work/docker-compose-made-again'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-docker-volume-id-not-compared', space300, 'control_space_remove.py',
+        "    if 'id' in locator and shown.get('Id') != locator['id']:\n",
+        "    if False:\n",
+        ['work/docker-volume-id'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-docker-image-tag-alone', space300, 'control_space_remove.py',
+        "    'image_tag': ('id',),\n",
+        "    'image_tag': (),\n",
+        ['work/docker-image-tag'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-docker-created-at-not-compared', space300, 'control_space_remove.py',
+        "    if 'created_at' in locator and shown.get('CreatedAt') != locator['created_at']:\n",
+        "    if False:\n",
+        ['work/docker-object-made-again', 'work/docker-compose-made-again'])
+    result[-1]['siblings'] = True
+    add(300, 'space300-docker-run-label-not-compared', space300, 'control_space_remove.py',
+        "        if field in locator and (labels or {}).get(label) != locator[field]:\n",
+        "        if field in locator and field != 'run_label' and (labels or {}).get(label) != locator[field]:\n",
+        ['work/docker-object-made-again'])
+    result[-1]['siblings'] = True
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'

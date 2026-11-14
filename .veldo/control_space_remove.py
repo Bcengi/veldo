@@ -105,13 +105,25 @@ keep_failed, whether it is bare or not: the index, the HEAD and git's record of 
 are files inside the repository's folder, and no keep step saves a linked worktree's index yet.
 
 THE DOCKER REMOVERS name one object to the engine, on the item's engine context: a container by its
-id, an image by its tag, a volume by its name, a network by its id. Each first has the engine show
-the object and compares it with the item's record: the Id, when the locator holds one, and the compose
-project label, when the locator holds one. An object the engine cannot show, one with another Id and
-one without that label is not the object the item recorded (a volume removed and made again under the
-same name, with data), and is remove_refused with nothing asked of the engine. The engine's refusal (a
-container uses the image or the volume, an endpoint is attached) is remove_refused. A container that
-does not stop is not removed.
+id, an image by its tag, a volume by its name, a network by its id. A DOCKER OBJECT IS REMOVED ONLY
+WHEN THE OBJECT FOUND NOW IS PROVABLY THE ONE THE ITEM RECORDED. A name proves nothing: a volume or a
+tag can be removed and made again under the same name, holding new data. So the item's locator must
+hold the identity seen when the object was made (IDENTITY):
+
+  container, network   id, the engine's Id of the object
+  image_tag            id, the Id of the image the tag named; never the tag alone
+  volume               created_at, the engine's CreatedAt of the volume (an engine gives a volume no
+                       Id), and with it the label that made it the run's: run_label, the value of the
+                       run's label (RUN_LABEL, design 6.4), or compose_project
+
+A locator without it is remove_refused, with the reason, and the engine is asked nothing: such an
+item waits and is never removed. A compose project label alone is no identity, because the same
+project makes the object again under the same name and label. With the identity there, the engine
+shows the object and every recorded field is compared with it: the Id, CreatedAt, the run's label
+and the compose project label. An object the engine cannot show and one that differs in any of them
+is not the object the item recorded, and is remove_refused with nothing but the inspect asked of the
+engine. The engine's refusal (a container uses the image or the volume, an endpoint is attached) is
+remove_refused. A container that does not stop is not removed.
 
 WHAT EACH ANSWER HOLDS (design 4.1, removal). bytes: the item's bytes measured just before, with
 bytes_source (measured; last_measurement when the engine gives no figure and the ledger's last
@@ -847,18 +859,50 @@ def _size_network(shown):
 
 
 COMPOSE_PROJECT = 'com.docker.compose.project'
+RUN_LABEL = 'veldo.space.run'  # the run's label (design 6.4): its value is the run's space label
+# The locator fields that hold what the engine said of the object when it was made, by kind. Without
+# them nothing proves that the object now under the name is the one the item recorded.
+IDENTITY = {
+    'container': ('id',),
+    'network': ('id',),
+    'image_tag': ('id',),
+    'volume': ('created_at',),
+}
+# The labels that say whose an object is, as (locator field, label). A volume's record holds one.
+OWNER_LABELS = (
+    ('run_label', RUN_LABEL),
+    ('compose_project', COMPOSE_PROJECT),
+)
+
+
+def _unproven(kind, locator):
+    """Why the item's record cannot prove which object it means, or None. Asked before the engine is."""
+    missing = [field for field in IDENTITY.get(kind, ('id',))
+               if not (isinstance(locator.get(field), str) and locator[field])]
+    if missing:
+        return ('the item\'s record does not hold the identity seen when the object was made (%s): the object '
+                'now under its name cannot be proved to be the one recorded' % ', '.join(missing))
+    if kind == 'volume' and not any(isinstance(locator.get(field), str) and locator[field]
+                                    for field, _ in OWNER_LABELS):
+        return ('the item\'s record holds neither the run\'s label nor a compose project: nothing says whose '
+                'the volume was when it was made')
+    return None
 
 
 def _recorded(locator, shown):
-    """Why the object the engine shows is not the one the item recorded, or None: the Id, when the
-    locator holds one, and the compose project label, when the locator holds one."""
+    """Why the object the engine shows is not the one the item recorded, or None. Every field of the
+    record that names the object's identity is compared: the Id, CreatedAt, the run's label and the
+    compose project label."""
     if shown is None:
         return 'the engine could not show the object'
     if 'id' in locator and shown.get('Id') != locator['id']:
         return 'the object has another Id than the item recorded'
+    if 'created_at' in locator and shown.get('CreatedAt') != locator['created_at']:
+        return 'the object was made at another time than the item recorded: it was made again'
     labels = shown.get('Labels') if isinstance(shown.get('Labels'), dict) else (shown.get('Config') or {}).get('Labels')
-    if 'compose_project' in locator and (labels or {}).get(COMPOSE_PROJECT) != locator['compose_project']:
-        return 'the object does not carry the compose project label the item recorded'
+    for field, label in OWNER_LABELS:
+        if field in locator and (labels or {}).get(label) != locator[field]:
+            return 'the object does not carry the label %s the item recorded' % label
     return None
 
 
@@ -868,6 +912,9 @@ def _docker(method, needs, show, size, steps):
         locator = record.get('locator') or {}
         if not all(isinstance(locator.get(field), str) and locator[field] for field in ('engine',) + needs):
             raise _Refusal(REFUSED, 'the locator does not name the object: ' + ', '.join(('engine',) + needs))
+        unproven = _unproven(record.get('kind'), locator)
+        if unproven is not None:
+            raise _Refusal(REFUSED, unproven + ': it is not removed')
         shown = _inspected(ctx, locator, *[locator[word[1:]] if word.startswith('$') else word for word in show])
         other = _recorded(locator, shown)
         if other is not None:

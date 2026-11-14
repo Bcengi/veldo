@@ -95,3 +95,11 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-14: from the third review of VELDO-0300 (review3-veldo-0300.md, finding E), under the owner's
+  rule that no work is ever lost. No acceptance criterion changed. The removers remove a Docker object
+  only when its item's locator holds the identity seen when the object was made, so the adapter records
+  it: the run's label is the engine label veldo.space.run (control_space_remove.RUN_LABEL), applied at
+  creation to every object Veldo itself creates and passed on to a project's scripts; each item's
+  locator gets run_label when the object carries it, created_at for a volume (the engine's CreatedAt,
+  from the create event or the snapshot), and id (for an image tag, the image Id the tag named when it
+  was built). An item recorded without them is never removed: it waits as remove_refused.
