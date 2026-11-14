@@ -1,0 +1,438 @@
+[
+ {
+  "falsifier": "space307-folder-name-only",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "ac1/inside-a-recorded-worktree"
+  ],
+  "red_rows": [
+   "ac1/inside-a-recorded-worktree",
+   "ac2/report-then-act",
+   "loss/nothing-of-theirs-touched"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/inside-a-recorded-worktree",
+    "the container namesake-1, whose label names a same-named folder outside every worktree, has no owner and no proposed owner [owner None, proposed {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent None]"
+   ],
+   [
+    "VELDO-0307 ac2/report-then-act",
+    "and the container in the same-named folder outside still has no owner [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}]"
+   ],
+   [
+    "VELDO-0307 loss/nothing-of-theirs-touched",
+    "the container in the same-named folder outside, in the act-mode project, was never named to a stop or a remove, and its volume holds its data [[('default', 'container', 'stop', '000000000000000000000000000000000000000000000000000000000000c00e'), ('default', 'container', 'rm', '000000000000000000000000000000000000000000000000000000000000c00e')] []]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-adopts-in-report",
+  "criterion": "AC2",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "ac2/report-mode"
+  ],
+  "red_rows": [
+   "ac1/by-where-the-path-leads",
+   "ac1/inside-a-recorded-worktree",
+   "ac1/no-proposal-when-undecided",
+   "ac2/report-mode",
+   "ac2/report-then-act",
+   "ac3/covered-later"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/inside-a-recorded-worktree",
+    "the container meadow-web-1 has the worktree wt-b as proposed owner, by its compose_working_dir [None None None]"
+   ],
+   [
+    "VELDO-0307 ac1/by-where-the-path-leads",
+    "a path that leads into the worktree through a link outside it places the container [None None]"
+   ],
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "and with it the same record shows the worktree as proposed owner [None]"
+   ],
+   [
+    "VELDO-0307 ac2/report-mode",
+    "in report mode the container meadow-web-1 is a report and not an item: no owner, no parent, not adopted, ending on no event [owner {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent space:item:b59f7283dfe84d5f92c676377d6d96fb, adopted True, ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']]"
+   ],
+   [
+    "VELDO-0307 ac2/report-then-act",
+    "after its ticket ended the proposed container is still a report with no owner [due]"
+   ],
+   [
+    "VELDO-0307 ac3/covered-later",
+    "before the protect list covers it the container is proposed to wt-c [None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-adoption-before-the-protect-list",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac3/protected-container"
+  ],
+  "red_rows": [
+   "ac3/covered-later",
+   "ac3/protected-container",
+   "ac3/protected-volume",
+   "loss/nothing-of-theirs-touched"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac3/protected-volume",
+    "the volume atlas_pg_main is listed as protected, by its name [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/protected-container",
+    "the container quiet-db-1 is listed as protected, by its compose_config_file [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/covered-later",
+    "once a protected path is beneath its working folder it is listed as protected [None]"
+   ],
+   [
+    "VELDO-0307 loss/nothing-of-theirs-touched",
+    "the protected container quiet-db-1 was asked nothing and is there with what it holds"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-link-not-followed",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "ac1/by-where-the-path-leads"
+  ],
+  "red_rows": [
+   "ac1/by-where-the-path-leads"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/by-where-the-path-leads",
+    "a path that leads into the worktree through a link outside it places the container [None outside]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-parent-segment-read",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "ac1/no-proposal-when-undecided"
+  ],
+  "red_rows": [
+   "ac1/no-proposal-when-undecided"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "the container dotdot-1 is a report with no proposed owner: path_unread [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-two-worktrees-one-taken",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "ac1/no-proposal-when-undecided"
+  ],
+  "red_rows": [
+   "ac1/no-proposal-when-undecided"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "the container two-1 is a report with no proposed owner: two_worktrees [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-gone-worktree-still-recorded",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "ac1/no-proposal-when-undecided"
+  ],
+  "red_rows": [
+   "ac1/by-where-the-path-leads",
+   "ac1/no-proposal-when-undecided",
+   "ac2/report-mode"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/by-where-the-path-leads",
+    "the reconciler answers the same when asked itself"
+   ],
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "the container ended-1 is a report with no proposed owner: outside [None None None]"
+   ],
+   [
+    "VELDO-0307 ac2/report-mode",
+    "a second snapshot writes nothing [{'default': {'matched': 21, 'refused': 1, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-run-label-ignored",
+  "criterion": "AC1",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac1/a-run-label-comes-first"
+  ],
+  "red_rows": [
+   "ac1/a-run-label-comes-first"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/a-run-label-comes-first",
+    "a container whose label names no known run is a report with no proposal, although compose ran inside the worktree [inside_recorded_worktree {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-no-identity-still-proposed",
+  "criterion": "AC1",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac1/no-proposal-when-undecided"
+  ],
+  "red_rows": [
+   "ac1/no-proposal-when-undecided"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "the volume unstamped is a report with no proposed owner: no_identity [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-bind-source-not-read",
+  "criterion": "AC1",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac1/inside-a-recorded-worktree"
+  ],
+  "red_rows": [
+   "ac1/inside-a-recorded-worktree",
+   "ac1/no-proposal-when-undecided",
+   "ac2/act-mode",
+   "ac2/report-mode"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/inside-a-recorded-worktree",
+    "the container meadow-bind-1 has the worktree wt-b as proposed owner, by its bind_source [None None outside]"
+   ],
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "the container two-1 is a report with no proposed owner: two_worktrees [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+   ],
+   [
+    "VELDO-0307 ac2/report-mode",
+    "and it shows the proposed owner [None]"
+   ],
+   [
+    "VELDO-0307 ac2/act-mode",
+    "in act mode the container orchard-bind-1 is adopted with the worktree as parent [owner None, parent None, rule None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-configuration-files-not-read",
+  "criterion": "AC1",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac1/inside-a-recorded-worktree"
+  ],
+  "red_rows": [
+   "ac1/inside-a-recorded-worktree",
+   "ac1/no-proposal-when-undecided",
+   "ac2/report-mode",
+   "ac3/protected-container",
+   "ac3/protected-image",
+   "loss/nothing-of-theirs-touched"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/inside-a-recorded-worktree",
+    "the container meadow-cf-1 has the worktree wt-b as proposed owner, by its compose_config_file [None None outside]"
+   ],
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "the container relative-1 is a report with no proposed owner: path_unread [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+   ],
+   [
+    "VELDO-0307 ac2/report-mode",
+    "and it shows the proposed owner [None]"
+   ],
+   [
+    "VELDO-0307 ac3/protected-container",
+    "the container quiet-db-1 is listed as protected, by its compose_config_file [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/protected-image",
+    "the image tools/packer on default is listed as protected, by its compose_config_file [None None]"
+   ],
+   [
+    "VELDO-0307 loss/nothing-of-theirs-touched",
+    "the protected container quiet-db-1 was asked nothing and is there with what it holds"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-labelled-path-not-protected",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac3/protected-volume",
+   "ac3/protected-container",
+   "ac3/protected-image"
+  ],
+  "red_rows": [
+   "ac3/covered-later",
+   "ac3/protected-container",
+   "ac3/protected-image",
+   "ac3/protected-volume",
+   "loss/nothing-of-theirs-touched"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac3/protected-volume",
+    "the volume vault_data is listed as protected, by its compose_working_dir [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/protected-container",
+    "the container quiet-db-1 is listed as protected, by its compose_config_file [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/protected-image",
+    "the image tools/packer on default is listed as protected, by its compose_config_file [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/covered-later",
+    "once a protected path is beneath its working folder it is listed as protected [None]"
+   ],
+   [
+    "VELDO-0307 loss/nothing-of-theirs-touched",
+    "the protected container quiet-db-1 was asked nothing and is there with what it holds"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-compose-project-not-protected",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac3/protected-image"
+  ],
+  "red_rows": [
+   "ac3/protected-container",
+   "ac3/protected-image",
+   "ac3/protected-volume"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac3/protected-volume",
+    "the volume renamed_store is listed as protected, by its compose_project [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/protected-container",
+    "the container renamed-db-1 is listed as protected, by its compose_project [None None]"
+   ],
+   [
+    "VELDO-0307 ac3/protected-image",
+    "the image tools/builder on default is listed as protected, by its compose_project [None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-image-known-by-its-tag-alone",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac3/protected-image"
+  ],
+  "red_rows": [
+   "ac3/protected-image"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac3/protected-image",
+    "the image store/objects on default is listed as protected, by its name [None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-covered-report-stays",
+  "criterion": "AC3",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac3/covered-later"
+  ],
+  "red_rows": [
+   "ac3/covered-later"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac3/covered-later",
+    "and its report record is gone: no live record proposes it [present]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-proposal-never-adopted",
+  "criterion": "AC2",
+  "module": "control_space_docker.py",
+  "expected_red": [
+   "ac2/report-then-act"
+  ],
+  "red_rows": [
+   "ac2/report-then-act"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac2/report-then-act",
+    "after meadow's switch to act the next snapshot adopts it: the report record is the item, with the worktree as parent [None None None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

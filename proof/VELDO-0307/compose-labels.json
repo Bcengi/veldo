@@ -1,0 +1,48 @@
+{
+ "what": "What compose writes on the objects it creates, and what the engine reports of a bind mount, read on both engine contexts of the build host before the adoption rule relied on it (design 6.4; the spec's last paragraph of Design).",
+ "measured_at": "2026-11-14",
+ "how": "A compose project made for the check in a new temporary folder (one service from a small image already on the engine, created and never started, with one bind mount of a folder beside the compose file and one named volume), under a project name made for the check, on each context in turn: docker compose create, then inspect of the project's container, network and volume, then docker compose down with its volumes for that project name alone. After each: no container, volume or network with the project's label was left. The temporary folder was removed. Nothing else on either engine was created, stopped or removed.",
+ "compose": "5.0.2",
+ "contexts": {
+  "default": {
+   "engine": "29.3.0",
+   "container": {
+    "com.docker.compose.project.working_dir": "written: the absolute path of the folder compose ran in",
+    "com.docker.compose.project.config_files": "written: the absolute path of the compose file",
+    "com.docker.compose.project": "written",
+    "bind mount": "Mounts holds Type bind with Source the absolute host path of the folder"
+   },
+   "network": {
+    "com.docker.compose.project": "written",
+    "com.docker.compose.project.working_dir": "not written",
+    "com.docker.compose.project.config_files": "not written"
+   },
+   "volume": {
+    "com.docker.compose.project": "written",
+    "com.docker.compose.project.working_dir": "not written",
+    "com.docker.compose.project.config_files": "not written"
+   }
+  },
+  "desktop-linux": {
+   "engine": "29.2.1",
+   "container": {
+    "com.docker.compose.project.working_dir": "written: the absolute path of the folder compose ran in",
+    "com.docker.compose.project.config_files": "written: the absolute path of the compose file",
+    "com.docker.compose.project": "written",
+    "bind mount": "Mounts holds Type bind with Source the absolute host path of the folder, the same path as on the context default"
+   },
+   "network": {
+    "com.docker.compose.project": "written",
+    "com.docker.compose.project.working_dir": "not written",
+    "com.docker.compose.project.config_files": "not written"
+   },
+   "volume": {
+    "com.docker.compose.project": "written",
+    "com.docker.compose.project.working_dir": "not written",
+    "com.docker.compose.project.config_files": "not written"
+   }
+  }
+ },
+ "result": "On both engines a container can be placed by this rule, by either label and by a bind source. A network and a volume carry neither label, so on these engines they get no proposal and no adoption by this rule and stay reports with no proposed owner. The adapter reads the labels on every kind, so an engine that writes them gets the adoptions.",
+ "not_measured": "A configuration file given to compose on its standard input, a compose older than 5.0.2, and an engine reached over the network, where a bind source is a path of another host. A label that is not an absolute path gives no proposal (path_unread)."
+}

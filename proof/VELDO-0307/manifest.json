@@ -1,0 +1,109 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0307",
+ "commit": "76e82376638a1ce4e14d57ad64476c50df042bc8",
+ "tree": "b52a85efc3fd595ee63e5a80dfa844aff17c5297",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-14T10:42:48.959609+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "Rows ac1/inside-a-recorded-worktree (a container whose compose working folder label is inside the recorded worktree wt-b, a container on the second context whose second configuration file is, a container with no label and a bind mount whose host source is, and a volume and a network that carry the labels: each has wt-b's owner as proposed owner, with the worktree, the label or mount that gave it and the path in the report; the container and the volume whose label names a same-named folder wt-b outside every worktree, the same pair for wt-a of the act-mode project, and a container in a folder whose name only begins with the worktree's name, have no owner, no proposed owner and no parent), ac1/by-where-the-path-leads (a path that leads into the worktree through a link outside it places the container; a path written inside the worktree that leads out through a link places nothing; the reconciler's worktree_inside answers the same when asked itself), ac1/no-proposal-when-undecided (a path with a .. segment although a bind source is inside, a configuration file that is not an absolute path, paths into two recorded worktrees, a worktree marked gone and a volume shown without its CreatedAt: each is a report with no proposed owner that says why; without the reconciler the adapter reports and proposes nothing, and with it the same record shows the proposed owner), ac1/a-run-label-comes-first (a container with a known run's label is that run's item although it binds a folder of the worktree; one whose label names no known run is a report with no proposal although compose ran inside the worktree). Green: proof/VELDO-0307/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "The rows run the adapter and the reconciler against a real Ledger on a real control store under one temporary folder, with the installation and two projects read by the real declarations reader; orchard is in act mode by the owner's own signed command with a real key, meadow in report mode. The worktrees are recorded worktree items whose folders are on disk, and the links of the link rows are real links. The tickets end through the real Signal, kind registry, probes, safety rules and removers (loss/nothing-of-theirs-touched). The engine is a stand-in (assumption 1). What compose and the engines really write was measured on both engines of the host: proof/VELDO-0307/compose-labels.json."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0307/falsifiers.json",
+     "detail": "space307-folder-name-only (the declared falsifier: the worktree is matched by its folder's name alone): ac1/inside-a-recorded-worktree red, the container in the same-named folder outside gets an owner; loss/nothing-of-theirs-touched red too, because in the act-mode project that container was adopted and then stopped and removed at the ticket's end, which is the loss the row plants. Further cases, each red on its row: space307-link-not-followed, space307-parent-segment-read, space307-two-worktrees-one-taken, space307-gone-worktree-still-recorded, space307-run-label-ignored, space307-no-identity-still-proposed, space307-bind-source-not-read, space307-configuration-files-not-read. Each applied once, noop copy green then mutant copy red: proof/VELDO-0307/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "Rows ac2/report-mode (in the report-mode project each of the five objects is a report record: no owner, no parent, not adopted, no adoption rule, ending on no event, state present, showing the worktree's owner as proposed owner; the adapter's observation records the object, the proposed owner and the label that gave it; a second snapshot of both contexts changes no record), ac2/act-mode (in the act-mode project a container placed by its compose working folder on the first context and one placed by a bind source on the second are items with the worktree's owner, the worktree as parent, adopted by the rule inside_recorded_worktree, with the engine's Id in the locator, ending on the ticket's events; the observation records the rule and what placed it), ac2/report-then-act (after its ticket ended the proposed container is still a report with no owner; after meadow's switch to act by the owner's signed command the next snapshot adopts it and the report record is the item, with the worktree as parent; the container in the same-named folder outside still has no owner)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "The rows run the adapter and the reconciler against a real Ledger on a real control store under one temporary folder, with the installation and two projects read by the real declarations reader; orchard is in act mode by the owner's own signed command with a real key, meadow in report mode. The worktrees are recorded worktree items whose folders are on disk, and the links of the link rows are real links. The tickets end through the real Signal, kind registry, probes, safety rules and removers (loss/nothing-of-theirs-touched). The engine is a stand-in (assumption 1). What compose and the engines really write was measured on both engines of the host: proof/VELDO-0307/compose-labels.json."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0307/falsifiers.json",
+     "detail": "space307-adopts-in-report (the declared falsifier: the reconciler's rule adopts whatever the mode): ac2/report-mode red, the report-mode row finds an item with an owner. space307-proposal-never-adopted: ac2/report-then-act red. proof/VELDO-0307/mutations.txt."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "Rows ac3/protected-volume (a volume covered by its name, one by its compose project label under another name, and one by its labelled path, a compose working folder under a protected path while its configuration file is inside the act-mode worktree: each is listed as protected with the entry and what it was found by, and has no record), ac3/protected-container (the declared falsifier row: a container whose configuration file is under a protected path while compose's working folder is inside the act-mode worktree, one the same way in the report-mode worktree on the second context, one covered by name, one by compose project and one whose working folder is above a protected path: each is listed as protected and has no record, no item names one and the adapter said of none that it was proposed or adopted), ac3/protected-image (an image covered by its tag's name, one known by a digest alone on the second context, one by its compose project label and one by its labelled path are listed as protected; an image nothing covers is not listed although its label is inside a worktree; no image has a record; the engine was asked image ls and image inspect and nothing else), ac3/covered-later (a container proposed to a worktree, then a protected path added beneath its working folder: at the next snapshot it is listed as protected and its report record is gone, the container asked nothing), loss/nothing-of-theirs-touched (after every ticket ended, each protected object is in its engine, was never named to a stop or a remove, the protected volumes hold their data, and no forced command or prune was given)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/145_veldo_0307_space_docker_ownership.py",
+     "detail": "The rows run the adapter and the reconciler against a real Ledger on a real control store under one temporary folder, with the installation and two projects read by the real declarations reader; orchard is in act mode by the owner's own signed command with a real key, meadow in report mode. The worktrees are recorded worktree items whose folders are on disk, and the links of the link rows are real links. The tickets end through the real Signal, kind registry, probes, safety rules and removers (loss/nothing-of-theirs-touched). The engine is a stand-in (assumption 1). What compose and the engines really write was measured on both engines of the host: proof/VELDO-0307/compose-labels.json."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0307/falsifiers.json",
+     "detail": "space307-adoption-before-the-protect-list (the declared falsifier: where the adoption rule finds a worktree the protect list is not read): ac3/protected-container red, the protected container gets an item in the act-mode project and a proposed owner in the report-mode one; loss/nothing-of-theirs-touched red too, because the protected container was then stopped and removed at the ticket's end. Further cases, each red on its row: space307-labelled-path-not-protected, space307-compose-project-not-protected, space307-image-known-by-its-tag-alone, space307-covered-report-stays. proof/VELDO-0307/mutations.txt."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 145_veldo_0307_space_docker_ownership (14 rows). Each on its own, green: 134_veldo_0331_space_mode, 144_veldo_0306_space_docker, 145 (proof/VELDO-0307/suite-green.txt, which also names what was not run)."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: its rows run on a real ledger, store, declarations, Signal, rules and removers, as the integration evidence of each criterion says. The measurement of compose's labels on both real engines: proof/VELDO-0307/compose-labels.json."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The 16 registered cases of finding 307 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop then mutant: 16 of 16 red on their target rows, no noop red (proof/VELDO-0307/falsifiers.json, mutations.txt). The 19 earlier cases of findings 306 and 331 in the two modules this build changed, each applied once in mutant mode: 19 of 19 red."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh (320 pairs); python3 scripts/check_git_boundary.py"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh was not run by the builder, by the lead's instruction: the lead runs it through the gate lock. Suite 86_veldo_0127 is known 52 of 54 on this branch until the lead recaptures its live captures; it was not run and not touched."
+  }
+ ],
+ "assumptions": [
+  "1. THE ENGINE OF THE ROWS IS A STAND-IN, a class in the suite that holds containers, networks, volumes and images for two contexts and refuses as an engine does without a force option. No row asks a real engine. That its records have the shape of a real engine's (the two compose labels on a container as absolute paths, a bind mount as Type bind with a host Source, an image's RepoTags, RepoDigests and Config.Labels) rests on the measurement in compose-labels.json for the container, and for an image on the engine's documented inspect record, which was not measured in this build.",
+  "2. ON THE MEASURED ENGINES A NETWORK AND A VOLUME CARRY NEITHER LABEL, so this rule gives them no proposal there. The rows for a volume and a network with the labels prove the code path for an engine that writes them; no such engine was seen.",
+  "3. NOTHING SETS Service.space_docker YET, as in VELDO-0306, so no adapter runs in a service and nothing passes it the reconciler in production. Without the reconciler the adapter behaves as VELDO-0306 left it, apart from the protect check coming first.",
+  "4. RULE 2 AT REMOVAL DOES NOT READ A LABELLED PATH (control_space_signal is outside this ticket's footprint). A container adopted while nothing covered it, whose compose folder a later edit of the protect list covers, is listed as protected from the adapter's next snapshot on, but its item stays and rule 2 would not refuse it by that path. The spec's History says so for the lead; VELDO-0341 or 0330 owns rule 2. Act mode is refused until VELDO-0332 and 0339.",
+  "5. A BIND SOURCE IS READ AS A PATH OF THIS HOST. An engine context that reaches an engine on another host would report that host's paths; the installation's two contexts are local sockets.",
+  "6. ONE EARLIER CASE MOVED WITH THE CODE: space306-compose-project-not-in-the-locator now carries a second edit, because the adapter reads the compose project label against the protect list itself before the ledger does, and the defect needs both readings gone. With both, its row ac1/protected is red as before."
+ ],
+ "rollback": "Revert the change. Objects without a run label stay reports with no proposed owner."
+}

@@ -130,3 +130,6 @@ the result in the proof (design 6.4).
     image tag item against the image patterns by the tag in full, so the pattern minio/minio does not
     match the tag minio/minio:latest there; the adapter's listing matches the repository too. VELDO-0328
     records image tags and should match the same way.
+  - One earlier mutation case moved with the code: space306-compose-project-not-in-the-locator carries
+    a second edit, because the adapter now reads the compose project label against the protect list
+    itself before the ledger does, and the defect needs both readings gone. Its row is red as before.
