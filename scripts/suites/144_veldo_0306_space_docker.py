@@ -653,10 +653,9 @@ def _v306_space_docker_suite():
                           for kind in ('container', 'network', 'volume')))
         check(ROW, 'each removal names one object and no command was forced [%s]' % (ENGINE.forced,),
               ENGINE.forced == [] and all(len(call) == 4 for call in acted))
-        check(ROW, 'each removal record holds the engine\'s method [%s]'
-              % sorted({L.item(identity)['removal'].get('method') for identity in ITEMS.values()}),
-              {L.item(identity)['removal'].get('method') for identity in ITEMS.values()}
-              == {'engine_stop_then_remove', 'engine_network_remove', 'engine_volume_remove'})
+        methods = {str((L.item(identity).get('removal') or {}).get('method')) for identity in ITEMS.values()}
+        check(ROW, 'each removal record holds the engine\'s method [%s]' % sorted(methods),
+              methods == {'engine_stop_then_remove', 'engine_network_remove', 'engine_volume_remove'})
 
         ROW = 'ac3/volume-of-another-run'
         check(ROW, 'the volume a container of another run mounts is deferred by the engine\'s own refusal [%s]'
@@ -824,7 +823,7 @@ def _v306_space_docker_suite():
         emit('desktop-linux', 'volume', 'destroy', 'events_cache')
         pump()
         check(ROW, 'a destroy event marks the record gone once the engine answers it holds no such volume [%s]'
-              % (L.item(item_fresh)['state'],), L.item(item_fresh)['state'] == 'gone')
+              % ((L.item(item_fresh) or {}).get('state'),), (L.item(item_fresh) or {}).get('state') == 'gone')
         late = ENGINE.network('default', 'late_net', run_label(R7))
         STREAMS['default'].stdin.write(b'this is not an event\n')
         STREAMS['default'].stdin.flush()
@@ -1017,7 +1016,8 @@ def _v306_space_docker_suite():
     except Exception as error:
         import traceback
         check('ac1/label-and-compose-name', 'raised ' + type(error).__name__ + ': ' + str(error)[:300]
-              + ' ' + ' | '.join(line.strip() for line in traceback.format_exc().splitlines()[-4:])[:400], False)
+              + ' ' + ' | '.join(line.strip() for line in traceback.format_exc().splitlines()[-4:])
+              .replace(str(ROOT), '.')[:400], False)
     finally:
         time.time, time.monotonic = real_time, real_monotonic
         for child in children:
