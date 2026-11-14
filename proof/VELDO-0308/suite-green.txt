@@ -55,3 +55,11 @@
 # The re-review ran, on a clean clone at 84dff437 with its own stub engine: 146 at 58 passed, 142 at 57, 129 (0239, 0247, 0254, 0260) and 130 to 145 all 0 failed, and check_teeth_mutations.py --finding 308 at registered=31 executed=31 rejected=31. That was before the row's last check was rewritten.
 # Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged).
 # Not run in fix round 2: ./scripts/verify.sh, the teeth run, and every suite not named in this section.
+# FIX ROUND 3 (the item-naming signal adopted). The engine modules are those of commit 5114f4ae (control_launch.py byte for byte, canon and copy; control_retirement.py unchanged). Run on the tree of commit eaf5e389, which changes control_landing.py and suite 147 and nothing of this ticket's modules or suite. Each suite on its own with python3 scripts/selftest.py --suite NAME, with a stub engine (a docker first on PATH that logs and exits 1, DOCKER_HOST at a missing socket; it was never called). Partial runs: none is the gate.
+146_veldo_0308_run_finished: 59 passed, 0 failed (33 rows; the new row is n1/changed-between-judge-and-send, and n1/handed-over-clone-untouched is rewritten)
+142_veldo_0303_space_paths: 57 passed, 0 failed
+147_veldo_0310_landed_contained: 58 passed, 0 failed
+148_veldo_0311_git_hooks: 57 passed, 0 failed
+149_veldo_0312_ticket_ended: 66 passed, 0 failed
+# Fast checks, exit 0 each: python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py; python3 scripts/update_index.py (index unchanged); python3 scripts/check_personal_setup.py; python3 scripts/secret_inventory.py.
+# Not run in fix round 3: ./scripts/verify.sh, the teeth run, every suite not named in this section, and 86_veldo_0127_agent_configuration (52 of 54 by a known recapture; left as it is).

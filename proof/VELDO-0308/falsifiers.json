@@ -801,5 +801,390 @@
   "declared": false,
   "round": "fix 2",
   "finding": "N2"
+ },
+ {
+  "falsifier": "space308-run-finished-names-the-owner",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n1/handed-over-clone-untouched"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n1/changed-between-judge-and-send",
+   "n1/handed-over-clone-untouched",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover whose item no event reaches (it was never confirmed) has nothing the event could name: over three sweeps no command is sent to the ledger and nothing is written, and it stays on disk; looked at once, it is no leftover of a sweep any more [[('runner.sweep', 'run_finished', 'dispatch/once-5"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the deferred clone does not hold the run's event back: the receiver sends run finished once, as its own principal, and it names exactly the run directory and the agent repository, each at the version read before the send [True None []]"
+   ],
+   [
+    "VELDO-0308 n1/changed-between-judge-and-send",
+    "the receiver named the run's three items at the versions it read, and one of them changed before the ledger's command (its size was measured) [[] {'space:item:eca11e10226f45d7875fc375a885fe4f': 2, 'space:item:b9f7c0be83e34db0bd987b31ac35704f': 2, 'space:item:8b884f305ff54745a9af85227f7aeabd': 2}]"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover that a sweep looked at once and could not move (its item is one no event reaches, so nothing was named) is recorded once and dropped from memory: no command and two observations over six sweeps [[('runner.sweep', 'run_finished', 'dispatch/bound-75')] ['space_deferred:declared', 'run_finis"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "N1, the item-naming signal",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-refused-send-falls-back-to-the-owner",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n1/changed-between-judge-and-send"
+  ],
+  "red_rows": [
+   "n1/changed-between-judge-and-send",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 n1/changed-between-judge-and-send",
+    "the receiver named the run's three items at the versions it read, and one of them changed before the ledger's command (its size was measured) [[[{'item': 'space:item:96ffc97b0b1044e1ab2a0506afb97dcf', 'version': 2}, {'item': 'space:item:bebec67a66584ffc8b473cb48ae953a2', 'version': 2}, {'item': 'spa"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "N1, the item-naming signal",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-any-repository-of-the-owner-holds-the-event-back",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n1/own-items-ended"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n1/changed-between-judge-and-send",
+   "n1/handed-over-clone-untouched",
+   "n1/own-items-ended",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "while the run's owner still has its clone the sweep sends nothing for the run directory: not_alone, nothing written, the clone's items present [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/alone-55', 'outcome': 'refused', 'refusal': 'not_alone', 'with': ['space:item:22c99001f2fc44bc8e6d9727"
+   ],
+   [
+    "VELDO-0308 n1/own-items-ended",
+    "a run whose owner has an agent repository elsewhere is sent run finished by its receiver, once [False not_alone []]"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the deferred clone does not hold the run's event back: the receiver sends run finished once, as its own principal, and it names exactly the run directory and the agent repository, each at the version read before the send [False not_alone []]"
+   ],
+   [
+    "VELDO-0308 n1/changed-between-judge-and-send",
+    "the receiver named the run's three items at the versions it read, and one of them changed before the ledger's command (its size was measured) [[] {'space:item:7624f8d8fcf74dad8d40fd03c4592b65': 2, 'space:item:a334f69abe97412483cabb27841c4e22': 2, 'space:item:1df4a38a61a74d9989bcee46000e7720': 2}]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-event-reaches-a-handed-over-clone",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n1/handed-over-clone-untouched"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n1/handed-over-clone-untouched",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "while the run's owner still has its clone the sweep sends nothing for the run directory: not_alone, nothing written, the clone's items present [[{'operation': 'remove_run', 'dispatch_id': 'dispatch/alone-55', 'outcome': 'removed'}] ['removed', 'removed', 'removed']]"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the deferred clone does not hold the run's event back: the receiver sends run finished once, as its own principal, and it names exactly the run directory and the agent repository, each at the version read before the send [True None [[{'item': 'space:item:3405bb632ebb4e94b7000972bd2c4417', 'version':"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "once the consumer has ended the new outcome is recorded, once over six more sweeps: one observation for each leftover and outcome, never one for each sweep [['clone_in_use'] ['remove_run', 'remove_run']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-sweep-event-reaches-the-clone",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n1/changed-between-judge-and-send",
+   "n1/handed-over-clone-untouched",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover whose item no event reaches (it was never confirmed) has nothing the event could name: over three sweeps no command is sent to the ledger and nothing is written, and it stays on disk; looked at once, it is no leftover of a sweep any more [[('runner.sweep', 'run_finished', 'dispatch/once-5"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the sweep does the same for a leftover of such a run: one event over three sweeps, naming the run directory and the agent repository and nothing of the clone; both are removed, and the clone is as it was at the version it had [True [['dispatch/apart-77'], [], []] [('runner.sweep', 'run_finished', 'd"
+   ],
+   [
+    "VELDO-0308 n1/changed-between-judge-and-send",
+    "the sweep then sends the one event for the run, naming the three items at the versions they have now, and all three are removed, the repository after its commit was kept [[['dispatch/apart-78'], []] ['removed', 'removed', 'removed']]"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover that a sweep looked at once and could not move (its item is one no event reaches, so nothing was named) is recorded once and dropped from memory: no command and two observations over six sweeps [[('runner.sweep', 'run_finished', 'dispatch/bound-75')] ['space_deferred:declared', 'run_finis"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-receiver-event-reaches-the-clone",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n1/changed-between-judge-and-send",
+   "n1/handed-over-clone-untouched",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "the receiver's own send is for its run's folders alone too: with the clone there it sends nothing and judges nothing [True None ['removed', 'removed', 'removed']]"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the deferred clone does not hold the run's event back: the receiver sends run finished once, as its own principal, and it names exactly the run directory and the agent repository, each at the version read before the send [True None []]"
+   ],
+   [
+    "VELDO-0308 n1/changed-between-judge-and-send",
+    "the receiver named the run's three items at the versions it read, and one of them changed before the ledger's command (its size was measured) [[] {'space:item:80215f80e9da472fa1d794b8059c3a8f': 2, 'space:item:04e4e6f31933451fbc4200dae00af33e': 2, 'space:item:16a6422168624529b10bc8a8be2a8d61': 2}]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC1",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-sweep-sends-at-every-sweep",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sent-once-and-alone"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover whose item no event reaches (it was never confirmed) has nothing the event could name: over three sweeps no command is sent to the ledger and nothing is written, and it stays on disk; looked at once, it is no leftover of a sweep any more [[] [{'operation': 'remove_run', 'dispatch_id': 'di"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover that a sweep looked at once and could not move (its item is one no event reaches, so nothing was named) is recorded once and dropped from memory: no command and two observations over six sweeps [[] ['space_deferred:declared']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-sweep-resends-for-a-handed-over-run",
+  "module": "control_launch.py",
+  "expected_red": [
+   "f1/sweep-never-resends"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "f1/sweep-never-resends",
+   "n1/changed-between-judge-and-send",
+   "n1/handed-over-clone-untouched",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sweep-never-resends",
+    "three Runner.sweep calls send no event for the run [[('runner.sweep', 'run_finished', 'dispatch/resend-51')]]"
+   ],
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover whose item no event reaches (it was never confirmed) has nothing the event could name: over three sweeps no command is sent to the ledger and nothing is written, and it stays on disk; looked at once, it is no leftover of a sweep any more [[('runner.sweep', 'run_finished', 'dispatch/once-5"
+   ],
+   [
+    "VELDO-0308 n1/handed-over-clone-untouched",
+    "the sweep does the same for a leftover of such a run: one event over three sweeps, naming the run directory and the agent repository and nothing of the clone; both are removed, and the clone is as it was at the version it had [True [['dispatch/apart-77'], [], []] [('runner.sweep', 'run_finished', 'd"
+   ],
+   [
+    "VELDO-0308 n1/changed-between-judge-and-send",
+    "the sweep then sends the one event for the run, naming the three items at the versions they have now, and all three are removed, the repository after its commit was kept [[['dispatch/apart-78'], []] ['removed', 'removed', 'removed']]"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover that a sweep looked at once and could not move (its item is one no event reaches, so nothing was named) is recorded once and dropped from memory: no command and two observations over six sweeps [[('runner.sweep', 'run_finished', 'dispatch/bound-75'), ('runner.sweep', 'run_finished', 'disp"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-sent-leftover-stays-in-memory",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n2/observations-bounded"
+  ],
+  "red_rows": [
+   "f1/sent-once-and-alone",
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 f1/sent-once-and-alone",
+    "a leftover whose item no event reaches (it was never confirmed) has nothing the event could name: over three sweeps no command is sent to the ledger and nothing is written, and it stays on disk; looked at once, it is no leftover of a sweep any more [[] [{'operation': 'remove_run', 'dispatch_id': 'di"
+   ],
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover that a sweep looked at once and could not move (its item is one no event reaches, so nothing was named) is recorded once and dropped from memory: no command and two observations over six sweeps [[] ['space_deferred:declared', 'run_finished_sent']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
+ },
+ {
+  "falsifier": "space308-observation-at-every-sweep",
+  "module": "control_launch.py",
+  "expected_red": [
+   "n2/observations-bounded"
+  ],
+  "red_rows": [
+   "n2/observations-bounded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0308 n2/observations-bounded",
+    "a leftover held back by a consumer of its clone adds one observation over six sweeps, and stays a leftover [['clone_in_use', 'clone_in_use', 'clone_in_use', 'clone_in_use', 'clone_in_use', 'clone_in_use']]"
+   ],
+   [
+    "VELDO-0308 paths/no-delete-and-canon",
+    "the engine canon engine/.veldo/control_launch.py equals this repository copy"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true,
+  "criterion": "AC3",
+  "declared": false,
+  "round": "fix 3",
+  "finding": "applied again: its lines or rows were touched in fix round 3",
+  "commit": "5114f4ae9eb3",
+  "applied": "once before the commit and once on the committed tree, by hand, to the repository copy the suite loads; the suite run with a stub engine; the copy put back and compared with the engine canon. Not the teeth run."
  }
 ]
