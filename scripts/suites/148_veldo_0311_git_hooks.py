@@ -51,9 +51,31 @@ observer's key missing an add and a switch both wait, in order; with the key bac
 second branch).
 
 hooks/never-fail-git (a CLI that is not there, a repository with no state root and a spool folder that
-is a link: git worktree add, a commit on the trunk and git switch return 0 and do their work). paths/no-delete-and-canon (the module runs no git and no recursive delete, its only
+is a link: git worktree add, a commit on the trunk and git switch return 0 and do their work). paths/no-delete-and-canon (the module runs no recursive delete and no git but the four commands that
+read, a git command that writes is not run, its only
 unlinks are of a delivered and of a set-aside spool file; neither hook removes anything and each ends
 with exit 0; the engine canon equals the copies).
+
+FIX ROUND rows (the review of bf5e9505). f1/trunk-master-main-moved (finding 1: a repository whose
+declared trunk is master and that also has a branch named main; main is moved by hand onto a worktree's
+branch: nothing is written, no event, the item is not due; a commit on master leaves one event; with the
+git configuration wrongly naming main the authority, which reads the land entry, records nothing).
+f1/no-declaration-nothing-sent (a repository with the hooks and no declared trunk: a commit on main
+writes no entry and the repository is noted once under undeclared/; a hook made to name main is answered
+trunk_undeclared by the authority). f2/unsafe-folder-refused (finding 2, the reviewer's probe: a spool
+folder of mode 0777 with a planted entry is not replayed, not written into, not listened in and not
+changed, by the module, the replay verb and a hook; it is noted beside it; a folder of another account
+is refused). f2/unsafe-entry-set-aside (an entry file group and others can write, and one that is a
+link, are set aside with why and never sent). f2/server-identity-checked (the hook's side sends nothing
+to a socket the kernel says another account serves). f2/commit-not-on-ref-is-nothing (an entry whose
+commit is not on its ref, and one for a worktree git does not list, are recorded as nothing, each with
+an observation; an entry that names another branch for a real worktree records the branch git reads).
+f3/path-reused-by-another-repository (finding 3: a path whose live item is another repository's; the
+entry is refused and set aside, the item is not rebranched and no branch item is made).
+f4/nothing-leaves-a-trace (finding 4: a switch in a worktree no item records leaves one observation with
+the entry). f4/paths-as-the-ledger-compares (about compares paths by the Ledger's own function).
+f5/replay-stops-at-its-deadline (finding 5: a replay past its deadline stops between two entries, the
+rest stay whole and the next replay delivers them).
 
 STAND-INS. The Ledger's event command and the event consumer are VELDO-0323's: the authority of this
 suite answers the event command with a stand-in that verifies the observer's signature and keeps the
@@ -76,6 +98,7 @@ def _v311_suite():
     import shutil
     import subprocess
     import tempfile
+    import threading
     import time
     from pathlib import Path
 
@@ -92,6 +115,10 @@ def _v311_suite():
             'ac3/one-event-record', 'ac3/git-returns-while-remover-held', 'ac3/no-event-command-waits',
             'ac4/down-git-unchanged-and-spooled', 'ac4/replayed-in-order-at-next-call',
             'ac4/service-start-before-reconcile', 'ac4/delivered-twice-recorded-once', 'ac4/waiting-keeps-order',
+            'f1/trunk-master-main-moved', 'f1/no-declaration-nothing-sent',
+            'f2/unsafe-folder-refused', 'f2/unsafe-entry-set-aside', 'f2/server-identity-checked',
+            'f2/commit-not-on-ref-is-nothing', 'f3/path-reused-by-another-repository',
+            'f4/nothing-leaves-a-trace', 'f4/paths-as-the-ledger-compares', 'f5/replay-stops-at-its-deadline',
             'hooks/never-fail-git', 'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
 
@@ -172,6 +199,9 @@ def _v311_suite():
         for made in (SCRATCH, STATE, BUILD):
             made.mkdir()
         PLAIN, PLAIN_TREES = temp / 'plain' / 'almanac', temp / 'plain' / 'almanac-trees'
+        # the fix round's repositories: one whose declared trunk is master, one that reuses a path
+        HARBOR, HARBOR_TREES = temp / 'plain' / 'harbor', temp / 'plain' / 'harbor-trees'
+        PIER, PIER_TREES = temp / 'plain' / 'pier', temp / 'plain' / 'pier-trees'
         folder = temp / 'installation'
         folder.mkdir()
         (folder / 'installation.yaml').write_text(YAML.dump({
@@ -186,7 +216,9 @@ def _v311_suite():
                 'scratch_roots': {'roots': [str(SCRATCH)],
                                   'session_pattern': 'sessions/{working_folder}/{session_id}'},
                 'build_roots': [str(BUILD)],
-                'plain_repositories': [{'repository': str(PLAIN), 'worktree_root': str(PLAIN_TREES)}],
+                'plain_repositories': [{'repository': str(PLAIN), 'worktree_root': str(PLAIN_TREES)},
+                                       {'repository': str(HARBOR), 'worktree_root': str(HARBOR_TREES)},
+                                       {'repository': str(PIER), 'worktree_root': str(PIER_TREES)}],
                 'client_accounts': [str(temp / 'client-a')],
                 'protect': {'paths': [str(STATE / 'vms')], 'volumes': ['atlas_pg_*'], 'containers': ['atlas-*'],
                             'images': ['store/objects'], 'networks': ['atlas_*'],
@@ -198,9 +230,9 @@ def _v311_suite():
         OBSERVER_KEY = folder / 'keys' / SP.OBSERVER
         OBSERVER_PUBLIC = keygen(OBSERVER_KEY)
 
-        def repository(path, space_file=None):
+        def repository(path, space_file=None, trunk='main'):
             path.mkdir(parents=True)
-            quiet(path, 'init', '-q', '-b', 'main')
+            quiet(path, 'init', '-q', '-b', trunk)
             (path / '.gitignore').write_text('build/\n')
             (path / 'tracked.txt').write_text('base\n')
             if space_file is not None:
@@ -210,7 +242,7 @@ def _v311_suite():
             quiet(path, 'commit', '-q', '-m', 'base')
             return path
 
-        def hooks_into(path, state_root=STATE):
+        def hooks_into(path, state_root=STATE, trunk=None):
             for name in ('post-checkout', 'reference-transaction'):
                 shutil.copyfile(PRODUCTION[name], path / '.git' / 'hooks' / name)
                 os.chmod(str(path / '.git' / 'hooks' / name), 0o755)
@@ -218,6 +250,8 @@ def _v311_suite():
             quiet(path, 'config', 'veldo.space.installation', str(folder))
             if state_root is not None:
                 quiet(path, 'config', 'veldo.space.stateroot', str(state_root))
+            if trunk is not None:  # what VELDO-0329 sets from the declared land trunk; there is no default
+                quiet(path, 'config', 'veldo.space.trunk', trunk)
 
         REPO = repository(temp / 'projects' / 'orchard', {'landing_refs': ['release']})
         ORCHARD = dict(CFG.read_project(str(REPO), YAML.read, config=CONFIG, stream=io.StringIO()),
@@ -227,8 +261,17 @@ def _v311_suite():
         repository(PLAIN)
         PLAIN_TREES.mkdir(parents=True)
         A = {'type': 'project', 'id': ORCHARD['project']}
-        hooks_into(REPO)
-        hooks_into(PLAIN)
+        hooks_into(REPO, trunk='main')
+        hooks_into(PLAIN)  # no trunk is declared for it
+        repository(HARBOR, trunk='master')
+        repository(PIER)
+        for made in (HARBOR_TREES, PIER_TREES):
+            made.mkdir(parents=True)
+        hooks_into(HARBOR, trunk='master')
+        hooks_into(PIER)
+        # The work configuration's land entry, as control_api_authority.landing_of reads it: by project
+        # name for the bound project, by execution repository for the other.
+        LANDS = {ORCHARD['project']: {'remote': 'origin', 'trunk': 'main'}, str(HARBOR): {'trunk': 'master'}}
 
         def journal_sign(message):
             return 'stub:' + S.digest_of(message.decode('utf-8'))
@@ -326,7 +369,7 @@ def _v311_suite():
                                      else (parameters.get('locator') or {}).get('path') or parameters.get('item')))
                 return answer
 
-        AUTH = Authority(L, CM)
+        AUTH = Authority(L, CM, landing=lambda: LANDS)
         SIGN = SPOOL.signer(str(folder))
         AFTER = [None]
         RUNNING = [None]
@@ -601,11 +644,11 @@ def _v311_suite():
         check(ROW, 'a change of the declared landing ref leaves one record %s' % ([e.get('subject') for e in fresh],),
               len(fresh) == 1 and fresh[0]['subject']['ref'] == 'refs/heads/release'
               and fresh[0]['subject']['new'] == new)
-        count = len(EVENTS)
+        count, noted = len(EVENTS), len(SPOOL.observations(FOLDER))
         plain(REPO, 'branch', 'unwatched', new)
         plain(REPO, 'update-ref', 'refs/veldo/fixture/untouched', new)
-        check(ROW, 'another branch, and a ref under refs/veldo/, leave none',
-              len(EVENTS) == count and SPOOL.pending(FOLDER) == [])
+        check(ROW, 'another branch, and a ref under refs/veldo/, leave none, and no entry was written for them',
+              len(EVENTS) == count and SPOOL.pending(FOLDER) == [] and len(SPOOL.observations(FOLDER)) == noted)
         check(ROW, 'the git commands returned with nothing removed: every worktree is still in git\'s list',
               listed(REPO) == trees_before and all(Path(path).is_dir() for path in trees_before))
 
@@ -763,6 +806,7 @@ def _v311_suite():
         SPOOL.start(FOLDER, AUTH, SIGN)
         length, first = journal_length(), items_at(T109)
         (Path(FOLDER) / name).write_bytes(saved)  # as a crash between the answer and the unlink leaves it
+        os.chmod(str(Path(FOLDER) / name), 0o600)  # the module's own file, with the mode it writes
         done = SPOOL.replay(FOLDER, AUTH, SIGN)
         check(ROW, 'the entry delivered again is answered and leaves the spool %s'
               % ([(one['type'], one['outcome']) for one in done],),
@@ -791,6 +835,340 @@ def _v311_suite():
               % (code, item_at(T110)[1].get('branch')),
               code == 0 and item_at(T110)[1].get('state') == 'present'
               and item_at(T110)[1].get('branch') == 'agent/kim/T-111' and SPOOL.pending(FOLDER) == [])
+
+        # ================================ the fix round ======================================================
+        def noted():
+            return SPOOL.observations(FOLDER)
+
+        def planted(subject, kind='ref_changed', hook='reference-transaction'):
+            return SPOOL.entry(kind, subject, hook, 'fixture-host')
+
+        ROW = 'f1/trunk-master-main-moved'
+        DOCK = HARBOR_TREES / 'dock'
+        quiet(HARBOR, 'branch', 'main')  # the repository's trunk is master, and it also has a branch named main
+        plain(HARBOR, 'worktree', 'add', '-q', '-b', 'topic/dock', str(DOCK))
+        _code, DOCK_TIP = commit_plain(DOCK, 'dock.txt', 'work that never landed\n', 'work on the dock')
+        count, seen, marks = len(EVENTS), len(noted()), SPOOL.undeclared(FOLDER)
+        code = plain(HARBOR, 'branch', '-f', 'main', DOCK_TIP)[0]
+        check(ROW, 'main is moved by hand onto the worktree\'s branch, and the trunk is master [%s]' % code,
+              code == 0 and tip_of(HARBOR, 'refs/heads/main') == DOCK_TIP
+              and quiet(HARBOR, 'symbolic-ref', '--short', 'HEAD') == 'master'
+              and reaches(HARBOR, DOCK_TIP, tip_of(HARBOR, 'refs/heads/master')) is False)
+        check(ROW, 'moving main is not a landing: no entry was written and there is no event [%d]'
+              % (len(EVENTS) - count),
+              len(EVENTS) == count and SPOOL.pending(FOLDER) == [] and len(noted()) == seen
+              and SPOOL.undeclared(FOLDER) == marks)
+        check(ROW, 'the worktree is on disk and its item is present, not due [%s]' % item_at(DOCK)[1].get('state'),
+              (DOCK / 'dock.txt').is_file() and item_at(DOCK)[1].get('state') == 'present'
+              and item_at(DOCK)[1].get('branch') == 'topic/dock')
+        old = tip_of(HARBOR, 'refs/heads/master')
+        code, new = commit_plain(HARBOR, 'tracked.txt', 'on master\n', 'a commit on the declared trunk')
+        check(ROW, 'a commit on master, the declared trunk, leaves one event record for it %s'
+              % ([one.get('subject') for one in EVENTS[count:]],),
+              code == 0 and len(EVENTS) - count == 1
+              and EVENTS[-1]['subject'] == {'repository': str(HARBOR), 'ref': 'refs/heads/master', 'old': old,
+                                            'new': new})
+        count, seen = len(EVENTS), len(noted())
+        quiet(HARBOR, 'config', 'veldo.space.trunk', 'main')  # a wrong git configuration
+        code = plain(HARBOR, 'branch', '-f', 'main', new)[0]
+        quiet(HARBOR, 'config', 'veldo.space.trunk', 'master')
+        fresh = noted()[seen:]
+        check(ROW, 'with the hook wrongly naming main the authority reads the land entry and records nothing %s'
+              % ([(one.get('reason'), (one.get('entry') or {}).get('subject', {}).get('ref')) for one in fresh],),
+              code == 0 and len(EVENTS) == count and SPOOL.pending(FOLDER) == []
+              and [(one.get('outcome'), one.get('reason'), one['entry']['subject']['ref']) for one in fresh]
+              == [('nothing', 'ref_not_declared', 'refs/heads/main')]
+              and item_at(DOCK)[1].get('state') == 'present' and DOCK.is_dir())
+
+        ROW = 'f1/no-declaration-nothing-sent'
+        count, seen, length = len(EVENTS), len(noted()), journal_length()
+        first, _new = commit_plain(PLAIN, 'tracked.txt', 'no trunk is declared here\n', 'a commit on main')
+        second, _new = commit_plain(PLAIN, 'tracked.txt', 'nor here\n', 'another')
+        marks = [json.loads((Path(FOLDER) / SPOOL.UNDECLARED / name).read_text()) for name in SPOOL.undeclared(FOLDER)]
+        check(ROW, 'with no declared trunk a commit on main returns 0 and nothing is sent or spooled [%s %s]'
+              % (first, second),
+              first == 0 and second == 0 and len(EVENTS) == count and SPOOL.pending(FOLDER) == []
+              and len(noted()) == seen and journal_length() == length)
+        check(ROW, 'the repository is noted once, with why %s' % ([(m.get('reason'), m.get('repository')) for m in marks],),
+              [(m.get('reason'), m.get('repository')) for m in marks if m.get('repository') == str(PLAIN)]
+              == [('trunk_undeclared', str(PLAIN))]
+              and not [m for m in marks if m.get('repository') in (str(REPO), str(HARBOR))])
+        quiet(PLAIN, 'config', 'veldo.space.trunk', 'main')  # a hook that names a trunk no declaration names
+        code, _new = commit_plain(PLAIN, 'tracked.txt', 'a third\n', 'a third')
+        quiet(PLAIN, 'config', '--unset', 'veldo.space.trunk')
+        fresh = noted()[seen:]
+        check(ROW, 'a hook made to name main is answered by the authority: no land entry, nothing recorded %s'
+              % ([one.get('reason') for one in fresh],),
+              code == 0 and len(EVENTS) == count and SPOOL.pending(FOLDER) == []
+              and [(one.get('outcome'), one.get('reason')) for one in fresh] == [('nothing', 'trunk_undeclared')])
+        check(ROW, 'about answers the declared trunk, and none where none is declared',
+              AUTH.about(str(REPO)).get('trunk') == 'main' and AUTH.about(str(HARBOR)).get('trunk') == 'master'
+              and AUTH.about(str(PLAIN)).get('trunk') is None and AUTH.about(str(PIER)).get('trunk') is None
+              and SPOOL.watched(str(PLAIN)) == [] and SPOOL.watched(str(PLAIN), 'master') == ['refs/heads/master'])
+
+        ROW = 'f2/unsafe-folder-refused'
+        TRUNK_TIP = tip_of(REPO, 'refs/heads/main')
+        TRUE_EVENT = {'repository': str(REPO), 'ref': 'refs/heads/main',
+                      'old': quiet(REPO, 'rev-parse', 'refs/heads/main~1'), 'new': TRUNK_TIP}
+        OPEN = temp / 'open-state'
+        OPEN_SPOOL = OPEN / SPOOL.SPOOL
+        OPEN_SPOOL.mkdir(parents=True)
+        os.chmod(str(OPEN_SPOOL), 0o777)  # the reviewer's probe: a folder anybody can write, and a planted file
+        one = planted(TRUE_EVENT)
+        PLANT = OPEN_SPOOL / ('%020d-%s%s' % (1, one['id'], SPOOL.SUFFIX))
+        PLANT.write_text(json.dumps(one, sort_keys=True) + '\n')
+        os.chmod(str(PLANT), 0o600)
+        plant_bytes = PLANT.read_bytes()
+        mark, count = len(ACCEPTED), len(EVENTS)
+
+        def refuses(call):
+            try:
+                call()
+            except SPOOL.Unsafe as refusal:
+                return str(refusal)
+            return None
+
+        answers = [refuses(lambda: SPOOL.replay(str(OPEN_SPOOL), AUTH, SIGN)),
+                   refuses(lambda: SPOOL.put(str(OPEN_SPOOL), planted(TRUE_EVENT))),
+                   refuses(lambda: listeners.append(SPOOL.listen(str(OPEN_SPOOL)))),
+                   refuses(lambda: SPOOL.start(str(OPEN_SPOOL), AUTH, SIGN))]
+        check(ROW, 'a replay, a put, a listen and start in a spool folder of mode 0777 are refused %s' % (answers,),
+              all(answer and 'writable by group or others' in answer for answer in answers) and len(listeners) == 1)
+        check(ROW, 'the planted file was not signed, not sent and not recorded [%d %d]'
+              % (len(ACCEPTED) - mark, len(EVENTS) - count), len(ACCEPTED) == mark and len(EVENTS) == count)
+        code, _out, err = cli('space', 'replay', '--state-root', str(OPEN), '--installation', str(folder))
+        beside = OPEN / SPOOL.FOLDER_REFUSED
+        check(ROW, 'the replay verb refuses it and says so, and it is noted beside the folder [%s %r]' % (code, err[-120:]),
+              code == 1 and 'writable by group or others' in err and beside.is_file()
+              and 'writable by group or others' in json.loads(beside.read_text()).get('refused', '')
+              and len(EVENTS) == count)
+        quiet(REPO, 'config', 'veldo.space.stateroot', str(OPEN))
+        code = plain(REPO, 'worktree', 'add', '-q', '-b', 'agent/kim/T-130', str(TREES / 't130'))[0]
+        quiet(REPO, 'config', 'veldo.space.stateroot', str(STATE))
+        check(ROW, 'a hook pointed at it writes nothing into it, and git returns 0 with the worktree made [%s]' % code,
+              code == 0 and (TREES / 't130' / 'tracked.txt').is_file() and len(EVENTS) == count)
+        check(ROW, 'the folder and the planted file are exactly as they were: nothing of another\'s is touched %s'
+              % (sorted(os.listdir(str(OPEN_SPOOL))),),
+              os.listdir(str(OPEN_SPOOL)) == [PLANT.name] and PLANT.read_bytes() == plant_bytes
+              and os.stat(str(OPEN_SPOOL)).st_mode & 0o777 == 0o777)
+        real_uid, files = os.getuid, sorted(os.listdir(FOLDER))
+        os.getuid = lambda: real_uid() + 1  # this account, seen as another: the folder is another owner's
+        try:
+            answer = refuses(lambda: SPOOL.put(FOLDER, planted(TRUE_EVENT)))
+        finally:
+            os.getuid = real_uid
+        check(ROW, 'a spool folder owned by another account is refused, and nothing is written [%s]' % answer,
+              bool(answer) and 'owned by another account' in answer and sorted(os.listdir(FOLDER)) == files)
+
+        ROW = 'f2/unsafe-entry-set-aside'
+        count, mark = len(EVENTS), len(ACCEPTED)
+        one, other = planted(TRUE_EVENT), planted(TRUE_EVENT)
+        loose = Path(FOLDER) / ('%020d-%s%s' % (time.time_ns(), one['id'], SPOOL.SUFFIX))
+        loose.write_text(json.dumps(one, sort_keys=True) + '\n')
+        os.chmod(str(loose), 0o666)  # a true entry in a file group and others can write
+        target = temp / 'linked-entry.json'
+        target.write_text(json.dumps(other, sort_keys=True) + '\n')
+        os.chmod(str(target), 0o600)
+        link = Path(FOLDER) / ('%020d-%s%s' % (time.time_ns(), other['id'], SPOOL.SUFFIX))
+        os.symlink(str(target), str(link))
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        aside_folder = Path(FOLDER) / SPOOL.REFUSED
+        whys = [json.loads((aside_folder / (name + '.why')).read_text()).get('refused')
+                if (aside_folder / (name + '.why')).is_file() else None for name in (loose.name, link.name)]
+        check(ROW, 'an entry file others can write, and one that is a link, are never replayed %s'
+              % ([(entry['outcome'], entry['reason']) for entry in done],),
+              [(entry['outcome'], entry['reason']) for entry in done] == [('refused', 'unsafe'), ('refused', 'unsafe')]
+              and len(EVENTS) == count and len(ACCEPTED) == mark)
+        check(ROW, 'each is set aside as it was, with why %s' % (whys,),
+              SPOOL.pending(FOLDER) == [] and (aside_folder / (loose.name + '.malformed')).is_file()
+              and os.path.islink(str(aside_folder / (link.name + '.malformed')))
+              and whys == ['the spooled file is writable by group or others', 'the spooled file is a link']
+              and json.loads(target.read_text()) == other)
+
+        ROW = 'f2/server-identity-checked'
+
+        def asked(remote):
+            """One about call from the hook's side, served here with the module's own serve_one."""
+            box = {}
+
+            def run():
+                try:
+                    box['answer'] = remote.about(str(REPO))
+                except SPOOL.Unreachable as unreachable:
+                    box['unreachable'] = str(unreachable)
+
+            thread = threading.Thread(target=run)
+            thread.start()
+            served = SPOOL.serve_one(listeners[0], AUTH) if select.select([listeners[0]], [], [], 10.0)[0] else None
+            thread.join(20.0)
+            return box, served
+
+        box, served = asked(SPOOL.Remote(SPOOL.socket_path(FOLDER)))
+        check(ROW, 'a socket this account serves is asked and answers %s' % (sorted(box),),
+              (box.get('answer') or {}).get('trunk') == 'main' and (served or {}).get('served') is True)
+        box, served = asked(SPOOL.Remote(SPOOL.socket_path(FOLDER), uid=os.getuid() + 1))
+        check(ROW, 'when the kernel names another account than the expected one nothing is sent %s %s' % (box, served),
+              'not served by this account' in box.get('unreachable', '') and 'answer' not in box
+              and served == {'served': False})
+
+        ROW = 'f2/commit-not-on-ref-is-nothing'
+        OFF = quiet(REPO, 'commit-tree', 'refs/heads/main^{tree}', '-p', 'refs/heads/main', '-m', 'on no ref')
+        count, seen, length = len(EVENTS), len(noted()), journal_length()
+        SPOOL.put(FOLDER, planted(dict(TRUE_EVENT, new=OFF)))
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        fresh = noted()[seen:]
+        check(ROW, 'an entry whose commit is not on the named ref is recorded as nothing %s'
+              % ([(entry['outcome'], entry['reason']) for entry in done],),
+              [(entry['outcome'], entry['reason']) for entry in done] == [('nothing', 'commit_not_on_ref')]
+              and len(EVENTS) == count and SPOOL.pending(FOLDER) == []
+              and [(one.get('reason'), one['entry']['subject']['new']) for one in fresh] == [('commit_not_on_ref', OFF)])
+        SPOOL.put(FOLDER, planted(TRUE_EVENT))
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        check(ROW, 'the same entry with a commit that is on the ref is recorded: one event %s'
+              % ([(entry['outcome'], entry['reason']) for entry in done],),
+              [entry['outcome'] for entry in done] == ['recorded'] and len(EVENTS) == count + 1
+              and EVENTS[-1]['subject'] == TRUE_EVENT)
+        seen, length = len(noted()), journal_length()
+        NEVER = TREES / 'never-made'
+        SPOOL.put(FOLDER, planted({'repository': str(REPO), 'path': str(NEVER), 'branch': 'agent/kim/T-900',
+                                   'start': TRUNK_TIP}, 'worktree_added', 'post-checkout'))
+        SPOOL.put(FOLDER, planted({'repository': str(PLAIN), 'path': str(T170), 'branch': 'agent/kim/T-170',
+                                   'start': TRUNK_TIP}, 'worktree_added', 'post-checkout'))
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        check(ROW, 'a worktree git does not list at the path in that repository is recorded as nothing %s'
+              % ([(entry['outcome'], entry['reason']) for entry in done],),
+              [(entry['outcome'], entry['reason']) for entry in done]
+              == [('nothing', 'worktree_not_in_that_repository')] * 2
+              and item_at(NEVER)[0] is None and journal_length() == length and len(noted()) == seen + 2
+              and len(items_at(T170)) == 1)
+        identity, before = item_at(T170)
+        SPOOL.put(FOLDER, planted({'repository': str(REPO), 'path': str(T170), 'branch': 'agent/kim/T-999',
+                                   'start': OFF}, 'branch_switched', 'post-checkout'))
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        _again, record = item_at(T170)
+        check(ROW, 'an entry that names another branch and commit for a real worktree records what git reads [%s %s]'
+              % (record.get('branch'), record.get('start')),
+              [entry['outcome'] for entry in done] == ['recorded'] and record.get('branch') == 'agent/kim/T-170'
+              and record.get('start') == quiet(T170, 'rev-parse', 'HEAD') == before.get('start')
+              and branch_item(REPO, 'agent/kim/T-999')[0] is None)
+
+        ROW = 'f3/path-reused-by-another-repository'
+        REUSED = TREES / 'reused'
+        plain(REPO, 'worktree', 'add', '-q', '-b', 'agent/kim/T-140', str(REUSED))
+        identity, before = item_at(REUSED)
+        quiet(REPO, 'worktree', 'remove', '--force', str(REUSED))  # removed by hand: its item stays live
+        aside_before = SPOOL.refused(FOLDER)
+        code = plain(PIER, 'worktree', 'add', '-q', '-b', 'topic/pier', str(REUSED))[0]
+        again, record = item_at(REUSED)
+        fresh = [name for name in SPOOL.refused(FOLDER) if name not in aside_before]
+        document = json.loads((Path(FOLDER) / SPOOL.REFUSED / fresh[0]).read_text()) if fresh else {}
+        check(ROW, 'another repository adds a worktree at the path of a live item: git returns 0 [%s]' % code,
+              code == 0 and before.get('state') == 'present' and str(REUSED) in listed(PIER)
+              and str(REUSED) not in listed(REPO))
+        check(ROW, 'the item is not given the other repository\'s branch: it is as it was [%s %s]'
+              % (record.get('branch'), record.get('owner')),
+              again == identity and record == before and record.get('branch') == 'agent/kim/T-140'
+              and len(items_at(REUSED)) == 1)
+        check(ROW, 'no branch item is made for that branch, in either repository',
+              branch_item(REPO, 'topic/pier')[0] is None and branch_item(PIER, 'topic/pier')[0] is None)
+        check(ROW, 'the entry is set aside whole with the reason, which names the item [%s]'
+              % ((document.get('refused') or {}).get('reason'),),
+              len(fresh) == 1 and (document.get('refused') or {}).get('reason') == SPOOL.OTHER + str(identity)
+              and (document.get('entry') or {}).get('subject', {}).get('repository') == str(PIER)
+              and SPOOL.pending(FOLDER) == [])
+        code = plain(REUSED, 'switch', '-q', '-c', 'topic/pier-two')[0]
+        check(ROW, 'a switch in it is refused the same way, and the item is still as it was [%s]' % code,
+              code == 0 and item_at(REUSED) == (identity, before)
+              and len([name for name in SPOOL.refused(FOLDER) if name not in aside_before]) == 2
+              and branch_item(REPO, 'topic/pier-two')[0] is None)
+        check(ROW, 'about answers an item by repository and path',
+              AUTH.about(str(REPO), str(REUSED)).get('item') == identity
+              and AUTH.about(str(REPO), str(REUSED)).get('other') is None
+              and AUTH.about(str(PIER), str(REUSED)).get('item') is None
+              and AUTH.about(str(PIER), str(REUSED)).get('other') == identity)
+
+        ROW = 'f4/nothing-leaves-a-trace'
+        seen, length = len(noted()), journal_length()
+        code = plain(UNSEEN, 'switch', '-q', '-c', 'agent/kim/T-162')[0]
+        fresh = noted()[seen:]
+        check(ROW, 'a switch in a worktree no item records writes nothing to the ledger and leaves the spool [%s]' % code,
+              code == 0 and journal_length() == length and SPOOL.pending(FOLDER) == [] and item_at(UNSEEN)[0] is None)
+        check(ROW, 'it leaves one observation, with the entry whole and why %s' % ([one.get('reason') for one in fresh],),
+              len(fresh) == 1 and fresh[0].get('outcome') == 'nothing'
+              and fresh[0].get('reason') == 'no item records this worktree'
+              and (fresh[0].get('entry') or {}).get('type') == 'branch_switched'
+              and (fresh[0].get('entry') or {}).get('subject', {}).get('path') == str(UNSEEN)
+              and (fresh[0].get('entry') or {}).get('subject', {}).get('branch') == 'agent/kim/T-162'
+              and isinstance(fresh[0].get('at'), float))
+        check(ROW, 'the observations are a file of this account\'s alone',
+              os.stat(os.path.join(FOLDER, SPOOL.OBSERVATIONS)).st_mode & 0o777 == 0o600)
+
+        ROW = 'f4/paths-as-the-ledger-compares'
+        LINKED = temp / 'plain' / 'almanac-link'
+        os.symlink(str(PLAIN), str(LINKED))
+        check(ROW, 'a repository named through a link is another name to the Ledger, and so to about',
+              SP.canonical_path(str(LINKED)) != SP.canonical_path(str(PLAIN)) and AUTH.about(str(LINKED)) is None
+              and (AUTH.about(str(PLAIN) + '/./') or {}).get('scope') == {'type': 'plain_repository', 'id': str(PLAIN)}
+              and SPOOL.canonical(str(PLAIN) + '/x/..') == SP.canonical_path(str(PLAIN) + '/x/..') == str(PLAIN))
+        seen = len(noted())
+        SPOOL.put(FOLDER, planted({'repository': str(LINKED), 'path': str(P1), 'branch': 'topic/atlas',
+                                   'start': quiet(P1, 'rev-parse', 'HEAD')}, 'worktree_added', 'post-checkout'))
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        check(ROW, 'an entry under that name is nothing, and says so in an observation: the hook is not silently off %s'
+              % ([(entry['outcome'], entry['reason']) for entry in done],),
+              [entry['outcome'] for entry in done] == ['nothing'] and len(noted()) == seen + 1
+              and noted()[-1].get('reason') == 'the repository is neither bound nor plain')
+        ledger_module = SPOOL._sibling('control_space')
+        ledger_form = ledger_module.canonical_path
+        ledger_module.canonical_path = os.path.realpath  # were the Ledger to follow links, about follows it
+        try:
+            follows = AUTH.about(str(LINKED))
+        finally:
+            ledger_module.canonical_path = ledger_form
+        check(ROW, 'the form is the Ledger\'s own function, not a copy of it [%s]' % ((follows or {}).get('scope'),),
+              (follows or {}).get('scope') == {'type': 'plain_repository', 'id': str(PLAIN)}
+              and AUTH.about(str(LINKED)) is None)
+
+        ROW = 'f5/replay-stops-at-its-deadline'
+        down()
+        SLOW = [TREES / name for name in ('t151', 't152', 't153')]
+        codes = [plain(REPO, 'worktree', 'add', '-q', '-b', 'agent/kim/T-' + path.name[1:], str(path))[0]
+                 for path in SLOW]
+        waiting = [one['subject']['path'] for one in spooled()]
+        ticks = [0.0]
+
+        class Slow:
+            """The authority, each of whose answers about a worktree takes 0.6 seconds of the replay's clock."""
+            accept = staticmethod(AUTH.accept)
+
+            @staticmethod
+            def about(repository, path=None):
+                ticks[0] += 0.6
+                return AUTH.about(repository, path)
+
+        done = SPOOL.replay(FOLDER, Slow, SIGN, seconds=1.0, clock=lambda: ticks[0])
+        left = spooled()
+        check(ROW, 'three entries wait %s' % (codes,), codes == [0, 0, 0] and waiting == [str(path) for path in SLOW])
+        check(ROW, 'a replay with a deadline of one second stops after the second entry %s'
+              % ([(entry['type'], entry['outcome']) for entry in done],),
+              [(entry['type'], entry['outcome']) for entry in done] == [('worktree_added', 'recorded')] * 2
+              and item_at(SLOW[0])[1].get('state') == 'present' and item_at(SLOW[1])[1].get('state') == 'present')
+        check(ROW, 'the third is in the spool, whole, and has no item yet',
+              [one['subject']['path'] for one in left] == [str(SLOW[2])] and left[0]['tries'] == 0
+              and item_at(SLOW[2])[0] is None and SLOW[2].is_dir())
+        done = SPOOL.replay(FOLDER, AUTH, SIGN)
+        check(ROW, 'the next replay delivers it %s' % ([(entry['type'], entry['outcome']) for entry in done],),
+              [(entry['type'], entry['outcome']) for entry in done] == [('worktree_added', 'recorded')]
+              and item_at(SLOW[2])[1].get('state') == 'present' and SPOOL.pending(FOLDER) == [])
+        late = SPOOL.Remote(SPOOL.socket_path(FOLDER), until=time.monotonic() - 1.0)
+        try:
+            late.about(str(REPO))
+            said = None
+        except SPOOL.Unreachable as unreachable:
+            said = str(unreachable)
+        check(ROW, 'past a hook\'s deadline no answer is waited for, and a hook\'s whole replay has five seconds [%s]'
+              % said, said == 'out of time' and 0 < SPOOL.HOOK_SECONDS <= SPOOL.REACH_SECONDS)
+        up()
 
         # ================================ the hooks ==========================================================
         ROW = 'hooks/never-fail-git'
@@ -826,9 +1204,17 @@ def _v311_suite():
         tree = ast.parse(source)
         calls = [ast.unparse(node.func) for node in ast.walk(tree) if isinstance(node, ast.Call)]
         imports = sorted({alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names})
-        check(ROW, 'the module imports no subprocess and no shutil, and names no git command %s' % (imports,),
-              'subprocess' not in imports and 'shutil' not in imports and "'git'" not in source
-              and '"git"' not in source)
+        runs = sorted(call for call in calls if call.startswith('subprocess.') or call.endswith('_process.run'))
+        check(ROW, 'the module imports no shutil, and the only git it runs is the four commands that read, '
+              'through the one Git boundary %s %s' % (imports, runs),
+              'shutil' not in imports and runs == ['_git_process.run'] and source.count("'git'") == 1
+              and '"git"' not in source
+              and SPOOL.READS == ('rev-parse', 'symbolic-ref', 'merge-base', 'worktree'))
+        check(ROW, 'a git command that writes is not run: the branch and the worktree it names are still there',
+              SPOOL._git(str(REPO), 'branch', '-D', 'unwatched') == (None, '')
+              and tip_of(REPO, 'refs/heads/unwatched') is not None
+              and SPOOL._git(str(REPO), 'worktree', 'remove', '--force', str(T101)) == (None, '')
+              and (T101 / 'work.txt').is_file() and SPOOL._git(str(REPO), 'worktree', 'prune') == (None, ''))
         deletes = sorted(call for call in calls if call.split('.')[-1] in ('unlink', 'remove', 'rmdir', 'rmtree',
                                                                              'removedirs'))
         check(ROW, 'its only deletes are the unlink of a delivered and of a set-aside spool file %s' % (deletes,),

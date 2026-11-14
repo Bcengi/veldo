@@ -10,7 +10,8 @@
 #   veldo.space.stateroot      the Veldo state root; without it the hook stands down
 #   veldo.space.cli            the veldo executable (default: veldo on PATH)
 #   veldo.space.installation   the installation folder (default: the one the CLI resolves)
-#   veldo.space.trunk          the trunk's branch name (default: main)
+#   veldo.space.trunk          the declared trunk's branch name. There is no default: the trunk is
+#                              never guessed, and without it nothing is sent for any branch
 [ "$1" = committed ] || exit 0
 root=$(git config --get veldo.space.stateroot 2>/dev/null) || exit 0
 [ -n "$root" ] || exit 0
@@ -18,7 +19,7 @@ lines=$(grep ' refs/' | grep -v ' refs/veldo/') || exit 0
 [ -n "$lines" ] || exit 0
 cli=$(git config --get veldo.space.cli 2>/dev/null) || cli=veldo
 installation=$(git config --get veldo.space.installation 2>/dev/null) || installation=
-trunk=$(git config --get veldo.space.trunk 2>/dev/null) || trunk=main
+trunk=$(git config --get veldo.space.trunk 2>/dev/null) || trunk=
 common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || exit 0
 # The CLI starts with git's own variables cleared, so nothing it does is aimed at this repository.
 unset $(git rev-parse --local-env-vars 2>/dev/null)

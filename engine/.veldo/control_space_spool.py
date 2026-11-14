@@ -4,8 +4,9 @@
 WHAT THIS MODULE IS. A worktree added with plain git, a branch switched in it and a trunk moved by hand
 all happen outside Veldo. Two git hooks (engine/hooks/post-checkout and reference-transaction) start the
 CLI, and the CLI calls this module. It writes down what the hook saw as one entry, hands it to the
-authority, and returns. It removes nothing of anybody's: no worktree, no folder, no ref, no branch. It
-runs no git command. Whatever goes wrong, the git command it rides on ends as it would without it.
+authority, and returns. It removes nothing of anybody's: no worktree, no folder, no ref, no branch. The
+only git commands it runs are the four that read (READS). Whatever goes wrong, the git command it rides
+on ends as it would without it.
 
 AN ENTRY is what a hook saw, {schema, id, type, subject, emitter, at, tries}:
 
@@ -13,12 +14,30 @@ AN ENTRY is what a hook saw, {schema, id, type, subject, emitter, at, tries}:
                     repository, path, branch (None when detached) and start, the commit checked out.
   branch_switched   post-checkout with a real previous HEAD and the branch flag, in a linked worktree:
                     the same four fields, for the branch and commit the worktree is on now.
-  ref_changed       reference-transaction in its committed state, for the trunk or a declared landing
-                    ref: repository, ref, old and new.
+  ref_changed       reference-transaction in its committed state, for the declared trunk or a declared
+                    landing ref: repository, ref, old and new.
+
+THE TRUNK IS NEVER GUESSED. The hook names the trunk only from the repository's git configuration
+(veldo.space.trunk, which VELDO-0329 sets from the declared land trunk). With none it writes no entry for
+any branch, and the repository is noted once under undeclared/ with why. The authority judges again: at
+a replay a ref_changed entry is sent only when its ref is the trunk the work configuration's land entry
+declares for that repository (about's trunk) or a landing ref the space file declares; any other ref is
+"nothing", so a stale or wrong git configuration cannot make a branch a trunk.
 
 The repository's own checkout is never an item (design 0.1), so a checkout there is no entry. A checkout
 git makes while a rebase is in progress is no entry: the worktree's branch is the same when it ends. A
 ref under refs/veldo/ is no entry (design 0.2: the hook sends nothing for a kept ref).
+
+AN ENTRY IS A HINT, NEVER A FACT. The spool is a folder of files, and this account is the trust boundary:
+the folder is made 0700; a folder or an entry file that is another account's, or that group or others
+can write, is refused and never replayed (a file is set aside in refused/ with why; a folder is left as
+it is and noted beside it, <state root>/space-spool.refused.json). The hook's side sends only to a socket
+the kernel says this account serves. And before anything is signed the replay reads the facts from git
+itself (read_git): the worktree is in that repository's own list at that path, with the branch and the
+commit it is on now; the commit of a ref change is on the named ref now. It records only what it read.
+What git does not confirm is "nothing". No key authenticates an entry: a key this account can read adds
+nothing on a single-user host. Whoever records an entry after this module (VELDO-0323's consumer) has
+the same duty.
 
 THE SPOOL (design 4.6) is <state root>/space-spool: one file per entry, written whole under a temporary
 name, synced and renamed into place, named by the time it was written, so the files in name order are
@@ -30,16 +49,21 @@ CLI's replay verb) and by start, which the service calls before reconcile.
 WHAT BECOMES OF AN ENTRY at a replay:
 
   recorded   the authority wrote what the entry says. The file is unlinked, and only then.
-  nothing    there is nothing to write: the repository is neither bound nor plain, or a switch was seen
-             in a worktree no item records (reconcile adopts it). The file is unlinked.
+  nothing    there is nothing to write: the repository is neither bound nor plain, a switch was seen
+             in a worktree no item records (reconcile adopts it), the ref is not the declared trunk or a
+             declared landing ref, or git does not confirm what the entry says. One line with the entry
+             and why is appended to observations.jsonl, and only then is the file unlinked.
   refused    the Ledger refused it by a name that will not change (a path outside every known root, a
-             protected path, a locator through a link). The entry and the answer are written to
+             protected path, a locator through a link), or a live item of another repository is at the
+             path (it is never given this worktree's branch). The entry and the answer are written to
              refused/ under the same name, and the file leaves the spool. Nothing drops it silently.
   waits      the authority answered but cannot take it yet: the Ledger has no such command (the event
              command is VELDO-0323's), the observer's key is missing or not enrolled, the packet was
              judged late. The file stays, its count of tries goes up by one, and later entries about the
              same worktree or the same ref stay behind it, so the order of one thing's entries is kept.
   not reachable  the replay stops there. Every file from that one on stays.
+  out of time    a replay has an overall deadline (HOOK_SECONDS for a hook's call, REPLAY_SECONDS for the
+             replay verb and start). Past it the replay stops between two entries; the rest stay.
 
 THE COMMANDS ARE THE LEDGER'S, SIGNED AS space-observer. This module verifies no signature and judges no
 command: each one is a packet {command, signature} the Ledger's own accept takes, verifies and applies
@@ -55,18 +79,23 @@ signs the same packet again, and the Ledger answers it with the original answer 
 entry that waited is signed with a new nonce, because the Ledger keeps the old one as refused for good.
 
 THE OWNER A BRANCH PATTERN GIVES. The authority's about answers, for a repository and a path, the scope
-(the project as the Ledger knows it, or the plain repository), the project's branch patterns and the live
-worktree item at the path. A branch that matches a pattern is owned by the scope and the ticket the
+(the project as the Ledger knows it, or the plain repository), the project's branch patterns, its
+declared trunk and landing refs, and the live worktree item at the path in that repository. An item is
+found by repository and path, never by path alone: a live item of another repository at the path is
+answered as `other`, and the entry is refused. Paths are compared in the Ledger's own canonical form
+(control_space.canonical_path). A branch that matches a pattern is owned by the scope and the ticket the
 pattern names; any other branch, a detached worktree and a worktree of a plain repository by the scope
 alone. A worktree a run owns (the run's label in the hook's environment) is VELDO-0336's.
 
-HOW LONG A HOOK CAN WAIT. The hook's side gives the authority REACH_SECONDS for each answer and another
-call's replay LOCK_SECONDS; past either, the entry stays in the spool and the git command goes on.
+HOW LONG A HOOK CAN WAIT. The hook's side gives the authority REACH_SECONDS for each answer, another
+call's replay LOCK_SECONDS, and its whole replay HOOK_SECONDS (no answer is waited for past that
+deadline); past any of them, the entries stay in the spool and the git command goes on.
 
 THE AUTHORITY is anything with accept(packet) and about(repository, path) that raises Unreachable when it
 cannot be reached. Local is the one in the authority's own process, over a Ledger. Remote is the hook's
 side of a local socket, <state root>/space-spool/authority.sock, one JSON request per connection; serve_one
-is the authority's side: the peer must be this account (the kernel's answer), the answer is sent and the
+is the authority's side; each side asks the kernel who the other is and goes on only when it is this
+account: the peer must be this account (the kernel's answer), the answer is sent and the
 connection closed, and only then is `after` called with the request and the answer. That is where the
 service's event consumer goes (VELDO-0323); nothing called there can delay the git command. Wiring the
 socket into the service is that ticket's; until then no authority answers and every entry waits in the
@@ -82,7 +111,9 @@ import json
 import os
 import re
 import socket
+import stat
 import string
+import subprocess
 import sys
 import time
 import uuid
@@ -107,11 +138,19 @@ ENDED = ('removed', 'gone')
 WAITS = ('space_no_command:', 'space_packet_', 'space_no_key', 'space_no_installation', 'not_authorized',
          'unavailable_service')
 KEPT_REFS = 'refs/veldo/'
-TRUNK = 'main'  # the trunk when the hook names none (git config veldo.space.trunk)
+UNDECLARED = 'undeclared'  # under the spool: one file for each repository whose hook names no trunk
+OBSERVATIONS = 'observations.jsonl'  # one line for each entry that came to nothing
+FOLDER_REFUSED = SPOOL + '.refused.json'  # beside a spool folder that was refused, with why
+OTHER = 'space_path_of_another_repository:'
+# The only git commands this module runs: each reads, none writes.
+READS = ('rev-parse', 'symbolic-ref', 'merge-base', 'worktree')
+GIT_SECONDS = 5.0     # the longest one read of git is waited for
 REBASING = ('rebase-merge', 'rebase-apply')
 MAX_BYTES = 1 << 20
 REACH_SECONDS = 5.0   # the longest a hook waits for the authority's answer
 LOCK_SECONDS = 2.0    # the longest a call waits for another call's replay
+HOOK_SECONDS = 5.0    # the longest a hook's whole replay goes on; what is left stays spooled
+REPLAY_SECONDS = 60.0  # the same for the replay verb and for start
 _LOADED = {}
 
 
@@ -121,6 +160,10 @@ class Unreachable(Exception):
 
 class Malformed(Exception):
     """Something that is not an entry."""
+
+
+class Unsafe(Malformed):
+    """A spool folder or file that is not this account's alone: it is refused, never read as an entry."""
 
 
 class _Waits(Exception):
@@ -145,6 +188,15 @@ def _text(value):
 
 def _null(commit):
     return _text(commit) and set(commit) == {'0'}
+
+
+def _hex(commit):
+    return _text(commit) and re.fullmatch(r'[0-9a-f]{40,64}', commit) is not None
+
+
+def canonical(path):
+    """A path in the one form the Ledger records and compares it in: the Ledger's own function."""
+    return _sibling('control_space').canonical_path(path)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -209,9 +261,10 @@ def full_ref(name):
 
 
 def watched(repository, trunk=None):
-    """The refs whose change is recorded for `repository`: its trunk, and the landing refs its space
-    file declares. A space file that cannot be read declares none here."""
-    refs = [full_ref(trunk or TRUNK)]
+    """The refs whose change is recorded for `repository`: the trunk the hook was given, and the landing
+    refs its space file declares. With no trunk given none is taken: the trunk is never guessed. A space
+    file that cannot be read declares none here."""
+    refs = [full_ref(trunk)] if _text(trunk) else []
     try:
         import io
         config = _sibling('control_space_config')
@@ -225,7 +278,8 @@ def watched(repository, trunk=None):
 
 def ref_changes(lines, common_dir, host, trunk=None, at=None):
     """The entries for one committed reference transaction: one for each changed trunk or declared
-    landing ref. `lines` are git's own, "<old> <new> <ref>". A kept ref gives none."""
+    landing ref. `lines` are git's own, "<old> <new> <ref>". A kept ref gives none, and with no trunk
+    given no branch is taken for one."""
     repository, refs, out = repository_of(common_dir), None, []
     for line in lines:
         parts = line.split()
@@ -249,13 +303,43 @@ def spool_folder(state_root):
     return os.path.join(os.path.normpath(state_root), SPOOL)
 
 
+def _unsafe(status, folder):
+    """Why what `status` describes is not this account's alone, or None. `folder`: a folder is wanted,
+    else a plain file. A link is neither."""
+    if not (stat.S_ISDIR if folder else stat.S_ISREG)(status.st_mode):
+        return 'not a folder' if folder else 'not a plain file'
+    if status.st_uid != os.getuid():
+        return 'owned by another account'
+    if status.st_mode & 0o022:
+        return 'writable by group or others'
+    return None
+
+
 def _folder(folder):
-    """The spool folder, made 0700 when it is not there. A link is refused: an entry is never written
-    through one."""
-    if os.path.islink(folder):
-        raise Malformed('the spool folder is a link: ' + folder)
-    os.makedirs(folder, mode=0o700, exist_ok=True)
+    """The spool folder, made 0700 when it is not there. A link, a folder of another account and one
+    group or others can write are refused (Unsafe): nothing is written into one or replayed from one."""
+    try:
+        status = os.lstat(folder)
+    except FileNotFoundError:
+        os.makedirs(folder, mode=0o700, exist_ok=True)
+        status = os.lstat(folder)
+    why = _unsafe(status, True)
+    if why is not None:
+        raise Unsafe('the spool folder is %s: %s' % (why, folder))
     return folder
+
+
+def note_refused_folder(state_root, why):
+    """One file beside a spool folder that was refused, saying why, written once. The folder itself is
+    left exactly as it is: it may not be this account's to touch."""
+    try:
+        root = os.path.normpath(state_root)
+        path = os.path.join(root, FOLDER_REFUSED)
+        status = os.lstat(root)
+        if stat.S_ISDIR(status.st_mode) and status.st_uid == os.getuid() and not os.path.lexists(path):
+            _write(path, {'refused': why, 'folder': os.path.join(root, SPOOL), 'at': time.time()})
+    except (OSError, TypeError, ValueError):
+        pass
 
 
 def _write(path, document):
@@ -296,8 +380,24 @@ def pending(folder):
 
 
 def read(folder, name):
-    with open(os.path.join(folder, name), 'rb') as handle:
-        data = handle.read(MAX_BYTES + 1)
+    """One spooled entry. The file is opened without following a link, and it is read only when it is a
+    plain file of this account's that group and others cannot write (else Unsafe)."""
+    path = os.path.join(folder, name)
+    if os.path.islink(path):
+        raise Unsafe('the spooled file is a link')
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        why = _unsafe(os.fstat(descriptor), False)
+        if why is not None:
+            raise Unsafe('the spooled file is ' + why)
+        data = b''
+        while len(data) <= MAX_BYTES:
+            chunk = os.read(descriptor, MAX_BYTES + 1 - len(data))
+            if not chunk:
+                break
+            data += chunk
+    finally:
+        os.close(descriptor)
     if len(data) > MAX_BYTES:
         raise Malformed('an entry of more than %d bytes' % MAX_BYTES)
     try:
@@ -311,10 +411,54 @@ def refused(folder):
     return pending(os.path.join(folder, REFUSED))
 
 
+def observe(folder, document):
+    """Append one line to the spool's observations: an entry that came to nothing, whole, with why."""
+    data = (json.dumps(dict(document, at=time.time()), sort_keys=True) + '\n').encode()
+    descriptor = os.open(os.path.join(_folder(folder), OBSERVATIONS),
+                         os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    try:
+        if os.write(descriptor, data) != len(data):
+            raise OSError('a short write of the observations')
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def observations(folder):
+    """The spool's observations, oldest first."""
+    try:
+        with open(os.path.join(folder, OBSERVATIONS), 'rb') as handle:
+            lines = handle.read().decode(errors='replace').splitlines()
+    except FileNotFoundError:
+        return []
+    out = []
+    for line in lines:
+        try:
+            out.append(json.loads(line))
+        except ValueError:
+            out.append({'unread': line})
+    return out
+
+
+def note_undeclared(folder, repository, ref):
+    """Record, once for a repository, that its hook names no trunk and so sent nothing for a changed
+    branch. Returns the file's name."""
+    name = hashlib.sha256(repository.encode()).hexdigest()[:32] + SUFFIX
+    aside = _folder(os.path.join(_folder(folder), UNDECLARED))
+    if not os.path.lexists(os.path.join(aside, name)):
+        _write(os.path.join(aside, name), {'reason': 'trunk_undeclared', 'repository': repository, 'ref': ref,
+                                           'at': time.time()})
+    return name
+
+
+def undeclared(folder):
+    """The names under undeclared/: one for each repository whose hook names no trunk."""
+    return pending(os.path.join(folder, UNDECLARED))
+
+
 def _set_aside(folder, name, document):
     """Move an entry out of the spool into refused/, with why. It is written there before it leaves."""
-    aside = os.path.join(folder, REFUSED)
-    os.makedirs(aside, mode=0o700, exist_ok=True)
+    aside = _folder(os.path.join(folder, REFUSED))
     _write(os.path.join(aside, name), document)
     os.unlink(os.path.join(folder, name))
 
@@ -322,7 +466,7 @@ def _set_aside(folder, name, document):
 def _locked(folder, seconds):
     """The spool's lock, held by one replay at a time, or None when another call still holds it after
     `seconds`."""
-    descriptor = os.open(os.path.join(_folder(folder), LOCK), os.O_RDWR | os.O_CREAT, 0o600)
+    descriptor = os.open(os.path.join(_folder(folder), LOCK), os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
     deadline = time.monotonic() + seconds
     while True:
         try:
@@ -379,11 +523,86 @@ def _key(one):
         'path', subject['path'])
 
 
-def send(one, authority, sign):
+# ---------------------------------------------------------------------------------------------
+# What git itself says: an entry is a hint, and only what is read here is recorded.
+# ---------------------------------------------------------------------------------------------
+
+def _git(where, *argv):
+    """(status, output) of one git command that only reads, run in `where` through the one Git boundary
+    (git_process.py, its isolated profile: no inherited GIT_ variable selects a repository); (None, '')
+    when it is not one of READS or could not be run."""
+    if not argv or argv[0] not in READS or (argv[0] == 'worktree' and argv[1:2] != ('list',)):
+        return None, ''
+    _git_process = _sibling('git_process')
+    try:
+        done = _git_process.run(['git', '-C', where] + list(argv), env=dict(os.environ, LC_ALL='C'),
+                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                timeout=GIT_SECONDS)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None, ''
+    return done.returncode, done.stdout.decode(errors='replace').strip()
+
+
+def _commit(where, name):
+    """The commit `name` is at in `where`, or None."""
+    status, out = _git(where, 'rev-parse', '--verify', '--quiet', '--end-of-options', name + '^{commit}')
+    return out if status == 0 and _hex(out) else None
+
+
+def _holds(where, commit, tip):
+    """Whether `tip` is `commit` or has it as an ancestor: True, False, or None when git did not say."""
+    if commit == tip:
+        return True
+    status, _out = _git(where, 'merge-base', '--is-ancestor', commit, tip)
+    return True if status == 0 else False if status == 1 else None
+
+
+def read_git(one):
+    """What git itself says of what an entry names, read now: (subject, None), or (None, why) when git
+    does not confirm it. For a ref change the subject is the entry's when its new commit is on the named
+    ref. For a worktree it is the repository, the path, the branch the worktree is on now (None when
+    detached) and its start: the entry's commit when the worktree is still on the entry's branch and
+    that commit is in its history, else the commit it is at now. Raises _Waits while a rebase is in
+    progress in the worktree: its branch is read when the rebase has ended."""
+    subject = one['subject']
+    repository = subject['repository']
+    if one['type'] == 'ref_changed':
+        if not subject['ref'].startswith('refs/') or not _hex(subject['new']):
+            return None, 'not_a_ref_and_a_commit'
+        tip = _commit(repository, subject['ref'])
+        held = None if tip is None else _holds(repository, subject['new'], tip)
+        if held is not True:
+            return None, 'commit_not_on_ref' if held is False else 'ref_unread'
+        return dict(subject), None
+    path = subject['path']
+    status, out = _git(repository, 'worktree', 'list', '--porcelain')
+    if status != 0:
+        return None, 'repository_unread'
+    listed = [canonical(line[len('worktree '):]) for line in out.splitlines() if line.startswith('worktree ')]
+    if canonical(path) not in listed[1:] or not os.path.isdir(path):
+        return None, 'worktree_not_in_that_repository'
+    status, git_dir = _git(path, 'rev-parse', '--absolute-git-dir')
+    head = _commit(path, 'HEAD')
+    if status != 0 or not git_dir or head is None:
+        return None, 'worktree_unread'
+    if [name for name in REBASING if os.path.lexists(os.path.join(git_dir, name))]:
+        raise _Waits('worktree_rebasing')
+    status, branch = _git(path, 'symbolic-ref', '-q', '--short', 'HEAD')
+    if status not in (0, 1):
+        return None, 'worktree_unread'
+    branch = branch if status == 0 and branch else None
+    same = branch == subject['branch'] and _hex(subject['start']) and _holds(path, subject['start'], head) is True
+    return {'repository': repository, 'path': path, 'branch': branch,
+            'start': subject['start'] if same else head}, None
+
+
+def send(one, authority, sign, facts=None):
     """Hand one entry to the authority as the Ledger's commands, each signed by `sign(operation,
     parameters, command_id, nonce)`. Returns {outcome, reason, answers}: recorded, nothing or refused.
-    Raises Unreachable when the authority is not reachable and _Waits when it cannot take the entry yet."""
+    Raises Unreachable when the authority is not reachable and _Waits when it cannot take the entry yet.
+    `facts(one)` reads what git says of the entry (default: read_git); only what it answers is signed."""
     kind, subject, answers = one['type'], one['subject'], []
+    facts = facts or read_git
 
     def ask(step, operation, parameters):
         token = hashlib.sha256(('%s:%s:%d' % (one['id'], step, one['tries'])).encode()).hexdigest()
@@ -399,16 +618,28 @@ def send(one, authority, sign):
     def result(outcome, reason=None):
         return {'outcome': outcome, 'reason': reason, 'answers': answers}
 
-    if kind == 'ref_changed':
-        answer = ask('event', EVENT, {'type': 'ref_changed', 'subject': dict(subject),
-                                      'emitter': dict(one['emitter'])})
-        return result('recorded') if answer['ok'] else result('refused', answer.get('reason'))
-    about = authority.about(subject['repository'], subject['path'])
+    about = authority.about(subject['repository'], subject.get('path'))
     if about is None:
         return result('nothing', 'the repository is neither bound nor plain')
     if not isinstance(about, dict) or not isinstance(about.get('scope'), dict):
         raise Unreachable('the authority gave no answer')
+    if kind == 'ref_changed':
+        # The authority's own declarations say what a trunk is, never the entry and never a guess.
+        declared = [full_ref(about['trunk'])] if _text(about.get('trunk')) else []
+        declared += [full_ref(name) for name in about.get('landing_refs') or () if _text(name)]
+        if subject['ref'] not in declared:
+            return result('nothing', 'ref_not_declared' if _text(about.get('trunk')) else 'trunk_undeclared')
+    subject, why = facts(one)
+    if subject is None:
+        return result('nothing', why)
+    if kind == 'ref_changed':
+        answer = ask('event', EVENT, {'type': 'ref_changed', 'subject': dict(subject),
+                                      'emitter': dict(one['emitter'])})
+        return result('recorded') if answer['ok'] else result('refused', answer.get('reason'))
     item = about.get('item')
+    if item is None and _text(about.get('other')):
+        # A live item of another repository is at the path: it is never given this worktree's branch.
+        return result('refused', OTHER + about['other'])
     # Only an item a hook declared is confirmed here: one a creator of Veldo's declared is its own.
     state = about.get('state') if about.get('creator') == 'hook' else None
     if kind == 'branch_switched':
@@ -424,8 +655,12 @@ def send(one, authority, sign):
         if answer['ok']:
             item, state = answer.get('item'), 'declared'
         elif _text(answer.get('reason')) and answer['reason'].startswith(TAKEN):
-            # Another call recorded the path since about was read: that item is given the branch.
+            # Another call recorded the path since about was read: that item is given the branch, when
+            # the authority says it is this repository's.
             item, state, there = answer['reason'][len(TAKEN):], None, True
+            again = authority.about(subject['repository'], subject['path'])
+            if not isinstance(again, dict) or again.get('item') != item:
+                return result('refused', OTHER + item)
         else:
             return result('refused', answer.get('reason'))
     if state == 'declared':
@@ -440,10 +675,14 @@ def send(one, authority, sign):
     return result('recorded')
 
 
-def replay(folder, authority, sign, wait=LOCK_SECONDS):
+def replay(folder, authority, sign, wait=LOCK_SECONDS, seconds=REPLAY_SECONDS, clock=time.monotonic,
+           facts=None):
     """Deliver the spooled entries, oldest first. Returns one {name, type, outcome, reason} for each
-    entry it handled; an entry it could not reach the authority for, and every one after it, stays."""
+    entry it handled; an entry it could not reach the authority for, and every one after it, stays.
+    `seconds` is the replay's overall deadline: past it no further entry is started, and the rest stay
+    in the spool for the next replay."""
     done = []
+    until = None if seconds is None else clock() + seconds
     lock = _locked(folder, wait)
     if lock is None:
         return done  # another call is replaying; what it does not take stays for the next call
@@ -454,6 +693,8 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS):
             if not names:
                 return done
             for name in names:
+                if until is not None and clock() >= until:
+                    return done  # out of time: this entry and every later one stay for the next replay
                 seen.add(name)
                 try:
                     one = read(folder, name)
@@ -461,13 +702,14 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS):
                     continue
                 except (Malformed, OSError) as error:
                     _set_aside_raw(folder, name, str(error))
-                    done.append({'name': name, 'type': None, 'outcome': 'refused', 'reason': 'malformed'})
+                    done.append({'name': name, 'type': None, 'outcome': 'refused',
+                                 'reason': 'unsafe' if isinstance(error, Unsafe) else 'malformed'})
                     continue
                 key = _key(one)
                 if key in blocked:
                     continue  # an older entry about the same thing waits: this one stays behind it
                 try:
-                    result = send(one, authority, sign)
+                    result = send(one, authority, sign, facts)
                 except Unreachable:
                     return done
                 except _Waits as waiting:
@@ -478,7 +720,9 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS):
                 if result['outcome'] == 'refused':
                     _set_aside(folder, name, {'entry': one, 'refused': result})
                 else:
-                    os.unlink(os.path.join(folder, name))  # delivered: the Ledger holds what it said
+                    if result['outcome'] == 'nothing':
+                        observe(folder, {'outcome': 'nothing', 'reason': result['reason'], 'entry': one})
+                    os.unlink(os.path.join(folder, name))  # delivered, or noted: nothing was to be written
                 done.append({'name': name, 'type': one['type'], 'outcome': result['outcome'],
                              'reason': result['reason']})
     finally:
@@ -488,25 +732,24 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS):
 
 def _set_aside_raw(folder, name, why):
     """A spooled file that is no entry: renamed into refused/ as it is, with why beside it."""
-    aside = os.path.join(folder, REFUSED)
-    os.makedirs(aside, mode=0o700, exist_ok=True)
+    aside = _folder(os.path.join(folder, REFUSED))
     os.rename(os.path.join(folder, name), os.path.join(aside, name + '.malformed'))
     _write(os.path.join(aside, name + '.why'), {'refused': why})
 
 
-def deliver(entries, folder, authority, sign):
+def deliver(entries, folder, authority, sign, seconds=HOOK_SECONDS):
     """Record what a hook saw: each entry is written into the spool, then the spool is replayed, the
-    entries of earlier calls first. With no authority given, or none reachable, they stay spooled.
-    Returns the names written and what the replay did."""
+    entries of earlier calls first, for `seconds` at most. With no authority given, or none reachable,
+    they stay spooled. Returns the names written and what the replay did."""
     names = [put(folder, one) for one in entries]
-    done = replay(folder, authority, sign) if authority is not None else []
+    done = replay(folder, authority, sign, seconds=seconds) if authority is not None else []
     return {'spooled': names, 'replayed': done}
 
 
-def start(folder, authority, sign, reconcile=None):
+def start(folder, authority, sign, reconcile=None, seconds=REPLAY_SECONDS):
     """What the service does at its start: replay the spool, and only then reconcile (design section 9).
     Returns (what the replay did, reconcile's answer)."""
-    done = replay(folder, authority, sign)
+    done = replay(folder, authority, sign, seconds=seconds)
     return done, (reconcile() if reconcile is not None else None)
 
 
@@ -515,39 +758,67 @@ def start(folder, authority, sign, reconcile=None):
 # ---------------------------------------------------------------------------------------------
 
 class Local:
-    """The authority in its own process: a Ledger, the membership module and the clock accept is given."""
+    """The authority in its own process: a Ledger, the membership module and the clock accept is given.
+    `landing` is the work configuration's land entry (control_service.landing_names, the mapping
+    control_api_authority.landing_of reads): a mapping, or a call that returns one, from an execution
+    repository's path or a project's name to {trunk}. It is the only place a trunk is read from."""
 
-    def __init__(self, ledger, membership, clock=time.time):
-        self.ledger, self.membership, self.clock = ledger, membership, clock
+    def __init__(self, ledger, membership, clock=time.time, landing=None):
+        self.ledger, self.membership, self.clock, self.landing = ledger, membership, clock, landing
 
     def accept(self, packet):
         """The Ledger's own accept: it verifies the signature, the packet's age and nonce, the rule for
         the principal, and runs the command."""
         return self.ledger.accept(packet, self.membership, self.clock())
 
-    def about(self, repository, path):
-        """{scope, patterns, item, state, creator} for a path in a repository the declarations name,
-        else None. item is the live worktree item at the path, with its state and who recorded it."""
-        if not _text(repository) or not _text(path):
+    def trunk(self, repository, scope):
+        """The trunk the land entry declares for a repository, or None: no declaration, no trunk."""
+        try:
+            lands = self.landing() if callable(self.landing) else self.landing
+        except Exception:
             return None
-        repository, path = os.path.normpath(repository), os.path.normpath(path)
+        if not isinstance(lands, dict):
+            return None
+        for key, land in sorted(lands.items(), key=lambda pair: str(pair[0])):
+            if not _text(key) or not isinstance(land, dict) or not _text(land.get('trunk')):
+                continue
+            if (canonical(key) == repository if os.path.isabs(key)
+                    else scope['type'] == 'project' and key == scope['id']):
+                return land['trunk']
+        return None
+
+    def about(self, repository, path=None):
+        """{scope, patterns, trunk, landing_refs, item, state, creator, other} for a repository the
+        declarations name, else None. trunk is the one the land entry declares (None when none does).
+        item is the live worktree item at `path` in that repository, with its state and who recorded
+        it; other is a live worktree item at the path that is another repository's."""
+        if not _text(repository) or not (path is None or _text(path)):
+            return None
+        repository, path = canonical(repository), None if path is None else canonical(path)
         scope = patterns = None
+        landing_refs = []
         for project in self.ledger.projects:
-            if os.path.normpath(str(project.get('repository'))) == repository:
+            if canonical(str(project.get('repository'))) == repository:
                 scope = {'type': 'project', 'id': project['project']}
                 patterns = list(project.get('branch_pattern') or ())
+                landing_refs = [name for name in project.get('landing_refs') or () if _text(name)]
         if scope is None:
             for plain in self.ledger.config.get('plain_repositories') or ():
-                if os.path.normpath(str(plain.get('repository'))) == repository:
+                if canonical(str(plain.get('repository'))) == repository:
                     scope, patterns = {'type': 'plain_repository', 'id': repository}, []
         if scope is None:
             return None
-        item = state = creator = None
-        for identity, record in sorted(self.ledger.items().items()):
+        item = state = creator = other = None
+        for identity, record in sorted(self.ledger.items().items()) if path is not None else ():
             if (record.get('kind') == 'worktree' and record.get('state') not in ENDED
                     and (record.get('locator') or {}).get('path') == path):
-                item, state, creator = identity, record.get('state'), record.get('creator')
-        return {'scope': scope, 'patterns': patterns, 'item': item, 'state': state, 'creator': creator}
+                if self.ledger._repository_of(record) == repository:
+                    item, state, creator = identity, record.get('state'), record.get('creator')
+                else:
+                    other = identity
+        return {'scope': scope, 'patterns': patterns, 'trunk': self.trunk(repository, scope),
+                'landing_refs': landing_refs, 'item': item, 'state': state, 'creator': creator,
+                'other': other if item is None else None}
 
 
 def socket_path(folder):
@@ -555,16 +826,24 @@ def socket_path(folder):
 
 
 class Remote:
-    """The hook's side of the authority's local socket. Anything but an answer is Unreachable."""
+    """The hook's side of the authority's local socket. Anything but an answer is Unreachable. Nothing
+    is sent before the kernel has said the socket is served by `uid`, this account. `until`, when
+    given, is a time.monotonic() deadline no answer is waited for past."""
 
-    def __init__(self, address, timeout=REACH_SECONDS):
-        self.address, self.timeout = address, timeout
+    def __init__(self, address, timeout=REACH_SECONDS, uid=None, until=None):
+        self.address, self.timeout, self.until = address, timeout, until
+        self.uid = os.getuid() if uid is None else uid
 
     def _call(self, request):
+        timeout = self.timeout if self.until is None else min(self.timeout, self.until - time.monotonic())
+        if timeout <= 0:
+            raise Unreachable('out of time')
         connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        connection.settimeout(self.timeout)
+        connection.settimeout(timeout)
         try:
             connection.connect(self.address)
+            if _sibling('control_client').peer_uid(connection) != self.uid:
+                raise Unreachable('the socket is not served by this account')
             connection.sendall(json.dumps(request).encode())
             connection.shutdown(socket.SHUT_WR)
             chunks, total = [], 0
@@ -588,7 +867,7 @@ class Remote:
     def accept(self, packet):
         return self._call({'call': 'accept', 'packet': packet})
 
-    def about(self, repository, path):
+    def about(self, repository, path=None):
         return self._call({'call': 'about', 'repository': repository, 'path': path})
 
 
@@ -657,7 +936,8 @@ def main(argv=None, stdin=None, stdout=None, stderr=None):
     """veldo space record --state-root R --worktree W --git-dir G --common-dir C [--branch B] OLD NEW FLAG
     is what the post-checkout hook runs; veldo space event --state-root R --common-dir C [--trunk T], with
     git's "<old> <new> <ref>" lines on standard input, is what the reference-transaction hook runs in
-    the committed state; veldo space replay --state-root R delivers what is spooled. Each takes
+    the committed state (with no trunk named it sends nothing for any branch and notes the repository
+    once); veldo space replay --state-root R delivers what is spooled. Each takes
     --installation F for the folder the observer's key is in (default: the resolved one).
 
     record and event exit 0 whatever happens: nothing of theirs reaches the git command."""
@@ -691,7 +971,16 @@ def main(argv=None, stdin=None, stdout=None, stderr=None):
                            args.branch, host)
             entries = [one] if one is not None else []
         elif args.verb == 'event':
-            entries = ref_changes(stdin.read().splitlines(), args.common_dir, host, args.trunk)
+            lines = stdin.read().splitlines()
+            entries = ref_changes(lines, args.common_dir, host, args.trunk or None)
+            if not _text(args.trunk):
+                # The trunk is never guessed: nothing is sent for a branch, and the repository is noted.
+                sent = [one['subject']['ref'] for one in entries]
+                moved = [parts[2] for parts in (line.split() for line in lines)
+                         if len(parts) == 3 and parts[0] != parts[1] and parts[2].startswith('refs/heads/')
+                         and parts[2] not in sent]
+                if moved:
+                    note_undeclared(spool_folder(args.state_root), repository_of(args.common_dir), moved[0])
         else:
             entries = []
         if not entries and args.verb != 'replay':
@@ -701,10 +990,18 @@ def main(argv=None, stdin=None, stdout=None, stderr=None):
         if not installation:
             resolved = _sibling('installation').resolve()
             installation = resolved['folder']
-        done = deliver(entries, folder, Remote(socket_path(folder)), signer(installation))
+        seconds = REPLAY_SECONDS if args.verb == 'replay' else HOOK_SECONDS
+        remote = Remote(socket_path(folder), until=time.monotonic() + seconds)
+        done = deliver(entries, folder, remote, signer(installation), seconds=seconds)
         if args.verb == 'replay':
             stdout.write(json.dumps({'replayed': done['replayed'], 'pending': pending(folder),
-                                     'refused': refused(folder)}, sort_keys=True) + '\n')
+                                     'refused': refused(folder), 'undeclared': undeclared(folder),
+                                     'observations': len(observations(folder))}, sort_keys=True) + '\n')
+    except Unsafe as error:  # a spool that is not this account's alone: refused, and noted beside it
+        note_refused_folder(args.state_root, str(error))
+        if args.verb == 'replay':
+            stderr.write('veldo space replay: %s\n' % error)
+            return 1
     except Exception as error:  # nothing of this module's reaches the git command
         if args.verb == 'replay':
             stderr.write('veldo space replay: %s\n' % error)

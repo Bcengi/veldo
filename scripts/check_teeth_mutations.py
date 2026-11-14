@@ -14362,6 +14362,59 @@ def cases():
         '2>&1\nfi\nexit 0\n', '2>&1\nfi\nexit $?\n', ['hooks/never-fail-git'])
     result[-1]['dir'] = 'engine/hooks'
 
+    # VELDO-0311 fix round (the review of bf5e9505). Each is the defect its finding names. Finding 1: the
+    # trunk is guessed as main, by the hook and by the module, and the authority does not judge the ref
+    # against the declared trunk. Finding 2: a spool folder of any mode or owner is taken, an entry file
+    # of any mode is read, the hook's side does not ask who serves the socket, and an entry is signed at
+    # its word with no fact read from git. Finding 3: an item is found by path alone. Finding 4: an entry
+    # that came to nothing is dropped without a trace, and paths are compared by a copy of the Ledger's
+    # form. Finding 5: a replay has no deadline.
+    add(311, 'space311-trunk-guessed-by-the-hook', space311, 'reference-transaction',
+        '|| trunk=\n', '|| trunk=main\n', ['f1/no-declaration-nothing-sent'])
+    result[-1]['dir'] = 'engine/hooks'
+    hooks311('space311-trunk-guessed-as-main',
+             "    refs = [full_ref(trunk)] if _text(trunk) else []\n",
+             "    refs = [full_ref(trunk or 'main')]  # defect: with none named, main is taken for the trunk\n",
+             ['f1/no-declaration-nothing-sent'])
+    hooks311('space311-ref-not-judged-against-the-declared-trunk',
+             "        if subject['ref'] not in declared:\n",
+             "        if False:  # defect: whatever ref the hook sent is taken for a trunk\n",
+             ['f1/trunk-master-main-moved'])
+    hooks311('space311-spool-folder-of-any-mode-taken',
+             "    if why is not None:\n        raise Unsafe('the spool folder is %s: %s' % (why, folder))\n",
+             "    if False:  # defect: a folder of any mode or owner is the spool\n"
+             "        raise Unsafe('the spool folder is %s: %s' % (why, folder))\n",
+             ['f2/unsafe-folder-refused'])
+    hooks311('space311-entry-file-of-any-mode-read',
+             "        if why is not None:\n            raise Unsafe('the spooled file is ' + why)\n",
+             "        if False:  # defect: a file anybody can write is read as an entry\n"
+             "            raise Unsafe('the spooled file is ' + why)\n",
+             ['f2/unsafe-entry-set-aside'])
+    hooks311('space311-server-identity-not-asked',
+             "            if _sibling('control_client').peer_uid(connection) != self.uid:\n",
+             "            if False:  # defect: whoever listens on the socket is sent the packet\n",
+             ['f2/server-identity-checked'])
+    hooks311('space311-entry-taken-at-its-word',
+             "    facts = facts or read_git\n",
+             "    facts = facts or (lambda one: (dict(one['subject']), None))  # defect: nothing is read from git\n",
+             ['f2/commit-not-on-ref-is-nothing'])
+    hooks311('space311-item-found-by-path-alone',
+             "                if self.ledger._repository_of(record) == repository:\n",
+             "                if True:  # defect: the item at the path, whatever its repository\n",
+             ['f3/path-reused-by-another-repository'])
+    hooks311('space311-nothing-dropped-without-a-trace',
+             "                        observe(folder, {'outcome': 'nothing', 'reason': result['reason'], 'entry': one})\n",
+             "                        pass  # defect: no observation is left\n",
+             ['f4/nothing-leaves-a-trace'])
+    hooks311('space311-paths-compared-by-a-copy',
+             "    return _sibling('control_space').canonical_path(path)\n",
+             "    return os.path.normpath(path)  # defect: a copy of the Ledger's form, not the Ledger's own\n",
+             ['f4/paths-as-the-ledger-compares'])
+    hooks311('space311-replay-without-a-deadline',
+             "                if until is not None and clock() >= until:\n",
+             "                if False:  # defect: the whole backlog is replayed, however long it takes\n",
+             ['f5/replay-stops-at-its-deadline'])
+
     # VELDO-0312: ticket ended, project ended and worktree abandoned, from the authority service. The
     # four declared falsifiers: the assignment's close is left unwired; project ended is sent for
     # complete only; the event is decided inside the transition, from the record as it is signed,

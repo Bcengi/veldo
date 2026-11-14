@@ -149,3 +149,60 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     entries about the same worktree or ref behind it, so an add is never delivered after its own switch.
   - How long a hook can wait: five seconds for an answer and two for another call's replay, then the
     entry stays spooled and git goes on.
+- 2026-11-14: fix round after the review of bf5e9505 (verdict FIX, five findings). Ten rows added to the
+  suite (28 rows), eleven falsifiers registered under finding 311 (21), each applied once and seen red on
+  its row. Three statements of the build entry above no longer hold and are replaced here: "The module
+  runs no git command", "The trunk ... the hook takes main", and "An entry is never dropped silently"
+  (it was, for an entry that came to nothing). What changed, by the lead's decisions:
+  - Finding 1, the trunk is never guessed. A declaration does name a trunk: the work configuration's
+    land entry (control_api_authority.landing_of). The hook has no default: without veldo.space.trunk
+    (which VELDO-0329 sets from the declared land trunk) it writes no entry for any branch, and the
+    repository is noted once under space-spool/undeclared/ with the reason trunk_undeclared. The
+    authority judges again, so a stale or wrong git configuration cannot make a branch a trunk: at a
+    replay a ref change is sent only when its ref is the trunk the land entry declares for that
+    repository or a landing ref its space file declares; any other is recorded as nothing
+    (ref_not_declared, or trunk_undeclared when no land entry names the repository). Local takes the land
+    entry as `landing`, by execution repository or by project name; handing it the service's own
+    (control_service.landing_names) is part of the wiring VELDO-0323 and 0315 do. A plain repository has
+    no land entry today, so it gets no trunk events until a declaration names its trunk; that is the
+    fail-closed side, and reconcile still finds its worktrees.
+  - Finding 2, the spool is a hint, never a fact. (a) The spool folder is made 0700. A spool folder, a
+    refused/ or undeclared/ folder, or an entry file that another account owns or that group or others
+    can write, and any link, is refused and never replayed: a file is set aside in refused/ as it was,
+    with why beside it; a folder is left exactly as it is (it may not be ours to touch) and noted in
+    <state root>/space-spool.refused.json. (b) The hook's side asks the kernel who serves the socket
+    (SO_PEERCRED) and sends nothing unless it is this account. (c) Before anything is signed the replay
+    reads the facts from git itself and records only what it read: a ref change only when its new commit
+    is on the named ref now; a worktree only when that repository's own worktree list holds the path,
+    with the branch it is on now and, as its start, the entry's commit when the worktree is still on the
+    entry's branch and has that commit in its history, else the commit it is at now (a later start can
+    only keep a worktree longer). The owner is the one the branch read from git gives. What git does not
+    confirm is recorded as nothing. An entry met while a rebase is in progress waits. The old commit of a
+    ref change is the hook's word and is not verified.
+  - The module now runs git, and only to read: rev-parse, symbolic-ref, merge-base and worktree list,
+    through one function that refuses any other command. It still writes, moves and removes nothing in
+    any repository.
+  - No MAC and no signature on an entry. Owner rule: this is a single-user setup. A key the same account
+    can read adds nothing against that account, and another account is kept out by the folder's owner
+    and mode. The account is the trust boundary.
+  - OBLIGATION FOR VELDO-0323. Whoever records or consumes an event after this module has the same duty:
+    the consumer reads from git itself, in the declared repository, that the event's new commit is
+    reachable from the ref's current value, and that the ref is the declared trunk or a declared landing
+    ref, before anything is made contained. It takes neither from the event record alone.
+  - Finding 3, an item is found by repository and path. about answers the live worktree item at a path
+    only when the item's repository is the entry's. A live item of another repository at the path makes
+    the entry refused (space_path_of_another_repository:<item>) and set aside; that item is never
+    rebranched, and no branch item is made. The same holds when a declare is answered locator taken.
+  - Finding 4. An entry that comes to nothing leaves one line, with the entry whole and why, in
+    space-spool/observations.jsonl before its file is unlinked. Paths are compared by the Ledger's own
+    function (control_space.canonical_path), not a copy of it. That form does not follow links, so a
+    repository declared through a link is still another name; its entries are now noted, not silent.
+  - Finding 5. A replay has an overall deadline: five seconds for a hook's call, sixty for the replay verb
+    and for start. Past it no further entry is started and no answer is waited for; the rest stay in the
+    spool, whole, for the next replay.
+  - Design change, recorded for the lead (review note A): the hooks reach the authority on their own
+    socket, <state root>/space-spool/authority.sock, where design 6.9 says the existing local socket of
+    control_client.py. The reason is in the build entry above. Until VELDO-0323 and 0315 serve it every
+    entry waits: nothing deletes a waiting entry, and the spool grows until then.
+  - Owner rule (Telegram 41209). The hooks and the spool still remove nothing but their own delivered or
+    set-aside files: the module has the same two unlinks, both of its own spool files.
