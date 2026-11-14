@@ -1,0 +1,706 @@
+[
+ {
+  "falsifier": "space344-digest-not-compared",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/digest"
+  ],
+  "red_rows": [
+   "ac1/digest",
+   "ac6/refused-executes-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/digest",
+    "another program at the path: the state is refused:digest [used: None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-any-set-with-ptrace",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/capability-exact"
+  ],
+  "red_rows": [
+   "ac1/capability-exact"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/capability-exact",
+    "cap_dac_read_search added: the state is refused:capability [used: None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-version-3-any-root-id",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/capability-root-id"
+  ],
+  "red_rows": [
+   "ac1/capability-root-id"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/capability-root-id",
+    "version 3 with root id 100000: the state is refused:capability [used: None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-file-and-not-its-folders",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/folder"
+  ],
+  "red_rows": [
+   "ac1/folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/folder",
+    "the folder that holds it belongs to this user: the state is refused:folder [used: None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-header-cap-ignored",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/header-cap"
+  ],
+  "red_rows": [
+   "ac1/header-cap"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/header-cap",
+    "a header that says cap=0 is refused [used]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-output-whoever-wrote-it",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/writer"
+  ],
+  "red_rows": [
+   "ac1/writer"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/writer",
+    "a stand-in on the socket, by its real status: the state is refused:writer [used: None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-process-id-without-the-pidfd",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/writer-gone"
+  ],
+  "red_rows": [
+   "ac1/writer-gone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/writer-gone",
+    "a writer that ended before the last look is refused [used: None; looks 2]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-bytes-from-before-the-lock",
+  "criterion": "AC1",
+  "expected_red": [
+   "ac1/bytes-before-the-byte"
+  ],
+  "red_rows": [
+   "ac1/bytes-before-the-byte"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac1/bytes-before-the-byte",
+    "its table, written before it was locked, is refused [used: None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-working-directory-only",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/open-file-only",
+   "ac2/directory-descriptor"
+  ],
+  "red_rows": [
+   "ac2/directory-descriptor",
+   "ac2/inode-alone",
+   "ac2/mapped-only",
+   "ac2/open-file-only",
+   "ac2/second-thread-descriptor",
+   "ac3/unlistable-folder",
+   "reader/facts-of-every-thread"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac2/open-file-only",
+    "a process that holds nothing but an open file beneath the item holds it [[]]"
+   ],
+   [
+    "VELDO-0344 ac2/directory-descriptor",
+    "a process that holds only a directory descriptor on the item holds it [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-maps-left-out",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/mapped-only"
+  ],
+  "red_rows": [
+   "ac2/mapped-only",
+   "reader/facts-of-every-thread"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac2/mapped-only",
+    "a process that only maps a file of the item holds it [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-first-thread-working-directory",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/second-thread-cwd"
+  ],
+  "red_rows": [
+   "ac2/second-thread-cwd",
+   "reader/facts-of-every-thread"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac2/second-thread-cwd",
+    "a process whose second thread sits in the item holds it, named by that thread [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-first-thread-descriptors",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/second-thread-descriptor"
+  ],
+  "red_rows": [
+   "ac2/second-thread-descriptor",
+   "reader/facts-of-every-thread"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac2/second-thread-descriptor",
+    "a process whose second thread holds a file of the item in a table of its own holds it, named by that thread [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-device-and-inode",
+  "criterion": "AC2",
+  "expected_red": [
+   "ac2/inode-alone"
+  ],
+  "red_rows": [
+   "ac2/inode-alone"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac2/inode-alone",
+    "a descriptor printed with the device 0:99 and an inode number of the item holds it [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-unread-fact-taken-as-read",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/unread-fact"
+  ],
+  "red_rows": [
+   "ac3/unread-fact",
+   "ac4/unread-without-capability"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac3/unread-fact",
+    "a block with an x line leaves the process unread, judged by the bound: in use [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-unlistable-folder-skipped",
+  "criterion": "AC3",
+  "expected_red": [
+   "ac3/unlistable-folder"
+  ],
+  "red_rows": [
+   "ac3/unlistable-folder"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac3/unlistable-folder",
+    "a folder of the item that cannot be listed makes the item in use [False None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-blocks-before-the-cut-used",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac5/cut"
+  ],
+  "red_rows": [
+   "ac5/cut"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac5/cut",
+    "an output cut before the block of the process in the item is refused [used: None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-probe-executes-the-reader",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac6/reads-through-the-socket"
+  ],
+  "red_rows": [
+   "ac1/bytes-before-the-byte",
+   "ac1/capability-root-id",
+   "ac1/header-cap",
+   "ac1/no-socket",
+   "ac1/reader-locks-first",
+   "ac1/second-writer",
+   "ac1/used",
+   "ac1/writer",
+   "ac1/writer-gone",
+   "ac2/cwd",
+   "ac2/directory-descriptor",
+   "ac2/inode-alone",
+   "ac2/mapped-only",
+   "ac2/open-file-only",
+   "ac2/outside-not-counted",
+   "ac2/second-thread-cwd",
+   "ac2/second-thread-descriptor",
+   "ac3/no-block-or-start",
+   "ac3/root-login",
+   "ac3/unlistable-folder",
+   "ac3/unread-fact",
+   "ac4/entries",
+   "ac4/filter",
+   "ac4/format",
+   "ac4/no-argument",
+   "ac4/unread-without-capability",
+   "ac5/cut",
+   "ac5/exit-status",
+   "ac5/failed-write",
+   "ac5/not-whole",
+   "ac5/waits-after-end",
+   "ac6/executes-the-checked-descriptor",
+   "ac6/reader-units",
+   "ac6/reads-through-the-socket",
+   "ac6/refused-executes-nothing",
+   "ac6/units",
+   "ac7/compiler-not-from-path",
+   "ac7/digest-from-the-review-record",
+   "ac7/no-replace-objects",
+   "ac7/recorded-digest",
+   "ac7/reproducible",
+   "ac7/setcap-after-digest",
+   "ac8/second-thread-cwd",
+   "ac8/second-thread-descriptor",
+   "ac8/unreadable-task",
+   "config/process-reader",
+   "reader/canon",
+   "reader/facts-of-every-thread",
+   "reader/maps",
+   "signal/deferral-names-the-reader"
+  ],
+  "red_details": [],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-checks-the-path-executes-the-path",
+  "criterion": "AC6",
+  "expected_red": [
+   "ac6/executes-the-checked-descriptor"
+  ],
+  "red_rows": [
+   "ac6/executes-the-checked-descriptor"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac6/executes-the-checked-descriptor",
+    "with the file swapped between the check and the execution, the program that was checked is the one that ran [b'other 0 veldo-procread\\n'; the path now holds the other: True]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-first-thread-only-in-the-probe",
+  "criterion": "AC8",
+  "expected_red": [
+   "ac8/second-thread-cwd"
+  ],
+  "red_rows": [
+   "ac8/second-thread-cwd",
+   "ac8/unreadable-task"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac8/second-thread-cwd",
+    "a readable process whose second thread sits in the path, with a file system state of its own, uses it [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-every-task-taken-as-sharing",
+  "criterion": "AC8",
+  "expected_red": [
+   "ac8/second-thread-cwd",
+   "ac8/second-thread-descriptor"
+  ],
+  "red_rows": [
+   "ac8/second-thread-cwd",
+   "ac8/second-thread-descriptor",
+   "ac8/unreadable-task"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac8/second-thread-cwd",
+    "a readable process whose second thread sits in the path, with a file system state of its own, uses it [[]]"
+   ],
+   [
+    "VELDO-0344 ac8/second-thread-descriptor",
+    "a readable process whose second thread holds a file of the path in a table of its own uses it [[]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-filter-allows-kill",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/filter"
+  ],
+  "red_rows": [
+   "ac4/filter",
+   "ac7/recorded-digest"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac4/filter",
+    "a patched copy that calls kill after the filter is ended by the kernel [0]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-filter-allows-pidfd_getfd",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/filter"
+  ],
+  "red_rows": [
+   "ac4/filter",
+   "ac7/recorded-digest"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac4/filter",
+    "a patched copy that calls pidfd_getfd after the filter is ended by the kernel [0]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-filter-allows-process_vm_readv",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/filter"
+  ],
+  "red_rows": [
+   "ac4/filter",
+   "ac7/recorded-digest"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac4/filter",
+    "a patched copy that calls process_vm_readv after the filter is ended by the kernel [0]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-filter-allows-an-open-for-writing",
+  "criterion": "AC4",
+  "expected_red": [
+   "ac4/filter"
+  ],
+  "red_rows": [
+   "ac4/filter",
+   "ac7/recorded-digest"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac4/filter",
+    "a patched copy that calls open-for-writing after the filter is ended by the kernel [0]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-reader-first-task-only",
+  "criterion": "AC2",
+  "expected_red": [
+   "reader/facts-of-every-thread"
+  ],
+  "red_rows": [
+   "ac7/recorded-digest",
+   "reader/facts-of-every-thread"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 reader/facts-of-every-thread",
+    "the table is whole and the block is whole, with the start time the probe reads [None False]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-reader-maps-not-read",
+  "criterion": "AC2",
+  "expected_red": [
+   "reader/maps"
+  ],
+  "red_rows": [
+   "ac1/absent",
+   "ac1/bytes-before-the-byte",
+   "ac1/capability",
+   "ac1/capability-exact",
+   "ac1/capability-root-id",
+   "ac1/digest",
+   "ac1/folder",
+   "ac1/header-cap",
+   "ac1/mode",
+   "ac1/no-pin",
+   "ac1/no-socket",
+   "ac1/not-regular",
+   "ac1/owner",
+   "ac1/reader-locks-first",
+   "ac1/second-writer",
+   "ac1/used",
+   "ac1/writer",
+   "ac1/writer-gone",
+   "ac2/cwd",
+   "ac2/directory-descriptor",
+   "ac2/inode-alone",
+   "ac2/mapped-only",
+   "ac2/open-file-only",
+   "ac2/outside-not-counted",
+   "ac2/second-thread-cwd",
+   "ac2/second-thread-descriptor",
+   "ac3/no-block-or-start",
+   "ac3/root-login",
+   "ac3/unlistable-folder",
+   "ac3/unread-fact",
+   "ac4/entries",
+   "ac4/filter",
+   "ac4/format",
+   "ac4/no-argument",
+   "ac4/unread-without-capability",
+   "ac5/cut",
+   "ac5/exit-status",
+   "ac5/failed-write",
+   "ac5/not-whole",
+   "ac5/waits-after-end",
+   "ac6/executes-the-checked-descriptor",
+   "ac6/reader-units",
+   "ac6/reads-through-the-socket",
+   "ac6/refused-executes-nothing",
+   "ac6/units",
+   "ac7/compiler-not-from-path",
+   "ac7/digest-from-the-review-record",
+   "ac7/no-replace-objects",
+   "ac7/recorded-digest",
+   "ac7/reproducible",
+   "ac7/setcap-after-digest",
+   "ac8/second-thread-cwd",
+   "ac8/second-thread-descriptor",
+   "ac8/unreadable-task",
+   "config/process-reader",
+   "reader/canon",
+   "reader/facts-of-every-thread",
+   "reader/maps",
+   "signal/deferral-names-the-reader"
+  ],
+  "red_details": [],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-goes-on-after-a-failed-write",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac5/failed-write"
+  ],
+  "red_rows": [
+   "ac5/failed-write",
+   "ac7/recorded-digest"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac5/failed-write",
+    "the reader ended with status 3 at the write that failed [0]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-exits-straight-after-the-end-line",
+  "criterion": "AC5",
+  "expected_red": [
+   "ac5/waits-after-end"
+  ],
+  "red_rows": [
+   "ac5/waits-after-end",
+   "ac7/recorded-digest"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac5/waits-after-end",
+    "the reader has written its end line and is still alive [0]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-no-prefix-map",
+  "criterion": "AC7",
+  "expected_red": [
+   "ac7/reproducible"
+  ],
+  "red_rows": [
+   "ac7/reproducible"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac7/reproducible",
+    "the build line is the house line: static, with the prefix map of its folder"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-compiler-from-the-path",
+  "criterion": "AC7",
+  "expected_red": [
+   "ac7/compiler-not-from-path"
+  ],
+  "red_rows": [
+   "ac7/compiler-not-from-path"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac7/compiler-not-from-path",
+    "with a stand-in cc first in the path the line still builds with /usr/bin/cc [f5f8eeae987b3e68b4592b2c02ba1dd277eba1fbfa716c3c829c7dbb513a2773]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-setcap-before-the-comparison",
+  "criterion": "AC7",
+  "expected_red": [
+   "ac7/setcap-after-digest"
+  ],
+  "red_rows": [
+   "ac7/setcap-after-digest"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac7/setcap-after-digest",
+    "root installs, sets the owner and the mode, compares the installed copy with the digest written into the line, and only then sets the capability [[12, 90, 145, 259, 195]]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-blob-read-with-git-show",
+  "criterion": "AC7",
+  "expected_red": [
+   "ac7/no-replace-objects"
+  ],
+  "red_rows": [
+   "ac7/no-replace-objects"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 ac7/no-replace-objects",
+    "and the first line still builds the source of the commit [f791c9ec5a55764b1464cbd193b26c666b604c044f677347636e714862cb558a]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ }
+]

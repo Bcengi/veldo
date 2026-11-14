@@ -1,0 +1,225 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0344",
+ "commit": "705d64311de90f1945d7d0c0a5b9b3e6d125e78e",
+ "tree": "a81d07342e6759a0cbf14ff1637c7e502e153d51",
+ "producer": "Claude implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-14T06:25:09.890238+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Rows ac1/absent (no file, no folder; the paths are fixed in the probe), ac1/not-regular (a link, a folder), ac1/owner, ac1/mode (another group, 0755, 4750), ac1/folder (the holding folder owned by this user, a folder others may write, a link on the way), ac1/capability (none, not effective, inheritable, version 1, another capability), ac1/capability-exact (cap_dac_read_search added, a capability of the upper word), ac1/capability-root-id (version 3 with root id 100000 refused, with root id 0 used), ac1/no-pin, ac1/digest, ac1/no-socket, ac1/writer (the writer check left real: the stand-in's own status; another uid, a second capability, NoNewPrivs 0, no filter), ac1/writer-gone (the writer ends after its table and the status read is answered as a locked reader's: the pidfd refuses it), ac1/bytes-before-the-byte (a wrapper writes a table, then executes the built reader on a socket pair: the kernel's own status shows the process locked, and its table is refused; a table in the header's write; a table sent before the byte), ac1/second-writer, ac1/header-cap (cap=0 from the stand-in and from the built reader served on the socket, whose own status showed NoNewPrivs 1 and Seccomp 2), ac1/reader-locks-first (the built reader shows NoNewPrivs 1 and Seccomp 2 when its header arrives, sends nothing more until the byte, and the table after it), ac1/used. In every refused row the undumpable process in the item is judged by the bound as before and the in_use facts name the state and what was seen. Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "The rows run the real probe against real processes of the kernel's process table (python children; the unreadable ones call prctl(PR_SET_DUMPABLE, 0); threads with a file system state or a descriptor table of their own by unshare), over a real unix socket served one program per connection as the socket unit serves it, with the kernel's SO_PASSCRED and SO_PASSPIDFD records and real pidfd looks, and with the reader built from its source by /usr/bin/cc and run for real. What a suite cannot have without root (the file's owner, group and mode, the folders' owners, the capability attribute, the capability lines of the writer's status) is given through the probe's seam and named as such in each row."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "Eight cases, each red on its own row: space344-digest-not-compared (ac1/digest: a program that prints a table showing the process elsewhere is used and the process is not counted), space344-any-set-with-ptrace (ac1/capability-exact), space344-version-3-any-root-id (ac1/capability-root-id), space344-file-and-not-its-folders (ac1/folder), space344-header-cap-ignored (ac1/header-cap), space344-output-whoever-wrote-it (ac1/writer), space344-process-id-without-the-pidfd (ac1/writer-gone), space344-bytes-from-before-the-lock (ac1/bytes-before-the-byte: the wrapper's table is taken)."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Rows ac2/cwd (named by process id, task, uid and fact with the device and inode number read), ac2/outside-not-counted (for another item the same process no longer counts; with no reader it counts by the bound), ac2/open-file-only, ac2/directory-descriptor, ac2/mapped-only, ac2/second-thread-cwd, ac2/second-thread-descriptor, ac2/inode-alone (a descriptor printed with another device, and with a hyphen). On the built reader's own output for a process it may read without its capability: reader/facts-of-every-thread (the second thread's working directory under its own t line, the third thread's file in its own table and in no other, an equal line written once, the probe's matching naming each by its task) and reader/maps. Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "The rows run the real probe against real processes of the kernel's process table (python children; the unreadable ones call prctl(PR_SET_DUMPABLE, 0); threads with a file system state or a descriptor table of their own by unshare), over a real unix socket served one program per connection as the socket unit serves it, with the kernel's SO_PASSCRED and SO_PASSPIDFD records and real pidfd looks, and with the reader built from its source by /usr/bin/cc and run for real. What a suite cannot have without root (the file's owner, group and mode, the folders' owners, the capability attribute, the capability lines of the writer's status) is given through the probe's seam and named as such in each row."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "space344-working-directory-only (ac2/open-file-only and ac2/directory-descriptor red), space344-maps-left-out (ac2/mapped-only), space344-first-thread-working-directory (ac2/second-thread-cwd), space344-first-thread-descriptors (ac2/second-thread-descriptor), space344-device-and-inode (ac2/inode-alone). Two more in the reader's source: space344-reader-first-task-only (reader/facts-of-every-thread; the reader's own second listing also marks the block unread) and space344-reader-maps-not-read (reader/maps)."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "On a fixture process table read whole: ac3/root-login (a root-owned process a login started: with no reader the item is in use by the bound; with the reader, in the item it holds it, named with uid 0, and elsewhere the item is not in use), ac3/unread-fact (an x line, a g line: unread, in use), ac3/no-block-or-start (no block; another start time: unread, in use), ac3/unlistable-folder (a folder of mode 000 inside the item: in use, and the answer names the folder). Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "The probe's real in_use over a fixture process table whose entries the probe cannot read, with a stand-in reader on a real socket printing the table the row composed from the real inode numbers of the row's files. A suite cannot start a root-owned process, so the root-owned process is a fixture entry, as in VELDO-0299's reach rows."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "space344-unread-fact-taken-as-read (ac3/unread-fact red: the item reads free), space344-unlistable-folder-skipped (ac3/unlistable-folder red: the item reads free)."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Rows ac4/no-argument (with an argument: nothing printed, exit 2), ac4/format (exit 0, nothing on standard error, the header and then only lines of design 7.1, numbers only, this suite's own process in the table, the end count right), ac4/entries (the entries the source opens are /proc, and beneath that one descriptor stat, mountinfo, maps, task, task/<tid>/cwd by stat and task/<tid>/fdinfo; no environment, no input), ac4/filter (eighteen patched copies, each making one call after the filter is in place and each ended by the kernel with SIGSYS: kill, pidfd_getfd on a descriptor opened before the filter, process_vm_readv, an open with O_WRONLY, O_RDWR, O_CREAT and O_TRUNC, ptrace, process_vm_writev, pidfd_open, kcmp, tkill, tgkill, rt_sigqueueinfo, pidfd_send_signal, a write to descriptor 2, execve, mmap; a copy that makes an allowed call exits normally), ac4/unread-without-capability (x lines for a process it may not read, which the probe leaves unread). Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "The reader is built from scripts/veldo_procread.c with the house build line and run for real, without its capability. The call of another architecture is in the filter (the architecture test and the x32 test) and has no row: see the assumptions."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "space344-filter-allows-kill, space344-filter-allows-pidfd_getfd, space344-filter-allows-process_vm_readv and space344-filter-allows-an-open-for-writing: each lets its patched copy exit normally and turns ac4/filter red."
+    }
+   ]
+  },
+  {
+   "id": "AC5",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Rows ac5/cut (a table cut before a block, with the writer alive: refused:output, and the process whose block came before the cut is still judged by the bound), ac5/not-whole (a wrong end count, a line outside the format, a letter for a number, a line in no block, a fact in no task, two end lines, a block after the end line, no final line feed; over the socket a wrong count and bytes after the end line; a process id with two blocks is whole in neither), ac5/exit-status (status 3 is refused:failed), ac5/failed-write (the built reader on a packet socket that refuses a large write: exit 3, no end line), ac5/waits-after-end (the built reader, read to its end line, is alive 0.4 seconds later and exits 0 when the row shuts down its side). Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "The rows run the real probe against real processes of the kernel's process table (python children; the unreadable ones call prctl(PR_SET_DUMPABLE, 0); threads with a file system state or a descriptor table of their own by unshare), over a real unix socket served one program per connection as the socket unit serves it, with the kernel's SO_PASSCRED and SO_PASSPIDFD records and real pidfd looks, and with the reader built from its source by /usr/bin/cc and run for real. What a suite cannot have without root (the file's owner, group and mode, the folders' owners, the capability attribute, the capability lines of the writer's status) is given through the probe's seam and named as such in each row."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "space344-blocks-before-the-cut-used (ac5/cut red: the process before the cut is no longer judged by the bound), space344-goes-on-after-a-failed-write (ac5/failed-write red: an end line after the gap, exit 0), space344-exits-straight-after-the-end-line (ac5/waits-after-end red: the writer is gone)."
+    }
+   ]
+  },
+  {
+   "id": "AC6",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Rows ac6/units (the socket unit and the service unit setting by setting: no NoNewPrivileges and no sandboxing setting; the authority unit keeps NoNewPrivileges=yes), ac6/reads-through-the-socket (a program at the reader's path that answers when run, and no socket: refused:no_socket, the process judged by the bound), ac6/executes-the-checked-descriptor (the entry runs the reader with an empty environment under the name veldo-procread; with the file swapped between the check and the execution the checked program is the one that ran), ac6/refused-executes-nothing, ac6/reader-units (the two units written with the interpreter and the entry filled in). NOT RUN HERE: ac6/installed, which needs the installed reader; it printed its skip line. Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "The unit's entry is run in a process of its own and really executes a static program through the descriptor it checked. The two unit files were not started by systemd here (the reader is not installed); the installed row does that on the owner's host. proof/VELDO-0344/owner-install.txt holds the owner's exact commands."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "space344-probe-executes-the-reader (ac6/reads-through-the-socket red: the probe runs the program and uses its table) and space344-checks-the-path-executes-the-path (ac6/executes-the-checked-descriptor red: the other program ran). The declared falsifier of the installed row (cap=0 under NoNewPrivileges=yes) was NOT applied: it needs the installed reader."
+    }
+   ]
+  },
+  {
+   "id": "AC7",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Rows ac7/reproducible (the setup text's first line run twice in a fixture repository: two folders, one digest; the suite's own two builds have the same one; the line is the house line with the prefix map; the program has no interpreter segment), ac7/recorded-digest (proof/VELDO-0344/reader.sha256 holds the digest with the versions of the compiler and the C library, and on those versions the build has it), ac7/compiler-not-from-path (a stand-in cc first in the path changes nothing), ac7/setcap-after-digest (install, owner, mode, comparison, then setcap), ac7/no-replace-objects (a replace ref for the blob: git show gives the other source, the line still builds the commit's), ac7/digest-from-the-review-record. Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "The first line of docs/veldo-procread-setup.txt is run as written, with C replaced by a fixture commit's full hash, by bash in a fixture repository made with plain git. The sudo line is read and never run. The builder also ran the first line in this worktree against commit 705d6431 and it printed the recorded digest."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "space344-compiler-from-the-path (ac7/compiler-not-from-path red: the stand-in's output), space344-setcap-before-the-comparison (ac7/setcap-after-digest red), space344-blob-read-with-git-show (ac7/no-replace-objects red: the other source built). space344-no-prefix-map turns ac7/reproducible red ONLY because the row requires the map in the line: the two digests stay equal without it (see the assumptions)."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0344/reader.sha256",
+     "detail": "bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035, cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, glibc 2.39-0ubuntu8.9, x86_64; built twice in two temporary folders."
+    }
+   ]
+  },
+  {
+   "id": "AC8",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Rows ac8/second-thread-cwd (a readable process whose second thread sits in the path with a file system state of its own, while /proc/<pid>/cwd shows another folder), ac8/second-thread-descriptor (a file held only in the second thread's own table), ac8/unreadable-task (a process with a task the probe cannot read is unread; once readable its working directory is use). Suites 136 to 140, which read the process table through the same code, are green. Green: proof/VELDO-0344/suite-green.txt."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/141_veldo_0344_process_reader.py",
+     "detail": "Real threads made with unshare(CLONE_FS) and unshare(CLONE_FILES) in real child processes, read from the kernel's process table."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0344/falsifiers.json",
+     "detail": "space344-first-thread-only-in-the-probe (ac8/second-thread-cwd red) and space344-every-task-taken-as-sharing (both thread rows red: the kcmp answer taken as always the same)."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py --suite 141_veldo_0344_process_reader (59 rows; ac6/installed skipped, the reader is not installed). Suites 130 to 141, each on its own, are green on the code of this commit (proof/VELDO-0344/suite-green.txt)."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite, as the integration evidence of each criterion says."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "The 32 registered cases of finding 344 in scripts/check_teeth_mutations.py, each applied once through the driver's own materialize() and worker(), noop copy then mutant copy, on the code of this commit: every noop green (85 observations: the suite's 59 rows and the shared preamble's 26; none red), every mutant turns its target rows red (proof/VELDO-0344/mutations.txt, falsifiers.json). One of them, space344-no-prefix-map, is red only on the row's requirement that the line carries the map. The falsifier of the installed row was not applied."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh (318 pairs); bash scripts/check_docs.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py. Every anchor of the 80 registered cases on the five touched modules still applies exactly once."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh was NOT run by the builder, by instruction: the lead runs it through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "NOT DONE: .veldo/policy.yaml. The spec's footprint and protected_paths name it, to protect the reader's source and the two unit templates. It is itself a protected path and the builder was told to touch none and to report. The six entries are written out in proof/VELDO-0344/owner-install.txt. Until they are added those files are not protected paths.",
+  "NOT RUN: everything that needs the installed reader. The builder has no sudo. Row ac6/installed (the reader check in a transient user unit with NoNewPrivileges=yes, reading an undumpable process and its second thread through the installed reader, with the run time recorded) printed its skip line, and its declared falsifier was not applied. The state used was reached only with a stand-in reader and with the capability facts given through the seam. So three things stay assumptions until the owner's host runs that row: cap_sys_ptrace held by the owner's uid reads root-owned entries; it reads the task entries; the two unit files work as written (Accept=yes, the capability arriving in the unit). Also unmeasured: how long the reader runs with the capability on the full table. Without it, it printed 3.6 MB for 373 processes in well under a second.",
+  "requires.json cannot name a row: it is derived by scripts/run_scope.py and holds suite closures only. It was regenerated for the new suite. The installed-only row is declared by its SELFTEST SKIP line and in the suite's requires_note in scripts/suites/manifest.json, which is how the namespace helper's rows are in fact declared.",
+  "AC7, THE PREFIX MAP DOES NOT CHANGE THE DIGEST. Measured on this compiler: with the map, without it, and compiled by an absolute path from another folder, the build has one digest, because the line carries no debug information and no folder name reaches the binary. The falsifier as worded (two folders give two digests) does not turn red. The row requires the map in the line and the registered case is red on that requirement alone. The spec's History records it.",
+  "WORDING OF TWO FALSIFIERS. \"A program that prints an empty table ... the item reads free\" (AC1) and \"the row cuts the output ... the item reads free\" (AC5): a process with no block stays unread and is counted by the bound, so no empty or cut table can make an item read free. The rows use the table that would: a whole block that shows the process elsewhere. For the cut, the row reads the process whose block came before the cut. On the host's own table the rows read one process's part of the answer (other processes of the host are judged too); the AC3 rows read the whole answer on a fixture table.",
+  "process_reader MAY BE LEFT OUT of the space section and then reads as none. Design 6.8 says every key is required. Nine reviewed suites outside this footprint write sections without it and suite 130 holds the required keys to the nine it names, so requiring it would turn them red. Left out, no reader is used.",
+  "EVERY THREAD, AND kcmp. Reading every task's descriptors took the probe from 0.1 to 1.7 seconds per call on this host. The probe asks the kernel with kcmp whether a task shares its descriptor table or its file system state with the first thread and reads it separately unless the kernel answers that they are the same one; any error has it read. The call number is known for x86_64 and aarch64; elsewhere every task is read. Inside a sandbox whose filter refuses kcmp the probe reads every task, which is slower and not less.",
+  "NO ROW for a call of another architecture, for the reader's exit 4 on a /proc that is not a process file system, or for the reader's 60 second unit limit. The first two are in the source (the filter's architecture and x32 tests; fstatfs before the header) and were read, not run: making either happen needs a 32-bit call path or a mount.",
+  "THE THREE OWNER COMMANDS ARE IN THE PROBE FILE, as the design's install lines name them. reader-units writes the two unit files through install(1), and the reader check makes three empty temporary folders. VELDO-0299's row probe/facts-only, which holds that the module calls nothing that writes, is green; a reviewer should know that this command exists beside the probes and that no probe function calls it.",
+  "The reader allows no call for memory (it keeps everything in static storage: about 60 MB of untouched address space), which is narrower than the list in design 7.1. A process with more than 524,288 distinct facts, or 65,536 tasks or mounts, gets an x line and stays unread.",
+  "A zombie of the owner's still counts by the bound with the reader used: its mountinfo cannot be read, the reader prints x mnt 22, and the block is unread. That is the behaviour before this ticket, not a new one.",
+  "On the owner's host, once the reader is installed and pinned, every in_use call of every suite that reads the host's own process table will go through the real reader. Suites 136 to 140 were only run here with the reader absent."
+ ],
+ "rollback": "Revert the change and set process_reader to none in the installation's space section. The probe then judges unread processes by the bound alone, as before. The installed binary and the two user units are the owner's to remove (systemctl --user disable --now veldo-procread.socket; sudo rm /usr/local/lib/veldo/veldo-procread); left in place they are used by nothing. Nothing was installed by this build."
+}
