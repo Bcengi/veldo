@@ -22,7 +22,25 @@
   ],
   "red_as_expected": true,
   "criterion": "AC1",
-  "declared": true
+  "declared": true,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac1/after-the-receipt",
+    "ac1/failed-landing-sends-nothing",
+    "ac2/image-tags-go",
+    "ac2/record-joined-to-receipt",
+    "ac2/unlanded-work-stays",
+    "ac2/worktree-after-build-output",
+    "f1/remote-trunk-put-back",
+    "f1/remote-unit-landed",
+    "f4/detached-worktree-at-landed",
+    "f4/one-landed-one-unlanded",
+    "f5/space-step-failed",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-branch-removed-with-the-worktree",
@@ -48,7 +66,25 @@
   ],
   "red_as_expected": true,
   "criterion": "AC2",
-  "declared": true
+  "declared": true,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac1/failed-landing-sends-nothing",
+    "ac2/branch-kept-and-marked",
+    "ac2/uncommitted-work-stays",
+    "ac3/contained-worktree-removed",
+    "ac3/moved-after-the-check",
+    "ac3/work-in-contained-worktree-stays",
+    "f1/remote-branch-contained",
+    "f1/remote-unit-landed",
+    "f2/trunk-read-at-the-attempt",
+    "f4/detached-worktree-at-landed",
+    "f4/squash-landing",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-start-commit-test-dropped",
@@ -68,7 +104,15 @@
   ],
   "red_as_expected": true,
   "criterion": "AC3",
-  "declared": true
+  "declared": true,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac3/fresh-branch-left",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-sent-with-the-trunk-put-back",
@@ -89,7 +133,19 @@
   ],
   "red_as_expected": true,
   "criterion": "AC1",
-  "declared": false
+  "declared": false,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac1/undone-landing-sends-nothing",
+    "ac2/uncommitted-work-stays",
+    "f1/remote-branch-contained",
+    "f1/remote-trunk-put-back",
+    "f1/remote-unit-landed",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-landed-for-a-branch-built-on",
@@ -109,7 +165,16 @@
   ],
   "red_as_expected": true,
   "criterion": "AC2",
-  "declared": false
+  "declared": false,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac2/unlanded-work-stays",
+    "f4/one-landed-one-unlanded",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-no-start-taken-for-contained",
@@ -129,7 +194,15 @@
   ],
   "red_as_expected": true,
   "criterion": "AC3",
-  "declared": false
+  "declared": false,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac3/no-start-left",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-not-in-trunk-taken-for-contained",
@@ -169,7 +242,22 @@
   ],
   "red_as_expected": true,
   "criterion": "AC3",
-  "declared": false
+  "declared": false,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac1/failed-landing-sends-nothing",
+    "ac1/no-ledger-sends-nothing",
+    "ac1/no-receipt-no-event",
+    "ac1/undone-landing-sends-nothing",
+    "ac2/uncommitted-work-stays",
+    "ac2/unlanded-work-stays",
+    "ac3/not-alone-left",
+    "ac3/not-in-trunk-left",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-contained-for-an-owner-not-alone",
@@ -189,7 +277,15 @@
   ],
   "red_as_expected": true,
   "criterion": "AC3",
-  "declared": false
+  "declared": false,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac3/not-alone-left",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-moved-branch-named-marked",
@@ -209,7 +305,15 @@
   ],
   "red_as_expected": true,
   "criterion": "AC3",
-  "declared": false
+  "declared": false,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac3/moved-after-the-check",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
  },
  {
   "falsifier": "space310-marked-branch-sent-again",
@@ -229,6 +333,148 @@
   ],
   "red_as_expected": true,
   "criterion": "AC3",
-  "declared": false
+  "declared": false,
+  "fix_round_rerun": {
+   "commit": "e84c80c7069d",
+   "red_rows": [
+    "ac3/marked-once",
+    "paths/no-delete-and-canon"
+   ],
+   "red_as_expected": true
+  }
+ },
+ {
+  "falsifier": "space310-remote-trunk-not-read",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f1/remote-trunk-put-back"
+  ],
+  "red_rows": [
+   "f1/remote-branch-contained",
+   "f1/remote-trunk-put-back",
+   "f1/remote-unit-landed",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 1,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-candidate-not-brought",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f1/remote-branch-contained"
+  ],
+  "red_rows": [
+   "f1/remote-branch-contained",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 1,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-transfer-writes-a-ref",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f1/remote-branch-contained"
+  ],
+  "red_rows": [
+   "f1/remote-branch-contained",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 1,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-candidate-given-to-rule-5",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f2/trunk-read-at-the-attempt"
+  ],
+  "red_rows": [
+   "ac1/after-the-receipt",
+   "f1/remote-unit-landed",
+   "f2/trunk-read-at-the-attempt",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 2,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-source-commit-not-counted",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f4/squash-landing"
+  ],
+  "red_rows": [
+   "f4/squash-landing",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 4,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-first-branch-judged-alone",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f4/one-landed-one-unlanded"
+  ],
+  "red_rows": [
+   "f4/one-landed-one-unlanded",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 4,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-detached-refused-at-landed",
+  "module": "control_landing.py",
+  "expected_red": [
+   "f4/detached-worktree-at-landed"
+  ],
+  "red_rows": [
+   "f4/detached-worktree-at-landed",
+   "f5/space-step-failed",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 4,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
+ },
+ {
+  "falsifier": "space310-space-step-inside-the-running-window",
+  "module": "control_landing_station.py",
+  "expected_red": [
+   "f5/space-step-failed"
+  ],
+  "red_rows": [
+   "ac1/after-the-receipt",
+   "ac1/failed-landing-sends-nothing",
+   "ac2/image-tags-go",
+   "ac2/record-joined-to-receipt",
+   "ac2/worktree-after-build-output",
+   "ac3/contained-worktree-removed",
+   "ac3/moved-after-the-check",
+   "ac3/work-in-contained-worktree-stays",
+   "f4/detached-worktree-at-landed",
+   "f5/space-step-failed",
+   "paths/no-delete-and-canon"
+  ],
+  "red_as_expected": true,
+  "review_finding": 5,
+  "fix_round": true,
+  "applied": "once, to the repository copy the suite loads, the suite run, the copy put back from the engine canon"
  }
 ]

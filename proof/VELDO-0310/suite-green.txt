@@ -1,13 +1,19 @@
-# Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit 5d0eb013. Partial runs: none is the gate.
-147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 217 suites): 47 passed, 0 failed in 12.61s
-147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 217 suites): 47 passed, 0 failed in 12.93s
-70_veldo_0057_landing: selftest (PARTIAL, 1 of 217 suites): 57 passed, 0 failed in 16.40s
-86_veldo_0148_re_land: selftest (PARTIAL, 1 of 217 suites): 52 passed, 0 failed in 69.51s
-103_veldo_0142_git_identities: selftest (PARTIAL, 1 of 217 suites): 49 passed, 0 failed in 27.19s
-107_veldo_0153_identity_push: selftest (PARTIAL, 1 of 217 suites): 146 passed, 0 failed in 7.10s
-128_veldo_0235_land_locally: selftest (PARTIAL, 1 of 217 suites): 35 passed, 0 failed in 14.36s
-129_veldo_0260_checkout_in_step: selftest (PARTIAL, 1 of 217 suites): 44 passed, 0 failed in 28.16s
-129_veldo_0239_batch_landing: selftest (PARTIAL, 1 of 217 suites): 49 passed, 0 failed in 23.33s
-83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 217 suites): 40 passed, 0 failed in 47.49s
-06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 217 suites): 1414 passed, 0 failed in 42.30s
-# 86_veldo_0127_agent_configuration was not run (52 of 54 on this branch: its live captures wait for the lead's recapture; left as it is).
+# Fix round. Each suite run on its own with python3 scripts/selftest.py --suite NAME, on the tree of commit e84c80c7069d, with a stub engine first on PATH (it was never called). Partial runs: none is the gate.
+147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 217 suites): 55 passed, 0 failed in 22.14s
+147_veldo_0310_landed_contained: selftest (PARTIAL, 1 of 217 suites): 55 passed, 0 failed in 21.91s
+146_veldo_0308_run_finished: selftest (PARTIAL, 1 of 217 suites): 58 passed, 0 failed in 3.86s
+142_veldo_0303_space_paths: selftest (PARTIAL, 1 of 217 suites): 57 passed, 0 failed in 2.59s
+103_veldo_0142_git_identities: selftest (PARTIAL, 1 of 217 suites): 49 passed, 0 failed in 24.83s
+103_veldo_0211_borrowed_login: selftest (PARTIAL, 1 of 217 suites): 88 passed, 0 failed in 1.97s
+107_veldo_0153_identity_push: selftest (PARTIAL, 1 of 217 suites): 146 passed, 0 failed in 5.34s
+128_veldo_0235_land_locally: selftest (PARTIAL, 1 of 217 suites): 35 passed, 0 failed in 13.83s
+129_veldo_0239_batch_landing: selftest (PARTIAL, 1 of 217 suites): 49 passed, 0 failed in 23.20s
+129_veldo_0260_checkout_in_step: selftest (PARTIAL, 1 of 217 suites): 44 passed, 0 failed in 26.85s
+70_veldo_0057_landing: selftest (PARTIAL, 1 of 217 suites): 57 passed, 0 failed in 14.80s
+70_veldo_0069_bindings: selftest (PARTIAL, 1 of 217 suites): 36 passed, 0 failed in 6.03s
+70_veldo_0073_activation: selftest (PARTIAL, 1 of 217 suites): 37 passed, 0 failed in 3.60s
+83_veldo_0154_factory_loop: selftest (PARTIAL, 1 of 217 suites): 40 passed, 0 failed in 24.44s
+86_veldo_0148_re_land: selftest (PARTIAL, 1 of 217 suites): 52 passed, 0 failed in 74.27s
+06_capabilities_manifest_honesty_veldo: selftest (PARTIAL, 4 of 217 suites): 1414 passed, 0 failed in 49.81s
+# 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is).
+# The first build ran 147 (47 passed), 70, 86 (0148), 103, 107, 128, 129 (0260, 0239), 83 and 06 on commit 5d0eb013: all 0 failed.
