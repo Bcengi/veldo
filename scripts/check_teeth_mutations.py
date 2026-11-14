@@ -12755,6 +12755,42 @@ def cases():
         "    if record.get('kind') in HOLDS_REPOSITORIES and path:\n",
         "    if False:\n",
         ['ac1/nested-repository-holds-worktree'])
+    # VELDO-0300: the removers. The declared falsifier of each acceptance criterion: AC1 the folder is
+    # deleted after the first probe, with no second one; AC2 git's worktree remove is given the force
+    # option; AC3 the engine's volume prune is used for volumes; AC4 the engine's own reclaimable figure
+    # is reported as freed.
+    space300 = '138_veldo_0300_space_remove.py'
+    add(300, 'space300-delete-after-first-probe', space300, 'control_space_remove.py',
+        "        use = _second_probe(ctx, name)\n",
+        "        use = None\n",
+        ['ac1/rename-probe-delete'])
+    add(300, 'space300-worktree-forced', space300, 'control_space_remove.py',
+        "    code, out = ctx['run'](['git', '-C', repository, 'worktree', 'remove', path])\n",
+        "    code, out = ctx['run'](['git', '-C', repository, 'worktree', 'remove', '--force', path])\n",
+        ['ac2/non-forced'])
+    add(300, 'space300-volume-prune', space300, 'control_space_remove.py',
+        "(('volume', 'rm', '$name'),))\n",
+        "(('volume', 'prune'),))\n",
+        ['ac3/commands'])
+    add(300, 'space300-engine-reclaimable-as-freed', space300, 'control_space_remove.py',
+        "    answer['freed'] = after - before if after is not None else None\n",
+        "    answer['freed'] = int(ctx['run'](['docker', '--context', str(pool.get('engine')), 'system', 'df'])[1])\n",
+        ['ac4/engine-image-pool'])
+    # No work is ever lost (design section 0), as these removers read it. A worktree removed with no
+    # keep step given; the remove run after a keep step that failed; a folder whose delete stopped left
+    # under its marked name, where its item no longer finds it.
+    add(300, 'space300-removes-with-no-keep-step', space300, 'control_space_remove.py',
+        "        raise _Refusal(KEEP_FAILED, 'no keep step was given: the commits of this item are recorded nowhere')\n",
+        "        return\n",
+        ['ac2/keep-step'])
+    add(300, 'space300-removes-after-a-failed-keep', space300, 'control_space_remove.py',
+        "    if not isinstance(said, dict) or said.get('ok') is not True:\n",
+        "    if False:\n",
+        ['ac2/keep-step'])
+    add(300, 'space300-left-under-its-marked-name', space300, 'control_space_remove.py',
+        "    stuck = _put_back(name, path)\n",
+        "    stuck = None\n",
+        ['ac1/delete-stops'])
 
     # VELDO-0239: batch landing, one candidate gated once and landed together on one approval.
     batch239 = '129_veldo_0239_batch_landing.py'
