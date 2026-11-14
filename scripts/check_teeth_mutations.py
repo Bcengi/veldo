@@ -14166,9 +14166,11 @@ def cases():
     # owns one outside a clone is sent nothing; the clones folder is not looked at, so the event
     # reaches a clone a retirement handed over. N2: a sweep records its refusal at every call; a
     # leftover that was sent its one event stays in memory.
+    # Re-anchored in the third fix round (the item-naming signal): the clone test moved into
+    # _space_clones; the mutant is the same look, every worktree and agent repository of the owner.
     finished308('space308-any-repository-of-the-owner-holds-the-event-back', 'control_launch.py',
-                "                  and within(record)\n",
-                "                  and record.get('kind') in ('worktree', 'agent_repository')\n",
+                "                  and _space_clones(record, paths, root)\n",
+                "                  and not beneath(record, paths) and record.get('kind') in ('worktree', 'agent_repository')\n",
                 ['n1/own-items-ended'])
     finished308('space308-event-reaches-a-handed-over-clone', 'control_launch.py',
                 "        return root is not None and beneath(record, [root])\n", "        return False\n",
@@ -14180,6 +14182,19 @@ def cases():
                 "                    if not apart:\n                        del self.leftovers[dispatch_id]",
                 "                    if False:\n                        del self.leftovers[dispatch_id]",
                 ['n2/observations-bounded'])
+
+    # VELDO-0308, the third fix round: run finished names the run's own items at their versions (the
+    # ledger's signal that names items). The event is sent for the owner again, as it was, so it
+    # reaches a clone a retirement handed over; a send the ledger refused whole, because a named item
+    # changed after it was read, is sent again for the owner.
+    finished308('space308-run-finished-names-the-owner', 'control_launch.py',
+                "            sends = [named] if named['items'] else []\n", "            sends = subjects\n",
+                ['n1/handed-over-clone-untouched'])
+    finished308('space308-refused-send-falls-back-to-the-owner', 'control_launch.py',
+                "                raise ValueError('the ledger refused the send whole: %s'\n"
+                "                                 % ((answer or {}).get('reason') if isinstance(answer, dict) else answer,))\n",
+                "                [_SPACE['signal'](ledger, event, one, emitter=emitter, **given) for one in subjects]\n",
+                ['n1/changed-between-judge-and-send'])
 
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the

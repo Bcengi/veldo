@@ -67,11 +67,11 @@ three Runner.sweep calls send no event, drop the leftover as handed over and wri
 items still deferred), f1/start-sweep-applies-the-rule (the start sweep of a restarted runner: a run
 directory the ledger holds is no leftover and is sent nothing, and the observation says it was found
 at start; one no event has reached is sent its one event and removed), f1/sent-once-and-alone (a
-leftover the event reaches and does not remove is sent run finished once over three sweeps; one a
-process sits in is deferred by that one event, handed over and never sent another; while the run's
-owner still has its clone, neither the sweep nor the receiver sends anything, the clone's items stay
-present, and the clone's teardown sends the one event that removes the run directory with the
-clone), f3/unread-group-sends-nothing (a group nobody could read is not known to be empty: nothing is
+leftover whose item no event reaches has nothing the event could name: no command is sent over three
+sweeps, and looked at once it is no leftover any more; one a process sits in is deferred by the
+sweep's one event, handed over and never sent another; while the run's owner still has its live
+clone, neither the sweep nor the receiver sends anything, the clone's items stay present, and the
+clone's teardown sends the one event that removes the run directory with the clone), f3/unread-group-sends-nothing (a group nobody could read is not known to be empty: nothing is
 sent, nothing is written, the hold stays, the reason is group_unread; the sweep, which reads the
 kernel itself, then removes the folders), f4/pins-followed-after-a-restart (a clone handed over, the
 retirement service made anew: it remembers nothing and still releases the pin after the work tree's
@@ -87,18 +87,30 @@ the same owner outside its folders and outside every clone is sent run finished 
 and, for a leftover, by the sweep, and all three items are removed, the repository after its commit was
 kept; with the run's clone handed to the ledger and left due, which no event takes, the run's own items
 are ended the same way and the clone's three items keep their state and their version),
-n1/handed-over-clone-untouched (a clone handed over and deferred, which an event for its owner would
-judge again: neither the receiver nor three sweeps send anything, nothing is written, the clone's items
-keep their state and version, one not_alone is recorded; the ledger's own retry of the clone then ends
-the clone and the run's own items in one event), n2/observations-bounded (a leftover whose one event
-did not move its item: one event and two observations over six sweeps, and it is dropped from memory;
-a leftover held back by a consumer and then by its clone: one observation for each outcome over twelve
-sweeps).
+n2/observations-bounded (a leftover a sweep looked at once and could not move: no command and two
+observations over six sweeps, and it is dropped from memory; a leftover held back by a consumer and
+then by its clone: one observation for each outcome over twelve sweeps).
+
+Rows of the third fix round (the item-naming signal: run finished names the run's own items at their
+versions). n1/handed-over-clone-untouched (the old N1 probe, closed: a clone a retirement handed over,
+deferred, and beside it the run's directory and an agent repository of the same owner. The runner,
+space-runner, is refused the signal that names those items. The receiver, as its own principal, sends
+run finished once, naming exactly the run directory and the agent repository at the versions read:
+both are removed, the repository after its commit was kept, and the clone's three items keep their
+state and their version, the clone whole and its pin held. The sweep does the same for a leftover of
+such a run. Five runner sweeps after the holders have gone send nothing and write nothing. No event
+the receiver or the sweep sent in this suite named an item of a clone),
+n1/changed-between-judge-and-send (an item of the run is measured after the receiver read it and
+before the ledger's command: the ledger refuses the whole send by that item, the receiver reports not
+sent with the ledger's reason, the three items stay present and on disk and nothing but the measure
+is written; the sweep then sends the one event with the versions read then, and all three go).
 
 paths/no-delete-and-canon: no drive of this suite made the launch module or the clone provisioner
 delete by itself, and the engine canon equals this repository's copies.
 
-STAND-INS. The creators declare nothing yet (VELDO-0302): the suite declares each run directory,
+STAND-INS. The Signal the launch module and the clone provisioner call is counted: every event is
+recorded as it is sent, with the items it named and the ledger's answer, and a row may have one thing
+happen inside it, after the sender's read and before the ledger's command. The creators declare nothing yet (VELDO-0302): the suite declares each run directory,
 scratch folder, worktree and clone item itself. Nothing writes a hold yet (VELDO-0316): the suite
 places and admits each hold through the ledger's own commands. The owner's Confirm (VELDO-0320) is not
 built: in ac4/pins-follow-the-removal it stands as what it will make, a removal of the deferred items
@@ -156,7 +168,8 @@ def _v308_run_finished_suite():
             'f3/unread-group-sends-nothing',
             'f4/pins-followed-after-a-restart', 'f4/clone-being-made-keeps-its-pin',
             'f5/refused-before-spawn', 'f5/spawn-failed',
-            'n1/own-items-ended', 'n1/handed-over-clone-untouched', 'n2/observations-bounded',
+            'n1/own-items-ended', 'n1/handed-over-clone-untouched', 'n1/changed-between-judge-and-send',
+            'n2/observations-bounded',
             'paths/no-delete-and-canon')
     rows = {name: [] for name in ROWS}
 
@@ -439,12 +452,34 @@ def _v308_run_finished_suite():
             return [event.get('operation') for event in L.observations[since:] if event.get('outcome') == 'accepted']
 
         # Every event sent through Signal by the launch module and by the clone provisioner, as it is
-        # sent: (emitter, event, the run of the subject).
+        # sent: (emitter, event, the run of the subject). For a signal that names items the run is the
+        # one run that owns every item named, and NAMED holds what it named: (emitter, the run, the items).
         SENT = []
+        NAMED = []
+        # What a row has happen inside the stand-in, once, as the event for a run is sent: after the
+        # sender read the items and their versions, and before the ledger's command.
+        INSIDE = {}
+
+        def run_of(subject):
+            if 'items' not in subject:
+                return subject.get('run')
+            runs = {(((L.item(one['item']) or {}).get('owner') or {}).get('run') or {}).get('id')
+                    for one in subject['items']}
+            return runs.pop() if len(runs) == 1 else sorted(runs, key=str)
 
         def counted(ledger, event, subject, **given):
-            SENT.append((given.get('emitter'), event, subject.get('run')))
-            return SIG.signal(ledger, event, subject, **given)
+            run = run_of(subject)
+            SENT.append((given.get('emitter'), event, run))
+            if 'items' in subject:
+                NAMED.append((given.get('emitter'), run, [dict(one) for one in subject['items']]))
+            inside = INSIDE.pop(run, None) if isinstance(run, str) else None
+            if inside is not None:
+                inside()
+            answer = SIG.signal(ledger, event, subject, **given)
+            ANSWERS.append((run, answer.get('ok'), answer.get('reason')))
+            return answer
+
+        ANSWERS = []
 
         LA._SPACE['signal'] = counted
         CL._SPACE['signal'] = counted
@@ -1340,11 +1375,13 @@ def _v308_run_finished_suite():
             place, run_item = run_place(dispatch_id, 'VELDO-9453', confirm=False)
             N = runner()
             N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            length = journal_length()
             swept = [N.sweep() for _ in range(3)]
-            check(row, 'a leftover the event reaches and does not remove (its item was never confirmed) is sent run '
-                       'finished once over three sweeps, and stays on disk; sent its one event, it is no leftover of '
-                       'a sweep any more [%s %s]' % (sent_for(dispatch_id), N.observations[-1:]),
-                  sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+            check(row, 'a leftover whose item no event reaches (it was never confirmed) has nothing the event could '
+                       'name: over three sweeps no command is sent to the ledger and nothing is written, and it stays '
+                       'on disk; looked at once, it is no leftover of a sweep any more [%s %s]'
+                  % (sent_for(dispatch_id), N.observations[-1:]),
+                  sent_for(dispatch_id) == [] and journal_length() == length
                   and dispatch_id not in N.leftovers
                   and N.observations[-1].get('refusal') == 'run_finished_sent' and place.is_dir()
                   and state_of(run_item) == 'declared')
@@ -1648,9 +1685,21 @@ def _v308_run_finished_suite():
                   and (work / 'tracked.txt').is_file() and readable(work, clone_head)
                   and len(C5._pins_held(clone_id)) == 1 and journal_length() > length)
 
+            def named_by(dispatch_id, emitter):
+                """What the events sent for the run by `emitter` named: one list of {item, version} for each."""
+                return [named for sender, run, named in NAMED if run == dispatch_id and sender == emitter]
+
+            def version_of(identity):
+                return conn.execute('SELECT version FROM entities WHERE id=?', (identity,)).fetchone()[0]
+
+            def exactly(named, *identities):
+                """Whether one event named exactly these items, each at the version it has in `at`."""
+                return (len(named) == 1 and sorted(one['item'] for one in named[0]) == sorted(identities)
+                        and all(type(one['version']) is int and one['version'] > 0 for one in named[0]))
+
             row = 'n1/handed-over-clone-untouched'
-            # A clone a retirement handed to the ledger, deferred: the ledger's signal takes a deferred item,
-            # and it names an owner and no item, so an event for this owner would judge the clone again.
+            # The old N1 probe, closed: a clone a retirement handed to the ledger, deferred, and the run's own
+            # items beside it. The event names the run's own items at their versions and never the clone's.
             clone_id, dispatch_id, root, work, clone_head, clone_items = clone(C5, 'apart-74')
             holder = process_entry(5874, '/', opened=str(work / 'tracked.txt'))
             N = runner(C5)
@@ -1660,49 +1709,139 @@ def _v308_run_finished_suite():
             place, run_item = run_place(dispatch_id, 'VELDO-9274')
             where, head, repository_item = sandbox('apart-74', owner)
             before, was, length, mark = versions(clone_items), states(clone_items), journal_length(), len(sent_for(dispatch_id))
-            R = receiver(dispatch_id, place, None, None, supervision={'empty': True}, clones=C5)
-            end = R._space_end(dispatch_id)
+            read = {identity: version_of(identity) for identity in (run_item, repository_item)}
             check(row, 'the clone is handed over with its work tree deferred [%s %s]' % (first, was),
                   first is True and (N.retirements.handed.get(clone_id) or {}).get('teardown') == 'deferred'
                   and state_of(clone_items['work']) == 'deferred')
-            check(row, 'the receiver sends nothing that would reach it: not_alone, naming the clone\'s items, and '
-                       'nothing is written [%s %s %s]' % (end.get('sent'), end.get('reason'), (end.get('removal') or {}).get('with')),
-                  end.get('sent') is False and end.get('reason') == 'not_alone' and sent_for(dispatch_id)[mark:] == []
-                  and set((end.get('removal') or {}).get('with') or ()) <= set(clone_items.values())
-                  and clone_items['work'] in ((end.get('removal') or {}).get('with') or ())
-                  and journal_length() == length)
-            N.leftovers[dispatch_id] = {'group': None, 'process': None}
-            removed = [N.clear_runs() for _ in range(3)]
-            check(row, 'nor does the sweep, over three calls; the clone\'s items are as they were, at the version they '
-                       'had, the clone whole, its pin held, and the run\'s own items present [%s %s %s]'
-                  % (removed, states(clone_items), refusals(N, dispatch_id)),
-                  removed == [[], [], []] and sent_for(dispatch_id)[mark:] == [] and journal_length() == length
+            # The runner (space-runner) stays refused for a signal that names items, these among them.
+            subject = {'scope': A, 'ticket': 'VELDO-9274', 'run': dispatch_id}
+            names = LA.space_named(L, 'run_finished', [str(place)], [subject], LA.clones_root(C5))
+            by_runner = L.signal('run_finished', names, principal='space-runner')
+            check(row, 'the runner is refused the signal that names these items, and nothing is written [%s]'
+                  % (by_runner.get('reason'),),
+                  by_runner.get('ok') is False and by_runner.get('reason') == 'space_not_permitted:space_signal'
+                  and journal_length() == length and [state_of(run_item), state_of(repository_item)] == ['present'] * 2)
+            R = receiver(dispatch_id, place, None, None, supervision={'empty': True}, clones=C5)
+            R.space = space(principal='launch-receiver')
+            end = R._space_end(dispatch_id)
+            named = named_by(dispatch_id, 'receiver')
+            check(row, 'the deferred clone does not hold the run\'s event back: the receiver sends run finished once, '
+                       'as its own principal, and it names exactly the run directory and the agent repository, each '
+                       'at the version read before the send [%s %s %s]' % (end.get('sent'), end.get('reason'), named),
+                  end.get('sent') is True and sent_for(dispatch_id)[mark:] == [('receiver', 'run_finished', dispatch_id)]
+                  and exactly(named, run_item, repository_item)
+                  and {one['item']: one['version'] for one in named[0]} == read
+                  and [event.get('principal') for event in L.observations
+                       if event.get('operation') == 'space_signal' and event.get('outcome') == 'accepted'][-1:]
+                  == ['launch-receiver'])
+            check(row, 'every item of the run that is no clone\'s is ended by it: the run directory and the agent '
+                       'repository are removed, the repository after its commit was kept [%s]'
+                  % ([state_of(run_item), state_of(repository_item)],),
+                  [state_of(run_item), state_of(repository_item)] == ['removed'] * 2
+                  and not os.path.lexists(place) and not os.path.lexists(where)
+                  and kept_at(repository_item, REPOSITORY, head)
+                  and removal_of(repository_item).get('emitter') == 'receiver')
+            check(row, 'the handed-over clone is not named and is untouched: its three items in the state and at the '
+                       'version they had, the clone whole, its commit readable and its pin held [%s %s]'
+                  % (states(clone_items), versions(clone_items) == before),
+                  bool(named) and not ({one['item'] for one in named[0]} & set(clone_items.values()))
                   and states(clone_items) == was and versions(clone_items) == before
-                  and (work / 'tracked.txt').is_file() and len(C5._pins_held(clone_id)) == 1
-                  and [state_of(run_item), state_of(repository_item)] == ['present'] * 2
-                  and refusals(N, dispatch_id) == ['not_alone'])
-            # What production does next, driven as production drives it: the retirement handed the clone over
-            # and released in the same attempt, so no retirement is pending and nothing calls the ledger's
-            # retry for this dispatch. Once the holder has gone, the runner's own sweeps send nothing: the
-            # run's items wait, deferred behind the clone, for the ledger's next retry (admission, reconcile).
-            shutil.rmtree(holder)
-            swept = [N.sweep() for _ in range(5)]
-            check(row, 'after the holder has gone, five runner sweeps release nothing, send nothing, make no retry and '
-                       'write nothing: no retirement is pending, and the leftover keeps its one observation [%s %s %s %s]'
-                  % (swept, sent_for(dispatch_id)[mark:], retries(N), refusals(N, dispatch_id)),
-                  swept == [[]] * 5 and sent_for(dispatch_id)[mark:] == [] and retries(N) == []
-                  and journal_length() == length and refusals(N, dispatch_id) == ['not_alone']
-                  and dispatch_id in N.leftovers and not N.retirements.pending())
-            check(row, 'the items stay deferred and unharmed: the clone as it was at the version it had, whole, its '
-                       'commit readable and its pin held; the run directory and the agent repository present on disk '
-                       'and in the ledger, the repository at its commit [%s %s]'
-                  % (states(clone_items), [state_of(run_item), state_of(repository_item)]),
-                  states(clone_items) == was and versions(clone_items) == before
                   and state_of(clone_items['work']) == 'deferred'
                   and (work / 'tracked.txt').is_file() and readable(work, clone_head)
-                  and len(C5._pins_held(clone_id)) == 1
-                  and [state_of(run_item), state_of(repository_item)] == ['present'] * 2
-                  and os.path.isdir(place) and os.path.isdir(where) and git(where, 'rev-parse', 'HEAD') == head)
+                  and len(C5._pins_held(clone_id)) == 1 and journal_length() > length)
+            # The sweep does the same for a leftover of such a run.
+            clone_id2, dispatch_id2, root2, work2, clone_head2, clone_items2 = clone(C5, 'apart-77')
+            holder2 = process_entry(5877, '/', opened=str(work2 / 'tracked.txt'))
+            N = runner(C5)
+            N.reservations.slot(dispatch_id2)
+            first = N._retire(dispatch_id2, 'completed', 'worker_reaped')
+            owner2 = {'scope': A, 'ticket': 'VELDO-9277', 'run': {'id': dispatch_id2, 'station': 'build'}}
+            place2, run_item2 = run_place(dispatch_id2, 'VELDO-9277')
+            where2, head2, repository_item2 = sandbox('apart-77', owner2)
+            before2, was2, mark2 = versions(clone_items2), states(clone_items2), len(sent_for(dispatch_id2))
+            N.leftovers[dispatch_id2] = {'group': None, 'process': None}
+            removed = [N.clear_runs() for _ in range(3)]
+            named = named_by(dispatch_id2, 'runner.sweep')
+            check(row, 'the sweep does the same for a leftover of such a run: one event over three sweeps, naming the '
+                       'run directory and the agent repository and nothing of the clone; both are removed, and the '
+                       'clone is as it was at the version it had [%s %s %s %s]'
+                  % (first, removed, sent_for(dispatch_id2)[mark2:], states(clone_items2)),
+                  first is True and state_of(clone_items2['work']) == 'deferred'
+                  and removed == [[dispatch_id2], [], []]
+                  and sent_for(dispatch_id2)[mark2:] == [('runner.sweep', 'run_finished', dispatch_id2)]
+                  and exactly(named, run_item2, repository_item2)
+                  and [state_of(run_item2), state_of(repository_item2)] == ['removed'] * 2
+                  and not os.path.lexists(place2) and not os.path.lexists(where2)
+                  and kept_at(repository_item2, REPOSITORY, head2)
+                  and states(clone_items2) == was2 and versions(clone_items2) == before2
+                  and (work2 / 'tracked.txt').is_file() and len(C5._pins_held(clone_id2)) == 1
+                  and refusals(N, dispatch_id2) == [] and N.leftovers == {})
+            # Once the holders have gone the runner's own sweeps send nothing more for these runs: nothing of
+            # theirs is left to send for, and the clone is the ledger's, which retries it itself.
+            shutil.rmtree(holder)
+            shutil.rmtree(holder2)
+            length, total = journal_length(), len(SENT)
+            swept = [N.sweep() for _ in range(5)]
+            check(row, 'after the holders have gone, five runner sweeps send nothing, make no retry and write nothing; '
+                       'both clones stay the ledger\'s, deferred at the version they had, whole and pinned [%s %s %s]'
+                  % (swept, len(SENT) - total, retries(N)),
+                  swept == [[]] * 5 and len(SENT) == total and retries(N) == [] and journal_length() == length
+                  and not N.retirements.pending()
+                  and states(clone_items) == was and versions(clone_items) == before
+                  and states(clone_items2) == was2 and versions(clone_items2) == before2
+                  and readable(work, clone_head) and readable(work2, clone_head2)
+                  and len(C5._pins_held(clone_id)) == 1 and len(C5._pins_held(clone_id2)) == 1)
+            check(row, 'no event of this suite sent from the receiver or the sweep named an item of a clone',
+                  bool(NAMED) and not any(
+                      (L.item(one['item']) or {}).get('locator', {}).get('path', '').startswith(str(CLONES) + '/')
+                      for sender, run, named in NAMED if sender in ('receiver', 'runner.sweep') for one in named))
+
+            row = 'n1/changed-between-judge-and-send'
+            # An item of the run changes after the receiver read it and before the ledger's command: the send
+            # is refused whole, nothing of the run is ended, and nothing else is sent in its place.
+            dispatch_id, owner, place, scratch, items = run_folders('apart-78', hold=False)
+            RECORDS[dispatch_id] = {'state': 'exited', 'process': None}
+            where, head, repository_item = sandbox('apart-78', owner)
+            mine = [items['run'], items['scratch'], repository_item]
+            read = {identity: version_of(identity) for identity in mine}
+            length, answered = journal_length(), len(ANSWERS)
+            INSIDE[dispatch_id] = lambda: L.measure(items['scratch'], 4321, 'run_finished')
+            R = receiver(dispatch_id, place, scratch, owner, supervision={'empty': True}, clones=C5)
+            end = R._space_end(dispatch_id)
+            named = named_by(dispatch_id, 'receiver')
+            check(row, 'the receiver named the run\'s three items at the versions it read, and one of them changed '
+                       'before the ledger\'s command (its size was measured) [%s %s]' % (named, read),
+                  exactly(named, *mine) and {one['item']: one['version'] for one in named[0]} == read
+                  and version_of(items['scratch']) == read[items['scratch']] + 1 and dispatch_id not in INSIDE)
+            check(row, 'the ledger refuses the whole send by the item that changed, and the receiver says so: not '
+                       'sent, remove_refused with the ledger\'s reason [%s %s %s]'
+                  % (ANSWERS[answered:], end.get('sent'), (end.get('removal') or {}).get('raised')),
+                  ANSWERS[answered:] == [(dispatch_id, False, 'space_item_version:' + items['scratch'])]
+                  and end.get('sent') is False and end.get('reason') == 'remove_refused'
+                  and 'space_item_version:' + items['scratch'] in str((end.get('removal') or {}).get('raised')))
+            check(row, 'nothing of the run is ended and nothing but the measure was written: the three items '
+                       'present, the two that did not change at the version read, every folder on disk and the '
+                       'repository at its commit [%s %s]'
+                  % ([state_of(identity) for identity in mine], journal_length() - length),
+                  [state_of(identity) for identity in mine] == ['present'] * 3 and journal_length() == length + 1
+                  and version_of(items['run']) == read[items['run']]
+                  and version_of(repository_item) == read[repository_item]
+                  and place.is_dir() and (scratch / 'tmp.bin').is_file() and git(where, 'rev-parse', 'HEAD') == head
+                  and sent_for(dispatch_id) == [('receiver', 'run_finished', dispatch_id)])
+            # Nothing is stuck by it: no event reached the run directory, so it is a leftover the sweep may
+            # send its one event for, with the versions read then.
+            N = runner(C5)
+            N.leftovers[dispatch_id] = {'group': None, 'process': None}
+            removed = [N.clear_runs() for _ in range(2)]
+            named = named_by(dispatch_id, 'runner.sweep')
+            check(row, 'the sweep then sends the one event for the run, naming the three items at the versions they '
+                       'have now, and all three are removed, the repository after its commit was kept [%s %s]'
+                  % (removed, [state_of(identity) for identity in mine]),
+                  removed == [[dispatch_id], []] and exactly(named, *mine)
+                  and {one['item']: one['version'] for one in named[0]}[items['scratch']] == read[items['scratch']] + 1
+                  and [state_of(identity) for identity in mine] == ['removed'] * 3
+                  and not os.path.lexists(place) and not os.path.lexists(scratch) and not os.path.lexists(where)
+                  and kept_at(repository_item, REPOSITORY, head))
 
             row = 'n2/observations-bounded'
             dispatch_id = 'dispatch/bound-75'
@@ -1711,10 +1850,10 @@ def _v308_run_finished_suite():
             N = runner()
             N.leftovers[dispatch_id] = {'group': None, 'process': None}
             removed = [N.clear_runs() for _ in range(6)]
-            check(row, 'a leftover that can never be sent again (its one event did not move its item) is recorded once '
-                       'and dropped from memory: one event and two observations over six sweeps [%s %s]'
-                  % (sent_for(dispatch_id), refusals(N, dispatch_id)),
-                  removed == [[]] * 6 and sent_for(dispatch_id) == [('runner.sweep', 'run_finished', dispatch_id)]
+            check(row, 'a leftover that a sweep looked at once and could not move (its item is one no event reaches, '
+                       'so nothing was named) is recorded once and dropped from memory: no command and two '
+                       'observations over six sweeps [%s %s]' % (sent_for(dispatch_id), refusals(N, dispatch_id)),
+                  removed == [[]] * 6 and sent_for(dispatch_id) == []
                   and refusals(N, dispatch_id) == ['space_deferred:declared', 'run_finished_sent']
                   and dispatch_id not in N.leftovers and place.is_dir() and state_of(run_item) == 'declared')
             clone_id, dispatch_id, root, work, clone_head, clone_items = clone(C5, 'bound-76')

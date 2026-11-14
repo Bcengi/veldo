@@ -337,3 +337,55 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   THAT NAMES ITEMS). This ticket adopts it next: it closes what N1 left open above, the signal that
   named an owner and no item, so run finished can be sent for exactly the items the receiver judged. No
   behaviour of this ticket changed in that round.
+- 2026-11-14: fix round 3, the item-naming signal adopted, by the lead's decision recorded in the entry
+  above. No acceptance criterion changed and the footprint is as it was. It closes what N1 left open (the
+  second fix round's "what is not closed" and the third round's DEPENDENCY): the run's own items are no
+  longer held back by a clone a retirement handed to the ledger.
+  - What changed, in control_launch.py. The receiver's send and the sweep's (space_signal with `alone`)
+    no longer signal the owner. They name exactly the run's own items, each with the version read at that
+    moment (space_named, space_versions), and the ledger acts on those and on nothing else of the owner.
+    The run's own items are what the owner's event reached before: present, kept or deferred, ending on
+    run finished, not marked Keep by the owner; the run directory, the scratch folder and a worktree or
+    an agent repository of the run elsewhere among them. The versions are read before the records, so a
+    record that changes between the two reads is named at the version it had and refused.
+  - A clone is never named, in any state. One handed over (due, deferred, removing or kept) is the
+    ledger's: it does not hold the event back any more, and the event leaves it at the state and the
+    version it had. One still live (declared or present) holds the event back as before (not_alone): its
+    teardown is to come, and that teardown sends run finished for the owner, behind its clone_in_use
+    test, which ends the run's folders with the clone. The teardown's own send is control_clone.py's,
+    outside this footprint, and still names the owner. FOR THE LEAD.
+  - A version that changed between the read and the send. The ledger refuses the whole command, with
+    nothing written (space_item_version:<item>). The receiver sends nothing in its place: its end says
+    not sent, reason remove_refused, with the ledger's reason, and the hold is released as for any run
+    that has ended. No event reached the run directory, so it is a leftover the sweep may send its one
+    event for, with the versions read then. Nothing is lost by the refusal and nothing is stuck by it.
+  - A leftover with nothing to name. An item no event reaches (declared, never confirmed) used to be sent
+    an owner's event that matched nothing. Now no command is sent at all. The sweep still records it
+    once, under the same name (run_finished_sent), and drops it: it is the ledger's and reconcile's, as
+    before.
+  - Who signs. No allowance was added to the ledger. Its rule for who may sign (permit) limits the two
+    host principals, space-observer and space-runner, and the runner stays refused for a signal that
+    names items, as VELDO-0312 decided. The receiver signs as its own principal, launch-receiver, which
+    is no host principal of the ledger and is limited, as before, to what the installation wires in. The
+    row shows both: the runner refused for the same named items, the receiver's command accepted under
+    its own principal.
+  - What is not changed, FOR THE LEAD. The retry of AC3 (space_retry) still signals the owner of the
+    dispatch's deferred items: it is the ledger's retry of everything deferred for the run, the clone's
+    items among them, which is its purpose. A run item that is declared after the receiver's send and
+    after the sweep dropped the leftover is still reconcile's (VELDO-0315).
+  - Suite 146 is 33 rows, 59 passed. n1/handed-over-clone-untouched is rewritten to the old N1 probe,
+    closed: beside a deferred, handed-over clone the receiver sends run finished once, naming exactly the
+    run directory and the agent repository at the versions read; both are removed, the repository after
+    its commit was kept; the clone's three items keep their state and version, the clone whole, its
+    commit readable and its pin held; the sweep does the same for a leftover; and no event of the suite
+    sent by the receiver or the sweep named an item of a clone. Its falsifier, registered and applied
+    once to the copy the suite loads, seen red: space308-run-finished-names-the-owner (the owner is
+    signalled, as it was). New row n1/changed-between-judge-and-send: an item of the run is measured
+    after the receiver's read and before the ledger's command; the whole send is refused, the three
+    items stay present and on disk, and the sweep's later send ends all three. Its falsifier, applied
+    once and red: space308-refused-send-falls-back-to-the-owner. f1/sent-once-and-alone and
+    n2/observations-bounded now expect no command for a leftover with nothing to name. One falsifier was
+    re-anchored, unchanged in meaning (space308-any-repository-of-the-owner-holds-the-event-back), and
+    it and the seven others whose lines or rows were touched were applied again by hand, one at a time:
+    all red on their rows. The registered set was not run as a whole in this round. Suite 142 is
+    unchanged, 57 passed.
