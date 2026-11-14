@@ -41,7 +41,8 @@
    "ac1/no-proposal-when-undecided",
    "ac2/report-mode",
    "ac2/report-then-act",
-   "ac3/covered-later"
+   "ac3/covered-later",
+   "split/every-path-inside-places"
   ],
   "red_details": [
    [
@@ -58,7 +59,7 @@
    ],
    [
     "VELDO-0307 ac2/report-mode",
-    "in report mode the container meadow-web-1 is a report and not an item: no owner, no parent, not adopted, ending on no event [owner {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent space:item:5bb94a93cdf943db9f62628b239b473a, adopted True, ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']]"
+    "in report mode the container meadow-web-1 is a report and not an item: no owner, no parent, not adopted, ending on no event [owner {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent space:item:32b291ca23e44148a5ef83e1b8222a97, adopted True, ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released']]"
    ],
    [
     "VELDO-0307 ac2/report-then-act",
@@ -67,6 +68,10 @@
    [
     "VELDO-0307 ac3/covered-later",
     "before the protect list covers it the container is proposed to wt-c [None]"
+   ],
+   [
+    "VELDO-0307 split/every-path-inside-places",
+    "and the one in the report-mode project is proposed to its worktree, by the working folder [None None None]"
    ]
   ],
   "noop_red_rows": [],
@@ -91,7 +96,7 @@
    ],
    [
     "VELDO-0307 ac3/protected-container",
-    "the container quiet-db-1 is listed as protected, by its compose_config_file [None None]"
+    "the container atlas-web-1 is listed as protected, by its name [None None]"
    ],
    [
     "VELDO-0307 ac3/covered-later",
@@ -128,12 +133,17 @@
    "ac1/no-proposal-when-undecided"
   ],
   "red_rows": [
-   "ac1/no-proposal-when-undecided"
+   "ac1/no-proposal-when-undecided",
+   "review/split-owner-is-a-conflict"
   ],
   "red_details": [
    [
     "VELDO-0307 ac1/no-proposal-when-undecided",
     "the container dotdot-1 is a report with no proposed owner: path_unread [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+   ],
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "a bind source alone still places, and a path that cannot be read is said before any conflict"
    ]
   ],
   "noop_red_rows": [],
@@ -144,20 +154,21 @@
   "criterion": "AC1",
   "module": "control_space_reconcile.py",
   "expected_red": [
-   "ac1/no-proposal-when-undecided"
+   "ac1/no-proposal-when-undecided",
+   "split/two-worktrees"
   ],
   "red_rows": [
    "ac1/no-proposal-when-undecided",
-   "review/split-owner-is-a-conflict"
+   "split/two-worktrees"
   ],
   "red_details": [
    [
     "VELDO-0307 ac1/no-proposal-when-undecided",
-    "the container two-1 is a report with no proposed owner: two_worktrees [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+    "the container two-1 is a report with no proposed owner: conflict [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
    ],
    [
-    "VELDO-0307 review/split-owner-is-a-conflict",
-    "a bind source alone still places, a configuration file inside still places although the working folder is outside, and two worktrees are still two worktrees"
+    "VELDO-0307 split/two-worktrees",
+    "in the act-mode project the container two-a-1, of which the paths lead into two different worktrees, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:90913d0fff6e4fc4a8139a7baec3a958, None]"
    ]
   ],
   "noop_red_rows": [],
@@ -186,7 +197,7 @@
    ],
    [
     "VELDO-0307 ac2/report-mode",
-    "a second snapshot writes nothing [{'default': {'matched': 23, 'refused': 4, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
+    "a second snapshot writes nothing [{'default': {'matched': 36, 'refused': 4, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
    ]
   ],
   "noop_red_rows": [],
@@ -243,7 +254,10 @@
    "ac2/report-mode",
    "ac2/act-mode",
    "protect/covered-after-adoption",
-   "review/split-owner-is-a-conflict"
+   "review/split-owner-is-a-conflict",
+   "split/folder-inside-bind-outside",
+   "split/bind-inside-bind-outside",
+   "split/two-worktrees"
   ],
   "red_details": [
    [
@@ -252,7 +266,7 @@
    ],
    [
     "VELDO-0307 ac1/no-proposal-when-undecided",
-    "the container two-1 is a report with no proposed owner: two_worktrees [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
+    "the container two-1 is a report with no proposed owner: conflict [{'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'} inside_recorded_worktree None]"
    ],
    [
     "VELDO-0307 ac2/report-mode",
@@ -269,6 +283,18 @@
    [
     "VELDO-0307 review/split-owner-is-a-conflict",
     "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed None, parent None, outside]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-bind-outside",
+    "in the act-mode project the container bindout-a-1, of which compose ran inside a worktree while a bind source is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:e67eb9f9ed5248918a0afdf303f9d902, None]"
+   ],
+   [
+    "VELDO-0307 split/bind-inside-bind-outside",
+    "in the act-mode project the container binds-a-1, of which one bind source is inside a worktree while another is outside every worktree, with no compose label, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed None, parent None, outside]"
+   ],
+   [
+    "VELDO-0307 split/two-worktrees",
+    "in the act-mode project the container two-a-1, of which the paths lead into two different worktrees, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:e67eb9f9ed5248918a0afdf303f9d902, None]"
    ]
   ],
   "noop_red_rows": [],
@@ -288,7 +314,10 @@
    "ac3/protected-image",
    "protect/covered-after-adoption",
    "review/relative-label-refused",
-   "review/split-owner-is-a-conflict"
+   "review/split-owner-is-a-conflict",
+   "split/file-inside-folder-outside",
+   "split/folder-inside-file-outside",
+   "split/two-worktrees"
   ],
   "red_details": [
    [
@@ -313,11 +342,23 @@
    ],
    [
     "VELDO-0307 review/relative-label-refused",
-    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:c1dc90f604fd4c65be1b65cadddbb2eb'] [('proposed', None)]]"
+    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:338b3ab3bd1c42c1aca0e1227950f215'] [('proposed', None)]]"
    ],
    [
     "VELDO-0307 review/split-owner-is-a-conflict",
     "in the report-mode project the container split-cf-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent None, None]"
+   ],
+   [
+    "VELDO-0307 split/file-inside-folder-outside",
+    "in the act-mode project the container cfin-a-1, of which a configuration file is inside a worktree while compose's working folder is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed None, parent None, outside]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-file-outside",
+    "in the act-mode project the container cfout-a-1, of which compose's working folder is inside a worktree while one of its configuration files is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:54043a6d0f2d4051bbdff431e01b3572, None]"
+   ],
+   [
+    "VELDO-0307 split/two-worktrees",
+    "in the report-mode project the container two-cf-1, of which the paths lead into two different worktrees, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed None, parent None, outside]"
    ]
   ],
   "noop_red_rows": [],
@@ -343,7 +384,7 @@
   "red_details": [
    [
     "VELDO-0307 ac2/report-mode",
-    "a second snapshot writes nothing [{'default': {'matched': 30, 'protected': 3}, 'desktop-linux': {'matched': 7, 'protected': 1}}]"
+    "a second snapshot writes nothing [{'default': {'matched': 43, 'protected': 3}, 'desktop-linux': {'matched': 7, 'protected': 1}}]"
    ],
    [
     "VELDO-0307 ac3/protected-volume",
@@ -363,7 +404,7 @@
    ],
    [
     "VELDO-0307 review/relative-label-refused",
-    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:532c8aa88f3b4da39f612d1bff41e457'] [('reported', None)]]"
+    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:7bfd773d551a416fbedef22a1b88aeee'] [('reported', None)]]"
    ]
   ],
   "noop_red_rows": [],
@@ -473,7 +514,7 @@
   "red_details": [
    [
     "VELDO-0307 protect/image-pattern-every-tag",
-    "the pattern minio/minio covers the tag latest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:3d697f8a14034bb3b521e459da478da5', 'space_locator_taken:space:item:3d697f8a14034bb3b521e459da478da5']]"
+    "the pattern minio/minio covers the tag latest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:7d3a2978245047fcb0c401184803f301', 'space_locator_taken:space:item:7d3a2978245047fcb0c401184803f301']]"
    ]
   ],
   "noop_red_rows": [],
@@ -492,7 +533,7 @@
   "red_details": [
    [
     "VELDO-0307 protect/image-pattern-every-tag",
-    "the pattern minio/minio covers a digest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:c8375d2c155240dab4ab7afc748f94f9', 'space_locator_taken:space:item:c8375d2c155240dab4ab7afc748f94f9']]"
+    "the pattern minio/minio covers a digest on default: declare, adopt and report refuse it [['accepted', 'space_locator_taken:space:item:5841c1073a094e11bc9333f527f0a01f', 'space_locator_taken:space:item:5841c1073a094e11bc9333f527f0a01f']]"
    ]
   ],
   "noop_red_rows": [],
@@ -713,30 +754,159 @@
   "red_details": [
    [
     "VELDO-0307 ac2/report-mode",
-    "a second snapshot writes nothing [{'default': {'matched': 27, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
+    "a second snapshot writes nothing [{'default': {'matched': 40, 'protected': 6}, 'desktop-linux': {'matched': 6, 'protected': 2}}]"
    ],
    [
     "VELDO-0307 review/relative-label-refused",
-    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:78fdeac9db2c4dfb980bddcdb12fd332'] [('reported', None)]]"
+    "the container relative-1 (a configuration file label that is not an absolute path) has no record, neither an item nor a report, and the adapter said labels_unread [['space:item:0df15714f69640bd8daf92bd0f6f795c'] [('reported', None)]]"
    ]
   ],
   "noop_red_rows": [],
   "red_as_expected": true
  },
  {
-  "falsifier": "space307-split-owner-placed-by-its-bind-source",
+  "falsifier": "space307-split-placed-by-the-path-inside",
   "criterion": "AC1",
   "module": "control_space_reconcile.py",
   "expected_red": [
-   "review/split-owner-is-a-conflict"
+   "review/split-owner-is-a-conflict",
+   "split/file-inside-folder-outside",
+   "split/folder-inside-file-outside",
+   "split/folder-inside-bind-outside",
+   "split/bind-inside-bind-outside"
   ],
   "red_rows": [
-   "review/split-owner-is-a-conflict"
+   "review/split-owner-is-a-conflict",
+   "split/file-inside-folder-outside",
+   "split/folder-inside-file-outside",
+   "split/folder-inside-bind-outside",
+   "split/bind-inside-bind-outside"
   ],
   "red_details": [
    [
     "VELDO-0307 review/split-owner-is-a-conflict",
-    "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:d6316175c001462fb1a577ab953a248a, None]"
+    "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:9cafcb6c02ab434d84a67ad10b839cf9, None]"
+   ],
+   [
+    "VELDO-0307 split/file-inside-folder-outside",
+    "in the act-mode project the container cfin-a-1, of which a configuration file is inside a worktree while compose's working folder is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:9cafcb6c02ab434d84a67ad10b839cf9, None]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-file-outside",
+    "in the act-mode project the container cfout-a-1, of which compose's working folder is inside a worktree while one of its configuration files is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:9cafcb6c02ab434d84a67ad10b839cf9, None]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-bind-outside",
+    "in the act-mode project the container bindout-a-1, of which compose ran inside a worktree while a bind source is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:9cafcb6c02ab434d84a67ad10b839cf9, None]"
+   ],
+   [
+    "VELDO-0307 split/bind-inside-bind-outside",
+    "in the act-mode project the container binds-a-1, of which one bind source is inside a worktree while another is outside every worktree, with no compose label, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:9cafcb6c02ab434d84a67ad10b839cf9, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-compose-label-inside-places-a-split",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "split/file-inside-folder-outside",
+   "split/folder-inside-file-outside",
+   "split/folder-inside-bind-outside"
+  ],
+  "red_rows": [
+   "split/file-inside-folder-outside",
+   "split/folder-inside-file-outside",
+   "split/folder-inside-bind-outside"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 split/file-inside-folder-outside",
+    "in the act-mode project the container cfin-a-1, of which a configuration file is inside a worktree while compose's working folder is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:0eeeb1a0f2b142518d739462ef1871dd, None]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-file-outside",
+    "in the act-mode project the container cfout-a-1, of which compose's working folder is inside a worktree while one of its configuration files is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:0eeeb1a0f2b142518d739462ef1871dd, None]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-bind-outside",
+    "in the act-mode project the container bindout-a-1, of which compose ran inside a worktree while a bind source is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:0eeeb1a0f2b142518d739462ef1871dd, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-working-folder-outside-not-seen",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "split/file-inside-folder-outside"
+  ],
+  "red_rows": [
+   "review/split-owner-is-a-conflict",
+   "split/file-inside-folder-outside"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "the reconciler, asked itself: compose's folder or file outside with a bind source inside is a conflict, in either order"
+   ],
+   [
+    "VELDO-0307 split/file-inside-folder-outside",
+    "in the act-mode project the container cfin-a-1, of which a configuration file is inside a worktree while compose's working folder is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:e455468964a04ee6a126e1cb43418a2d, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-configuration-file-outside-not-seen",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "review/split-owner-is-a-conflict",
+   "split/folder-inside-file-outside"
+  ],
+  "red_rows": [
+   "review/split-owner-is-a-conflict",
+   "split/folder-inside-file-outside"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "in the report-mode project the container split-cf-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner None, proposed {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9308'}, parent None, None]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-file-outside",
+    "in the act-mode project the container cfout-a-1, of which compose's working folder is inside a worktree while one of its configuration files is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:5cc089ba86be4df685c957573d908456, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-bind-source-outside-not-seen",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "split/folder-inside-bind-outside",
+   "split/bind-inside-bind-outside"
+  ],
+  "red_rows": [
+   "split/folder-inside-bind-outside",
+   "split/bind-inside-bind-outside"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 split/folder-inside-bind-outside",
+    "in the act-mode project the container bindout-a-1, of which compose ran inside a worktree while a bind source is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:5b86e419ffa1492fa10cda271344bb85, None]"
+   ],
+   [
+    "VELDO-0307 split/bind-inside-bind-outside",
+    "in the act-mode project the container binds-a-1, of which one bind source is inside a worktree while another is outside every worktree, with no compose label, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:5b86e419ffa1492fa10cda271344bb85, None]"
    ]
   ],
   "noop_red_rows": [],
@@ -747,15 +917,101 @@
   "criterion": "AC1",
   "module": "control_space_reconcile.py",
   "expected_red": [
-   "review/split-owner-is-a-conflict"
+   "review/split-owner-is-a-conflict",
+   "split/file-inside-folder-outside",
+   "split/folder-inside-file-outside"
   ],
   "red_rows": [
-   "review/split-owner-is-a-conflict"
+   "review/split-owner-is-a-conflict",
+   "split/file-inside-folder-outside",
+   "split/folder-inside-file-outside"
   ],
   "red_details": [
    [
     "VELDO-0307 review/split-owner-is-a-conflict",
-    "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:665b7be309de4ee89bd00df39b658faf, None]"
+    "in the act-mode project the container split-a-1, whose bind source is inside a worktree while compose's label leads outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:fa37abafcded4e5d999dbb995693090b, None]"
+   ],
+   [
+    "VELDO-0307 split/file-inside-folder-outside",
+    "in the act-mode project the container cfin-a-1, of which a configuration file is inside a worktree while compose's working folder is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:fa37abafcded4e5d999dbb995693090b, None]"
+   ],
+   [
+    "VELDO-0307 split/folder-inside-file-outside",
+    "in the act-mode project the container cfout-a-1, of which compose's working folder is inside a worktree while one of its configuration files is outside every worktree, is a report with no owner, no proposed owner and no parent: a conflict [owner {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'VELDO-9307'}, proposed None, parent space:item:fa37abafcded4e5d999dbb995693090b, None]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space307-every-placed-object-a-conflict",
+  "criterion": "AC1",
+  "module": "control_space_reconcile.py",
+  "expected_red": [
+   "split/every-path-inside-places"
+  ],
+  "red_rows": [
+   "ac1/inside-a-recorded-worktree",
+   "ac1/by-where-the-path-leads",
+   "ac1/no-proposal-when-undecided",
+   "ac2/report-mode",
+   "ac2/act-mode",
+   "ac2/report-then-act",
+   "ac3/covered-later",
+   "loss/nothing-of-theirs-touched",
+   "protect/covered-after-adoption",
+   "review/relative-label-refused",
+   "review/split-owner-is-a-conflict",
+   "split/every-path-inside-places"
+  ],
+  "red_details": [
+   [
+    "VELDO-0307 ac1/inside-a-recorded-worktree",
+    "the container meadow-web-1 has the worktree wt-b as proposed owner, by its compose_working_dir [None None conflict]"
+   ],
+   [
+    "VELDO-0307 ac1/by-where-the-path-leads",
+    "a path that leads into the worktree through a link outside it places the container [None conflict]"
+   ],
+   [
+    "VELDO-0307 ac1/no-proposal-when-undecided",
+    "the volume unstamped is a report with no proposed owner: no_identity [None no_label conflict]"
+   ],
+   [
+    "VELDO-0307 ac2/report-mode",
+    "and it shows the proposed owner [None]"
+   ],
+   [
+    "VELDO-0307 ac2/act-mode",
+    "in act mode the container orchard-web-1 is adopted with the worktree as parent [owner None, parent None, rule None]"
+   ],
+   [
+    "VELDO-0307 ac2/report-then-act",
+    "after meadow's switch to act the next snapshot adopts it: the report record is the item, with the worktree as parent [None None None]"
+   ],
+   [
+    "VELDO-0307 ac3/covered-later",
+    "before the protect list covers it the container is proposed to wt-c [None]"
+   ],
+   [
+    "VELDO-0307 loss/nothing-of-theirs-touched",
+    "the container the act-mode worktree adopted was stopped and removed by the removers: the fixture's removal is live [present []]"
+   ],
+   [
+    "VELDO-0307 protect/covered-after-adoption",
+    "while nothing covers it the container late-bind-1 is adopted to the worktree, and rule 2 passes it [None None ['ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children']]"
+   ],
+   [
+    "VELDO-0307 review/relative-label-refused",
+    "at removal: while its labels are absolute paths the container late-rel-1 is adopted to the worktree and rule 2 passes it [None ['ledger', 'protect', 'owner_live', 'process_use', 'unique_work', 'children']]"
+   ],
+   [
+    "VELDO-0307 review/split-owner-is-a-conflict",
+    "a bind source alone still places, and a path that cannot be read is said before any conflict"
+   ],
+   [
+    "VELDO-0307 split/every-path-inside-places",
+    "the container whose working folder, two configuration files and two bind sources all lead inside the act-mode worktree is adopted with it as parent [owner None, parent None, rule None]"
    ]
   ],
   "noop_red_rows": [],
