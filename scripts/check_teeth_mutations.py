@@ -13581,6 +13581,58 @@ def cases():
             "                            provisioner = clone.Clones(self.dispatches, **self.config['clones'])\n",
             ['f5/clones-given-space'])
 
+    # VELDO-0305: the run census and the run's space environment. The declared falsifier of each
+    # acceptance criterion. AC1: match the name target. AC2: record every untracked folder. AC3: set
+    # the variables without declaring. AC4: apply the ignored-folder rule to adopted worktrees. And
+    # the ways to lose work the amended criteria name beside them: a keep entry not read, an ignore
+    # rule nobody committed taken for the project's, every ignored folder taken for build output, the
+    # census left out at the receiver's end, and the values left out of what survives the wrapper's
+    # strip.
+    space305 = '143_veldo_0305_space_census.py'
+
+    def census305(name, old, new, rows):
+        add(305, name, space305, 'control_launch.py', old, new, rows)
+        result[-1]['siblings'] = True
+
+    covered305 = ("        elif source.get(folder) in committed or any(\n"
+                  "                fnmatch.fnmatchcase(os.path.basename(inside), pattern) for pattern in patterns):\n")
+    census305('space305-match-the-name-target', covered305,
+              "        elif os.path.basename(inside) == 'target':\n", ['ac1/any-ignored-folder'])
+    census305('space305-record-every-untracked-folder',
+              "    return {'build': sorted(build), 'kept': sorted(kept), 'work': sorted(set(work))}\n",
+              "    return {'build': sorted(set(build) | set(name.split('/')[0] for name in untracked if '/' in name)),\n"
+              "            'kept': sorted(kept), 'work': sorted(set(work))}\n",
+              ['ac2/untracked-never-recorded'])
+    census305('space305-variables-without-declaring',
+              "            if os.path.lexists(path):\n"
+              "                return dict(out, refusal=SPACE_UNAVAILABLE,\n"
+              "                            detail='the %s folder is there and no item records it' % name)\n",
+              "            if os.path.lexists(path):\n"
+              "                return dict(out, refusal=SPACE_UNAVAILABLE,\n"
+              "                            detail='the %s folder is there and no item records it' % name)\n"
+              "            if name == 'build':\n"
+              "                os.makedirs(path, mode=0o700)\n"
+              "                out[name] = path\n"
+              "                continue\n",
+              ['ac3/declared-before-worker'])
+    census305('space305-ignored-folder-rule-for-adopted',
+              "        read = census_read(where, adopted=bool(record.get('adopted')),\n",
+              "        read = census_read(where, adopted=False,\n", ['ac4/adopted-patterns-only'])
+    census305('space305-keep-entry-not-read',
+              "                           patterns=project.get('build_output') or (), keep=project.get('keep') or ())\n",
+              "                           patterns=project.get('build_output') or (), keep=())\n",
+              ['ac1/keep-entry'])
+    census305('space305-uncommitted-ignore-rule-counts',
+              "                if held is not None and held.strip() == _census_git(where, 'hash-object', '--', found).strip():\n",
+              "                if True:\n", ['ac1/uncommitted-rule'])
+    census305('space305-every-ignored-folder-is-build-output', covered305,
+              "        elif True:\n", ['ac1/personal-rule', 'ac2/ignored-uncovered'])
+    census305('space305-no-census-at-the-receivers-end',
+              "        if self.space is not None and given.get('worktree') and (self.supervision or {}).get('empty') is not False:\n",
+              "        if False:\n", ['ac3/run-end'])
+    census305('space305-values-lost-at-the-strip',
+              "    if values and ENGINE_OVERRIDES in environment:\n", "    if False:\n", ['ac3/engine-strip'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

@@ -199,6 +199,7 @@ WHAT IT IS NOT. No recovery of an unknown dispatch, leadership fencing or crash-
 import contextlib
 import copy
 import errno
+import fnmatch
 import hashlib
 import math
 import importlib.util
@@ -655,6 +656,302 @@ def space_standalone(path, kind, main=None, event='run_finished', ticket=None, s
     except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed
         return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
                 'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
+
+
+# VELDO-0305: the run census and the run's space environment (design 6.3). Nothing here deletes
+# anything: the census declares, confirms and measures, and what it declares goes later by Signal's
+# removers, after the safety rules and the keep step.
+CENSUS_SECONDS = 600
+SPACE_WORKTREES = ('worktree', 'agent_repository')  # the kinds whose folder is a run's worktree
+SPACE_STATIONS = ('build', 'review', 'gate')  # the stations the ledger records a run with
+SPACE_TEMPORARY = 'TMPDIR'
+SPACE_UNAVAILABLE = 'unavailable_service:space_ledger'
+
+
+class _CensusStop(Exception):
+    """A read the census could not make: it records nothing."""
+
+
+def _census_git(where, *argv, feed=None, absent=False):
+    """One git read of the census, through the one Git boundary: no GIT_ variable of the caller and
+    no system or global configuration reaches it, so a path only a personal excludes file ignores is
+    an untracked path here. Raises _CensusStop when git cannot say; with `absent`, a quiet failure
+    answers None."""
+    _git_process = _organ('git_process')
+    given = dict(env=dict(os.environ, LC_ALL='C'), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                 timeout=CENSUS_SECONDS)
+    given.update({'stdin': subprocess.DEVNULL} if feed is None else {'input': feed})
+    try:
+        done = _git_process.run(['git', '--no-optional-locks', '-c', 'core.fsmonitor=false', '-C', str(where)]
+                                + [str(word) for word in argv], **given)
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        raise _CensusStop('git could not be run: %s' % type(error).__name__) from None
+    if done.returncode:
+        if absent and done.returncode == 1 and not done.stderr.strip():
+            return None
+        raise _CensusStop('git could not read the worktree: '
+                          + done.stderr.decode('utf-8', 'replace').strip()[-200:])
+    return done.stdout.decode('utf-8', 'surrogateescape')
+
+
+def census_read(where, adopted=False, patterns=(), keep=()):
+    """What a run left in the worktree `where`, as git reads it now with every ignored path:
+    {build: [folder], kept: [folder], work: [path]}, each relative to the worktree.
+
+    build names every ignored folder git reports as a whole, at any depth and whatever its name,
+    that a committed ignore file of the worktree or a pattern the project declares covers. An ignore
+    file is committed when the worktree's HEAD holds it and the file on disk is that very content: a
+    rule somebody added and has not committed yet covers nothing. In a worktree reconcile adopted,
+    whose history nobody saw, the ignore files prove nothing and only the declared patterns count.
+    kept names the folders a keep entry of the project holds: the entry itself, anything inside it,
+    and a folder the entry lies in. They are left out.
+
+    work names everything else that is in no commit and is not build output, and so is unique work
+    (design 0.1): an untracked path git does not ignore, an ignored folder that neither a committed
+    ignore file nor a declared pattern covers (one only info/exclude ignores, one whose rule cannot
+    be traced), and a loose ignored file outside every build output folder. None of them is ever
+    recorded as an item. Raises _CensusStop when git cannot say."""
+    top = _census_git(where, 'rev-parse', '--show-toplevel').rstrip('\n')
+    if os.path.realpath(top) != os.path.realpath(where):
+        raise _CensusStop('the folder is not the top of a work tree')
+    entries = _census_git(where, 'status', '--porcelain=v1', '-z', '--ignored=matching',
+                          '--untracked-files=all').split('\0')[:-1]
+    untracked, ignored = [], []
+    while entries:
+        entry = entries.pop(0)
+        state, name = entry[:2], entry[3:]
+        if 'R' in state or 'C' in state:
+            entries.pop(0)  # the name it was renamed or copied from
+        if state == '!!':
+            ignored.append(name)
+        elif state == '??':
+            untracked.append(name)
+    folders = [name for name in ignored if name.endswith('/')]
+    work = untracked + [name for name in ignored if not name.endswith('/')]  # a loose ignored file is work
+    build, kept = [], []
+    source, committed = {}, set()
+    if folders:
+        rules = _census_git(where, 'check-ignore', '-v', '-z', '--stdin',
+                            feed=b''.join(os.fsencode(name) + b'\0' for name in folders)).split('\0')[:-1]
+        source = {rules[at + 3]: rules[at] for at in range(0, len(rules) - 3, 4)}
+        if not adopted:
+            for found in sorted(set(source.values())):
+                if os.path.isabs(found) or os.path.basename(found) != '.gitignore':
+                    continue  # info/exclude, or a file outside the worktree: a personal rule
+                held = _census_git(where, 'rev-parse', '--verify', '--quiet', 'HEAD:' + found, absent=True)
+                if held is not None and held.strip() == _census_git(where, 'hash-object', '--', found).strip():
+                    committed.add(found)
+    for folder in folders:
+        inside = folder.rstrip('/')
+        if any(inside == entry or inside.startswith(entry + '/') or entry.startswith(inside + '/')
+               for entry in keep):
+            kept.append(inside)
+        elif source.get(folder) in committed or any(
+                fnmatch.fnmatchcase(os.path.basename(inside), pattern) for pattern in patterns):
+            build.append(inside)
+        else:
+            work.append(folder)
+    return {'build': sorted(build), 'kept': sorted(kept), 'work': sorted(set(work))}
+
+
+def _space_live(ledger):
+    """The live items of the ledger that have an owner, by the path each is at."""
+    return {record['locator']['path']: (identity, record) for identity, record in sorted(ledger.items().items())
+            if record.get('state') not in SPACE_ENDED and (record.get('locator') or {}).get('path')
+            and record.get('owner') is not None}
+
+
+def _space_project(ledger, owner):
+    """What the project that owns an item declares, or nothing for an owner that is no project."""
+    scope = (owner or {}).get('scope') or {}
+    for project in ledger.projects:
+        if scope.get('type') == 'project' and project.get('project') == scope.get('id'):
+            return project
+    return {}
+
+
+def space_census(space, worktree, event, owner=None, also=()):
+    """VELDO-0305: the census of a run's worktree at one of the run's events, before Signal (design
+    6.3). Every ignored folder git reports in the worktree that a committed ignore file of the project
+    or a declared pattern covers (census_read) becomes a build output item inside the worktree's item:
+    declared by the census, confirmed, and measured. Then the sizes are written with `event`: each
+    build output, the worktree without them, and each folder of `also` (the run's scratch root and
+    build root) that a live item records.
+
+    `space` is the mapping space_signal is given; `owner` is the owner a new item gets (the run's),
+    and the worktree's own owner when none is given. The answer is {worktree, event, declared, items,
+    kept, work, sizes, refused, refusal}: the worktree's item, the items declared now, {path: item}
+    of every build output, the folders a keep entry held back, the paths that are unique work, {item:
+    bytes} as written, {path: reason} of what the ledger refused, and the reason nothing was read.
+
+    Work is never recorded: an untracked path git does not ignore, an ignored path nothing of the
+    project covers and a loose ignored file get no item, so nothing ever removes them as build output,
+    and they keep the worktree as unique work (section 7, rule 5 and the remover's last look). A
+    worktree no live item records gets nothing (not_in_ledger). Whatever cannot be read records
+    nothing, and nothing here raises or deletes."""
+    answer = {'worktree': None, 'event': event, 'declared': [], 'items': {}, 'kept': [], 'work': [],
+              'sizes': {}, 'refused': {}, 'refusal': None}
+    try:
+        ledger = space['ledger']
+        where = os.path.normpath(str(worktree))
+        live = _space_live(ledger)
+        held = live.get(where)
+        if held is None or held[1].get('kind') not in SPACE_WORKTREES:
+            answer['refusal'] = 'not_in_ledger'
+            return answer
+        identity, record = held
+        answer['worktree'] = identity
+        project = _space_project(ledger, record.get('owner'))
+        read = census_read(where, adopted=bool(record.get('adopted')),
+                           patterns=project.get('build_output') or (), keep=project.get('keep') or ())
+        answer['kept'], answer['work'] = read['kept'], read['work']
+        for inside in read['build']:
+            path = os.path.join(where, inside)
+            known = live.get(path)
+            if known is None:
+                made = ledger.declare('build_output', {'path': path}, owner or record['owner'], 'census',
+                                      parent=identity)
+                if made.get('ok'):
+                    made = dict(ledger.confirm(made['item']), item=made['item'])
+                if not made.get('ok'):
+                    answer['refused'][inside] = str(made.get('reason'))
+                    continue
+                answer['declared'].append(made['item'])
+                answer['items'][path] = made['item']
+            elif known[1].get('kind') == 'build_output':
+                answer['items'][path] = known[0]
+        if 'measure' not in _SPACE:
+            _SPACE['measure'] = _organ('control_space_remove').measure
+        outputs = 0
+        for path, item in sorted(answer['items'].items()):
+            try:
+                size = _SPACE['measure'](path)
+            except Exception:  # noqa: BLE001 - a folder that cannot be measured has no size written
+                continue
+            outputs += size
+            if ledger.measure(item, size, event).get('ok'):
+                answer['sizes'][item] = size
+        measured = [(where, identity)] + [(os.path.normpath(str(path)), live[os.path.normpath(str(path))][0])
+                                          for path in also if os.path.normpath(str(path)) in live]
+        for path, item in measured:
+            try:
+                size = _SPACE['measure'](path) - (outputs if path == where else 0)
+            except Exception:  # noqa: BLE001
+                continue
+            if ledger.measure(item, max(0, size), event).get('ok'):
+                answer['sizes'][item] = max(0, size)
+    except Exception as error:  # noqa: BLE001 - a census that could not read records nothing more
+        answer['refusal'] = 'census_failed'
+        answer['said'] = '%s: %s' % (type(error).__name__, str(error)[:300])
+    return answer
+
+
+def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=False):
+    """VELDO-0305 AC3: the folders a run is given, each declared in the ledger before it is made and
+    before the worker starts: the run's temporary folder, a scratch item under the installation's first
+    scratch root, and, for a project that declares build variables, the build root, a build output item
+    under the installation's first build root, named after the worktree. Both are owned by the run
+    (the worktree's scope and ticket, the run with its station). The answer is {worktree, item, owner,
+    scratch, build, items, environment, refusal, detail}; environment is what the worker is given:
+    the temporary folder variable at the scratch folder and each declared build variable at the
+    build root. A variable is in it only when its folder has a live item.
+
+    Declare, make, confirm, in that order (design 6.2). A folder that is already there with no live
+    item is never taken over: whatever is in it was not made by this run. The build root of a worktree
+    passes from one run of the worktree to the next, so one a live build output item records is used
+    as it is. A worktree no live item records, and a station the ledger has no run for, are given
+    nothing and the environment stays as it was (detail says which). So is a run in the confined
+    runner (`confined`), which has a temporary folder of its own and may write nowhere outside its
+    worktree: it gets its owner, for the census, and no folder. A ledger that refuses or cannot
+    be reached, a folder that cannot be made, and a build variable that names a variable of the
+    launch (`taken`, the reserved names, a factory name) refuse the launch: nothing is pointed at a
+    folder the ledger does not record."""
+    where = os.path.normpath(str(worktree))
+    out = {'worktree': where, 'item': None, 'owner': None, 'scratch': None, 'build': None, 'items': {},
+           'environment': {}, 'refusal': None, 'detail': None}
+    try:
+        ledger = space['ledger']
+        if station not in SPACE_STATIONS:
+            return dict(out, detail='station')
+        live = _space_live(ledger)
+        held = live.get(where)
+        if held is None or held[1].get('kind') not in SPACE_WORKTREES:
+            return dict(out, detail='not_in_ledger')
+        out['item'] = held[0]
+        base = held[1]['owner']
+        owner = {'scope': dict(base['scope']), 'run': {'id': dispatch_id, 'station': station}}
+        if base.get('ticket'):
+            owner['ticket'] = base['ticket']
+        out['owner'] = owner
+        if confined:
+            return dict(out, detail='confined_runner')
+        variables = list(_space_project(ledger, base).get('build_variables') or ())
+        for name in variables:
+            if (name == SPACE_TEMPORARY or name in ENGINE_RESERVED or name in taken
+                    or name.startswith((FACTORY_PREFIX,) + SESSION_PREFIXES)):
+                return dict(out, refusal='invalid_input:space_build_variable:' + name,
+                            detail='a build variable names a variable of the launch')
+        wanted = [('scratch', 'scratch', (ledger.config['scratch_roots']['roots'] or [None])[0],
+                   lambda root: run_directory(os.path.join(root, 'runs'), dispatch_id))]
+        if variables:
+            wanted.append(('build', 'build_output', (ledger.config['build_roots'] or [None])[0],
+                           lambda root: os.path.join(root, '%s-%s' % (
+                               os.path.basename(where), hashlib.sha256(where.encode()).hexdigest()[:12]))))
+        for name, kind, root, place in wanted:
+            if not root:
+                return dict(out, refusal=SPACE_UNAVAILABLE, detail='the installation names no %s root' % name)
+            path = os.path.normpath(place(str(root)))
+            known = live.get(path)
+            if known is not None:
+                mine = (known[1]['owner'].get('run') or {}).get('id') == dispatch_id
+                if (known[1].get('kind') != kind or (name == 'scratch' and not mine)
+                        or known[1]['owner'].get('scope') != owner['scope']
+                        or os.path.islink(path) or not os.path.isdir(path)):
+                    return dict(out, refusal=SPACE_UNAVAILABLE,
+                                detail='the %s folder is recorded as something else: %s' % (name, known[0]))
+                out[name], out['items'][path] = path, known[0]
+                continue
+            if os.path.lexists(path):
+                return dict(out, refusal=SPACE_UNAVAILABLE,
+                            detail='the %s folder is there and no item records it' % name)
+            made = ledger.declare(kind, {'path': path}, owner, 'seam')
+            if not made.get('ok'):
+                return dict(out, refusal=SPACE_UNAVAILABLE,
+                            detail='declare refused: %s' % (made.get('reason'),))
+            out['items'][path] = made['item']
+            try:
+                os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+                os.mkdir(path, 0o700)
+            except OSError as error:
+                if space_absent(path):
+                    ledger.gone(made['item'])  # the creation failed and nothing is there (design 6.2)
+                return dict(out, refusal=SPACE_UNAVAILABLE,
+                            detail='the %s folder could not be made: %s' % (name, type(error).__name__))
+            confirmed = ledger.confirm(made['item'])
+            if not confirmed.get('ok'):
+                return dict(out, refusal=SPACE_UNAVAILABLE,
+                            detail='confirm refused: %s' % (confirmed.get('reason'),))
+            out[name] = path
+        out['environment'][SPACE_TEMPORARY] = out['scratch']
+        for name in variables:
+            out['environment'][name] = out['build']
+    except Exception as error:  # noqa: BLE001 - a ledger that cannot be reached gives the run nothing
+        return dict(out, environment={}, refusal=SPACE_UNAVAILABLE,
+                    detail='%s: %s' % (type(error).__name__, str(error)[:300]))
+    return out
+
+
+def space_environment(environment, values):
+    """`environment` with the run's space values set. An engine launch's environment is stripped by
+    the trusted wrapper at the exec (engine_environment), the temporary folder variable included, and
+    only what ENGINE_OVERRIDES carries is installed again: so the values are written there too."""
+    environment = dict(environment)
+    environment.update(values)
+    if values and ENGINE_OVERRIDES in environment:
+        own = json.loads(environment[ENGINE_OVERRIDES])
+        own.update(values)
+        environment[ENGINE_OVERRIDES] = json.dumps(own, sort_keys=True)
+    return environment
 
 
 def clone_users(clones, dispatches, dispatch_id, space=None):
@@ -1476,6 +1773,9 @@ class Receiver:
         # VELDO-0303: the space ledger and what Signal is given (space_signal), or None where there is none;
         # and what Signal answered for this receiver's run directory.
         self.space, self.run_removal, self.run_dispatch = space, None, None
+        # VELDO-0305: what the run was given before its worker started (space_run_folders), and what the
+        # census read at its end (space_census).
+        self.space_run, self.run_census = None, None
         self.profile = config.get('profile')
         self.qualification = None
         self.supervision = None
@@ -1566,6 +1866,13 @@ class Receiver:
         With a space ledger the removal is Signal's, and nothing is deleted here (VELDO-0303)."""
         run, self.run = self.run, None
         stays = run is None or (self.supervision or {}).get('empty') is False
+        given = getattr(self, 'space_run', None) or {}
+        if self.space is not None and given.get('worktree') and (self.supervision or {}).get('empty') is not False:
+            # VELDO-0305: the census of the run's worktree at the run's end, before Signal (design 8.1,
+            # step 7): the build output the run left is declared now, so run finished can reach it, and
+            # what is work gets no item. It declares and measures and deletes nothing.
+            self.run_census = space_census(self.space, given['worktree'], 'run_finished', owner=given.get('owner'),
+                                           also=[path for path in (given.get('scratch'), given.get('build')) if path])
         if not stays and self.space is not None:
             # VELDO-0303: the run directory is an item of this dispatch, and run finished removes it through
             # Signal. Rule 3 is answered here only when the group is known to be empty, or the engine never
@@ -1579,7 +1886,7 @@ class Receiver:
                 self.run_removal = {'item': None, 'state': None, 'deferral': 'clone_in_use', 'users': users}
                 return
             self.run_removal = space_signal(
-                self.space, 'run_finished', [run], 'receiver',
+                self.space, 'run_finished', [run] + [path for path in (given.get('scratch'),) if path], 'receiver',
                 ended=(self.supervision or {}).get('empty', True) is True)[os.path.normpath(run)]
         elif not stays:
             # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
@@ -2217,6 +2524,8 @@ class Receiver:
                if (getattr(self, 'contract', None) or {}).get('subject_kind') == 'conversation' else None)
         if cwd is not None:
             os.makedirs(cwd, mode=0o700, exist_ok=True)
+        # VELDO-0305: the run's temporary folder and build root, declared before the worker exists.
+        environment = self._space_given(dispatch_id, argv, environment, adapter)
         # VELDO-0141: the run's resolved values and its execution record, before the worker exists; its error
         # stream comes to this receiver, which keeps it in the record.
         self._record(adapter, environment)
@@ -2248,6 +2557,29 @@ class Receiver:
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, env=environment, cwd=cwd,
                                 start_new_session=True, close_fds=True)
+
+    def _space_given(self, dispatch_id, argv, environment, adapter):
+        """VELDO-0305 AC3: with a space ledger, the run's temporary folder and build variables point at
+        folders the ledger holds before the worker starts (space_run_folders); a folder that could not be
+        declared refuses the launch by name, with nothing spawned. Nothing is given to an engine on another
+        host, whose folders are not this host's, nor to a run in the confined runner, which gives the
+        engine a temporary folder of its own and lets it write nowhere outside its worktree: what such a
+        run builds stays in the worktree, where the census reads it."""
+        self.space_run = None
+        space = getattr(self, 'space', None)
+        if space is None:
+            return environment
+        worktree = self._engine_cwd(argv, dispatch_id, adapter.get('identity', 'local') == 'reported')
+        if not worktree:
+            return environment
+        contract = getattr(self, 'contract', None) or {}
+        given = space_run_folders(space, worktree, dispatch_id, contract.get('station'),
+                                  taken=tuple(getattr(self, 'delivered', None) or ()),
+                                  confined=(getattr(self, 'runner', None) or {}).get('runner') == 'confined')
+        self.space_run = given
+        if given['refusal']:
+            raise C.Refused(given['refusal'], given.get('detail') or '')
+        return space_environment(environment, given['environment'])
 
     def _resolve_credentials(self, adapter):
         """VELDO-0158 AC1, AC2: the catalog servers the dispatch configuration selects, with their credentials

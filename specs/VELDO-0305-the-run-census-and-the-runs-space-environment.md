@@ -93,3 +93,42 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   nothing of the project covers, and a loose ignored file outside every build output folder, make the
   worktree unique work, because git's non-forced worktree remove deletes ignored files without refusing.
   Both falsifiers are unchanged. Rule 5's reading of such a path is VELDO-0347 AC1.
+- 2026-11-14: built. No acceptance criterion changed. What the build decided, recorded here because
+  the criteria do not say it:
+  - Where it is. Three functions in control_launch.py, the receiver's module and the one engine file
+    in this footprint: space_census, space_run_folders and space_environment. The receiver calls the
+    second from its one spawn, before the execution record and before any process is started, and the
+    first from its end, before it sends run finished. Neither deletes anything: the census declares,
+    confirms and measures, and what it declares goes later by Signal's removers. Nothing in the
+    engine builds `space` yet (VELDO-0303's note), so until that is wired a run is given what it was
+    given before.
+  - Committed means in HEAD and unchanged. An ignore file covers a folder only when the worktree's
+    HEAD holds that file and the file on disk is that very content. A rule somebody added and has not
+    committed covers nothing, so a worker cannot turn a folder of notes into build output by editing
+    the ignore file. This is narrower than the remover's last look, which asks only that git tracks
+    the file; the two agree again once the rule is committed.
+  - A keep entry holds the folder it is, a folder inside it, and a folder it lies in: when the
+    project keeps models/weights and git reports models/ as one ignored folder, the whole folder is
+    left out, because removing it would take the kept path with it.
+  - A declared pattern is matched against an ignored folder's own name, as the remover matches it.
+    A folder git does not ignore is never recorded, whatever its name (AC2).
+  - The census is for a worktree a live item records, of the kind worktree or agent repository. One
+    no item records gets nothing, and the answer says not_in_ledger. New items are owned by the run
+    when the receiver names it, so run finished reaches them, and by the worktree's owner otherwise.
+  - The folders. The temporary folder is <first scratch root>/runs/<the dispatch's digest>, a
+    scratch item. The build root, for a project that declares build variables, is <first build
+    root>/<the worktree's name>-<a digest of its path>, a build output item; one a live build output
+    item of the same scope records is used as it is, so it passes from one run of a worktree to the
+    next. A folder that is already there with no live item is never taken over, and the launch is
+    refused as unavailable_service:space_ledger, as it is when the ledger refuses or cannot be
+    reached. A build variable that names a variable of the launch (a reserved name, a factory name, a
+    delivered credential) is refused as invalid_input:space_build_variable.
+  - Who is given nothing: a worktree no item records, a station the ledger has no run for
+    (coordination, turn), an engine on another host, and a run in the confined runner, which has a
+    temporary folder of its own and may write nowhere outside its worktree. Their environment is
+    unchanged, and what such a run builds stays in the worktree, where the census reads it.
+  - An engine's environment is stripped by the trusted wrapper at the exec, the temporary folder
+    variable included, so the values are also written into what the wrapper installs again.
+  - Not built here: the run's label and compose project name and the census of Docker objects
+    (VELDO-0306), the order census, Signal, release and the conclusive end (VELDO-0308), the gate's
+    census at a verdict (VELDO-0309), and rule 5's own reading of ignored work (VELDO-0347 AC1).
