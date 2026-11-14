@@ -323,7 +323,7 @@
   "red_details": [
    [
     "VELDO-0303 loss/fleet-nested-repository",
-    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-87hdtdg6/plain-worktrees/outer/build/dependency': No such file or directory\n File \"/home/dmitry/projects/veldo-worktrees/space-management/scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-87hdtdg6/plain-worktrees/outer/build/dependency': No such file or directory |"
+    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-87hdtdg6/plain-worktrees/outer/build/dependency': No such file or directory\n File \"./scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-87hdtdg6/plain-worktrees/outer/build/dependency': No such file or directory |"
    ]
   ],
   "noop_red_rows": [],
@@ -352,7 +352,7 @@
    ],
    [
     "VELDO-0303 loss/fleet-nested-repository",
-    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/outer/build/dependency': No such file or directory\n File \"/home/dmitry/projects/veldo-worktrees/space-management/scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/outer/build/dependency': No such file or directory |"
+    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/outer/build/dependency': No such file or directory\n File \"./scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-dw7oc2jm/plain-worktrees/outer/build/dependency': No such file or directory |"
    ]
   ],
   "noop_red_rows": [],
@@ -394,7 +394,7 @@
   "red_details": [
    [
     "VELDO-0303 loss/run-directory-repository",
-    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-8lo16gjj/state/runs/f2be06c9a6199d11b134712ea672a1ba/config/checkout': No such file or directory\n File \"/home/dmitry/projects/veldo-worktrees/space-management/scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-8lo16gjj/state/runs/f2be06c9a6199d11b134712ea672a1ba/config/checkout': No such file or directory |"
+    "raised RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-8lo16gjj/state/runs/f2be06c9a6199d11b134712ea672a1ba/config/checkout': No such file or directory\n File \"./scripts/suites/142_veldo_0303_space_paths.py\", line 170, in git | raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:])) | RuntimeError: git rev-parse HEAD: fatal: cannot change to '/tmp/veldo-0303-8lo16gjj/state/runs/f2be06c9a6199d11b134712ea672a1ba/config/checkout': No such file or directory |"
    ]
   ],
   "noop_red_rows": [],
