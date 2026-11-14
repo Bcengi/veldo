@@ -181,3 +181,18 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     fe486efb (VELDO-0305, review) by the run that was fixing VELDO-0305 in the same worktree at the
     same time, before their engine copies were synced. This fix's own commit holds the synced engine
     copies, the suite, the driver and the rest; between the two commits the template-sync check is red.
+- 2026-11-14: fixed from the second review of this build (review2-veldo-0306.md, N1, low). No acceptance
+  criterion changed.
+  - The Ledger adds the snapshot store to the protect list as a path with no engine named, and the two
+    mount checks (control_space_docker.mount_protected at adoption, control_space_probe.mounts at
+    removal) kept only the entries that name the container's engine, path entries too. A container with
+    a run's label that binds the snapshot store was adopted and could be stopped and removed. Both
+    checks now read every path entry, whatever engines it names: a protected path is protected on every
+    engine, as rule 2 for a path already has it. Configured path entries name every engine, so only the
+    Ledger's entry changes. Volume and compose project entries are still read by engine.
+  - Row rereview/snapshot-store-mount, on the stand-in engine: a labelled container that binds the
+    store on one context, and one that binds a folder beneath it on the other, get neither an item nor
+    a report; one recorded before it bound the store is deferred as protected at removal and asked
+    nothing. Two cases: space306-rereview-store-mount-adopted and space306-rereview-store-mount-removed.
+  - The suite now loads control_space_probe.py through its PRODUCTION map, so a mutant of the probe can
+    run and the real-engine row's guard compares the probe with its canon too.

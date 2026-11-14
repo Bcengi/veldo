@@ -101,6 +101,11 @@ there with their data; that row stays green under the mutants that give an unlab
 live run, where the client's refusals are what kept them. review/never-under-a-mutant: the row's own
 refusal to run.
 
+The second review's row: rereview/snapshot-store-mount (the Ledger protects the snapshot store as a path
+with no engine named; a container with the run's label that binds the store, or a folder beneath it,
+gets neither an item nor a report on either context, and one recorded before it bound the store is
+refused by rule 2 at removal: a protected path is protected on every engine).
+
 The review's other rows: review/protected-mount (a container that mounts a protected volume, a volume
 of a protected compose project or a protected path gets neither an item nor a report, with the run's
 label on it; one recorded before it mounted a protected volume, and one whose mounts cannot be read,
@@ -136,6 +141,7 @@ def _v306_space_docker_suite():
         'control_space_kinds.py': ROOT / ".veldo" / "control_space_kinds.py",
         'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
+        'control_space_probe.py': ROOT / ".veldo" / "control_space_probe.py",
     }
     VELDO = ROOT / '.veldo'
 
@@ -155,7 +161,7 @@ def _v306_space_docker_suite():
             'loss/volume-made-again', 'loss/engine-unreadable', 'docker/canon',
             'review/protected-mount', 'review/volume-labels-rule-1', 'review/events-since-the-snapshot',
             'review/engine-down-reported', 'review/own-row-on-a-stand-in', 'review/host-object-untouched',
-            'review/never-under-a-mutant')
+            'review/never-under-a-mutant', 'rereview/snapshot-store-mount')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -187,7 +193,7 @@ def _v306_space_docker_suite():
         CM = load('v306_control_membership', VELDO / 'control_membership.py')
         CFG = load('v306_control_space_config', VELDO / 'control_space_config.py')
         YAML = load('v306_yamlish', VELDO / 'yamlish.py')
-        P = load('v306_control_space_probe', VELDO / 'control_space_probe.py')
+        P = load('v306_control_space_probe', PRODUCTION['control_space_probe.py'])
         RM = load('v306_control_space_remove', VELDO / 'control_space_remove.py')
         KP = load('v306_control_space_keep', VELDO / 'control_space_keep.py')
         AC = CM.AC
@@ -888,6 +894,58 @@ def _v306_space_docker_suite():
               and ENGINE.find('desktop-linux', 'volume', 'ledger_files') is ledger_files
               and ledger_files['Data'] == 'the ledger\'s files')
         blind['Mounts'] = []
+
+        # ------------------------------------------------------------------------------------
+        # The second review, N1: a container that mounts the snapshot store
+        # ------------------------------------------------------------------------------------
+        ROW = 'rereview/snapshot-store-mount'
+        R9S = 'run-306-store'
+        live_run(R9S)
+        STORE = L.snapshot_store
+        store_entry = [entry for entry in L.protect if entry['type'] == 'path' and entry['value'] == STORE]
+        check(ROW, 'the Ledger protects the snapshot store as a path with no engine named [%s]' % (store_entry,),
+              len(store_entry) == 1 and list(store_entry[0].get('engines', ())) == [])
+        STORE_MOUNTING = {
+            'uses-store-1': ('default', ENGINE.container('default', 'uses-store-1', run_label(R9S),
+                                                         binds=[STORE])),
+            'uses-store-inside-1': ('desktop-linux', ENGINE.container(
+                'desktop-linux', 'uses-store-inside-1', compose_label(R9S), binds=[STORE + '/objects'])),
+        }
+        store_later = ENGINE.container('default', 'store-later-1', run_label(R9S))
+        store_plain = ENGINE.container('default', 'store-plain-1', run_label(R9S),
+                                       binds=[str(SCRATCH / 'elsewhere')])
+        seen = len(ADAPTER.observations)
+        snapshots()
+        said = {entry['name']: entry for entry in ADAPTER.observations[seen:] if entry['what'] in ('protected', 'refused')}
+        for name, (context, record) in STORE_MOUNTING.items():
+            check(ROW, 'the container %s binds the snapshot store: it gets neither an item nor a report [%s %s]'
+                  % (name, last_at(context, 'container', name), said.get(name)),
+                  last_at(context, 'container', name) == []
+                  and (said.get(name) or {}).get('what') == 'protected'
+                  and str((said.get(name) or {}).get('refusal')).startswith('space_protected:path:' + STORE))
+        item_store_later = record_at('default', 'container', 'store-later-1')[0]
+        item_store_plain = record_at('default', 'container', 'store-plain-1')[0]
+        check(ROW, 'a container of the run that binds another folder is an item, and so is one that binds nothing yet',
+              None not in (item_store_later, item_store_plain))
+        # After it was recorded: it now binds the snapshot store.
+        store_later['Mounts'] = [{'Type': 'bind', 'Source': STORE, 'Destination': '/host'}]
+        done = send('run_finished', {'run': R9S})
+        found = (item_store_later and (L.item(item_store_later).get('deferral') or {}).get('found')) or {}
+        check(ROW, 'at removal rule 2 reads the mounts again: the recorded container that now binds the snapshot '
+              'store is deferred as protected [%s %s]' % (named(done, item_store_later), found),
+              item_store_later is not None and named(done, item_store_later) == ('deferred', 'protected', 'protect')
+              and found.get('entry') == 'path:' + STORE and found.get('how') == 'mounted_path'
+              and found.get('mount') == STORE)
+        check(ROW, 'no container that binds the snapshot store was named to a stop or a remove, and each runs [%s]'
+              % (ENGINE.asked(store_later['Id']),),
+              ENGINE.asked(store_later['Id']) == [] and store_later['State']['Status'] == 'running'
+              and all(ENGINE.asked(record['Id']) == [] and ENGINE.asked(name) == []
+                      and record['State']['Status'] == 'running'
+                      for name, (context, record) in STORE_MOUNTING.items()))
+        check(ROW, 'the container that binds another folder is removed [%s]' % (named(done, item_store_plain),),
+              item_store_plain is not None and named(done, item_store_plain)[0] == 'removed'
+              and ENGINE.find('default', 'container', 'store-plain-1') is None)
+        store_later['Mounts'] = []
 
         # ------------------------------------------------------------------------------------
         # The review, finding 5: rule 1 compares a volume's labels

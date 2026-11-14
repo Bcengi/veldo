@@ -13777,6 +13777,15 @@ def cases():
               "        if not held['read']:\n"
               "            return {'entry': None, 'how': 'mounts_unread', 'unread': held['said']}\n", "",
               ['review/protected-mount'], module='control_space_signal.py')
+    # The second review, N1: a protected path is protected on every engine, at adoption and at removal.
+    docker306('space306-rereview-store-mount-adopted',
+              "            for entry in protect:\n                if entry['type'] != 'path':\n",
+              "            for entry in entries:\n                if entry['type'] != 'path':\n",
+              ['rereview/snapshot-store-mount'])
+    docker306('space306-rereview-store-mount-removed',
+              "            for entry in protect:\n                if entry['type'] != 'path':\n",
+              "            for entry in entries:\n                if entry['type'] != 'path':\n",
+              ['rereview/snapshot-store-mount'], module='control_space_probe.py', siblings=True)
     docker306('space306-review-start-without-since',
               "            done[engine] = self.snapshot(engine)\n            self.subscribe(engine, since)\n",
               "            done[engine] = self.snapshot(engine)\n            self.subscribe(engine)\n",

@@ -545,7 +545,9 @@ def mounts(locator, protect, run=None):
         elif mount.get('Type') == 'bind':
             if not (isinstance(source, str) and source.startswith('/')):
                 return dict(facts, said='a bind mount has no source path')
-            for entry in entries:
+            # A protected path is protected on every engine: the snapshot store, which the Ledger adds
+            # with no engine, is covered like a configured path.
+            for entry in protect:
                 if entry['type'] != 'path':
                     continue
                 value = os.path.normpath(entry['value'])
