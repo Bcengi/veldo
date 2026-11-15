@@ -29,3 +29,11 @@ selftest (PARTIAL, 1 of 211 suites): 85 passed, 0 failed in 17.91s
   141_veldo_0344_process_reader                   61 passed   13.37s
 selftest (PARTIAL, 1 of 222 suites): 87 passed, 0 failed in 13.37s
 # Suites 130 to 140 were not run again in this round. Suite 151_veldo_0313_space_run, which uses the block's label, in the gate's confinement: 50 passed, 0 failed (24 rows).
+
+# 2026-11-15, the fix after the review of the run label (an environment is read whole, of one program, or it is unread), on the tree of 8bdfd9876983. One run, alone, with python3 scripts/selftest.py and the suite option:
+  SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is not installed at /usr/local/lib/veldo/veldo-procread on this host; the row runs after the owner's setup (docs/veldo-procread-setup.txt)
+  141_veldo_0344_process_reader                   62 passed   57.36s
+selftest (PARTIAL, 1 of 222 suites): 88 passed, 0 failed in 57.36s
+# The same suite before the commit, on the same files, alone: 88 passed, 0 failed in 35.53s. Row reader/whole-read reads the whole process table of the host 150 times, so the suite's time follows the host's load.
+# The review's case by hand before the row was written, a static program that carries VELDO_SPACE_LABEL=run77 and executes itself again without end, 150 reads of each reader: the reader of 2df0c67cd342 gave l =72756e3737 129 times and l - 21 times; this reader gave l =72756e3737 150 times, l - 0 times, x env 0 times.
+# Suites 130 to 140 were not run again in this round. Suite 151_veldo_0313_space_run, whose scan reads an environment by the same rule, in the gate's confinement: 51 passed, 0 failed (25 rows). Suite 152_veldo_0313_house_group, unconfined: 30 passed, 0 failed (4 rows). Suite 148_veldo_0311_git_hooks, unconfined: 57 passed, 0 failed (31 rows).

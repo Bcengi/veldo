@@ -13,10 +13,6 @@
    [
     "VELDO-0344 ac1/digest",
     "another program at the path: the state is refused:digest [used: None]"
-   ],
-   [
-    "VELDO-0344 ac6/refused-executes-nothing",
-    "with a digest that is not the pinned one the entry executes nothing [0 b'checked 0 veldo-procread\\n']"
    ]
   ],
   "noop_red_rows": [],
@@ -156,42 +152,18 @@
    "ac2/directory-descriptor"
   ],
   "red_rows": [
-   "ac2/open-file-only",
    "ac2/directory-descriptor",
-   "ac2/mapped-only",
-   "ac2/second-thread-descriptor",
    "ac2/inode-alone",
-   "reader/facts-of-every-thread",
-   "ac3/unlistable-folder"
+   "ac2/mapped-only",
+   "ac2/open-file-only",
+   "ac2/second-thread-descriptor",
+   "ac3/unlistable-folder",
+   "reader/facts-of-every-thread"
   ],
   "red_details": [
    [
     "VELDO-0344 ac2/open-file-only",
     "a process that holds nothing but an open file beneath the item holds it [[]]"
-   ],
-   [
-    "VELDO-0344 ac2/directory-descriptor",
-    "a process that holds only a directory descriptor on the item holds it [[]]"
-   ],
-   [
-    "VELDO-0344 ac2/mapped-only",
-    "a process that only maps a file of the item holds it [[]]"
-   ],
-   [
-    "VELDO-0344 ac2/second-thread-descriptor",
-    "a process whose second thread holds a file of the item in a table of its own holds it, named by that thread [[]]"
-   ],
-   [
-    "VELDO-0344 ac2/inode-alone",
-    "a descriptor printed with the device 0:99 and an inode number of the item holds it [[]]"
-   ],
-   [
-    "VELDO-0344 reader/facts-of-every-thread",
-    "matched against the item, the reader's facts name the second thread's working directory, the third thread's file, the map and the descriptor python keeps for the map [None [{'how': 'cwd', 'tid': 3832095, 'device': '259:2', 'inode': 19186977, 'item_device': '259:2'}]]"
-   ],
-   [
-    "VELDO-0344 ac3/unlistable-folder",
-    "while every folder can be listed the file inside is matched [[]]"
    ]
   ],
   "noop_red_rows": [],
@@ -211,10 +183,6 @@
    [
     "VELDO-0344 ac2/mapped-only",
     "a process that only maps a file of the item holds it [[]]"
-   ],
-   [
-    "VELDO-0344 reader/facts-of-every-thread",
-    "matched against the item, the reader's facts name the second thread's working directory, the third thread's file, the map and the descriptor python keeps for the map [None [{'how': 'fd', 'tid': 3855876, 'device': '259:2', 'inode': 21245168, 'item_device': '259:2'}, {'how': 'cwd', 'tid': 3855878, 'device': '259:2', 'inode': 21245166, 'item_device': '259:2'}, {'how': 'fd', 'tid': 3855906, 'device': '259:2', 'inode': 21245167, 'item_device': '259:2'}]]"
    ]
   ],
   "noop_red_rows": [],
@@ -234,10 +202,6 @@
    [
     "VELDO-0344 ac2/second-thread-cwd",
     "a process whose second thread sits in the item holds it, named by that thread [[]]"
-   ],
-   [
-    "VELDO-0344 reader/facts-of-every-thread",
-    "matched against the item, the reader's facts name the second thread's working directory, the third thread's file, the map and the descriptor python keeps for the map [None [{'how': 'fd', 'tid': 3857120, 'device': '259:2', 'inode': 19059029, 'item_device': '259:2'}, {'how': 'fd', 'tid': 3857157, 'device': '259:2', 'inode': 19059028, 'item_device': '259:2'}, {'how': 'maps', 'tid': None, 'device': '259:2', 'inode': 19059029, 'item_device': '259:2'}]]"
    ]
   ],
   "noop_red_rows": [],
@@ -257,10 +221,6 @@
    [
     "VELDO-0344 ac2/second-thread-descriptor",
     "a process whose second thread holds a file of the item in a table of its own holds it, named by that thread [[]]"
-   ],
-   [
-    "VELDO-0344 reader/facts-of-every-thread",
-    "matched against the item, the reader's facts name the second thread's working directory, the third thread's file, the map and the descriptor python keeps for the map [None [{'how': 'fd', 'tid': 3858165, 'device': '259:2', 'inode': 19186982, 'item_device': '259:2'}, {'how': 'cwd', 'tid': 3858205, 'device': '259:2', 'inode': 19186980, 'item_device': '259:2'}, {'how': 'maps', 'tid': None, 'device': '259:2', 'inode': 19186982, 'item_device': '259:2'}]]"
    ]
   ],
   "noop_red_rows": [],
@@ -298,10 +258,6 @@
    [
     "VELDO-0344 ac3/unread-fact",
     "a block with an x line leaves the process unread, judged by the bound: in use [[]]"
-   ],
-   [
-    "VELDO-0344 ac4/unread-without-capability",
-    "for a process it may not read it prints x lines, and the block is not whole [['237553636', 't 3865775', 'x cwd 13', 'x env 13', 'x fd 13', 'x maps 13']]"
    ]
   ],
   "noop_red_rows": [],
@@ -350,81 +306,61 @@
    "ac6/reads-through-the-socket"
   ],
   "red_rows": [
+   "ac1/bytes-before-the-byte",
    "ac1/capability-root-id",
+   "ac1/header-cap",
    "ac1/no-socket",
+   "ac1/reader-locks-first",
+   "ac1/second-writer",
+   "ac1/used",
    "ac1/writer",
    "ac1/writer-gone",
-   "ac1/bytes-before-the-byte",
-   "ac1/second-writer",
-   "ac1/header-cap",
-   "ac1/reader-locks-first",
-   "ac1/used",
    "ac2/cwd",
-   "ac2/open-file-only",
    "ac2/directory-descriptor",
+   "ac2/inode-alone",
    "ac2/mapped-only",
+   "ac2/open-file-only",
+   "ac2/outside-not-counted",
    "ac2/second-thread-cwd",
    "ac2/second-thread-descriptor",
-   "ac2/inode-alone",
-   "ac2/outside-not-counted",
-   "reader/facts-of-every-thread",
-   "reader/maps",
-   "reader/label",
-   "label/table",
-   "ac3/root-login",
-   "ac3/unread-fact",
    "ac3/no-block-or-start",
+   "ac3/root-login",
    "ac3/unlistable-folder",
-   "ac4/no-argument",
-   "ac4/format",
+   "ac3/unread-fact",
    "ac4/entries",
    "ac4/filter",
+   "ac4/format",
+   "ac4/no-argument",
    "ac4/unread-without-capability",
    "ac5/cut",
-   "ac5/not-whole",
    "ac5/exit-status",
    "ac5/failed-write",
+   "ac5/not-whole",
    "ac5/waits-after-end",
-   "ac6/units",
-   "ac6/reads-through-the-socket",
    "ac6/executes-the-checked-descriptor",
-   "ac6/refused-executes-nothing",
    "ac6/reader-units",
-   "ac7/reproducible",
-   "ac7/recorded-digest",
+   "ac6/reads-through-the-socket",
+   "ac6/refused-executes-nothing",
+   "ac6/units",
    "ac7/compiler-not-from-path",
-   "ac7/setcap-after-digest",
-   "ac7/no-replace-objects",
    "ac7/digest-from-the-review-record",
+   "ac7/no-replace-objects",
+   "ac7/recorded-digest",
+   "ac7/reproducible",
+   "ac7/setcap-after-digest",
    "ac8/second-thread-cwd",
    "ac8/second-thread-descriptor",
    "ac8/unreadable-task",
    "config/process-reader",
-   "signal/deferral-names-the-reader",
-   "reader/canon"
+   "label/table",
+   "reader/canon",
+   "reader/facts-of-every-thread",
+   "reader/label",
+   "reader/maps",
+   "reader/whole-read",
+   "signal/deferral-names-the-reader"
   ],
-  "red_details": [
-   [
-    "VELDO-0344 ac1/capability-root-id",
-    "version 3 with root id 0 is used [refused:failed]"
-   ],
-   [
-    "VELDO-0344 ac1/no-socket",
-    "no socket at the path: the state is refused:no_socket [refused:failed: PermissionError: [Errno 13] Permission denied: '/tmp/veldo-0344-1drvlgnq/installed/veldo-procread']"
-   ],
-   [
-    "VELDO-0344 ac1/writer",
-    "a stand-in on the socket, by its real status: the state is refused:writer [refused:failed: PermissionError: [Errno 13] Permission denied: '/tmp/veldo-0344-1drvlgnq/installed/veldo-procread']"
-   ],
-   [
-    "VELDO-0344 ac1/writer-gone",
-    "a writer that ended before the last look is refused [refused:failed: PermissionError: [Errno 13] Permission denied: '/tmp/veldo-0344-1drvlgnq/installed/veldo-procread'; looks 0]"
-   ],
-   [
-    "VELDO-0344 reader/canon",
-    "raised AttributeError: 'NoneType' object has no attribute 'pid' File \"/home/dmitry/projects/veldo-worktrees/space-management/scripts/suites/141_veldo_0344_process_reader.py\", line 549, in _v344_process_reader_suite | status = Path('/proc/%d/status' % became.pid).read_text() | ^^^^^^^^^^ | AttributeError: 'NoneType' object has no attribute 'pid'"
-   ]
-  ],
+  "red_details": [],
   "noop_red_rows": [],
   "red_as_expected": true
  },
@@ -460,10 +396,6 @@
    [
     "VELDO-0344 ac8/second-thread-cwd",
     "a readable process whose second thread sits in the path, with a file system state of its own, uses it [[]]"
-   ],
-   [
-    "VELDO-0344 ac8/unreadable-task",
-    "a process with a task the probe cannot read is unread [[(70, 'privileged_login')]]"
    ]
   ],
   "noop_red_rows": [],
@@ -485,14 +417,6 @@
    [
     "VELDO-0344 ac8/second-thread-cwd",
     "a readable process whose second thread sits in the path, with a file system state of its own, uses it [[]]"
-   ],
-   [
-    "VELDO-0344 ac8/second-thread-descriptor",
-    "a readable process whose second thread holds a file of the path in a table of its own uses it [[]]"
-   ],
-   [
-    "VELDO-0344 ac8/unreadable-task",
-    "a process with a task the probe cannot read is unread [[(70, 'privileged_login')]]"
    ]
   ],
   "noop_red_rows": [],
@@ -512,10 +436,6 @@
    [
     "VELDO-0344 ac4/filter",
     "a patched copy that calls kill after the filter is ended by the kernel [0]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [8f0fc36a440a4037f3f1afaad34da2b5f5374a20cee43dad2f496bd8fdc95925]"
    ]
   ],
   "noop_red_rows": [],
@@ -535,10 +455,6 @@
    [
     "VELDO-0344 ac4/filter",
     "a patched copy that calls pidfd_getfd after the filter is ended by the kernel [0]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [28ba164d2b69f9eaf4c734a0568d2d4c3cdb45b75c358094a2e8a95aac846324]"
    ]
   ],
   "noop_red_rows": [],
@@ -558,10 +474,6 @@
    [
     "VELDO-0344 ac4/filter",
     "a patched copy that calls process_vm_readv after the filter is ended by the kernel [0]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [9aece8ef7507c3475a43d6647ec4b2f36b14d91880e9dde1b0fbcb0b6c9d9e09]"
    ]
   ],
   "noop_red_rows": [],
@@ -581,10 +493,6 @@
    [
     "VELDO-0344 ac4/filter",
     "a patched copy that calls open-for-writing after the filter is ended by the kernel [0]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [68908b493847c95bb2a48de70d8657aeb6524aecdc655be62fdeff83d7018b4b]"
    ]
   ],
   "noop_red_rows": [],
@@ -597,22 +505,14 @@
    "reader/facts-of-every-thread"
   ],
   "red_rows": [
+   "ac7/recorded-digest",
    "reader/facts-of-every-thread",
-   "reader/label",
-   "ac7/recorded-digest"
+   "reader/label"
   ],
   "red_details": [
    [
     "VELDO-0344 reader/facts-of-every-thread",
     "the table is whole and the block is whole, with the start time the probe reads [None False]"
-   ],
-   [
-    "VELDO-0344 reader/label",
-    "a process started with the run label variable has, for each of its tasks, one l line with the value in hexadecimal, and the probe reads that value as its label [None [b'row:run-ffbed415'] ['l =726f773a72756e2d6666626564343135', 'x task 0']]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [e881a4e12dbdd019f9c3693ff2cd7aec2a103f85861c3eec680e687875adc7b9]"
    ]
   ],
   "noop_red_rows": [],
@@ -626,73 +526,69 @@
   ],
   "red_rows": [
    "ac1/absent",
-   "ac1/not-regular",
-   "ac1/owner",
-   "ac1/mode",
-   "ac1/folder",
+   "ac1/bytes-before-the-byte",
    "ac1/capability",
    "ac1/capability-exact",
    "ac1/capability-root-id",
-   "ac1/no-pin",
    "ac1/digest",
+   "ac1/folder",
+   "ac1/header-cap",
+   "ac1/mode",
+   "ac1/no-pin",
    "ac1/no-socket",
+   "ac1/not-regular",
+   "ac1/owner",
+   "ac1/reader-locks-first",
+   "ac1/second-writer",
+   "ac1/used",
    "ac1/writer",
    "ac1/writer-gone",
-   "ac1/bytes-before-the-byte",
-   "ac1/second-writer",
-   "ac1/header-cap",
-   "ac1/reader-locks-first",
-   "ac1/used",
    "ac2/cwd",
-   "ac2/open-file-only",
    "ac2/directory-descriptor",
+   "ac2/inode-alone",
    "ac2/mapped-only",
+   "ac2/open-file-only",
+   "ac2/outside-not-counted",
    "ac2/second-thread-cwd",
    "ac2/second-thread-descriptor",
-   "ac2/inode-alone",
-   "ac2/outside-not-counted",
-   "reader/facts-of-every-thread",
-   "reader/maps",
-   "reader/label",
-   "label/table",
-   "ac3/root-login",
-   "ac3/unread-fact",
    "ac3/no-block-or-start",
+   "ac3/root-login",
    "ac3/unlistable-folder",
-   "ac4/no-argument",
-   "ac4/format",
+   "ac3/unread-fact",
    "ac4/entries",
    "ac4/filter",
+   "ac4/format",
+   "ac4/no-argument",
    "ac4/unread-without-capability",
    "ac5/cut",
-   "ac5/not-whole",
    "ac5/exit-status",
    "ac5/failed-write",
+   "ac5/not-whole",
    "ac5/waits-after-end",
-   "ac6/units",
-   "ac6/reads-through-the-socket",
    "ac6/executes-the-checked-descriptor",
-   "ac6/refused-executes-nothing",
    "ac6/reader-units",
-   "ac7/reproducible",
-   "ac7/recorded-digest",
+   "ac6/reads-through-the-socket",
+   "ac6/refused-executes-nothing",
+   "ac6/units",
    "ac7/compiler-not-from-path",
-   "ac7/setcap-after-digest",
-   "ac7/no-replace-objects",
    "ac7/digest-from-the-review-record",
+   "ac7/no-replace-objects",
+   "ac7/recorded-digest",
+   "ac7/reproducible",
+   "ac7/setcap-after-digest",
    "ac8/second-thread-cwd",
    "ac8/second-thread-descriptor",
    "ac8/unreadable-task",
    "config/process-reader",
-   "signal/deferral-names-the-reader",
-   "reader/canon"
+   "label/table",
+   "reader/canon",
+   "reader/facts-of-every-thread",
+   "reader/label",
+   "reader/maps",
+   "reader/whole-read",
+   "signal/deferral-names-the-reader"
   ],
-  "red_details": [
-   [
-    "VELDO-0344 reader/canon",
-    "raised RuntimeError: the build failed: veldo_procread.c:785:12: error: 'read_maps' defined but not used [-Werror=unused-function]\n  785 | static int read_maps(int proc, uint64_t pid)\n      |            ^~~~~~~~~\ncc1: all warnings being treated as errors\n 785 | static int read_maps(int proc, uint64_t pid) | |            ^~~~~~~~~ | cc1: all warnings being treated as errors |"
-   ]
-  ],
+  "red_details": [],
   "noop_red_rows": [],
   "red_as_expected": true
  },
@@ -710,10 +606,6 @@
    [
     "VELDO-0344 ac5/failed-write",
     "the reader ended with status 3 at the write that failed [0]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [f79855bdc78c10a9cc5c03f0760a685380d2b9629533e9ca0e49ca80bbf736db]"
    ]
   ],
   "noop_red_rows": [],
@@ -733,10 +625,6 @@
    [
     "VELDO-0344 ac5/waits-after-end",
     "the reader has written its end line and is still alive [0]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [b8fc807cda5aa6f2b90a90a6280413a75ddc68256846b957fee0905c5b203239]"
    ]
   ],
   "noop_red_rows": [],
@@ -749,17 +637,13 @@
    "reader/label"
   ],
   "red_rows": [
-   "reader/label",
-   "ac7/recorded-digest"
+   "ac7/recorded-digest",
+   "reader/label"
   ],
   "red_details": [
    [
     "VELDO-0344 reader/label",
-    "a process started with the run label variable has, for each of its tasks, one l line with the value in hexadecimal, and the probe reads that value as its label [None [b'TE_VERSION=7600', b'MUTATION_DRIVER=1', b'row:run-1f3da5bd', b'_OTHER=decoy-bf710aa2fb84'] ['l =54455f56455253494f4e3d37363030', 'l =4d55544154494f4e5f4452495645523d31', 'l =726f773a72756e2d3166336461356264', 'l =5f4f544845523d6465636f792d626637313061613266623834']]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [2daad14af75e66ab1f6bf028fbdedf62dad6ac67b91c2850efad4a8211b4b953]"
+    "a process started with the run label variable has, for each of its tasks, one l line with the value in hexadecimal, and the probe reads that value as its label [None [b'TE_VERSION=7600', b'MUTATION_DRIVER=1', b'row:run-a0f9aefa', b'_OTHER=decoy-b4055f40cdf2'] ['l =54455f56455253494f4e3d37363030', 'l =4d55544154494f4e5f4452495645523d31', 'l =726f773a72756e2d6130663961656661', 'l =5f4f544845523d6465636f792d623430353566343063646632']]"
    ]
   ],
   "noop_red_rows": [],
@@ -772,17 +656,14 @@
    "reader/label"
   ],
   "red_rows": [
+   "ac7/recorded-digest",
    "reader/label",
-   "ac7/recorded-digest"
+   "reader/whole-read"
   ],
   "red_details": [
    [
     "VELDO-0344 reader/label",
-    "a process started with the run label variable has, for each of its tasks, one l line with the value in hexadecimal, and the probe reads that value as its label [None [b'=row:run-93dce1e7', b'_OTHER=decoy-ef098ed51de5'] ['l =3d726f773a72756e2d3933646365316537', 'l =5f4f544845523d6465636f792d656630393865643531646535', 'l =3d726f773a72756e2d3933646365316537', 'l =5f4f544845523d6465636f792d656630393865643531646535']]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [d8db62ff5a5f560aeab496e5449e27c5a4346ca8642e08f17a7cdfa61175d0d8]"
+    "a process started with the run label variable has, for each of its tasks, one l line with the value in hexadecimal, and the probe reads that value as its label [None [b'=row:run-40ec0d03', b'_OTHER=decoy-79cfa95257d6'] ['l =3d726f773a72756e2d3430656330643033', 'l =5f4f544845523d6465636f792d373963666139353235376436', 'l =3d726f773a72756e2d3430656330643033', 'l =5f4f544845523d6465636f792d373963666139353235376436']]"
    ]
   ],
   "noop_red_rows": [],
@@ -795,17 +676,13 @@
    "reader/label"
   ],
   "red_rows": [
-   "reader/label",
-   "ac7/recorded-digest"
+   "ac7/recorded-digest",
+   "reader/label"
   ],
   "red_details": [
    [
     "VELDO-0344 reader/label",
     "a value of 64 bytes is read; one of 65 is not printed, in part or whole, and leaves the label unread, with the block still whole [[b'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL'] ['l =4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d']]"
-   ],
-   [
-    "VELDO-0344 ac7/recorded-digest",
-    "on the recorded compiler and C library the build has the recorded digest [02773fbcc384962780d5bbe893bc274dabf235e38722b671ee2c5d4130bb7695]"
    ]
   ],
   "noop_red_rows": [],
@@ -818,22 +695,15 @@
    "label/table"
   ],
   "red_rows": [
-   "reader/label",
+   "ac4/unread-without-capability",
    "label/table",
-   "ac4/unread-without-capability"
+   "reader/label",
+   "reader/whole-read"
   ],
   "red_details": [
    [
-    "VELDO-0344 reader/label",
-    "a value of 64 bytes is read; one of 65 is not printed, in part or whole, and leaves the label unread, with the block still whole [[b'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL'] ['x env 7']]"
-   ],
-   [
     "VELDO-0344 label/table",
     "an environment that was not read is not a label of none: an x env line leaves the label unread, before or after another task's l line, and leaves the block whole [([], True) ([b'ab'], True)]"
-   ],
-   [
-    "VELDO-0344 ac4/unread-without-capability",
-    "its environment is closed too: x env, no l line, and its label is not read [[]]"
    ]
   ],
   "noop_red_rows": [],
@@ -924,6 +794,63 @@
    [
     "VELDO-0344 ac7/no-replace-objects",
     "and the first line still builds the source of the commit [5a949ee1a77582f665518063fa58ceb753a71614dcbca84b48eb568d80b709a5]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-environment-not-whole-taken-as-read",
+  "criterion": "a whole read (2026-11-15, the review of the run label, finding 1)",
+  "expected_red": [
+   "reader/whole-read"
+  ],
+  "red_rows": [
+   "ac7/recorded-digest",
+   "reader/whole-read"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 reader/whole-read",
+    "a process that carries the run label and executes itself again without end, read 150 times while it does: never l -, never a label of none, and its own label whenever its environment was read whole [{'l -': 7, 'l =7370696e3a72756e2d6632613839393138': 143} wrong ['l -', 'l -', 'l -'] alive True]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-empty-environment-taken-as-read",
+  "criterion": "a whole read (2026-11-15, the review of the run label, finding 1)",
+  "expected_red": [
+   "reader/whole-read"
+  ],
+  "red_rows": [
+   "ac7/recorded-digest",
+   "reader/whole-read"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 reader/whole-read",
+    "a process that carries the run label and executes itself again without end, read 150 times while it does: never l -, never a label of none, and its own label whenever its environment was read whole [{'l -': 2, 'l =7370696e3a72756e2d3863636434383036': 147, 'x env 11': 1} wrong ['l -', 'l -'] alive True]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-short-environment-taken-as-read",
+  "criterion": "a whole read (2026-11-15, the review of the run label, finding 1)",
+  "expected_red": [
+   "reader/whole-read"
+  ],
+  "red_rows": [
+   "ac7/recorded-digest",
+   "reader/whole-read"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 reader/whole-read",
+    "an environment that ends in memory the process has unmapped, the label in that part, is not read: x env 11, no l line, the label not read and the block still whole [['l -'] [] of 100043 bytes]"
    ]
   ],
   "noop_red_rows": [],

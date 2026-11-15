@@ -544,3 +544,12 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
     2.39-0ubuntu8.12 on x86_64 it has the digest
     bf1e1256ad3edb8fb83c695ef7e01380146a7048a3c465bfe463d9fee8835f26. reader.sha256 records it first
     and keeps the three earlier records. No sudo command was run and the reader is not installed.
+- 2026-11-15: THE PROOF OF THE FIX, AND THE OWNER'S FILE. proof/VELDO-0344/owner-install.txt names
+  C = 8bdfd98769830deb0a4ccfa78b3573ab5bcf589d and H =
+  bf1e1256ad3edb8fb83c695ef7e01380146a7048a3c465bfe463d9fee8835f26 in line 1, line 2 and step 4, says
+  that the source of 2026-11-14 (commit 2df0c67c, digest f890b5a2...) is not to be installed, and has
+  a History section. Line 1 was run twice against C and printed H both times. Suite 141 on that
+  tree: 62 rows, 88 passed, 0 failed, ac6/installed skipped. The 40 cases of finding 344, each
+  through the driver's materialize() and worker(), outside its confinement: every no-op green, every
+  mutant red on its target rows; the registered driver itself refuses the stage at its baseline, as
+  before. Everything here awaits review. Nothing is installed; no sudo command was run.

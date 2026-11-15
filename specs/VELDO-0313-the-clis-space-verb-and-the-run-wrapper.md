@@ -405,3 +405,7 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     what does not depend on its environment: it descends from the run's supervisor, or it is in the
     run's containment group, or it holds a file of an item (rule 4). The answer for a daemon a run
     starts is the house's group, not the label. This is the lead's to change if it is not accepted.
+- 2026-11-15: THE PROOF OF THAT CHANGE. Case space313-label-not-read moved with the line it changes
+  (the scan's read through _space_environment). On the tree of d2e00c364f52 the registered driver,
+  every worker confined: registered 36, executed 36, rejected 36. Suite 151 in the gate's
+  confinement: 25 rows, 51 passed, 0 failed.

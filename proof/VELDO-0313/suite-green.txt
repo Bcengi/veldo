@@ -13,3 +13,13 @@
 # Fast checks, 0 failed each: bash scripts/check_template_sync.sh, bash scripts/check_lint.sh, bash scripts/check_generated.sh, bash scripts/check_docs.sh, python3 .veldo/validate.py all, python3 scripts/check_git_boundary.py.
 # Teeth: python3 scripts/check_teeth_mutations.py with finding 313: registered 34, executed 34, rejected 34.
 # Not run by the builder: ./scripts/verify.sh and the heavy suites. Suite 86_veldo_0127 was left alone, as told.
+# 2026-11-15, the scan reads an environment whole or not at all (the review of VELDO-0344's run label, finding 1), on the tree of d2e00c364f52. Partial runs, not the gate.
+# Suite 151 in a process table of its own (python3 -I -S scripts/gate_candidate.py with the root, then python3 scripts/selftest.py with the suite option; the gate's confinement):
+151_veldo_0313_space_run: 51 passed, 0 failed (25 rows)
+# Suite 151 unconfined on this host was started once by mistake and stopped after more than two minutes without an answer: no result. This host has no process reader installed, so a process of another session that started after a run and cannot be read still holds it, as the earlier rounds recorded.
+# Each of these on its own with python3 scripts/selftest.py and the suite option, unconfined:
+152_veldo_0313_house_group: 30 passed, 0 failed (4 rows)
+141_veldo_0344_process_reader: 88 passed, 0 failed (62 rows; ac6/installed skipped, the reader is not installed)
+148_veldo_0311_git_hooks: 57 passed, 0 failed (31 rows)
+# By hand, 3000 plain reads of the environ entry of a process that carries the label and executes itself again without end (a shell script, exec "$0"): 355 came back without the label. Through _space_holders, 150 reads of the same kind of process: label 142, unread 8, missing 0.
+# 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is). 133, 143, 146 and 101 were not run in this round.
