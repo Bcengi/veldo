@@ -129,6 +129,17 @@ approval, bound to the commit and the proof, is required.
 
 ## History
 
+- 2026-11-15: boundary implementation and targeted falsifiers are built. The three ref callers use
+  the verified ref remover. No-ledger calls preserve their inputs and refuse as not_in_ledger;
+  they cannot invent an owner or an item-naming ending event. Suite 142 retains sixteen assertions
+  for the prior standalone removal or diagnostic behavior. They remain red and unchanged; this
+  build is not ready for landing. The current proof records that conflict and all unrun lead checks.
+
+- 2026-11-15: the temporary-tree decision is applied to the named scoped functions in design 6.10,
+  and to scripts/check_install_and_run.py:check and scripts/suite_equiv.py:main, each of which
+  deletes only the mkdtemp result it just created with its own prefix. The boundary check names
+  every function and reason. The gate_legs.py pair and scripts/check_first_use.py remain unchanged.
+
 - 2026-11-15: the reviewed temporary-tree class is enforced for TemporaryDirectory too: an
   explicit prefix, the system temporary directory, and only its exact scoped tree. Custom roots
   and default prefixes are changed in engine/.veldo/action_executor.py, engine/.veldo/control_agent_config_handoff.py, engine/.veldo/control_api_webauthn.py, engine/.veldo/control_batch.py, engine/.veldo/control_launch_work.py, engine/.veldo/control_memory_check.py, engine/.veldo/lander.py, engine/.veldo/pack_conformance.py, scripts/parser_corpus_audit.py,

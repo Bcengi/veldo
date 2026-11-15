@@ -15311,6 +15311,257 @@ def cases():
         "        r.setdefault('space_outcomes', {}).update(found)",
         "        r['space_outcomes'] = found", ['ac1/saved-reassembly'])
 
+
+    # VELDO-0304: exact targeted falsifiers; the lead owns the teeth stage.
+    add(304,
+        'space304-fleet-direct-remove',
+        '155_veldo_0304_space_boundary.py',
+        'fleet.py',
+        '            # Without an item and its owner no ending event can authorize a removal.\n',
+        '            _git_worktree(["remove", "--force", path], cwd=self.repo_root)\n',
+        ['fleet/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-ref-skip-keep',
+        '155_veldo_0304_space_boundary.py',
+        'control_space_remove.py',
+        "        keeper = _sibling('control_space_keep')\n",
+        "        _git(commands, '-C', repository, 'update-ref', '-d', ref)\n        return dict(answer, ok=True)\n        keeper = _sibling('control_space_keep')\n",
+        ['ref/keep-before-delete'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-clone-direct-ref',
+        '155_veldo_0304_space_boundary.py',
+        'control_clone.py',
+        "        ledger = (self.space or {}).get('ledger')\n",
+        "        _git('-C', cache, 'update-ref', '-d', ref)\n        ledger = (self.space or {}).get('ledger')\n",
+        ['clone/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-clone-direct-tree',
+        '155_veldo_0304_space_boundary.py',
+        'control_clone.py',
+        '        return looked, []\n',
+        '        shutil.rmtree(work)\n        return looked, []\n',
+        ['clone/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-batch-direct-ref',
+        '155_veldo_0304_space_boundary.py',
+        'control_batch.py',
+        "                ledger = (self.space or {}).get('ledger')\n",
+        "                self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)\n                ledger = (self.space or {}).get('ledger')\n",
+        ['batch/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-scaffold-direct-ref',
+        '155_veldo_0304_space_boundary.py',
+        'control_repository_provisioner.py',
+        "        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n",
+        "        git(path, 'update-ref', '-d', SCAFFOLD_REF + repository, check=False)\n        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n",
+        ['scaffold/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-launch-direct-sweep',
+        '155_veldo_0304_space_boundary.py',
+        'control_launch.py',
+        "                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+        "                shutil.rmtree(place)\n                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+        ['launch/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-launch-direct-receiver',
+        '155_veldo_0304_space_boundary.py',
+        'control_launch.py',
+        '        elif not stays:\n            self._unstage_skills()\n',
+        '        elif not stays:\n            shutil.rmtree(run)\n            self._unstage_skills()\n',
+        ['launch/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-runtime-direct-tree',
+        '155_veldo_0304_space_boundary.py',
+        'control_launch_work.py',
+        "                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+        "                shutil.rmtree(directory)\n                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+        ['runtime/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-lander-direct-tree',
+        '155_veldo_0304_space_boundary.py',
+        'lander.py',
+        '            for path in paths:\n                if not space_absent(path):\n',
+        '            for path in paths:\n                shutil.rmtree(path)\n                if not space_absent(path):\n',
+        ['lander/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-migration-direct-tree',
+        '155_veldo_0304_space_boundary.py',
+        'migrate_to_veldo.py',
+        '        raise SystemExit("migration: destination exists; a recorded owner item is required for removal: %s" % dest)',
+        '        shutil.rmtree(dest)',
+        ['migration/boundary'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-publish-direct-tree',
+        '155_veldo_0304_space_boundary.py',
+        'publish.py',
+        '        raise SystemExit("publish: destination exists; a recorded owner item is required for removal: %s" % dest)',
+        '        shutil.rmtree(dest)',
+        ['publish/boundary'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-rename-direct-tree',
+        '155_veldo_0304_space_boundary.py',
+        'rename_migration.py',
+        '        raise SystemExit("rename: destination exists; a recorded owner item is required for removal: %s" % d)',
+        '        shutil.rmtree(d)',
+        ['rename/boundary'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-memory-time-delete',
+        '155_veldo_0304_space_boundary.py',
+        'control_memory_check.py',
+        '        # Keep the incomplete copy. SQLite backup replaces its contents on the next attempt.\n',
+        '        target.unlink()\n',
+        ['memory/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-spool-time-delete',
+        '155_veldo_0304_space_boundary.py',
+        'control_space_spool.py',
+        '                    retain_delivered(folder, name)  # durable input stays outside the pending queue\n',
+        '                    os.unlink(os.path.join(folder, name))\n',
+        ['spool/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-service-time-delete',
+        '155_veldo_0304_space_boundary.py',
+        'control_service.py',
+        '                # Keep the pathname at shutdown. The next locked bind owns stale socket replacement.\n',
+        "                os.unlink(config['socket'])\n",
+        ['service/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-mutation-time-delete',
+        '155_veldo_0304_space_boundary.py',
+        'mutation_ownership.py',
+        '        wait_for_empty(self.path)\n',
+        '        if time.monotonic() > 0:\n            wait_for_empty(self.path)\n',
+        ['mutation/boundary'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-render-time-delete',
+        '155_veldo_0304_space_boundary.py',
+        'render_pdfs.py',
+        '        ws_url = devtools_endpoint(proc)\n',
+        '        if time.time() > 0:\n            ws_url = devtools_endpoint(proc)\n',
+        ['render/boundary'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-boundary-new-creator',
+        '155_veldo_0304_space_boundary.py',
+        'fleet.py',
+        'class WorktreeProvisioner:\n',
+        'def undeclared_creator(path):\n    _git_worktree(["add", path])\n\n\nclass WorktreeProvisioner:\n',
+        ['ac1/repository'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-boundary-stale-accepted',
+        '155_veldo_0304_space_boundary.py',
+        'check_space_boundary.py',
+        '        if key[0] == path and (not reason or key not in matched):\n',
+        '        if False and key[0] == path and (not reason or key not in matched):\n',
+        ['ac3/stale-entries'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-boundary-age-restored',
+        '155_veldo_0304_space_boundary.py',
+        'gate_legs.py',
+        '    for entry in listing:\n',
+        '    for entry in listing:\n        if time.time() - entry.stat().st_mtime > 30 * 24 * 60 * 60:\n            os.unlink(entry.path)\n            continue\n',
+        ['ac4/repository'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-boundary-gate-unwired',
+        '155_veldo_0304_space_boundary.py',
+        'verify.sh',
+        'CHECK_extra="required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"',
+        'CHECK_extra="required:bash scripts/check_template_sync.sh"',
+        ['integration/gate-wired'])
+    result[-1]['dir'] = 'scripts'
+    add(304,
+        'space304-temporary-action_executor',
+        '155_veldo_0304_space_boundary.py',
+        'action_executor.py',
+        "tempfile.TemporaryDirectory(prefix='veldo-action-executor-')",
+        'tempfile.TemporaryDirectory()',
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-control_agent_config_handoff',
+        '155_veldo_0304_space_boundary.py',
+        'control_agent_config_handoff.py',
+        "tempfile.TemporaryDirectory(prefix='tool-observation-')",
+        "tempfile.TemporaryDirectory(prefix='tool-observation-', dir=config)",
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-control_api_webauthn',
+        '155_veldo_0304_space_boundary.py',
+        'control_api_webauthn.py',
+        "tempfile.TemporaryDirectory(prefix='v-')",
+        "tempfile.TemporaryDirectory(prefix='v-', dir=base)",
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-control_batch',
+        '155_veldo_0304_space_boundary.py',
+        'control_batch.py',
+        "tempfile.TemporaryDirectory(prefix='veldo-control-batch-')",
+        'tempfile.TemporaryDirectory()',
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-control_launch_work',
+        '155_veldo_0304_space_boundary.py',
+        'control_launch_work.py',
+        "tempfile.TemporaryDirectory(prefix='import-')",
+        "tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates'])",
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-control_memory_check',
+        '155_veldo_0304_space_boundary.py',
+        'control_memory_check.py',
+        "tempfile.TemporaryDirectory(prefix='probe-')",
+        "tempfile.TemporaryDirectory(prefix='probe-', dir=scratch)",
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-lander',
+        '155_veldo_0304_space_boundary.py',
+        'lander.py',
+        "tempfile.TemporaryDirectory(prefix='veldo-lander-')",
+        'tempfile.TemporaryDirectory()',
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-pack_conformance',
+        '155_veldo_0304_space_boundary.py',
+        'pack_conformance.py',
+        '    has_prepush = _has_prepush(repo_root, pack["pack_dir"])\n    with tempfile.TemporaryDirectory(prefix=\'veldo-pack-conformance-\') as td:\n        _extract_pack(repo_root, pack["pack_dir"], td)',
+        '    has_prepush = _has_prepush(repo_root, pack["pack_dir"])\n    with tempfile.TemporaryDirectory() as td:\n        _extract_pack(repo_root, pack["pack_dir"], td)',
+        ['integration/boundary'])
+    result[-1]['siblings'] = True
+    add(304,
+        'space304-temporary-parser_corpus_audit',
+        '155_veldo_0304_space_boundary.py',
+        'parser_corpus_audit.py',
+        "tempfile.TemporaryDirectory(prefix='veldo-parser-corpus-audit-')",
+        'tempfile.TemporaryDirectory()',
+        ['integration/boundary'])
+    result[-1]['dir'] = 'scripts'
+
     return result
 
 

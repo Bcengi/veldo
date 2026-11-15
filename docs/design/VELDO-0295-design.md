@@ -1520,6 +1520,12 @@ Four git commands are removal primitives too, since section 0: a ref delete, a s
 reflog expire and a prune of objects. The check refuses each one anywhere but in the owner's kept drop
 command, so no later change can quietly delete a kept ref or the commits behind it.
 
+2026-11-15 lead decision (VELDO-0304): the pin, staging and scaffold ref releases call the
+central ref remover. It requires the owner's ended ledger item and event, verifies its keep record,
+and proves that a kept ref or branch in the main repository reaches the commit before a non-forced,
+value-checked deletion of the temporary ref. Without that proof the ref stays. This grants no direct
+ref deletion to the three callers, and no stash, reflog or object pruning to the ref remover.
+
 The check has one more rule, for removal by age. It refuses any function that deletes something (a folder,
 a single file, or a call to a remover) and also reads a file's time fields or compares the clock with a
 threshold. A search of the engine at the design commit finds two such functions, the two that 6.10 changes:
@@ -1913,6 +1919,56 @@ Four more entries stay for a different reason, each named with it:
 | control_service.py:894-898, _remove_tree, called at :1204 | Removes the service's own home at uninstall, on the owner's uninstall command. The ledger lives in that service; it cannot remove its own host through itself |
 | engine/scripts/agent_sandbox.py:2223, through remove_tree at :2052-2071 | Runs only when no space environment is present: the launcher removes the scratch it made, at its own end. Under a recorded run the row above applies |
 | engine/scripts/mutation_ownership.py, cleanup, at :286 and :288 through remove_tree at :200 | Removes only the directories that one mutation test worker recorded in its own ownership ledger, when the coordinator ends that worker. That is an event, and the list is the worker's own |
+
+2026-11-15 lead decision (VELDO-0304): the reviewed class also includes a process removing a
+temporary tree it created itself (mkdtemp, system temporary directory, its own prefix, refusing
+anything else). The protected scripts/check_first_use.py function _rmtree is one such site and
+stays unchanged. A scoped TemporaryDirectory is the same class only when it has an explicit
+prefix, uses the system temporary directory and cleans only its exact mkdtemp result. A custom
+root or an extra recursive delete does not get that exception. The following functions are named
+with that reason; engine entries also name their installed copies.
+
+| Path | Function | Reason |
+| :- | :- | :- |
+| engine/.veldo/action_executor.py | _cli | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/authority_contract.py | ssh_keygen_verify | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_agent_config_handoff.py | codex_observe | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_api_webauthn.py | openssl_verifies | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_architecture.py | ArchitectureAuthority._judge | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_batch.py | Batch._merge | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_engine_codex.py | bundled_catalog | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_engine_codex.py | feature_listing | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_factory_setup_dispatch.py | checked_work | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_graph_isolation.py | probe_graph | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_graph_isolation.py | run_entry | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_launch_work.py | Runtime._collect | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_memory_check.py | probe | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_runtime.py | metadata_problems | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_runtime.py | probe_graph | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_runtime.py | qualify | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_runtime.py | run_hidden | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_service.py | find_principals | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_space_probe.py | reader_check | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_workflow_cycle.py | Cycles._exchange | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/control_workflow_cycle_pm.py | ProjectCycles.exchange | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/executor.py | LiveLoop.gate | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/git_process.py | _invoke | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/lander.py | GitLandOps._union_resolve_one | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/pack_conformance.py | _conform_one | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/pack_conformance.py | gate_exit_for_state | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/pack_conformance.py | real_push_exec_bit | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/qualify.py | claude_builtins | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/.veldo/qualify.py | fixtures | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| engine/scripts/check_gate_mutations.py | run_stage | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| scripts/check_first_use.py | _rmtree | Lead decision 2026-11-15: only its own mkdtemp tree, system temporary directory and own prefix. |
+| scripts/check_install_and_run.py | check | Lead decision class: only the mkdtemp result created by this call, with its own prefix. |
+| scripts/check_review_mutations.py | main | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| scripts/drive.py | main | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| scripts/drive.py | red | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| scripts/parser_corpus_audit.py | main | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| scripts/propose_case_inputs.py | trace_case | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| scripts/render_pdfs.py | main | Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree. |
+| scripts/suite_equiv.py | main | Lead decision class: only each mkdtemp result this call created with its own prefix. |
 
 The list names each function and its reason. A removal primitive anywhere else fails the gate.
 

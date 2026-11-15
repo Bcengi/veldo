@@ -2,6 +2,7 @@
 """VELDO-0304: creation, removal and age boundaries, checked by function."""
 import ast
 from pathlib import Path
+import re
 import shlex
 
 
@@ -126,13 +127,17 @@ REMOVERS = {
     ('engine/.veldo/control_space_remove.py', '_worktree_remove'): 'The existing non-forced worktree remover.',
     ('engine/.veldo/control_space_remove.py', '<module>'): 'The existing measured engine remover table.',
 }
+CREATORS[('engine/scripts/verify.sh', '<module>')] = 'The gate creates its own schedule folder.'
+REVIEWED[('engine/scripts/verify.sh', '<EXIT trap>')] = 'The gate removes its own schedule folder at exit; design 6.10.'
+REVIEWED[('engine/.veldo/control_graph_install.py', 'install')] = 'The install owns its freshly built staging and temporary folders; design 6.10.'
 
 
 def canonical(path):
     path = str(path)
     if path.startswith('.veldo/'):
         return 'engine/' + path
-    if path.startswith('scripts/') and (Path(__file__).resolve().parents[1] / 'engine' / path).is_file():
+    paired = {key[0] for table in (CREATORS, REVIEWED, REMOVERS) for key in table}
+    if path.startswith('scripts/') and 'engine/' + path in paired:
         return 'engine/' + path
     return path
 
@@ -142,7 +147,19 @@ def name(node):
         return node.id
     if isinstance(node, ast.Attribute):
         return name(node.value) + '.' + node.attr
+    if isinstance(node, ast.Call):
+        return name(node.func)
     return ''
+
+
+def resolved_name(node, values, seen=()):
+    if isinstance(node, ast.Name) and node.id in values and node.id not in seen:
+        value = values[node.id]
+        if isinstance(value, (ast.Name, ast.Attribute)):
+            return resolved_name(value, values, (*seen, node.id))
+    if isinstance(node, ast.Attribute):
+        return resolved_name(node.value, values, seen) + '.' + node.attr
+    return name(node)
 
 
 def words(node, values, seen=()):
@@ -161,7 +178,7 @@ def primitives(node, values):
     """Classify executed calls, not examples in strings or comments."""
     if not isinstance(node, ast.Call):
         return set()
-    called = name(node.func)
+    called = resolved_name(node.func, values)
     tail = called.rsplit('.', 1)[-1]
     result = set()
     if tail in ('mkdtemp', 'TemporaryDirectory'):
@@ -176,11 +193,13 @@ def primitives(node, values):
         result.add('remove:recursive folder')
     if tail in ('unlink', 'rmdir') or called in ('os.remove', 'os.removedirs'):
         result.add('delete:single path')
-    if tail in ('remove_tree', '_remove_tree', '_rmtree', 'space_signal', 'remove_ref', 'remove_path'):
+    if (tail in ('remove_tree', '_remove_tree', '_rmtree', 'space_signal', 'remove_ref', 'remove_path')
+            or tail == 'remove' and any(part in called.lower() for part in ('remover', 'space_remove', 'rm.'))):
         result.add('delete:remover call')
     vector = [word for arg in node.args for word in words(arg, values)]
     if tail in ('run', 'call', 'check_call', 'check_output', 'Popen', 'system', 'popen'):
-        vector = [token for word in vector for token in shlex.split(word)]
+        vector = [token for word in vector for token in (
+            shlex.split(word) if re.match(r'^(?:git|rm|docker|mktemp)\s', word) else [word])]
     git = 'git' in called.lower() or 'git' in vector
     if git:
         if ('worktree' in vector or 'worktree' in called) and 'add' in vector:
@@ -189,6 +208,9 @@ def primitives(node, values):
             result.add('remove:git worktree remove')
         if 'update-ref' in vector and any(x in vector for x in ('-d', '--delete')):
             result.add('history:git ref delete')
+        if any(x in vector for x in ('branch', 'tag', 'symbolic-ref')) and any(
+                x in vector for x in ('-d', '-D', '--delete')):
+            result.add('history:git ref delete')
         if ('stash' in vector and any(x in vector for x in ('drop', 'clear'))
                 or 'reflog' in vector and 'expire' in vector or 'prune' in vector
                 or 'gc' in vector):
@@ -196,6 +218,11 @@ def primitives(node, values):
     if 'rm' in vector and any(x.startswith('-') and ('r' in x or x == '--recursive') for x in vector):
         result.add('remove:shell recursive remove')
     docker = 'docker' in called or 'docker' in vector or tail in ('_engine', 'client')
+    sdk = any(part in called.split('.') for part in ('containers', 'volumes', 'networks', 'images'))
+    if sdk and tail in ('remove', 'prune'):
+        result.add('remove:engine remove')
+    if sdk and tail in ('create', 'run', 'build'):
+        result.add('create:engine object')
     if docker:
         if any(x in vector for x in ('rm', 'rmi', 'prune')):
             result.add('remove:engine remove')
@@ -207,6 +234,20 @@ def primitives(node, values):
 def functions(source):
     tree = ast.parse(source)
     found = []
+    globals_ = {target.id: node.value for node in tree.body if isinstance(node, ast.Assign)
+                for target in node.targets if isinstance(target, ast.Name)}
+
+    def bindings(nodes):
+        values = dict(globals_)
+        for part in [*tree.body, *nodes]:
+            if isinstance(part, ast.Assign):
+                values.update({target.id: part.value for target in part.targets if isinstance(target, ast.Name)})
+            if isinstance(part, ast.Import):
+                values.update({alias.asname or alias.name: ast.Name(id=alias.name) for alias in part.names})
+            if isinstance(part, ast.ImportFrom):
+                values.update({alias.asname or alias.name: ast.Attribute(value=ast.Name(id=part.module or ''),
+                                                                        attr=alias.name) for alias in part.names})
+        return values
 
     def visit(node, scope):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -217,17 +258,13 @@ def functions(source):
             def local(part):
                 nodes.append(part)
                 for child in ast.iter_child_nodes(part):
-                    if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+                    if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                         local(child)
             local(node)
-            values = {target.id: part.value for part in nodes if isinstance(part, ast.Assign)
-                      for target in part.targets if isinstance(target, ast.Name)}
+            values = bindings(nodes)
             found.append(('.'.join(scope) or '<module>', nodes, values))
         for child in ast.iter_child_nodes(node):
-            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                visit(child, scope)
-            elif not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                visit(child, scope)
+            visit(child, scope)
     visit(tree, ())
     return found
 
@@ -237,15 +274,78 @@ def inventory(source):
         hits = [(node.lineno, primitive) for node in nodes for primitive in primitives(node, values)]
         times = [node for node in nodes if isinstance(node, ast.Attribute)
                  and node.attr in ('st_mtime', 'st_ctime', 'st_atime', 'st_mtime_ns', 'st_ctime_ns', 'st_atime_ns')]
-        clocks = [node for node in nodes if isinstance(node, ast.Compare) and any(
-            isinstance(part, ast.Call) and name(part.func).rsplit('.', 1)[-1] in
-            ('time', 'monotonic', 'now', 'utcnow', 'clock') for part in ast.walk(node))]
-        # A local clock value compared later is the same test.
-        clocks += [node for node in nodes if isinstance(node, ast.Compare) and any(
-            isinstance(part, ast.Name) and isinstance(values.get(part.id), ast.Call)
-            and name(values[part.id].func).rsplit('.', 1)[-1] in
-            ('time', 'monotonic', 'now', 'utcnow', 'clock') for part in ast.walk(node))]
+        times += [node for node in nodes if isinstance(node, ast.Call)
+                  and resolved_name(node.func, values).rsplit('.', 1)[-1] in ('getmtime', 'getctime', 'getatime')]
+        def clock_value(node, seen=()):
+            if isinstance(node, ast.Name):
+                return (node.id in values and node.id not in seen
+                        and clock_value(values[node.id], (*seen, node.id)))
+            if isinstance(node, ast.Call):
+                return resolved_name(node.func, values).rsplit('.', 1)[-1] in (
+                    'time', 'monotonic', 'now', 'utcnow', 'clock')
+            if isinstance(node, (ast.Compare, ast.BinOp, ast.UnaryOp, ast.BoolOp, ast.IfExp)):
+                return any(clock_value(child, seen) for child in ast.iter_child_nodes(node))
+            return False
+        clocks = [node for node in nodes if isinstance(node, ast.Compare) and clock_value(node)]
         yield function, hits, bool(times or clocks)
+
+
+def shell_inventory(source):
+    """Shell command segments and traps. Quoted prose is not executed as a command."""
+    function = '<module>'
+    grouped = {}
+    continued = ''
+    for number, line in enumerate(source.splitlines(), 1):
+        line = continued + line
+        if line.endswith('\\'):
+            continued = line[:-1] + ' '
+            continue
+        continued = ''
+        match = re.match(r'\s*(?:function\s+)?([\w]+)\s*\(\s*\)\s*\{', line)
+        if match:
+            function = match.group(1)
+        if line.strip() == '}':
+            function = '<module>'
+        try:
+            lexer = shlex.shlex(line, posix=True, punctuation_chars=';|&()')
+            lexer.whitespace_split = True
+            tokens = list(lexer)
+        except ValueError:
+            continue  # a multiline shell quote, not an executable command on this line
+        segments, segment = [], []
+        for token in [*tokens, ';']:
+            if token in (';', '&&', '||', '|', '(', ')'):
+                if segment:
+                    segments.append(segment)
+                segment = []
+            else:
+                segment.append(token)
+        for vector in segments:
+            while vector and (vector[0] in ('if', 'then', 'do', '!', 'exec', 'command') or '=' in vector[0]):
+                vector = vector[1:]
+            if not vector:
+                continue
+            if vector[0] == 'trap' and len(vector) >= 3:
+                for _, hits, age in shell_inventory(vector[1]):
+                    grouped.setdefault('<' + vector[-1] + ' trap>', [[], False])[0].extend(
+                        (number, primitive) for _, primitive in hits)
+                continue
+            hits = set()
+            if vector[0] == 'mktemp' and '-d' in vector:
+                hits.add('create:temporary folder')
+            if vector[0] == 'rm':
+                hits.add('remove:shell recursive remove' if any(
+                    flag.startswith('-') and ('r' in flag or flag == '--recursive') for flag in vector[1:])
+                         else 'delete:single path')
+            if vector[0] in {'git', 'docker'}:
+                call = ast.Call(func=ast.Name(id=vector[0]), args=[ast.Constant(value=word) for word in vector[1:]],
+                                keywords=[])
+                hits |= primitives(call, {})
+            group = grouped.setdefault(function, [[], False])
+            group[0].extend((number, primitive) for primitive in sorted(hits))
+            group[1] |= bool(re.search(r'\b(?:mtime|mmin|ctime|cmin|atime|amin)\b|%[YZX]', line))
+    for function, (hits, age) in grouped.items():
+        yield function, hits, age
 
 
 def problems(source, path, creators=None, reviewed=None, removers=None):
@@ -254,7 +354,7 @@ def problems(source, path, creators=None, reviewed=None, removers=None):
     removers = REMOVERS if removers is None else removers
     path = canonical(path)
     errors, matched = [], set()
-    for function, hits, age in inventory(source):
+    for function, hits, age in (shell_inventory(source) if path.endswith('.sh') else inventory(source)):
         key = (path, function)
         deleting = any(primitive.split(':')[0] in ('remove', 'history', 'delete') for _, primitive in hits)
         for line, primitive in hits:
@@ -282,18 +382,19 @@ def problems(source, path, creators=None, reviewed=None, removers=None):
 def sources(root):
     for directory in ('.veldo', 'engine/.veldo', 'scripts', 'engine/scripts'):
         yield from sorted((root / directory).glob('*.py'))
+        yield from sorted((root / directory).glob('*.sh'))
     for directory in ('scripts/runners', 'engine/scripts/runners'):
         yield from sorted((root / directory).rglob('*.py'))
 
 
-def check(root):
+def check(root, read=None):
     errors = []
     present = set()
     for path in sources(root):
         relative = str(path.relative_to(root))
         present.add(canonical(relative))
         try:
-            errors.extend(problems(path.read_text(), relative))
+            errors.extend(problems(read(path) if read else path.read_text(), relative))
         except (SyntaxError, ValueError) as error:
             errors.append(f'{relative}: unreadable syntax: {error}')
     errors.extend(f'{path}: {function}: stale reviewed entry, file absent'

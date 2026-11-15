@@ -201,7 +201,7 @@ export VELDO_REUSE_RECEIPT
 VELDO_LEGS_RECORD=$(mktemp)
 VELDO_LEGS_EXPECTED=""
 trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"' EXIT
-CHECK_extra="required:bash scripts/check_template_sync.sh"
+CHECK_extra="required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"
 CHECK_mutation="required:authority mutation stage"
 # Configured for the VELDO home repository (docs + plugin templates + plans):
 # lint syntax-checks every shipped script, unit is the contract-system
