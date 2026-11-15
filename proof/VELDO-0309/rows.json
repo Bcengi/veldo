@@ -1,77 +1,98 @@
 [
   {
     "row": "VELDO-0309 ac1/no-host-waits",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 ac1/report-runs",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 ac2/no-stamp-no-event",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 ac3/stamp-then-cleanup",
-    "passed": true,
-    "detail": ""
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 log/removed-at-verdict",
+    "passed": true
   },
   {
     "row": "VELDO-0309 ac3/killed-before-stamp",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 ac4/adopter-unchanged",
-    "passed": true,
-    "detail": ""
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 ac4/no-helper-unchanged",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 hold/killed-gate-does-not-block",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 hold/live-holder-blocks",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 hold/released-on-every-exit",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 exit/leftover-does-not-hold-gate",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 exit/group-ended",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 graph/refused-runs-no-review-events",
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/need",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/owner-keep",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/duplicate-verdict",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/stale-stamp",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/nested-work",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/error-above-floor",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/unread-free",
-    "passed": true,
-    "detail": ""
+    "passed": true
   },
   {
     "row": "VELDO-0309 safe/locators",
-    "passed": true,
-    "detail": ""
+    "passed": true
+  },
+  {
+    "row": "VELDO-0309 hold/pid-reused-is-gone",
+    "passed": true
   },
   {
     "row": "VELDO-0309 canon/helper",
-    "passed": true,
-    "detail": ""
+    "passed": true
   }
 ]

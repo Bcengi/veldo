@@ -1,68 +1,264 @@
-[
-  {
-    "name": "space309-need-only-with-host-local",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 ac1/no-host-waits",
-      "VELDO-0309 ac1/report-runs"
-    ]
-  },
-  {
-    "name": "space309-classify-after-stamp-local",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 ac2/no-stamp-no-event"
-    ]
-  },
-  {
-    "name": "space309-verdict-before-stamp-local",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 ac3/killed-before-stamp"
-    ]
-  },
-  {
-    "name": "space309-need-only-with-host-template",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 ac1/no-host-waits",
-      "VELDO-0309 ac1/report-runs"
-    ]
-  },
-  {
-    "name": "space309-classify-after-stamp-template",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 ac2/no-stamp-no-event"
-    ]
-  },
-  {
-    "name": "space309-verdict-before-stamp-template",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 ac3/killed-before-stamp"
-    ]
-  },
-  {
-    "name": "space309-requires-ledger",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 ac4/adopter-unchanged"
-    ]
-  },
-  {
-    "name": "space309-kept-child-measured",
-    "applied": 1,
-    "rejected": true,
-    "red_rows": [
-      "VELDO-0309 safe/owner-keep"
-    ]
-  }
-]
+{
+  "command": "python3 scripts/check_teeth_mutations.py --finding 309",
+  "status": "passed",
+  "registered": 20,
+  "executed": 20,
+  "rejected": 20,
+  "input_digest": "6b9e21d8417f242fad5e988c6c247edd5f99137d947f6fb814d655554011fe53",
+  "cases": [
+    {
+      "name": "space309-need-only-with-host-local",
+      "file": "scripts/verify.sh",
+      "rows": [
+        "ac1/no-host-waits"
+      ],
+      "red_rows": [
+        "VELDO-0309 ac1/no-host-waits",
+        "VELDO-0309 ac1/report-runs",
+        "VELDO-0309 ac2/no-stamp-no-event",
+        "VELDO-0309 ac3/stamp-then-cleanup",
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 ac4/adopter-unchanged",
+        "VELDO-0309 ac4/no-helper-unchanged",
+        "VELDO-0309 hold/killed-gate-does-not-block",
+        "VELDO-0309 hold/live-holder-blocks",
+        "VELDO-0309 hold/released-on-every-exit",
+        "VELDO-0309 exit/group-ended",
+        "VELDO-0309 graph/refused-runs-no-review-events"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-exit-keeps-hold-local",
+      "file": "scripts/verify.sh",
+      "rows": [
+        "hold/released-on-every-exit"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 hold/released-on-every-exit"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-classify-after-stamp-local",
+      "file": "scripts/verify.sh",
+      "rows": [
+        "ac2/no-stamp-no-event"
+      ],
+      "red_rows": [
+        "VELDO-0309 ac2/no-stamp-no-event",
+        "VELDO-0309 hold/released-on-every-exit"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-verdict-before-stamp-local",
+      "file": "scripts/verify.sh",
+      "rows": [
+        "ac3/killed-before-stamp"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 ac3/killed-before-stamp"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-need-only-with-host-template",
+      "file": "engine/scripts/verify.sh",
+      "rows": [
+        "ac1/no-host-waits"
+      ],
+      "red_rows": [
+        "VELDO-0309 ac1/no-host-waits",
+        "VELDO-0309 ac1/report-runs",
+        "VELDO-0309 ac2/no-stamp-no-event",
+        "VELDO-0309 ac3/stamp-then-cleanup",
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 ac4/adopter-unchanged",
+        "VELDO-0309 ac4/no-helper-unchanged",
+        "VELDO-0309 hold/killed-gate-does-not-block",
+        "VELDO-0309 hold/live-holder-blocks",
+        "VELDO-0309 hold/released-on-every-exit",
+        "VELDO-0309 exit/group-ended",
+        "VELDO-0309 graph/refused-runs-no-review-events"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-group-left-running-local",
+      "file": "scripts/verify.sh",
+      "rows": [
+        "exit/group-ended"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 exit/group-ended"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-review-events-after-refused-graph-local",
+      "file": "scripts/verify.sh",
+      "rows": [
+        "graph/refused-runs-no-review-events"
+      ],
+      "red_rows": [
+        "VELDO-0309 graph/refused-runs-no-review-events"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-copy-waits-for-end-of-file-local",
+      "file": "scripts/verify.sh",
+      "rows": [
+        "exit/leftover-does-not-hold-gate"
+      ],
+      "red_rows": [
+        "VELDO-0309 exit/leftover-does-not-hold-gate",
+        "VELDO-0309 exit/group-ended"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-classify-after-stamp-template",
+      "file": "engine/scripts/verify.sh",
+      "rows": [
+        "ac2/no-stamp-no-event"
+      ],
+      "red_rows": [
+        "VELDO-0309 ac2/no-stamp-no-event",
+        "VELDO-0309 hold/released-on-every-exit"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-exit-keeps-hold-template",
+      "file": "engine/scripts/verify.sh",
+      "rows": [
+        "hold/released-on-every-exit"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 hold/released-on-every-exit"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-verdict-before-stamp-template",
+      "file": "engine/scripts/verify.sh",
+      "rows": [
+        "ac3/killed-before-stamp"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 ac3/killed-before-stamp"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-copy-waits-for-end-of-file-template",
+      "file": "engine/scripts/verify.sh",
+      "rows": [
+        "exit/leftover-does-not-hold-gate"
+      ],
+      "red_rows": [
+        "VELDO-0309 exit/leftover-does-not-hold-gate",
+        "VELDO-0309 exit/group-ended"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-group-left-running-template",
+      "file": "engine/scripts/verify.sh",
+      "rows": [
+        "exit/group-ended"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 exit/group-ended"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-dead-holder-kept",
+      "file": "scripts/gate_space.py",
+      "rows": [
+        "hold/killed-gate-does-not-block"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict",
+        "VELDO-0309 hold/killed-gate-does-not-block",
+        "VELDO-0309 hold/pid-reused-is-gone"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-review-events-after-refused-graph-template",
+      "file": "engine/scripts/verify.sh",
+      "rows": [
+        "graph/refused-runs-no-review-events"
+      ],
+      "red_rows": [
+        "VELDO-0309 graph/refused-runs-no-review-events"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-live-holder-taken-for-gone",
+      "file": "scripts/gate_space.py",
+      "rows": [
+        "hold/live-holder-blocks"
+      ],
+      "red_rows": [
+        "VELDO-0309 hold/live-holder-blocks"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-start-time-not-compared",
+      "file": "scripts/gate_space.py",
+      "rows": [
+        "hold/pid-reused-is-gone"
+      ],
+      "red_rows": [
+        "VELDO-0309 hold/pid-reused-is-gone"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-requires-ledger",
+      "file": "scripts/gate_space.py",
+      "rows": [
+        "ac4/adopter-unchanged"
+      ],
+      "red_rows": [
+        "VELDO-0309 ac4/adopter-unchanged"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-log-not-named",
+      "file": "scripts/gate_space.py",
+      "rows": [
+        "log/removed-at-verdict"
+      ],
+      "red_rows": [
+        "VELDO-0309 log/removed-at-verdict"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "space309-kept-child-measured",
+      "file": "scripts/gate_space.py",
+      "rows": [
+        "safe/owner-keep"
+      ],
+      "red_rows": [
+        "VELDO-0309 safe/owner-keep"
+      ],
+      "rejected": true
+    }
+  ]
+}

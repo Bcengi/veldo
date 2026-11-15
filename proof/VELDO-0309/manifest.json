@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0309",
-  "commit": "91d8ce812080ed210d7840c1b1e4115a03bbaa25",
-  "tree": "da3764d3c0689c599dc8575bce9ec90be15020d5",
-  "producer": "Codex implementation agent; not an independent reviewer",
-  "produced_at": "2026-11-15T21:55:27.222332+00:00",
+  "commit": "42eed75c7b437053cd68d24637a1615c18c201f9",
+  "tree": "6588238cdea46e483c555b184dd3248a50ca064b",
+  "producer": "Codex implementation agent (first build); Claude agent (fix round after the review); neither is an independent reviewer",
+  "produced_at": "2026-11-15T22:52:53.800033+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -13,17 +13,17 @@
         {
           "type": "unit",
           "ref": "scripts/suites/153_veldo_0309_gate_space.py",
-          "detail": "Both real gate scripts, with no gate_host.json: act at free 120, need 250 and floor 100 exits 75 before the check, stamp or event; report prints the same numbers and runs. Needs come from the project instead of the default 200."
+          "detail": "Both real gate scripts, with no gate_host.json: act at free 120, need 250 and floor 100 exits 75 before the check, stamp or event, makes no output folder and leaves its hold released; report prints the same numbers and runs. Needs come from the project instead of the default 200. Rows hold/killed-gate-does-not-block, hold/live-holder-blocks, hold/pid-reused-is-gone and hold/released-on-every-exit: the hold is the gate process's (process id, start time, boot); a gate killed with SIGKILL after its need step does not block the next gate at free 400, whose need step releases the dead holder's hold; a gate that is still running blocks a second need with held 250; the same process id with another start time is gone; a hold that is no gate's is not touched; a gate told to end (exit 143) and a gate whose classify step fails (exit 75) leave their hold released."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0309/rows.json",
-          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+          "detail": "24 rows passed (python3 scripts/selftest.py --suite 153_veldo_0309_gate_space; proof/VELDO-0309/rows.json). Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts with tiny fixture catalogs; the gates, the processes they leave and the signals are real."
         },
         {
           "type": "falsifier",
           "ref": "proof/VELDO-0309/falsifiers.json",
-          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+          "detail": "python3 scripts/check_teeth_mutations.py --finding 309: registered 20, executed 20, rejected 20, passed. Each case names the row it turns red; the row names are fixed, so the tool finds them."
         }
       ]
     },
@@ -34,17 +34,17 @@
         {
           "type": "unit",
           "ref": "scripts/suites/153_veldo_0309_gate_space.py",
-          "detail": "Both gate scripts capture a check writing the OS no-space error to stderr. With free 50 below floor 100, report mode exits 75 as environment_failure:no_space, with no stamp, no event and build output still present. Unread free space refuses; an error above the floor is not classified as confirmed no_space."
+          "detail": "Both gate scripts capture a check writing the OS no-space error to stderr. With free 50 below floor 100, report mode exits 75 as environment_failure:no_space, with no stamp, no event and build output still present. Unread free space refuses; an error above the floor is not classified as confirmed no_space. Row exit/leftover-does-not-hold-gate: the copy of the output ends at the gate's own last line, so a gate returns with its stamp while a process a check left running with the output open is still running."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0309/rows.json",
-          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+          "detail": "24 rows passed (python3 scripts/selftest.py --suite 153_veldo_0309_gate_space; proof/VELDO-0309/rows.json). Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts with tiny fixture catalogs; the gates, the processes they leave and the signals are real."
         },
         {
           "type": "falsifier",
           "ref": "proof/VELDO-0309/falsifiers.json",
-          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+          "detail": "python3 scripts/check_teeth_mutations.py --finding 309: registered 20, executed 20, rejected 20, passed. Each case names the row it turns red; the row names are fixed, so the tool finds them."
         }
       ]
     },
@@ -55,17 +55,17 @@
         {
           "type": "unit",
           "ref": "scripts/suites/153_veldo_0309_gate_space.py",
-          "detail": "Green and red gates record their stamp before the synchronous census and versioned item signal. Real build folders and declared evidence caches are gone on return; notes, a personally ignored settings file, and the evidence proof stay byte for byte. SIGKILL during checks and at entry to the stamp writer sends no verdict call. The helper refuses a previous stamp and a duplicate end. Keep leaves its item at the same version; a repository inside build output and invalid locators refuse removal."
+          "detail": "Green and red gates record their stamp before the synchronous census and versioned item signal. Real build folders and declared evidence caches are gone on return; notes, a personally ignored settings file, and the evidence proof stay byte for byte. SIGKILL during checks and at entry to the stamp writer sends no verdict call. The helper refuses a previous stamp and a duplicate end. Keep leaves its item at the same version; a repository inside build output and invalid locators refuse removal. Row log/removed-at-verdict: the folder of the gate's output is an item of the ledger, declared before it is made, and is removed by the folder remover in the verdict's Signal, as is the folder a killed gate left, at the next verdict. Row exit/group-ended: a gate that leads its process group ends what a check left in it."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0309/rows.json",
-          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+          "detail": "24 rows passed (python3 scripts/selftest.py --suite 153_veldo_0309_gate_space; proof/VELDO-0309/rows.json). Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts with tiny fixture catalogs; the gates, the processes they leave and the signals are real."
         },
         {
           "type": "falsifier",
           "ref": "proof/VELDO-0309/falsifiers.json",
-          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+          "detail": "python3 scripts/check_teeth_mutations.py --finding 309: registered 20, executed 20, rejected 20, passed. Each case names the row it turns red; the row names are fixed, so the tool finds them."
         }
       ]
     },
@@ -76,17 +76,17 @@
         {
           "type": "unit",
           "ref": "scripts/suites/153_veldo_0309_gate_space.py",
-          "detail": "For both scripts, absent installation and an actual off installation preserve green/red exit and stamp status. Inactive gates create no space files that could change the dirty-path count. A fresh scaffold installs the canonical helper and the gate steps."
+          "detail": "For both scripts, absent installation and an actual off installation preserve green/red exit and stamp status; such a gate calls no capture, release or group step and makes no space files. Row ac4/no-helper-unchanged: an installation with no helper file says so and its gate stamps green and red as before. Row graph/refused-runs-no-review-events: in both scripts a refused graph ends red without the review events, and an ordinary gate runs them. A fresh scaffold installs the canonical helper and the gate steps."
         },
         {
           "type": "integration",
           "ref": "proof/VELDO-0309/rows.json",
-          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+          "detail": "24 rows passed (python3 scripts/selftest.py --suite 153_veldo_0309_gate_space; proof/VELDO-0309/rows.json). Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts with tiny fixture catalogs; the gates, the processes they leave and the signals are real."
         },
         {
           "type": "falsifier",
           "ref": "proof/VELDO-0309/falsifiers.json",
-          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+          "detail": "python3 scripts/check_teeth_mutations.py --finding 309: registered 20, executed 20, rejected 20, passed. Each case names the row it turns red; the row names are fixed, so the tool finds them."
         }
       ]
     }
@@ -95,37 +95,47 @@
     {
       "name": "unit and integration",
       "status": "passed",
-      "command": "python3 proof/VELDO-0309/run_rows.py: 15 rows passed, 0 failed"
+      "command": "python3 scripts/selftest.py --suite 153_veldo_0309_gate_space: 24 rows of this ticket passed, 0 failed (50 with the suite's prerequisite rows); recorded by python3 proof/VELDO-0309/run_rows.py in rows.json"
     },
     {
       "name": "falsifiers",
       "status": "passed",
-      "command": "The same targeted runner, isolated source copies only: 8 registered falsifiers applied once each in the final run, all 8 rejected. No mutation coordinator or teeth stage was run."
+      "command": "python3 scripts/check_teeth_mutations.py --finding 309: registered=20 executed=20 reused=0 rejected=20, passed; falsifiers.json is written from its receipt"
+    },
+    {
+      "name": "template sync",
+      "status": "passed",
+      "command": "bash scripts/check_template_sync.sh: pass (322 pairs compared)"
+    },
+    {
+      "name": "other suites that start a gate script",
+      "status": "passed",
+      "command": "python3 scripts/selftest.py --suite NAME, 0 failed, for 113_veldo_0220_gate_host, 114_veldo_0220_gate_scope, 114_veldo_0216_concurrent_stages, 69_veldo_0058_gate_output, 13_warp_0623_codified_live, 129_veldo_0239_batch_landing, 129_veldo_0260_checkout_in_step, 128_veldo_0235_land_locally, 70_veldo_0057_landing, 147_veldo_0310_landed_contained, 53_veldo_0123_mutations, 99_veldo_0205_reuse, 63_veldo_0049_floor, 67_veldo_0135_offers, 27_veldo_0010_evidence_provenance, 01_warp_0101_reviewer_notes and 03_plugin_extension_loading_runner. 101_veldo_0208_landing_reuse: 213 passed, 3 failed (sandbox/unavailable-refuses-before-exec, sandbox/old-abi-refuses-before-exec, unconfined-leg/fixture-sharers-are-listed); the same three rows fail at a0ecd899, where the suite also stopped on the stamp fragment, and none of them runs a gate script"
     },
     {
       "name": "fresh adopter",
       "status": "passed",
-      "command": "init_scaffold.scaffold on a temporary directory using engine: installed helper bytes match canon and gate has the need step; no gate was executed."
+      "command": "first build: init_scaffold.scaffold on a temporary directory using engine: installed helper bytes match canon and gate has the need step; no gate was executed. Not repeated in the fix round; the template sync check covers the helper and init_scaffold is unchanged."
     },
     {
       "name": "fast checks",
       "status": "passed",
-      "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py"
+      "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh"
     },
     {
       "name": "gate",
       "status": "not_run",
-      "command": "./scripts/verify.sh is for the lead through the gate lock; the builder did not run it."
+      "command": "./scripts/verify.sh is for the lead through the gate lock; neither the builder nor the fix round ran it, nor the policy checker."
     }
   ],
   "assumptions": [
     "Criteria remain pending the lead gate and independent review, despite all targeted rows passing.",
     "Production authority transport is VELDO-0323, not built on this branch. As the existing wrapper does, the helper reports ledger_unreachable with an enabled installation and no wiring. It opens no private ledger and sends nothing. Rows inject the receiver-style authority wiring; a live central-service gate is not proven.",
-    "The fixtures alone supply the two unbuilt act checks (VELDO-0332 and VELDO-0339), an empty process table, synthetic free-byte readings and a stub Docker client. Production act guards, signatures, packet checks, probes, keeper and removers are unchanged. No actual engine, protected volume or owner data was touched.",
+    "The fixtures alone supply the two unbuilt act checks (VELDO-0332 and VELDO-0339), an empty process table for the removers' probes, synthetic free-byte readings and a stub Docker client. The holder of a hold is read from the real process table. Production act guards, signatures, packet checks, probes, keeper and removers are unchanged. No actual engine, protected volume or owner data was touched.",
     "Admission retries and historical needs are later tickets; this helper uses the current arithmetic. The unconfirmed no-space retry policy is not built: an error without a below-floor pool keeps the ordinary verdict.",
-    "The shell rows retain gate ordering and stamp code, replacing catalogs and confinement helpers only in throwaway fixtures. Kills are real SIGKILL at the checks and stamp boundary. The standard full gate, heavy suites, policy checker and suite 86 captures were not run or edited.",
-    "Development found two fixture setup mistakes and an absent-stamp assertion that raised instead of producing its named red row. These were corrected. Final records are from the complete rerun after the inactive-log correction; no failed run is counted as evidence of detection.",
-    "The docs check exited 0 and reported pass while printing paths of older non-ASCII artifacts. Changed files were separately checked as ASCII."
+    "The gate ends its process group only when it leads one (started by the host holder, or by a shell with job control). A gate that is a member of its caller's group ends nobody; the other children of its parent are never ended. Candidate mode with a sink was not run with space management on: a sink outside every known root is refused by the ledger and such a gate answers NOT STARTED.",
+    "The holder is read from /proc. On a host without it, a gate with space management on answers NOT STARTED.",
+    "The standard full gate and the policy checker were not run in this round. Suite 153, the teeth check for finding 309 and the other suites that start a gate script were run under nice 10 on a host loaded by another gate."
   ],
   "rollback": "Revert the gate steps, helper, scaffold entry and the two protected helper entries. Gate behavior returns to the previous form."
 }

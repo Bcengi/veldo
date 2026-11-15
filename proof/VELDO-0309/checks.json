@@ -1,8 +1,9 @@
 {
-  "implementation": "91d8ce812080ed210d7840c1b1e4115a03bbaa25",
-  "targeted_rows": 15,
-  "falsifiers": 8,
-  "fast_checks": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py",
+  "implementation": "42eed75c7b437053cd68d24637a1615c18c201f9",
+  "targeted_rows": 24,
+  "falsifiers": 20,
+  "teeth": "python3 scripts/check_teeth_mutations.py --finding 309: registered=20 executed=20 rejected=20, passed",
+  "fast_checks": "python3 .veldo/validate.py all; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; bash scripts/check_docs.sh",
   "fast_checks_exit": 0,
   "full_gate": "not run"
 }
