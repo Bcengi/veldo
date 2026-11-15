@@ -1,0 +1,49 @@
+{
+  "scope": "Four targeted manual mutations; no teeth run and no full gate.",
+  "results": [
+    {
+      "case": "space314-record-at-end-only",
+      "applied": 1,
+      "target_rows": {
+        "ac1/start-owns-scratch": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-drop-no-project",
+      "applied": 1,
+      "target_rows": {
+        "ac2/no-project": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-remove-inside-hook",
+      "applied": 1,
+      "target_rows": {
+        "ac3/end-returns-with-removers-held": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-failure-reaches-client",
+      "applied": 1,
+      "target_rows": {
+        "ac4/down-starts-and-spools": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    }
+  ]
+}

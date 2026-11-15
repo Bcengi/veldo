@@ -1,0 +1,26 @@
+{
+  "fast-checks.json": {
+    "bytes": 941,
+    "sha256": "ad7807a3eda9c0fa89dc9070cd04e56930c22b7eff432d785602b1cbe4bd7ba0"
+  },
+  "manifest.json": {
+    "bytes": 8786,
+    "sha256": "74b40ce35035ae49a785519fc75108f263f56561c01a67ca5e27968615f332a4"
+  },
+  "falsifiers.json": {
+    "bytes": 968,
+    "sha256": "92b729c83e225edad21bc9d87a7597061487667e2e54b06a03f2f6a510bbc3ff"
+  },
+  "targeted-tests.json": {
+    "bytes": 529,
+    "sha256": "43169b8be146f9a749862539d8a167c3c3bcff5c6abc0216fb818fbc38bfe0e4"
+  },
+  "tests.txt": {
+    "bytes": 580,
+    "sha256": "6da994c9b811a87cc2d2867357e0cf7ab433468a19a40873dba7f3384f2eb515"
+  },
+  "falsify.py": {
+    "bytes": 2337,
+    "sha256": "5f340aeb51313bb290d5166e2328685f14c97271c567426091847ff2f663a3ce"
+  }
+}
