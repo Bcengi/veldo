@@ -61,5 +61,12 @@
   "row": "runtime/boundary",
   "old": "                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
   "new": "                shutil.rmtree(directory)\n                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n"
+ },
+ {
+  "name": "lander-direct-tree",
+  "path": ".veldo/lander.py",
+  "row": "lander/boundary",
+  "old": "            for path in paths:\n                if not space_absent(path):\n",
+  "new": "            for path in paths:\n                shutil.rmtree(path)\n                if not space_absent(path):\n"
  }
 ]

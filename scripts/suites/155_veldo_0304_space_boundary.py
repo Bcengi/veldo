@@ -222,5 +222,30 @@ def _v304_suite():
     row('runtime/unique-work', runtime_work)
     row('runtime/boundary', lambda: module_boundary('control_launch_work', ('Runtime.close',)))
 
+    def lander_work():
+        lander = load('lander', ROOT / '.veldo/lander.py')
+        with tempfile.TemporaryDirectory(prefix='v304-lander-') as temporary:
+            base = Path(temporary)
+            path, observations = base / 'candidate', base / 'observations'
+            path.mkdir()
+            observations.mkdir()
+            git(path, 'init', '-q', '-b', 'main')
+            (path / 'unique').write_text('only landing candidate work\n')
+            git(path, 'add', '.')
+            git(path, 'commit', '-q', '-m', 'unique')
+            tip = git(path, 'rev-parse', 'HEAD')
+            (observations / 'proof').write_bytes(b'only proof\n')
+            obj = object.__new__(lander.GitLandOps)
+            obj.space, obj.observations = None, None
+            obj.candidate = {'workspace': str(path), 'observation_dir': str(observations)}
+            obj.discard()
+            assert not obj.candidate['discarded']
+            assert all(value['deferral'] == 'not_in_ledger' for value in obj.candidate['space'].values())
+            assert git(path, 'rev-parse', 'HEAD') == tip
+            assert (observations / 'proof').read_bytes() == b'only proof\n'
+
+    row('lander/unique-work', lander_work)
+    row('lander/boundary', lambda: module_boundary('lander', ('GitLandOps.discard',)))
+
 
 _v304_suite()

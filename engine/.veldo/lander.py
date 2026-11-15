@@ -180,84 +180,10 @@ _SPACE = {}
 
 
 def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
-    """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
-    and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
-    whatever goes is removed by Signal's removers, after the safety rules and the keep step.
-
-    `space` is what the installation wires in when it has a space ledger: a mapping with ledger (the
-    control_space.Ledger) and, under their own names, the arguments Signal is given (probe, kinds,
-    remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). The items are the live
-    ones the ledger records at or beneath `paths`. The event is signalled once for each owner among
-    them, and the subject is every part of that owner. A path the ledger records no live item for
-    answers with no item and the deferral not_in_ledger, and nothing is done to it; when the kernel
-    says nothing is at that path (not found, and no other answer) it answers gone, for there is
-    nothing to remove. Whatever raises removes nothing: every path then answers with the deferral
-    remove_refused and what was raised.
-
-    `ended` says the caller has just read from the kernel that the runs owning these items are over:
-    rule 3 is answered conclusive for those runs and for no other owner. `confirm` first confirms the
-    items still in state declared (a creation that failed part way), so the event reaches them.
-    `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
-    repository that is not at or beneath `paths`."""
-    paths = [os.path.normpath(str(path)) for path in paths]
-    found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
-
-    def beneath(record):
-        where = (record.get('locator') or {}).get('path')
-        return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
-
-    def owned(record, subject):
-        owner = record.get('owner') or {}
-        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
-                   for part, wanted in subject.items())
-
-    try:
-        ledger = space['ledger']
-        given = {key: value for key, value in space.items() if key != 'ledger'}
-        every = ledger.items()
-        live = {identity: record for identity, record in every.items()
-                if record.get('state') not in SPACE_ENDED and beneath(record)}
-        subjects, runs = [], set()
-        for identity, record in sorted(live.items()):
-            if confirm and record.get('state') == 'declared':
-                ledger.confirm(identity)
-            owner = dict(record.get('owner') or {})
-            if isinstance(owner.get('run'), dict):
-                owner['run'] = owner['run'].get('id')
-                runs.add(owner['run'])
-            if owner and owner not in subjects:
-                subjects.append(owner)
-        others = [identity for identity, record in sorted(every.items())
-                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
-                  and record.get('kind') in ('worktree', 'agent_repository')
-                  and any(owned(record, subject) for subject in subjects)]
-        if others:
-            raise ValueError('the owner of this thing also owns %s: the event would end it too'
-                             % ', '.join(others[:3]))
-        if ended:
-            wired = given.get('owner_live')
-            given['owner_live'] = lambda owner: (
-                {'conclusive': True, 'group_empty': True} if (owner.get('run') or {}).get('id') in runs
-                else wired(owner) if wired else None)
-        if 'signal' not in _SPACE:
-            _SPACE['signal'] = _load("veldo_space_signal_ld", "control_space_signal.py").signal
-        for subject in subjects:
-            _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
-        for identity, record in live.items():
-            where = record['locator']['path']
-            if where in found:
-                now = ledger.item(identity) or {}
-                found[where] = {'item': identity, 'state': now.get('state'),
-                                'deferral': (now.get('deferral') or {}).get('rule')
-                                if now.get('state') == 'deferred' else None}
-        for path in paths:
-            if found[path]['item'] is None and space_absent(path):
-                found[path] = {'item': None, 'state': 'gone', 'deferral': None}
-    except Exception as error:  # noqa: BLE001 - what could not be signalled is not removed
-        raised = '%s: %s' % (type(error).__name__, str(error)[:300])
-        found = {path: {'item': None, 'state': None, 'deferral': 'remove_refused', 'raised': raised}
-                 for path in paths}
-    return found
+    """Use the shared item-naming event; an owner's other items are never selected."""
+    if 'clone' not in _SPACE:
+        _SPACE['clone'] = _load('lander_space_clone', 'control_clone.py')
+    return _SPACE['clone'].space_signal(space, event, paths, emitter, ended=ended, confirm=confirm)
 
 
 def space_absent(path):
@@ -712,14 +638,8 @@ class GitLandOps(LandOps):
         return json.loads(json.dumps(self.candidate)) if self.candidate is not None else None
 
     def discard(self):
-        """Remove the candidate workspace. A candidate is disposable, and its commits are still work: with
-        no ledger it goes with no kept ref written only when every commit it holds is held elsewhere or
-        is one the lander makes again (space_rebuildable), so that a refused land leaves the caller's
-        repository as it was (VELDO-0056); any other workspace has its commits written on kept refs in
-        the caller's repository first (space_standalone).
-        With a space ledger (VELDO-0303) the workspace, a private repository, and the observation
-        folder go through Signal: the rules, the keep step for the workspace, then the folder remover.
-        What a rule keeps stays on disk, deferred on the record, and the candidate says so under space."""
+        """End the candidate through its named ledger items and their keep step.
+        Without a ledger, keep the workspace and observation folder with a named refusal."""
         c = self.candidate
         if c and self.space is not None:
             paths = [c["workspace"]] if c.get("workspace") and os.path.isdir(c["workspace"]) else []
@@ -732,30 +652,16 @@ class GitLandOps(LandOps):
                 if c.get("workspace") in paths:
                     c["discarded"] = found[os.path.normpath(c["workspace"])]["state"] in SPACE_ENDED
             return
-        # No ledger: the unique work probe and the keep step by themselves, before either delete. The
-        # workspace is a private repository of the caller's: its commits go to kept refs there first, and
-        # one that holds unsaved files stays, as the candidate says under space.
-        # VELDO-0303 fix: but first the look that writes nothing. A candidate whose every commit is held
-        # by the caller's refs or the fetched trunk, or is the lander's own merge or projection, is
-        # removed with no kept ref; whatever that look does not clear takes the path above (fail closed).
-        # Fix 2: no ref of the workspace says what is held, and a commit no ref of the caller holds, the
-        # fetched trunk first of all, counts only while the remote's trunk, read now, contains it.
-        if c and c.get("workspace") and os.path.isdir(c["workspace"]):
-            found = space_rebuildable(c["workspace"], self.repo_root, c, REGEN_PATHS,
-                                      self._remote_trunk if c.get("remote") else None)
-            if found["state"] != SPACE_REBUILDABLE:
-                found = space_standalone(c["workspace"], "agent_repository", main=self.repo_root)
-            if found["state"] == SPACE_REBUILDABLE or found["state"] in SPACE_SAFE:
-                shutil.rmtree(c["workspace"], ignore_errors=True)
-            else:
-                c.setdefault("space", {})[c["workspace"]] = dict(found, refusal=space_refusal(found))
-            c["discarded"] = not os.path.exists(c["workspace"])
-        if c and c.get("observation_dir") and self.observations is None and os.path.isdir(c["observation_dir"]):
-            found = space_standalone(c["observation_dir"], "folder")
-            if found["state"] in SPACE_SAFE:
-                shutil.rmtree(c["observation_dir"], ignore_errors=True)
-            else:
-                c.setdefault("space", {})[c["observation_dir"]] = dict(found, refusal=space_refusal(found))
+        if c:
+            paths = [c['workspace']] if c.get('workspace') else []
+            if c.get('observation_dir') and self.observations is None:
+                paths.append(c['observation_dir'])
+            for path in paths:
+                if not space_absent(path):
+                    c.setdefault('space', {})[path] = {'path': path, 'item': None, 'state': None,
+                                                       'deferral': 'not_in_ledger',
+                                                       'refusal': 'space_deferred:not_in_ledger'}
+            c['discarded'] = bool(c.get('workspace')) and space_absent(c['workspace'])
 
     def _remote_trunk(self):
         """VELDO-0303 fix 2: the commit the remote's trunk names now, asked of the remote itself with the
