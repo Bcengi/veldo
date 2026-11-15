@@ -1,0 +1,1 @@
+Lead rerun 2026-11-15 after the builder stopped on the input-stability guard (proof files edited during its own teeth run): check_teeth_mutations.py --finding 324 rc=0, 21 registered, 21 rejected; suite 154 55/55.

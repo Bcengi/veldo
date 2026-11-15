@@ -53,7 +53,8 @@ acceptance_criteria:
       candidate workspace, the batch clone and the batch's observation folder. The clone's work tree, the
       batch clone and the candidate workspace are declared as items of the kind agent repository, each
       with its form and its main repository, and never as scratch. The receiver's artifacts, receipts and
-      token records are declared as evidence, never as scratch
+      token records and the batch observation folder are declared as evidence, never as scratch. The
+      batch observation folder ends at verdict_recorded, after the reviewer reads it, not at batch end
     falsified_by: >
       Each of these turns a row of its own red. Declare after creating: the row that kills the creator
       between the two finds a folder with no item. Declare the batch clone as scratch: the row that reads
@@ -159,3 +160,7 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
   worktrees, the sandbox's prepare) are what provision a ticket's next run in a worktree. The call comes
   before the new worktree's item is confirmed; a declared item is not signalled, so the order is safe. A
   worktree the owner marked Keep is sent nothing by it. No code in that round.
+
+- 2026-11-15: lead decision for VELDO-0324 review: AC1 now explicitly names the batch
+  observation folder as reviewer evidence, with declared end event verdict_recorded. Batch
+  end does not end that evidence. This amends the older removal wording of VELDO-0324 AC1.

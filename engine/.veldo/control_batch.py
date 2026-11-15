@@ -654,6 +654,7 @@ class Batch:
     def assemble(self, units):
         """Assemble every eligible unit onto the trunk watermark in one candidate (see the module text)."""
         self.discard()
+        previous = self.record or {}
         self._units = [{'unit': u.get('unit'), 'commit': u.get('commit')} for u in units or () if isinstance(u, dict)]
         picked = eligible(self.authority, self._units)
         self.record = {'schema': SCHEMA, 'id': 'batch-' + uuid.uuid4().hex[:16], 'project': self.project,
@@ -661,7 +662,9 @@ class Batch:
                        'hook': list(self.hook) if self.hook else None, 'state': 'new', 'watermark': None,
                        'tip': None, 'units': [], 'left_out': [], 'hook_runs': [], 'gate': None,
                        'inventory': None, 'approval': None, 'landing': None, 'receipts': [],
-                       'started_at': self.clock()}
+                       'started_at': self.clock(),
+                       'space_outcomes': dict(previous.get('space_outcomes', {})),
+                       'space_deferred': dict(previous.get('space_deferred', {}))}
         if not picked:
             self.record['state'] = 'empty'
             self._event('assemble', 'empty')
@@ -724,7 +727,7 @@ class Batch:
         CV = _organ('control_verification')
         creation = _organ('control_clone').SpaceCreator(self.space, self.space_owner, Refused)
         directory = creation.temporary('veldo-batch-observation-', self.workspace_root)
-        with creation.item('evidence', directory):
+        with creation.item('evidence', directory, ends_on=['verdict_recorded']):
             directory.mkdir(mode=0o700)
         r.setdefault('space_items', {}).update(creation.items)
         r['observation_dir'] = str(directory)
@@ -969,9 +972,11 @@ class Batch:
             found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
         else:
             found = clones.space_signal(self.space, 'run_finished', paths, 'batch.discard', confirm=True)
-        r['space_outcomes'] = found
-        r['space_deferred'] = {path: clones.space_refusal(entry) for path, entry in found.items()
+        r.setdefault('space_outcomes', {}).update(found)
+        r['space_deferred'] = {path: clones.space_refusal(entry) for path, entry in r['space_outcomes'].items()
                                if entry.get('state') not in clones.SPACE_ENDED}
+        self._event('discard', 'deferred' if r['space_deferred'] else 'accepted',
+                    space_outcomes=found, space_deferred=r['space_deferred'])
         return found
 
 

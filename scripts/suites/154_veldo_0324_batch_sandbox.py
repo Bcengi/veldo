@@ -10,6 +10,7 @@ def _v324_suite():
     import copy
     import importlib.util
     import io
+    import json
     import os
     from pathlib import Path
     import shutil
@@ -22,6 +23,8 @@ def _v324_suite():
     from unittest.mock import patch
 
     PRODUCTION = {
+        'control_batch_service.py': ROOT / ".veldo" / "control_batch_service.py",
+        'control_space.py': ROOT / ".veldo" / "control_space.py",
         'control_batch.py': ROOT / ".veldo" / "control_batch.py",
         'agent_sandbox.py': ROOT / "scripts" / "agent_sandbox.py",
         'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
@@ -58,6 +61,7 @@ def _v324_suite():
             'control_batch', 'control_clone', 'control_space', 'control_store', 'control_space_config',
             'yamlish', 'control_space_kinds', 'control_space_probe', 'control_space_remove',
             'control_space_keep', 'control_space_signal', 'git_process', 'control_membership')]
+        BS = load('batch_service', mods / 'control_batch_service.py')
         SB = load('sandbox', installed / 'scripts/agent_sandbox.py')
         repo, state, scratch, proc, borrows = [base / name for name in ('main', 'state', 'scratch', 'proc', 'borrows')]
         for path in (repo, state, scratch, proc, borrows):
@@ -163,7 +167,9 @@ def _v324_suite():
             parent.mkdir()
             b = object.__new__(BA.Batch)
             b.space, b.space_owner, b.repo_root, b.workspace_root = space, owner, str(repo), str(parent)
-            b.record = {}
+            b.record = {'id': 'batch-' + name}
+            b.records, b.events, b.project = state / 'batch-records', [], project['project']
+            b.clock, b.observe = time.time, lambda event: None
             path = b._isolated_clone()
             git(path, 'checkout', '-q', '-b', 'main', head)
             observation = parent / 'observation'
@@ -264,6 +270,107 @@ def _v324_suite():
             check(row, 'a batch without its ledger keeps its work and reports deferral',
                   path.is_dir() and observation.is_dir() and b.record['space_deferred'][str(path)] == 'space_deferred:not_in_ledger')
         drive('safety/batch-no-ledger', no_ledger)
+
+        def saved_deferral(row):
+            b, path, observation = batch('saved-deferral')
+            b.space = None
+            b._write()
+            events = []
+            b.observe = events.append
+            b.discard()
+            saved = json.loads((b.records / (b.record['id'] + '.json')).read_text())
+            expected = {str(p): 'space_deferred:not_in_ledger' for p in (path, observation)}
+            check(row, 'the saved batch retains no-ledger deferrals and an emitted discard outcome',
+                  saved.get('space_deferred') == expected and saved.get('space_outcomes') == b.record['space_outcomes']
+                  and any(e['operation'] == 'discard' and e['outcome'] == 'deferred'
+                          and e.get('space_deferred') == expected for e in saved.get('log', []))
+                  and len(events) == 1 and events[0]['operation'] == 'discard'
+                  and (path / 'work.txt').read_text() == 'committed work\n' and observation.is_dir())
+        drive('ac1/saved-deferral', saved_deferral)
+
+        def reassembly(row):
+            b, path, observation = batch('reassembly')
+            b.space = None
+            old_id = b.record['id']
+            b.authority = object.__new__(BA.Authority)
+            b.trunk, b.destination, b.follows, b.hook = 'main', BA.LAND_LOCALLY, old_id, None
+            b.assemble([])
+            b.discard()
+            saved = json.loads((b.records / (b.record['id'] + '.json')).read_text())
+            previous = json.loads((b.records / (old_id + '.json')).read_text())
+            expected = {str(p): 'space_deferred:not_in_ledger' for p in (path, observation)}
+            check(row, 'reassembly and a later discard retain earlier deferrals on both saved records',
+                  saved.get('space_deferred') == previous.get('space_deferred') == expected
+                  and saved.get('space_outcomes') == previous.get('space_outcomes')
+                  and (path / 'work.txt').read_text() == 'committed work\n')
+        drive('ac1/saved-reassembly', reassembly)
+
+        # Gate, approval and landing decisions are stand-ins; discard, request writes
+        # and the SQLite readback are the real production path for every terminal arm.
+        for terminal in ('landed', 'stopped', 'refused', 'reland-failed', 'red', 'not-started'):
+            def saved_request(row, terminal=terminal):
+                b, path, observation = batch('request-' + terminal)
+                b.space = None
+                b.record['state'] = 'red' if terminal == 'reland-failed' else terminal
+                def land():
+                    if terminal == 'refused':
+                        raise BS.BT.Refused('unavailable_service:fixture')
+                    return {'ok': terminal == 'landed',
+                            'outcome': 'trunk_moved' if terminal == 'reland-failed' else terminal,
+                            'refusal': BS.BT.STOPPED if terminal == 'stopped' else None}
+                b.land, b.reland = land, lambda: {'ok': False}
+                line = object.__new__(BS.BatchLine)
+                line.store, line.conn, line.signer = S, conn, 'authority'
+                line.sign, line.generation, line.clock = L.sign, 1, time.time
+                line.repository, line.held = str(repo), {}
+                requested = terminal in ('red', 'not-started')
+                rid = 'request-' + terminal
+                request = {'project': project['project'], 'repository': str(repo),
+                           'state': BS.REQUESTED if requested else BS.AWAITING}
+                BS._upsert(S, conn, line.signer, line.sign, 1, rid, BS.REQUEST_KIND, request)
+                if not requested:
+                    line.held[rid] = b
+                line._batch = lambda request: b
+                with patch.object(BS.BT, 'run', lambda *a: {'outcome': terminal.replace('-', '_')}):
+                    line.pass_once()
+                saved = BS._row(conn, rid)['data']
+                expected = {str(p): 'space_deferred:not_in_ledger' for p in (path, observation)}
+                check(row, 'saved request includes the discard deferrals and outcomes with work intact',
+                      saved.get('space_deferred') == expected and bool(saved.get('space_outcomes'))
+                      and (path / 'work.txt').read_text() == 'committed work\n' and observation.is_dir())
+                # Keep this still-requested fixture out of the next independent pass.
+                line.held.clear()
+                if saved['state'] == BS.REQUESTED:
+                    BS._upsert(S, conn, line.signer, line.sign, 1, rid, BS.REQUEST_KIND, dict(saved, state='fixture-done'))
+            drive('ac1/saved-request-' + terminal, saved_request)
+
+        def observation_end(row):
+            b, path, _ = batch('observation-end')
+            b.record.update(state='assembled', watermark=head)
+            b.installation, b.gate_runs, b.gate_timeout = str(installed), 0, None
+            b.tell = lambda *args: None
+            cv = BA._organ('control_verification')
+            def refused_gate(*args, **kwargs):
+                raise cv.Refused('fixture_gate')
+            with patch.object(cv, 'observe_gate', refused_gate):
+                b.gate()
+            evidence = Path(b.record['observation_dir'])
+            (evidence / 'proof').write_text('reviewer evidence')
+            identity, record = at(evidence)
+            b.discard()
+            check(row, 'the actual gate observation declares verdict_recorded and survives batch end',
+                  record['kind'] == 'evidence' and record['ends_on']['events'] == ['verdict_recorded']
+                  and L.item(identity)['state'] == 'present'
+                  and (evidence / 'proof').read_text() == 'reviewer evidence')
+        drive('ac1/observation-end', observation_end)
+
+        def invalid_end(row):
+            for number, events in enumerate(([], ['unknown'], ['verdict_recorded', 'verdict_recorded'], 'verdict_recorded')):
+                path = scratch / ('invalid-end-' + str(number))
+                result = L.declare('evidence', {'path': str(path)}, owner, 'seam', ends_on=events)
+                check(row, 'invalid event selections refuse without a declared item',
+                      not result['ok'] and at(path)[0] is None and not path.exists())
+        drive('safety/invalid-end-events', invalid_end)
 
         def bad_paths(row):
             b, path, observation = batch('bad-paths')
@@ -415,6 +522,25 @@ def _v324_suite():
             check(row, 'adopter starts and returns its status, removing only its own scratch',
                   code == 7 and len(seen) == 1 and not seen[0].exists() and not list(root.iterdir()))
         drive('ac4/standalone', standalone)
+
+        def foreign_parent(row):
+            root = scratch / 'foreign-run-root'
+            foreign_owner = dict(owner, run={'id': 'another-run', 'station': 'build'})
+            with CL.SpaceCreator(space, foreign_owner).item('scratch', root):
+                root.mkdir()
+            (root / 'work').write_text('another run owns this')
+            before, ran = copy.deepcopy(L.items()), []
+            env = {'VELDO_SPACE_LABEL': owner['run']['id'], 'TMPDIR': str(root), 'XDG_STATE_HOME': str(state)}
+            with patch.dict(os.environ, env), patch.object(SB, 'prepared_launch', lambda *a: ran.append(True)):
+                try:
+                    SB.launch(base / 'unused', repo, ['fixture-command'], space=space)
+                    failed = False
+                except RuntimeError as error:
+                    failed = 'unavailable_service:space_ledger' in str(error)
+            check(row, 'another run scratch root refuses before creation, declaration or command',
+                  failed and not ran and L.items() == before and list(root.iterdir()) == [root / 'work']
+                  and (root / 'work').read_text() == 'another run owns this')
+        drive('safety/foreign-run-parent', foreign_parent)
 
         def refused(row):
             root = scratch / 'unavailable'

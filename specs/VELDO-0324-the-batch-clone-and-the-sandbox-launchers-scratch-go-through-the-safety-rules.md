@@ -12,6 +12,13 @@ depends_on: [VELDO-0302]
 placement: [engine, loop]
 protected_paths: ["engine/scripts/agent_sandbox.py", "scripts/agent_sandbox.py"]
 footprint:
+  - "engine/.veldo/control_batch_service.py"
+  - ".veldo/control_batch_service.py"
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
+  - "specs/VELDO-0302-veldos-own-creators-declare-before-they-create.md"
   - "engine/.veldo/control_batch.py"
   - ".veldo/control_batch.py"
   - "engine/scripts/agent_sandbox.py"
@@ -38,8 +45,9 @@ observability:
 acceptance_criteria:
   - id: AC1
     text: >
-      A batch's discard removes its clone and its observation folder through Signal; a refusal is a
-      deferral on the record and never an ignored error
+      A batch's discard removes its clone through Signal; a refusal is a deferral on the saved batch
+      and request records and never an ignored error. Its observation folder is reviewer evidence
+      declared to end at verdict_recorded, not at batch end
     falsified_by: >
       Leave the direct delete in place; the row with a process holding an open file in the clone finds the
       folder gone and fails
@@ -119,3 +127,11 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
   while holding its scratch lock, leaving deletion to the existing remover. The two older
   sandbox suites now expect killed launchers' scratch to remain, consistent with AC3; their
   borrowed-login recovery checks remain. Their test paths are added to the footprint above.
+
+- 2026-11-15: fix round after independent review. Discard emits and saves its outcome;
+  request records carry outcomes and deferrals after discard, including no-ledger refusals.
+  The protected launcher leaves permission recovery to the existing remover. A row refuses
+  another run's scratch parent. The lead's VELDO-0302 decision amends AC1: observation
+  evidence ends at verdict_recorded. The creator seam passes that explicit event selection
+  to the ledger, which validates it against the kind's lifecycle. Footprint includes the
+  request writer and this declaration path. The earlier permission-restoration note is superseded.

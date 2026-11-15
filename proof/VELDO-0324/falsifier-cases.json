@@ -1,8 +1,9 @@
 [
  {
+  "finding": 324,
   "name": "space324-batch-direct-delete",
+  "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "control_batch.py",
-  "dir": ".veldo",
   "old": "            found = clones.space_signal(self.space, 'run_finished', paths, 'batch.discard', confirm=True)",
   "new": "            for path in paths:\n                if os.path.isdir(path):\n                    __import__('shutil').rmtree(path)\n            found = {}",
   "rows": [
@@ -11,68 +12,254 @@
    "safety/unsaved-batch",
    "safety/keep-failure",
    "ac1/evidence"
-  ]
+  ],
+  "dir": ".veldo"
  },
  {
+  "finding": 324,
   "name": "space324-launcher-direct-delete",
+  "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "agent_sandbox.py",
-  "dir": "scripts",
-  "old": "                            scratch_access(scratch)",
-  "new": "                            remove_tree(scratch)",
+  "old": "            if scratch is not None and creation is None:",
+  "new": "            if scratch is not None:",
   "rows": [
    "ac2/recorded",
    "ac2/lock-and-login"
-  ]
+  ],
+  "dir": "scripts"
  },
  {
+  "finding": 324,
   "name": "space324-stale-pass-without-installation",
+  "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "agent_sandbox.py",
-  "dir": "scripts",
   "old": "    parent = creation[1] if creation else Path(tempfile.gettempdir())\n    recover_orphans()",
   "new": "    parent = creation[1] if creation else Path(tempfile.gettempdir())\n    for old in parent.glob(SCRATCH_PREFIX + '*'):\n        if old.is_dir() and time.time() - old.stat().st_mtime > 24 * 60 * 60:\n            remove_tree(old)\n    recover_orphans()",
   "rows": [
    "ac3/no-installation",
    "ac3/installation"
-  ]
+  ],
+  "dir": "scripts"
  },
  {
+  "finding": 324,
   "name": "space324-requires-ledger-outside-run",
+  "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "agent_sandbox.py",
-  "dir": "scripts",
   "old": "    if not label:\n        return None",
   "new": "    if not label:\n        raise RuntimeError('ledger required')",
   "rows": [
    "ac4/standalone"
-  ]
+  ],
+  "dir": "scripts"
  },
  {
+  "finding": 324,
   "name": "space324-failed-keep-still-deletes",
+  "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "control_space_remove.py",
-  "dir": ".veldo",
   "old": "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
   "new": "    kept = {'ok': True, 'tips': tips(record['locator']['path'], 'agent_repository')}\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
   "rows": [
    "safety/keep-failure"
-  ]
+  ],
+  "dir": ".veldo"
  },
  {
+  "finding": 324,
   "name": "space324-nested-repository-deleted",
+  "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "control_space_remove.py",
-  "dir": ".veldo",
   "old": "        if own is not None and ('.git' in names or GIT_FOLDER <= names):",
   "new": "        if False and ('.git' in names or GIT_FOLDER <= names):",
   "rows": [
    "safety/sandbox-repository"
-  ]
+  ],
+  "dir": ".veldo"
  },
  {
+  "finding": 324,
   "name": "space324-declaration-skipped",
+  "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "agent_sandbox.py",
-  "dir": "scripts",
   "old": "                with creator.item('scratch', scratch, parent=parent_item):",
   "new": "                with __import__('contextlib').nullcontext():",
   "rows": [
    "ac2/recorded"
-  ]
+  ],
+  "dir": "scripts"
+ },
+ {
+  "finding": 324,
+  "name": "space324-discard-event-dropped",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch.py",
+  "old": "        self._event('discard', 'deferred' if r['space_deferred'] else 'accepted',\n                    space_outcomes=found, space_deferred=r['space_deferred'])\n",
+  "new": "",
+  "rows": [
+   "ac1/saved-deferral"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-discard-deferrals-dropped",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch.py",
+  "old": "        self._event('discard', 'deferred' if r['space_deferred'] else 'accepted',",
+  "new": "        r['space_deferred'] = {}\n        self._event('discard', 'deferred' if r['space_deferred'] else 'accepted',",
+  "rows": [
+   "ac1/saved-deferral"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-request-deferrals-dropped",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch_service.py",
+  "old": "                    space_deferred=dict(request.get('space_deferred', {}), **(record or {}).get('space_deferred', {})),\n",
+  "new": "",
+  "rows": [
+   "ac1/saved-request-landed",
+   "ac1/saved-request-stopped",
+   "ac1/saved-request-refused",
+   "ac1/saved-request-reland-failed",
+   "ac1/saved-request-red",
+   "ac1/saved-request-not-started"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-request-before-discard-landed",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch_service.py",
+  "old": "            batch.discard()\n            return self._end(rid, request, batch, 'landed')",
+  "new": "            ended = self._end(rid, request, batch, 'landed')\n            batch.discard()\n            return ended",
+  "rows": [
+   "ac1/saved-request-landed"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-request-before-discard-stopped",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch_service.py",
+  "old": "            batch.discard()\n            return self._end(rid, request, batch, 'stopped', BT.STOPPED)",
+  "new": "            ended = self._end(rid, request, batch, 'stopped', BT.STOPPED)\n            batch.discard()\n            return ended",
+  "rows": [
+   "ac1/saved-request-stopped"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-request-before-discard-reland-failed",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch_service.py",
+  "old": "                batch.discard()\n                return self._end(rid, request, batch, state, (batch.record or {}).get('refusal'))",
+  "new": "                ended = self._end(rid, request, batch, state, (batch.record or {}).get('refusal'))\n                batch.discard()\n                return ended",
+  "rows": [
+   "ac1/saved-request-reland-failed"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-request-before-discard-refused",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch_service.py",
+  "old": "                if batch is not None:\n                    batch.discard()\n                done.append(self._end(rid, request, batch, 'refused', code))",
+  "new": "                done.append(self._end(rid, request, batch, 'refused', code))\n                if batch is not None:\n                    batch.discard()",
+  "rows": [
+   "ac1/saved-request-refused"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-foreign-run-parent",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "agent_sandbox.py",
+  "old": "                   and (record.get('owner', {}).get('run') or {}).get('id') == label]",
+  "new": "                   ]",
+  "rows": [
+   "safety/foreign-run-parent"
+  ],
+  "dir": "scripts"
+ },
+ {
+  "finding": 324,
+  "name": "space324-observation-default-end",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch.py",
+  "old": "with creation.item('evidence', directory, ends_on=['verdict_recorded']):",
+  "new": "with creation.item('evidence', directory):",
+  "rows": [
+   "ac1/observation-end"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-creator-drops-end",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_clone.py",
+  "old": "**({'ends_on': ends_on} if ends_on is not None else {})",
+  "new": "**{}",
+  "rows": [
+   "ac1/observation-end"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-ledger-drops-end",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_space.py",
+  "old": "'events': list(ends_on)",
+  "new": "'events': list(self.lifecycle['ends_on'][kind])",
+  "rows": [
+   "ac1/observation-end"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-ledger-invalid-end",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_space.py",
+  "old": "        if 'ends_on' in params and (not isinstance(ends_on, list) or not ends_on",
+  "new": "        if False and (not isinstance(ends_on, list) or not ends_on",
+  "rows": [
+   "safety/invalid-end-events"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-reassembly-drops-deferrals",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch.py",
+  "old": "                       'space_outcomes': dict(previous.get('space_outcomes', {})),",
+  "new": "                       'space_outcomes': {},",
+  "rows": [
+   "ac1/saved-reassembly"
+  ],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 324,
+  "name": "space324-discard-drops-prior-outcomes",
+  "suite": "154_veldo_0324_batch_sandbox.py",
+  "module": "control_batch.py",
+  "old": "        r.setdefault('space_outcomes', {}).update(found)",
+  "new": "        r['space_outcomes'] = found",
+  "rows": [
+   "ac1/saved-reassembly"
+  ],
+  "dir": ".veldo"
  }
 ]

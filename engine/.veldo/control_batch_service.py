@@ -154,6 +154,8 @@ class BatchLine:
         data = dict(request, state=state, refusal=refusal, batch=(record or {}).get('id'),
                     tip=(record or {}).get('tip'), watermark=(record or {}).get('watermark'),
                     left_out=(record or {}).get('left_out'), inventory=(record or {}).get('inventory'),
+                    space_outcomes=dict(request.get('space_outcomes', {}), **(record or {}).get('space_outcomes', {})),
+                    space_deferred=dict(request.get('space_deferred', {}), **(record or {}).get('space_deferred', {})),
                     receipts=[r['unit'] for r in (record or {}).get('receipts') or []], updated_at=self.clock())
         _upsert(self.store, self.conn, self.signer, self.sign, self.generation, rid, REQUEST_KIND, data)
         return {'batch_request': rid, 'project': request['project'], 'state': state, 'refusal': refusal,
@@ -171,9 +173,9 @@ class BatchLine:
             except (BT.Refused, self.store.StoreRefused) as error:
                 code = getattr(error, 'code', 'unknown_outcome')
                 batch = self.held.pop(rid, None)
-                done.append(self._end(rid, request, batch, 'refused', code))
                 if batch is not None:
                     batch.discard()
+                done.append(self._end(rid, request, batch, 'refused', code))
         return done
 
     def _step(self, rid, request):
@@ -186,7 +188,7 @@ class BatchLine:
             outcome = BT.run(batch, request.get('units') or [])['outcome']
             if outcome == 'not_started':
                 batch.discard()
-                return {'batch_request': rid, 'project': request['project'], 'state': REQUESTED, 'refusal': None}
+                return self._end(rid, request, batch, REQUESTED)
             if outcome != 'green':
                 batch.discard()
                 return self._end(rid, request, batch, outcome, (batch.record or {}).get('refusal'))
@@ -195,23 +197,20 @@ class BatchLine:
         landed = batch.land()
         if landed.get('ok'):
             self.held.pop(rid, None)
-            ended = self._end(rid, request, batch, 'landed')
             batch.discard()
-            return ended
+            return self._end(rid, request, batch, 'landed')
         if landed.get('outcome') == 'trunk_moved':
             again = batch.reland()
             if not again.get('ok'):
                 self.held.pop(rid, None)
                 state = (batch.record or {}).get('state') or 'refused'
-                ended = self._end(rid, request, batch, state, (batch.record or {}).get('refusal'))
                 batch.discard()
-                return ended
+                return self._end(rid, request, batch, state, (batch.record or {}).get('refusal'))
             return self._end(rid, request, batch, AWAITING)
         if landed.get('refusal') == BT.STOPPED:
             self.held.pop(rid, None)
-            ended = self._end(rid, request, batch, 'stopped', BT.STOPPED)
             batch.discard()
-            return ended
+            return self._end(rid, request, batch, 'stopped', BT.STOPPED)
         if landed.get('refusal') in (BT.MISSING_APPROVAL, BT.STALE):
             return self._end(rid, request, batch, AWAITING, landed['refusal'])
         return self._end(rid, request, batch, AWAITING, landed.get('refusal'))

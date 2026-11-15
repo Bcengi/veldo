@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
-SUITES = ('103_veldo_0211_borrowed_login', '133_veldo_0326_space_principals',
+SUITES = ('102_veldo_0210_agent_profile_runtime', '103_veldo_0211_borrowed_login', '133_veldo_0326_space_principals',
           '138_veldo_0300_space_remove', '139_veldo_0301_space_signal',
           '140_veldo_0345_space_keep', '153_veldo_0302_space_creators', '154_veldo_0324_batch_sandbox')
 FAST = (['python3', '.veldo/validate.py', 'all'], ['bash', 'scripts/check_docs.sh'],
@@ -18,8 +18,12 @@ commands = ([['python3', 'scripts/selftest.py', '--suite', suite] for suite in S
             if mode == 'tests' else FAST)
 rows = []
 for command in commands:
+    command = ['nice', '-n', '10'] + command
+    print('running ' + ' '.join(command), flush=True)
     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
     output = result.stdout + result.stderr
+    if mode == 'tests':
+        (HERE / (command[-1] + '.log')).write_text(output)
     if mode == 'tests':
         summary = next((line for line in output.splitlines() if line.startswith('selftest (PARTIAL,')), '')
         passed = bool(re.search(r'\b0 failed\b', summary)) and result.returncode == 2

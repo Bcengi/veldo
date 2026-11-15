@@ -604,7 +604,7 @@ class SpaceCreator:
 
     @contextmanager
     def item(self, kind, path, *, main=None, parent=None, start=None, branch=None, form=None,
-             provisioned=None):
+             provisioned=None, ends_on=None):
         locator = ({'repository': str(main), 'ref': branch} if kind == 'branch'
                    else {'path': str(path)})
         identity = None
@@ -622,7 +622,8 @@ class SpaceCreator:
             if kind == 'worktree' and (self.owner or {}).get('ticket') and not callable(provisioned):
                 raise SpaceCreationError('a ticket worktree requires space_provisioned')
             identity = self.call('declare', kind, locator, self.owner, 'seam', parent=parent,
-                                 start=start, branch=branch, form=form)['item']
+                                 start=start, branch=branch, form=form,
+                                 **({'ends_on': ends_on} if ends_on is not None else {}))['item']
             self.items[str(path)] = identity
         try:
             yield identity

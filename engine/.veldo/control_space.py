@@ -393,7 +393,7 @@ RUNNER_EVENTS = ('run_finished', 'verdict_recorded')
 ABANDON_EVENT = 'worktree_abandoned'
 # The parameters each command a host principal may send is called with.
 COMMAND_PARAMETERS = {
-    DECLARE: ('kind', 'locator', 'owner', 'creator', 'parent', 'start', 'branch', 'process', 'pool', 'form'),
+    DECLARE: ('kind', 'locator', 'owner', 'creator', 'parent', 'start', 'branch', 'process', 'pool', 'form', 'ends_on'),
     CONFIRM: ('item',), REBRANCH: ('item', 'branch', 'start'), MEASURE: ('item', 'bytes', 'event'),
     HOLD: ('hold', 'needs', 'source'), ADMIT: ('hold', 'answer', 'reason', 'used', 'retry_asked'),
     RELEASE: ('hold', 'used'), SIGNAL: ('event', 'subject'), OUTCOME: ('item', 'outcome', 'facts')}
@@ -1043,10 +1043,10 @@ class Ledger:
         return canonical, (self.device(path) if path else None), pool
 
     def declare(self, kind, locator, owner, creator, parent=None, start=None, branch=None, process=None,
-                pool=None, principal=None, command_id=None, form=None):
+                pool=None, principal=None, command_id=None, form=None, ends_on=None):
         """Create an item in state declared, with pool and ends_on filled in. Returns its identity."""
         return self._create(DECLARE, kind, locator, owner, creator, parent, start, branch, process, pool, None,
-                            principal, command_id, form)
+                            principal, command_id, form, ends_on)
 
     def adopt(self, kind, locator, owner, rule, parent=None, start=None, branch=None, process=None, pool=None,
               principal=None, command_id=None):
@@ -1057,7 +1057,7 @@ class Ledger:
                             principal, command_id)
 
     def _create(self, operation, kind, locator, owner, creator, parent, start, branch, process, pool, rule,
-                principal, command_id, form=None):
+                principal, command_id, form=None, ends_on=None):
         about = {'item': None, 'kind': kind, 'owner': owner, 'locator': locator, 'state': None}
         try:
             canonical, device, pool = self._placed(kind, locator, pool)
@@ -1072,6 +1072,8 @@ class Ledger:
         parameters = {'item': identity, 'kind': kind, 'host': self.host, 'locator': canonical, 'owner': owner,
                       'creator': creator, 'parent': parent, 'start': start, 'branch': branch, 'process': process,
                       'pool': pool, 'device': device, 'rule': rule, 'form': form}
+        if ends_on is not None:
+            parameters['ends_on'] = ends_on
         result = self._send(operation, parameters, versions, principal, command_id,
                             dict(about, item=identity, locator=canonical))
         if result['ok']:
@@ -1831,6 +1833,11 @@ class Ledger:
                                  ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):
             raise _invalid('form', 'a known agent repository form')
         canonical = canonical_locator(kind, params.get('locator'))
+        ends_on = params.get('ends_on', self.lifecycle['ends_on'][kind])
+        if 'ends_on' in params and (not isinstance(ends_on, list) or not ends_on
+                or any(event not in self.lifecycle['ends_on'][kind] for event in ends_on)
+                or len(set(ends_on)) != len(ends_on)):
+            raise _invalid('ends_on', 'distinct lifecycle events for this kind')
         if canonical != params.get('locator'):
             raise _invalid('locator', 'the command carries the canonical locator')
         owner = checked_owner(params.get('owner'), kind)
@@ -1856,7 +1863,7 @@ class Ledger:
                 'locator': canonical, 'key': key, 'parent': parent, 'owner': owner, 'creator': params['creator'],
                 'adopted': adopted, 'branch': params.get('branch'), 'start': params.get('start'), 'form': form,
                 'process': process, 'state': state,
-                'ends_on': {'version': self.lifecycle['version'], 'events': list(self.lifecycle['ends_on'][kind])},
+                'ends_on': {'version': self.lifecycle['version'], 'events': list(ends_on)},
                 'size': None, 'confirmed': None, 'deferral': None, 'removal': None, 'report': None}
 
     def _fresh(self, params, before):

@@ -2057,12 +2057,10 @@ GRACE_SECONDS = 10
 STOP_SIGNALS = (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)
 
 
-def scratch_access(path):
-    """Open the launcher's scratch directories for its owner, following no inner link.
-
-    A recorded run leaves deletion to Signal. Restore access while the launcher
-    still holds its lock so the run's final probes can read even shut directories.
-    """
+def remove_tree(path):
+    """Remove a scratch tree the confined process may have shut (directories made unreadable or
+    unwritable): every directory is opened up before it is entered, through descriptors and without
+    following a link, then shutil.rmtree removes the tree without following a link either."""
     os.chmod(path, 0o700)
     for _, directories, _, descriptor in os.fwalk(path, follow_symlinks=False):
         for name in directories:
@@ -2078,11 +2076,6 @@ def scratch_access(path):
                 pass
             finally:
                 os.close(inner)
-
-
-def remove_tree(path):
-    """Remove only this standalone launcher's scratch at its own end."""
-    scratch_access(path)
     shutil.rmtree(path)
 
 
@@ -2208,6 +2201,7 @@ def launch(config_path, worktree, command, profile="agent", client=None, *, spac
     parent = creation[1] if creation else Path(tempfile.gettempdir())
     recover_orphans()
     scratch = lock = None
+    # The handlers stay installed until the scratch is gone, so a signal cannot cut the removal short.
     with Stop() as stop:
         try:
             if creation:
@@ -2230,15 +2224,11 @@ def launch(config_path, worktree, command, profile="agent", client=None, *, spac
             raise
         finally:
             stop.closing = True
-            if scratch is not None:
+            if scratch is not None and creation is None:
                 try:
-                    if creation:
-                        if lock is not None:
-                            scratch_access(scratch)
-                    else:
-                        remove_tree(scratch)
+                    remove_tree(scratch)
                 except OSError as error:
-                    print('agent sandbox: scratch %s left for recovery: %s' % (scratch, error),
+                    print('agent sandbox: scratch %s not removed: %s' % (scratch, error),
                           file=sys.stderr, flush=True)
             if lock is not None:
                 os.close(lock)
