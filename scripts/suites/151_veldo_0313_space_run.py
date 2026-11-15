@@ -14,24 +14,56 @@ meadow has no mode record and is in report mode.
 Every row plants what it is about, drives the CLI's own verb at it, and reads the disk and the ledger
 again as the verb returns.
 
-AC1 rows. ac1/declared-started-ended (the run is issued to space-runner by the authority; its scratch
-root is an item owned by the run with its station, declared by the wrapper before the folder is made;
-the command is given the temporary folder, the space label, which is the run's identity, and the
-compose project name derived from it; when the wrapper returns, every command of the run in the journal
-is space-runner's, in the order hold, admit, declare, confirm, then the census, then one signal, then
-the outcomes, and the release last). ac1/build-output-has-item-and-goes (the declared falsifier row: the
+AC1 rows. ac1/declared-started-ended (the run is issued to space-runner by the authority, through the
+issuer the wiring carries; its scratch root is an item owned by the run with its station, declared by
+the wrapper before the folder is made, with the run's supervisor as its recorded process; the command
+is given the temporary folder, the space label, which is the run's identity, and the compose project
+name derived from it; when the wrapper returns, every command of the run in the journal is
+space-runner's, in the order hold, admit, declare, confirm, then the census, then one signal, then the
+outcomes, and the release last). ac1/build-output-has-item-and-goes (the declared falsifier row: the
 ignored build folder the command made in its recorded worktree has a build output item of the run,
 declared by the census, and is removed at run finished with the scratch root; the untracked notes the
 command wrote, an ignored folder only the repository's own exclude file covers, and the tracked file
-stay, and the worktree's item is present). ac1/surviving-child (the command ends at once and leaves a
-process that left its session and holds a file under the scratch root: the wrapper returns only after
-that process has ended, and that process saw its file there to its last moment; then the scratch root
-is removed). ac1/unread-group-sends-nothing (a group nobody could read, and one known not to be empty:
-no census, no signal, nothing written, the scratch root present and on disk with its file, the hold
-held). ac1/only-the-runs-own-items (an item of the run the owner marked Keep, with its file, and the
-scratch root of another run of the same project and ticket: run finished removes the run's own scratch
-root and neither of those; the owner's mark and both versions are as they were; and space-runner is
-refused, by the Ledger, a signal for another run, a signal that names items, and worktree abandoned).
+stay, and the worktree's item is present). ac1/unread-group-sends-nothing (a group nobody could read,
+and one the kernel shows a process in: no census, no signal, nothing written, the scratch root present
+and on disk with its file, the hold held). ac1/only-the-runs-own-items (an item of the run the owner
+marked Keep, with its file, and the scratch root of another run of the same project and ticket: run
+finished removes the run's own scratch root and neither of those; the owner's mark and both versions
+are as they were; and space-runner is refused, by the Ledger, a signal for another run, a signal that
+names items, and worktree abandoned).
+
+The fix round's rows (the review of VELDO-0313). fix1/existing-work-is-never-scratch (finding 1, the
+reviewer's case: a worktree's untracked folder holding the only copy of some work, and a hand-made
+folder under the project's worktree root, are each refused as scratch, with and without a session, and
+as any other kind because they exist; then session ended is signalled for that session as the hook
+event's consumer will: no item was made, nothing became due and both files are on disk; a session's
+scratch folder that does not exist yet is refused too, so nothing a later writer puts there is ever an
+item of this verb). fix2/returns-at-the-commands-exit (finding 2: a command that ends at once and
+leaves a process outside its session returns its own status at once; run finished is not sent, the
+processes left are named, the scratch root is present with its file and the hold is held; and rule 3
+of any judge holds the scratch root by its recorded process, the run's supervisor, read from the
+kernel's own table). fix2/end-follows-their-exit (the run's end sleeps until that process exits and
+is made then: the process ran to its own last line and saw its file there, nothing was sent before it
+ended, and then the scratch root went and the hold was released). fix3/handed-outside-the-tree
+(finding 3, the reviewer's case: the command hands work to a server that was running before the run;
+the server's worker is no descendant of the command and carries the run's space label; the wrapper
+returns at once and sends nothing while that worker lives, naming it by the label; the end follows
+its exit). fix3/unread-process-holds (an orphaned process of the owner's whose environment the kernel
+will not show, started after the run: it may carry the label, so nothing is sent and the hold stays;
+one that was running before the run began, and one started by a process that does not carry the
+label, do not hold it). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
+asks the kernel again for each item, so the scratch root is deferred as in use and stays, and the hold
+is not released). fix3/the-house-group (on a host with the owner's user manager: the command runs in a
+transient scope named for the run by control_containment, a process it left is read as a member of
+that group, and the end follows its exit; without a manager the row stands down by name).
+fix4/docker-objects-are-items (finding 4: at the run's end the container that carries the run's label
+and the one that carries its compose project name are declared as space-runner, owned by the run, and
+go at run finished through the engine's own stop and remove; another run's container and one with no
+label get no item and stay; an engine that cannot be read is named and nothing of it is recorded).
+fix5/no-issuer-no-run (finding 5: a wiring with no issuer records no run, writes nothing, and the
+command still runs unchanged; the wrapper holds no call of the Ledger's issue). fix6/scratch-not-made
+(finding 6: a scratch folder that could not be made leaves its item declared, says so, and sends no
+gone as space-runner; the command still runs with its own temporary folder).
 
 AC2 rows. ac2/command-status (the wrapper returns the command's own status: 0, 7, 143 for a command a
 signal ended, 127 for a command that is not there; each of those runs ends with its hold released).
@@ -44,9 +76,10 @@ released).
 AC3 rows. ac3/record-refusals (the declared falsifier row among them: an unknown kind, a folder outside
 every known root, a path on the protect list, a path with a .. segment and a link that leads to a
 protected folder are each refused by name with exit 1; no item is made and the journal does not move;
-a kind the observer may not record is refused by the Ledger's own rule). ac3/record-accepted (a
-worktree made with plain git is recorded: present, creator record, owned by its project, written as
-space-observer). ac3/event-types (the event types are exactly ref changed, session started, session
+scratch, build output and evidence are kinds the verb does not record, and a folder that exists is
+refused whatever its kind). ac3/record-accepted (a worktree a script is about to make is declared
+before it is made, then made with plain git and confirmed: present, creator record, owned by its
+project, written as space-observer; a path inside it is refused). ac3/event-types (the event types are exactly ref changed, session started, session
 ended and released; any other, an owner's action among them, is refused by name; a released event and
 a ref changed event that name a path outside every known root or on the protect list are refused by
 name; each of the four is handed to the Ledger as space-observer, and a Ledger that has no event
@@ -60,11 +93,18 @@ installation whose ledger this process cannot reach, and one whose switch is off
 unchanged and say why).
 
 STAND-INS. The wiring an installation gives the CLI (the mapping the receiver is given) is made here:
-nothing serves the ledger to a CLI process yet (VELDO-0323). The worktree the wrapped command runs in
-is declared by the suite (VELDO-0302, 0311). The two checks of a switch to act (VELDO-0332 and 0339)
+nothing serves the ledger to a CLI process yet (VELDO-0323), so the issuer in it is the suite calling
+the authority's own issue, and the run's end for a command that left a process is driven by the suite
+calling the function the run's supervisor calls (_space_ended), in this process. The containment group
+is the house's own only in fix3/the-house-group: the gate's confinement has no user manager, so every
+other row is given a group nobody joined, or one that says what the row is about; what the supervisor
+sees and what the process table shows are the kernel's in every row. The Docker engine is a stand-in
+that holds what a row plants. The worktree the wrapped command runs in is declared by the suite
+(VELDO-0302, 0311). The two checks of a switch to act (VELDO-0332 and 0339)
 allow. Free space is a function of the suite. The docker client is a function with no container
-anywhere, and the process table a folder shaped as the kernel's with no entry: what tells the wrapper
-the run is over is the kernel, through its supervisor. The owner's Keep is written as VELDO-0308's
+anywhere, and the process table the rules of Signal read is a folder shaped as the kernel's with no entry; what
+holds a run (its supervisor, its descendants, a labelled process) is always read from the kernel's own
+table. The owner's Keep is written as VELDO-0308's
 suite writes it.
 """
 
@@ -107,10 +147,14 @@ def _v313_space_run_suite():
             sys.dont_write_bytecode = before
         return module
 
-    ROWS = ('ac1/declared-started-ended', 'ac1/build-output-has-item-and-goes', 'ac1/surviving-child',
+    ROWS = ('ac1/declared-started-ended', 'ac1/build-output-has-item-and-goes',
             'ac1/unread-group-sends-nothing', 'ac1/only-the-runs-own-items',
+            'fix2/returns-at-the-commands-exit', 'fix2/end-follows-their-exit',
+            'fix3/handed-outside-the-tree', 'fix3/unread-process-holds', 'fix3/rule-3-reads-the-kernel',
+            'fix3/the-house-group',
+            'fix4/docker-objects-are-items', 'fix5/no-issuer-no-run', 'fix6/scratch-not-made',
             'ac2/command-status', 'ac2/act-waits-75', 'ac2/report-starts',
-            'ac3/record-refusals', 'ac3/record-accepted', 'ac3/event-types',
+            'ac3/record-refusals', 'fix1/existing-work-is-never-scratch', 'ac3/record-accepted', 'ac3/event-types',
             'ac4/no-installation-runs-unchanged', 'ac4/each-verb-says-so',
             'paths/canon')
     rows = {name: [] for name in ROWS}
@@ -144,6 +188,8 @@ def _v313_space_run_suite():
 
     temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0313-')))
     connections = []
+    waiting = []  # the fixture's own processes, ended when the suite ends
+    opened = []  # descriptors the fixture holds for them
     row = ROWS[0]
     try:
         CLI = load_cli('v313_veldo_cli', PRODUCTION['veldo'])
@@ -158,6 +204,7 @@ def _v313_space_run_suite():
         RM = load('v313_control_space_remove', VELDO / 'control_space_remove.py')
         KP = load('v313_control_space_keep', VELDO / 'control_space_keep.py')
         DK = load('v313_control_space_docker', VELDO / 'control_space_docker.py')
+        SIG = load('v313_control_space_signal', VELDO / 'control_space_signal.py')
         AC = CM.AC
         NOW = 1000.0
 
@@ -286,24 +333,135 @@ def _v313_space_run_suite():
             return [(identity, record) for identity, record in sorted(L.items().items())
                     if (record.get('locator') or {}).get('path') == str(path)]
 
+        # The stand-in engine: it holds the containers a row plants, lists and shows them, and stops
+        # and removes one named object. A container's labels are what the files it names hold now.
+        ENGINE = {'containers': [], 'unreadable': False, 'calls': []}
+
+        def shown(record):
+            labels = dict(record['labels'])
+            for name, path in record['labels_from'].items():
+                if text_of(path):
+                    labels[name] = text_of(path).strip()
+            return {'Id': record['Id'], 'Name': '/' + record['name'], 'State': {'Status': record['status']},
+                    'Config': {'Labels': labels}, 'Mounts': [], 'NetworkSettings': {'Networks': {}}}
+
+        def container(name, labels=None, labels_from=None):
+            record = {'Id': '%064x' % (0xc000 + len(ENGINE['containers']) + 1), 'name': name, 'status': 'running',
+                      'labels': dict(labels or {}), 'labels_from': dict(labels_from or {})}
+            ENGINE['containers'].append(record)
+            return record
+
         def client(argv, cwd=None):
             if argv[0] != 'docker':
                 return P._run(argv, cwd)
-            if argv[3] == 'container' and argv[4] == 'ls':
-                return 0, ''
-            return 1, 'Error response from daemon: No such %s' % argv[3]
+            rest = [str(word) for word in argv[3:]]
+            ENGINE['calls'].append(tuple(rest))
+            if ENGINE['unreadable']:
+                return 1, 'Cannot connect to the Docker daemon at unix:///var/run/docker.sock.'
+            kind, verb = rest[0], rest[1]
+            names = [word for word in rest[2:] if not word.startswith('-')]
+            held = ENGINE['containers'] if kind == 'container' else []
+            if verb == 'ls':
+                return 0, ''.join(record['Id'] + '\n' for record in held)
+            found = [next((record for record in held if name in (record['Id'], record['name'])), None)
+                     for name in names]
+            if not names or None in found:
+                return 1, 'Error response from daemon: No such %s' % kind
+            if verb == 'inspect':
+                return 0, json.dumps([shown(record) for record in found])
+            if kind == 'container' and verb == 'stop':
+                found[0]['status'] = 'exited'
+                return 0, names[0] + '\n'
+            if kind == 'container' and verb == 'rm' and found[0]['status'] != 'running':
+                held.remove(found[0])
+                return 0, names[0] + '\n'
+            return 1, 'the stand-in engine does not know %s %s' % (kind, verb)
 
         PROC = temp / 'proc'
         PROC.mkdir()
         PLENTY, SHORT = FLOOR + NEED + 500 * MEGABYTE, FLOOR + NEED - 1
 
+        class Group:
+            """A stand-in containment group: no host scope is made for the command, and the read says
+            what the row gives it. With nothing given it is a group nobody joined."""
+
+            def __init__(self, read=True, pids=(), after=0):
+                self.said, self.pids, self.after, self.reads = read, list(pids), after, 0
+
+            def words(self, run):
+                return None
+
+            def read(self, run, group):
+                self.reads += 1
+                pids = self.pids if self.reads > self.after else []
+                return {'read': self.said, 'populated': bool(pids), 'pids': list(pids)}
+
+        def issue(label, scope):
+            """The authority's issue of a run to space-runner, as its service will answer a wrapper."""
+            return L.issue(SP.RUNNER, label, scope=scope)
+
         def space(free=PLENTY, **over):
             wired = {'ledger': L, 'probe': P, 'kinds': K, 'remover': RM, 'free': lambda pool: free,
                      'keep': lambda identity, record: KP.keep(L, identity, record),
                      'owner_live': lambda owner: None, 'run': client, 'proc': str(PROC),
-                     'borrow_root': str(temp / 'borrowed')}
+                     'borrow_root': str(temp / 'borrowed'), 'issue': issue, 'group': Group()}
             wired.update(over)
-            return wired
+            return {name: value for name, value in wired.items() if value is not None}
+
+        def sleeper():
+            """A real process that lives until the suite ends it: (process, {pid, started})."""
+            child = subprocess.Popen(['cat'], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
+            waiting.append(child)
+            return child, {'pid': child.pid, 'started': CLI._space_process(child.pid)['started']}
+
+        def ended():
+            """The process of a supervisor that has already ended, for a row that drives the end itself."""
+            child, process = sleeper()
+            child.stdin.close()
+            child.wait()
+            return process
+
+        LINGER = 10.0  # the longest a process a fixture command leaves lives with no word from the suite
+
+        def lingering(code, latch, late, shown=None):
+            """The source of a command that ends at once with `code` and leaves a process that left its
+            session and its parent. That process holds a file under the command's temporary folder
+            and lives until the suite makes `latch` (never by the clock, short of LINGER); at its last
+            line it writes to `late` what it sees. `shown`, when given, gets the command's cgroup."""
+            return ('import json, os, sys, time\n'
+                    'held = os.path.join(os.environ["TMPDIR"], "held.txt")\n'
+                    'open(held, "w").write("in use\\n")\n'
+                    + ('open(%r, "w").write(open("/proc/self/cgroup").read())\n' % str(shown) if shown else '')
+                    + 'if os.fork():\n'
+                    '    os._exit(%d)\n'
+                    'os.setsid()\n'
+                    'if os.fork():\n'
+                    '    os._exit(0)\n'
+                    'for stream in (0, 1, 2):\n'
+                    '    os.close(stream)\n'
+                    'handle, until = open(held), time.monotonic() + %r\n'
+                    'while not os.path.exists(%r) and time.monotonic() < until:\n'
+                    '    time.sleep(0.02)\n'
+                    'json.dump({"held": os.path.isfile(held), "text": handle.read(),\n'
+                    '           "released": os.path.exists(%r)}, open(%r, "w"))\n'
+                    % (code, LINGER, str(latch), str(latch), str(late)))
+
+        def release(latch):
+            """Make `latch` a moment from now, from a process of the fixture's own, so that the caller
+            is already asleep on the exit it causes."""
+            waiting.append(subprocess.Popen(['sh', '-c', 'sleep 0.7; : > "$1"', 'sh', str(latch)],
+                                            stdin=subprocess.DEVNULL))
+
+        def alive(holders, how):
+            found = [one for one in holders or () if one.get('how') == how]
+            return found if found and all(CLI._space_process(one['pid']) is not None for one in found) else []
+
+        def rule_three(identity):
+            """Rule 3 as any judge reads it, against the kernel's own process table, from a judge that
+            was told the run is over: what it finds, or None."""
+            judged = SIG.rules(L, P, identity, L.item(identity), run=client, proc='/proc',
+                               owner_live=lambda owner: {'conclusive': True, 'group_empty': True})
+            return judged if judged.get('rule') == 'owner_live' else None
 
         def worktree(project, name, ticket=None):
             """A worktree of the project, made with plain git and recorded as the seams will record it."""
@@ -327,8 +485,8 @@ def _v313_space_run_suite():
             """The wrapper's own verb, as the CLI's router calls it. Returns (status, what it said on
             standard error, its report)."""
             said, report = io.StringIO(), {}
-            status = CLI.space_run(list(argv), space=wiring, environ=dict(BASE), cwd=str(where), stderr=said,
-                                   report=report, **more)
+            status = CLI.space_run(list(argv), space=wiring, environ=more.pop('environ', dict(BASE)),
+                                   cwd=str(where), stderr=said, report=report, **more)
             return status, said.getvalue(), report
 
         def verb(call, argv, wiring=None, **more):
@@ -378,6 +536,12 @@ def _v313_space_run_suite():
                                                                  'run': {'id': RUN, 'station': 'build'}}
                   and scratch[0][1]['creator'] == 'wrapper'
                   and scratch[0][1]['locator']['path'].startswith(str(SCRATCH) + '/run-scratch/'))
+            supervisor = (report.get('given') or {}).get('supervisor') or {}
+            check(row, 'the scratch root records the run\'s supervisor, a process the kernel showed with that start '
+                       'time; it has ended by the time run finished is sent [%s %s]'
+                  % (scratch[0][1].get('process') if scratch else None, supervisor),
+                  bool(scratch) and isinstance(supervisor.get('pid'), int) and isinstance(supervisor.get('started'), int)
+                  and scratch[0][1].get('process') == supervisor and CLI._space_process(supervisor['pid']) is None)
             check(row, 'the command was given its temporary folder, which was there, the space label, which is the '
                        'run\'s identity, and the compose project name derived from it; its arguments and folder are '
                        'its own [%s]' % (saw,),
@@ -406,7 +570,7 @@ def _v313_space_run_suite():
             check(row, 'the hold is released and the wrapper sent run finished [%s %s]'
                   % ((L.hold(RUN) or {}).get('state'), (report.get('end') or {}).get('reason')),
                   (L.hold(RUN) or {}).get('state') == 'released' and (report.get('end') or {}).get('sent') is True
-                  and report.get('empty') is True and report.get('answer') == 'admitted')
+                  and report.get('holders') == [] and report.get('answer') == 'admitted')
 
             row = 'ac1/build-output-has-item-and-goes'
             built = [(identity, record) for identity, record in mine.items() if record['kind'] == 'build_output']
@@ -430,60 +594,441 @@ def _v313_space_run_suite():
             stopped(row, error)
 
         try:
-            row = 'ac1/surviving-child'
+            row = 'fix2/returns-at-the-commands-exit'
             W2, _ = worktree(ORCHARD, 'w-child')
-            late = temp / 'late.json'
+            late, latch = temp / 'late.json', temp / 'latch-child'
             # The command ends at once with 3. It leaves a process that left its session and its
-            # parent, holds a file under the scratch root, and at its last moment says what it sees.
-            script = (
-                'import json, os, sys, time\n'
-                'held = os.path.join(os.environ["TMPDIR"], "held.txt")\n'
-                'open(held, "w").write("in use\\n")\n'
-                'if os.fork():\n'
-                '    os._exit(3)\n'
-                'os.setsid()\n'
-                'if os.fork():\n'
-                '    os._exit(0)\n'
-                'for stream in (0, 1, 2):\n'
-                '    os.close(stream)\n'
-                'handle = open(held)\n'
-                'time.sleep(1.5)\n'
-                'json.dump({"held": os.path.isfile(held), "text": handle.read()}, open(%r, "w"))\n' % str(late))
+            # parent, holds a file under the scratch root, and at its last line says what it sees.
+            script = lingering(3, latch, late)
+            wiring = space()
+            since = seq()
             began = time.monotonic()
-            status, said, report = run(['--label', 'child', '--', sys.executable, '-c', script], W2, space())
+            status, said, report = run(['--label', 'child', '--', sys.executable, '-c', script], W2, wiring)
             took = time.monotonic() - began
+            given, first = report.get('given') or {}, report.get('end') or {}
+            mine = items_of(report.get('run'))
+            left = alive(first.get('holders'), 'descendant')
+            check(row, 'the wrapper returns the command\'s own status when the command exits: the process the '
+                       'command left is alive, and has not been told to end [%s %.1fs %s]' % (status, took, left),
+                  status == 3 and bool(left) and not late.exists() and not latch.exists() and took < LINGER)
+            check(row, 'run finished is not sent, and the wrapper names the processes that hold the run: its '
+                       'supervisor and what the command left [%s %s]' % (first.get('reason'), said.strip()[-160:]),
+                  first.get('sent') is False and first.get('reason') == 'group_not_empty' and bool(left)
+                  and any(one.get('how') == 'supervisor' and one.get('pid') == (given.get('supervisor') or {}).get('pid')
+                          for one in first.get('holders') or ())
+                  and 'it follows the exit of process' in said and all(str(one['pid']) in said for one in left))
+            check(row, 'nothing of the run was judged: no census, no signal and no release are written, the scratch '
+                       'root is present with the file the process holds, and the hold is held [%s %s %s]'
+                  % ([name for name, _ in written(since)], [record['state'] for record in mine.values()],
+                     (L.hold(report.get('run')) or {}).get('state')),
+                  [name for name, _ in written(since)] == [SP.ISSUE, SP.HOLD, SP.ADMIT, SP.DECLARE, SP.CONFIRM]
+                  and [record['state'] for record in mine.values()] == ['present']
+                  and text_of(Path(report.get('scratch') or temp) / 'held.txt') == 'in use\n'
+                  and (L.hold(report.get('run')) or {}).get('state') == 'admitted')
+            held_by = rule_three(given['items'][given['scratch']]) if given.get('scratch') else None
+            check(row, 'the scratch root records the run\'s supervisor, and rule 3 of a judge that was told the run '
+                       'is over still holds the item, by that process as the kernel shows it [%s]'
+                  % ((held_by or {}).get('found'),),
+                  held_by is not None and held_by.get('deferral') == 'in_use'
+                  and ((held_by.get('found') or {}).get('process') or {}).get('pid') == given['supervisor']['pid']
+                  and ((held_by.get('found') or {}).get('process') or {}).get('start') == given['supervisor']['started'])
+
+            row = 'fix2/end-follows-their-exit'
+            since = seq()
+            release(latch)
+            end = CLI._space_ended(wiring, given)
             saw = json.loads(text_of(late) or '{}')
             mine = items_of(report.get('run'))
-            check(row, 'the wrapper returns the command\'s own status, and only after the process the command left '
-                       'has ended [%s %.1fs %s]' % (status, took, said.strip()[:200]),
-                  status == 3 and late.is_file() and took >= 1.4 and report.get('empty') is True)
-            check(row, 'the process the command left had its file under the scratch root to its last moment: run '
-                       'finished was not sent while it lived [%s]' % (saw,),
-                  saw == {'held': True, 'text': 'in use\n'})
-            check(row, 'then run finished was sent and the scratch root removed [%s]'
-                  % ([record['state'] for record in mine.values()],),
+            check(row, 'the run\'s end sleeps until the process the command left exits, and is made then: that '
+                       'process had written its last line when the end returned [%s %s]' % (end.get('reason'), saw),
+                  late.is_file() and end.get('sent') is True)
+            check(row, 'that process was never stopped: it ended on the suite\'s word, at its own last line, and its '
+                       'file under the scratch root was there to that moment [%s]' % (saw,),
+                  saw == {'held': True, 'text': 'in use\n', 'released': True})
+            check(row, 'then run finished was sent, the scratch root removed and the hold released, in that order '
+                       '[%s %s %s]' % ([name for name, _ in written(since)], [record['state'] for record in mine.values()],
+                                       (L.hold(report.get('run')) or {}).get('state')),
                   [record['state'] for record in mine.values()] == ['removed']
-                  and (report.get('end') or {}).get('sent') is True
-                  and not os.path.lexists(report.get('scratch') or str(temp)))
+                  and not os.path.lexists(report.get('scratch') or str(temp))
+                  and [name for name, _ in written(since)][-1:] == [SP.RELEASE]
+                  and [name for name, _ in written(since)].count(SP.SIGNAL) == 1
+                  and (L.hold(report.get('run')) or {}).get('state') == 'released'
+                  and CLI._space_process(given['supervisor']['pid']) is None)
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix3/handed-outside-the-tree'
+            W7, _ = worktree(ORCHARD, 'w-handed')
+            fifo, acknowledged, late = temp / 'server.fifo', temp / 'server.ack', temp / 'late-worker.json'
+            latch = temp / 'latch-worker'
+            os.mkfifo(fifo)
+            # A server that is running before the run starts, the way a terminal multiplexer's or a
+            # user manager's is. It starts one worker for each line it is sent, with the environment
+            # the line carries. The worker is the server's child and never the command's.
+            worker = ('import json, os, sys, time\n'
+                      'until = time.monotonic() + %r\n'
+                      'while not os.path.exists(%r) and time.monotonic() < until:\n'
+                      '    time.sleep(0.02)\n'
+                      'json.dump({"held": os.path.isfile(sys.argv[1]), "released": os.path.exists(%r)},\n'
+                      '          open(sys.argv[2], "w"))\n' % (LINGER, str(latch), str(latch)))
+            server = subprocess.Popen(
+                [sys.executable, '-c',
+                 'import os, subprocess, sys\n'
+                 'for line in open(sys.argv[1]):\n'
+                 '    label, held, late = line.rstrip("\\n").split("\\t")\n'
+                 '    made = subprocess.Popen([sys.executable, "-c", sys.argv[3], held, late],\n'
+                 '                            env=dict(os.environ, VELDO_SPACE_LABEL=label))\n'
+                 '    open(sys.argv[2], "w").write(str(made.pid))\n',
+                 str(fifo), str(acknowledged), worker], env=dict(BASE), stdin=subprocess.DEVNULL)
+            waiting.append(server)
+            opened.append(os.open(str(fifo), os.O_RDWR))  # the server stays for as long as the suite holds this
+            # The command writes a file under its scratch root, hands the work to the server with its
+            # own label, waits for the server's word that the work has started, and exits 0.
+            script = ('import os, sys, time\n'
+                      'held = os.path.join(os.environ["TMPDIR"], "handed.txt")\n'
+                      'open(held, "w").write("the worker reads this\\n")\n'
+                      'open(sys.argv[1], "w").write("\\t".join([os.environ["VELDO_SPACE_LABEL"], held, sys.argv[3]]) + "\\n")\n'
+                      'while not os.path.exists(sys.argv[2]):\n'
+                      '    time.sleep(0.02)\n')
+            wiring = space()
+            began = time.monotonic()
+            status, said, report = run(['--label', 'handed', '--', sys.executable, '-c', script, str(fifo),
+                                        str(acknowledged), str(late)], W7, wiring)
+            took = time.monotonic() - began
+            given, first = report.get('given') or {}, report.get('end') or {}
+            carried = [one for one in first.get('holders') or () if one.get('how') == 'label']
+            working = int(text_of(acknowledged) or 0)
+            check(row, 'the fixture\'s worker is the server\'s child, started for the command, and no descendant of '
+                       'the run\'s supervisor [%s %s]' % (working, carried),
+                  working > 0 and (CLI._space_process(working) or {}).get('parent') == server.pid
+                  and not any(one.get('how') == 'descendant' for one in first.get('holders') or ()))
+            check(row, 'the wrapper returns the command\'s status while that worker lives and does not send run '
+                       'finished: a process outside the command\'s tree carries the run\'s label [%s %.1fs %s]'
+                  % (status, took, first.get('reason')),
+                  status == 0 and took < LINGER and first.get('sent') is False
+                  and first.get('reason') == 'label_carried' and [one.get('pid') for one in carried] == [working]
+                  and bool(alive(first.get('holders'), 'label')))
+            check(row, 'while that worker lives the scratch root is present with its file and the hold is held '
+                       '[%s %s]' % ([record['state'] for record in items_of(report.get('run')).values()],
+                                    (L.hold(report.get('run')) or {}).get('state')),
+                  [record['state'] for record in items_of(report.get('run')).values()] == ['present']
+                  and text_of(Path(report.get('scratch') or temp) / 'handed.txt') == 'the worker reads this\n'
+                  and (L.hold(report.get('run')) or {}).get('state') == 'admitted' and not late.exists())
+            release(latch)
+            end = CLI._space_ended(wiring, given)
+            check(row, 'the end follows the worker\'s exit: the worker ended on the suite\'s word and saw the file to '
+                       'its last line, and then the scratch root went and the hold was released [%s %s]'
+                  % (text_of(late), end.get('reason')),
+                  json.loads(text_of(late) or '{}') == {'held': True, 'released': True} and end.get('sent') is True
+                  and [record['state'] for record in items_of(report.get('run')).values()] == ['removed']
+                  and (L.hold(report.get('run')) or {}).get('state') == 'released')
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix3/unread-process-holds'
+            W14, _ = worktree(ORCHARD, 'w-unreadable')
+
+            def hidden(orphan=False):
+                """A process of this account that made itself not dumpable: the kernel then shows its
+                environment to nobody without privilege. It lives until the descriptor returned with
+                its id is closed. An orphan is started by a process that ends at once, so nothing
+                the suite could read stands above it."""
+                import select
+                reading, writing = os.pipe()
+                argv = [sys.executable, '-c', 'import ctypes, os, sys\nctypes.CDLL(None).prctl(4, 0, 0, 0, 0)\n'
+                                              'os.write(1, b"%d\\n" % os.getpid())\nos.read(int(sys.argv[1]), 1)\n',
+                        str(reading)]
+                if orphan:
+                    argv = [sys.executable, '-c', 'import subprocess, sys\n'
+                                                  'subprocess.Popen(sys.argv[1:], pass_fds=(int(sys.argv[-1]),))\n'] + argv
+                child = subprocess.Popen(argv, stdout=subprocess.PIPE, pass_fds=(reading,), env=dict(BASE))
+                pid = int(child.stdout.readline())
+                os.close(reading)
+                opened.append(writing)
+                if orphan:
+                    child.wait()
+                else:
+                    waiting.append(child)
+
+                def end():
+                    opened.remove(writing)
+                    os.close(writing)
+                    try:
+                        descriptor = os.pidfd_open(pid)
+                    except OSError:
+                        return
+                    try:
+                        watch = select.poll()
+                        watch.register(descriptor, select.POLLIN)
+                        watch.poll()
+                    finally:
+                        os.close(descriptor)
+                return pid, end
+
+            def read_above(pid):
+                """Whether a process of this account whose environment can be read stands above `pid`."""
+                at = (CLI._space_process(pid) or {}).get('parent')
+                while at and at > 1:
+                    try:
+                        with open('/proc/%d/status' % at) as status:
+                            own = str(os.getuid()) in next(line for line in status if line.startswith('Uid:')).split()
+                        if own:
+                            open('/proc/%d/environ' % at, 'rb').close()
+                            return True
+                    except (OSError, StopIteration):
+                        pass
+                    at = (CLI._space_process(at) or {}).get('parent')
+                return False
+            before_the_run, end_before = hidden(orphan=True)
+            try:
+                open('/proc/%d/environ' % before_the_run, 'rb').close()
+                unreadable = False
+            except OSError:
+                unreadable = not read_above(before_the_run)
+            if not unreadable:
+                end_before()
+                check(row, 'here this account reads the environment of its every process, or an orphan lands under '
+                           'a process it reads, so no process is unread in the way the row needs: it stands down', True)
+            else:
+                wiring = space()
+                given = CLI._space_begin(wiring, 'build', 'unreadable', str(W14), start=ended)
+                given['status'] = 0
+                (Path(given['scratch']) / 'kept.bin').write_text('it may still be written\n')
+                child_of_the_suite, end_child = hidden()
+                after_the_run, end_after = hidden(orphan=True)
+                since = seq()
+                end = CLI._space_finish(wiring, given)
+                check(row, 'an orphaned process of the owner\'s that started after the run and whose environment '
+                           'cannot be read may carry the label: nothing is sent or written, and it is named [%s %s]'
+                      % (end.get('reason'), end.get('holders')),
+                      end.get('sent') is False and end.get('reason') == 'label_unread' and written(since) == []
+                      and [one.get('pid') for one in end.get('holders') or ()] == [after_the_run]
+                      and text_of(Path(given['scratch']) / 'kept.bin') == 'it may still be written\n'
+                      and (L.hold(given['run']) or {}).get('state') == 'admitted')
+                end_after()
+                end = CLI._space_finish(wiring, given)
+                check(row, 'once it has ended the run is over. Two unread processes never held it: the one that was '
+                           'running before the run began, and the one a process without the label started [%s %s %s]'
+                      % (end.get('reason'), CLI._space_process(before_the_run) is not None,
+                         CLI._space_process(child_of_the_suite) is not None),
+                      end.get('sent') is True and CLI._space_process(before_the_run) is not None
+                      and CLI._space_process(child_of_the_suite) is not None
+                      and not os.path.lexists(given['scratch'])
+                      and (L.hold(given['run']) or {}).get('state') == 'released')
+                end_child()
+                end_before()
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix3/rule-3-reads-the-kernel'
+            W8, _ = worktree(ORCHARD, 'w-turning')
+            member, process = sleeper()
+            # A group that is empty when the end begins and has a live process in it from then on.
+            wiring = space(group=Group(pids=[member.pid], after=1))
+            given = CLI._space_begin(wiring, 'build', 'turning', str(W8), start=ended)
+            given['status'] = 0
+            (Path(given['scratch']) / 'written-late.bin').write_text('a process of the run writes this\n')
+            end = CLI._space_finish(wiring, given)
+            mine = L.item(given['items'][given['scratch']])
+            check(row, 'the end began on an empty group, and rule 3 asked the kernel again when it judged the item: '
+                       'the scratch root is deferred as in use and is on disk with its file [%s %s %s]'
+                  % (end.get('sent'), mine.get('state'), (mine.get('deferral') or {}).get('refused_by')),
+                  end.get('sent') is True and wiring['group'].reads >= 2 and mine.get('state') == 'deferred'
+                  and (mine.get('deferral') or {}).get('rule') == 'in_use'
+                  and (mine.get('deferral') or {}).get('refused_by') == 'owner_live'
+                  and text_of(Path(given['scratch']) / 'written-late.bin') == 'a process of the run writes this\n')
+            check(row, 'the hold is not released for a run the kernel still shows [%s %s]'
+                  % (end.get('hold'), (L.hold(given['run']) or {}).get('state')),
+                  end.get('hold') == 'held:group_not_empty' and (L.hold(given['run']) or {}).get('state') == 'admitted')
+            L.release(given['run'])
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix3/the-house-group'
+            house = CLI._SpaceScope(dict(os.environ))
+            words = house.words('probe:' + temp.name)
+            able = bool(words) and subprocess.run(
+                [word.replace('veldo-dispatch-', 'veldo-probe-') for word in words] + ['true'],
+                stdin=subprocess.DEVNULL, capture_output=True, timeout=60).returncode == 0
+            if not able:
+                check(row, 'this host gives the suite no user manager to make a scope with: the row stands down, and '
+                           'the wrapper\'s answer for such a host is in ac1/unread-group-sends-nothing', True)
+            else:
+                W9, _ = worktree(ORCHARD, 'w-house')
+                seen, late, latch = temp / 'seen-house.txt', temp / 'late-house.json', temp / 'latch-house'
+                wiring = space(group=None)  # no group is wired: the wrapper makes the house's own
+                status, said, report = run(
+                    ['--label', 'house', '--', sys.executable, '-c', lingering(5, latch, late, shown=seen)],
+                    W9, wiring, environ=dict(BASE, XDG_RUNTIME_DIR=house.environment['XDG_RUNTIME_DIR']))
+                given, first = report.get('given') or {}, report.get('end') or {}
+                unit = house.house.unit_name(report.get('run'))
+                check(row, 'the command ran in a scope of the owner\'s user manager named for the run by the house\'s '
+                           'own rule, in the slice of wrapped runs, and the wrapper holds that group [%s %s]'
+                      % ((text_of(seen) or '').strip(), report.get('group')),
+                      status == 5 and (text_of(seen) or '').strip().endswith('/' + CLI.SPACE_SLICE + '/' + unit)
+                      and (report.get('group') or {}).get('cgroup') == (text_of(seen) or '').strip()[3:])
+                read = house.read(report.get('run'), report.get('group'))
+                check(row, 'the process the command left is a member of that group as the kernel lists it, and run '
+                           'finished is not sent while it is [%s %s]' % (read, first.get('reason')),
+                      read.get('read') is True and read.get('populated') is True and bool(read.get('pids'))
+                      and first.get('sent') is False and first.get('reason') == 'group_not_empty'
+                      and set(read['pids']) <= {one.get('pid') for one in first.get('holders') or ()}
+                      and not late.exists())
+                release(latch)
+                end = CLI._space_ended(wiring, given)
+                after = house.read(report.get('run'), report.get('group'))
+                check(row, 'the end follows its exit: the group is read empty, run finished is sent and the scratch '
+                           'root goes [%s %s %s]' % (after, end.get('reason'), end.get('holders')),
+                      after == {'read': True, 'populated': False, 'pids': []} and end.get('sent') is True
+                      and json.loads(text_of(late) or '{}').get('released') is True
+                      and [record['state'] for record in items_of(report.get('run')).values()] == ['removed'])
+                check(row, 'a group record that is not the run\'s own scope is a group nobody read [%s]'
+                      % (house.read('another:run', report.get('group')),),
+                      house.read('another:run', report.get('group'))['read'] is False
+                      and house.read(report.get('run'), None)['read'] is False)
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix4/docker-objects-are-items'
+            W10, _ = worktree(ORCHARD, 'w-docker')
+            label_file, compose_file = temp / 'docker-label.txt', temp / 'docker-compose.txt'
+            # What the command made on the engine: one container with the run's label, one that compose
+            # stamped with the run's project name. And two that are not the run's.
+            labelled = container('built-by-the-run', labels_from={'veldo.space.run': label_file})
+            composed = container('composed-by-the-run', labels_from={'com.docker.compose.project': compose_file})
+            foreign = container('another-runs', labels={'veldo.space.run': 'another:run-nobody-knows'})
+            plain = container('made-by-hand')
+            since = seq()
+            del ENGINE['calls'][:]
+            status, said, report = run(['--label', 'docker', '--', 'sh', '-c',
+                                        'printf %%s "$VELDO_SPACE_LABEL" > %s; printf %%s "$COMPOSE_PROJECT_NAME" > %s'
+                                        % (label_file, compose_file)], W10, space())
+            RUN = report.get('run')
+            end = report.get('end') or {}
+            mine = [record for record in items_of(RUN).values() if record['kind'] == 'container']
+            check(row, 'the container with the run\'s label and the one with its compose project name are items of '
+                       'the run, declared by the census with the identity the engine showed [%s %s]'
+                  % (sorted(record['locator']['name'] for record in mine), (end.get('docker') or {}).get('engines')),
+                  status == 0 and sorted(record['locator']['name'] for record in mine)
+                  == ['built-by-the-run', 'composed-by-the-run']
+                  and all(record['creator'] == 'census' and record['owner'] == report['given']['owner'] for record in mine)
+                  and sorted(record['locator'].get('id') for record in mine) == sorted([labelled['Id'], composed['Id']])
+                  and (end.get('docker') or {}).get('engines') == {'default': 'read'})
+            wrote = written(since)
+            check(row, 'each was declared and confirmed as space-runner, before the one signal [%s]'
+                  % ([name for name, _ in wrote],),
+                  [name for name, _ in wrote].count(SP.DECLARE) == 3 and SP.SIGNAL in [name for name, _ in wrote]
+                  and all(principal == SP.RUNNER for _, principal in wrote[1:])
+                  and [name for name, _ in wrote].index(SP.SIGNAL)
+                  > max(at for at, (name, _) in enumerate(wrote) if name == SP.DECLARE))
+            check(row, 'at run finished both go through the engine\'s own stop and remove, with no force option; '
+                       'another run\'s container and the one with no label have no item and are still on the engine '
+                       '[%s %s]' % ([record['state'] for record in mine], [one['name'] for one in ENGINE['containers']]),
+                  [record['state'] for record in mine] == ['removed', 'removed']
+                  and [one['name'] for one in ENGINE['containers']] == ['another-runs', 'made-by-hand']
+                  and ('container', 'stop', labelled['Id']) in ENGINE['calls']
+                  and ('container', 'rm', composed['Id']) in ENGINE['calls']
+                  and not any(word in ('--force', '-f', 'kill', 'prune') for call in ENGINE['calls'] for word in call)
+                  and not [record for record in L.items().values() if record.get('kind') == 'container'
+                           and (record.get('locator') or {}).get('name') in ('another-runs', 'made-by-hand')])
+            # An engine nobody can read: it is named, and nothing of it is recorded.
+            late = container('made-while-unread', labels_from={'veldo.space.run': label_file})
+            ENGINE['unreadable'] = True
+            try:
+                status, said, report = run(['--label', 'docker', '--', 'sh', '-c',
+                                            'printf %%s "$VELDO_SPACE_LABEL" > %s' % label_file], W10, space())
+            finally:
+                ENGINE['unreadable'] = False
+            said_of = ((report.get('end') or {}).get('docker') or {}).get('engines') or {}
+            check(row, 'an engine that cannot be read is named, its labelled container gets no item and stays [%s]'
+                  % (said_of,),
+                  status == 0 and 'Cannot connect' in str(said_of.get('default'))
+                  and not [record for record in items_of(report.get('run')).values() if record['kind'] == 'container']
+                  and late in ENGINE['containers'])
+            ENGINE['containers'].remove(late)
+            L.release(report.get('run'))
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix5/no-issuer-no-run'
+            W11, _ = worktree(ORCHARD, 'w-issuer')
+            marker = temp / 'ran-with-no-issuer.json'
+            since = seq()
+            status, said, report = run(
+                ['--', sys.executable, '-c',
+                 'import json, os, sys\n'
+                 'json.dump({"tmp": os.environ.get("TMPDIR"), "label": os.environ.get("VELDO_SPACE_LABEL")}, '
+                 'open(%r, "w"))\nsys.exit(9)\n' % str(marker)], W11, space(issue=None))
+            check(row, 'a wiring with no issuer: the wrapper says the run is not recorded, and the command runs '
+                       'unchanged with its own status [%s %s %s]' % (status, said.strip(), text_of(marker)),
+                  status == 9 and 'the run is not recorded (no authority issues a run to this process)' in said
+                  and report.get('wrapped') is False
+                  and json.loads(text_of(marker) or '{}') == {'tmp': BASE['TMPDIR'], 'label': None})
+            check(row, 'no run was issued and nothing was written: the wrapper never issues its own run [%s]'
+                  % (written(since),), written(since) == [])
+            refused = space(issue=lambda label, scope: L.issue(SP.OBSERVER, label, scope=scope))
+            status, said, report = run(['--', 'sh', '-c', 'exit 4'], W11, refused)
+            check(row, 'a run the issuer did not issue to space-runner is not the wrapper\'s: it is not recorded '
+                       'and the command runs unchanged [%s %s]' % (status, said.strip()[:120]),
+                  status == 4 and report.get('wrapped') is False and 'the run is not recorded' in said)
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix6/scratch-not-made'
+            W12, _ = worktree(ORCHARD, 'w-unmade')
+            marker = temp / 'ran-with-no-scratch.json'
+
+            def cannot(path):
+                raise PermissionError(13, 'the fixture lets nobody make this folder')
+            make, CLI._space_make = CLI._space_make, cannot
+            before = len(L.observations)
+            try:
+                status, said, report = run(
+                    ['--label', 'unmade', '--', sys.executable, '-c',
+                     'import json, os\njson.dump({"tmp": os.environ.get("TMPDIR")}, open(%r, "w"))\n' % str(marker)],
+                    W12, space())
+            finally:
+                CLI._space_make = make
+            mine = items_of(report.get('run'))
+            check(row, 'a scratch folder that could not be made: the wrapper says its item stays declared, the '
+                       'command runs with its own temporary folder, and the item is declared with nothing at its '
+                       'path [%s %s]' % (status, [note for note in report.get('notes') or ()]),
+                  status == 0 and json.loads(text_of(marker) or '{}') == {'tmp': BASE['TMPDIR']}
+                  and any('stays declared, for reconcile' in note for note in report.get('notes') or ())
+                  and [record['state'] for record in mine.values()] == ['declared']
+                  and not os.path.lexists(list(mine.values())[0]['locator']['path']))
+            check(row, 'no gone was sent as space-runner, accepted or refused [%s]'
+                  % (sorted({seen.get('operation') for seen in L.observations[before:]}),),
+                  not any('gone' in str(seen.get('operation')) for seen in L.observations[before:]))
         except Exception as error:
             stopped(row, error)
 
         try:
             row = 'ac1/unread-group-sends-nothing'
             W3, _ = worktree(ORCHARD, 'w-unread')
-            for answer, reason in ((None, 'group_unread'), (False, 'group_not_empty')):
-                wiring = space()
-                given = CLI._space_begin(wiring, 'build', 'unread', str(W3))
+            member, _ = sleeper()
+            for answer, group, reason in (('nobody could read', Group(read=False), 'group_unread'),
+                                          ('has a process in it', Group(pids=[member.pid]), 'group_not_empty')):
+                wiring = space(group=group)
+                given = CLI._space_begin(wiring, 'build', 'unread', str(W3), start=ended)
+                given['status'] = 0
                 (Path(given['scratch']) / 'half-written.bin').write_text('still being written\n')
                 (W3 / 'build').mkdir(exist_ok=True)
                 (W3 / 'build' / 'out.o').write_text('o')
                 since = seq()
-                end = CLI._space_finish(wiring, given, answer)
+                end = CLI._space_finish(wiring, given)
                 mine = items_of(given['run'])
-                check(row, 'a group whose emptiness is %r: run finished is not sent and the reason is %s; no census, '
+                check(row, 'a group that %s: run finished is not sent and the reason is %s; no census, '
                            'no signal and no release are written [%s %s]' % (answer, reason, end, written(since)),
                       end['sent'] is False and end['reason'] == reason and end['census'] is None
-                      and end['signal'] is None and written(since) == [])
+                      and end['docker'] is None and end['signal'] is None and written(since) == [])
                 check(row, 'the scratch root is present and on disk with its file, the build folder has no item and '
                            'is there, and the hold is held [%s %s]'
                       % ([record['state'] for record in mine.values()], (L.hold(given['run']) or {}).get('state')),
@@ -501,7 +1046,8 @@ def _v313_space_run_suite():
             row = 'ac1/only-the-runs-own-items'
             W4, _ = worktree(ORCHARD, 'w-own', ticket='VELDO-9004')
             wiring = space()
-            given = CLI._space_begin(wiring, 'build', 'own', str(W4))
+            given = CLI._space_begin(wiring, 'build', 'own', str(W4), start=ended)
+            given['status'] = 0
             RUN = given['run']
             # An item of this run the owner marked Keep, and the scratch root of another run of the
             # same project and ticket.
@@ -521,7 +1067,7 @@ def _v313_space_run_suite():
                               'seam')['item']
             L.confirm(other)
             versions = (version_of(kept), version_of(other))
-            end = CLI._space_finish(wiring, given, True)
+            end = CLI._space_finish(wiring, given)
             mine = L.item(given['items'][given['scratch']])
             check(row, 'the fixture marked the item Keep as the owner [%s %s]' % (due.get('reason'), marked.get('reason')),
                   due.get('ok') is True and marked.get('ok') is True)
@@ -648,32 +1194,99 @@ def _v313_space_run_suite():
                                  (['--kind', 'worktree', '--path', ORCHARD['worktree_root'] + '/a/../../../elsewhere'],
                                   'space_locator_parent'),
                                  (['--kind', 'scratch', '--path', str(SCRATCH / 'a-script-scratch')],
-                                  'space_not_permitted:space_declare')):
+                                  'space_record_kind:scratch'),
+                                 (['--kind', 'build_output', '--path', str(BUILD / 'a-script-build')],
+                                  'space_record_kind:build_output'),
+                                 (['--kind', 'evidence', '--path', str(SCRATCH / 'a-script-evidence')],
+                                  'space_record_kind:evidence'),
+                                 (['--kind', 'worktree', '--path', ORCHARD['worktree_root'] + '/new', '--session', 's-9'],
+                                  'space_record_session'),
+                                 (['--kind', 'agent_repository', '--path', str(W)], 'space_record_exists'),
+                                 (['--confirm', 'space:item:nobody-declared-this'], 'space_record_not_declared'),
+                                 (['--confirm', W_ITEM], 'space_record_not_declared')):
                 status, out, said = verb(CLI.space_record, argv, space())
                 check(row, '%s is refused as %s, exit 1, with no item [%s %s]'
-                      % (' '.join(argv[:2] + [argv[3][-24:]]), wanted, status, said.strip()),
+                      % (' '.join(argv[:2] + [argv[-1][-24:]]), wanted, status, said.strip()),
                       status == 1 and said.strip() == 'veldo space record: refused ' + wanted and out == '')
             check(row, 'none of the refusals wrote to the journal, and the protected file is as it was [%s]'
                   % (written(since),),
                   written(since) == [] and text_of(STATE / 'vms' / 'disk.raw') == 'a disk image nobody may touch\n')
 
+            row = 'fix1/existing-work-is-never-scratch'
+            W13, W13_ITEM = worktree(ORCHARD, 'w-notes', ticket='VELDO-9013')
+            (W13 / 'notes').mkdir()
+            (W13 / 'notes' / 'only-copy.txt').write_text('the only copy of some work\n')
+            handmade = Path(ORCHARD['worktree_root']) / 'made-by-hand'
+            handmade.mkdir()
+            (handmade / 'draft.txt').write_text('a folder a person made\n')
+            unmade = SCRATCH / 'sessions' / 'orchard' / 'sess-y'
+            since = seq()
+            for argv, wanted in ((['--kind', 'scratch', '--path', str(W13 / 'notes'), '--session', 'sess-x'],
+                                  'space_record_kind:scratch'),
+                                 (['--kind', 'scratch', '--path', str(handmade), '--session', 'sess-x'],
+                                  'space_record_kind:scratch'),
+                                 (['--kind', 'scratch', '--path', str(handmade)], 'space_record_kind:scratch'),
+                                 (['--kind', 'scratch', '--path', str(unmade), '--session', 'sess-y'],
+                                  'space_record_kind:scratch'),
+                                 (['--kind', 'worktree', '--path', str(handmade)], 'space_record_exists'),
+                                 (['--kind', 'agent_repository', '--path', str(handmade)], 'space_record_exists'),
+                                 (['--kind', 'worktree', '--path', str(W13 / 'notes')], 'space_record_exists'),
+                                 (['--kind', 'worktree', '--path', str(W13 / 'notes' / 'only-copy.txt')],
+                                  'space_record_exists')):
+                status, out, said = verb(CLI.space_record, argv, space())
+                check(row, '%s %s is refused as %s, exit 1 [%s %s]'
+                      % (' '.join(argv[:2]), argv[3][-22:] + (' with a session' if '--session' in argv else ''),
+                         wanted, status, said.strip()),
+                      status == 1 and said.strip() == 'veldo space record: refused ' + wanted and out == '')
+            check(row, 'no refusal made an item or wrote to the journal [%s]' % (written(since),),
+                  written(since) == [] and item_at(W13 / 'notes') == [] and item_at(handmade) == []
+                  and item_at(unmade) == [])
+            # What a later writer puts where the refused session folder would have been is nobody's item.
+            unmade.mkdir(parents=True)
+            (unmade / 'later.txt').write_text('written after the refusal\n')
+            # The session ends, as the consumer of the hook's event will signal it (VELDO-0323).
+            sent = [SIG.signal(L, 'session_ended', {'session': name}, probe=P, kinds=K, remover=RM, emitter='fixture',
+                               free=lambda pool: PLENTY, keep=lambda identity, record: KP.keep(L, identity, record),
+                               run=client, proc=str(PROC), borrow_root=str(temp / 'borrowed'))
+                    for name in ('sess-x', 'sess-y')]
+            check(row, 'session ended for those sessions makes nothing due and removes nothing [%s]'
+                  % ([(answer.get('ok'), answer.get('items')) for answer in sent],),
+                  all(answer.get('ok') is True and answer.get('items') == [] for answer in sent))
+            check(row, 'the worktree\'s untracked file, the hand-made folder\'s file and the later file are on disk, '
+                       'byte for byte, and the worktree\'s item is present [%s]' % ((L.item(W13_ITEM) or {}).get('state'),),
+                  text_of(W13 / 'notes' / 'only-copy.txt') == 'the only copy of some work\n'
+                  and text_of(handmade / 'draft.txt') == 'a folder a person made\n'
+                  and text_of(unmade / 'later.txt') == 'written after the refusal\n'
+                  and (L.item(W13_ITEM) or {}).get('state') == 'present')
+
             row = 'ac3/record-accepted'
             made = Path(ORCHARD['worktree_root']) / 'by-a-script'
-            git(ORCHARD['repository'], 'worktree', 'add', '-q', '--detach', str(made))
             since = seq()
             status, out, said = verb(CLI.space_record, ['--kind', 'worktree', '--path', str(made) + '/'], space())
             found = item_at(made)
-            check(row, 'a worktree a script made is recorded: exit 0, one item, present, creator record, owned by its '
-                       'project, and the verb prints the item [%s %s %s]' % (status, out.strip(), said.strip()),
-                  status == 0 and len(found) == 1 and found[0][1]['state'] == 'present'
+            check(row, 'a worktree a script is about to make is declared before it is there: exit 0, one item, '
+                       'declared, creator record, owned by its project, and the verb prints the item [%s %s %s]'
+                  % (status, out.strip(), said.strip()),
+                  status == 0 and len(found) == 1 and found[0][1]['state'] == 'declared'
                   and found[0][1]['creator'] == 'record' and found[0][1]['owner'] == {'scope': A}
-                  and json.loads(out or '{}') == {'item': found[0][0], 'state': 'present'})
+                  and json.loads(out or '{}') == {'item': found[0][0], 'state': 'declared'} and not made.exists())
+            status, out, said = verb(CLI.space_record, ['--confirm', found[0][0]], space())
+            check(row, 'it is not confirmed while nothing is at its path [%s %s]' % (status, said.strip()),
+                  status == 1 and said.strip() == 'veldo space record: refused space_record_absent')
+            git(ORCHARD['repository'], 'worktree', 'add', '-q', '--detach', str(made))
+            status, out, said = verb(CLI.space_record, ['--confirm', found[0][0]], space())
+            check(row, 'made with plain git and confirmed, it is present [%s %s %s]' % (status, out.strip(), said.strip()),
+                  status == 0 and json.loads(out or '{}') == {'item': found[0][0], 'state': 'present'}
+                  and item_at(made)[0][1]['state'] == 'present')
             check(row, 'both commands were written as space-observer [%s]' % (written(since),),
                   written(since) == [(SP.DECLARE, SP.OBSERVER), (SP.CONFIRM, SP.OBSERVER)])
             status, out, said = verb(CLI.space_record, ['--kind', 'worktree', '--path', str(made)], space())
-            check(row, 'recorded a second time it is refused by the Ledger, by name [%s]' % (said.strip(),),
-                  status == 1 and bool(found) and said.strip() == 'veldo space record: refused space_locator_taken:'
-                  + found[0][0])
+            check(row, 'recorded a second time it is refused, because it exists [%s]' % (said.strip(),),
+                  status == 1 and said.strip() == 'veldo space record: refused space_record_exists')
+            status, out, said = verb(CLI.space_record, ['--kind', 'agent_repository', '--path', str(made / 'nested')],
+                                     space())
+            check(row, 'a path inside a recorded worktree is refused by the item it is inside [%s]' % (said.strip(),),
+                  status == 1 and said.strip() == 'veldo space record: refused space_record_inside:' + found[0][0])
 
             row = 'ac3/event-types'
             check(row, 'the event types are ref changed, session started, session ended and released, and no other '
@@ -798,18 +1411,45 @@ def _v313_space_run_suite():
             row = 'paths/canon'
             check(row, 'the engine canon engine/bin/veldo equals this repository copy',
                   (ROOT / 'engine' / 'bin' / 'veldo').read_bytes() == (ROOT / 'bin' / 'veldo').read_bytes())
-            source = (ROOT / 'bin' / 'veldo').read_text()
+            source = Path(PRODUCTION['veldo']).read_text()  # the copy the rows above ran
             block = source[source.index('# VELDO-0313: the run wrapper'):source.index('def route(argv):')]
             check(row, 'the wrapper and the verbs hold no delete of their own: no recursive delete, no unlink, no '
                        'rmdir and no git or engine remove',
                   not any(word in block for word in ('rmtree', 'unlink', 'rmdir', 'os.remove', "'rm'", '"rm"',
                                                      'worktree remove', '"remove"', 'prune')))
+            import re
+            check(row, 'they stop nothing: no kill of a process or a group, and the one signal sent is the stop the '
+                       'wrapper was sent, passed on to the command',
+                  block.count('os.kill(') == 1 and block.count('send_signal(') == 1
+                  and not any(word in block for word in ('SIGKILL', 'cgroup.kill', '.terminate(', '.kill()',
+                                                         'killpg', 'systemctl')))
+            check(row, 'they wait on no timer: no sleep, and every poll is one with no time limit',
+                  'sleep(' not in block and 'timeout=' not in block and not re.search(r'\.poll\([^)]', block)
+                  and block.count('poller.poll()') == 1)
+            check(row, 'they hold no call of the Ledger\'s issue and no gone, and the label they look for in a '
+                       'process\'s environment is the one the Docker adapter gives a run',
+                  '.issue(' not in block and '.gone(' not in block and CLI.SPACE_LABEL_VARIABLE == DK.LABEL_VARIABLE)
         except Exception as error:
             stopped(row, error)
 
     except Exception as error:
         stopped(row, error)
     finally:
+        for descriptor in opened:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+        for child in waiting:
+            try:
+                if child.stdin is not None:
+                    child.stdin.close()
+                child.wait(timeout=30)
+            except Exception:  # noqa: BLE001 - a fixture process that will not end never reds a row
+                try:
+                    child.kill()  # the fixture's own stand-in, never a process of a wrapped run
+                except Exception:  # noqa: BLE001
+                    pass
         for connection in connections:
             try:
                 connection.close()

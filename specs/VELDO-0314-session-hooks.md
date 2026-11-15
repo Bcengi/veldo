@@ -14,6 +14,10 @@ protected_paths: []
 footprint:
   - "packs/claude/hooks/hooks.json"
   - "packs/claude/scripts/**"
+  - "engine/.veldo/control_space_spool.py"
+  - ".veldo/control_space_spool.py"
+  - "engine/bin/veldo"
+  - "bin/veldo"
   - "scripts/suites/*_veldo_0314_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -90,3 +94,14 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-14: footprint widened, from the review of VELDO-0313 (the lead's question 3). No code is
+  built by this entry. The spool holds only the three entry types the git hooks write, and AC4 has a
+  hook spool its record. So the footprint gains the spool module, engine/.veldo/control_space_spool.py
+  with its synced copy: its types and fields gain session_started and session_ended (the session id,
+  the working folder, the process id and the process start time) and released (the paths, and the
+  creator record VELDO-0335 checks), and replay hands each to the Ledger's event command as
+  space-observer. It also gains both copies of the CLI, engine/bin/veldo and bin/veldo, so that the
+  event verb spools when the ledger is not reachable (design 6.9) where today it returns 0 with
+  nothing recorded. Since VELDO-0313's fix round the CLI's record verb refuses the kind scratch and any
+  path that exists: the SessionStart hook is what declares a session's scratch folder, under the
+  installation's session pattern, before the folder is made.

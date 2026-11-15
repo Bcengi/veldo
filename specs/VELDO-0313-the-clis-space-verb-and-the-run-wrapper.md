@@ -136,3 +136,94 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   - The declared falsifier of AC3 says the row "gets an item". With the CLI's own check taken out the
     Ledger still refuses the path, so no item is made; the row is red because the refusal no longer has
     its name.
+- 2026-11-14: FIX ROUND after the review (verdict FIX, six findings, three of them the lead's decisions).
+  Code in engine/bin/veldo and its copy bin/veldo and nowhere else. The suite has 23 rows and finding 313
+  has 26 falsifiers, each applied once and seen red on its row. Where a line of the entry above says
+  otherwise, this entry holds.
+  - Finding 1 (critical, the owner's rule). The record verb let a host script declare an existing folder
+    as a session's scratch, and session ended then removed it unsaved. Now the verb records a worktree or
+    an agent repository and nothing else: the kind scratch is refused (space_record_kind:scratch), and so
+    are build output and evidence, and a session as the owner (space_record_session). A path that exists
+    is refused whatever the kind (space_record_exists), and so is a path inside a recorded worktree or
+    agent repository (space_record_inside). The verb follows design 6.2: record with a kind and a path
+    declares before the creation, record with the option confirm confirms after it, and only an item the
+    verb itself declared, with something now at its path. So no verb relabels existing work as something
+    that is removed unsaved. Scratch is declared only by what creates it, at creation, for a path that
+    did not exist: the wrapper for a run, the SessionStart hook for a session (VELDO-0314). Row
+    fix1/existing-work-is-never-scratch is the reviewer's case, with session ended signalled as the
+    consumer will: nothing becomes due and every planted file is on disk. Not done here, for the lead:
+    the Ledger's own rule (control_space.permit, the observed thing branch) still lets space-observer
+    declare session scratch at any path inside a root. Narrowing it to the session pattern folder needs
+    a ticket whose footprint holds control_space.py. The verb does not look for a git repository above a
+    path that does not exist yet: a project may keep its worktree root inside its repository.
+  - Finding 2 (high, the lead's decision 1). The wrapper returns the command's exit status as soon as
+    the command exits. It waits for nothing else, has no time limit of its own, and never stops or kills
+    a process: the one signal it sends is the stop it was itself sent, passed on to the command while
+    the command runs. What the command left is named on standard error and in the report, and the run's
+    end follows its exit. How the processes are recorded as holding the run's items: the Ledger has one
+    recorded process per item and no command by which space-runner could add more, so the scratch root
+    is declared with the run's supervisor as its recorded process. The supervisor is started before the
+    declare and starts the command only when told. It is the child subreaper of everything the command
+    starts, and it stays for exactly as long as a descendant, a member of the group or a labelled
+    process lives. Rule 3 of any judge in any process then holds the item for as long as the kernel
+    shows that supervisor, with no wiring. Each wait is one poll with no time limit on a pidfd of every
+    holder: an exit wakes it and the table is read again. There is no interval and no timer anywhere in
+    the block (row paths/canon reads the source for it). The supervisor takes "no child left" from the
+    kernel's one answer to its wait call and not from a pass over the process table: the registered
+    falsifier run found that a pass can miss a child started while the table is read. The CLI's module text said it spawns nothing
+    detached. It now names the one exception: this supervisor.
+  - Who sends the run's end when the command left something. The supervisor, when the last holder has
+    gone, by a process that follows it (the scratch root records the supervisor, so the end cannot be
+    made by the supervisor itself), with the wiring that process resolves for itself. Nothing serves the
+    ledger to a CLI process until VELDO-0323, so on a host today that process reaches no ledger, sends
+    nothing, and the run's items and hold stay as they are for reconcile. The suite drives the same
+    function (_space_ended) in its own process with its own wiring. The few lines in the supervisor that
+    resolve a wiring and hand over to the follower cannot run before VELDO-0323 and have no row.
+  - Finding 3 (high). The forced answer "group empty" is gone. Whether a run is over is three reads of
+    the kernel, made again each time the question is asked: the supervisor has ended; the house's
+    containment group was read and is empty; no process in the table carries the run's label. The group
+    is the house's own provider (control_containment, the one the receiver uses for a dispatch): a
+    transient scope of the owner's user manager, named for the run by the house's unit name rule and
+    read through its cgroup. Two differences from a dispatch's group, both on purpose: it is in a slice
+    of its own (veldo-runs.slice), because the workers' slice counts its scopes against the worker
+    concurrency cap; and it carries none of the worker profile's caps and is never stopped, because a
+    cap that fires is a kill, and the lead's decision is that the wrapper never kills. A host that
+    cannot make the scope has no group, which is a group nobody read: nothing is sent and the hold
+    stays. Rule 3 for the run is answered by the same read when the rule asks, never by a kept answer,
+    and the hold is released only if the read still finds nothing after Signal. Row
+    fix3/handed-outside-the-tree is the reviewer's case: a server that was running before the run starts
+    a worker with the run's label; nothing is sent while the worker lives.
+  - Unread processes, for the lead. The review says an environment that cannot be read counts as
+    holding the run. Taken whole, that ends no run on this host: another session's sandboxed compiler
+    processes are unreadable to this account and start many times a second (195 in 20 seconds on
+    2026-11-14). So it is bounded as design section 7 bounds rule 4. An unread process of the owner's
+    holds the run when it started at or after the run's supervisor and, going up its parents, a process
+    of the run is among them or nobody whose environment was read stands above it (an orphan). It does
+    not hold when it started before the run, or when the first parent that was read does not carry the
+    label. What this does not see: a process that cannot be read and was started, with the label, by a
+    process that does not itself carry it; and a process that started before the run and replaced its
+    own program afterwards. Rule 4 still judges both by their files. The process reader gives no
+    environment, so it does not change this. Only processes of the owner's uid are read for the label.
+  - Finding 4 (the lead's decision 2). The wrapper calls the Docker part of the census (design 6.3,
+    step 3) before Signal: on every engine the installation names, each container, network and volume
+    that carries the run's label or its compose project name is declared as space-runner, owned by the
+    run, with the identity the engine showed, and confirmed. Whose an object is is the adapter's own
+    rule (owner_of), asked for this run alone. An object the protect list covers, a container that
+    mounts what is protected, and one shown with no identity get no item. An engine that cannot be read
+    is named and nothing of it is recorded. The suite's engine is a stand-in; no row asks a real one.
+  - Finding 5. The wrapper never issues its own run. The wiring carries the authority's issue as a
+    callable (issue(label, scope)), which VELDO-0323's socket request will be; the wrapper also reads
+    back that the run was issued to space-runner. A wiring with no issuer records no run and the command
+    runs unchanged. The block holds no call of the Ledger's issue (row paths/canon).
+  - Finding 6. A scratch folder that could not be made leaves its item declared, and the wrapper says
+    so; reconcile ends it. No gone is sent as space-runner, which the Ledger's rule refuses.
+  - AC1 says the census, run finished and the release run "before it exits". That holds for a run whose
+    group has ended when the command exits. For a run whose command left a process the lead's decision 1
+    replaces it: the wrapper exits with the status and the end follows. The criterion's text is the
+    design's (section 12) and is not edited here; the design's 6.9 row and this criterion want the
+    lead's amendment.
+  - Suite and gate. Suite 151 runs inside the gate's confinement, which has no user manager, so its
+    rows are given a stand-in group, and the one row that makes the house's own scope
+    (fix3/the-house-group) stands down by name there. On a host with a manager it runs for real and was
+    seen green. The suite claims no manager slot and is not on the unconfined list: both are the
+    lead's and the owner's to change.

@@ -14879,27 +14879,31 @@ def cases():
     # VELDO-0313: the CLI's space verb and the run wrapper, in bin/veldo (case field `dir`). The
     # declared falsifier of each acceptance criterion. AC1: skip the census. AC2: start the command
     # anyway in act mode. AC3: accept any path. AC4: refuse to run with no central installation. And
-    # the losses beside them: run finished sent when the command's own process exits, while a process
-    # it left still holds a file; sent for a group nobody could read; a signal written as the
-    # authority and not through the Ledger's rule for space-runner; the command's status lost; the
-    # hold of a run that must wait left behind; an unknown kind and an unknown event type let through.
+    # the losses beside them: run finished sent for a group nobody could read; a signal written as
+    # the authority and not through the Ledger's rule for space-runner; the command's status lost;
+    # the hold of a run that must wait left behind; an unknown kind and an unknown event type let
+    # through. The fix round (the review of VELDO-0313) adds one or more for each finding. Finding
+    # 1: an existing folder accepted as session scratch (the verb as it was: the planted file is
+    # gone after session ended), an existing path recorded, the kind scratch recorded. Finding 2: a
+    # wrapper that waits for what the command left, run finished sent while such a process lives,
+    # what the command left killed, an end that waits on a timer, a scratch root that records no
+    # process. Finding 3: the label not read in the process table, an unreadable process not
+    # counted, rule 3 answered without a read, the hold released for a run that is not over.
+    # Finding 4: the Docker step skipped, and another run's container taken. Finding 5: the wrapper
+    # issues its own run. Finding 6: gone sent as space-runner.
     space313 = '151_veldo_0313_space_run.py'
 
-    def run313(name, old, new, rows):
-        add(313, name, space313, 'veldo', old, new, rows)
+    def run313(name, old, new, rows, also=()):
+        add(313, name, space313, 'veldo', old, new, rows, also=also)
         result[-1]['dir'] = 'bin'
 
     run313('space313-census-skipped',
            "    if given.get(\"worktree\"):\n        # The census before Signal",
            "    if False:\n        # The census before Signal",
            ['ac1/build-output-has-item-and-goes'])
-    run313('space313-sent-when-the-command-exits',
-           "            status = child.returncode = _space_code(raw)\n            tell(status=status)\n",
-           "            status = child.returncode = _space_code(raw)\n            tell(status=status)\n            break\n",
-           ['ac1/surviving-child'])
     run313('space313-unread-group-sent',
-           "    if empty is not True:\n        # What is left of the run may still write",
-           "    if False:\n        # What is left of the run may still write",
+           "    if not isinstance(read, dict) or read.get(\"read\") is not True:\n        return {\"group\": \"unread\", \"holders\": []}\n    supervisor = given.get(\"supervisor\")\n",
+           "    supervisor = given.get(\"supervisor\")\n",
            ['ac1/unread-group-sends-nothing'])
     run313('space313-signal-not-through-the-runners-rule',
            "        return self._apply(self._sp.SIGNAL, event=event, subject=subject)\n",
@@ -14910,7 +14914,7 @@ def cases():
            "    if False:\n        # Act mode with too little space",
            ['ac2/act-waits-75'])
     run313('space313-waiting-hold-left-behind',
-           "            done = given[\"runner\"].release(given[\"hold\"])\n            report[\"released\"] = done.get(\"ok\") is True\n",
+           "            done = _space_runner(space).release(given[\"hold\"])\n            report[\"released\"] = done.get(\"ok\") is True\n",
            "            report[\"released\"] = False\n",
            ['ac2/act-waits-75'])
     run313('space313-status-lost',
@@ -14931,6 +14935,87 @@ def cases():
            "        report.update(wrapped=False, why=why)\n        return _space_plain(command, environ, where)\n",
            "        report.update(wrapped=False, why=why)\n        return 1\n",
            ['ac4/no-installation-runs-unchanged'])
+
+    # Finding 1 (critical): the record verb as it was. It takes scratch, a session and a path that
+    # exists, and confirms what it declared.
+    scratch313 = ("    if args.kind not in SPACE_RECORD_KINDS:\n", "    if False:\n")
+    session313 = ("    if args.session:\n        # What a session owns", "    if False:\n        # What a session owns")
+    exists313 = ("    if os.path.lexists(path):\n        # Declare comes before create",
+                 "    if False:\n        # Declare comes before create")
+    owned313 = ("    if args.ticket:\n        owner[\"ticket\"] = args.ticket\n",
+                "    if args.ticket:\n        owner[\"ticket\"] = args.ticket\n"
+                "    if args.session:\n        owner[\"session\"] = args.session\n")
+    run313('space313-existing-folder-accepted-as-session-scratch', scratch313[0], scratch313[1],
+           ['fix1/existing-work-is-never-scratch'],
+           also=[session313, exists313, owned313,
+                 ("    inside = _space_worktree(ledger, path)\n", "    inside = None\n"),
+                 ("    stdout.write(json.dumps({\"item\": made[\"item\"], \"state\": \"declared\"}, sort_keys=True) + \"\\n\")\n",
+                  "    observer.confirm(made[\"item\"])\n"
+                  "    stdout.write(json.dumps({\"item\": made[\"item\"], \"state\": \"declared\"}, sort_keys=True) + \"\\n\")\n")])
+    run313('space313-existing-path-recorded', exists313[0], exists313[1],
+           ['fix1/existing-work-is-never-scratch', 'ac3/record-refusals'])
+    run313('space313-scratch-recorded-by-the-verb', scratch313[0], scratch313[1],
+           ['fix1/existing-work-is-never-scratch'], also=[session313, owned313])
+
+    # Finding 2 (high): the wrapper returns at the command's exit, and never kills.
+    run313('space313-waits-for-what-the-command-left',
+           "                        if holders == []:\n                            child.wait()  # it has nothing to stay for",
+           "                        if True:\n                            child.wait()  # it has nothing to stay for",
+           ['fix2/returns-at-the-commands-exit'])
+    run313('space313-sent-while-a-process-it-left-lives',
+           "        holders = seen[\"holders\"]\n        if any(one[\"how\"] in (\"descendant\", \"group\") for one in holders) or seen[\"group\"] != \"empty\":\n",
+           "        holders = []\n        if any(one[\"how\"] in (\"descendant\", \"group\") for one in holders) or seen[\"group\"] != \"empty\":\n",
+           ['fix2/returns-at-the-commands-exit', 'fix2/end-follows-their-exit'])
+    run313('space313-what-the-command-left-is-killed',
+           "                poller.poll()\n",
+           "                [os.kill(one[\"pid\"], 9) for one in waited if one[\"how\"] != \"supervisor\"]\n"
+           "                poller.poll()\n",
+           ['fix2/end-follows-their-exit'])
+    run313('space313-end-waits-on-a-timer',
+           "                poller.poll()\n", "                poller.poll(50)\n",
+           ['paths/canon'])
+    run313('space313-scratch-records-no-process',
+           "        made = runner.declare(\"scratch\", {\"path\": path}, owner, \"wrapper\", process=out[\"supervisor\"])\n",
+           "        made = runner.declare(\"scratch\", {\"path\": path}, owner, \"wrapper\")\n",
+           ['fix2/returns-at-the-commands-exit'])
+
+    # Finding 3 (high): the label in the process table, and rule 3 as a read of the kernel.
+    run313('space313-label-not-read',
+           "        if read[pid]:\n            add(pid, \"label\")\n",
+           "        if False:\n            add(pid, \"label\")\n",
+           ['fix3/handed-outside-the-tree'])
+    run313('space313-unread-process-not-counted',
+           "                add(pid, \"unread\")  # nobody that was read stands above it\n",
+           "                pass  # nobody that was read stands above it\n",
+           ['fix3/unread-process-holds'])
+    run313('space313-rule-three-answered-without-a-read',
+           "            {\"conclusive\": True, \"group_empty\": held() is None}\n",
+           "            {\"conclusive\": True, \"group_empty\": True}\n",
+           ['fix3/rule-3-reads-the-kernel'])
+    run313('space313-hold-released-for-a-run-that-is-not-over',
+           "            again = held()\n", "            again = None\n",
+           ['fix3/rule-3-reads-the-kernel'])
+
+    # Finding 4: the Docker part of the census.
+    run313('space313-docker-step-skipped',
+           "        end[\"docker\"] = _space_docker(space, runner, given)\n",
+           "        end[\"docker\"] = None\n",
+           ['fix4/docker-objects-are-items'])
+    run313('space313-another-runs-container-taken',
+           "                label, owner, rule = docker.owner_of(locator, {run: given[\"owner\"]})\n",
+           "                label, owner, rule = run, given[\"owner\"], \"any\"\n",
+           ['fix4/docker-objects-are-items'])
+
+    # Finding 5: the run is the authority's to issue. Finding 6: gone is not space-runner's.
+    run313('space313-issues-its-own-run',
+           "    if not callable(issuer):\n        raise RuntimeError(SPACE_NO_ISSUER)\n    issued = issuer(label, scope)\n",
+           "    issued = issuer(label, scope) if callable(issuer) else ledger.issue(sp.RUNNER, label, scope=scope)\n",
+           ['fix5/no-issuer-no-run'])
+    run313('space313-gone-sent-as-space-runner',
+           "            raise RuntimeError(\"the scratch folder could not be made (%s): its item %s stays declared, for \"\n",
+           "            ledger.gone(made[\"item\"], principal=sp.RUNNER)\n"
+           "            raise RuntimeError(\"the scratch folder could not be made (%s): its item %s stays declared, for \"\n",
+           ['fix6/scratch-not-made'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
