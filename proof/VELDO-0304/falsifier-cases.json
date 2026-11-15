@@ -103,5 +103,12 @@
   "row": "spool/boundary",
   "old": "                    retain_delivered(folder, name)  # durable input stays outside the pending queue\n",
   "new": "                    os.unlink(os.path.join(folder, name))\n"
+ },
+ {
+  "name": "service-time-delete",
+  "path": ".veldo/control_service.py",
+  "row": "service/boundary",
+  "old": "                # Keep the pathname at shutdown. The next locked bind owns stale socket replacement.\n",
+  "new": "                os.unlink(config['socket'])\n"
  }
 ]

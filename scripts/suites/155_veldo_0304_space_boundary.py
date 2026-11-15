@@ -313,5 +313,29 @@ def _v304_suite():
     row('spool/unique-work', spool_work)
     row('spool/boundary', lambda: module_boundary('control_space_spool', ('replay',)))
 
+    def service_work():
+        import ast
+        import contextlib
+        import os
+        from types import SimpleNamespace
+        source = (ROOT / '.veldo/control_service.py').read_text()
+        serve = next(node for node in ast.parse(source).body if isinstance(node, ast.FunctionDef) and node.name == 'serve')
+        block = next(node.finalbody for node in ast.walk(serve) if isinstance(node, ast.Try) and any(
+            isinstance(call, ast.Call) and ast.unparse(call.func) == 'listener.close'
+            for statement in node.finalbody for call in ast.walk(statement)))
+        with tempfile.TemporaryDirectory(prefix='v304-service-') as temporary:
+            path = Path(temporary) / 'socket'
+            path.write_bytes(b'work now at the socket path\n')
+            closed = []
+            # Execute the production shutdown block. No service or host socket is started.
+            exec(compile(ast.Module(body=block, type_ignores=[]), '<service shutdown>', 'exec'),
+                 {'notify': lambda message: None, 'listener': SimpleNamespace(close=lambda: closed.append(True)),
+                  'service': SimpleNamespace(channel=None), 'contextlib': contextlib, 'os': os,
+                  'config': {'socket': str(path)}, 'inode': path.stat().st_ino})
+            assert closed == [True] and path.read_bytes() == b'work now at the socket path\n'
+
+    row('service/unique-work', service_work)
+    row('service/boundary', lambda: module_boundary('control_service', ('serve',)))
+
 
 _v304_suite()

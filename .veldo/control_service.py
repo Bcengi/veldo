@@ -4043,7 +4043,6 @@ def serve(config_path):
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})
             listener = CC.bind(config['socket'])
-            inode = os.stat(config['socket']).st_ino
             # VELDO-0161: read once more now the socket is bound. An adoption that wrote its record after the
             # read above handed it over before there was a socket (refused, authority_unavailable); from here
             # on a hand-off waits in the backlog and is answered, so no record falls between the two.
@@ -4109,9 +4108,7 @@ def serve(config_path):
             finally:
                 notify('STOPPING=1')
                 listener.close()
-                with contextlib.suppress(OSError):
-                    if os.stat(config['socket']).st_ino == inode:
-                        os.unlink(config['socket'])
+                # Keep the pathname at shutdown. The next locked bind owns stale socket replacement.
                 if service.channel is not None:
                     with contextlib.suppress(Exception):
                         service.channel.close()
