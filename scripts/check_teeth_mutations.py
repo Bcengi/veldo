@@ -14453,6 +14453,14 @@ def cases():
     verdict337('space337-reconcile-sends-again', 'dispatch.py',
                "            and not (lost and (item.get('due') or {}).get('event') == 'verdict_recorded'))\n",
                "            )\n", ['ac1/lost-send-reconciled'])
+    # Accepted re-review: hold the authority scope filter and the adoption-only ends refusal.
+    verdict337('space337-reconcile-foreign-scope', 'dispatch.py',
+               '            if record.get("domain") != self.domain or record.get("repository") != self.repository:\n'
+               '                continue\n', '', ['ac1/reconcile-domain-and-repository'])
+    verdict337('space337-adopt-accepts-ends', 'control_space.py',
+               '            if (adopted or not isinstance(ends, (list, tuple)) or not ends\n',
+               '            if (not isinstance(ends, (list, tuple)) or not ends\n',
+               ['ac1/adopt-refuses-ends'])
 
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the
