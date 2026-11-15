@@ -27,3 +27,29 @@ git diff with the check option: no whitespace errors.
 
 Not run: ./scripts/verify.sh, the heavy suites, suite 86_veldo_0127, the teeth stage, policy_check.py.
 The lead owns the full gate and landing. Captures were not changed.
+
+Fix round after the review, 2026-11-15 (commit 147fe207)
+
+python3 scripts/selftest.py with the suite selector, each a partial run:
+153_veldo_0323_hook_events: 38 ticket rows passed; 64 checks including the shared preamble; 0 failed.
+132_veldo_0297_space_ledger: 31 ticket rows passed.
+133_veldo_0326_space_principals: 30 ticket rows passed.
+139_veldo_0301_space_signal: 18 ticket rows passed.
+148_veldo_0311_git_hooks: 31 ticket rows passed.
+149_veldo_0312_ticket_ended: 41 ticket rows passed.
+
+python3 scripts/check_teeth_mutations.py --finding 323 --jobs 4:
+mutations: passed registered=13 executed=13 reused=0 rejected=13 workers=23 elapsed=198.333s
+The first run of the stage in this round, with eight workers, failed its baseline: the host was under
+heavy load from other runs and the suite's own waits (10 and 30 seconds) ran out. The waits now follow
+the child's state. One run of a single case then had its no-op control red on ac3/one-worker for the
+same reason, before that change. The run recorded above is the one after it.
+
+python3 proof/VELDO-0323/run_falsifiers.py: see the last line of this file.
+
+Fast checks, each exit 0: bash scripts/check_template_sync.sh; bash scripts/check_lint.sh;
+git diff with the check option.
+
+Not run: ./scripts/verify.sh, policy_check.py, suite 151, suite 86_veldo_0127, the teeth stage for any
+other finding.
+python3 proof/VELDO-0323/run_falsifiers.py: 13 mutations applied in-process, 13 rejected, no exceptions, exit 0.
