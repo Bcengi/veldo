@@ -15,6 +15,7 @@ footprint:
   - "engine/scripts/gate_legs.py"
   - "scripts/gate_legs.py"
   - "scripts/suites/*_veldo_0333_*.py"
+  - "scripts/suites/111_veldo_0214_first_use_budget.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -92,5 +93,10 @@ The owner's recorded approval, bound to the commit and the proof, is required.
 
 ## History
 
+- 2026-11-15: build footprint includes the existing VELDO-0214 budget suite: its timing-store row
+  expected age removal of an old live-checkout file and a pending file. Those two expectations now
+  require retention, with the missing-checkout and keep checks preserved. Its registered keep
+  falsifier follows the simplified condition. No acceptance criterion changed. The missing-checkout
+  probe uses stat and accepts only FileNotFoundError as absence; an unreadable checkout stays.
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.

@@ -11621,8 +11621,8 @@ def cases():
     result[-1]['dir'] = 'scripts'
     # Round 3 (review F7): prune_times no longer spares the file it is told to keep.
     add(214, 'budget214-keep-not-spared', suite214, 'gate_legs.py',
-        "        if entry.name == Path(keep).name or not (TIMES_NAME.match(entry.name)\n",
-        "        if not (TIMES_NAME.match(entry.name)\n",
+        "        if entry.name == Path(keep).name or not TIMES_NAME.match(entry.name):\n",
+        "        if not TIMES_NAME.match(entry.name):\n",
         ['first-use-budget/leg-time-store-pruned'])
     result[-1]['dir'] = 'scripts'
 
@@ -15119,6 +15119,29 @@ def cases():
            "            ledger.gone(made[\"item\"], principal=sp.RUNNER)\n"
            "            raise RuntimeError(\"the scratch folder could not be made (%s): its item %s stays declared, for \"\n",
            ['fix6/scratch-not-made'])
+
+    # VELDO-0333: no age removal; missing-checkout cleanup and read freshness remain.
+    suite333 = '153_veldo_0333_leg_time_store.py'
+    time333 = "            if not entry.is_file(follow_symlinks=False):\n                continue\n"
+    aged333 = (time333 +
+               "            if entry.stat(follow_symlinks=False).st_mtime < time.time() - 30 * 86400:\n"
+               "                os.unlink(entry.path)\n"
+               "                removed.append(entry.name)\n"
+               "                continue\n")
+    add(333, 'space333-age-branch-retained', suite333, 'gate_legs.py', time333, aged333,
+        ['ac1/old-live-file-stays'])
+    result[-1]['dir'] = 'engine/scripts'
+    add(333, 'space333-pruning-dropped', suite333, 'gate_legs.py',
+        'def prune_times(times, keep):\n', 'def prune_times(times, keep):\n    return []\n',
+        ['ac2/missing-checkout-removed'])
+    result[-1]['dir'] = 'scripts'
+    add(333, 'space333-synced-copy-still-ages', suite333, 'gate_legs.py', time333, aged333,
+        ['ac3/canon', 'ac3/no-clock-or-file-time'])
+    result[-1]['dir'] = 'scripts'
+    add(333, 'space333-read-bound-dropped', suite333, 'gate_legs.py',
+        'RESOURCE_READ_MAX_AGE_DAYS = 30\n', '', ['ac4/read-age-bound'],
+        also=[(' or time.time() - path.stat().st_mtime > RESOURCE_READ_MAX_AGE_DAYS * 86400:', ':')])
+    result[-1]['dir'] = 'scripts'
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

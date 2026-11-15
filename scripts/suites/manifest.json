@@ -2068,6 +2068,15 @@
    ],
    "regions": "VELDO-0324 batch discard through Signal; recorded sandbox scratch declarations and run ending; no age deletion; standalone launch cleanup; planted work and owner Keep.",
    "requires_note": "Only ROOT and expect. Real git, files, journal and owner enrollment. Supplied ledger; fixture process table with a real open-file holder; no real engines or confined command. Act prerequisites and the future batch lifecycle are explicit fixture stand-ins."
+  },
+  {
+   "name": "153_veldo_0333_leg_time_store",
+   "file": "153_veldo_0333_leg_time_store.py",
+   "requires": [
+    "153_veldo_0333_leg_time_store"
+   ],
+   "regions": "VELDO-0333 AC1 to AC4: both timing writers retain old live-checkout files, remove only missing-checkout files and spare the file just written; direct pruning always spares keep, leaves pending, foreign and unreadable files alone, reads no clock or timing-file time, and describes only missing checkouts. Both production copies agree. Resource reads accept 29 and 30 day measurements, ignore 31 day measurements and retain every file, with a read-named constant.",
+   "requires_note": "Only ROOT and expect. Real production modules, temporary stores and checkout directories, both recording entry points and direct pruning. The resource clock is fixed; pruning clock and directory-entry stat are refusing stand-ins. A checkout stat raises PermissionError to prove that unreadable is not absent. No host store or gate stage is used."
   }
  ],
  "resource_capacities": {
