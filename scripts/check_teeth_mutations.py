@@ -14673,6 +14673,26 @@ def cases():
     # four declared falsifiers: the assignment's close is left unwired; project ended is sent for
     # complete only; the event is decided inside the transition, from the record as it is signed,
     # before the commit; a worktree unchanged for 30 days is sent worktree abandoned.
+    space314 = '153_veldo_0314_session_hooks.py'
+    add(314, 'space314-record-at-end-only', space314, 'control_space_spool.py',
+        "        pid = os.getppid() if pid is None else pid\n",
+        "        if kind == 'session_started':\n            return 0\n"
+        "        pid = os.getppid() if pid is None else pid\n", ['ac1/start-owns-scratch'])
+    add(314, 'space314-drop-no-project', space314, 'control_space_spool.py',
+        "            if declaration.get('item') is None:\n",
+        "            if declaration.get('declare', {}).get('owner', {}).get('scope') == {'type': 'no_project'}:\n"
+        "                return result('nothing', 'no project')\n"
+        "            if declaration.get('item') is None:\n", ['ac2/no-project'])
+    add(314, 'space314-remove-inside-hook', space314, 'control_space_spool.py',
+        "        submit(one, state_root, installation)\n",
+        "        submit(one, state_root, installation)\n"
+        "        if kind == 'session_ended':\n            __import__('shutil').rmtree(payload['cwd'])\n",
+        ['ac3/end-returns-with-removers-held'])
+    add(314, 'space314-failure-reaches-client', space314, 'control_space_spool.py',
+        "        submit(one, state_root, installation)\n",
+        "        if submit(one, state_root, installation).get('pending'):\n            return 1\n",
+        ['ac4/down-starts-and-spools'])
+
     space312 = '149_veldo_0312_ticket_ended.py'
 
     def ended312(name, old, new, rows, also=()):

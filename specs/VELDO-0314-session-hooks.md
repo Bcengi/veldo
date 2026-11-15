@@ -92,6 +92,20 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: built the session notification hooks and extended the existing spool. New session
+  declarations use the first configured scratch root and its session pattern; working_folder in
+  that pattern is the UTF-8 hex encoding of the absolute working folder, so distinct folders do
+  not alias. Session ids are single safe path components. The declaration precedes creation;
+  existing unrecorded folders are refused, including on delayed replay. The hook creates no folder
+  of scratch and sends no Signal. It records the exec hook's parent process and kernel start ticks.
+  The installer must supply VELDO_SPACE_STATE_ROOT and either veldo on PATH or VELDO_SPACE_CLI;
+  installation in client account folders remains VELDO-0329. The event CLI also accepts a state root,
+  working folder, process identity and creator; its fallback spool is under the user's XDG state
+  folder, in veldo. Released entries preserve the creator name, default record, for VELDO-0335.
+  VELDO-0323 still owns the event command, service wiring and consumer: with today's ledger, a
+  session start declares its scratch when the authority can be reached and retains the event as
+  waiting. The suite's event receiver is explicitly a stand-in. The builder ran targeted rows and
+  four manual falsifiers, not the full gate or the teeth driver. No acceptance criterion changed.
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
 - 2026-11-14: footprint widened, from the review of VELDO-0313 (the lead's question 3). No code is

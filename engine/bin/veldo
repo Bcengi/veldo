@@ -1648,8 +1648,11 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     nothing sent: an unknown type (space_unknown_event:<type>), and for every path it names a path
     outside every known root (space_outside_roots) or on the protect list (space_protected:<entry>).
     A Ledger that has no event command yet answers space_no_command:space_event: the event is then
-    not recorded, nothing becomes due, and the verb says so. Exit 0 with the Ledger's answer on
-    standard output, 1 for a refusal; with no ledger it says why and exits 0."""
+    retained in the spool, nothing becomes due, and the verb says so. Exit 0 with the Ledger's answer
+    on standard output, 1 for a refusal. With no ledger the notification is spooled and the verb exits
+    0. The state root is the option, VELDO_SPACE_STATE_ROOT, the wired ledger's root, or the user's
+    XDG state folder under veldo. Session fields include working-folder, pid and started (kernel ticks);
+    defaults describe the caller. Released records carry creator, default record, for the consumer."""
     import json
     import socket
     stdout, stderr = stdout or sys.stdout, stderr or sys.stderr
@@ -1660,10 +1663,49 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     parser.add_argument("--repository")
     parser.add_argument("--ref")
     parser.add_argument("--new")
+    parser.add_argument("--state-root")
+    parser.add_argument("--working-folder")
+    parser.add_argument("--pid", type=int)
+    parser.add_argument("--started", type=int)
+    parser.add_argument("--creator", default="record")
     args = parser.parse_args(list(rest))
+    env = os.environ if environ is None else environ
+    spool = _space_module("control_space_spool")
+
+    def notification(subject=None):
+        if args.kind in spool.SESSION_TYPES:
+            process = _space_process(args.pid or os.getppid())
+            if args.started is None and process is None:
+                raise ValueError("the session process could not be read")
+            one = spool.session_entry(args.kind, args.session, args.working_folder or os.getcwd(),
+                                      args.pid or os.getppid(), args.started or process["started"],
+                                      socket.gethostname() or "unknown")
+        elif args.kind == "released":
+            one = spool.entry(args.kind, {"paths": list(args.path), "creator": args.creator},
+                              "event", socket.gethostname() or "unknown")
+        else:
+            one = spool.entry(args.kind, subject or {"repository": args.repository, "ref": args.ref,
+                                                    "old": None, "new": args.new},
+                              "reference-transaction", socket.gethostname() or "unknown")
+        return one
+
+    def pending_event(subject=None):
+        # The socket and its consumer are separate tickets. Preserve the notification now.
+        state_root = args.state_root or env.get("VELDO_SPACE_STATE_ROOT")
+        if not state_root and space is not None:
+            state_root = space["ledger"].state_root
+        if not state_root:
+            base = env.get("XDG_STATE_HOME") or os.path.join(env.get("HOME") or os.path.expanduser("~"),
+                                                            ".local", "state")
+            state_root = os.path.join(base, "veldo")
+        return spool.submit(notification(subject), state_root, installation=env.get("VELDO_INSTALLATION"))
     space, why = _space_usable(space, why, environ)
     if space is None:
-        stderr.write("veldo space event: %s: nothing is recorded\n" % why)
+        try:
+            pending_event()
+            stderr.write("veldo space event: %s: event spooled\n" % why)
+        except Exception as error:
+            stderr.write("veldo space event: %s: could not spool (%s)\n" % (why, error))
         return 0
     sp, ledger = _space_module("control_space"), space["ledger"]
     if args.kind not in SPACE_EVENT_TYPES:
@@ -1697,11 +1739,27 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
         if not args.session or args.repository or args.ref or args.new:
             return _space_refused("event", stderr, "invalid_input:a session event names its session")
         subject = {"session": args.session, "paths": [sp.canonical_path(path) for path in args.path]}
-    answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(
-        args.kind, subject, {"verb": "event", "host": socket.gethostname() or "unknown"})
+    try:
+        subject = notification(subject)["subject"]
+    except (spool.Malformed, ValueError) as error:
+        return _space_refused("event", stderr, "invalid_input:" + str(error))
+    try:
+        answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(
+            args.kind, subject, {"verb": "event", "host": socket.gethostname() or "unknown"})
+    except Exception as error:
+        try:
+            pending_event(subject)
+            stderr.write("veldo space event: event spooled (%s)\n" % error)
+        except Exception as failure:
+            stderr.write("veldo space event: could not spool (%s)\n" % failure)
+        return 0
     if not answer.get("ok"):
         reason = str(answer.get("reason"))
         if reason.startswith("space_no_command:"):
+            try:
+                pending_event(subject)
+            except Exception as error:
+                stderr.write("veldo space event: could not spool (%s)\n" % error)
             stderr.write("veldo space event: not recorded (%s): nothing becomes due and nothing is removed\n"
                          % reason)
             stdout.write(json.dumps({"recorded": False, "reason": reason, "type": args.kind}, sort_keys=True) + "\n")
