@@ -93,6 +93,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: AC3 amended by lead decision 2026-11-15 (spec human_approval: required); the owner's
+  approval is asked together with this ticket's landing
+- 2026-11-15: fix round 2 adds the row safety/cli-emitter-released-only (the Ledger refuses the CLI
+  emitter for ref_changed and session_ended) with its registered falsifier, and rebuilds the proof.
 - 2026-11-15: lead decision, the decision request moves to VELDO-0318
 - 2026-11-15: review fix records the CLI emitter as verb event and refuses --force by name
   (invalid_input:force). Direct Ledger protection, repository-only releases, private branches and

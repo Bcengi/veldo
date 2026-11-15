@@ -15184,6 +15184,10 @@ def cases():
         "                self._admissible(item['kind'], item['locator'], name)\n",
         '                pass  # defect: no protection check at receipt\n',
         ['safety/ledger-protected-at-receipt'])
+    add(335, 'space335-cli-emitter-any-kind', released335, 'control_space.py',
+        "                        or (kind == 'released' and emitter.get('verb') == 'event'))):\n",
+        "                        or emitter.get('verb') == 'event')):  # defect: the CLI emitter for every kind\n",
+        ['safety/cli-emitter-released-only'])
     add(335, 'space335-repository-releases-child', released335, 'control_space_worker.py',
         "    elif kind in ('session_started', 'session_ended'):\n",
         "        chosen.update(child for child, item in items.items() if item.get('parent') in chosen)\n"

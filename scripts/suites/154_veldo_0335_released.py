@@ -417,6 +417,16 @@ def _v335_suite():
               and answer.get('reason') == 'space_protected:path:' + str(inner_path)
               and ledger.events() == before and (inner_path / 'draft').read_text() == 'protected work', answer)
 
+        # The CLI's own emitter stands for released only: no other kind is recorded from the verb.
+        for kind, subject in (('ref_changed', {'repository': str(repo), 'ref': 'refs/heads/main',
+                                               'old': tip, 'new': tip}),
+                              ('session_ended', {'session': 'cli-emitter', 'pid': os.getpid()})):
+            before = ledger.events()
+            answer = ledger.event(kind, subject, {'verb': 'event', 'host': ledger.host})
+            check('safety/cli-emitter-released-only', not answer['ok']
+                  and answer.get('reason') == 'invalid_input:emitter' and ledger.events() == before,
+                  (kind, answer))
+
         # Do not re-resolve a received observation after a later declaration takes its path.
         agent, agent_path, inner, inner_path = pair('identity')
         status, out, err = release([inner_path], wake=False)
