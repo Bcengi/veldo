@@ -301,6 +301,7 @@ def _v307_space_docker_ownership_suite():
 
             def container(self, context, name, labels=None, volumes=(), status='running', binds=()):
                 record = {'Id': '%064x' % (0xc000 + self._new()), 'Name': '/' + name, 'State': {'Status': status},
+                          'Image': 'sha256:' + 'f' * 64,
                           'Config': {'Labels': dict(labels or {})}, 'SizeRw': 0,
                           'Mounts': [{'Type': 'volume', 'Name': volume, 'Source': '', 'Destination': '/data'}
                                      for volume in volumes]
@@ -942,9 +943,10 @@ def _v307_space_docker_ownership_suite():
               and seen_default['protected'] == ['store/objects', 'tools/builder', 'tools/packer'])
         check(ROW, 'no image has a record: neither an item nor a proposal',
               not any(record.get('kind') == 'image_tag' for record in L.items().values()))
-        check(ROW, 'the engine was asked to list and to show its images, and nothing else [%s]'
+        check(ROW, 'the engine was asked only to list and inspect images and their containers [%s]'
               % sorted(set(LOG[log_before:])),
-              {entry[1:] for entry in LOG[log_before:]} == {('image', 'ls'), ('image', 'inspect')})
+              {entry[1:] for entry in LOG[log_before:]} == {('image', 'ls'), ('image', 'inspect'),
+                                                          ('container', 'ls'), ('container', 'inspect')})
         check(ROW, 'the names of an image: each tag and each digest name, and each repository without its tag '
               'or its digest',
               D.image_names({'RepoTags': ['registry.example:5000/store/objects:2024'],

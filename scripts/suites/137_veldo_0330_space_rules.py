@@ -231,6 +231,9 @@ def _v330_space_rules_suite():
                              if name in (record['Id'], record['Name'].lstrip('/'))]
                 else:
                     match = [DOCKER['objects'][(kind, name)]] if (kind, name) in DOCKER['objects'] else []
+                    if not match:
+                        match = [record for (object_kind, _name), record in DOCKER['objects'].items()
+                                 if object_kind == kind and record.get('Id') == name]
                 if not match:
                     return 1, 'Error response from daemon: No such %s: %s' % (kind, name)
                 found.extend(match)
@@ -993,7 +996,8 @@ def _v330_space_rules_suite():
         # AC2: a Docker name held by another object id
         ROW = 'ac2/docker-other-id'
         RUN = {'scope': A, 'run': {'id': 'run-docker', 'station': 'gate'}}
-        DOCKER['containers'] = [{'Id': 'c' * 64, 'Name': '/orchard-db-1', 'State': {'Status': 'exited'}, 'Mounts': []}]
+        DOCKER['containers'] = [{'Id': 'c' * 64, 'Name': '/orchard-db-1', 'State': {'Status': 'exited'}, 'Mounts': [],
+                                 'Image': 'sha256:' + 'a' * 64, 'NetworkSettings': {'Networks': {}}}]
         DOCKER['objects'] = {('image', 'orchard/app:run-docker'): {'Id': 'sha256:' + 'a' * 64},
                              ('volume', 'orchard_data'): {'Name': 'orchard_data'},
                              ('network', 'orchard_net'): {'Id': 'n' * 64}}
