@@ -247,5 +247,28 @@ def _v304_suite():
     row('lander/unique-work', lander_work)
     row('lander/boundary', lambda: module_boundary('lander', ('GitLandOps.discard',)))
 
+    def output_work(filename, operation):
+        module = load(filename, ROOT / 'scripts' / (filename + '.py'))
+        with tempfile.TemporaryDirectory(prefix='v304-output-') as temporary:
+            path = Path(temporary) / 'existing'
+            path.mkdir()
+            (path / 'unique').write_bytes(b'only existing output copy\n')
+            try:
+                operation(module, path)
+            except SystemExit:
+                pass
+            else:
+                raise AssertionError('existing output was not refused')
+            assert (path / 'unique').read_bytes() == b'only existing output copy\n'
+
+    def script_boundary(filename, functions):
+        path = 'scripts/' + filename + '.py'
+        errors = boundary.problems((ROOT / path).read_text(), path)
+        assert not [error for error in errors if any(function + ':' in error for function in functions)], errors
+
+    row('migration/unique-work', lambda: output_work('migrate_to_veldo', lambda module, path:
+                                                   module.build(path, {}, 'path', [])))
+    row('migration/boundary', lambda: script_boundary('migrate_to_veldo', ('build',)))
+
 
 _v304_suite()

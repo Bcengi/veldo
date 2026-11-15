@@ -68,5 +68,12 @@
   "row": "lander/boundary",
   "old": "            for path in paths:\n                if not space_absent(path):\n",
   "new": "            for path in paths:\n                shutil.rmtree(path)\n                if not space_absent(path):\n"
+ },
+ {
+  "name": "migration-direct-tree",
+  "path": "scripts/migrate_to_veldo.py",
+  "row": "migration/boundary",
+  "old": "        raise SystemExit(\"migration: destination exists; a recorded owner item is required for removal: %s\" % dest)",
+  "new": "        shutil.rmtree(dest)"
  }
 ]

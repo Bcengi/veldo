@@ -1,0 +1,18 @@
+{
+ "case": "migration-direct-tree",
+ "row": "migration/boundary",
+ "red": [
+  {
+   "row": "VELDO-0304 migration/unique-work",
+   "passed": false,
+   "detail": " es/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 269, in <lambda>\n    row('migration/unique-work', lambda: output_work('migrate_to_veldo', lambda module, path:\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 257, in output_work\n    operation(module, path)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 270, in <lambda>\n    module.build(path, {}, 'path', [])))\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-pzf1vi35/scripts/migrate_to_veldo.py\", line 130, in build\n    for rel in tracked_files():\n               ^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-pzf1vi35/scripts/migrate_to_veldo.py\", line 70, in tracked_files\n    out = _git_process.run([\"git\", \"-C\", str(ROOT), \"ls-files\", \"-z\"],\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-pzf1vi35/.veldo/git_process.py\", line 159, in run\n    return _invoke(subprocess.run, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-pzf1vi35/.veldo/git_process.py\", line 155, in _invoke\n    return invoke(args, **_options(args, kwargs, private_home))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['git', '-C', '/tmp/v304-mutation-pzf1vi35', 'ls-files', '-z']' returned non-zero exit status 128.\n"
+  },
+  {
+   "row": "VELDO-0304 migration/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 271, in <lambda>\n    row('migration/boundary', lambda: script_boundary('migrate_to_veldo', ('build',)))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 267, in script_boundary\n    assert not [error for error in errors if any(function + ':' in error for function in functions)], errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['scripts/migrate_to_veldo.py:128: build: remove:recursive folder outside its reviewed boundary']\n"
+  }
+ ],
+ "before": "2f7441949f4266ee070298e19b1bb72c92cef6d193f4d7a4c45bc6404df97234",
+ "after": "0770a0eeaeda77e9d0b3456955be5aa03f7feb6b2ec57b3a897ef4f11224d5ed"
+}

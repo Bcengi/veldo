@@ -125,7 +125,7 @@ def redact_path(rel, names):
 def build(dest, names, path_placeholder, deny):
     dest = Path(dest)
     if dest.exists():
-        shutil.rmtree(dest)
+        raise SystemExit("migration: destination exists; a recorded owner item is required for removal: %s" % dest)
     copied, redacted, withheld = 0, 0, []
     for rel in tracked_files():
         if rel == ".veldo/private_names.txt":
