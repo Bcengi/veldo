@@ -32,8 +32,8 @@ def _v328_images_suite():
         return module
 
     ROWS = ('ac1/two-tags', 'ac1/in-use', 'ac1/provenance', 'ac1/identity-changed',
-            'ac1/owner-keep', 'ac1/report-mode', 'ac2/pulled-kept', 'ac2/restart', 'ac2/pull-after-build',
-            'ac3/both-engines', 'ac3/other-name', 'safety/unread', 'safety/act-refused', 'images/canon')
+            'ac1/owner-keep', 'ac1/report-mode', 'ac1/untagged-parent', 'ac1/unknown-run', 'ac2/pulled-kept', 'ac2/restart', 'ac2/pull-after-build',
+            'ac3/both-engines', 'ac3/other-name', 'safety/unread', 'safety/option-name', 'safety/act-refused', 'images/canon')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -171,10 +171,11 @@ def _v328_images_suite():
                 self.unread = False
                 self.next_id = 0
 
-            def add(self, engine, tags, labels=None, used=False, identity=None):
+            def add(self, engine, tags, labels=None, used=False, identity=None, parent=''):
                 self.next_id += 1
                 image = {'Id': identity or 'sha256:%064x' % self.next_id, 'RepoTags': list(tags),
                          'RepoDigests': [], 'Config': {'Labels': labels or {}}, 'Size': 128,
+                         'Parent': parent,
                          'content': ('only-copy-image-%s' % self.next_id).encode(), 'used': used}
                 self.images[engine].append(image)
                 return image
@@ -198,7 +199,14 @@ def _v328_images_suite():
                     raise AssertionError('unexpected client command: ' + repr(argv))
                 if verb == 'ls':
                     return 0, '\n'.join(image['Id'] for image in self.images[engine])
-                if verb not in ('inspect', 'rm') or any(word.startswith('-') for word in words):
+                if verb not in ('inspect', 'rm'):
+                    raise AssertionError('unexpected image command: ' + repr(argv))
+                # The one option the remover may give is --no-prune, first. A name that starts with
+                # "-" is only recorded: the row reads the calls and finds it was never handed over.
+                prune = True
+                if verb == 'rm' and words[:1] == ['--no-prune']:
+                    prune, words = False, words[1:]
+                if verb == 'rm' and any(word.startswith('-') for word in words):
                     raise AssertionError('unexpected or forced image command: ' + repr(argv))
                 found = [self.find(engine, word) for word in words]
                 if not words or any(image is None for image in found):
@@ -215,9 +223,18 @@ def _v328_images_suite():
                     image['RepoTags'] = []
                 else:
                     image['RepoTags'].remove(name)
-                if not image['RepoTags']:
+                said = 'Untagged: ' + name
+                while not image['RepoTags']:
                     self.images[engine].remove(image)
-                return 0, 'Untagged: ' + name
+                    said += '\nDeleted: ' + image['Id']
+                    # The classic image store: without --no-prune the delete goes on to each
+                    # untagged parent that has no other child and no container.
+                    above = self.find(engine, image['Parent']) if prune and image['Parent'] else None
+                    if (above is None or above['RepoTags'] or above['used']
+                            or any(other['Parent'] == above['Id'] for other in self.images[engine])):
+                        break
+                    image = above
+                return 0, said
 
         E = Engine()
         owners = {
@@ -282,7 +299,7 @@ def _v328_images_suite():
                 check('ac1/two-tags', 'own tag removed and other ticket content survives ' + engine + ' ' + event,
                       ended.get('ok') and L.item(item)['state'] == 'removed' and E.find(engine, tag) is None
                       and E.find(engine, other)['content'] == planted
-                      and removals()[before:] == [(engine, 'image', 'rm', (tag,))]
+                      and removals()[before:] == [(engine, 'image', 'rm', ('--no-prune', tag))]
                       and at(engine, other)[1]['state'] == 'present')
 
         image = E.add('default', ['fixture/used:1'], used=True)
@@ -347,6 +364,46 @@ def _v328_images_suite():
         check('ac1/report-mode', 'report mode records due and removes nothing',
               L.item(item)['state'] == 'due' and len(removals()) == before
               and E.find('default', 'fixture/report:1')['content'] == image['content'])
+
+        for engine in CONTEXTS:
+            # A classic build FROM an untagged image Veldo did not build: a docker commit result.
+            parent = E.add(engine, [])
+            image = E.add(engine, ['fixture/on-commit:1'], parent=parent['Id'])
+            planted = parent['content']
+            result = adapter.built(engine, 'fixture/on-commit:1', 'build-a', image['Id'])
+            held = at(engine, 'fixture/on-commit:1')
+            check('ac1/untagged-parent', 'the built tag is recorded and its parent is not, on ' + engine,
+                  result == 'adopted' and held is not None and at(engine, parent['Id']) is None)
+            if held is None:
+                continue
+            before = len(removals())
+            ended = signal('ticket_ended', owners['build-a'], [held[0]])
+            check('ac1/untagged-parent', 'the untagged parent Veldo did not build survives on ' + engine,
+                  (E.find(engine, parent['Id']) or {}).get('content') == planted)
+            check('ac1/untagged-parent', 'the tag goes by a remove that names it and prunes nothing, on ' + engine,
+                  ended.get('ok') and L.item(held[0])['state'] == 'removed'
+                  and E.find(engine, 'fixture/on-commit:1') is None
+                  and removals()[before:] == [(engine, 'image', 'rm', ('--no-prune', 'fixture/on-commit:1'))])
+
+        for engine in CONTEXTS:
+            # No label on the image, so nothing but the run's own name stands between it and an owner.
+            image = E.add(engine, ['fixture/unknown-run:1'])
+            size = journal_size()
+            check('ac1/unknown-run', 'an unlabelled image built for an unknown run is refused on ' + engine,
+                  adapter.built(engine, 'fixture/unknown-run:1', 'unknown', image['Id']) == 'refused')
+            check('ac1/unknown-run', 'it has no item and no owner on ' + engine,
+                  at(engine, 'fixture/unknown-run:1') is None and journal_size() == size)
+            before = len(removals())
+            for known in ('build-a', 'build-b', 'report-run'):
+                # Whatever item names this tag is ended for each known run; there must be none.
+                signal('ticket_ended', owners[known],
+                       [found for found, record in L.items().items()
+                        if record['locator'].get('engine') == engine
+                        and record['locator'].get('name') == 'fixture/unknown-run:1'
+                        and record.get('owner') == owners[known]])
+            check('ac1/unknown-run', 'it is kept when every known ticket ends, on ' + engine,
+                  len(removals()) == before
+                  and (E.find(engine, 'fixture/unknown-run:1') or {}).get('content') == image['content'])
 
         check('ac2/pulled-kept', 'subscription includes image events',
               'type=image' in D.events_argv('default'))
@@ -444,11 +501,62 @@ def _v328_images_suite():
             def items(self):
                 raise OSError('fixture ledger read failure')
 
+            def __getattr__(self, name):
+                return getattr(L, name)  # everything but the pull inventory reads as it does in service
+
+        # With a reader of free space the removal goes as far as the pulled-image check: the same
+        # call on the read ledger removes a twin tag, so only the unread inventory stops this one.
+        twin = E.add('default', ['fixture/ledger-read:1'])
+        adapter.built('default', 'fixture/ledger-read:1', 'build-a', twin['Id'])
+        twin_item, twin_record = at('default', 'fixture/ledger-read:1')
+        reached = RM.remove(L, P, twin_item, twin_record, action='remove_tag', run=E.client,
+                            free=lambda pool: 1000000)
+        check('safety/unread', 'the same removal on a read ledger passes the pulled-image check',
+              reached.get('ok') is True and E.find('default', 'fixture/ledger-read:1') is None)
         before = len(removals())
-        result = RM.remove(UnreadLedger(), P, item, record, action='remove_tag', run=E.client)
+        raised = result = None
+        try:
+            result = RM.remove(UnreadLedger(), P, item, record, action='remove_tag', run=E.client,
+                               free=lambda pool: 1000000)
+        except OSError as error:
+            raised = error
         check('safety/unread', 'an unread pull inventory refuses removal',
-              not result.get('ok') and len(removals()) == before
-              and E.find('default', 'fixture/ledger-unread:1')['content'] == image['content'])
+              raised is not None and result is None and len(removals()) == before
+              and (E.find('default', 'fixture/ledger-unread:1') or {}).get('content') == image['content'])
+        ended = signal('ticket_ended', owners['build-a'], [twin_item])  # leaves the twin's record settled
+        real_items = L.items
+        current = version(item)
+        try:
+            L.items = UnreadLedger().items
+            try:
+                ended = SIG.signal(L, 'ticket_ended', {'items': [{'item': item, 'version': current}]},
+                                   probe=P, kinds=K, remover=RM,
+                                   emitter={'process': 'image-fixture', 'pid': os.getpid()},
+                                   owner_live=lambda owner: {'conclusive': True, 'group_empty': True},
+                                   free=lambda pool: 1000000, keep=lambda item, record: KP.keep(L, item, record),
+                                   run=E.client, proc=str(PROC))
+            except OSError:
+                ended = None
+        finally:
+            L.items = real_items
+        check('safety/unread', 'through Signal the unread inventory removes nothing and the item is not removed',
+              len(removals()) == before and L.item(item)['state'] != 'removed'
+              and (E.find('default', 'fixture/ledger-unread:1') or {}).get('content') == image['content'])
+
+        for engine in CONTEXTS:
+            # Images that really carry such names, so only the adapter's refusal keeps them from the client.
+            for name in ('--force', '-f', '--no-prune'):
+                image = E.add(engine, [name])
+                size, calls = journal_size(), len(E.calls)
+                check('safety/option-name', 'a build named %s is refused on %s' % (name, engine),
+                      adapter.built(engine, name, 'build-a', image['Id']) == 'refused')
+                check('safety/option-name', 'a pull named %s is refused on %s' % (name, engine),
+                      adapter.pulled(engine, name) == 'refused')
+                check('safety/option-name', '%s never reaches the client and no record is written on %s'
+                      % (name, engine),
+                      E.calls[calls:] == [] and journal_size() == size and at(engine, name) is None
+                      and at(engine, image['Id']) is None)
+                E.images[engine].remove(image)
         L.act_checks = {}
         command = dict(mode_command, command_id='mode-2', nonce='mode-nonce-2',
                        parameters={'scope': B, 'mode': 'act'})

@@ -416,7 +416,8 @@ def _v300_space_remove_suite():
                        for word in argv)
 
         def pruning(argv):
-            return any('prune' in word for word in argv[:6])
+            # --no-prune is the option that forbids a prune (VELDO-0328): it is not one.
+            return any('prune' in word and word != '--no-prune' for word in argv[:6])
 
         def declared(kind, locator, owner=None, **more):
             made = L.declare(kind, locator, owner or OWNER, 'seam', **more)
@@ -1133,7 +1134,7 @@ def _v300_space_remove_suite():
         check(ROW, 'the engine was told: stop, then remove the container; remove the network, the volume, the tag [%s]'
               % tools, tools == [['container', 'stop', 'a' * 64], ['container', 'rm', 'a' * 64],
                                  ['network', 'rm', 'a' * 12], ['volume', 'rm', 'run7_data_a'],
-                                 ['image', 'rm', 'run7/app:a']])
+                                 ['image', 'rm', '--no-prune', 'run7/app:a']])
         item, path = scratch('plain')
         answers['scratch'] = drive(item)
         item, path = scratch('made', kind='build_output', root=BUILD)
@@ -1164,7 +1165,9 @@ def _v300_space_remove_suite():
               forced(['git', '-C', '/r', 'worktree', 'remove', '--force', '/w'])
               and forced(['docker', '--context', 'default', 'volume', 'rm', '-f', 'v'])
               and pruning(['docker', '--context', 'default', 'volume', 'prune'])
-              and pruning(['git', '-C', '/r', 'worktree', 'prune']))
+              and pruning(['git', '-C', '/r', 'worktree', 'prune'])
+              and pruning(['docker', '--context', 'default', 'image', 'prune'])
+              and not pruning(['docker', '--context', 'default', 'image', 'rm', '--no-prune', 'a:1']))
         tree = ast.parse(PRODUCTION['control_space_remove.py'].read_text())
         documents = {id(node.body[0].value) for node in ast.walk(tree)
                      if isinstance(node, (ast.Module, ast.FunctionDef, ast.ClassDef)) and node.body
@@ -1172,7 +1175,8 @@ def _v300_space_remove_suite():
         words = [node.value for node in ast.walk(tree) if isinstance(node, ast.Constant)
                  and isinstance(node.value, str) and id(node) not in documents]
         check(ROW, 'the source holds no prune, no clean and no force option as a string',
-              words and not [word for word in words if 'prune' in word or word in ('clean', '-f', '--force', '-ff')
+              words and not [word for word in words if ('prune' in word and word != '--no-prune')
+                             or word in ('clean', '-f', '--force', '-ff')
                              or word.startswith('--force')])
 
         boundary_check = load('v300_check_git_boundary', ROOT / 'scripts' / 'check_git_boundary.py')

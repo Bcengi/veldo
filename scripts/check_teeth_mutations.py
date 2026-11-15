@@ -15172,8 +15172,8 @@ def cases():
             result[-1]['companions'] = ['git_process.py']
 
     images328('space328-remove-by-image-id',
-              "                       (('image', 'rm', '$name'),))\n",
-              "                       (('image', 'rm', '$id'),))\n",
+              "                       (('image', 'rm', '--no-prune', '$name'),))\n",
+              "                       (('image', 'rm', '--no-prune', '$id'),))\n",
               ['ac1/two-tags'], module='control_space_remove.py')
     images328('space328-pull-owned-by-run',
               "        wrote = self.ledger.report('image_tag', locator, found, pool=self.pool)\n",
@@ -15210,6 +15210,33 @@ def cases():
               "                            list(self.ledger.protect or ()))\n",
               "        entry, by = covered(engine, 'image', [name], labels_of('image', shown),\n"
               "                            list(self.ledger.protect or ()))\n", ['ac3/other-name'])
+    # Review round 1: the remove that prunes untagged parents, the pull inventory that fails open,
+    # the unknown run that borrows an owner, and the name the client would read as an option.
+    images328('space328-remove-prunes-parents',
+              "                       (('image', 'rm', '--no-prune', '$name'),))\n",
+              "                       (('image', 'rm', '$name'),))\n",
+              ['ac1/untagged-parent'], module='control_space_remove.py')
+    images328('space328-pull-inventory-fails-open',
+              "    for record in ledger.items().values():\n"
+              "        where = record.get('locator') or {}\n"
+              "        found = (record.get('report') or {}).get('found') or {}\n",
+              "    try:\n"
+              "        listed = list(ledger.items().values())\n"
+              "    except OSError:\n"
+              "        return False\n"
+              "    for record in listed:\n"
+              "        where = record.get('locator') or {}\n"
+              "        found = (record.get('report') or {}).get('found') or {}\n",
+              ['safety/unread'], module='control_space_remove.py')
+    images328('space328-unknown-run-borrows-owner',
+              "        owner = runs.get(label) if runs is not None else None\n",
+              "        owner = ((runs.get(label) or next(iter(runs.values()), None))\n"
+              "                 if runs is not None else None)\n",
+              ['ac1/unknown-run'])
+    images328('space328-option-name-passes',
+              "        if engine not in self.engines or not _text(name) or name.startswith('-'):\n",
+              "        if engine not in self.engines or not _text(name):\n",
+              ['safety/option-name'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
