@@ -106,6 +106,18 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   session start declares its scratch when the authority can be reached and retains the event as
   waiting. The suite's event receiver is explicitly a stand-in. The builder ran targeted rows and
   four manual falsifiers, not the full gate or the teeth driver. No acceptance criterion changed.
+- 2026-11-15, fix round 2, from the re-review (verdict FIX, one finding). No acceptance criterion
+  changed. `veldo space event` that cannot spool no longer leaves only a line on standard error: it
+  runs the hook's chain. What is no entry (an invalid session id) is written whole under refused/
+  with why. A spool folder that is refused is noted beside it and the entry is spooled under the
+  XDG fallback; a state root that cannot be written is passed over for the same fallback. When no
+  root takes it, one line with the verb's arguments and why is appended to
+  space-session.unspooled.jsonl under the first root that can be written. The verb still exits 0 and
+  still says so on standard error, now naming what was kept. Left: when neither root can be written
+  at all, nothing can be recorded and the line on standard error is all there is. Rows
+  round2/cli-unwritable-root, round2/cli-invalid-refused and round2/cli-unsafe-folder; four
+  falsifiers registered for finding 314, one for each link of the chain (the note and the fallback
+  are two). The "known and left" of the entry below is closed by this one.
 - 2026-11-15, fix round, from the review of the build (verdict FIX, six findings). No acceptance
   criterion changed. No notification is dropped without a record. (1) The suite's latch is two files
   in its own temporary folder and its child is a plain fork: no semaphore, so the row runs in the

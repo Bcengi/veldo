@@ -1701,15 +1701,40 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
         return one
 
     def pending_event(subject=None):
-        # The socket and its consumer are separate tickets. Preserve the notification now.
+        """Preserve the notification now (the socket and its consumer are separate tickets). The
+        hook's chain, so no failure is left on stderr alone: what is no entry is written whole under
+        refused/ with why; a refused spool folder is noted beside it and the XDG fallback is the next
+        root; a root that cannot be written is passed over for the fallback; and when no root took
+        it one line is left in the unspooled file. Raises, naming what was kept, unless spooled."""
+        fallback = os.path.join(env.get("XDG_STATE_HOME") or os.path.join(
+            env.get("HOME") or os.path.expanduser("~"), ".local", "state"), "veldo")
         state_root = args.state_root or env.get("VELDO_SPACE_STATE_ROOT")
         if not state_root and space is not None:
             state_root = space["ledger"].state_root
-        if not state_root:
-            base = env.get("XDG_STATE_HOME") or os.path.join(env.get("HOME") or os.path.expanduser("~"),
-                                                            ".local", "state")
-            state_root = os.path.join(base, "veldo")
-        return spool.submit(notification(subject), state_root, installation=env.get("VELDO_INSTALLATION"))
+        state_root = state_root or fallback
+        roots = [state_root] + ([fallback] if fallback != state_root else [])
+        seen = {"type": args.kind, "argv": list(rest), "subject": subject, "pid": os.getpid()}
+        one = invalid = last = None
+        try:
+            one = notification(subject)
+        except Exception as error:
+            invalid = "space_event_invalid:" + (str(error) or type(error).__name__)
+        for root in roots:
+            try:
+                if one is not None:
+                    return spool.submit(one, root, installation=env.get("VELDO_INSTALLATION"))
+                spool.refuse(root, seen, invalid)
+                kept = "the notification is kept under " + os.path.join(spool.spool_folder(root), spool.REFUSED)
+                break
+            except spool.Unsafe as error:
+                spool.note_refused_folder(root, str(error))
+                last = error
+            except (spool.Malformed, OSError) as error:
+                last = error
+        else:
+            reason = "; ".join(str(part) for part in (invalid, last) if part) or "no state root"
+            kept = "one line is left in " + spool.unspooled(roots, dict(seen, reason=reason))
+        raise ValueError("%s: %s" % (invalid or last, kept))
 
     def unrecorded_paths():
         if args.kind in spool.SESSION_TYPES and args.path:
