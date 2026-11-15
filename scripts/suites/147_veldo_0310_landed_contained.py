@@ -762,7 +762,7 @@ def _v310_suite():
               % (state_of(image), ENGINE['image']), state_of(image) == 'removed' and not ENGINE['image'])
         check(R, 'by the engine\'s image remove on the tag, with no force option [%s]'
               % [ran for ran in engine_ran if ran[:2] == ['image', 'rm']],
-              [ran for ran in engine_ran if ran[:2] == ['image', 'rm']] == [['image', 'rm', 'orchard/u1:a']])
+              [ran for ran in engine_ran if ran[:2] == ['image', 'rm']] == [['image', 'rm', '--no-prune', 'orchard/u1:a']])
         check(R, 'the record names it removed', len(of(done.get('removed') or [], item=image)) == 1)
 
         R = 'ac2/record-joined-to-receipt'

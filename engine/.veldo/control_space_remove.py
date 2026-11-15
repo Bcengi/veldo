@@ -917,7 +917,8 @@ def _pulled_image(ledger, locator):
     """A pull can follow a build. Its durable kept report holds the image on this engine.
 
     Read the ledger at removal, including after adapter or service restart. An unread ledger raises
-    into the remover's refusal; a built tag never takes the only copy of a subsequently pulled image.
+    out of remove() and nothing is removed; Signal defers the item. A built tag never takes the only
+    copy of a subsequently pulled image.
     """
     for record in ledger.items().values():
         where = record.get('locator') or {}
@@ -962,8 +963,10 @@ def _docker(method, needs, show, size, steps):
 
 _r_container = _docker('engine_stop_then_remove', ('id',), ('container', 'inspect', '--size', '$id'), _size_container,
                        (('container', 'stop', '$id'), ('container', 'rm', '$id')))
+# --no-prune: the engine removes the tag and nothing else. Without it a classic image store also
+# deletes the image's untagged parents, which Veldo did not build.
 _r_image_tag = _docker('engine_image_remove', ('name',), ('image', 'inspect', '$name'), _size_image,
-                       (('image', 'rm', '$name'),))
+                       (('image', 'rm', '--no-prune', '$name'),))
 _r_volume = _docker('engine_volume_remove', ('name',), ('volume', 'inspect', '$name'), _size_volume,
                     (('volume', 'rm', '$name'),))
 _r_network = _docker('engine_network_remove', ('id',), ('network', 'inspect', '$id'), _size_network,

@@ -17,6 +17,8 @@ footprint:
   - "engine/.veldo/control_space_remove.py"
   - ".veldo/control_space_remove.py"
   - "scripts/suites/*_veldo_0328_*.py"
+  - "scripts/suites/138_veldo_0300_space_remove.py"
+  - "scripts/suites/147_veldo_0310_landed_contained.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -102,3 +104,21 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   the other ticket's planted content survives. No acceptance criterion was changed.
 - Targeted checks only. The lead runs `./scripts/verify.sh` through the gate lock. The existing
   VELDO-0127 captures, policy check, real engines and protected host data were not touched.
+
+- 2026-11-15, fix round after review (verdict FIX, three findings). No acceptance criterion was changed.
+  1. The image remover now runs `image rm --no-prune <tag>`. Without the option a classic image store
+     deletes, with a build's last tag, the image's untagged parents that have no other child: an image
+     Veldo did not build, a `docker commit` result for example. Row ac1/untagged-parent: such a parent
+     and its planted content survive the removal on both engines. The stand-in engine now prunes as the
+     classic store does unless it is given exactly that option.
+  2. The row "an unread pull inventory refuses removal" gave no reader of free space, so the removal was
+     refused before the pulled-image check and the row proved nothing. It now gives one, shows the same
+     call on a read ledger removing a twin tag, and holds that the unread inventory raises out of
+     remove() with nothing removed; a second check drives it through Signal. The docstring of
+     `_pulled_image` said the error became the remover's refusal; it raises out of remove(), and now
+     says so.
+  3. Rows ac1/unknown-run (an unlabelled image built for an unknown run gets no item and is kept) and
+     safety/option-name (a name starting with "-" is refused before the client is called).
+  Four cases are registered for finding 328, one per row above. The footprint adds two suites, each for
+  the one assertion that reads the remover's exact command: 138 (VELDO-0300), whose reading of a prune
+  command and of the source's strings now tells `--no-prune` from a prune, and 147 (VELDO-0310).
