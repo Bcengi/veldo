@@ -15079,6 +15079,13 @@ def cases():
            "        if before == after and read and len(read) == before[2] - before[1]:\n",
            "        if before == after and len(read) == before[2] - before[1]:\n",
            ['fix3/environment-not-whole-holds'])
+    # The review of that fix, finding 1: what the process is not compared, alone. A process that
+    # shares its parent's memory and executes between the open of environ and the read is read as
+    # its parent.
+    run313('space313-identity-not-compared',
+           "        if before == after and read and len(read) == before[2] - before[1]:\n",
+           "        if True and read and len(read) == before[2] - before[1]:\n",
+           ['fix3/same-program-holds'])
     run313('space313-supervisor-keeps-the-callers-output',
            "    if seen[\"holders\"]:\n        _space_let_go()\n", "",
            ['fix2/captured-output-ends-at-return'])

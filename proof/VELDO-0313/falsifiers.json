@@ -863,5 +863,29 @@
   "red_as_expected": true,
   "commit": "d2e00c364f520504a19a85f9872076b28e7140ad",
   "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-identity-not-compared",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": "the review of VELDO-0344's fix, finding 1",
+  "fix_round": 5,
+  "expected_red": [
+   "fix3/same-program-holds"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix3/same-program-holds"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix3/same-program-holds",
+    "a process that shares its parent's memory and executes a program with the run's label between the scan's open of its environ entry and the read: a descriptor opened before the execution returns the parent's environment, which has no label, and the scan does not take that for the process's own: it reads once more and the process holds the run by its label [[] ['/proc/111/environ', 'executed']; before the execution: b'OTHER=value\\x00']"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "the working tree above 1bb8934d573cd8615b299694f5efac10b7ddb9ab; bin/veldo is as it is at that commit",
+  "applied": "once, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313 and the case's name) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  }
 ]

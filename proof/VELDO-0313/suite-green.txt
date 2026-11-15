@@ -23,3 +23,15 @@
 148_veldo_0311_git_hooks: 57 passed, 0 failed (31 rows)
 # By hand, 3000 plain reads of the environ entry of a process that carries the label and executes itself again without end (a shell script, exec "$0"): 355 came back without the label. Through _space_holders, 150 reads of the same kind of process: label 142, unread 8, missing 0.
 # 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is). 133, 143, 146 and 101 were not run in this round.
+# 2026-11-15, the accepted limit put to the proof and the comparison of what a process is (the review of VELDO-0344's fix), on the working tree above 1bb8934d573c; suite 151 and one case only, bin/veldo unchanged. Partial runs, not the gate.
+# Suite 151 in a process table of its own (python3 -I -S scripts/gate_candidate.py with the root, then python3 scripts/selftest.py with the suite option; the gate's confinement):
+151_veldo_0313_space_run: 54 passed, 0 failed (28 rows)
+# Each of these on its own with python3 scripts/selftest.py and the suite option, unconfined:
+152_veldo_0313_house_group: 30 passed, 0 failed (4 rows)
+146_veldo_0308_run_finished: 64 passed, 0 failed (38 rows)
+147_veldo_0310_landed_contained: 59 passed, 0 failed (33 rows)
+148_veldo_0311_git_hooks: 57 passed, 0 failed (31 rows)
+149_veldo_0312_ticket_ended: 67 passed, 0 failed (41 rows)
+141_veldo_0344_process_reader: 90 passed, 0 failed (64 rows; ac6/installed skipped, the reader is not installed)
+# Teeth: python3 scripts/check_teeth_mutations.py with finding 313: registered 37, executed 37, rejected 37.
+# Not run by the builder: ./scripts/verify.sh and the heavy suites.

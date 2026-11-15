@@ -401,11 +401,55 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     overwrites its own environment area (programs that set their process title that way: database
     backends, web server workers) reads as carrying no label, by this account's own read and, since
     VELDO-0344's change of 2026-11-14, by the reader's for every uid. Nothing in /proc says whether
-    the area is as the execution left it, so the rule cannot tell. Such a process is still held by
-    what does not depend on its environment: it descends from the run's supervisor, or it is in the
-    run's containment group, or it holds a file of an item (rule 4). The answer for a daemon a run
-    starts is the house's group, not the label. This is the lead's to change if it is not accepted.
+    the area is as the execution left it, so the rule cannot tell. THE LIMIT AFFECTS ONLY WHEN RUN
+    FINISHED IS SENT, NEVER WHETHER AN ITEM IN USE IS REMOVED. When such a process is also outside
+    the run's tree and outside its containment group, nothing shows it as the run's, and run
+    finished is sent while it lives. Every removal that follows still passes the rule that reads
+    what processes hold (rule 4 of the probe, process_use in Signal), and that rule reads no
+    label: it takes the working directory, the open files and the mappings of every process, by
+    path for a process this account can read and by inode through the process reader for one it
+    cannot, and an item one of them holds is deferred as in use and stays on disk. An item of the
+    run that no process holds is removed then, as it is for any run that is over. Proved by rows
+    on 2026-11-15, below. The answer for a daemon a run starts is still the house's group, not the
+    label. Rewritten on 2026-11-15 after the proof; the line before it said only that such a
+    process is held by a file of an item.
 - 2026-11-15: THE PROOF OF THAT CHANGE. Case space313-label-not-read moved with the line it changes
   (the scan's read through _space_environment). On the tree of d2e00c364f52 the registered driver,
   every worker confined: registered 36, executed 36, rejected 36. Suite 151 in the gate's
   confinement: 25 rows, 51 passed, 0 failed.
+- 2026-11-15: THE ACCEPTED LIMIT PUT TO THE PROOF, AND THE COMPARISON OF WHAT A PROCESS IS (the
+  review of VELDO-0344's fix, finding 1, and the lead's claim about finding 2 of the review before).
+  Suite 151 only, with one registered case; bin/veldo is not changed.
+  - The lead's claim: a process that rewrites its environment area can lose its label, but removal
+    of any item still passes the in-use rule, which needs no label. HOLDS, both rows green:
+    - fix3/rewritten-environment-cwd-in-scratch. A server that ran before the run starts a worker
+      for the command with the run's label; the worker writes over its own environment area and
+      changes its working directory to the run's scratch root. It is the server's child, no
+      descendant of the supervisor, in no group, and the kernel shows no label: it is no holder, and
+      run finished is sent while it lives (the limit). The scratch root is NOT removed: its item is
+      deferred, rule in_use, refused by process_use, the deferral names the worker alone by its
+      working directory, and the folder and its file are on disk.
+    - fix3/rewritten-environment-open-file-in-worktree. The same worker with a file open in the
+      build folder the command made in the run's worktree, which is the run's build output item
+      there. The build folder is NOT removed: deferred, in_use, process_use, the worker named by its
+      open file, the file on disk whole; the probe names the worker for the worktree itself as well.
+      The scratch root of that run, which the worker does not hold, is removed by the same judge.
+    In both rows rule 4 reads a table that holds the kernel's own entry of the worker and of no
+    other process, through a link. On the whole table of the gate's confinement, and of a shared
+    host, there are processes this account cannot read in full, and each alone defers every item
+    (seen while the rows were written: the scratch root of the second row stayed, for eight such
+    processes), so a row on the whole table would keep its item whatever the worker held. The
+    reader's half of the claim is suite 141's row reader/rewritten-environment (VELDO-0344): the
+    built reader writes l - for such a process and its block is whole and names the working
+    directory and the open file by inode.
+    NOT SHOWN: a process of another uid read through an installed reader; this host has none.
+  - fix3/same-program-holds, with case space313-identity-not-compared (before == after taken as
+    true, the other two conditions in place). A process made by posix_spawn shares its parent's
+    memory until it executes; the row holds it in the open of a fifo, one of posix_spawn's own file
+    actions, and lets it go on from inside the scan's open of its environ entry. The read then
+    returns the parent's environment, which has no label and is as long as the ends taken before
+    are apart. The scan reads once more and the process holds the run by its label. With the case
+    applied the process is no holder: red, seen in the registered driver's confined worker; the
+    no-op copy green. The line of 2026-11-15 above that says the comparison has no falsifier was
+    about the length; the comparison of what the process is had none either until this row.
+  - Suite 151 has 28 rows; finding 313 has 37 cases.

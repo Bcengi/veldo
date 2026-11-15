@@ -66,7 +66,19 @@ and none is this run's, the run is over while they live). fix3/environment-not-w
 of VELDO-0344, finding 1, in the CLI's own scan: a process that carries the run's label and executes
 itself again without end is a holder in every one of 150 reads of the kernel's table, by its label or
 unread, never missing; a process with an environment of no bytes is unread and holds; one with an
-environment and no label is no holder). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
+environment and no label is no holder). fix3/same-program-holds (the review of that fix, finding 1: a
+process that shares its parent's memory, as posix_spawn makes it, executes a program with the run's
+label between the scan's open of its environ entry and the read; the read returns the parent's
+environment, which has no label, and the scan does not take it for the process's own: it reads once
+more and the process holds the run by its label). fix3/rewritten-environment-cwd-in-scratch and
+fix3/rewritten-environment-open-file-in-worktree (the accepted limit put to the proof: a worker a
+server started for the command, outside the command's tree and its group, carries the run's label
+and then writes over its own environment area, as a program that sets its process title does; it is
+no holder and run finished is sent while it lives; with its working directory in the run's scratch
+root the scratch root is deferred as in use and stays on disk; with a file open in the build folder
+of the run's worktree the build folder is deferred as in use and stays, while the scratch root it
+does not hold goes; in both the table rule 4 reads holds the kernel's own entry of the worker and of
+no other process, so what is kept is kept for the worker). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
 asks the kernel again for each item, so the scratch root is deferred as in use and stays, and the hold
 is not released). fix3/the-house-group (on a host with the owner's user manager: the command runs in
 the house's own transient scope, run finished is not sent while a process it left is in that group,
@@ -178,7 +190,8 @@ def _v313_space_run_suite():
             'fix2/returns-at-the-commands-exit', 'fix2/end-follows-their-exit',
             'fix2/captured-output-ends-at-return',
             'fix3/handed-outside-the-tree', 'fix3/unread-process-holds', 'fix3/environment-not-whole-holds',
-            'fix3/rule-3-reads-the-kernel',
+            'fix3/same-program-holds', 'fix3/rewritten-environment-cwd-in-scratch',
+            'fix3/rewritten-environment-open-file-in-worktree', 'fix3/rule-3-reads-the-kernel',
             'fix3/the-house-group',
             'fix4/docker-objects-are-items', 'fix5/no-issuer-no-run', 'fix6/scratch-not-made',
             'ac2/command-status', 'ac2/act-waits-75', 'ac2/report-starts',
@@ -1100,6 +1113,219 @@ def _v313_space_run_suite():
                   % (ready, held.get(bare.pid), held.get(plain.pid), held.get(mine.pid)),
                   ready == [b'ready\n'] * 3 and held.get(bare.pid) == 'unread' and plain.pid not in held
                   and held.get(mine.pid) == 'label')
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix3/same-program-holds'
+            # A process that shares its parent's memory until it executes (posix_spawn, which is how
+            # most programs start another). The kernel reads environ from the memory the process had
+            # when the entry was opened, and the parent keeps that memory alive: a read that falls
+            # across the execution returns the parent's whole environment, as many bytes as the ends
+            # taken before it are apart. Only what the process is, before and after, tells it apart.
+            # The child waits in the open of a fifo, one of posix_spawn's own file actions, and the
+            # scan's open of its environ entry is what lets it go on.
+            shared_run = 'row:run-' + os.urandom(4).hex()
+            go = temp / 'share.fifo'
+            os.mkfifo(go)
+            spawner = subprocess.Popen(
+                [sys.executable, '-c',
+                 'import os, sys\n'
+                 'os.posix_spawn(sys.executable, [sys.executable, "-c", "import os\\nos.read(0, 1)\\n"],\n'
+                 '               {sys.argv[2]: sys.argv[3]}, file_actions=[(os.POSIX_SPAWN_OPEN, 9, sys.argv[1], os.O_RDONLY, 0)])\n'
+                 'os.read(0, 1)\n', str(go), CLI.SPACE_LABEL_VARIABLE, shared_run],
+                stdin=subprocess.PIPE, env={'OTHER': 'value'})
+            waiting.append(spawner)
+            until, sharing = time.monotonic() + 30, None
+            while sharing is None and time.monotonic() < until:
+                born = [int(name) for name in os.listdir('/proc') if name.isdigit()
+                        and (CLI._space_process(int(name)) or {}).get('parent') == spawner.pid]
+                sharing = born[0] if born else None
+                time.sleep(0.01)
+            entry = '/proc/%d/environ' % sharing
+            wanted = (CLI.SPACE_LABEL_VARIABLE + '=' + shared_run).encode()
+            early = open(entry, 'rb')  # opened before the execution, as the scan's own will be
+            opens = []
+
+            def across(path, *more, **named):
+                made = open(path, *more, **named)
+                if path == entry and not opens:
+                    opens.append(path)
+                    with open(go, 'wb') as word:
+                        word.write(b'x')
+                    limit = time.monotonic() + 30
+                    while time.monotonic() < limit:
+                        with open(entry, 'rb') as now:
+                            if now.read() == wanted + b'\0':
+                                opens.append('executed')
+                                break
+                        time.sleep(0.005)
+                return made
+            CLI.open = across
+            try:
+                how = [one.get('how') for one in CLI._space_holders(shared_run, None, []) if one.get('pid') == sharing]
+            finally:
+                del CLI.open
+            through = early.read()
+            early.close()
+            spawner.stdin.close()
+            spawner.wait(timeout=30)
+            check(row, 'a process that shares its parent\'s memory and executes a program with the run\'s label '
+                       'between the scan\'s open of its environ entry and the read: a descriptor opened before the '
+                       'execution returns the parent\'s environment, which has no label, and the scan does not take '
+                       'that for the process\'s own: it reads once more and the process holds the run by its label '
+                       '[%s %s; before the execution: %r]' % (how, opens, through[:40]),
+                  opens == [entry, 'executed'] and through == b'OTHER=value\0' and how == ['label'])
+        except Exception as error:
+            stopped(row, error)
+
+        # A LABEL IS WHAT THE ENVIRONMENT AREA SAYS NOW (the accepted limit, the lead's claim put to
+        # the proof). A worker that a server started for the command, outside the command's tree and
+        # outside its group, carries the run's label and then writes over its own environment area,
+        # as a program that sets its process title does. Nothing shows it as the run's any more, so
+        # run finished is sent while it lives. What the rows ask is whether anything it holds is
+        # removed then.
+        def titled(name, command):
+            """One run whose command hands work to such a worker. Returns (the run's report, what the
+            worker said of itself, the latch that ends the worker, the wiring)."""
+            where, _ = worktree(ORCHARD, 'w-' + name)
+            fifo, said, latch = temp / (name + '.fifo'), temp / (name + '.said'), temp / (name + '.latch')
+            os.mkfifo(fifo)
+            # The table rule 4 reads in this row: the kernel's own entry of the worker, through a
+            # link the server makes, and of no other process. In the whole table of a host, or of the
+            # gate's confinement, there are processes this account cannot read in full, and each of
+            # them alone defers every item; here what is kept is kept for the worker.
+            view = temp / (name + '.proc')
+            view.mkdir()
+            worker = ('import ctypes, json, os, sys, time\n'
+                      'cwd, held, said, latch = sys.argv[1:5]\n'
+                      'label = os.environ.get(%r)\n'
+                      'fields = open("/proc/self/stat", "rb").read().rsplit(b")", 1)[1].split()\n'
+                      'first, last = int(fields[47]), int(fields[48])\n'
+                      'ctypes.memset(first, 0, last - first)\n'
+                      'ctypes.memmove(first, b"worker: title", 13)\n'
+                      'if cwd:\n'
+                      '    os.chdir(cwd)\n'
+                      'handle = open(held) if held else None\n'
+                      'json.dump({"pid": os.getpid(), "label": label, "area": last - first,\n'
+                      '           "now": %r in open("/proc/self/environ", "rb").read()}, open(said + ".part", "w"))\n'
+                      'os.rename(said + ".part", said)\n'
+                      'until = time.monotonic() + %r\n'
+                      'while not os.path.exists(latch) and time.monotonic() < until:\n'
+                      '    time.sleep(0.02)\n'
+                      % (CLI.SPACE_LABEL_VARIABLE, CLI.SPACE_LABEL_VARIABLE.encode(), 3 * LINGER))
+            server = subprocess.Popen(
+                [sys.executable, '-c',
+                 'import os, subprocess, sys\n'
+                 'for line in open(sys.argv[1]):\n'
+                 '    label, cwd, held = line.rstrip("\\n").split("\\t")\n'
+                 '    made = subprocess.Popen([sys.executable, "-c", sys.argv[4], cwd, held, sys.argv[2], sys.argv[3]],\n'
+                 '                            env=dict(os.environ, %s=label), stdin=subprocess.DEVNULL)\n'
+                 '    os.symlink("/proc/%%d" %% made.pid, os.path.join(sys.argv[5], str(made.pid)))\n'
+                 % CLI.SPACE_LABEL_VARIABLE, str(fifo), str(said), str(latch), worker, str(view)],
+                env=dict(BASE), stdin=subprocess.DEVNULL)
+            waiting.append(server)
+            opened.append(os.open(str(fifo), os.O_RDWR))
+            wiring = space(proc=str(view))
+            status, words, report = run(['--station', 'build', '--label', name, '--', sys.executable, '-c',
+                                         command, str(fifo), str(said)], where, wiring)
+            report.update(status=status, words=words, where=where, server=server.pid, view=sorted(os.listdir(view)))
+            return report, json.loads(text_of(said) or '{}'), latch, wiring
+
+        def outside(report, worker):
+            """Whether the worker is alive, the server's child, and nothing the run's end counts."""
+            seen = CLI._space_process(worker.get('pid') or 0) or {}
+            judged = CLI._space_holders(report.get('run'), (report.get('given') or {}).get('supervisor'), [])
+            return (seen.get('parent') == report['server'] and worker.get('label') == report.get('run')
+                    and worker.get('now') is False and worker.get('area', 0) > 0
+                    and report.get('view') == [str(worker.get('pid'))]
+                    and worker['pid'] not in [one.get('pid') for one in judged]
+                    and (report.get('end') or {}).get('sent') is True and report.get('status') == 0)
+
+        def gone(worker, latch):
+            latch.write_text('')
+            until = time.monotonic() + 30
+            while CLI._space_process(worker.get('pid') or 0) is not None and time.monotonic() < until:
+                time.sleep(0.02)
+            return CLI._space_process(worker.get('pid') or 0) is None
+
+        def kept_for(record):
+            """Who the item's own deferral names: {pid: the ways it holds the item}, and the processes
+            the judge could not read."""
+            found = (record.get('deferral') or {}).get('found') or {}
+            return ({user['pid']: sorted(set(use['how'] for use in user['uses'])) for user in found.get('processes') or ()},
+                    (found.get('unread') or {}).get('processes'))
+
+        def users_of(path):
+            facts = P.in_use(str(path), L.engines, run=client)
+            return {user['pid']: sorted(set(use['how'] for use in user['uses'])) for user in facts['processes']}
+
+        try:
+            row = 'fix3/rewritten-environment-cwd-in-scratch'
+            script = ('import os, sys, time\n'
+                      'open(os.path.join(os.environ["TMPDIR"], "kept.txt"), "w").write("the worker is here\\n")\n'
+                      'open(sys.argv[1], "w").write("\\t".join([os.environ["VELDO_SPACE_LABEL"], os.environ["TMPDIR"], ""]) + "\\n")\n'
+                      'while not os.path.exists(sys.argv[2]):\n'
+                      '    time.sleep(0.02)\n')
+            report, worker, latch, wiring = titled('titled-cwd', script)
+            mine = items_of(report.get('run'))
+            scratch = [record for record in mine.values() if record['kind'] == 'scratch']
+            path = Path(report.get('scratch') or temp / 'none')
+            check(row, 'the limit itself: the worker was started with the run\'s label, wrote over its environment '
+                       'area and now shows none; it is the server\'s child, no descendant of the run\'s supervisor, in '
+                       'no group and no holder, and run finished was sent while it lives [%s %s %s]'
+                  % (worker, (report.get('end') or {}).get('reason'), report.get('words', '').strip()[:200]),
+                  outside(report, worker))
+            check(row, 'its working directory is the run\'s scratch root, and the scratch root is not removed: the '
+                       'item is deferred as in use by the rule that reads what processes hold, its deferral names the '
+                       'worker alone, by its working directory, as the probe does on the whole table, and the folder and its file are on disk [%s %s %s]'
+                  % ([(record['state'], (record.get('deferral') or {}).get('rule'),
+                       (record.get('deferral') or {}).get('refused_by')) for record in scratch],
+                     users_of(path).get(worker.get('pid')), sorted(os.listdir(path)) if path.is_dir() else None),
+                  len(scratch) == 1 and scratch[0]['state'] == 'deferred'
+                  and (scratch[0].get('deferral') or {}).get('rule') == 'in_use'
+                  and (scratch[0].get('deferral') or {}).get('refused_by') == 'process_use'
+                  and kept_for(scratch[0]) == ({worker.get('pid'): ['cwd']}, [])
+                  and users_of(path).get(worker.get('pid')) == ['cwd']
+                  and text_of(path / 'kept.txt') == 'the worker is here\n')
+            check(row, 'once the worker has ended the probe names nobody in the scratch root [%s]' % (users_of(path),),
+                  gone(worker, latch) and users_of(path) == {})
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix3/rewritten-environment-open-file-in-worktree'
+            script = ('import os, sys, time\n'
+                      'os.mkdir("build"); open("build/out.o", "w").write("o" * 8192)\n'
+                      'open(sys.argv[1], "w").write("\\t".join([os.environ["VELDO_SPACE_LABEL"], "", os.path.abspath("build/out.o")]) + "\\n")\n'
+                      'while not os.path.exists(sys.argv[2]):\n'
+                      '    time.sleep(0.02)\n')
+            report, worker, latch, wiring = titled('titled-open', script)
+            mine = items_of(report.get('run'))
+            built = [record for record in mine.values() if record['kind'] == 'build_output']
+            scratch = [record for record in mine.values() if record['kind'] == 'scratch']
+            where = report['where']
+            check(row, 'the limit itself, as in the row before: no label now, outside the tree and the group, no '
+                       'holder, and run finished was sent while the worker lives [%s %s]'
+                  % (worker, (report.get('end') or {}).get('reason')), outside(report, worker))
+            check(row, 'it holds a file of the run\'s worktree open, in the build folder that is the run\'s item there: '
+                       'the build folder is not removed, deferred as in use by the same rule, and the file is on disk '
+                       'whole; the probe names the worker by its open file, for the build folder and for the worktree; '
+                       'the scratch root, which it does not hold, went, so the same judge removes what nobody holds [%s %s %s %s]'
+                  % ([(record['state'], (record.get('deferral') or {}).get('rule'),
+                       (record.get('deferral') or {}).get('refused_by')) for record in built],
+                     users_of(where / 'build').get(worker.get('pid')), users_of(where).get(worker.get('pid')),
+                     [record['state'] for record in scratch]),
+                  len(built) == 1 and built[0]['state'] == 'deferred'
+                  and (built[0].get('deferral') or {}).get('rule') == 'in_use'
+                  and (built[0].get('deferral') or {}).get('refused_by') == 'process_use'
+                  and kept_for(built[0]) == ({worker.get('pid'): ['open']}, [])
+                  and users_of(where / 'build').get(worker.get('pid')) == ['open']
+                  and users_of(where).get(worker.get('pid')) == ['open']
+                  and text_of(where / 'build' / 'out.o') == 'o' * 8192
+                  and [record['state'] for record in scratch] == ['removed'])
+            check(row, 'once the worker has ended the probe names nobody in the worktree [%s]' % (users_of(where),),
+                  gone(worker, latch) and users_of(where) == {})
         except Exception as error:
             stopped(row, error)
 
