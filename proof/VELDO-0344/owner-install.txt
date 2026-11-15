@@ -5,22 +5,30 @@ reader's state is absent and every process the probe cannot read is judged by th
 
 THE TWO VALUES
 
-  C = 705d64311de90f1945d7d0c0a5b9b3e6d125e78e
-      the commit of this branch that holds the reviewed source (blob
-      208e7c1f0c80365181e83885b999b34ff740ab6f, scripts/veldo_procread.c, SHA-256
-      233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c). When the change lands as
+  C = 2df0c67cd3426de0d83c193e3ed9cbe0785c0f69
+      the commit of this branch that holds the source that reads the run label too (blob
+      c450f4238fc5b2e1e5dbc13155becf1753194785, scripts/veldo_procread.c, SHA-256
+      f5373c0a5b2ba29ba425a5305e97d16fa578a632bfb5afed69962a1abae39821). When the change lands as
       another commit, use that commit's full hash; the source's SHA-256 must be the same.
-  H = 861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199
+      THIS SOURCE AWAITS REVIEW. It is not the source reviewed at commit
+      705d64311de90f1945d7d0c0a5b9b3e6d125e78e (SHA-256
+      233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c): it also opens the environ
+      entry of every task and prints the value of the one variable VELDO_SPACE_LABEL. Install
+      nothing from this file until that change is reviewed and you approve it.
+  H = f890b5a253447011bd3570700275579119ff89170e61ea8e3f8903717bf8b647
       the digest of that source's build with cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 and glibc
       2.39-0ubuntu8.12 on x86_64, as proof/VELDO-0344/reader.sha256 records it. The builder ran
       line 1 below against C in this worktree on 2026-11-14, twice, and it printed H both times.
+      The source before this one had, on the same toolchain, the digest
+      861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199; reader.sha256 keeps that
+      record and the one before it. Neither is a digest of this source.
 
       H FOLLOWS THE TOOLCHAIN. The reader is linked statically, so the C library's code is part of
       the program: the same source built with another cc or another C library has another digest.
-      Until 2026-11-14 this host had glibc 2.39-0ubuntu8.9 and H was
+      Until 2026-11-14 this host had glibc 2.39-0ubuntu8.9 and the earlier source's digest was
       bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035; an unattended update to
-      2.39-0ubuntu8.12 changed it, with the source unchanged. reader.sha256 keeps both records,
-      each with its toolchain.
+      2.39-0ubuntu8.12 changed it, with that source unchanged. reader.sha256 keeps every record,
+      each with its source and its toolchain.
 
       So read H from the record reviewed for the toolchain of the host you install on: compare
       "cc --version" and "ldd --version" there with the record's cc and libc lines, and take the
@@ -35,7 +43,7 @@ THE COMMANDS, from the root of the authority checkout, in one shell
 1. No sudo. Builds from the blob of C and prints the digest. It must print the H that the reviewed
    record has for this host's toolchain (above):
 
-d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob 705d64311de90f1945d7d0c0a5b9b3e6d125e78e:scripts/veldo_procread.c > "$d/veldo_procread.c" && (cd "$d" && env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c) && sha256sum "$d/veldo-procread"
+d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob 2df0c67cd3426de0d83c193e3ed9cbe0785c0f69:scripts/veldo_procread.c > "$d/veldo_procread.c" && (cd "$d" && env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c) && sha256sum "$d/veldo-procread"
 
 2. The one sudo command. Root opens no path of the owner's account: the owner's shell opens the
    build and hands it to root as standard input. Root copies it into a temporary file of its own
@@ -44,7 +52,7 @@ d=$(mktemp -d) && g=$(id -gn) && /usr/bin/git --no-replace-objects cat-file blob
    step after the comparison fails, root removes the copy and nothing is installed. The folder
    /usr/local/lib/veldo gets mode 0755 only when this line makes it:
 
-sudo sh -c "umask 077 && { [ -d /usr/local/lib/veldo ] || { mkdir -p /usr/local/lib/veldo && chmod 0755 /usr/local/lib/veldo; }; } && t=\$(mktemp /usr/local/lib/veldo/.veldo-procread.XXXXXX) && if cat > \"\$t\" && echo '861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199  '\"\$t\" | sha256sum -c - >/dev/null; then chown root:'$g' \"\$t\" && chmod 0750 \"\$t\" && setcap cap_sys_ptrace=ep \"\$t\" && mv -f \"\$t\" /usr/local/lib/veldo/veldo-procread || { rm -f \"\$t\"; echo 'the install failed: nothing installed' >&2; exit 1; }; else rm -f \"\$t\"; echo 'digest differs: nothing installed' >&2; exit 1; fi" < "$d/veldo-procread" && rm -r "$d"
+sudo sh -c "umask 077 && { [ -d /usr/local/lib/veldo ] || { mkdir -p /usr/local/lib/veldo && chmod 0755 /usr/local/lib/veldo; }; } && t=\$(mktemp /usr/local/lib/veldo/.veldo-procread.XXXXXX) && if cat > \"\$t\" && echo 'f890b5a253447011bd3570700275579119ff89170e61ea8e3f8903717bf8b647  '\"\$t\" | sha256sum -c - >/dev/null; then chown root:'$g' \"\$t\" && chmod 0750 \"\$t\" && setcap cap_sys_ptrace=ep \"\$t\" && mv -f \"\$t\" /usr/local/lib/veldo/veldo-procread || { rm -f \"\$t\"; echo 'the install failed: nothing installed' >&2; exit 1; }; else rm -f \"\$t\"; echo 'digest differs: nothing installed' >&2; exit 1; fi" < "$d/veldo-procread" && rm -r "$d"
 
 3. No sudo. The two user units and the socket:
 
@@ -53,9 +61,9 @@ python3 -I .veldo/control_space_probe.py reader-units && systemctl --user daemon
 4. In the installation's space section (installation.yaml), add the key, quoted as a string (the
    same H as in line 2, the one for this host's toolchain):
 
-  process_reader: "861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199"
+  process_reader: "f890b5a253447011bd3570700275579119ff89170e61ea8e3f8903717bf8b647"
 
-5. The reader check. It must print "state used cap=1" and five PASS lines, and exit 0:
+5. The reader check. It must print "state used cap=1" and six PASS lines, and exit 0:
 
 python3 -I .veldo/control_space_probe.py reader
 
@@ -65,7 +73,8 @@ python3 -I .veldo/control_space_probe.py reader
 python3 scripts/selftest.py --suite 141_veldo_0344_process_reader
 
    Its line "VELDO-0344 ac6/installed: ..." carries how long the reader ran. The row requires the
-   check's five PASS lines. What each proves, of the three things the design marks as assumptions:
+   check's six PASS lines. What each proves, of the three things the design marks as assumptions,
+   and of the run label:
    - that cap_sys_ptrace, held by the owner's uid, reads root-owned entries: the fifth line alone.
      Process 1 is root's, the probe cannot read it itself, and the reader's table must hold a
      whole block for it (no x line) with the start time the probe reads. The other four lines read
@@ -73,6 +82,10 @@ python3 scripts/selftest.py --suite 141_veldo_0344_process_reader
      nothing about root-owned entries.
    - that it reads the task entries: the second and third lines, on a process of the owner's uid,
      and the fifth, whose block is whole only when every task of process 1 was read.
+   - that the run label is read where the probe is refused the environment: the sixth line. The
+     check starts its undumpable process with a label of its own, the probe itself is refused that
+     process's environ entry, and the reader's block must carry exactly that label; the block of
+     process 1 must carry a label that was read, whatever it holds.
    - that the two unit files work as written (Accept=yes, the capability arriving in the unit):
      the state "used cap=1", reached through the socket from a unit with NoNewPrivileges=yes.
    When the reader is installed and systemd-run is not on the path, the suite's skip line says so;

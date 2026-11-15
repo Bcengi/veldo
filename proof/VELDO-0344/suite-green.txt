@@ -23,3 +23,9 @@ selftest (PARTIAL, 1 of 211 suites): 57 passed, 0 failed in 7.57s
   SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is not installed at /usr/local/lib/veldo/veldo-procread on this host; the row runs after the owner's setup (docs/veldo-procread-setup.txt)
   141_veldo_0344_process_reader                   59 passed   17.91s
 selftest (PARTIAL, 1 of 211 suites): 85 passed, 0 failed in 17.91s
+
+# 2026-11-14, the reader reads the run label too, on the tree of 2df0c67cd342. One run, alone, with python3 scripts/selftest.py and the suite option:
+  SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is not installed at /usr/local/lib/veldo/veldo-procread on this host; the row runs after the owner's setup (docs/veldo-procread-setup.txt)
+  141_veldo_0344_process_reader                   61 passed   13.37s
+selftest (PARTIAL, 1 of 222 suites): 87 passed, 0 failed in 13.37s
+# Suites 130 to 140 were not run again in this round. Suite 151_veldo_0313_space_run, which uses the block's label, in the gate's confinement: 50 passed, 0 failed (24 rows).
