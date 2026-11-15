@@ -758,7 +758,7 @@ class GitLandOps(LandOps):
                     stages[parts[2]] = parts[1]
         if "2" not in stages or "3" not in stages:
             return False
-        with tempfile.TemporaryDirectory() as td:
+        with tempfile.TemporaryDirectory(prefix='veldo-lander-') as td:
             names = {}
             for stage, label in (("1", "base"), ("2", "ours"), ("3", "theirs")):
                 names[label] = os.path.join(td, label)

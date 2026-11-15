@@ -1,0 +1,16 @@
+{
+ "module": "engine/.veldo/lander.py",
+ "functions": [
+  "GitLandOps._union_resolve_one"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "GitLandOps._union_resolve_one",
+  "old": "tempfile.TemporaryDirectory()",
+  "new": "tempfile.TemporaryDirectory(prefix='veldo-lander-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/lander.py:761: GitLandOps._union_resolve_one: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}
