@@ -15157,21 +15157,57 @@ def cases():
     add(335, 'space335-host-abandons', released335, 'veldo',
         '    answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(args.kind, subject, emitter)\n',
         '    answer = _SpaceAs(ledger, sp, sp.OBSERVER).signal("worktree_abandoned", subject)\n',
-        ['ac1/released-pair'])
+        ['ac1/released-pair', 'ac1/returns-before-removal'])
     result[-1]['dir'] = 'bin'
     add(335, 'space335-any-creator', released335, 'control_space.py',
         "                if item['creator'] not in ('hook', 'record') or item['kind'] not in ('worktree', 'agent_repository'):\n",
         '                if False:  # defect: any creator may release\n', ['ac2/seam-refused'])
-    add(335, 'space335-force-reaches-delete', released335, 'veldo',
-        '        subject = {"paths": [sp.canonical_path(path) for path in args.path]}\n',
-        '        if args.force:  # defect: the script deletes without the owner or save\n'
-        '            import shutil\n'
-        '            for path in sorted(args.path, key=len, reverse=True):\n'
-        '                if os.path.isdir(path):\n'
-        '                    shutil.rmtree(path)\n'
-        '        subject = {"paths": [sp.canonical_path(path) for path in args.path]}\n',
+    force335 = '    if args.force:\n        return _space_refused("event", stderr, "invalid_input:force")\n'
+    add(335, 'space335-force-reaches-delete', released335, 'veldo', force335,
+        '    if args.force:  # defect: force deletes before refusing\n'
+        '        import shutil\n'
+        '        for path in sorted(args.path, key=len, reverse=True):\n'
+        '            if os.path.isdir(path):\n'
+        '                shutil.rmtree(path)\n'
+        '        return _space_refused("event", stderr, "invalid_input:force")\n',
         ['ac3/unique-force'])
     result[-1]['dir'] = 'bin'
+    add(335, 'space335-force-silently-accepted', released335, 'veldo', force335,
+        '    # defect: force is silently accepted\n', ['cli/force-refused'])
+    result[-1]['dir'] = 'bin'
+    add(335, 'space335-cli-forges-hook', released335, 'veldo',
+        '    emitter = ({"verb": "event", "host": ledger.host} if args.kind == "released"\n',
+        '    emitter = ({"hook": "event", "host": ledger.host} if args.kind == "released"\n',
+        ['cli/verb-emitter'])
+    result[-1]['dir'] = 'bin'
+    add(335, 'space335-ledger-protect-skipped', released335, 'control_space.py',
+        "                self._admissible(item['kind'], item['locator'], name)\n",
+        '                pass  # defect: no protection check at receipt\n',
+        ['safety/ledger-protected-at-receipt'])
+    add(335, 'space335-repository-releases-child', released335, 'control_space_worker.py',
+        "    elif kind in ('session_started', 'session_ended'):\n",
+        "        chosen.update(child for child, item in items.items() if item.get('parent') in chosen)\n"
+        "    elif kind in ('session_started', 'session_ended'):\n",
+        ['rv/repository-held-by-worktree'])
+    add(335, 'space335-private-branch-ignored', released335, 'control_space_signal.py',
+        "        facts = probe.agent_repository(path, shared, given['run'])\n",
+        "        return None  # defect: private repository branches are not compared\n"
+        "        facts = probe.agent_repository(path, shared, given['run'])\n",
+        ['rv/private-branch'])
+    add(335, 'space335-git-operation-ignored', released335, 'control_space_signal.py',
+        'def _rule_process_use(ledger, probe, identity, record, given):\n',
+        'def _rule_process_use(ledger, probe, identity, record, given):\n'
+        '    return None  # defect: operation in progress is not checked\n',
+        ['rv/git-lock-and-draft'])
+    add(335, 'space335-path-replaces-identity', released335, 'control_space_worker.py',
+        '        for path, identity in zip(paths, names):\n',
+        "        for path, identity in [(path, name) for path in paths for name, item in items.items()\n"
+        "                               if item.get('locator', {}).get('path') == path]:\n",
+        ['safety/bound-identity'])
+    add(335, 'space335-removed-item-accepted', released335, 'control_space.py',
+        "                           if item.get('locator', {}).get('path') == path and item['state'] in LIVE]\n",
+        "                           if item.get('locator', {}).get('path') == path]\n",
+        ['rv/twice'])
     add(335, 'space335-keep-skipped', released335, 'control_space_worker.py',
         "        given.setdefault('keep', KEEP.keeper(ledger, event=emitter))\n",
         "        given.setdefault('keep', lambda identity, item: {'ok': True, 'tips': "

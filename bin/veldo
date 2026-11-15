@@ -1657,8 +1657,8 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     it leaves one event record and returns, and removes nothing (design 6.9). Refused by name, with
     nothing sent: an unknown type (space_unknown_event:<type>), and for every path it names a path
     outside every known root (space_outside_roots) or on the protect list (space_protected:<entry>).
-    Released additionally refuses unrecorded paths and creations of a Veldo seam. Its legacy force
-    option is ignored: only the owner's settled Discard authorizes force, after its save.
+    Released additionally refuses unrecorded paths and creations of a Veldo seam. Its force
+    option is refused by name: only the owner's settled Discard authorizes force, after its save.
     A Ledger that has no event command yet answers space_no_command:space_event: the event is then
     not recorded, nothing becomes due, and the verb says so. Exit 0 with the Ledger's answer on
     standard output, 1 for a refusal; with no ledger it says why and exits 0."""
@@ -1673,8 +1673,10 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     parser.add_argument("--ref")
     parser.add_argument("--new")
     parser.add_argument("--force", action="store_true",
-                        help="legacy released flag: accepted but grants no removal authority")
+                        help="refused: force is not an event option")
     args = parser.parse_args(list(rest))
+    if args.force:
+        return _space_refused("event", stderr, "invalid_input:force")
     space, why = _space_usable(space, why, environ)
     if space is None:
         stderr.write("veldo space event: %s: nothing is recorded\n" % why)
@@ -1682,8 +1684,6 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     sp, ledger = _space_module("control_space"), space["ledger"]
     if args.kind not in SPACE_EVENT_TYPES:
         return _space_refused("event", stderr, "space_unknown_event:" + args.kind)
-    if args.force and args.kind != "released":
-        return _space_refused("event", stderr, "invalid_input:force is only a legacy released flag")
     for path in args.path:
         refusal = _space_path_refusal(ledger, sp, path)
         if refusal is not None:
@@ -1713,7 +1713,7 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
         if not args.session or args.repository or args.ref or args.new:
             return _space_refused("event", stderr, "invalid_input:a session event names its session")
         subject = {"session": args.session, "paths": [sp.canonical_path(path) for path in args.path]}
-    emitter = ({"hook": "event", "host": ledger.host} if args.kind == "released"
+    emitter = ({"verb": "event", "host": ledger.host} if args.kind == "released"
                else {"verb": "event", "host": socket.gethostname() or "unknown"})
     answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(args.kind, subject, emitter)
     if not answer.get("ok"):

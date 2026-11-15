@@ -1,0 +1,1 @@
+Lead verification 2026-11-15 after the builder stopped at mutation_sandbox.py:94 during its confined teeth retry: suite 154 (0335) 56/56, suite 153 (0323) 66/66, check_teeth_mutations.py --finding 335 rc=0 12 registered 12 rejected, --finding 323 16/16.
