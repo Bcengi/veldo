@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0341",
- "commit": "732948d23ef73fcba42c67fa908016f9a501f2f6",
- "tree": "88d559aac0fc7a39aff061326408d85bf72cb1bf",
- "producer": "Codex implementation agent; not an independent reviewer",
- "produced_at": "2026-11-15T21:01:46.486827+00:00",
+ "commit": "0ab790ca765fc92fbf9fe4158b80eeac3e652182",
+ "tree": "44b7980964d269f36c502c9454bf2a79db1c05de",
+ "producer": "Codex implementation agent (build 732948d2); Claude fix round after the review (0ab790ca); neither is an independent reviewer",
+ "produced_at": "2026-11-15T21:16:27.234376+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -34,7 +34,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
-     "detail": "ac2/container-image-network, ac2/image-does-not-protect-container, ac2/immutable-image, ac2/unread-refuses: volume and path mounts protect containers and their images and networks, including stopped containers and a tag moved to another image. A named run-finished event removes the run container of a protected image and preserves that image. Unread lists and malformed inspect records refuse."
+     "detail": "ac2/container-image-network, ac2/image-does-not-protect-container, ac2/immutable-image, ac2/unread-refuses: volume and path mounts protect containers and their images and networks, including stopped containers and a tag moved to another image. A named run-finished event removes the run container of a protected image and preserves that image. Unread lists and malformed inspect records refuse. Fix round: fix2/one-read-per-pass (an image pass asks the stand-in engine for one container list and one inspect for each container, whatever the number of images, and a snapshot judges its networks by the container records it read: calls counted) and fix2/unreadable-refuses (with one container unreadable every image and network the pass would judge is refused; one covered by its own name is still listed)."
     },
     {
      "type": "integration",
@@ -44,7 +44,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0341/falsifiers.json",
-     "detail": "space341-image-protects-container; space341-no-inherited-protection; space341-unread-list-free; space341-image-by-movable-tag"
+     "detail": "space341-image-protects-container; space341-no-inherited-protection; space341-unread-list-free; space341-image-by-movable-tag; space341-containers-read-for-each-image; space341-snapshot-reads-containers-for-each-network; space341-unreadable-container-free"
     }
    ]
   },
@@ -55,7 +55,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
-     "detail": "ac3/no-record, ac3/discovery-before-proposal, ac3/removal-purposes, ac3/released-keeps-work, ac3/withdraw-mount-report: protected discovery writes no item or report in either mode. The adapter unit seam records every attempted proposal. Removal and Discard purposes refuse at rule 2; named released events leave planted database and container bytes intact. Images have no released cell, so released is refused and ticket-ended exercises their removal rule. A report newly covered by a mount is withdrawn. Public read and owner-action integration remains unproven: those handlers are absent on this base."
+     "detail": "ac3/no-record, ac3/discovery-before-proposal, ac3/removal-purposes, ac3/released-keeps-work, ac3/withdraw-mount-report: protected discovery writes no item or report in either mode. The adapter unit seam records every attempted proposal. Removal and Discard purposes refuse at rule 2; named released events leave planted database and container bytes intact. Images have no released cell, so released is refused and ticket-ended exercises their removal rule. A report newly covered by a mount is withdrawn. Public read and owner-action integration remains unproven: those handlers are absent on this base. Fix round (review finding 1): fix1/compose-order (the network is made and reported first; right after the protected container's create event the report is withdrawn, the network and the image are listed as protected and nothing is left to Adopt, on one context by a mount and on the other by the compose label), fix1/snapshot-image (a snapshot alone lists the image of each protected container), fix1/connect-event (a connect event to a protected container protects the network) and fix1/disconnect-event (after the disconnect event it is judged by what is attached now)."
     },
     {
      "type": "integration",
@@ -65,7 +65,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0341/falsifiers.json",
-     "detail": "space341-protect-at-removal-only; space341-removal-no-relations; space341-mount-report-stays"
+     "detail": "space341-protect-at-removal-only; space341-removal-no-relations; space341-mount-report-stays; space341-mounting-container-no-recheck; space341-covered-container-no-recheck; space341-connect-event-ignored; space341-disconnect-event-ignored"
     }
    ]
   }
@@ -74,7 +74,7 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "Targeted selftest selectors only: 153, 134, 136, 137, 138, 139, 140, 144 and 145. 475 checks passed, 0 failed; no aggregate gate claim. See suite-green.txt."
+   "command": "Targeted selftest selectors only, on the fix commit: 153, 134, 136, 137, 138, 139, 140, 144 and 145. 482 checks passed, 0 failed; no aggregate gate claim. See suite-green.txt."
   },
   {
    "name": "integration",
@@ -84,7 +84,7 @@
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "Eight registered VELDO-0341 cases: individual materialize and worker calls, noop control then mutant, each final mutant executed once. 8 controls green, 8 target sets red, no exception counted as detection. No mutation stage or coordinator run. Final run followed fixture corrections during development."
+   "command": "python3 scripts/check_teeth_mutations.py --finding 341 on the fix commit: registered=15 executed=15 rejected=15 (the eight cases of the build and seven of the fix round; baseline and noop control green for each). Findings 307 (37 of 37) and 306 (29 of 29), whose cases mutate the same module, were run as well. See falsifiers.json."
   },
   {
    "name": "fast checks",
@@ -102,13 +102,15 @@
   "Docker engines are stand-ins. No real Docker engine, volume, container, image or protected host data was read or changed.",
   "The fixture substitutes the two act prerequisite readers after verifying the production switch refuses VELDO-0332 and VELDO-0339. No production mode checks were changed.",
   "Objects already recorded before protection is added keep their ledger history and defer at rule 2. Public-read suppression of such historical items cannot be proven without the absent readers.",
-  "Inherited protection reads all containers on the target context for each image or network, including stopped containers. This adds read-only engine calls and intentionally refuses when a relationship cannot be read.",
-  "Suite 86_veldo_0127 and its live captures were left alone. The full gate, heavy suites and mutation stages were not run."
+  "Suite 86_veldo_0127 and its live captures were left alone. The full gate, heavy suites and mutation stages were not run.",
+  "Fix round. Inherited protection is judged by one read of the containers for a pass. When any container cannot be read, every image and network that pass would judge is refused, including one that another, readable container protects; the build listed such an object as protected. Both are safe: a refused object gets no record and its listing is left as it was.",
+  "Fix round. A network or image whose protected container is found later is listed as protected from that container's event on. A report written before is withdrawn; an item a run already owns keeps its record and defers at rule 2, as the build's assumption on objects recorded before protection says.",
+  "Fix round. The connect and disconnect events were read on the stand-in engine in the shape the engine documents (Type network, Action connect or disconnect, Actor.ID the network). No real engine was asked to emit them."
  ],
  "rollback": "Revert the implementation commit; direct name, compose-label and mount protections remain as before.",
  "artifacts": {
-  "checks.json": "34e70df0c9537b73d7976475881e31795a25694b4d5da12cd2ddf6deb82a1a62",
-  "falsifiers.json": "306c8f0bcb9b8be40ae649f281abe6df2349ad758cbfb00d09384f602d1caf3d",
-  "suite-green.txt": "ccbedb792d407ddcfe3a6c8c880a45e4f1598d5882b35350fadf70a3bd7adc41"
+  "checks.json": "1b1bad6e77da5995284fa5e28e33bcc038b684c2bc4a579a7e745588d4e9b053",
+  "falsifiers.json": "58d38ed7b09a5f7d816ab6f5c88092f3470c546145f8fb7b509753a005802012",
+  "suite-green.txt": "5d2bb74edf046df46a52738582ee3ea9487b356b2f83ab3b57038af34df975fb"
  }
 }
