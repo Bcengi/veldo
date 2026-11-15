@@ -1,0 +1,46 @@
+{
+ "name": "space345-refs-after-the-remove",
+ "module": "control_space_remove.py",
+ "targets": {
+  "ac1/kept-before-remove": [
+   false
+  ]
+ },
+ "rejected": true,
+ "failed_rows": [
+  "VELDO-0345 ac1/kept-before-remove",
+  "VELDO-0345 ac1/agent-worktree-in-shared",
+  "VELDO-0345 ac3/ref-unwritable",
+  "VELDO-0345 ac3/ref-at-another-commit",
+  "VELDO-0345 ac3/kept-ref-per-attempt",
+  "VELDO-0345 ac3/fetch-fails",
+  "VELDO-0345 ac3/main-repository-gone",
+  "VELDO-0345 ac3/second-attempt-after-crash",
+  "VELDO-0345 ac4/outside-git",
+  "VELDO-0345 ac4/store-protected",
+  "VELDO-0345 ac5/failed-save-removes-nothing",
+  "VELDO-0345 ac5/kill-points",
+  "VELDO-0345 ac5/retry-compares",
+  "VELDO-0345 ac5/never-replaced",
+  "VELDO-0345 ac5/every-attempt-listed",
+  "VELDO-0345 ac6/three-deferrals",
+  "VELDO-0345 ac6/removing-put-back",
+  "VELDO-0345 ac3/record-of-this-attempt",
+  "VELDO-0345 ac3/verify-reads-current-tips",
+  "VELDO-0345 ac1/ledger-reads-the-head",
+  "VELDO-0345 ac4/modes-kept",
+  "VELDO-0345 ac5/folders-synced",
+  "VELDO-0345 signal/removing-while-the-remover-runs",
+  "VELDO-0345 keep/ledger-reads-itself",
+  "VELDO-0345 keep/names",
+  "VELDO-0345 keep/canon"
+ ],
+ "failed_details": [
+  [
+   "VELDO-0345 ac1/kept-before-remove",
+   "before git's remove ran, the head, the own ref, the operation's commit and the commit only the log named were each on a kept ref of the main repository [[]]"
+  ]
+ ],
+ "old_digest": "674b5e8c7741d8ff5c6644c4e86ea91584c1866101c8b4dde906d598e9216b01",
+ "new_digest": "cfede61c196f9912df3c55d93bbef6e2af1cbb8de1a26dce4e0290152f2112cb"
+}

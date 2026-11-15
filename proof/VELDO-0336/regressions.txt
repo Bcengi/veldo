@@ -1,0 +1,9 @@
+Targeted partial runs only; no full gate claim.
+134 space mode: 42 passed, 0 failed.
+135 kinds: 150 passed, 0 failed.
+137 rules: 49 passed, 0 failed.
+138 removers: 65 passed, 0 failed after callback compatibility fix.
+139 signal: 44 passed, 0 failed.
+140 keep: 57 passed, 0 failed.
+148 hooks: 57 passed, 0 failed.
+151 wrapper: initial shared-host run 47 passed, 7 failed. A separate base/current comparison also failed on differing rows; this does not establish equivalent failures. Final rerun interrupted during host process waiting, with no verdict. The lead needs the confined run.

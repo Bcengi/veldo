@@ -1,0 +1,135 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0336",
+ "commit": "151da9528457d349e1909b6b062adbc030bcbaed",
+ "tree": "ecc51dd44bdfe7e847869b3473839e95503233d4",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T21:51:37.590917+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0336_run_worktree.py",
+     "detail": "ac1/detached-owned-and-ended: plain git fires the real hook in the wrapper environment; replay verifies signed packets; the recorded run and review station are read from the ledger. Census records build output, which is removed before the worktree. The keep record points to the main repository."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0336/targeted.txt",
+     "detail": "45 checks passed, zero failed in the targeted partial run. Real git, hook, signed spool replay, ledger, rules, snapshots and removers. Full verification remains pending."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0336/falsifiers.json",
+     "detail": "space336-project-owns-detached, space336-build-census-skipped: each rejected on its target row."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0336_run_worktree.py",
+     "detail": "ac2/branch-keeps-owner: a branch matching agent/{agent}/{ticket} keeps its ticket owner and stays after run finished."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0336/targeted.txt",
+     "detail": "45 checks passed, zero failed in the targeted partial run. Real git, hook, signed spool replay, ledger, rules, snapshots and removers. Full verification remains pending."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0336/falsifiers.json",
+     "detail": "space336-run-owns-branch: each rejected on its target row."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0336_run_worktree.py",
+     "detail": "ac3/scratch-saved-and-removed, changed-after-save, added-after-save, mode-after-save, folder-retry and failed-keep: every removed file is saved, changes stop deletion, failed saves refuse, retries retain both attempts, and all 27 removed paths are recorded. Tracked edits, builder scratch, personal ignores, owner Keep and kept children stay."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0336/targeted.txt",
+     "detail": "45 checks passed, zero failed in the targeted partial run. Real git, hook, signed spool replay, ledger, rules, snapshots and removers. Full verification remains pending."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0336/falsifiers.json",
+     "detail": "space336-scratch-is-unique-work, space336-scratch-not-saved, space336-delete-without-comparison, space336-paths-truncated: each rejected on its target row."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0336_run_worktree.py",
+     "detail": "ac4/link-target-stays and open-file-stays: the saved link is removed without its target; a real open descriptor defers in_use. loss/protect checks the named protected deferral. paths/non-forced checks the actual removal command vectors."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0336/targeted.txt",
+     "detail": "45 checks passed, zero failed in the targeted partial run. Real git, hook, signed spool replay, ledger, rules, snapshots and removers. Full verification remains pending."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0336/falsifiers.json",
+     "detail": "space336-link-target-deleted, space336-open-file-ignored: each rejected on its target row."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "python3 scripts/selftest.py with the suite option for 153_veldo_0336_run_worktree: 45 passed, 0 failed. Partial only."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same targeted suite uses real repositories, hooks, OpenSSH signatures, ledger records, file saves and removals. See targeted.txt."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "Nine registered VELDO-0336 defects applied to isolated production copies with the registered worker, each target red. The reanchored space345-refs-after-the-remove also turns ac1/kept-before-remove red. No teeth stage was run."
+  },
+  {
+   "name": "regressions",
+   "status": "failed",
+   "command": "Suites 134, 135, 137, 138, 139, 140 and 148 passed (464 checks). Suite 151 is not green on this shared host: initial run 47 passed and 7 failed; separate base and current comparisons also failed; final rerun interrupted while waiting. See regressions.txt and wrapper-comparison.json."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "validate.py all, docs, template sync, generated, lint and Git boundary checks; see fast-checks.txt."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh - reserved for the lead through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "The wrapper begin/end are driven in process. Its empty containment group and run process census are stand-ins. The file-use row exposes a real process through a fixture process table. No real Docker engine is contacted.",
+  "The fixture supplies the issuer and authority wiring, as the dependency suites do. The production service wiring and event consumer are VELDO-0323, outside this ticket.",
+  "Only fixture act prerequisites allow removal. Production act checks, signatures, packet expiry, owner marks and item-naming signals are unchanged. No real installation was switched to act.",
+  "The restore command is VELDO-0346 and is not built here. Recovery is checked against the recorded snapshots and the kept refs, using actual file bytes and the keeper verification.",
+  "Criteria remain pending until the lead runs full verification and independent review. Suite 86 captures were not run or edited; policy checking and landing remain with the lead.",
+  "One development regression exposed the extended folder-delete callback signature; ordinary calls now retain their original three arguments, and suite 138 passes. The first validation overlapped fixture snapshot manifests and refused two temporary files; validation is repeated after fixture cleanup."
+ ],
+ "rollback": "Revert the implementation commit. Detached worktrees return to project-only ownership and review scratch is left in place."
+}

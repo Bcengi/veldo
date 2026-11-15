@@ -1,0 +1,2 @@
+python3 .veldo/validate.py all: exit 0, no contract problems.
+Run after all temporary fixtures were removed.
