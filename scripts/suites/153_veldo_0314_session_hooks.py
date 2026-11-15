@@ -7,10 +7,10 @@ Only ROOT and expect are shared. All output, keys, databases and planted files a
 
 
 def _v314_suite():
+    import importlib.machinery
     import importlib.util
     import io
     import json
-    import multiprocessing
     import os
     from pathlib import Path
     import select
@@ -129,11 +129,12 @@ def _v314_suite():
         def one(kind, session, where):
             return spool.session_entry(kind, session, str(where), pid, started, socket.gethostname())
 
-        def call_hook(kind, session, where, serve=True):
-            process = subprocess.Popen([sys.executable, str(hook), kind], env=env, stdin=subprocess.PIPE,
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        def call_hook(kind, session, where, serve=True, environ=None, payload=None):
+            process = subprocess.Popen([sys.executable, str(hook), kind], env=environ or env,
+                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             children.append(process)
-            process.stdin.write(json.dumps({'session_id': session, 'cwd': str(where)}).encode())
+            process.stdin.write(json.dumps({'session_id': session, 'cwd': str(where)}
+                                           if payload is None else payload).encode())
             process.stdin.close()
             began = time.monotonic()
             while process.poll() is None and time.monotonic() - began < 15:
@@ -164,6 +165,99 @@ def _v314_suite():
                   and event[0]['subject'] == one('session_started', session, where)['subject'])
             if records:
                 check(row, 'declaration precedes creation', not Path(records[0][1]['locator']['path']).exists())
+        # Fix round, finding 2: the client's folder is resolved first, and what is still no entry is
+        # written under refused/ with why. Real hook processes against the served socket.
+        (temp / 'cwd-link').symlink_to(temp / 'outside', target_is_directory=True)
+        for session, where in (('through-link', str(temp / 'cwd-link')),
+                               ('trailing-slash', str(temp / 'outside') + '/'),
+                               ('dot-segment', str(temp / 'project' / '..' / 'outside'))):
+            status, elapsed = call_hook('SessionStart', session, where)
+            event = [event for event in events if event['subject'].get('session') == session]
+            check('fix2/folder-resolved', '%s: one item and one event for the folder it leads to: %s'
+                  % (session, (status, items(session), event)),
+                  status == 0 and len(items(session)) == 1 and len(event) == 1
+                  and event[0]['subject'] == one('session_started', session, temp / 'outside')['subject']
+                  and items(session)[0][1]['owner'] == {'scope': {'type': 'no_project'}, 'session': session})
+        check('fix2/folder-resolved', 'nothing was refused and nothing waits',
+              not spool.refused(folder) and not spool.pending(folder))
+        for payload, word in (({'session_id': 'bad/name', 'cwd': str(temp / 'outside')}, 'path component'),
+                              ({'session_id': 'no-folder'}, 'cwd'),
+                              ({'session_id': 'relative-folder', 'cwd': 'outside'}, 'absolute')):
+            before = spool.refused(folder)
+            status, elapsed = call_hook('SessionStart', None, None, payload=payload)
+            new = [name for name in spool.refused(folder) if name not in before]
+            kept = [json.loads((Path(folder) / spool.REFUSED / name).read_text()) for name in new]
+            check('fix2/invalid-refused', '%s: the notification is under refused/ with why: %s'
+                  % (payload['session_id'], (status, kept)),
+                  status == 0 and len(kept) == 1 and kept[0]['notification']['payload'] == payload
+                  and kept[0]['notification']['type'] == 'session_started'
+                  and kept[0]['notification']['pid'] == pid
+                  and kept[0]['refused']['reason'].startswith('space_session_invalid:')
+                  and word in kept[0]['refused']['reason'] and not spool.pending(folder)
+                  and not items(payload['session_id']))
+
+        # Fix round, finding 3: no state root is the CLI's fallback; a refused spool folder is noted and
+        # the entry is spooled under the fallback; with no spool and with no module one line is left.
+        def without(*names, **more):
+            return dict({name: value for name, value in env.items() if name not in names}, **more)
+
+        def spooled(root):
+            where = spool.spool_folder(str(root))
+            return [spool.read(where, name)['subject'].get('session') for name in spool.pending(where)]
+
+        def lines(root):
+            path = Path(root) / spool.UNSPOOLED
+            return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+
+        status, elapsed = call_hook('SessionStart', 'no-root-xdg', temp / 'outside', serve=False,
+                                    environ=without('VELDO_SPACE_STATE_ROOT', XDG_STATE_HOME=str(temp / 'xdg')))
+        check('fix3/no-state-root', 'spooled under XDG_STATE_HOME/veldo: ' + str((status, spooled(temp / 'xdg/veldo'))),
+              status == 0 and spooled(temp / 'xdg/veldo') == ['no-root-xdg'])
+        status, elapsed = call_hook('SessionEnd', 'no-root-home', temp / 'outside', serve=False,
+                                    environ=without('VELDO_SPACE_STATE_ROOT', 'XDG_STATE_HOME', HOME=str(temp / 'home')))
+        check('fix3/no-state-root', 'spooled under ~/.local/state/veldo: '
+              + str((status, spooled(temp / 'home/.local/state/veldo'))),
+              status == 0 and spooled(temp / 'home/.local/state/veldo') == ['no-root-home'])
+        unsafe = temp / 'unsafe-state'
+        (unsafe / spool.SPOOL).mkdir(parents=True, mode=0o700)
+        (unsafe / spool.SPOOL).chmod(0o770)
+        there = without(VELDO_SPACE_STATE_ROOT=str(unsafe), XDG_STATE_HOME=str(temp / 'xdg-unsafe'))
+        status, elapsed = call_hook('SessionStart', 'unsafe-folder', temp / 'outside', serve=False, environ=there)
+        noted = unsafe / spool.FOLDER_REFUSED
+        check('fix3/unsafe-folder', 'the refused folder is noted beside it and nothing is written into it: '
+              + str((status, noted.exists(), os.listdir(unsafe / spool.SPOOL))),
+              status == 0 and noted.exists() and 'writable by group or others' in json.loads(noted.read_text())['refused']
+              and os.listdir(unsafe / spool.SPOOL) == [])
+        check('fix3/unsafe-folder', 'the entry is spooled under the fallback: ' + str(spooled(temp / 'xdg-unsafe/veldo')),
+              spooled(temp / 'xdg-unsafe/veldo') == ['unsafe-folder'] and not lines(unsafe))
+        # The fallback's spool folder is made here when no entry made it, so the row that follows runs.
+        (temp / 'xdg-unsafe/veldo' / spool.SPOOL).mkdir(parents=True, mode=0o700, exist_ok=True)
+        (temp / 'xdg-unsafe/veldo' / spool.SPOOL).chmod(0o770)
+        status, elapsed = call_hook('SessionEnd', 'no-spool', temp / 'outside', serve=False, environ=there)
+        left = lines(unsafe)
+        check('fix3/no-spool-last-record', 'both spool folders refused: one line under the state root: '
+              + str((status, left)),
+              status == 0 and len(left) == 1 and left[0]['type'] == 'session_ended'
+              and left[0]['payload'] == {'session_id': 'no-spool', 'cwd': str(temp / 'outside')}
+              and left[0]['pid'] == pid
+              and 'writable by group or others' in left[0]['reason']
+              and (temp / 'xdg-unsafe/veldo' / spool.FOLDER_REFUSED).exists())
+        (temp / 'xdg-unsafe/veldo' / spool.SPOOL).chmod(0o700)
+        nowhere = temp / 'state-no-module'
+        status, elapsed = call_hook('SessionStart', 'no-module', temp / 'outside', serve=False,
+                                    environ=without(VELDO_SPACE_STATE_ROOT=str(nowhere),
+                                                    VELDO_SPACE_CLI=str(temp / 'nowhere/bin/veldo')))
+        left = lines(nowhere)
+        check('fix3/no-module-last-record', 'the module cannot be loaded: one line with the input: '
+              + str((status, left)),
+              status == 0 and len(left) == 1 and left[0]['hook'] == ['SessionStart'] and left[0]['pid'] == pid
+              and json.loads(left[0]['input']) == {'session_id': 'no-module', 'cwd': str(temp / 'outside')}
+              and left[0]['reason'])
+        status, elapsed = call_hook('SessionStart', None, None, serve=False, payload=['no', 'notification'],
+                                    environ=without(VELDO_SPACE_STATE_ROOT=str(nowhere)))
+        check('fix3/no-module-last-record', 'an input that is no notification is refused with why, not dropped',
+              status == 0 and len(spool.refused(spool.spool_folder(str(nowhere)))) == 1)
+
         for kind in SP.KINDS:
             if kind != 'scratch':
                 try:
@@ -193,11 +287,15 @@ def _v314_suite():
         (planted / 'only-copy').write_bytes(b'work that must stay')
         client_work = temp / 'project' / 'only-copy-client'
         client_work.write_bytes(b'client work that must stay')
-        latch, reached = multiprocessing.Event(), multiprocessing.Event()
+        # The latch is two files in the suite's own temporary folder (no semaphore: the gate's confined
+        # leg grants no /dev/shm). `reached` is written by a remover that was called; `latch` opens it.
+        latch, reached = temp / 'latch-open', temp / 'latch-reached'
         removers = spool._sibling('control_space_remove')
         def held(*args, **kwargs):
-            reached.set()
-            latch.wait(30)
+            reached.write_bytes(b'')
+            until = time.monotonic() + 30
+            while not latch.exists() and time.monotonic() < until:
+                time.sleep(0.02)
         for name in list(vars(removers)):
             if name == 'remove' or name.startswith('_r_') or name in ('tool', 'drop_caches'):
                 setattr(removers, name, held)
@@ -207,19 +305,27 @@ def _v314_suite():
             shutil.rmtree = held
             os._exit(spool.session_hook('session_ended', {'session_id': 'never-ends', 'cwd': str(temp / 'project')},
                                        str(state), str(installation), pid=pid))
-        child = multiprocessing.get_context('fork').Process(target=ending)
-        child.start()
-        began = time.monotonic()
-        while child.is_alive() and time.monotonic() - began < 15:
+        child = os.fork()
+        if child == 0:
+            try:
+                ending()
+            finally:
+                os._exit(70)
+        began, exited = time.monotonic(), None
+        while exited is None and time.monotonic() - began < 15:
             if select.select([listener], [], [], 0.02)[0]:
                 spool.serve_one(listener, authority)
-        timely = not child.is_alive()
+            done, status = os.waitpid(child, os.WNOHANG)
+            if done:
+                exited = os.waitstatus_to_exitcode(status)
+        timely = exited is not None
         intact = ((planted / 'only-copy').read_bytes() == b'work that must stay'
                   and client_work.read_bytes() == b'client work that must stay')
         check('ac3/end-returns-with-removers-held', 'bounded return, no remover, file intact',
-              timely and child.exitcode == 0 and not reached.is_set() and intact)
-        latch.set()
-        child.join(5)
+              timely and exited == 0 and not reached.exists() and intact)
+        latch.write_bytes(b'')
+        if exited is None:
+            os.waitpid(child, 0)
         check('ac3/end-event-once', 'one end, no signal and no item change',
               len([e for e in events if e['type'] == 'session_ended']) == 1
               and SP.SIGNAL not in operations and ledger.item(items('never-ends')[0][0]) == record)
@@ -327,6 +433,115 @@ def _v314_suite():
                    for name in spool.pending(spool.spool_folder(str(cli_state)))]
         check('ac4/cli-spools', 'session retained with process identity', done.returncode == 0 and len(entries) == 2
               and entries[-1]['subject'] == one('session_ended', 'cli-session', temp / 'outside')['subject'])
+
+        # Fix round, finding 5: the CLI resolves what it is given. With no ledger: a relative path, a path
+        # through a link and a working folder through a link. A session's --path is said, not dropped.
+        loose = temp / 'cli-state-loose'
+        loose_folder = spool.spool_folder(str(loose))
+        done = subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event', '--type', 'released',
+                               '--path', 'outside/given-up', '--path', str(link / 'linked-given-up'),
+                               '--path', str(planted) + '/', '--state-root', str(loose)],
+                              env=env, cwd=str(temp), capture_output=True, timeout=15)
+        entries = [spool.read(loose_folder, name) for name in spool.pending(loose_folder)]
+        check('fix5/cli-resolves', 'released paths are resolved, not refused: '
+              + str((done.returncode, done.stderr.decode(), [e['subject'] for e in entries])),
+              done.returncode == 0 and len(entries) == 1 and entries[0]['subject'] == {
+                  'paths': [str(temp / 'outside/given-up'), str(temp / 'outside/linked-given-up'), str(planted)],
+                  'creator': 'record'})
+        done = subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event', '--type', 'session_started',
+                               '--session', 'cli-linked', '--working-folder', str(link) + '/',
+                               '--pid', str(pid), '--started', str(started), '--path', str(planted),
+                               '--state-root', str(loose)], env=env, capture_output=True, timeout=15)
+        entries = [spool.read(loose_folder, name) for name in spool.pending(loose_folder)]
+        check('fix5/cli-resolves', 'a session working folder through a link is resolved: '
+              + str((done.returncode, done.stderr.decode())),
+              done.returncode == 0 and len(entries) == 2
+              and entries[-1]['subject'] == one('session_started', 'cli-linked', temp / 'outside')['subject'])
+        check('fix5/cli-session-path-said', 'with no ledger the verb says the path is not recorded',
+              'a session event records no path' in done.stderr.decode())
+        # With a ledger (this fixture's, handed to the verb in this process): the entry holds the paths
+        # the Ledger's own checks gave. The real Ledger has no event command, so the entry is spooled.
+        loader = importlib.machinery.SourceFileLoader('v314_veldo_cli', str(temp / 'bin/veldo'))
+        CLI = importlib.util.module_from_spec(importlib.util.spec_from_loader('v314_veldo_cli', loader))
+        was, sys.dont_write_bytecode = sys.dont_write_bytecode, True
+        try:
+            loader.exec_module(CLI)
+        finally:
+            sys.dont_write_bytecode = was
+        wired = temp / 'cli-state-wired'
+        wired_folder = spool.spool_folder(str(wired))
+        event_enabled[0] = False
+
+        def verb(argv):
+            out, said = io.StringIO(), io.StringIO()
+            try:
+                status = CLI.space_event(argv + ['--state-root', str(wired)], space={'ledger': ledger},
+                                         environ=dict(env), stdout=out, stderr=said)
+            except SystemExit as stop:
+                status = stop.code
+            return status, out.getvalue(), said.getvalue()
+        status, out, said = verb(['--type', 'released', '--path', str(scratch) + '//given-up/'])
+        entries = [spool.read(wired_folder, name) for name in spool.pending(wired_folder)]
+        check('fix5/cli-wired-canonical', 'the entry holds the Ledger\'s form of the path: '
+              + str((status, out, said, [e['subject'] for e in entries])),
+              status == 0 and len(entries) == 1
+              and entries[0]['subject'] == {'paths': [str(scratch / 'given-up')], 'creator': 'record'})
+        status, out, said = verb(['--type', 'session_ended', '--session', 'wired-session', '--path',
+                                  str(scratch / 'given-up'), '--pid', str(pid), '--started', str(started),
+                                  '--working-folder', str(temp / 'outside')])
+        check('fix5/cli-session-path-said', 'with a ledger the verb says the path is not recorded: '
+              + str((status, said)),
+              status == 0 and 'a session event records no path' in said
+              and len(spool.pending(wired_folder)) == 2)
+        event_enabled[0] = True
+
+        # Fix round, finding 4: the hook's timer raises TimeoutError. Raised where the entry is read (read
+        # is replaced for this one call: the timer cannot be made to fire there on demand), it ends the
+        # replay and the entry stays whole; the next replay delivers it.
+        timed = spool.spool_folder(str(temp / 'state-deadline'))
+        name = spool.put(timed, one('session_started', 'deadline', temp / 'outside'))
+        whole = (Path(timed) / name).read_bytes()
+        real_read = spool.read
+
+        def late(*args):
+            raise TimeoutError('session hook deadline')
+        spool.read = late
+        try:
+            spool.replay(timed, authority, sign)
+            raised = False
+        except TimeoutError:
+            raised = True
+        finally:
+            spool.read = real_read
+        check('fix4/deadline-in-read', 'the replay ends and the entry stays whole in the spool: '
+              + str((raised, os.listdir(timed))),
+              raised and spool.pending(timed) == [name] and (Path(timed) / name).read_bytes() == whole
+              and not (Path(timed) / spool.REFUSED).exists())
+        spool.read = late
+        try:
+            result = spool.submit(one('session_ended', 'deadline', temp / 'outside'), str(temp / 'state-deadline'),
+                                  str(installation), authority, sign)
+        finally:
+            spool.read = real_read
+        check('fix4/deadline-in-read', 'a hook whose deadline fires in the replay keeps both entries',
+              result['pending'] and len(spool.pending(timed)) == 2 and not (Path(timed) / spool.REFUSED).exists())
+        # Finding 6: what a crash in the middle of a write left is set aside by the next replay.
+        stale, fresh = Path(timed) / 'x.json.1.aaaaaaaa.partial', Path(timed) / 'y.json.1.bbbbbbbb.partial'
+        stale.write_bytes(b'{"cut": ')
+        fresh.write_bytes(b'{"being written": ')
+        os.chmod(stale, 0o600)
+        os.chmod(fresh, 0o600)
+        os.utime(stale, (time.time() - 3600, time.time() - 3600))
+        spool.replay(timed, authority, sign)
+        check('fix4/deadline-in-read', 'the next replay delivers the entry',
+              not spool.pending(timed) and len(items('deadline')) == 1
+              and len([e for e in events if e['subject'].get('session') == 'deadline']) == 2)
+        aside = Path(timed) / spool.REFUSED
+        check('fix6/stale-partial-set-aside', 'a stale partial leaves the spool with its bytes and why; a new one stays: '
+              + str(sorted(os.listdir(timed))),
+              not stale.exists() and fresh.exists()
+              and (aside / (stale.name + '.malformed')).read_bytes() == b'{"cut": '
+              and json.loads((aside / (stale.name + '.why')).read_text()) == {'refused': 'a write that did not finish'})
         hooks = json.loads((ROOT / 'packs/claude/hooks/hooks.json').read_text())['hooks']
         check('hooks/registered', 'both hooks bounded and use exec to retain client parent identity',
               all(hooks[k][0]['hooks'][0]['timeout'] == 15

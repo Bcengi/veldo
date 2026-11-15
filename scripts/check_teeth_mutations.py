@@ -14684,14 +14684,71 @@ def cases():
         "                return result('nothing', 'no project')\n"
         "            if declaration.get('item') is None:\n", ['ac2/no-project'])
     add(314, 'space314-remove-inside-hook', space314, 'control_space_spool.py',
-        "        submit(one, state_root, installation)\n",
-        "        submit(one, state_root, installation)\n"
+        "        session_record(kind, payload, state_root, installation, pid, fallback)\n",
+        "        session_record(kind, payload, state_root, installation, pid, fallback)\n"
         "        if kind == 'session_ended':\n            __import__('shutil').rmtree(payload['cwd'])\n",
         ['ac3/end-returns-with-removers-held'])
     add(314, 'space314-failure-reaches-client', space314, 'control_space_spool.py',
-        "        submit(one, state_root, installation)\n",
-        "        if submit(one, state_root, installation).get('pending'):\n            return 1\n",
-        ['ac4/down-starts-and-spools'])
+        "        session_record(kind, payload, state_root, installation, pid, fallback)\n",
+        "        if session_record(kind, payload, state_root, installation, pid, fallback).get('pending'):\n"
+        "            return 1\n", ['ac4/down-starts-and-spools'])
+    # The fix round (the review of VELDO-0314): no notification is dropped without a record. Finding
+    # 2: the client's folder used as it was given (through a link or with a trailing slash it is no
+    # entry); a notification that is no entry dropped. Finding 3: a refused spool folder left with no
+    # note; no fallback root; no last record when no spool takes it; the hook with no fallback state
+    # root; the hook silent when the module cannot be loaded. Finding 4: a deadline that fires where
+    # an entry is read sets the entry aside as malformed. Finding 6: what a crash cut short is left in
+    # the spool. Finding 5 (the CLI, case field `dir`): the raw arguments spooled in place of the
+    # Ledger's form; a path and a working folder not resolved with no ledger; a session's --path
+    # dropped without a word.
+    add(314, 'space314-folder-not-resolved', space314, 'control_space_spool.py',
+        "        where = resolved(payload['cwd'])\n", "        where = payload['cwd']\n",
+        ['fix2/folder-resolved'])
+    add(314, 'space314-invalid-dropped', space314, 'control_space_spool.py',
+        "                return {'refused': refuse(root, seen, why), 'reason': why, 'root': root}\n",
+        "                return {'refused': None, 'reason': why, 'root': root}\n", ['fix2/invalid-refused'])
+    add(314, 'space314-unsafe-folder-silent', space314, 'control_space_spool.py',
+        "            note_refused_folder(root, str(error))\n            last = error\n",
+        "            last = error\n", ['fix3/unsafe-folder'])
+    add(314, 'space314-unsafe-no-fallback', space314, 'control_space_spool.py',
+        "    for root in [state_root] + ([fallback] if fallback and fallback != state_root else []):\n",
+        "    for root in [state_root]:\n", ['fix3/unsafe-folder'])
+    add(314, 'space314-no-last-record', space314, 'control_space_spool.py',
+        "            unspooled([state_root, fallback], {'type': kind,",
+        "            (lambda *given: None)([state_root, fallback], {'type': kind,",
+        ['fix3/no-spool-last-record'])
+    add(314, 'space314-deadline-sets-aside', space314, 'control_space_spool.py',
+        "                except TimeoutError:\n"
+        "                    raise  # a caller's deadline fired in the read: the entry stays whole, with the rest\n",
+        "", ['fix4/deadline-in-read'])
+    add(314, 'space314-partials-not-swept', space314, 'control_space_spool.py',
+        "        _sweep(folder)\n", "", ['fix6/stale-partial-set-aside'])
+
+    def hook314(name, old, new, rows):
+        add(314, name, space314, 'space-session.py', old, new, rows)
+        result[-1]['dir'] = 'packs/claude/scripts'
+
+    hook314('space314-hook-no-fallback', "    fallback = os.path.join(base, 'veldo')\n",
+            "    fallback = None\n", ['fix3/no-state-root'])
+    hook314('space314-hook-no-last-record',
+            "        note((root, fallback), dict(seen, reason=str(error) or type(error).__name__))\n", "",
+            ['fix3/no-module-last-record'])
+
+    def cli314(name, old, new, rows):
+        add(314, name, space314, 'veldo', old, new, rows)
+        result[-1]['dir'] = 'bin'
+
+    cli314('space314-cli-raw-paths', '            paths = (subject or {}).get("paths")\n',
+           '            paths = list(args.path)\n', ['fix5/cli-wired-canonical', 'fix5/cli-resolves'])
+    cli314('space314-cli-unresolved',
+           '                paths = [spool.resolved(os.path.abspath(path)) for path in args.path]\n',
+           '                paths = list(args.path)\n', ['fix5/cli-resolves'])
+    cli314('space314-cli-folder-unresolved',
+           '            where = spool.resolved(os.path.abspath(args.working_folder or os.getcwd()))\n',
+           '            where = args.working_folder or os.getcwd()\n', ['fix5/cli-resolves'])
+    cli314('space314-cli-session-path-silent',
+           '        if args.kind in spool.SESSION_TYPES and args.path:\n', '        if False:\n',
+           ['fix5/cli-session-path-said'])
 
     space312 = '149_veldo_0312_ticket_ended.py'
 

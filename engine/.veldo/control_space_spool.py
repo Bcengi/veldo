@@ -9,6 +9,17 @@ remover. The event command and consumer remain VELDO-0323's: until then the even
 Released entries preserve paths and creator for that consumer's own authorization. Installation in
 client accounts remains VELDO-0329's. Invalid notifications are never treated as removal permission.
 
+NO NOTIFICATION IS DROPPED WITHOUT A RECORD. The client's folder is resolved first (resolved: links
+followed, a trailing slash and dot segments gone), so a folder named through a link is the folder it
+leads to. A notification that is still no entry (a session id that is no path component, no folder,
+a client process the kernel does not show) is written whole under refused/ with why (refuse). A
+spool folder that is not this account's alone is refused and noted beside it, and the entry is
+spooled under the fallback state root (the user's XDG state folder, veldo). When neither root takes
+it, one line with the notification and why is appended to <state root>/space-session.unspooled.jsonl
+(unspooled). A deadline that fires while an entry is read (TimeoutError, the hook's timer) ends the
+replay: the entry stays whole in the spool. A write a crash cut short (a .partial file of this
+account's, PARTIAL_SECONDS old) is set aside under refused/ by the next replay, under its lock.
+
 WHAT THIS MODULE IS. A worktree added with plain git, a branch switched in it and a trunk moved by hand
 all happen outside Veldo. Two git hooks (engine/hooks/post-checkout and reference-transaction) start the
 CLI, and the CLI calls this module. It writes down what the hook saw as one entry, hands it to the
@@ -167,6 +178,9 @@ REACH_SECONDS = 5.0   # the longest a hook waits for the authority's answer
 LOCK_SECONDS = 2.0    # the longest a call waits for another call's replay
 HOOK_SECONDS = 5.0    # the longest a hook's whole replay goes on; what is left stays spooled
 REPLAY_SECONDS = 60.0  # the same for the replay verb and for start
+PARTIAL = '.partial'  # the end of a temporary name (_write)
+PARTIAL_SECONDS = 600.0  # a write that has not ended after this long was cut short by a crash
+UNSPOOLED = 'space-session.unspooled.jsonl'  # under a state root: notifications no spool took
 _LOADED = {}
 
 
@@ -274,6 +288,12 @@ def plain_path(path):
             or os.path.normpath(path) != path or os.path.realpath(path) != path):
         raise Malformed('path must be absolute, normalized and without links')
     return path
+
+
+def resolved(path):
+    """Where a folder a client names is: every link followed, a trailing slash and dot segments gone.
+    What is not an absolute path is returned as it is, for checked to refuse."""
+    return os.path.realpath(path) if _text(path) and os.path.isabs(path) else path
 
 
 def _inside(path, root):
@@ -516,6 +536,62 @@ def _set_aside(folder, name, document):
     aside = _folder(os.path.join(folder, REFUSED))
     _write(os.path.join(aside, name), document)
     os.unlink(os.path.join(folder, name))
+
+
+def refuse(state_root, notification, why):
+    """A notification that is no entry is not dropped: it is written whole under refused/, with why.
+    Returns the file's name."""
+    folder = spool_folder(state_root)
+    data = json.dumps(notification, sort_keys=True, default=repr)
+    name = '%020d-%s%s' % (time.time_ns(), hashlib.sha256(data.encode()).hexdigest()[:32], SUFFIX)
+    aside = _folder(os.path.join(_folder(folder), REFUSED))
+    _write(os.path.join(aside, name), {'notification': json.loads(data),
+                                       'refused': {'outcome': 'refused', 'reason': why}})
+    return name
+
+
+def unspooled(roots, document):
+    """The last record of a notification no spool took: one line appended to UNSPOOLED under the first
+    of `roots` that takes it. Returns the file's path. Raises when none does."""
+    data = (json.dumps(dict(document, at=time.time()), sort_keys=True, default=repr) + '\n').encode()
+    last = Malformed('no state root')
+    for root in roots:
+        if not _text(root) or not os.path.isabs(root):
+            continue
+        try:
+            os.makedirs(root, mode=0o700, exist_ok=True)
+            path = os.path.join(os.path.normpath(root), UNSPOOLED)
+            descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+            try:
+                if os.write(descriptor, data) != len(data):
+                    raise OSError('a short write of ' + path)
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+            return path
+        except OSError as error:
+            last = error
+    raise last
+
+
+def _sweep(folder, now=None):
+    """Set aside, under refused/ with why, each write a crash cut short: a .partial file of this
+    account's that is PARTIAL_SECONDS old. Called under the replay's lock. Returns their names."""
+    now = time.time() if now is None else now
+    out = []
+    for name in sorted(os.listdir(folder)):
+        if not name.endswith(PARTIAL):
+            continue
+        try:
+            status = os.lstat(os.path.join(folder, name))
+            if _unsafe(status, False) is None and now - status.st_mtime >= PARTIAL_SECONDS:
+                _set_aside_raw(folder, name, 'a write that did not finish')
+                out.append(name)
+        except TimeoutError:
+            raise
+        except OSError:
+            continue
+    return out
 
 
 def _locked(folder, seconds):
@@ -793,6 +869,7 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS, seconds=REPLAY_SECONDS, c
     if lock is None:
         return done  # another call is replaying; what it does not take stays for the next call
     try:
+        _sweep(folder)
         blocked, seen = set(), set()
         while True:
             names = [name for name in pending(folder) if name not in seen]
@@ -806,6 +883,8 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS, seconds=REPLAY_SECONDS, c
                     one = read(folder, name)
                 except FileNotFoundError:
                     continue
+                except TimeoutError:
+                    raise  # a caller's deadline fired in the read: the entry stays whole, with the rest
                 except (Malformed, OSError) as error:
                     _set_aside_raw(folder, name, str(error))
                     done.append({'name': name, 'type': None, 'outcome': 'refused',
@@ -870,20 +949,57 @@ def submit(one, state_root, installation=None, authority=None, sign=None):
         return {'spooled': name, 'replayed': [], 'pending': True, 'reason': str(error)}
 
 
-def session_hook(kind, payload, state_root, installation=None, pid=None):
-    """The client supplies session_id and cwd. The exec hook's parent is the client process.
-    A start time is the kernel's field 22, in ticks, as the owner-live probe records it.
-    No event is invented when that identity cannot be read. No hook failure escapes to the client.
-    """
+def session_record(kind, payload, state_root, installation=None, pid=None, fallback=None):
+    """Record one client notification and say where: {spooled, replayed, pending, root} for an entry,
+    {refused, reason, root} for a notification that is no entry. The client supplies session_id and
+    cwd. The exec hook's parent is the client process. A start time is the kernel's field 22, in
+    ticks, as the owner-live probe records it. The folder is resolved first. What is still no entry
+    (no event is invented when the process cannot be read) is written under refused/ with why. A root
+    whose spool folder is refused is noted beside it and `fallback` is the next root. Raises when no
+    root took it."""
+    host = socket.gethostname() or 'unknown'
+    seen = {'type': kind, 'payload': payload, 'pid': pid, 'host': host}
+    one = why = None
     try:
         pid = os.getppid() if pid is None else pid
+        seen['pid'] = pid
         with open('/proc/%d/stat' % pid, 'rb') as stream:
             fields = stream.read().rsplit(b')', 1)[1].split()
-        one = session_entry(kind, payload['session_id'], payload['cwd'], pid, int(fields[19]),
-                            socket.gethostname() or 'unknown')
-        submit(one, state_root, installation)
-    except Exception:
-        return 0
+        seen['started'] = int(fields[19])
+        where = resolved(payload['cwd'])
+        one = session_entry(kind, payload['session_id'], where, pid, seen['started'], host)
+    except TimeoutError:
+        raise
+    except Exception as error:
+        why = 'space_session_invalid:' + (str(error) or type(error).__name__)
+    last = Malformed('no state root')
+    for root in [state_root] + ([fallback] if fallback and fallback != state_root else []):
+        try:
+            if one is None:
+                return {'refused': refuse(root, seen, why), 'reason': why, 'root': root}
+            return dict(submit(one, root, installation), root=root)
+        except TimeoutError:
+            raise
+        except Unsafe as error:
+            note_refused_folder(root, str(error))
+            last = error
+        except (Malformed, OSError) as error:
+            last = error
+    raise last
+
+
+def session_hook(kind, payload, state_root, installation=None, pid=None, fallback=None):
+    """session_record for a hook: no failure escapes to the client, and the status is 0. A
+    notification no root took is left as one line under a state root (unspooled)."""
+    try:
+        session_record(kind, payload, state_root, installation, pid, fallback)
+    except Exception as error:
+        try:
+            unspooled([state_root, fallback], {'type': kind, 'payload': payload,
+                                               'pid': os.getppid() if pid is None else pid,
+                                               'reason': str(error) or type(error).__name__})
+        except Exception:
+            pass
     return 0
 
 
