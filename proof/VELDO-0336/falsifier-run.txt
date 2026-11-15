@@ -1,0 +1,9 @@
+space336-project-owns-detached: rejected
+space336-run-owns-branch: rejected
+space336-scratch-is-unique-work: rejected
+space336-scratch-not-saved: rejected
+space336-delete-without-comparison: rejected
+space336-link-target-deleted: rejected
+space336-open-file-ignored: rejected
+space336-build-census-skipped: rejected
+space336-paths-truncated: rejected

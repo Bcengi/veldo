@@ -1,0 +1,31 @@
+{
+ "note": "Direct suite observations, excluding the shared preamble. Base and current ran sequentially on the same shared host. Both failed, on differing rows; no equivalence claim.",
+ "runs": [
+  {
+   "source": "base-8ef46604",
+   "passed": 27,
+   "failed_rows": [
+    "VELDO-0313 fix4/docker-objects-are-items"
+   ]
+  },
+  {
+   "source": "working-tree",
+   "passed": 15,
+   "failed_rows": [
+    "VELDO-0313 ac1/unread-group-sends-nothing",
+    "VELDO-0313 ac1/only-the-runs-own-items",
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "VELDO-0313 fix3/unread-process-holds",
+    "VELDO-0313 fix3/rewritten-environment-cwd-in-scratch",
+    "VELDO-0313 fix3/rewritten-environment-open-file-in-worktree",
+    "VELDO-0313 fix3/rule-3-reads-the-kernel",
+    "VELDO-0313 fix3/the-house-group",
+    "VELDO-0313 fix4/docker-objects-are-items",
+    "VELDO-0313 fix6/scratch-not-made",
+    "VELDO-0313 ac2/command-status",
+    "VELDO-0313 ac2/act-waits-75",
+    "VELDO-0313 ac2/report-starts"
+   ]
+  }
+ ]
+}

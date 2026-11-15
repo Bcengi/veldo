@@ -1,0 +1,1 @@
+template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)

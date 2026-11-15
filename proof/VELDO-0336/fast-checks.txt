@@ -1,0 +1,6 @@
+python3 .veldo/validate.py all: exit 0.
+docs hygiene: pass
+template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)
+lint: pass (1204 python, 39 shell, 3.90s)
+generated: pass
+Git subprocess boundary: pass

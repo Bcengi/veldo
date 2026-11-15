@@ -1,0 +1,240 @@
+{
+ "scope": "VELDO-0336 isolated applications only; no teeth stage or full gate run",
+ "results": [
+  {
+   "name": "space336-project-owns-detached",
+   "module": "control_space_spool.py",
+   "targets": {
+    "ac1/detached-owned-and-ended": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac1/detached-owned-and-ended",
+    "VELDO-0336 ac3/scratch-saved-and-removed",
+    "VELDO-0336 ac3/changed-after-save",
+    "VELDO-0336 ac3/added-after-save",
+    "VELDO-0336 ac3/mode-after-save",
+    "VELDO-0336 ac3/folder-retry",
+    "VELDO-0336 ac3/failed-keep",
+    "VELDO-0336 ac4/link-target-stays",
+    "VELDO-0336 ac4/open-file-stays",
+    "VELDO-0336 loss/kept-child",
+    "VELDO-0336 loss/tracked-edit",
+    "VELDO-0336 loss/build-station",
+    "VELDO-0336 loss/personal-ignore",
+    "VELDO-0336 loss/protect",
+    "VELDO-0336 ownership/unknown-run"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac1/detached-owned-and-ended",
+     "run and station from ledger, no ticket"
+    ]
+   ],
+   "old_digest": "41e856ae120b5b639f5e6b046aa91c4983405ac57fbcc5282174238a1b77ce80",
+   "new_digest": "3cf4fcd8f170b184af437fd22cb0ea63fc37a67986bc1f3b513c4ebd5213d9ba"
+  },
+  {
+   "name": "space336-run-owns-branch",
+   "module": "control_space_spool.py",
+   "targets": {
+    "ac2/branch-keeps-owner": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac2/branch-keeps-owner"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac2/branch-keeps-owner",
+     "branch pattern owns it"
+    ]
+   ],
+   "old_digest": "41e856ae120b5b639f5e6b046aa91c4983405ac57fbcc5282174238a1b77ce80",
+   "new_digest": "7af237a58b2dc225e5edef84dd3be22df532a3a1904d118aee38033219b5aad1"
+  },
+  {
+   "name": "space336-scratch-is-unique-work",
+   "module": "control_space_signal.py",
+   "targets": {
+    "ac3/scratch-saved-and-removed": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac3/scratch-saved-and-removed",
+    "VELDO-0336 ac3/changed-after-save",
+    "VELDO-0336 ac3/added-after-save",
+    "VELDO-0336 ac3/mode-after-save",
+    "VELDO-0336 ac3/folder-retry",
+    "VELDO-0336 ac3/failed-keep",
+    "VELDO-0336 ac4/link-target-stays"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac3/scratch-saved-and-removed",
+     "scratch removed with no request"
+    ]
+   ],
+   "old_digest": "ca21b23191f0e01ed0b66e2864cff2d4dccec45ae0b3e68219b5485894342036",
+   "new_digest": "ab56524d569212f3810cbe60959b274742ec040e1bb749cbdfca279f4660faa4"
+  },
+  {
+   "name": "space336-scratch-not-saved",
+   "module": "control_space_keep.py",
+   "targets": {
+    "ac3/scratch-saved-and-removed": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac3/scratch-saved-and-removed",
+    "VELDO-0336 ac3/folder-retry",
+    "VELDO-0336 ac4/link-target-stays"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac3/scratch-saved-and-removed",
+     "both files recoverable from recorded snapshots"
+    ]
+   ],
+   "old_digest": "6cbb5a4f9ac344ace0ce22ab48e439a3b079dc364ab6374a4c647b72d4f17b0d",
+   "new_digest": "daf1e824bc31f4fea5dd97dc37368b988912927569685b16b279e42000ed8932"
+  },
+  {
+   "name": "space336-delete-without-comparison",
+   "module": "control_space_remove.py",
+   "targets": {
+    "ac3/changed-after-save": [
+     false
+    ],
+    "ac3/added-after-save": [
+     false
+    ],
+    "ac3/mode-after-save": [
+     false
+    ],
+    "ac3/folder-retry": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac3/changed-after-save",
+    "VELDO-0336 ac3/added-after-save",
+    "VELDO-0336 ac3/mode-after-save",
+    "VELDO-0336 ac3/folder-retry"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac3/changed-after-save",
+     "comparison defers at original locator"
+    ],
+    [
+     "VELDO-0336 ac3/added-after-save",
+     "comparison defers at original locator"
+    ],
+    [
+     "VELDO-0336 ac3/mode-after-save",
+     "comparison defers at original locator"
+    ],
+    [
+     "VELDO-0336 ac3/folder-retry",
+     "comparison defers at original locator"
+    ]
+   ],
+   "old_digest": "674b5e8c7741d8ff5c6644c4e86ea91584c1866101c8b4dde906d598e9216b01",
+   "new_digest": "6967e061a0e367d942439d3be40f0c99069ed314bf9a181e4646c990ee99505f"
+  },
+  {
+   "name": "space336-link-target-deleted",
+   "module": "control_space_remove.py",
+   "targets": {
+    "ac4/link-target-stays": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac4/link-target-stays"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac4/link-target-stays",
+     "only the link was removed"
+    ]
+   ],
+   "old_digest": "674b5e8c7741d8ff5c6644c4e86ea91584c1866101c8b4dde906d598e9216b01",
+   "new_digest": "b58415cf4518909f5093b8f576ad264fa65639f61713eb80f7744032efbd2943"
+  },
+  {
+   "name": "space336-open-file-ignored",
+   "module": "control_space_signal.py",
+   "targets": {
+    "ac4/open-file-stays": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac4/open-file-stays"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac4/open-file-stays",
+     "live descriptor defers in_use"
+    ]
+   ],
+   "old_digest": "ca21b23191f0e01ed0b66e2864cff2d4dccec45ae0b3e68219b5485894342036",
+   "new_digest": "b0f610b5ec85278135f71403a19d64925038944863bee4f3ebe15d0f4979d991"
+  },
+  {
+   "name": "space336-build-census-skipped",
+   "module": "veldo",
+   "targets": {
+    "ac1/detached-owned-and-ended": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac1/detached-owned-and-ended"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac1/detached-owned-and-ended",
+     "build output recorded and removed first"
+    ]
+   ],
+   "old_digest": "0faaa247416ad7d3597564069a80a91e712d61205c20a57478f7d7c3a83dd0f4",
+   "new_digest": "2ed14f71fb081beaac955546444f92d97ea6af99fd59d857ca5b3ef3a1b13a90"
+  },
+  {
+   "name": "space336-paths-truncated",
+   "module": "control_space_signal.py",
+   "targets": {
+    "ac3/scratch-saved-and-removed": [
+     false
+    ]
+   },
+   "rejected": true,
+   "failed_rows": [
+    "VELDO-0336 ac3/scratch-saved-and-removed"
+   ],
+   "failed_details": [
+    [
+     "VELDO-0336 ac3/scratch-saved-and-removed",
+     "each removed path is in outcome"
+    ]
+   ],
+   "old_digest": "ca21b23191f0e01ed0b66e2864cff2d4dccec45ae0b3e68219b5485894342036",
+   "new_digest": "0bfad512e138d424ddc0e83122d085af29c52059b449a6f6ce082d48c148e7f4"
+  }
+ ]
+}
