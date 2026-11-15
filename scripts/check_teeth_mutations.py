@@ -15165,6 +15165,20 @@ def cases():
         'shutil.rmtree(root)',
         ['safety/failed-clone-work'])
 
+    # VELDO-0302 fix round: the form agent, and a source that is a linked worktree.
+    add(302, 'space302-agent-form-refused', '153_veldo_0302_space_creators.py', 'control_space.py',
+        "                                 ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):",
+        "                                 ('worker_clone', 'batch_clone', 'candidate_workspace')):",
+        ['ledger/forms'])
+    add(302, 'space302-worktree-source-not-resolved', '153_veldo_0302_space_creators.py', 'control_clone.py',
+        "        return Path(main)\n    return Path(common)\n",
+        "        return Path(main)\n    return Path(main)\n",
+        ['safety/main-repository-worktree'])
+    add(302, 'space302-any-source-accepted', '153_veldo_0302_space_creators.py', 'control_clone.py',
+        "                            or space_main_repository(main) not in (Path(known), Path(known) / '.git')):",
+        "                            or False):",
+        ['safety/main-repository'])
+
     return result
 
 

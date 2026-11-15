@@ -800,8 +800,6 @@ def prepare(shared, private, worktree, agent, name, start, *, space=None, owner=
         (private / 'objects/info/alternates').write_text(str(shared / 'objects') + '\n')
         git_run(['--git-dir=' + str(private), 'worktree', 'add', '-q', '-b', 'agent/%s/%s' % (agent, name),
                  str(worktree), commit])
-    if space is not None:
-        (private / 'veldo-space.json').write_text(json.dumps(creation.items, sort_keys=True) + '\n')
     return commit
 
 

@@ -115,6 +115,15 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
 
 ## History
 
+- 2026-11-15: fix round after the review (verdict FIX). Finding 1: the row ac2/three-items always
+  reports; under the declare-after-creating mutation it fails and no longer disappears. Finding 2: the
+  ledger accepts the form agent, so the accepted forms are exactly the four of design 4.1. Finding 3:
+  a creator's source that is a linked worktree of the main repository is read through git's common
+  directory and accepted; a source outside the main repository, and a folder beneath it that is no
+  work tree, stay refused. Note N1: the sandbox's prepare no longer writes veldo-space.json, which had
+  no reader and no criterion; the creator module is still loaded on every prepare. Three cases were
+  added to the mutation registry, twelve in all for this ticket.
+
 - 2026-11-15: the VELDO-0303 removal fixture still supplied predeclared items to creators.
   Its footprint is included for fixture adaptation: manual fleet setup uses an unwired creator,
   and the failed-clone row reads the items the creator now declares. Every removal assertion stays.

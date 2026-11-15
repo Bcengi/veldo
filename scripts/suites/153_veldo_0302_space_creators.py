@@ -230,25 +230,32 @@ def _v302_creators_suite():
                                     for r in items.values()))
                 check(row, 'declare observed absence; confirm observed existence',
                       len(observations[observed:]) == 2 * len(items) and all(o[3] for o in observations[observed:]))
-                record = at(path)[1]
+                found = at(path)
+                record = found[1] if found else None
+                if actor == 'sandbox':
+                    check('ac2/three-items', 'repository, child worktree and branch at the exact start',
+                          record is not None and len(items) == 3 and sorted(r['kind'] for r in items.values()) ==
+                          ['agent_repository', 'branch', 'worktree'] and
+                          items.get(record.get('parent'), {}).get('kind') == 'agent_repository' and
+                          record.get('start') == head and
+                          next(r for r in items.values() if r['kind'] == 'branch')['start'] == head)
+                check(row, 'the created thing has an item at its own path', record is not None)
+                record = record or {}
                 form = {'clone': 'worker_clone', 'batch': 'batch_clone', 'candidate': 'candidate_workspace',
                         'landing-candidate': 'candidate_workspace'}.get(actor)
                 if form:
-                    check(row, 'repository form and declared main repository', record['kind'] == 'agent_repository'
+                    check(row, 'repository form and declared main repository', record.get('kind') == 'agent_repository'
                           and record.get('form') == form and L._main_of(record) == str(repo))
                 if actor in ('receipts', 'artifact', 'batch-observation'):
-                    check(row, 'receipts, token usage and artifacts are evidence', record['kind'] == 'evidence')
+                    check(row, 'receipts, token usage and artifacts are evidence', record.get('kind') == 'evidence')
                 if actor == 'artifact':
                     check(row, 'token usage is held in the evidence artifact',
                           json.loads(Path(path).read_text()).get('tokens') == {'input': 7, 'output': 3})
-                if actor == 'sandbox':
-                    check('ac2/three-items', 'repository, child worktree and branch at the exact start',
-                          len(items) == 3 and sorted(r['kind'] for r in items.values()) ==
-                          ['agent_repository', 'branch', 'worktree'] and
-                          items[record['parent']]['kind'] == 'agent_repository' and record['start'] == head and
-                          next(r for r in items.values() if r['kind'] == 'branch')['start'] == head)
             except Exception as error:
                 check(row, traceback.format_exc()[-1400:], False)
+                if actor == 'sandbox' and 'ac2/three-items' not in rows:
+                    # The row always reports: a sandbox that did not get this far fails it.
+                    check('ac2/three-items', 'the sandbox prepare did not leave its three items', False)
 
         for actor in actors:
             row = 'ac3/' + actor
@@ -306,7 +313,7 @@ def _v302_creators_suite():
                   os.WIFSIGNALED(status) and os.WTERMSIG(status) == signal.SIGKILL and paths and
                   all(at(p) is not None and at(p)[1]['state'] == 'declared' for p in paths))
 
-        for form in ('worker_clone', 'batch_clone', 'candidate_workspace'):
+        for form in ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace'):
             reply = L.declare('agent_repository', {'path': str(scratch / ('form-' + form))}, owner, 'seam', form=form)
             check('ledger/forms', 'known form recorded', reply['ok'] and L.item(reply.get('item')).get('form') == form)
         for kind, form in (('agent_repository', 'unknown'), ('scratch', 'worker_clone')):
@@ -465,6 +472,50 @@ def _v302_creators_suite():
             refused = True
         check('safety/main-repository', 'the creator cannot attach a different main repository to the owner scope',
               refused and not bad_main.exists())
+        # A source outside the main repository stays refused: a linked worktree of another
+        # repository, and a folder beneath the main repository that is no work tree of it.
+        elsewhere, elsewhere_tree = base / 'elsewhere', base / 'elsewhere-tree'
+        elsewhere.mkdir()
+        git(elsewhere, 'init', '-q', '-b', 'main')
+        (elsewhere / 'other.md').write_text('another repository\n')
+        git(elsewhere, 'add', 'other.md')
+        git(elsewhere, 'commit', '-q', '-m', 'other')
+        git(elsewhere, 'worktree', 'add', '-q', '--detach', str(elsewhere_tree), 'HEAD')
+        for name, source in (('other-worktree', elsewhere_tree), ('other-repository', elsewhere),
+                             ('beneath-main', repo / '.veldo')):
+            outside, before = scratch / ('wrong-main-' + name), set(L.items())
+            try:
+                with creation.item('agent_repository', outside, main=source, form='worker_clone'):
+                    outside.mkdir()
+                refused = False
+            except FL.SpaceCreationError:
+                refused = True
+            check('safety/main-repository', 'a source outside the main repository is refused: ' + name,
+                  refused and not outside.exists() and set(L.items()) == before)
+        # A creator whose source is a linked worktree of the main repository is valid.
+        lead_tree = scratch / 'lead-worktree'
+        git(repo, 'worktree', 'add', '-q', '--detach', str(lead_tree), head)
+        try:
+            (scratch / 'worktree-source').mkdir()
+            batch = object.__new__(BA.Batch)
+            batch.space, batch.space_owner = space, owner
+            batch.workspace_root, batch.repo_root = str(scratch / 'worktree-source'), str(lead_tree)
+            batch.record = {'id': 'batch-worktree', 'state': 'assembled', 'clone': str(lead_tree), 'watermark': head}
+            clone = batch._isolated_clone()
+            found = at(clone)
+            check('safety/main-repository-worktree',
+                  'the real batch creator, run from a linked worktree, declares its clone under the main repository',
+                  found is not None and found[1]['state'] == 'present' and found[1]['kind'] == 'agent_repository'
+                  and found[1].get('form') == 'batch_clone' and L._main_of(found[1]) == str(repo)
+                  and (Path(clone) / '.git' / 'objects' / 'info' / 'alternates').read_text().strip()
+                  == str(repo / '.git' / 'objects'))
+            direct = scratch / 'worktree-source-direct'
+            with creation.item('agent_repository', direct, main=lead_tree, form='candidate_workspace'):
+                direct.mkdir()
+            check('safety/main-repository-worktree', 'the seam accepts the linked worktree as the source',
+                  at(direct) is not None and at(direct)[1]['state'] == 'present')
+        except Exception:
+            check('safety/main-repository-worktree', traceback.format_exc()[-1000:], False)
         conn.close()
 
     for row, values in rows.items():

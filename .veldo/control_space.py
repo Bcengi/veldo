@@ -1828,7 +1828,7 @@ class Ledger:
         kind = params.get('kind')
         form = params.get('form')
         if form is not None and (kind != 'agent_repository' or form not in
-                                 ('worker_clone', 'batch_clone', 'candidate_workspace')):
+                                 ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):
             raise _invalid('form', 'a known agent repository form')
         canonical = canonical_locator(kind, params.get('locator'))
         if canonical != params.get('locator'):

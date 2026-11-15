@@ -564,6 +564,21 @@ def space_owner(contract):
             'lane': context.get('lane') or reservation.get('lane') or contract.get('lane')}
 
 
+def space_main_repository(main):
+    """The repository a creator's source belongs to. A work tree, a linked worktree or a git
+    directory is read through git's common directory, so a linked worktree gives its main
+    repository. Anything else, a folder beneath a work tree included, is returned as given."""
+    where = os.path.realpath(str(main))
+    result = _git('-C', where, 'rev-parse', '--git-dir', '--git-common-dir', check=False)
+    lines = [] if result.returncode else result.stdout.splitlines()
+    if len(lines) != 2:
+        return Path(main)
+    git_dir, common = (os.path.realpath(os.path.join(where, line)) for line in lines)
+    if where != git_dir and not os.path.lexists(os.path.join(where, '.git')):
+        return Path(main)
+    return Path(common)
+
+
 class SpaceCreator:
     """VELDO-0302: supplied ledger, declare before creation, confirm after success.
 
@@ -598,7 +613,7 @@ class SpaceCreator:
                 try:
                     known = self.space['ledger']._main_of({'owner': self.owner})
                     if (known is None or os.path.realpath(known) != known
-                            or Path(main) not in (Path(known), Path(known) / '.git')):
+                            or space_main_repository(main) not in (Path(known), Path(known) / '.git')):
                         raise ValueError('the owner scope must name the creator main repository')
                 except Exception as error:
                     if self.refusal is not None:
