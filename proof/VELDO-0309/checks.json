@@ -1,0 +1,8 @@
+{
+  "implementation": "91d8ce812080ed210d7840c1b1e4115a03bbaa25",
+  "targeted_rows": 15,
+  "falsifiers": 8,
+  "fast_checks": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py",
+  "fast_checks_exit": 0,
+  "full_gate": "not run"
+}

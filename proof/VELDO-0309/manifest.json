@@ -1,0 +1,131 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0309",
+  "commit": "91d8ce812080ed210d7840c1b1e4115a03bbaa25",
+  "tree": "da3764d3c0689c599dc8575bce9ec90be15020d5",
+  "producer": "Codex implementation agent; not an independent reviewer",
+  "produced_at": "2026-11-15T21:55:27.222332+00:00",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/153_veldo_0309_gate_space.py",
+          "detail": "Both real gate scripts, with no gate_host.json: act at free 120, need 250 and floor 100 exits 75 before the check, stamp or event; report prints the same numbers and runs. Needs come from the project instead of the default 200."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0309/rows.json",
+          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0309/falsifiers.json",
+          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/153_veldo_0309_gate_space.py",
+          "detail": "Both gate scripts capture a check writing the OS no-space error to stderr. With free 50 below floor 100, report mode exits 75 as environment_failure:no_space, with no stamp, no event and build output still present. Unread free space refuses; an error above the floor is not classified as confirmed no_space."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0309/rows.json",
+          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0309/falsifiers.json",
+          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/153_veldo_0309_gate_space.py",
+          "detail": "Green and red gates record their stamp before the synchronous census and versioned item signal. Real build folders and declared evidence caches are gone on return; notes, a personally ignored settings file, and the evidence proof stay byte for byte. SIGKILL during checks and at entry to the stamp writer sends no verdict call. The helper refuses a previous stamp and a duplicate end. Keep leaves its item at the same version; a repository inside build output and invalid locators refuse removal."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0309/rows.json",
+          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0309/falsifiers.json",
+          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "scripts/suites/153_veldo_0309_gate_space.py",
+          "detail": "For both scripts, absent installation and an actual off installation preserve green/red exit and stamp status. Inactive gates create no space files that could change the dirty-path count. A fresh scaffold installs the canonical helper and the gate steps."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0309/rows.json",
+          "detail": "15 targeted rows passed. Real SQLite ledger, OpenSSH owner signature, git worktrees, census, Signal, keeper and existing removers; both gate scripts use tiny fixture catalogs."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0309/falsifiers.json",
+          "detail": "The final isolated application of each registered case turned its intended row red; 8 of 8 rejected. The before-stamp mutant is also refused independently by the helper, so its killed-gate row detects the premature call without requiring a loss."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit and integration",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0309/run_rows.py: 15 rows passed, 0 failed"
+    },
+    {
+      "name": "falsifiers",
+      "status": "passed",
+      "command": "The same targeted runner, isolated source copies only: 8 registered falsifiers applied once each in the final run, all 8 rejected. No mutation coordinator or teeth stage was run."
+    },
+    {
+      "name": "fresh adopter",
+      "status": "passed",
+      "command": "init_scaffold.scaffold on a temporary directory using engine: installed helper bytes match canon and gate has the need step; no gate was executed."
+    },
+    {
+      "name": "fast checks",
+      "status": "passed",
+      "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py"
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "command": "./scripts/verify.sh is for the lead through the gate lock; the builder did not run it."
+    }
+  ],
+  "assumptions": [
+    "Criteria remain pending the lead gate and independent review, despite all targeted rows passing.",
+    "Production authority transport is VELDO-0323, not built on this branch. As the existing wrapper does, the helper reports ledger_unreachable with an enabled installation and no wiring. It opens no private ledger and sends nothing. Rows inject the receiver-style authority wiring; a live central-service gate is not proven.",
+    "The fixtures alone supply the two unbuilt act checks (VELDO-0332 and VELDO-0339), an empty process table, synthetic free-byte readings and a stub Docker client. Production act guards, signatures, packet checks, probes, keeper and removers are unchanged. No actual engine, protected volume or owner data was touched.",
+    "Admission retries and historical needs are later tickets; this helper uses the current arithmetic. The unconfirmed no-space retry policy is not built: an error without a below-floor pool keeps the ordinary verdict.",
+    "The shell rows retain gate ordering and stamp code, replacing catalogs and confinement helpers only in throwaway fixtures. Kills are real SIGKILL at the checks and stamp boundary. The standard full gate, heavy suites, policy checker and suite 86 captures were not run or edited.",
+    "Development found two fixture setup mistakes and an absent-stamp assertion that raised instead of producing its named red row. These were corrected. Final records are from the complete rerun after the inactive-log correction; no failed run is counted as evidence of detection.",
+    "The docs check exited 0 and reported pass while printing paths of older non-ASCII artifacts. Changed files were separately checked as ASCII."
+  ],
+  "rollback": "Revert the gate steps, helper, scaffold entry and the two protected helper entries. Gate behavior returns to the previous form."
+}
