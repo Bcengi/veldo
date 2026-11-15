@@ -1,3 +1,4 @@
-python3 scripts/selftest.py with the suite option for 153_veldo_0336_run_worktree
-selftest (PARTIAL, 1 of 223 suites): 45 passed, 0 failed in 15.47s
+nice -n 10 python3 scripts/selftest.py --suite 153_veldo_0336_run_worktree (fix round, commit 1cd912af)
+selftest (PARTIAL, 1 of 223 suites): 47 passed, 0 failed in 4.37s
+Rows added in the fix round: ac4/opened-during-removal, paths/parent-link-refused.
 Partial suite run only; full verification is reserved for the lead.

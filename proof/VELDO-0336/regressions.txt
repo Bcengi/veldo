@@ -1,9 +1,14 @@
-Targeted partial runs only; no full gate claim.
+Targeted partial runs only; no full gate claim. Fix round, commit 1cd912af, each with nice -n 10
+python3 scripts/selftest.py --suite NAME.
 134 space mode: 42 passed, 0 failed.
 135 kinds: 150 passed, 0 failed.
+136 probe: 72 passed, 0 failed.
 137 rules: 49 passed, 0 failed.
-138 removers: 65 passed, 0 failed after callback compatibility fix.
+138 removers: 65 passed, 0 failed.
 139 signal: 44 passed, 0 failed.
 140 keep: 57 passed, 0 failed.
 148 hooks: 57 passed, 0 failed.
-151 wrapper: initial shared-host run 47 passed, 7 failed. A separate base/current comparison also failed on differing rows; this does not establish equivalent failures. Final rerun interrupted during host process waiting, with no verdict. The lead needs the confined run.
+153 run worktree: 47 passed, 0 failed.
+151 wrapper: not run in the fix round. First round: initial shared-host run 47 passed, 7 failed; the
+independent review ran it three times on this commit's parent (51/54, 53/54, 54/54) and three times on
+the base (54/54, 53/54, 41/54) and found the failures come from the host. The lead needs the confined run.
