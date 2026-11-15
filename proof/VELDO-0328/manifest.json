@@ -1,0 +1,109 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0328",
+ "commit": "96eceb36538e7ade39b3aee6e553e995bd82d694",
+ "tree": "253b159b7f7234b5381ed41d87410d988ff9c346",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T20:45:56.231482+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0328_images.py",
+     "detail": "ac1/two-tags drives landed and ticket_ended on both contexts. The real ledger records the known run and its ticket, with engine, tag and image identity. Item-naming signals carry exactly the selected current item versions through real rules and remove_tag. Only the owned tag is named to the non-forced remove; a second ticket tag and its planted content survive. ac1/in-use checks engine refusal becomes deferred remove_refused, then retries after use ends. Provenance, changed identity, owner Keep and report mode rows refuse unsafe ownership or removal."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0328/suite-green.txt",
+     "detail": "Targeted suite, real store, ledger, owner signatures, Signal, rules and removers; two strict in-memory engines. All targeted checks passed. Full-gate acceptance remains pending the lead."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0328/falsifiers.json",
+     "detail": "space328-remove-by-image-id turns ac1/two-tags red. A realistic non-forced engine refuses an image id with multiple tags, so the target tag remains; the row also checks preservation of the other ticket tag. This is not claimed as a real-engine reproduction of tag loss. The expected-image-id falsifier turns ac1/provenance red."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0328_images.py",
+     "detail": "ac2/pulled-kept drives an image pull event whose image carries an inherited run label. On both engines its report is ownerless, disposition kept, and has no ending event. Both tags and planted content remain after the run ticket ends. ac2/restart checks another tag, duplicate event and a new adapter instance write no duplicate; a pulled image cannot become built. ac2/pull-after-build proves a durable pulled report also stops the existing remover from removing an older owned tag, on both engines. safety/unread proves unread engine and ledger information refuse recording or removal."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0328/suite-green.txt",
+     "detail": "Targeted suite, real store, ledger, owner signatures, Signal, rules and removers; two strict in-memory engines. All targeted checks passed. Full-gate acceptance remains pending the lead."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0328/falsifiers.json",
+     "detail": "space328-pull-owned-by-run turns ac2/pulled-kept red and the pulled tag is removed at ticket end. space328-pull-after-build-not-kept removes the only tag of the planted image and turns ac2/pull-after-build red. Additional falsifiers cover missing event subscription, duplicate pull writes and adopting a pulled image as built."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0328_images.py",
+     "detail": "ac3/both-engines checks protected repositories, including minio names, before both build and pull recording on default and desktop-linux. No item or report is written and planted content stays. ac3/other-name checks a protected sibling tag and a protected digest also exclude an otherwise unprotected requested tag. Malformed names or labels refuse the protect look as unread; space328-unread-image-names-pass turns safety/unread red."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0328/suite-green.txt",
+     "detail": "Targeted suite, real store, ledger, owner signatures, Signal, rules and removers; two strict in-memory engines. All targeted checks passed. Full-gate acceptance remains pending the lead."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0328/falsifiers.json",
+     "detail": "space328-protect-first-context-only turns ac3/other-name red: the unprotected alias of an image carrying a protected sibling name gets an item on the second engine. space328-protect-only-requested-tag also turns the row red. Direct protected tag names remain additionally guarded by the ledger."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "Six individually selected targeted suites: all zero failures. See suite-green.txt. These partial runs do not establish full verification."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The 14 VELDO-0328 rows use the real control store, ledger, owner signatures, rules and removers with strict stand-in engines. No real engine was contacted."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "python3 proof/VELDO-0328/run_falsifiers.py: 10 passing controls, 10 target rows red; isolated copies only."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; python3 scripts/check_git_boundary.py"
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh is reserved for the lead through the gate lock. No full verification or independent approval is claimed."
+  }
+ ],
+ "assumptions": [
+  "Build ownership enters through built(engine, tag, label, image_id), called by a trusted build creator after success. Image labels and generic tag events are not build provenance because a pull can inherit labels. Project build command wiring is outside this adapter ticket; Service.space_docker remains unset on this branch.",
+  "Pulled images use the existing ownerless report representation, keyed by image id per engine, with disposition kept and no ending events. Their ledger state is present, not an owned lifecycle state kept. They are not owned removal items. Image inventory listing does not infer provenance; a missed pull requires its creator to replay pulled(), since a snapshot alone cannot prove a pull.",
+  "Docker responses and removal semantics are stand-ins. No live engine test was run and no Docker object, host database, protected data, engine backing file or minio image was read or changed by the suite.",
+  "The fixture supplies the two unbuilt act prerequisites only for integration removal rows. A separate row checks the real refusal names VELDO-0332 and VELDO-0339. The empty fixture process table and free-space reading are stand-ins.",
+  "The small additional image-remover refusal is within AC2 and documented in the spec footprint. No new deletion path was added. Built image tags are reproducible output under design 0.1; the existing keep step and snapshot behavior for repositories is unchanged and its targeted regression suite passed.",
+  "Criteria remain pending until the lead runs the full gate and handles landing approval. Suite 86_veldo_0127 remains the lead recapture task."
+ ],
+ "rollback": "Revert the implementation and proof commits. Existing owned tags stay recorded; pulled reports stay ownerless. No removed build output is restored by reverting."
+}
