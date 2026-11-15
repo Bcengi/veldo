@@ -437,7 +437,8 @@ APPLIES = {
     REVIEW_SCRATCH: ('ledger', 'protect', 'owner_live', 'process_use', 'children'),
 }
 
-DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence')
+DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence', 'review_run_scratch',
+              'review_run_build_output')
 HOLDS_REPOSITORIES = ('worktree', 'agent_repository')  # the kinds a nested repository is looked for in
 NOT_HOLDING_STATES = ('removed', 'gone')
 REVIEW_SCRATCH_CASE = 3  # an untracked file git does not ignore: not unique work in a review worktree
@@ -570,7 +571,7 @@ def _rule_process_use(ledger, probe, identity, record, given):
         # named by process id, task and fact; one that stayed unread carries the reason.
         return {'processes': facts['processes'], 'containers': facts['containers'], 'git': facts['git'],
                 'unread': dict(unread, processes=reaching), 'reader': facts.get('reader')}
-    if record['kind'] == 'scratch':
+    if record['kind'] in ('scratch', 'review_run_scratch'):
         held = probe.scratch(path, given['borrow_root'])
         if held['in_use'] or not held['read']:
             return {'scratch': held}

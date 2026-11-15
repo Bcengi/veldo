@@ -1135,12 +1135,39 @@ def space_census(space, worktree, event, owner=None, also=()):
     return answer
 
 
+SPACE_VERDICT = 'verdict_recorded'  # the event a review run's folders wait for (VELDO-0337)
+SPACE_VERDICT_STATIONS = ('review',)  # the stations whose run ends with a verdict the floor records
+
+
+# The kind a review run's own folder is declared with, for the kind every other run's has (VELDO-0337).
+SPACE_REVIEW_KINDS = {'scratch': 'review_run_scratch', 'build_output': 'review_run_build_output'}
+
+
+def space_kind(kind, owner):
+    """VELDO-0337: the kind a run's own folder is declared with. Declare takes no end list: an item's end
+    events come from its kind in the kind registry alone (design 4.1, 6.1; the lead's decision at
+    assembly, as VELDO-0324 decided). A review run's scratch folder and build root are still read while
+    its verdict is validated and signed, after its receiver has ended, so they are declared with the
+    kinds review_run_scratch and review_run_build_output, which end at verdict recorded, ticket ended
+    and project ended and never at run finished. The one writer of the verdict sends verdict recorded
+    after its commit (dispatch.py, FloorAuthority.record_review). Run finished then neither names nor
+    matches them, from the receiver, a sweep or a retry. A review that ends with no verdict leaves them
+    for ticket ended or project ended. Every other run's folders keep their kind."""
+    run = (owner or {}).get('run')
+    station = run.get('station') if isinstance(run, dict) else None
+    if station not in SPACE_VERDICT_STATIONS:
+        return kind
+    return SPACE_REVIEW_KINDS.get(kind, kind)
+
+
 def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=False, run=None):
     """VELDO-0305 AC3: the folders a run is given, each declared in the ledger before it is made and
     before the worker starts: the run's temporary folder, a scratch item under the installation's first
     scratch root, and, for a project that declares build variables, the build root, a build output item
     under the installation's first build root, named after the worktree. Both are owned by the run
-    (the worktree's scope and ticket, the run with its station). The answer is {worktree, item, owner,
+    (the worktree's scope and ticket, the run with its station), and a review run's are declared with
+    the review run kinds, which end at verdict recorded and never at run finished (space_kind,
+    VELDO-0337). The answer is {worktree, item, owner,
     scratch, build, items, environment, refusal, detail}; environment is what the worker is given:
     the temporary folder variable at the scratch folder and each declared build variable at the
     build root. A variable is in it only when its folder has a live item.
@@ -1203,9 +1230,12 @@ def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=
                                 detail='the %s folder %s and the run directory %s are not apart'
                                        % (name, path, os.path.normpath(str(run))))
             known = live.get(path)
+            # VELDO-0337: a review run's folder has a kind of its own. The build root passes from run to
+            # run of the worktree as it is, whichever of the two build kinds it was declared with.
+            declared_as = space_kind(kind, owner)
             if known is not None:
                 mine = (known[1]['owner'].get('run') or {}).get('id') == dispatch_id
-                if (known[1].get('kind') != kind or (name == 'scratch' and not mine)
+                if (known[1].get('kind') not in (kind, SPACE_REVIEW_KINDS[kind]) or (name == 'scratch' and not mine)
                         or known[1]['owner'].get('scope') != owner['scope']
                         or os.path.islink(path) or not os.path.isdir(path)):
                     return dict(out, refusal=SPACE_OTHERWISE,
@@ -1216,7 +1246,9 @@ def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=
             if os.path.lexists(path):
                 return dict(out, refusal=SPACE_UNRECORDED,
                             detail='the %s folder %s is there and no item records it' % (name, path))
-            made = ledger.declare(kind, {'path': path}, owner, 'seam')
+            # VELDO-0337: a review run's folders are declared with the review run kinds, which end at its
+            # verdict, never at run finished.
+            made = ledger.declare(declared_as, {'path': path}, owner, 'seam')
             if not made.get('ok'):
                 return dict(out, refusal=SPACE_UNAVAILABLE,
                             detail='declare refused: %s' % (made.get('reason'),))
@@ -2338,6 +2370,9 @@ class Receiver:
             # teardown, behind its own clone_in_use test, and that teardown names the clone's own items and
             # nothing else of the owner. Neither holds this event back. A worktree or an agent repository of
             # the run that is no clone's is named with the run's folders, as design 6.10 has it.
+            # VELDO-0337: a review run's scratch folder and build root are of the review run kinds, which
+            # do not end on run finished (space_kind), so this event neither names nor removes them: they
+            # wait for verdict recorded, which the writer of the verdict sends.
             folders = [run] + [path for path in (given.get('scratch'),) if path]
             self.run_sent = True
             self.run_removal = space_signal(

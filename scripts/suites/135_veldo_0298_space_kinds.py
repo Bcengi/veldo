@@ -76,7 +76,8 @@ def _v298_space_kinds_suite():
     EVENTS = ('run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended',
               'worktree_abandoned', 'released', 'session_ended')
     TABLE_ROWS = ('scratch', 'build_output', 'container', 'network', 'volume', 'image_tag', 'evidence',
-                  'worktree', 'worktree_review_run', 'worktree_station_run', 'agent_repository', 'branch')
+                  'worktree', 'worktree_review_run', 'worktree_station_run', 'agent_repository', 'branch',
+                  'review_run_scratch', 'review_run_build_output')
 
     # Design section 5, transcribed. None is an empty cell.
     remove = {'action': 'remove'}
@@ -133,6 +134,14 @@ def _v298_space_kinds_suite():
                    'contained': {'action': 'mark_contained'}, 'ticket_ended': {'action': 'keep'},
                    'project_ended': {'action': 'keep'}, 'worktree_abandoned': {'action': 'keep'},
                    'released': {'action': 'keep'}, 'session_ended': None},
+        # VELDO-0337, the lead's decision at assembly: a review run's scratch and build root are kinds
+        # whose end events are verdict recorded, ticket ended and project ended (design 4.1/6.1).
+        'review_run_scratch': {'run_finished': None, 'verdict_recorded': remove, 'landed': None,
+                               'contained': None, 'ticket_ended': remove, 'project_ended': remove,
+                               'worktree_abandoned': None, 'released': None, 'session_ended': None},
+        'review_run_build_output': {'run_finished': None, 'verdict_recorded': remove, 'landed': None,
+                                    'contained': None, 'ticket_ended': remove, 'project_ended': remove,
+                                    'worktree_abandoned': None, 'released': None, 'session_ended': None},
     }
 
     ROWS = (tuple('ac1/%s/%s' % (row, event) for row in TABLE_ROWS for event in EVENTS)

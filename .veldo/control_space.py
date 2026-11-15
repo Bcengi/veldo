@@ -318,7 +318,11 @@ MODE_SIGNER_TYPE, MODE_SIGNER_ROLE = 'person', 'project_owner'
 ACT_CONDITIONS = (('clean_report_days', 'VELDO-0332'), ('no_unconfirmed_pending_group', 'VELDO-0339'))
 NO_PROJECT = {'type': 'no_project'}
 
-DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence')
+# VELDO-0337 (the lead's decision at assembly, design 4.1/6.1): a review run's scratch folder and build
+# root are kinds of their own, whose end events the kind registry gives: verdict recorded, ticket ended
+# and project ended, never run finished. Declare takes no end list.
+REVIEW_RUN_KINDS = ('review_run_scratch', 'review_run_build_output')
+DISK_KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence') + REVIEW_RUN_KINDS
 DOCKER_KINDS = ('container', 'volume', 'network', 'image_tag')
 KINDS = DISK_KINDS + ('branch',) + DOCKER_KINDS
 # The protect list's entry type that holds the name patterns of each Docker kind.
@@ -746,7 +750,7 @@ def checked_lifecycle(lifecycle):
             or not isinstance(lifecycle.get('events'), (list, tuple))
             or not all(_is_str(event) for event in lifecycle['events'])
             or not isinstance(lifecycle.get('ends_on'), dict) or set(lifecycle['ends_on']) != set(KINDS)):
-        raise _invalid('lifecycle', 'a version, the events, and the events each of the ten kinds ends on')
+        raise _invalid('lifecycle', 'a version, the events, and the events each kind ends on')
     events = list(lifecycle['events'])
     ends_on = {}
     for kind in KINDS:

@@ -980,6 +980,8 @@ _r_network = _docker('engine_network_remove', ('id',), ('network', 'inspect', '$
 REMOVERS = {
     ('remove', 'scratch'): _r_folder,
     ('remove', 'build_output'): _r_folder,
+    ('remove', 'review_run_scratch'): _r_folder,
+    ('remove', 'review_run_build_output'): _r_folder,
     ('remove', 'worktree'): _r_worktree,
     ('remove', 'agent_repository'): _r_agent_repository,
     ('remove', 'volume'): _r_volume,

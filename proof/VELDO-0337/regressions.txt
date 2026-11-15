@@ -1,9 +1,25 @@
-139_veldo_0301_space_signal
-selftest (PARTIAL, 1 of 223 suites): 44 passed, 0 failed in 1.65s
-exit 2 (2 means partial with no failures)
-146_veldo_0308_run_finished
-selftest (PARTIAL, 1 of 223 suites): 64 passed, 0 failed in 7.86s
-exit 2 (2 means partial with no failures)
-82_veldo_0129_worker_wiring
-selftest (PARTIAL, 1 of 223 suites): 55 passed, 0 failed in 38.90s
-exit 2 (2 means partial with no failures)
+Fix round, 2026-11-15. Each: python3 scripts/selftest.py with the suite option naming the suite; exit 2
+is the partial-run convention with no failure.
+132_veldo_0297_space_ledger: 57 passed, 0 failed
+133_veldo_0326_space_principals: 56 passed, 0 failed
+135_veldo_0298_space_kinds: 150 passed, 0 failed
+139_veldo_0301_space_signal: 44 passed, 0 failed
+142_veldo_0303_space_paths: 64 passed, 0 failed
+143_veldo_0305_space_census: 52 passed, 0 failed
+146_veldo_0308_run_finished: 64 passed, 0 failed
+147_veldo_0310_landed_contained: 59 passed, 0 failed
+149_veldo_0312_ticket_ended: 67 passed, 0 failed
+82_veldo_0129_worker_wiring: 55 passed, 0 failed
+63_veldo_0049_floor: 46 passed, 0 failed
+59_veldo_0031_review: 32 passed, 0 failed
+62_veldo_0039_dispatch: 51 passed, 0 failed
+The last four were run again after the last edit of dispatch.py; the others ran before it, on the
+final control_space.py and control_launch.py.
+
+NOT GREEN, and not from this change: 151_veldo_0313_space_run: 36 passed, 18 failed with this change,
+and 40 passed, 14 failed on the unmodified HEAD c528e8aa, run in a separate checkout of that commit on
+the same host the same hour. The failing rows are of one family in both runs (the wrapper answers 75,
+not started, waiting for space; rows that then read a run that never began; a run's end still asleep
+after 120 s). The two failing sets overlap and are not identical, so the suite is unsteady on this
+host today. It is left for the lead; nothing of it was edited.
+Suite 86_veldo_0127 and its captures were left unchanged and not run.

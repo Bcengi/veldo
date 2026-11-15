@@ -27,6 +27,7 @@ def _v337_verdict_suite():
         'control_launch_work.py': ROOT / ".veldo" / "control_launch_work.py",
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
+        'control_space.py': ROOT / ".veldo" / "control_space.py",
     }
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -142,6 +143,7 @@ def _v337_verdict_suite():
 
         ORCHARD, MEADOW = project('orchard'), project('meadow')
         ORCHARD['evidence_caches'] = ['cache']
+        ORCHARD['build_variables'] = ['ORCHARD_BUILD_DIR']
         REPOSITORY = Path(ORCHARD['repository'])
         WORKTREES = Path(ORCHARD['worktree_root'])
         WORKTREES.mkdir(parents=True, exist_ok=True)
@@ -315,28 +317,41 @@ def _v337_verdict_suite():
                 raise RuntimeError('confirm')
             return result['item']
 
-        def planted(name, verdict='fail', scope=None, ticket=True):
-            unit, dispatch = 'VELDO-93' + name, 'dispatch/review-' + name
+        def planted(name, verdict='fail', scope=None, ticket=True, again=None):
+            """One review of one unit, with its dispatch and its folders. The run directory ends on run
+            finished, as every run directory does. The scratch folder and the build root are declared
+            as production declares a review run's (space_kind): with the review run kinds, whose end
+            events the kind registry gives, from the verdict on. `again` is an
+            earlier review of the same unit: this one is its next attempt, with a dispatch of its own."""
+            unit = again.unit if again else 'VELDO-93' + name
+            dispatch = 'dispatch/review-' + name
             owner = {'scope': scope or A, 'ticket': unit, 'run': {'id': dispatch, 'station': 'review'}}
             if not ticket:
                 owner.pop('ticket')
             where = SCRATCH / name
             where.mkdir()
             paths, items = {}, {}
-            for key, kind in (('scratch', 'scratch'), ('build', 'build_output'), ('evidence', 'evidence')):
+            for key, kind in (('run', 'scratch'), ('scratch', 'scratch'), ('build', 'build_output'),
+                              ('evidence', 'evidence')):
                 path = where / key
                 path.mkdir()
                 (path / 'work.txt').write_text(key + ' planted\n')
-                paths[key], items[key] = path, declared(kind, path, owner)
+                chosen = LA.space_kind(kind, owner) if key in ('scratch', 'build') else kind
+                paths[key], items[key] = path, declared(chosen, path, owner)
             (paths['evidence'] / 'cache').mkdir()
             (paths['evidence'] / 'cache' / 'rebuild').write_text('cache\n')
             head = git(REPOSITORY, 'rev-parse', 'HEAD')
-            record = dict(domain=DOMAIN, repository=REPO, unit=unit, state='review', attempt=1,
-                          builder='builder', builders=['builder'], source={'commit': head},
-                          proof={'digest': 'sha256:fixture', 'path': 'proof.json'}, assignments={},
-                          reviews=[], findings={}, history=[], build={'process': {'pid': 111}})
-            put(unit, 'execution_unit', dict(repository_uuid=REPO, risk='low'))
+            if again:
+                record = floor.record(unit)
+                record.update(state='review', attempt=record['attempt'] + 1)
+            else:
+                record = dict(domain=DOMAIN, repository=REPO, unit=unit, state='review', attempt=1,
+                              builder='builder', builders=['builder'], source={'commit': head},
+                              proof={'digest': 'sha256:fixture', 'path': 'proof.json'}, assignments={},
+                              reviews=[], findings={}, history=[], build={'process': {'pid': 111}})
+                put(unit, 'execution_unit', dict(repository_uuid=REPO, risk='low'))
             put(F.floor_id(REPO, unit), F.FLOOR_KIND, record)
+            floor.clock = lambda: NOW + record['attempt'] - 1  # a later attempt is assigned later
             assignment = floor.assign_review(unit, 'reviewer')
             body = dict(schema='veldo.review_receipt/v1', unit=unit, assignment=assignment['assignment'],
                         reviewer='reviewer', source=head, proof=record['proof']['digest'],
@@ -359,10 +374,10 @@ def _v337_verdict_suite():
         def versions(items):
             return {identity: F._row(conn, identity)['version'] for identity in items}
 
-        def receiver(f):
+        def receiver(f, given=None):
             r = object.__new__(LA.Receiver)
-            r.space, r.space_run = floor.space, {}
-            r.run, r.run_dispatch = str(f.paths['scratch']), f.dispatch
+            r.space, r.space_run = floor.space, given or {}
+            r.run, r.run_dispatch = str(f.paths['run']), f.dispatch
             r.config, r.supervision = {}, {'empty': True}
             r.run_census, r.run_removal, r.role_skills = None, None, None
             r._unstage_skills = lambda: None
@@ -385,10 +400,17 @@ def _v337_verdict_suite():
         for suffix, verdict in (('01', 'pass'), ('02', 'fail')):
             f = planted(suffix, verdict)
             current[0] = f
+            # A worktree of the review that is still there at the verdict: it does not end on the event.
+            tree = WORKTREES / ('verdict-' + suffix)
+            git(REPOSITORY, 'worktree', 'add', '-q', '-d', str(tree), 'main')
+            tree_item = declared('worktree', tree, f.owner, start=git(tree, 'rev-parse', 'HEAD'))
             before = len(signals)
             at = versions(f.items.values())
             result = record(f)
             sent = signals[before:]
+            check('ac2/ends-on-the-event', 'a worktree of the review is not named and stays',
+                  bool(sent) and tree_item not in {x['item'] for x in sent[0][1].get('items', ())}
+                  and state_of(tree_item) == 'present' and tree.is_dir() and not f.paths['build'].exists())
             check(row, verdict + ' committed before the one signal', len(sent) == 1 and sent[0][3]
                   and result['reviews'][-1]['verdict'] == verdict and boundaries[-1])
             check(row, 'exact item versions and recorded owners', bool(sent)
@@ -439,9 +461,18 @@ def _v337_verdict_suite():
             assign = floor.assign_review
             floor.assign_review = lambda *args: f.assignment
             def run(*args):
-                receiver(f)._space_end(f.dispatch)
+                end = receiver(f)._space_end(f.dispatch)
                 check(row, 'receiver emits run finished only', signals[-1][0] == 'run_finished'
                       and not floor.record(f.unit)['reviews'])
+                # The real ordering: the receiver has ended and no verdict is stored yet.
+                check('ac1/real-ordering', 'run finished takes the run directory and leaves the review build '
+                      'and scratch', end['sent'] and not f.paths['run'].exists()
+                      and state_of(f.items['run']) == 'removed'
+                      and text_of(f.paths['build'] / 'work.txt') == 'build planted\n'
+                      and text_of(f.paths['scratch'] / 'work.txt') == 'scratch planted\n'
+                      and state_of(f.items['build']) == 'present' and state_of(f.items['scratch']) == 'present'
+                      and not any(f.items[key] in {x['item'] for x in signals[-1][1].get('items', ())}
+                                  for key in ('build', 'scratch')))
                 return f.body, {'dispatch': f.dispatch}
             runtime._run = run
             before = len(signals)
@@ -460,11 +491,67 @@ def _v337_verdict_suite():
             check(row, 'one post-commit verdict from the common writer',
                   [s[0] for s in sent] == ['run_finished', 'verdict_recorded']
                   and sent[-1][3] and sent[-1][2]['process'] == 'floor.record_review')
+            check('ac1/real-ordering', 'build and scratch go only at verdict recorded; evidence stays',
+                  floor.record(f.unit)['reviews'] and not f.paths['build'].exists()
+                  and not f.paths['scratch'].exists()
+                  and state_of(f.items['build']) == 'removed' and state_of(f.items['scratch']) == 'removed'
+                  and (L.item(f.items['build'])['removal'] or {}).get('event') == 'verdict_recorded'
+                  and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n')
+
+        row = 'ac1/declared-at-creation'
+        head = git(REPOSITORY, 'rev-parse', 'HEAD')
+        for station in ('review', 'build'):
+            tree = WORKTREES / ('seam-' + station)
+            git(REPOSITORY, 'worktree', 'add', '-q', '-d', str(tree), 'main')
+            dispatch = 'dispatch/seam-' + station
+            owner = {'scope': A, 'run': {'id': dispatch, 'station': station}}
+            declared('worktree', tree, owner, start=head)
+            given = LA.space_run_folders(floor.space, str(tree), dispatch, station)
+            ends = {name: (L.item(given['items'].get(given[name])) or {}).get('ends_on', {}).get('events')
+                    for name in ('scratch', 'build')}
+            kinds = {name: (L.item(given['items'].get(given[name])) or {}).get('kind') for name in ('scratch', 'build')}
+            whole = {'scratch': K.LIFECYCLE['ends_on']['scratch'], 'build': K.LIFECYCLE['ends_on']['build_output']}
+            if station == 'review':
+                review = {'scratch': K.LIFECYCLE['ends_on']['review_run_scratch'],
+                          'build': K.LIFECYCLE['ends_on']['review_run_build_output']}
+                check(row, 'the seam declares a review run\'s scratch and build root with the review run kinds, '
+                           'which end at the verdict',
+                      given['refusal'] is None
+                      and kinds == {'scratch': 'review_run_scratch', 'build': 'review_run_build_output'}
+                      and all(ends[name] == review[name] and 'verdict_recorded' in ends[name]
+                              and 'run_finished' not in ends[name] for name in ends))
+            else:
+                check(row, 'a build run\'s folders end on run finished as before',
+                      given['refusal'] is None and all(ends[name] == whole[name] for name in ends))
+            run_directory = SCRATCH / ('seam-run-' + station)
+            run_directory.mkdir()
+            run_item = declared('scratch', run_directory, owner)
+            (Path(given['scratch']) / 'work.txt').write_text('scratch planted\n')
+            put(D.record_id(dispatch), D.RECORD_KIND, dict(state='exited', contract={}, process={'pid': 333},
+                                                           termination={'returncode': 0, 'signal': None}))
+            end = receiver(types.SimpleNamespace(paths={'run': run_directory}, dispatch=dispatch),
+                           given)._space_end(dispatch)
+            scratch_item = given['items'][given['scratch']]
+            if station == 'review':
+                check(row, 'run finished ends the run directory and not the declared review folders',
+                      end['sent'] and state_of(run_item) == 'removed' and state_of(scratch_item) == 'present'
+                      and text_of(Path(given['scratch']) / 'work.txt') == 'scratch planted\n'
+                      and state_of(given['items'][given['build']]) == 'present' and Path(given['build']).is_dir())
+            else:
+                check(row, 'run finished ends a build run\'s scratch', end['sent']
+                      and state_of(run_item) == 'removed' and state_of(scratch_item) == 'removed'
+                      and not Path(given['scratch']).exists())
+        # The lead's decision at assembly: the end list comes from the kind, and declare takes none.
+        check(row, 'the review run kinds end at the verdict, the ticket end and the project end, and declare '
+                   'takes no end list',
+              all(K.LIFECYCLE['ends_on'][kind] == ['verdict_recorded', 'ticket_ended', 'project_ended']
+                  for kind in ('review_run_scratch', 'review_run_build_output'))
+              and 'ends' not in SP.COMMAND_PARAMETERS[SP.DECLARE])
 
         row = 'ac2/owner-and-keep'
         f, other = planted('06'), planted('07')
         kept = f.items['scratch']
-        L.signal('run_finished', {'items': [{'item': kept, 'version': versions([kept])[kept]}]})
+        L.signal('ticket_ended', {'items': [{'item': kept, 'version': versions([kept])[kept]}]})
         marked = L.outcome(kept, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
         at = versions([kept] + list(other.items.values()))
         before = len(signals)
@@ -528,6 +615,12 @@ def _v337_verdict_suite():
               and not floor.record(f.unit)['reviews']
               and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n'
               and (f.paths['evidence'] / 'cache').is_dir())
+        # A reconcile finds no verdict of this review, whatever it sends for the committed ones before it.
+        reconciled = floor.reconcile_verdicts()
+        check(row, 'with no verdict the review build and scratch are not removed, by a reconcile either',
+              all(unit != f.unit for unit, _ in reconciled) and f.paths['build'].is_dir()
+              and f.paths['scratch'].is_dir() and state_of(f.items['build']) == 'present'
+              and state_of(f.items['scratch']) == 'present')
 
         row = 'ac3/keep-before-removal'
         for suffix, fail_keep in (('13', False), ('14', True)):
@@ -556,6 +649,95 @@ def _v337_verdict_suite():
                       and all(git(REPOSITORY, 'rev-parse', ref) == tip for ref, tip in refs.items())
                       and git(REPOSITORY, 'cat-file', 'blob', head + ':draft.txt') == 'only log names this work')
 
+        row = 'ac2/second-attempt'
+        first = planted('15')
+        wired, floor.space = floor.space, None  # the first verdict's event never reached its items
+        record(first)
+        floor.space = wired
+        second = planted('16', again=first)
+        before = len(signals)
+        at = versions(second.items.values())
+        result = record(second)
+        sent = signals[before:]
+        check(row, 'the signal names the review that matches the assignment, never the first review',
+              [r['dispatch'] for r in result['reviews']] == [first.dispatch, second.dispatch]
+              and len(sent) == 1 and sent[0][2]['dispatch'] == second.dispatch
+              and sent[0][1] == {'items': [{'item': i, 'version': at[i]} for i in sorted(at)]}
+              and not second.paths['build'].exists() and not second.paths['scratch'].exists()
+              and all(state_of(i) == 'present' for i in first.items.values())
+              and all(p.is_dir() for p in first.paths.values()))
+
+        row = 'ac2/error-after-commit'
+        f = planted('17', 'pass')
+        def failing(*args, **given):
+            raise RuntimeError('fixture space failure after the commit')
+        F._FLOOR_ORGANS['control_space_signal'] = types.SimpleNamespace(signal=failing)
+        dispatcher = object.__new__(F.Dispatcher)
+        dispatcher.fail_status = 'ready'
+        dispatcher._resolve = lambda unit: {'id': unit}
+        dispatcher._launch = lambda *args: contextlib.nullcontext(None)
+        dispatcher._reviewer = types.SimpleNamespace(
+            identity='reviewer', review=lambda spec, *a, **kw: {'receipt': f.receipt})
+        dispatcher._verdict_passes = lambda body: False  # the row ends at the review, before any handoff
+        assign, floor.assign_review = floor.assign_review, lambda *args: f.assignment
+        floor.publish = lambda unit: {'published': unit}
+        seen = len(observations)
+        try:
+            result = dispatcher._review_floor(floor, {'spec': f.unit}, {}, {})
+        except Exception as error:
+            result = {'raised': '%s: %s' % (type(error).__name__, error)}
+        finally:
+            floor.assign_review = assign
+            F._FLOOR_ORGANS['control_space_signal'] = types.SimpleNamespace(signal=traced_signal)
+        noted = [o for o in observations[seen:] if o.get('operation') == 'verdict_recorded']
+        check(row, 'an error after the commit is recorded and the dispatch continues',
+              result.get('kind') == 'review' and result.get('verdict') == 'pass'
+              and result.get('projection') == {'published': f.unit}
+              and len(noted) == 1 and noted[0]['outcome'] == 'refused'
+              and 'fixture space failure' in noted[0].get('refusal', ''))
+        check(row, 'the verdict stays committed and nothing is removed',
+              [r['verdict'] for r in floor.record(f.unit)['reviews']] == ['pass']
+              and all(state_of(i) == 'present' for i in f.items.values())
+              and all(p.is_dir() for p in f.paths.values()))
+
+        row = 'ac1/lost-send-reconciled'
+        class Killed(BaseException):
+            """The process stops between the verdict's commit and its send."""
+        f, other = planted('18', 'pass'), planted('19')
+        def killed():
+            raise Killed()
+        inside_signal[0] = killed
+        try:
+            record(f)
+        except Killed:
+            pass
+        check(row, 'killed between commit and send: the verdict is durable and its items are held',
+              [r['verdict'] for r in F._row(reader, F.floor_id(REPO, f.unit))['data']['reviews']] == ['pass']
+              and all(state_of(i) == 'present' for i in f.items.values())
+              and all(p.is_dir() for p in f.paths.values()))
+        restarted = object.__new__(F.FloorAuthority)
+        restarted.__dict__.update(floor.__dict__)
+        before = len(signals)
+        sent = restarted.reconcile_verdicts()
+        named = [one for one in signals[before:] if one[2].get('dispatch') == f.dispatch]
+        check(row, 'the reconcile at start releases them once, from the committed verdict',
+              sent.count((f.unit, f.assignment['assignment'])) == 1 and len(named) == 1
+              and all(unit != other.unit for unit, _ in sent)
+              and named[0][0] == 'verdict_recorded' and named[0][3]
+              and named[0][2]['process'] == 'floor.reconcile' and named[0][2]['dispatch'] == f.dispatch
+              and {x['item'] for x in named[0][1].get('items', ())} == set(f.items.values())
+              and not f.paths['build'].exists() and not f.paths['scratch'].exists()
+              and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n'
+              and not (f.paths['evidence'] / 'cache').exists() and state_of(f.items['evidence']) == 'kept')
+        before, at = len(signals), journal_length()
+        again = restarted.reconcile_verdicts()
+        check(row, 'once: a second reconcile sends nothing and writes nothing',
+              again == [] and len(signals) == before and journal_length() == at
+              and text_of(f.paths['evidence'] / 'work.txt') == 'evidence planted\n')
+        check(row, 'a review with no committed verdict is sent nothing',
+              not floor.record(other.unit)['reviews'] and all(state_of(i) == 'present' for i in other.items.values())
+              and all(p.is_dir() for p in other.paths.values()))
+
         row = 'paths/wiring-and-canon'
         import ast
         tree = ast.parse((VELDO / 'control_launch_work.py').read_text())
@@ -564,7 +746,11 @@ def _v337_verdict_suite():
         check(row, 'Runtime gives its floor the space wiring', len(wired) == 1
               and any(k.arg == 'space' and isinstance(k.value, ast.Name) and k.value.id == 'space'
                       for k in wired[0].keywords))
-        for name in ('dispatch.py', 'control_launch_work.py'):
+        starts = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == '__init__'
+                  and any(isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
+                          and c.func.attr == 'reconcile_verdicts' for c in ast.walk(n))]
+        check(row, 'Runtime reconciles lost verdict events at its start', len(starts) == 1)
+        for name in ('dispatch.py', 'control_launch_work.py', 'control_launch.py', 'control_space.py'):
             check(row, name + ' equals engine canon',
                   (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes())
     except Exception as error:

@@ -8,7 +8,8 @@ the look it is given (below), and with no look it returns neither for removal.
 
 THE TABLE. For each row and each event, one cell: the action the table of section 5 gives, with the
 words of the cell that qualify it. A cell that is not there means the event does nothing to that row.
-The rows are the ten kinds, and two more for a worktree owned by a run: worktree_review_run (a review
+The rows are the twelve kinds (the ten of section 5, and a review run's scratch and build root, VELDO-0337),
+and two more for a worktree owned by a run: worktree_review_run (a review
 worktree) and worktree_station_run (a worktree owned by a run of another station). The events are the
 five columns of the table, where landed and contained share a column and ticket ended and project ended
 share one, and the two further events: session_ended, which removes the scratch a session owns, and
@@ -48,7 +49,7 @@ changes nothing for an item declared before it. A table is never edited once iss
 version beside the old one.
 
 LIFECYCLE is the current table in the form the Ledger is given (control_space.checked_lifecycle): the
-version, the events, and for each of the ten kinds the events an item of that kind ends on. A worktree's
+version, the events, and for each kind the events an item of that kind ends on. A worktree's
 events are those of its three rows together.
 
 WHAT HOLDS A WORKTREE OR AN AGENT REPOSITORY. Every item inside it that is not removed and not gone:
@@ -77,7 +78,7 @@ Standard library only; nothing is imported.
 SCHEMA = 'veldo.control_space_kinds/v1'
 
 KINDS = ('worktree', 'agent_repository', 'build_output', 'scratch', 'evidence', 'branch', 'container',
-         'volume', 'network', 'image_tag')
+         'volume', 'network', 'image_tag', 'review_run_scratch', 'review_run_build_output')
 
 # The rows a kind reads. Only a worktree has more than one.
 ROWS_OF = {kind: (kind,) for kind in KINDS}
@@ -101,7 +102,7 @@ NOT_HOLDING_STATES = ('removed', 'gone')
 
 # Among items none of which is inside another, the order they come back in: what the table says goes
 # after its containers, after its build output and after its worktree comes after them.
-ORDER = ('scratch', 'build_output', 'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',
+ORDER = ('scratch', 'review_run_scratch', 'build_output', 'review_run_build_output', 'container', 'network', 'volume', 'image_tag', 'evidence', 'worktree',
          'agent_repository', 'branch')
 
 NOTHING = None
@@ -136,6 +137,11 @@ SHEET_1 = {
     'worktree_station_run': (WORKTREE_ASK, NOTHING, WORKTREE_ASK, WORKTREE_ASK, WORKTREE_ASK),
     'agent_repository': (NOTHING, NOTHING, AGENT, AGENT_END, AGENT_END),
     'branch': (NOTHING, NOTHING, CONTAINED, KEEP, KEEP),
+    # VELDO-0337, the lead's decision at assembly (design 4.1/6.1): a review run's scratch folder and
+    # build root are still read while its verdict is validated and recorded, so their kinds end at
+    # verdict recorded and at ticket or project end, never at run finished.
+    'review_run_scratch': (NOTHING, REMOVE, NOTHING, REMOVE, NOTHING),
+    'review_run_build_output': (NOTHING, REMOVE, NOTHING, REMOVE, NOTHING),
 }
 
 # Session ended removes the scratch a session owns, and nothing else.

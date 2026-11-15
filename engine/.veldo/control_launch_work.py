@@ -145,6 +145,9 @@ class Runtime:
         F = organ('dispatch')
         self.floor = F.FloorAuthority(L.S, self.conn, repo=self.root, projections=c['work']['projections'],
                                       space=space, **common)
+        # VELDO-0337: a verdict recorded lost between a verdict's commit and its send is sent again here,
+        # at start, from the committed verdicts; it observes what it could not do and never raises.
+        self.floor.reconcile_verdicts()
         self.dispatches = L.D.Dispatches(L.S, self.conn, **common)
         self.reservations = L.D.RES.Reservations(L.S, self.conn, authorize=L.D.RES.service_authority, **common)
         self.clones = CL.Clones(self.dispatches, space=space, **c['clones'])
