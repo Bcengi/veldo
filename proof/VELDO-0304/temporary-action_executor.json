@@ -1,0 +1,16 @@
+{
+ "module": "engine/.veldo/action_executor.py",
+ "functions": [
+  "_cli"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "_cli",
+  "old": "tempfile.TemporaryDirectory()",
+  "new": "tempfile.TemporaryDirectory(prefix='veldo-action-executor-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/action_executor.py:853: _cli: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}

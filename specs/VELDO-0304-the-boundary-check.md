@@ -12,6 +12,15 @@ depends_on: [VELDO-0302, VELDO-0303, VELDO-0324, VELDO-0333]
 placement: [enforcement]
 protected_paths: ["scripts/verify.sh"]
 footprint:
+  - "engine/.veldo/action_executor.py"
+  - ".veldo/action_executor.py"
+  - "engine/.veldo/control_agent_config_handoff.py"
+  - ".veldo/control_agent_config_handoff.py"
+  - "engine/.veldo/control_api_webauthn.py"
+  - ".veldo/control_api_webauthn.py"
+  - "engine/.veldo/pack_conformance.py"
+  - ".veldo/pack_conformance.py"
+  - "scripts/parser_corpus_audit.py"
   - "docs/design/VELDO-0295-design.md"
   - "scripts/migrate_to_veldo.py"
   - "scripts/publish.py"
@@ -119,6 +128,11 @@ The check is called from scripts/verify.sh, a protected path (policy.yaml:83). T
 approval, bound to the commit and the proof, is required.
 
 ## History
+
+- 2026-11-15: the reviewed temporary-tree class is enforced for TemporaryDirectory too: an
+  explicit prefix, the system temporary directory, and only its exact scoped tree. Custom roots
+  and default prefixes are changed in engine/.veldo/action_executor.py, engine/.veldo/control_agent_config_handoff.py, engine/.veldo/control_api_webauthn.py, engine/.veldo/control_batch.py, engine/.veldo/control_launch_work.py, engine/.veldo/control_memory_check.py, engine/.veldo/lander.py, engine/.veldo/pack_conformance.py, scripts/parser_corpus_audit.py,
+  each with its synced copy. No existing output or external tree is removed by these contexts.
 
 - 2026-11-15: lead decision, all unprotected boundary findings go through the removers and the
   item-naming signal. Footprint extended to fleet.py, control_launch.py, control_launch_work.py,

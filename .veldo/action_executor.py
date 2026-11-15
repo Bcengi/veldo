@@ -850,7 +850,7 @@ def _cli(argv):
 
     # Build the effective whitelist from the shipped reference trio (in a fresh actions view).
     import tempfile
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory(prefix='veldo-action-executor-') as td:
         adir = Path(td) / ".veldo" / "actions"
         adir.mkdir(parents=True)
         for name in ("action-rollback-deploy-example.yaml", "action-restart-service-example.yaml",

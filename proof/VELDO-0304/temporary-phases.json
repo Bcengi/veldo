@@ -1,0 +1,75 @@
+{
+ "engine/.veldo/action_executor.py": [
+  {
+   "function": "_cli",
+   "old": "tempfile.TemporaryDirectory()",
+   "new": "tempfile.TemporaryDirectory(prefix='veldo-action-executor-')"
+  }
+ ],
+ "engine/.veldo/control_agent_config_handoff.py": [
+  {
+   "function": "codex_observe",
+   "old": "tempfile.TemporaryDirectory(prefix='tool-observation-', dir=config)",
+   "new": "tempfile.TemporaryDirectory(prefix='tool-observation-')"
+  }
+ ],
+ "engine/.veldo/control_api_webauthn.py": [
+  {
+   "function": "openssl_verifies",
+   "old": "tempfile.TemporaryDirectory(prefix='v-', dir=base)",
+   "new": "tempfile.TemporaryDirectory(prefix='v-')"
+  }
+ ],
+ "engine/.veldo/control_batch.py": [
+  {
+   "function": "Batch._merge",
+   "old": "tempfile.TemporaryDirectory()",
+   "new": "tempfile.TemporaryDirectory(prefix='veldo-control-batch-')"
+  }
+ ],
+ "engine/.veldo/control_launch_work.py": [
+  {
+   "function": "Runtime._collect",
+   "old": "tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates'])",
+   "new": "tempfile.TemporaryDirectory(prefix='import-')"
+  }
+ ],
+ "engine/.veldo/control_memory_check.py": [
+  {
+   "function": "probe",
+   "old": "tempfile.TemporaryDirectory(prefix='probe-', dir=scratch)",
+   "new": "tempfile.TemporaryDirectory(prefix='probe-')"
+  }
+ ],
+ "engine/.veldo/lander.py": [
+  {
+   "function": "GitLandOps._union_resolve_one",
+   "old": "tempfile.TemporaryDirectory()",
+   "new": "tempfile.TemporaryDirectory(prefix='veldo-lander-')"
+  }
+ ],
+ "engine/.veldo/pack_conformance.py": [
+  {
+   "function": "gate_exit_for_state",
+   "old": "tempfile.TemporaryDirectory()",
+   "new": "tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-')"
+  },
+  {
+   "function": "_conform_one",
+   "old": "tempfile.TemporaryDirectory()",
+   "new": "tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-')"
+  },
+  {
+   "function": "real_push_exec_bit",
+   "old": "tempfile.TemporaryDirectory()",
+   "new": "tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-')"
+  }
+ ],
+ "scripts/parser_corpus_audit.py": [
+  {
+   "function": "main",
+   "old": "tempfile.TemporaryDirectory()",
+   "new": "tempfile.TemporaryDirectory(prefix='veldo-parser-corpus-audit-')"
+  }
+ ]
+}

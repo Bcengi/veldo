@@ -166,7 +166,13 @@ def primitives(node, values):
     result = set()
     if tail in ('mkdtemp', 'TemporaryDirectory'):
         result.add('create:temporary folder')
-    if tail in ('rmtree', 'TemporaryDirectory'):
+    if tail == 'TemporaryDirectory':
+        keywords = {keyword.arg: keyword.value for keyword in node.keywords}
+        prefix = keywords.get('prefix')
+        scoped = (not node.args and 'dir' not in keywords and None not in keywords
+                  and isinstance(prefix, ast.Constant) and isinstance(prefix.value, str) and bool(prefix.value))
+        result.add('remove:scoped temporary' if scoped else 'remove:unscoped temporary')
+    if tail == 'rmtree':
         result.add('remove:recursive folder')
     if tail in ('unlink', 'rmdir') or called in ('os.remove', 'os.removedirs'):
         result.add('delete:single path')
@@ -256,8 +262,12 @@ def problems(source, path, creators=None, reviewed=None, removers=None):
             if category in ('remove', 'history'):
                 matched.add(key)
             allowed = (category == 'create' and key in creators
-                       or category == 'remove' and (key in removers or key in reviewed)
-                       or category == 'history' and key in removers
+                       or category == 'remove' and primitive != 'remove:unscoped temporary'
+                       and (key in removers or key in reviewed and (
+                           not reviewed[key].startswith('Scoped TemporaryDirectory')
+                           or primitive == 'remove:scoped temporary'))
+                       or primitive == 'history:git ref delete'
+                       and key == ('engine/.veldo/control_space_remove.py', 'remove_ref') and key in removers
                        or category == 'delete')
             if not allowed:
                 errors.append(f'{path}:{line}: {function}: {primitive} outside its reviewed boundary')
