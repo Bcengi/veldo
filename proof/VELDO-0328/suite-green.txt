@@ -1,0 +1,40 @@
+VELDO-0328 targeted checks, 2026-11-15
+Implementation: 96eceb36538e7ade39b3aee6e553e995bd82d694
+
+Each suite was selected individually through scripts/selftest.py.
+These are PARTIAL runs, with nonzero exit by convention, not full verification.
+VELDO_MUTATION_DRIVER=1 prevented the optional real-engine row from running.
+153_veldo_0328_images: 40 passed, 0 failed
+138_veldo_0300_space_remove: 65 passed, 0 failed
+139_veldo_0301_space_signal: 44 passed, 0 failed
+140_veldo_0345_space_keep: 57 passed, 0 failed
+144_veldo_0306_space_docker: 54 passed, 0 failed
+145_veldo_0307_space_docker_ownership: 51 passed, 0 failed
+
+The new suite has 14 named rows plus the shared preamble: 40 checks.
+Suites 144 and 145 ran before the final pull-after-build refusal was added to the image remover;
+the other four suites ran with that refusal. Neither 144 nor 145 removes image tags.
+
+Fast checks:
+python3 .veldo/validate.py all: exit 0
+bash scripts/check_docs.sh: exit 0, docs hygiene pass
+bash scripts/check_template_sync.sh: exit 0, 321 pairs compared
+python3 scripts/check_git_boundary.py: exit 0, pass
+Registered mutation anchors in the two changed production modules: 70 cases, each anchor exact once.
+
+Falsifiers: the final 10 cases each ran once against an isolated changed copy and an unchanged
+control on this implementation. All controls passed 40 checks; every target row turned red.
+The dedicated runner is python3 proof/VELDO-0328/run_falsifiers.py. It calls materialize and worker
+only for the ten cases; no mutation coordinator, full teeth stage or heavy suite ran.
+Earlier development run: the image-id case lacked git_process.py beside its copy; both copies
+failed to load. The companion was declared, and subsequent controls passed. That setup failure
+is not counted as a caught falsifier. The first suite run also exposed an overly short expected
+act-refusal code in the test; the assertion now checks both unbuilt ticket identifiers exactly.
+
+Not run: ./scripts/verify.sh, policy_check.py, heavy suites, full teeth stages, real engines.
+Suite 86_veldo_0127 and its live captures were left for the lead, as instructed.
+Only this worktree and test-created temporary output were written. No host data was touched.
+
+Final inspection added refusal for malformed image names or labels. The new suite was repeated
+at 96eceb36: 40 passed, 0 failed; all 10 falsifiers ran on those final sources with passing controls.
+Template sync was repeated after that change and passed all 321 pairs.
