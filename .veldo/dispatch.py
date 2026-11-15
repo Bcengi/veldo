@@ -1141,6 +1141,25 @@ def handoff_refusals(repository, record, policy, unit):
     return []
 
 
+def _verdict_run(item):
+    """The dispatch that owns a ledger item, or None for an item no run owns."""
+    run = (item.get('owner') or {}).get('run')
+    return run.get('id') if isinstance(run, dict) else None
+
+
+def _verdict_held(item, lost=False):
+    """VELDO-0337: whether a ledger item is one a review's verdict recorded names: a live item a signal
+    reaches (present, kept or deferred) of a review run, which ends on the event and which the owner
+    did not mark Keep. With `lost`, only one the event has not reached: the ledger writes the event
+    that last made an item due on its record, and it stays there with the outcome."""
+    owner = item.get('owner') or {}
+    run = owner.get('run') if isinstance(owner.get('run'), dict) else {}
+    return (item.get('state') in ('present', 'kept', 'deferred') and not item.get('owner_keep')
+            and 'verdict_recorded' in ((item.get('ends_on') or {}).get('events') or ())
+            and run.get('station') == 'review'
+            and not (lost and (item.get('due') or {}).get('event') == 'verdict_recorded'))
+
+
 class FloorAuthority:
     """One domain and repository's floor records over a real control store connection (VELDO-0049).
     `principal` is the service writing (an active `service` member scoped to the repository),
@@ -1250,32 +1269,37 @@ class FloorAuthority:
         self._space_verdict(unit, assignment, record)
         return record
 
-    def _space_verdict(self, unit, assignment, record):
+    def _space_verdict(self, unit, assignment, record, lost=False):
         """VELDO-0337: the committed verdict ends only its recorded dispatch's items.
 
         Both review callers use record_review. Neither a receiver exit nor an engine
         artifact is a verdict. Versions precede the item read, so a concurrent change
         refuses the named signal whole. No owner liveness answer is inferred here:
         Signal retains its rules, keeper and removers, including in report mode.
+
+        The review is the one recorded for `assignment`, never another attempt's: each
+        review has its own dispatch, and only that dispatch's items are named. Whatever
+        raises here is observed and removes nothing; the verdict stays committed and the
+        caller goes on. `lost` is the reconcile's send (reconcile_verdicts): it names only
+        the items verdict recorded has not reached yet. Returns whether a signal was sent.
         """
         if self.space is None:
-            return
+            return False
         event = dict(operation="verdict_recorded", unit=unit, assignment=assignment)
+        if lost:
+            event["reconciled"] = True
         try:
             review = next(one for one in record["reviews"] if one["assignment"] == assignment)
             dispatch = review["dispatch"]
             ledger = self.space['ledger']
             versions = dict(ledger.conn.execute('SELECT id, version FROM entities'))
             owned = {identity: item for identity, item in ledger.items().items()
-                     if identity in versions and item.get('state') in ('present', 'kept', 'deferred')
-                     and not item.get('owner_keep')
-                     and 'verdict_recorded' in ((item.get('ends_on') or {}).get('events') or ())
-                     and (item.get('owner') or {}).get('run', {}).get('id') == dispatch
-                     and (item.get('owner') or {}).get('run', {}).get('station') == 'review'}
+                     if identity in versions and _verdict_held(item, lost)
+                     and _verdict_run(item) == dispatch}
             if not owned:
-                return
+                return False
             subject = {'items': [{'item': identity, 'version': versions[identity]} for identity in sorted(owned)]}
-            emitter = dict(process='floor.record_review', dispatch=dispatch, **event,
+            emitter = dict(process='floor.reconcile' if lost else 'floor.record_review', dispatch=dispatch, **event,
                            owners={identity: item['owner'] for identity, item in owned.items()})
             given = {key: value for key, value in self.space.items() if key != 'ledger'}
             given.setdefault('principal', self.principal)
@@ -1283,8 +1307,46 @@ class FloorAuthority:
                 ledger, 'verdict_recorded', subject, emitter=emitter, **given)
             self.observe(dict(event, outcome='accepted' if result.get('ok') else 'refused',
                               space=result))
+            return True
         except Exception as error:  # A space failure cannot undo a committed verdict or authorize removal.
             self.observe(dict(event, outcome='refused', refusal=str(error)[:300]))
+            return False
+
+    def reconcile_verdicts(self):
+        """VELDO-0337: at start, send again the verdict recorded a stop lost between a verdict's
+        commit and its send (record_review commits, then sends once, in the same process).
+
+        What is due is derived from the durable verdicts and from nothing else: every review this
+        floor's records hold is a committed verdict, and its dispatch's items that verdict recorded
+        has never reached (_verdict_held) are still held for it. Each such review is sent the same
+        signal record_review sends, naming the items at their versions, once. An item the event
+        reached is not named again, whatever became of it then (removed, kept, deferred, or due in
+        report mode): a deferred item waits for its next event, as every deferred item does. A
+        review with no verdict in the store has no record here and is sent nothing. The mark is the
+        event that last made the item due, so an item a later event of its own reached and left in
+        place is named once more, and judged again by every rule as at any event. This is one
+        read at start. Nothing polls, waits or reads a clock, and nothing here raises: what cannot
+        be read sends nothing and is observed. Returns the (unit, assignment) pairs it sent for."""
+        sent = []
+        if self.space is None:
+            return sent
+        try:
+            waiting = {_verdict_run(item) for item in self.space['ledger'].items().values()
+                       if _verdict_held(item, True)}
+            records = [json.loads(data) for (data,) in self.conn.execute(
+                "SELECT data FROM entities WHERE kind=? ORDER BY id", (FLOOR_KIND,))]
+        except Exception as error:  # What cannot be read is not due.
+            self.observe(dict(operation="verdict_reconcile", outcome="refused", refusal=str(error)[:300]))
+            return sent
+        for record in records:
+            if record.get("domain") != self.domain or record.get("repository") != self.repository:
+                continue
+            for review in record.get("reviews") or ():
+                if not isinstance(review, dict) or review.get("dispatch") not in waiting:
+                    continue
+                if self._space_verdict(record.get("unit"), review.get("assignment"), record, lost=True):
+                    sent.append((record.get("unit"), review.get("assignment")))
+        return sent
 
     def dispose_finding(self, unit, finding, disposition):
         """A signed disposition {body, signature} of one blocking finding."""

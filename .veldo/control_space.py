@@ -393,7 +393,7 @@ RUNNER_EVENTS = ('run_finished', 'verdict_recorded')
 ABANDON_EVENT = 'worktree_abandoned'
 # The parameters each command a host principal may send is called with.
 COMMAND_PARAMETERS = {
-    DECLARE: ('kind', 'locator', 'owner', 'creator', 'parent', 'start', 'branch', 'process', 'pool'),
+    DECLARE: ('kind', 'locator', 'owner', 'creator', 'parent', 'start', 'branch', 'process', 'pool', 'ends'),
     CONFIRM: ('item',), REBRANCH: ('item', 'branch', 'start'), MEASURE: ('item', 'bytes', 'event'),
     HOLD: ('hold', 'needs', 'source'), ADMIT: ('hold', 'answer', 'reason', 'used', 'retry_asked'),
     RELEASE: ('hold', 'used'), SIGNAL: ('event', 'subject'), OUTCOME: ('item', 'outcome', 'facts')}
@@ -1043,10 +1043,17 @@ class Ledger:
         return canonical, (self.device(path) if path else None), pool
 
     def declare(self, kind, locator, owner, creator, parent=None, start=None, branch=None, process=None,
-                pool=None, principal=None, command_id=None):
-        """Create an item in state declared, with pool and ends_on filled in. Returns its identity."""
+                pool=None, principal=None, command_id=None, ends=None):
+        """Create an item in state declared, with pool and ends_on filled in. Returns its identity.
+
+        `ends` (VELDO-0337) is the creator's own declaration of the item's end events: some of the
+        events its kind ends on, and never one the kind does not. The item's ends_on then lists those
+        alone, so an event left out neither names nor matches the item: a review run's scratch and
+        build output are declared without run finished and wait for verdict recorded. Leaving events
+        out keeps an item longer and never removes it sooner. With no `ends` the item ends on every
+        event of its kind, as before."""
         return self._create(DECLARE, kind, locator, owner, creator, parent, start, branch, process, pool, None,
-                            principal, command_id)
+                            principal, command_id, ends=ends)
 
     def adopt(self, kind, locator, owner, rule, parent=None, start=None, branch=None, process=None, pool=None,
               principal=None, command_id=None):
@@ -1057,7 +1064,7 @@ class Ledger:
                             principal, command_id)
 
     def _create(self, operation, kind, locator, owner, creator, parent, start, branch, process, pool, rule,
-                principal, command_id):
+                principal, command_id, ends=None):
         about = {'item': None, 'kind': kind, 'owner': owner, 'locator': locator, 'state': None}
         try:
             canonical, device, pool = self._placed(kind, locator, pool)
@@ -1072,6 +1079,8 @@ class Ledger:
         parameters = {'item': identity, 'kind': kind, 'host': self.host, 'locator': canonical, 'owner': owner,
                       'creator': creator, 'parent': parent, 'start': start, 'branch': branch, 'process': process,
                       'pool': pool, 'device': device, 'rule': rule}
+        if ends is not None:
+            parameters['ends'] = ends
         result = self._send(operation, parameters, versions, principal, command_id,
                             dict(about, item=identity, locator=canonical))
         if result['ok']:
@@ -1847,12 +1856,22 @@ class Ledger:
             if repository is not None and resolved_path(repository) != repository:
                 raise Refused('space_locator_link', 'the repository of this worktree is declared through a link: '
                                                     'declare the repository by its resolved path')
+        events = list(self.lifecycle['ends_on'][kind])
+        ends = params.get('ends')
+        if ends is not None:
+            # VELDO-0337: the creator's own end events, some of the kind's and in the table's order.
+            if (adopted or not isinstance(ends, (list, tuple)) or not ends
+                    or not all(_is_str(event) and event in events for event in ends)
+                    or len(set(ends)) != len(ends)):
+                raise _invalid('ends', 'some of the events a declared %s ends on, each once: %s'
+                               % (kind, ', '.join(events)))
+            events = [event for event in events if event in ends]
         return {'kind': kind, 'host': params['host'], 'pool': self._pool_for(kind, canonical, params.get('device'),
                                                                              params.get('pool')),
                 'locator': canonical, 'key': key, 'parent': parent, 'owner': owner, 'creator': params['creator'],
                 'adopted': adopted, 'branch': params.get('branch'), 'start': params.get('start'),
                 'process': process, 'state': state,
-                'ends_on': {'version': self.lifecycle['version'], 'events': list(self.lifecycle['ends_on'][kind])},
+                'ends_on': {'version': self.lifecycle['version'], 'events': events},
                 'size': None, 'confirmed': None, 'deferral': None, 'removal': None, 'report': None}
 
     def _fresh(self, params, before):

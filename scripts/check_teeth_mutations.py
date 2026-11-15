@@ -14406,10 +14406,11 @@ def cases():
                "    for relative in _declared(ctx, record, 'evidence_caches'):\n",
                ['ac2/output-and-evidence'])
     verdict337('space337-owner-keep-named', 'dispatch.py',
-               "                     and not item.get('owner_keep')\n", '', ['ac2/owner-and-keep'])
+               "    return (item.get('state') in ('present', 'kept', 'deferred') and not item.get('owner_keep')\n",
+               "    return (item.get('state') in ('present', 'kept', 'deferred')\n", ['ac2/owner-and-keep'])
     verdict337('space337-other-run-named', 'dispatch.py',
-               "                     and (item.get('owner') or {}).get('run', {}).get('id') == dispatch\n", '',
-               ['ac2/owner-and-keep'])
+               "                     and _verdict_run(item) == dispatch}\n",
+               "                     }\n", ['ac2/owner-and-keep'])
     verdict337('space337-owner-instead-of-items', 'dispatch.py',
                "                ledger, 'verdict_recorded', subject, emitter=emitter, **given)\n",
                "                ledger, 'verdict_recorded', {'run': dispatch}, emitter=emitter, **given)\n",
@@ -14421,6 +14422,37 @@ def cases():
                "    path = _plain(record['locator']['path'])\n    kept = _kept(ctx, identity, record)\n",
                "    path = _plain(record['locator']['path'])\n    kept = {'ok': True, 'tips': tips(path)}\n",
                ['ac3/keep-before-removal'])
+    # The fix round after the review of VELDO-0337. Finding 1: an item's own declared end events govern
+    # its removal. A review run's scratch and build root declared as every other run's, or a ledger that
+    # does not keep the declaration, lets run finished take them before the verdict exists.
+    verdict337('space337-run-finished-takes-review-folders', 'control_launch.py',
+               "SPACE_VERDICT_STATIONS = ('review',)", "SPACE_VERDICT_STATIONS = ()",
+               ['ac1/real-ordering', 'ac1/declared-at-creation'])
+    verdict337('space337-ledger-drops-declared-ends', 'control_space.py',
+               "            events = [event for event in events if event in ends]\n", "",
+               ['ac1/real-ordering', 'ac1/declared-at-creation'])
+    # Finding 2: the reviewer's survivors. The first review named in place of the one the assignment
+    # matches; a space error after the commit that leaves record_review; an item named that does not
+    # end on the event.
+    verdict337('space337-first-review-named', 'dispatch.py',
+               '            review = next(one for one in record["reviews"] if one["assignment"] == assignment)\n',
+               '            review = record["reviews"][0]\n', ['ac2/second-attempt'])
+    verdict337('space337-error-after-commit-raised', 'dispatch.py',
+               "        except Exception as error:  # A space failure cannot undo a committed verdict or authorize removal.\n",
+               "        except FloorRefused as error:\n", ['ac2/error-after-commit'])
+    verdict337('space337-not-ending-item-named', 'dispatch.py',
+               "            and 'verdict_recorded' in ((item.get('ends_on') or {}).get('events') or ())\n", '',
+               ['ac2/ends-on-the-event'])
+    # Finding 3: a verdict recorded lost between the commit and the send. No reconcile path, a reconcile
+    # nothing calls at start, and a reconcile that names again what the event already reached.
+    verdict337('space337-lost-send-not-reconciled', 'dispatch.py',
+               '                if not isinstance(review, dict) or review.get("dispatch") not in waiting:\n',
+               '                if True:\n', ['ac1/lost-send-reconciled'])
+    verdict337('space337-reconcile-not-at-start', 'control_launch_work.py',
+               '        self.floor.reconcile_verdicts()\n', '', ['paths/wiring-and-canon'])
+    verdict337('space337-reconcile-sends-again', 'dispatch.py',
+               "            and not (lost and (item.get('due') or {}).get('event') == 'verdict_recorded'))\n",
+               "            )\n", ['ac1/lost-send-reconciled'])
 
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the

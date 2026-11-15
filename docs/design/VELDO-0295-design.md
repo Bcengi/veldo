@@ -1357,6 +1357,25 @@ One table, held in the kind registry as data. "Remove" always means: through the
 | Agent repository whose form is a worker clone, a batch clone or a candidate workspace | Remove as an agent repository is removed: the keep step, then the folder remover, once rule 5 finds no unique work in it; otherwise deferred as unique work. A worker clone of a run that has ended is saved and removed (0.3) | The same | The same | The same | The same |
 | Branch | | | Mark contained; keep | Keep | Keep |
 
+Amended 2026-11-15 (the lead's decision, from the review of VELDO-0337, finding 1). An item's own
+declared end events govern its removal, and where this table and that rule disagree the rule holds. A
+review is not over when its receiver ends: the verdict is validated, signed and recorded after that, by
+the one writer of the verdict. So a review run's scratch folder and build root are declared at creation
+with their own end events, verdict recorded and the events after it, and without run finished. For
+those two items the run finished cell of the scratch and build output rows does nothing: run finished
+removes only an item whose own end events list run finished, and never an item that waits for a later
+event. They go at verdict recorded, which the writer of the verdict sends after its commit
+(VELDO-0337); a verdict recorded that was lost between the commit and the send is sent again at start,
+from the committed verdict. A review that ends with no verdict sends run finished only, and its scratch
+folder and build root then wait for their later events (landed or contained, ticket ended, project
+ended, worktree abandoned). Everything else of a review run keeps its row: its run directory ends at
+run finished, the build output the census declares inside its worktree goes at run finished before
+the worktree, and its worktree is removed as the review worktree row says. The ledger holds the
+declaration on the item (4.1, ends_on), so every sender of run finished is bound by it, not only the
+receiver. In the table of events below, "the review's receiver" as the emitter of verdict recorded
+reads "the writer of the review's verdict, after its commit" (the lead's decision of the same day,
+VELDO-0337 History).
+
 Two more events. Session ended removes the scratch a session owns. Released by its creator has the
 actions of the worktree abandoned column for every kind; it differs only in who may send it (below and
 6.11).

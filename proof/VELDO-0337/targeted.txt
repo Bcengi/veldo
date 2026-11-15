@@ -1,5 +1,16 @@
+Fix round after the review (review-veldo-0337.md, verdict FIX), 2026-11-15.
 Command: python3 scripts/selftest.py with the suite option naming 153_veldo_0337_verdict_recorded
-selftest (PARTIAL, 1 of 223 suites): 37 passed, 0 failed in 1.90s
-11 ticket rows, 26 shared preamble checks. Exit 2 is the partial-run convention.
-No full gate or independent review is claimed.
-Initial exploratory runs found a string-emitter fixture assumption and an incorrect keep-record key. Both were fixed before the final green run.
+selftest (PARTIAL, 1 of 223 suites): 43 passed, 0 failed in 1.99s
+17 ticket rows, 26 shared preamble checks. Exit 2 is the partial-run convention.
+Rows added in this round: ac1/real-ordering, ac1/declared-at-creation, ac1/lost-send-reconciled,
+ac2/second-attempt, ac2/error-after-commit, ac2/ends-on-the-event. ac3/killed-no-verdict gained the check
+that a review with no verdict keeps its build and scratch, by a reconcile too.
+Command: python3 scripts/check_teeth_mutations.py with the finding option naming 337
+mutations: passed registered=16 executed=16 reused=0 rejected=16 workers=26
+No full gate, policy check or independent review is claimed.
+During the round: the first run of the new rows was red on two fixture faults (a second assignment
+made at the same fixture clock, and a reconcile assertion that forbade the legitimate release of an
+earlier row's refused send), and one row trapped time.time under the removers. All three were
+fixture faults, corrected before the green run. The first teeth run rejected 15 of 16: the
+owner-subject mutant made a new row raise KeyError and drop the rows after it; the row now reads the
+subject with a default, and the rerun rejected 16 of 16.

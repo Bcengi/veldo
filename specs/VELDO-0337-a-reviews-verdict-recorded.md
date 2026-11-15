@@ -18,6 +18,9 @@ footprint:
   - ".veldo/dispatch.py"
   - "engine/.veldo/control_launch.py"
   - ".veldo/control_launch.py"
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
+  - "docs/design/VELDO-0295-design.md"
   - "scripts/suites/*_veldo_0337_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -80,6 +83,39 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-15: fix round after the review (review-veldo-0337.md, verdict FIX), by three lead decisions. No
+  acceptance criterion changed.
+  Finding 1, lead decision: AC1 wins over the design's table. An item's own declared end events govern
+  its removal. A review run's scratch folder and build root are declared at creation to end at verdict
+  recorded and the events after it, without run finished (control_launch.space_ends, called by
+  space_run_folders); run finished neither names nor matches them, and they go when the writer of the
+  verdict sends verdict recorded. The design's section 5 carries the dated note. Footprint: the end
+  events of an item are written by the ledger alone, from its kind, so the declaration needs the
+  ledger: control_space.py and its synced copy are added (declare takes `ends`, some of the kind's own
+  events, never another; an item is kept longer by it and never removed sooner), and the design
+  document for the note. Neither is a protected path. The lead's fix brief names "fix the declaration"
+  and does not name this file: the extension is recorded here for the lead to confirm.
+  What the decision leaves as it was: the run directory of a review ends at run finished; the build
+  output the census declares inside a review's worktree goes at run finished before its worktree, as
+  the review worktree row has it (declared at the run's end, not at creation; held back, it would hold
+  the worktree with no event of the run left to end it). Known effect: a review that ends with no
+  verdict (AC3) sends run finished only, so its scratch folder and build root stay until a later event
+  of theirs (landed or contained, ticket ended, project ended, worktree abandoned). No work is in them
+  that is lost by staying; the cost is space.
+  Finding 2: rows for the reviewer's survivors. ac2/second-attempt: a second review of a unit names
+  only its own dispatch's items. ac2/error-after-commit: Signal raising after the commit is observed,
+  Dispatcher._review_floor returns, the verdict stays stored and nothing is removed.
+  ac2/ends-on-the-event: a worktree of the review present at the verdict is not named. Each survivor
+  is a registered mutation of finding 337.
+  Finding 3, lead decision: a verdict recorded lost between the commit and the send is recovered at
+  start. FloorAuthority.reconcile_verdicts reads the committed verdicts and sends the event once for
+  the items it has not reached; it reads no clock and polls nothing. Lead decision: the footprint may
+  include the reconcile module VELDO-0315 built. It was not needed and is not touched: VELDO-0315's
+  reconcile at start is not on this branch (no commit, suite or proof of it; control_space_reconcile.py
+  holds the adoption rule of VELDO-0331 and VELDO-0307 only). The reconcile is therefore called where
+  the floor is built, at the start of the worker's Runtime (control_launch_work.py), and VELDO-0315's
+  reconcile can call the same function when it is built.
 
 - 2026-11-15: lead decision, footprint extended to the recording path; the signal is emitted by the one writer of the verdict after its commit
   FloorAuthority.record_review is the emitter for both review callers. The

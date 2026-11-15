@@ -1134,12 +1134,36 @@ def space_census(space, worktree, event, owner=None, also=()):
     return answer
 
 
+SPACE_VERDICT = 'verdict_recorded'  # the event a review run's folders wait for (VELDO-0337)
+SPACE_VERDICT_STATIONS = ('review',)  # the stations whose run ends with a verdict the floor records
+
+
+def space_ends(ledger, kind, owner):
+    """VELDO-0337: the end events a run's own folder is declared with, or None for every event of its
+    kind. An item's own declared end events govern its removal (the lead's decision, 2026-11-15): a
+    review run's scratch folder and build root are still read while its verdict is validated and
+    signed, after its receiver has ended, so they are declared without run finished and end at verdict
+    recorded, which the one writer of the verdict sends after its commit (dispatch.py,
+    FloorAuthority.record_review). Run finished then neither names nor matches them, from the
+    receiver, a sweep or a retry: the ledger reads the item's own ends_on. A review that ends with no
+    verdict leaves them for their later events (landed or contained, ticket ended, project ended,
+    worktree abandoned). A kind that does not end on verdict recorded is declared as before: no item
+    is left with no event that ends it sooner than its table says."""
+    station = ((owner or {}).get('run') or {}).get('station') if isinstance((owner or {}).get('run'), dict) else None
+    events = list(ledger.lifecycle['ends_on'].get(kind) or ())
+    if station not in SPACE_VERDICT_STATIONS or SPACE_VERDICT not in events:
+        return None
+    return [event for event in events if event != 'run_finished']
+
+
 def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=False, run=None):
     """VELDO-0305 AC3: the folders a run is given, each declared in the ledger before it is made and
     before the worker starts: the run's temporary folder, a scratch item under the installation's first
     scratch root, and, for a project that declares build variables, the build root, a build output item
     under the installation's first build root, named after the worktree. Both are owned by the run
-    (the worktree's scope and ticket, the run with its station). The answer is {worktree, item, owner,
+    (the worktree's scope and ticket, the run with its station), and a review run's are declared with
+    their own end events: verdict recorded and what follows it, never run finished (space_ends,
+    VELDO-0337). The answer is {worktree, item, owner,
     scratch, build, items, environment, refusal, detail}; environment is what the worker is given:
     the temporary folder variable at the scratch folder and each declared build variable at the
     build root. A variable is in it only when its folder has a live item.
@@ -1215,7 +1239,8 @@ def space_run_folders(space, worktree, dispatch_id, station, taken=(), confined=
             if os.path.lexists(path):
                 return dict(out, refusal=SPACE_UNRECORDED,
                             detail='the %s folder %s is there and no item records it' % (name, path))
-            made = ledger.declare(kind, {'path': path}, owner, 'seam')
+            # VELDO-0337: a review run's folders are declared to end at its verdict, never at run finished.
+            made = ledger.declare(kind, {'path': path}, owner, 'seam', ends=space_ends(ledger, kind, owner))
             if not made.get('ok'):
                 return dict(out, refusal=SPACE_UNAVAILABLE,
                             detail='declare refused: %s' % (made.get('reason'),))
@@ -2340,6 +2365,9 @@ class Receiver:
             # teardown, behind its own clone_in_use test, and that teardown names the clone's own items and
             # nothing else of the owner. Neither holds this event back. A worktree or an agent repository of
             # the run that is no clone's is named with the run's folders, as design 6.10 has it.
+            # VELDO-0337: an item's own declared end events govern its removal. A review run's scratch
+            # folder and build root do not end on run finished (space_ends), so this event neither names
+            # nor removes them: they wait for verdict recorded, which the writer of the verdict sends.
             folders = [run] + [path for path in (given.get('scratch'),) if path]
             self.run_sent = True
             self.run_removal = space_signal(

@@ -1,8 +1,9 @@
+Fix round, 2026-11-15.
 python3 .veldo/validate.py all: passed, exit 0
 bash scripts/check_docs.sh: passed, exit 0
 bash scripts/check_template_sync.sh: passed, exit 0; 321 pairs
 bash scripts/check_lint.sh: passed, exit 0
 python3 scripts/check_git_boundary.py: passed, exit 0
 bash scripts/check_generated.sh: passed, exit 0
-Full gate, heavy suites, teeth stage and policy checker were not run.
-Suite 86_veldo_0127 and its captures were left unchanged.
+python3 scripts/check_teeth_mutations.py for finding 337: passed, 16 of 16 rejected
+Full gate, heavy suites and the policy checker were not run.
