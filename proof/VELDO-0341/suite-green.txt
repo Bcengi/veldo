@@ -1,0 +1,15 @@
+Targeted runs only. Each selector exits 2 by the runner contract. No full gate claim.
+
+134_veldo_0331_space_mode: selftest (PARTIAL, 1 of 223 suites): 42 passed, 0 failed in 1.87s
+136_veldo_0299_space_probe: selftest (PARTIAL, 1 of 223 suites): 72 passed, 0 failed in 3.26s
+137_veldo_0330_space_rules: selftest (PARTIAL, 1 of 223 suites): 49 passed, 0 failed in 1.89s
+138_veldo_0300_space_remove: selftest (PARTIAL, 1 of 223 suites): 65 passed, 0 failed in 2.71s
+139_veldo_0301_space_signal: selftest (PARTIAL, 1 of 223 suites): 44 passed, 0 failed in 1.27s
+140_veldo_0345_space_keep: selftest (PARTIAL, 1 of 223 suites): 57 passed, 0 failed in 4.74s
+144_veldo_0306_space_docker: SELFTEST SKIP: VELDO-0306 integration/real-engine: the mutation driver is running the suite: the row never runs under a mutant, and no real engine is asked anything
+selftest (PARTIAL, 1 of 223 suites): 54 passed, 0 failed in 3.05s
+145_veldo_0307_space_docker_ownership: selftest (PARTIAL, 1 of 223 suites): 51 passed, 0 failed in 1.78s
+153_veldo_0341_docker_protection: selftest (PARTIAL, 1 of 223 suites): 41 passed, 0 failed in 0.48s
+
+9 suites, 475 passing checks, 0 failures. Suite 144 real-engine row skipped.
+Suite 86_veldo_0127 and its captures were not run or edited.

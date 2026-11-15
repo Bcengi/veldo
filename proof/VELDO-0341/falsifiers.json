@@ -1,0 +1,270 @@
+[
+ {
+  "name": "space341-name-only",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac1/adapter-label"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac1/adapter-label": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac1/name-or-label-two-contexts",
+   "VELDO-0341 ac3/no-record",
+   "VELDO-0341 ac2/container-image-network",
+   "VELDO-0341 ac1/adapter-label"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac1/name-or-label-two-contexts",
+    "container default"
+   ],
+   [
+    "VELDO-0341 ac3/no-record",
+    "no record, proposal, pending item or adopt target: default renamed-network"
+   ],
+   [
+    "VELDO-0341 ac2/container-image-network",
+    "protected listing default renamed-database"
+   ],
+   [
+    "VELDO-0341 ac1/adapter-label",
+    "label alone stops discovery on default"
+   ]
+  ],
+  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
+  "mutant_sha256": "a85a75b1c2588fd85af1a9774648802937195d22deeacda86fe89d1bfba237b6",
+  "rejected": true
+ },
+ {
+  "name": "space341-image-protects-container",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac2/image-does-not-protect-container"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/image-does-not-protect-container": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac2/image-does-not-protect-container"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac2/image-does-not-protect-container",
+    "the run owns its container on default"
+   ]
+  ],
+  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
+  "mutant_sha256": "d5783ad68d3296d135a19ea3a9ba537b16f0c0195acc0efcf730af7915574208",
+  "rejected": true
+ },
+ {
+  "name": "space341-protect-at-removal-only",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac3/discovery-before-proposal"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac3/discovery-before-proposal": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac1/name-or-label-two-contexts",
+   "VELDO-0341 ac3/no-record",
+   "VELDO-0341 ac2/container-image-network",
+   "VELDO-0341 ac1/adapter-label",
+   "VELDO-0341 ac3/discovery-before-proposal"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac1/name-or-label-two-contexts",
+    "volume default"
+   ],
+   [
+    "VELDO-0341 ac3/no-record",
+    "protected listing default atlas_pg_handmade"
+   ],
+   [
+    "VELDO-0341 ac2/container-image-network",
+    "protected listing default renamed-database"
+   ],
+   [
+    "VELDO-0341 ac1/adapter-label",
+    "label alone stops discovery on default"
+   ],
+   [
+    "VELDO-0341 ac3/discovery-before-proposal",
+    "protected volume never reaches report or adopt on default: [('report', {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9342'})]"
+   ]
+  ],
+  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
+  "mutant_sha256": "1996349d019c92b6d113db33e0f1fb12cf621d1b107a480cb241b3d0545c9be5",
+  "rejected": true
+ },
+ {
+  "name": "space341-no-inherited-protection",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac2/container-image-network"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/container-image-network": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac3/no-record",
+   "VELDO-0341 ac2/container-image-network",
+   "VELDO-0341 ac2/unread-refuses",
+   "VELDO-0341 ac2/immutable-image"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac3/no-record",
+    "no record, proposal, pending item or adopt target: default renamed-network"
+   ],
+   [
+    "VELDO-0341 ac2/container-image-network",
+    "protected listing default renamed-network"
+   ],
+   [
+    "VELDO-0341 ac2/unread-refuses",
+    "network unread list"
+   ],
+   [
+    "VELDO-0341 ac2/immutable-image",
+    "image identity survives a tag move; a stopped container counts"
+   ]
+  ],
+  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
+  "mutant_sha256": "3d1678bb212641ed507039e572c94c0b333a74edcec0552b76732464224200b7",
+  "rejected": true
+ },
+ {
+  "name": "space341-removal-no-relations",
+  "module": "control_space_probe.py",
+  "targets": [
+   "ac3/removal-purposes",
+   "ac3/released-keeps-work"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac3/removal-purposes": [
+    false
+   ],
+   "ac3/released-keeps-work": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac3/removal-purposes",
+   "VELDO-0341 ac3/released-keeps-work"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac3/removal-purposes",
+    "default network remove"
+   ],
+   [
+    "VELDO-0341 ac3/released-keeps-work",
+    "default network"
+   ]
+  ],
+  "source_sha256": "ebe363453b1bd23a0cc358c9101202eaec83dd36da996e38892e08aa601671eb",
+  "mutant_sha256": "a05736b9a05e04e321f188f1a86241fe10b164b6c9a94461658ebe421863ddae",
+  "rejected": true
+ },
+ {
+  "name": "space341-unread-list-free",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac2/unread-refuses"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/unread-refuses": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac2/unread-refuses"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac2/unread-refuses",
+    "network unread list"
+   ]
+  ],
+  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
+  "mutant_sha256": "aa0271dce32ab0d8803485072b59d253302f86cb01358a540140796f48edf82e",
+  "rejected": true
+ },
+ {
+  "name": "space341-mount-report-stays",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac3/withdraw-mount-report"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac3/withdraw-mount-report": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac3/withdraw-mount-report"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac3/withdraw-mount-report",
+    "old report is gone and protected listing holds the entry"
+   ]
+  ],
+  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
+  "mutant_sha256": "94adb3dcaf7b0a5113daf947e744ab6f17c3661523d0ab4cd73949f11ebd0371",
+  "rejected": true
+ },
+ {
+  "name": "space341-image-by-movable-tag",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac2/container-image-network",
+   "ac2/immutable-image"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/container-image-network": [
+    false
+   ],
+   "ac2/immutable-image": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac2/container-image-network",
+   "VELDO-0341 ac2/immutable-image"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac2/container-image-network",
+    "protected listing default custom/database"
+   ],
+   [
+    "VELDO-0341 ac2/immutable-image",
+    "image identity survives a tag move; a stopped container counts"
+   ]
+  ],
+  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
+  "mutant_sha256": "21547d710a5bbf281e1e71b372cd442cff083b97b1363e735ffae10741d9d8aa",
+  "rejected": true
+ }
+]
