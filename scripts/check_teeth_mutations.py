@@ -14167,8 +14167,8 @@ def cases():
               "            names += [name] if field == 'RepoTags' else []\n",
               DIGEST_ROW)
     docker307('space307-uncovered-image-unlists-its-namesake',
-              "                if (self.protected.get((engine, 'image', name)) or {}).get('id') == identity:\n",
-              "                if True:\n",
+              "            if (self.protected.get((engine, 'image', name)) or {}).get('id') == identity:\n",
+              "            if True:\n",
               DIGEST_ROW)
 
     # VELDO-0308: run finished, from the receiver. The declared falsifier of each acceptance
@@ -15149,16 +15149,44 @@ def cases():
               "    if False:  # defective: removal ignores inherited protection\n",
               ['ac3/removal-purposes', 'ac3/released-keeps-work'], module='control_space_probe.py')
     docker341('space341-unread-list-free',
-              "        return 'unread', 'the containers could not be listed'\n",
-              "        return None, None\n", ['ac2/unread-refuses'])
+              "            index['unread'] = 'the containers could not be listed'\n",
+              "", ['ac2/unread-refuses'])
     docker341('space341-mount-report-stays',
               "                if held is not None and held[1].get('owner') is None:\n"
               "                    self.ledger.gone(held[0])\n",
               "", ['ac3/withdraw-mount-report'])
     docker341('space341-image-by-movable-tag',
-              "            source = _text(container.get('Image'))\n",
-              "            source = _text((container.get('Config') or {}).get('Image'))\n",
+              "        source = _text(container.get('Image'))\n",
+              "        source = _text((container.get('Config') or {}).get('Image'))\n",
               ['ac2/container-image-network', 'ac2/immutable-image'])
+    # The review of VELDO-0341. Finding 1: a container found protected protects its networks and
+    # its image at once, in each of the two places it is found protected, and a network's connect
+    # and disconnect events are read. Finding 2: one read of the containers for a pass, and a
+    # container that cannot be read refuses.
+    docker341('space341-mounting-container-no-recheck',
+              "                self._note('protected', refusal='space_protected:' + entry, mount=mount, **facts)\n"
+              "                self._inherit(engine, shown, entry, locator['name'], runs, networks)\n",
+              "                self._note('protected', refusal='space_protected:' + entry, mount=mount, **facts)\n",
+              ['fix1/compose-order'])
+    docker341('space341-covered-container-no-recheck',
+              "            if kind == 'container':\n"
+              "                self._inherit(engine, shown, entry, locator['name'], runs, networks)\n",
+              "", ['fix1/compose-order', 'fix1/snapshot-image'])
+    docker341('space341-connect-event-ignored',
+              "ATTACHED = ('connect', 'disconnect')", "ATTACHED = ('disconnect',)", ['fix1/connect-event'])
+    docker341('space341-disconnect-event-ignored',
+              "ATTACHED = ('connect', 'disconnect')", "ATTACHED = ('connect',)", ['fix1/disconnect-event'])
+    docker341('space341-containers-read-for-each-image',
+              "            if relations.get('index') is None:\n",
+              "            if True:  # defective: the containers are read again for each image\n",
+              ['fix2/one-read-per-pass'])
+    docker341('space341-snapshot-reads-containers-for-each-network',
+              "                done = self._record(engine, kind, shown, runs, relations, networks=False)\n",
+              "                done = self._record(engine, kind, shown, runs, None, networks=False)\n",
+              ['fix2/one-read-per-pass'])
+    docker341('space341-unreadable-container-free',
+              "            index['unread'] = index['unread'] or 'a container could not be read: ' + name\n",
+              "", ['fix2/unreadable-refuses', 'ac2/unread-refuses'])
     # The probe's relationship read loads this already-installed sibling by path.
     for case in result:
         if case['module'] == 'control_space_probe.py' and not case.get('siblings'):

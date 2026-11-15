@@ -92,6 +92,17 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: fix round after the review (verdict FIX, two findings; removal safety held). Finding 1:
+  a network or an image seen before its protected container stayed a report with an Adopt action
+  until the next full read. A container found protected, on its event or in the snapshot, now has
+  its networks and its image asked for and judged again at once, and a network's connect and
+  disconnect events are read as its create event is. Finding 2: a pass reads the containers once
+  (one list and one inspect for each container; the snapshot uses the records it already holds) and
+  judges every image and network by that read; when a container cannot be read, every image and
+  network the pass would judge is refused. Rows fix1/compose-order, fix1/snapshot-image,
+  fix1/connect-event, fix1/disconnect-event, fix2/one-read-per-pass and fix2/unreadable-refuses,
+  with seven registered cases. One anchor of a VELDO-0307 case moved with its line; the case is
+  unchanged and still rejected. The removal probe is unchanged.
 - 2026-11-15: build footprint includes two earlier suite fixtures. Rule 2 now reads the
   image and network relationships of every container; suite 137 supplies those inspect fields
   and resolves inspect by Id. Suite 145 permits the additional read-only container queries when
