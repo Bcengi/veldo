@@ -1,0 +1,129 @@
+[
+ {
+  "finding": 302,
+  "name": "space302-declare-after-creation",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_clone.py",
+  "old": "            identity = self.call('declare', kind, locator, self.owner, 'seam', parent=parent,\n                                 start=start, branch=branch, form=form)['item']\n            self.items[str(path)] = identity\n        try:\n            yield identity\n            if identity is not None:\n",
+  "new": "        try:\n            yield identity\n            if self.space is not None:\n                identity = self.call('declare', kind, locator, self.owner, 'seam', parent=parent,\n                                     start=start, branch=branch, form=form)['item']\n                self.items[str(path)] = identity\n            if identity is not None:\n",
+  "rows": [
+   "ac1/crash-fleet",
+   "ac1/crash-clone",
+   "ac1/crash-batch"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-batch-is-scratch",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_batch.py",
+  "old": "with creation.item('agent_repository', clone, main=self.repo_root, form='batch_clone'):",
+  "new": "with creation.item('scratch', clone):",
+  "rows": [
+   "ac1/batch"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-sandbox-worktree-only",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "agent_sandbox.py",
+  "old": "with creation.item('agent_repository', private, main=shared) as repository_item,",
+  "new": "with creator_module.SpaceCreator(None, owner).item('agent_repository', private, main=shared) as repository_item,",
+  "rows": [
+   "ac2/three-items"
+  ],
+  "also": [
+   [
+    "            creation.item('branch', branch, main=private, parent=repository_item, start=commit, branch=branch):",
+    "            creator_module.SpaceCreator(None, owner).item('branch', branch, main=private, parent=repository_item, start=commit, branch=branch):"
+   ]
+  ],
+  "dir": "scripts"
+ },
+ {
+  "finding": 302,
+  "name": "space302-create-on-refused-declare",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_clone.py",
+  "old": "                raise ValueError(str(result))",
+  "new": "                return {'item': None}",
+  "rows": [
+   "ac3/fleet",
+   "ac3/run",
+   "ac3/batch"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-no-provisioned-call",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_clone.py",
+  "old": "                    provisioned(self.owner['ticket'], str(path),\n                                dispatch=(self.owner.get('run') or {}).get('id'))",
+  "new": "                    pass",
+  "rows": [
+   "ac4/fleet",
+   "ac4/sandbox"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-unknown-form-accepted",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_space.py",
+  "old": "        if form is not None and (kind != 'agent_repository' or form not in",
+  "new": "        if False and (kind != 'agent_repository' or form not in",
+  "rows": [
+   "ledger/forms"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-partial-creation-gone",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_clone.py",
+  "old": "            if (identity is not None and kind != 'branch' and space_absent(path)\n",
+  "new": "            if (identity is not None and kind != 'branch'\n",
+  "rows": [
+   "safety/failed-creation"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-receipts-after-spawn",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_launch.py",
+  "old": "            metering.started()\n            spawned.append(self._spawn(dispatch_id, acceptance, adapter))",
+  "new": "            spawned.append(self._spawn(dispatch_id, acceptance, adapter))\n            metering.started()",
+  "rows": [
+   "ac3/receipts-before-spawn"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-failed-clone-without-save",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_clone.py",
+  "old": "self._through_space(root, work, pins, confirm=True)",
+  "new": "shutil.rmtree(root)",
+  "rows": [
+   "safety/failed-clone-work"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ }
+]

@@ -1,0 +1,38 @@
+[
+ {
+  "command": "python3 .veldo/validate.py all",
+  "exit": 0,
+  "status": "passed",
+  "summary": "All specification, proof and plan validation returned exit 0."
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit": 0,
+  "status": "passed",
+  "summary": "docs hygiene: pass"
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit": 0,
+  "status": "passed",
+  "summary": "template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+ },
+ {
+  "command": "bash scripts/check_lint.sh",
+  "exit": 0,
+  "status": "passed",
+  "summary": "lint: pass (1205 python, 39 shell, 2.46s)"
+ },
+ {
+  "command": "bash scripts/check_generated.sh",
+  "exit": 0,
+  "status": "passed",
+  "summary": "generated: pass"
+ },
+ {
+  "command": "python3 scripts/check_git_boundary.py",
+  "exit": 0,
+  "status": "passed",
+  "summary": "Git subprocess boundary: pass"
+ }
+]

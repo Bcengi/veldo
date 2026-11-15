@@ -1,0 +1,365 @@
+{
+ "baseline_rows": 41,
+ "baseline_passed": true,
+ "mutations": [
+  {
+   "name": "space302-declare-after-creation",
+   "detected": true,
+   "target_rows": [
+    "ac1/crash-fleet",
+    "ac1/crash-clone",
+    "ac1/crash-batch"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ac1/clone",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/fleet",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/sandbox",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/run",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/batch",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/batch-observation",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/candidate",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/landing-candidate",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/receipts",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac1/artifact",
+     "passed": false,
+     "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac3/clone",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/fleet",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/sandbox",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/run",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/batch",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/batch-observation",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/candidate",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/landing-candidate",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/receipts",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac3/artifact",
+     "passed": false,
+     "detail": "refusal creates no thing or record"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-clone",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-fleet",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-sandbox",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-run",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-batch",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-candidate",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-landing-candidate",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    },
+    {
+     "row": "VELDO-0302 safety/failed-clone-work",
+     "passed": false,
+     "detail": "the failed creator leaves untracked and ignored work recorded and intact"
+    },
+    {
+     "row": "VELDO-0302 safety/failed-creation",
+     "passed": false,
+     "detail": "absent creation is gone, partial creation remains recorded with its work"
+    },
+    {
+     "row": "VELDO-0302 safety/locators",
+     "passed": false,
+     "detail": "links and parent segments refuse before filesystem creation"
+    }
+   ],
+   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
+   "after": "565272222e67107d7d067ba881cd5ba5d873efe591567ca4b3fa6697c3b63e3c"
+  },
+  {
+   "name": "space302-batch-is-scratch",
+   "detected": true,
+   "target_rows": [
+    "ac1/batch"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ac1/batch",
+     "passed": false,
+     "detail": "repository form and declared main repository"
+    }
+   ],
+   "before": "389d9d9a13c8f1ca0f5ca65aac500411384cb085b97a9c5c427248b403fc8dc8",
+   "after": "f9abe41c47e95508a16379a8c4ea8c34233525ef69f8150f965f225d392aa063"
+  },
+  {
+   "name": "space302-sandbox-worktree-only",
+   "detected": true,
+   "target_rows": [
+    "ac2/three-items"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ac2/three-items",
+     "passed": false,
+     "detail": "repository, child worktree and branch at the exact start"
+    },
+    {
+     "row": "VELDO-0302 ac1/crash-sandbox",
+     "passed": false,
+     "detail": "creator killed at its first creation, with a durable declared item"
+    }
+   ],
+   "before": "c62cf7a370b73226bbe8bdd58c8b2d4615884dee7c7fd30549cf01927272cc22",
+   "after": "34a8ee5f19cd7e7411fa6bd0eb92e29935e80c75aea86989673e928ce7f13d32"
+  },
+  {
+   "name": "space302-create-on-refused-declare",
+   "detected": true,
+   "target_rows": [
+    "ac3/fleet",
+    "ac3/run",
+    "ac3/batch"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ac3/clone",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/fleet",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/sandbox",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/run",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/batch",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/batch-observation",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/candidate",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/landing-candidate",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/receipts",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 ac3/artifact",
+     "passed": false,
+     "detail": "unavailable ledger refused"
+    },
+    {
+     "row": "VELDO-0302 safety/locators",
+     "passed": false,
+     "detail": "links and parent segments refuse before filesystem creation"
+    }
+   ],
+   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
+   "after": "5b261fd1358183eb670a295621f05e207b3ec72866efcef943065fa1262c1746"
+  },
+  {
+   "name": "space302-no-provisioned-call",
+   "detected": true,
+   "target_rows": [
+    "ac4/fleet",
+    "ac4/sandbox"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ac4/order",
+     "passed": false,
+     "detail": "both worktree creators call before confirmation with ticket and dispatch"
+    },
+    {
+     "row": "VELDO-0302 ac4/fleet",
+     "passed": false,
+     "detail": "real service sent the item-naming event for the old worktree"
+    },
+    {
+     "row": "VELDO-0302 ac4/sandbox",
+     "passed": false,
+     "detail": "real service sent the item-naming event for the old worktree"
+    }
+   ],
+   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
+   "after": "fcf9d79d8fedc767fd1ec2a47361bb57b08eef94c664bd03099dcbfc2ca59790"
+  },
+  {
+   "name": "space302-unknown-form-accepted",
+   "detected": true,
+   "target_rows": [
+    "ledger/forms"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ledger/forms",
+     "passed": false,
+     "detail": "unknown form and wrong kind refused by transition"
+    }
+   ],
+   "before": "69ddbf2af3d2882acd67ac468c684eb5b21174aaf18c1e468f3cddcaa906e73c",
+   "after": "c6b407096010d251a8feec4054da82bfca04e28d0508ea56d798414125d49764"
+  },
+  {
+   "name": "space302-partial-creation-gone",
+   "detected": true,
+   "target_rows": [
+    "safety/failed-creation"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 safety/failed-creation",
+     "passed": false,
+     "detail": "absent creation is gone, partial creation remains recorded with its work"
+    }
+   ],
+   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
+   "after": "37a10f22ac2e3dccb9f61dcda87e9e2f857368b2c383e84b408c00851dadf8ab"
+  },
+  {
+   "name": "space302-receipts-after-spawn",
+   "detected": true,
+   "target_rows": [
+    "ac3/receipts-before-spawn"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ac3/receipts-before-spawn",
+     "passed": false,
+     "detail": "a refused receipt declaration starts no worker"
+    }
+   ],
+   "before": "0cf49ba6cf49dc6aeffbced0b418cce14fcfa08252c677876e389a9a32822b6f",
+   "after": "f1f4c42e2360c8663bce16246a41d1b0eb7780aa10914a8577cddd598525c799"
+  },
+  {
+   "name": "space302-failed-clone-without-save",
+   "detected": true,
+   "target_rows": [
+    "safety/failed-clone-work"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 safety/failed-clone-work",
+     "passed": false,
+     "detail": "the failed creator leaves untracked and ignored work recorded and intact"
+    }
+   ],
+   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
+   "after": "5b5bb7c048dcbc0fc7446f216d044c12a8a9679fa3f63d0063505d7a9d253509"
+  }
+ ]
+}

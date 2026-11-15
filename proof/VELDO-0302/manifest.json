@@ -1,0 +1,135 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0302",
+ "commit": "e573b26917536020fc0cd027fe7d6b0e19783127",
+ "tree": "6511fddde9139c82467bbd9a621d9c9e081aa9f7",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T21:32:27.978865+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0302_space_creators.py",
+     "detail": "Ten creation paths have declared and present items with the complete owner. Repository forms and the scope-bound main repository are checked. Receipts, token usage, artifacts and observations are evidence. Seven real SIGKILL rows prove declaration precedes creation. Rows: ac1/clone, ac1/fleet, ac1/run, ac1/batch, ac1/batch-observation, ac1/candidate, ac1/landing-candidate, ac1/receipts, ac1/artifact, ac1/crash-*, ledger/forms.",
+     "sha256": "7c6f3f3270fcf221fda8d421e069f0ab89d744b37b17c2a4b021f6079443451f"
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0302/tests.json",
+     "detail": "Real git, files and journal-backed ledger. Supplied owners and callbacks; no installed startup claim. Stand-ins and limits are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0302/falsifiers.json",
+     "detail": "Each designated target row is red in the final nine-case pass. The unchanged baseline has 41 green ticket rows."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0302_space_creators.py",
+     "detail": "Real sandbox prepare leaves the agent repository, its child worktree and branch, with the exact start commit. The saved item map is beside the private repository. Rows: ac1/sandbox, ac2/three-items.",
+     "sha256": "7c6f3f3270fcf221fda8d421e069f0ab89d744b37b17c2a4b021f6079443451f"
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0302/tests.json",
+     "detail": "Real git, files and journal-backed ledger. Supplied owners and callbacks; no installed startup claim. Stand-ins and limits are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0302/falsifiers.json",
+     "detail": "Each designated target row is red in the final nine-case pass. The unchanged baseline has 41 green ticket rows."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0302_space_creators.py",
+     "detail": "Every creator refuses an unavailable supplied ledger before creating its thing; None preserves standalone creation. Receipt refusal starts no worker. Absent failed creations are gone; partial work remains recorded. Links, parent segments and a mismatched main repository refuse. Rows: ac3/*, safety/failed-creation, safety/failed-clone-work, safety/locators, safety/main-repository.",
+     "sha256": "7c6f3f3270fcf221fda8d421e069f0ab89d744b37b17c2a4b021f6079443451f"
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0302/tests.json",
+     "detail": "Real git, files and journal-backed ledger. Supplied owners and callbacks; no installed startup claim. Stand-ins and limits are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0302/falsifiers.json",
+     "detail": "Each designated target row is red in the final nine-case pass. The unchanged baseline has 41 green ticket rows."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0302_space_creators.py",
+     "detail": "Both worktree creators call the supplied service callback before confirmation. The real Service entry sends the earlier worktree an item-naming event. Owner Keep survives unchanged, with the enrolled owner identity and planted file intact. Rows: ac4/order, ac4/fleet, ac4/sandbox, safety/owner-keep-fleet, safety/owner-keep-sandbox.",
+     "sha256": "7c6f3f3270fcf221fda8d421e069f0ab89d744b37b17c2a4b021f6079443451f"
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0302/tests.json",
+     "detail": "Real git, files and journal-backed ledger. Supplied owners and callbacks; no installed startup claim. Stand-ins and limits are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0302/falsifiers.json",
+     "detail": "Each designated target row is red in the final nine-case pass. The unchanged baseline has 41 green ticket rows."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "Six targeted suites: 132, 133, 140, 142, 149 and 153. Counts and exact commands in tests.json."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "Suite 153: real creation and SIGKILL boundaries with a supplied ledger; real Service provisioning callback. Existing keeper and removal suites retain their planted-work assertions."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "python3 proof/VELDO-0302/run_falsifiers.py: 41 green baseline rows; nine mutations, every designated target row red. No gate mutation stages run."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "validate.py all, docs, template sync, lint, generated files and git subprocess boundary; exact commands and exits in checks.json."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The lead runs ./scripts/verify.sh through the gate lock. Full verification, heavy suites, gate mutation stages and policy checking were not run."
+  }
+ ],
+ "assumptions": [
+  "VELDO-0315 startup wiring is absent. Supplied-ledger creation and flat-layout imports are proved; installed creator integration is not claimed.",
+  "Journal signatures in suite 153 are deterministic fixture signatures. Owner enrollment uses a real SSH signature. Suite 133 exercises ledger signature validation.",
+  "Clone input acceptance, identity acceptance, worker results and the gate executor are stand-ins. No real worker, engine or protected data is exercised.",
+  "New provisioning-event rows run in report mode. Act prerequisites remain unbuilt and refused. The legacy keeper and removal suites use their existing isolated fixtures.",
+  "Only the approved repository form field and validation are delivered for VELDO-0347. Its lifecycle and disposal support are not implemented.",
+  "A failed partial creation remains recorded. Nothing marks a filesystem item gone unless its path is absent. An interrupted branch declaration may remain declared for later recovery.",
+  "Criteria remain pending for the lead gate and independent review. Suite 86_veldo_0127 and live captures are untouched."
+ ],
+ "rollback": "Revert the implementation commit. Existing ledger items and every saved copy remain."
+}
