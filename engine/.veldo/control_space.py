@@ -948,7 +948,28 @@ class Ledger:
             if path != resolved_path(path):
                 raise Refused('space_locator_link', 'the working folder traverses a link')
             subject = dict(subject, cwd=path)
-        # released is recorded only; its removal belongs to VELDO-0335.
+        elif kind == 'released':
+            if (set(subject) != {'paths'} or not isinstance(subject['paths'], list)
+                    or not subject['paths']):
+                raise _invalid('subject', 'released names a nonempty list of paths')
+            paths, names = [], []
+            for path in subject['paths']:
+                path = _absolute(path, 'subject.paths')
+                if path != resolved_path(path):
+                    raise Refused('space_locator_link', 'the released path traverses a link: ' + path)
+                matches = [(name, item) for name, item in self.items().items()
+                           if item.get('locator', {}).get('path') == path and item['state'] in LIVE]
+                if len(matches) != 1:
+                    raise Refused('space_release_no_item:' + path, 'released needs one live item at this path')
+                name, item = matches[0]
+                if item['creator'] not in ('hook', 'record') or item['kind'] not in ('worktree', 'agent_repository'):
+                    raise Refused('space_release_creator:' + name, 'released is only for a hook or record creation')
+                self._admissible(item['kind'], item['locator'], name)
+                if name not in names:
+                    paths.append(path)
+                    names.append(name)
+            # Bind the observation to these identities, never to a later occupant of the path.
+            subject = {'paths': paths, 'items': names}
         received = conn.execute('SELECT COALESCE(MAX(seq), 0) + 1 FROM journal').fetchone()[0]
         return {identity: {'kind': EVENT_KIND, 'data': dict(type=kind, subject=subject,
             emitter=dict(emitter), state='received', received=received, result=None)}}

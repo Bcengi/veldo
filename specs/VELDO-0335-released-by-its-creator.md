@@ -21,6 +21,8 @@ footprint:
   - "engine/.veldo/control_space_worker.py"
   - ".veldo/control_space_worker.py"
   - "scripts/suites/*_veldo_0335_*.py"
+  - "scripts/suites/151_veldo_0313_space_run.py"
+  - "scripts/suites/153_veldo_0323_hook_events.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -91,5 +93,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: build updates the two existing CLI event expectations: released now reaches the
+  ledger's creator check and records valid creations. Other event envelopes are unchanged. The record
+  verb accepts an explicit parent agent repository for a new worktree with the same owner, so the
+  rules compare the worktree with its shared repository and remove the child first. The legacy force
+  flag on released is accepted without authority and is never recorded or passed to Signal.
+  This base has no VELDO-0318 implementation or proof bundle; AC3's decision request remains blocked
+  on that implementation. Its unique-work deferral and refusal to force removal are tested here.
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.

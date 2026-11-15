@@ -2149,6 +2149,15 @@
    ],
    "regions": "VELDO-0323: journal-woken hook records, serial child workers, containment, signed socket packets, spool replay before reconcile, and host-wide session scratch. Planted commits and unsaved files exercise the keep step and owner Keep.",
    "requires_note": "Only ROOT and expect. Real store, git, child processes and OpenSSH packet signatures. Fixture declarations, membership records, act eligibility, process table and free space. No real engines."
+  },
+  {
+   "name": "154_veldo_0335_released",
+   "file": "154_veldo_0335_released.py",
+   "requires": [
+    "154_veldo_0335_released"
+   ],
+   "regions": "VELDO-0335: released observations name only hook and record creations, remain asynchronous, and go through the item-naming Signal, safety rules, keep step and removers. Owner Keep and unique work remain on disk.",
+   "requires_note": "Only ROOT and expect. Real git, SQLite, child worker and signed observer packets. Fixture act eligibility, free space and private process table; no real engines. The decision request needs VELDO-0318, absent from this base."
   }
  ],
  "resource_capacities": {

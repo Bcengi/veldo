@@ -433,8 +433,9 @@ def _v323_suite():
                      ['--type', 'ref_changed', '--repository', str(repo), '--ref', 'refs/heads/main', '--new', tip]):
             out, err = io.StringIO(), io.StringIO()
             status = cli.space_event(args, space={'ledger': ledger}, stdout=out, stderr=err)
+            refusal = 'space_release_creator:' + alive if args[1] == 'released' else 'invalid_input:emitter'
             check('compatibility/cli-envelope-refused', status == 1 and out.getvalue() == ''
-                  and 'refused invalid_input:emitter' in err.getvalue(), err.getvalue())
+                  and 'refused ' + refusal in err.getvalue(), err.getvalue())
         check('compatibility/cli-envelope-refused', before == service.watermark())
         scaffold = load('v323_scaffold', mods / 'init_scaffold.py')
         absent_modules = [name for name in SVC.closure() if '.veldo/' + name not in scaffold._FILES]

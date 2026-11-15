@@ -1809,8 +1809,7 @@ def _v313_space_run_suite():
                 check(row, 'the event %s is refused as %s, exit 1 [%s %s]'
                       % (' '.join(argv[:2]), wanted, status, said.strip()),
                       status == 1 and said.strip() == 'veldo space event: refused ' + wanted and out == '')
-            for argv in (['--type', 'released', '--path', str(made)],
-                         ['--type', 'session_started', '--session', 's-1'],
+            for argv in (['--type', 'session_started', '--session', 's-1'],
                          ['--type', 'session_ended', '--session', 's-1', '--path', str(SCRATCH / 'sessions' / 's-1')],
                          ['--type', 'ref_changed', '--repository', ORCHARD['repository'], '--ref', 'refs/heads/main',
                           '--new', git(ORCHARD['repository'], 'rev-parse', 'HEAD')]):
@@ -1825,6 +1824,14 @@ def _v313_space_run_suite():
             check(row, 'no event wrote to the journal and the recorded worktree is present and on disk [%s]'
                   % (written(since),),
                   written(since) == [] and item_at(made)[0][1]['state'] == 'present' and (made / 'tracked.txt').is_file())
+            status, out, said = verb(CLI.space_event, ['--type', 'released', '--path', str(made)], space())
+            observed = json.loads(out) if out else {}
+            event_record = L.event_record(observed.get('event')) or {}
+            check(row, 'released records the exact item as space-observer and returns without removal',
+                  status == 0 and observed.get('recorded') is True and event_record.get('state') == 'received'
+                  and event_record.get('subject', {}).get('items') == [item_at(made)[0][0]]
+                  and item_at(made)[0][1]['state'] == 'present' and (made / 'tracked.txt').is_file()
+                  and L.observations[-1].get('principal') == SP.OBSERVER)
         except Exception as error:
             stopped(row, error)
 
