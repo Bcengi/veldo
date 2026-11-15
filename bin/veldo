@@ -824,10 +824,11 @@ def _space_holders(run, supervisor, members, since=None, reader=None):
     environment at all and is not a process in this sense (PF_KTHREAD, in the stat file every user
     may read). With no `since` nothing is taken out.
 
-    THE READER. `reader`, when given, is the process reader's read (VELDO-0344). It is asked only
-    when a process is unread. When its state is used, a process it shows whole, with the start time
-    the kernel shows here, is read: it is no unread holder, and rule 4 judges it by the files it
-    holds. A reader that is absent or refused, and a process with no whole block, change nothing."""
+    THE READER rules nothing out (fix round 3). The process reader's block for a process (VELDO-0344)
+    holds the files the process has, and no environment: it says that the reader saw the process,
+    never that the process is not the run's. So a block changes nothing here, whole or not, and an
+    unread process holds the run whatever the reader shows. `reader` is kept for the read of the
+    label, which is the reader's to add; until it does, it is not asked."""
     label = (SPACE_LABEL_VARIABLE + "=" + str(run)).encode()
     me = os.getpid()
     table = {}
@@ -874,18 +875,7 @@ def _space_holders(run, supervisor, members, since=None, reader=None):
     # The one thing that takes an unread process out: it started before the run began, and it is no
     # descendant and no member of the group (those are in `found` already, under their own names).
     unread = [pid for pid in unread if pid not in found and (since is None or table[pid]["started"] >= since)]
-    blocks = None
-    if unread and reader is not None:
-        try:
-            said = reader()
-            if isinstance(said, dict) and said.get("state") == "used" and isinstance(said.get("blocks"), dict):
-                blocks = said["blocks"]
-        except Exception:  # noqa: BLE001 - a reader that could not be asked read nothing
-            blocks = None
     for pid in unread:
-        block = (blocks or {}).get(pid)
-        if isinstance(block, dict) and block.get("whole") is True and block.get("start") == table[pid]["started"]:
-            continue  # the reader read it: rule 4 judges it by its files
         add(pid, "unread")
     return [found[pid] for pid in sorted(found)]
 
@@ -903,13 +893,14 @@ def _space_judged(space, given, environ=None):
             else "empty", "holders": holders}
 
 
-def _space_wait(read, reap=None):
+def _space_wait(read, reap=None, asleep=None):
     """Sleep until nothing that can be waited for holds the run, and return the last read. Each
     sleep is one poll with no time limit on a pidfd of every holder: the kernel wakes it when one
     of them exits, and the table is then read again. A process whose environment cannot be read is
     waited for like any other: its exit needs no reading. Nothing is signalled. What nobody can
     wait for (a group nobody read, a table nobody could list) ends the wait at once: the caller
-    sends nothing for it."""
+    sends nothing for it. `asleep`, when given, is called once, when the first sleep is about to
+    begin: every holder's pidfd is open and registered then."""
     import select
     while True:
         if reap is not None:
@@ -931,10 +922,35 @@ def _space_wait(read, reap=None):
                     break
                 poller.register(descriptor, select.POLLIN)
             else:
+                if asleep is not None:
+                    asleep, begun = None, asleep
+                    begun()
                 poller.poll()
         finally:
             for descriptor in descriptors:
                 os.close(descriptor)
+
+
+def _space_let_go():
+    """Point descriptors 0, 1 and 2 of this process at /dev/null: what a supervisor that stays does
+    first, so that it holds no end of a pipe its caller reads. On a host with no /dev/null they stay
+    as they are: a descriptor is never closed here, since the next file opened would take its
+    number."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.flush()
+        except Exception:  # noqa: BLE001 - what could not be written is not kept for later
+            pass
+    try:
+        null = os.open(os.devnull, os.O_RDWR)
+    except OSError:
+        return
+    try:
+        for number in (0, 1, 2):
+            os.dup2(null, number)
+    finally:
+        if null > 2:
+            os.close(null)
 
 
 def space_contained(rest):
@@ -970,7 +986,15 @@ def space_supervise(rest):
     shows. With none it exits with the command's status. Otherwise it stays, asleep on their exit,
     and when the last has gone the run's end is made by a process that follows this one, with the
     wiring that process resolves for itself. It signals nothing but the command itself, with the
-    stop it was sent, and only while the command runs."""
+    stop it was sent, and only while the command runs.
+
+    BEFORE IT STAYS it lets go of the caller's input and output: descriptors 0, 1 and 2 are pointed
+    at /dev/null before the status line is written, and the process that follows inherits that. So
+    a caller that reads the wrapper's output to its end gets the end when the wrapper returns, and
+    not when what the command left exits. Nothing changes for the command, which has ended, or for
+    what it left, which holds its own descriptors. Then it writes one more line, staying: true from
+    inside the wait, when the pidfd of every holder is open and its first sleep is about to begin,
+    and false when it did not sleep at all."""
     import json
     import signal
     import subprocess
@@ -1079,12 +1103,15 @@ def space_supervise(rest):
             # A child is alive that this pass over the table did not show: it was started while the
             # table was read. The table is read again; the child is in it now.
     seen = read()
+    if seen["holders"]:
+        _space_let_go()
     tell(status=status, holders=seen["holders"], read=seen["group"] != "unread")
     if not seen["holders"]:
         return status
     # Something of the run is left. This process is the one the run's scratch root records, so it
     # stays for as long as any of it lives, asleep on their exit.
-    _space_wait(read, reap)
+    _space_wait(read, reap, asleep=lambda: tell(staying=True))
+    tell(staying=False)  # for a wrapper that has heard nothing yet: there was nothing to sleep on
     space, why = _space_usable(None, None, None)
     if space is None:
         tell(end=why)
@@ -1106,7 +1133,7 @@ class _SpaceSupervisor:
 
     def __init__(self, command, environ, where):
         self.command, self.environ, self.where = list(command), environ, where
-        self.child, self.lines, self.control, self.process = None, None, None, None
+        self.child, self.lines, self.control, self.process, self.staying = None, None, None, None, False
 
     def start(self):
         """Start the supervisor, which then waits for go. Returns its process, {pid, started}."""
@@ -1153,8 +1180,11 @@ class _SpaceSupervisor:
     def result(self):
         """(status, holders, group) as the supervisor said them when the command exited: the
         command's own exit status, the processes of the run the kernel still showed, and the scope
-        the command ran in. This returns at the command's exit and waits for nothing else. With no
-        word of the command the supervisor's own end is the status and holders is None."""
+        the command ran in. This returns at the command's exit and waits for nothing the command
+        left. With no word of the command the supervisor's own end is the status and holders is
+        None. When something is left, one more line of the supervisor is read, or the end of its
+        lines: self.staying is True when the supervisor said it is asleep on the exit of what is
+        left, and False when it said otherwise or ended without a word."""
         import json
         import signal
         child = self.child
@@ -1180,6 +1210,10 @@ class _SpaceSupervisor:
                             child.wait()  # it has nothing to stay for, and the scratch root records it
                         if said.get("read") is not True:
                             holders = None  # the supervisor could not read what the command left
+                        if not holders:
+                            break
+                    if status is not None and "staying" in said:
+                        self.staying = said["staying"] is True
                         break
             if status is None:
                 code = child.wait()
@@ -1450,7 +1484,8 @@ def space_run(rest, space=None, why=None, environ=None, cwd=None, stderr=None, r
         supervisor.go(given, _space_group(space, environ))
         status, holders, given["group"] = supervisor.result()
     given["status"], given["unread"] = status, holders is None
-    report.update(started=True, status=status, holders=holders, group=given["group"])
+    report.update(started=True, status=status, holders=holders, group=given["group"],
+                  staying=supervisor.staying)
     end = _space_finish(space, given, environ)
     report["end"] = end
     if not end["sent"]:

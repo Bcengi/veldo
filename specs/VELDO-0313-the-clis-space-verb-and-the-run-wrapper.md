@@ -21,6 +21,8 @@ footprint:
   - "specs/VELDO-0313-the-clis-space-verb-and-the-run-wrapper.md"
   - "specs/index.md"
   - "proof/VELDO-0313/**"
+  - "scripts/gate_unconfined.json"
+  - "scripts/suites/101_veldo_0208_landing_reuse.py"
 behavior_bearing: true
 observability:
   logs: >
@@ -301,3 +303,61 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     no longer waits without bound for such a process: a row that follows an end is red after 120
     seconds and says what held it. The first fix round's "seen green 8 times on this host" was under
     the bound that is now gone.
+- 2026-11-14: FIX ROUND 3 after the re-review of rounds 1 and 2 (verdict FIX: two HIGH, one MEDIUM).
+  Code in engine/bin/veldo and its copy bin/veldo. The owner's rule (Telegram 41209): no work is ever
+  lost.
+  - Finding 1 (HIGH), the reader's block is not a read of the label. Round 2 left an unread process
+    out when the process reader's state was used and its block for the process was whole with the
+    kernel's start time. A block holds the files of a process and no environment, so with the reader
+    installed a live process that carried the run's label and could not be read had the run's scratch
+    removed under it. That exclusion is gone: a block rules nothing out, whole or not, and round 2's
+    paragraph "THE OWNER'S READER INSTALL REMOVES THIS" is withdrawn. Two things, and nothing else,
+    take an unread process out. One is the lead's decision of round 2, unchanged: it started before
+    the run began and is no descendant of the supervisor and no member of the group. The other is the
+    label itself, read by the reader, which VELDO-0344 adds in its own change; until that lands and
+    the reader is installed, an unread process that started after the run holds it on every host.
+    Row fix3/unread-process-holds now ends the other way: with a reader used and a whole block the
+    run stays open, its file is on disk and the hold is held, and the run ends only when the process
+    has ended. Falsifier space313-reader-block-taken-as-label-read is the code as it was. Cases
+    space313-reader-block-not-checked and space313-reader-not-used-taken-as-used mutated lines that
+    no longer exist and are withdrawn with them.
+  - Finding 2 (HIGH), the supervisor kept the caller's output. A supervisor that stays held the
+    wrapper's descriptors 0, 1 and 2, so a caller that read the wrapper's output to its end waited
+    for what the command left: with a daemon, without bound. Before it writes the status line, a
+    supervisor that has something to stay for points 0, 1 and 2 at /dev/null (_space_let_go); the
+    process that follows it inherits that. Nothing is closed and nothing is signalled. Row
+    fix2/captured-output-ends-at-return: the suite puts a pipe on the wrapper's standard output and
+    standard error, as a shell's $(...) does, around a command that leaves "sleep infinity"; the
+    wrapper returns at once, the read of the pipe ends at once with the command's own line, the
+    supervisor's three descriptors are /dev/null and the run is held until the suite ends the sleep.
+    Falsifier space313-supervisor-keeps-the-callers-output.
+  - Finding 3 (MEDIUM), the row that did not prove the supervisor stays. The supervisor now writes
+    one more line, staying, from inside its wait: true when the pidfd of every holder is open and its
+    first sleep is about to begin, false when it had nothing to sleep on. The wrapper reads to that
+    line, or to the end of the supervisor's lines, and reports it. This is a read of the supervisor,
+    bounded by the supervisor's own next pass over the process table, and not a wait for what the
+    command left. Row fix2/returns-at-the-commands-exit requires that word and reads rule 3 only
+    after it; fix2/end-follows-their-exit reads rule 3 once more just before the suite lets the
+    process end. Falsifier space313-supervisor-does-not-stay (the supervisor returns where it should
+    wait) writes no such line and is red on the first of the two. A supervisor that writes the line
+    and then leaves is not registered: no read of rule 3 right after the line tells it apart without
+    a timer.
+  - The house's group. fix3/the-house-group is split, as the re-review asked. What does not depend
+    on a run's end is in a suite of its own, scripts/suites/152_veldo_0313_house_group.py, which
+    needs no ledger and places no hold: the command runs in the scope named for the run in the
+    slice of wrapped runs, a process it left is listed in that group and named as a holder, a record
+    that is not the run's scope is a group nobody read, and the group is read empty once the process
+    has gone. It was seen green on this host, with the manager. Suite 151 keeps the part that needs
+    the end (run finished after the group is empty); in the confinement it stands down as before,
+    and unconfined on a shared host it stays red until the reader reads the label.
+  - WHY A SUITE OF ITS OWN, AND WHAT NEEDS THE OWNER. The gate's unconfined list can name rows of a
+    suite, but the mutation stage refuses every case of a suite listed for some rows
+    (check_gate_mutations, rows_scoped_unconfined_case), and suite 151 has 31 cases. So the checks
+    are a suite listed whole. That adds one entry to scripts/gate_unconfined.json, which is a
+    protected path and the owner's decision, and moves the pinned count in VELDO-0208's row
+    unconfined-leg/declared-list (scripts/suites/101_veldo_0208_landing_reuse.py, 46 to 47). Both
+    edits are in this change on the lead's word and are outside what this ticket could decide: the
+    gate reads the list from the authority checkout, so the entry takes effect only when the owner
+    approves it there. The footprint names both files for that reason.
+  - The suite. Suite 151 has 24 rows, all green in a process table of its own. Finding 313 has 31
+    cases.

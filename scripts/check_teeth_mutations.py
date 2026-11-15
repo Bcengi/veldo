@@ -14890,7 +14890,9 @@ def cases():
     # process. Finding 3: the label not read in the process table, an unreadable process not
     # counted, rule 3 answered without a read, the hold released for a run that is not over.
     # Finding 4: the Docker step skipped, and another run's container taken. Finding 5: the wrapper
-    # issues its own run. Finding 6: gone sent as space-runner.
+    # issues its own run. Finding 6: gone sent as space-runner. Fix round 3 (the re-review): a
+    # reader's block taken as a read of the label, a staying supervisor that keeps its caller's
+    # output, a supervisor that leaves where it should stay.
     space313 = '151_veldo_0313_space_run.py'
 
     def run313(name, old, new, rows, also=()):
@@ -14997,14 +14999,31 @@ def cases():
     run313('space313-unread-started-after-the-run-left-out', unread313,
            "    unread = [pid for pid in unread if pid not in found and since is None]\n",
            ['fix3/unread-process-holds'])
-    run313('space313-reader-block-not-checked',
-           "        if isinstance(block, dict) and block.get(\"whole\") is True and block.get(\"start\") == table[pid][\"started\"]:\n",
-           "        if isinstance(block, dict):\n",
+    # Fix round 3 (the re-review). Finding 1: the code as it was, a whole block of the process
+    # reader taken as a read of the label, which it does not hold. Finding 2: the supervisor that
+    # stays keeps its caller's output. Finding 3: the supervisor leaves where it should stay.
+    run313('space313-reader-block-taken-as-label-read',
+           "    for pid in unread:\n        add(pid, \"unread\")\n",
+           "    blocks = None\n"
+           "    if unread and reader is not None:\n"
+           "        try:\n"
+           "            said = reader()\n"
+           "            if isinstance(said, dict) and said.get(\"state\") == \"used\" and isinstance(said.get(\"blocks\"), dict):\n"
+           "                blocks = said[\"blocks\"]\n"
+           "        except Exception:  # noqa: BLE001\n"
+           "            blocks = None\n"
+           "    for pid in unread:\n"
+           "        block = (blocks or {}).get(pid)\n"
+           "        if isinstance(block, dict) and block.get(\"whole\") is True and block.get(\"start\") == table[pid][\"started\"]:\n"
+           "            continue\n"
+           "        add(pid, \"unread\")\n",
            ['fix3/unread-process-holds'])
-    run313('space313-reader-not-used-taken-as-used',
-           "            if isinstance(said, dict) and said.get(\"state\") == \"used\" and isinstance(said.get(\"blocks\"), dict):\n",
-           "            if isinstance(said, dict) and isinstance(said.get(\"blocks\"), dict):\n",
-           ['fix3/unread-process-holds'])
+    run313('space313-supervisor-keeps-the-callers-output',
+           "    if seen[\"holders\"]:\n        _space_let_go()\n", "",
+           ['fix2/captured-output-ends-at-return'])
+    run313('space313-supervisor-does-not-stay',
+           "    _space_wait(read, reap, asleep=lambda: tell(staying=True))\n", "    return status\n",
+           ['fix2/returns-at-the-commands-exit'])
     run313('space313-rule-three-answered-without-a-read',
            "            {\"conclusive\": True, \"group_empty\": held() is None}\n",
            "            {\"conclusive\": True, \"group_empty\": True}\n",
