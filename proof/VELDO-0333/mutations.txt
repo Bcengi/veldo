@@ -1,0 +1,5 @@
+budget214-keep-not-spared: control green; expected rows red
+space333-age-branch-retained: control green; expected rows red
+space333-pruning-dropped: control green; expected rows red
+space333-synced-copy-still-ages: control green; expected rows red
+space333-read-bound-dropped: control green; expected rows red

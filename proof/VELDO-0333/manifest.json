@@ -1,0 +1,122 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0333",
+ "commit": "9db7f3693fa940d430e53e94245e3650928ace14",
+ "tree": "8173b6ee30a59ba787a59729b6a09ad0f777a936",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T20:26:31.479842+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0333_leg_time_store.py",
+     "detail": "ac1/old-live-file-stays. Both production copies and both recording entry points retain the exact bytes of a 31-day-old timing file whose checkout exists."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0333/falsifiers.json",
+     "detail": "space333-age-branch-retained: unchanged copy green; the defective copy makes the named row red."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0333_leg_time_store.py",
+     "detail": "ac2/missing-checkout-removed, ac2/write-completes, ac2/keep-always-spared. Both writers remove the file for a missing checkout and retain their new file. A direct call retains the explicit keep file even when its checkout is missing."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0333/falsifiers.json",
+     "detail": "space333-pruning-dropped: unchanged copy green; the defective copy makes the named row red."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0333_leg_time_store.py",
+     "detail": "ac3/pending-untouched, ac3/unreadable-and-foreign-stay, ac3/missing-checkout-only-message, ac3/no-clock-or-file-time, ac3/descriptions, ac3/canon. Pending files remain byte-identical. Refusing clock and directory-entry stat seams do not stop pruning. Source checks find no file-time attributes in pruning, descriptions and output name only missing checkouts, and canon equals the synced copy. Malformed, foreign, linked timing files and unreadable checkouts stay."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0333/falsifiers.json",
+     "detail": "space333-synced-copy-still-ages: unchanged copy green; the defective copy makes the named row red."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0333_leg_time_store.py",
+     "detail": "ac4/read-age-bound, ac4/read-keeps-file, ac4/read-named-bound. Resource reads accept measurements at 29 and 30 fixture days and ignore 31-day-old measurements, retaining every file byte for byte. The constant is RESOURCE_READ_MAX_AGE_DAYS and equals 30."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0333/falsifiers.json",
+     "detail": "space333-read-bound-dropped: unchanged copy green; the defective copy makes the named row red."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "Targeted selftest suites 153_veldo_0333_leg_time_store, 111_veldo_0214_first_use_budget and 114_veldo_0216_concurrent_stages",
+   "detail": "13, 10 and 26 ticket rows passed respectively; 39, 36 and 52 checks including the shared preamble, 0 failed. Exit 2 is the partial-run convention. Summaries: suite-green.txt and regression.txt."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "Targeted suite 153: both real recording entry points and direct pruning against temporary stores; resource reads on fixture files."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "python3 proof/VELDO-0333/run_falsifiers.py",
+   "detail": "Four ticket falsifiers and the adjusted budget214-keep-not-spared case, each applied to its own temporary production copy in the final run. Five unchanged controls passed, five mutants failed their expected rows. Uses materialize and worker directly; no coordinator or teeth run."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "See proof/VELDO-0333/checks.json",
+   "detail": "validate.py all and ready, docs, template sync, generated files, lint and personal setup passed."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh",
+   "reason": "The owner reserved the full gate, heavy suites and teeth runs for the lead through the gate lock. Criterion status remains pending until that gate; local checks are not a landing decision."
+  }
+ ],
+ "notes": [
+  "Design 6.10 explicitly retains the existing single-file timing cleanup for a missing checkout. This ticket adds no deletion primitive, ledger action, checkout removal or Docker action. The owner keep, signature and keep-step paths are unchanged.",
+  "The only protected files changed are engine/scripts/gate_legs.py and scripts/gate_legs.py, explicitly authorized in the ticket. Landing approval is the lead and owner step.",
+  "The existing VELDO-0214 timing row expected age deletion. The footprint and history now include its revised retention assertions; its keep check and mutation remain effective.",
+  "An initial falsifier run stopped on a test diagnostic TypeError when a disabled function had no docstring. The suite now handles that missing description; the final five-case run completed with assertion failures, not exceptions.",
+  "Suite 86_veldo_0127 was not run and its captures were not edited. The owner reports its two live-capture failures require a lead recapture.",
+  "All stores and checkout directories used here are fixture directories. No host timing store, container engine, protected data or real-data volume was touched."
+ ],
+ "artifacts": {
+  "checks.json": "sha256:8c3d1912f07a4b9d88f21b0882a74787b781305634d01439daea7678f42d1a89",
+  "falsifiers.json": "sha256:0fb9950b5064e7c8e14827d5281b847692231da21b959824c52921384c5e8444",
+  "mutations.txt": "sha256:2f94a4a562496b17cf3b45522d394fa2a92642229bd1078d013159c0c2216279",
+  "regression.txt": "sha256:abbe45120307828b678ac56d8f82cdce50a9ed1bfa42396b6ef7f38ee8bed94e",
+  "run_falsifiers.py": "sha256:8b228df5860df74b2631d48f31989e31b34ba74745d30549ad24898cc6885266",
+  "suite-green.txt": "sha256:45492045691edc44d88a18f58023e15e6aee3817976c6b607f24c19472796565"
+ },
+ "rollback": "Revert the implementation commit in both production copies and the associated tests. The previous age deletion behavior returns."
+}
