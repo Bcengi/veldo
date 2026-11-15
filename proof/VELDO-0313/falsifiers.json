@@ -23,29 +23,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
-  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-sent-when-the-command-exits",
-  "module": "bin/veldo",
-  "criterion": "AC1",
-  "declared": false,
-  "expected_red": [
-   "ac1/surviving-child"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "ac1/surviving-child"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 ac1/surviving-child",
-    "the wrapper returns the command's own status, and only after the process the command left has ended [3 0.1s ]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -53,6 +31,7 @@
   "module": "bin/veldo",
   "criterion": "AC1",
   "declared": false,
+  "review_finding": 3,
   "expected_red": [
    "ac1/unread-group-sends-nothing"
   ],
@@ -63,11 +42,11 @@
   "red_details": [
    [
     "VELDO-0313 ac1/unread-group-sends-nothing",
-    "a group whose emptiness is None: run finished is not sent and the reason is group_unread; no census, no signal and no release are written [{'sent': True, 'reason': None, 'census': {'worktree': 'space:item:0aeeda567b6247e39b903c79fad1bbf2', 'event': 'run_finished', 'declared': ['space:item:99b01f3e513d467b94ba9420ef790182'], 'items': {'/tmp/veldo-0313-n9crb0p9/projects/orchard-worktrees/w-unread/bu"
+    "a group that nobody could read: run finished is not sent and the reason is group_unread; no census, no signal and no release are written [{'sent': True, 'reason': None, 'holders': [], 'census': {'worktree': 'space:item:f1c000179e814c0cb1cfa986a0612df8', 'event': 'run_finished', 'declared': ['space:item:3e9195054a944dd390df6a2f326434ba'], 'items': {'/tmp/veldo-0313-nvjnb226/projects/orchard-worktrees/w-unread/build': 'space:item:3e9195054a944dd390df6a2f326434ba'}, 'kept': [], 'work': [], 'sizes': {'space:item:3e9195054a944dd390df6a2f326434ba': 8192, 'space:item:90a2777863b3498993a97542cc231643'"
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -81,7 +60,8 @@
   "noop_red_rows": [],
   "red_rows": [
    "ac1/declared-started-ended",
-   "ac1/only-the-runs-own-items"
+   "ac1/only-the-runs-own-items",
+   "fix4/docker-objects-are-items"
   ],
   "red_details": [
    [
@@ -91,10 +71,14 @@
    [
     "VELDO-0313 ac1/only-the-runs-own-items",
     "the Ledger refuses space-runner a signal for a run nobody issued to it, a signal that names items, worktree abandoned and the owner's Keep, each by name, with nothing written [[None, None, None, 'space_not_permitted:space_disposition']]"
+   ],
+   [
+    "VELDO-0313 fix4/docker-objects-are-items",
+    "each was declared and confirmed as space-runner, before the one signal [['space_issue', 'space_hold', 'space_admit', 'space_declare', 'space_confirm', 'space_measure', 'space_declare', 'space_confirm', 'space_declare', 'space_confirm', 'space_signal', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_outcome', 'space_release']]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -116,7 +100,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -138,7 +122,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -151,14 +135,19 @@
   ],
   "noop_red_rows": [],
   "red_rows": [
-   "ac1/surviving-child",
+   "fix2/returns-at-the-commands-exit",
+   "fix3/the-house-group",
    "ac2/command-status",
    "ac2/report-starts"
   ],
   "red_details": [
    [
-    "VELDO-0313 ac1/surviving-child",
-    "the wrapper returns the command's own status, and only after the process the command left has ended [0 1.7s ]"
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [0 0.1s [{'pid': 4138486, 'started': 236965245, 'how': 'descendant'}]]"
+   ],
+   [
+    "VELDO-0313 fix3/the-house-group",
+    "the command ran in a scope of the owner's user manager named for the run by the house's own rule, in the slice of wrapped runs, and the wrapper holds that group [0::/user.slice/user-1000.slice/user@1000.service/veldo.slice/veldo-runs.slice/veldo-dispatch-c1930b366d08a2807acf99778deac944.scope {'cgroup': '/user.slice/user-1000.slice/user@1000.service/veldo.slice/veldo-runs.slice/veldo-dispatch-c1930b366d08a2807acf99778deac944.scope', 'unit': 'veldo-dispatch-c1930b366d08a2807acf99778deac944.scope'}]"
    ],
    [
     "VELDO-0313 ac2/command-status",
@@ -170,7 +159,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -179,8 +168,8 @@
   "criterion": "AC3",
   "declared": true,
   "expected_red": [
-   "ac3/event-types",
-   "ac3/record-refusals"
+   "ac3/record-refusals",
+   "ac3/event-types"
   ],
   "noop_red_rows": [],
   "red_rows": [
@@ -190,15 +179,15 @@
   "red_details": [
    [
     "VELDO-0313 ac3/record-refusals",
-    "a folder outside every known root is refused by name, exit 1, and gets no item [1 veldo space record: refused invalid_input:owner.scope]"
+    "a folder outside every known root is refused by name, exit 1, and gets no item [1 veldo space record: refused space_record_exists]"
    ],
    [
     "VELDO-0313 ac3/event-types",
-    "the event the type option released is refused as space_outside_roots, exit 1 [0 veldo space event: not recorded (space_no_command:space_event): nothing becomes due and nothing is removed]"
+    "the event --type released is refused as space_outside_roots, exit 1 [0 veldo space event: not recorded (space_no_command:space_event): nothing becomes due and nothing is removed]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -216,11 +205,11 @@
   "red_details": [
    [
     "VELDO-0313 ac3/record-refusals",
-    "the kind option bucket sewhere/made-by-a-script is refused as space_unknown_kind:bucket, exit 1, with no item [1 veldo space record: refused space_record_kind:bucket]"
+    "--kind bucket sewhere/made-by-a-script is refused as space_unknown_kind:bucket, exit 1, with no item [1 veldo space record: refused space_record_kind:bucket]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -242,7 +231,7 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
@@ -265,7 +254,467 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-existing-folder-accepted-as-session-scratch",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "fix1/existing-work-is-never-scratch"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals",
+   "fix1/existing-work-is-never-scratch",
+   "ac3/record-accepted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "--kind scratch scratch/a-script-scratch is refused as space_record_kind:scratch, exit 1, with no item [1 veldo space record: refused space_not_permitted:space_declare]"
+   ],
+   [
+    "VELDO-0313 fix1/existing-work-is-never-scratch",
+    "--kind scratch orktrees/w-notes/notes with a session is refused as space_record_kind:scratch, exit 1 [0 ]"
+   ],
+   [
+    "VELDO-0313 ac3/record-accepted",
+    "a worktree a script is about to make is declared before it is there: exit 0, one item, declared, creator record, owned by its project, and the verb prints the item [0 {\"item\": \"space:item:53c9ba426c264c469b3c444c4c1db043\", \"state\": \"declared\"} ]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-existing-path-recorded",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "fix1/existing-work-is-never-scratch",
+   "ac3/record-refusals"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals",
+   "fix1/existing-work-is-never-scratch",
+   "ac3/record-accepted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "--kind agent_repository /orchard-worktrees/w-ac1 is refused as space_record_exists, exit 1, with no item [1 veldo space record: refused space_record_inside:space:item:35fa3849f36c41eca423edb7eea2364e]"
+   ],
+   [
+    "VELDO-0313 fix1/existing-work-is-never-scratch",
+    "--kind worktree worktrees/made-by-hand is refused as space_record_exists, exit 1 [0 ]"
+   ],
+   [
+    "VELDO-0313 ac3/record-accepted",
+    "recorded a second time it is refused, because it exists [veldo space record: refused space_record_inside:space:item:931ee8667a6c4bd7b1a82aefdb34f9dd]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-scratch-recorded-by-the-verb",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "fix1/existing-work-is-never-scratch"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals",
+   "fix1/existing-work-is-never-scratch"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "--kind scratch scratch/a-script-scratch is refused as space_record_kind:scratch, exit 1, with no item [1 veldo space record: refused space_not_permitted:space_declare]"
+   ],
+   [
+    "VELDO-0313 fix1/existing-work-is-never-scratch",
+    "--kind scratch orktrees/w-notes/notes with a session is refused as space_record_kind:scratch, exit 1 [1 veldo space record: refused space_record_exists]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-waits-for-what-the-command-left",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "fix2/returns-at-the-commands-exit"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/returns-at-the-commands-exit",
+   "fix2/end-follows-their-exit",
+   "fix3/handed-outside-the-tree",
+   "fix3/the-house-group"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 10.2s []]"
+   ],
+   [
+    "VELDO-0313 fix2/end-follows-their-exit",
+    "that process was never stopped: it ended on the suite's word, at its own last line, and its file under the scratch root was there to that moment [{'held': True, 'text': 'in use\\n', 'released': False}]"
+   ],
+   [
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "the fixture's worker is the server's child, started for the command, and no descendant of the run's supervisor [4154677 []]"
+   ],
+   [
+    "VELDO-0313 fix3/the-house-group",
+    "the process the command left is a member of that group as the kernel lists it, and run finished is not sent while it is [{'read': True, 'populated': False, 'pids': []} None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-sent-while-a-process-it-left-lives",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "fix2/returns-at-the-commands-exit",
+   "fix2/end-follows-their-exit"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/returns-at-the-commands-exit",
+   "fix2/end-follows-their-exit",
+   "fix3/handed-outside-the-tree",
+   "fix3/unread-process-holds",
+   "fix3/the-house-group"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 0.2s []]"
+   ],
+   [
+    "VELDO-0313 fix2/end-follows-their-exit",
+    "that process was never stopped: it ended on the suite's word, at its own last line, and its file under the scratch root was there to that moment [{'held': False, 'text': 'in use\\n', 'released': True}]"
+   ],
+   [
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "the wrapper returns the command's status while that worker lives and does not send run finished: a process outside the command's tree carries the run's label [0 0.2s None]"
+   ],
+   [
+    "VELDO-0313 fix3/unread-process-holds",
+    "an orphaned process of the owner's that started after the run and whose environment cannot be read may carry the label: nothing is sent or written, and it is named [None []]"
+   ],
+   [
+    "VELDO-0313 fix3/the-house-group",
+    "the process the command left is a member of that group as the kernel lists it, and run finished is not sent while it is [{'read': True, 'populated': True, 'pids': [4157467]} group_not_empty]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-what-the-command-left-is-killed",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "fix2/end-follows-their-exit"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/end-follows-their-exit",
+   "fix3/handed-outside-the-tree",
+   "fix3/the-house-group",
+   "paths/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/end-follows-their-exit",
+    "the run's end sleeps until the process the command left exits, and is made then: that process had written its last line when the end returned [None {}]"
+   ],
+   [
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "the end follows the worker's exit: the worker ended on the suite's word and saw the file to its last line, and then the scratch root went and the hold was released [None None]"
+   ],
+   [
+    "VELDO-0313 fix3/the-house-group",
+    "the process the command left is a member of that group as the kernel lists it, and run finished is not sent while it is [{'read': True, 'populated': True, 'pids': []} group_not_empty]"
+   ],
+   [
+    "VELDO-0313 paths/canon",
+    "they stop nothing: no kill of a process or a group, and the one signal sent is the stop the wrapper was sent, passed on to the command"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-end-waits-on-a-timer",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "paths/canon"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "paths/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 paths/canon",
+    "they wait on no timer: no sleep, and every poll is one with no time limit"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-scratch-records-no-process",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "fix2/returns-at-the-commands-exit"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/declared-started-ended",
+   "fix2/returns-at-the-commands-exit"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac1/declared-started-ended",
+    "the scratch root records the run's supervisor, a process the kernel showed with that start time; it has ended by the time run finished is sent [None {'pid': 4160791, 'started': 236981334}]"
+   ],
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the scratch root records the run's supervisor, and rule 3 of a judge that was told the run is over still holds the item, by that process as the kernel shows it [None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-label-not-read",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 3,
+  "expected_red": [
+   "fix3/handed-outside-the-tree"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix3/handed-outside-the-tree"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "the wrapper returns the command's status while that worker lives and does not send run finished: a process outside the command's tree carries the run's label [0 0.2s None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-unread-process-not-counted",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 3,
+  "expected_red": [
+   "fix3/unread-process-holds"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix3/unread-process-holds"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix3/unread-process-holds",
+    "an orphaned process of the owner's that started after the run and whose environment cannot be read may carry the label: nothing is sent or written, and it is named [None []]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-rule-three-answered-without-a-read",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 3,
+  "expected_red": [
+   "fix3/rule-3-reads-the-kernel"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix3/rule-3-reads-the-kernel"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix3/rule-3-reads-the-kernel",
+    "the end began on an empty group, and rule 3 asked the kernel again when it judged the item: the scratch root is deferred as in use and is on disk with its file [True removed None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-hold-released-for-a-run-that-is-not-over",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 3,
+  "expected_red": [
+   "fix3/rule-3-reads-the-kernel"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix3/rule-3-reads-the-kernel"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix3/rule-3-reads-the-kernel",
+    "the hold is not released for a run the kernel still shows [released released]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-docker-step-skipped",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 4,
+  "expected_red": [
+   "fix4/docker-objects-are-items"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix4/docker-objects-are-items"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix4/docker-objects-are-items",
+    "the container with the run's label and the one with its compose project name are items of the run, declared by the census with the identity the engine showed [[] None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-another-runs-container-taken",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 4,
+  "expected_red": [
+   "fix4/docker-objects-are-items"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix4/docker-objects-are-items"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix4/docker-objects-are-items",
+    "the container with the run's label and the one with its compose project name are items of the run, declared by the census with the identity the engine showed [['another-runs', 'built-by-the-run', 'composed-by-the-run', 'made-by-hand'] {'default': 'read'}]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-issues-its-own-run",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 5,
+  "expected_red": [
+   "fix5/no-issuer-no-run"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix5/no-issuer-no-run",
+   "paths/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix5/no-issuer-no-run",
+    "a wiring with no issuer: the wrapper says the run is not recorded, and the command runs unchanged with its own status [9  {\"tmp\": \"/tmp/veldo-0313-qhisdcvf/scratch/run-scratch/e7026afb903a4a3a8df44dad23886d71\", \"label\": \"run:8f89e7007b414d008baa82c97a44debc\"}]"
+   ],
+   [
+    "VELDO-0313 paths/canon",
+    "they hold no call of the Ledger's issue and no gone, and the label they look for in a process's environment is the one the Docker adapter gives a run"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-gone-sent-as-space-runner",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 6,
+  "expected_red": [
+   "fix6/scratch-not-made"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix6/scratch-not-made",
+   "paths/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix6/scratch-not-made",
+    "no gone was sent as space-runner, accepted or refused [['space_admit', 'space_declare', 'space_gone', 'space_hold', 'space_issue', 'space_measure', 'space_release', 'space_signal']]"
+   ],
+   [
+    "VELDO-0313 paths/canon",
+    "they hold no call of the Ledger's issue and no gone, and the label they look for in a process's environment is the one the Docker adapter gives a run"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "957d138c23ebf0c4d609593d069401fd4451f7f3",
   "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  }
 ]
