@@ -21,6 +21,7 @@ def _v323_suite():
     import tempfile
     import threading
     import time
+    import types
     import uuid
 
     PRODUCTION = {
@@ -291,6 +292,14 @@ def _v323_suite():
                 @staticmethod
                 def remove(ledger, probe, identity, item, **given):
                     if identity == which:
+                        # What this child holds open, read by the child itself, before it says it is here.
+                        links = []
+                        for name in os.listdir('/proc/self/fd'):
+                            try:
+                                links.append(os.readlink('/proc/self/fd/' + name))
+                            except OSError:
+                                pass
+                        Path(str(entered) + '.open').write_text(json.dumps(links))
                         entered.write_text(str(os.getpid()))
                         with open(latch, 'rb') as stream:
                             stream.read(1)
@@ -326,6 +335,21 @@ def _v323_suite():
         owned_fd = os.open(owned_file, os.O_CREAT | os.O_RDWR, 0o600)
         inherited_fd = os.open(inherited_file, os.O_CREAT | os.O_RDWR, 0o600)
         service.space_owned = [owned_fd]
+        # The channel and the API of the service each hold a store connection of their own here (in
+        # serve they share one). Both are the service's, so neither is the child's to keep.
+        channel_file, api_file = base / 'channel.sqlite3', base / 'api.sqlite3'
+        channel_conn, api_conn = S.open_store(str(channel_file)), S.open_store(str(api_file))
+        service.channel = types.SimpleNamespace(ingress=types.SimpleNamespace(conn=channel_conn))
+        service.api = types.SimpleNamespace(conn=api_conn, publish=lambda: {})
+
+        def holds(links, file):
+            return any(link.startswith(str(file)) for link in links)
+        service_open = []
+        for name in os.listdir('/proc/self/fd'):
+            try:
+                service_open.append(os.readlink('/proc/self/fd/' + name))
+            except OSError:
+                pass
         e1 = event(wake=False)
         service.hint_after(service.watermark() - 1)
         child = held_child(entered)
@@ -338,6 +362,18 @@ def _v323_suite():
                     pass
         check('ac2/only-service-descriptors', str(owned_file) not in child_open, sorted(child_open))
         check('ac2/only-service-descriptors', str(inherited_file) in child_open, sorted(child_open))
+        own_open = Path(str(entered) + '.open')
+        child_said = json.loads(own_open.read_text()) if child and own_open.exists() else None
+        # Not blind: the service holds both, and the child still holds what was only handed down.
+        check('ac2/channel-and-api-closed', holds(service_open, channel_file) and holds(service_open, api_file)
+              and child_said is not None and holds(child_said, inherited_file), [service_open, child_said])
+        check('ac2/channel-and-api-closed', child_said is not None and not holds(child_said, channel_file),
+              child_said)
+        check('ac2/channel-and-api-closed', child_said is not None and not holds(child_said, api_file),
+              child_said)
+        service.channel, service.api = None, None
+        channel_conn.close()
+        api_conn.close()
         service.space_owned = []
         os.close(owned_fd)
         os.close(inherited_fd)
@@ -575,6 +611,33 @@ def _v323_suite():
             drain(exits=True)
             check('ac4/held-across-restart', len(exit_records(early)) == 1 and not again_path.exists()
                   and ledger.item(again)['state'] == 'removed', ledger.item(again))
+
+            # A client that has ended and that its parent has not collected has exited: the kernel
+            # reports it, its stat reads state Z with the recorded start time, and the scratch is
+            # removed then. This suite is that parent, and it collects the client only afterwards.
+            client, process, ghost, ghost_path = client_session('client-uncollected')
+            clients.append(client)
+            early = event('session_ended', dict(session='client-uncollected', cwd=str(base), **process))
+            check('ac4/exited-before-collected', ghost_path.is_dir() and ledger.item(ghost)['state'] == 'deferred'
+                  and not W._uncollected(process, str(proc)), ledger.item(ghost))
+            client.terminate()
+            os.waitid(os.P_PID, client.pid, os.WEXITED | os.WNOWAIT)
+
+            def uncollected():
+                with open('/proc/%d/stat' % client.pid, 'rb') as stream:
+                    fields = stream.read().rsplit(b')', 1)[1].split()
+                return fields[0] == b'Z' and int(fields[19]) == process['started']
+            # The same number with another start time is another process, and is not exited.
+            check('ac4/exited-before-collected', uncollected() and W._uncollected(process, str(proc))
+                  and not W._uncollected(dict(process, started=process['started'] + 1), str(proc)))
+            drain(exits=True)
+            exits = exit_records(early)
+            removal = (ledger.item(ghost).get('removal') or {}).get('emitter') or {}
+            check('ac4/exited-before-collected', uncollected() and len(exits) == 1
+                  and exits[0][1]['emitter']['hook'] == 'client-exit' and exits[0][1]['state'] == 'consumed'
+                  and not ghost_path.exists() and ledger.item(ghost)['state'] == 'removed'
+                  and removal.get('event_record') == exits[0][0] and not service.space_pipes()
+                  and time.time() == frozen, [exits, ledger.item(ghost)])
         finally:
             time.time = real_time
             for client in clients:
