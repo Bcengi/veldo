@@ -6,15 +6,17 @@ pipe is drained by the service poll set. A failed worker leaves the record for t
 journal advance or start; it is never retried by a timer.
 
 The child closes what the service holds and it must not keep: the descriptors and connections
-`held` names (the service's lock, listeners, pipes and store), this dispatcher's own pipe and
-its process descriptors. It closes nothing else: a descriptor the service did not open (one a
+`held` names (the service's lock, listeners, pipes and store, and the store connections of its
+channel and its API), this dispatcher's own pipe and its process descriptors. It closes nothing else: a descriptor the service did not open (one a
 supervisor or a test harness handed down) is not the child's to close.
 
 A session ended record whose client is still alive is not dropped. The worker leaves its
 scratch deferred (rule 3) and names it in the record's result; this dispatcher then holds a
 process descriptor of that client in the service poll set. The kernel makes it readable when
 the client ends, and that writes one more session ended record for the same session, which is
-consumed like any other. Nothing reads a clock and nothing polls.
+consumed like any other. Nothing reads a clock and nothing polls. The kernel reports the end
+before the client's parent has collected it; the worker judges the client as exited from then
+(state Z in its stat, with the recorded start time), so the scratch does not wait for the parent.
 """
 import fcntl
 import importlib.util

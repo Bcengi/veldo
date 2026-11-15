@@ -16125,6 +16125,19 @@ def cases():
         "                if one.get('why') == 'client_alive':\n",
         "                if False:  # defect: nothing waits for the client's end\n",
         ['ac4/re-judged-at-client-exit'])
+    # Fix round 2: the lead's decisions on the two open points.
+    add(323, 'space323-uncollected-client-alive', hook323, 'control_space_worker.py',
+        "        if state(base) != (b'Z', process['started']):\n",
+        "        if True:  # defect: a client that ended and is not yet collected is treated as alive\n",
+        ['ac4/exited-before-collected'])
+    add(323, 'space323-channel-descriptor-kept', hook323, 'control_service.py',
+        "        found.append(getattr(getattr(getattr(self, 'channel', None), 'ingress', None), 'conn', None))\n",
+        "        found.append(None)  # defect: the channel's descriptor stays open in the worker\n",
+        ['ac2/channel-and-api-closed'])
+    add(323, 'space323-api-descriptor-kept', hook323, 'control_service.py',
+        "        found.append(getattr(getattr(self, 'api', None), 'conn', None))\n",
+        "        found.append(None)  # defect: the API's descriptor stays open in the worker\n",
+        ['ac2/channel-and-api-closed'])
     return result
 
 
