@@ -1574,7 +1574,8 @@ class Service:
 
     def space_held(self):
         """What this instance holds and a space worker must not keep: the lock and the listeners that
-        serve registered in space_owned, every pipe of the poll set, and the store connection."""
+        serve registered in space_owned, every pipe of the poll set, the store connection, and the
+        store connections the channel and the API hold (in serve the API works on the channel's)."""
         found = list(getattr(self, 'space_owned', ()))
         loop = getattr(self, 'loop', None)
         for pipes in (loop.pipes() if loop is not None else {},
@@ -1582,6 +1583,8 @@ class Service:
                       self.docker_pipes() if getattr(self, 'space_docker', None) is not None else {}):
             found.extend(pipes)
         found.append(getattr(self, 'conn', None))
+        found.append(getattr(getattr(getattr(self, 'channel', None), 'ingress', None), 'conn', None))
+        found.append(getattr(getattr(self, 'api', None), 'conn', None))
         return found
 
     def space_start(self, replay=None, reconcile=None):

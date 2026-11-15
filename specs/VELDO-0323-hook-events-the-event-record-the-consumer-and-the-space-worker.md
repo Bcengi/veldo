@@ -107,6 +107,18 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15, fix round 2, the lead's decisions on the two points the first fix round left open.
+  (1) A client that has ended and that its parent has not collected (state Z) has exited. The worker
+  reads the state from the client's stat together with the recorded start time, so a reused number
+  is another process, and requires that no task of it still runs. For a session ended event Signal
+  and the removers read rule 4 with that one fact added: such a client is not an unread process
+  that could hold a path. The scratch is removed when the kernel reports the end and does not wait
+  for the parent or for the next session. Every other process is judged as before. (2) The store
+  connections the service's channel and API hold are in the list the worker child closes: the child
+  holds only what it needs. A descriptor handed down to the service still stays open. Rows
+  ac4/exited-before-collected and ac2/channel-and-api-closed, three mutations. No acceptance
+  criterion changes.
+
 - 2026-11-15, fix round after the review (verdict FIX, no loss path found). (1) The worker child
   closes only what the service holds (its lock, listeners, pipes and store, named by the service) and
   never every inherited descriptor, so a descriptor handed down to the service stays open and the
