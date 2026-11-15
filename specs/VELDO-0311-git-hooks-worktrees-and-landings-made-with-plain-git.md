@@ -235,3 +235,25 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     that it still shows the stop between two entries.
   - Owner rule (Telegram 41209). Nothing in this round removes anything: the module has the same two
     unlinks, both of its own spool files, and an entry that runs out of time is kept whole.
+- 2026-11-15: ROW ac3/no-event-command-waits NO LONGER ASSERTS THE HOOK'S OWN BUDGET (the review of
+  VELDO-0344's run label, finding 3; the row was red once, on a host that 74 runs of another suite
+  loaded, and green alone). No production file changes: the suite only.
+  - What was wrong. The row read the worktree's item the moment git returned. That holds only when
+    the hook's replay ends inside HOOK_SECONDS, 5 seconds; when it does not, the hook leaves the
+    entry in the spool for the next call, as specified, and no record is lost. The row took the
+    budget for a promise, and when it was red it printed nothing of what it saw.
+  - Now. The row waits for what it is about: the end of the process that runs the hook, and then,
+    when the hook left the worktree's entry spooled, the end of one space replay, which is the next
+    call. Each wait is woken by the kernel, by a connection on the authority's socket or by the
+    process's exit through its pidfd, and by nothing else: no sleep and no poll on a clock. Each has
+    one deadline, 180 seconds, there only so that a hang ends: the hook's replay of this step was
+    measured at 0.10 s on a quiet host and 0.30 s with 80 busy loops on 20 cores (the review), the
+    whole git command at 0.22 s here, and the deadline is 600 times the worst of them. The check
+    still requires the item present, the spool holding the ref event alone, and nothing new set
+    aside, so the row's point, that the event waits while a later entry is recorded, is as it was.
+  - The check's words now carry what it saw: git's status, how long it took and what ended the wait,
+    what the hook left in the spool, the replay's status and time when one ran, the item's state, the
+    spooled types and the set-aside list.
+  - Both ways run once by hand: as it is (the hook delivers, no replay: git 0 in 0.22 s), and with the
+    authority kept away during the add (the hook left ref_changed and worktree_added, the replay
+    delivered the second in 0.11 s, the row green). Suite 148: 31 rows, 57 passed, 0 failed.

@@ -7,3 +7,6 @@ selftest (PARTIAL, 1 of 219 suites): 57 passed, 0 failed in 14.47s
 149_veldo_0312_ticket_ended: selftest (PARTIAL, 1 of 219 suites): 61 passed, 0 failed in 3.15s
 133_veldo_0326_space_principals: selftest (PARTIAL, 1 of 219 suites): 56 passed, 0 failed in 26.72s
 # 86_veldo_0127_agent_configuration was not run (52 of 54 by a known recapture; left as it is).
+# 2026-11-15, row ac3/no-event-command-waits waits for the hook's process and, when the hook left the entry spooled, for one replay (the review of VELDO-0344's run label, finding 3). Suite only; no production file changed. Alone, with python3 scripts/selftest.py and the suite option:
+148_veldo_0311_git_hooks: selftest (PARTIAL, 1 of 222 suites): 57 passed, 0 failed in 8.63s (31 rows)
+# Once by hand with the authority kept away during the add of that row, so that the hook left ref_changed and worktree_added in the spool: the replay delivered the second in 0.11 s and the suite was 57 passed, 0 failed. That edit of the suite was not kept.

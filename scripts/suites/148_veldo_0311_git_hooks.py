@@ -731,9 +731,61 @@ def _v311_suite():
               code == 0 and len(waiting) == 1 and waiting[0]['type'] == 'ref_changed'
               and waiting[0]['subject']['new'] == new and waiting[0]['tries'] == 1 and len(EVENTS) == count)
         T170 = TREES / 't170'
-        plain(REPO, 'worktree', 'add', '-q', '-b', 'agent/kim/T-170', str(T170))
-        check(ROW, 'a worktree added after it is still recorded, and the event still waits',
-              item_at(T170)[1].get('state') == 'present' and [one['type'] for one in spooled()] == ['ref_changed']
+
+        # HOW LONG THE ROW WAITS. The hook gives its own replay HOOK_SECONDS and then leaves what is
+        # left in the spool for the next call; that is the product's rule and no record is lost by it.
+        # The row used to read the item the moment git returned, which is a claim that the hook was
+        # done inside that budget: true on a quiet host, false once on a loaded one (the review of
+        # VELDO-0344, finding 3). The row now waits for what it is about: the end of the process that
+        # runs the hook, and then, when the hook left the entry spooled, the end of one replay. Both
+        # waits are woken by the kernel, by a connection on the socket or by the process's exit
+        # through its pidfd, and by nothing else: no sleep, no poll on a clock. COMMAND_SECONDS is
+        # the deadline of each, there only so that a hang ends: the measured worst of the hook's
+        # replay of this step is 0.10 s on a quiet host and 0.30 s with 80 busy loops on 20 cores
+        # (the review), and of the whole git command here 0.22 s; the deadline is 600 times that worst.
+        COMMAND_SECONDS = 180.0
+
+        def ended(process, seconds=COMMAND_SECONDS):
+            """Serve the socket until the command has ended. (status, seconds it took, how the wait
+            ended: exit, or deadline when it was ended here)."""
+            started_at = time.monotonic()
+            descriptor = os.pidfd_open(process.pid)
+            how = 'deadline'
+            try:
+                while True:
+                    left = started_at + seconds - time.monotonic()
+                    if left <= 0:
+                        break
+                    ready = select.select([descriptor] + listeners[:1], [], [], left)[0]
+                    if listeners and listeners[0] in ready:
+                        SPOOL.serve_one(listeners[0], AUTH, after=AFTER[0])
+                    elif descriptor in ready:
+                        how = 'exit'
+                        break
+            finally:
+                os.close(descriptor)
+            if how != 'exit':
+                process.kill()
+            process.communicate()
+            return process.returncode, time.monotonic() - started_at, how
+
+        def command(*argv):
+            return subprocess.Popen(list(argv), env=ENVIRONMENT, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+        added = ended(command('git', '-C', str(REPO), 'worktree', 'add', '-q', '-b', 'agent/kim/T-170', str(T170)))
+        left_by_the_hook = [one['type'] for one in spooled()]
+        again = None
+        if 'worktree_added' in left_by_the_hook:
+            # The hook ran out of its own time and left the entry for the next call: this is it.
+            again = ended(command(str(CLI), 'space', 'replay', '--state-root', str(STATE), '--installation',
+                                  str(folder)))
+        check(ROW, 'a worktree added after it is still recorded, and the event still waits [git %s in %.2fs, ended '
+                   'by %s; the hook left %s; the replay %s; the item %s; spooled %s; set aside %s, before %s]'
+              % (added[0], added[1], added[2], left_by_the_hook,
+                 again and '%s in %.2fs, ended by %s' % again, item_at(T170)[1].get('state'),
+                 [one['type'] for one in spooled()], SPOOL.refused(FOLDER), aside),
+              added[0] == 0 and added[2] == 'exit' and (again is None or again[2] == 'exit')
+              and item_at(T170)[1].get('state') == 'present' and [one['type'] for one in spooled()] == ['ref_changed']
               and SPOOL.refused(FOLDER) == aside)
         WITH_EVENTS[0] = True
         code, out, _err = cli('space', 'replay', '--state-root', str(STATE), '--installation', str(folder))
