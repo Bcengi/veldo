@@ -1,0 +1,51 @@
+[
+ {
+  "command": "python3 scripts/selftest.py --suite 103_veldo_0211_borrowed_login",
+  "exit": 2,
+  "passed": true,
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 88 passed, 0 failed in 1.62s",
+  "detail": []
+ },
+ {
+  "command": "python3 scripts/selftest.py --suite 133_veldo_0326_space_principals",
+  "exit": 2,
+  "passed": true,
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 56 passed, 0 failed in 26.02s",
+  "detail": []
+ },
+ {
+  "command": "python3 scripts/selftest.py --suite 138_veldo_0300_space_remove",
+  "exit": 2,
+  "passed": true,
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 65 passed, 0 failed in 2.19s",
+  "detail": []
+ },
+ {
+  "command": "python3 scripts/selftest.py --suite 139_veldo_0301_space_signal",
+  "exit": 2,
+  "passed": true,
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 44 passed, 0 failed in 1.10s",
+  "detail": []
+ },
+ {
+  "command": "python3 scripts/selftest.py --suite 140_veldo_0345_space_keep",
+  "exit": 2,
+  "passed": true,
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 57 passed, 0 failed in 4.39s",
+  "detail": []
+ },
+ {
+  "command": "python3 scripts/selftest.py --suite 153_veldo_0302_space_creators",
+  "exit": 2,
+  "passed": true,
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 68 passed, 0 failed in 1.52s",
+  "detail": []
+ },
+ {
+  "command": "python3 scripts/selftest.py --suite 154_veldo_0324_batch_sandbox",
+  "exit": 2,
+  "passed": true,
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 44 passed, 0 failed in 1.12s",
+  "detail": []
+ }
+]

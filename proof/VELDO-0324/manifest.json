@@ -1,0 +1,135 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0324",
+ "commit": "7c330d217e5368e175a2056a9a27fb5b66a70446",
+ "tree": "3a37b1eef571de0fe94422b52bb3f21885f4fe19",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T22:10:02.605978+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/154_veldo_0324_batch_sandbox.py",
+     "sha256": "e3ce09ed87d44f435674f4dea7c68a5c5827dd1eb7aa062af771601ea6649013",
+     "detail": "Rows ac1/clean, ac1/open-file, ac1/evidence, safety/keep-failure, safety/unsaved-batch, safety/owner-keep-batch, safety/batch-no-ledger and safety/batch-locators. Item-naming Signal, removal outcomes, main-repository kept refs, named deferrals, intact unsaved work and evidence. Observations retain their accepted evidence kind. The future batch lifecycle is a fixture stand-in only."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0324/tests.json",
+     "detail": "Seven lightweight targeted suites pass with real files, git, owner enrollment and journal-backed ledger. Fixture boundaries and the unrun runtime suite are named in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0324/falsifiers.json",
+     "detail": "Green 18-row baseline; seven exact mutations applied once each in disposable copies, every designated target row red. Definitions match the gate registry."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/154_veldo_0324_batch_sandbox.py",
+     "sha256": "e3ce09ed87d44f435674f4dea7c68a5c5827dd1eb7aa062af771601ea6649013",
+     "detail": "Rows ac2/recorded, ac2/lock-and-login, ac2/failed-launch, safety/sandbox-repository, safety/owner-keep-sandbox and safety/recorded-refusal. Declaration precedes creation, exact parent and complete owner, launcher retains recorded scratch, run event uses the existing remover after locks and borrowed logins settle, shut directories are removed, nested repository commits and kept work survive."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0324/tests.json",
+     "detail": "Seven lightweight targeted suites pass with real files, git, owner enrollment and journal-backed ledger. Fixture boundaries and the unrun runtime suite are named in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0324/falsifiers.json",
+     "detail": "Green 18-row baseline; seven exact mutations applied once each in disposable copies, every designated target row red. Definitions match the gate registry."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/154_veldo_0324_batch_sandbox.py",
+     "sha256": "e3ce09ed87d44f435674f4dea7c68a5c5827dd1eb7aa062af771601ea6649013",
+     "detail": "Rows ac3/no-installation and ac3/installation. Two fixture days old and lock free, planted scratch remains byte equal after a launcher starts. The stale function, call and constant are absent."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0324/tests.json",
+     "detail": "Seven lightweight targeted suites pass with real files, git, owner enrollment and journal-backed ledger. Fixture boundaries and the unrun runtime suite are named in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0324/falsifiers.json",
+     "detail": "Green 18-row baseline; seven exact mutations applied once each in disposable copies, every designated target row red. Definitions match the gate registry."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/154_veldo_0324_batch_sandbox.py",
+     "sha256": "e3ce09ed87d44f435674f4dea7c68a5c5827dd1eb7aa062af771601ea6649013",
+     "detail": "Row ac4/standalone. Without a run label or installation, the launcher reaches its command, preserves its exit status and removes its own scratch at its own end. Prepared launch is a stand-in; the launcher and filesystem are real."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0324/tests.json",
+     "detail": "Seven lightweight targeted suites pass with real files, git, owner enrollment and journal-backed ledger. Fixture boundaries and the unrun runtime suite are named in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0324/falsifiers.json",
+     "detail": "Green 18-row baseline; seven exact mutations applied once each in disposable copies, every designated target row red. Definitions match the gate registry."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "Seven targeted selftest selections, 422 checks passed and 0 failed including shared preambles. Exact commands and partial-run exit codes are in tests.json."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "Suite 154: real launcher lifetime and locks, real open-file holder, real git, owner enrollment, journal and Signal removals. No real engine or confined command."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "python3 proof/VELDO-0324/run_falsifiers.py: 18 green baseline rows; seven mutations, all designated rows red. No teeth stage run."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "validate.py all, docs, template sync, lint, generated files and git boundary. Exact commands and exit codes in fast.json."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The lead runs ./scripts/verify.sh through the gate lock. Full verification, heavy suites, teeth stages and policy checking were not run."
+  }
+ ],
+ "assumptions": [
+  "Service startup wiring is not added. Recorded sandbox launch requires a supplied ledger; a label without one refuses before creation. No production act prerequisites are changed.",
+  "The future VELDO-0347 batch-clone lifecycle and the act prerequisite callbacks are fixture stand-ins. The default prerequisite refusal is tested first. Production batch repositories may remain present until that later lifecycle exists.",
+  "Batch observation folders are evidence per VELDO-0302 and remain kept at run finished; their classification is not weakened to allow removal.",
+  "The engine client is empty fixture data; the process table contains only fixture entries. A holder process and its open descriptor are real. Journal signatures are deterministic fixture signatures; owner enrollment uses a real SSH key.",
+  "The confined command is replaced at prepared_launch. Runtime suite 102 was updated for the new age rule but not run because the lead owns heavy tests. Suite 103 borrowed-login recovery passed.",
+  "Suite 86_veldo_0127 and live captures are untouched. No real protected data or engines were modified.",
+  "Criteria remain pending for the lead gate, independent review and landing approval."
+ ],
+ "rollback": "Revert the implementation commit. Existing ledger items and saved work remain."
+}
