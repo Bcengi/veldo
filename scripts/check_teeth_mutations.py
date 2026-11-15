@@ -15143,6 +15143,28 @@ def cases():
         'RESOURCE_READ_MAX_AGE_DAYS = 30\n', '', ['ac4/read-age-bound'],
         also=[(' or time.time() - path.stat().st_mtime > RESOURCE_READ_MAX_AGE_DAYS * 86400:', ':')])
     result[-1]['dir'] = 'scripts'
+    # Review of VELDO-0333: the two defects its first rows let through. A removal by age that
+    # reads the file's time and the clock through interfaces the suite does not replace, and a
+    # checkout probe that takes a refused or impossible lookup for absence.
+    add(333, 'space333-age-branch-through-real-clock', suite333, 'gate_legs.py', time333,
+        time333 +
+        "            if os.path.getmtime(entry.path) < __import__('datetime').datetime.now().timestamp() - 30 * 86400:\n"
+        "                os.unlink(entry.path)\n"
+        "                removed.append(entry.name)\n"
+        "                continue\n",
+        ['ac1/old-live-file-stays'])
+    result[-1]['dir'] = 'engine/scripts'
+    probe333 = ("            try:\n"
+                "                Path(authority).stat()\n"
+                "            except FileNotFoundError:\n"
+                "                os.unlink(entry.path)\n"
+                "                removed.append(entry.name)\n")
+    add(333, 'space333-probe-takes-refusal-for-absence', suite333, 'gate_legs.py', probe333,
+        "            if not os.path.exists(authority):\n"
+        "                os.unlink(entry.path)\n"
+        "                removed.append(entry.name)\n",
+        ['ac3/unreadable-and-foreign-stay'])
+    result[-1]['dir'] = 'engine/scripts'
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
