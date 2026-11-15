@@ -2138,8 +2138,8 @@
    "requires": [
     "153_veldo_0309_gate_space"
    ],
-   "regions": "VELDO-0309: both gate scripts call admission before checks, classify disk-full failures before records, and finish the gated worktree after its stamp through census and the item-naming signal. No installation and off preserve gate verdicts. Planted work, Keep, locators and unread probes refuse cleanup.",
-   "requires_note": "Only ROOT and expect. Real SQLite ledger, OpenSSH owner key, git worktrees, census, Signal and removers. Tiny fixture catalogs and authority helpers; injected socket wiring, disk readings, empty process table and unbuilt act checks. No real engine."
+   "regions": "VELDO-0309: both gate scripts call admission before checks, classify disk-full failures before records, and finish the gated worktree after its stamp through census and the item-naming signal. No installation and off preserve gate verdicts. Planted work, Keep, locators and unread probes refuse cleanup. The hold is the gate process's: released on every exit path, and released at the next admission when that process is gone, never while it runs. The folder of the gate's output is the ledger's item and goes with the verdict. A process a check left running does not hold the gate and ends with the group the gate leads. A refused graph runs no review events.",
+   "requires_note": "Only ROOT and expect. Real SQLite ledger, OpenSSH owner key, git worktrees, census, Signal and removers. Tiny fixture catalogs and authority helpers; injected socket wiring, disk readings, empty process table and unbuilt act checks. No real engine. The gates, the processes they leave and the signals that end them are real; the holder of a hold is read from the kernel's process table."
   }
  ],
  "resource_capacities": {

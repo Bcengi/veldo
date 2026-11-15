@@ -51,6 +51,39 @@ veldo_stage() {
   else veldo_candidate bash -c "$2"; fi
 }
 
+# THE GATE'S SPACE STEPS (VELDO-0309): the helper's steps, the end of the gate's copy of its output
+# and the end of the run. They stand here with the other functions and do nothing until the steps
+# are set up, after the host block; a part of this script that is run on its own finds them so.
+veldo_space() {
+  [ -n "${VELDO_SPACE_DIR:-}" ] || return 0
+  # An installation laid down before these steps has no helper, and its gate runs as it did.
+  if [ ! -f "$VELDO_AUTHORITY/scripts/gate_space.py" ]; then
+    [ "$1" != need ] || echo 'space: this installation has no gate space helper'
+    return 0
+  fi
+  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_space.py" "$1" "$VELDO_SPACE_ROOT" \
+    "$VELDO_SPACE_DIR/record.json" "$VELDO_SPACE_DIR/output.log" "$VELDO_SPACE_OUT/last_verify" "$$"
+}
+# The copy of the output ends at the gate's own last line, never at end of file: the gate waits for
+# its own child and for nothing a check left running with the output open.
+veldo_space_drain() {
+  [ -n "${VELDO_SPACE_COPY:-}" ] || return 0
+  _veldo_copy="$VELDO_SPACE_COPY"; VELDO_SPACE_COPY=""
+  printf '%s\n' "$VELDO_SPACE_END"
+  exec 1>&$VELDO_SPACE_STDOUT 2>&$VELDO_SPACE_STDERR
+  wait "$_veldo_copy"
+}
+# The hold is this gate process's own. Every exit path releases it, and ends what is left of the
+# process group the gate leads. A gate killed outright runs none of this: the next gate's need step
+# finds its process gone and releases its hold.
+veldo_space_exit() {
+  [ -n "${VELDO_SPACE_ACTIVE:-}" ] || return 0
+  VELDO_SPACE_ACTIVE=""; trap '' INT TERM
+  veldo_space_drain
+  veldo_space release
+  veldo_space group
+}
+
 # CANDIDATE MODE (VELDO-0058). `verify.sh --candidate <root> --sink <dir>` is how the trusted
 # installation verifies a landing candidate: this script is the installed copy, every check runs in
 # <root>, and the stamp, the gate event and the review-event reconciliation are written to <dir>, a
@@ -170,21 +203,20 @@ fi
 mkdir -p "$VELDO_OUT" || { echo 'GATE: NOT STARTED (space output unavailable)'; exit 75; }
 VELDO_SPACE_ROOT=$(pwd -P)
 VELDO_SPACE_OUT=$(cd "$VELDO_OUT" && pwd -P)
-VELDO_SPACE_ID=$(python3 -I -S -c 'import uuid; print(uuid.uuid4().hex)') || exit 75
-VELDO_SPACE_LOG="$VELDO_SPACE_OUT/gate-space.$VELDO_SPACE_ID.log"
-VELDO_SPACE_RECORD="$VELDO_SPACE_LOG.json"
-veldo_space() {
-  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_space.py" "$1" "$VELDO_SPACE_ROOT" \
-    "$VELDO_SPACE_RECORD" "$VELDO_SPACE_LOG" "$VELDO_SPACE_OUT/last_verify"
-}
+VELDO_SPACE_ID=$(python3 -I -S -c 'import uuid; print(uuid.uuid4().hex, uuid.uuid4().hex)') \
+  || { echo 'GATE: NOT STARTED (space run identity unavailable)'; exit 75; }
+VELDO_SPACE_END="veldo-gate-space-end-${VELDO_SPACE_ID#* }"; VELDO_SPACE_ID="${VELDO_SPACE_ID%% *}"
+# One folder per run, declared with the ledger by the need step before it is made; its end event is
+# verdict recorded, so the verdict step's Signal removes it with the worktree's build output.
+VELDO_SPACE_DIR="$VELDO_SPACE_OUT/gate-space.$VELDO_SPACE_ID"
+VELDO_SPACE_ACTIVE=""; VELDO_SPACE_COPY=""
+trap veldo_space_exit EXIT
 veldo_space need || exit 75
-# Keep both streams. Close and drain the writer before classifying, so the last
-# error cannot race the read. Output is evidence and stays beside the stamp.
-VELDO_SPACE_TEE=""
-if [ -f "$VELDO_SPACE_RECORD" ]; then
+if [ -d "$VELDO_SPACE_DIR" ]; then
+  VELDO_SPACE_ACTIVE=1; trap 'exit 130' INT; trap 'exit 143' TERM
   exec {VELDO_SPACE_STDOUT}>&1 {VELDO_SPACE_STDERR}>&2
-  exec > >(tee "$VELDO_SPACE_LOG") 2>&1
-  VELDO_SPACE_TEE=$!
+  exec > >(VELDO_GATE_SPACE_END="$VELDO_SPACE_END" veldo_space capture) 2>&1
+  VELDO_SPACE_COPY=$!
 fi
 
 # ---- the validation catalog: declare EVERY item (see header) ---------------
@@ -221,7 +253,7 @@ VELDO_REUSE_RECEIPT=$(mktemp)
 export VELDO_REUSE_RECEIPT
 VELDO_LEGS_RECORD=$(mktemp)
 VELDO_LEGS_EXPECTED=""
-trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"' EXIT
+trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; veldo_space_exit' EXIT
 CHECK_extra="required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"
 CHECK_mutation="required:authority mutation stage"
 # Configured for the VELDO home repository (docs + plugin templates + plans):
@@ -254,7 +286,7 @@ TODAY=$(date -u +%Y-%m-%d)
 VELDO_GRAPH_FIELD=""; VELDO_SCHEDULE=""; VELDO_GRAPH_REFUSED=0
 if [ -e "$VELDO_AUTHORITY/scripts/gate_graph.json" ] || [ -L "$VELDO_AUTHORITY/scripts/gate_graph.json" ]; then
   VELDO_SCHEDULE=$(mktemp -d)
-  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE"' EXIT
+  trap 'rm -f "$VELDO_REUSE_RECEIPT" "$VELDO_LEGS_RECORD"; rm -rf "$VELDO_SCHEDULE"; veldo_space_exit' EXIT
   _veldo_stages=()
   for _veldo_name in $ORDER; do
     _veldo_var="CHECK_${_veldo_name}"; _veldo_decl="${!_veldo_var}"
@@ -414,28 +446,11 @@ REUSE_JSON=$(python3 -I -S "$VELDO_AUTHORITY/scripts/reuse_stamp.py" "$REUSE_SOU
     REUSE_JSON='"force_fresh":false,"reused":{"mutation":null,"unit":0}'
   fi
 }
-# Which suites ran outside the confinement, by stage, and under which declaration. The field is
-# present exactly when an unconfined leg was expected, as reuse_evidence is present only when reuse
-# needed it. When one was expected, a leg record that is missing, empty, unreadable or short of an
-# expected stage is RED with the field null, never absent: the record is a file the unconfined leg's
-# candidate code can reach, and only VELDO_LEGS_EXPECTED is out of its reach.
-UNCONFINED_FIELD=""
-if [ -n "$VELDO_LEGS_EXPECTED" ]; then
-  if _veldo_u=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --stamp "$VELDO_LEGS_RECORD" \
-       --expect "$VELDO_LEGS_EXPECTED"); then
-    UNCONFINED_FIELD=",\"unconfined\":$_veldo_u"
-  else
-    FAIL=1; STATUS=red; EVENT=gate.failed; UNCONFINED_FIELD=',"unconfined":null'
-  fi
-fi
-VELDO_HOST_FIELD="$VELDO_HOST_FIELD$VELDO_GRAPH_FIELD"
 # VELDO-0309: classify before any stamp or event is written.
-if [ -n "$VELDO_SPACE_TEE" ]; then
-  exec 1>&$VELDO_SPACE_STDOUT 2>&$VELDO_SPACE_STDERR
-  if ! wait "$VELDO_SPACE_TEE"; then
-    echo 'GATE: NOT JUDGED (gate output could not be captured)'
-    exit 75
-  fi
+# These steps stand before the stamp fields below, which other suites run on their own.
+if ! veldo_space_drain; then
+  echo 'GATE: NOT JUDGED (gate output could not be captured)'
+  exit 75
 fi
 if [ "$FAIL" -ne 0 ]; then veldo_space classify || exit 75; fi
 
@@ -479,6 +494,21 @@ python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts "$@" || \
 
 fi
 
+# Which suites ran outside the confinement, by stage, and under which declaration. The field is
+# present exactly when an unconfined leg was expected, as reuse_evidence is present only when reuse
+# needed it. When one was expected, a leg record that is missing, empty, unreadable or short of an
+# expected stage is RED with the field null, never absent: the record is a file the unconfined leg's
+# candidate code can reach, and only VELDO_LEGS_EXPECTED is out of its reach.
+UNCONFINED_FIELD=""
+if [ -n "$VELDO_LEGS_EXPECTED" ]; then
+  if _veldo_u=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_legs.py" --stamp "$VELDO_LEGS_RECORD" \
+       --expect "$VELDO_LEGS_EXPECTED"); then
+    UNCONFINED_FIELD=",\"unconfined\":$_veldo_u"
+  else
+    FAIL=1; STATUS=red; EVENT=gate.failed; UNCONFINED_FIELD=',"unconfined":null'
+  fi
+fi
+VELDO_HOST_FIELD="$VELDO_HOST_FIELD$VELDO_GRAPH_FIELD"
 EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s%s}' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD" "$VELDO_HOST_FIELD")
 veldo_write_stamp() {
@@ -487,8 +517,7 @@ veldo_write_stamp() {
     "$VELDO_HOST_FIELD" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
-  _veldo_written=no
-  if veldo_write_stamp .veldo/last_verify; then _veldo_written=yes; else FAIL=1; fi
+  veldo_write_stamp .veldo/last_verify && _veldo_written=yes || { _veldo_written=no; FAIL=1; }
   printf '%s\n' "$EVENT_LINE" >> .veldo/events.jsonl
 else
   # The sink, written only through names that are not symlinks: the stamp is renamed into place (a

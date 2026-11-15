@@ -15547,9 +15547,29 @@ def cases():
                 also=(('# VELDO-0309: a missing stamp sends nothing.',
                        classify309 + '\n# VELDO-0309: a missing stamp sends nothing.'),))
         gate309('verdict-before-stamp',
-                'if [ "$VELDO_OUT" = ".veldo" ]; then\n  _veldo_written=no',
-                'veldo_space verdict || :\nif [ "$VELDO_OUT" = ".veldo" ]; then\n  _veldo_written=no',
+                'if [ "$VELDO_OUT" = ".veldo" ]; then\n  veldo_write_stamp .veldo/last_verify',
+                'veldo_space verdict || :\nif [ "$VELDO_OUT" = ".veldo" ]; then\n  veldo_write_stamp .veldo/last_verify',
                 ['ac3/killed-before-stamp'])
+        # The fix round: the hold on every exit path, the copy that ends at the gate's own last line,
+        # the group, and the refused graph.
+        gate309('exit-keeps-hold', '  veldo_space release\n', '  :\n', ['hold/released-on-every-exit'])
+        gate309('copy-waits-for-end-of-file', '  printf \'%s\\n\' "$VELDO_SPACE_END"\n', '  :\n',
+                ['exit/leftover-does-not-hold-gate'])
+        gate309('group-left-running', '  veldo_space group\n', '  :\n', ['exit/group-ended'])
+        gate309('review-events-after-refused-graph',
+                'if [ "$VELDO_GRAPH_REFUSED" = 0 ]; then\n# Review observability',
+                'if true; then\n# Review observability', ['graph/refused-runs-no-review-events'])
+    for name, old, new, rows in (
+            ('dead-holder-kept', '    reclaim(ledger, say)\n    accepted(ledger.place_hold(',
+             '    accepted(ledger.place_hold(', ['hold/killed-gate-does-not-block']),
+            ('live-holder-taken-for-gone', '    return start is None or start != started\n',
+             '    return True\n', ['hold/live-holder-blocks']),
+            ('start-time-not-compared', '    return start is None or start != started\n',
+             '    return start is None\n', ['hold/pid-reused-is-gone']),
+            ('log-not-named', '    named += gate_logs(ledger, record, folder, owner, launch.space_versions(ledger))\n',
+             '    named += []\n', ['log/removed-at-verdict'])):
+        add(309, 'space309-' + name, '153_veldo_0309_gate_space.py', 'gate_space.py', old, new, rows)
+        result[-1]['dir'] = 'scripts'
     add(309, 'space309-requires-ledger', '153_veldo_0309_gate_space.py', 'gate_space.py',
         "                say('space: ' + str(why))\n            return 0",
         "                say('space: ' + str(why))\n            return TEMPORARY", ['ac4/adopter-unchanged'])
