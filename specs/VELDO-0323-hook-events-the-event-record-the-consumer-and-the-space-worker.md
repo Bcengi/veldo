@@ -107,6 +107,22 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15, fix round after the review (verdict FIX, no loss path found). (1) The worker child
+  closes only what the service holds (its lock, listeners, pipes and store, named by the service) and
+  never every inherited descriptor, so a descriptor handed down to the service stays open and the
+  teeth stage can measure this ticket. (2) AC2's row counts every git process the service process
+  starts, wherever it is started from. AC3 has a row for the order of three records received
+  together, and rows for a second consumer on the same store while the first one's child is held: its
+  child waits for the lock and reads again under it. (3) Lead decision on AC4: a session ended record
+  that arrives while its client is alive is not dropped. The scratch is selected, rule 3 leaves it
+  deferred as in_use, and the record's result names it as held. The consumer holds that client by a
+  process descriptor in the service's poll set; when the kernel reports the client ended, one more
+  session ended record is written for the same session and consumed like any other. Nothing polls. A
+  scratch whose process cannot be read is still not selected, and the result says so. A service that
+  starts again holds the clients of the scratch left deferred that way. Seven mutations are
+  registered for these rows. No acceptance criterion changes. The startup bootstrap stays
+  VELDO-0315 AC7 and is not built here.
+
 - 2026-11-15: build footprint includes init_scaffold and its synced copy so the installed service
   carries the consumer, worker and their existing spool and kind-registry dependencies. The event
   record accepts released but this ticket removes nothing for it; VELDO-0335 supplies that behavior.

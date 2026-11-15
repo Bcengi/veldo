@@ -16092,6 +16092,39 @@ def cases():
         "        given.setdefault('keep', lambda identity, item: {'ok': True, 'tips': "
         "REMOVE.tips(item['locator']['path'], item['kind'])})\n",
         ['safety/kept-in-main', 'safety/repository-kept'])
+    # The review's survivors and the fix round's rows.
+    add(323, 'space323-service-descriptors-kept', hook323, 'control_space_consumer.py',
+        '            for one in [read] + list(self.watched) + list(self.held()):\n',
+        '            for one in [read] + list(self.watched):  # defect: the service\'s descriptors stay open\n',
+        ['ac2/only-service-descriptors'])
+    add(323, 'space323-service-git-by-another-path', hook323, 'control_space_consumer.py',
+        '        if pending:\n            self._spawn()\n',
+        '        if pending:\n            for _item in self.ledger.items().values():\n'
+        '                if _item["kind"] == "branch":\n'
+        '                    WORKER.SPOOL._commit(_item["locator"]["repository"], _item["locator"]["ref"])\n'
+        '            self._spawn()\n',
+        ['ac2/no-service-git'])
+    add(323, 'space323-newest-first', hook323, 'control_space.py',
+        'ORDER BY json_extract(data, "$.received"), id',
+        'ORDER BY json_extract(data, "$.received") DESC, id',
+        ['ac3/oldest-first'])
+    add(323, 'space323-no-worker-lock', hook323, 'control_space_consumer.py',
+        '            fcntl.flock(lock, fcntl.LOCK_EX)\n',
+        '            pass  # defect: a second service\'s child does not wait for the first\n',
+        ['ac3/one-worker'])
+    add(323, 'space323-no-read-under-lock', hook323, 'control_space_consumer.py',
+        "                pending = [identity for identity, record in ledger.events() if record['state'] == 'received']\n"
+        "                answer = WORKER.consume(ledger, pending[0], self.given, self.landing) if pending else {'ok': True}\n",
+        "                answer = WORKER.consume(ledger, self.dispatched, self.given, self.landing)\n",
+        ['ac3/read-again-under-lock'])
+    add(323, 'space323-live-session-end-dropped', hook323, 'control_space_worker.py',
+        "            elif kind == 'session_ended':\n",
+        "            elif False:  # defect: a record whose client is alive selects nothing and says nothing\n",
+        ['ac4/ended-while-alive-held'])
+    add(323, 'space323-client-exit-not-watched', hook323, 'control_space_consumer.py',
+        "                if one.get('why') == 'client_alive':\n",
+        "                if False:  # defect: nothing waits for the client's end\n",
+        ['ac4/re-judged-at-client-exit'])
     return result
 
 

@@ -119,12 +119,16 @@ def _v323_suite():
         service._log = observations.append
         service.space = {'ledger': ledger, 'proc': str(proc), 'free': lambda pool: 1000000000}
 
-        def drain(timeout=30, allow_failure=False):
+        def drain(timeout=300, allow_failure=False, exits=False):
+            # A worker's pipe is waited for. A held client's process descriptor is waited for only
+            # when the row has just ended that client (exits).
+            def busy():
+                return service.space_consumer.active or (exits and service.space_pipes())
             until = time.monotonic() + timeout
-            while service.space_pipes() and time.monotonic() < until:
+            while busy() and time.monotonic() < until:
                 for descriptor in select.select(list(service.space_pipes()), [], [], 0.1)[0]:
                     service.space_readable(descriptor)
-            if service.space_pipes():
+            if busy():
                 raise RuntimeError('worker did not finish')
             if not allow_failure and observations and observations[-1].get('ok') is False:
                 raise RuntimeError('worker refused: %s' % observations[-1])
@@ -256,37 +260,87 @@ def _v323_suite():
             made = ledger.declare('branch', {'repository': str(repo), 'ref': name}, {'scope': scope},
                                   'seam', start=first)
             ledger.confirm(made['item'])
+        # The count is taken where a process is made, so it holds every git command of the service
+        # process, by whatever function it is reached. A child's commands are not the service's.
         parent_calls = []
-        original_tip = W._tip
         parent_pid = os.getpid()
-        def counted(*args):
-            if os.getpid() == parent_pid:
-                parent_calls.append(args)
-            return original_tip(*args)
-        W._tip = counted
-        event()
-        W._tip = original_tip
-        check('ac2/no-service-git', not parent_calls, str(len(parent_calls)))
+        real_popen = subprocess.Popen
+        def counted(args=None, *rest, **more):
+            argv = list(args) if isinstance(args, (list, tuple)) else [args]
+            if os.getpid() == parent_pid and os.path.basename(str(argv[0])) == 'git':
+                parent_calls.append(argv)
+            return real_popen(args, *rest, **more)
+        subprocess.Popen = counted
+        try:
+            event()
+            during = len(parent_calls)
+            git(repo, 'rev-parse', 'HEAD')
+        finally:
+            subprocess.Popen = real_popen
+        check('ac2/no-service-git', during == 0, str(during))
+        # The counter is not blind: the fixture's own git command, made the same way, is counted.
+        check('ac2/no-service-git', len(parent_calls) == during + 1, str(len(parent_calls)))
 
         # A real pipe latch in the remover child. Another signed packet is answered while held.
         held, held_path, _b, _o = worktree('latched')
         latch, entered = base / 'latch', base / 'entered'
         os.mkfifo(latch)
-        class Latched:
-            left = staticmethod(RM.left)
-            @staticmethod
-            def remove(ledger, probe, identity, item, **given):
-                if identity == held:
-                    entered.write_text(str(os.getpid()))
-                    with open(latch, 'rb') as stream:
-                        stream.read(1)
-                return RM.remove(ledger, probe, identity, item, **given)
-        service.space_consumer.given['remover'] = Latched
+        def latched(which, latch, entered):
+            class Latched:
+                left = staticmethod(RM.left)
+                @staticmethod
+                def remove(ledger, probe, identity, item, **given):
+                    if identity == which:
+                        entered.write_text(str(os.getpid()))
+                        with open(latch, 'rb') as stream:
+                            stream.read(1)
+                    return RM.remove(ledger, probe, identity, item, **given)
+            return Latched
+
+        def release(latch):
+            # Never waits for a reader: the byte is there for the remover whenever it gets to the latch.
+            descriptor = os.open(latch, os.O_RDWR | os.O_NONBLOCK)
+            os.write(descriptor, b'x')
+            return descriptor
+
+        def held_child(entered):
+            # Waits for the service's child to reach the latch, however slow the host is, and stops
+            # when there is no child or the child has answered without getting there.
+            until = time.monotonic() + 300
+            while time.monotonic() < until:
+                if entered.exists() and entered.read_text():
+                    return int(entered.read_text())
+                active = service.space_consumer.active
+                if not active or select.select([active[0]], [], [], 0.01)[0]:
+                    break
+            return int(entered.read_text()) if entered.exists() and entered.read_text() else None
+
+        def consumed():
+            return [identity for (text,) in conn.execute('SELECT transition FROM journal ORDER BY seq')
+                    for identity, change in json.loads(text).items()
+                    if change['kind'] == SP.EVENT_KIND and change['data']['state'] == 'consumed']
+
+        service.space_consumer.given['remover'] = latched(held, latch, entered)
+        # One descriptor the service says it holds, and one it does not: something handed down to it.
+        owned_file, inherited_file = base / 'service-owned', base / 'inherited'
+        owned_fd = os.open(owned_file, os.O_CREAT | os.O_RDWR, 0o600)
+        inherited_fd = os.open(inherited_file, os.O_CREAT | os.O_RDWR, 0o600)
+        service.space_owned = [owned_fd]
         e1 = event(wake=False)
         service.hint_after(service.watermark() - 1)
-        until = time.monotonic() + 10
-        while not entered.exists() and time.monotonic() < until:
-            time.sleep(0.01)
+        child = held_child(entered)
+        child_open = set()
+        if child:
+            for name in os.listdir('/proc/%d/fd' % child):
+                try:
+                    child_open.add(os.readlink('/proc/%d/fd/%s' % (child, name)))
+                except OSError:
+                    pass
+        check('ac2/only-service-descriptors', str(owned_file) not in child_open, sorted(child_open))
+        check('ac2/only-service-descriptors', str(inherited_file) in child_open, sorted(child_open))
+        service.space_owned = []
+        os.close(owned_fd)
+        os.close(inherited_fd)
         listener = service.space_listen()
         request = dict(operation=SP.EVENT, principal=SP.OBSERVER, command_id=uuid.uuid4().hex,
                        nonce=uuid.uuid4().hex, issued_at=time.time(), parameters=dict(type='ref_changed',
@@ -299,23 +353,19 @@ def _v323_suite():
         thread = threading.Thread(target=ask)
         thread.start()
         service.space_packet(listener)
-        thread.join(10)
+        thread.join(60)
         check('ac2/responsive', entered.exists() and bool(answers) and answers[0].get('ok')
               and held_path.exists() and ledger.event_record(e1)['state'] == 'received', answers)
         check('ac3/oldest-once', bool(answers) and ledger.event_record(answers[0].get('event'))['state'] == 'received')
-        if entered.exists():
-            with open(latch, 'wb') as stream:
-                stream.write(b'x')
+        released = release(latch)
         drain()
+        os.close(released)
         listener.close()
         service.space_consumer.given.pop('remover')
         e2 = answers[0]['event']
         check('ac3/oldest-once', ledger.event_record(e1)['state'] == ledger.event_record(e2)['state'] == 'consumed'
               and ledger.event_record(e1)['result']['worker'] != ledger.event_record(e2)['result']['worker'])
-        consumed_order = [
-            identity for (text,) in conn.execute('SELECT transition FROM journal ORDER BY seq')
-            for identity, change in json.loads(text).items()
-            if change['kind'] == SP.EVENT_KIND and change['data']['state'] == 'consumed']
+        consumed_order = consumed()
         check('ac3/oldest-once', e1 in consumed_order and e2 in consumed_order
               and consumed_order.index(e1) < consumed_order.index(e2))
         signals = conn.execute('SELECT COUNT(*) FROM journal WHERE command_id=?', ('space-hook:' + e1,)).fetchone()[0]
@@ -329,6 +379,55 @@ def _v323_suite():
         replayed = ledger.accept(packet, CM, time.time())
         check('ac3/packet-replay', replayed.get('replayed') and replayed.get('event') == e2
               and service.watermark() == before)
+
+        # Three records are received before any child starts, so the order is chosen: oldest first.
+        queued = [event(subject=dict(repository=str(repo), ref='refs/heads/main', old=tip, new=digit * 40),
+                        wake=False) for digit in '234']
+        service.hint_after(service.watermark() - 1)
+        drain()
+        order = [identity for identity in consumed() if identity in queued]
+        check('ac3/oldest-first', order == queued, [queued.index(identity) for identity in order])
+
+        # A replacement service: a second consumer on the same store and state root, started while
+        # the first one's child is held in a remover. Its child waits for the lock. Then it reads
+        # again under the lock: the first record is consumed, so it takes the next one.
+        locked, locked_path, _b, _o = worktree('locked')
+        latch2, entered2 = base / 'latch2', base / 'entered2'
+        os.mkfifo(latch2)
+        service.space_consumer.given['remover'] = latched(locked, latch2, entered2)
+        l1 = event(wake=False)
+        l2 = event(subject=dict(repository=str(repo), ref='refs/heads/main', old=tip, new='5' * 40), wake=False)
+        service.hint_after(service.watermark() - 1)
+        first_child = held_child(entered2)
+        second_seen = []
+        second = C.Consumer(ledger, dict(service.space_consumer.given), landing=service.space_consumer.landing,
+                            observe=second_seen.append)
+        second.advance()
+        second_child = second.active[1] if second.active else None
+        waited = bool(second.active) and not select.select(list(second.pipes()), [], [], 3)[0]
+        check('ac3/one-worker', bool(first_child) and waited and locked_path.exists()
+              and ledger.event_record(l1)['state'] == ledger.event_record(l2)['state'] == 'received',
+              [first_child, second_child, waited, second_seen])
+        released = release(latch2)
+        until = time.monotonic() + 300
+        while second.pipes() and time.monotonic() < until:
+            for descriptor in select.select(list(second.pipes()), [], [], 0.1)[0]:
+                second.readable(descriptor)
+        drain(allow_failure=True)
+        os.close(released)
+        service.space_consumer.given.pop('remover')
+        r1, r2 = ledger.event_record(l1), ledger.event_record(l2)
+        check('ac3/one-worker', r1['state'] == 'consumed' and (r1['result'] or {}).get('worker') == first_child
+              and not (r1['result'] or {}).get('recovered') and consumed().count(l1) == 1
+              and conn.execute('SELECT COUNT(*) FROM journal WHERE command_id=?',
+                               ('space-hook:' + l1,)).fetchone()[0] == 1
+              and not locked_path.exists() and ledger.item(locked)['state'] == 'removed'
+              and observations[-1].get('ok') is True, [r1, observations[-1]])
+        check('ac3/read-again-under-lock', r2['state'] == 'consumed' and consumed().count(l2) == 1
+              and (r2['result'] or {}).get('worker') == second_child and len(second_seen) == 1
+              and not second_seen[0].get('already_consumed'), [r2, second_child, second_seen])
+        # The next record gets a worker of its own, whatever the row above left behind.
+        event(subject=dict(repository=str(repo), ref='refs/heads/main', old=tip, new='6' * 40))
 
         # A stop after Signal's journal write must not signal the same event again on restart.
         recovery, recovery_path, _b, _o = worktree('recovery')
@@ -411,6 +510,76 @@ def _v323_suite():
         check('ac4/host-wide', not none_path.exists() and not other_path.exists(),
               [ledger.item(none), ledger.item(other)])
         check('ac4/live-no-age', alive_path.is_dir() and ledger.item(alive)['state'] == 'present')
+
+        # The SessionEnd hook runs inside its client, so the record arrives while the client is alive.
+        # It is not dropped: the scratch is left deferred by rule 3 and the record names it. Nothing
+        # is asked again on a clock. The kernel reports the client's end, and that is the event.
+        def client_session(name):
+            client = subprocess.Popen(['sleep', '600'])
+            os.symlink('/proc/%d' % client.pid, proc / str(client.pid))
+            process = {'pid': client.pid, 'started': P.process(client.pid)['start']}
+            identity, path = session(name, scope, process)
+            return client, process, identity, path
+
+        def exit_records(origin):
+            return [(identity, record) for identity, record in ledger.events()
+                    if record['emitter'].get('after') == origin]
+
+        clients = []
+        frozen = real_time()
+        time.time = lambda: frozen
+        try:
+            client, process, waiting, waiting_path = client_session('client-alive')
+            clients.append(client)
+            early = event('session_ended', dict(session='client-alive', cwd=str(base), **process))
+            record, item = ledger.event_record(early), ledger.item(waiting)
+            deferral = item.get('deferral') or {}
+            check('ac4/ended-while-alive-held', waiting_path.is_dir() and item['state'] == 'deferred'
+                  and deferral.get('rule') == 'in_use' and deferral.get('refused_by') == 'owner_live'
+                  and (deferral.get('emitter') or {}).get('event_record') == early
+                  and record['state'] == 'consumed'
+                  and [(one['item'], one['why']) for one in (record['result'] or {}).get('held', [])]
+                  == [(waiting, 'client_alive')], [item, record])
+            pipes = list(service.space_pipes())
+            quiet = len(pipes) == 1 and not select.select(pipes, [], [], 0.5)[0]
+            check('ac4/re-judged-at-client-exit', quiet and waiting_path.is_dir() and not exit_records(early),
+                  [pipes, exit_records(early)])
+            # Ended and collected by its parent, as a client's shell does: a process not yet
+            # collected is one rule 4 cannot read, and it would defer the scratch once more.
+            client.terminate()
+            client.wait()
+            drain(exits=True)
+            exits = exit_records(early)
+            removal = (ledger.item(waiting).get('removal') or {}).get('emitter') or {}
+            check('ac4/re-judged-at-client-exit', len(exits) == 1 and exits[0][1]['emitter']['hook'] == 'client-exit'
+                  and exits[0][1]['type'] == 'session_ended' and exits[0][1]['state'] == 'consumed'
+                  and not waiting_path.exists() and ledger.item(waiting)['state'] == 'removed'
+                  and removal.get('event_record') == exits[0][0] and not service.space_pipes()
+                  and time.time() == frozen, [exits, ledger.item(waiting)])
+
+            # A service that starts again holds the client of every scratch left deferred that way.
+            client, process, again, again_path = client_session('client-alive-restart')
+            clients.append(client)
+            early = event('session_ended', dict(session='client-alive-restart', cwd=str(base), **process))
+            for descriptor in list(service.space_consumer.watched):
+                os.close(descriptor)
+            service.space = service.space
+            service.space_start()
+            drain()
+            check('ac4/held-across-restart', len(service.space_pipes()) == 1 and again_path.is_dir()
+                  and ledger.item(again)['state'] == 'deferred', ledger.item(again))
+            # Ended and collected by its parent, as a client's shell does: a process not yet
+            # collected is one rule 4 cannot read, and it would defer the scratch once more.
+            client.terminate()
+            client.wait()
+            drain(exits=True)
+            check('ac4/held-across-restart', len(exit_records(early)) == 1 and not again_path.exists()
+                  and ledger.item(again)['state'] == 'removed', ledger.item(again))
+        finally:
+            time.time = real_time
+            for client in clients:
+                client.kill()
+                client.wait()
         check('safety/signature-expiry', not ledger.accept(dict(packet, signature='forged'), CM, time.time())['ok'])
         check('safety/signature-expiry', ledger.accept(packet, CM, request['issued_at'] + SP.PACKET_AGE + 1)
               .get('reason') == 'space_packet_expired')
