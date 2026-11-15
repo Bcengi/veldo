@@ -48,10 +48,11 @@ ended, and then the scratch root went and the hold was released). fix3/handed-ou
 (finding 3, the reviewer's case: the command hands work to a server that was running before the run;
 the server's worker is no descendant of the command and carries the run's space label; the wrapper
 returns at once and sends nothing while that worker lives, naming it by the label; the end follows
-its exit). fix3/unread-process-holds (an orphaned process of the owner's whose environment the kernel
-will not show, started after the run: it may carry the label, so nothing is sent and the hold stays;
-one that was running before the run began, and one started by a process that does not carry the
-label, do not hold it). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
+its exit). fix3/unread-process-holds (fix round 2, fail closed: a process whose environment the kernel
+will not show and that started after the run began may be the run's, whatever started it, so the run
+stays open, nothing is sent and the hold stays; one that was running before the run began cannot be
+the run's and does not hold it; only the process reader's whole block for such a process, with the
+kernel's start time, reads it, and then the run is over while it lives). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
 asks the kernel again for each item, so the scratch root is deferred as in use and stays, and the hold
 is not released). fix3/the-house-group (on a host with the owner's user manager: the command runs in a
 transient scope named for the run by control_containment, a process it left is read as a member of
@@ -91,6 +92,14 @@ folder and its own status, in this process and as a real CLI process). ac4/each-
 event, the hooks' record, event and replay, and sign each say there is no central installation; an
 installation whose ledger this process cannot reach, and one whose switch is off, run the command
 unchanged and say why).
+
+THE PROCESS TABLE. What holds a run is read from the kernel's own table, in the suite's process and in
+the run's supervisor, and a process that started after a run began and whose environment cannot be
+read holds that run (fail closed, fix round 2). So the suite is green in a process table of its own,
+which the gate's confinement and the mutation workers give it. Run unconfined on a host shared with
+other sessions and without the process reader, its rows meet their processes: an end is then not
+made, and a row that follows an end is red after the suite's own limit and says what held it. That is
+the decision's answer for such a host, not a fault of the row; no row is passed or stood down for it.
 
 STAND-INS. The wiring an installation gives the CLI (the mapping the receiver is given) is made here:
 nothing serves the ledger to a CLI process yet (VELDO-0323), so the issuer in it is the suite calling
@@ -491,15 +500,43 @@ def _v313_space_run_suite():
                 report['end'] = settled(wiring, report.get('given'), report['end'])
             return status, said.getvalue(), report
 
+        FOLLOW = 120.0  # the suite's own limit on an end held by what is no part of its fixture
+
+        def follow(wiring, given):
+            """The run's end as the supervisor's follower makes it (_space_ended), which sleeps with no
+            time limit on the exit of every holder. A process that started after the run and whose
+            environment cannot be read holds the run (fail closed), whoever it belongs to. In a
+            process table of the suite's own (the gate's confinement) there is none but the
+            fixture's. On a host shared with other sessions and without the process reader there
+            may be, and the end then waits for it, as it must. The suite does not wait with it: past
+            its own limit the row is red and says why. It is never passed and never stood down."""
+            import signal
+
+            def late(number, frame):
+                raise TimeoutError
+            before = signal.signal(signal.SIGALRM, late)
+            signal.alarm(int(FOLLOW))
+            try:
+                return CLI._space_ended(wiring, given)
+            except TimeoutError:
+                raise RuntimeError(
+                    'the run\'s end is still asleep after %ds on processes that hold the run: %s. On a host shared '
+                    'with other sessions and without the process reader, a process nobody here can read holds every '
+                    'run that began before it (fail closed). Run the suite in a process table of its own.'
+                    % (FOLLOW, CLI._space_judged(wiring, given).get('holders'))) from None
+            finally:
+                signal.alarm(0)
+                signal.signal(signal.SIGALRM, before)
+
         def settled(wiring, given, end):
-            """The run's end on a host this suite shares with other work. Another session's process
-            that this account cannot read, orphaned and started after the run, may carry the label for
-            all the wrapper can tell, so the end is not made while it lives. It is no part of the
-            fixture. The end then follows its exit, as it does for the run's supervisor on such a
-            host (_space_ended). A row that plants such a process itself does not come through here."""
+            """The run's end on a host this suite shares with other work: another session's process
+            that this account cannot read and that started after the run may be the run's for all
+            the wrapper can tell, so the end is not made while it lives. It is no part of the
+            fixture. The end then follows its exit (follow). A row that plants such a process itself
+            does not come through here."""
             tries = 0
             while end.get('reason') == 'label_unread' and tries < 50:
-                end, tries = CLI._space_ended(wiring, given), tries + 1
+                end, tries = follow(wiring, given), tries + 1
             return end
 
         def finish(wiring, given):
@@ -652,7 +689,7 @@ def _v313_space_run_suite():
             row = 'fix2/end-follows-their-exit'
             since = seq()
             release(latch)
-            end = CLI._space_ended(wiring, given)
+            end = follow(wiring, given)
             saw = json.loads(text_of(late) or '{}')
             mine = items_of(report.get('run'))
             check(row, 'the run\'s end sleeps until the process the command left exits, and is made then: that '
@@ -732,7 +769,7 @@ def _v313_space_run_suite():
                   and text_of(Path(report.get('scratch') or temp) / 'handed.txt') == 'the worker reads this\n'
                   and (L.hold(report.get('run')) or {}).get('state') == 'admitted' and not late.exists())
             release(latch)
-            end = CLI._space_ended(wiring, given)
+            end = follow(wiring, given)
             check(row, 'the end follows the worker\'s exit: the worker ended on the suite\'s word and saw the file to '
                        'its last line, and then the scratch root went and the hold was released [%s %s]'
                   % (text_of(late), end.get('reason')),
@@ -783,55 +820,88 @@ def _v313_space_run_suite():
                         os.close(descriptor)
                 return pid, end
 
-            def read_above(pid):
-                """Whether a process of this account whose environment can be read stands above `pid`."""
-                at = (CLI._space_process(pid) or {}).get('parent')
-                while at and at > 1:
-                    try:
-                        with open('/proc/%d/status' % at) as status:
-                            own = str(os.getuid()) in next(line for line in status if line.startswith('Uid:')).split()
-                        if own:
-                            open('/proc/%d/environ' % at, 'rb').close()
-                            return True
-                    except (OSError, StopIteration):
-                        pass
-                    at = (CLI._space_process(at) or {}).get('parent')
-                return False
+            class Reader:
+                """The probe with a stand-in process reader (VELDO-0344) in the state used. Its table
+                holds a whole block, with the start time the kernel shows, for every process of the
+                table but the ones in `but`; a process in `torn` gets a block that is not whole, and
+                one in `stale` a block with another start time. `state` is the state it says it is in."""
+
+                def __init__(self, but=(), torn=(), stale=(), state='used'):
+                    self.but, self.torn, self.stale, self.asked = set(but), set(torn), set(stale), 0
+                    self.state = state
+
+                def __getattr__(self, name):
+                    return getattr(P, name)
+
+                def reader_read(self, proc=None):
+                    self.asked += 1
+                    blocks = {}
+                    for name in os.listdir('/proc'):
+                        seen = CLI._space_process(int(name)) if name.isdigit() else None
+                        if seen is not None and seen['pid'] not in self.but:
+                            blocks[seen['pid']] = {'start': seen['started'] + (1 if seen['pid'] in self.stale else 0),
+                                                   'whole': seen['pid'] not in self.torn, 'facts': []}
+                    return {'state': self.state, 'said': None, 'blocks': blocks, 'writer': None, 'digest': None}
+
+            def unread_of(end):
+                return {one.get('pid') for one in end.get('holders') or () if one.get('how') == 'unread'}
             before_the_run, end_before = hidden(orphan=True)
             try:
                 open('/proc/%d/environ' % before_the_run, 'rb').close()
                 unreadable = False
             except OSError:
-                unreadable = not read_above(before_the_run)
+                unreadable = True
             if not unreadable:
                 end_before()
-                check(row, 'here this account reads the environment of its every process, or an orphan lands under '
-                           'a process it reads, so no process is unread in the way the row needs: it stands down', True)
+                check(row, 'here this account reads the environment of its every process, so no process is unread '
+                           'in the way the row needs: it stands down', True)
             else:
-                wiring = space()
+                # No reader: the fixture's are the only unread processes the row answers for, so the
+                # stand-in reader reads every process of the host but them.
+                wiring = space(probe=Reader())
                 given = CLI._space_begin(wiring, 'build', 'unreadable', str(W14), start=ended)
                 given['status'] = 0
                 (Path(given['scratch']) / 'kept.bin').write_text('it may still be written\n')
                 child_of_the_suite, end_child = hidden()
                 after_the_run, end_after = hidden(orphan=True)
+                wiring['probe'].but = {before_the_run, child_of_the_suite, after_the_run}
                 since = seq()
                 end = CLI._space_finish(wiring, given)
-                check(row, 'an orphaned process of the owner\'s that started after the run and whose environment '
-                           'cannot be read may carry the label: nothing is sent or written, and it is named [%s %s]'
+                check(row, 'a process that started after the run began and whose environment cannot be read may be '
+                           'the run\'s: the run stays open, nothing is sent or written, and each is named. The one '
+                           'that was running before the run began cannot be the run\'s and is not [%s %s]'
                       % (end.get('reason'), end.get('holders')),
                       end.get('sent') is False and end.get('reason') == 'label_unread' and written(since) == []
-                      and after_the_run in [one.get('pid') for one in end.get('holders') or ()]
-                      and not {before_the_run, child_of_the_suite} & {one.get('pid') for one in end.get('holders') or ()}
+                      and unread_of(end) == {after_the_run, child_of_the_suite}
                       and text_of(Path(given['scratch']) / 'kept.bin') == 'it may still be written\n'
                       and (L.hold(given['run']) or {}).get('state') == 'admitted')
                 end_after()
-                end = finish(wiring, given)
-                check(row, 'once it has ended the run is over. Two unread processes never held it: the one that was '
-                           'running before the run began, and the one a process without the label started [%s %s %s]'
-                      % (end.get('reason'), CLI._space_process(before_the_run) is not None,
-                         CLI._space_process(child_of_the_suite) is not None),
-                      end.get('sent') is True and CLI._space_process(before_the_run) is not None
-                      and CLI._space_process(child_of_the_suite) is not None
+                end = CLI._space_finish(wiring, given)
+                check(row, 'the orphan has ended, and the run is still open: the unread process that a process '
+                           'without the label started holds it, since nobody read what it carries [%s %s]'
+                      % (end.get('reason'), end.get('holders')),
+                      end.get('sent') is False and end.get('reason') == 'label_unread' and written(since) == []
+                      and unread_of(end) == {child_of_the_suite}
+                      and os.path.isdir(given['scratch'])
+                      and (L.hold(given['run']) or {}).get('state') == 'admitted')
+                # The process reader, and nothing else, reads such a process.
+                for name, reader in (('shows no block for it', Reader(but=[child_of_the_suite])),
+                                     ('shows a block for it that is not whole', Reader(torn=[child_of_the_suite])),
+                                     ('shows a block with another start time', Reader(stale=[child_of_the_suite])),
+                                     ('is refused, whatever its table holds', Reader(state='refused:digest'))):
+                    wiring['probe'] = reader
+                    end = CLI._space_finish(wiring, given)
+                    check(row, 'a reader that %s has not read it: the run stays open [%s %s]'
+                          % (name, end.get('reason'), end.get('holders')),
+                          reader.asked >= 1 and end.get('sent') is False and end.get('reason') == 'label_unread'
+                          and unread_of(end) == {child_of_the_suite} and written(since) == [])
+                wiring['probe'] = Reader()
+                end = CLI._space_finish(wiring, given)
+                check(row, 'with the reader used and a whole block for every process nothing is unread: the run is '
+                           'over while that process lives, and rule 4 judged it by its files [%s %s %s]'
+                      % (end.get('reason'), end.get('holders'), CLI._space_process(child_of_the_suite) is not None),
+                      end.get('sent') is True and CLI._space_process(child_of_the_suite) is not None
+                      and CLI._space_process(before_the_run) is not None
                       and not os.path.lexists(given['scratch'])
                       and (L.hold(given['run']) or {}).get('state') == 'released')
                 end_child()
@@ -896,7 +966,7 @@ def _v313_space_run_suite():
                       and set(read['pids']) <= {one.get('pid') for one in first.get('holders') or ()}
                       and not late.exists())
                 release(latch)
-                end = CLI._space_ended(wiring, given)
+                end = follow(wiring, given)
                 after = house.read(report.get('run'), report.get('group'))
                 check(row, 'the end follows its exit: the group is read empty, run finished is sent and the scratch '
                            'root goes [%s %s %s]' % (after, end.get('reason'), end.get('holders')),

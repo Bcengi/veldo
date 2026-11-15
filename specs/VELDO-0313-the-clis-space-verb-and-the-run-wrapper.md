@@ -232,3 +232,72 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     (fix3/the-house-group) stands down by name there. On a host with a manager it runs for real and was
     seen green. The suite claims no manager slot and is not on the unconfined list: both are the
     lead's and the owner's to change.
+- 2026-11-14: FIX ROUND 2, the lead's decision. Code in engine/bin/veldo and its copy bin/veldo and
+  nowhere else. The suite has 23 rows and finding 313 has 30 falsifiers. Where a line above says
+  otherwise, this entry holds.
+  - REVERSED: unread processes. The first fix round bounded "an environment that cannot be read counts
+    as holding the run" by the process's parents, so that runs end on this host. That was fail open
+    and is gone. Per design section 7 and the owner's decision (Telegram 41204 and 41205): a process
+    whose environment cannot be read may carry the run's label, so it holds the run for as long as it
+    lives, whoever it belongs to and whatever started it. Processes of every uid are read now, not
+    only the owner's. One thing takes a process out, and it is what the kernel says with no
+    environment read: it started before the run began (before the start of the run's supervisor, field
+    22 of its stat file) and it is no descendant of the supervisor and no member of the run's
+    containment group. Nothing else takes one out: not its uid, not its name, not the process that
+    started it. A kernel thread is not read at all: it has no environment (PF_KTHREAD in its stat
+    file). What the one exclusion does not see: a process from before the run that later replaced its
+    own program with one given the label. Rule 4 still judges that one by its files.
+  - WHAT THIS COSTS, RECORDED AS ASKED. On a host without the process reader (VELDO-0344), a run whose
+    processes cannot all be read ends only when those processes exit. The run's supervisor stays, the
+    wrapper names them, run finished is not sent, nothing of the run is judged or removed, and the
+    hold stays held. On this host, measured on 2026-11-14: 423 processes this account cannot read,
+    190 of them younger than 20 minutes (database backends in containers, container proxies, another
+    session's sandbox), and new ones every second. So here, today, no wrapped run ends: each stays
+    open until every such process that started after it has exited, and others start meanwhile.
+    Nothing is lost by that; nothing is cleaned either.
+  - THE OWNER'S READER INSTALL REMOVES THIS. The wrapper asks the process reader through the probe's
+    own read (control_space_probe.reader_read, with every check that function makes), and only when a
+    process is unread. When the reader's state is used, a process it shows with a whole block and the
+    start time the kernel shows is read: it is no unread holder, and rule 4 judges it by the files it
+    holds, as the probe does. With the reader installed every process has such a block, so nothing is
+    unread and a run ends when its own processes have. A reader that is absent or refused, a process
+    with no block, a block that is not whole and a block with another start time change nothing: the
+    process holds. Said plainly: the reader prints files, not environments, so with it a process is
+    judged by what it holds and not by a label nobody read.
+  - The row and its falsifiers. fix3/unread-process-holds: an unread process that started after the
+    run began keeps the run open, an orphan and one the suite itself started alike; nothing is sent
+    or written and the hold stays; the one from before the run is not named. A reader that shows no
+    block for it, a block that is not whole, a block with another start time, or that is refused,
+    changes nothing. With the reader used and a whole block the run is over while the process lives.
+    Falsifiers, each red on that row: space313-unread-bounded-by-a-read-parent (the first fix round's
+    bound put back), space313-unread-started-after-the-run-left-out,
+    space313-unread-process-not-counted, space313-reader-block-not-checked,
+    space313-reader-not-used-taken-as-used.
+  - Note 2, the scope's slice and caps. A wrapped run's scope is in veldo-runs.slice and carries no
+    cap. It stays so. In the workers' slice a wrapped run would count against the worker concurrency
+    cap and take a worker's place. A cap of the worker profile that fires is a kill by the kernel or
+    by the manager, and the lead's decision 1 is that the wrapper never kills. What it costs: a
+    wrapped command is limited in memory and in tasks by nothing of Veldo's, as a command started
+    from a shell is. Putting a limit on it is the lead's to decide, and would be a kill.
+  - Note 3, the follower and the ledger. When a run is not over at the command's exit, the end is
+    made later by the process that follows the run's supervisor. Nothing serves the ledger to a CLI
+    process until VELDO-0323, so on a host today that process reaches no ledger and sends nothing:
+    the run's items and its hold stay as they are, for reconcile. Until fix round 2 that was the case
+    of a command that left a process. With unread processes holding, it is the usual case on a host
+    without the reader: until VELDO-0323 is built and the reader is installed, most wrapped runs on
+    such a host end with no run finished. Nothing is removed that should not be; what the run left is
+    not cleaned until reconcile.
+  - Note 4, fix3/the-house-group. The gate's confinement has no user manager, so there the row
+    stands down by name and asserts nothing: the gate does not prove the house's own scope for a
+    wrapped run. It needs a host with a manager, which means unconfined, which on this host means a
+    process table shared with other sessions. In the first fix round it was seen green here. In this
+    round it cannot be: the run's end waits for other sessions' unread processes, as decided, and the
+    row is red after the suite's limit. To have it proven by the gate the suite needs a row on the
+    unconfined list and a host with the reader, or a process table of its own with a manager in it.
+    Both are the lead's and the owner's.
+  - The suite. In a process table of its own (the gate's confinement, the mutation workers) all 23
+    rows are green. Unconfined on this host, 8 rows were green and 15 red in the one run made: an end
+    held by other sessions' processes, and what follows from a hold that was not released. The suite
+    no longer waits without bound for such a process: a row that follows an end is red after 120
+    seconds and says what held it. The first fix round's "seen green 8 times on this host" was under
+    the bound that is now gone.

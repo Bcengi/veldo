@@ -14981,12 +14981,29 @@ def cases():
 
     # Finding 3 (high): the label in the process table, and rule 3 as a read of the kernel.
     run313('space313-label-not-read',
-           "        if read[pid]:\n            add(pid, \"label\")\n",
-           "        if False:\n            add(pid, \"label\")\n",
+           "                    add(pid, \"label\")\n", "                    pass\n",
            ['fix3/handed-outside-the-tree'])
     run313('space313-unread-process-not-counted',
-           "                add(pid, \"unread\")  # nobody that was read stands above it\n",
-           "                pass  # nobody that was read stands above it\n",
+           "        add(pid, \"unread\")\n", "        pass\n",
+           ['fix3/unread-process-holds'])
+    # Fix round 2 (the lead's decision, fail closed). The bound of the first fix round put back: an
+    # unread process that started after the run does not hold it when the process that started it
+    # can be read (it was taken not to have handed the label down). And a reader's block that is
+    # not whole, or is another process's, taken as a read.
+    unread313 = ("    unread = [pid for pid in unread if pid not in found and (since is None or table[pid][\"started\"] >= since)]\n")
+    run313('space313-unread-bounded-by-a-read-parent', unread313,
+           unread313[:-2] + "\n              and not os.access(\"%s/%d/environ\" % (SPACE_PROC, table[pid][\"parent\"]), os.R_OK)]\n",
+           ['fix3/unread-process-holds'])
+    run313('space313-unread-started-after-the-run-left-out', unread313,
+           "    unread = [pid for pid in unread if pid not in found and since is None]\n",
+           ['fix3/unread-process-holds'])
+    run313('space313-reader-block-not-checked',
+           "        if isinstance(block, dict) and block.get(\"whole\") is True and block.get(\"start\") == table[pid][\"started\"]:\n",
+           "        if isinstance(block, dict):\n",
+           ['fix3/unread-process-holds'])
+    run313('space313-reader-not-used-taken-as-used',
+           "            if isinstance(said, dict) and said.get(\"state\") == \"used\" and isinstance(said.get(\"blocks\"), dict):\n",
+           "            if isinstance(said, dict) and isinstance(said.get(\"blocks\"), dict):\n",
            ['fix3/unread-process-holds'])
     run313('space313-rule-three-answered-without-a-read',
            "            {\"conclusive\": True, \"group_empty\": held() is None}\n",

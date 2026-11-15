@@ -403,12 +403,14 @@ def _fleet_args(rest):
 #                    manager, named for the run as a dispatch's is, read through its cgroup. No cap
 #                    is put on it and nothing in it is ever stopped: a wrapped command is not a
 #                    worker. A host that cannot make it has no group, which is a group nobody read.
-#   the label        every process of the owner's in the process table whose environment carries
+#   the label        every process in the process table whose environment carries
 #                    the run's space label. This is what sees work handed to a process outside the
-#                    command's tree (a server that was already running). A process of the owner's
-#                    whose environment cannot be read holds the run when it may carry the label
-#                    (_space_holders: it started after the run did, and a process of the run, or
-#                    nobody that could be read, stands above it).
+#                    command's tree (a server that was already running). A process whose
+#                    environment cannot be read may carry the label and holds the run (fail
+#                    closed, design section 7), whoever it belongs to, unless the kernel itself
+#                    says it cannot be the run's: it started before the run began and is no
+#                    descendant and no member of the group. Only the process reader (VELDO-0344),
+#                    once the owner has installed it, reads such a process (_space_holders).
 # The scratch root is declared with the supervisor as its recorded process, so rule 3 of every
 # judge, in any process, holds it for as long as the kernel shows that supervisor. Run finished and
 # the release are sent only when all three reads find nothing, by the wrapper when the command left
@@ -794,26 +796,40 @@ def _space_group(space, environ=None):
     return wired if wired is not None else _SpaceScope(environ)
 
 
-def _space_holders(run, supervisor, members, since=None):
+def _space_reader(space):
+    """The process reader's own read (the probe's reader_read, VELDO-0344), as a callable, from the
+    probe the installation wires in, else from the house's. None when there is none to ask."""
+    try:
+        probe = (space or {}).get("probe") or _space_module("control_space_probe")
+        return probe.reader_read
+    except Exception:  # noqa: BLE001 - no probe is no reader: every unread process holds
+        return None
+
+
+def _space_holders(run, supervisor, members, since=None, reader=None):
     """What the kernel shows of the run now: [{pid, started, how}], read in one pass over the
     process table. `how` is supervisor (the run's supervisor itself, which stays while anything of
     the run lives), descendant (a process that descends from it), group (a member of the run's
-    containment group), label (a process of the owner's whose environment carries the run's space
-    label) or unread (a process of the owner's whose environment cannot be read and that may carry
-    the label, below). `supervisor` is the process the descendants are counted from, {pid,
-    started}; in the supervisor itself it is this process, which is then not listed. Nothing here
-    signals a process.
+    containment group), label (a process whose environment carries the run's space label) or unread
+    (a process whose environment cannot be read and that may be the run's, below). `supervisor` is
+    the process the descendants are counted from, {pid, started}; in the supervisor itself it is
+    this process, which is then not listed. Nothing here signals a process.
 
-    UNREAD, BOUNDED (as rule 4 bounds a process it cannot read, design section 7). A process gets
-    its environment when it is started, from the process that started it. So a process of the
-    owner's whose environment cannot be read may carry the run's label when it started at or after
-    `since`, the start of the run's supervisor, and, going up its parents (which every user may
-    read): a process of the run is among them, or no process whose environment was read stands
-    above it (it was orphaned, and where it came from is not known). It does not count when it
-    started before the run, or when the first parent that could be read does not carry the label:
-    that parent did not hand the label down."""
+    UNREAD HOLDS (fail closed, design section 7; the owner's decision, Telegram 41204 and 41205). A
+    process whose environment cannot be read may carry the run's label, so it holds the run for as
+    long as it lives, whoever it belongs to and whatever started it. One thing takes it out, and it
+    is what the kernel says with no environment read: the process started before `since`, the start
+    of the run's supervisor, and it is no descendant of the supervisor and no member of the group.
+    Such a process got its environment before the run had a label. A kernel thread has no
+    environment at all and is not a process in this sense (PF_KTHREAD, in the stat file every user
+    may read). With no `since` nothing is taken out.
+
+    THE READER. `reader`, when given, is the process reader's read (VELDO-0344). It is asked only
+    when a process is unread. When its state is used, a process it shows whole, with the start time
+    the kernel shows here, is read: it is no unread holder, and rule 4 judges it by the files it
+    holds. A reader that is absent or refused, and a process with no whole block, change nothing."""
     label = (SPACE_LABEL_VARIABLE + "=" + str(run)).encode()
-    mine, me = os.getuid(), os.getpid()
+    me = os.getpid()
     table = {}
     try:
         names = os.listdir(SPACE_PROC)
@@ -842,42 +858,35 @@ def _space_holders(run, supervisor, members, since=None):
                 add(pid, "descendant")
     for pid in members or ():
         add(pid, "group")
-    read = {me: False}  # pid: whether its environment was read and carries the label; None when unread
+    unread = []
     for pid in sorted(table):
         if pid == me or table[pid]["flags"] & PF_KTHREAD:
             continue
         try:
-            with open("%s/%d/status" % (SPACE_PROC, pid), "rb") as status:
-                uids = [line.split()[1:] for line in status.read().split(b"\n") if line.startswith(b"Uid:")]
-        except OSError:
-            continue  # it ended while it was read
-        if not uids or str(mine).encode() not in uids[0]:
-            continue
-        try:
             with open("%s/%d/environ" % (SPACE_PROC, pid), "rb") as environment:
-                read[pid] = label in environment.read().split(b"\0")
+                if label in environment.read().split(b"\0"):
+                    add(pid, "label")
         except (FileNotFoundError, ProcessLookupError):
-            continue
+            continue  # it ended while it was read
         except OSError:
             if _space_process(pid) is not None:
-                read[pid] = None
-    for pid in sorted(read):
-        if read[pid]:
-            add(pid, "label")
-    for pid in sorted(read):
-        if read[pid] is not None or pid in found or (since is not None and table[pid]["started"] < since):
-            continue
-        at, steps = table[pid]["parent"], 0
-        while True:
-            if at in found:
-                add(pid, "unread")  # a process of the run stands above it
-                break
-            if read.get(at) is False:
-                break  # the first parent that was read does not carry the label
-            if at not in table or at <= 1 or steps >= 4096:
-                add(pid, "unread")  # nobody that was read stands above it
-                break
-            at, steps = table[at]["parent"], steps + 1
+                unread.append(pid)
+    # The one thing that takes an unread process out: it started before the run began, and it is no
+    # descendant and no member of the group (those are in `found` already, under their own names).
+    unread = [pid for pid in unread if pid not in found and (since is None or table[pid]["started"] >= since)]
+    blocks = None
+    if unread and reader is not None:
+        try:
+            said = reader()
+            if isinstance(said, dict) and said.get("state") == "used" and isinstance(said.get("blocks"), dict):
+                blocks = said["blocks"]
+        except Exception:  # noqa: BLE001 - a reader that could not be asked read nothing
+            blocks = None
+    for pid in unread:
+        block = (blocks or {}).get(pid)
+        if isinstance(block, dict) and block.get("whole") is True and block.get("start") == table[pid]["started"]:
+            continue  # the reader read it: rule 4 judges it by its files
+        add(pid, "unread")
     return [found[pid] for pid in sorted(found)]
 
 
@@ -888,7 +897,8 @@ def _space_judged(space, given, environ=None):
     if not isinstance(read, dict) or read.get("read") is not True:
         return {"group": "unread", "holders": []}
     supervisor = given.get("supervisor")
-    holders = _space_holders(given["run"], supervisor, read.get("pids"), since=(supervisor or {}).get("started"))
+    holders = _space_holders(given["run"], supervisor, read.get("pids"), since=(supervisor or {}).get("started"),
+                             reader=_space_reader(space))
     return {"group": "populated" if read.get("populated") or any(one["how"] == "group" for one in holders)
             else "empty", "holders": holders}
 
@@ -1063,7 +1073,7 @@ def space_supervise(rest):
             return {"group": "unread", "holders": []}
         while True:
             childless = reap()
-            holders = _space_holders(run, me, shown.get("pids"), since=me["started"])
+            holders = _space_holders(run, me, shown.get("pids"), since=me["started"], reader=_space_reader(None))
             if childless or any(one["how"] == "descendant" for one in holders):
                 return {"group": "populated" if shown.get("populated") else "empty", "holders": holders}
             # A child is alive that this pass over the table did not show: it was started while the
