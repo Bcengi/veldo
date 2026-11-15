@@ -1,33 +1,27 @@
-VELDO-0335 targeted checks on b5579c63
+VELDO-0335 targeted checks on fd36f85b (fix round 2)
 
-Six partial selftest runs, each exit 2 (the partial-run marker):
+Six partial selftest runs under nice -n 10, each exit 2 (the partial-run marker):
 132 space ledger: 57 passed, 0 failed.
 133 space principals: 56 passed, 0 failed.
 139 space Signal: 44 passed, 0 failed.
 140 space keeper: 57 passed, 0 failed.
-153 hook events: 57 passed, 0 failed.
-154 released: 49 passed, 0 failed (23 ticket rows plus shared checks).
-Total: 320 passed, 0 failed. These are partial checks, not a full gate claim.
+153 hook events: 66 passed, 0 failed.
+154 released: 57 passed, 0 failed.
+Total: 337 passed, 0 failed. These are partial checks, not a full gate claim.
+Suite 151 was skipped: it fails on this host at the base commits too (re-review, cgroup reads).
 
-python3 proof/VELDO-0335/run_falsifiers.py: exit 0.
-Final campaign applied each of four registered defects once to temporary production copies.
-Every target row turned red; no exceptions or missing target rows. No teeth stage ran.
-An exploratory campaign preceded the final planted repository-log and protection rows.
+nice -n 10 python3 scripts/check_teeth_mutations.py --finding 335: exit 0, run last on the
+committed implementation with no edit during the run.
+mutations: passed registered=13 executed=13 reused=0 rejected=13 (stage status passed,
+invalid results 0, surviving workers 0). Every baseline and no-op run was green and
+every target row of every mutant turned red. Cases and failed rows: falsifiers.json.
+New in this round: space335-cli-emitter-any-kind reds safety/cli-emitter-released-only.
 
-Fast checks, each exit 0:
-python3 .veldo/validate.py all
-bash scripts/check_docs.sh
-bash scripts/check_template_sync.sh (323 pairs)
-bash scripts/check_lint.sh (1210 Python, 39 shell)
-bash scripts/check_generated.sh
-python3 scripts/check_git_boundary.py
+AC3 reads as amended: deferred as unique work and never deleted, with or without force.
+--force is refused by name (invalid_input:force) before anything is recorded. The decision
+request is not this ticket's: it moved to VELDO-0318 (lead decision 2026-11-15, both specs).
+The owner's approval of the amended wording is asked together with this ticket's landing.
 
-The lead runs ./scripts/verify.sh through the gate lock. It was not run here.
-The heavy 151 suite was not run; only its released-event expectation was updated.
-Suite 86_veldo_0127 and its captures were untouched.
-
-BLOCKER: AC3's decision request cannot be demonstrated on this base. VELDO-0318 has
-no implementation or proof here. Signal still documents the request as unbuilt.
-This ticket demonstrates unique-work deferral, repeated events without deletion, and
-that the legacy force option confers no removal authority. It creates no substitute
-request or owner-answer path. The lead must bring 0318 and prove the one-request row.
+python3 .veldo/validate.py all: exit 0 on this bundle.
+Not run in this round: the other fast checks, policy_check.py, ./scripts/verify.sh.
+The lead runs the gate through the gate lock.

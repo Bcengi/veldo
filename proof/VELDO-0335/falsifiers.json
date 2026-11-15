@@ -2,23 +2,31 @@
  {
   "name": "space335-host-abandons",
   "status": "rejected",
+  "module": "veldo",
   "targets": {
-   "ac1/released-pair": false
+   "ac1/released-pair": false,
+   "ac1/returns-before-removal": false
   },
   "error": null,
-  "before": "2c938d7cf2c4fc56960133f15de5fb1825b01006c2bc7316d5aef105423f1fa6",
-  "after": "c4121aa52011854e5e0214eee905d942b13cf50dc35e8c23be64c86950f36bf7",
-  "seconds": 1.557,
+  "before": "e59258d873b3b28aaa3e5784622bcbaa9eed445d3164049738893cf3d8370055",
+  "after": "86ed798b5b03bdfbd2f2edca03758ef6a0062afaa06413aa5307d7bcb59fc177",
+  "seconds": 2.638,
   "failed_rows": [
+   "VELDO-0335 ac1/returns-before-removal",
    "VELDO-0335 ac1/released-pair",
    "VELDO-0335 safety/kept-in-main",
    "VELDO-0335 safety/repository-kept",
    "VELDO-0335 ac1/owner-and-event",
    "VELDO-0335 ac1/signed-observer",
+   "VELDO-0335 cli/verb-emitter",
+   "VELDO-0335 rv/twice",
    "VELDO-0335 ac2/seam-refused",
    "VELDO-0335 ac2/no-item",
    "VELDO-0335 ac3/unique",
    "VELDO-0335 ac3/unique-force",
+   "VELDO-0335 rv/repository-held-by-worktree",
+   "VELDO-0335 rv/private-branch",
+   "VELDO-0335 rv/git-lock-and-draft",
    "VELDO-0335 safety/keep-failure",
    "VELDO-0335 safety/report",
    "VELDO-0335 safety/protected-after-receipt",
@@ -26,49 +34,190 @@
   ]
  },
  {
+  "name": "space335-force-reaches-delete",
+  "status": "rejected",
+  "module": "veldo",
+  "targets": {
+   "ac3/unique-force": false
+  },
+  "error": null,
+  "before": "e59258d873b3b28aaa3e5784622bcbaa9eed445d3164049738893cf3d8370055",
+  "after": "1fbdd3e936df0754f7445e20b6999405affe0b17b9c35d85961c4b34aa80bbcb",
+  "seconds": 3.668,
+  "failed_rows": [
+   "VELDO-0335 ac1/returns-before-removal",
+   "VELDO-0335 ac3/unique",
+   "VELDO-0335 ac3/unique-force"
+  ]
+ },
+ {
+  "name": "space335-cli-forges-hook",
+  "status": "rejected",
+  "module": "veldo",
+  "targets": {
+   "cli/verb-emitter": false
+  },
+  "error": null,
+  "before": "e59258d873b3b28aaa3e5784622bcbaa9eed445d3164049738893cf3d8370055",
+  "after": "0d7334597aea8ed9ea542c921a93d1fb30dd93642293fa5d961901710b55ed1a",
+  "seconds": 3.693,
+  "failed_rows": [
+   "VELDO-0335 cli/verb-emitter"
+  ]
+ },
+ {
+  "name": "space335-ledger-protect-skipped",
+  "status": "rejected",
+  "module": "control_space.py",
+  "targets": {
+   "safety/ledger-protected-at-receipt": false
+  },
+  "error": null,
+  "before": "f5c8620efd9dd0e65659a2e16a9fc2d08b35462325a3d3c2e99ead0e5c319926",
+  "after": "b754fd413841870830edf0856e12580fa2a7643e129c211fc5ef702978cfbf1b",
+  "seconds": 3.739,
+  "failed_rows": [
+   "VELDO-0335 safety/ledger-protected-at-receipt"
+  ]
+ },
+ {
+  "name": "space335-repository-releases-child",
+  "status": "rejected",
+  "module": "control_space_worker.py",
+  "targets": {
+   "rv/repository-held-by-worktree": false
+  },
+  "error": null,
+  "before": "9a0c6adef9ac933c5b18992cf4d6a6284eca820597f0e8e02f8da4624556ea0e",
+  "after": "6ebc6db63e28dd6a50fcb8e8ef4ca5b9f6fa69170f189a282c725e09a69a7d2e",
+  "seconds": 3.743,
+  "failed_rows": [
+   "VELDO-0335 rv/repository-held-by-worktree"
+  ]
+ },
+ {
+  "name": "space335-cli-emitter-any-kind",
+  "status": "rejected",
+  "module": "control_space.py",
+  "targets": {
+   "safety/cli-emitter-released-only": false
+  },
+  "error": null,
+  "before": "f5c8620efd9dd0e65659a2e16a9fc2d08b35462325a3d3c2e99ead0e5c319926",
+  "after": "c41a9dcec2a7e7d67ea74d9e8a22d8c365e96bc66d8c246159a6c0c1e2894722",
+  "seconds": 3.79,
+  "failed_rows": [
+   "VELDO-0335 safety/cli-emitter-released-only"
+  ]
+ },
+ {
   "name": "space335-any-creator",
   "status": "rejected",
+  "module": "control_space.py",
   "targets": {
    "ac2/seam-refused": false
   },
   "error": null,
-  "before": "6d66da7779ea0b26c2507bb63f1a437a3bea9da60d8f93217949c6b3e665e9d9",
-  "after": "ee0954fd7341506d9b43ee50bb66a0f03c78d31b4c379c52b7f64db85acc707b",
-  "seconds": 2.426,
+  "before": "f5c8620efd9dd0e65659a2e16a9fc2d08b35462325a3d3c2e99ead0e5c319926",
+  "after": "64567e46bbe3a61242fd5a0c4d908c47972424d257fa489844578498a0c8d1ae",
+  "seconds": 3.857,
   "failed_rows": [
    "VELDO-0335 ac2/seam-refused"
   ]
  },
  {
-  "name": "space335-force-reaches-delete",
+  "name": "space335-force-silently-accepted",
   "status": "rejected",
+  "module": "veldo",
   "targets": {
-   "ac3/unique-force": false
+   "cli/force-refused": false
   },
   "error": null,
-  "before": "2c938d7cf2c4fc56960133f15de5fb1825b01006c2bc7316d5aef105423f1fa6",
-  "after": "917e8e2faf59f8f7a94e3a2901da23cf62e640ca979af000be641841934c08d9",
-  "seconds": 2.379,
+  "before": "e59258d873b3b28aaa3e5784622bcbaa9eed445d3164049738893cf3d8370055",
+  "after": "dbf94dc0d10fb096d7faf85aa8c9907e4bbb328f3e51c51db715771ecc241ad3",
+  "seconds": 3.861,
   "failed_rows": [
-   "VELDO-0335 ac1/returns-before-removal",
+   "VELDO-0335 cli/force-refused",
    "VELDO-0335 ac3/unique-force"
+  ]
+ },
+ {
+  "name": "space335-private-branch-ignored",
+  "status": "rejected",
+  "module": "control_space_signal.py",
+  "targets": {
+   "rv/private-branch": false
+  },
+  "error": null,
+  "before": "d27384b77134a7df1a86829810e656a858cc006653696e963ac90e73fc53c16d",
+  "after": "818d5cb81bb7e341d5fb5906866c017eb10ad8bba8b18fe0224a8eefa4d2f094",
+  "seconds": 3.335,
+  "failed_rows": [
+   "VELDO-0335 rv/private-branch"
   ]
  },
  {
   "name": "space335-keep-skipped",
   "status": "rejected",
+  "module": "control_space_worker.py",
   "targets": {
    "safety/kept-in-main": false,
    "safety/repository-kept": false
   },
   "error": null,
-  "before": "4e34db66622c0ee05b48f86c591f3686b847278b1ec21493acc01ff5ef865737",
-  "after": "919b8fd2db459abe19e1acfa3874ba42bec4a90b58bb86d0c7c276d41b84f83b",
-  "seconds": 2.375,
+  "before": "9a0c6adef9ac933c5b18992cf4d6a6284eca820597f0e8e02f8da4624556ea0e",
+  "after": "ef1ad52ef7d803112fe52de75c6d26c9fa0af4d4cbe566433516b4c2b23d08a4",
+  "seconds": 3.358,
   "failed_rows": [
    "VELDO-0335 ac1/released-pair",
    "VELDO-0335 safety/kept-in-main",
-   "VELDO-0335 safety/repository-kept"
+   "VELDO-0335 safety/repository-kept",
+   "VELDO-0335 rv/twice"
+  ]
+ },
+ {
+  "name": "space335-git-operation-ignored",
+  "status": "rejected",
+  "module": "control_space_signal.py",
+  "targets": {
+   "rv/git-lock-and-draft": false
+  },
+  "error": null,
+  "before": "d27384b77134a7df1a86829810e656a858cc006653696e963ac90e73fc53c16d",
+  "after": "b134184232f85238ce2c5e804453f78c651f8c5856905d92b303c7208e5ec5ad",
+  "seconds": 3.46,
+  "failed_rows": [
+   "VELDO-0335 rv/git-lock-and-draft"
+  ]
+ },
+ {
+  "name": "space335-path-replaces-identity",
+  "status": "rejected",
+  "module": "control_space_worker.py",
+  "targets": {
+   "safety/bound-identity": false
+  },
+  "error": null,
+  "before": "9a0c6adef9ac933c5b18992cf4d6a6284eca820597f0e8e02f8da4624556ea0e",
+  "after": "63fa91d079dc83039fbdd230cf893765d1a9a5e30f534f949800dcdcdce34aad",
+  "seconds": 3.54,
+  "failed_rows": [
+   "VELDO-0335 safety/bound-identity"
+  ]
+ },
+ {
+  "name": "space335-removed-item-accepted",
+  "status": "rejected",
+  "module": "control_space.py",
+  "targets": {
+   "rv/twice": false
+  },
+  "error": null,
+  "before": "f5c8620efd9dd0e65659a2e16a9fc2d08b35462325a3d3c2e99ead0e5c319926",
+  "after": "6cd58babce2dafd06ed232662396b5fac2df5ecca477c28514707c72e9c592a2",
+  "seconds": 3.494,
+  "failed_rows": [
+   "VELDO-0335 rv/twice"
   ]
  }
 ]

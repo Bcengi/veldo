@@ -1,3 +1,3 @@
 139_veldo_0301_space_signal
 exit 2
-selftest (PARTIAL, 1 of 224 suites): 44 passed, 0 failed in 1.29s
+selftest (PARTIAL, 1 of 224 suites): 44 passed, 0 failed in 1.09s
