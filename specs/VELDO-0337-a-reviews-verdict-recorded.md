@@ -77,5 +77,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: build blocked by the declared production footprint. Launch.wait
+  reaps the receiver before Runtime.review validates and signs the review
+  receipt. The verdict is recorded afterwards by control_launch_work.py or,
+  for a supplied assignment, dispatch.py; both are outside this footprint.
+  An engine completion artifact is not a stored review verdict. No production
+  change or AC amendment made. The owner was asked to extend the footprint to
+  the verdict-recording path and decide the emitter. Evidence and the read-only
+  ordering reproduction are in proof/VELDO-0337/blocker.md and receiver_order.py.
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.

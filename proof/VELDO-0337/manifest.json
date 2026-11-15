@@ -1,0 +1,74 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0337",
+  "commit": "8ef46604e80e6a69909556c82e4e9b17e2acde87",
+  "producer": "Codex build agent; not an independent reviewer",
+  "produced_at": "2026-11-15T20:23:06.724923+00:00",
+  "status": "blocked",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "AC2",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "checks": [
+    {
+      "name": "ordering reproduction",
+      "status": "passed",
+      "command": "python3 proof/VELDO-0337/receiver_order.py",
+      "detail": "Two diagnostic checks. Real Launch.wait and Runtime.review with explicit stand-ins; no acceptance criterion proven."
+    },
+    {
+      "name": "unit",
+      "status": "not_run",
+      "command": "Acceptance tests blocked by the production footprint; no implementation."
+    },
+    {
+      "name": "integration",
+      "status": "not_run",
+      "command": "Real verdict-store and ledger integration not built or tested."
+    },
+    {
+      "name": "falsifiers",
+      "status": "not_run",
+      "command": "All three declared falsifiers remain unapplied; no implementation to mutate."
+    },
+    {
+      "name": "contracts",
+      "status": "passed",
+      "command": "python3 .veldo/validate.py all"
+    },
+    {
+      "name": "docs",
+      "status": "passed",
+      "command": "bash scripts/check_docs.sh"
+    },
+    {
+      "name": "template sync",
+      "status": "passed",
+      "command": "bash scripts/check_template_sync.sh"
+    },
+    {
+      "name": "gate",
+      "status": "not_run",
+      "command": "./scripts/verify.sh",
+      "detail": "Reserved for the lead through the gate lock."
+    }
+  ],
+  "assumptions": [
+    "This manifest records a blocked build on the named base commit, not delivered behavior. See blocker.md. No production file changed.",
+    "The owner has not authorized a footprint expansion."
+  ],
+  "rollback": "Revert the blocker documentation; there is no runtime change."
+}
