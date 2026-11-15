@@ -89,5 +89,12 @@
   "row": "rename/boundary",
   "old": "        raise SystemExit(\"rename: destination exists; a recorded owner item is required for removal: %s\" % d)",
   "new": "        shutil.rmtree(d)"
+ },
+ {
+  "name": "memory-time-delete",
+  "path": ".veldo/control_memory_check.py",
+  "row": "memory/boundary",
+  "old": "        # Keep the incomplete copy. SQLite backup replaces its contents on the next attempt.\n",
+  "new": "        target.unlink()\n"
  }
 ]

@@ -61,7 +61,7 @@ def backup(source, target, part='copy', sleep=time.sleep):
         if not quiet or ((before.st_size, before.st_mtime_ns) == (after.st_size, after.st_mtime_ns) and idle(source)):
             target.chmod(0o600)
             return
-        target.unlink()
+        # Keep the incomplete copy. SQLite backup replaces its contents on the next attempt.
         sleep(QUIET)
     raise M.Refused('unavailable_service:memory:%s:copy_busy' % part, str(source))
 

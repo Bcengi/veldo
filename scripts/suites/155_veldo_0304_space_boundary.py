@@ -274,5 +274,28 @@ def _v304_suite():
     row('rename/unique-work', lambda: output_work('rename_migration', lambda module, path: module.verify(path)))
     row('rename/boundary', lambda: script_boundary('rename_migration', ('verify',)))
 
+    def memory_work():
+        import sqlite3
+        from unittest.mock import patch
+        memory = load('memory', ROOT / '.veldo/control_memory_check.py')
+        with tempfile.TemporaryDirectory(prefix='v304-memory-') as temporary:
+            source, target = Path(temporary) / 'source.db', Path(temporary) / 'copy.db'
+            with sqlite3.connect(source) as conn:
+                conn.execute('CREATE TABLE work (value TEXT)')
+                conn.execute('INSERT INTO work VALUES (?)', ('only memory work',))
+            with patch.object(memory, 'ATTEMPTS', 1), patch.object(memory, 'idle', return_value=False), patch.object(
+                    memory, 'source_uri', return_value=(source.as_uri() + '?mode=ro', True)):
+                try:
+                    memory.backup(source, target, sleep=lambda seconds: None)
+                except memory.M.Refused:
+                    pass
+                else:
+                    raise AssertionError('a changing source was accepted')
+            with sqlite3.connect(target) as conn:
+                assert conn.execute('SELECT value FROM work').fetchone() == ('only memory work',)
+
+    row('memory/unique-work', memory_work)
+    row('memory/boundary', lambda: module_boundary('control_memory_check', ('backup',)))
+
 
 _v304_suite()

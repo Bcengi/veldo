@@ -1,0 +1,18 @@
+{
+ "case": "memory-time-delete",
+ "row": "memory/boundary",
+ "red": [
+  {
+   "row": "VELDO-0304 memory/unique-work",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 295, in memory_work\n    assert conn.execute('SELECT value FROM work').fetchone() == ('only memory work',)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsqlite3.OperationalError: no such table: work\n"
+  },
+  {
+   "row": "VELDO-0304 memory/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 298, in <lambda>\n    row('memory/boundary', lambda: module_boundary('control_memory_check', ('backup',)))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 122, in module_boundary\n    assert not [error for error in errors if any(function + ':' in error for function in functions)], errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['engine/.veldo/control_memory_check.py: backup: removal reads a file time or compares the clock']\n"
+  }
+ ],
+ "before": "23eee15f5766e1632e89d760446409ca44d0deb6b0996aab87727ae1fc160291",
+ "after": "eb6a73f2a1a9d14a9189234ba553a3e495b37943a55620748f1f6fcbb60f6832"
+}
