@@ -14,6 +14,8 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_space_docker.py"
   - ".veldo/control_space_docker.py"
+  - "engine/.veldo/control_space_remove.py"
+  - ".veldo/control_space_remove.py"
   - "scripts/suites/*_veldo_0328_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
@@ -83,3 +85,20 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+
+- 2026-11-15: built the adapter completion seams `built(engine, tag, label, image_id)` and
+  `pulled(engine, name)`, and image pull event handling. A trusted build creator names its tag,
+  known run and expected image identity; inherited image labels and tag events alone prove no
+  build. The adapter records only that tag, never its sibling tags. Project build-command wiring
+  is not part of this adapter ticket; no service sets the adapter up yet on this branch.
+- A pulled image is an ownerless ledger report, keyed by image identity and engine, with disposition
+  kept and no ending events. Repeated pulls and adapter restarts reuse it. The footprint adds the
+  existing remover and its synced copy: AC2 also holds when the pull follows a build, so that
+  remover reads the durable kept report before removing a built tag. No removal primitive or
+  lifecycle event was added. The existing keep step for repositories and snapshots is unchanged.
+- Proof uses two strict stand-in engines and real ledger, Signal, rules, owner signatures and
+  removers. A non-forced remove by image id with multiple tags is refused by the stand-in; the
+  declared AC1 falsifier turns the row red because the owned tag remains, while the row also checks
+  the other ticket's planted content survives. No acceptance criterion was changed.
+- Targeted checks only. The lead runs `./scripts/verify.sh` through the gate lock. The existing
+  VELDO-0127 captures, policy check, real engines and protected host data were not touched.

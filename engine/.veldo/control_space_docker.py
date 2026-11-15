@@ -88,10 +88,17 @@ write that removes nothing. The ledger's adopt and report refuse a protected nam
 again, as space_protected. This module asks for both owner labels of every object and puts each one
 the object carries in the locator, so a protected compose project is seen whatever else it carries.
 
-IMAGES ARE READ FOR THE PROTECT LIST ONLY. `images(engine)` reads the images of a context and lists
+IMAGE INVENTORY AND PROVENANCE (VELDO-0328). `images(engine)` reads the images of a context and lists
 those the protect list covers: by a name it carries (a tag in full, or its repository without the tag
-or the digest), by its compose project label or by its labelled path. Nothing is written for any
-image, protected or not: an image tag as an item is VELDO-0328. The snapshot does not read images.
+or the digest), by its compose project label or by its labelled path. The listing alone writes nothing and the object snapshot does not infer image provenance.
+`built(engine, tag, label, image_id)` is the creator's completion seam: after its build it names
+exactly the tag, the known run and the image identity it built. Only that tag becomes an item, owned
+by the run's ticket. An image label alone proves no build: a pull can carry inherited labels.
+`pulled(engine, name)` and image pull events record an ownerless report by image identity, once per
+engine, with disposition kept and no ending event. A later build completion cannot adopt an image
+already recorded as pulled. Unknown tag events never invent a builder. Both seams inspect afresh and
+read every name of the image against the protect list before any write. The existing Signal, rules
+and remove_tag remover handle the ending event; this adapter still has no removal operation.
 
 A CONTAINER THAT MOUNTS WHAT IS PROTECTED IS PROTECTED (design section 7, the protect list; the review
 of VELDO-0306, finding 2). Before a container is recorded its mounts are read from the record the
@@ -155,7 +162,7 @@ context that is not read now with its reason, and `tell`, when the caller gave o
 for each context that goes down. The service writes it to its observation log (control_service
 docker_readable) and shows it as an engine not read (docker_unread).
 
-WHAT IS NOT HERE. Images as items (a built tag is an item and a pulled image is kept: VELDO-0328).
+WHAT IS NOT HERE. Wiring build completion into project-specific build commands.
 The image a protected container was made from and the networks it is attached to (VELDO-0341).
 Reconcile's counts and its record (VELDO-0315). Giving a run its label and its compose
 project name in its environment is the receiver's (design 6.3); `given` says what the two are.
@@ -192,7 +199,7 @@ IDENTITY = {'container': ('id', 'Id'), 'network': ('id', 'Id'), 'volume': ('crea
 # they are not reported.
 ENGINE_NETWORKS = ('bridge', 'host', 'none')
 EVENTS = ('events', '--format', '{{json .}}', '--filter', 'type=container', '--filter', 'type=network',
-          '--filter', 'type=volume')
+          '--filter', 'type=volume', '--filter', 'type=image')
 SINCE = '--since'  # the option that makes the engine print again what happened from a time on
 ENGINE_TIME = ('system', 'info', '--format', '{{.SystemTime}}')  # the engine's own time, read by its client
 ACTIONS = ('create', 'start', 'stop', 'destroy')  # the events that become a ledger write or a report
@@ -590,6 +597,83 @@ class Adapter:
         answer.update(read=True, images=len(records))
         return answer
 
+    def _image(self, engine, name):
+        """Read one named image and its protect status, without writing a record."""
+        if engine not in self.engines or not _text(name) or name.startswith('-'):
+            return None, 'refused'
+        records, said = self._records(engine, 'image', [name])
+        if records is None:
+            self._note('unread', engine=engine, kind='image', name=name, said=said)
+            return None, 'unread'
+        shown = records[0]
+        if not _text(shown.get('Id')):
+            return None, 'refused'
+        entry, by = covered(engine, 'image', image_names(shown), labels_of('image', shown),
+                            list(self.ledger.protect or ()))
+        if entry is not None:
+            if entry != 'unread':
+                self._listed(engine, 'image', name, shown['Id'], entry, by)
+            self._note('refused' if entry == 'unread' else 'protected', engine=engine,
+                       kind='image', name=name, refusal=entry, by=by)
+            return None, 'refused' if entry == 'unread' else 'protected'
+        return shown, None
+
+    def built(self, engine, tag, label, image_id):
+        """A trusted creator completed a build of this exact tag and image for a known run.
+
+        Never infer this from an image's labels or from a tag event. Another ticket's tags on the
+        same image get no item. Replayed completions cannot change an item's owner or revive Keep.
+        """
+        shown, refusal = self._image(engine, tag)
+        if refusal:
+            return refusal
+        if (tag not in (shown.get('RepoTags') or ()) or tag == shown['Id']
+                or shown['Id'] != image_id):
+            return 'refused'
+        runs, said = self._known(engine)
+        owner = runs.get(label) if runs is not None else None
+        if not owner or not owner.get('ticket'):
+            self._note('refused', engine=engine, kind='image', name=tag, refusal=said or 'unknown_ticket')
+            return 'refused'
+        labels = labels_of('image', shown)
+        if labels.get(RUN_LABEL) not in (None, label):
+            return 'refused'
+        if self._held(engine, 'image_tag', name=shown['Id']) is not None:
+            return 'held'  # an image recorded as pulled stays kept
+        locator = {'engine': engine, 'name': tag, 'id': shown['Id']}
+        if labels.get(RUN_LABEL):
+            locator['run_label'] = labels[RUN_LABEL]
+        if labels.get(COMPOSE_PROJECT):
+            locator['compose_project'] = labels[COMPOSE_PROJECT]
+        held = self._held(engine, 'image_tag', name=tag)
+        if held is not None:
+            prior = held[1]
+            return ('matched' if prior.get('owner') == owner and prior.get('locator') == locator
+                    else 'held')
+        wrote = self.ledger.adopt('image_tag', locator, owner, 'built_tag', pool=self.pool)
+        self._note('adopted' if wrote.get('ok') else 'refused', engine=engine, kind='image_tag',
+                   name=tag, id=shown['Id'], run=label, item=wrote.get('item'), refusal=wrote.get('reason'))
+        return 'adopted' if wrote.get('ok') else 'refused'
+
+    def pulled(self, engine, name):
+        """A pull's image is a durable ownerless report, once per image identity per engine.
+
+        Kept is a report disposition, not an owned lifecycle item. Labels inherited from the image
+        cannot assign it to the pulling run. Replays, other tags and adapter restarts reuse it.
+        """
+        shown, refusal = self._image(engine, name)
+        if refusal:
+            return refusal
+        identity = shown['Id']
+        if self._held(engine, 'image_tag', name=identity) is not None:
+            return 'matched'
+        locator = {'engine': engine, 'name': identity, 'id': identity}
+        found = {'why': 'pulled_image', 'disposition': 'kept', 'engine': engine, 'id': identity}
+        wrote = self.ledger.report('image_tag', locator, found, pool=self.pool)
+        self._note('kept' if wrote.get('ok') else 'refused', engine=engine, kind='image',
+                   name=name, id=identity, item=wrote.get('item'), refusal=wrote.get('reason'))
+        return 'kept' if wrote.get('ok') else 'refused'
+
     def _mounts(self, engine, shown):
         """mount_protected for a container of `engine`, against the ledger's protect list."""
         def volume(name):
@@ -944,6 +1028,9 @@ class Adapter:
         actor = event.get('Actor') if isinstance(event, dict) else None
         kind, action = (event.get('Type'), event.get('Action')) if isinstance(event, dict) else (None, None)
         name = _text(actor.get('ID')) if isinstance(actor, dict) else None
+        if kind == 'image' and name is not None and isinstance(action, str):
+            # Pull events carry no trustworthy caller identity. A tag event is not proof of a build.
+            return self.pulled(engine, name) if action == 'pull' else 'ignored'
         if kind not in KINDS or not isinstance(action, str) or name is None:
             if isinstance(event, dict) and isinstance(kind, str) and kind not in KINDS and isinstance(action, str):
                 return 'ignored'  # an event of a type this adapter did not ask for

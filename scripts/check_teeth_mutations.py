@@ -15121,6 +15121,50 @@ def cases():
            "            raise RuntimeError(\"the scratch folder could not be made (%s): its item %s stays declared, for \"\n",
            ['fix6/scratch-not-made'])
 
+    # VELDO-0328: the three declared falsifiers and the provenance boundaries.
+    def images328(name, old, new, rows, module='control_space_docker.py'):
+        add(328, name, '153_veldo_0328_images.py', module, old, new, rows)
+        if module == 'control_space_remove.py':
+            result[-1]['companions'] = ['git_process.py']
+
+    images328('space328-remove-by-image-id',
+              "                       (('image', 'rm', '$name'),))\n",
+              "                       (('image', 'rm', '$id'),))\n",
+              ['ac1/two-tags'], module='control_space_remove.py')
+    images328('space328-pull-owned-by-run',
+              "        wrote = self.ledger.report('image_tag', locator, found, pool=self.pool)\n",
+              "        wrote = self.ledger.adopt('image_tag', dict(locator, name=shown['RepoTags'][0]),\n"
+              "                                  self.runs()[labels_of('image', shown)[RUN_LABEL]],\n"
+              "                                  'pulled_as_owned', pool=self.pool)\n",
+              ['ac2/pulled-kept'])
+    images328('space328-protect-first-context-only',
+              "        entry, by = covered(engine, 'image', image_names(shown), labels_of('image', shown),\n"
+              "                            list(self.ledger.protect or ()))\n",
+              "        entry, by = (covered(engine, 'image', image_names(shown), labels_of('image', shown),\n"
+              "                             list(self.ledger.protect or ()))\n"
+              "                     if engine == self.engines[0] else (None, None))\n",
+              ['ac3/other-name'])
+    images328('space328-pull-after-build-not-kept',
+              "        if record.get('kind') == 'image_tag' and _pulled_image(ctx['ledger'], locator):\n",
+              "        if False:\n", ['ac2/pull-after-build'], module='control_space_remove.py')
+    images328('space328-no-image-subscription',
+              "          '--filter', 'type=volume', '--filter', 'type=image')\n",
+              "          '--filter', 'type=volume')\n", ['ac2/pulled-kept'])
+    images328('space328-build-id-not-compared',
+              "                or shown['Id'] != image_id):\n",
+              "                or False):\n", ['ac1/provenance'])
+    images328('space328-pulled-image-becomes-built',
+              "        if self._held(engine, 'image_tag', name=shown['Id']) is not None:\n",
+              "        if False:\n", ['ac2/restart'])
+    images328('space328-pull-replay-written-again',
+              "        if self._held(engine, 'image_tag', name=identity) is not None:\n",
+              "        if False:\n", ['ac2/restart'])
+    images328('space328-protect-only-requested-tag',
+              "        entry, by = covered(engine, 'image', image_names(shown), labels_of('image', shown),\n"
+              "                            list(self.ledger.protect or ()))\n",
+              "        entry, by = covered(engine, 'image', [name], labels_of('image', shown),\n"
+              "                            list(self.ledger.protect or ()))\n", ['ac3/other-name'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
