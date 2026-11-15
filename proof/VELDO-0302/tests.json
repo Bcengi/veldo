@@ -1,38 +1,44 @@
 [
  {
   "command": "python3 scripts/selftest.py --suite 132_veldo_0297_space_ledger",
-  "summary": "selftest (PARTIAL, 1 of 223 suites): 57 passed, 0 failed in 1.39s",
+  "summary": "selftest (PARTIAL, 1 of 223 suites): 57 passed, 0 failed in 3.25s",
   "status": "passed",
   "scope": "targeted; not full verification"
  },
  {
   "command": "python3 scripts/selftest.py --suite 133_veldo_0326_space_principals",
-  "summary": "selftest (PARTIAL, 1 of 223 suites): 56 passed, 0 failed in 25.27s",
+  "summary": "selftest (PARTIAL, 1 of 223 suites): 56 passed, 0 failed in 32.45s",
   "status": "passed",
   "scope": "targeted; not full verification"
  },
  {
   "command": "python3 scripts/selftest.py --suite 140_veldo_0345_space_keep",
-  "summary": "selftest (PARTIAL, 1 of 223 suites): 57 passed, 0 failed in 4.63s",
+  "summary": "selftest (PARTIAL, 1 of 223 suites): 57 passed, 0 failed in 10.16s",
   "status": "passed",
   "scope": "targeted; not full verification"
  },
  {
   "command": "python3 scripts/selftest.py --suite 142_veldo_0303_space_paths",
-  "summary": "selftest (PARTIAL, 1 of 223 suites): 64 passed, 0 failed in 5.87s",
+  "summary": "selftest (PARTIAL, 1 of 223 suites): 64 passed, 0 failed in 12.04s",
   "status": "passed",
   "scope": "targeted; not full verification"
  },
  {
   "command": "python3 scripts/selftest.py --suite 149_veldo_0312_ticket_ended",
-  "summary": "selftest (PARTIAL, 1 of 223 suites): 67 passed, 0 failed in 3.35s",
+  "summary": "selftest (PARTIAL, 1 of 223 suites): 67 passed, 0 failed in 7.16s",
   "status": "passed",
   "scope": "targeted; not full verification"
  },
  {
   "command": "python3 scripts/selftest.py --suite 153_veldo_0302_space_creators",
-  "summary": "selftest (PARTIAL, 1 of 223 suites): 67 passed, 0 failed in 1.50s",
+  "summary": "selftest (PARTIAL, 1 of 223 suites): 68 passed, 0 failed in 2.09s",
   "status": "passed",
   "scope": "targeted; not full verification"
+ },
+ {
+  "command": "python3 scripts/check_teeth_mutations.py --finding 302",
+  "summary": "mutations: passed registered=12 executed=12 reused=0 rejected=12 workers=22 elapsed=142.285s",
+  "status": "passed",
+  "scope": "targeted; the mutation stage for finding 302 only"
  }
 ]

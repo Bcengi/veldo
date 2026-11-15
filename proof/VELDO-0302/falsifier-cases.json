@@ -125,5 +125,44 @@
   ],
   "also": [],
   "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-agent-form-refused",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_space.py",
+  "old": "                                 ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):",
+  "new": "                                 ('worker_clone', 'batch_clone', 'candidate_workspace')):",
+  "rows": [
+   "ledger/forms"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-worktree-source-not-resolved",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_clone.py",
+  "old": "        return Path(main)\n    return Path(common)\n",
+  "new": "        return Path(main)\n    return Path(main)\n",
+  "rows": [
+   "safety/main-repository-worktree"
+  ],
+  "also": [],
+  "dir": ".veldo"
+ },
+ {
+  "finding": 302,
+  "name": "space302-any-source-accepted",
+  "suite": "153_veldo_0302_space_creators.py",
+  "module": "control_clone.py",
+  "old": "                            or space_main_repository(main) not in (Path(known), Path(known) / '.git')):",
+  "new": "                            or False):",
+  "rows": [
+   "safety/main-repository"
+  ],
+  "also": [],
+  "dir": ".veldo"
  }
 ]

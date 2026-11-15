@@ -1,5 +1,5 @@
 {
- "baseline_rows": 41,
+ "baseline_rows": 42,
  "baseline_passed": true,
  "mutations": [
   {
@@ -25,6 +25,11 @@
      "row": "VELDO-0302 ac1/sandbox",
      "passed": false,
      "detail": "declare observed absence; confirm observed existence"
+    },
+    {
+     "row": "VELDO-0302 ac2/three-items",
+     "passed": false,
+     "detail": "repository, child worktree and branch at the exact start"
     },
     {
      "row": "VELDO-0302 ac1/run",
@@ -162,8 +167,8 @@
      "detail": "links and parent segments refuse before filesystem creation"
     }
    ],
-   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
-   "after": "565272222e67107d7d067ba881cd5ba5d873efe591567ca4b3fa6697c3b63e3c"
+   "before": "e686bc62f7e6c8e2bb0397bf55e29aed0cac1c5caf596c65a2c8056ca74f575d",
+   "after": "3a73c1025eff36536884c46d4308db909f6c90c31fb14d7b241624146f690607"
   },
   {
    "name": "space302-batch-is-scratch",
@@ -176,6 +181,11 @@
      "row": "VELDO-0302 ac1/batch",
      "passed": false,
      "detail": "repository form and declared main repository"
+    },
+    {
+     "row": "VELDO-0302 safety/main-repository-worktree",
+     "passed": false,
+     "detail": "the real batch creator, run from a linked worktree, declares its clone under the main repository"
     }
    ],
    "before": "389d9d9a13c8f1ca0f5ca65aac500411384cb085b97a9c5c427248b403fc8dc8",
@@ -199,8 +209,8 @@
      "detail": "creator killed at its first creation, with a durable declared item"
     }
    ],
-   "before": "c62cf7a370b73226bbe8bdd58c8b2d4615884dee7c7fd30549cf01927272cc22",
-   "after": "34a8ee5f19cd7e7411fa6bd0eb92e29935e80c75aea86989673e928ce7f13d32"
+   "before": "68bb45fc0a5bc55637fb401455e7783073f1ac8233ff73169a3c31eabdd892c8",
+   "after": "69fc56288b770cb596109b2b9c9fb55a59b4b13368614c2494d223b0b06300fa"
   },
   {
    "name": "space302-create-on-refused-declare",
@@ -267,8 +277,8 @@
      "detail": "links and parent segments refuse before filesystem creation"
     }
    ],
-   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
-   "after": "5b261fd1358183eb670a295621f05e207b3ec72866efcef943065fa1262c1746"
+   "before": "e686bc62f7e6c8e2bb0397bf55e29aed0cac1c5caf596c65a2c8056ca74f575d",
+   "after": "95b695b72be2a94713c336f2c2844a5abf7e54a8711cadba2d2df45b032527f9"
   },
   {
    "name": "space302-no-provisioned-call",
@@ -294,8 +304,8 @@
      "detail": "real service sent the item-naming event for the old worktree"
     }
    ],
-   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
-   "after": "fcf9d79d8fedc767fd1ec2a47361bb57b08eef94c664bd03099dcbfc2ca59790"
+   "before": "e686bc62f7e6c8e2bb0397bf55e29aed0cac1c5caf596c65a2c8056ca74f575d",
+   "after": "b9c7b1745b3c1ecfb9299eb2c5259b504bee2ee5d83ce2f1a7779010638794de"
   },
   {
    "name": "space302-unknown-form-accepted",
@@ -310,8 +320,8 @@
      "detail": "unknown form and wrong kind refused by transition"
     }
    ],
-   "before": "69ddbf2af3d2882acd67ac468c684eb5b21174aaf18c1e468f3cddcaa906e73c",
-   "after": "c6b407096010d251a8feec4054da82bfca04e28d0508ea56d798414125d49764"
+   "before": "25b7ab7c90664ecf4effa2cf46f19b4fb2a4d9d63b48e17d6281a9e2d8fe000a",
+   "after": "ab7223efaeb8fb27007e6dea283c145b8564f94d61fafdd0a6cd3347209203e6"
   },
   {
    "name": "space302-partial-creation-gone",
@@ -326,8 +336,8 @@
      "detail": "absent creation is gone, partial creation remains recorded with its work"
     }
    ],
-   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
-   "after": "37a10f22ac2e3dccb9f61dcda87e9e2f857368b2c383e84b408c00851dadf8ab"
+   "before": "e686bc62f7e6c8e2bb0397bf55e29aed0cac1c5caf596c65a2c8056ca74f575d",
+   "after": "757317e1b832098d996fb4f6a8d2ef158a3fe39a17c6cb68e10a2b2c3bbd9c38"
   },
   {
    "name": "space302-receipts-after-spawn",
@@ -358,8 +368,56 @@
      "detail": "the failed creator leaves untracked and ignored work recorded and intact"
     }
    ],
-   "before": "6ba35a24a747aa1cd45f8549f7fd5be80947f8a525a4f8380525f7edd409efea",
-   "after": "5b5bb7c048dcbc0fc7446f216d044c12a8a9679fa3f63d0063505d7a9d253509"
+   "before": "e686bc62f7e6c8e2bb0397bf55e29aed0cac1c5caf596c65a2c8056ca74f575d",
+   "after": "ace22101c7170ad0163e65c8db434b971fe1e90ee1d311330cefde010d4c33d8"
+  },
+  {
+   "name": "space302-agent-form-refused",
+   "detected": true,
+   "target_rows": [
+    "ledger/forms"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 ledger/forms",
+     "passed": false,
+     "detail": "known form recorded"
+    }
+   ],
+   "before": "25b7ab7c90664ecf4effa2cf46f19b4fb2a4d9d63b48e17d6281a9e2d8fe000a",
+   "after": "69ddbf2af3d2882acd67ac468c684eb5b21174aaf18c1e468f3cddcaa906e73c"
+  },
+  {
+   "name": "space302-worktree-source-not-resolved",
+   "detected": true,
+   "target_rows": [
+    "safety/main-repository-worktree"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 safety/main-repository-worktree",
+     "passed": false,
+     "detail": "me the creator main repository')\nValueError: the owner scope must name the creator main repository\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0302/scripts/suites/153_veldo_0302_space_creators.py\", line 504, in _v302_creators_suite\n    clone = batch._isolated_clone()\n            ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v302-ydz1_75o/installed/.veldo/control_batch.py\", line 533, in _isolated_clone\n    with creation.item('agent_repository', clone, main=self.repo_root, form='batch_clone'):\n  File \"/usr/lib/python3.12/contextlib.py\", line 137, in __enter__\n    return next(self.gen)\n           ^^^^^^^^^^^^^^\n  File \"/tmp/v302-ydz1_75o/installed/.veldo/control_clone.py\", line 620, in item\n    raise self.refusal('unavailable_service:space_ledger', str(error)) from error\nv302_control_batch.Refused: unavailable_service:space_ledger: the owner scope must name the creator main repository"
+    }
+   ],
+   "before": "e686bc62f7e6c8e2bb0397bf55e29aed0cac1c5caf596c65a2c8056ca74f575d",
+   "after": "74a7d54977d143484f7438069101e1e8852a345e7d393240fd2f7dabceb20f73"
+  },
+  {
+   "name": "space302-any-source-accepted",
+   "detected": true,
+   "target_rows": [
+    "safety/main-repository"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0302 safety/main-repository",
+     "passed": false,
+     "detail": "the creator cannot attach a different main repository to the owner scope"
+    }
+   ],
+   "before": "e686bc62f7e6c8e2bb0397bf55e29aed0cac1c5caf596c65a2c8056ca74f575d",
+   "after": "fee63cfc14d82c7d60894d5b6427721ae8f9fc0b178c981559650f63ca9bbf39"
   }
  ]
 }
