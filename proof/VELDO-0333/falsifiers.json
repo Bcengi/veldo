@@ -11,7 +11,7 @@
   "red_details": [
    [
     "VELDO-0214 first-use-budget/leg-time-store-pruned",
-    "(['.pending-abandoned', '11111111111111111111111111111111.json', '22222222222222222222222222222222.json', '9bda6399848deab9fdfe5d0760780191.json', 'notes.txt'], '   unit: removed 1 leg-time file from /tmp/veldo-0214-2j0t8knu/times-pruned (authority checkout gone)\\n', ['33333333333333333333333333333333.json'], [])"
+    "(['.pending-abandoned', '11111111111111111111111111111111.json', '22222222222222222222222222222222.json', 'aee264ea4ae280c8a044d3be01cc0de3.json', 'notes.txt'], '   unit: removed 1 leg-time file from /tmp/veldo-0214-46u8m260/times-pruned (authority checkout gone)\\n', ['33333333333333333333333333333333.json'], [])"
    ]
   ],
   "red_as_expected": true
@@ -36,7 +36,7 @@
    ],
    [
     "VELDO-0333 ac3/unreadable-and-foreign-stay",
-    "canon/time unrelated files retained; canon/resources unrelated files retained"
+    "canon/time unrelated files retained; canon/resources unrelated files retained; canon checkout under a plain file is not absence; canon unreadable checkout is not absence"
    ],
    [
     "VELDO-0333 ac3/missing-checkout-only-message",
@@ -111,7 +111,7 @@
    ],
    [
     "VELDO-0333 ac3/unreadable-and-foreign-stay",
-    "copy/time unrelated files retained; copy/resources unrelated files retained"
+    "copy/time unrelated files retained; copy/resources unrelated files retained; copy checkout under a plain file is not absence; copy unreadable checkout is not absence"
    ],
    [
     "VELDO-0333 ac3/missing-checkout-only-message",
@@ -147,6 +147,65 @@
    [
     "VELDO-0333 ac4/read-named-bound",
     "copy bound says read and remains 30 days"
+   ],
+   [
+    "VELDO-0333 ac3/canon",
+    "canon and synced copy agree"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space333-age-branch-through-real-clock",
+  "expected_red": [
+   "ac1/old-live-file-stays"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "VELDO-0333 ac1/old-live-file-stays",
+   "VELDO-0333 ac3/unreadable-and-foreign-stay",
+   "VELDO-0333 ac3/missing-checkout-only-message",
+   "VELDO-0333 ac3/no-clock-or-file-time",
+   "VELDO-0333 ac3/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0333 ac1/old-live-file-stays",
+    "canon/time old bytes retained; canon/resources old bytes retained"
+   ],
+   [
+    "VELDO-0333 ac3/unreadable-and-foreign-stay",
+    "canon/time unrelated files retained; canon/resources unrelated files retained; canon checkout under a plain file is not absence; canon unreadable checkout is not absence"
+   ],
+   [
+    "VELDO-0333 ac3/missing-checkout-only-message",
+    "canon/time cleanup reason; canon/resources cleanup reason"
+   ],
+   [
+    "VELDO-0333 ac3/no-clock-or-file-time",
+    "canon pruning succeeds with time readers refused"
+   ],
+   [
+    "VELDO-0333 ac3/canon",
+    "canon and synced copy agree"
+   ]
+  ],
+  "red_as_expected": true
+ },
+ {
+  "falsifier": "space333-probe-takes-refusal-for-absence",
+  "expected_red": [
+   "ac3/unreadable-and-foreign-stay"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "VELDO-0333 ac3/unreadable-and-foreign-stay",
+   "VELDO-0333 ac3/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0333 ac3/unreadable-and-foreign-stay",
+    "canon checkout under a plain file is not absence; canon unreadable checkout is not absence"
    ],
    [
     "VELDO-0333 ac3/canon",

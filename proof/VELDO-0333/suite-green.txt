@@ -1,4 +1,4 @@
 Targeted suite only; not a gate pass.
-  153_veldo_0333_leg_time_store                   13 passed    0.04s
-selftest (PARTIAL, 1 of 223 suites): 39 passed, 0 failed in 0.04s
+  153_veldo_0333_leg_time_store                   13 passed    2.24s
+selftest (PARTIAL, 1 of 223 suites): 39 passed, 0 failed in 2.24s
 exit: 2 (partial-run convention)

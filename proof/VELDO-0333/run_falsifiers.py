@@ -1,4 +1,4 @@
-"""Run only this ticket's four falsifiers and the adjusted prior keep falsifier.
+"""Run only this ticket's six falsifiers and the adjusted prior keep falsifier.
 
 Uses the existing driver's materialize and worker seams, without its coordinator or gate.
 Each mutation is applied once to a temporary production copy, after a no-op control.
@@ -14,7 +14,7 @@ driver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(driver)
 cases = [case for case in driver.cases()
          if case['finding'] == 333 or case['name'] == 'budget214-keep-not-spared']
-assert len(cases) == 5
+assert len(cases) == 7
 results = []
 with tempfile.TemporaryDirectory(prefix='veldo-0333-falsifiers-') as directory:
     for case in cases:
