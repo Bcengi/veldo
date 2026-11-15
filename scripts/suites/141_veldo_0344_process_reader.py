@@ -54,6 +54,14 @@ its tasks carry, each once; an empty list only when the environment was read and
 leaves the block whole, so rule 4 still reads its files; an l line in no task or outside the format
 makes the whole table unused.
 
+A whole read (the fix of 2026-11-15, the review's finding 1). reader/whole-read, on the built reader's
+own output for three real processes of a small static program the row builds: one that carries the
+run label and executes itself again without end, read 150 times, never has l - and has its label
+whenever its environment was read; one whose environment ends in memory it has unmapped, the label in
+that part, has x env 11 and no l line; and one started with an environment of no bytes has x env 11
+and no l line. Not read is what the probe makes of each. The source takes the task's stat and exe
+before the read and after it, and reads the environment twice at most.
+
 AC3 rows: ac3/root-login (in the item, and elsewhere), ac3/unread-fact, ac3/no-block-or-start,
 ac3/unlistable-folder.
 
@@ -121,7 +129,7 @@ def _v344_process_reader_suite():
             'ac1/reader-locks-first', 'ac1/used',
             'ac2/cwd', 'ac2/open-file-only', 'ac2/directory-descriptor', 'ac2/mapped-only',
             'ac2/second-thread-cwd', 'ac2/second-thread-descriptor', 'ac2/inode-alone', 'ac2/outside-not-counted',
-            'reader/facts-of-every-thread', 'reader/maps', 'reader/label', 'label/table',
+            'reader/facts-of-every-thread', 'reader/maps', 'reader/label', 'reader/whole-read', 'label/table',
             'ac3/root-login', 'ac3/unread-fact', 'ac3/no-block-or-start', 'ac3/unlistable-folder',
             'ac4/no-argument', 'ac4/format', 'ac4/entries', 'ac4/filter', 'ac4/unread-without-capability',
             'ac5/cut', 'ac5/not-whole', 'ac5/exit-status', 'ac5/failed-write', 'ac5/waits-after-end',
@@ -782,6 +790,136 @@ sys.exit(P.reader_exec())
         for one in (carrier, bare, empty, fits, over):
             stop(one)
 
+        # ---- a whole read of the environment ---------------------------------------------------------
+        # One static program, three ways: spin executes itself again at once, with the environment it
+        # has; cut unmaps the memory from the entry that begins with its second argument to the end
+        # of the environment, says ready and waits; anything else says ready and waits.
+        HELPER = r'''
+#define _GNU_SOURCE
+#include <stdint.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
+extern char **environ;
+int main(int argc, char **argv)
+{
+    char byte;
+    if (argc > 1 && !strcmp(argv[1], "spin")) {
+        execve("/proc/self/exe", argv, environ);
+        return 1;
+    }
+    if (argc > 2 && !strcmp(argv[1], "cut")) {
+        uintptr_t page = (uintptr_t)sysconf(_SC_PAGESIZE), first = 0, last = 0;
+        char **entry;
+        for (entry = environ; *entry; entry++) {
+            uintptr_t end = (uintptr_t)*entry + strlen(*entry) + 1;
+            if (!strncmp(*entry, argv[2], strlen(argv[2])))
+                first = (uintptr_t)*entry;
+            if (end > last)
+                last = end;
+        }
+        if (!first)
+            return 1;
+        first &= ~(page - 1);
+        last = (last + page - 1) & ~(page - 1);
+        if (munmap((void *)first, last - first) != 0)
+            return 1;
+    }
+    if (write(1, "ready\n", 6) != 6)
+        return 1;
+    while (read(0, &byte, 1) > 0)
+        ;
+    return 0;
+}
+'''
+        helper_folder = temporary / 'helper'
+        helper_folder.mkdir()
+        (helper_folder / 'helper.c').write_text(HELPER)
+        built = subprocess.run(['/usr/bin/cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', '-static', '-o',
+                                'helper', 'helper.c'], cwd=str(helper_folder), env={'PATH': '/usr/bin:/bin'},
+                               stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+        if built.returncode:
+            raise RuntimeError('the helper\'s build failed: ' + built.stderr.decode()[-400:])
+        helper = str(helper_folder / 'helper')
+
+        def helped(environ, *argv):
+            process = subprocess.Popen([helper] + list(argv), cwd=str(elsewhere), stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, env=environ)
+            children.append(process)
+            if argv[:1] != ('spin',) and process.stdout.readline() != b'ready\n':
+                raise RuntimeError('the helper did not start')
+            return process
+
+        def label_lines(text, pid):
+            return [line for line in text.split('\np %d ' % pid, 1)[-1].split('\np ', 1)[0].split('\n')[1:]
+                    if line[:1] in 'lxg' and not line.startswith(('x cwd', 'x fd', 'x maps', 'x mnt', 'x task'))]
+
+        spin_label = 'spin:run-' + os.urandom(4).hex()
+        spin_line = 'l =' + spin_label.encode().hex()
+        spinner = helped({NAME: spin_label, 'OTHER': 'value'}, 'spin')
+        READS = 150
+        seen_reads, wrong = {}, []
+        for _ in range(READS):
+            read = run_reader()
+            read_text = read.stdout.decode('ascii', 'replace')
+            if '\np %d ' % spinner.pid not in read_text:
+                kind = 'no block'
+            else:
+                got = label_lines(read_text, spinner.pid)
+                kind = ' | '.join(got) or 'no line'
+                read_blocks = P.reader_table(read.stdout.split(b'\n', 1)[-1])[0] or {}
+                carried = (read_blocks.get(spinner.pid) or {}).get('label')
+                if 'l -' in got or carried == [] or (carried is not None and carried != [spin_label.encode()]) \
+                        or read.returncode != 0:
+                    wrong.append(kind)
+            seen_reads[kind] = seen_reads.get(kind, 0) + 1
+        alive = spinner.poll() is None
+        spinner.kill()
+        spinner.wait()
+        spinner.stdin.close()
+        spinner.stdout.close()
+        check('reader/whole-read', 'a process that carries the run label and executes itself again without end, read '
+              '%d times while it does: never l -, never a label of none, and its own label whenever its '
+              'environment was read whole [%s wrong %s alive %s]' % (READS, seen_reads, wrong[:3], alive),
+              alive and wrong == [] and sum(seen_reads.values()) == READS and seen_reads.get(spin_line, 0) >= 1
+              and all(kind in (spin_line, 'no block', 'no line') or re.fullmatch(r'x env \d+', kind)
+                      for kind in seen_reads))
+        cut_label = 'cut:run-' + os.urandom(4).hex()
+        severed = helped({'FILLER': 'f' * 100000, NAME: cut_label}, 'cut', NAME + '=')
+        nothing = helped({})
+        whole_read = run_reader()
+        whole_text = whole_read.stdout.decode('ascii', 'replace')
+        whole_blocks = P.reader_table(whole_read.stdout.split(b'\n', 1)[-1])[0] or {}
+
+        def bounds_of(pid):
+            fields = Path('/proc/%d/stat' % pid).read_bytes().rsplit(b')', 1)[1].split()
+            return int(fields[48]) - int(fields[47])
+        check('reader/whole-read', 'an environment that ends in memory the process has unmapped, the label in that '
+              'part, is not read: x env 11, no l line, the label not read and the block still whole [%s %s of %s '
+              'bytes]' % (label_lines(whole_text, severed.pid), (whole_blocks.get(severed.pid) or {}).get('label', '?'),
+                          bounds_of(severed.pid)),
+              whole_read.returncode == 0 and label_lines(whole_text, severed.pid) == ['x env 11']
+              and severed.pid in whole_blocks and whole_blocks[severed.pid]['label'] is None
+              and whole_blocks[severed.pid]['whole'] is True and bounds_of(severed.pid) > 100000
+              and cut_label.encode().hex() not in whole_text)
+        check('reader/whole-read', 'an environment of no bytes is not read either, since that is what the kernel '
+              'returns for a task that is executing: x env 11, no l line, the label not read [%s %s of %s bytes]'
+              % (label_lines(whole_text, nothing.pid), (whole_blocks.get(nothing.pid) or {}).get('label', '?'),
+                 bounds_of(nothing.pid)),
+              label_lines(whole_text, nothing.pid) == ['x env 11'] and nothing.pid in whole_blocks
+              and whole_blocks[nothing.pid]['label'] is None and bounds_of(nothing.pid) == 0)
+        for one in (severed, nothing):
+            stop(one)
+        check('reader/whole-read', 'the source takes what the task is before the read and after it, and reads an '
+              'environment twice at most; the buffers an environment passed through are cleared by a call the '
+              'compiler may not drop',
+              source.count('identify(proc, pid, tid, &before)') == 1
+              and source.count('identify(proc, pid, tid, &after)') == 1
+              and 'for (attempt = 0; attempt < 2; attempt++) {' in source
+              and 'explicit_bzero(in.bytes, sizeof in.bytes);' in source
+              and 'explicit_bzero(value, sizeof value);' in source and 'explicit_bzero(kept, sizeof kept);' in source
+              and 'memset(value' not in source and 'memset(in.bytes' not in source)
+
         def label_read(*lines):
             got = P.reader_table(table(['p 7 1'] + list(lines)))
             return (got[0][7]['label'], got[0][7]['whole']) if got[0] else got[1][0]
@@ -855,8 +993,12 @@ sys.exit(P.reader_exec())
 
         opened = sorted(set(re.findall(r'path_(?:start|task)\([^"]*"([^"]*)"', source)))
         check('ac4/entries', 'the entries the source opens are stat, mountinfo, maps and the task folder of a process, '
-              'and cwd, environ and fdinfo of a task [%s]' % opened,
-              opened == ['/cwd', '/environ', '/fdinfo', '/fdinfo/', '/maps', '/mountinfo', '/stat', '/task', '/task/'])
+              'and cwd, environ, exe, stat and fdinfo of a task [%s %s]'
+              % (opened, sorted(re.findall(r'path_task\([^"]*"([^"]*)"', source))),
+              opened == ['/cwd', '/environ', '/exe', '/fdinfo', '/fdinfo/', '/maps', '/mountinfo', '/stat', '/task',
+                         '/task/']
+              and sorted(re.findall(r'path_task\([^"]*"([^"]*)"', source))
+              == ['/cwd', '/environ', '/exe', '/fdinfo', '/fdinfo/', '/stat', '/task/'])
         check('ac4/entries', 'it opens /proc, and every other open is beneath that one descriptor',
               source.count('SYS_openat') == 2 and 'syscall(SYS_openat, AT_FDCWD, "/proc",' in source
               and 'syscall(SYS_openat, proc, path, O_RDONLY' in source and 'SYS_open,' not in source

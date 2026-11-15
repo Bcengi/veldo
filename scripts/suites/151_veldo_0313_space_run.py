@@ -62,7 +62,11 @@ the run's and does not hold it; of the process reader's block for such a process
 decides, and only one that was read: a whole block with no label read, no block, a block that is not
 whole, one with another start time and a refused reader each leave the run open; a label that is this
 run's makes the process a holder by its label; and when the label of every unread process was read
-and none is this run's, the run is over while they live). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
+and none is this run's, the run is over while they live). fix3/environment-not-whole-holds (the review
+of VELDO-0344, finding 1, in the CLI's own scan: a process that carries the run's label and executes
+itself again without end is a holder in every one of 150 reads of the kernel's table, by its label or
+unread, never missing; a process with an environment of no bytes is unread and holds; one with an
+environment and no label is no holder). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
 asks the kernel again for each item, so the scratch root is deferred as in use and stays, and the hold
 is not released). fix3/the-house-group (on a host with the owner's user manager: the command runs in
 the house's own transient scope, run finished is not sent while a process it left is in that group,
@@ -173,7 +177,8 @@ def _v313_space_run_suite():
             'ac1/unread-group-sends-nothing', 'ac1/only-the-runs-own-items',
             'fix2/returns-at-the-commands-exit', 'fix2/end-follows-their-exit',
             'fix2/captured-output-ends-at-return',
-            'fix3/handed-outside-the-tree', 'fix3/unread-process-holds', 'fix3/rule-3-reads-the-kernel',
+            'fix3/handed-outside-the-tree', 'fix3/unread-process-holds', 'fix3/environment-not-whole-holds',
+            'fix3/rule-3-reads-the-kernel',
             'fix3/the-house-group',
             'fix4/docker-objects-are-items', 'fix5/no-issuer-no-run', 'fix6/scratch-not-made',
             'ac2/command-status', 'ac2/act-waits-75', 'ac2/report-starts',
@@ -1050,6 +1055,51 @@ def _v313_space_run_suite():
                 end_child()
                 end_bystander()
                 end_before()
+        except Exception as error:
+            stopped(row, error)
+
+        try:
+            row = 'fix3/environment-not-whole-holds'
+            # A program that executes itself again at once, for ever, with the environment it has.
+            # The kernel reads environ from the memory a process had when the entry was opened, so a
+            # read that falls across one of its executions returns nothing.
+            again = temp / 'again.sh'
+            again.write_text('#!/bin/sh\nexec "$0"\n')
+            again.chmod(0o755)
+            carried_run = 'row:run-' + os.urandom(4).hex()
+            spinner = subprocess.Popen([str(again)], stdin=subprocess.DEVNULL,
+                                       env={'PATH': '/usr/bin:/bin', CLI.SPACE_LABEL_VARIABLE: carried_run})
+            waiting.append(spinner)
+            READS, hows = 150, {}
+            for _ in range(READS):
+                how = [one.get('how') for one in CLI._space_holders(carried_run, None, []) if one.get('pid') == spinner.pid]
+                hows[str(how)] = hows.get(str(how), 0) + 1
+            alive = spinner.poll() is None
+            spinner.kill()
+            spinner.wait()
+            check(row, 'a process that carries the run\'s label and executes itself again without end is a holder '
+                       'of the run in each of %d reads of the kernel\'s table: by its label when its environment '
+                       'was read whole, unread when it was not, and never missing [%s alive %s]' % (READS, hows, alive),
+                  alive and sum(hows.values()) == READS and set(hows) <= {"['label']", "['unread']"}
+                  and hows.get("['label']", 0) >= 1)
+            quiet = [sys.executable, '-c', 'import os\nos.write(1, b"ready\\n")\nos.read(0, 1)\n']
+            bare = subprocess.Popen(quiet, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env={})
+            plain = subprocess.Popen(quiet, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env={'OTHER': 'value'})
+            mine = subprocess.Popen(quiet, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                    env={'OTHER': 'value', CLI.SPACE_LABEL_VARIABLE: carried_run})
+            waiting.extend([bare, plain, mine])
+            ready = [one.stdout.readline() for one in (bare, plain, mine)]
+            held = {one.get('pid'): one.get('how') for one in CLI._space_holders(carried_run, None, [])}
+            for one in (bare, plain, mine):
+                one.stdin.close()
+                one.wait(timeout=30)
+                one.stdout.close()
+            check(row, 'an environment of no bytes is what the kernel returns for a process that is executing, so '
+                       'a process that has one is unread and holds the run; one with an environment and no label '
+                       'is no holder, and one with the label holds by it [%s %s %s %s]'
+                  % (ready, held.get(bare.pid), held.get(plain.pid), held.get(mine.pid)),
+                  ready == [b'ready\n'] * 3 and held.get(bare.pid) == 'unread' and plain.pid not in held
+                  and held.get(mine.pid) == 'label')
         except Exception as error:
             stopped(row, error)
 

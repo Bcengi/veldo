@@ -737,6 +737,42 @@ def _space_process(pid):
         return None
 
 
+def _space_identity(pid):
+    """What one process is at this moment, as the kernel shows it: its start time, the two ends of
+    its environment (fields 22, 50 and 51 of stat) and the device and inode of its program. Raises
+    what the kernel raises, and ValueError for a stat that is not in the format."""
+    with open("%s/%d/stat" % (SPACE_PROC, int(pid)), "rb") as stat:
+        fields = stat.read().rsplit(b")", 1)[1].split()
+    if len(fields) < 49:
+        raise ValueError("stat has no environment bounds")
+    program = os.stat("%s/%d/exe" % (SPACE_PROC, int(pid)))
+    return (int(fields[19]), int(fields[47]), int(fields[48]), program.st_dev, program.st_ino)
+
+
+def _space_environment(pid):
+    """The entries of one process's environment, from a whole read of it, or None when it was not
+    read whole. The kernel reads environ from the memory the process had when the entry was opened:
+    a process that executes a program meanwhile has other memory by then, and the read returns
+    nothing, or a part. Bytes that end early with no label among them are not an environment
+    without the label (the review of VELDO-0344, finding 1). So what the process is, is taken
+    before the read and after it, and the read is whole only when the two agree, at least one byte
+    was returned, and exactly as many as the bounds are apart; an environment of no bytes is never
+    whole, since that is what the kernel returns for a process that is executing. A read that is
+    not whole is made once more. Raises what the kernel raises: the caller tells a process that has
+    ended from one it may not read."""
+    for _ in range(2):
+        try:
+            before = _space_identity(pid)
+            with open("%s/%d/environ" % (SPACE_PROC, int(pid)), "rb") as environment:
+                read = environment.read()
+            after = _space_identity(pid)
+        except (ValueError, IndexError):
+            continue
+        if before == after and read and len(read) == before[2] - before[1]:
+            return read.split(b"\0")
+    return None
+
+
 class _SpaceScope:
     """The house's containment group for a wrapped run (control_containment, the provider the
     receiver uses for a dispatch): a transient scope of the owner's user manager, named for the run
@@ -812,7 +848,8 @@ def _space_holders(run, supervisor, members, since=None, reader=None):
     the run lives), descendant (a process that descends from it), group (a member of the run's
     containment group), label (a process whose environment carries the run's space label, read here
     or, for a process this account may not read, by the process reader) or unread
-    (a process whose environment cannot be read and that may be the run's, below). `supervisor` is
+    (a process whose environment cannot be read, or was not read whole (_space_environment), and
+    that may be the run's, below). `supervisor` is
     the process the descendants are counted from, {pid, started}; in the supervisor itself it is
     this process, which is then not listed. Nothing here signals a process.
 
@@ -871,14 +908,16 @@ def _space_holders(run, supervisor, members, since=None, reader=None):
         if pid == me or table[pid]["flags"] & PF_KTHREAD:
             continue
         try:
-            with open("%s/%d/environ" % (SPACE_PROC, pid), "rb") as environment:
-                if label in environment.read().split(b"\0"):
-                    add(pid, "label")
+            carried = _space_environment(pid)
         except (FileNotFoundError, ProcessLookupError):
             continue  # it ended while it was read
         except OSError:
+            carried = None
+        if carried is None:  # refused, or not read whole: nobody read what it carries
             if _space_process(pid) is not None:
                 unread.append(pid)
+        elif label in carried:
+            add(pid, "label")
     # The one thing that takes an unread process out: it started before the run began, and it is no
     # descendant and no member of the group (those are in `found` already, under their own names).
     unread = [pid for pid in unread if pid not in found and (since is None or table[pid]["started"] >= since)]

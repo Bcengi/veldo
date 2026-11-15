@@ -13471,6 +13471,23 @@ def cases():
     reader344('space344-no-label-line-taken-as-no-label', probe344,
               "'whole': pid not in blocks, 'facts': [], 'label': None}, None\n",
               "'whole': pid not in blocks, 'facts': [], 'label': []}, None\n", ['label/table'])
+    # A whole read (2026-11-15, the review's finding 1). The reader as it was: an environment that
+    # was not read whole, of one program, taken as read, so a process that is executing has no
+    # label. Beside it, each alone: an environment of no bytes taken as read; a read that ended
+    # before the environment did taken as read.
+    reader344('space344-environment-not-whole-taken-as-read', source344,
+              "            error = EAGAIN; /* it became another program while it was read */\n",
+              "            error = 0;\n", ['reader/whole-read'], where='scripts',
+              also=(("            error = EAGAIN; /* nothing returned: what the kernel says of a task that is executing */\n",
+                     "            error = 0;\n"),
+                    ("            error = EAGAIN; /* the read ended before the environment did */\n",
+                     "            error = 0;\n")))
+    reader344('space344-empty-environment-taken-as-read', source344,
+              "            error = EAGAIN; /* nothing returned: what the kernel says of a task that is executing */\n",
+              "            error = 0;\n", ['reader/whole-read'], where='scripts')
+    reader344('space344-short-environment-taken-as-read', source344,
+              "            error = EAGAIN; /* the read ended before the environment did */\n",
+              "            error = 0;\n", ['reader/whole-read'], where='scripts')
     setup344 = 'veldo-procread-setup.txt'
     reader344('space344-no-prefix-map', setup344,
               ' -static -ffile-prefix-map="$d"=. -o ', ' -static -o ', ['ac7/reproducible'], where='docs')
@@ -15043,6 +15060,17 @@ def cases():
            "            add(pid, \"label\")  # the reader read this run's label in its environment\n",
            "            pass\n",
            ['fix3/unread-process-holds'])
+    # The review of VELDO-0344, finding 1, in the CLI's own scan: the environment taken as it was
+    # read, once, so a process that is executing carries no label; and an environment of no bytes
+    # taken as a whole read.
+    run313('space313-environment-taken-as-it-was-read',
+           "        if before == after and read and len(read) == before[2] - before[1]:\n",
+           "        if True:\n",
+           ['fix3/environment-not-whole-holds'])
+    run313('space313-empty-environment-taken-as-read',
+           "        if before == after and read and len(read) == before[2] - before[1]:\n",
+           "        if before == after and len(read) == before[2] - before[1]:\n",
+           ['fix3/environment-not-whole-holds'])
     run313('space313-supervisor-keeps-the-callers-output',
            "    if seen[\"holders\"]:\n        _space_let_go()\n", "",
            ['fix2/captured-output-ends-at-return'])

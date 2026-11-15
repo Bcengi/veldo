@@ -20,9 +20,10 @@
  *      read returns: the probe is the side that refuses a table sent too early;
  *   4. for every process of the table that is not a kernel thread reads stat (the start time and
  *      the flags), mountinfo (the device of each mount id), then for every task under its task
- *      folder the working directory by stat, the run label in environ (THE RUN LABEL, below) and
- *      every fdinfo entry, lists the task folder a second time, and reads maps. It prints the
- *      lines below and opens nothing outside /proc;
+ *      folder the working directory by stat, the run label in environ (THE RUN LABEL, below;
+ *      beside it the task's own stat and its exe by stat, before the read and after it) and every
+ *      fdinfo entry, lists the task folder a second time, and reads maps. It prints the lines
+ *      below and opens nothing outside /proc;
  *   5. writes the end line, makes one blocking read on descriptor 1 and exits 0 when that read
  *      returns, which is when the probe has shut down its side: the writer of a short output is
  *      still alive when the probe looks.
@@ -36,8 +37,9 @@
  *   p PID START                     opens the block of one process; START is field 22 of stat
  *   t TID                           opens the facts of one task; the first is the first thread
  *   c MAJOR:MINOR INODE             the working directory of the task
- *   l -                             the environment of the task was read to its end and no entry
- *                                   of it is the run label variable
+ *   l -                             the environment of the task was read whole, of one program
+ *                                   (A WHOLE READ, below), and no entry of it is the run label
+ *                                   variable
  *   l =HEX                          one entry of the task's environment is the run label variable;
  *                                   HEX is its value, two lower-case hexadecimal digits a byte, and
  *                                   nothing for an empty value. One line for each such entry
@@ -49,7 +51,8 @@
  *                                   follows; stat, mnt, maps or task of the process. x task 0 is
  *                                   a task the second listing showed and the reader had not read.
  *                                   Error 12 is also written when a table of this program is full,
- *                                   and x env 7 for a run label longer than 64 bytes
+ *                                   x env 7 for a run label longer than 64 bytes, and x env 11
+ *                                   for an environment that was not read whole, of one program
  *   g                               the process ended while it was read; closes its block
  *   end COUNT                       the last line; COUNT is the number of p lines
  * A c, f or m line equal to one the block already holds is not written again. A task that has
@@ -66,6 +69,18 @@
  * buffer the entry was read through is cleared before the next file is opened. A value is at most
  * 64 bytes; a longer one is not printed, in part or whole, and the fact is unread (x env 7). The
  * value is printed in hexadecimal, so no byte of another process reaches a line as it is.
+ *
+ * A WHOLE READ. The kernel reads environ from the memory the task had when the entry was opened. A
+ * task that executes a program between the open and the read has other memory by then, and the
+ * read returns nothing, or a part; so does a read of memory that is no longer there. Bytes that
+ * end early with no label among them are not an environment without the label. So before the read
+ * and after it the reader takes what the task is: the start time and the bounds of the
+ * environment (fields 22, 50 and 51 of the task's stat) and the device and inode of its exe. An l
+ * line is written only when the two agree, the read returned at least one byte, and it returned
+ * exactly as many as the bounds are apart. Otherwise the environment is read a second time, the
+ * same way, and when that read is not whole either the fact is unread (x env 11) and no l line is
+ * written. An l line is kept back until its read is known to be whole. An environment of no bytes
+ * at all is never a whole read: the kernel returns the same nothing for a task that is executing.
  *
  * THE FILTER is a list of what is allowed, for the native architecture only (the x32 numbers
  * refused): openat with none of O_WRONLY, O_RDWR, O_CREAT and O_TRUNC, read, getdents64,
@@ -260,10 +275,17 @@ static int gone(int error)
     return error == ENOENT || error == ESRCH;
 }
 
+/* What `path` names, the last link followed. 0, or the error. */
+static int stat_under(int proc, struct stat *found)
+{
+    return syscall(SYS_newfstatat, proc, path, found, 0) < 0 ? errno : 0;
+}
+
 /* Reading a file a byte at a time through one buffer. */
 static struct {
     int fd;
     size_t at, length;
+    uint64_t total; /* the bytes read from the file so far */
     int error;
     char bytes[65536];
 } in;
@@ -272,6 +294,7 @@ static void in_start(int fd)
 {
     in.fd = fd;
     in.at = in.length = 0;
+    in.total = 0;
     in.error = 0;
 }
 
@@ -290,6 +313,7 @@ static int in_byte(void)
         }
         in.at = 0;
         in.length = (size_t)n;
+        in.total += (uint64_t)n;
     }
     return (unsigned char)in.bytes[in.at++];
 }
@@ -479,15 +503,15 @@ static int numbered(int folder, char *entries, void (*each)(uint64_t, void *), v
     }
 }
 
-/* stat: the start time and the flags. 0 read, else the error. */
+/* The stat entry `path` names: the start time and the flags, and with `bounds` the two ends of the
+ * environment (fields 50 and 51). 0 read, else the error. */
 static char text[4096];
 
-static int read_stat(int proc, uint64_t pid, uint64_t *start, uint64_t *flags)
+static int read_stat(int proc, uint64_t *start, uint64_t *flags, uint64_t *bounds)
 {
     long n, total = 0;
     int fd, field = 0;
     char *at, *end;
-    path_start(pid, "/stat");
     fd = open_under(proc, 0);
     if (fd < 0)
         return errno;
@@ -511,12 +535,13 @@ static int read_stat(int proc, uint64_t pid, uint64_t *start, uint64_t *flags)
         return EINVAL;
     end = text + total;
     *start = *flags = 0;
-    /* After the bracket: field 3 the state, then one field per blank; 9 the flags, 22 the start. */
+    /* After the bracket: field 3 the state, then one field per blank; 9 the flags, 22 the start,
+     * 50 and 51 the environment's first byte and the byte after its last. */
     for (at++, field = 2; at < end; at++) {
         if (*at != ' ')
             continue;
         field++;
-        if (field == 9 || field == 22) {
+        if (field == 9 || field == 22 || field == 50 || field == 51) {
             uint64_t value = 0;
             char *digit = at + 1;
             if (digit >= end || *digit < '0' || *digit > '9')
@@ -525,8 +550,14 @@ static int read_stat(int proc, uint64_t pid, uint64_t *start, uint64_t *flags)
                 value = value * 10 + (uint64_t)(*digit++ - '0');
             if (field == 9)
                 *flags = value;
-            else {
+            else if (field == 22) {
                 *start = value;
+                if (!bounds)
+                    return 0;
+            } else if (field == 50)
+                bounds[0] = value;
+            else {
+                bounds[1] = value;
                 return 0;
             }
         }
@@ -603,13 +634,18 @@ static int read_fdinfo(int proc, uint64_t *mount, uint64_t *inode)
 /* The one variable of another process's environment this program prints the value of. */
 static const char label_name[] = "VELDO_SPACE_LABEL=";
 
-/* environ of the task `path` names: the value of each entry that is the run label variable, and
- * nothing else of it. 0 read to its end, else the error. */
-static int read_label(int proc)
+/* The l lines of one read, kept back until the read is known to be whole. */
+static char kept[8192];
+static size_t kept_len;
+
+/* environ of the task `path` names: the value of each entry that is the run label variable, kept
+ * back as l lines, and nothing else of it. `total` is the number of bytes the kernel returned. 0
+ * read to the end of what the kernel returned, else the error. */
+static int scan_label(int proc, uint64_t *total)
 {
     static const char digits[] = "0123456789abcdef";
     unsigned char value[LABEL_BYTES];
-    int fd = open_under(proc, 0), error = 0, found = 0;
+    int fd = open_under(proc, 0), error = 0;
     if (fd < 0)
         return errno;
     in_start(fd);
@@ -633,13 +669,17 @@ static int read_label(int proc)
             }
             if (error)
                 break;
-            word("l =");
-            for (index = 0; index < length; index++) {
-                line[line_len++] = digits[value[index] >> 4];
-                line[line_len++] = digits[value[index] & 15];
+            if (kept_len + 4 + 2 * length > sizeof kept) {
+                error = ENOMEM;
+                break;
             }
-            finish();
-            found = 1;
+            memcpy(kept + kept_len, "l =", 3);
+            kept_len += 3;
+            for (index = 0; index < length; index++) {
+                kept[kept_len++] = digits[value[index] >> 4];
+                kept[kept_len++] = digits[value[index] & 15];
+            }
+            kept[kept_len++] = '\n';
         } else {
             while (byte > 0) /* another variable: passed over, nothing of it kept */
                 byte = in_byte();
@@ -650,13 +690,76 @@ static int read_label(int proc)
     if (!error && in.error > 0)
         error = in.error;
     syscall(SYS_close, fd);
-    memset(in.bytes, 0, sizeof in.bytes);
-    memset(value, 0, sizeof value);
+    *total = in.total;
+    explicit_bzero(in.bytes, sizeof in.bytes);
+    explicit_bzero(value, sizeof value);
     in.at = in.length = 0;
-    if (!error && !found) {
-        word("l -");
-        finish();
+    return error;
+}
+
+/* What a task is at one moment: its start time, the two ends of its environment, its program. */
+struct identity {
+    uint64_t start, bounds[2], device, inode;
+};
+
+static int identify(int proc, uint64_t pid, uint64_t tid, struct identity *is)
+{
+    struct stat found;
+    uint64_t flags;
+    int error;
+    path_task(pid, tid, "/stat", -1);
+    error = read_stat(proc, &is->start, &flags, is->bounds);
+    if (error)
+        return error;
+    path_task(pid, tid, "/exe", -1);
+    error = stat_under(proc, &found);
+    if (error)
+        return error;
+    is->device = found.st_dev;
+    is->inode = found.st_ino;
+    return 0;
+}
+
+/* The run label of one task: its l lines, written only for A WHOLE READ (above). A read that is
+ * not whole is made once more. 0 written, else the error: the fact is unread, and no l line of
+ * either read is written. */
+static int read_label(int proc, uint64_t pid, uint64_t tid)
+{
+    int attempt, error = 0;
+    for (attempt = 0; attempt < 2; attempt++) {
+        struct identity before, after;
+        uint64_t total = 0;
+        kept_len = 0;
+        error = identify(proc, pid, tid, &before);
+        if (!error) {
+            path_task(pid, tid, "/environ", -1);
+            error = scan_label(proc, &total);
+        }
+        if (!error)
+            error = identify(proc, pid, tid, &after);
+        if (gone(error))
+            break; /* the task has ended: it carries nothing */
+        if (!error && (before.start != after.start || before.device != after.device
+                       || before.inode != after.inode || before.bounds[0] != after.bounds[0]
+                       || before.bounds[1] != after.bounds[1]))
+            error = EAGAIN; /* it became another program while it was read */
+        if (!error && total == 0)
+            error = EAGAIN; /* nothing returned: what the kernel says of a task that is executing */
+        if (!error && total != before.bounds[1] - before.bounds[0])
+            error = EAGAIN; /* the read ended before the environment did */
+        if (!error)
+            break;
     }
+    if (!error) {
+        if (kept_len)
+            put(kept, kept_len);
+        else {
+            word("l -");
+            finish();
+        }
+    }
+    explicit_bzero(kept, sizeof kept);
+    kept_len = 0;
     return error;
 }
 
@@ -743,11 +846,9 @@ static void read_task(int proc, uint64_t pid, uint64_t tid)
     int error = 0;
     add('t', tid, 0, 0, 0, 1); /* read, also when it has ended: it holds nothing then */
     path_task(pid, tid, "/cwd", -1);
-    if (syscall(SYS_newfstatat, proc, path, &found, 0) < 0) {
-        error = errno;
-        if (gone(error))
-            return; /* the task has ended: no line */
-    }
+    error = stat_under(proc, &found);
+    if (gone(error))
+        return; /* the task has ended: no line */
     word("t ");
     number(tid);
     finish();
@@ -768,9 +869,8 @@ static void read_task(int proc, uint64_t pid, uint64_t tid)
             finish();
         }
     }
-    path_task(pid, tid, "/environ", -1);
-    error = read_label(proc);
-    if (error && !gone(error)) /* gone: the task ended before its environment was opened */
+    error = read_label(proc, pid, tid);
+    if (error && !gone(error)) /* gone: the task ended before its environment was read */
         unread("env", error);
     error = task_descriptors(&task);
     if (gone(error))
@@ -835,7 +935,8 @@ static void process(uint64_t pid, void *with)
     uint64_t start = 0, flags = 0;
     uint32_t index;
 
-    error = read_stat(proc, pid, &start, &flags);
+    path_start(pid, "/stat");
+    error = read_stat(proc, &start, &flags, NULL);
     if (gone(error))
         return; /* ended before it was read: no block */
     if (!error && (flags & KERNEL_THREAD))

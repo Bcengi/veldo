@@ -1,10 +1,19 @@
-f890b5a253447011bd3570700275579119ff89170e61ea8e3f8903717bf8b647  veldo-procread
+bf1e1256ad3edb8fb83c695ef7e01380146a7048a3c465bfe463d9fee8835f26  veldo-procread
 cc: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
 libc: ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39
 machine: x86_64
-source: scripts/veldo_procread.c sha256 f5373c0a5b2ba29ba425a5305e97d16fa578a632bfb5afed69962a1abae39821
+source: scripts/veldo_procread.c sha256 44936632a48945a9380319b91b32deef1e9ffac11bac477401db1691b14b3561
 build: env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c, in the temporary folder $d that holds the source; built twice in two folders, one digest
-recorded: 2026-11-14, for the source that reads the run label too (for every task, the value of the one variable VELDO_SPACE_LABEL in the task's environ entry, and nothing else of it). This is another source than the one of the records below, so it has another digest on the same toolchain. Built twice from the source with the build line above, and then with line 1 of proof/VELDO-0344/owner-install.txt against the commit that file names as C. This record awaits review; the records below were for the source before it, and no digest below belongs to this source.
+recorded: 2026-11-15, for the source after the review of the run label (review-veldo-0344-label.md, verdict FIX, finding 1): an environment is taken as read only from a whole read of one program. The reader takes the task's stat (start time and the two ends of the environment) and its exe by stat before the read and after it, writes l lines only when the two agree and the read returned at least one byte and exactly as many as the ends are apart, reads once more otherwise, and writes x env 11 when the second read is not whole either. The buffers an environment passed through are cleared with explicit_bzero (finding 4). This is another source than the one of every record below, so it has another digest on the same toolchain. Built twice from the source with the build line above, and then with line 1 of proof/VELDO-0344/owner-install.txt against the commit that file names as C. This record awaits review; no digest below belongs to this source.
+
+The record of 2026-11-14 for the source that first read the run label, kept. The review found that source wrong (it wrote l - for a task that was executing a program), so it is the digest of a source that is not to be installed; the same compiler, C library and line:
+label digest: f890b5a253447011bd3570700275579119ff89170e61ea8e3f8903717bf8b647  veldo-procread
+label cc: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+label libc: ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39
+label machine: x86_64
+label source: scripts/veldo_procread.c sha256 f5373c0a5b2ba29ba425a5305e97d16fa578a632bfb5afed69962a1abae39821
+label commit: 2df0c67cd3426de0d83c193e3ed9cbe0785c0f69
+label recorded: 2026-11-14, for the source that reads the run label too (for every task, the value of the one variable VELDO_SPACE_LABEL in the task's environ entry, and nothing else of it). This is another source than the one of the records below, so it has another digest on the same toolchain. Built twice from the source with the build line above, and then with line 1 of proof/VELDO-0344/owner-install.txt against the commit that file names as C. This record awaits review; the records below were for the source before it, and no digest below belongs to this source.
 
 The record before it, kept. The source before the run label was read; the same compiler, C library and line:
 previous digest: 861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199  veldo-procread

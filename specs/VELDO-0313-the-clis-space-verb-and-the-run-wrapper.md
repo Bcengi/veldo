@@ -379,3 +379,29 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   space313-reader-not-used-taken-as-used are back on the new lines; and
   space313-readers-label-of-the-run-not-counted is new. Finding 313 has 34 cases. On a host with no
   reader installed nothing changes: an unread process that started after the run holds it.
+- 2026-11-15: AN ENVIRONMENT IS READ WHOLE OR NOT AT ALL (the review of VELDO-0344's run label,
+  findings 1 and 2). Owner rule (Telegram 41209): no work is ever lost.
+  - Finding 1, in the CLI's own scan. _space_holders read a process's environ once and took whatever
+    came back as its environment. The kernel returns nothing for a process that is executing a
+    program, so a process that carries the run's label could be read as carrying none and the run
+    could end while it lived. The scan now reads through _space_environment: what the process is
+    (start time, the two ends of the environment, its program's device and inode) is taken before the
+    read and after it, and the read counts only when the two agree, at least one byte came back, and
+    exactly as many as the ends are apart. It is made once more otherwise, and a process whose
+    environment was not read whole is unread: it holds the run, or the reader is asked. An
+    environment of no bytes is never whole, so a process that really has none is unread and holds.
+  - Row fix3/environment-not-whole-holds: a process that carries the run's label and executes itself
+    again without end is a holder in each of 150 reads, by its label or unread, never missing; a
+    process with an environment of no bytes is unread; one with an environment and no label is no
+    holder. Falsifiers: space313-environment-taken-as-it-was-read (the scan as it was) and
+    space313-empty-environment-taken-as-read. Suite 151 has 25 rows; finding 313 has 36 cases. The
+    comparison of the read's length alone has no falsifier in this suite: the row makes no
+    environment that ends early (suite 141's reader/whole-read does, for the reader).
+  - Finding 2, AN ACCEPTED LIMIT: A LABEL IS WHAT THE ENVIRONMENT AREA SAYS NOW. A process that
+    overwrites its own environment area (programs that set their process title that way: database
+    backends, web server workers) reads as carrying no label, by this account's own read and, since
+    VELDO-0344's change of 2026-11-14, by the reader's for every uid. Nothing in /proc says whether
+    the area is as the execution left it, so the rule cannot tell. Such a process is still held by
+    what does not depend on its environment: it descends from the run's supervisor, or it is in the
+    run's containment group, or it holds a file of an item (rule 4). The answer for a daemon a run
+    starts is the house's group, not the label. This is the lead's to change if it is not accepted.

@@ -484,3 +484,63 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
     owner-install.txt carries the new C and H and says that the source it names is not the one that
     was reviewed. No sudo command was run, the reader is not installed on this host, and row
     ac6/installed, with its sixth line, has not run anywhere.
+- 2026-11-15: FIX AFTER THE REVIEW OF THE RUN LABEL (review-veldo-0344-label.md, verdict FIX, four
+  findings). Owner rule (Telegram 41209): no work is ever lost.
+  - Finding 1 (high, reproduced by the review: 33 of 150 reads). The reader wrote l -, "read to its
+    end, no label", for a task that executed a program between the open of its environ entry and the
+    read. The kernel reads environ from the memory the task had at the open; after the execution that
+    memory is gone and the read returns nothing. With the reader wired in, VELDO-0313's rule then took
+    a live process that carries the run's label out of the run. NOW: an l line is written only for a
+    whole read of one program. Before the read and after it the reader takes what the task is: the
+    start time and the two ends of the environment (fields 22, 50 and 51 of the task's own stat) and
+    the device and inode of its exe, by stat. The read is whole when the two agree, the kernel
+    returned at least one byte, and it returned exactly as many as the ends are apart. A read that is
+    not whole is made once more, the same way; when that one is not whole either the fact is unread,
+    x env 11, and no l line of either read is written (l lines are kept back until their read is
+    known to be whole). The probe already reads x env as a label that was not read, so the process
+    holds the run. Not read is never no label.
+  - AN ENVIRONMENT OF NO BYTES IS NEVER A WHOLE READ. It is what the kernel returns for a task that
+    is executing, and during an execution the two ends can both be zero before and after. The cost:
+    a process that really has an empty environment is unread for as long as it lives, and so holds
+    every run it could belong to. That is the fail-closed side.
+  - What the reader opens grows by two entries of a task, both beneath /proc and for reading: its
+    stat, and its exe by stat (the one newfstatat call of the source, now in one function). Nothing
+    of either is printed. The filter is as it was: no call added. AC4's text was already narrower
+    than the reader (the entry of 2026-11-14) and is narrower by these two as well; it is still the
+    lead's and the owner's to amend, and was not edited.
+  - Finding 2 (medium, the lead's): a process that overwrites its own environment area reads as no
+    label. Recorded as an accepted limit in VELDO-0313's History of this day; nothing in /proc says
+    whether the area is as the execution left it.
+  - Finding 3 (low, suite 148): fixed under VELDO-0311, in its own commit.
+  - Finding 4 (low): the buffers an environment passed through (the read buffer, the value, the kept
+    lines) are cleared with explicit_bzero, which the compiler may not drop.
+  - The CLI's own scan had the same defect (bin/veldo, _space_holders read environ once and took an
+    empty read as no label; a plain read of a process that executes itself without end was wrong in
+    355 of 3000 reads here). It now reads through _space_environment, by the same rule, and a read
+    that is not whole leaves the process unread.
+  - Rows. reader/whole-read, suite 141: a small static program the row builds, three ways. One
+    carries the label and executes itself again without end, and is read 150 times: never l -, never
+    a label of none, its own label whenever its environment was read whole (on this host the reader
+    of 2df0c67c gave l - in 21 of 150 such reads, and this one 0 of 150, the label in all 150). One
+    unmaps the end of its environment, the label in that part, behind 100000 bytes of another entry:
+    x env 11, no l line. One has an environment of no bytes: x env 11. Row ac4/entries reads the two
+    new entries. Suite 141 has 62 rows. Three falsifiers, each seen red on reader/whole-read:
+    space344-environment-not-whole-taken-as-read (the three conditions gone: the reader as it was),
+    space344-empty-environment-taken-as-read, space344-short-environment-taken-as-read. Finding 344
+    has 40 cases.
+  - NOT FALSIFIED BY A ROW: the comparison of the two takings alone (start time, exe, the two ends).
+    A read that is complete, of the right length, and of a program the task no longer is cannot be
+    made on purpose from outside the kernel; the comparison is there for that case and no mutant of
+    it alone turns a row red. The second read has no falsifier either: without it the reader is
+    still right, and only says unread more often.
+  - SEEN AND NOT CHANGED (outside the review, about files and not the label): a process whose first
+    thread has ended and whose other thread then executes a program takes the first thread's id; a
+    table read across that moment has a whole block with no task line for it. Its label is then not
+    read, so it holds; but rule 4 finds no file of it in that one table.
+  - THE SOURCE CHANGED, SO ITS DIGEST DID, AND BOTH AWAIT REVIEW. scripts/veldo_procread.c has SHA-256
+    44936632a48945a9380319b91b32deef1e9ffac11bac477401db1691b14b3561 (before:
+    f5373c0a5b2ba29ba425a5305e97d16fa578a632bfb5afed69962a1abae39821). Built with line 1 of
+    proof/VELDO-0344/owner-install.txt on cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 and glibc
+    2.39-0ubuntu8.12 on x86_64 it has the digest
+    bf1e1256ad3edb8fb83c695ef7e01380146a7048a3c465bfe463d9fee8835f26. reader.sha256 records it first
+    and keeps the three earlier records. No sudo command was run and the reader is not installed.
