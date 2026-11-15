@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0335",
- "commit": "b5579c639a40972435cd28522c8e0510969162e4",
- "tree": "4886e0d1021b9e1bc1617b35815b78e1a00c8cc4",
- "producer": "Codex implementation agent; not an independent reviewer",
- "produced_at": "2026-11-15T22:15:31.332764+00:00",
+ "commit": "fd36f85b235aea496818aab22193e2a10f996d61",
+ "tree": "650538ea28a85163f295443c43f48dd82bac35b3",
+ "producer": "Claude implementation agent (fix round 2); not an independent reviewer",
+ "produced_at": "2026-11-15T23:16:50.123619+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -13,7 +13,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/154_veldo_0335_released.py",
-     "detail": "ac1/released-pair and returns-before-removal record both creations through the real CLI record verb and signed observer acceptance, return with both folders present, then wake the serial child. The recorded outcomes remove the worktree first. owner-and-event verifies the owner identities and source event. safety/kept-in-main and repository-kept read both planted log-only commits from kept refs in the shared main repository after both removals."
+     "detail": "ac1/returns-before-removal reports on every release call: the CLI returns with both folders present and the event in state received. ac1/released-pair then wakes the serial child and the recorded outcomes remove the worktree first, then the agent repository. ac1/owner-and-event and ac1/signed-observer verify the owner identities, the source event and the space-observer signature. cli/verb-emitter reads the journal's emitter as verb event on this host; safety/cli-emitter-released-only shows the Ledger refuses that emitter for ref_changed and session_ended with invalid_input:emitter and records nothing. safety/kept-in-main and safety/repository-kept read both planted log-only commits from kept refs in the shared repository after both removals."
     },
     {
      "type": "integration",
@@ -23,7 +23,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0335/falsifiers.json",
-     "detail": "space335-host-abandons reds ac1/released-pair; the host principal cannot give the owner's Abandon. space335-keep-skipped reds both planted-commit rows."
+     "detail": "space335-host-abandons reds ac1/released-pair and ac1/returns-before-removal. space335-keep-skipped reds both planted-commit rows. space335-cli-forges-hook reds cli/verb-emitter. space335-cli-emitter-any-kind reds safety/cli-emitter-released-only. space335-path-replaces-identity reds safety/bound-identity."
     }
    ]
   },
@@ -34,7 +34,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/154_veldo_0335_released.py",
-     "detail": "ac2/seam-refused sends a mixed list containing a record creation and a fleet seam creation; the whole observation is refused by the seam item identity and neither becomes due. ac2/no-item names the absent locator. Locators, signature expiry, malformed envelopes and protection at receipt and after receipt are also checked."
+     "detail": "ac2/seam-refused sends a mixed list containing a record creation and a fleet seam creation; the whole observation is refused by the seam item identity and neither becomes due. ac2/no-item names the absent locator. rv/twice refuses a second release of removed items. Locators, signature expiry, malformed envelopes and protection at receipt (through the CLI and directly at the Ledger, safety/ledger-protected-at-receipt) and after receipt are also checked."
     },
     {
      "type": "integration",
@@ -44,7 +44,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0335/falsifiers.json",
-     "detail": "space335-any-creator reds ac2/seam-refused by admitting and consuming the fleet creation."
+     "detail": "space335-any-creator reds ac2/seam-refused by admitting the fleet creation. space335-removed-item-accepted reds rv/twice. space335-ledger-protect-skipped reds safety/ledger-protected-at-receipt."
     }
    ]
   },
@@ -55,7 +55,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/154_veldo_0335_released.py",
-     "detail": "ac3/unique and unique-force plant an unlanded commit in an agent worktree. Two released events in each case leave it deferred as unique_work, with its repository and bytes intact. The force flag is never in the recorded subject or Signal arguments. The decision-request portion is BLOCKED: this base has no VELDO-0318 request implementation. No claim of one request is made."
+     "detail": "AC3 as amended (spec History, lead decision 2026-11-15): a released agent worktree whose branch the shared repository does not hold is deferred as unique work and never deleted, with or without force. ac3/unique plants an unlanded commit; two released events leave the worktree deferred as unique_work with its repository, commit and bytes intact. With --force the CLI refuses by name (invalid_input:force) before anything is recorded or signed (cli/force-refused), and ac3/unique-force finds the item still deferred and the work intact. rv/repository-held-by-worktree, rv/private-branch and rv/git-lock-and-draft cover a repository released without its child, private repository branches and a git operation in progress with an untracked draft. The decision request is not part of this criterion: it moved to VELDO-0318, whose spec carries the one-request row."
     },
     {
      "type": "integration",
@@ -65,7 +65,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0335/falsifiers.json",
-     "detail": "space335-force-reaches-delete reds ac3/unique-force: the defective CLI uses its force flag to remove the temporary worktree and its private repository without the owner or save."
+     "detail": "space335-force-reaches-delete reds ac3/unique-force: the defective CLI removes the worktree and its private repository under force. space335-force-silently-accepted reds cli/force-refused. space335-repository-releases-child, space335-private-branch-ignored and space335-git-operation-ignored red their rv rows."
     }
    ]
   }
@@ -74,22 +74,17 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "Six targeted partial selftests: 320 passed, 0 failed; details in checks.txt."
+   "command": "nice -n 10 python3 scripts/selftest.py --suite NAME for suites 132, 133, 139, 140, 153, 154: 337 passed, 0 failed; details in checks.txt. Suite 151 was not run (it fails on this host at the base too)."
   },
   {
    "name": "integration",
    "status": "passed",
-   "command": "Suite 154 exercises real signed acceptance and child removals. AC3 decision request remains blocked."
+   "command": "Suite 154 exercises real signed acceptance and child removals: 57 passed, 0 failed."
   },
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "python3 proof/VELDO-0335/run_falsifiers.py: four defects applied once each in the final campaign; all target rows red."
-  },
-  {
-   "name": "fast checks",
-   "status": "passed",
-   "command": "validate.py all; docs, template sync, lint, generated-file and Git boundary checks; all exit 0."
+   "command": "nice -n 10 python3 scripts/check_teeth_mutations.py --finding 335: rc 0, registered=13 executed=13 reused=0 rejected=13."
   },
   {
    "name": "gate",
@@ -98,13 +93,11 @@
   }
  ],
  "assumptions": [
-  "Criteria remain pending until the full gate and independent review. AC3 also needs VELDO-0318, absent from this base; see the explicit blocker in checks.txt and the spec History.",
-  "The existing CLI requires explicit ledger wiring; its installation resolver still reports that the ledger is unreachable. The suite supplies that wiring, signing each CLI apply through the real OpenSSH verification path. No live installation was started or changed.",
-  "Journal signing and membership are fixtures; observer packet signatures are real. Scope act eligibility is a fixture. The ordinary act switch still refuses the unbuilt prerequisites, including VELDO-0332 and VELDO-0339.",
-  "The process table is a private empty fixture and free bytes are supplied. No Docker engine or protected real data was accessed. Temporary repositories and test output are the only removed files.",
-  "The force option is retained only as ignored compatibility input for released, and is rejected for other event types. The parent option records a new worktree against a record-created agent repository with the same owner.",
-  "No worker descriptor closing or session-ended behavior was changed. The heavy 151 suite and all teeth stages were left to the lead. The 151 expectation change is covered by the released CLI rows in 154; it was syntax checked but the full 151 suite was not run.",
-  "An exploratory four-case falsifier run preceded the final test additions. The final campaign used the implementation bytes committed here, once per defect."
+  "Criteria remain pending until the full gate and independent review. AC3 was amended by lead decision 2026-11-15 on a spec with human_approval: required; the owner's approval of the wording is asked together with this ticket's landing and is not yet recorded.",
+  "Suite 151 was not run in this round: the re-review measured it failing on this host at the base commits too (cgroup reads). It remains to be shown green where the cgroup is readable.",
+  "The existing CLI requires explicit ledger wiring; the suite supplies it, signing each CLI apply through the real OpenSSH verification path. No live installation was started or changed.",
+  "Journal signing and membership are fixtures; observer packet signatures are real. Scope act eligibility is a fixture. The process table is a private empty fixture and free bytes are supplied. No Docker engine or protected real data was accessed.",
+  "python3 .veldo/validate.py all exited 0 on this bundle. The other fast checks, policy_check.py and ./scripts/verify.sh were not run in this round."
  ],
  "rollback": "Revert the change. Released records have no consumer removal behavior on the base."
 }
