@@ -109,3 +109,44 @@ required.
   VALID). Status ready.
 
 - 2026-11-15: the footprint includes init_scaffold.py and its canon so a new adopter receives the helper its gate calls. The authority socket is VELDO-0323: until it serves the ledger, the helper reports ledger_unreachable, as the existing run wrapper does. Tests inject that wiring and exercise a real ledger. Admission retries and history remain VELDO-0316 and VELDO-0317; this ticket uses the existing admission arithmetic.
+
+- 2026-11-15, fix round after the independent review (verdict FIX, five findings):
+  - The hold belongs to the gate process that took it. Its identity names the run, the gate's process id,
+    that process's start time and the boot. The gate script releases it on every exit path (a trap on
+    EXIT, INT and TERM calls the helper's release step). A gate killed outright runs no trap: the next
+    gate's need step reads the holds, finds the process gone (no such process, or the same process id with
+    another start time) and releases the hold before it judges its own. Nothing waits for a time and
+    nothing sweeps. A hold that is not a gate's is never touched there. The trap of INT and TERM runs when
+    the check that is running returns, which is how bash delivers a trapped signal; the hold stands until
+    then, and the check does use the space until then.
+  - The suite's row names are fixed. What a failed row saw is printed on the error stream. A suite that
+    stopped on a missing file lost its later rows, which the teeth tool also refuses; those reads no
+    longer stop it.
+  - The template runs the review events inside the refused-graph guard again, as this repository's copy
+    does.
+  - The gate's copy of its output is one folder per run, gate-space.<run>, in the gate's output folder
+    (design 8.2). The need step declares it with the ledger before it is made. Decision: it is declared
+    as build output of the gated worktree's owner, because it is the run's working copy for the classify
+    step and not the evidence gate log of design 0.4; the cell of build output at verdict recorded is
+    remove, so the verdict step names it in the same Signal as the worktree's build output and the
+    folder remover removes it. The folder of a gate that never reached its verdict stays the ledger's
+    item and goes with the next verdict in that output folder. A folder the ledger refuses (an output
+    folder outside every known root) is not made and the gate answers NOT STARTED: a sink that is to be
+    used with space management on must be inside a declared root (design 11 names the gate lock's log
+    folder as a scratch root). Known effect: while an active gate runs, its folder is one untracked
+    path, and the stamp's tree field counts it.
+  - The copy ends at a line only the gate writes, as its last, and not at end of file, so the gate waits
+    for its own child and for no process a check left running with the output open. At its exit the
+    gate ends what is left of the process group it leads (the helper's group step). It leads one when
+    the host holder started it, which makes it a session leader, or when a shell with job control did.
+    A gate that is a member of its caller's group leads none and ends nobody, because ending that group
+    would end the caller. The other children of the gate's parent (the commands of a pipeline the gate
+    was started in) are not ended. With no installation, or space management off, none of this runs.
+  - Found in this round by running the other suites that start a gate script, and not in the review:
+    the first build made every gate whose installation has no helper file answer exit 75, which the
+    host lock and scope suites (113, 114) showed, and it put the classify step and the review events
+    between the stamp fields that suites 101 and 114 run on their own. An installation with no helper
+    file now says so in one line and its gate runs as before; the classify step and the review events
+    stand before the stamp fields; the stamp writer is the first line of its branch again.
+  - Not built here, as the reviewer noted: a no-space error on a pool at or above its floor keeps the
+    ordinary verdict; the one repeat of design 8.9 step 4 belongs to the admission tickets.
