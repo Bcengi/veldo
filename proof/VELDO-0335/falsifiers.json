@@ -1,0 +1,74 @@
+[
+ {
+  "name": "space335-host-abandons",
+  "status": "rejected",
+  "targets": {
+   "ac1/released-pair": false
+  },
+  "error": null,
+  "before": "2c938d7cf2c4fc56960133f15de5fb1825b01006c2bc7316d5aef105423f1fa6",
+  "after": "c4121aa52011854e5e0214eee905d942b13cf50dc35e8c23be64c86950f36bf7",
+  "seconds": 1.557,
+  "failed_rows": [
+   "VELDO-0335 ac1/released-pair",
+   "VELDO-0335 safety/kept-in-main",
+   "VELDO-0335 safety/repository-kept",
+   "VELDO-0335 ac1/owner-and-event",
+   "VELDO-0335 ac1/signed-observer",
+   "VELDO-0335 ac2/seam-refused",
+   "VELDO-0335 ac2/no-item",
+   "VELDO-0335 ac3/unique",
+   "VELDO-0335 ac3/unique-force",
+   "VELDO-0335 safety/keep-failure",
+   "VELDO-0335 safety/report",
+   "VELDO-0335 safety/protected-after-receipt",
+   "VELDO-0335 safety/bound-identity"
+  ]
+ },
+ {
+  "name": "space335-any-creator",
+  "status": "rejected",
+  "targets": {
+   "ac2/seam-refused": false
+  },
+  "error": null,
+  "before": "6d66da7779ea0b26c2507bb63f1a437a3bea9da60d8f93217949c6b3e665e9d9",
+  "after": "ee0954fd7341506d9b43ee50bb66a0f03c78d31b4c379c52b7f64db85acc707b",
+  "seconds": 2.426,
+  "failed_rows": [
+   "VELDO-0335 ac2/seam-refused"
+  ]
+ },
+ {
+  "name": "space335-force-reaches-delete",
+  "status": "rejected",
+  "targets": {
+   "ac3/unique-force": false
+  },
+  "error": null,
+  "before": "2c938d7cf2c4fc56960133f15de5fb1825b01006c2bc7316d5aef105423f1fa6",
+  "after": "917e8e2faf59f8f7a94e3a2901da23cf62e640ca979af000be641841934c08d9",
+  "seconds": 2.379,
+  "failed_rows": [
+   "VELDO-0335 ac1/returns-before-removal",
+   "VELDO-0335 ac3/unique-force"
+  ]
+ },
+ {
+  "name": "space335-keep-skipped",
+  "status": "rejected",
+  "targets": {
+   "safety/kept-in-main": false,
+   "safety/repository-kept": false
+  },
+  "error": null,
+  "before": "4e34db66622c0ee05b48f86c591f3686b847278b1ec21493acc01ff5ef865737",
+  "after": "919b8fd2db459abe19e1acfa3874ba42bec4a90b58bb86d0c7c276d41b84f83b",
+  "seconds": 2.375,
+  "failed_rows": [
+   "VELDO-0335 ac1/released-pair",
+   "VELDO-0335 safety/kept-in-main",
+   "VELDO-0335 safety/repository-kept"
+  ]
+ }
+]
