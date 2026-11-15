@@ -101,10 +101,23 @@ read every name of the image against the protect list before any write. The exis
 and remove_tag remover handle the ending event; this adapter still has no removal operation.
 Images and networks also inherit the entry of a protected container (VELDO-0341). The image's Id
 is compared with the container's Image, so a tag moved since creation does not change which image
-is protected. Network names and NetworkID are read from NetworkSettings.Networks. Every such check
-lists all containers, including stopped ones, and inspects their current protection. An unread
-relationship refuses discovery; the removal probe makes this same read at each attempt. No reverse
-relationship protects a run's container merely because its image or network is protected.
+is protected. Network names and NetworkID are read from NetworkSettings.Networks. The containers,
+stopped ones included, are read ONCE FOR A PASS (container_relations: one list and one inspect for
+each container), and every image or network of that pass is judged by that one read; the snapshot
+judges by the container records it already holds. Whether a container is protected is told once
+for the pass, and a volume it mounts is asked for once. When the containers could not all be read,
+every image and network the pass would judge is refused. The removal probe makes its own read at each
+attempt. No reverse relationship protects a run's container merely because its image or network is
+protected.
+
+A CONTAINER FOUND PROTECTED PROTECTS ITS NETWORKS AND ITS IMAGE AT ONCE (the review of VELDO-0341,
+finding 1). Compose makes the network before the container, so the network's own event finds no
+protected container and the network is reported. When a container is found protected, on its event
+or in the snapshot, each network it is attached to and the image it was made from are asked for and
+judged again there and then: they are listed as protected, and a report written before is withdrawn.
+A network's connect and disconnect events make the adapter ask for that network again, as its create
+event does: a network a protected container joined is protected, and one it left is judged by what
+is attached to it now.
 
 A CONTAINER THAT MOUNTS WHAT IS PROTECTED IS PROTECTED (design section 7, the protect list; the review
 of VELDO-0306, finding 2). Before a container is recorded its mounts are read from the record the
@@ -150,7 +163,7 @@ then prints again every event from before the snapshot's first read on, and goes
 ones. An event of an object the snapshot recorded writes nothing new. A context whose time could not
 be read is down: it gets no snapshot and no subscription, because a subscription with no start would
 miss what was made meanwhile. Each create, start, stop and destroy
-event of a container, a network or a volume makes the adapter ask the engine for that one object and
+event of a container, a network or a volume, and each connect and disconnect event of a network, makes the adapter ask the engine for that one object and
 record it as the snapshot would (a ledger write or a report), or mark its record gone when the engine
 no longer holds it. An event of any other action is counted and nothing is asked. A line that is not
 an event the adapter can read means something happened that it did not see, so the context is read
@@ -208,6 +221,7 @@ EVENTS = ('events', '--format', '{{json .}}', '--filter', 'type=container', '--f
 SINCE = '--since'  # the option that makes the engine print again what happened from a time on
 ENGINE_TIME = ('system', 'info', '--format', '{{.SystemTime}}')  # the engine's own time, read by its client
 ACTIONS = ('create', 'start', 'stop', 'destroy')  # the events that become a ledger write or a report
+ATTACHED = ('connect', 'disconnect')  # a network's events that change which containers are attached to it
 ENDED = ('removed', 'gone')  # the states of a record whose thing is no longer there
 SECONDS = 600  # the longest one read of an engine may take
 CHUNK = 65536
@@ -485,70 +499,121 @@ def owner_of(locator, runs):
     return None, None, 'no_label'
 
 
-def related_protection(engine, kind, shown, protect, run):
+def container_relations(engine, protect, run, containers=None):
+    """One read of the containers of a context, as the index a whole pass judges its images and
+    networks by: one list and one inspect for each container. `containers` are inspect records a
+    pass already holds (the snapshot's); with them no container is asked for again.
+
+    Returns {unread, unread_image, unread_network, image, network, rows, judged, volumes, engine,
+    protect, run}. `unread` says why the containers could not all be read; unread_image and
+    unread_network say that a container was shown without its image identity or without its
+    networks. Every image, or every network, the pass would judge is then refused. `image` maps the
+    immutable Id of an image, and `network` the Id and the name of a network, to the containers that
+    use it, in the order of the list. Whether a container is protected is told when an object it
+    uses is first judged (related_protection), once for the pass: `judged` holds each answer and
+    `volumes` each mounted volume that was asked for."""
+    index = {'unread': None, 'unread_image': None, 'unread_network': None, 'image': {}, 'network': {},
+             'rows': [], 'judged': {}, 'volumes': {}, 'engine': engine, 'protect': protect, 'run': run}
+    if containers is None:
+        code, out = run(['docker', '--context', str(engine)] + list(LISTED['container']))
+        if code != 0:
+            index['unread'] = 'the containers could not be listed'
+            return index
+        containers = [(name, _inspect_one(engine, 'container', name, run)) for name in sorted(set(str(out).split()))]
+    else:
+        containers = [(_text(shown.get('Id')) or '?', shown) for shown in containers]
+    for name, container in containers:
+        if container is None:
+            index['unread'] = index['unread'] or 'a container could not be read: ' + name
+            continue
+        row = len(index['rows'])
+        index['rows'].append((name, container))
+        source = _text(container.get('Image'))
+        if source is None:
+            index['unread_image'] = index['unread_image'] or 'a container has no image identity: ' + name
+        else:
+            index['image'].setdefault(source, []).append(row)
+        settings = container.get('NetworkSettings')
+        networks = settings.get('Networks') if isinstance(settings, dict) else None
+        if not isinstance(networks, dict) or not all(isinstance(held, dict) for held in networks.values()):
+            index['unread_network'] = index['unread_network'] or 'a container has no readable networks: ' + name
+            continue
+        for network in sorted(set(networks) | {held['NetworkID'] for held in networks.values()
+                                               if _text(held.get('NetworkID'))}):
+            index['network'].setdefault(network, []).append(row)
+    return index
+
+
+def _inspect_one(engine, kind, name, run):
+    """The one inspect record of an object, or None when the engine did not show exactly one."""
+    code, out = run(['docker', '--context', str(engine), kind, 'inspect', str(name)])
+    if code != 0:
+        return None
+    try:
+        records = json.loads(out)
+    except (ValueError, TypeError):
+        return None
+    return records[0] if (isinstance(records, list) and len(records) == 1
+                          and isinstance(records[0], dict)) else None
+
+
+def _judged(relations, row):
+    """Whether the container at `row` of the pass's read is protected: (entry, reason), (None, None)
+    or ('unread', why). Told once for the pass; a mounted volume is asked for once."""
+    if row in relations['judged']:
+        return relations['judged'][row]
+    engine, protect = relations['engine'], relations['protect']
+    name, container = relations['rows'][row]
+
+    def volume(mounted):
+        if mounted not in relations['volumes']:
+            relations['volumes'][mounted] = _inspect_one(engine, 'volume', mounted, relations['run'])
+        return relations['volumes'][mounted]
+
+    locator = locator_of(engine, 'container', container)
+    if locator is None:
+        answer = ('unread', 'a container has no name: ' + name)
+    else:
+        entry, by = covered(engine, 'container', [locator['name']], labels_of('container', container), protect)
+        if entry in (None, 'unread'):
+            mounted, mount = mount_protected(engine, container, protect, volume)
+            if mounted not in (None, 'unread'):
+                entry, by = mounted, 'mount'
+            elif entry == 'unread' or mounted == 'unread':
+                entry, by = 'unread', (by if entry == 'unread' else mount)
+        answer = (entry, by) if entry in (None, 'unread') else (entry, 'protected_container:' + locator['name'])
+    relations['judged'][row] = answer
+    return answer
+
+
+def related_protection(engine, kind, shown, protect, run, relations=None):
     """Read protection inherited by an image or network from a container, now.
 
     The image is compared by immutable Id, never by a tag that may have moved. Every
     container is read, stopped ones included. An unread relationship refuses the
     answer. Protection travels from a container to its image and networks only.
+    `relations` is the read of a pass (container_relations); without one the
+    containers are read here, once, for this one object.
     Returns (entry, reason), (None, None), or ('unread', reason).
     """
     if kind not in ('image', 'network'):
         return None, None
-
-    def inspect(one_kind, name):
-        code, out = run(['docker', '--context', str(engine), one_kind, 'inspect', str(name)])
-        if code != 0:
-            return None
-        try:
-            records = json.loads(out)
-        except (ValueError, TypeError):
-            return None
-        return records[0] if (isinstance(records, list) and len(records) == 1
-                              and isinstance(records[0], dict)) else None
-
     identity = _text(shown.get('Id'))
     if identity is None:
         return 'unread', 'the related object has no identity'
-    code, out = run(['docker', '--context', str(engine)] + list(LISTED['container']))
-    if code != 0:
-        return 'unread', 'the containers could not be listed'
+    if relations is None:
+        relations = container_relations(engine, protect, run)
+    for said in (relations['unread'], relations['unread_' + kind]):
+        if said is not None:
+            return 'unread', said
+    keys = [identity] + ([shown['Name']] if kind == 'network' and _text(shown.get('Name')) else [])
     unread = None
-    for name in sorted(set(str(out).split())):
-        container = inspect('container', name)
-        if container is None:
-            unread = 'a container could not be read: ' + name
-            continue
-        if kind == 'image':
-            source = _text(container.get('Image'))
-            if source is None:
-                unread = 'a container has no image identity: ' + name
-                continue
-            attached = source == identity
-        else:
-            settings = container.get('NetworkSettings')
-            networks = settings.get('Networks') if isinstance(settings, dict) else None
-            if not isinstance(networks, dict) or not all(isinstance(row, dict) for row in networks.values()):
-                unread = 'a container has no readable networks: ' + name
-                continue
-            attached = any(row.get('NetworkID') == identity or network == shown.get('Name')
-                           for network, row in networks.items())
-        if not attached:
-            continue
-        locator = locator_of(engine, 'container', container)
-        if locator is None:
-            unread = 'a container has no name: ' + name
-            continue
-        entry, by = covered(engine, 'container', [locator['name']], labels_of('container', container), protect)
-        if entry in (None, 'unread'):
-            mounted, mount = mount_protected(engine, container, protect, lambda value: inspect('volume', value))
-            if mounted not in (None, 'unread'):
-                entry, by = mounted, 'mount'
-            elif entry == 'unread' or mounted == 'unread':
-                unread = by if entry == 'unread' else mount
-                continue
-        if entry is not None:
-            return entry, 'protected_container:' + locator['name']
+    for row in sorted({row for key in keys for row in relations[kind].get(key, ())}):
+        entry, by = _judged(relations, row)
+        if entry == 'unread':
+            unread = unread or by
+        elif entry is not None:
+            return entry, by
     return ('unread', unread) if unread is not None else (None, None)
 
 
@@ -643,35 +708,15 @@ class Adapter:
         if records is None:
             answer['said'] = said
             return answer
+        relations = {}  # the one read of the containers this pass judges by, made when first needed
         for shown in records:
-            carried = image_names(shown)
-            identity = _text(shown.get('Id'))
-            name = carried[0] if carried else identity
-            if name is None:
-                continue
-            entry, by = covered(engine, 'image', carried, labels_of('image', shown), list(self.ledger.protect or ()))
-            if entry is None:
-                entry, by = related_protection(engine, 'image', shown, list(self.ledger.protect or ()), self.run)
-            unplaced = entry == 'unread'
-            if unplaced:
-                # Not known to be free and not known to be covered: said, and the listing is left as it was.
-                self._note('refused', refusal='labels_unread: ' + str(by), engine=engine, kind='image',
-                           name=name, id=identity)
-                continue
-            if entry is None:
-                # Two images of one repository are listed under one name: an image nothing covers
-                # takes away only its own listing, never the listing of another image.
-                if (self.protected.get((engine, 'image', name)) or {}).get('id') == identity:
-                    self.protected.pop((engine, 'image', name), None)
-                continue
-            self._listed(engine, 'image', name, identity, entry, by)
-            answer['protected'].append(name)
-            self._note('protected', refusal='space_protected:' + entry, by=by, engine=engine, kind='image',
-                       name=name, id=identity)
+            name = self._image(engine, shown, relations)
+            if name is not None:
+                answer['protected'].append(name)
         answer.update(read=True, images=len(records))
         return answer
 
-    def _image(self, engine, name):
+    def _named_image(self, engine, name):
         """Read one named image and its protect status, without writing a record."""
         if engine not in self.engines or not _text(name) or name.startswith('-'):
             return None, 'refused'
@@ -711,7 +756,7 @@ class Adapter:
         Never infer this from an image's labels or from a tag event. Another ticket's tags on the
         same image get no item. Replayed completions cannot change an item's owner or revive Keep.
         """
-        shown, refusal = self._image(engine, tag)
+        shown, refusal = self._named_image(engine, tag)
         if refusal:
             return refusal
         if (tag not in (shown.get('RepoTags') or ()) or tag == shown['Id']
@@ -748,7 +793,7 @@ class Adapter:
         Kept is a report disposition, not an owned lifecycle item. Labels inherited from the image
         cannot assign it to the pulling run. Replays, other tags and adapter restarts reuse it.
         """
-        shown, refusal = self._image(engine, name)
+        shown, refusal = self._named_image(engine, name)
         if refusal:
             return refusal
         identity = shown['Id']
@@ -760,6 +805,74 @@ class Adapter:
         self._note('kept' if wrote.get('ok') else 'refused', engine=engine, kind='image',
                    name=name, id=identity, item=wrote.get('item'), refusal=wrote.get('reason'))
         return 'kept' if wrote.get('ok') else 'refused'
+
+    def _image(self, engine, shown, relations):
+        """Judge one image the engine showed and list it when it is protected: by itself, or by a
+        protected container made from it. `relations` holds the pass's read of the containers under
+        'index'; it is made on the first image that needs it. Returns the name it is listed under,
+        or None."""
+        carried = image_names(shown)
+        identity = _text(shown.get('Id'))
+        name = carried[0] if carried else identity
+        if name is None:
+            return None
+        protect = list(self.ledger.protect or ())
+        entry, by = covered(engine, 'image', carried, labels_of('image', shown), protect)
+        if entry is None:
+            if relations.get('index') is None:
+                relations['index'] = container_relations(engine, protect, self.run)
+            entry, by = related_protection(engine, 'image', shown, protect, self.run, relations['index'])
+        if entry == 'unread':
+            # Not known to be free and not known to be covered: said, and the listing is left as it was.
+            self._note('refused', refusal='labels_unread: ' + str(by), engine=engine, kind='image',
+                       name=name, id=identity)
+            return None
+        if entry is None:
+            # Two images of one repository are listed under one name: an image nothing covers
+            # takes away only its own listing, never the listing of another image.
+            if (self.protected.get((engine, 'image', name)) or {}).get('id') == identity:
+                self.protected.pop((engine, 'image', name), None)
+            return None
+        self._listed(engine, 'image', name, identity, entry, by)
+        self._note('protected', refusal='space_protected:' + entry, by=by, engine=engine, kind='image',
+                   name=name, id=identity)
+        return name
+
+    def _inherit(self, engine, shown, entry, name, runs, networks=True):
+        """The container `shown` was found protected by `entry`: the image it was made from and, with
+        `networks`, each network it is attached to are asked for and judged again now, by this one
+        container. What cannot be read is said and left as it was; an image the engine no longer
+        holds is nothing to list. Nothing is written for the container, and no container is asked
+        for again."""
+        protect = list(self.ledger.protect or ())
+        relations = container_relations(engine, protect, self.run, [shown])
+        relations['judged'][0] = (entry, 'protected_container:' + name)
+        source = _text(shown.get('Image'))
+        if source is not None:
+            code, out = self._client(engine, 'image', 'inspect', source)
+            records = None
+            if code == 0:
+                try:
+                    records = json.loads(out)
+                except ValueError:
+                    records = None
+            if isinstance(records, list) and len(records) == 1 and isinstance(records[0], dict):
+                self._image(engine, records[0], {'index': relations})
+            elif not absent('image', code, out):
+                self._note('unread', engine=engine, kind='image', name=source, said=str(out)[:300])
+        settings = shown.get('NetworkSettings')
+        attached = settings.get('Networks') if isinstance(settings, dict) else None
+        if not networks or not isinstance(attached, dict):
+            return
+        for network, held in sorted(attached.items()):
+            if network in ENGINE_NETWORKS:
+                continue
+            asked = (_text(held.get('NetworkID')) if isinstance(held, dict) else None) or network
+            records, said = self._records(engine, 'network', [asked])
+            if records is None:
+                self._note('unread', engine=engine, kind='network', name=asked, said=said)
+            else:
+                self._record(engine, 'network', records[0], runs, relations)
 
     def _mounts(self, engine, shown):
         """mount_protected for a container of `engine`, against the ledger's protect list."""
@@ -816,12 +929,15 @@ class Adapter:
 
     # Recording one object.
 
-    def _record(self, engine, kind, shown, runs):
+    def _record(self, engine, kind, shown, runs, relations=None, networks=True):
         """Record the object the engine showed: an item when its labels name a known run; with the
         reconciler, a proposal to the recorded worktree it is inside, or an item of that worktree in
         act mode; a report otherwise. Returns what was done: matched, adopted, proposed, reported,
         protected, held or refused. An object the protect list covers, and a container that mounts
-        what is protected, is listed as protected, and nothing is written for it."""
+        what is protected, is listed as protected, and nothing is written for it. `relations` is the
+        pass's read of the containers (container_relations); without one a network's containers are
+        read here. A container found protected has its image and, with `networks`, its networks
+        judged again at once (_inherit)."""
         locator = locator_of(engine, kind, shown)
         if locator is None:
             self._note('unnamed', engine=engine, kind=kind, id=_text(shown.get('Id')))
@@ -843,10 +959,12 @@ class Adapter:
                 if held is not None and held[1].get('owner') is None:
                     self.ledger.gone(held[0])
                 self._note('protected', refusal='space_protected:' + entry, mount=mount, **facts)
+                self._inherit(engine, shown, entry, locator['name'], runs, networks)
                 return 'protected'
         entry, by = covered(engine, kind, [locator['name']], labels_of(kind, shown), list(self.ledger.protect or ()))
         if entry is None and kind == 'network':
-            entry, by = related_protection(engine, kind, shown, list(self.ledger.protect or ()), self.run)
+            entry, by = related_protection(engine, kind, shown, list(self.ledger.protect or ()), self.run,
+                                           relations)
         if entry == 'unread':
             # A labelled path that cannot be placed: as with mounts that cannot be read, nothing is
             # written for the object, and it gets no owner and no proposal.
@@ -859,6 +977,8 @@ class Adapter:
             if held is not None and held[1].get('owner') is None:
                 self.ledger.gone(held[0])  # a report from before it was covered: withdrawn, nothing removed
             self._note('protected', refusal='space_protected:' + entry, by=by, **facts)
+            if kind == 'container':
+                self._inherit(engine, shown, entry, locator['name'], runs, networks)
             return 'protected'
         self.protected.pop((engine, kind, locator['name']), None)
         if held is not None:
@@ -938,9 +1058,12 @@ class Adapter:
             answer['said'] = said
             self._note('snapshot', engine=engine, read=False, said=said)
             return answer
+        # The containers are read already: every network of this pass is judged by that one read, and
+        # a protected container's networks are recorded below, after it, in this same pass.
+        relations = container_relations(engine, list(self.ledger.protect or ()), self.run, found['container'])
         for kind in KINDS:
             for shown in found[kind]:
-                done = self._record(engine, kind, shown, runs)
+                done = self._record(engine, kind, shown, runs, relations, networks=False)
                 answer['counts'][done] = answer['counts'].get(done, 0) + 1
                 answer['objects'] += 1
         answer['read'] = True
@@ -1128,7 +1251,7 @@ class Adapter:
                 return 'ignored'  # an event of a type this adapter did not ask for
             self._note('unreadable_event', engine=engine, line=str(line)[:200])
             return None
-        if action not in ACTIONS:
+        if action not in ACTIONS and not (kind == 'network' and action in ATTACHED):
             return 'ignored'
         done = self.observe(engine, kind, name)
         self._note('event', engine=engine, kind=kind, action=action, name=name, done=done)

@@ -2102,7 +2102,7 @@
    "requires": [
     "153_veldo_0341_docker_protection"
    ],
-   "regions": "VELDO-0341 AC1 to AC3: protection by name, compose label, mounts and container relationships; discovery and removal refusal on two contexts.",
+   "regions": "VELDO-0341 AC1 to AC3: protection by name, compose label, mounts and container relationships; discovery and removal refusal on two contexts. Fix round: a network and an image seen before their protected container are protected by the container's event and by a network's connect event, and judged again on disconnect; one read of the containers for a pass, counted on the stand-in engine; an unreadable container refuses.",
    "requires_note": "Only ROOT and expect. Real ledger, signatures, Signal, probes, keeper and removers; Docker engines are stand-ins. No real engine is asked."
   }
  ],

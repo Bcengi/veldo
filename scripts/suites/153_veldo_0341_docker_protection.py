@@ -537,6 +537,170 @@ def _v341_space_docker_ownership_suite():
         check('ac2/immutable-image', 'image identity survives a tag move; a stopped container counts',
               inherited == 'container:atlas-*' and why == 'protected_container:atlas-stopped'
               and other is None and why_other is None)
+        # FIX ROUND (the review of VELDO-0341). Finding 1: an object seen before its protected
+        # container. Compose makes the network first; the container's own event must protect the
+        # network and the image there and then, with no snapshot and no image read in between.
+        def happened(context, kind, action, identity, **attributes):
+            return ADAPTER.event(context, json.dumps({'Type': kind, 'Action': action,
+                                                      'Actor': {'ID': identity, 'Attributes': attributes}}))
+
+        def live_reports(context, kind, name):
+            return [identity for identity in every_record(context, kind, name)
+                    if L.item(identity).get('state') not in ('removed', 'gone')]
+
+        # On the first context the container is protected by what it mounts, on the second by its
+        # compose project label: the two places a container is found protected.
+        for context, how in zip(CONTEXTS, ('mount', 'label')):
+            ROW = 'fix1/compose-order'
+            ENGINE.volume(context, 'atlas_pg_stack', data=DATA)
+            network = ENGINE.network(context, 'stack_default')
+            image = ENGINE.image(context, tags=['stack/server:one'])
+            first = happened(context, 'network', 'create', network['Id'])
+            ADAPTER.images(context)
+            before = live_reports(context, 'network', 'stack_default')
+            check(ROW, 'before the container the network is a report and the image is not listed: %s [%s]'
+                  % (context, first),
+                  first == 'reported' and len(before) == 1 and L.item(before[0]).get('owner') is None
+                  and not listed(context, 'network', 'stack_default')
+                  and not listed(context, 'image', 'stack/server'))
+            server = ENGINE.container(context, 'stack-server-1',
+                                      {D.COMPOSE_PROJECT: 'ledgerdb'} if how == 'label' else None,
+                                      volumes=['atlas_pg_stack'] if how == 'mount' else ())
+            server['Image'] = image['Id']
+            server['NetworkSettings']['Networks'] = {'stack_default': {'NetworkID': network['Id']}}
+            log_before = len(LOG)
+            second = happened(context, 'container', 'create', server['Id'])
+            asked = LOG[log_before:]
+            found = listed(context, 'network', 'stack_default')
+            check(ROW, 'right after the container event the network has no report to Adopt: %s by %s [%s, %s, %s]'
+                  % (context, how, second, live_reports(context, 'network', 'stack_default'), found),
+                  second == 'protected' and not live_reports(context, 'network', 'stack_default')
+                  and bool(before) and L.item(before[0]).get('state') == 'gone'
+                  and found.get('id') == network['Id']
+                  and found.get('entry') == ('volume:atlas_pg_*' if how == 'mount' else 'compose_project:ledgerdb')
+                  and found.get('by') == 'protected_container:stack-server-1')
+            check(ROW, 'and its image is listed as protected, by the same event: %s [%s]'
+                  % (context, listed(context, 'image', 'stack/server')),
+                  listed(context, 'image', 'stack/server').get('id') == image['Id']
+                  and listed(context, 'image', 'stack/server').get('by') == 'protected_container:stack-server-1')
+            check(ROW, 'the event asked for the container, its network and its image, and listed nothing: %s [%s]'
+                  % (context, asked),
+                  not any(entry[2] == 'ls' for entry in asked)
+                  and sum(1 for entry in asked if entry[1:] == ('container', 'inspect')) == 1
+                  and sum(1 for entry in asked if entry[1:] == ('network', 'inspect')) == 1
+                  and sum(1 for entry in asked if entry[1:] == ('image', 'inspect')) == 1)
+            check(ROW, 'nothing was removed: %s' % context,
+                  ENGINE.find(context, 'network', 'stack_default') is network and not ENGINE.asked(network['Id']))
+
+            # The snapshot alone, by an adapter that never read the images.
+            ROW = 'fix1/snapshot-image'
+            fresh = D.Adapter(L, run=ENGINE.client, runs=lambda: {RUN: OWNER}, pool='host', reconcile=REC)
+            taken = fresh.snapshot(context)
+            seen = {(entry['kind'], entry['name']): entry for entry in fresh.protected_objects()
+                    if entry['engine'] == context}
+            check(ROW, 'a snapshot lists the image of each protected container, with no image read: ' + context,
+                  taken['read'] and seen.get(('image', 'custom/database'), {}).get('by')
+                  == 'protected_container:renamed-database'
+                  and seen.get(('image', 'stack/server'), {}).get('by') == 'protected_container:stack-server-1'
+                  and ('network', 'stack_default') in seen)
+
+            # A network a protected container joins later: the connect event alone protects it.
+            ROW = 'fix1/connect-event'
+            joined = ENGINE.network(context, 'joined_later')
+            first = happened(context, 'network', 'create', joined['Id'])
+            before = live_reports(context, 'network', 'joined_later')
+            database = ENGINE.find(context, 'container', 'renamed-database')
+            database['NetworkSettings']['Networks']['joined_later'] = {'NetworkID': joined['Id']}
+            second = happened(context, 'network', 'connect', joined['Id'], container=database['Id'])
+            check(ROW, 'reported when made, protected by the connect event: %s [%s, %s, %s]'
+                  % (context, first, second, listed(context, 'network', 'joined_later')),
+                  first == 'reported' and len(before) == 1 and second == 'protected'
+                  and not live_reports(context, 'network', 'joined_later')
+                  and L.item(before[0]).get('state') == 'gone'
+                  and listed(context, 'network', 'joined_later').get('by') == 'protected_container:renamed-database')
+
+            # And the disconnect event judges it by what is attached now: nobody's again, and said.
+            ROW = 'fix1/disconnect-event'
+            del database['NetworkSettings']['Networks']['joined_later']
+            third = happened(context, 'network', 'disconnect', joined['Id'], container=database['Id'])
+            after = live_reports(context, 'network', 'joined_later')
+            check(ROW, 'after the disconnect event it is a report again and no longer listed: %s [%s]'
+                  % (context, third),
+                  third == 'reported' and len(after) == 1 and L.item(after[0]).get('owner') is None
+                  and not listed(context, 'network', 'joined_later'))
+            check(ROW, 'an event of a network that changes no attachment is still not asked about: ' + context,
+                  happened(context, 'network', 'prune', joined['Id']) == 'ignored')
+
+        # Finding 2: one read of the containers for a whole pass.
+        for context in CONTEXTS:
+            ROW = 'fix2/one-read-per-pass'
+            containers = len(ENGINE.held[context]['container'])
+            volumes = len(ENGINE.held[context]['volume'])
+            for extra in range(6):
+                ENGINE.image(context, tags=['plain/unrelated-%d:one' % extra])
+            images = len(ENGINE.held[context]['image'])
+            log_before = len(LOG)
+            answer = ADAPTER.images(context)
+            asked = [entry[1:] for entry in LOG[log_before:]]
+            check(ROW, 'an image pass lists the containers once and inspects each once: %s '
+                  '[%d images, %d containers, %d calls: %s]'
+                  % (context, images, containers, len(asked), sorted((call, asked.count(call)) for call in set(asked))),
+                  answer['read'] and answer['images'] == images and images > containers / 2
+                  and asked.count(('container', 'ls')) == 1 and asked.count(('container', 'inspect')) == containers
+                  and asked.count(('image', 'ls')) == 1 and asked.count(('image', 'inspect')) == 1
+                  and asked.count(('volume', 'inspect')) <= volumes
+                  and len(asked) <= 3 + containers + volumes)
+            check(ROW, 'and the pass still lists what a protected container was made from: ' + context,
+                  'custom/database' in answer['protected'] and 'stack/server' in answer['protected']
+                  and not any(name.startswith('plain/unrelated') for name in answer['protected']))
+            networks = len(ENGINE.held[context]['network'])
+            log_before = len(LOG)
+            taken = ADAPTER.snapshot(context)
+            asked = [entry[1:] for entry in LOG[log_before:]]
+            check(ROW, 'a snapshot judges every network by the containers it read: one list and one inspect '
+                  'of the containers: %s [%d containers, %d networks, %d volumes, %d calls: %s]'
+                  % (context, containers, networks, volumes, len(asked),
+                     sorted((call, asked.count(call)) for call in set(asked))),
+                  taken['read'] and asked.count(('container', 'ls')) == 1
+                  and asked.count(('container', 'inspect')) == 1
+                  and asked.count(('network', 'ls')) == 1 and asked.count(('network', 'inspect')) == 1
+                  and asked.count(('image', 'inspect')) <= containers
+                  and len(asked) <= 6 + 2 * containers + 2 * volumes)
+
+            # One container that cannot be read: every image and network the pass would judge is refused.
+            ROW = 'fix2/unreadable-refuses'
+            hidden = ENGINE.find(context, 'container', 'run-like-plain') or ENGINE.container(context, 'run-like-plain')
+
+            def one_unread(argv, cwd=None, hidden=hidden):
+                if list(argv[3:5]) == ['container', 'inspect'] and hidden['Id'] in argv[5:] and len(argv) == 6:
+                    return 1, 'the stand-in engine does not show this container'
+                return ENGINE.client(argv, cwd)
+
+            blind = D.Adapter(L, run=one_unread, runs=lambda: {RUN: OWNER}, pool='host', reconcile=REC)
+            answer = blind.images(context)
+            refused = sorted(entry['name'] for entry in blind.observations
+                             if entry['what'] == 'refused' and entry.get('kind') == 'image')
+            direct = sorted(D.image_names(shown)[0] for shown in ENGINE.held[context]['image']
+                            if D.image_names(shown) and D.covered(context, 'image', D.image_names(shown), {},
+                                                                  list(L.protect))[0])
+            check(ROW, 'no image is listed through a container, each is refused, and one covered by its own name '
+                  'is still listed: %s [%s; refused %d of %d]' % (context, answer['protected'], len(refused), images),
+                  answer['read'] and sorted(answer['protected']) == direct and bool(direct)
+                  and 'custom/database' in refused and 'plain/unrelated-0' in refused
+                  and len(refused) == len(ENGINE.held[context]['image']) - len(direct)
+                  and not any(entry['kind'] == 'image' and entry['name'] not in direct
+                              for entry in blind.protected_objects()))
+            writes_before = len(L.items())
+            seen = blind.observe(context, 'network', 'stack_default')
+            other = ENGINE.network(context, 'made_while_unread')
+            check(ROW, 'a network is refused, and nothing is written for one nobody uses: %s [%s]' % (context, seen),
+                  seen == 'refused' and blind.observe(context, 'network', other['Id']) == 'refused'
+                  and len(L.items()) == writes_before and not every_record(context, 'network', 'made_while_unread'))
+            entry, why = D.related_protection(context, 'image', ENGINE.find(context, 'image', 'custom/database:one'),
+                                              L.protect, one_unread)
+            check(ROW, 'the read itself answers unread, also for the image of a protected container: ' + context,
+                  entry == 'unread' and 'could not be read' in str(why))
+
         for context, kind, shown in protected:
             name = (shown.get('Name') or D.image_names(shown)[0]).lstrip('/')
             check('loss/protected-work-stays', context + ' ' + name,
