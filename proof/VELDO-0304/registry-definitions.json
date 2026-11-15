@@ -1,0 +1,219 @@
+[
+ {
+  "name": "fleet-direct-remove",
+  "path": ".veldo/fleet.py",
+  "row": "fleet/boundary",
+  "old": "            # Without an item and its owner no ending event can authorize a removal.\n",
+  "new": "            _git_worktree([\"remove\", \"--force\", path], cwd=self.repo_root)\n"
+ },
+ {
+  "name": "ref-skip-keep",
+  "path": ".veldo/control_space_remove.py",
+  "row": "ref/keep-before-delete",
+  "old": "        keeper = _sibling('control_space_keep')\n",
+  "new": "        _git(commands, '-C', repository, 'update-ref', '-d', ref)\n        return dict(answer, ok=True)\n        keeper = _sibling('control_space_keep')\n"
+ },
+ {
+  "name": "clone-direct-ref",
+  "path": ".veldo/control_clone.py",
+  "row": "clone/boundary",
+  "old": "        ledger = (self.space or {}).get('ledger')\n",
+  "new": "        _git('-C', cache, 'update-ref', '-d', ref)\n        ledger = (self.space or {}).get('ledger')\n"
+ },
+ {
+  "name": "clone-direct-tree",
+  "path": ".veldo/control_clone.py",
+  "row": "clone/boundary",
+  "old": "        return looked, []\n",
+  "new": "        shutil.rmtree(work)\n        return looked, []\n"
+ },
+ {
+  "name": "batch-direct-ref",
+  "path": ".veldo/control_batch.py",
+  "row": "batch/boundary",
+  "old": "                ledger = (self.space or {}).get('ledger')\n",
+  "new": "                self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)\n                ledger = (self.space or {}).get('ledger')\n"
+ },
+ {
+  "name": "scaffold-direct-ref",
+  "path": ".veldo/control_repository_provisioner.py",
+  "row": "scaffold/boundary",
+  "old": "        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n",
+  "new": "        git(path, 'update-ref', '-d', SCAFFOLD_REF + repository, check=False)\n        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n"
+ },
+ {
+  "name": "launch-direct-sweep",
+  "path": ".veldo/control_launch.py",
+  "row": "launch/boundary",
+  "old": "                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+  "new": "                shutil.rmtree(place)\n                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n"
+ },
+ {
+  "name": "launch-direct-receiver",
+  "path": ".veldo/control_launch.py",
+  "row": "launch/boundary",
+  "old": "        elif not stays:\n            self._unstage_skills()\n",
+  "new": "        elif not stays:\n            shutil.rmtree(run)\n            self._unstage_skills()\n"
+ },
+ {
+  "name": "runtime-direct-tree",
+  "path": ".veldo/control_launch_work.py",
+  "row": "runtime/boundary",
+  "old": "                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+  "new": "                shutil.rmtree(directory)\n                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n"
+ },
+ {
+  "name": "lander-direct-tree",
+  "path": ".veldo/lander.py",
+  "row": "lander/boundary",
+  "old": "            for path in paths:\n                if not space_absent(path):\n",
+  "new": "            for path in paths:\n                shutil.rmtree(path)\n                if not space_absent(path):\n"
+ },
+ {
+  "name": "migration-direct-tree",
+  "path": "scripts/migrate_to_veldo.py",
+  "row": "migration/boundary",
+  "old": "        raise SystemExit(\"migration: destination exists; a recorded owner item is required for removal: %s\" % dest)",
+  "new": "        shutil.rmtree(dest)"
+ },
+ {
+  "name": "publish-direct-tree",
+  "path": "scripts/publish.py",
+  "row": "publish/boundary",
+  "old": "        raise SystemExit(\"publish: destination exists; a recorded owner item is required for removal: %s\" % dest)",
+  "new": "        shutil.rmtree(dest)"
+ },
+ {
+  "name": "rename-direct-tree",
+  "path": "scripts/rename_migration.py",
+  "row": "rename/boundary",
+  "old": "        raise SystemExit(\"rename: destination exists; a recorded owner item is required for removal: %s\" % d)",
+  "new": "        shutil.rmtree(d)"
+ },
+ {
+  "name": "memory-time-delete",
+  "path": ".veldo/control_memory_check.py",
+  "row": "memory/boundary",
+  "old": "        # Keep the incomplete copy. SQLite backup replaces its contents on the next attempt.\n",
+  "new": "        target.unlink()\n"
+ },
+ {
+  "name": "spool-time-delete",
+  "path": ".veldo/control_space_spool.py",
+  "row": "spool/boundary",
+  "old": "                    retain_delivered(folder, name)  # durable input stays outside the pending queue\n",
+  "new": "                    os.unlink(os.path.join(folder, name))\n"
+ },
+ {
+  "name": "service-time-delete",
+  "path": ".veldo/control_service.py",
+  "row": "service/boundary",
+  "old": "                # Keep the pathname at shutdown. The next locked bind owns stale socket replacement.\n",
+  "new": "                os.unlink(config['socket'])\n"
+ },
+ {
+  "name": "mutation-time-delete",
+  "path": "scripts/mutation_ownership.py",
+  "row": "mutation/boundary",
+  "old": "        wait_for_empty(self.path)\n",
+  "new": "        if time.monotonic() > 0:\n            wait_for_empty(self.path)\n"
+ },
+ {
+  "name": "render-time-delete",
+  "path": "scripts/render_pdfs.py",
+  "row": "render/boundary",
+  "old": "        ws_url = devtools_endpoint(proc)\n",
+  "new": "        if time.time() > 0:\n            ws_url = devtools_endpoint(proc)\n"
+ },
+ {
+  "name": "boundary-new-creator",
+  "path": ".veldo/fleet.py",
+  "row": "ac1/repository",
+  "old": "class WorktreeProvisioner:\n",
+  "new": "def undeclared_creator(path):\n    _git_worktree([\"add\", path])\n\n\nclass WorktreeProvisioner:\n"
+ },
+ {
+  "name": "boundary-stale-accepted",
+  "path": "scripts/check_space_boundary.py",
+  "row": "ac3/stale-entries",
+  "old": "        if key[0] == path and (not reason or key not in matched):\n",
+  "new": "        if False and key[0] == path and (not reason or key not in matched):\n"
+ },
+ {
+  "name": "boundary-age-restored",
+  "path": "scripts/gate_legs.py",
+  "row": "ac4/repository",
+  "old": "    for entry in listing:\n",
+  "new": "    for entry in listing:\n        if time.time() - entry.stat().st_mtime > 30 * 24 * 60 * 60:\n            os.unlink(entry.path)\n            continue\n"
+ },
+ {
+  "name": "boundary-gate-unwired",
+  "path": "scripts/verify.sh",
+  "row": "integration/gate-wired",
+  "old": "CHECK_extra=\"required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py\"",
+  "new": "CHECK_extra=\"required:bash scripts/check_template_sync.sh\""
+ },
+ {
+  "name": "temporary-action_executor",
+  "path": ".veldo/action_executor.py",
+  "old": "tempfile.TemporaryDirectory(prefix='veldo-action-executor-')",
+  "new": "tempfile.TemporaryDirectory()",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-control_agent_config_handoff",
+  "path": ".veldo/control_agent_config_handoff.py",
+  "old": "tempfile.TemporaryDirectory(prefix='tool-observation-')",
+  "new": "tempfile.TemporaryDirectory(prefix='tool-observation-', dir=config)",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-control_api_webauthn",
+  "path": ".veldo/control_api_webauthn.py",
+  "old": "tempfile.TemporaryDirectory(prefix='v-')",
+  "new": "tempfile.TemporaryDirectory(prefix='v-', dir=base)",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-control_batch",
+  "path": ".veldo/control_batch.py",
+  "old": "tempfile.TemporaryDirectory(prefix='veldo-control-batch-')",
+  "new": "tempfile.TemporaryDirectory()",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-control_launch_work",
+  "path": ".veldo/control_launch_work.py",
+  "old": "tempfile.TemporaryDirectory(prefix='import-')",
+  "new": "tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates'])",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-control_memory_check",
+  "path": ".veldo/control_memory_check.py",
+  "old": "tempfile.TemporaryDirectory(prefix='probe-')",
+  "new": "tempfile.TemporaryDirectory(prefix='probe-', dir=scratch)",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-lander",
+  "path": ".veldo/lander.py",
+  "old": "tempfile.TemporaryDirectory(prefix='veldo-lander-')",
+  "new": "tempfile.TemporaryDirectory()",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-pack_conformance",
+  "path": ".veldo/pack_conformance.py",
+  "old": "    has_prepush = _has_prepush(repo_root, pack[\"pack_dir\"])\n    with tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-') as td:\n        _extract_pack(repo_root, pack[\"pack_dir\"], td)",
+  "new": "    has_prepush = _has_prepush(repo_root, pack[\"pack_dir\"])\n    with tempfile.TemporaryDirectory() as td:\n        _extract_pack(repo_root, pack[\"pack_dir\"], td)",
+  "row": "integration/boundary"
+ },
+ {
+  "name": "temporary-parser_corpus_audit",
+  "path": "scripts/parser_corpus_audit.py",
+  "old": "tempfile.TemporaryDirectory(prefix='veldo-parser-corpus-audit-')",
+  "new": "tempfile.TemporaryDirectory()",
+  "row": "integration/boundary"
+ }
+]

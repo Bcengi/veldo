@@ -1,0 +1,37 @@
+[
+ {
+  "command": "python3 .veldo/validate.py all",
+  "exit_code": 0,
+  "summary": "e taken before its own commit\n  /home/dmitry/projects/veldo-worktrees/space-0304/proof/WARP-1208/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: ad65e2a946e0, 3ff4336929be\n  /home/dmitry/projects/veldo-worktrees/space-0304/proof/WARP-1209/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit\n  /home/dmitry/projects/veldo-worktrees/space-0304/proof/WARP-1210/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 34cbc292fcf8, 13b4b4d29fec\n  /home/dmitry/projects/veldo-worktrees/space-0304/proof/WARP-1212/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit\n  /home/dmitry/projects/veldo-worktrees/space-0304/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down\n  /home/dmitry/projects/veldo-worktrees/space-0304/.veldo/examples/proof-example.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit\n"
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit_code": 0,
+  "summary": "affected.json.gz\n-- non-ASCII sweep\nengine/ui/package-lock.json\nproof/VELDO-0121/earlier-attempt/results/AC1-green.json.gz\nproof/VELDO-0121/earlier-attempt/results/AC1-red.json.gz\nproof/VELDO-0121/earlier-attempt/results/AC2-green.json.gz\nproof/VELDO-0121/earlier-attempt/results/AC2-red.json.gz\nproof/VELDO-0121/earlier-attempt/results/AC3-green.json.gz\nproof/VELDO-0121/earlier-attempt/results/AC3-red.json.gz\nproof/VELDO-0121/earlier-attempt/results/AC4-green.json.gz\nproof/VELDO-0121/earlier-attempt/results/AC4-red.json.gz\nproof/VELDO-0121/results/AC1-green.json.gz\nproof/VELDO-0121/results/AC1-red.json.gz\nproof/VELDO-0121/results/AC2-green.json.gz\nproof/VELDO-0121/results/AC2-red.json.gz\nproof/VELDO-0121/results/AC3-green.json.gz\nproof/VELDO-0121/results/AC3-red.json.gz\nproof/VELDO-0121/results/AC4-green.json.gz\nproof/VELDO-0121/results/AC4-red.json.gz\nproof/VELDO-0131/layout145-e2e.log\nproof/VELDO-0131/layout145-served-assets-green.log\nproof/VELDO-0131/round2-layout145-e2e.log\nproof/VELDO-0131/round3-layout145-e2e.log\nproof/VELDO-0145/round3/n3-green.log\nproof/VELDO-0145/round3/n3-red.log\nproof/VELDO-0160/README.md\nproof/VELDO-0189/older/8bc34e94.tar.gz\nproof/VELDO-0189/older/971186ac.tar.gz\nproof/VELDO-0189/older/census.json.gz\nproof/VELDO-0215/affected-cases.json.gz\nproof/VELDO-0215/full-gate.log.gz\nproof/VELDO-0215/round2/affected.json.gz\nproof/VELDO-0215/round2/affected.log.gz\nproof/VELDO-0215/round2/existing.log.gz\nproof/VELDO-0215/round2/finding205.json.gz\nproof/VELDO-0215/round2/finding205.log.gz\nproof/VELDO-0215/round2/finding215.json.gz\nproof/VELDO-0215/round2/finding215.log.gz\nproof/VELDO-0215/round2/reuse.log.gz\nproof/VELDO-0215/round2/suite.log.gz\n-- genericity sweep (docs/ and packs/claude/; design/ and research/ are internal provenance)\ndocs hygiene: pass\n"
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit_code": 0,
+  "summary": "template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)\n"
+ },
+ {
+  "command": "bash scripts/check_generated.sh",
+  "exit_code": 0,
+  "summary": "generated: pass (specs/index.md)\ngenerated: pass (proof/WARP-0716/crossing-state.md)\ngenerated: pass (proof/WARP-0712/order-dependence.md)\ngenerated: pass (proof/WARP-0712/split-plan.md)\ngenerated: pass (scripts/suites/requires.json)\ngenerated: pass\n"
+ },
+ {
+  "command": "bash scripts/check_lint.sh",
+  "exit_code": 0,
+  "summary": "lint: pass (1214 python, 39 shell, 2.57s)\n"
+ },
+ {
+  "command": "python3 scripts/check_git_boundary.py",
+  "exit_code": 0,
+  "summary": "Git subprocess boundary: pass\n"
+ },
+ {
+  "command": "python3 scripts/check_space_boundary.py",
+  "exit_code": 0,
+  "summary": "Space boundary: pass\n"
+ }
+]

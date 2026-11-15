@@ -124,5 +124,33 @@
   "row": "render/boundary",
   "old": "        ws_url = devtools_endpoint(proc)\n",
   "new": "        if time.time() > 0:\n            ws_url = devtools_endpoint(proc)\n"
+ },
+ {
+  "name": "boundary-new-creator",
+  "path": ".veldo/fleet.py",
+  "row": "ac1/repository",
+  "old": "class WorktreeProvisioner:\n",
+  "new": "def undeclared_creator(path):\n    _git_worktree([\"add\", path])\n\n\nclass WorktreeProvisioner:\n"
+ },
+ {
+  "name": "boundary-stale-accepted",
+  "path": "scripts/check_space_boundary.py",
+  "row": "ac3/stale-entries",
+  "old": "        if key[0] == path and (not reason or key not in matched):\n",
+  "new": "        if False and key[0] == path and (not reason or key not in matched):\n"
+ },
+ {
+  "name": "boundary-age-restored",
+  "path": "scripts/gate_legs.py",
+  "row": "ac4/repository",
+  "old": "    for entry in listing:\n",
+  "new": "    for entry in listing:\n        if time.time() - entry.stat().st_mtime > 30 * 24 * 60 * 60:\n            os.unlink(entry.path)\n            continue\n"
+ },
+ {
+  "name": "boundary-gate-unwired",
+  "path": "scripts/verify.sh",
+  "row": "integration/gate-wired",
+  "old": "CHECK_extra=\"required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py\"",
+  "new": "CHECK_extra=\"required:bash scripts/check_template_sync.sh\""
  }
 ]

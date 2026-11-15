@@ -1,0 +1,8 @@
+{
+ "manifest_commit": "1df935ea488dfca2c4ac8034dda899d17a563834",
+ "validate_all_exit": 0,
+ "docs_exit": 0,
+ "artifact_digests_match": true,
+ "largest_artifact_bytes": 14762,
+ "gate": "not run"
+}

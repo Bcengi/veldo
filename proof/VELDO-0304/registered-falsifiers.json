@@ -1,0 +1,502 @@
+{
+ "baseline": [
+  {
+   "row": "VELDO-0304 fleet/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 fleet/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ref/keep-before-delete",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 clone/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 clone/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 batch/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 batch/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 scaffold/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 scaffold/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 launch/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 launch/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 runtime/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 runtime/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 lander/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 lander/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 migration/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 migration/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 publish/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 publish/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 rename/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 rename/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 memory/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 memory/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 spool/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 spool/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 service/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 service/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 mutation/unique-work",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 mutation/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 render/owned-temporary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 render/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ac1/forms",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ac1/repository",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ac2/forms",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ac2/repository",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ac3/stale-entries",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ac4/forms",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 ac4/repository",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 integration/boundary",
+   "passed": true
+  },
+  {
+   "row": "VELDO-0304 integration/gate-wired",
+   "passed": true
+  }
+ ],
+ "cases": [
+  {
+   "case": "fleet-direct-remove",
+   "target": "fleet/boundary",
+   "red": [
+    "VELDO-0304 fleet/unique-work",
+    "VELDO-0304 fleet/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "343d3a8514e692313bebd67b4456740f9ff833bc8fda95071ccac6409260fd4c",
+   "after": "9ed70fd4e21f97d3c0d5a6ba9d1ea38e8192a79fd8071d045ccfdd49086672f7"
+  },
+  {
+   "case": "ref-skip-keep",
+   "target": "ref/keep-before-delete",
+   "red": [
+    "VELDO-0304 ref/keep-before-delete"
+   ],
+   "before": "bb306daad22342c70e2e851964c43d4e5207727282622f3768b8c3fe5021a717",
+   "after": "419b39d8a9019493c843b2bd11b150f4aebb0b2bea7b38dd2b8a43ab86a3599a"
+  },
+  {
+   "case": "clone-direct-ref",
+   "target": "clone/boundary",
+   "red": [
+    "VELDO-0304 clone/unique-work",
+    "VELDO-0304 clone/boundary",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "ecf22bd371bc28830594ec293420e673175771dbf6e8a4c05f0ba91d3066607a",
+   "after": "c049731945fc524e768b7a7bce3cf3f35ccb718b92c1cd7cdb5fa4511923023c"
+  },
+  {
+   "case": "clone-direct-tree",
+   "target": "clone/boundary",
+   "red": [
+    "VELDO-0304 clone/unique-work",
+    "VELDO-0304 clone/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "ecf22bd371bc28830594ec293420e673175771dbf6e8a4c05f0ba91d3066607a",
+   "after": "53b57625c91362296cdd4c5370f56f0abd6227f30e97925262c0bcd0cf351a49"
+  },
+  {
+   "case": "batch-direct-ref",
+   "target": "batch/boundary",
+   "red": [
+    "VELDO-0304 batch/boundary",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "6751730e5337b9732fb4f62770fde6cbb7e68bc2ee00f21f8818d4c36d882f9a",
+   "after": "1bf03546ac2d49ddca1b3f1f7c5c7847e6b6cac3c724327bd19ff02b51484d30"
+  },
+  {
+   "case": "scaffold-direct-ref",
+   "target": "scaffold/boundary",
+   "red": [
+    "VELDO-0304 scaffold/unique-work",
+    "VELDO-0304 scaffold/boundary",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "bab4c0d616c60980c38591cddae4f4f8b887efd6752d5fe5ba7890809a8f38e6",
+   "after": "45fdc40650f01dc69c97516573c39669b277c037c7cf6fa22ced31b5e06fd551"
+  },
+  {
+   "case": "launch-direct-sweep",
+   "target": "launch/boundary",
+   "red": [
+    "VELDO-0304 launch/unique-work",
+    "VELDO-0304 launch/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "d308e918a04fd832444b0b4679ab8b88653c3a9139c398f4a250d7132d78a407",
+   "after": "e6fa0e0d93e41b54c3dfae91347c51018384df6a8b0c75f514fb2ea18cad6565"
+  },
+  {
+   "case": "launch-direct-receiver",
+   "target": "launch/boundary",
+   "red": [
+    "VELDO-0304 launch/unique-work",
+    "VELDO-0304 launch/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "d308e918a04fd832444b0b4679ab8b88653c3a9139c398f4a250d7132d78a407",
+   "after": "6cc0a3af5e63e8bb23bc285a362dd105b0314094e44403157e1cdaa67fad26b9"
+  },
+  {
+   "case": "runtime-direct-tree",
+   "target": "runtime/boundary",
+   "red": [
+    "VELDO-0304 runtime/unique-work",
+    "VELDO-0304 runtime/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "204796884f828abd4595ee20ad07af2553ca65ca551f47d061cef585dfeb1e9e",
+   "after": "5a5c08963d03805c3e3f8cbf3fe7cea835afb838bc23b2ce7dc253604b0129d8"
+  },
+  {
+   "case": "lander-direct-tree",
+   "target": "lander/boundary",
+   "red": [
+    "VELDO-0304 lander/unique-work",
+    "VELDO-0304 lander/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "2f0bcf684ba4497cfc0d234bc4334c08667e244f06c26a608207c391140eeaa1",
+   "after": "096ca619a9191f97f814ac23834c543409577ce2134bd283424fcdafac5dc7a2"
+  },
+  {
+   "case": "migration-direct-tree",
+   "target": "migration/boundary",
+   "red": [
+    "VELDO-0304 migration/unique-work",
+    "VELDO-0304 migration/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "2f7441949f4266ee070298e19b1bb72c92cef6d193f4d7a4c45bc6404df97234",
+   "after": "0770a0eeaeda77e9d0b3456955be5aa03f7feb6b2ec57b3a897ef4f11224d5ed"
+  },
+  {
+   "case": "publish-direct-tree",
+   "target": "publish/boundary",
+   "red": [
+    "VELDO-0304 publish/unique-work",
+    "VELDO-0304 publish/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "23c37b5e69a174d40561276fbdb9820ace8d6933b254d3f492a07ac74a939370",
+   "after": "901866b5720de737176224e4e16cd5dd7caea649a9f7928b528880c1ffc471d0"
+  },
+  {
+   "case": "rename-direct-tree",
+   "target": "rename/boundary",
+   "red": [
+    "VELDO-0304 rename/unique-work",
+    "VELDO-0304 rename/boundary",
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "28221780e24eb97d05b7e621c5f7a88ad03c9aec998f7277888a8fee909a9bbd",
+   "after": "b9081758223f986ae306cc54acae8eb75f3647db12e2cd8a656b0543609bd84e"
+  },
+  {
+   "case": "memory-time-delete",
+   "target": "memory/boundary",
+   "red": [
+    "VELDO-0304 memory/unique-work",
+    "VELDO-0304 memory/boundary",
+    "VELDO-0304 ac4/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "e5599e68ae28daaadf6d5704a7dc9a30d63c5dd95cd00b25026421992b1a0c53",
+   "after": "bfdae4a88546b7eeac54e50b199798efd7b0948faa5f86f437e73e2c419c9d24"
+  },
+  {
+   "case": "spool-time-delete",
+   "target": "spool/boundary",
+   "red": [
+    "VELDO-0304 spool/boundary",
+    "VELDO-0304 ac4/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "d6c6579c69a6f5110613039e3287674af51b2ee9ca4930a2bdedb382ddd62260",
+   "after": "190d48281ddfafc929575db721914c4c8bc69c187f1a61267864361dc73d7a2d"
+  },
+  {
+   "case": "service-time-delete",
+   "target": "service/boundary",
+   "red": [
+    "VELDO-0304 service/unique-work",
+    "VELDO-0304 service/boundary",
+    "VELDO-0304 ac4/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "f00de707e1bd48debe6920c332f8905ab55764bf588ea94a4f423e4a4e63aa6f",
+   "after": "9e4bf61a4273c268119259381d2403cd90daea6af00259fd51ddf8b6e51ca0a6"
+  },
+  {
+   "case": "mutation-time-delete",
+   "target": "mutation/boundary",
+   "red": [
+    "VELDO-0304 mutation/boundary",
+    "VELDO-0304 ac4/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "aa50f9d06dcb0dc75e0778d4c15b08f557ce8c20925f1078b40a9ed50fb1535b",
+   "after": "9777af77c29e6917db5cade9e5e90235c6c2f63cd277bc00bdfacab8e46939d9"
+  },
+  {
+   "case": "render-time-delete",
+   "target": "render/boundary",
+   "red": [
+    "VELDO-0304 render/boundary",
+    "VELDO-0304 ac4/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "1b318030e2f4fca76e0213867ab213519bf150a600f57873dc02e04ff7b4779f",
+   "after": "be13aaab40c02d3559b915315cef9cd9bc20bd30459abe9dddf53e4f76eca5af"
+  },
+  {
+   "case": "boundary-new-creator",
+   "target": "ac1/repository",
+   "red": [
+    "VELDO-0304 ac1/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "343d3a8514e692313bebd67b4456740f9ff833bc8fda95071ccac6409260fd4c",
+   "after": "fe42cc47392a6554961358fc4f60ed7ebd52ed2a6edcb28786557b5933f24158"
+  },
+  {
+   "case": "boundary-stale-accepted",
+   "target": "ac3/stale-entries",
+   "red": [
+    "VELDO-0304 ac3/stale-entries"
+   ],
+   "before": "f44307677fe5e963f77c45bf1720e14013f3d15f9f89c3b5059227d0526bcd2c",
+   "after": "c9933ef11340c5cb73bf55a0cd2a2a167501330edbf2cf1edee95ac20eafc51b"
+  },
+  {
+   "case": "boundary-age-restored",
+   "target": "ac4/repository",
+   "red": [
+    "VELDO-0304 ac4/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "2f89fa7c8e12dd0af30c6017cc03dc132a5091c1e28e13752a5ba1e1eee12b01",
+   "after": "5abfb5fae94ec463684ed7f49d750677f5643e246fb117b10fbdeedbdc92b71c"
+  },
+  {
+   "case": "boundary-gate-unwired",
+   "target": "integration/gate-wired",
+   "red": [
+    "VELDO-0304 integration/gate-wired"
+   ],
+   "before": "c23316d1ba959569833f598ac975546b30cdb2fe9dda261e4e6ba18c43be3ffc",
+   "after": "9fa3eb7dfc3ca974be4e6d0bb11823ed7a3b2c2f9a84e077e9dad698d0312641"
+  },
+  {
+   "case": "temporary-action_executor",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "aab6683d863d75def60a5f3b62610c50bb15b8f012ad4edb54098e3793591595",
+   "after": "7eac8463524f93d51c6d120c560fc144acb7e44d60fb1299528c352603906833"
+  },
+  {
+   "case": "temporary-control_agent_config_handoff",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "0421e80db5ba99b1bc4dd1efdd0416c9bd5abe762ce88f0f12e1b5f5bbaca0f0",
+   "after": "6388e401352a4ed34c58f2432ff51eb9206604e0a288a82df64c3a56d73d2853"
+  },
+  {
+   "case": "temporary-control_api_webauthn",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "46f4e2129f8466f4a3c0f4a177fd1c9de89d94b126066dc2fcd5a9dd5926f012",
+   "after": "94b6e0b45773f458a7604f1374ea4605d60bac7967ecfb1c93688390ce85a064"
+  },
+  {
+   "case": "temporary-control_batch",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "6751730e5337b9732fb4f62770fde6cbb7e68bc2ee00f21f8818d4c36d882f9a",
+   "after": "0aa4ca48e911892465a4ff38d2fe3a2f922dae244250a702a294d3f9b3477473"
+  },
+  {
+   "case": "temporary-control_launch_work",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "204796884f828abd4595ee20ad07af2553ca65ca551f47d061cef585dfeb1e9e",
+   "after": "5420ae825e6134b9f589cd1391b6e1f504792106dcd5de7b891f6cdd5f99030d"
+  },
+  {
+   "case": "temporary-control_memory_check",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "e5599e68ae28daaadf6d5704a7dc9a30d63c5dd95cd00b25026421992b1a0c53",
+   "after": "23eee15f5766e1632e89d760446409ca44d0deb6b0996aab87727ae1fc160291"
+  },
+  {
+   "case": "temporary-lander",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "2f0bcf684ba4497cfc0d234bc4334c08667e244f06c26a608207c391140eeaa1",
+   "after": "39a65fa1a814b091d1c39a37ae834bc4bd3b8c23795528e246da2aeb924c5fc9"
+  },
+  {
+   "case": "temporary-pack_conformance",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "fa59c2a12c62d6e7a3366f44f5e865435cfcc0a862079ba7d40ecf1b28a83126",
+   "after": "2a9f708d9fb9c310ba572ad785dcd17bcf12189bb77a68cd1665510dd3a685d4"
+  },
+  {
+   "case": "temporary-parser_corpus_audit",
+   "target": "integration/boundary",
+   "red": [
+    "VELDO-0304 ac2/repository",
+    "VELDO-0304 integration/boundary"
+   ],
+   "before": "3178cde19c5e9e636d123d0f2f8166f8b4c0817d47de37d50759ee8f5d440af8",
+   "after": "14d553a78b316d4ff47e4c0b51558b9831ea464abd07951c55af3301b4e95da8"
+  }
+ ],
+ "teeth_stage": "not run",
+ "suite_sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209"
+}

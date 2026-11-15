@@ -1,76 +1,158 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0304",
- "commit": "490bcf08794a3767c39f62b45988cde93cb42574",
- "tree": "0adb89d02cd4a7a780079d0dae83f715416ec35f",
- "producer": "Codex implementation agent; resumed audit blocked before implementation",
- "produced_at": "2026-11-15T23:09:08.847082+00:00",
+ "commit": "1df935ea488dfca2c4ac8034dda899d17a563834",
+ "tree": "e1904cae9d30308f3a696329573d54f97611c47d",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T23:57:23.027305+00:00",
  "criteria": [
   {
    "id": "AC1",
    "status": "pending",
-   "evidence": []
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
+     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
+     "detail": "ac1/forms, ac1/repository; targeted baseline green, not a gate result."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "boundary-new-creator applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
+    }
+   ]
   },
   {
    "id": "AC2",
    "status": "pending",
-   "evidence": []
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
+     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
+     "detail": "ac2/forms, ac2/repository and each module boundary row; targeted baseline green, not a gate result."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "fleet-direct-remove applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
+    }
+   ]
   },
   {
    "id": "AC3",
    "status": "pending",
-   "evidence": []
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
+     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
+     "detail": "ac3/stale-entries; targeted baseline green, not a gate result."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "boundary-stale-accepted applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
+    }
+   ]
   },
   {
    "id": "AC4",
    "status": "pending",
-   "evidence": []
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/155_veldo_0304_space_boundary.py",
+     "sha256": "6a12a26169ed70950f796391be4095941714e9ec444d8e714a12c2777a6a3209",
+     "detail": "ac4/forms, ac4/repository; targeted baseline green, not a gate result."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "40 green targeted baseline rows, with real fixture files and Git. Fixture limitations are in README.md."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0304/registered-falsifiers.json",
+     "sha256": "9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+     "detail": "boundary-age-restored applied once in the final targeted run and its designated row red. All 31 registrations agree with their literal driver definitions."
+    }
+   ]
   }
  ],
  "checks": [
   {
    "name": "unit",
-   "status": "not_run",
-   "reason": "Ticket implementation blocked by the no-ledger direct-removal policy and footprint conflict recorded in resume-blocker.json. Prerequisite suites were rerun separately."
+   "status": "passed",
+   "command": "python3 proof/VELDO-0304/run_registered_falsifiers.py",
+   "detail": "40 green baseline rows, then 31 designated mutation rows red."
   },
   {
    "name": "integration",
-   "status": "not_run",
-   "reason": "Ticket implementation blocked by the no-ledger direct-removal policy and footprint conflict recorded in resume-blocker.json. Prerequisite suites were rerun separately."
+   "status": "failed",
+   "detail": "Suite 142 has 16 remaining assertions for the prior standalone contract; see integration-conflict.json. No earlier tests were changed. Targeted suites 155, 138, 139, 140, both 153 selections and 154 pass their selected rows; all selftest selections are partial."
   },
   {
    "name": "falsifiers",
-   "status": "not_run",
-   "reason": "Ticket implementation blocked by the no-ledger direct-removal policy and footprint conflict recorded in resume-blocker.json. Prerequisite suites were rerun separately."
+   "status": "passed",
+   "command": "python3 proof/VELDO-0304/run_registered_falsifiers.py",
+   "detail": "31 of 31 detected. This is not a teeth stage."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "detail": "validate.py all, docs, template sync, generated files, lint, Git boundary and space boundary. Commands and results in final-fast-checks.json."
   },
   {
    "name": "gate",
    "status": "not_run",
-   "reason": "The lead runs ./scripts/verify.sh through the gate lock."
+   "reason": "The lead runs ./scripts/verify.sh through the gate lock. Full verification, heavy suites, teeth and policy checking were not run."
   }
  ],
- "blocker": "proof/VELDO-0304/resume-blocker.json",
- "dependency_commits": [
-  "a8f1754e",
-  "931ac7c9",
-  "7a404450",
-  "90d5c05b"
- ],
+ "unresolved": "proof/VELDO-0304/integration-conflict.json",
  "assumptions": [
-  "No acceptance criterion is claimed passed. This records a blocked build, not verification.",
-  "Full gate, heavy suites, teeth stages and policy checking are reserved for the lead.",
-  "No removal code, protected data or live captures changed. The protected gate_legs.py pair was taken exactly from the accepted prerequisite.",
-  "The lead decision is recorded verbatim in History and the authorized module pairs are in the footprint. The resumed blocker is the conflict over existing no-ledger direct removals, not the prior ref-delete scope question.",
-  "No exemption, remover, boundary check, suite or mutation case was added. AC1 through AC4 and all falsifiers remain pending. No new loss was reproduced."
+  "No green gate, approval or completed criterion is claimed. The implementation is pending the lead gate and independent review, with the prior standalone test contract unresolved.",
+  "A missing ledger or item owner now refuses removal. No owner is inferred from a path. Existing standalone callers may retain clean folders and internal refs.",
+  "The ref-remover unit row uses a stand-in ledger record with real Git and real keep verification. Caller rows prove retention of unique commits. They do not prove a new journal authorization flow.",
+  "Temporary constructor tests, extracted service shutdown syntax and the batch swap failure use the limited stand-ins named in README.md. No live service, Chrome, real engine or protected data was used.",
+  "The act prerequisites remain unchanged; no new act authority is introduced.",
+  "The accepted gate_legs.py pair, check_first_use.py, suite 86 and its live captures remain unchanged. scripts/verify.sh is the only changed protected path.",
+  "Earlier blocked-build artifacts are retained as history. This manifest supersedes their implementation-pending descriptions."
  ],
- "rollback": "No boundary implementation exists. Revert this blocked-build record if superseded; prerequisite changes remain separate commits.",
- "dependency_results": "proof/VELDO-0304/resume-dependency-tests.json",
- "fast_check_results": "proof/VELDO-0304/resume-fast-checks.json",
- "previous_blocker": {
-  "ref": "proof/VELDO-0304/blocker.json",
-  "status": "Scope decision supplied by the lead; implementation remains pending."
- },
+ "rollback": "Revert the implementation commits. Saved refs, snapshots and retained work stay in place; no data cleanup is part of rollback.",
  "artifacts": {
-  "resume-blocker.json": "sha256:deba78a63edd808baab9107532f6a12ec28eee3b364ac12b29e1867ae2401bac"
+  "README.md": "sha256:b1fcd4c25c6574534b461495cbd605fe00fc18682ac81549131750fb9cc377a9",
+  "sources.json": "sha256:ac9d3c838bd516457f81b60af0ce61b5774a8e6f9c3c75fe3d72c0a0f2b210e2",
+  "dependency-tests.json": "sha256:c4b323f5c9c376181b10273e49c87d845976a3f8dfe0e430daf55aa1f1f55fa0",
+  "integration-conflict.json": "sha256:0c6722fa56bad74e41959b73586b0ea7cb8fe6c09c86dfb7f3ee7a4442d8cea7",
+  "final-fast-checks.json": "sha256:ed2fb432ec12130edd4056b94ac2454de355ede0d83ff244af3b106d7cde8463",
+  "scope-check.json": "sha256:3cb25aec834e5dc4c6e52e3908f7e7ca2a90c9ad98d9f7f388e3f8cf6f36ce98",
+  "registered-falsifiers.json": "sha256:9afa41230fbb54ded8b36ea8bc8d0293b4c851fc7bfb324c404859d75762c7ab",
+  "registry-definitions.json": "sha256:5599545abf99880d6f7982bc95111cf5fd0b534e6766f0cea36f307483138382",
+  "falsifier-cases.json": "sha256:8ab09166faf8ec90ce58625fe979bd13febebe4722993753bd81061d93e73e20",
+  "run_registered_falsifiers.py": "sha256:70bf114e5f88dae06fdbf175f26c2eb932055e7d23af7411d2f7f24d02266ce4"
  }
 }

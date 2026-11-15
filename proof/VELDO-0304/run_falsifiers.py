@@ -22,7 +22,7 @@ def exercise(root):
 def run(case):
     with tempfile.TemporaryDirectory(prefix='v304-mutation-') as directory:
         root = Path(directory)
-        for part in ('.veldo', 'engine/.veldo'):
+        for part in ('.veldo', 'engine/.veldo', 'engine/scripts'):
             shutil.copytree(ROOT / part, root / part, ignore=shutil.ignore_patterns('__pycache__'))
         shutil.copytree(ROOT / 'scripts', root / 'scripts', ignore=shutil.ignore_patterns('__pycache__'))
         target = root / case['path']

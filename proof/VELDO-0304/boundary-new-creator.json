@@ -1,0 +1,18 @@
+{
+ "case": "boundary-new-creator",
+ "row": "ac1/repository",
+ "red": [
+  {
+   "row": "VELDO-0304 ac1/repository",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 497, in <lambda>\n    row('ac1/repository', lambda: repository_boundary('create:'))\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 423, in repository_boundary\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: ['engine/.veldo/fleet.py:206: undeclared_creator: create:git worktree add outside its reviewed boundary']\n"
+  },
+  {
+   "row": "VELDO-0304 integration/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 52, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 423, in repository_boundary\n    assert not errors, errors\n           ^^^^^^^^^^\nAssertionError: ['engine/.veldo/fleet.py:206: undeclared_creator: create:git worktree add outside its reviewed boundary']\n"
+  }
+ ],
+ "before": "b4499e0dc323ea40ceb5c3d42a2586ac0961272b2718750c93b32f010e2c7d06",
+ "after": "38519dcd9bb291f70c838871e2c05e9b648305e68d08d58c2276bf5e4b91f633"
+}
