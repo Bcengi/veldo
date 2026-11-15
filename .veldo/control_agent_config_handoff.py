@@ -591,7 +591,7 @@ def codex_observe(bound, extra, environment, config):
             self.send_response(400)
             self.end_headers()
 
-    with tempfile.TemporaryDirectory(prefix='tool-observation-', dir=config) as temp:
+    with tempfile.TemporaryDirectory(prefix='tool-observation-') as temp:
         home = Path(temp)
         profile = home / 'profile'
         profile.mkdir(mode=0o700)

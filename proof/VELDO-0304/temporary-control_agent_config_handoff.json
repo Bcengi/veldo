@@ -1,0 +1,16 @@
+{
+ "module": "engine/.veldo/control_agent_config_handoff.py",
+ "functions": [
+  "codex_observe"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "codex_observe",
+  "old": "tempfile.TemporaryDirectory(prefix='tool-observation-', dir=config)",
+  "new": "tempfile.TemporaryDirectory(prefix='tool-observation-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/control_agent_config_handoff.py:594: codex_observe: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}
