@@ -1,0 +1,18 @@
+{
+ "case": "fleet-direct-remove",
+ "row": "fleet/boundary",
+ "red": [
+  {
+   "row": "VELDO-0304 fleet/unique-work",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 49, in fleet_work\n    assert (path / 'draft').read_bytes() == b'not in git\\n'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v304-fleet-g79wipp6/workers/unique/draft'\n"
+  },
+  {
+   "row": "VELDO-0304 fleet/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 56, in fleet_boundary\n    assert not [error for error in errors if 'WorktreeProvisioner.remove:' in error], errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['engine/.veldo/fleet.py:235: WorktreeProvisioner.add: create:git worktree add outside its reviewed boundary', 'engine/.veldo/fleet.py:249: WorktreeProvisioner.remove: remove:git worktree remove outside its reviewed boundary']\n"
+  }
+ ],
+ "before": "1097673484728a083e02564d71f79e408a0283a702b88b4951957cea4a2a95be",
+ "after": "c37623c731ad70d0bd20123622eba227d6454bf0895a6f2115894575de09d381"
+}

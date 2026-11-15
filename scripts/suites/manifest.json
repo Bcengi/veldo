@@ -2077,6 +2077,15 @@
    ],
    "regions": "VELDO-0333 AC1 to AC4: both timing writers retain old live-checkout files, remove only missing-checkout files and spare the file just written; direct pruning always spares keep, leaves pending, foreign and unreadable files alone, reads no clock or timing-file time, and describes only missing checkouts. Both production copies agree. Resource reads accept 29 and 30 day measurements, ignore 31 day measurements and retain every file, with a read-named constant.",
    "requires_note": "Only ROOT and expect. Real production modules, temporary stores and checkout directories, both recording entry points and direct pruning. The fixture clock is the real clock read once, so aged files are old by the injected clock and by the real one; pruning clock and directory-entry stat are refusing stand-ins. The unreadable checkout is a real folder under a parent with no permissions (restored after the call; stands down by name when run as root) and a second checkout lies under a plain file, to prove that neither is absent. No host store or gate stage is used."
+  },
+  {
+   "name": "155_veldo_0304_space_boundary",
+   "file": "155_veldo_0304_space_boundary.py",
+   "requires": [
+    "155_veldo_0304_space_boundary"
+   ],
+   "regions": "VELDO-0304 boundary and no-loss rows, real temporary repositories.",
+   "requires_note": "Only ROOT and expect. No host engines or real data."
   }
  ],
  "resource_capacities": {

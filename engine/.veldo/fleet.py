@@ -146,65 +146,8 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
     items still in state declared (a creation that failed part way), so the event reaches them.
     `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
     repository that is not at or beneath `paths`."""
-    paths = [os.path.normpath(str(path)) for path in paths]
-    found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
-
-    def beneath(record):
-        where = (record.get('locator') or {}).get('path')
-        return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
-
-    def owned(record, subject):
-        owner = record.get('owner') or {}
-        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
-                   for part, wanted in subject.items())
-
-    try:
-        ledger = space['ledger']
-        given = {key: value for key, value in space.items() if key != 'ledger'}
-        every = ledger.items()
-        live = {identity: record for identity, record in every.items()
-                if record.get('state') not in SPACE_ENDED and beneath(record)}
-        subjects, runs = [], set()
-        for identity, record in sorted(live.items()):
-            if confirm and record.get('state') == 'declared':
-                ledger.confirm(identity)
-            owner = dict(record.get('owner') or {})
-            if isinstance(owner.get('run'), dict):
-                owner['run'] = owner['run'].get('id')
-                runs.add(owner['run'])
-            if owner and owner not in subjects:
-                subjects.append(owner)
-        others = [identity for identity, record in sorted(every.items())
-                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
-                  and record.get('kind') in ('worktree', 'agent_repository')
-                  and any(owned(record, subject) for subject in subjects)]
-        if others:
-            raise ValueError('the owner of this thing also owns %s: the event would end it too'
-                             % ', '.join(others[:3]))
-        if ended:
-            wired = given.get('owner_live')
-            given['owner_live'] = lambda owner: (
-                {'conclusive': True, 'group_empty': True} if (owner.get('run') or {}).get('id') in runs
-                else wired(owner) if wired else None)
-        if 'signal' not in _SPACE:
-            _SPACE['signal'] = _load("veldo_space_signal_fl", ".veldo/control_space_signal.py").signal
-        for subject in subjects:
-            _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
-        for identity, record in live.items():
-            where = record['locator']['path']
-            if where in found:
-                now = ledger.item(identity) or {}
-                found[where] = {'item': identity, 'state': now.get('state'),
-                                'deferral': (now.get('deferral') or {}).get('rule')
-                                if now.get('state') == 'deferred' else None}
-        for path in paths:
-            if found[path]['item'] is None and space_absent(path):
-                found[path] = {'item': None, 'state': 'gone', 'deferral': None}
-    except Exception as error:  # noqa: BLE001 - what could not be signalled is not removed
-        raised = '%s: %s' % (type(error).__name__, str(error)[:300])
-        found = {path: {'item': None, 'state': None, 'deferral': 'remove_refused', 'raised': raised}
-                 for path in paths}
-    return found
+    # The shared adapter names item identities and versions, preserving owner Keep.
+    return SC.space_signal(space, event, paths, emitter, ended=ended, confirm=confirm)
 
 
 def space_absent(path):
@@ -266,15 +209,8 @@ class WorktreeProvisioner:
                       non-forced remove takes it. A worktree with an untracked file, or anything
                       else a rule keeps, stays on disk and is deferred on the record. A worktree
                       no item records stays too. This module runs no git remove of its own then.
-      without one     remove first runs the unique work probe and the keep step by themselves
-                      (space_standalone). A worktree with a modified, staged or untracked file, an
-                      ignored file that is work (a local settings file), an operation in progress
-                      or a git repository beneath it stays: git's non-forced remove would take an
-                      ignored file and a repository in an ignored folder without a word. For any
-                      other, its head, its own refs and each commit only its HEAD log names (one a
-                      reset left behind) are written on kept refs in the repository and read back,
-                      and only then does git's non-forced worktree remove run. When the look or
-                      the keep step fails, the worktree stays.
+      without one     removal is refused as not_in_ledger. No standalone look can authorize
+                      deletion without the item's owner and item-naming signal.
 
     remove returns what became of the worktree, {path, item, state, deferral}, and `deferred` lists
     every worktree a remove left in place, with the reason."""
@@ -310,18 +246,9 @@ class WorktreeProvisioner:
         elif space_absent(path):
             entry = {"path": path, "item": None, "state": "gone", "deferral": None}  # idempotent
         else:
-            # No ledger: nothing judges this removal but the look made here, and nothing is removed
-            # that it did not answer for. git's non-forced remove runs only after the keep step.
-            entry = dict(space_standalone(path, "worktree", main=self.repo_root, event="worktree_abandoned"),
-                         path=path)
-            if entry["state"] == "kept":
-                try:
-                    _git_worktree(["remove", path], cwd=self.repo_root)
-                    entry["state"] = "removed"
-                except WorktreeError as error:
-                    entry.update(state=None, deferral="remove_refused", said=str(error))
-            elif entry["state"] != "gone":
-                entry.update(state=None, deferral=entry.get("deferral") or "remove_refused")
+            # Without an item and its owner no ending event can authorize a removal.
+            entry = {"path": path, "item": None, "state": None,
+                     "deferral": "not_in_ledger", "said": "removal requires a recorded owner and item"}
         if entry["state"] not in SPACE_ENDED:
             self.deferred.append(entry)
         return entry

@@ -12,6 +12,27 @@ depends_on: [VELDO-0302, VELDO-0303, VELDO-0324, VELDO-0333]
 placement: [enforcement]
 protected_paths: ["scripts/verify.sh"]
 footprint:
+  - "docs/design/VELDO-0295-design.md"
+  - "scripts/migrate_to_veldo.py"
+  - "scripts/publish.py"
+  - "scripts/rename_migration.py"
+  - "scripts/render_pdfs.py"
+  - "engine/scripts/mutation_ownership.py"
+  - "scripts/mutation_ownership.py"
+  - "engine/.veldo/fleet.py"
+  - ".veldo/fleet.py"
+  - "engine/.veldo/control_launch.py"
+  - ".veldo/control_launch.py"
+  - "engine/.veldo/control_launch_work.py"
+  - ".veldo/control_launch_work.py"
+  - "engine/.veldo/lander.py"
+  - ".veldo/lander.py"
+  - "engine/.veldo/control_memory_check.py"
+  - ".veldo/control_memory_check.py"
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "engine/.veldo/control_space_spool.py"
+  - ".veldo/control_space_spool.py"
   - "scripts/check_space_boundary.py"
   - "engine/.veldo/control_clone.py"
   - ".veldo/control_clone.py"
@@ -98,6 +119,17 @@ The check is called from scripts/verify.sh, a protected path (policy.yaml:83). T
 approval, bound to the commit and the proof, is required.
 
 ## History
+
+- 2026-11-15: lead decision, all unprotected boundary findings go through the removers and the
+  item-naming signal. Footprint extended to fleet.py, control_launch.py, control_launch_work.py,
+  lander.py, control_memory_check.py, control_service.py, control_space_spool.py and their synced
+  copies; scripts/migrate_to_veldo.py, publish.py, rename_migration.py, render_pdfs.py and the
+  mutation_ownership.py pair. Missing ledger or owner refuses removal, including standalone paths.
+  A function with a clock and an unrelated deletion separates its event-based cleanup from its
+  timed operation; no age exception is added.
+- 2026-11-15: lead decision, design 6.10 includes a process removing a temporary tree it created
+  itself with mkdtemp in the system temporary directory, with its own prefix and refusing anything
+  else. scripts/check_first_use.py:_rmtree is named in the reviewed list and remains unchanged.
 
 - 2026-11-15: lead decision, the three engine ref deletes go through a ref remover with the keep step; no exemption
   The footprint now includes those three modules and the removers, each with its synced copy.

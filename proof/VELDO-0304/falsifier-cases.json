@@ -1,0 +1,9 @@
+[
+ {
+  "name": "fleet-direct-remove",
+  "path": ".veldo/fleet.py",
+  "row": "fleet/boundary",
+  "old": "            # Without an item and its owner no ending event can authorize a removal.\n",
+  "new": "            _git_worktree([\"remove\", \"--force\", path], cwd=self.repo_root)\n"
+ }
+]
