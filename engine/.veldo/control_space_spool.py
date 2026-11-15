@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """The event spool, and what a git hook records through it (VELDO-0311, design 4.5, 4.6, 6.9, 8.4, 8.5).
 
+SESSION NOTIFICATIONS (VELDO-0314). SessionStart and SessionEnd carry the session, working folder,
+client pid and kernel start ticks. submit persists before any key lookup or socket call. A start
+asks Local.session for a declaration derived from the authority's scratch pattern, then sends the
+declaration and event as space-observer. An end sends only the event. Neither calls Signal or a
+remover. The event command and consumer remain VELDO-0323's: until then the event stays spooled.
+Released entries preserve paths and creator for that consumer's own authorization. Installation in
+client accounts remains VELDO-0329's. Invalid notifications are never treated as removal permission.
+
 WHAT THIS MODULE IS. A worktree added with plain git, a branch switched in it and a trunk moved by hand
 all happen outside Veldo. Two git hooks (engine/hooks/post-checkout and reference-transaction) start the
 CLI, and the CLI calls this module. It writes down what the hook saw as one entry, hands it to the
@@ -128,11 +136,15 @@ REFUSED = 'refused'
 SOCKET = 'authority.sock'
 LOCK = 'lock'
 SUFFIX = '.json'
-TYPES = ('worktree_added', 'branch_switched', 'ref_changed')
+SESSION_TYPES = ('session_started', 'session_ended')
+TYPES = ('worktree_added', 'branch_switched', 'ref_changed') + SESSION_TYPES + ('released',)
 FIELDS = {'worktree_added': ('repository', 'path', 'branch', 'start'),
           'branch_switched': ('repository', 'path', 'branch', 'start'),
-          'ref_changed': ('repository', 'ref', 'old', 'new')}
-HOOKS = ('post-checkout', 'reference-transaction')
+          'ref_changed': ('repository', 'ref', 'old', 'new'),
+          'session_started': ('session', 'working_folder', 'pid', 'started'),
+          'session_ended': ('session', 'working_folder', 'pid', 'started'),
+          'released': ('paths', 'creator')}
+HOOKS = ('post-checkout', 'reference-transaction', 'SessionStart', 'SessionEnd', 'event')
 # The Ledger's own names (control_space.py); the suite holds them equal.
 OBSERVER = 'space-observer'
 DECLARE, CONFIRM, REBRANCH, EVENT = 'space_declare', 'space_confirm', 'space_rebranch', 'space_event'
@@ -220,8 +232,22 @@ def checked(entry):
     if not isinstance(subject, dict) or set(subject) != set(fields):
         raise Malformed('the subject of %s holds %s' % (entry['type'], ', '.join(fields)))
     for field in fields:
-        if not _text(subject[field]) and not (field == 'branch' and subject[field] is None):
+        if field in ('pid', 'started'):
+            if type(subject[field]) is not int or subject[field] <= 0:
+                raise Malformed('subject.%s is a positive integer' % field)
+            continue
+        if field == 'paths':
+            if not isinstance(subject[field], list) or not subject[field]:
+                raise Malformed('released names paths')
+            for path in subject[field]:
+                plain_path(path)
+            continue
+        if not _text(subject[field]) and not (field in ('branch', 'old') and subject[field] is None):
             raise Malformed('subject.%s is a name' % field)
+    if entry['type'] in SESSION_TYPES:
+        plain_path(subject['working_folder'])
+        if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,199}', subject['session']):
+            raise Malformed('session is one safe path component')
     for field in ('repository', 'path'):
         if field in subject and not os.path.isabs(subject[field]):
             raise Malformed('subject.%s is an absolute path' % field)
@@ -240,6 +266,27 @@ def entry(kind, subject, hook, host, at=None):
     return checked({'schema': SCHEMA, 'id': uuid.uuid4().hex, 'type': kind, 'subject': dict(subject),
                     'emitter': {'hook': hook, 'host': host}, 'at': time.time() if at is None else at,
                     'tries': 0})
+
+
+def plain_path(path):
+    """Never turn a link or a dot segment into a different locator."""
+    if (not _text(path) or not os.path.isabs(path) or '..' in path.split(os.sep)
+            or os.path.normpath(path) != path or os.path.realpath(path) != path):
+        raise Malformed('path must be absolute, normalized and without links')
+    return path
+
+
+def _inside(path, root):
+    return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
+
+
+def session_entry(kind, session, working_folder, pid, started, host):
+    one = entry(kind, {'session': session, 'working_folder': working_folder,
+                       'pid': pid, 'started': started},
+                'SessionStart' if kind == 'session_started' else 'SessionEnd', host)
+    # Duplicate delivery of the same client notification uses the same command identity.
+    one['id'] = hashlib.sha256(json.dumps([kind, one['subject'], host], sort_keys=True).encode()).hexdigest()[:32]
+    return one
 
 
 def repository_of(common_dir):
@@ -527,6 +574,10 @@ def waits(reason):
 
 def _key(one):
     subject = one['subject']
+    if one['type'] in SESSION_TYPES:
+        return ('session', one['emitter']['host'], subject['session'])
+    if one['type'] == 'released':
+        return ('released', tuple(subject['paths']), subject['creator'])
     return ('ref', subject['repository'], subject['ref']) if one['type'] == 'ref_changed' else (
         'path', subject['path'])
 
@@ -656,6 +707,22 @@ def send(one, authority, sign, facts=None, until=None, clock=time.monotonic):
 
     def result(outcome, reason=None):
         return {'outcome': outcome, 'reason': reason, 'answers': answers}
+
+    if kind in SESSION_TYPES or kind == 'released':
+        checked(one)
+        if kind == 'session_started':
+            declaration = authority.session(subject)
+            if not isinstance(declaration, dict):
+                raise Unreachable('the authority gave no session declaration')
+            if declaration.get('reason'):
+                return result('refused', declaration['reason'])
+            if declaration.get('item') is None:
+                answer = ask('declare', DECLARE, declaration['declare'])
+                if not answer['ok']:
+                    return result('refused', answer.get('reason'))
+        answer = ask('event', EVENT, {'type': kind, 'subject': dict(subject),
+                                     'emitter': dict(one['emitter'])})
+        return result('recorded') if answer['ok'] else result('refused', answer.get('reason'))
 
     about = authority.about(subject['repository'], subject.get('path'))
     if about is None:
@@ -794,6 +861,39 @@ def deliver(entries, folder, authority, sign, seconds=HOOK_SECONDS):
     return {'spooled': names, 'replayed': done}
 
 
+def submit(one, state_root, installation=None, authority=None, sign=None):
+    """Persist before resolving a key or contacting the authority. Failures leave the entry whole.
+    The caller may provide the authority for an in-process call; ordinary hooks use the local socket.
+    """
+    folder = spool_folder(state_root)
+    name = put(folder, one)
+    try:
+        installation = installation or _sibling('installation').resolve()['folder']
+        remote = authority if authority is not None else Remote(
+            socket_path(folder), until=time.monotonic() + HOOK_SECONDS)
+        done = replay(folder, remote, sign or signer(installation), seconds=HOOK_SECONDS)
+        return {'spooled': name, 'replayed': done, 'pending': name in pending(folder)}
+    except Exception as error:
+        return {'spooled': name, 'replayed': [], 'pending': True, 'reason': str(error)}
+
+
+def session_hook(kind, payload, state_root, installation=None, pid=None):
+    """The client supplies session_id and cwd. The exec hook's parent is the client process.
+    A start time is the kernel's field 22, in ticks, as the owner-live probe records it.
+    No event is invented when that identity cannot be read. No hook failure escapes to the client.
+    """
+    try:
+        pid = os.getppid() if pid is None else pid
+        with open('/proc/%d/stat' % pid, 'rb') as stream:
+            fields = stream.read().rsplit(b')', 1)[1].split()
+        one = session_entry(kind, payload['session_id'], payload['cwd'], pid, int(fields[19]),
+                            socket.gethostname() or 'unknown')
+        submit(one, state_root, installation)
+    except Exception:
+        return 0
+    return 0
+
+
 def start(folder, authority, sign, reconcile=None, seconds=REPLAY_SECONDS):
     """What the service does at its start: replay the spool, and only then reconcile (design section 9).
     Returns (what the replay did, reconcile's answer)."""
@@ -818,6 +918,53 @@ class Local:
         """The Ledger's own accept: it verifies the signature, the packet's age and nonce, the rule for
         the principal, and runs the command."""
         return self.ledger.accept(packet, self.membership, self.clock())
+
+    def session(self, subject):
+        """Derive the declaration from the authority's roots, never a caller's scratch path.
+
+        The first scratch root holds new sessions. working_folder is encoded as UTF-8 hex in the
+        pattern so two folders cannot alias. An existing unrecorded folder is never made scratch.
+        This reads and declares only; creation and event consumption are separate operations.
+        """
+        try:
+            checked(entry('session_started', subject, 'SessionStart', self.ledger.host))
+            where = plain_path(subject['working_folder'])
+            scopes = []
+            for project in self.ledger.projects:
+                for root in (project['repository'], project['worktree_root']):
+                    if _inside(where, canonical(root)):
+                        scopes.append((len(canonical(root)), {'type': 'project', 'id': project['project']}))
+            for plain in self.ledger.config.get('plain_repositories') or ():
+                for root in (plain['repository'], plain['worktree_root']):
+                    if _inside(where, canonical(root)):
+                        scopes.append((len(canonical(root)),
+                                       {'type': 'plain_repository', 'id': canonical(plain['repository'])}))
+            scopes.sort(key=lambda pair: pair[0], reverse=True)
+            scope = scopes[0][1] if scopes else {'type': 'no_project'}
+            if any(length == scopes[0][0] and other != scope for length, other in scopes):
+                return {'reason': 'space_session_scope_ambiguous'}
+            scratch = self.ledger.config['scratch_roots']
+            root = plain_path(scratch['roots'][0])
+            relative = scratch['session_pattern'].format(
+                session_id=subject['session'], working_folder=where.encode().hex())
+            path = plain_path(os.path.join(root, relative))
+            if path == root or not _inside(path, root):
+                return {'reason': 'space_outside_roots'}
+            owner = {'scope': scope, 'session': subject['session']}
+            process = {name: subject[name] for name in ('pid', 'started')}
+            for identity, record in self.ledger.items().items():
+                if record.get('locator') != {'path': path} or record.get('state') in ENDED:
+                    continue
+                if (record.get('kind') == 'scratch' and record.get('creator') == 'hook'
+                        and record.get('owner') == owner and record.get('process') == process):
+                    return {'item': identity}
+                return {'reason': TAKEN + identity}
+            if os.path.lexists(path):
+                return {'reason': 'space_session_exists'}
+            return {'item': None, 'declare': {'kind': 'scratch', 'locator': {'path': path},
+                                             'owner': owner, 'creator': 'hook', 'process': process}}
+        except (Malformed, KeyError, IndexError, TypeError, ValueError) as error:
+            return {'reason': 'space_session_invalid:' + str(error)}
 
     def trunk(self, repository, scope):
         """The trunk the land entry declares for a repository, or None: no declaration, no trunk."""
@@ -918,6 +1065,9 @@ class Remote:
     def about(self, repository, path=None):
         return self._call({'call': 'about', 'repository': repository, 'path': path})
 
+    def session(self, subject):
+        return self._call({'call': 'session', 'subject': subject})
+
 
 def listen(folder):
     """The authority's listening socket in the spool folder, which only this account can enter."""
@@ -950,6 +1100,8 @@ def serve_one(listener, authority, after=None, timeout=REACH_SECONDS):
                 elif isinstance(request, dict) and request.get('call') == 'about':
                     response = {'served': True, 'answer': authority.about(request.get('repository'),
                                                                           request.get('path'))}
+                elif isinstance(request, dict) and request.get('call') == 'session':
+                    response = {'served': True, 'answer': authority.session(request.get('subject'))}
             except Exception:  # the hook is told it was not served, and its entry stays in the spool
                 response = {'served': False}
         try:

@@ -2113,6 +2113,15 @@
    ],
    "regions": "VELDO-0337: verdict signal after the floor commit, output and scratch removal, evidence and declared caches, no verdict at a killed review end, item versions and owner Keep; the review folders declared to end at the verdict and left by run finished, the second attempt, an error after the commit, and the lost send reconciled at start.",
    "requires_note": "Only ROOT and expect. Real store, floor recording, signed receipts, Ledger, Signal, probes, removers and keeper. Fixture initial floor and dispatch records, worker answer, containment, process table, Docker client and act prerequisites."
+  },
+  {
+   "name": "153_veldo_0314_session_hooks",
+   "file": "153_veldo_0314_session_hooks.py",
+   "requires": [
+    "153_veldo_0314_session_hooks"
+   ],
+   "regions": "VELDO-0314 session start ownership, session end without removal, failure spooling, replay and safe session paths.",
+   "requires_note": "Only ROOT and expect. Real ledger, store, observer signatures, socket, hook and CLI processes. Event receiver is a stand-in for VELDO-0323; no consumer or live engines. Every remover held by a fixture latch."
   }
  ],
  "resource_capacities": {
