@@ -200,7 +200,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     holds the run when it started at or after the run's supervisor and, going up its parents, a process
     of the run is among them or nobody whose environment was read stands above it (an orphan). It does
     not hold when it started before the run, or when the first parent that was read does not carry the
-    label. What this does not see: a process that cannot be read and was started, with the label, by a
+    label. The run's end sleeps on the exit of such a process as on any other holder's, so the end
+    follows it and is not given up. What this does not see: a process that cannot be read and was started, with the label, by a
     process that does not itself carry it; and a process that started before the run and replaced its
     own program afterwards. Rule 4 still judges both by their files. The process reader gives no
     environment, so it does not change this. Only processes of the owner's uid are read for the label.
@@ -222,6 +223,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     replaces it: the wrapper exits with the status and the end follows. The criterion's text is the
     design's (section 12) and is not edited here; the design's 6.9 row and this criterion want the
     lead's amendment.
+  - A shared host. Run unconfined on a host where another session's sandbox starts orphaned processes
+    this account cannot read, a row's end can meet one of them. The suite then lets the end follow
+    that process's exit, as the supervisor does, and goes on; the row that plants such a process
+    itself does not. Inside the gate's confinement the suite sees its own process table only.
   - Suite and gate. Suite 151 runs inside the gate's confinement, which has no user manager, so its
     rows are given a stand-in group, and the one row that makes the house's own scope
     (fix3/the-house-group) stands down by name there. On a host with a manager it runs for real and was

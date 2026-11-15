@@ -896,15 +896,16 @@ def _space_judged(space, given, environ=None):
 def _space_wait(read, reap=None):
     """Sleep until nothing that can be waited for holds the run, and return the last read. Each
     sleep is one poll with no time limit on a pidfd of every holder: the kernel wakes it when one
-    of them exits, and the table is then read again. Nothing is signalled. A holder nobody can wait
-    for (a process that cannot be read, a group nobody read) ends the wait at once: the caller
+    of them exits, and the table is then read again. A process whose environment cannot be read is
+    waited for like any other: its exit needs no reading. Nothing is signalled. What nobody can
+    wait for (a group nobody read, a table nobody could list) ends the wait at once: the caller
     sends nothing for it."""
     import select
     while True:
         if reap is not None:
             reap()
         seen = read()
-        waited = [one for one in seen["holders"] if one["how"] != "unread" and one["pid"] is not None]
+        waited = [one for one in seen["holders"] if one["pid"] is not None]
         if seen["group"] == "unread" or not waited:
             return seen
         poller, descriptors = select.poll(), []

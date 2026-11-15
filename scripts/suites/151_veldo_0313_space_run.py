@@ -487,7 +487,23 @@ def _v313_space_run_suite():
             said, report = io.StringIO(), {}
             status = CLI.space_run(list(argv), space=wiring, environ=more.pop('environ', dict(BASE)),
                                    cwd=str(where), stderr=said, report=report, **more)
+            if isinstance(report.get('end'), dict):
+                report['end'] = settled(wiring, report.get('given'), report['end'])
             return status, said.getvalue(), report
+
+        def settled(wiring, given, end):
+            """The run's end on a host this suite shares with other work. Another session's process
+            that this account cannot read, orphaned and started after the run, may carry the label for
+            all the wrapper can tell, so the end is not made while it lives. It is no part of the
+            fixture. The end then follows its exit, as it does for the run's supervisor on such a
+            host (_space_ended). A row that plants such a process itself does not come through here."""
+            tries = 0
+            while end.get('reason') == 'label_unread' and tries < 50:
+                end, tries = CLI._space_ended(wiring, given), tries + 1
+            return end
+
+        def finish(wiring, given):
+            return settled(wiring, given, CLI._space_finish(wiring, given))
 
         def verb(call, argv, wiring=None, **more):
             out, said = io.StringIO(), io.StringIO()
@@ -804,11 +820,12 @@ def _v313_space_run_suite():
                            'cannot be read may carry the label: nothing is sent or written, and it is named [%s %s]'
                       % (end.get('reason'), end.get('holders')),
                       end.get('sent') is False and end.get('reason') == 'label_unread' and written(since) == []
-                      and [one.get('pid') for one in end.get('holders') or ()] == [after_the_run]
+                      and after_the_run in [one.get('pid') for one in end.get('holders') or ()]
+                      and not {before_the_run, child_of_the_suite} & {one.get('pid') for one in end.get('holders') or ()}
                       and text_of(Path(given['scratch']) / 'kept.bin') == 'it may still be written\n'
                       and (L.hold(given['run']) or {}).get('state') == 'admitted')
                 end_after()
-                end = CLI._space_finish(wiring, given)
+                end = finish(wiring, given)
                 check(row, 'once it has ended the run is over. Two unread processes never held it: the one that was '
                            'running before the run began, and the one a process without the label started [%s %s %s]'
                       % (end.get('reason'), CLI._space_process(before_the_run) is not None,
@@ -831,7 +848,7 @@ def _v313_space_run_suite():
             given = CLI._space_begin(wiring, 'build', 'turning', str(W8), start=ended)
             given['status'] = 0
             (Path(given['scratch']) / 'written-late.bin').write_text('a process of the run writes this\n')
-            end = CLI._space_finish(wiring, given)
+            end = finish(wiring, given)
             mine = L.item(given['items'][given['scratch']])
             check(row, 'the end began on an empty group, and rule 3 asked the kernel again when it judged the item: '
                        'the scratch root is deferred as in use and is on disk with its file [%s %s %s]'
@@ -1067,7 +1084,7 @@ def _v313_space_run_suite():
                               'seam')['item']
             L.confirm(other)
             versions = (version_of(kept), version_of(other))
-            end = CLI._space_finish(wiring, given)
+            end = finish(wiring, given)
             mine = L.item(given['items'][given['scratch']])
             check(row, 'the fixture marked the item Keep as the owner [%s %s]' % (due.get('reason'), marked.get('reason')),
                   due.get('ok') is True and marked.get('ok') is True)
