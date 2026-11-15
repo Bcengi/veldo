@@ -15238,6 +15238,49 @@ def cases():
               "        if engine not in self.engines or not _text(name):\n",
               ['safety/option-name'])
 
+    # VELDO-0341: three declared falsifiers and the inherited-protection refusal paths.
+    def docker341(name, old, new, rows, module='control_space_docker.py'):
+        add(341, name, '153_veldo_0341_docker_protection.py', module, old, new, rows)
+
+    docker341('space341-name-only',
+              "        if entry['type'] == 'compose_project' and labels.get(COMPOSE_PROJECT) == entry['value']:\n",
+              "        if False:  # defective: name only\n", ['ac1/adapter-label'])
+    docker341('space341-image-protects-container',
+              "        if kind == 'container':\n            entry, mount = self._mounts(engine, shown)\n",
+              "        if kind == 'container':\n"
+              "            images, _ = self._records(engine, 'image', [shown.get('Image')])\n"
+              "            if images and covered(engine, 'image', image_names(images[0]), {}, self.ledger.protect)[0]:\n"
+              "                return 'protected'\n"
+              "            entry, mount = self._mounts(engine, shown)\n",
+              ['ac2/image-does-not-protect-container'])
+    docker341('space341-protect-at-removal-only',
+              "        entry, by = covered(engine, kind, [locator['name']], labels_of(kind, shown), list(self.ledger.protect or ()))\n",
+              "        entry, by = None, None  # defective: leave protection to removal\n",
+              ['ac3/discovery-before-proposal'])
+    docker341('space341-no-inherited-protection',
+              "    if kind not in ('image', 'network'):\n",
+              "    if True:  # defective: never read container relations\n",
+              ['ac2/container-image-network'])
+    docker341('space341-removal-no-relations',
+              "    if kind in ('image_tag', 'network'):\n",
+              "    if False:  # defective: removal ignores inherited protection\n",
+              ['ac3/removal-purposes', 'ac3/released-keeps-work'], module='control_space_probe.py')
+    docker341('space341-unread-list-free',
+              "        return 'unread', 'the containers could not be listed'\n",
+              "        return None, None\n", ['ac2/unread-refuses'])
+    docker341('space341-mount-report-stays',
+              "                if held is not None and held[1].get('owner') is None:\n"
+              "                    self.ledger.gone(held[0])\n",
+              "", ['ac3/withdraw-mount-report'])
+    docker341('space341-image-by-movable-tag',
+              "            source = _text(container.get('Image'))\n",
+              "            source = _text((container.get('Config') or {}).get('Image'))\n",
+              ['ac2/container-image-network', 'ac2/immutable-image'])
+    # The probe's relationship read loads this already-installed sibling by path.
+    for case in result:
+        if case['module'] == 'control_space_probe.py' and not case.get('siblings'):
+            case['companions'] = sorted(set(case.get('companions', ())) | {'git_process.py', 'control_space_docker.py'})
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

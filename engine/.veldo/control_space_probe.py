@@ -643,6 +643,20 @@ def labelled(kind, locator, protect, run=None):
                                         how=how, path=path)
     if unplaced is not None:
         return dict(facts, said=unplaced)
+    if kind in ('image_tag', 'network'):
+        # The relation is read at every attempt, including a Confirm or Discard.
+        # No cached snapshot can authorize removal after a container became protected.
+        docker = _sibling('control_space_docker')
+        target, said = _inspect_one(run or _run, locator.get('engine'), DOCKER_TYPE[kind],
+                                    locator.get('id') or locator.get('name'))
+        if target is None:
+            return dict(facts, said=said)
+        entry, by = docker.related_protection(locator.get('engine'), DOCKER_TYPE[kind], target,
+                                               protect, run or _run)
+        if entry == 'unread':
+            return dict(facts, said=by)
+        if entry is not None:
+            return dict(facts, read=True, protected=True, entry=entry, how=by)
     return dict(facts, read=True)
 
 

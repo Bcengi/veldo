@@ -2095,6 +2095,15 @@
    ],
    "regions": "VELDO-0328 built image tags, ownerless kept pulls and protect-first recording on each engine context; real ledger and Signal, with tag-only removers, identity refusal, engine refusal and owner Keep.",
    "requires_note": "Only ROOT and expect. Real store, ledger and signatures in a temporary fixture; strict in-memory engines with planted image content. No real engine access. Act prerequisites and empty process table are fixture stand-ins."
+  },
+  {
+   "name": "153_veldo_0341_docker_protection",
+   "file": "153_veldo_0341_docker_protection.py",
+   "requires": [
+    "153_veldo_0341_docker_protection"
+   ],
+   "regions": "VELDO-0341 AC1 to AC3: protection by name, compose label, mounts and container relationships; discovery and removal refusal on two contexts.",
+   "requires_note": "Only ROOT and expect. Real ledger, signatures, Signal, probes, keeper and removers; Docker engines are stand-ins. No real engine is asked."
   }
  ],
  "resource_capacities": {
