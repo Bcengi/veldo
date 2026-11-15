@@ -1,0 +1,16 @@
+{
+ "module": "engine/.veldo/control_launch_work.py",
+ "functions": [
+  "Runtime._collect"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "Runtime._collect",
+  "old": "tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates'])",
+  "new": "tempfile.TemporaryDirectory(prefix='import-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/control_launch_work.py:255: Runtime._collect: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}

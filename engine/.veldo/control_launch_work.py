@@ -252,7 +252,7 @@ class Runtime:
         commit = result.get('commit')
         if not P._hex(commit):
             raise Refused('missing_evidence:build_commit')
-        with tempfile.TemporaryDirectory(prefix='import-', dir=self.config['work']['candidates']) as directory:
+        with tempfile.TemporaryDirectory(prefix='import-') as directory:
             source, collected = Path(directory) / 'source.git', Path(directory) / 'collected.git'
             for repo in (source, collected):
                 _git_process.run(['git', 'init', '-q', OPT + 'bare', OPT + 'template=', str(repo)],
