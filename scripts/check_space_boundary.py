@@ -9,7 +9,11 @@ import shlex
 # never a whole module. Reasons are reviewed with design 6.10.
 CREATORS = {}
 REVIEWED = {}
-REMOVERS = {}
+REMOVERS = {
+    ('engine/.veldo/control_space_remove.py', 'remove_ref'): 'Ended ledger item, verified keep and compare-and-delete.',
+    ('engine/.veldo/control_space_remove.py', '_worktree_remove'): 'The existing non-forced worktree remover.',
+    ('engine/.veldo/control_space_remove.py', '<module>'): 'The existing measured engine remover table.',
+}
 
 
 def canonical(path):

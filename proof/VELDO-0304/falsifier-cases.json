@@ -5,5 +5,12 @@
   "row": "fleet/boundary",
   "old": "            # Without an item and its owner no ending event can authorize a removal.\n",
   "new": "            _git_worktree([\"remove\", \"--force\", path], cwd=self.repo_root)\n"
+ },
+ {
+  "name": "ref-skip-keep",
+  "path": ".veldo/control_space_remove.py",
+  "row": "ref/keep-before-delete",
+  "old": "        keeper = _sibling('control_space_keep')\n",
+  "new": "        _git(commands, '-C', repository, 'update-ref', '-d', ref)\n        return dict(answer, ok=True)\n        keeper = _sibling('control_space_keep')\n"
  }
 ]

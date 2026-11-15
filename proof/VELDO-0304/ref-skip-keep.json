@@ -1,0 +1,13 @@
+{
+ "case": "ref-skip-keep",
+ "row": "ref/keep-before-delete",
+ "red": [
+  {
+   "row": "VELDO-0304 ref/keep-before-delete",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 83, in ref_keep\n    assert not answer['ok'] and git(main, 'rev-parse', ref) == tip, answer\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'item': 'fixture', 'ref': 'refs/veldo/batch/test', 'commands': [['git', '--no-optional-locks', '-c', 'core.fsmonitor=false', '-C', '/tmp/v304-ref-cvtn0qkb', 'check-ref-format', 'refs/veldo/batch/test'], ['git', '--no-optional-locks', '-c', 'core.fsmonitor=false', '-C', '/tmp/v304-ref-cvtn0qkb', 'update-ref', '-d', 'refs/veldo/batch/test']], 'ok': True, 'deferral': 'keep_failed'}\n"
+  }
+ ],
+ "before": "bb306daad22342c70e2e851964c43d4e5207727282622f3768b8c3fe5021a717",
+ "after": "419b39d8a9019493c843b2bd11b150f4aebb0b2bea7b38dd2b8a43ab86a3599a"
+}

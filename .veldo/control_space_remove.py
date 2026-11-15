@@ -1014,3 +1014,55 @@ def tool(ledger, probe, action='remove', free=None, keep=None, run=None, proc=No
     def call(identity, record):
         return remove(ledger, probe, identity, record, action=action, free=free, keep=keep, run=run, proc=proc)
     return call
+
+
+def remove_ref(repository, ref, ledger=None, identity=None):
+    """Release an internal pin only after its owner's recorded removal and verified keep.
+
+    There is no standalone authority to delete a ref. Without the ledger item,
+    its ending event and a verified keep record this refuses and leaves the ref.
+    The main repository must still reach its commit through a kept ref or branch.
+    A temporary ref unique even there stays for a later keep attempt. Branches,
+    tags, stashes and kept refs are never accepted by this entry.
+    """
+    commands = []
+    answer = {'item': identity, 'ref': ref, 'commands': commands, 'ok': False,
+              'deferral': 'keep_failed'}
+    try:
+        repository = _plain(str(repository))
+        if not isinstance(ref, str) or not ref.startswith(
+                ('refs/veldo/pins/', 'refs/veldo/batch/', 'refs/veldo/adoption/')):
+            raise ValueError('not an internal temporary ref')
+        code, out = _git(commands, '-C', repository, 'check-ref-format', ref)
+        if code != 0:
+            raise ValueError('invalid ref name')
+        record = ledger.item(identity) if ledger is not None and identity else None
+        if (not record or not record.get('owner') or record.get('owner_keep')
+                or record.get('state') != 'removed' or not (record.get('due') or {}).get('event')):
+            return dict(answer, deferral='not_in_ledger', said='no ended owner item authorizes this ref removal')
+        keeper = _sibling('control_space_keep')
+        if keeper.verify(ledger, identity).get('ok') is not True:
+            raise ValueError('the keep record could not be verified')
+        main = _plain(ledger.main_repository(identity))
+        code, out = _git(commands, '-C', repository, 'symbolic-ref', '-q', ref)
+        if code != 1:
+            raise ValueError('a symbolic or unreadable ref is not removable')
+        code, out = _git(commands, '-C', repository, 'show-ref', '--verify', '--hash', ref)
+        if code != 0 or not out.strip():
+            raise ValueError('the temporary ref could not be read')
+        old = out.strip()
+        code, out = _git(commands, '-C', main, 'for-each-ref', '--format=%(objectname)',
+                         'refs/heads/', 'refs/veldo/kept/')
+        if code != 0 or not out.strip():
+            raise ValueError('the main repository has no readable holding ref')
+        code, beyond = _git(commands, '-C', main, 'rev-list', '--stdin',
+                            feed=('\n'.join([old, '--not', *out.split()]) + '\n').encode())
+        if code != 0 or beyond.strip():
+            raise ValueError('the temporary ref has work no main repository branch or kept ref reaches')
+        # Compare the value under git's ref lock. Never follow a symbolic ref and never force.
+        code, out = _git(commands, '-C', repository, 'update-ref', '--no-deref', '-d', ref, old)
+        if code != 0:
+            raise ValueError('git refused the ref removal: ' + str(out)[:200])
+        return dict(answer, ok=True, deferral=None, commit=old, repository=main)
+    except Exception as error:  # noqa: BLE001 - no unread fact permits a delete
+        return dict(answer, said=_said(error))
