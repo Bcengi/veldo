@@ -1,11 +1,11 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0337",
- "commit": "863cbe2875880faa1c17515aa1a6c0b000139e60",
- "tree": "d2a1f9b29ce8ca5e18075ba32d32c3360c8b9ad6",
- "spec_revision": "sha256:ae28402de33c9f2b3577f22cf6d6a3eff480083baedba234facd0bec040a5ace",
- "producer": "Codex implementation agent; not an independent reviewer",
- "produced_at": "2026-11-15T20:35:39.858781+00:00",
+ "commit": "e2878b3c8f021b4c2117e91649530dd0b6d19e76",
+ "tree": "8d13004394fce11171db8e17bb77fc151b493b4c",
+ "spec_revision": "sha256:8966d1a5cac0709a80f85490cb0fb9f811e7d6ef678091f54f84e0916a7514ed",
+ "producer": "Codex implementation agent (build); Claude implementation agent (fix round after the review); not an independent reviewer",
+ "produced_at": "2026-11-15T21:04:17.632280+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -14,20 +14,32 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
-     "digest": "sha256:c538a97148e777e2e68b0f20297a12413419c9294b826a943b7907feeabe8fa5",
+     "digest": "sha256:e7191a5f1278375262e0b14bc68b5181df95317921f80c949bf97ab3affa5431",
      "detail": "ac1/after-commit: passing and failing verdicts are invisible on a second connection inside the transaction, with build and scratch still present. The one signal follows the durable record and names exact item versions and recorded owners. ac1/rejected-or-unstored: bad signature and failed store write emit nothing. ac1/both-callers: real Runtime.review and Dispatcher._review_floor converge on the common writer; the receiver sends run finished only."
     },
     {
      "type": "integration",
      "ref": "proof/VELDO-0337/targeted.txt",
-     "digest": "sha256:963a87a9623363d75c2e1cb8ac671e46833fed98acd4d0e6e1679d719ff3cc7f",
-     "detail": "Real floor transition, store transactions, signed review receipts and a second store connection; actual Signal and removers. The targeted suite has 11 ticket rows and 26 shared checks, all green. This is partial evidence, not a gate pass."
+     "digest": "sha256:c9e854614662ed195a4e7fd1d5d790965f141ecd91e4cef401f4c1d1e1df0e92",
+     "detail": "Real floor transition, store transactions, signed review receipts and a second store connection; actual Signal and removers. The targeted suite has 17 ticket rows after the fix round and 26 shared checks, all green. This is partial evidence, not a gate pass."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0337/falsifiers.json",
-     "digest": "sha256:eda47703c289fd6959ac2679649fb5f9759fe5acf037bea8154aff44763a1efa",
+     "digest": "sha256:e7f7975a4be1e444152b46aad9f2cee030242bef00f1d5054c65ccde043f7b59",
      "detail": "Before-commit and receiver-emitter falsifiers turn the timing and caller rows red. Owner-subject and missing Runtime wiring falsifiers also turn their target rows red."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
+     "digest": "sha256:e7191a5f1278375262e0b14bc68b5181df95317921f80c949bf97ab3affa5431",
+     "detail": "Fix round, finding 1. ac1/real-ordering, on both callers: after the production receiver's run finished and before any verdict is stored, the review's run directory is removed and its build and scratch are present with their planted files and are not named; they are removed only by the verdict recorded that follows the commit, with evidence intact. ac1/declared-at-creation: production space_run_folders declares a review run's scratch folder and build root without run finished and with verdict recorded, a build run's as before; the receiver's run finished ends the run directory and a build run's scratch and leaves the review's folders; the ledger refuses an end event the kind does not have. Finding 3. ac1/lost-send-reconciled: a stop between the commit and the send leaves a durable verdict and held items; the reconcile on a restarted floor sends once from the committed verdict, a second reconcile sends and writes nothing, and a review with no verdict is sent nothing."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0337/falsifiers.json",
+     "digest": "sha256:e7f7975a4be1e444152b46aad9f2cee030242bef00f1d5054c65ccde043f7b59",
+     "detail": "space337-run-finished-takes-review-folders (the seam declares a review's folders as any run's) and space337-ledger-drops-declared-ends (the ledger does not keep the declaration) let run finished take the build and scratch before the verdict: ac1/real-ordering and ac1/declared-at-creation red. space337-lost-send-not-reconciled (no reconcile path: the items stay held) and space337-reconcile-sends-again turn ac1/lost-send-reconciled red; space337-reconcile-not-at-start turns paths/wiring-and-canon red."
     }
    ]
   },
@@ -38,14 +50,26 @@
     {
      "type": "integration",
      "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
-     "digest": "sha256:c538a97148e777e2e68b0f20297a12413419c9294b826a943b7907feeabe8fa5",
+     "digest": "sha256:e7191a5f1278375262e0b14bc68b5181df95317921f80c949bf97ab3affa5431",
      "detail": "ac2/output-and-evidence: real build and scratch folders removed, evidence file byte-equal, only declared cache dropped. ac2/owner-and-keep: owner_keep item excluded at its version and another review untouched. ac2/stale-version: the ledger refuses the whole named send after an item changes, without fallback. ac2/report-and-owner-live: report writes due only; unread owner liveness defers removal. ac2/planted-work: a nested repository and its only commit remain in place."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0337/falsifiers.json",
-     "digest": "sha256:eda47703c289fd6959ac2679649fb5f9759fe5acf037bea8154aff44763a1efa",
+     "digest": "sha256:e7f7975a4be1e444152b46aad9f2cee030242bef00f1d5054c65ccde043f7b59",
      "detail": "Deleting the evidence root instead of only caches loses the planted evidence and turns ac2/output-and-evidence red. Naming owner_keep or another run turns ac2/owner-and-keep red. Replacing item versions with an owner subject turns ac2/stale-version red."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
+     "digest": "sha256:e7191a5f1278375262e0b14bc68b5181df95317921f80c949bf97ab3affa5431",
+     "detail": "Fix round, finding 2. ac2/second-attempt: a second review of the same unit names only its own dispatch's items at their versions; the first review's items stay. ac2/error-after-commit: Signal raising after the commit is observed as refused, Dispatcher._review_floor returns the review result, the verdict stays stored and nothing is removed. ac2/ends-on-the-event: a worktree of the review present at the verdict is not named and stays while the build output goes."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0337/falsifiers.json",
+     "digest": "sha256:e7f7975a4be1e444152b46aad9f2cee030242bef00f1d5054c65ccde043f7b59",
+     "detail": "space337-first-review-named turns ac2/second-attempt red; space337-error-after-commit-raised turns ac2/error-after-commit red; space337-not-ending-item-named turns ac2/ends-on-the-event red."
     }
    ]
   },
@@ -56,14 +80,20 @@
     {
      "type": "integration",
      "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
-     "digest": "sha256:c538a97148e777e2e68b0f20297a12413419c9294b826a943b7907feeabe8fa5",
+     "digest": "sha256:e7191a5f1278375262e0b14bc68b5181df95317921f80c949bf97ab3affa5431",
      "detail": "ac3/killed-no-verdict: a real child is killed, the fixture dispatch records its exit, the production receiver sends run finished, and the real floor rejects the receipt. No verdict is stored or emitted, evidence and its cache stay. ac3/keep-before-removal: a review worktree commit named only by its log is on verified kept refs in the main repository before removal; failed keep leaves the worktree and commit in place."
     },
     {
      "type": "unit",
      "ref": "proof/VELDO-0337/falsifiers.json",
-     "digest": "sha256:eda47703c289fd6959ac2679649fb5f9759fe5acf037bea8154aff44763a1efa",
+     "digest": "sha256:e7f7975a4be1e444152b46aad9f2cee030242bef00f1d5054c65ccde043f7b59",
      "detail": "Emitting verdict at receiver end turns the killed-review row red. Skipping the worktree keep step turns its planted-commit row red, with the worktree removed without kept refs."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
+     "digest": "sha256:e7191a5f1278375262e0b14bc68b5181df95317921f80c949bf97ab3affa5431",
+     "detail": "Fix round. ac3/killed-no-verdict also shows that a review with no verdict keeps its build and scratch after run finished, and that a reconcile sends nothing for it."
     }
    ]
   }
@@ -72,17 +102,17 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "Targeted suite 153_veldo_0337_verdict_recorded: 37 passed, 0 failed; partial exit 2. See targeted.txt."
+   "command": "Targeted suite 153_veldo_0337_verdict_recorded: 43 passed, 0 failed (17 ticket rows); partial exit 2. See targeted.txt."
   },
   {
    "name": "integration",
    "status": "passed",
-   "command": "The same suite uses real store, ledger, rules, removers and keeper. Regression suites 139_veldo_0301_space_signal: 44 passed; 146_veldo_0308_run_finished: 64 passed; 82_veldo_0129_worker_wiring: 55 passed. All 0 failed, partial exit 2. See regressions.txt."
+   "command": "The same suite uses real store, ledger, rules, removers and keeper. Thirteen regression suites green, 0 failed each (space ledger, principals, kinds, signal, paths, census, run finished, landed, ticket ended, worker wiring, floor, review, dispatch). 151_veldo_0313_space_run is not green on this host, with this change (18 failed) and on the unmodified HEAD c528e8aa (14 failed). See regressions.txt."
   },
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "python3 proof/VELDO-0337/run_falsifiers.py: eight registered cases applied individually in private copies. Seven target sets red on the first batch; one fixture shape assertion corrected and only that case rerun. Final eight target sets red, baseline eleven rows green. No teeth stage ran. See falsifiers.json."
+   "command": "python3 proof/VELDO-0337/run_falsifiers.py: sixteen registered cases applied individually in private copies, sixteen target sets red, baseline seventeen rows green. python3 scripts/check_teeth_mutations.py for finding 337: registered 16, executed 16, rejected 16. See falsifiers.json and targeted.txt."
   },
   {
    "name": "fast checks",
@@ -98,11 +128,14 @@
  "assumptions": [
   "The lead decision resolves the historical blocker in commit 0982de16. It extends the footprint and replaces the receiver emitter with the one durable verdict writer; the three criteria and their declared falsifiers are unchanged.",
   "Initial floor and dispatch records are fixture records. FloorAuthority constructor materialization is outside these rows; its record_review, _run, transaction validation and store commit are real. Worker execution output, dispatcher launch context and containment answers are stand-ins.",
-  "The ledger items are declared by the fixture. Space is explicitly injected; production installations without a space mapping emit no space event. The receiver is not changed by this ticket.",
   "The process table and Docker client are isolated stand-ins. No real engine or protected data was accessed. The killed child and git repositories are real and owned by the fixture.",
   "Two act prerequisites are fixture answers. Production act restrictions, rules, keeper and removers are unchanged. No worktree force option or new deletion path was added.",
   "The receipt uses a real SSH signature with the fixture key. Journal signing is a deterministic stand-in. Owner Keep is written through the existing ledger owner check.",
-  "Criteria remain pending until the lead runs the canonical gate and independent review. The known 86_veldo_0127 capture failures were not rerun or edited. No full gate, heavy suite, policy checker or teeth stage was run."
+  "Fix round, 2026-11-15, by the lead's three decisions on the review's findings. The scratch and build items of the fixture reviews are declared with the production helper control_launch.space_ends; ac1/declared-at-creation drives production space_run_folders. Production installations without a space mapping emit no space event and reconcile nothing.",
+  "The footprint was extended in this round to control_space.py and its synced copy (the ledger alone writes an item's end events) and to the design document for the dated note. Neither is a protected path. The lead's brief did not name the ledger file; the spec History records the extension for the lead to confirm.",
+  "The reconcile of a lost verdict event is called at the start of the worker's Runtime, where the floor is built. VELDO-0315's reconcile at start is not on this branch, so it is not where the call is made; control_space_reconcile.py is not touched.",
+  "Known effects, recorded in the spec History: a review that ends with no verdict leaves its scratch folder and build root for a later event of theirs; the build output the census declares inside a review's worktree still goes at run finished, before the worktree.",
+  "Criteria remain pending until the lead runs the canonical gate and a fresh independent review. Suite 151_veldo_0313_space_run is not green on this host with or without this change and is left to the lead. The known 86_veldo_0127 capture failures were not rerun or edited. No full gate, heavy suite or policy checker was run."
  ],
- "rollback": "Revert the implementation and proof commits. Existing run finished behavior remains."
+ "rollback": "Revert the fix commit and the implementation and proof commits. A review's items then end at run finished only."
 }
