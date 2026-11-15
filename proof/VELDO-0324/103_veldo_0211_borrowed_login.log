@@ -12,66 +12,66 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmpqndxpvxp: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmpqndxpvxp/nocrit.md: no acceptance criteria
-  /tmp/tmpqndxpvxp/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmpqndxpvxp/status.md: bad status: donezo
-  /tmp/tmpqndxpvxp/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmpqndxpvxp/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmpqndxpvxp/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmpqndxpvxp/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmpqndxpvxp/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmpqndxpvxp/verdict.json: bad verdict: looks_fine
-  /tmp/tmpegzn53qu/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpegzn53qu/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpegzn53qu/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpegzn53qu/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpegzn53qu/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpegzn53qu/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpegzn53qu/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpegzn53qu/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpegzn53qu/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpegzn53qu/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpegzn53qu/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpegzn53qu/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmp2m83p_w8: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp2m83p_w8/nocrit.md: no acceptance criteria
+  /tmp/tmp2m83p_w8/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp2m83p_w8/status.md: bad status: donezo
+  /tmp/tmp2m83p_w8/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp2m83p_w8/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp2m83p_w8/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp2m83p_w8/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp2m83p_w8/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmp2m83p_w8/verdict.json: bad verdict: looks_fine
+  /tmp/tmpu7exxuhi/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpu7exxuhi/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpu7exxuhi/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpu7exxuhi/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpu7exxuhi/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpu7exxuhi/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpu7exxuhi/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpu7exxuhi/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpu7exxuhi/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpu7exxuhi/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpu7exxuhi/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpu7exxuhi/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
 claude: captured
 codex: captured
-  103_veldo_0211_borrowed_login                   62 passed    1.82s
-selftest (PARTIAL, 1 of 224 suites): 88 passed, 0 failed in 1.82s
+  103_veldo_0211_borrowed_login                   62 passed    1.68s
+selftest (PARTIAL, 1 of 224 suites): 88 passed, 0 failed in 1.68s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/auth.json
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
-agent sandbox: credential claude-login/.credentials.json write-back to /tmp/v211-k4zqy9ep/account/.credentials.json failed: fixture storage failure after launch
-agent sandbox: credential .claude/.credentials.json write-back to /tmp/v211-k4zqy9ep/account/.credentials.json failed: fixture storage failure after launch
-agent sandbox: credential .claude/.credentials.json write-back to /tmp/v211-k4zqy9ep/account/.credentials.json failed: fixture storage failure after launch
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential .codex/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential codex-login/auth.json refreshed during the run, written back to /tmp/v211-736ughxn/account/auth.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential .claude/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
+agent sandbox: credential claude-login/.credentials.json write-back to /tmp/v211-736ughxn/account/.credentials.json failed: fixture storage failure after launch
+agent sandbox: credential .claude/.credentials.json write-back to /tmp/v211-736ughxn/account/.credentials.json failed: fixture storage failure after launch
+agent sandbox: credential .claude/.credentials.json write-back to /tmp/v211-736ughxn/account/.credentials.json failed: fixture storage failure after launch
 agent sandbox: the recovery could not be written: fixture store failure
-agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-k4zqy9ep/account/.credentials.json
+agent sandbox: credential claude-login/.credentials.json refreshed during the run, written back to /tmp/v211-736ughxn/account/.credentials.json
 agent sandbox: credential .credentials.json changed but not written back: rotated credential is missing a refresh token
 agent sandbox: credential auth.json changed but not written back: rotated credential is missing a refresh token
 agent sandbox: credential .credentials.json changed but not written back: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)

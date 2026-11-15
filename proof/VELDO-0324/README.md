@@ -56,3 +56,16 @@ proof did not run that stage. The receipts contain small summaries and source ha
 
 The lead's exact verification command is ./scripts/verify.sh through the gate lock.
 No full gate, heavy suite, teeth stage or policy check was run by this builder.
+
+Fix round 2 (2026-11-15, after the re-review). The ends_on option on the ledger's
+declare, the creator seam and the batch is removed; those ledger and seam files are
+back to their content before the first fix round. The batch observation folder keeps
+the evidence kind's default end list from the kind registry. Row ac1/observation-end
+asserts that the folder is evidence, is kept with its proof file after discard, and
+that verdict_recorded, ticket_ended and project_ended are all on its list. Row
+safety/no-end-option asserts that declare takes no end list from its caller; it
+replaces safety/invalid-end-events. The registry holds 20 cases for this finding;
+falsifier-cases.json is generated from it, falsifiers.json is this script's rerun,
+tests.json and the suite logs are reruns, and teeth.log is the teeth stage's own
+output for --finding 324, run last with no edits during it. The earlier statements
+above about seven falsifiers and no teeth stage describe the first proof round.

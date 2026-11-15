@@ -164,3 +164,9 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
 - 2026-11-15: lead decision for VELDO-0324 review: AC1 now explicitly names the batch
   observation folder as reviewer evidence, with declared end event verdict_recorded. Batch
   end does not end that evidence. This amends the older removal wording of VELDO-0324 AC1.
+
+- 2026-11-15: lead decision after the VELDO-0324 re-review: the folder's end list is the evidence
+  kind's default from the kind registry, not a list its creator chooses. verdict_recorded,
+  ticket ended and project ended are all on it; the folder survives batch end and is removed at
+  ticket end or project end. Read AC1's "ends at verdict_recorded" as: verdict_recorded is on
+  its end list. The design (VELDO-0295, sections 4, 6 and 13) now calls the folder evidence.

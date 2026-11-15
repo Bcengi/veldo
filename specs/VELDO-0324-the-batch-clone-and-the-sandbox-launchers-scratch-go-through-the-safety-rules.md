@@ -135,3 +135,13 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
   evidence ends at verdict_recorded. The creator seam passes that explicit event selection
   to the ledger, which validates it against the kind's lifecycle. Footprint includes the
   request writer and this declaration path. The earlier permission-restoration note is superseded.
+
+- 2026-11-15: fix round 2 after the re-review. The ends_on option on the ledger's declare, the
+  creator seam and the batch is removed: design 4.1 and 6.1 copy the end list from the kind
+  registry, and the chosen list had dropped ticket ended and project ended, so observation
+  folders would never have been removed. Lead decision: the folder keeps the evidence kind's
+  default end list. Row ac1/observation-end asserts that verdict_recorded, ticket ended and
+  project ended are all on it and that the folder survives batch end; row safety/no-end-option
+  replaces safety/invalid-end-events. Read AC1's "declared to end at verdict_recorded" as:
+  verdict_recorded is on its end list. The design now calls the folder evidence. The ledger and
+  creator-seam files are back to their content before the first fix round.

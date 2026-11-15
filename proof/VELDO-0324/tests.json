@@ -3,56 +3,56 @@
   "command": "nice -n 10 python3 scripts/selftest.py --suite 102_veldo_0210_agent_profile_runtime",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 263 passed, 0 failed in 19.50s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 263 passed, 0 failed in 20.35s",
   "detail": []
  },
  {
   "command": "nice -n 10 python3 scripts/selftest.py --suite 103_veldo_0211_borrowed_login",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 88 passed, 0 failed in 1.82s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 88 passed, 0 failed in 1.68s",
   "detail": []
  },
  {
   "command": "nice -n 10 python3 scripts/selftest.py --suite 133_veldo_0326_space_principals",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 56 passed, 0 failed in 25.31s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 56 passed, 0 failed in 25.76s",
   "detail": []
  },
  {
   "command": "nice -n 10 python3 scripts/selftest.py --suite 138_veldo_0300_space_remove",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 65 passed, 0 failed in 2.40s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 65 passed, 0 failed in 2.14s",
   "detail": []
  },
  {
   "command": "nice -n 10 python3 scripts/selftest.py --suite 139_veldo_0301_space_signal",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 44 passed, 0 failed in 1.36s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 44 passed, 0 failed in 1.05s",
   "detail": []
  },
  {
   "command": "nice -n 10 python3 scripts/selftest.py --suite 140_veldo_0345_space_keep",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 57 passed, 0 failed in 4.92s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 57 passed, 0 failed in 4.31s",
   "detail": []
  },
  {
   "command": "nice -n 10 python3 scripts/selftest.py --suite 153_veldo_0302_space_creators",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 68 passed, 0 failed in 1.56s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 68 passed, 0 failed in 1.43s",
   "detail": []
  },
  {
   "command": "nice -n 10 python3 scripts/selftest.py --suite 154_veldo_0324_batch_sandbox",
   "exit": 2,
   "passed": true,
-  "summary": "selftest (PARTIAL, 1 of 224 suites): 55 passed, 0 failed in 1.40s",
+  "summary": "selftest (PARTIAL, 1 of 224 suites): 55 passed, 0 failed in 1.27s",
   "detail": []
  }
 ]

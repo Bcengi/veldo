@@ -727,7 +727,7 @@ class Batch:
         CV = _organ('control_verification')
         creation = _organ('control_clone').SpaceCreator(self.space, self.space_owner, Refused)
         directory = creation.temporary('veldo-batch-observation-', self.workspace_root)
-        with creation.item('evidence', directory, ends_on=['verdict_recorded']):
+        with creation.item('evidence', directory):
             directory.mkdir(mode=0o700)
         r.setdefault('space_items', {}).update(creation.items)
         r['observation_dir'] = str(directory)
