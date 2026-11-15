@@ -200,5 +200,27 @@ def _v304_suite():
     row('launch/unique-work', launch_work)
     row('launch/boundary', lambda: module_boundary('control_launch', ('Runner.clear_runs', 'Receiver._remove_run')))
 
+    def runtime_work():
+        from types import SimpleNamespace
+        runtime = load('runtime', ROOT / '.veldo/control_launch_work.py')
+        with tempfile.TemporaryDirectory(prefix='v304-runtime-') as temporary:
+            path = Path(temporary) / 'candidate'
+            path.mkdir()
+            git(path, 'init', '-q', '-b', 'main')
+            (path / 'unique').write_text('only candidate work\n')
+            git(path, 'add', '.')
+            git(path, 'commit', '-q', '-m', 'unique')
+            tip = git(path, 'rev-parse', 'HEAD')
+            obj = object.__new__(runtime.Runtime)
+            obj.candidates, obj.space, obj.kept = [str(path)], None, []
+            obj.floor = obj.conn = SimpleNamespace(close=lambda: None)
+            obj.close()
+            assert obj.kept[-1]['deferral'] == 'not_in_ledger'
+            assert git(path, 'rev-parse', 'HEAD') == tip
+            assert (path / 'unique').read_text() == 'only candidate work\n'
+
+    row('runtime/unique-work', runtime_work)
+    row('runtime/boundary', lambda: module_boundary('control_launch_work', ('Runtime.close',)))
+
 
 _v304_suite()

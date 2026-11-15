@@ -54,5 +54,12 @@
   "row": "launch/boundary",
   "old": "        elif not stays:\n            self._unstage_skills()\n",
   "new": "        elif not stays:\n            shutil.rmtree(run)\n            self._unstage_skills()\n"
+ },
+ {
+  "name": "runtime-direct-tree",
+  "path": ".veldo/control_launch_work.py",
+  "row": "runtime/boundary",
+  "old": "                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+  "new": "                shutil.rmtree(directory)\n                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n"
  }
 ]

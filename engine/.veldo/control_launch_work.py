@@ -71,84 +71,8 @@ _SPACE = {}
 
 
 def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
-    """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
-    and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
-    whatever goes is removed by Signal's removers, after the safety rules and the keep step.
-
-    `space` is what the installation wires in when it has a space ledger: a mapping with ledger (the
-    control_space.Ledger) and, under their own names, the arguments Signal is given (probe, kinds,
-    remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). The items are the live
-    ones the ledger records at or beneath `paths`. The event is signalled once for each owner among
-    them, and the subject is every part of that owner. A path the ledger records no live item for
-    answers with no item and the deferral not_in_ledger, and nothing is done to it; when the kernel
-    says nothing is at that path (not found, and no other answer) it answers gone, for there is
-    nothing to remove. Whatever raises removes nothing: every path then answers with the deferral
-    remove_refused and what was raised.
-
-    `ended` says the caller has just read from the kernel that the runs owning these items are over:
-    rule 3 is answered conclusive for those runs and for no other owner. `confirm` first confirms the
-    items still in state declared (a creation that failed part way), so the event reaches them.
-    `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
-    repository that is not at or beneath `paths`."""
-    paths = [os.path.normpath(str(path)) for path in paths]
-    found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
-
-    def beneath(record):
-        where = (record.get('locator') or {}).get('path')
-        return bool(where) and any(where == path or where.startswith(path + '/') for path in paths)
-
-    def owned(record, subject):
-        owner = record.get('owner') or {}
-        return all(((owner.get(part) or {}).get('id') if part == 'run' else owner.get(part)) == wanted
-                   for part, wanted in subject.items())
-
-    try:
-        ledger = space['ledger']
-        given = {key: value for key, value in space.items() if key != 'ledger'}
-        every = ledger.items()
-        live = {identity: record for identity, record in every.items()
-                if record.get('state') not in SPACE_ENDED and beneath(record)}
-        subjects, runs = [], set()
-        for identity, record in sorted(live.items()):
-            if confirm and record.get('state') == 'declared':
-                ledger.confirm(identity)
-            owner = dict(record.get('owner') or {})
-            if isinstance(owner.get('run'), dict):
-                owner['run'] = owner['run'].get('id')
-                runs.add(owner['run'])
-            if owner and owner not in subjects:
-                subjects.append(owner)
-        others = [identity for identity, record in sorted(every.items())
-                  if alone and identity not in live and record.get('state') not in SPACE_ENDED
-                  and record.get('kind') in ('worktree', 'agent_repository')
-                  and any(owned(record, subject) for subject in subjects)]
-        if others:
-            raise ValueError('the owner of this thing also owns %s: the event would end it too'
-                             % ', '.join(others[:3]))
-        if ended:
-            wired = given.get('owner_live')
-            given['owner_live'] = lambda owner: (
-                {'conclusive': True, 'group_empty': True} if (owner.get('run') or {}).get('id') in runs
-                else wired(owner) if wired else None)
-        if 'signal' not in _SPACE:
-            _SPACE['signal'] = organ('control_space_signal').signal
-        for subject in subjects:
-            _SPACE['signal'](ledger, event, subject, emitter=emitter, **given)
-        for identity, record in live.items():
-            where = record['locator']['path']
-            if where in found:
-                now = ledger.item(identity) or {}
-                found[where] = {'item': identity, 'state': now.get('state'),
-                                'deferral': (now.get('deferral') or {}).get('rule')
-                                if now.get('state') == 'deferred' else None}
-        for path in paths:
-            if found[path]['item'] is None and space_absent(path):
-                found[path] = {'item': None, 'state': 'gone', 'deferral': None}
-    except Exception as error:  # noqa: BLE001 - what could not be signalled is not removed
-        raised = '%s: %s' % (type(error).__name__, str(error)[:300])
-        found = {path: {'item': None, 'state': None, 'deferral': 'remove_refused', 'raised': raised}
-                 for path in paths}
-    return found
+    """Send the shared item-naming event, retaining the owner and version of each item."""
+    return CL.space_signal(space, event, paths, emitter, ended=ended, confirm=confirm)
 
 
 def space_absent(path):
@@ -230,13 +154,8 @@ class Runtime:
     def close(self):
         for directory in self.candidates:
             if self.space is None:
-                # No ledger: the unique work probe and the keep step by themselves; a candidate folder whose
-                # commits are not on kept refs in the repository, or that holds unsaved files, stays.
-                found = space_standalone(directory, 'agent_repository', main=self.root)
-                if found['state'] in SPACE_SAFE:
-                    shutil.rmtree(directory, ignore_errors=True)
-                else:
-                    self.kept.append(dict(found, path=directory, refusal=space_refusal(found)))
+                found = {'path': str(directory), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}
+                self.kept.append(dict(found, refusal=space_refusal(found)))
                 continue
             # VELDO-0303: a candidate folder is a private repository. It goes through Signal, after the rules
             # and the keep step, or it stays and the deferral is on the record.
