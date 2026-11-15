@@ -1,9 +1,3 @@
-space336-project-owns-detached: rejected
-space336-run-owns-branch: rejected
-space336-scratch-is-unique-work: rejected
-space336-scratch-not-saved: rejected
-space336-delete-without-comparison: rejected
-space336-link-target-deleted: rejected
-space336-open-file-ignored: rejected
-space336-build-census-skipped: rejected
-space336-paths-truncated: rejected
+Superseded in the fix round by teeth-run.txt: the teeth stage itself now runs suite 153 and
+measures all 11 registered cases. falsifiers.json and apply_falsifiers.py are the first round's
+record of 9 cases applied outside the teeth stage, kept as they were.

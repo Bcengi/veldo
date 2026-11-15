@@ -1,0 +1,16 @@
+nice -n 10 python3 scripts/check_teeth_mutations.py --finding 336 (tree f5e7fca0c301c96a5c170372cf3ddd26ad1690db, commit 1cd912af)
+mutations: passed registered=11 executed=11 reused=0 rejected=11 workers=21 elapsed=28.933s
+exit 0
+status passed, scope selected, invalid_results 0, surviving_workers 0
+Each case: baseline count and failed rows, then the rows the mutant turned red.
+space336-project-owns-detached: baseline 47 rows, 0 failed; mutant red: ac1/detached-owned-and-ended, ac3/scratch-saved-and-removed, ac3/changed-after-save, ac3/added-after-save, ac3/mode-after-save, ac3/folder-retry, ac3/failed-keep, ac4/link-target-stays, ac4/open-file-stays, ac4/opened-during-removal, loss/kept-child, loss/tracked-edit, loss/build-station, loss/personal-ignore, loss/protect, ownership/unknown-run
+space336-scratch-is-unique-work: baseline 47 rows, 0 failed; mutant red: ac3/scratch-saved-and-removed, ac3/changed-after-save, ac3/added-after-save, ac3/mode-after-save, ac3/folder-retry, ac3/failed-keep, ac4/link-target-stays, ac4/opened-during-removal
+space336-scratch-not-saved: baseline 47 rows, 0 failed; mutant red: ac3/scratch-saved-and-removed, ac3/folder-retry, ac4/link-target-stays, ac4/opened-during-removal
+space336-delete-without-comparison: baseline 47 rows, 0 failed; mutant red: ac3/changed-after-save, ac3/added-after-save, ac3/mode-after-save, ac3/folder-retry, ac4/opened-during-removal
+space336-per-path-rules-skipped: baseline 47 rows, 0 failed; mutant red: ac4/opened-during-removal
+space336-open-file-ignored: baseline 47 rows, 0 failed; mutant red: ac4/open-file-stays, ac4/opened-during-removal
+space336-link-target-deleted: baseline 47 rows, 0 failed; mutant red: ac4/link-target-stays
+space336-run-owns-branch: baseline 47 rows, 0 failed; mutant red: ac2/branch-keeps-owner
+space336-parent-follows-link: baseline 47 rows, 0 failed; mutant red: paths/parent-link-refused
+space336-build-census-skipped: baseline 47 rows, 0 failed; mutant red: ac1/detached-owned-and-ended
+space336-paths-truncated: baseline 47 rows, 0 failed; mutant red: ac3/scratch-saved-and-removed
