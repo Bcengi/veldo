@@ -704,7 +704,7 @@ def verify(dest):
     require every tracked file to come back byte-identical to this repository's."""
     d = Path(dest)
     if d.exists():
-        shutil.rmtree(d)
+        raise SystemExit("rename: destination exists; a recorded owner item is required for removal: %s" % d)
     _git_process.run(["git", "clone", "-q", str(ROOT), str(d)], check=True)
 
     # SNAPSHOT THE CLONE, not this working tree. An earlier version compared the round-tripped

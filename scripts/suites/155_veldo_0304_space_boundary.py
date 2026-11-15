@@ -271,6 +271,8 @@ def _v304_suite():
     row('migration/boundary', lambda: script_boundary('migrate_to_veldo', ('build',)))
     row('publish/unique-work', lambda: output_work('publish', lambda module, path: module.build(path)))
     row('publish/boundary', lambda: script_boundary('publish', ('build', 'main')))
+    row('rename/unique-work', lambda: output_work('rename_migration', lambda module, path: module.verify(path)))
+    row('rename/boundary', lambda: script_boundary('rename_migration', ('verify',)))
 
 
 _v304_suite()

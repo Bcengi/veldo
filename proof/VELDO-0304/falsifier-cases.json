@@ -82,5 +82,12 @@
   "row": "publish/boundary",
   "old": "        raise SystemExit(\"publish: destination exists; a recorded owner item is required for removal: %s\" % dest)",
   "new": "        shutil.rmtree(dest)"
+ },
+ {
+  "name": "rename-direct-tree",
+  "path": "scripts/rename_migration.py",
+  "row": "rename/boundary",
+  "old": "        raise SystemExit(\"rename: destination exists; a recorded owner item is required for removal: %s\" % d)",
+  "new": "        shutil.rmtree(d)"
  }
 ]

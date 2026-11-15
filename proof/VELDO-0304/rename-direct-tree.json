@@ -1,0 +1,18 @@
+{
+ "case": "rename-direct-tree",
+ "row": "rename/boundary",
+ "red": [
+  {
+   "row": "VELDO-0304 rename/unique-work",
+   "passed": false,
+   "detail": " do-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 274, in <lambda>\n    row('rename/unique-work', lambda: output_work('rename_migration', lambda module, path: module.verify(path)))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 257, in output_work\n    operation(module, path)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 274, in <lambda>\n    row('rename/unique-work', lambda: output_work('rename_migration', lambda module, path: module.verify(path)))\n                                                                                           ^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-t3ozcco2/scripts/rename_migration.py\", line 708, in verify\n    _git_process.run([\"git\", \"clone\", \"-q\", str(ROOT), str(d)], check=True)\n  File \"/tmp/v304-mutation-t3ozcco2/.veldo/git_process.py\", line 159, in run\n    return _invoke(subprocess.run, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-t3ozcco2/.veldo/git_process.py\", line 155, in _invoke\n    return invoke(args, **_options(args, kwargs, private_home))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['git', 'clone', '-q', '/tmp/v304-mutation-t3ozcco2', '/tmp/v304-output-h39n55qb/existing']' returned non-zero exit status 128.\n"
+  },
+  {
+   "row": "VELDO-0304 rename/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 275, in <lambda>\n    row('rename/boundary', lambda: script_boundary('rename_migration', ('verify',)))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 267, in script_boundary\n    assert not [error for error in errors if any(function + ':' in error for function in functions)], errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['scripts/rename_migration.py:707: verify: remove:recursive folder outside its reviewed boundary']\n"
+  }
+ ],
+ "before": "28221780e24eb97d05b7e621c5f7a88ad03c9aec998f7277888a8fee909a9bbd",
+ "after": "b9081758223f986ae306cc54acae8eb75f3647db12e2cd8a656b0543609bd84e"
+}
