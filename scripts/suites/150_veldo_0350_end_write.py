@@ -38,6 +38,11 @@ END_UNRECORDED, the record still running; a receiver that could not read its con
 same), ac3/zero-with-an-end (a receiver that fails after its end was recorded reports failed and exits 0;
 one that ends cleanly reports no failure and exits 0).
 
+FIX 2 ROW (the review of 6e0b807b, finding 5): f2/unrecorded-before-running (a dispatch whose record is
+accepted, not yet running: a receiver that exits END_UNRECORDED there is recorded unknown with the reason
+launch_evidence_missing:end_unrecorded; one that ended with another status and one the runner killed are
+recorded launch_evidence_missing as before; the real receiver started by invoke is recorded the first way).
+
 paths/canon: the engine canon equals this repository's copies.
 
 STAND-INS. The dispatch records are fixture records, written whole in the state the receiver's own run
@@ -73,6 +78,7 @@ def _v350_end_write_suite():
             'ac2/never-two-ends', 'ac2/retry-is-bounded',
             'ac3/failed-without-an-end', 'ac3/zero-with-an-end',
             'f1/launch-records-the-status', 'f1/receiver-errors-in-the-log',
+            'f2/unrecorded-before-running',
             'paths/canon')
     rows = {name: [] for name in ROWS}
 
@@ -552,6 +558,46 @@ L.main()
         unopened = L._receiver_errors(str(blocked), dispatch_id)
         check(R, 'a log that cannot be opened refuses no launch: no descriptor and no path are given [%s]' % (unopened,),
               unopened == (None, None))
+
+        # ---- Fix 2 (the review of 6e0b807b, finding 5): the same before the record reaches running ----
+        R = 'f2/unrecorded-before-running'
+
+        def started(name, argv=None, accept_seconds=60):
+            """A dispatch whose record is accepted, not yet running, and the runner's Launch.start over its
+            receiver: a process given by `argv`, or the real receiver started by invoke."""
+            dispatch_id, contract = planted(name, state='accepted')
+            if argv is None:
+                made = L.invoke(str(real_config), dict(contract, deadline=time.time() + 600), running,
+                                accept_seconds=accept_seconds, environment=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'))
+            else:
+                made = launched(argv, contract, feed=False)
+                made.result = made.record = None
+                made.start(accept_seconds)
+            return made, shown(made, dispatch_id), holder(contract) == dispatch_id
+
+        made, early, held = started('early-17', [sys.executable, '-c', 'import os, sys; os.close(1); sys.exit(%d)'
+                                                 % L.END_UNRECORDED])
+        check(R, 'a receiver that exits END_UNRECORDED before its record reaches running is recorded unknown once, '
+                 'by the runner, and the reason names end_unrecorded: launch evidence missing, and the receiver said '
+                 'so itself [%s %s]' % (early, made.result),
+              early == (L.END_UNRECORDED, 'unknown', L.EVIDENCE_UNRECORDED_REASON, [('unknown', 'runner')])
+              and made.result == 'unknown' and held
+              and L.EVIDENCE_UNRECORDED_REASON == 'launch_evidence_missing:end_unrecorded'
+              and D.taxonomy(L.EVIDENCE_UNRECORDED_REASON) == D.taxonomy('launch_evidence_missing') == 'unknown_outcome')
+        made, gone, _held = started('gone-18', [sys.executable, '-c', 'import sys; sys.exit(1)'])
+        made, killed, _held = started('dead-19', [sys.executable, '-c', 'import time; time.sleep(600)'], accept_seconds=0.3)
+        check(R, 'a receiver that ended there with another status, and a silent one the runner had to kill, are '
+                 'recorded as before, launch_evidence_missing with nothing after it: told apart [%s %s]' % (gone, killed),
+              gone == (1, 'unknown', 'launch_evidence_missing', [('unknown', 'runner')])
+              and killed[0] is not None and killed[0] < 0
+              and killed[1:] == ('unknown', 'launch_evidence_missing', [('unknown', 'runner')]))
+        made, real, held = started('real-20')
+        log = Path(made.receiver_log).read_text() if made.receiver_log and os.path.exists(made.receiver_log) else None
+        check(R, 'the real receiver, started by invoke on an accepted dispatch it cannot run, exits END_UNRECORDED '
+                 'and the launch records that reason; its log says no end [%s %s %s]' % (real, made.result, log),
+              real == (L.END_UNRECORDED, 'unknown', L.EVIDENCE_UNRECORDED_REASON, [('unknown', 'runner')])
+              and made.result == 'unknown' and held
+              and log is not None and 'no end (exit %d)' % L.END_UNRECORDED in log)
         writer.close()
 
         R = 'paths/canon'

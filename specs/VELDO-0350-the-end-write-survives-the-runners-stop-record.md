@@ -229,3 +229,21 @@ The owner's recorded approval is needed at landing.
     the log; applied once, red on their rows.
   - Not done here, from the review's notes: N1 (two guards of the retry that no row holds), N2 (the
     runner's stop_result is not retried), N3. Each is for a ticket or a later round.
+- 2026-11-14: fix 2, after the review of 6e0b807b (review-veldo-0303fix-0350fix.md, finding 5,
+  minor). No acceptance criterion changed. control_launch.py only, canon and copy.
+  - A receiver that exits END_UNRECORDED before its dispatch's record reaches running was recorded
+    by Launch.start exactly as one that died: unknown, reason launch_evidence_missing. Launch._settle
+    now reads the status the launch already keeps: the reason is
+    launch_evidence_missing:end_unrecorded for a receiver that exited END_UNRECORDED and
+    launch_evidence_missing otherwise. The part before the colon is the code every reader has, so
+    nothing that holds or frees a unit changes.
+  - Suite 150 is 11 rows, 37 passed. f2/unrecorded-before-running: on an accepted dispatch, a
+    receiver that exits 3 is recorded with the new reason, one that exits 1 and one the runner kills
+    are recorded launch_evidence_missing, and the real receiver started by invoke is recorded with
+    the new reason and its line is in the log.
+  - Two falsifiers added under finding 350 (13 now), each applied once and red on the row:
+    end350-unrecorded-before-running-recorded-as-dead and
+    end350-every-receiver-lost-before-running-recorded-unrecorded. One case of finding 39
+    (dispatch-lost-answer-as-refused) is re-anchored, unchanged in meaning, because the line it names
+    now takes the reason from a name.
+  - Not done here: naming receiver_log in the runner's observation.

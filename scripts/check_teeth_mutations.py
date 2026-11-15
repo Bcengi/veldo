@@ -3027,10 +3027,11 @@ def cases():
              "    if target not in HOLDING:\n",
              "    if target not in HOLDING or target == 'unknown':  # defect: an unknown outcome releases its unit\n",
              'unknown-never-relaunched')
+    # Re-anchored under VELDO-0350 fix 2, unchanged in meaning: the reason is a name on the line before now.
     dispatch('dispatch-lost-answer-as-refused', 'control_launch.py',
-             "            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
+             "            record = self.dispatches.unknown(self.dispatch_id, digest, reason, now=self.clock(),\n"
              "                                             expected_state='accepted', execution_record=self._record_commitment())\n",
-             "            record = self.dispatches.refuse(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),\n"
+             "            record = self.dispatches.refuse(self.dispatch_id, digest, reason, now=self.clock(),\n"
              "                                            expected_state='accepted')\n",
              'launch-results')
     dispatch('dispatch-receiver-identity-recorded', 'control_launch.py',
@@ -14798,6 +14799,17 @@ def cases():
             "            sys.stderr.write('receiver failed: %s %s; the dispatch\\'s record shows %s (exit %d)\\n' % (\n",
             "            ''.join('receiver failed: %s %s; the dispatch\\'s record shows %s (exit %d)\\n' % (\n",
             ['f1/launch-records-the-status', 'f1/receiver-errors-in-the-log'])
+    # VELDO-0350 fix 2 (the review of 6e0b807b, finding 5): a receiver that exits END_UNRECORDED before
+    # its record reaches running is recorded as a dead one is; and every receiver lost there is
+    # recorded as one that said it left no end.
+    kept350('end350-unrecorded-before-running-recorded-as-dead',
+            "            reason = EVIDENCE_UNRECORDED_REASON if self.returncode == END_UNRECORDED else 'launch_evidence_missing'\n",
+            "            reason = 'launch_evidence_missing'\n",
+            ['f2/unrecorded-before-running'])
+    kept350('end350-every-receiver-lost-before-running-recorded-unrecorded',
+            "            reason = EVIDENCE_UNRECORDED_REASON if self.returncode == END_UNRECORDED else 'launch_evidence_missing'\n",
+            "            reason = EVIDENCE_UNRECORDED_REASON\n",
+            ['f2/unrecorded-before-running'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

@@ -2076,7 +2076,8 @@ class Launch:
     def _settle(self, lost):
         """The launch result from the record. When the receiver ended without a conclusive record it
         is settled here: still prepared is refused (the receiver spawns only after its acceptance
-        commits, and it has ended), accepted is unknown (a stop owed, never a second launch)."""
+        commits, and it has ended), accepted is unknown (a stop owed, never a second launch). The
+        reason of that unknown says whether the receiver itself said it left no end (its exit status)."""
         record = self.dispatches.record(self.dispatch_id)
         state = (record or {}).get('state')
         digest = (record or {}).get('contract_digest')
@@ -2084,7 +2085,10 @@ class Launch:
             record = self.dispatches.refuse(self.dispatch_id, digest, 'receiver_unavailable', now=self.clock(),
                                             expected_state='prepared')
         elif lost and state == 'accepted':
-            record = self.dispatches.unknown(self.dispatch_id, digest, 'launch_evidence_missing', now=self.clock(),
+            # VELDO-0350 fix 2: a receiver that said itself that it left no end (it failed before its record
+            # reached running and exited END_UNRECORDED) is recorded apart from one that died or was killed.
+            reason = EVIDENCE_UNRECORDED_REASON if self.returncode == END_UNRECORDED else 'launch_evidence_missing'
+            record = self.dispatches.unknown(self.dispatch_id, digest, reason, now=self.clock(),
                                              expected_state='accepted', execution_record=self._record_commitment())
         state = (record or {}).get('state')
         self.record = record
@@ -3880,6 +3884,9 @@ END_UNRECORDED = 3  # the receiver's exit status when it failed and the dispatch
 # What Launch.wait records for a receiver that exited END_UNRECORDED with its dispatch still running: an
 # unknown outcome as every other (its code before the colon), and why.
 END_UNRECORDED_REASON = 'outcome_unknown:end_unrecorded'
+# What Launch.start records for a receiver that exited END_UNRECORDED before its dispatch's record reached
+# running: launch evidence missing as for every receiver that ended there, and why.
+EVIDENCE_UNRECORDED_REASON = 'launch_evidence_missing:end_unrecorded'
 RECEIVER_EXIT_SECONDS = 2  # how long a receiver whose output has ended is given to exit by itself
 
 
