@@ -110,5 +110,12 @@
   "row": "service/boundary",
   "old": "                # Keep the pathname at shutdown. The next locked bind owns stale socket replacement.\n",
   "new": "                os.unlink(config['socket'])\n"
+ },
+ {
+  "name": "mutation-time-delete",
+  "path": "scripts/mutation_ownership.py",
+  "row": "mutation/boundary",
+  "old": "        wait_for_empty(self.path)\n",
+  "new": "        if time.monotonic() > 0:\n            wait_for_empty(self.path)\n"
  }
 ]

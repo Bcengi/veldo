@@ -562,15 +562,21 @@ class WorkerMeter:
         self.peer = self.lifecycle = None
         if not self.path.exists():
             return
-        events = self.path / 'cgroup.events'
-        if 'populated 1' in events.read_text():
-            (self.path / 'cgroup.kill').write_text('1')
-            end = time.monotonic() + 5
-            while 'populated 1' in events.read_text():
-                if time.monotonic() >= end:
-                    raise RuntimeError('worker cgroup remains populated')
-                time.sleep(.02)
+        wait_for_empty(self.path)
         for path in sorted(self.path.rglob('*'), reverse=True):
             if path.is_dir():
                 path.rmdir()
         self.path.rmdir()
+
+
+def wait_for_empty(path):
+    """Wait for kernel process exit. This clock never decides to remove a stored item."""
+    import time
+    events = path / 'cgroup.events'
+    if 'populated 1' in events.read_text():
+        (path / 'cgroup.kill').write_text('1')
+        end = time.monotonic() + 5
+        while 'populated 1' in events.read_text():
+            if time.monotonic() >= end:
+                raise RuntimeError('worker cgroup remains populated')
+            time.sleep(.02)

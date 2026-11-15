@@ -337,5 +337,27 @@ def _v304_suite():
     row('service/unique-work', service_work)
     row('service/boundary', lambda: module_boundary('control_service', ('serve',)))
 
+    def mutation_work():
+        ownership = load('ownership', ROOT / 'scripts/mutation_ownership.py')
+        with tempfile.TemporaryDirectory(prefix='v304-meter-') as temporary:
+            path = Path(temporary) / 'group'
+            path.mkdir()
+            (path / 'cgroup.events').write_text('populated 0\n')
+            (path / 'unique').write_bytes(b'not a disposable kernel directory\n')
+            meter = object.__new__(ownership.WorkerMeter)
+            meter.dropins, meter.retained, meter.accounting_slice = [], {}, None
+            meter.peer = meter.lifecycle = None
+            meter.path = path
+            try:
+                meter.close()
+            except OSError:
+                pass
+            else:
+                raise AssertionError('a nonempty ordinary directory was removed')
+            assert (path / 'unique').read_bytes() == b'not a disposable kernel directory\n'
+
+    row('mutation/unique-work', mutation_work)
+    row('mutation/boundary', lambda: script_boundary('mutation_ownership', ('WorkerMeter.close',)))
+
 
 _v304_suite()
