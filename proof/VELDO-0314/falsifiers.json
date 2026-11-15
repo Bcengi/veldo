@@ -1,8 +1,9 @@
 {
-  "scope": "Four targeted manual mutations; no teeth run and no full gate.",
+  "scope": "Every mutation registered for finding 314, applied by hand; the teeth driver run is recorded in targeted-tests.json. No full gate.",
   "results": [
     {
       "case": "space314-record-at-end-only",
+      "module": "control_space_spool.py",
       "applied": 1,
       "target_rows": {
         "ac1/start-owns-scratch": [
@@ -14,6 +15,7 @@
     },
     {
       "case": "space314-drop-no-project",
+      "module": "control_space_spool.py",
       "applied": 1,
       "target_rows": {
         "ac2/no-project": [
@@ -25,6 +27,7 @@
     },
     {
       "case": "space314-remove-inside-hook",
+      "module": "control_space_spool.py",
       "applied": 1,
       "target_rows": {
         "ac3/end-returns-with-removers-held": [
@@ -36,9 +39,169 @@
     },
     {
       "case": "space314-failure-reaches-client",
+      "module": "control_space_spool.py",
       "applied": 1,
       "target_rows": {
         "ac4/down-starts-and-spools": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-folder-not-resolved",
+      "module": "control_space_spool.py",
+      "applied": 1,
+      "target_rows": {
+        "fix2/folder-resolved": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-invalid-dropped",
+      "module": "control_space_spool.py",
+      "applied": 1,
+      "target_rows": {
+        "fix2/invalid-refused": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-unsafe-folder-silent",
+      "module": "control_space_spool.py",
+      "applied": 1,
+      "target_rows": {
+        "fix3/unsafe-folder": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-unsafe-no-fallback",
+      "module": "control_space_spool.py",
+      "applied": 1,
+      "target_rows": {
+        "fix3/unsafe-folder": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-no-last-record",
+      "module": "control_space_spool.py",
+      "applied": 1,
+      "target_rows": {
+        "fix3/no-spool-last-record": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-deadline-sets-aside",
+      "module": "control_space_spool.py",
+      "applied": 1,
+      "target_rows": {
+        "fix4/deadline-in-read": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-partials-not-swept",
+      "module": "control_space_spool.py",
+      "applied": 1,
+      "target_rows": {
+        "fix6/stale-partial-set-aside": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-hook-no-fallback",
+      "module": "space-session.py",
+      "applied": 1,
+      "target_rows": {
+        "fix3/no-state-root": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-hook-no-last-record",
+      "module": "space-session.py",
+      "applied": 1,
+      "target_rows": {
+        "fix3/no-module-last-record": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-cli-raw-paths",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "fix5/cli-wired-canonical": [
+          false
+        ],
+        "fix5/cli-resolves": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-cli-unresolved",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "fix5/cli-resolves": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-cli-folder-unresolved",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "fix5/cli-resolves": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-cli-session-path-silent",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "fix5/cli-session-path-said": [
           false
         ]
       },

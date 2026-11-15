@@ -31,7 +31,7 @@
     "command": "bash scripts/check_lint.sh",
     "exit_code": 0,
     "summary": [
-      "lint: pass (1205 python, 39 shell, 2.37s)"
+      "lint: pass (1206 python, 39 shell, 2.85s)"
     ]
   }
 ]
