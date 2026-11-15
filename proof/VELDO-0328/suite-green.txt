@@ -38,3 +38,38 @@ Only this worktree and test-created temporary output were written. No host data 
 Final inspection added refusal for malformed image names or labels. The new suite was repeated
 at 96eceb36: 40 passed, 0 failed; all 10 falsifiers ran on those final sources with passing controls.
 Template sync was repeated after that change and passed all 321 pairs.
+
+Fix round 1, 2026-11-15, after review verdict FIX (three findings)
+Implementation: 7b9e0f7c1d6df3184da65106c660e9a194113c76
+
+Each suite selected individually through scripts/selftest.py, VELDO_MUTATION_DRIVER=1. PARTIAL runs.
+153_veldo_0328_images: 43 passed, 0 failed
+138_veldo_0300_space_remove: 65 passed, 0 failed
+139_veldo_0301_space_signal: 44 passed, 0 failed
+140_veldo_0345_space_keep: 57 passed, 0 failed
+144_veldo_0306_space_docker: 54 passed, 0 failed
+145_veldo_0307_space_docker_ownership: 51 passed, 0 failed
+147_veldo_0310_landed_contained: 59 passed, 0 failed
+
+The suite now has 17 named rows: ac1/untagged-parent, ac1/unknown-run and safety/option-name are new.
+Suites 138 and 147 were red on the changed command before their assertions were updated: 138 on the
+exact command and on its reading of the word prune (command and source strings), 147 on the exact command.
+
+python3 scripts/check_teeth_mutations.py --finding 328: mutations: passed registered=14 executed=14 reused=0 rejected=14 workers=18 elapsed=6.639s
+python3 scripts/check_teeth_mutations.py --finding 300: passed registered=26 executed=26 rejected=26
+python3 scripts/check_teeth_mutations.py --finding 310: passed registered=22 executed=22 rejected=22
+python3 proof/VELDO-0328/run_falsifiers.py: 14 of 14 caught, every control 43 checks green.
+
+Falsifiers seen red in this round, first failing check of the target row:
+space328-remove-prunes-parents (finding 1): ac1/untagged-parent, the untagged parent Veldo did not
+  build survives on default.
+space328-pull-inventory-fails-open (finding 2, the reviewer's R1, which survived before): safety/unread,
+  an unread pull inventory refuses removal.
+space328-unknown-run-borrows-owner (finding 3a, the reviewer's R5): ac1/unknown-run, an unlabelled
+  image built for an unknown run is refused on default.
+space328-option-name-passes (finding 3b, the reviewer's R6): safety/option-name, a build named --force
+  is refused on default.
+
+Fast checks: validate.py all exit 0; check_docs.sh pass; check_template_sync.sh pass, 321 pairs;
+check_git_boundary.py pass.
+Not run: ./scripts/verify.sh, policy_check.py, heavy suites, full teeth stages, real engines.
