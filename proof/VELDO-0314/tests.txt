@@ -1,0 +1,7 @@
+VELDO-0314 targeted checks, partial runs only. The full gate was not run.
+153_veldo_0314_session_hooks: 14 rows passed; 40 checks including shared preamble, 0 failed.
+148_veldo_0311_git_hooks: 31 rows passed; 57 checks including shared preamble, 0 failed.
+Both invoked with python3 scripts/selftest.py and the suite selector.
+Four manual production mutations: four target rows red, no fixture exception.
+The latch mutation attempted synchronous removal and failed the 15 second return bound.
+No real engine, protected data, live captures or installed client account was accessed.

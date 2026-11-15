@@ -1,0 +1,37 @@
+[
+  {
+    "command": "python3 .veldo/validate.py all",
+    "exit_code": 0,
+    "summary": [
+      "  /home/dmitry/projects/veldo-worktrees/space-0314/.veldo/examples/proof-example.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit"
+    ]
+  },
+  {
+    "command": "bash scripts/check_docs.sh",
+    "exit_code": 0,
+    "summary": [
+      "docs hygiene: pass"
+    ]
+  },
+  {
+    "command": "bash scripts/check_template_sync.sh",
+    "exit_code": 0,
+    "summary": [
+      "template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+    ]
+  },
+  {
+    "command": "bash scripts/check_generated.sh",
+    "exit_code": 0,
+    "summary": [
+      "generated: pass"
+    ]
+  },
+  {
+    "command": "bash scripts/check_lint.sh",
+    "exit_code": 0,
+    "summary": [
+      "lint: pass (1205 python, 39 shell, 2.37s)"
+    ]
+  }
+]
