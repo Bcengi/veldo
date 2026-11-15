@@ -1308,7 +1308,7 @@ def _v208_unconfined_leg():
     listed_files = ['scripts/suites/%s.py' % name for name in listed]
     expect('VELDO-0208 unconfined-leg/dispatcher-is-protected',
            dispatcher_files <= set(P.protected_patterns()) and dispatcher_files <= set(front['protected_paths'])
-           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 48
+           and all((ROOT / f).is_file() for f in dispatcher_files) and len(listed_files) == 49
            and not [f for f in listed_files for pattern in P.protected_patterns()
                     if __import__('fnmatch').fnmatch(f, pattern)])
 

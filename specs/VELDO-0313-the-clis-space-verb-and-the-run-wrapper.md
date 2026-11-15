@@ -354,9 +354,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     suite, but the mutation stage refuses every case of a suite listed for some rows
     (check_gate_mutations, rows_scoped_unconfined_case), and suite 151 has 31 cases. So the checks
     are a suite listed whole. That adds one entry to scripts/gate_unconfined.json, which is a
-    protected path and the owner's decision, and moves the pinned count in VELDO-0208's row
-    unconfined-leg/declared-list (scripts/suites/101_veldo_0208_landing_reuse.py, 46 to 47). Both
-    edits are in this change on the lead's word and are outside what this ticket could decide: the
+    protected path and the owner's decision, and moves two pinned counts in VELDO-0208's suite
+    (scripts/suites/101_veldo_0208_landing_reuse.py: the suites listed whole, 46 to 47, in row
+    unconfined-leg/declared-list, and all entries, 48 to 49, in row
+    unconfined-leg/dispatcher-is-protected; the second was found by running the suite and is in
+    the commit of the proof bundle). Both rows were then seen green. Three other rows of that suite
+    were red in the same run and read nothing this round changed (proof/VELDO-0313/suite-green.txt
+    names them). The edits are in this change on the lead's word and are outside what this ticket could decide: the
     gate reads the list from the authority checkout, so the entry takes effect only when the owner
     approves it there. The footprint names both files for that reason.
   - The suite. Suite 151 has 24 rows, all green in a process table of its own. Finding 313 has 31

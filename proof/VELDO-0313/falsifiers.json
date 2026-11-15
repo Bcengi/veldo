@@ -23,8 +23,102 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-any-path-accepted",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": true,
+  "expected_red": [
+   "ac3/record-refusals",
+   "ac3/event-types"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals",
+   "ac3/event-types"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "a folder outside every known root is refused by name, exit 1, and gets no item [1 veldo space record: refused space_record_exists]"
+   ],
+   [
+    "VELDO-0313 ac3/event-types",
+    "the event --type released is refused as space_outside_roots, exit 1 [0 veldo space event: not recorded (space_no_command:space_event): nothing becomes due and nothing is removed]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-started-anyway-in-act",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": true,
+  "expected_red": [
+   "ac2/act-waits-75"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/act-waits-75"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac2/act-waits-75",
+    "act mode with too little space: the wrapper returns 75 [0]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-waiting-hold-left-behind",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": false,
+  "expected_red": [
+   "ac2/act-waits-75"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/act-waits-75"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac2/act-waits-75",
+    "no scratch root was made and the run has no item; its hold is released, never left admitted [{} waiting]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-any-kind-accepted",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "expected_red": [
+   "ac3/record-refusals"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "--kind bucket sewhere/made-by-a-script is refused as space_unknown_kind:bucket, exit 1, with no item [1 veldo space record: refused space_record_kind:bucket]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-signal-not-through-the-runners-rule",
@@ -55,80 +149,8 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-waiting-hold-left-behind",
-  "module": "bin/veldo",
-  "criterion": "AC2",
-  "declared": false,
-  "expected_red": [
-   "ac2/act-waits-75"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "ac2/act-waits-75"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 ac2/act-waits-75",
-    "no scratch root was made and the run has no item; its hold is released, never left admitted [{} waiting]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-started-anyway-in-act",
-  "module": "bin/veldo",
-  "criterion": "AC2",
-  "declared": true,
-  "expected_red": [
-   "ac2/act-waits-75"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "ac2/act-waits-75"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 ac2/act-waits-75",
-    "act mode with too little space: the wrapper returns 75 [0]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-any-path-accepted",
-  "module": "bin/veldo",
-  "criterion": "AC3",
-  "declared": true,
-  "expected_red": [
-   "ac3/record-refusals",
-   "ac3/event-types"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "ac3/record-refusals",
-   "ac3/event-types"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 ac3/record-refusals",
-    "a folder outside every known root is refused by name, exit 1, and gets no item [1 veldo space record: refused space_record_exists]"
-   ],
-   [
-    "VELDO-0313 ac3/event-types",
-    "the event --type released is refused as space_outside_roots, exit 1 [0 veldo space event: not recorded (space_no_command:space_event): nothing becomes due and nothing is removed]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-status-lost",
@@ -141,13 +163,18 @@
   "noop_red_rows": [],
   "red_rows": [
    "fix2/returns-at-the-commands-exit",
+   "fix2/captured-output-ends-at-return",
    "ac2/command-status",
    "ac2/report-starts"
   ],
   "red_details": [
    [
     "VELDO-0313 fix2/returns-at-the-commands-exit",
-    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [0 0.1s [{'pid': 52, 'started': 237170592, 'how': 'descendant'}]]"
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [0 0.9s [{'pid': 52, 'started': 237467984, 'how': 'descendant'}]]"
+   ],
+   [
+    "VELDO-0313 fix2/captured-output-ends-at-return",
+    "the wrapper returns the command's status at once and the caller's read of its output ends at once too, with what the command wrote, while the sleep the command left lives [0 0.90s 0.90s b'the command said this\\n' [{'pid': 67, 'started': 237468213, 'how': 'descendant'}]]"
    ],
    [
     "VELDO-0313 ac2/command-status",
@@ -159,8 +186,8 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-unread-group-sent",
@@ -178,72 +205,12 @@
   "red_details": [
    [
     "VELDO-0313 ac1/unread-group-sends-nothing",
-    "a group that nobody could read: run finished is not sent and the reason is group_unread; no census, no signal and no release are written [{'sent': True, 'reason': None, 'holders': [], 'census': {'worktree': 'space:item:a25683591af84f12849592757fd36664', 'event': 'run_finished', 'declared': ['space:item:c39fd84858464712adc330bc90efe20c'], 'items': {'/tmp/veldo-mutations-gpo4eshv/3/veldo-0313-1azp617_/projects/orchard-worktrees/w-unread/build': 'space:item:c39fd84858464712adc330bc90efe20c'}, 'kept': [], 'work': [], 'sizes': {'space:item:c39fd84858464712adc330bc90efe20c': 8192, 'space:item:12a72b25beb64788a1667c6fcb7a2e69': 8192}, 'refused': {}, 'refusal': None}, 'docker': {'engines': {'default': 'read'}, 'declared': {}, 'held': [], 'refused': {}}, 'signal': {'ok': True, 'reason': None, 'items': ['space:item:12a72b25beb64788a1667c6fcb7a2e69', 'space:item:c39fd84858464712adc330bc90efe20c'], 'carried': ['space:item:12a72b25beb64788a1667c6fcb7a2e69', 'space:item:c39fd84858464712adc330bc90efe20c'], 'left': [], 'outcomes': [{'item': 'space:item:12a72b25beb64788a1667c6fcb7a2e69', 'action': 'remove', 'outcome': 'removed'}, {'item': 'space:item:c39fd84858464712adc330bc90efe20c', 'action': 'remove', 'outcome': 'removed'}], 'counts': {'removed': 2, 'gone': 0, 'kept': 0, 'removing': 0, 'left': 0, 'deferred': {}}}, 'items': {'space:item:12a72b25beb64788a1667c6fcb7a2e69': 'removed', 'space:item:c39fd84858464712adc330bc90efe20c': 'removed'}, 'hold': 'released'} [('space_declare', 'space-runner'), ('space_confirm', 'space-runner'), ('space_measure', 'space-runner'), ('space_measure', 'space-runner'), ('space_signal', 'space-runner'), ('space_outcome', 'space-runner'), ('space_outcome', 'space-runner'), ('space_outcome', 'space-runner'), ('space_outcome', 'space-runner'), ('space_release', 'space-runner')]]"
+    "a group that nobody could read: run finished is not sent and the reason is group_unread; no census, no signal and no release are written [{'sent': True, 'reason': None, 'holders': [], 'census': {'worktree': 'space:item:9d56b1833719445bbe05e0a0ec00c122', 'event': 'run_finished', 'declared': ['space:item:305a785acdcb4a03b30be2a6769d48be'], 'items': {'/tmp/veldo-mutations-8otzds7c/3/veldo-0313-t9p3rxrs/projects/orchard-worktrees/w-unread/build': 'space:item:305a785acdcb4a03b30be2a6769d48be'}, 'kept': [], 'work': [], 'sizes': {'space:item:305a785acdcb4a03b30be2a6769d48be': 8192, 'space:item:18e3c15d13a64ed39e4ecf80f67712a3': 8192}, 'refused': {}, 'refusal': None}, 'docker': {'engines': {'default': 'read'}, 'declared': {}, 'held': [], 'refused': {}}, 'signal': {'ok': True, 'reason': None, 'items': ['space:item:18e3c15d13a64ed39e4ecf80f67712a3', 'space:item:305a785acdcb4a03b30be2a6769d48be'], 'carried': ['space:item:18e3c15d13a64ed39e4ecf80f67712a3', 'space:item:305a785acdcb4a03b30be2a6769d48be'], 'left': [], 'outcomes': [{'item': 'space:item:18e3c15d13a64ed39e4ecf80f67712a3', 'action': 'remove', 'outcome': 'removed'}, {'item': 'space:item:305a785acdcb4a03b30be2a6769d48be', 'action': 'remove', 'outcome': 'removed'}], 'counts': {'removed': 2, 'gone': 0, 'kept': 0, 'removing': 0, 'left': 0, 'deferred': {}}}, 'items': {'space:item:18e3c15d13a64ed39e4ecf80f67712a3': 'removed', 'space:item:305a785acdcb4a03b30be2a6769d48be': 'removed'}, 'hold': 'released'} [('space_declare', 'space-runner'), ('space_confirm', 'space-runner'), ('space_measure', 'space-runner'), ('space_measure', 'space-runner'), ('space_signal', 'space-runner'), ('space_outcome', 'space-runner'), ('space_outcome', 'space-runner'), ('space_outcome', 'space-runner'), ('space_outcome', 'space-runner'), ('space_release', 'space-runner')]]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-any-kind-accepted",
-  "module": "bin/veldo",
-  "criterion": "AC3",
-  "declared": false,
-  "expected_red": [
-   "ac3/record-refusals"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "ac3/record-refusals"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 ac3/record-refusals",
-    "--kind bucket sewhere/made-by-a-script is refused as space_unknown_kind:bucket, exit 1, with no item [1 veldo space record: refused space_record_kind:bucket]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-what-the-command-left-is-killed",
-  "module": "bin/veldo",
-  "criterion": "AC1",
-  "declared": false,
-  "review_finding": 2,
-  "expected_red": [
-   "fix2/end-follows-their-exit"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "fix2/returns-at-the-commands-exit",
-   "fix2/end-follows-their-exit",
-   "fix3/handed-outside-the-tree",
-   "paths/canon"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 fix2/returns-at-the-commands-exit",
-    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 0.1s []]"
-   ],
-   [
-    "VELDO-0313 fix2/end-follows-their-exit",
-    "the run's end sleeps until the process the command left exits, and is made then: that process had written its last line when the end returned [None {}]"
-   ],
-   [
-    "VELDO-0313 fix3/handed-outside-the-tree",
-    "the fixture's worker is the server's child, started for the command, and no descendant of the run's supervisor [67 []]"
-   ],
-   [
-    "VELDO-0313 paths/canon",
-    "they stop nothing: no kill of a process or a group, and the one signal sent is the stop the wrapper was sent, passed on to the command"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-any-event-type-accepted",
@@ -264,8 +231,8 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-refuses-with-no-installation",
@@ -287,8 +254,113 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-what-the-command-left-is-killed",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "fix2/end-follows-their-exit"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/returns-at-the-commands-exit",
+   "fix2/end-follows-their-exit",
+   "fix2/captured-output-ends-at-return",
+   "fix3/handed-outside-the-tree",
+   "paths/canon"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 1.0s []]"
+   ],
+   [
+    "VELDO-0313 fix2/end-follows-their-exit",
+    "the run's end sleeps until the process the command left exits, and is made then: that process had written its last line when the end returned [None {}]"
+   ],
+   [
+    "VELDO-0313 fix2/captured-output-ends-at-return",
+    "the wrapper returns the command's status at once and the caller's read of its output ends at once too, with what the command wrote, while the sleep the command left lives [4 0.21s 0.21s b'the command said this\\n' []]"
+   ],
+   [
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "the end follows the worker's exit: the worker ended on the suite's word and saw the file to its last line, and then the scratch root went and the hold was released [None None]"
+   ],
+   [
+    "VELDO-0313 paths/canon",
+    "they stop nothing: no kill of a process or a group, and the one signal sent is the stop the wrapper was sent, passed on to the command"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-scratch-recorded-by-the-verb",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "fix1/existing-work-is-never-scratch"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals",
+   "fix1/existing-work-is-never-scratch"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "--kind scratch scratch/a-script-scratch is refused as space_record_kind:scratch, exit 1, with no item [1 veldo space record: refused space_not_permitted:space_declare]"
+   ],
+   [
+    "VELDO-0313 fix1/existing-work-is-never-scratch",
+    "--kind scratch orktrees/w-notes/notes with a session is refused as space_record_kind:scratch, exit 1 [1 veldo space record: refused space_record_exists]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-existing-path-recorded",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "review_finding": 1,
+  "expected_red": [
+   "fix1/existing-work-is-never-scratch",
+   "ac3/record-refusals"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals",
+   "fix1/existing-work-is-never-scratch",
+   "ac3/record-accepted"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "--kind agent_repository /orchard-worktrees/w-ac1 is refused as space_record_exists, exit 1, with no item [1 veldo space record: refused space_record_inside:space:item:39ea01e6647d4468b2f6122038d26a10]"
+   ],
+   [
+    "VELDO-0313 fix1/existing-work-is-never-scratch",
+    "--kind worktree worktrees/made-by-hand is refused as space_record_exists, exit 1 [0 ]"
+   ],
+   [
+    "VELDO-0313 ac3/record-accepted",
+    "recorded a second time it is refused, because it exists [veldo space record: refused space_record_inside:space:item:64f9f26bd5d1466cb12c7f1e6b37b0d0]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-existing-folder-accepted-as-session-scratch",
@@ -316,74 +388,12 @@
    ],
    [
     "VELDO-0313 ac3/record-accepted",
-    "a worktree a script is about to make is declared before it is there: exit 0, one item, declared, creator record, owned by its project, and the verb prints the item [0 {\"item\": \"space:item:8dd2c7a30e0741b5960b66643bbebe8d\", \"state\": \"declared\"} ]"
+    "a worktree a script is about to make is declared before it is there: exit 0, one item, declared, creator record, owned by its project, and the verb prints the item [0 {\"item\": \"space:item:11dcca0a7c2743f98ea868ad0553ba08\", \"state\": \"declared\"} ]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-scratch-recorded-by-the-verb",
-  "module": "bin/veldo",
-  "criterion": "AC3",
-  "declared": false,
-  "review_finding": 1,
-  "expected_red": [
-   "fix1/existing-work-is-never-scratch"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "ac3/record-refusals",
-   "fix1/existing-work-is-never-scratch"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 ac3/record-refusals",
-    "--kind scratch scratch/a-script-scratch is refused as space_record_kind:scratch, exit 1, with no item [1 veldo space record: refused space_not_permitted:space_declare]"
-   ],
-   [
-    "VELDO-0313 fix1/existing-work-is-never-scratch",
-    "--kind scratch orktrees/w-notes/notes with a session is refused as space_record_kind:scratch, exit 1 [1 veldo space record: refused space_record_exists]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-existing-path-recorded",
-  "module": "bin/veldo",
-  "criterion": "AC3",
-  "declared": false,
-  "review_finding": 1,
-  "expected_red": [
-   "fix1/existing-work-is-never-scratch",
-   "ac3/record-refusals"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "ac3/record-refusals",
-   "fix1/existing-work-is-never-scratch",
-   "ac3/record-accepted"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 ac3/record-refusals",
-    "--kind agent_repository /orchard-worktrees/w-ac1 is refused as space_record_exists, exit 1, with no item [1 veldo space record: refused space_record_inside:space:item:f276d570dd0d4ea68bbdcfb137a956f9]"
-   ],
-   [
-    "VELDO-0313 fix1/existing-work-is-never-scratch",
-    "--kind worktree worktrees/made-by-hand is refused as space_record_exists, exit 1 [0 ]"
-   ],
-   [
-    "VELDO-0313 ac3/record-accepted",
-    "recorded a second time it is refused, because it exists [veldo space record: refused space_record_inside:space:item:c507c0bec83745f699d750b0608a8c59]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-sent-while-a-process-it-left-lives",
@@ -399,21 +409,26 @@
   "red_rows": [
    "fix2/returns-at-the-commands-exit",
    "fix2/end-follows-their-exit",
+   "fix2/captured-output-ends-at-return",
    "fix3/handed-outside-the-tree",
    "fix3/unread-process-holds"
   ],
   "red_details": [
    [
     "VELDO-0313 fix2/returns-at-the-commands-exit",
-    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 0.1s []]"
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 1.4s []]"
    ],
    [
     "VELDO-0313 fix2/end-follows-their-exit",
-    "that process was never stopped: it ended on the suite's word, at its own last line, and its file under the scratch root was there to that moment [{'held': False, 'text': 'in use\\n', 'released': True}]"
+    "just before the suite lets that process end, the supervisor is there and rule 3 still holds the scratch root by it [None]"
+   ],
+   [
+    "VELDO-0313 fix2/captured-output-ends-at-return",
+    "the wrapper returns the command's status at once and the caller's read of its output ends at once too, with what the command wrote, while the sleep the command left lives [4 1.80s 1.80s b'the command said this\\n' []]"
    ],
    [
     "VELDO-0313 fix3/handed-outside-the-tree",
-    "the wrapper returns the command's status while that worker lives and does not send run finished: a process outside the command's tree carries the run's label [0 0.2s None]"
+    "the wrapper returns the command's status while that worker lives and does not send run finished: a process outside the command's tree carries the run's label [0 1.7s None]"
    ],
    [
     "VELDO-0313 fix3/unread-process-holds",
@@ -421,8 +436,46 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-waits-for-what-the-command-left",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": false,
+  "review_finding": 2,
+  "expected_red": [
+   "fix2/returns-at-the-commands-exit"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/returns-at-the-commands-exit",
+   "fix2/end-follows-their-exit",
+   "fix2/captured-output-ends-at-return",
+   "fix3/handed-outside-the-tree"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 12.0s []]"
+   ],
+   [
+    "VELDO-0313 fix2/end-follows-their-exit",
+    "just before the suite lets that process end, the supervisor is there and rule 3 still holds the scratch root by it [None]"
+   ],
+   [
+    "VELDO-0313 fix2/captured-output-ends-at-return",
+    "the wrapper returns the command's status at once and the caller's read of its output ends at once too, with what the command wrote, while the sleep the command left lives [4 11.30s 11.30s b'the command said this\\n' []]"
+   ],
+   [
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "the fixture's worker is the server's child, started for the command, and no descendant of the run's supervisor [86 []]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-end-waits-on-a-timer",
@@ -444,8 +497,8 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-scratch-records-no-process",
@@ -459,21 +512,26 @@
   "noop_red_rows": [],
   "red_rows": [
    "ac1/declared-started-ended",
-   "fix2/returns-at-the-commands-exit"
+   "fix2/returns-at-the-commands-exit",
+   "fix2/end-follows-their-exit"
   ],
   "red_details": [
    [
     "VELDO-0313 ac1/declared-started-ended",
-    "the scratch root records the run's supervisor, a process the kernel showed with that start time; it has ended by the time run finished is sent [None {'pid': 29, 'started': 237171546}]"
+    "the scratch root records the run's supervisor, a process the kernel showed with that start time; it has ended by the time run finished is sent [None {'pid': 29, 'started': 237478673}]"
    ],
    [
     "VELDO-0313 fix2/returns-at-the-commands-exit",
-    "the scratch root records the run's supervisor, and rule 3 of a judge that was told the run is over still holds the item, by that process as the kernel shows it [None]"
+    "the scratch root records the run's supervisor, and after that word rule 3 of a judge that was told the run is over holds the item, by that process as the kernel shows it [None]"
+   ],
+   [
+    "VELDO-0313 fix2/end-follows-their-exit",
+    "just before the suite lets that process end, the supervisor is there and rule 3 still holds the scratch root by it [None]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-label-not-read",
@@ -491,12 +549,12 @@
   "red_details": [
    [
     "VELDO-0313 fix3/handed-outside-the-tree",
-    "the wrapper returns the command's status while that worker lives and does not send run finished: a process outside the command's tree carries the run's label [0 0.2s None]"
+    "the wrapper returns the command's status while that worker lives and does not send run finished: a process outside the command's tree carries the run's label [0 1.2s None]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-unread-process-not-counted",
@@ -518,40 +576,16 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-reader-block-not-checked",
-  "module": "bin/veldo",
-  "criterion": "AC1",
-  "declared": false,
-  "fix_round": 2,
-  "review_finding": 3,
-  "expected_red": [
-   "fix3/unread-process-holds"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "fix3/unread-process-holds"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 fix3/unread-process-holds",
-    "a reader that shows a block for it that is not whole has not read it: the run stays open [None []]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-unread-bounded-by-a-read-parent",
   "module": "bin/veldo",
   "criterion": "AC1",
   "declared": false,
-  "fix_round": 2,
   "review_finding": 3,
+  "fix_round": 2,
   "expected_red": [
    "fix3/unread-process-holds"
   ],
@@ -566,16 +600,45 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-reader-block-taken-as-label-read",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": "re-review finding 1",
+  "fix_round": 3,
+  "expected_red": [
+   "fix3/unread-process-holds"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/returns-at-the-commands-exit",
+   "fix3/unread-process-holds"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 0.6s []]"
+   ],
+   [
+    "VELDO-0313 fix3/unread-process-holds",
+    "a reader that shows a whole block for it, with the kernel's start time, and no label read has not read what it carries: the run stays open, its file is there and the hold is held [None []]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-unread-started-after-the-run-left-out",
   "module": "bin/veldo",
   "criterion": "AC1",
   "declared": false,
-  "fix_round": 2,
   "review_finding": 3,
+  "fix_round": 2,
   "expected_red": [
    "fix3/unread-process-holds"
   ],
@@ -590,16 +653,16 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
-  "falsifier": "space313-reader-not-used-taken-as-used",
+  "falsifier": "space313-reader-block-not-checked",
   "module": "bin/veldo",
   "criterion": "AC1",
   "declared": false,
-  "fix_round": 2,
-  "review_finding": 3,
+  "review_finding": "re-review finding 1",
+  "fix_round": 3,
   "expected_red": [
    "fix3/unread-process-holds"
   ],
@@ -610,35 +673,65 @@
   "red_details": [
    [
     "VELDO-0313 fix3/unread-process-holds",
-    "a reader that is refused, whatever its table holds has not read it: the run stays open [None []]"
+    "a reader that shows a block for it that is not whole has not read what it carries: the run stays open, its file is there and the hold is held [None []]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
-  "falsifier": "space313-rule-three-answered-without-a-read",
+  "falsifier": "space313-readers-label-of-the-run-not-counted",
   "module": "bin/veldo",
   "criterion": "AC1",
   "declared": false,
-  "review_finding": 3,
+  "review_finding": "re-review finding 1",
+  "fix_round": 3,
   "expected_red": [
-   "fix3/rule-3-reads-the-kernel"
+   "fix3/unread-process-holds"
   ],
   "noop_red_rows": [],
   "red_rows": [
-   "fix3/rule-3-reads-the-kernel"
+   "fix3/unread-process-holds"
   ],
   "red_details": [
    [
-    "VELDO-0313 fix3/rule-3-reads-the-kernel",
-    "the end began on an empty group, and rule 3 asked the kernel again when it judged the item: the scratch root is deferred as in use and is on disk with its file [True removed None]"
+    "VELDO-0313 fix3/unread-process-holds",
+    "a reader that read this run's label in its environment: the process is the run's, named by the label; the run stays open and nothing is written [None []]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-reader-not-used-taken-as-used",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": "re-review finding 1",
+  "fix_round": 3,
+  "expected_red": [
+   "fix3/unread-process-holds"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/returns-at-the-commands-exit",
+   "fix3/unread-process-holds"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 0.8s []]"
+   ],
+   [
+    "VELDO-0313 fix3/unread-process-holds",
+    "a reader that is refused, whatever its table holds has not read what it carries: the run stays open, its file is there and the hold is held [None []]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-hold-released-for-a-run-that-is-not-over",
@@ -660,8 +753,60 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-supervisor-does-not-stay",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": false,
+  "review_finding": "re-review finding 3",
+  "fix_round": 3,
+  "expected_red": [
+   "fix2/returns-at-the-commands-exit"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix2/returns-at-the-commands-exit",
+   "fix2/captured-output-ends-at-return"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix2/returns-at-the-commands-exit",
+    "the supervisor said, from inside its wait and before the wrapper returned, that it is asleep on the exit of what the command left [False]"
+   ],
+   [
+    "VELDO-0313 fix2/captured-output-ends-at-return",
+    "the supervisor stays, asleep on that sleep's exit, and its descriptors 0, 1 and 2 are /dev/null [False ['PermissionError', 'PermissionError', 'PermissionError']]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-rule-three-answered-without-a-read",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 3,
+  "expected_red": [
+   "fix3/rule-3-reads-the-kernel"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix3/rule-3-reads-the-kernel"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix3/rule-3-reads-the-kernel",
+    "the end began on an empty group, and rule 3 asked the kernel again when it judged the item: the scratch root is deferred as in use and is on disk with its file [True removed None]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-docker-step-skipped",
@@ -683,8 +828,31 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-another-runs-container-taken",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "review_finding": 4,
+  "expected_red": [
+   "fix4/docker-objects-are-items"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "fix4/docker-objects-are-items"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 fix4/docker-objects-are-items",
+    "the container with the run's label and the one with its compose project name are items of the run, declared by the census with the identity the engine showed [['another-runs', 'built-by-the-run', 'composed-by-the-run', 'made-by-hand'] {'default': 'read'}]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-gone-sent-as-space-runner",
@@ -711,31 +879,8 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
- },
- {
-  "falsifier": "space313-another-runs-container-taken",
-  "module": "bin/veldo",
-  "criterion": "AC1",
-  "declared": false,
-  "review_finding": 4,
-  "expected_red": [
-   "fix4/docker-objects-are-items"
-  ],
-  "noop_red_rows": [],
-  "red_rows": [
-   "fix4/docker-objects-are-items"
-  ],
-  "red_details": [
-   [
-    "VELDO-0313 fix4/docker-objects-are-items",
-    "the container with the run's label and the one with its compose project name are items of the run, declared by the census with the identity the engine showed [['another-runs', 'built-by-the-run', 'composed-by-the-run', 'made-by-hand'] {'default': 'read'}]"
-   ]
-  ],
-  "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
   "falsifier": "space313-issues-its-own-run",
@@ -754,7 +899,7 @@
   "red_details": [
    [
     "VELDO-0313 fix5/no-issuer-no-run",
-    "a wiring with no issuer: the wrapper says the run is not recorded, and the command runs unchanged with its own status [9  {\"tmp\": \"/tmp/veldo-mutations-gpo4eshv/30/veldo-0313-ry2posc3/scratch/run-scratch/eb178003b2145f6af956e4691d046840\", \"label\": \"run:dda475634772426aacd417072672b216\"}]"
+    "a wiring with no issuer: the wrapper says the run is not recorded, and the command runs unchanged with its own status [9  {\"tmp\": \"/tmp/veldo-mutations-8otzds7c/34/veldo-0313-98qcge0p/scratch/run-scratch/209a1554eeb9ce27b65cdb3a679bad27\", \"label\": \"run:c2ff834828794ae7a55483bbcc83de2e\"}]"
    ],
    [
     "VELDO-0313 paths/canon",
@@ -762,40 +907,31 @@
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  },
  {
-  "falsifier": "space313-waits-for-what-the-command-left",
+  "falsifier": "space313-supervisor-keeps-the-callers-output",
   "module": "bin/veldo",
   "criterion": "AC2",
   "declared": false,
-  "review_finding": 2,
+  "review_finding": "re-review finding 2",
+  "fix_round": 3,
   "expected_red": [
-   "fix2/returns-at-the-commands-exit"
+   "fix2/captured-output-ends-at-return"
   ],
   "noop_red_rows": [],
   "red_rows": [
-   "fix2/returns-at-the-commands-exit",
-   "fix2/end-follows-their-exit",
-   "fix3/handed-outside-the-tree"
+   "fix2/captured-output-ends-at-return"
   ],
   "red_details": [
    [
-    "VELDO-0313 fix2/returns-at-the-commands-exit",
-    "the wrapper returns the command's own status when the command exits: the process the command left is alive, and has not been told to end [3 10.2s []]"
-   ],
-   [
-    "VELDO-0313 fix2/end-follows-their-exit",
-    "that process was never stopped: it ended on the suite's word, at its own last line, and its file under the scratch root was there to that moment [{'held': True, 'text': 'in use\\n', 'released': False}]"
-   ],
-   [
-    "VELDO-0313 fix3/handed-outside-the-tree",
-    "the fixture's worker is the server's child, started for the command, and no descendant of the run's supervisor [69 []]"
+    "VELDO-0313 fix2/captured-output-ends-at-return",
+    "the wrapper returns the command's status at once and the caller's read of its output ends at once too, with what the command wrote, while the sleep the command left lives [4 0.70s 5.71s b'the command said this\\n' [{'pid': 67, 'started': 237485294, 'how': 'descendant'}]]"
    ]
   ],
   "red_as_expected": true,
-  "commit": "22e8f5a0acdd63320dc707d824e409e35f2a2b3c",
-  "applied": "once, on the committed tree, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+  "commit": "2df0c67cd3426de0d83c193e3ed9cbe0785c0f69",
+  "applied": "once, on the tree of this commit, by the registered driver (python3 scripts/check_teeth_mutations.py with finding 313) in its confined worker, on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
  }
 ]

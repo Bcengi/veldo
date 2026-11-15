@@ -1,12 +1,15 @@
-# VELDO-0313, fix round 2, 2026-11-14, on the committed tree of 22e8f5a0acdd. Partial runs, not the gate.
+# VELDO-0313, fix round 3 and the reader's label, 2026-11-14, on the tree of 2df0c67cd342. Partial runs, not the gate.
 # Suite 151 in a process table of its own (python3 -I -S scripts/gate_candidate.py with the root, then python3 scripts/selftest.py with the suite option; the gate's confinement):
-151_veldo_0313_space_run: 49 passed, 0 failed (23 rows)
-# Suite 151 unconfined on this host, which other sessions share and which has no process reader, one run: 34 passed, 15 failed (8 of 23 rows green). Fail closed: a run's end is held by other sessions' processes that started after it and that this account cannot read; a row that follows an end is red after the suite's 120 second limit and names them, and rows after it meet a hold that was not released. Row fix3/the-house-group is among the red ones: it was not seen green in this round.
+151_veldo_0313_space_run: 50 passed, 0 failed (24 rows)
+# Suite 151 unconfined on this host was not run in this round. Nothing in the round changes what the re-review measured there (8 of 23 rows green): this host has no process reader installed, so a process of another session that started after a run and cannot be read still holds it.
 # Each of these on its own with python3 scripts/selftest.py and the suite option, unconfined:
+152_veldo_0313_house_group: 30 passed, 0 failed (4 rows, with the owner's user manager: no row stood down)
 133_veldo_0326_space_principals: 56 passed, 0 failed
 143_veldo_0305_space_census: 52 passed, 0 failed
 146_veldo_0308_run_finished: 64 passed, 0 failed
-148_veldo_0311_git_hooks: 57 passed, 0 failed
-# Fast checks, 0 failed each: bash scripts/check_template_sync.sh (321 pairs), bash scripts/check_lint.sh, bash scripts/check_generated.sh, bash scripts/check_docs.sh, python3 .veldo/validate.py all, python3 scripts/check_git_boundary.py.
-# Teeth: python3 scripts/check_teeth_mutations.py with finding 313: registered 30, executed 30, rejected 30.
-# Not run by the builder: ./scripts/verify.sh and the heavy suites.
+148_veldo_0311_git_hooks: 57 passed, 0 failed. Its first run in this round, made while 74 runs of suite 141 loaded the host six at a time, had one red row (ac3/no-event-command-waits) and took 142 seconds; run again alone it was green in 10 seconds. Both are said here; the row reads nothing this round changed.
+141_veldo_0344_process_reader: 87 passed, 0 failed (61 rows; ac6/installed skipped, the reader is not installed)
+# 101_veldo_0208_landing_reuse, unconfined, after its two pins of the list were moved (the count of suites listed whole, 46 to 47, with the new suite's name; the count of all entries, 48 to 49): 213 passed, 3 failed. The two rows this round edits, unconfined-leg/declared-list and unconfined-leg/dispatcher-is-protected, are green. The three red rows are sandbox/unavailable-refuses-before-exec, sandbox/old-abi-refuses-before-exec and unconfined-leg/fixture-sharers-are-listed (suite 133 loads suite 85's file and is not on the list). None reads a file this round changes; whether they were red before this round was not measured. The first run of the suite in this round, before the second pin was moved, had dispatcher-is-protected red as well.
+# Fast checks, 0 failed each: bash scripts/check_template_sync.sh, bash scripts/check_lint.sh, bash scripts/check_generated.sh, bash scripts/check_docs.sh, python3 .veldo/validate.py all, python3 scripts/check_git_boundary.py.
+# Teeth: python3 scripts/check_teeth_mutations.py with finding 313: registered 34, executed 34, rejected 34.
+# Not run by the builder: ./scripts/verify.sh and the heavy suites. Suite 86_veldo_0127 was left alone, as told.
