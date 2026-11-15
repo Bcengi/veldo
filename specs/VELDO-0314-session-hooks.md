@@ -106,6 +106,24 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   session start declares its scratch when the authority can be reached and retains the event as
   waiting. The suite's event receiver is explicitly a stand-in. The builder ran targeted rows and
   four manual falsifiers, not the full gate or the teeth driver. No acceptance criterion changed.
+- 2026-11-15, fix round, from the review of the build (verdict FIX, six findings). No acceptance
+  criterion changed. No notification is dropped without a record. (1) The suite's latch is two files
+  in its own temporary folder and its child is a plain fork: no semaphore, so the row runs in the
+  gate's confined leg, which grants no /dev/shm. (2) The hook resolves the client's folder first (links
+  followed, a trailing slash and dot segments gone); a notification that is still no entry is written
+  whole under refused/ with why. (3) With no VELDO_SPACE_STATE_ROOT the hook uses the CLI's fallback,
+  the user's XDG state folder, veldo. A spool folder that is refused is noted beside it and the entry
+  is spooled under the fallback. When no spool takes it, or the module cannot be loaded, one line with
+  the notification and why is appended to space-session.unspooled.jsonl under the state root, else
+  under the fallback. (4) A deadline that fires where an entry is read ends the replay; the entry
+  stays whole. (5) The CLI builds a released entry from the paths the Ledger's checks gave, and with
+  no ledger resolves each path and a session's working folder. A session's --path is still checked
+  and the verb now says it is not recorded: it is not refused, because suite 151 (VELDO-0313) holds
+  rows in which a session event with a path is accepted and one on the protect list is refused by
+  name, and that suite is outside this footprint. (6) A .partial file of this account's that is ten
+  minutes old is set aside under refused/ by the next replay, under its lock. Thirteen falsifiers are
+  registered for finding 314 beside the four of the build. Known and left: when `veldo space event`
+  itself cannot spool, it says so on standard error and exits 0, as before.
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
 - 2026-11-14: footprint widened, from the review of VELDO-0313 (the lead's question 3). No code is
