@@ -120,7 +120,7 @@ def main():
         after = outcome(Y.parse, text)
         row = {'path': str(p.relative_to(ROOT)), 'comparisons': differences(before, after)}
         if p.name == 'policy.yaml':
-            with tempfile.TemporaryDirectory() as tmp:
+            with tempfile.TemporaryDirectory(prefix='veldo-parser-corpus-audit-') as tmp:
                 policy = Path(tmp) / 'policy.yaml'
                 policy.write_text(text)
                 strict_before = outcome(policy_reader.read_policy, policy)

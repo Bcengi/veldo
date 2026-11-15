@@ -1,0 +1,16 @@
+{
+ "module": "scripts/parser_corpus_audit.py",
+ "functions": [
+  "main"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "main",
+  "old": "tempfile.TemporaryDirectory()",
+  "new": "tempfile.TemporaryDirectory(prefix='veldo-parser-corpus-audit-')"
+ },
+ "falsifier_red": [
+  "scripts/parser_corpus_audit.py:123: main: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}
