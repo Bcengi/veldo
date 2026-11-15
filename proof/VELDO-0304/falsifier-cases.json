@@ -117,5 +117,12 @@
   "row": "mutation/boundary",
   "old": "        wait_for_empty(self.path)\n",
   "new": "        if time.monotonic() > 0:\n            wait_for_empty(self.path)\n"
+ },
+ {
+  "name": "render-time-delete",
+  "path": "scripts/render_pdfs.py",
+  "row": "render/boundary",
+  "old": "        ws_url = devtools_endpoint(proc)\n",
+  "new": "        if time.time() > 0:\n            ws_url = devtools_endpoint(proc)\n"
  }
 ]

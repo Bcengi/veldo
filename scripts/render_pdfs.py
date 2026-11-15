@@ -163,6 +163,21 @@ async def print_pdf(ws, mid, html_path, pdf_path, footer_left, author):
     await cmd("Target.closeTarget", {"targetId": target["targetId"]})
 
 
+def devtools_endpoint(proc):
+    """Read the browser's startup response. Timing this read removes no file."""
+    ws_url = None
+    deadline = time.time() + 20
+    while time.time() < deadline:
+        line = proc.stderr.readline()
+        m = re.search(r"DevTools listening on (ws://\S+)", line or "")
+        if m:
+            ws_url = m.group(1)
+            break
+    if not ws_url:
+        raise SystemExit("no DevTools endpoint")
+    return ws_url
+
+
 async def main():
     manifest = _Y.read(DOCS / "manifest.yaml")
     author = manifest["author"]
@@ -190,21 +205,12 @@ async def main():
                  PDF / manifest["map"]["pdf"],
                  f"{manifest['map']['title']} ({datetime.date.today().isoformat()})"))
 
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix="veldo-pdf-", ignore_cleanup_errors=True) as profile:
         proc = subprocess.Popen(
             ["google-chrome", "--headless=new", "--disable-gpu",
              f"--user-data-dir={profile}", "--remote-debugging-port=0", "about:blank"],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        ws_url = None
-        deadline = time.time() + 20
-        while time.time() < deadline:
-            line = proc.stderr.readline()
-            m = re.search(r"DevTools listening on (ws://\S+)", line or "")
-            if m:
-                ws_url = m.group(1)
-                break
-        if not ws_url:
-            raise SystemExit("no DevTools endpoint")
+        ws_url = devtools_endpoint(proc)
         try:
             async with websockets.connect(ws_url, max_size=None) as ws:
                 mid = [0]

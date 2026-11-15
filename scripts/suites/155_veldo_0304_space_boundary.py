@@ -359,5 +359,24 @@ def _v304_suite():
     row('mutation/unique-work', mutation_work)
     row('mutation/boundary', lambda: script_boundary('mutation_ownership', ('WorkerMeter.close',)))
 
+    def render_work():
+        import ast
+        source = (ROOT / 'scripts/render_pdfs.py').read_text()
+        main = next(node for node in ast.parse(source).body if isinstance(node, ast.AsyncFunctionDef) and node.name == 'main')
+        context = next(node for node in ast.walk(main) if isinstance(node, ast.With)).items[0].context_expr
+        with tempfile.TemporaryDirectory(prefix='v304-render-') as temporary:
+            external = Path(temporary) / 'unique'
+            external.write_bytes(b'work outside the browser profile\n')
+            manager = eval(compile(ast.Expression(body=context), '<production browser profile>', 'eval'),
+                           {'tempfile': tempfile})
+            with manager as directory:
+                assert Path(directory).name.startswith('veldo-pdf-')
+                (Path(directory) / 'browser-scratch').write_text('rebuildable scratch')
+            assert not Path(directory).exists()
+            assert external.read_bytes() == b'work outside the browser profile\n'
+
+    row('render/owned-temporary', render_work)
+    row('render/boundary', lambda: script_boundary('render_pdfs', ('main',)))
+
 
 _v304_suite()
