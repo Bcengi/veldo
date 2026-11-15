@@ -749,6 +749,7 @@ class Clones(EP.EnvProvisioner):
 
     def _release(self, cache, ref, identity=None):
         """Release only through the remover after the owning item's keep and outcome."""
+        identity = identity or getattr(self, '_ref_items', {}).get((str(cache), ref))
         ledger = (self.space or {}).get('ledger')
         answer = _organ('control_space_remove').remove_ref(str(cache), ref, ledger, identity)
         if not hasattr(self, 'ref_outcomes'):
@@ -1058,7 +1059,10 @@ class Clones(EP.EnvProvisioner):
         released = []
         if tree['state'] in SPACE_ENDED:
             for pin in pins:
-                answer = self._release(Path(pin['cache']), pin['ref'], tree.get('item'))
+                if not hasattr(self, '_ref_items'):
+                    self._ref_items = {}
+                self._ref_items[(str(pin['cache']), pin['ref'])] = tree.get('item')
+                answer = self._release(Path(pin['cache']), pin['ref'])
                 if answer['ok']:
                     released.append(pin['ref'])
         return whole, released
