@@ -1,7 +1,8 @@
-VELDO-0314 targeted checks, partial runs only. The full gate was not run.
-153_veldo_0314_session_hooks: 14 rows passed; 40 checks including shared preamble, 0 failed.
+VELDO-0314 targeted checks after the fix round, partial runs only. The full gate was not run.
+153_veldo_0314_session_hooks: 25 rows passed; 51 checks including shared preamble, 0 failed.
 148_veldo_0311_git_hooks: 31 rows passed; 57 checks including shared preamble, 0 failed.
 Both invoked with python3 scripts/selftest.py and the suite selector.
-Four manual production mutations: four target rows red, no fixture exception.
+python3 scripts/check_teeth_mutations.py --finding 314: passed, registered 17, rejected 17, confined leg.
+python3 proof/VELDO-0314/falsify.py: 17 mutations by hand, 17 target rows red, no fixture exception.
 The latch mutation attempted synchronous removal and failed the 15 second return bound.
 No real engine, protected data, live captures or installed client account was accessed.
