@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0323",
- "commit": "f72f4b24490b670924241c9584efb122998972c5",
- "tree": "4fd8456b7416c8639efaaf7e71d262d5628bb6a2",
- "producer": "Codex implementation agent; not an independent reviewer",
- "produced_at": "2026-11-15T21:04:53.189179+00:00",
+ "commit": "147fe207960082e718f068c8c344d8674b1ca48d",
+ "tree": "3e59be3cdcf6123df77a3ee2847831490915e238",
+ "producer": "Codex implementation agent (build); Claude fix agent (fix round after the review); neither is an independent reviewer",
+ "produced_at": "2026-11-15T22:06:21.692247+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -18,7 +18,7 @@
     {
      "type": "integration",
      "ref": "proof/VELDO-0323/checks.txt",
-     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. Full verification remains with the lead."
+     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. The teeth stage ran for finding 323 in its confined leg. Full verification remains with the lead."
     },
     {
      "type": "falsifier",
@@ -34,17 +34,17 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0323_hook_events.py",
-     "detail": "ac2/no-service-git records zero service-process tip reads for an event with a hundred additional recorded branches. ac2/responsive holds the real child remover on a FIFO and serves another signed socket packet while the first event remains received. The service poll set includes the child pipe, and each removal records its worker, source event, hook and ledger owners."
+     "detail": "ac2/no-service-git counts every git process the service process starts during an event with a hundred additional recorded branches, at the point where a process is made, and finds none; the same counter then counts the fixture's own git command, so it is not blind. ac2/responsive holds the real child remover on a FIFO and serves another signed socket packet while the first event remains received. ac2/only-service-descriptors reads the held child's open descriptors: one the service names as its own is closed in the child and one that was only handed down stays open. The service poll set includes the child pipe, and each removal records its worker, source event, hook and ledger owners."
     },
     {
      "type": "integration",
      "ref": "proof/VELDO-0323/checks.txt",
-     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. Full verification remains with the lead."
+     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. The teeth stage ran for finding 323 in its confined leg. Full verification remains with the lead."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0323/falsifiers.json",
-     "detail": "space323-service-computes-containment reds ac2/no-service-git; the parent reads the recorded branch tips."
+     "detail": "space323-service-computes-containment and space323-service-git-by-another-path (the review's survivor: a git command per recorded branch in the service, not through the worker's function) both red ac2/no-service-git. space323-service-descriptors-kept reds ac2/only-service-descriptors."
     }
    ]
   },
@@ -55,17 +55,17 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0323_hook_events.py",
-     "detail": "ac3/oldest-once observes a second record received while the first child is held, then checks their consumed journal order and separate child identities. restart and consumed-refused prove no repeat and a refused duplicate consumed command. packet-replay verifies the original event identity with no journal advance. spool-before-reconcile replays a real signed spool entry in a child and sees its worktree removed before reconcile. recover-after-signal refuses the consumed write after Signal, restarts, and observes one Signal journal record with the item still due for reconcile."
+     "detail": "ac3/oldest-once observes a second record received while the first child is held, then checks their consumed journal order and separate child identities. ac3/oldest-first leaves three records received before any child starts and reads the consumed order from the journal. ac3/one-worker starts a second consumer on the same store and state root while the first one's child is held in a remover: its child does not answer until the first has ended, the record is consumed once, by the first child, with one Signal journal row. ac3/read-again-under-lock: that second child then takes the next received record and not the one it was started for. restart and consumed-refused prove no repeat and a refused duplicate consumed command. packet-replay verifies the original event identity with no journal advance. spool-before-reconcile replays a real signed spool entry in a child and sees its worktree removed before reconcile. recover-after-signal refuses the consumed write after Signal, restarts, and observes one Signal journal record with the item still due for reconcile."
     },
     {
      "type": "integration",
      "ref": "proof/VELDO-0323/checks.txt",
-     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. Full verification remains with the lead."
+     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. The teeth stage ran for finding 323 in its confined leg. Full verification remains with the lead."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0323/falsifiers.json",
-     "detail": "space323-consumption-not-recorded reds ac3/oldest-once and the restart/consumed rows. The separate committed-Signal recovery check still prevents a second Signal after restart."
+     "detail": "space323-consumption-not-recorded reds ac3/oldest-once and the restart/consumed rows. space323-newest-first reds ac3/oldest-first. space323-no-worker-lock reds ac3/one-worker. space323-no-read-under-lock reds ac3/read-again-under-lock. The separate committed-Signal recovery check still prevents a second Signal after restart."
     }
    ]
   },
@@ -76,17 +76,17 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0323_hook_events.py",
-     "detail": "ac4/session-ended removes the exact ended session scratch. host-wide removes dead sessions from another project and no project. live-no-age leaves a live session with old files. unread-stays refuses malformed process facts and an unread process table. safety/session-work-kept plants a repository with its only commit at the scratch locator and observes it intact after session ended."
+     "detail": "ac4/session-ended removes the exact ended session scratch. host-wide removes dead sessions from another project and no project. live-no-age leaves a live session with old files. unread-stays refuses malformed process facts and an unread process table. safety/session-work-kept plants a repository with its only commit at the scratch locator and observes it intact after session ended. ac4/ended-while-alive-held sends session ended for a session whose client (a real process) is alive: the scratch stays, the item is deferred as in_use by rule 3 with the event that refused it, and the consumed record names it as held, client_alive. ac4/re-judged-at-client-exit: with the clock stopped, the service poll set holds one process descriptor that stays quiet while the client lives; when the client ends, exactly one more session ended record (hook client-exit, after the first) is written and consumed, and the scratch is removed under that record. ac4/held-across-restart: a consumer that starts again holds the client of a scratch left deferred that way, and removes the scratch at its end."
     },
     {
      "type": "integration",
      "ref": "proof/VELDO-0323/checks.txt",
-     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. Full verification remains with the lead."
+     "detail": "Partial targeted runs on the real SQLite store, git repositories, worker processes, Signal, keeper and removers. The hook socket accepts real OpenSSH signatures. The teeth stage ran for finding 323 in its confined leg. Full verification remains with the lead."
     },
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0323/falsifiers.json",
-     "detail": "space323-no-project-sessions-skipped reds ac4/host-wide. space323-session-repository-deleted reds safety/session-work-kept: the scratch repository and its only commit are deleted."
+     "detail": "space323-no-project-sessions-skipped reds ac4/host-wide. space323-session-repository-deleted reds safety/session-work-kept: the scratch repository and its only commit are deleted. space323-live-session-end-dropped (a record whose client is alive selects nothing and says nothing) reds ac4/ended-while-alive-held. space323-client-exit-not-watched reds ac4/re-judged-at-client-exit."
     }
    ]
   }
@@ -95,22 +95,22 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "Targeted selftest suite 153_veldo_0323_hook_events: 31 ticket rows, 57 checks including the shared preamble, 0 failed; exit 2 denotes a successful partial run."
+   "command": "python3 scripts/selftest.py --suite 153_veldo_0323_hook_events: 38 ticket rows, 64 checks including the shared preamble, 0 failed (a partial run)."
   },
   {
    "name": "integration",
    "status": "passed",
-   "command": "The same suite exercises the signed local socket, real worker pipe, real git and real removers. Targeted regressions 132, 133, 139, 148 and 149 passed. The installed closure and the four CLI event-envelope refusals are also checked by suite 153."
+   "command": "The same suite exercises the signed local socket, real worker pipe, real git, real removers and a real client process. Targeted regressions 132 (31 rows), 133 (30), 139 (18), 148 (31) and 149 (41) passed after the fix. The installed closure and the four CLI event-envelope refusals are also checked by suite 153."
   },
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "python3 proof/VELDO-0323/run_falsifiers.py: final campaign applied each of six registered mutations once in temporary copies; all target rows red, no exceptions. No teeth stage or coordinator ran."
+   "command": "python3 scripts/check_teeth_mutations.py --finding 323 --jobs 4: passed, registered=13 executed=13 reused=0 rejected=13, baseline and no-op controls green in the confined leg. python3 proof/VELDO-0323/run_falsifiers.py applies the same thirteen in-process; its result is falsifiers.json."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; python3 scripts/check_git_boundary.py. Each exit 0."
+   "command": "After the fix: bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; git diff with the check option. Each exit 0. The build's other fast checks were not run again."
   },
   {
    "name": "gate",
@@ -124,9 +124,13 @@
   "The act predicate, free-space reading, declarations and membership records are fixtures. Journal signatures are deterministic stand-ins; hook packet signatures are real OpenSSH signatures. The ordinary act switch still refuses the unbuilt VELDO-0332 and VELDO-0339 checks.",
   "The process table is a private fixture, with a link to the suite process for the live-session row. The unread-table row supplies an unread mount-table answer. No real Docker engine, data volume, installed process reader or protected data was touched.",
   "The CLI event verb still supplies an incomplete verb/session envelope and is refused as invalid_input:emitter. Its creator wiring and session hooks are outside this ticket. released can be recorded but removes nothing here; VELDO-0335 supplies that behavior.",
-  "The recovery row stops after the committed Signal by refusing the consumed write, not by delivering SIGKILL. Recovery marks the event consumed without signalling again; due or removing items remain for the existing reconcile path and its keep checks. Simultaneous service replacement while a live worker holds the lock is not separately exercised.",
+  "The recovery row stops after the committed Signal by refusing the consumed write, not by delivering SIGKILL. Recovery marks the event consumed without signalling again; due or removing items remain for the existing reconcile path and its keep checks. A service replacement while a live worker holds the lock is exercised by a second consumer in the same process and on the same ledger object, not by a second service process.",
   "The heavy suite 151 was not run. Its four edited event-envelope expectations are exercised directly in suite 153. Suite 86_veldo_0127 and all captures were left untouched.",
-  "An exploratory falsifier campaign preceded the final process-table check. The recorded final campaign uses the final production bytes; each of its six mutations ran once. The teeth stage, policy_check.py and the full gate were not run."
+  "The teeth stage ran for finding 323 only, with four workers, on a host under heavy load from other runs. policy_check.py and the full gate were not run. No fix validation record is in this bundle: the review, its validation and the gate are the lead's.",
+  "Fix round, descriptors: the service names what a worker closes (its lock, its two listeners, the launch, provisioner and Docker pipes, its store connection). The channel and API objects of the service are not in that list; nothing here reads which descriptors they hold. serve was not started in any row: the row gives the service one descriptor of its own.",
+  "Fix round, session ended: the kernel reports a client ended before its parent has collected it. A worker that looks in that moment finds a process rule 4 cannot read and leaves the scratch deferred as in_use, visible on the console, until the next session started on the host. The rows collect the client before the record is consumed. This costs time, never work.",
+  "Fix round, session ended: a scratch whose recorded process cannot be read is still not selected, and the record names it as held, process_unread; no row plants that case for a session ended record. A client that cannot be held by a process descriptor is written to the observation log as space_client_unwatched and is not watched; no row plants that either.",
+  "The startup bootstrap (Service.space at service start, the real reconcile) is VELDO-0315 AC7 and is not built here."
  ],
  "rollback": "Revert the change. Hook events remain spooled or received, with no new consumer removals."
 }
