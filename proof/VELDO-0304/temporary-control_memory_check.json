@@ -1,0 +1,16 @@
+{
+ "module": "engine/.veldo/control_memory_check.py",
+ "functions": [
+  "probe"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "probe",
+  "old": "tempfile.TemporaryDirectory(prefix='probe-', dir=scratch)",
+  "new": "tempfile.TemporaryDirectory(prefix='probe-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/control_memory_check.py:186: probe: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}

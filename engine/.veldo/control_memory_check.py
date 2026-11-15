@@ -183,7 +183,7 @@ def probe(part, entry, operation, sample=None, scratch=None):
     interpreter = entry.get('interpreter', sys.executable)
     request = dict(part=part, entry=entry, operation=operation, sample=sample or [])
     adapter = Path(__file__).with_name('control_memory_adapter.py')
-    with tempfile.TemporaryDirectory(prefix='probe-', dir=scratch) as private:
+    with tempfile.TemporaryDirectory(prefix='probe-') as private:
         try:
             if part == 'claude_mem':
                 request['home'] = str(snapshot(entry, private))
