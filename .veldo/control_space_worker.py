@@ -2,6 +2,12 @@
 
 No deletion lives here. Signal supplies the rules and the VELDO-0300 removers, with the
 VELDO-0345 keeper. An unread fact never selects an item. released is VELDO-0335's work.
+
+A session ended record usually arrives while its client is still alive: the hook runs inside
+it. The scratch is then selected all the same and rule 3 (the owner is live) leaves it
+deferred as in_use, on the console, and the record's result names it under `held` with
+client_alive. The consumer re-judges it when the kernel reports that client ended. A scratch
+whose process cannot be read is not selected; the result names it with process_unread.
 """
 import importlib.util
 import json
@@ -51,21 +57,30 @@ def _ended(process, proc):
         return False
 
 
+def _alive(process, proc):
+    """The recorded process is conclusively the same live one, as rule 3 reads it."""
+    if not PROBE._table(proc)['read'] or not isinstance(process, dict) or set(process) != {'pid', 'started'}:
+        return False
+    seen = PROBE.process(process['pid'], proc) if type(process['pid']) is int and process['pid'] > 0 else None
+    return seen is not None and seen['live'] and seen['start'] == process['started']
+
+
 def selected(ledger, record, landing=None, proc='/proc'):
-    """Return (lifecycle event, exact items). Every owner comes from the ledger."""
+    """Return (lifecycle event, exact items, held). Every owner comes from the ledger. held names
+    each scratch of a session ended record whose process has not conclusively ended, and why."""
     items = ledger.items()
     subject, kind = record['subject'], record['type']
-    chosen = set()
+    chosen, held = set(), []
     if kind == 'ref_changed':
         repository = subject['repository']
         about = SPOOL.Local(ledger, None, landing=landing).about(repository)
         if about is None:
-            return 'contained', []
+            return 'contained', [], held
         refs = [SPOOL.full_ref(name) for name in about['landing_refs']]
         if about['trunk']:
             refs.append(SPOOL.full_ref(about['trunk']))
         if subject['ref'] not in refs or _tip(repository, subject['new']) != subject['new']:
-            return 'contained', []
+            return 'contained', [], held
         branches = {}
         for identity, item in items.items():
             if item['kind'] != 'branch' or (item['locator']['repository'] != repository
@@ -107,11 +122,19 @@ def selected(ledger, record, landing=None, proc='/proc'):
                 continue
             if _ended(process, proc):
                 chosen.add(identity)
+            elif kind == 'session_ended':
+                # The hook runs inside its client. Alive: rule 3 defers the scratch and the record
+                # says so. Unread: nothing is selected, and the record says that too.
+                alive = _alive(process, proc)
+                held.append({'item': identity, 'process': process,
+                             'why': 'client_alive' if alive else 'process_unread'})
+                if alive:
+                    chosen.add(identity)
     else:
-        return None, []
+        return None, [], held
     return event, [identity for identity in sorted(chosen)
                    if items[identity]['state'] in SP.SIGNALLED and not items[identity].get('owner_keep')
-                   and event in items[identity]['ends_on']['events']]
+                   and event in items[identity]['ends_on']['events']], held
 
 
 def consume(ledger, identity, given=None, landing=None):
@@ -129,11 +152,13 @@ def consume(ledger, identity, given=None, landing=None):
     given = dict(given or {})
     # Versions precede the read of facts: a rebranch or Keep during that read refuses the signal.
     versions = {key: version for key, version in ledger.conn.execute('SELECT id, version FROM entities')}
-    event, names = selected(ledger, record, landing, given.get('proc') or '/proc')
+    event, names, held = selected(ledger, record, landing, given.get('proc') or '/proc')
     names = [name for name in names if name in versions]
     emitter = dict(record['emitter'], event_record=identity, worker=os.getpid(),
                    owners={name: ledger.item(name)['owner'] for name in names})
     result = {'items': [], 'worker': os.getpid(), 'event': event, 'outcomes': []}
+    if held:
+        result['held'] = held
     if names:
         for key in ('ledger', 'emitter', 'principal'):
             given.pop(key, None)

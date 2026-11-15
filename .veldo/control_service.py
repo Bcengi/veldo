@@ -1541,6 +1541,7 @@ class Service:
         # here: an instance built with no store (one that only judges signatures) reads no journal.
         self._space, self.space_seen = None, None
         self.space_consumer = None
+        self.space_owned = []
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1568,7 +1569,20 @@ class Service:
         self.space_consumer = None if wired is None else SPACE_CONSUMER.Consumer(
             wired['ledger'], {key: value for key, value in wired.items() if key != 'ledger'},
             landing=lambda: landing_names(self.loop) if self.loop is not None else self.config.get('space_landing'),
-            observe=lambda answer: self._log(dict(answer, kind='space', operation='space_worker')))
+            observe=lambda answer: self._log(dict(answer, kind='space', operation='space_worker')),
+            held=self.space_held)
+
+    def space_held(self):
+        """What this instance holds and a space worker must not keep: the lock and the listeners that
+        serve registered in space_owned, every pipe of the poll set, and the store connection."""
+        found = list(getattr(self, 'space_owned', ()))
+        loop = getattr(self, 'loop', None)
+        for pipes in (loop.pipes() if loop is not None else {},
+                      self.provisioner_pipes() if getattr(self, 'projects_pass', None) is not None else {},
+                      self.docker_pipes() if getattr(self, 'space_docker', None) is not None else {}):
+            found.extend(pipes)
+        found.append(getattr(self, 'conn', None))
+        return found
 
     def space_start(self, replay=None, reconcile=None):
         """Replay in a child, then consume received events before starting reconcile."""
@@ -4068,6 +4082,8 @@ def serve(config_path):
             if previous is not None and not keep:
                 S.drop_previous_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_commit', rows))
             service = Service(config, conn)
+            # VELDO-0323: what a space worker closes in itself. Nothing else it inherits is closed.
+            service.space_owned.append(lock)
             # VELDO-0161: the repositories adopted before this instance started are served again, and one whose
             # adoption could not reach a running service is taken on.
             service.take_on()
@@ -4094,14 +4110,16 @@ def serve(config_path):
                 service._log({'kind': 'loop', 'operation': 'loop_open', 'at': time.time(), 'domain_uuid': service.domain,
                               'refusal': service.loop_refusal})
             listener = CC.bind(config['socket'])
+            service.space_owned.append(listener)
             inode = os.stat(config['socket']).st_ino
             # VELDO-0161: read once more now the socket is bound. An adoption that wrote its record after the
             # read above handed it over before there was a socket (refused, authority_unavailable); from here
             # on a hand-off waits in the backlog and is answered, so no record falls between the two.
             service.take_on()
             listener.settimeout(ACCEPT_SECONDS)
-            service.space_start()
             space_listener = service.space_listen()
+            service.space_owned.append(space_listener)
+            service.space_start()
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()
             next_pass = time.monotonic()
