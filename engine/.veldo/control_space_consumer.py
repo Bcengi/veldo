@@ -4,6 +4,17 @@ Each child opens its own store connection. A lock survives a service restart whi
 child finishes, so a replacement service cannot run a second remover beside it. The output
 pipe is drained by the service poll set. A failed worker leaves the record for the next
 journal advance or start; it is never retried by a timer.
+
+The child closes what the service holds and it must not keep: the descriptors and connections
+`held` names (the service's lock, listeners, pipes and store), this dispatcher's own pipe and
+its process descriptors. It closes nothing else: a descriptor the service did not open (one a
+supervisor or a test harness handed down) is not the child's to close.
+
+A session ended record whose client is still alive is not dropped. The worker leaves its
+scratch deferred (rule 3) and names it in the record's result; this dispatcher then holds a
+process descriptor of that client in the service poll set. The kernel makes it readable when
+the client ends, and that writes one more session ended record for the same session, which is
+consumed like any other. Nothing reads a clock and nothing polls.
 """
 import fcntl
 import importlib.util
@@ -24,18 +35,24 @@ WORKER = _organ('control_space_worker')
 
 
 class Consumer:
-    def __init__(self, ledger, given=None, landing=None, observe=None):
+    def __init__(self, ledger, given=None, landing=None, observe=None, held=None):
         self.ledger, self.given, self.landing = ledger, dict(given or {}), landing
         self.observe = observe or (lambda answer: None)
+        self.held = held or (lambda: ())
         self.active, self.buffer = None, b''
         self.reconcile = None
         self.head, self.dispatched = 0, None
+        self.watched = {}
 
     def pipes(self):
-        return {self.active[0]: self.active[1]} if self.active else {}
+        found = {descriptor: watch['process']['pid'] for descriptor, watch in self.watched.items()}
+        if self.active:
+            found[self.active[0]] = self.active[1]
+        return found
 
     def start(self, replay=None, reconcile=None):
         self.reconcile = reconcile
+        self._rearm()
         if replay is not None:
             self._spawn(replay)
         else:
@@ -72,14 +89,17 @@ class Consumer:
         try:
             registry = dict(ledger.conn.command_registry)
             ledger.conn.close()
-            # No inherited listener, lock, launch pipe or database handle outlives the service here.
-            for name in os.listdir('/proc/self/fd'):
-                descriptor = int(name)
-                if descriptor > 2 and descriptor != write:
-                    try:
-                        os.close(descriptor)
-                    except OSError:
-                        pass
+            # No listener, lock, launch pipe or database handle of the service outlives it here. Only
+            # what the service holds is closed, never every inherited descriptor.
+            for one in [read] + list(self.watched) + list(self.held()):
+                try:
+                    if type(one) is int:
+                        if one > 2 and one != write:
+                            os.close(one)
+                    elif one is not None:
+                        one.close()
+                except Exception:  # noqa: BLE001 - one that is closed already is closed
+                    pass
             root = ledger.state_root
             if os.path.realpath(root) != root:
                 raise ValueError('the state root traverses a link')
@@ -106,7 +126,62 @@ class Consumer:
             pass
         os._exit(0 if answer.get('ok') else 1)
 
+    def _rearm(self):
+        """At start: every scratch a session ended record left deferred behind a live client."""
+        if self.ledger.conn.in_transaction:
+            return
+        for identity, item in sorted(self.ledger.items().items()):
+            deferral = item.get('deferral') or {}
+            origin = (deferral.get('emitter') or {}).get('event_record')
+            if (item['kind'] != 'scratch' or item['state'] != 'deferred'
+                    or deferral.get('refused_by') != 'owner_live' or not origin):
+                continue
+            record = self.ledger.event_record(origin)
+            if record is not None and record['type'] == 'session_ended':
+                self._watch(origin, record, identity)
+
+    def _watch(self, origin, record, item):
+        """Hold the client of a session ended record by a process descriptor until it ends."""
+        subject = record['subject']
+        process = {'pid': subject['pid'], 'started': subject['started']}
+        if any(watch['process'] == process for watch in self.watched.values()):
+            return
+        proc = self.given.get('proc') or '/proc'
+        watch = {'origin': origin, 'subject': dict(subject), 'process': process, 'item': item}
+        try:
+            descriptor = os.pidfd_open(process['pid'])
+        except ProcessLookupError:
+            descriptor = None
+        except (OSError, AttributeError) as error:
+            self.observe({'ok': False, 'reason': 'space_client_unwatched', 'event': origin, 'item': item,
+                          'detail': str(error)[:500]})
+            return
+        # The descriptor is held first: the number cannot be handed to another process after this look.
+        seen = WORKER.PROBE.process(process['pid'], proc)
+        if descriptor is not None and seen is not None and seen['live'] and seen['start'] == process['started']:
+            self.watched[descriptor] = watch
+            return
+        if descriptor is not None:
+            os.close(descriptor)
+        if WORKER._ended(process, proc):
+            self._exited(watch)
+        else:
+            self.observe({'ok': False, 'reason': 'space_client_unwatched', 'event': origin, 'item': item,
+                          'detail': 'the recorded process cannot be read'})
+
+    def _exited(self, watch):
+        """The client's exit is an event record of its own, consumed once like a hook's."""
+        answer = self.ledger.event('session_ended', watch['subject'],
+                                   {'hook': 'client-exit', 'host': self.ledger.host, 'after': watch['origin']})
+        self.observe(dict(answer, client_exit=watch['origin'], item=watch['item']))
+
     def readable(self, descriptor):
+        if descriptor in self.watched:
+            watch = self.watched.pop(descriptor)
+            os.close(descriptor)
+            self._exited(watch)
+            self.advance()
+            return
         if not self.active or descriptor != self.active[0]:
             return
         try:
@@ -125,6 +200,11 @@ class Consumer:
         except ValueError:
             answer = {'ok': False, 'reason': 'space_worker_lost'}
         self.observe(dict(answer, worker=pid, status=status))
-        finished = self.dispatched is None or self.ledger.event_record(self.dispatched)['state'] == 'consumed'
+        record = self.ledger.event_record(self.dispatched) if self.dispatched is not None else None
+        finished = record is None or record['state'] == 'consumed'
+        if record is not None and finished and record['type'] == 'session_ended':
+            for one in (record['result'] or {}).get('held') or ():
+                if one.get('why') == 'client_alive':
+                    self._watch(self.dispatched, record, one.get('item'))
         if status == 0 and answer.get('ok') and finished:
             self.advance()

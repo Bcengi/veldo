@@ -1,4 +1,4 @@
-"""Apply the six ticket-local falsifiers, sequentially, without the gate or teeth stage.
+"""Apply every ticket-local falsifier, sequentially, without the gate or teeth stage.
 
 The registry supplies definitions only. Each temporary production copy runs suite 153 with
 its two declared inputs, ROOT and expect. Exceptions and missing target rows are errors.
@@ -52,7 +52,7 @@ def main():
             failed_rows=[name for name, ok in observed.items() if not ok], detail=output.getvalue()[-4000:]))
         print(case['name'] + ': ' + status, flush=True)
     (HERE / 'falsifiers.json').write_text(json.dumps(summaries, indent=1) + '\n')
-    return 0 if len(summaries) == 6 and all(row['status'] == 'rejected' for row in summaries) else 1
+    return 0 if summaries and len(summaries) == len(cases) and all(row['status'] == 'rejected' for row in summaries) else 1
 
 
 if __name__ == '__main__':
