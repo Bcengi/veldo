@@ -171,5 +171,34 @@ def _v304_suite():
     row('scaffold/unique-work', scaffold_work)
     row('scaffold/boundary', lambda: module_boundary('control_repository_provisioner', ('remove_scaffold_ref',)))
 
+    def launch_work():
+        from unittest.mock import patch
+        launch = load('launch', ROOT / '.veldo/control_launch.py')
+        with tempfile.TemporaryDirectory(prefix='v304-launch-') as temporary:
+            receiver = object.__new__(launch.Receiver)
+            path = Path(temporary) / 'receiver'
+            path.mkdir()
+            draft = path / 'draft'
+            draft.write_bytes(b'only receiver copy\n')
+            receiver.run, receiver.space, receiver.supervision = str(path), None, {'empty': True}
+            receiver._unstage_skills = lambda: None
+            receiver._remove_run()
+            assert receiver.run_removal['deferral'] == 'not_in_ledger'
+            assert draft.read_bytes() == b'only receiver copy\n'
+            runner = object.__new__(launch.Runner)
+            runner.runs, runner.space, runner.profile = temporary, None, None
+            runner.leftovers = {'fixture': {'group': {}, 'process': {}}}
+            runner.observations = []
+            place = Path(launch.run_directory(runner.runs, 'fixture'))
+            place.mkdir(parents=True)
+            (place / 'draft').write_bytes(b'only sweep copy\n')
+            with patch.object(launch.C, 'retirement', return_value={'terminated': True, 'cleaned': True}):
+                assert runner.clear_runs() == []
+            assert runner.observations[-1]['space']['deferral'] == 'not_in_ledger'
+            assert (place / 'draft').read_bytes() == b'only sweep copy\n'
+
+    row('launch/unique-work', launch_work)
+    row('launch/boundary', lambda: module_boundary('control_launch', ('Runner.clear_runs', 'Receiver._remove_run')))
+
 
 _v304_suite()

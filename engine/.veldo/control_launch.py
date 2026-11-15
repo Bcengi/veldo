@@ -1628,14 +1628,10 @@ class Runner:
                                              'refusal': space_refusal(found), 'space': found})
                     continue
             else:
-                # No ledger: a run directory is the run's scratch, and it goes only when no git repository is
-                # in it (the look of space_standalone): a repository's commits may be nowhere else.
-                found = space_standalone(place, 'folder')
-                if found['state'] not in SPACE_SAFE:
-                    self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
-                                              'refusal': space_refusal(found), 'space': found})
-                    continue
-                shutil.rmtree(place, ignore_errors=True)
+                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}
+                self.observations.append({'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused',
+                                          'refusal': space_refusal(found), 'space': found})
+                continue
             if os.path.lexists(place):
                 refused = {'operation': 'remove_run', 'dispatch_id': dispatch_id, 'outcome': 'refused'}
                 if self.space is not None:
@@ -2351,17 +2347,9 @@ class Receiver:
                 # nothing was sent. The run directory is the sweep's, which reads the items again.
                 self.run_sent = False
         elif not stays:
-            # Before the end is reported: the runner stops this receiver once it reads the end, so a link left
-            # for close() alone could survive into the clone (VELDO-0127).
-            # No ledger: a run directory is the run's scratch, and it goes only when no git repository is in
-            # it (the look of space_standalone). One that holds a repository stays and is named here.
-            found = space_standalone(run, 'folder')
-            if found['state'] not in SPACE_SAFE:
-                self._unstage_skills()
-                self.run_removal = dict(found, refusal=space_refusal(found))
-                return
             self._unstage_skills()
-            shutil.rmtree(run, ignore_errors=True)
+            self.run_removal = {'path': str(run), 'item': None, 'state': None,
+                                'deferral': 'not_in_ledger', 'refusal': 'space_deferred:not_in_ledger'}
 
     def _group_empty(self):
         """Whether the run's containment group is empty, as the kernel answered when the receiver settled it:

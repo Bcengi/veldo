@@ -40,5 +40,19 @@
   "row": "scaffold/boundary",
   "old": "        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n",
   "new": "        git(path, 'update-ref', '-d', SCAFFOLD_REF + repository, check=False)\n        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n"
+ },
+ {
+  "name": "launch-direct-sweep",
+  "path": ".veldo/control_launch.py",
+  "row": "launch/boundary",
+  "old": "                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n",
+  "new": "                shutil.rmtree(place)\n                found = {'path': str(place), 'item': None, 'state': None, 'deferral': 'not_in_ledger'}\n"
+ },
+ {
+  "name": "launch-direct-receiver",
+  "path": ".veldo/control_launch.py",
+  "row": "launch/boundary",
+  "old": "        elif not stays:\n            self._unstage_skills()\n",
+  "new": "        elif not stays:\n            shutil.rmtree(run)\n            self._unstage_skills()\n"
  }
 ]

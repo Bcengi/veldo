@@ -1,0 +1,18 @@
+{
+ "case": "launch-direct-receiver",
+ "row": "launch/boundary",
+ "red": [
+  {
+   "row": "VELDO-0304 launch/unique-work",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 187, in launch_work\n    assert draft.read_bytes() == b'only receiver copy\\n'\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1021, in read_bytes\n    with self.open(mode='rb') as f:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v304-launch-ryb71u36/receiver/draft'\n"
+  },
+  {
+   "row": "VELDO-0304 launch/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 201, in <lambda>\n    row('launch/boundary', lambda: module_boundary('control_launch', ('Runner.clear_runs', 'Receiver._remove_run')))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 122, in module_boundary\n    assert not [error for error in errors if any(function + ':' in error for function in functions)], errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['engine/.veldo/control_launch.py:2350: Receiver._remove_run: remove:recursive folder outside its reviewed boundary']\n"
+  }
+ ],
+ "before": "d308e918a04fd832444b0b4679ab8b88653c3a9139c398f4a250d7132d78a407",
+ "after": "6cc0a3af5e63e8bb23bc285a362dd105b0314094e44403157e1cdaa67fad26b9"
+}
