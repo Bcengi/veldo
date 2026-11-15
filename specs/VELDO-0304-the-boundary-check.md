@@ -91,6 +91,18 @@ approval, bound to the commit and the proof, is required.
 
 ## History
 
+- 2026-11-15: build blocked after the four required VELDO-0333 dependency commits were applied.
+  AC2 and design 6.2 refuse every ref delete outside the owner's kept drop command. The current
+  engine still deletes refs in control_clone.py, Clones._release (line 756), control_batch.py,
+  Batch._swap (line 929), and control_repository_provisioner.py, remove_scaffold_ref (line 200).
+  Each has the same call in its synced .veldo copy. These are pin, staging and scaffold refs,
+  respectively; none is the owner's kept drop command. An exemption for these calls would weaken
+  AC2, while changing the six implementation files exceeds this ticket's declared footprint.
+  The lead must supply a prerequisite that resolves these calls under the owner's rule, or obtain
+  an explicit scope and design decision before the boundary check can pass on this branch.
+  No boundary-check implementation or removal change was made. Suites 153 for VELDO-0333 and 154
+  for VELDO-0324 pass; the gate_legs.py pair is exactly the accepted VELDO-0333 version.
+  Evidence and unrun checks are recorded in proof/VELDO-0304/manifest.json.
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
 - 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.

@@ -1,0 +1,14 @@
+[
+ {
+  "command": "python3 scripts/selftest.py --suite 153_veldo_0333_leg_time_store",
+  "exit_code": 2,
+  "summary": "selftest (PARTIAL, 1 of 225 suites): 39 passed, 0 failed in 0.04s",
+  "scope": "Prerequisite selection only, not full verification."
+ },
+ {
+  "command": "python3 scripts/selftest.py --suite 154_veldo_0324_batch_sandbox",
+  "exit_code": 2,
+  "summary": "selftest (PARTIAL, 1 of 225 suites): 55 passed, 0 failed in 2.03s",
+  "scope": "Prerequisite selection only, not full verification."
+ }
+]

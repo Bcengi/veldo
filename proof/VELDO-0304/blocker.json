@@ -1,0 +1,49 @@
+{
+ "criterion": "AC2",
+ "findings": [
+  {
+   "path": "engine/.veldo/control_clone.py",
+   "line": 756,
+   "function": "Clones._release",
+   "primitive": "git update-ref -d",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a"
+  },
+  {
+   "path": "engine/.veldo/control_batch.py",
+   "line": 929,
+   "function": "Batch._swap",
+   "primitive": "git update-ref -d",
+   "sha256": "51800824d53d2d8eaa26f6660e95b29d543fe00a08f2fcc39fa7a5a2b01ec356"
+  },
+  {
+   "path": "engine/.veldo/control_repository_provisioner.py",
+   "line": 200,
+   "function": "remove_scaffold_ref",
+   "primitive": "git update-ref -d",
+   "sha256": "2233fc9c88e807bed4ef58735107374fe87f01fe32c86ea8ea4dde29c06cd767"
+  },
+  {
+   "path": ".veldo/control_clone.py",
+   "line": 756,
+   "function": "Clones._release",
+   "primitive": "git update-ref -d",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a"
+  },
+  {
+   "path": ".veldo/control_batch.py",
+   "line": 929,
+   "function": "Batch._swap",
+   "primitive": "git update-ref -d",
+   "sha256": "51800824d53d2d8eaa26f6660e95b29d543fe00a08f2fcc39fa7a5a2b01ec356"
+  },
+  {
+   "path": ".veldo/control_repository_provisioner.py",
+   "line": 200,
+   "function": "remove_scaffold_ref",
+   "primitive": "git update-ref -d",
+   "sha256": "2233fc9c88e807bed4ef58735107374fe87f01fe32c86ea8ea4dde29c06cd767"
+  }
+ ],
+ "reason": "Existing ref deletes outside the sole permitted owner kept-drop command. No exception is allowed by AC2; the six implementation files are outside the ticket footprint.",
+ "resolution_needed": "Lead-supplied prerequisite or explicit scope and design decision. No exemption or implementation change made."
+}

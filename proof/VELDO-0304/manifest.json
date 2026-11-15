@@ -1,0 +1,67 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0304",
+ "commit": "90d5c05b14d32fe246f539997badb6dec1e772d6",
+ "tree": "fea1c66df3b6b5259ffbff82f9b2ca90f305a772",
+ "producer": "Codex implementation agent; blocked before implementation",
+ "produced_at": "2026-11-15T23:03:56.778640+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": []
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": []
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": []
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": []
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "not_run",
+   "reason": "Implementation blocked by existing AC2 violations outside the footprint."
+  },
+  {
+   "name": "integration",
+   "status": "not_run",
+   "reason": "Implementation blocked by existing AC2 violations outside the footprint."
+  },
+  {
+   "name": "falsifiers",
+   "status": "not_run",
+   "reason": "Implementation blocked by existing AC2 violations outside the footprint."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "reason": "The lead runs ./scripts/verify.sh through the gate lock."
+  }
+ ],
+ "blocker": "proof/VELDO-0304/blocker.json",
+ "dependency_commits": [
+  "a8f1754e",
+  "931ac7c9",
+  "7a404450",
+  "90d5c05b"
+ ],
+ "assumptions": [
+  "No acceptance criterion is claimed passed. This records a blocked build, not verification.",
+  "Full gate, heavy suites, teeth stages and policy checking are reserved for the lead.",
+  "No removal code, protected data or live captures changed. The protected gate_legs.py pair was taken exactly from the accepted prerequisite."
+ ],
+ "rollback": "No boundary implementation exists. Revert this blocked-build record if superseded; prerequisite changes remain separate commits.",
+ "dependency_results": "proof/VELDO-0304/dependency-tests.json",
+ "fast_check_results": "proof/VELDO-0304/fast-checks.json"
+}

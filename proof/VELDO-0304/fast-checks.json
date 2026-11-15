@@ -1,0 +1,43 @@
+[
+ {
+  "command": "python3 .veldo/validate.py all",
+  "exit_code": 0,
+  "summary": [
+   "All repository contracts passed after adding the required rollback field to the blocked-build manifest."
+  ],
+  "earlier_attempt": "One problem: new blocked-build manifest omitted rollback. Corrected, then rerun."
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit_code": 0,
+  "summary": [
+   "proof/VELDO-0215/round2/finding205.json.gz",
+   "proof/VELDO-0215/round2/finding205.log.gz",
+   "proof/VELDO-0215/round2/finding215.json.gz",
+   "proof/VELDO-0215/round2/finding215.log.gz",
+   "proof/VELDO-0215/round2/reuse.log.gz",
+   "proof/VELDO-0215/round2/suite.log.gz",
+   "-- genericity sweep (docs/ and packs/claude/; design/ and research/ are internal provenance)",
+   "docs hygiene: pass"
+  ]
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit_code": 0,
+  "summary": [
+   "template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+  ]
+ },
+ {
+  "command": "bash scripts/check_generated.sh",
+  "exit_code": 0,
+  "summary": [
+   "generated: pass (specs/index.md)",
+   "generated: pass (proof/WARP-0716/crossing-state.md)",
+   "generated: pass (proof/WARP-0712/order-dependence.md)",
+   "generated: pass (proof/WARP-0712/split-plan.md)",
+   "generated: pass (scripts/suites/requires.json)",
+   "generated: pass"
+  ]
+ }
+]
