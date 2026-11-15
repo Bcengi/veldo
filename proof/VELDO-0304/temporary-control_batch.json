@@ -1,0 +1,16 @@
+{
+ "module": "engine/.veldo/control_batch.py",
+ "functions": [
+  "Batch._merge"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "Batch._merge",
+  "old": "tempfile.TemporaryDirectory()",
+  "new": "tempfile.TemporaryDirectory(prefix='veldo-control-batch-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/control_batch.py:573: Batch._merge: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}

@@ -570,7 +570,7 @@ class Batch:
                 if '2' not in stages or '3' not in stages:
                     resolved = False
                     break
-                with tempfile.TemporaryDirectory() as td:
+                with tempfile.TemporaryDirectory(prefix='veldo-control-batch-') as td:
                     names = {}
                     for stage, label in (('1', 'base'), ('2', 'ours'), ('3', 'theirs')):
                         names[label] = os.path.join(td, label)
