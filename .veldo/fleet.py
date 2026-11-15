@@ -146,6 +146,23 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
     items still in state declared (a creation that failed part way), so the event reaches them.
     `alone` refuses, with nothing signalled, when the subject would also end a worktree or an agent
     repository that is not at or beneath `paths`."""
+    if alone:
+        try:
+            locations = [os.path.normpath(str(path)) for path in paths]
+            items = space['ledger'].items()
+            here = [record for record in items.values() if record.get('state') not in SPACE_ENDED
+                    and any((record.get('locator') or {}).get('path') == path
+                            or str((record.get('locator') or {}).get('path') or '').startswith(path + '/')
+                            for path in locations)]
+            owners = [record.get('owner') for record in here if record.get('owner')]
+            if any(record not in here and record.get('state') not in SPACE_ENDED
+                   and record.get('kind') in ('worktree', 'agent_repository') and record.get('owner') in owners
+                   for record in items.values()):
+                return {path: {'item': None, 'state': None, 'deferral': 'remove_refused',
+                               'said': 'the owner has another live repository item'} for path in locations}
+        except Exception as error:  # noqa: BLE001 - unread ownership refuses the event
+            return {os.path.normpath(str(path)): {'item': None, 'state': None, 'deferral': 'remove_refused',
+                                                 'said': str(error)} for path in paths}
     # The shared adapter names item identities and versions, preserving owner Keep.
     return SC.space_signal(space, event, paths, emitter, ended=ended, confirm=confirm)
 
