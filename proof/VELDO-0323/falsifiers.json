@@ -6,9 +6,9 @@
    "ac1/journal-advance": false
   },
   "error": null,
-  "before": "8855b789254023c20cb0b3b0a7480879e4b73132cb040ffc9b5df8bf995684e6",
-  "after": "4a06cbdae73a7ba59460aa38e4d580d0de49ecd3532e51893854a9c834d8a482",
-  "seconds": 20.411,
+  "before": "b5c0fda39f631f63393566cc44b2400ec516532c9a6edb4c79f4bf525c46297a",
+  "after": "04a307b07e8ceea3bb26012febbb8d3b072d168e981a8b3f0ad1267b029d3885",
+  "seconds": 12.612,
   "failed_rows": [
    "VELDO-0323 ac1/journal-advance",
    "VELDO-0323 ac1/keep-and-order",
@@ -19,14 +19,20 @@
    "VELDO-0323 safety/agent-kept-in-main",
    "VELDO-0323 ac1/missing-commit",
    "VELDO-0323 safety/keep-failure",
+   "VELDO-0323 ac2/only-service-descriptors",
    "VELDO-0323 ac2/responsive",
    "VELDO-0323 ac3/oldest-once",
    "VELDO-0323 ac3/restart",
+   "VELDO-0323 ac3/oldest-first",
+   "VELDO-0323 ac3/one-worker",
+   "VELDO-0323 ac3/read-again-under-lock",
    "VELDO-0323 ac3/recover-after-signal",
    "VELDO-0323 ac4/session-ended",
-   "VELDO-0323 ac4/host-wide"
+   "VELDO-0323 ac4/host-wide",
+   "VELDO-0323 ac4/ended-while-alive-held",
+   "VELDO-0323 ac4/re-judged-at-client-exit"
   ],
-  "detail": "VELDO-0323 detail ac1/journal-advance: {'adopted': False, 'branch': 'complete', 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-cbf15mal/trees/complete', 'kind': 'worktree', 'locator': {'path': '/tmp/veldo-0323-cbf15mal/trees/complete'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'complete'}, 'parent': None, 'pool': 'disk', 'process': None, 'removal': None, 'report': None, 'size': None, 'start': '35996ff23dca91e540f5510f268de76348a6ce1b', 'state': 'present'}\nVELDO-0323 detail ac1/keep-and-order: \nVELDO-0323 detail safety/log-only-kept: \nVELDO-0323 detail ac1/keep-and-order: \nVELDO-0323 detail ac1/branch-kept: \nVELDO-0323 detail ac1/trace: \nVELDO-0323 detail ac1/declared-landing: \nVELDO-0323 detail safety/agent-kept-in-main: {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-cbf15mal/trees/agent-repository', 'kind': 'agent_repository', 'locator': {'path': '/tmp/veldo-0323-cbf15mal/trees/agent-repository'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'agent-complete'}, 'parent': None, 'pool': 'disk', 'process': None, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}\nVELDO-0323 detail ac1/missing-commit: \nVELDO-0323 detail safety/keep-failure: \nVELDO-0323 detail ac2/responsive: [{'ok': True, 'seq': 247, 'replayed': False, 'event': 'space:event:81471cec8ed84d1aad161cd4a55677ea'}]\nVELDO-0323 detail ac3/oldest-once: \nVELDO-0323 detail ac3/oldest-once: \nVELDO-0323 detail ac3/restart: \nVELDO-0323 detail ac3/recover-after-signal: \nVELDO-0323 detail ac4/session-ended: \nVELDO-0323 detail ac4/host-wide: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-cbf15mal/scratch/no-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-cbf15mal/scratch/no-project'}, 'owner': {'scope': {'type': 'no_project'}, 'session': 'no-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-cbf15mal/scratch/other-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-cbf15mal/scratch/other-project'}, 'owner': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}]\n"
+  "detail": "ed': 1181, 'result': {'event': 'contained', 'items': [], 'outcomes': [], 'worker': 3267791}, 'state': 'consumed', 'subject': {'new': '5555555555555555555555555555555555555555', 'old': '0caffdae3c27383e8bb78dc377ac4778bda1427c', 'ref': 'refs/heads/main', 'repository': '/tmp/veldo-0323-95gjo86v/repository'}, 'type': 'ref_changed'}, 3267437, [{'ok': True, 'seq': 1182, 'replayed': False, 'worker': 3267437, 'status': 0}, {'ok': True, 'seq': 1183, 'replayed': False, 'worker': 3267439, 'status': 0}, {'ok': True, 'seq': 1184, 'replayed': False, 'worker': 3267441, 'status': 0}, {'ok': True, 'seq': 1301, 'replayed': False, 'worker': 3267443, 'status': 0}, {'ok': True, 'seq': 1302, 'replayed': False, 'worker': 3267791, 'status': 0}]]\nVELDO-0323 detail ac3/recover-after-signal: \nVELDO-0323 detail ac4/session-ended: \nVELDO-0323 detail ac4/host-wide: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-95gjo86v/scratch/no-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-95gjo86v/scratch/no-project'}, 'owner': {'scope': {'type': 'no_project'}, 'session': 'no-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-95gjo86v/scratch/other-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-95gjo86v/scratch/other-project'}, 'owner': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}]\nVELDO-0323 detail ac4/ended-while-alive-held: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-95gjo86v/scratch/client-alive', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-95gjo86v/scratch/client-alive'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3268808, 'started': 243918852}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'emitter': {'hook': 'session', 'host': 'fixture'}, 'received': 1567, 'result': None, 'state': 'received', 'subject': {'cwd': '/tmp/veldo-0323-95gjo86v', 'pid': 3268808, 'session': 'client-alive', 'started': 243918852}, 'type': 'session_ended'}]\nVELDO-0323 detail ac4/re-judged-at-client-exit: [[], []]\nVELDO-0323 detail ac4/re-judged-at-client-exit: [[], {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-95gjo86v/scratch/client-alive', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-95gjo86v/scratch/client-alive'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3268808, 'started': 243918852}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}]\n"
  },
  {
   "name": "space323-service-computes-containment",
@@ -35,13 +41,13 @@
    "ac2/no-service-git": false
   },
   "error": null,
-  "before": "8101fe472051107f3a6b0f89d75a7f12155f1a5b7322a3fb1756e53d2b95fc55",
-  "after": "d3cd7d0aafe7f8713abc79abdc8b39f495dbbdfc59a43ca0c9fbaac466e0a9ee",
-  "seconds": 8.016,
+  "before": "a16976f1b0ff051cece1ad0c9774cf0413789c8fa1327c60e6ddcbc80aceaab6",
+  "after": "397f6fa7d7ea3c292c9e41b3ace5e8ab74d7b41d3642b1904efb096e62dada0e",
+  "seconds": 13.422,
   "failed_rows": [
    "VELDO-0323 ac2/no-service-git"
   ],
-  "detail": "VELDO-0323 detail ac2/no-service-git: 109\n"
+  "detail": "VELDO-0323 detail ac2/no-service-git: 221\n"
  },
  {
   "name": "space323-consumption-not-recorded",
@@ -50,23 +56,30 @@
    "ac3/oldest-once": false
   },
   "error": null,
-  "before": "f4c1055b67c89435f47aa25ce7204f75f2369ce01baf845968d79787161e20b2",
-  "after": "137c2bbdc705f5400dbea8b6619900721dc0f4d096a45954fa118215ba7978de",
-  "seconds": 13.916,
+  "before": "7e410670988e0a2f1197324c7a55c04b1cc8a3f7b5e6be1285cc31aab4238314",
+  "after": "0b447b1287ca153758d32fdfa4a359afd3cc83a251a479a2b755b6f77098ff73",
+  "seconds": 5.01,
   "failed_rows": [
    "VELDO-0323 ac1/keep-and-order",
    "VELDO-0323 ac1/missing-commit",
    "VELDO-0323 safety/keep-failure",
+   "VELDO-0323 ac2/only-service-descriptors",
    "VELDO-0323 ac2/responsive",
    "VELDO-0323 ac3/oldest-once",
    "VELDO-0323 ac3/restart",
    "VELDO-0323 ac3/consumed-refused",
+   "VELDO-0323 ac3/oldest-first",
+   "VELDO-0323 ac3/one-worker",
+   "VELDO-0323 ac3/read-again-under-lock",
    "VELDO-0323 ac3/recover-after-signal",
    "VELDO-0323 ac3/spool-before-reconcile",
    "VELDO-0323 ac4/session-ended",
-   "VELDO-0323 ac4/host-wide"
+   "VELDO-0323 ac4/host-wide",
+   "VELDO-0323 ac4/ended-while-alive-held",
+   "VELDO-0323 ac4/re-judged-at-client-exit",
+   "VELDO-0323 ac4/held-across-restart"
   ],
-  "detail": "VELDO-0323 detail ac1/keep-and-order: \nVELDO-0323 detail ac1/missing-commit: \nVELDO-0323 detail safety/keep-failure: \nVELDO-0323 detail ac2/responsive: [{'ok': True, 'seq': 277, 'replayed': False, 'event': 'space:event:19f1fc47aca2435597e72a101c8c425c'}]\nVELDO-0323 detail ac3/oldest-once: \nVELDO-0323 detail ac3/oldest-once: \nVELDO-0323 detail ac3/restart: \nVELDO-0323 detail ac3/consumed-refused: \nVELDO-0323 detail ac3/recover-after-signal: \nVELDO-0323 detail ac3/spool-before-reconcile: \nVELDO-0323 detail ac4/session-ended: \nVELDO-0323 detail ac4/host-wide: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-cnil2x2f/scratch/no-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-cnil2x2f/scratch/no-project'}, 'owner': {'scope': {'type': 'no_project'}, 'session': 'no-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-cnil2x2f/scratch/other-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-cnil2x2f/scratch/other-project'}, 'owner': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}]\n"
+  "detail": "dopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-20iestjd/scratch/other-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-20iestjd/scratch/other-project'}, 'owner': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}]\nVELDO-0323 detail ac4/ended-while-alive-held: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-20iestjd/scratch/client-alive', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-20iestjd/scratch/client-alive'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3275747, 'started': 243920731}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'emitter': {'hook': 'session', 'host': 'fixture'}, 'received': 313, 'result': None, 'state': 'received', 'subject': {'cwd': '/tmp/veldo-0323-20iestjd', 'pid': 3275747, 'session': 'client-alive', 'started': 243920731}, 'type': 'session_ended'}]\nVELDO-0323 detail ac4/re-judged-at-client-exit: [[], []]\nVELDO-0323 detail ac4/re-judged-at-client-exit: [[], {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-20iestjd/scratch/client-alive', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-20iestjd/scratch/client-alive'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3275747, 'started': 243920731}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}]\nVELDO-0323 detail ac4/held-across-restart: {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-20iestjd/scratch/client-alive-restart', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-20iestjd/scratch/client-alive-restart'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive-restart'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3275750, 'started': 243920737}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}\nVELDO-0323 detail ac4/held-across-restart: {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-20iestjd/scratch/client-alive-restart', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-20iestjd/scratch/client-alive-restart'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive-restart'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3275750, 'started': 243920737}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}\n"
  },
  {
   "name": "space323-no-project-sessions-skipped",
@@ -75,13 +88,13 @@
    "ac4/host-wide": false
   },
   "error": null,
-  "before": "f4c1055b67c89435f47aa25ce7204f75f2369ce01baf845968d79787161e20b2",
-  "after": "4e0950411c8330c61ea0be40a66b52529936ba509684572a186de41342c79aa6",
-  "seconds": 6.741,
+  "before": "7e410670988e0a2f1197324c7a55c04b1cc8a3f7b5e6be1285cc31aab4238314",
+  "after": "73a16f580324c6ac750300b43193b4b3e2652149809a6e50cd3a0424dbb19319",
+  "seconds": 12.844,
   "failed_rows": [
    "VELDO-0323 ac4/host-wide"
   ],
-  "detail": "VELDO-0323 detail ac4/host-wide: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-xcxe_ctx/scratch/no-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-xcxe_ctx/scratch/no-project'}, 'owner': {'scope': {'type': 'no_project'}, 'session': 'no-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'due': {'event': 'session_ended'}, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-xcxe_ctx/scratch/other-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-xcxe_ctx/scratch/other-project'}, 'owner': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': {'action': 'remove', 'bytes': 8192, 'bytes_source': 'measured', 'carrier': {'pid': 2283848, 'seq': 676, 'started': 243539370}, 'emitter': {'event_record': 'space:event:ca2ffb62be2443c6ab94fd977e7aef89', 'hook': 'session', 'host': 'fixture', 'owners': {'space:item:103c1e2992d94ebcb8d62e12fc40bdfb': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'scratch-repository'}, 'space:item:3c64c2e0c46941b0ab818380c50947c6': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'space:item:ce8279dc14944f25a5c0b253a35af16f': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'unread'}}, 'worker': 2283848}, 'event': 'session_ended', 'freed': 0, 'host': None, 'method': 'rename_probe_delete', 'pool': 'disk', 'pool_free_after': 1000000000, 'pool_free_before': 1000000000}, 'report': None, 'size': None, 'start': None, 'state': 'removed'}]\n"
+  "detail": "VELDO-0323 detail ac4/host-wide: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-o7jxukxb/scratch/no-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-o7jxukxb/scratch/no-project'}, 'owner': {'scope': {'type': 'no_project'}, 'session': 'no-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'due': {'event': 'session_ended'}, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-o7jxukxb/scratch/other-project', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-o7jxukxb/scratch/other-project'}, 'owner': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 99999999, 'started': 1}, 'removal': {'action': 'remove', 'bytes': 8192, 'bytes_source': 'measured', 'carrier': {'pid': 3280187, 'seq': 807, 'started': 243921934}, 'emitter': {'event_record': 'space:event:40e4982a6e7647c5b5fcbb313686d3de', 'hook': 'session', 'host': 'fixture', 'owners': {'space:item:42026a53ac744f348853b85ca4a17153': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'scratch-repository'}, 'space:item:6d8faa275ced40288f872d7a4cad3312': {'scope': {'id': 'other', 'type': 'project'}, 'session': 'other-project'}, 'space:item:b467d362e242409cb0ca629fd2a93ecf': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'unread'}}, 'worker': 3280187}, 'event': 'session_ended', 'freed': 0, 'host': None, 'method': 'rename_probe_delete', 'pool': 'disk', 'pool_free_after': 1000000000, 'pool_free_before': 1000000000}, 'report': None, 'size': None, 'start': None, 'state': 'removed'}]\n"
  },
  {
   "name": "space323-keeper-skipped",
@@ -91,16 +104,17 @@
    "safety/agent-kept-in-main": false
   },
   "error": null,
-  "before": "f4c1055b67c89435f47aa25ce7204f75f2369ce01baf845968d79787161e20b2",
-  "after": "384782514159eeaeffb135b325703085fcfdd961354c61d91cca7aeff1a9ce01",
-  "seconds": 7.075,
+  "before": "7e410670988e0a2f1197324c7a55c04b1cc8a3f7b5e6be1285cc31aab4238314",
+  "after": "06c2f0afefb57fbf898f1dfa58b1444d30c13048609c25f06f07eb7865ef0006",
+  "seconds": 12.2,
   "failed_rows": [
    "VELDO-0323 ac1/journal-advance",
    "VELDO-0323 ac1/keep-and-order",
    "VELDO-0323 safety/log-only-kept",
-   "VELDO-0323 safety/agent-kept-in-main"
+   "VELDO-0323 safety/agent-kept-in-main",
+   "VELDO-0323 ac3/one-worker"
   ],
-  "detail": "VELDO-0323 detail ac1/journal-advance: {'adopted': False, 'branch': 'complete', 'confirmed': None, 'creator': 'seam', 'deferral': None, 'due': {'event': 'contained'}, 'ends_on': {'events': ['run_finished', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-ddy7jnf0/trees/complete', 'kind': 'worktree', 'locator': {'path': '/tmp/veldo-0323-ddy7jnf0/trees/complete'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'complete'}, 'parent': None, 'pool': 'disk', 'process': None, 'removal': {'action': 'remove', 'carrier': {'pid': 2283945, 'seq': 12, 'started': 243539575}, 'emitter': {'event_record': 'space:event:0c963ffaeaab47de8d1f17f4a4e2d790', 'hook': 'reference-transaction', 'host': 'fixture', 'owners': {'space:item:2c7885e9839146548b5018c802055740': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'complete'}, 'space:item:5b80603fcb5c40af8038e5b030e418f3': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'complete'}, 'space:item:8a7067d3828049489e9b3dddf2c3332c': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'complete'}}, 'worker': 2283945}, 'event': 'contained'}, 'report': None, 'size': None, 'start': 'dd45820f2ce09b83dfa80bc23931eecbce86c5fc', 'state': 'removing'}\nVELDO-0323 detail ac1/keep-and-order: \nVELDO-0323 detail safety/log-only-kept: \nVELDO-0323 detail ac1/keep-and-order: \nVELDO-0323 detail safety/agent-kept-in-main: {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': {'action': 'remove', 'attempts': 1, 'carrier': {'pid': 2284092, 'seq': 33, 'started': 243539606}, 'emitter': {'event_record': 'space:event:df404040078642cfb4b959e240232aa8', 'hook': 'reference-transaction', 'host': 'fixture', 'owners': {'space:item:1174ceae4a0c46f2b61f80e541ac9ff4': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'agent-complete'}, 'space:item:20236ab76aef4f9a89bb814fd6a59707': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'declared-landing'}, 'space:item:2c7885e9839146548b5018c802055740': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'complete'}, 'space:item:40f27706ad2240b685524ba349baa60d': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'agent-complete'}, 'space:item:9195d8c2e94343e4920ceb417f55e4a7': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'agent-complete'}}, 'worker': 2284092}, 'event': 'contained', 'found': {'items': ['space:item:9195d8c2e94343e4920ceb417f55e4a7'], 'states': {'space:item:9195d8c2e94343e4920ceb417f55e4a7': 'removing'}}, 'order': 6, 'refused_by': 'children', 'retry': ['landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'], 'rule': 'in_use'}, 'due': {'event': 'contained'}, 'ends_on': {'events': ['landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-ddy7jnf0/trees/agent-repository', 'kind': 'agent_repository', 'locator': {'path': '/tmp/veldo-0323-ddy7jnf0/trees/agent-repository'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'ticket': 'agent-complete'}, 'parent': None, 'pool': 'disk', 'process': None, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'deferred'}\n"
+  "detail": "c14663ad2e7f82c14df38b', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c61de6423afd4036b3f1bc28bd6a1fdd', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c977000db088487da73588e1b2086627', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c97eceb5637e48fabd9cb934e0216bec', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c99b527393c446699a9ea41266dc4dec', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:cafb2b267b184a77b98cf8b23aa9ef3d', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:cbb30079edb846cca184d97a66bac7fb', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ce5bc6811ac04855a5cc141ef1647531', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:d1335d3d5b6549f485a2b43cc168fc50', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:d5085c8884a24dd4a8dd32de299349ca', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:d56289517a5d49f6bd3a2274a0106ed6', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:d86fbd6417c04abfb7a2a479b938f40a', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:da7a33439a0b476e90ebd9ba8cd7a944', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:de2af01a2bf248029c8bb2d008f91494', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:dfff02348de942d7be3663b92f0f96cd', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e05601c21baa4e8fbb67882c87da646c', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e39b95740e794df79b2f7fa5eed9e993', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e68ae6cc99a3490d99f81272576d08c8', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ea3424b596b94276abf96d5eb243345d', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ea35eda60ef94918b983000a8e870112', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:eb764d849ac9406cacc96b83195fc6d9', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ec47f8eef8a343f18e0c80d3efc8bf76', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ec8b85507f294fe1b32f37afb4fe3120', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ec9d2d5753b743c69d99b45d536ddd7f', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ece81ab9427945bca67bfa172e1dcb94', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ed0349a7548342618bdb0b7d7158cb76', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f8f31c3daf624cb6a861c985adaef85e', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f8f502a798d840729384cdd929c7b3ed', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:fa3a903e85644beaa81af4d8f1351e81', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:fb3f9fceb61d4a8a941930cdcad34bd0', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:fc7cefdfebc74764bb0cbefacfa88ef3', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:fca69dc01d2744bc887130e0e0378694', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:fd3d02a813ac4490ae068741c7dc5550', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ff17dc24fbe1494f901f25adaf681271', 'outcome': 'kept'}, {'action': 'wait', 'deferral': 'in_use', 'item': 'space:item:f84f50c7934844f4a6a36269351d439b', 'outcome': 'deferred', 'rule': 'registry'}], 'worker': 3283024}, 'state': 'consumed', 'subject': {'new': '189c336f6039838d116df57eef38f1296df1d00c', 'old': '5c05af1991bd885e8800556d162f80e4a4352481', 'ref': 'refs/heads/main', 'repository': '/tmp/veldo-0323-u0xgzqec/repository'}, 'type': 'ref_changed'}, {'ok': True, 'seq': 758, 'replayed': False, 'worker': 3283024, 'status': 0, 'kind': 'space', 'operation': 'space_worker'}]\n"
  },
  {
   "name": "space323-session-repository-deleted",
@@ -111,10 +125,120 @@
   "error": null,
   "before": "3afecb3afce55bb294d539c8d6bce2ed90bff899dc8a62a85b784b222ee3ec8c",
   "after": "2c22f9fb35c719e9e4642ec28561973a7ded52dada0ca868c01b1d1cc40ad9d4",
-  "seconds": 7.324,
+  "seconds": 12.093,
   "failed_rows": [
    "VELDO-0323 safety/session-work-kept"
   ],
   "detail": "VELDO-0323 detail safety/session-work-kept: \n"
+ },
+ {
+  "name": "space323-service-descriptors-kept",
+  "status": "rejected",
+  "targets": {
+   "ac2/only-service-descriptors": false
+  },
+  "error": null,
+  "before": "a16976f1b0ff051cece1ad0c9774cf0413789c8fa1327c60e6ddcbc80aceaab6",
+  "after": "457eb3372d533a3e2e62718d8c759f83a3d7405bfd05702d4e24eb5f89a03c0a",
+  "seconds": 12.306,
+  "failed_rows": [
+   "VELDO-0323 ac2/only-service-descriptors"
+  ],
+  "detail": "VELDO-0323 detail ac2/only-service-descriptors: ['/dev/null', '/tmp/claude-1000/falsifiers323.out', '/tmp/veldo-0323-eo0g5yj_/inherited', '/tmp/veldo-0323-eo0g5yj_/service-owned', '/tmp/veldo-0323-eo0g5yj_/state/space-worker.lock', '/tmp/veldo-0323-eo0g5yj_/state/store.sqlite3', '/tmp/veldo-0323-eo0g5yj_/state/store.sqlite3-shm', '/tmp/veldo-0323-eo0g5yj_/state/store.sqlite3-wal', 'pipe:[3295386457]']\n"
+ },
+ {
+  "name": "space323-service-git-by-another-path",
+  "status": "rejected",
+  "targets": {
+   "ac2/no-service-git": false
+  },
+  "error": null,
+  "before": "a16976f1b0ff051cece1ad0c9774cf0413789c8fa1327c60e6ddcbc80aceaab6",
+  "after": "6b9106a8949912003640041aa3209bf1c45805ef147eee1bda9f550bc7883ce9",
+  "seconds": 14.489,
+  "failed_rows": [
+   "VELDO-0323 ac2/no-service-git"
+  ],
+  "detail": "VELDO-0323 detail ac2/no-service-git: 108\n"
+ },
+ {
+  "name": "space323-newest-first",
+  "status": "rejected",
+  "targets": {
+   "ac3/oldest-first": false
+  },
+  "error": null,
+  "before": "15a8c33a0baa3b35a9e9a9f93c16455a143800bdb52dbadcc864202cb5fc5be5",
+  "after": "3698b8763902e57ce4dc44b304a7de511437a46663eab258c79ed58f947dba84",
+  "seconds": 11.671,
+  "failed_rows": [
+   "VELDO-0323 ac3/oldest-first",
+   "VELDO-0323 ac3/one-worker",
+   "VELDO-0323 ac3/read-again-under-lock"
+  ],
+  "detail": "ce:item:c22ba5d5f5904b9b9a37b88a81870374', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c5175ce09b654b42bea2aa42332ca9e8', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c522c855317f4fd689a27f5bf4b6145b', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c5f1f82072c14ae4910fdef9c444433b', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c6413c5dd78f47b89cf57ddd4b394ef7', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c8006f11f74242ac95b9f32cffa54d11', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:c936290ae121440bb0cbb28c21f7cd22', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:cba01c4b60fc4eee85d7e107b3f70ed8', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:cc3a2380152d470497b952fd0044c4ab', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:d1c70c90b1994949a7e311e5d047e0a8', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:d371a2c983b3481da6d2a98be665a5f3', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:d4dae60c5dba472f856baa63c88ee078', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:decd405c9bb4441a8a54b8b675d0cdde', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e0a2820839ae46be9189c3ec7f8c821e', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e327fad0084443f8b82c048f5194c4d5', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e42b01f844494a74a5fcf5b923de79a0', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e4a3c08ff28a43369da4a56ee26cd079', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e6493818907e4acdb872de6bb45f3a00', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:e6dc26b6661840edbbeafd162a9c6ee6', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ecd865098d4e452a898d73f27a1e47eb', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ed4029dc35b146c085d5ed63185b5b51', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f0a851a1a11d49be9255933b28815b18', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f27be4937a91432d83e35ad00f85c637', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f362d362ae5d45ec81805b757b6e62f8', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f7a0b605868741049ea9a6749f3cadcd', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f92104bbf514414ea3e66f6e180cce8a', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:f9f7604a920a46d0bc1846b57837a5e4', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:fa2d2d767309467ba9ce91ce8165a9a5', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ff07dbce22bb46f6867bbc07af86a7cc', 'outcome': 'kept'}, {'action': 'mark_contained', 'item': 'space:item:ffaa7044f265431b9859daefa474a731', 'outcome': 'kept'}], 'worker': 3299458}, 'state': 'consumed', 'subject': {'new': 'f5cb8391f935cbc53d445ae24788f251b4f2b892', 'old': 'acfdd3d6611e10536ec83d5ce46e815b014fa483', 'ref': 'refs/heads/main', 'repository': '/tmp/veldo-0323-c5yzrmgn/repository'}, 'type': 'ref_changed'}, {'ok': True, 'seq': 648, 'replayed': False, 'worker': 3299423, 'status': 0, 'kind': 'space', 'operation': 'space_worker'}]\nVELDO-0323 detail ac3/read-again-under-lock: [{'emitter': {'hook': 'reference-transaction', 'host': 'fixture'}, 'received': 647, 'result': {'event': 'contained', 'items': [], 'outcomes': [], 'worker': 3299423}, 'state': 'consumed', 'subject': {'new': '5555555555555555555555555555555555555555', 'old': 'f5cb8391f935cbc53d445ae24788f251b4f2b892', 'ref': 'refs/heads/main', 'repository': '/tmp/veldo-0323-c5yzrmgn/repository'}, 'type': 'ref_changed'}, 3299458, [{'ok': True, 'seq': 765, 'replayed': False, 'worker': 3299458, 'status': 0}]]\n"
+ },
+ {
+  "name": "space323-no-worker-lock",
+  "status": "rejected",
+  "targets": {
+   "ac3/one-worker": false
+  },
+  "error": null,
+  "before": "a16976f1b0ff051cece1ad0c9774cf0413789c8fa1327c60e6ddcbc80aceaab6",
+  "after": "a1c9a92853e8a8b3b3ba9dd37210ee57f698f7abd0f94415107505cba6f4c76b",
+  "seconds": 9.273,
+  "failed_rows": [
+   "VELDO-0323 ac3/one-worker",
+   "VELDO-0323 ac3/read-again-under-lock"
+  ],
+  "detail": "9f5b86f0c148e5e6', 'space:item:61abb5276a334df388d1deeef8d2221c', 'space:item:62af8ec66e024ac8a7974c93d21990eb', 'space:item:6597ef1e4df1498fbbdf3010f358d86f', 'space:item:68244857589645cebd0860cd94d1d132', 'space:item:6a51617f951040a8a9d9b372fc70f2e1', 'space:item:6ccc005ebe3b4ddfb3ddfc84f6ce3ca2', 'space:item:752b571dcccc42ecbb7d31dd09112be2', 'space:item:7a2c062638214472af336149fd0dd64f', 'space:item:7d81d88da3bf4a7bb26c707dd865f413', 'space:item:7f332d5471d24354823d0f5ea5d175a2', 'space:item:811637ba999443618fcddf9fc0ed1e2d', 'space:item:83dc25ccca784f7fb1b209904ba61f3b', 'space:item:8576df856e184dd6805e3263c0f99464', 'space:item:87c33dd4e35e447395ec3e99616fc09b', 'space:item:8970eef467904de383166c50e833808f', 'space:item:8bbb3e6f8f7341d8a25e6e59d1aa9feb', 'space:item:8c5476a2ec144ef88028a6085733a3fd', 'space:item:9278be0870c449edbe3b317b07aacdaf', 'space:item:93cb9672fde344009b0d974abcae5f15', 'space:item:9590d466233b42518068e35529602b3d', 'space:item:95e04f7b8c314996853a8d3ea302c875', 'space:item:9a3dde646e6246d18b93695244823046', 'space:item:9a69511148d7403a9930c45fa1dbb6ea', 'space:item:9bdf79b81d5f4719af209127db00de1d', 'space:item:9bfb6cf9545e40aebe234b01b73444ea', 'space:item:a02f74bba35f46c6bf38b750c63d0086', 'space:item:a2adaa5ea66143f4a030cabc740a5f94', 'space:item:a3cbf75644ad423eb1759ba99eb86098', 'space:item:a660871aaa744ed480c2aa66730b0200', 'space:item:a7eebcb3c9cf4ea895995f71b9ad3753', 'space:item:aa907f88807c48aaa3a159603047a50b', 'space:item:aac3cecd82ed4c3583519fcf5b0ecdd0', 'space:item:ac845b0d53df4d6e94802750601faf42', 'space:item:acaed61b42e74a929ea668decb980616', 'space:item:acbac792b16643818df0e1e64b1bee9c', 'space:item:aeda8ee6899c480898eae3d491412efe', 'space:item:b0d2b22021374b54bf3775222f063fa5', 'space:item:b2b895b231ce4984bf9f5d39d8c51786', 'space:item:b4f09e5cedf54f4e889c2f5aed14e807', 'space:item:b73ceebc27a144b79bbdc6645ee42209', 'space:item:bce26e3641094574bf8b8c70f5c26e95', 'space:item:bcf0e4cb24f04433914fdd0d596a800e', 'space:item:bf41137456e74d22a9517c47432b7c36', 'space:item:c389d75a74b745279a5123df78f8684f', 'space:item:c5e06c9c01c440548c8689bfbb9c29f1', 'space:item:ca5015a70b114373928679c49107449d', 'space:item:cb0a03b9fe434360a323bb8b1a8da6f2', 'space:item:cea217604a0840819c813d19f8fe9529', 'space:item:cf0cc3a744b944519bef1597c307420f', 'space:item:d84e83f97aa243d69788ec861bc87071', 'space:item:dbea784074ec445198a12d6a52722454', 'space:item:e5dccec463a742dfaefcf7387238a99e', 'space:item:e5f3631c712b47a5b7ab2c246bf78f5f', 'space:item:e91fd55e05a34657aaed61c4fa84c137', 'space:item:e9a47ec331484acc91480d999aeaed5c', 'space:item:e9be528679134ada8b9bc87abac383bd', 'space:item:ea1f5ea96ca042b793fa613d4b6012c3', 'space:item:f0227dc42f924d8399979cc5006ebb5a', 'space:item:f16cece9f7c84add87456849436ad618', 'space:item:f204e44b15c44c84b564cf830d69ae10', 'space:item:f40a5c007c6548eaa64a36f810647d35', 'space:item:f61f8493203a4579bb322c5cf09a31a2'], 'recovered': True, 'worker': 3307517}, 'state': 'consumed', 'subject': {'new': 'cc3d51a2fe1fb59dc61d0b2542bece12a50b67c5', 'old': 'c7a44d6122da4fac120328f8b2a31f664d12eee0', 'ref': 'refs/heads/main', 'repository': '/tmp/veldo-0323-c0fg4umm/repository'}, 'type': 'ref_changed'}, {'ok': False, 'reason': 'space_event_consumed', 'detail': 'the event was already consumed', 'worker': 3307158, 'status': 256, 'kind': 'space', 'operation': 'space_worker'}]\nVELDO-0323 detail ac3/read-again-under-lock: [{'emitter': {'hook': 'reference-transaction', 'host': 'fixture'}, 'received': 647, 'result': {'event': 'contained', 'items': [], 'outcomes': [], 'worker': 3307530}, 'state': 'consumed', 'subject': {'new': '5555555555555555555555555555555555555555', 'old': 'cc3d51a2fe1fb59dc61d0b2542bece12a50b67c5', 'ref': 'refs/heads/main', 'repository': '/tmp/veldo-0323-c0fg4umm/repository'}, 'type': 'ref_changed'}, 3307517, [{'ok': True, 'seq': 654, 'replayed': False, 'worker': 3307517, 'status': 0}, {'ok': True, 'seq': 710, 'replayed': False, 'worker': 3307530, 'status': 0}]]\n"
+ },
+ {
+  "name": "space323-no-read-under-lock",
+  "status": "rejected",
+  "targets": {
+   "ac3/read-again-under-lock": false
+  },
+  "error": null,
+  "before": "a16976f1b0ff051cece1ad0c9774cf0413789c8fa1327c60e6ddcbc80aceaab6",
+  "after": "91bcb0163555ab192afd479f8fe2657eb6c079312445b84ef1ac9c4f99219945",
+  "seconds": 12.087,
+  "failed_rows": [
+   "VELDO-0323 ac3/read-again-under-lock"
+  ],
+  "detail": "VELDO-0323 detail ac3/read-again-under-lock: [{'emitter': {'hook': 'reference-transaction', 'host': 'fixture'}, 'received': 647, 'result': {'event': 'contained', 'items': [], 'outcomes': [], 'worker': 3310535}, 'state': 'consumed', 'subject': {'new': '5555555555555555555555555555555555555555', 'old': '00d8deddf30ebf30a400613d65a8f681f89ffc1c', 'ref': 'refs/heads/main', 'repository': '/tmp/veldo-0323-aypll8p1/repository'}, 'type': 'ref_changed'}, 3310285, [{'ok': True, 'already_consumed': True, 'worker': 3310285, 'status': 0}, {'ok': True, 'seq': 765, 'replayed': False, 'worker': 3310535, 'status': 0}]]\n"
+ },
+ {
+  "name": "space323-live-session-end-dropped",
+  "status": "rejected",
+  "targets": {
+   "ac4/ended-while-alive-held": false
+  },
+  "error": null,
+  "before": "7e410670988e0a2f1197324c7a55c04b1cc8a3f7b5e6be1285cc31aab4238314",
+  "after": "d5009b0e02a4e286443d027d5f1484c93430c2aa715fee69cfcdfb6396ca4294",
+  "seconds": 11.399,
+  "failed_rows": [
+   "VELDO-0323 ac4/ended-while-alive-held",
+   "VELDO-0323 ac4/re-judged-at-client-exit",
+   "VELDO-0323 ac4/held-across-restart"
+  ],
+  "detail": "VELDO-0323 detail ac4/ended-while-alive-held: [{'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-0d_mni0s/scratch/client-alive', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-0d_mni0s/scratch/client-alive'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3314148, 'started': 243931568}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}, {'emitter': {'hook': 'session', 'host': 'fixture'}, 'received': 819, 'result': {'event': 'session_ended', 'items': [], 'outcomes': [], 'worker': 3314149}, 'state': 'consumed', 'subject': {'cwd': '/tmp/veldo-0323-0d_mni0s', 'pid': 3314148, 'session': 'client-alive', 'started': 243931568}, 'type': 'session_ended'}]\nVELDO-0323 detail ac4/re-judged-at-client-exit: [[], []]\nVELDO-0323 detail ac4/re-judged-at-client-exit: [[], {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-0d_mni0s/scratch/client-alive', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-0d_mni0s/scratch/client-alive'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3314148, 'started': 243931568}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}]\nVELDO-0323 detail ac4/held-across-restart: {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-0d_mni0s/scratch/client-alive-restart', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-0d_mni0s/scratch/client-alive-restart'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive-restart'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3314150, 'started': 243931573}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}\nVELDO-0323 detail ac4/held-across-restart: {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': None, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-0d_mni0s/scratch/client-alive-restart', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-0d_mni0s/scratch/client-alive-restart'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive-restart'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3314150, 'started': 243931573}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'present'}\n"
+ },
+ {
+  "name": "space323-client-exit-not-watched",
+  "status": "rejected",
+  "targets": {
+   "ac4/re-judged-at-client-exit": false
+  },
+  "error": null,
+  "before": "a16976f1b0ff051cece1ad0c9774cf0413789c8fa1327c60e6ddcbc80aceaab6",
+  "after": "cb714f20b23b488aa677c51de000aa58faebd1984a15cdc7d47f89797e71a561",
+  "seconds": 11.64,
+  "failed_rows": [
+   "VELDO-0323 ac4/re-judged-at-client-exit"
+  ],
+  "detail": "VELDO-0323 detail ac4/re-judged-at-client-exit: [[], []]\nVELDO-0323 detail ac4/re-judged-at-client-exit: [[], {'adopted': False, 'branch': None, 'confirmed': None, 'creator': 'seam', 'deferral': {'action': 'remove', 'attempts': 1, 'carrier': {'pid': 3317083, 'seq': 820, 'started': 243932714}, 'emitter': {'event_record': 'space:event:a283b31db00d452f8332e342a742b0b9', 'hook': 'session', 'host': 'fixture', 'owners': {'space:item:fcc7c01564e84814b1a14a34d0307700': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}}, 'worker': 3317083}, 'event': 'session_ended', 'found': {'process': {'live': True, 'pid': 3317082, 'start': 243932713}}, 'order': 3, 'refused_by': 'owner_live', 'retry': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'rule': 'in_use'}, 'due': {'event': 'session_ended'}, 'ends_on': {'events': ['run_finished', 'verdict_recorded', 'landed', 'contained', 'ticket_ended', 'project_ended', 'worktree_abandoned', 'released', 'session_ended'], 'version': '1'}, 'host': 'fixture', 'key': 'path:/tmp/veldo-0323-hbq6x35c/scratch/client-alive', 'kind': 'scratch', 'locator': {'path': '/tmp/veldo-0323-hbq6x35c/scratch/client-alive'}, 'owner': {'scope': {'id': 'orchard', 'type': 'project'}, 'session': 'client-alive'}, 'parent': None, 'pool': 'disk', 'process': {'pid': 3317082, 'started': 243932713}, 'removal': None, 'report': None, 'size': None, 'start': None, 'state': 'deferred'}]\n"
  }
 ]
