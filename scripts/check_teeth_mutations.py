@@ -16040,6 +16040,34 @@ def cases():
         also=[("        if code != 0 or beyond.strip():", "        if code != 0:")])
     result[-1]['siblings'] = True
 
+    # VELDO-0323: each AC and each removal family's planted-work loss.
+    hook323 = '153_veldo_0323_hook_events.py'
+    add(323, 'space323-waits-for-interval', hook323, 'control_service.py',
+        '            if consumer is not None and consume:\n                consumer.advance()\n',
+        '            if False:  # defect: wait for an interval instead of the journal\n                consumer.advance()\n',
+        ['ac1/journal-advance'])
+    add(323, 'space323-service-computes-containment', hook323, 'control_space_consumer.py',
+        '        if pending:\n            self._spawn()\n',
+        '        if pending:\n            WORKER.selected(self.ledger, self.ledger.event_record(pending[0]), '
+        'self.landing, self.given.get("proc") or "/proc")\n            self._spawn()\n',
+        ['ac2/no-service-git'])
+    add(323, 'space323-consumption-not-recorded', hook323, 'control_space_worker.py',
+        '    return ledger.consumed(identity, result)\n',
+        '    return {"ok": True}  # defect: never record consumption\n',
+        ['ac3/oldest-once'])
+    add(323, 'space323-no-project-sessions-skipped', hook323, 'control_space_worker.py',
+        '            if _ended(process, proc):\n',
+        '            if _ended(process, proc) and item["owner"]["scope"]["type"] != "no_project":\n',
+        ['ac4/host-wide'])
+    add(323, 'space323-keeper-skipped', hook323, 'control_space_worker.py',
+        "        given.setdefault('keep', KEEP.keeper(ledger, event=emitter))\n",
+        "        given.setdefault('keep', lambda identity, item: {'ok': True, 'tips': "
+        "REMOVE.tips(item['locator']['path'], item['kind'])})\n",
+        ['safety/log-only-kept', 'safety/agent-kept-in-main'])
+    add(323, 'space323-session-repository-deleted', hook323, 'control_space_remove.py',
+        "        if own is not None and ('.git' in names or GIT_FOLDER <= names):\n",
+        "        if False:  # defect: a session's scratch repository is deleted\n",
+        ['safety/session-work-kept'])
     return result
 
 

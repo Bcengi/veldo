@@ -22,8 +22,10 @@ THE RECORDS, each an entity kind this module owns (design 4.1 to 4.4 and 4.7):
                    it was issued to (VELDO-0326).
   space_packet     space:packet:<principal>:<nonce>. One signed packet a host principal sent: its digest,
                    when it was issued and seen, and what became of it (VELDO-0326).
+  space_event      space:event:<new id>. A hook's type, subject, emitter and journal order; received
+                   until the child records consumed with the exact items made due (VELDO-0323).
 
-ONLY THIS MODULE WRITES THEM. Attaching declares the seven kinds and their id prefixes with the store's
+ONLY THIS MODULE WRITES THEM. Attaching declares the eight kinds and their id prefixes with the store's
 declare_owners, bound to this file's bytes. From then on the store's generic entity command is refused
 entity_owned for them on every connection, and so is any other command.
 
@@ -179,7 +181,7 @@ report refuse a locator at, above or beneath it as space_protected, and rule 2 r
 
 WHAT IS NOT HERE. The lifecycle table is the kind registry's (VELDO-0298); this module is given it as
 plain data and copies an item's events from it at declaration, with its version. Rules, probes and
-removers, and the event, wrong-proposal and review group records are later tickets. The Ledger reads no
+removers, and the wrong-proposal and review group records are separate tickets. The Ledger reads no
 clock: accept and set_mode are given the time. The sending side stamps a packet with the time its caller
 gives it; only the command line entry reads a clock, once, for that.
 
@@ -304,6 +306,9 @@ MODE_KIND, MODE_PREFIX = 'space_mode', 'space:mode:'
 # packet a host principal sent.
 RUN_KIND, RUN_PREFIX = 'space_run', 'space:run:'
 PACKET_KIND, PACKET_PREFIX = 'space_packet', 'space:packet:'
+EVENT_KIND, EVENT_PREFIX = 'space_event', 'space:event:'
+CONSUMED = 'space_consumed'
+EVENT_TYPES = ('ref_changed', 'session_started', 'session_ended', 'released')
 # A signed packet is refused when it was issued more than PACKET_AGE seconds before the time accept is
 # given (five minutes), or more than PACKET_SKEW seconds after it.
 PACKET_AGE, PACKET_SKEW = 300, 60
@@ -397,6 +402,7 @@ RUNNER_EVENTS = ('run_finished', 'verdict_recorded')
 ABANDON_EVENT = 'worktree_abandoned'
 # The parameters each command a host principal may send is called with.
 COMMAND_PARAMETERS = {
+    EVENT: ('type', 'subject', 'emitter'),
     DECLARE: ('kind', 'locator', 'owner', 'creator', 'parent', 'start', 'branch', 'process', 'pool', 'form'),
     CONFIRM: ('item',), REBRANCH: ('item', 'branch', 'start'), MEASURE: ('item', 'bytes', 'event'),
     HOLD: ('hold', 'needs', 'source'), ADMIT: ('hold', 'answer', 'reason', 'used', 'retry_asked'),
@@ -863,25 +869,99 @@ class Ledger:
                        REPORT: self._t_report, GONE: self._t_gone, REBRANCH: self._t_rebranch,
                        POOL: self._t_pool, HOLD: self._t_hold, ADMIT: self._t_admit, RELEASE: self._t_release,
                        RECONCILE: self._t_reconcile, MODE: self._t_mode, ISSUE: self._t_issue,
-                       PACKET: self._t_packet, KEEP: self._t_keep}
+                       PACKET: self._t_packet, KEEP: self._t_keep,
+                       EVENT: self._t_event, CONSUMED: self._t_consumed}
         # A command a host principal may send writes the record of its packet in its own transaction.
         for operation in COMMAND_PARAMETERS:
             transitions[operation] = self._with_packet(transitions[operation])
         # The mode switch is the owner's action and not one of OPERATIONS, the commands the authority sends.
-        for operation in OPERATIONS + (MODE, PACKET):
+        for operation in OPERATIONS + (MODE, PACKET, EVENT, CONSUMED):
             conn.command_registry[operation] = {'transaction_transition': transitions[operation], 'writes': WRITES}
         store.declare_owners(conn, OWNER,
                              kinds={ITEM_KIND: ITEM_OPERATIONS, POOL_KIND: (POOL,),
                                     HOLD_KIND: (HOLD, ADMIT, RELEASE), RECONCILE_KIND: (RECONCILE,),
-                                    MODE_KIND: (MODE,), RUN_KIND: (ISSUE,),
+                                    MODE_KIND: (MODE,), RUN_KIND: (ISSUE,), EVENT_KIND: (EVENT, CONSUMED),
                                     PACKET_KIND: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              prefixes={ITEM_PREFIX: ITEM_OPERATIONS, POOL_PREFIX: (POOL,),
                                        HOLD_PREFIX: (HOLD, ADMIT, RELEASE), RECONCILE_PREFIX: (RECONCILE,),
-                                       MODE_PREFIX: (MODE,), RUN_PREFIX: (ISSUE,),
+                                       MODE_PREFIX: (MODE,), RUN_PREFIX: (ISSUE,), EVENT_PREFIX: (EVENT, CONSUMED),
                                        PACKET_PREFIX: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              module=__file__)
 
     # Reads.
+
+    def event_record(self, identity):
+        return self._row(identity, EVENT_KIND)[1]
+
+    def events(self):
+        """Hook records in journal order, independent of clocks and random identifiers."""
+        return [(identity, json.loads(data)) for identity, data in self.conn.execute(
+            'SELECT id, data FROM entities WHERE kind=? ORDER BY json_extract(data, "$.received"), id',
+            (EVENT_KIND,))]
+
+    def event(self, type, subject, emitter, principal=None, command_id=None):
+        identity = EVENT_PREFIX + self.new_id()
+        answer = self._send(EVENT, dict(event=identity, type=type, subject=subject, emitter=emitter),
+                            {identity: 0}, principal, command_id, {'event': identity})
+        if answer['ok']:
+            answer['event'] = identity
+        return answer
+
+    def consumed(self, identity, result, principal=None, command_id=None):
+        return self._send(CONSUMED, dict(event=identity, result=result),
+                          {identity: self._row(identity, EVENT_KIND)[0]}, principal, command_id,
+                          {'event': identity})
+
+    def _t_event(self, conn, params, before):
+        identity, kind = params.get('event'), params.get('type')
+        subject, emitter = params.get('subject'), params.get('emitter')
+        if not _is_str(identity) or not identity.startswith(EVENT_PREFIX) or identity in before:
+            raise _invalid('event', 'a new event identity')
+        if kind not in EVENT_TYPES or not isinstance(subject, dict):
+            raise _invalid('event', 'a hook event type and its subject')
+        if (not isinstance(emitter, dict) or emitter.get('host') != self.host
+                or not _is_str(emitter.get('hook'))):
+            raise _invalid('emitter', 'the hook and this host')
+        if kind == 'ref_changed':
+            if set(subject) != {'repository', 'ref', 'old', 'new'}:
+                raise _invalid('subject', 'repository, ref, old and new')
+            locator = canonical_locator('branch', {k: subject[k] for k in ('repository', 'ref')})
+            if locator != self._resolved('branch', locator):
+                raise Refused('space_locator_link', 'the repository path traverses a link')
+            if not inside_roots('branch', locator, self.resolved_roots, self.engines):
+                raise Refused('space_outside_roots', 'the repository is not declared')
+            if protected_by('branch', locator, self.protect):
+                raise Refused('space_protected', 'the repository is protected')
+            for field in ('old', 'new'):
+                value = subject[field]
+                if not (field == 'old' and value is None) and not (
+                        isinstance(value, str) and len(value) in (40, 64)
+                        and all(c in '0123456789abcdef' for c in value)):
+                    raise _invalid(field, 'a commit hash')
+            subject = dict(subject, **locator)
+        elif kind in ('session_started', 'session_ended'):
+            if (set(subject) != {'session', 'cwd', 'pid', 'started'} or not _is_str(subject['session'])
+                    or type(subject['pid']) is not int or subject['pid'] <= 0
+                    or type(subject['started']) is not int or subject['started'] < 0):
+                raise _invalid('subject', 'session, cwd, pid and started')
+            path = canonical_path(subject['cwd'])
+            if path != resolved_path(path):
+                raise Refused('space_locator_link', 'the working folder traverses a link')
+            subject = dict(subject, cwd=path)
+        # released is recorded only; its removal belongs to VELDO-0335.
+        received = conn.execute('SELECT COALESCE(MAX(seq), 0) + 1 FROM journal').fetchone()[0]
+        return {identity: {'kind': EVENT_KIND, 'data': dict(type=kind, subject=subject,
+            emitter=dict(emitter), state='received', received=received, result=None)}}
+
+    def _t_consumed(self, conn, params, before):
+        identity, record = self._stored(params, before, 'event', EVENT_KIND, 'space_no_event')
+        if record['state'] != 'received':
+            raise Refused('space_event_consumed', 'the event was already consumed')
+        result = params.get('result')
+        if not isinstance(result, dict) or not isinstance(result.get('items'), list):
+            raise _invalid('result', 'the items made due and the worker result')
+        record.update(state='consumed', result=result)
+        return {identity: {'kind': EVENT_KIND, 'data': record}}
 
     def _row(self, entity_id, kind):
         row = self.conn.execute('SELECT version, data FROM entities WHERE id=? AND kind=?',
@@ -1498,6 +1578,9 @@ class Ledger:
         if operation == DECLARE:
             return self.declare(given.pop('kind', None), given.pop('locator', None), given.pop('owner', None),
                                 given.pop('creator', None), **given)
+        if operation == EVENT:
+            return self.event(given.pop('type', None), given.pop('subject', None), given.pop('emitter', None),
+                              **given)
         if operation == CONFIRM:
             return self.confirm(given.pop('item', None), **given)
         if operation == REBRANCH:
@@ -1614,6 +1697,8 @@ class Ledger:
         items = sorted(identity for identity in wrote if identity.startswith(ITEM_PREFIX))
         if operation == SIGNAL:
             answer['items'] = items
+        elif operation == EVENT:
+            answer['event'] = next((identity for identity in wrote if identity.startswith(EVENT_PREFIX)), None)
         elif operation in (ADMIT, RELEASE):
             answer['state'] = next((value['state'] for identity, value in wrote.items()
                                     if identity.startswith(HOLD_PREFIX)), None)
@@ -1998,6 +2083,8 @@ class Ledger:
             record['confirmed'] = None
         elif outcome == 'removing':
             record['removal'] = dict(facts)
+        if outcome == 'kept' and record['kind'] == 'branch' and facts.get('action') == 'mark_contained':
+            record['contained'] = dict(facts)
         if 'owner_keep' in facts:
             # The owner's Keep (design 0.4): its own mark, which no signal that names an owner passes.
             mark = facts['owner_keep']

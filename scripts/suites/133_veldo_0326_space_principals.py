@@ -872,8 +872,9 @@ def _v326_space_principals_suite():
             except SP.Refused:
                 passed = False
             answer = send('space-observer', name, {})
-            check('ac2/observer-may', '%s passes the rule; this ledger has no such command yet [%s]'
-                  % (name, answer.get('reason')), passed and answer.get('reason') == 'space_no_command:' + name)
+            wanted = 'invalid_input:event' if name == SP.EVENT else 'space_no_command:' + name
+            check('ac2/observer-may', '%s passes the rule; empty event input is refused, covers is unbuilt [%s]'
+                  % (name, answer.get('reason')), passed and answer.get('reason') == wanted)
         check('ac2/observer-may', 'the rule lists exactly declare, confirm, rebranch, event and the covers read',
               set(SP.MAY_SIGN['space-observer']) == {SP.DECLARE, SP.CONFIRM, SP.REBRANCH, SP.EVENT, SP.COVERS})
 
