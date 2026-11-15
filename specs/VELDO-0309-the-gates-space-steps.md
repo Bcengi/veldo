@@ -16,6 +16,8 @@ footprint:
   - "scripts/verify.sh"
   - "engine/scripts/gate_space.py"
   - "scripts/gate_space.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - ".veldo/policy.yaml"
   - "scripts/suites/*_veldo_0309_*.py"
   - "scripts/suites/manifest.json"
@@ -105,3 +107,5 @@ required.
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+
+- 2026-11-15: the footprint includes init_scaffold.py and its canon so a new adopter receives the helper its gate calls. The authority socket is VELDO-0323: until it serves the ledger, the helper reports ledger_unreachable, as the existing run wrapper does. Tests inject that wiring and exercise a real ledger. Admission retries and history remain VELDO-0316 and VELDO-0317; this ticket uses the existing admission arithmetic.

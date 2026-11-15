@@ -540,7 +540,7 @@ _FILES += _REUSE_AUTHORITY
 # VELDO-0220: the host holder travels with the gate. Its configuration (scripts/gate_host.json)
 # does not: it names this host's lock and limits, so an adopter has none, and its gate takes no
 # lock and makes no scope.
-_FILES += ["scripts/gate_host.py"]
+_FILES += ["scripts/gate_host.py", "scripts/gate_space.py"]
 
 # Files that must be executable in the scaffolded repository.
 _EXECUTABLE = {

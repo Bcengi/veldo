@@ -15121,6 +15121,33 @@ def cases():
            "            raise RuntimeError(\"the scratch folder could not be made (%s): its item %s stays declared, for \"\n",
            ['fix6/scratch-not-made'])
 
+    # VELDO-0309: ordering in both catalogs, and the adopter's absent ledger.
+    for directory, suffix in (('scripts', 'local'), ('engine/scripts', 'template')):
+        def gate309(name, old, new, rows, also=()):
+            add(309, 'space309-' + name + '-' + suffix, '153_veldo_0309_gate_space.py',
+                'verify.sh', old, new, rows, also=also)
+            result[-1]['dir'] = directory
+        gate309('need-only-with-host', 'veldo_space need || exit 75',
+                'if [ -e "$VELDO_AUTHORITY/scripts/gate_host.json" ]; then veldo_space need || exit 75; fi',
+                ['ac1/no-host-waits'])
+        classify309 = 'if [ "$FAIL" -ne 0 ]; then veldo_space classify || exit 75; fi'
+        gate309('classify-after-stamp', classify309, ': # classification delayed', ['ac2/no-stamp-no-event'],
+                also=(('# VELDO-0309: a missing stamp sends nothing.',
+                       classify309 + '\n# VELDO-0309: a missing stamp sends nothing.'),))
+        gate309('verdict-before-stamp',
+                'if [ "$VELDO_OUT" = ".veldo" ]; then\n  _veldo_written=no',
+                'veldo_space verdict || :\nif [ "$VELDO_OUT" = ".veldo" ]; then\n  _veldo_written=no',
+                ['ac3/killed-before-stamp'])
+    add(309, 'space309-requires-ledger', '153_veldo_0309_gate_space.py', 'gate_space.py',
+        "                say('space: ' + str(why))\n            return 0",
+        "                say('space: ' + str(why))\n            return TEMPORARY", ['ac4/adopter-unchanged'])
+    result[-1]['dir'] = 'scripts'
+    add(309, 'space309-kept-child-measured', '153_veldo_0309_gate_space.py', 'gate_space.py',
+        "        if any(entry.get('owner_keep') and entry['locator'].get('path', '').startswith(root + '/')",
+        "        if any(False and entry.get('owner_keep') and entry['locator'].get('path', '').startswith(root + '/')",
+        ['safe/owner-keep'])
+    result[-1]['dir'] = 'scripts'
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
