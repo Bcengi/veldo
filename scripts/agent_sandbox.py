@@ -1994,8 +1994,7 @@ def recover_orphans(root=None):
 
 
 def pending_borrow(name, root=None):
-    """True when a journal of the scratch named `name` has not been settled: the stale-scratch
-    sweep leaves that scratch alone, it may hold the only copy of a rotation."""
+    """Whether scratch still holds a borrowed login that has not been settled."""
     journal = (root or borrow_root()) / name
     return (journal / 'borrow.json').is_file() and not (journal / 'recovery.json').exists()
 
@@ -2054,15 +2053,16 @@ def restore_login(recovery=None, force=False):
 
 
 SCRATCH_PREFIX = 'veldo-agent-'
-STALE_SECONDS = 24 * 60 * 60
 GRACE_SECONDS = 10
 STOP_SIGNALS = (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)
 
 
-def remove_tree(path):
-    """Remove a scratch tree the confined process may have shut (directories made unreadable or
-    unwritable): every directory is opened up before it is entered, through descriptors and without
-    following a link, then shutil.rmtree removes the tree without following a link either."""
+def scratch_access(path):
+    """Open the launcher's scratch directories for its owner, following no inner link.
+
+    A recorded run leaves deletion to Signal. Restore access while the launcher
+    still holds its lock so the run's final probes can read even shut directories.
+    """
     os.chmod(path, 0o700)
     for _, directories, _, descriptor in os.fwalk(path, follow_symlinks=False):
         for name in directories:
@@ -2078,47 +2078,12 @@ def remove_tree(path):
                 pass
             finally:
                 os.close(inner)
+
+
+def remove_tree(path):
+    """Remove only this standalone launcher's scratch at its own end."""
+    scratch_access(path)
     shutil.rmtree(path)
-
-
-def remove_stale_scratch(parent):
-    """Remove the scratch directories launchers killed outright left in `parent`: veldo-agent-*
-    directories this uid owns, untouched for more than a day and held by no live launcher or agent
-    (each launcher holds a shared lock on its own scratch until it removes it, and its confined
-    command holds another on its own descriptor for as long as it runs). A link or any other kind of
-    entry is never followed or removed, and neither is a scratch whose borrow journal is not settled
-    (recover_orphans runs first and keeps its rotated credentials; VELDO-0211)."""
-    try:
-        entries = list(os.scandir(parent))
-    except OSError:
-        return
-    for entry in entries:
-        if not entry.name.startswith(SCRATCH_PREFIX):
-            continue
-        if pending_borrow(entry.name):
-            print('agent sandbox: stale scratch %s kept: its borrowed login is not settled' % entry.path,
-                  file=sys.stderr, flush=True)
-            continue
-        try:
-            info = entry.stat(follow_symlinks=False)
-            if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid()
-                    or time.time() - info.st_mtime < STALE_SECONDS):
-                continue
-            descriptor = os.open(entry.path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-        except OSError:
-            continue
-        try:
-            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError:
-            os.close(descriptor)
-            continue
-        try:
-            remove_tree(entry.path)
-        except OSError as error:
-            print('agent sandbox: stale scratch %s not removed: %s' % (entry.path, error),
-                  file=sys.stderr, flush=True)
-        finally:
-            os.close(descriptor)
 
 
 class Interrupted(Exception):
@@ -2199,22 +2164,59 @@ class Stop:
             self.signal_group(signal.SIGKILL)
 
 
-def launch(config_path, worktree, command, profile="agent", client=None):
-    """Run `command` confined. The private scratch is created in the temporary directory, held
-    with a shared lock and removed when the launcher returns, raises or is stopped by TERM, INT or
-    HUP; one a launcher killed outright left behind is removed by the next start once it is a day
-    old and no process holds its lock (VELDO-0210). Before that sweep, a killed run's rotated
-    credential is kept as a recovery (recover_orphans). A credential that could not be written back
-    raises CredentialRecovery with the run's own exit status; the scratch is removed unless it holds
-    the only copy (VELDO-0211)."""
-    parent = Path(tempfile.gettempdir())
+def scratch_creation(space, environ):
+    """The recorded run's scratch parent and creator, or None outside a recorded run.
+
+    The environment names the run and its root, never its owner. The live parent
+    record supplies the complete owner. An unavailable ledger or ambiguous parent
+    refuses before anything is made. Service startup wiring is supplied by callers.
+    """
+    label = environ.get('VELDO_SPACE_LABEL')
+    if not label:
+        return None
+    if space is None:
+        raise RuntimeError('unavailable_service:space_ledger: recorded sandbox run has no ledger')
+    authority = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location('sandbox_scratch_creator', authority / '.veldo/control_clone.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        root = environ['TMPDIR']
+        if not os.path.isabs(root) or os.path.normpath(root) != root or os.path.realpath(root) != root:
+            raise ValueError('the scratch root must be plain, absolute and have no links')
+        parents = [(identity, record) for identity, record in space['ledger'].items().items()
+                   if record.get('kind') == 'scratch' and record.get('state') == 'present'
+                   and record.get('locator', {}).get('path') == root
+                   and (record.get('owner', {}).get('run') or {}).get('id') == label]
+        if len(parents) != 1 or not os.path.isdir(root):
+            raise ValueError('the run has no single present scratch root at TMPDIR')
+        identity, record = parents[0]
+        return module.SpaceCreator(space, record['owner']), Path(root), identity
+    except Exception as error:
+        raise RuntimeError('unavailable_service:space_ledger: ' + str(error)) from error
+
+
+def launch(config_path, worktree, command, profile="agent", client=None, *, space=None):
+    """Run confined, with scratch owned by the recorded run when its label is given.
+
+    A recorded launcher declares before mkdir and leaves removal to run finished.
+    Without a space environment it removes its own scratch at its own end. Killed
+    launchers' old scratch is never deleted by a later launch. Borrow recovery runs
+    as before; a scratch holding the only copy of a rotation always stays.
+    """
+    creation = scratch_creation(space, os.environ)
+    parent = creation[1] if creation else Path(tempfile.gettempdir())
     recover_orphans()
-    remove_stale_scratch(parent)
     scratch = lock = None
-    # The handlers stay installed until the scratch is gone, so a signal cannot cut the removal short.
     with Stop() as stop:
         try:
-            scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
+            if creation:
+                creator, parent, parent_item = creation
+                scratch = creator.temporary(SCRATCH_PREFIX, parent)
+                with creator.item('scratch', scratch, parent=parent_item):
+                    scratch.mkdir(mode=0o700)
+            else:
+                scratch = Path(tempfile.mkdtemp(prefix=SCRATCH_PREFIX, dir=parent))
             lock = os.open(scratch, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
             fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
             code = prepared_launch(config_path, worktree, command, profile, scratch, client, stop)
@@ -2230,9 +2232,13 @@ def launch(config_path, worktree, command, profile="agent", client=None):
             stop.closing = True
             if scratch is not None:
                 try:
-                    remove_tree(scratch)
+                    if creation:
+                        if lock is not None:
+                            scratch_access(scratch)
+                    else:
+                        remove_tree(scratch)
                 except OSError as error:
-                    print('agent sandbox: scratch %s not removed: %s' % (scratch, error),
+                    print('agent sandbox: scratch %s left for recovery: %s' % (scratch, error),
                           file=sys.stderr, flush=True)
             if lock is not None:
                 os.close(lock)

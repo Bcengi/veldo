@@ -19,6 +19,8 @@ footprint:
   - "engine/.veldo/control_space_remove.py"
   - ".veldo/control_space_remove.py"
   - "scripts/suites/*_veldo_0324_*.py"
+  - "scripts/suites/102_veldo_0210_agent_profile_runtime.py"
+  - "scripts/suites/103_veldo_0211_borrowed_login.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -107,3 +109,13 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
   acceptance criterion changed. A batch clone is a private repository (VELDO-0347 AC3), and a repository
   found beneath a sandbox launcher's scratch holds that scratch unless it is a clean clone (VELDO-0347
   AC2).
+
+- 2026-11-15: built the supplied-ledger seams. Batch observation folders remain evidence as
+  VELDO-0302 declares them; Signal keeps that evidence at run finished. The batch lifecycle
+  addition belongs to VELDO-0347, so it is a named fixture stand-in, not a production change.
+  A batch with no ledger defers rather than deleting work it cannot record or save. Recorded
+  sandbox scratch requires the supplied ledger and a present scratch parent matching the run
+  label and TMPDIR. No service startup wiring is added. The launcher restores directory access
+  while holding its scratch lock, leaving deletion to the existing remover. The two older
+  sandbox suites now expect killed launchers' scratch to remain, consistent with AC3; their
+  borrowed-login recovery checks remain. Their test paths are added to the footprint above.

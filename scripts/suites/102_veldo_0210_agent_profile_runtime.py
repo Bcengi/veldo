@@ -1790,7 +1790,7 @@ print(json.dumps(seen))
             expect('VELDO-0210 state/%s-refused: %s' % (name, refused.stderr[-200:]),
                    refused.returncode == 2 and reason in refused.stderr and not marker.exists())
 
-        # scratch: removed at exit and on stop signals; stale ones swept at the next start
+        # Scratch ends with its launcher; killed launchers leave scratch for the owner (VELDO-0324).
         import fcntl
         import signal
         parent = top / 'tmp-parent'
@@ -1976,17 +1976,18 @@ time.sleep(120)
             expect('VELDO-0210 scratch/killed-launcher-takes-its-descendants: %s nested=%r' % (held, nested),
                    descendant is not None and settled(lambda: not alive(descendant)))
             result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
-            expect('VELDO-0210 scratch/swept-once-nothing-holds-it: %s' % leftovers(),
-                   result.returncode == 0 and bool(held) and not Path(held['home']).exists() and leftovers() == [])
+            expect('VELDO-0210 scratch/killed-scratch-stays: %s' % leftovers(),
+                   result.returncode == 0 and bool(held) and Path(held['home']).is_dir()
+                   and leftovers() == [Path(held['home']).name])
             # The killed run refreshed its copy and never wrote it back: the next start kept it as a
-            # recovery and said so before the sweep removed the scratch (VELDO-0211).
+            # recovery and said so; the scratch stays (VELDO-0211 and VELDO-0324).
             expect('VELDO-0210 scratch/killed-run-rotation-kept-and-reported: %s' % result.stderr[-300:],
                    'CREDENTIAL RECOVERY REQUIRED' in result.stderr and 'restore-login' in result.stderr
                    and take_recovery())
 
         else:
             skip('scratch/* rows of a running tree (stop signals, live and killed launchers)')
-        # Stale: a day-old scratch is swept at the next start; nothing else is.
+        # Age gives no permission: old scratch stays at the next start (VELDO-0324).
         stale = parent / 'veldo-agent-stale'
         (stale / 'shut/inner').mkdir(parents=True)
         (stale / 'shut/inner/credential.json').write_text('{}')
@@ -2011,9 +2012,9 @@ time.sleep(120)
             result = run(client_config, worktree, ['/usr/bin/true'], client='claude', env=scratch_env)
         finally:
             os.close(locked)
-        # The sweep runs before the start, so it is checked even where the start is refused.
-        expect('VELDO-0210 scratch/stale-removed-at-next-start: %s' % leftovers(),
-               result.returncode == (0 if live else 2) and not stale.exists())
+        # This holds even where the start is refused.
+        expect('VELDO-0210 scratch/stale-kept-at-next-start: %s' % leftovers(),
+               result.returncode == (0 if live else 2) and stale.is_dir())
         expect('VELDO-0210 scratch/recent-scratch-kept', recent.is_dir())
         expect('VELDO-0210 scratch/live-scratch-kept', held_stale.is_dir())
         expect('VELDO-0210 scratch/stale-link-and-file-untouched',

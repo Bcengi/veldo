@@ -1,0 +1,78 @@
+[
+ {
+  "name": "space324-batch-direct-delete",
+  "module": "control_batch.py",
+  "dir": ".veldo",
+  "old": "            found = clones.space_signal(self.space, 'run_finished', paths, 'batch.discard', confirm=True)",
+  "new": "            for path in paths:\n                if os.path.isdir(path):\n                    __import__('shutil').rmtree(path)\n            found = {}",
+  "rows": [
+   "ac1/open-file",
+   "safety/owner-keep-batch",
+   "safety/unsaved-batch",
+   "safety/keep-failure",
+   "ac1/evidence"
+  ]
+ },
+ {
+  "name": "space324-launcher-direct-delete",
+  "module": "agent_sandbox.py",
+  "dir": "scripts",
+  "old": "                            scratch_access(scratch)",
+  "new": "                            remove_tree(scratch)",
+  "rows": [
+   "ac2/recorded",
+   "ac2/lock-and-login"
+  ]
+ },
+ {
+  "name": "space324-stale-pass-without-installation",
+  "module": "agent_sandbox.py",
+  "dir": "scripts",
+  "old": "    parent = creation[1] if creation else Path(tempfile.gettempdir())\n    recover_orphans()",
+  "new": "    parent = creation[1] if creation else Path(tempfile.gettempdir())\n    for old in parent.glob(SCRATCH_PREFIX + '*'):\n        if old.is_dir() and time.time() - old.stat().st_mtime > 24 * 60 * 60:\n            remove_tree(old)\n    recover_orphans()",
+  "rows": [
+   "ac3/no-installation",
+   "ac3/installation"
+  ]
+ },
+ {
+  "name": "space324-requires-ledger-outside-run",
+  "module": "agent_sandbox.py",
+  "dir": "scripts",
+  "old": "    if not label:\n        return None",
+  "new": "    if not label:\n        raise RuntimeError('ledger required')",
+  "rows": [
+   "ac4/standalone"
+  ]
+ },
+ {
+  "name": "space324-failed-keep-still-deletes",
+  "module": "control_space_remove.py",
+  "dir": ".veldo",
+  "old": "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
+  "new": "    kept = {'ok': True, 'tips': tips(record['locator']['path'], 'agent_repository')}\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
+  "rows": [
+   "safety/keep-failure"
+  ]
+ },
+ {
+  "name": "space324-nested-repository-deleted",
+  "module": "control_space_remove.py",
+  "dir": ".veldo",
+  "old": "        if own is not None and ('.git' in names or GIT_FOLDER <= names):",
+  "new": "        if False and ('.git' in names or GIT_FOLDER <= names):",
+  "rows": [
+   "safety/sandbox-repository"
+  ]
+ },
+ {
+  "name": "space324-declaration-skipped",
+  "module": "agent_sandbox.py",
+  "dir": "scripts",
+  "old": "                with creator.item('scratch', scratch, parent=parent_item):",
+  "new": "                with __import__('contextlib').nullcontext():",
+  "rows": [
+   "ac2/recorded"
+  ]
+ }
+]

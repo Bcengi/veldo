@@ -79,7 +79,6 @@ import json
 import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -953,11 +952,27 @@ class Batch:
         return dict(gated, record=self.snapshot())
 
     def discard(self):
-        """Remove the batch clone and its observation directory."""
-        r = self.record or {}
-        for key in ('clone', 'observation_dir'):
-            if r.get(key) and os.path.isdir(r[key]):
-                shutil.rmtree(r[key], ignore_errors=True)
+        """Hand the batch's items to Signal; keep every refusal on the batch record.
+
+        Observation folders are evidence (VELDO-0302), so their lifecycle may keep
+        them. With no ledger there is no authorized removal of a batch's work.
+        """
+        r = self.record
+        if r is None:
+            return {}
+        paths = [r[key] for key in ('clone', 'observation_dir') if r.get(key)]
+        clones = _organ('control_clone')
+        if self.space is None:
+            found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
+        elif any(not os.path.isabs(path) or os.path.normpath(path) != path or os.path.realpath(path) != path
+                 for path in paths):
+            found = {path: {'item': None, 'state': None, 'deferral': 'not_in_ledger'} for path in paths}
+        else:
+            found = clones.space_signal(self.space, 'run_finished', paths, 'batch.discard', confirm=True)
+        r['space_outcomes'] = found
+        r['space_deferred'] = {path: clones.space_refusal(entry) for path, entry in found.items()
+                               if entry.get('state') not in clones.SPACE_ENDED}
+        return found
 
 
 def run(batch, units):

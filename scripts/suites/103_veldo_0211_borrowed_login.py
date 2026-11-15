@@ -462,14 +462,13 @@ sys.exit(int(sys.argv[4]))
             S.remove_tree(error.location)
 
         # The recovery store itself failing: the scratch, the only copy, is kept, and so is its
-        # journal; the stale sweep leaves it until the next start turns it into a recovery.
+        # journal; recovery at the next start preserves it. Age never deletes scratch (VELDO-0324).
         source = reset('claude')
         error = launch_failing([('keep_recovery', lambda *a, **k: (_ for _ in ()).throw(OSError('fixture store failure')))])
         scratch = held_scratch[0] if held_scratch else top / 'missing'
         old = __import__('time').time() - 2 * 24 * 60 * 60
         if scratch.exists():
             os.utime(scratch, (old, old))
-        S.remove_stale_scratch(parent)
         swept_early = not scratch.exists()
         report = io.StringIO()
         with redirect_stderr(report):
@@ -480,13 +479,12 @@ sys.exit(int(sys.argv[4]))
                and token(scratch / '.claude/.credentials.json', 'claude') == 'fixture-old-rotated'
                and (recovered / 'recovery.json').is_file() and kept(recovered)
                and 'CREDENTIAL RECOVERY REQUIRED' in report.getvalue())
-        S.remove_stale_scratch(parent)
-        expect('VELDO-0211 recovery/scratch-swept-once-recovered', not scratch.exists())
+        expect('VELDO-0211 recovery/scratch-kept-once-recovered', scratch.is_dir())
         if recovered.exists():
             S.remove_tree(recovered)
 
         # A run killed outright (SIGKILL, no write-back): the next start's sweep keeps a rotated copy
-        # as a recovery and reports it, drops an unchanged one, and only then may remove the scratch.
+        # as a recovery and reports it, drops an unchanged journal, and leaves scratch for its owner.
         killed = '''import importlib.util, json, os, signal, sys
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('s', sys.argv[1]); S = importlib.util.module_from_spec(spec)
@@ -510,18 +508,17 @@ with S.borrowed_credentials(scratch, [(source, '.claude/.credentials.json')], Pa
             with redirect_stderr(report):
                 S.recover_orphans()
             os.utime(scratch, (old, old))
-            S.remove_stale_scratch(parent)
             recovered = borrows / scratch.name
             if mode == 'rotate':
                 expect('VELDO-0211 sweep/killed-run-rotation-kept-and-reported: %s' % report.getvalue()[-200:],
                        pending and kept(recovered) and 'CREDENTIAL RECOVERY REQUIRED' in report.getvalue()
-                       and 'restore-login' in report.getvalue() and not scratch.exists()
+                       and 'restore-login' in report.getvalue() and scratch.is_dir()
                        and token(source, 'claude') == 'fixture-old' and lease_free())
                 if recovered.exists():
                     S.remove_tree(recovered)
             else:
                 expect('VELDO-0211 sweep/killed-run-unchanged-dropped',
-                       pending and not recovered.exists() and report.getvalue() == '' and not scratch.exists())
+                       pending and not recovered.exists() and report.getvalue() == '' and scratch.is_dir())
 
         # live.py killed outright: its guard stops the slice while still holding the lease, then
         # writes the rotation back, then releases the lease.

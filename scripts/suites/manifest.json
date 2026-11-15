@@ -2059,6 +2059,15 @@
    ],
    "regions": "VELDO-0302 creator declarations, forms, fail closed, crash ordering and provisioning events.",
    "requires_note": "Only ROOT and expect. Real filesystem, git and supplied ledger; no gate or engines."
+  },
+  {
+   "name": "154_veldo_0324_batch_sandbox",
+   "file": "154_veldo_0324_batch_sandbox.py",
+   "requires": [
+    "154_veldo_0324_batch_sandbox"
+   ],
+   "regions": "VELDO-0324 batch discard through Signal; recorded sandbox scratch declarations and run ending; no age deletion; standalone launch cleanup; planted work and owner Keep.",
+   "requires_note": "Only ROOT and expect. Real git, files, journal and owner enrollment. Supplied ledger; fixture process table with a real open-file holder; no real engines or confined command. Act prerequisites and the future batch lifecycle are explicit fixture stand-ins."
   }
  ],
  "resource_capacities": {
