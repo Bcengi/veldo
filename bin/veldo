@@ -1566,7 +1566,8 @@ def space_record(rest, space=None, why=None, environ=None, stdout=None, stderr=N
     a host script reports a worktree or an agent repository it makes, around the creation (design
     6.2): the first form before, the second after. The item is declared as space-observer, with the
     creator record and the scope the path is inside as its owner, and confirmed once the thing is
-    there.
+    there. For an agent worktree, --parent names the agent repository's record, declared first,
+    with the same scope and ticket. The parent binds rule 5 and the keep step to the shared repository.
 
     NOTHING THAT EXISTS IS EVER RECORDED BY THIS VERB, AND NOTHING IS EVER RECORDED AS SCRATCH.
     Scratch is not work by its declaration, so an item of that kind is removed unsaved when its
@@ -1591,6 +1592,7 @@ def space_record(rest, space=None, why=None, environ=None, stdout=None, stderr=N
     parser.add_argument("--ticket")
     parser.add_argument("--session")
     parser.add_argument("--confirm")
+    parser.add_argument("--parent")
     args = parser.parse_args(list(rest))
     if (args.confirm is None) == (args.kind is None) or (args.kind is None) != (args.path is None):
         parser.error("--kind K --path P, or --confirm ITEM")
@@ -1601,6 +1603,8 @@ def space_record(rest, space=None, why=None, environ=None, stdout=None, stderr=N
     sp, ledger = _space_module("control_space"), space["ledger"]
     observer = _SpaceAs(ledger, sp, sp.OBSERVER)
     if args.confirm is not None:
+        if args.parent:
+            return _space_refused("record", stderr, "invalid_input:parent is only for a declaration")
         record = ledger.item(args.confirm) or {}
         if (record.get("creator") != "record" or record.get("state") != "declared"
                 or record.get("kind") not in SPACE_RECORD_KINDS):
@@ -1628,12 +1632,18 @@ def space_record(rest, space=None, why=None, environ=None, stdout=None, stderr=N
         # Declare comes before create (design 6.2). What is there already was not made by the caller.
         return _space_refused("record", stderr, "space_record_exists")
     inside = _space_worktree(ledger, path)
-    if inside is not None:
+    if inside is not None and inside[0] != args.parent:
         return _space_refused("record", stderr, "space_record_inside:" + inside[0])
     owner = {"scope": _space_scope(ledger, sp, path)}
     if args.ticket:
         owner["ticket"] = args.ticket
-    made = observer.declare(args.kind, {"path": path}, owner, "record")
+    if args.parent:
+        parent = ledger.item(args.parent) or {}
+        if (args.kind != "worktree" or parent.get("kind") != "agent_repository"
+                or parent.get("creator") != "record" or parent.get("state") not in sp.LIVE
+                or parent.get("owner") != owner):
+            return _space_refused("record", stderr, "space_record_parent")
+    made = observer.declare(args.kind, {"path": path}, owner, "record", parent=args.parent)
     if not made.get("ok"):
         return _space_refused("record", stderr, str(made.get("reason")))
     stdout.write(json.dumps({"item": made["item"], "state": "declared"}, sort_keys=True) + "\n")
@@ -1647,6 +1657,8 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     it leaves one event record and returns, and removes nothing (design 6.9). Refused by name, with
     nothing sent: an unknown type (space_unknown_event:<type>), and for every path it names a path
     outside every known root (space_outside_roots) or on the protect list (space_protected:<entry>).
+    Released additionally refuses unrecorded paths and creations of a Veldo seam. Its legacy force
+    option is ignored: only the owner's settled Discard authorizes force, after its save.
     A Ledger that has no event command yet answers space_no_command:space_event: the event is then
     not recorded, nothing becomes due, and the verb says so. Exit 0 with the Ledger's answer on
     standard output, 1 for a refusal; with no ledger it says why and exits 0."""
@@ -1660,6 +1672,8 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     parser.add_argument("--repository")
     parser.add_argument("--ref")
     parser.add_argument("--new")
+    parser.add_argument("--force", action="store_true",
+                        help="legacy released flag: accepted but grants no removal authority")
     args = parser.parse_args(list(rest))
     space, why = _space_usable(space, why, environ)
     if space is None:
@@ -1668,6 +1682,8 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
     sp, ledger = _space_module("control_space"), space["ledger"]
     if args.kind not in SPACE_EVENT_TYPES:
         return _space_refused("event", stderr, "space_unknown_event:" + args.kind)
+    if args.force and args.kind != "released":
+        return _space_refused("event", stderr, "invalid_input:force is only a legacy released flag")
     for path in args.path:
         refusal = _space_path_refusal(ledger, sp, path)
         if refusal is not None:
@@ -1697,8 +1713,9 @@ def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=No
         if not args.session or args.repository or args.ref or args.new:
             return _space_refused("event", stderr, "invalid_input:a session event names its session")
         subject = {"session": args.session, "paths": [sp.canonical_path(path) for path in args.path]}
-    answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(
-        args.kind, subject, {"verb": "event", "host": socket.gethostname() or "unknown"})
+    emitter = ({"hook": "event", "host": ledger.host} if args.kind == "released"
+               else {"verb": "event", "host": socket.gethostname() or "unknown"})
+    answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(args.kind, subject, emitter)
     if not answer.get("ok"):
         reason = str(answer.get("reason"))
         if reason.startswith("space_no_command:"):

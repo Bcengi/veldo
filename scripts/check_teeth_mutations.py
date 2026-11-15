@@ -15153,6 +15153,30 @@ def cases():
         "        if own is not None and ('.git' in names or GIT_FOLDER <= names):\n",
         "        if False:  # defect: a session's scratch repository is deleted\n",
         ['safety/session-work-kept'])
+    released335 = '154_veldo_0335_released.py'
+    add(335, 'space335-host-abandons', released335, 'veldo',
+        '    answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(args.kind, subject, emitter)\n',
+        '    answer = _SpaceAs(ledger, sp, sp.OBSERVER).signal("worktree_abandoned", subject)\n',
+        ['ac1/released-pair'])
+    result[-1]['dir'] = 'bin'
+    add(335, 'space335-any-creator', released335, 'control_space.py',
+        "                if item['creator'] not in ('hook', 'record') or item['kind'] not in ('worktree', 'agent_repository'):\n",
+        '                if False:  # defect: any creator may release\n', ['ac2/seam-refused'])
+    add(335, 'space335-force-reaches-delete', released335, 'veldo',
+        '        subject = {"paths": [sp.canonical_path(path) for path in args.path]}\n',
+        '        if args.force:  # defect: the script deletes without the owner or save\n'
+        '            import shutil\n'
+        '            for path in sorted(args.path, key=len, reverse=True):\n'
+        '                if os.path.isdir(path):\n'
+        '                    shutil.rmtree(path)\n'
+        '        subject = {"paths": [sp.canonical_path(path) for path in args.path]}\n',
+        ['ac3/unique-force'])
+    result[-1]['dir'] = 'bin'
+    add(335, 'space335-keep-skipped', released335, 'control_space_worker.py',
+        "        given.setdefault('keep', KEEP.keeper(ledger, event=emitter))\n",
+        "        given.setdefault('keep', lambda identity, item: {'ok': True, 'tips': "
+        "REMOVE.tips(item['locator']['path'], item['kind'])})\n",
+        ['safety/kept-in-main', 'safety/repository-kept'])
     return result
 
 

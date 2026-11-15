@@ -1,7 +1,8 @@
 """One hook event, in the service's child: read facts, name items, call Signal, record consumption.
 
 No deletion lives here. Signal supplies the rules and the VELDO-0300 removers, with the
-VELDO-0345 keeper. An unread fact never selects an item. released is VELDO-0335's work.
+VELDO-0345 keeper. An unread fact never selects an item. Released records name only their
+recorded creations; they confer no owner action and no force option.
 """
 import importlib.util
 import json
@@ -95,6 +96,16 @@ def selected(ledger, record, landing=None, proc='/proc'):
             if parent and parent['kind'] == 'agent_repository' and parent.get('owner') == owner:
                 chosen.add(item['parent'])
         event = 'contained'
+    elif kind == 'released':
+        event = 'released'
+        paths, names = subject.get('paths'), subject.get('items')
+        if not isinstance(paths, list) or not isinstance(names, list) or len(paths) != len(names):
+            return event, []  # an old, unbound observation cannot select a new occupant
+        for path, identity in zip(paths, names):
+            item = items.get(identity)
+            if (item and item['kind'] in ('worktree', 'agent_repository')
+                    and item['locator']['path'] == path):
+                chosen.add(identity)
     elif kind in ('session_started', 'session_ended'):
         event = 'session_ended'
         for identity, item in items.items():
