@@ -134,8 +134,8 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
     `space` is what the installation wires in when it has a space ledger: a mapping with ledger (the
     control_space.Ledger) and, under their own names, the arguments Signal is given (probe, kinds,
     remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). The items are the live
-    ones the ledger records at or beneath `paths`. The event is signalled once for each owner among
-    them, and the subject is every part of that owner. A path the ledger records no live item for
+    ones the ledger records at or beneath `paths`. The event names exactly those items at their current versions,
+    with their recorded owners. A path the ledger records no live item for
     answers with no item and the deferral not_in_ledger, and nothing is done to it; when the kernel
     says nothing is at that path (not found, and no other answer) it answers gone, for there is
     nothing to remove. Whatever raises removes nothing: every path then answers with the deferral
@@ -155,10 +155,13 @@ def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone
                             or str((record.get('locator') or {}).get('path') or '').startswith(path + '/')
                             for path in locations)]
             owners = [record.get('owner') for record in here if record.get('owner')]
-            if any(record not in here and record.get('state') not in SPACE_ENDED
-                   and record.get('kind') in ('worktree', 'agent_repository') and record.get('owner') in owners
-                   for record in items.values()):
+            others = [identity for identity, record in items.items()
+                      if record not in here and record.get('state') not in SPACE_ENDED
+                      and record.get('kind') in ('worktree', 'agent_repository')
+                      and record.get('owner') in owners]
+            if others:
                 return {path: {'item': None, 'state': None, 'deferral': 'remove_refused',
+                               'raised': ', '.join(others),
                                'said': 'the owner has another live repository item'} for path in locations}
         except Exception as error:  # noqa: BLE001 - unread ownership refuses the event
             return {os.path.normpath(str(path)): {'item': None, 'state': None, 'deferral': 'remove_refused',
