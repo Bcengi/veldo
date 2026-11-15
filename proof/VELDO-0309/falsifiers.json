@@ -1,0 +1,68 @@
+[
+  {
+    "name": "space309-need-only-with-host-local",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 ac1/no-host-waits",
+      "VELDO-0309 ac1/report-runs"
+    ]
+  },
+  {
+    "name": "space309-classify-after-stamp-local",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 ac2/no-stamp-no-event"
+    ]
+  },
+  {
+    "name": "space309-verdict-before-stamp-local",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 ac3/killed-before-stamp"
+    ]
+  },
+  {
+    "name": "space309-need-only-with-host-template",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 ac1/no-host-waits",
+      "VELDO-0309 ac1/report-runs"
+    ]
+  },
+  {
+    "name": "space309-classify-after-stamp-template",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 ac2/no-stamp-no-event"
+    ]
+  },
+  {
+    "name": "space309-verdict-before-stamp-template",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 ac3/killed-before-stamp"
+    ]
+  },
+  {
+    "name": "space309-requires-ledger",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 ac4/adopter-unchanged"
+    ]
+  },
+  {
+    "name": "space309-kept-child-measured",
+    "applied": 1,
+    "rejected": true,
+    "red_rows": [
+      "VELDO-0309 safe/owner-keep"
+    ]
+  }
+]
