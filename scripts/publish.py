@@ -300,21 +300,24 @@ def build(dest, quiet=False):
     if dest == ROOT or ROOT in dest.parents or dest in ROOT.parents:
         raise SystemExit("publish: refusing a destination inside or containing this repository: %s"
                          % dest)
+    if dest.exists():
+        raise SystemExit("publish: destination exists; a recorded owner item is required for removal: %s" % dest)
     names = load_private_names()
     rels = selected(tracked_files())
     if not rels:
         raise SystemExit("publish: the manifest selected NOTHING; refusing to publish an empty tree")
-    if dest.exists():
-        shutil.rmtree(dest)
     for rel in rels:
         src, target = ROOT / rel, dest / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, target)
-    composed = compose_packs(dest)
-    # SWEEP THE TREE FOR CACHE DIRECTORIES AFTER COMPOSING, because anything that imports a module
-    # out of the tree can create one and the manifest cannot exclude what does not exist yet.
-    for cache in sorted(dest.rglob("__pycache__")):
-        shutil.rmtree(cache, ignore_errors=True)
+    bytecode = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        composed = compose_packs(dest)
+    finally:
+        sys.dont_write_bytecode = bytecode
+    if list(dest.rglob("__pycache__")):
+        raise SystemExit("publish: generated cache directories retained; no ledger item authorizes removal")
     findings = personal_setup(dest)
     if findings:
         print("publish: REFUSED. The produced tree carries personal setup (findings above, masked).")
@@ -359,7 +362,7 @@ def main(argv):
         second = Path(str(a.dest).rstrip("/") + ".idempotence-check")
         build(second, quiet=True)
         same = _identical(Path(a.dest), second)
-        shutil.rmtree(second)
+        print("publish: comparison output retained at %s" % second)
         if not same:
             raise SystemExit("publish: NOT IDEMPOTENT - two runs over an unchanged repository "
                              "produced different trees")

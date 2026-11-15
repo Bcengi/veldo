@@ -75,5 +75,12 @@
   "row": "migration/boundary",
   "old": "        raise SystemExit(\"migration: destination exists; a recorded owner item is required for removal: %s\" % dest)",
   "new": "        shutil.rmtree(dest)"
+ },
+ {
+  "name": "publish-direct-tree",
+  "path": "scripts/publish.py",
+  "row": "publish/boundary",
+  "old": "        raise SystemExit(\"publish: destination exists; a recorded owner item is required for removal: %s\" % dest)",
+  "new": "        shutil.rmtree(dest)"
  }
 ]
