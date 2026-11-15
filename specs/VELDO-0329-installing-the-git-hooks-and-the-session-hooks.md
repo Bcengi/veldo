@@ -87,3 +87,12 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+
+- 2026-11-15: build blocked at supplied base 8ef46604e80e6a69909556c82e4e9b17e2acde87.
+  The session hook implementation (VELDO-0314), reconcile runner (VELDO-0315), and
+  ledger event command (VELDO-0323) are absent from this tree. AC2's second-account
+  session cannot create its item, and AC3 has no reconcile runner to drive. The existing
+  CLI explicitly returns space_no_command:space_event when that command is absent.
+  Installing inert hooks or replacing these integrations with passing stand-ins would
+  not prove the acceptance criteria. Implementation is paused without changing the
+  criteria, dependencies or runtime code; see proof/VELDO-0329/blocker.md.
