@@ -1,5 +1,7 @@
 Targeted suites only; not a gate pass.
-111_veldo_0214_first_use_budget: 10 suite rows passed; 36 checks including preamble, 0 failed; exit 2.
-  114_veldo_0216_concurrent_stages                26 passed   26.45s
-selftest (PARTIAL, 1 of 223 suites): 52 passed, 0 failed in 26.45s
+  111_veldo_0214_first_use_budget                 10 passed    2.07s
+selftest (PARTIAL, 1 of 223 suites): 36 passed, 0 failed in 2.07s
+exit: 2
+  114_veldo_0216_concurrent_stages                26 passed   29.74s
+selftest (PARTIAL, 1 of 223 suites): 52 passed, 0 failed in 29.74s
 exit: 2

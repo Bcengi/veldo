@@ -3,3 +3,7 @@ space333-age-branch-retained: control green; expected rows red
 space333-pruning-dropped: control green; expected rows red
 space333-synced-copy-still-ages: control green; expected rows red
 space333-read-bound-dropped: control green; expected rows red
+space333-age-branch-through-real-clock: control green; expected rows red
+space333-probe-takes-refusal-for-absence: control green; expected rows red
+Finding 333 through the registered driver: python3 scripts/check_teeth_mutations.py --finding 333
+mutations: passed registered=6 executed=6 reused=0 rejected=6 workers=8 elapsed=8.676s
