@@ -223,7 +223,7 @@ def openssl_verifies(algorithm, spki_der, message, signature, state_dir):
     base = Path(state_dir) / 'verify'
     base.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(base, 0o700)
-    with tempfile.TemporaryDirectory(prefix='v-', dir=base) as directory:
+    with tempfile.TemporaryDirectory(prefix='v-') as directory:
         os.chmod(directory, 0o700)
         key, sig, data = Path(directory) / 'key.der', Path(directory) / 'signature', Path(directory) / 'message'
         for path, content in ((key, spki_der), (sig, signature)):

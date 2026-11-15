@@ -1,0 +1,16 @@
+{
+ "module": "engine/.veldo/control_api_webauthn.py",
+ "functions": [
+  "openssl_verifies"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "openssl_verifies",
+  "old": "tempfile.TemporaryDirectory(prefix='v-', dir=base)",
+  "new": "tempfile.TemporaryDirectory(prefix='v-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/control_api_webauthn.py:226: openssl_verifies: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}
