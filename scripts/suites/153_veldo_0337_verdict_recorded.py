@@ -548,6 +548,27 @@ def _v337_verdict_suite():
                   for kind in ('review_run_scratch', 'review_run_build_output'))
               and 'ends' not in SP.COMMAND_PARAMETERS[SP.DECLARE])
 
+        row = 'ac1/adopt-refuses-ends'
+        adopt_path = SCRATCH / 'adopt-ends'
+        adopt_path.mkdir()
+        (adopt_path / 'work.txt').write_text('adopt planted\n')
+        locator = {'path': str(adopt_path)}
+        before, at = L.items(), journal_length()
+        # The public adopt helper has no ends argument. Send it through the shared command
+        # builder to exercise the ledger's adoption transition, with an otherwise valid subset.
+        refused = L._create(SP.ADOPT, 'scratch', locator, owner, 'reconcile',
+                            None, None, None, None, None, 'owner_adopt', None, None,
+                            ends=['verdict_recorded'])
+        check(row, 'adopt refuses valid end events without an item or journal write',
+              not refused['ok'] and str(refused.get('reason')).startswith('invalid_input:ends')
+              and L.items() == before and journal_length() == at
+              and text_of(adopt_path / 'work.txt') == 'adopt planted\n')
+        accepted = L.adopt('scratch', locator, owner, 'owner_adopt')
+        adopted = L.item(accepted.get('item')) or {}
+        check(row, 'the same adoption without ends succeeds with all kind events',
+              accepted['ok'] and adopted.get('adopted') is True and adopted.get('state') == 'present'
+              and adopted.get('ends_on', {}).get('events') == K.LIFECYCLE['ends_on']['scratch'])
+
         row = 'ac2/owner-and-keep'
         f, other = planted('06'), planted('07')
         kept = f.items['scratch']
@@ -737,6 +758,34 @@ def _v337_verdict_suite():
         check(row, 'a review with no committed verdict is sent nothing',
               not floor.record(other.unit)['reviews'] and all(state_of(i) == 'present' for i in other.items.values())
               and all(p.is_dir() for p in other.paths.values()))
+
+        row = 'ac1/reconcile-domain-and-repository'
+        for suffix, coordinate in (('20', 'domain'), ('21', 'repository')):
+            f = planted(suffix, 'pass')
+            inside_signal[0] = killed
+            try:
+                record(f)
+            except Killed:
+                pass
+            identity = F.floor_id(REPO, f.unit)
+            foreign = floor.record(f.unit)
+            foreign[coordinate] += '-other'
+            put(identity, F.FLOOR_KIND, foreign)
+            durable = F._row(reader, identity)['data']
+            reviews = durable.get('reviews') or []
+            check(row, coordinate + ': committed foreign verdict has held matching dispatch items',
+                  durable[coordinate] != getattr(floor, coordinate)
+                  and bool(reviews) and reviews[-1]['dispatch'] == f.dispatch
+                  and reviews[-1]['verdict'] == 'pass'
+                  and all(state_of(i) == 'present' for i in f.items.values()))
+            before, at, held = len(signals), journal_length(), versions(f.items.values())
+            sent = floor.reconcile_verdicts()
+            check(row, coordinate + ': no reconcile send or write for another authority scope',
+                  (f.unit, f.assignment['assignment']) not in sent and len(signals) == before
+                  and journal_length() == at and versions(f.items.values()) == held
+                  and all(state_of(i) == 'present' for i in f.items.values())
+                  and all(text_of(path / 'work.txt') == key + ' planted\n'
+                          for key, path in f.paths.items()))
 
         row = 'paths/wiring-and-canon'
         import ast
