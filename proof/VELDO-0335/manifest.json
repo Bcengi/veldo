@@ -1,0 +1,110 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0335",
+ "commit": "b5579c639a40972435cd28522c8e0510969162e4",
+ "tree": "4886e0d1021b9e1bc1617b35815b78e1a00c8cc4",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T22:15:31.332764+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/154_veldo_0335_released.py",
+     "detail": "ac1/released-pair and returns-before-removal record both creations through the real CLI record verb and signed observer acceptance, return with both folders present, then wake the serial child. The recorded outcomes remove the worktree first. owner-and-event verifies the owner identities and source event. safety/kept-in-main and repository-kept read both planted log-only commits from kept refs in the shared main repository after both removals."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0335/checks.txt",
+     "detail": "Real git, SQLite, signed observer packets, child worker, Signal, keeper and removers. Fixture scope eligibility, free bytes and private process table. Partial checks only."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0335/falsifiers.json",
+     "detail": "space335-host-abandons reds ac1/released-pair; the host principal cannot give the owner's Abandon. space335-keep-skipped reds both planted-commit rows."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/154_veldo_0335_released.py",
+     "detail": "ac2/seam-refused sends a mixed list containing a record creation and a fleet seam creation; the whole observation is refused by the seam item identity and neither becomes due. ac2/no-item names the absent locator. Locators, signature expiry, malformed envelopes and protection at receipt and after receipt are also checked."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0335/checks.txt",
+     "detail": "Real git, SQLite, signed observer packets, child worker, Signal, keeper and removers. Fixture scope eligibility, free bytes and private process table. Partial checks only."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0335/falsifiers.json",
+     "detail": "space335-any-creator reds ac2/seam-refused by admitting and consuming the fleet creation."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/154_veldo_0335_released.py",
+     "detail": "ac3/unique and unique-force plant an unlanded commit in an agent worktree. Two released events in each case leave it deferred as unique_work, with its repository and bytes intact. The force flag is never in the recorded subject or Signal arguments. The decision-request portion is BLOCKED: this base has no VELDO-0318 request implementation. No claim of one request is made."
+    },
+    {
+     "type": "integration",
+     "ref": "proof/VELDO-0335/checks.txt",
+     "detail": "Real git, SQLite, signed observer packets, child worker, Signal, keeper and removers. Fixture scope eligibility, free bytes and private process table. Partial checks only."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0335/falsifiers.json",
+     "detail": "space335-force-reaches-delete reds ac3/unique-force: the defective CLI uses its force flag to remove the temporary worktree and its private repository without the owner or save."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "Six targeted partial selftests: 320 passed, 0 failed; details in checks.txt."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "Suite 154 exercises real signed acceptance and child removals. AC3 decision request remains blocked."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "python3 proof/VELDO-0335/run_falsifiers.py: four defects applied once each in the final campaign; all target rows red."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "validate.py all; docs, template sync, lint, generated-file and Git boundary checks; all exit 0."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh is reserved for the lead through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "Criteria remain pending until the full gate and independent review. AC3 also needs VELDO-0318, absent from this base; see the explicit blocker in checks.txt and the spec History.",
+  "The existing CLI requires explicit ledger wiring; its installation resolver still reports that the ledger is unreachable. The suite supplies that wiring, signing each CLI apply through the real OpenSSH verification path. No live installation was started or changed.",
+  "Journal signing and membership are fixtures; observer packet signatures are real. Scope act eligibility is a fixture. The ordinary act switch still refuses the unbuilt prerequisites, including VELDO-0332 and VELDO-0339.",
+  "The process table is a private empty fixture and free bytes are supplied. No Docker engine or protected real data was accessed. Temporary repositories and test output are the only removed files.",
+  "The force option is retained only as ignored compatibility input for released, and is rejected for other event types. The parent option records a new worktree against a record-created agent repository with the same owner.",
+  "No worker descriptor closing or session-ended behavior was changed. The heavy 151 suite and all teeth stages were left to the lead. The 151 expectation change is covered by the released CLI rows in 154; it was syntax checked but the full 151 suite was not run.",
+  "An exploratory four-case falsifier run preceded the final test additions. The final campaign used the implementation bytes committed here, once per defect."
+ ],
+ "rollback": "Revert the change. Released records have no consumer removal behavior on the base."
+}

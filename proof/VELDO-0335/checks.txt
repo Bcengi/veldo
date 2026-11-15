@@ -1,0 +1,33 @@
+VELDO-0335 targeted checks on b5579c63
+
+Six partial selftest runs, each exit 2 (the partial-run marker):
+132 space ledger: 57 passed, 0 failed.
+133 space principals: 56 passed, 0 failed.
+139 space Signal: 44 passed, 0 failed.
+140 space keeper: 57 passed, 0 failed.
+153 hook events: 57 passed, 0 failed.
+154 released: 49 passed, 0 failed (23 ticket rows plus shared checks).
+Total: 320 passed, 0 failed. These are partial checks, not a full gate claim.
+
+python3 proof/VELDO-0335/run_falsifiers.py: exit 0.
+Final campaign applied each of four registered defects once to temporary production copies.
+Every target row turned red; no exceptions or missing target rows. No teeth stage ran.
+An exploratory campaign preceded the final planted repository-log and protection rows.
+
+Fast checks, each exit 0:
+python3 .veldo/validate.py all
+bash scripts/check_docs.sh
+bash scripts/check_template_sync.sh (323 pairs)
+bash scripts/check_lint.sh (1210 Python, 39 shell)
+bash scripts/check_generated.sh
+python3 scripts/check_git_boundary.py
+
+The lead runs ./scripts/verify.sh through the gate lock. It was not run here.
+The heavy 151 suite was not run; only its released-event expectation was updated.
+Suite 86_veldo_0127 and its captures were untouched.
+
+BLOCKER: AC3's decision request cannot be demonstrated on this base. VELDO-0318 has
+no implementation or proof here. Signal still documents the request as unbuilt.
+This ticket demonstrates unique-work deferral, repeated events without deletion, and
+that the legacy force option confers no removal authority. It creates no substitute
+request or owner-answer path. The lead must bring 0318 and prove the one-request row.

@@ -1,0 +1,3 @@
+153_veldo_0323_hook_events
+exit 2
+selftest (PARTIAL, 1 of 224 suites): 57 passed, 0 failed in 6.10s
