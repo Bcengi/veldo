@@ -192,8 +192,8 @@ def _v214_suite():
                    and 'Traceback' not in huge_printed)
 
             # The leg-time store is pruned after each recording: a file whose authority checkout is
-            # gone and a file untouched for more than 30 days go, a live one, the one just written
-            # and anything that is not the store's own goes nowhere.
+            # gone goes. VELDO-0333: an old file of a live checkout and an unfinished pending file
+            # stay, as do the one just written and anything that is not the store's own.
             pruned = top / 'times-pruned'
             pruned.mkdir()
             planted = {'gone': ('0' * 32 + '.json', str(top / 'deleted-checkout'), 0),
@@ -225,8 +225,8 @@ def _v214_suite():
             kept_left = sorted(p.name for p in kept_store.iterdir())
             expect('VELDO-0214 first-use-budget/leg-time-store-pruned: '
                    + repr((left, said.getvalue(), kept_removed, kept_left)),
-                   left == sorted([written, planted['live'][0], planted['foreign'][0]])
-                   and 'removed 3 leg-time files' in said.getvalue()
+                   left == sorted([written] + [planted[key][0] for key in ('old', 'live', 'pending', 'foreign')])
+                   and 'removed 1 leg-time file' in said.getvalue()
                    and kept_removed == [] and kept_left == [kept_file.name])
 
             # Suites stay out of the owner's store: the runner records there only the authority's

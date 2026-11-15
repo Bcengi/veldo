@@ -67,10 +67,9 @@ toward a verdict: the budget only bounds how long the gate waits, scripts/check_
 it between a floor of 1800s and a ceiling of 6 hours whatever the store says, and a run over it is
 CANNOT ANSWER, which is red.
 
-THE STORE STAYS SMALL AND HOLDS ONLY GATE MEASUREMENTS. After each recording, the files of
-authority checkouts that no longer exist and every file untouched for STORE_MAX_AGE_DAYS are
-removed (a declaration revision, a deleted worktree or the lander's per-land installation leaves
-its file behind otherwise). The owner's store records only the authority's own list: a suite that
+THE STORE HOLDS ONLY GATE MEASUREMENTS. After each recording, only files of authority checkouts
+that no longer exist are removed. Files for existing checkouts and unfinished .pending- files
+stay. The owner's store records only the authority's own list: a suite that
 drives this runner over a fixture list is testing the runner, not timing the gate, and its leg is
 said and not recorded. Where the authority lives is no test: the lander runs the gate from an
 installation it lays down under the system temporary directory
@@ -104,7 +103,7 @@ LEG, ENTRIES, DIGEST = 'VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DE
 UNIT_SECONDS = 'VELDO_GATE_UNIT_SECONDS'
 MEASURED_STAGE, BUDGETED_STAGE = 'unit', 'integration'
 LEG_TIMES = Path.home() / '.cache' / 'veldo' / 'gate-leg-seconds'
-STORE_MAX_AGE_DAYS = 30
+RESOURCE_READ_MAX_AGE_DAYS = 30
 TIMES_NAME = re.compile(r'^[0-9a-f]{32}\.json$')
 SUITE = re.compile(r'^[0-9A-Za-z][0-9A-Za-z_]*$')
 ROWS = re.compile(r'^[a-z][a-z0-9-]*$')
@@ -233,7 +232,7 @@ def read_resources(times, digest, node):
         path = _resources_file(times, digest, node)
         item = json.loads(path.read_text())
         if item.get('authority') != str(HERE.parent) or item.get('digest') != digest \
-                or item.get('node') != node or time.time() - path.stat().st_mtime > STORE_MAX_AGE_DAYS * 86400:
+                or item.get('node') != node or time.time() - path.stat().st_mtime > RESOURCE_READ_MAX_AGE_DAYS * 86400:
             return None
         for key in ('cpu_rate', 'peak_anon_bytes'):
             value = item[key]
@@ -264,38 +263,36 @@ def record_resources(times, digest, node, seconds, metrics):
     prune_times(times, keep=target)
 
 
-def prune_times(times, keep, now=None):
-    """Remove the store's files whose authority checkout is gone or that are older than
-    STORE_MAX_AGE_DAYS, never `keep`; a file that cannot be read or removed is left. Said, not
-    fatal. Returns the names removed."""
-    oldest = (time.time() if now is None else now) - STORE_MAX_AGE_DAYS * 86400
+def prune_times(times, keep):
+    """Remove only timing files whose authority checkout is gone, never `keep` or .pending-
+    files. An unreadable file or checkout is left. Said, not fatal. Returns the names removed."""
     removed = []
     try:
         listing = list(os.scandir(str(times)))
     except OSError:
         return removed
     for entry in listing:
-        if entry.name == Path(keep).name or not (TIMES_NAME.match(entry.name)
-                                                 or entry.name.startswith('.pending-')):
+        if entry.name == Path(keep).name or not TIMES_NAME.match(entry.name):
             continue
         try:
             if not entry.is_file(follow_symlinks=False):
                 continue
-            stale = entry.stat(follow_symlinks=False).st_mtime < oldest
-            if not stale and TIMES_NAME.match(entry.name):
-                try:
-                    authority = json.loads(Path(entry.path).read_text()).get('authority')
-                except (ValueError, AttributeError):
-                    authority = None
-                stale = isinstance(authority, str) and authority != '' and not Path(authority).exists()
-            if stale:
+            try:
+                authority = json.loads(Path(entry.path).read_text()).get('authority')
+            except (ValueError, AttributeError):
+                continue
+            if not isinstance(authority, str) or not authority:
+                continue
+            try:
+                Path(authority).stat()
+            except FileNotFoundError:
                 os.unlink(entry.path)
                 removed.append(entry.name)
         except OSError:
             continue
     if removed:
-        print('   unit: removed %d leg-time file%s from %s (authority checkout gone or older than %d '
-              'days)' % (len(removed), '' if len(removed) == 1 else 's', times, STORE_MAX_AGE_DAYS),
+        print('   unit: removed %d leg-time file%s from %s (authority checkout gone)'
+              % (len(removed), '' if len(removed) == 1 else 's', times),
               flush=True)
     return removed
 
