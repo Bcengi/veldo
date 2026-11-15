@@ -855,5 +855,24 @@
   ],
   "noop_red_rows": [],
   "red_as_expected": true
+ },
+ {
+  "falsifier": "space344-identity-not-compared",
+  "criterion": "a whole read of one program (2026-11-15, the review of the fix, finding 1)",
+  "expected_red": [
+   "reader/same-program"
+  ],
+  "red_rows": [
+   "ac7/recorded-digest",
+   "reader/same-program"
+  ],
+  "red_details": [
+   [
+    "VELDO-0344 reader/same-program",
+    "a task that shares its parent's memory and carries no label of its own until it executes a program with the run label, which it does between the reader's open of its environ entry and the read: the parent's environment, which holds no label, is not taken for the task's; the reader reads once more and writes the task's own label [['l -'] label []; the parent carried 12 bytes and no label True; executed in time True; reader exit 0]"
+   ]
+  ],
+  "noop_red_rows": [],
+  "red_as_expected": true
  }
 ]

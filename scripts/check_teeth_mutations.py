@@ -13488,6 +13488,13 @@ def cases():
     reader344('space344-short-environment-taken-as-read', source344,
               "            error = EAGAIN; /* the read ended before the environment did */\n",
               "            error = 0;\n", ['reader/whole-read'], where='scripts')
+    # The same program before and after (2026-11-15, the review of the fix, finding 1): what the
+    # task is not compared, alone, the other two checks in place. A task that shares its parent's
+    # memory and then executes is read as its parent: no label, while it carries one.
+    reader344('space344-identity-not-compared', source344,
+              "        if (!error && (before.start != after.start || before.device != after.device\n",
+              "        if (0 && (before.start != after.start || before.device != after.device\n",
+              ['reader/same-program'], where='scripts')
     setup344 = 'veldo-procread-setup.txt'
     reader344('space344-no-prefix-map', setup344,
               ' -static -ffile-prefix-map="$d"=. -o ', ' -static -o ', ['ac7/reproducible'], where='docs')

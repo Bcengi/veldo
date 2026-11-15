@@ -553,3 +553,37 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
   through the driver's materialize() and worker(), outside its confinement: every no-op green, every
   mutant red on its target rows; the registered driver itself refuses the stage at its baseline, as
   before. Everything here awaits review. Nothing is installed; no sudo command was run.
+- 2026-11-15: THE REVIEW OF THE FIX (review-veldo-0344-fix.md, verdict FIX, tests only). The reader's
+  source and its digest are as they were: scripts/veldo_procread.c is not changed.
+  - Finding 1 (medium): no row failed when the comparison of what the task is, before the read and
+    after it, was removed alone. The entry above says such a read cannot be made on purpose from
+    outside the kernel. It can: a task that shares its parent's memory (clone with CLONE_VM, which
+    vfork and posix_spawn use) keeps that memory until it executes, and the parent keeps it alive
+    after. Row reader/same-program: the suite's helper starts such a task, which waits on a fifo and
+    then executes the helper with the run label as its whole environment; the built reader runs
+    under strace, which holds its read of that one environ entry back for 2 seconds, and the row
+    lets the task execute when strace shows the open. The read returns the parent's environment (12
+    bytes, no label), as long as the ends taken before are apart. The reader reads once more and
+    writes the task's own label. Case space344-identity-not-compared (the comparison alone gone):
+    the row is red, l - and a label of none for a task that carries one; the no-op copy is green.
+    The row is added only where strace is on /usr/bin:/bin and prints a SELFTEST SKIP line
+    elsewhere; the case then has no row and is an error, never a pass.
+  - Finding 2 (low), A KNOWN EFFECT: a process with an environment of no bytes that started after a
+    run holds the run while it lives (a program started with env -i, for one). Kernel threads,
+    zombies and processes older than the run's supervisor are taken out by what stat says, not by
+    the label.
+  - Row reader/rewritten-environment (the limit recorded in VELDO-0313, put to the proof): a process
+    started with the run label that writes over its environment area, with its working directory
+    in the item and a file of the item open. The reader writes l - for it (the label is lost for
+    every reader) and its block is whole and names the working directory and the open file by
+    inode: what holds an item is read with no label.
+  - Suite 141 has 64 rows where strace is there. Finding 344 has 41 cases. Only the new case was
+    applied in this round, through the driver's materialize() and worker(), outside its
+    confinement, as before; the other 40 were not applied again.
+  - THE SUDO LINE, DRY: lines 1 and 2 of proof/VELDO-0344/owner-install.txt, run without sudo
+    against a scratch prefix in place of /usr/local/lib/veldo, with programs on the path that log
+    their call in place of chown and setcap and before sha256sum. Line 1 printed H. A build with one
+    byte added: exit 1, digest differs: nothing installed, sha256sum the only call, the folder
+    empty. The right build with setcap failing, and with chown failing: exit 1, the install failed:
+    nothing installed, the folder empty. The right build: sha256sum, then chown, then setcap, and
+    the file in place with digest H. No sudo command was run and nothing is installed.

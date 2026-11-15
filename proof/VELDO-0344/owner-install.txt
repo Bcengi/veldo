@@ -152,3 +152,13 @@ HISTORY
             (buffers cleared with explicit_bzero). Line 1 run twice against C on cc 13.3.0
             (13.3.0-6ubuntu2~24.04.1) and glibc 2.39-0ubuntu8.12, x86_64: H both times. Awaits
             review. Nothing was installed and no sudo command was run by the builder.
+2026-11-15  The review of that fix (review-veldo-0344-fix.md): verdict FIX, tests only; the source,
+            C and H stay as they are, and the reviewer built H twice. Its dry run of line 2 was
+            blocked, so the builder made it: no sudo, a scratch prefix in place of
+            /usr/local/lib/veldo, programs on the path that log their call in place of chown and
+            setcap and before sha256sum. Line 1 printed H. A build with one byte added: exit 1,
+            "digest differs: nothing installed", sha256sum the only call, the folder empty. The
+            right build with setcap failing, and with chown failing: exit 1, "the install failed:
+            nothing installed", the folder empty. The right build: sha256sum, chown, setcap in that
+            order, and the file in place with digest H. The comparison comes before setcap, and a
+            failure leaves nothing. Nothing was installed and no sudo command was run.

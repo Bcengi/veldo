@@ -79,3 +79,6 @@ space344-setcap-before-the-comparison noop rows 88 targets {"ac7/setcap-after-di
 space344-setcap-before-the-comparison mutant rows 88 targets {"ac7/setcap-after-digest": [false]} failed ['VELDO-0344 ac7/setcap-after-digest']
 space344-blob-read-with-git-show noop rows 88 targets {"ac7/no-replace-objects": [true]} failed []
 space344-blob-read-with-git-show mutant rows 88 targets {"ac7/no-replace-objects": [false]} failed ['VELDO-0344 ac7/no-replace-objects']
+# 2026-11-15, the review of the fix, finding 1: one more case, 41 in all. space344-identity-not-compared removes, alone, the comparison of what the task is before the read and after it; its row is reader/same-program, which is in the suite where strace is on /usr/bin:/bin. Applied once on the working tree above 1bb8934d573c (the reader's source unchanged, SHA-256 44936632...), through the driver's own materialize() and worker(), outside the driver's confined worker, as the 40 before it: noop copy, then mutant copy. The other 40 cases were not applied again in this round. The suite has 90 observations: 64 rows and the shared preamble's 26.
+space344-identity-not-compared noop rows 90 targets {"reader/same-program": [true]} failed []
+space344-identity-not-compared mutant rows 90 targets {"reader/same-program": [false]} failed ['VELDO-0344 ac7/recorded-digest', 'VELDO-0344 reader/same-program']

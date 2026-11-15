@@ -62,6 +62,19 @@ that part, has x env 11 and no l line; and one started with an environment of no
 and no l line. Not read is what the probe makes of each. The source takes the task's stat and exe
 before the read and after it, and reads the environment twice at most.
 
+The same program before and after (the review of the fix, finding 1). reader/same-program: a task of
+the row's helper that shares its parent's memory waits on a fifo and then executes the helper with the
+run label as its whole environment; the built reader runs under strace, which holds its read of that
+one environ entry back, and the row lets the task execute when strace shows the open. The kernel then
+returns the parent's environment, which has no label and is as long as the ends taken before are
+apart; the reader does not take it for the task's, reads once more and writes the task's own label.
+The row is added only where strace is on /usr/bin:/bin; elsewhere a SELFTEST SKIP line says so.
+
+A rewritten environment (the limit VELDO-0313 records). reader/rewritten-environment: a process started
+with the run label that writes over its environment area, as a program that sets its process title
+does, with its working directory in the item and a file of the item open: the reader writes l - (the
+label is lost) and its block is whole and names the working directory and the open file by inode.
+
 AC3 rows: ac3/root-login (in the item, and elsewhere), ac3/unread-fact, ac3/no-block-or-start,
 ac3/unlistable-folder.
 
@@ -129,7 +142,8 @@ def _v344_process_reader_suite():
             'ac1/reader-locks-first', 'ac1/used',
             'ac2/cwd', 'ac2/open-file-only', 'ac2/directory-descriptor', 'ac2/mapped-only',
             'ac2/second-thread-cwd', 'ac2/second-thread-descriptor', 'ac2/inode-alone', 'ac2/outside-not-counted',
-            'reader/facts-of-every-thread', 'reader/maps', 'reader/label', 'reader/whole-read', 'label/table',
+            'reader/facts-of-every-thread', 'reader/maps', 'reader/label', 'reader/whole-read', 'reader/rewritten-environment',
+            'label/table',
             'ac3/root-login', 'ac3/unread-fact', 'ac3/no-block-or-start', 'ac3/unlistable-folder',
             'ac4/no-argument', 'ac4/format', 'ac4/entries', 'ac4/filter', 'ac4/unread-without-capability',
             'ac5/cut', 'ac5/not-whole', 'ac5/exit-status', 'ac5/failed-write', 'ac5/waits-after-end',
@@ -796,14 +810,57 @@ sys.exit(P.reader_exec())
         # of the environment, says ready and waits; anything else says ready and waits.
         HELPER = r'''
 #define _GNU_SOURCE
+#include <fcntl.h>
+#include <sched.h>
+#include <signal.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
 extern char **environ;
+static char stack[1 << 16];
+static char **shared;
+/* A task that shares its parent's memory: it waits for a byte on the fifo, then executes this
+ * program with an environment of its own, the one entry it was given. */
+static int sharer(void *unused)
+{
+    char byte, *argv[] = {"helper", NULL}, *env[] = {shared[3], NULL};
+    int fifo = open(shared[2], O_RDONLY);
+    (void)unused;
+    if (fifo < 0 || read(fifo, &byte, 1) != 1)
+        _exit(1);
+    execve("/proc/self/exe", argv, env);
+    _exit(1);
+}
 int main(int argc, char **argv)
 {
     char byte;
+    if (argc > 3 && !strcmp(argv[1], "share")) {
+        int pid;
+        shared = argv;
+        pid = clone(sharer, stack + sizeof stack, CLONE_VM | SIGCHLD, NULL);
+        if (pid < 0 || dprintf(1, "ready\n%d\n", pid) < 0)
+            return 1;
+        while (read(0, &byte, 1) > 0)
+            ;
+        return 0;
+    }
+    if (argc > 3 && !strcmp(argv[1], "title")) {
+        /* What a program that sets its process title does: it writes over its environment area. */
+        char **entry, *first = NULL, *last = NULL;
+        for (entry = environ; *entry; entry++) {
+            char *end = *entry + strlen(*entry) + 1;
+            if (!first || *entry < first)
+                first = *entry;
+            if (end > last)
+                last = end;
+        }
+        if (!first || chdir(argv[2]) != 0 || open(argv[3], O_RDONLY) < 0)
+            return 1;
+        memset(first, 0, (size_t)(last - first));
+        memcpy(first, "title", 5);
+    }
     if (argc > 1 && !strcmp(argv[1], "spin")) {
         execve("/proc/self/exe", argv, environ);
         return 1;
@@ -919,6 +976,97 @@ int main(int argc, char **argv)
               and 'explicit_bzero(in.bytes, sizeof in.bytes);' in source
               and 'explicit_bzero(value, sizeof value);' in source and 'explicit_bzero(kept, sizeof kept);' in source
               and 'memset(value' not in source and 'memset(in.bytes' not in source)
+
+        # The same program before and after (the review of the fix, finding 1). A task that shares
+        # its parent's memory until it executes: the kernel reads environ from the memory the task
+        # had when the entry was opened, which the parent keeps alive, so a read that falls across
+        # the execution returns the parent's whole environment, as many bytes as the ends taken
+        # before it are apart. Only what the task is, before and after, tells that read from the
+        # task's own. The reader's read of that one entry is held back by strace until the task has
+        # executed.
+        strace = shutil.which('strace', path='/usr/bin:/bin')
+        if strace:
+            HELD = 2.0  # how long the reader's read of that entry is held back
+            share_label = 'share:run-' + os.urandom(4).hex()
+            go = temporary / 'share.fifo'
+            os.mkfifo(str(go))
+            parent = helped({'OTHER': 'value'}, 'share', str(go), '%s=%s' % (NAME, share_label))
+            shared_pid = int(parent.stdout.readline())
+            program = os.stat(helper)
+
+            def executed():
+                try:
+                    found = os.stat('/proc/%d/exe' % shared_pid)
+                    carried = Path('/proc/%d/environ' % shared_pid).read_bytes()
+                except OSError:
+                    return False
+                return (found.st_dev, found.st_ino) == (program.st_dev, program.st_ino) \
+                    and carried == ('%s=%s' % (NAME, share_label)).encode() + b'\0'
+            before_bytes = Path('/proc/%d/environ' % shared_pid).read_bytes()
+            traced = subprocess.Popen(
+                [strace, '-qq', '-P', '%d/task/%d/environ' % (shared_pid, shared_pid), '-e', 'trace=openat,read',
+                 '-e', 'inject=read:delay_enter=%d' % int(HELD * 1000000), str(reader)],
+                cwd='/proc', stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env={})
+            spawned.append(traced)
+            table_read = []
+            pump = threading.Thread(target=lambda: table_read.append(traced.stdout.read()), daemon=True)
+            pump.start()
+            opened_at = executed_at = None
+            for line in traced.stderr:
+                if opened_at is None and line.startswith(b'openat(') and b'environ' in line:
+                    opened_at = time.monotonic()
+                    with open(str(go), 'wb') as word:
+                        word.write(b'x')
+                    while time.monotonic() - opened_at < HELD and not executed():
+                        time.sleep(0.005)
+                    executed_at = time.monotonic() if executed() else None
+            traced.wait(timeout=120)
+            pump.join(timeout=120)
+            share_text = (table_read or [b''])[0].decode('ascii', 'replace')
+            share_blocks = P.reader_table((table_read or [b''])[0].split(b'\n', 1)[-1])[0] or {}
+            share_lines = label_lines(share_text, shared_pid) if '\np %d ' % shared_pid in share_text else ['no block']
+            in_time = opened_at is not None and executed_at is not None and executed_at - opened_at < HELD / 2
+            rows['reader/same-program'] = [(
+                'a task that shares its parent\'s memory and carries no label of its own until it executes a '
+                'program with the run label, which it does between the reader\'s open of its environ entry and '
+                'the read: the parent\'s environment, which holds no label, is not taken for the task\'s; the '
+                'reader reads once more and writes the task\'s own label [%s label %s; the parent carried %d bytes '
+                'and no label %s; executed in time %s; reader exit %s]'
+                % (share_lines, (share_blocks.get(shared_pid) or {}).get('label', '?'), len(before_bytes),
+                   NAME.encode() not in before_bytes, in_time, traced.returncode),
+                in_time and len(before_bytes) > 0 and NAME.encode() not in before_bytes and traced.returncode == 0
+                and share_lines == ['l =' + share_label.encode().hex()]
+                and (share_blocks.get(shared_pid) or {}).get('label') == [share_label.encode()])]
+            stop(parent)
+        else:
+            print('  SELFTEST SKIP: VELDO-0344 reader/same-program: strace is not on the path /usr/bin:/bin, and the '
+                  'row needs it to hold the reader\'s read of one environ entry back until the task has executed')
+
+        # A process that writes over its environment area (programs that set their process title that
+        # way). Its label is gone for any reader; what it holds is not, and needs no label.
+        title_label = 'title:run-' + os.urandom(4).hex()
+        titled = helped({'FILLER': 'f' * 200, NAME: title_label}, 'title', str(item / 'inner'),
+                        str(item / 'inner' / 'held.txt'))
+        title_read = run_reader()
+        title_text = title_read.stdout.decode('ascii', 'replace')
+        title_blocks = P.reader_table(title_read.stdout.split(b'\n', 1)[-1])[0] or {}
+        title_block = title_blocks.get(titled.pid) or {}
+        title_uses, title_why = P._by_reader({'state': 'used', 'blocks': title_blocks}, titled.pid, '/proc',
+                                             P._inodes(os.path.realpath(str(item)))[0])
+        title_hows = sorted(set(use['how'] for use in title_uses or ()))
+        title_inodes = set(use['inode'] for use in title_uses or ())
+        check('reader/rewritten-environment', 'a process started with the run label that then writes over its '
+              'environment area, with its working directory in the item and a file of the item open: the reader '
+              'reads an environment with no label (l -, a label of none), and its block is whole and names the '
+              'working directory and the open file by inode, so the item is in use by it [%s label %s whole %s; '
+              'uses %s %s]' % (label_lines(title_text, titled.pid), title_block.get('label', '?'),
+                               title_block.get('whole'), title_hows, title_why),
+              title_read.returncode == 0 and label_lines(title_text, titled.pid) == ['l -']
+              and title_block.get('label') == [] and title_block.get('whole') is True and title_why is None
+              and title_hows == ['cwd', 'fd'] and title_label.encode().hex() not in title_text
+              and os.stat(str(item / 'inner')).st_ino in title_inodes
+              and os.stat(str(item / 'inner' / 'held.txt')).st_ino in title_inodes)
+        stop(titled)
 
         def label_read(*lines):
             got = P.reader_table(table(['p 7 1'] + list(lines)))
