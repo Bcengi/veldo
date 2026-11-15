@@ -12,6 +12,10 @@ depends_on: [VELDO-0301]
 placement: [engine, loop]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_launch_work.py"
+  - "engine/.veldo/dispatch.py"
+  - ".veldo/control_launch_work.py"
+  - ".veldo/dispatch.py"
   - "engine/.veldo/control_launch.py"
   - ".veldo/control_launch.py"
   - "scripts/suites/*_veldo_0337_*.py"
@@ -76,6 +80,11 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-15: lead decision, footprint extended to the recording path; the signal is emitted by the one writer of the verdict after its commit
+  FloorAuthority.record_review is the emitter for both review callers. The
+  receiver and the engine completion artifact emit no verdict event. This
+  resolves the blocker recorded below without changing the three criteria.
 
 - 2026-11-15: build blocked by the declared production footprint. Launch.wait
   reaps the receiver before Runtime.review validates and signs the review

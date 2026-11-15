@@ -14386,6 +14386,42 @@ def cases():
     finished308('space308-teardown-names-a-kept-item', 'control_clone.py', kept308[0], kept308[1],
                 ['keep/teardown-kept-item-not-named'])
 
+    # VELDO-0337: one post-commit verdict writer, never the receiver.
+    def verdict337(name, module, old, new, rows):
+        add(337, name, '153_veldo_0337_verdict_recorded.py', module, old, new, rows)
+        result[-1]['siblings'] = True
+
+    verdict337('space337-before-commit', 'dispatch.py',
+               '        record = self._run("record_review", unit, {"assignment": assignment, "receipt": receipt, "return_to": return_to})\n',
+               '        self._space_verdict(unit, assignment, {"reviews": [{"assignment": assignment, "dispatch": receipt["dispatch"]}]})\n'
+               '        record = self._run("record_review", unit, {"assignment": assignment, "receipt": receipt, "return_to": return_to})\n',
+               ['ac1/after-commit', 'ac1/rejected-or-unstored'])
+    verdict337('space337-receiver-emits-verdict', 'control_launch.py',
+               "                self.space, 'run_finished', folders, 'receiver', clones=self.config.get('clones'),\n",
+               "                self.space, 'verdict_recorded', folders, 'receiver', clones=self.config.get('clones'),\n",
+               ['ac1/both-callers', 'ac3/killed-no-verdict'])
+    verdict337('space337-evidence-removed-with-caches', 'control_space_remove.py',
+               "    for relative in _declared(ctx, record, 'evidence_caches'):\n",
+               "    answer['bytes'] += _folder(ctx, identity, record, root)\n"
+               "    for relative in _declared(ctx, record, 'evidence_caches'):\n",
+               ['ac2/output-and-evidence'])
+    verdict337('space337-owner-keep-named', 'dispatch.py',
+               "                     and not item.get('owner_keep')\n", '', ['ac2/owner-and-keep'])
+    verdict337('space337-other-run-named', 'dispatch.py',
+               "                     and (item.get('owner') or {}).get('run', {}).get('id') == dispatch\n", '',
+               ['ac2/owner-and-keep'])
+    verdict337('space337-owner-instead-of-items', 'dispatch.py',
+               "                ledger, 'verdict_recorded', subject, emitter=emitter, **given)\n",
+               "                ledger, 'verdict_recorded', {'run': dispatch}, emitter=emitter, **given)\n",
+               ['ac1/after-commit', 'ac2/stale-version'])
+    verdict337('space337-runtime-space-not-wired', 'control_launch_work.py',
+               '                                      space=space, **common)\n',
+               '                                      **common)\n', ['paths/wiring-and-canon'])
+    verdict337('space337-keep-skipped', 'control_space_remove.py',
+               "    path = _plain(record['locator']['path'])\n    kept = _kept(ctx, identity, record)\n",
+               "    path = _plain(record['locator']['path'])\n    kept = {'ok': True, 'tips': tips(path)}\n",
+               ['ac3/keep-before-removal'])
+
     # VELDO-0310: landed and contained, from the landing station. The declared falsifier of each
     # acceptance criterion. AC1: send landed when the landing starts. AC2: remove the branch with the
     # worktree. AC3: drop the start commit test. And the steps beside them, each a way a branch is

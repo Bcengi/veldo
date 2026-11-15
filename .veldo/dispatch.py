@@ -1149,10 +1149,11 @@ class FloorAuthority:
     publishes into."""
 
     def __init__(self, store, conn, *, domain, repository, repo, projections, principal, signer, sign,
-                 generation=1, observe=None, clock=None):
+                 generation=1, observe=None, clock=None, space=None):
         if not all(_text(v) for v in (domain, repository, principal, signer)):
             raise FloorRefused("invalid_input", "domain, repository, principal and signer are named")
         self.store, self.conn = store, conn
+        self.space = space
         self.domain, self.repository, self.principal = domain, repository, principal
         self.signer, self.sign, self.generation = signer, sign, generation
         self.observe = observe or (lambda event: None)
@@ -1245,7 +1246,45 @@ class FloorAuthority:
 
     def record_review(self, unit, assignment, receipt, *, return_to=None):
         """The reviewer's signed receipt for `assignment`; returns the updated record."""
-        return self._run("record_review", unit, {"assignment": assignment, "receipt": receipt, "return_to": return_to})
+        record = self._run("record_review", unit, {"assignment": assignment, "receipt": receipt, "return_to": return_to})
+        self._space_verdict(unit, assignment, record)
+        return record
+
+    def _space_verdict(self, unit, assignment, record):
+        """VELDO-0337: the committed verdict ends only its recorded dispatch's items.
+
+        Both review callers use record_review. Neither a receiver exit nor an engine
+        artifact is a verdict. Versions precede the item read, so a concurrent change
+        refuses the named signal whole. No owner liveness answer is inferred here:
+        Signal retains its rules, keeper and removers, including in report mode.
+        """
+        if self.space is None:
+            return
+        event = dict(operation="verdict_recorded", unit=unit, assignment=assignment)
+        try:
+            review = next(one for one in record["reviews"] if one["assignment"] == assignment)
+            dispatch = review["dispatch"]
+            ledger = self.space['ledger']
+            versions = dict(ledger.conn.execute('SELECT id, version FROM entities'))
+            owned = {identity: item for identity, item in ledger.items().items()
+                     if identity in versions and item.get('state') in ('present', 'kept', 'deferred')
+                     and not item.get('owner_keep')
+                     and 'verdict_recorded' in ((item.get('ends_on') or {}).get('events') or ())
+                     and (item.get('owner') or {}).get('run', {}).get('id') == dispatch
+                     and (item.get('owner') or {}).get('run', {}).get('station') == 'review'}
+            if not owned:
+                return
+            subject = {'items': [{'item': identity, 'version': versions[identity]} for identity in sorted(owned)]}
+            emitter = dict(process='floor.record_review', dispatch=dispatch, **event,
+                           owners={identity: item['owner'] for identity, item in owned.items()})
+            given = {key: value for key, value in self.space.items() if key != 'ledger'}
+            given.setdefault('principal', self.principal)
+            result = _floor_organ('control_space_signal').signal(
+                ledger, 'verdict_recorded', subject, emitter=emitter, **given)
+            self.observe(dict(event, outcome='accepted' if result.get('ok') else 'refused',
+                              space=result))
+        except Exception as error:  # A space failure cannot undo a committed verdict or authorize removal.
+            self.observe(dict(event, outcome='refused', refusal=str(error)[:300]))
 
     def dispose_finding(self, unit, finding, disposition):
         """A signed disposition {body, signature} of one blocking finding."""

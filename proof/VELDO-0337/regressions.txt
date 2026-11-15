@@ -1,0 +1,9 @@
+139_veldo_0301_space_signal
+selftest (PARTIAL, 1 of 223 suites): 44 passed, 0 failed in 1.65s
+exit 2 (2 means partial with no failures)
+146_veldo_0308_run_finished
+selftest (PARTIAL, 1 of 223 suites): 64 passed, 0 failed in 7.86s
+exit 2 (2 means partial with no failures)
+82_veldo_0129_worker_wiring
+selftest (PARTIAL, 1 of 223 suites): 55 passed, 0 failed in 38.90s
+exit 2 (2 means partial with no failures)
