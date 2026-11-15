@@ -1,9 +1,12 @@
 """VELDO-0333: timing retention follows checkout existence, never a file's age.
 
 Only shared ROOT and expect are consumed. Both production copies run against temporary
-stores and fixture checkout directories. No gate stage or host store is used. The clock is
-fixed for resource reads; the pruning row refuses clock and directory-entry time reads.
-The old files contain markers checked byte for byte after both recording entry points.
+stores and fixture checkout directories. No gate stage or host store is used. The fixture
+clock is the real clock read once, so an aged file is old by the injected clock and by the
+real one alike: a removal by age through either turns the row red. The pruning row refuses
+clock and directory-entry time reads. The old files contain markers checked byte for byte
+after both recording entry points. The checkout that cannot be read is a real folder under a
+parent with no permissions, and the checkout under a plain file is a real path.
 """
 
 
@@ -16,6 +19,7 @@ def _v333_suite():
     import os
     from pathlib import Path
     import tempfile
+    import time
     import types
     from unittest import mock
 
@@ -23,7 +27,7 @@ def _v333_suite():
         'canon': ROOT / "engine/scripts" / "gate_legs.py",
         'copy': ROOT / "scripts" / "gate_legs.py",
     }
-    now, day = 2000000000, 86400
+    now, day = int(time.time()), 86400
     rows = {}
 
     def check(row, detail, condition):
@@ -54,6 +58,11 @@ def _v333_suite():
         checkout = top / 'authority'
         checkout.mkdir()
         missing = top / 'missing-checkout'
+        locked = top / 'locked'
+        sealed = locked / 'checkout'
+        sealed.mkdir(parents=True)
+        blocker = top / 'plain-file'
+        blocker.write_text('not a folder')
         for label, source in sources.items():
             gl = load('v333_' + label, source)
             gl.HERE = checkout / 'scripts'
@@ -115,18 +124,33 @@ def _v333_suite():
                     no_reads = False
             check('ac3/no-clock-or-file-time', label + ' pruning succeeds with time readers refused', no_reads)
 
-            unread = planted(store, '9' * 32 + '.json', {'authority': str(checkout)})
-            real_stat = Path.stat
-
-            def cannot_read(path, *args, **kwargs):
-                if path == checkout:
-                    raise PermissionError('fixture checkout probe refused')
-                return real_stat(path, *args, **kwargs)
-
-            with mock.patch.object(Path, 'stat', cannot_read), contextlib.redirect_stdout(io.StringIO()):
-                gl.prune_times(store, keep=kept[0])
-            check('ac3/unreadable-and-foreign-stay', label + ' unreadable checkout is not absence',
-                  unchanged(unread) and unchanged(live))
+            # A checkout that cannot be read, or that lies under a plain file, is not a missing
+            # one. Both are real paths: a probe that answers "absent" for them through any
+            # interface removes the file here.
+            under_file = planted(store, 'a' * 32 + '.json', {'authority': str(blocker / 'checkout')})
+            with contextlib.redirect_stdout(io.StringIO()):
+                removed = gl.prune_times(store, keep=kept[0])
+            check('ac3/unreadable-and-foreign-stay', label + ' checkout under a plain file is not absence',
+                  removed == [] and unchanged(under_file) and unchanged(live))
+            if os.geteuid() == 0:
+                print('   VELDO-0333 %s: unreadable-checkout case skipped: running as root, '
+                      'for which a folder without permissions is still readable' % label)
+            else:
+                unread = planted(store, '9' * 32 + '.json', {'authority': str(sealed)})
+                os.chmod(locked, 0)
+                try:
+                    try:
+                        sealed.stat()
+                        refused = False
+                    except PermissionError:
+                        refused = True
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        removed = gl.prune_times(store, keep=kept[0])
+                finally:
+                    os.chmod(locked, 0o700)
+                check('ac3/unreadable-and-foreign-stay', label + ' unreadable checkout is not absence',
+                      refused and removed == [] and unchanged(unread) and unchanged(live)
+                      and unchanged(under_file))
 
             module = ast.parse(source.read_text())
             prune = next(n for n in module.body if isinstance(n, ast.FunctionDef) and n.name == 'prune_times')
