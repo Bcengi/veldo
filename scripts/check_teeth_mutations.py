@@ -15020,7 +15020,8 @@ def cases():
 
     # Finding 3 (high): the label in the process table, and rule 3 as a read of the kernel.
     run313('space313-label-not-read',
-           "                    add(pid, \"label\")\n", "                    pass\n",
+           "        elif label in carried:\n            add(pid, \"label\")\n",
+           "        elif label in carried:\n            pass\n",
            ['fix3/handed-outside-the-tree'])
     run313('space313-unread-process-not-counted',
            "            add(pid, \"unread\")  # nobody read what it carries: it may be the run's\n",
