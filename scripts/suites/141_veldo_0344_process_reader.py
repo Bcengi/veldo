@@ -41,6 +41,19 @@ AC2 rows: ac2/cwd, ac2/open-file-only, ac2/directory-descriptor, ac2/mapped-only
 ac2/second-thread-cwd, ac2/second-thread-descriptor, ac2/inode-alone, ac2/outside-not-counted, and on
 the built reader's own output for a process it may read: reader/facts-of-every-thread, reader/maps.
 
+The run label (the change of 2026-11-14: the reader reads the label too). reader/label, on the built
+reader's own output for processes it may read: a process started with the run label variable has an
+l line with its value, in hexadecimal, for each of its tasks, and nothing else of its environment is
+anywhere in the output, neither a secret the row planted nor two variables whose names only begin or
+end like the label's; a process with no such variable has l -; an empty value is read as empty; a
+value of 64 bytes is read and one of 65 is not printed, in part or whole, and leaves the label unread;
+the name in the source is the one the Docker adapter and the CLI give a run, and the source names no
+other variable. label/table, on the probe's reading of a table: the label of a block is the values
+its tasks carry, each once; an empty list only when the environment was read and holds none; not read
+(None) for a block with an x env line, with no l line, closed with g, or opened twice; an x env line
+leaves the block whole, so rule 4 still reads its files; an l line in no task or outside the format
+makes the whole table unused.
+
 AC3 rows: ac3/root-login (in the item, and elsewhere), ac3/unread-fact, ac3/no-block-or-start,
 ac3/unlistable-folder.
 
@@ -56,8 +69,8 @@ reader, read to its end line, is still alive until the row shuts down its side).
 AC6 rows: ac6/units, ac6/reads-through-the-socket, ac6/executes-the-checked-descriptor,
 ac6/refused-executes-nothing, ac6/reader-units, and ac6/installed, which runs only where the reader is
 installed at its fixed path (the owner's host after docs/veldo-procread-setup.txt) and requires the
-check's five PASS lines, the fifth being a whole block for process 1, root's and closed to the probe
-itself: elsewhere it prints a SELFTEST SKIP line that says which condition skipped it (no reader, or a
+check's six PASS lines, the fifth being a whole block for process 1, root's and closed to the probe
+itself, and the sixth the run label of a process whose environment the probe may not read: elsewhere it prints a SELFTEST SKIP line that says which condition skipped it (no reader, or a
 reader and no systemd-run) and adds no row.
 
 AC7 rows: ac7/reproducible, ac7/recorded-digest, ac7/compiler-not-from-path, ac7/setcap-after-digest,
@@ -108,7 +121,7 @@ def _v344_process_reader_suite():
             'ac1/reader-locks-first', 'ac1/used',
             'ac2/cwd', 'ac2/open-file-only', 'ac2/directory-descriptor', 'ac2/mapped-only',
             'ac2/second-thread-cwd', 'ac2/second-thread-descriptor', 'ac2/inode-alone', 'ac2/outside-not-counted',
-            'reader/facts-of-every-thread', 'reader/maps',
+            'reader/facts-of-every-thread', 'reader/maps', 'reader/label', 'label/table',
             'ac3/root-login', 'ac3/unread-fact', 'ac3/no-block-or-start', 'ac3/unlistable-folder',
             'ac4/no-argument', 'ac4/format', 'ac4/entries', 'ac4/filter', 'ac4/unread-without-capability',
             'ac5/cut', 'ac5/not-whole', 'ac5/exit-status', 'ac5/failed-write', 'ac5/waits-after-end',
@@ -247,10 +260,11 @@ sys.exit(P.reader_exec())
 
     children, spawned = [], []
 
-    def child(cwd, **spec):
-        """(the process, the ids of the threads it started)."""
+    def child(cwd, environ=None, **spec):
+        """(the process, the ids of the threads it started). `environ`, when given, is its whole
+        environment."""
         process = subprocess.Popen([sys.executable, '-c', CHILD] + ['%s=%s' % pair for pair in spec.items()],
-                                   cwd=str(cwd), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                                   cwd=str(cwd), stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=environ)
         children.append(process)
         said = process.stdout.readline().split()
         if said[:1] != [b'ready']:
@@ -710,13 +724,112 @@ sys.exit(P.reader_exec())
               and sorted(((use['how'], use['tid']) for use in uses or ()), key=str)
               == sorted([('cwd', tids[0]), ('fd', tids[1]), ('maps', None), ('fd', open_one.pid)], key=str))
 
+        # ---- the run label ------------------------------------------------------------------------
+        DK = load('v344_control_space_docker', ROOT / '.veldo' / 'control_space_docker.py')
+        NAME = DK.LABEL_VARIABLE
+        plain_environment = {key: value for key, value in os.environ.items() if key != NAME}
+        secret, decoy_a, decoy_b = os.urandom(12).hex(), 'decoy-' + os.urandom(6).hex(), 'decoy-' + os.urandom(6).hex()
+        run_label = 'row:run-' + os.urandom(4).hex()
+        carrier, carrier_tids = child(elsewhere, thread_cwd=item / 'inner', environ=dict(
+            plain_environment, **{NAME: run_label, 'SECRET_OF_THE_ROW': secret, NAME + '_OTHER': decoy_a,
+                                  'X' + NAME: decoy_b}))
+        bare, _ = child(elsewhere, environ=dict(plain_environment, SECRET_OF_THE_ROW=secret))
+        empty, _ = child(elsewhere, environ=dict(plain_environment, **{NAME: ''}))
+        longest, too_long = 'L' * 64, 'M' * 65
+        fits, _ = child(elsewhere, environ=dict(plain_environment, **{NAME: longest}))
+        over, _ = child(elsewhere, environ=dict(plain_environment, **{NAME: too_long}))
+        labelled = run_reader()
+        label_text = labelled.stdout.decode('ascii', 'replace')
+        label_blocks, label_why = P.reader_table(labelled.stdout.split(b'\n', 1)[-1])
+
+        def lines_of(pid):
+            return label_text.split('\np %d ' % pid, 1)[-1].split('\np ', 1)[0].split('\n')
+
+        def label_of(pid):
+            return ((label_blocks or {}).get(pid) or {}).get('label', 'no block')
+        check('reader/label', 'a process started with the run label variable has, for each of its tasks, one l line '
+              'with the value in hexadecimal, and the probe reads that value as its label [%s %s %s]'
+              % (label_why, label_of(carrier.pid), [line for line in lines_of(carrier.pid) if line[:1] in 'lx'][:4]),
+              labelled.returncode == 0 and label_why is None and label_of(carrier.pid) == [run_label.encode()]
+              and lines_of(carrier.pid).count('l =' + run_label.encode().hex()) == 1 + len(carrier_tids) == 2
+              and not any(line.startswith('l ') and line != 'l =' + run_label.encode().hex()
+                          for line in lines_of(carrier.pid)))
+        leaked = [name for name, value in (('the secret', secret), ('the first decoy', decoy_a),
+                                           ('the second decoy', decoy_b), ('the secret\'s name', 'SECRET_OF_THE_ROW'),
+                                           ('the label\'s name', NAME))
+                  if value in label_text or value.encode().hex() in label_text]
+        check('reader/label', 'nothing else of an environment is anywhere in the output, as it is or in hexadecimal: '
+              'not the secret the row planted, not its name, not the label\'s name, and not the values of two '
+              'variables whose names only begin or end like the label\'s %s' % (leaked,), leaked == [])
+        check('reader/label', 'a process with no such variable has l - and its label is read as none; an empty '
+              'value is read as empty [%s %s]' % (label_of(bare.pid), label_of(empty.pid)),
+              label_of(bare.pid) == [] and 'l -' in lines_of(bare.pid) and label_of(empty.pid) == [b'']
+              and 'l =' in lines_of(empty.pid))
+        check('reader/label', 'a value of 64 bytes is read; one of 65 is not printed, in part or whole, and leaves '
+              'the label unread, with the block still whole [%s %s]'
+              % (label_of(fits.pid), [line for line in lines_of(over.pid) if line[:1] in 'lx']),
+              label_of(fits.pid) == [longest.encode()] and label_of(over.pid) is None
+              and 'x env 7' in lines_of(over.pid) and not any(line.startswith('l ') for line in lines_of(over.pid))
+              and 'M'.encode().hex() * 8 not in label_text
+              and ((label_blocks or {}).get(over.pid) or {}).get('whole') is True)
+        cli_text = (ROOT / 'bin' / 'veldo').read_text()
+        check('reader/label', 'the one name in the source is the variable the Docker adapter and the CLI give a run, '
+              'compared with its equals sign, and the probe names the same one [%s]'
+              % (re.findall(r'"([A-Za-z_][A-Za-z0-9_]*=)"', source),),
+              re.findall(r'"([A-Za-z_][A-Za-z0-9_]*=)"', source) == [NAME + '=']
+              and 'static const char label_name[] = "%s=";' % NAME in source and P.RUN_LABEL_VARIABLE == NAME
+              and 'SPACE_LABEL_VARIABLE = "%s"' % NAME in cli_text)
+        for one in (carrier, bare, empty, fits, over):
+            stop(one)
+
+        def label_read(*lines):
+            got = P.reader_table(table(['p 7 1'] + list(lines)))
+            return (got[0][7]['label'], got[0][7]['whole']) if got[0] else got[1][0]
+        check('label/table', 'the label of a block is what its tasks carry: none when the environment was read and '
+              'holds none, a value once however many tasks carry it, two values in the order read [%s %s %s]'
+              % (label_read('t 7', 'l -'), label_read('t 7', 'l =6162', 't 8', 'l =6162'),
+                 label_read('t 7', 'l =6162', 't 8', 'l =63', 'l =')),
+              label_read('t 7', 'c 1:2 3', 'l -') == ([], True)
+              and label_read('t 7', 'l =6162', 't 8', 'l =6162') == ([b'ab'], True)
+              and label_read('t 7', 'l =6162', 't 8', 'l =63', 'l =') == ([b'ab', b'c', b''], True)
+              and label_read('t 7', 'l -', 't 8', 'l =6162') == ([b'ab'], True))
+        check('label/table', 'an environment that was not read is not a label of none: an x env line leaves the '
+              'label unread, before or after another task\'s l line, and leaves the block whole [%s %s]'
+              % (label_read('t 7', 'x env 13'), label_read('t 7', 'l =6162', 't 8', 'x env 13')),
+              label_read('t 7', 'x env 13') == (None, True)
+              and label_read('t 7', 'l =6162', 't 8', 'x env 13') == (None, True)
+              and label_read('t 7', 'x env 13', 't 8', 'l -') == (None, True))
+        twice = P.reader_table(table(['p 7 1', 't 7', 'l -'], ['p 7 1', 't 7', 'l -']))[0]
+        check('label/table', 'a block with no l line, one closed with g and a process id that opens two blocks have '
+              'no label read [%s %s %s]' % (label_read('t 7', 'c 1:2 3'), label_read('t 7', 'l -', 'g'),
+                                           twice and twice[7]['label']),
+              label_read('t 7', 'c 1:2 3') == (None, True) and label_read('t 7', 'l -', 'g') == (None, False)
+              and label_read() == (None, True) and twice is not None and twice[7]['label'] is None)
+        check('label/table', 'an l line in no task, and one outside the format, make the whole table unused [%s]'
+              % ([label_read(*lines) for lines in (('l -',), ('t 7', 'l =6'), ('t 7', 'l =6G'), ('t 7', 'l =AB'),
+                                                   ('t 7', 'l'), ('t 7', 'l abc'), ('x env 13',))],),
+              all(label_read(*lines) == 'refused:output'
+                  for lines in (('l -',), ('t 7', 'l =6'), ('t 7', 'l =6G'), ('t 7', 'l =AB'), ('t 7', 'l'),
+                                ('t 7', 'l abc'), ('t 7', 'l - '), ('x env 13',))))
+        seam()
+        shown = block(sealed.pid, [(sealed.pid, elsewhere, [])])
+        facts = ask(item, table(shown[:2] + ['x env 13'] + shown[2:]))
+        again = ask(item, table(block(sealed.pid, [(sealed.pid, item, [])]) + ['x env 13']))
+        check('label/table', 'rule 4 still reads the files of a block whose label was not read: elsewhere the '
+              'process does not count, in the item it holds it [%s %s %s]'
+              % (state(facts), counted(facts, sealed.pid), counted(again, sealed.pid)),
+              state(facts) == 'used' and counted(facts, sealed.pid) is None and counted(again, sealed.pid) == 'user')
+        P.SEAM['reader'] = None
+
         # ---- AC4 ------------------------------------------------------------------------------------
         check('ac4/format', 'run directly it exits 0 and writes nothing to standard error [%s %r]'
               % (done.returncode, done.stderr[:80]), done.returncode == 0 and done.stderr == b'')
         check('ac4/format', 'the first line is the header and every other line is in the format of design 7.1',
               printed[0] == b'veldo-procread 1 cap=0' and why is None)
-        check('ac4/format', 'it prints numbers only: no letter but the line\'s own first word, no path',
-              re.fullmatch(rb'(?:(?:[ptcfmg]|x (?:cwd|fd|stat|mnt|maps|task)|end)(?: [0-9:]+| -)*\n)+',
+        check('ac4/format', 'it prints numbers only, and a run label in hexadecimal: no letter but the line\'s own '
+              'first word and the digits of a label, no path',
+              re.fullmatch(rb'(?:(?:(?:[ptcfmg]|x (?:cwd|fd|stat|mnt|maps|task|env)|end)(?: [0-9:]+| -)*'
+                           rb'|l (?:-|=(?:[0-9a-f]{2})*))\n)+',
                            printed[1] if len(printed) > 1 else b'') is not None)
         check('ac4/format', 'the table holds this suite\'s own process and the end line counts the blocks',
               os.getpid() in (blocks or {}) and text.rstrip('\n').rsplit('\n', 1)[-1] == 'end %d' % len(blocks or {}))
@@ -726,6 +839,10 @@ sys.exit(P.reader_exec())
               'whole [%s]' % sealed_lines[:6],
               sealed_block is not None and sealed_block['whole'] is False
               and 'x cwd 13' in sealed_lines and 'x fd 13' in sealed_lines and 'x maps 13' in sealed_lines)
+        check('ac4/unread-without-capability', 'its environment is closed too: x env, no l line, and its label is not '
+              'read [%s]' % (sealed_block and sealed_block['label'],),
+              sealed_block is not None and sealed_block['label'] is None and 'x env 13' in sealed_lines
+              and not any(line.startswith('l ') for line in sealed_lines))
         uses, stays = P._by_reader({'blocks': blocks or {}}, sealed.pid, P.PROC, inodes)
         check('ac4/unread-without-capability', 'and the probe leaves that process unread [%s]' % stays,
               uses is None and stays == 'unread_fact')
@@ -738,14 +855,17 @@ sys.exit(P.reader_exec())
 
         opened = sorted(set(re.findall(r'path_(?:start|task)\([^"]*"([^"]*)"', source)))
         check('ac4/entries', 'the entries the source opens are stat, mountinfo, maps and the task folder of a process, '
-              'and cwd and fdinfo of a task [%s]' % opened,
-              opened == ['/cwd', '/fdinfo', '/fdinfo/', '/maps', '/mountinfo', '/stat', '/task', '/task/'])
+              'and cwd, environ and fdinfo of a task [%s]' % opened,
+              opened == ['/cwd', '/environ', '/fdinfo', '/fdinfo/', '/maps', '/mountinfo', '/stat', '/task', '/task/'])
         check('ac4/entries', 'it opens /proc, and every other open is beneath that one descriptor',
               source.count('SYS_openat') == 2 and 'syscall(SYS_openat, AT_FDCWD, "/proc",' in source
               and 'syscall(SYS_openat, proc, path, O_RDONLY' in source and 'SYS_open,' not in source
               and source.count('SYS_newfstatat') == 1 and 'SYS_newfstatat, proc, path' in source)
-        check('ac4/entries', 'it reads no environment and takes no input: no getenv, no read of descriptor 0',
-              'getenv' not in source and 'environ' not in source and 'SYS_read, 0' not in source
+        check('ac4/entries', 'it reads no environment of its own and takes no input: no getenv, no third argument of '
+              'main, no read of descriptor 0; the one environment entry it opens is a task\'s, in one place',
+              'getenv' not in source and 'envp' not in source and 'char **environ' not in source
+              and source.count('"/environ"') == 1 and source.count('read_label(') == 2
+              and 'int main(int argc, char **argv)\n' in source and 'SYS_read, 0' not in source
               and 'if (argc > 1)\n        return 2;' in source)
 
         # Patched copies: one forbidden call after the filter is in place, then a normal exit.
@@ -1104,12 +1224,15 @@ sys.exit(P.reader_exec())
             print('  VELDO-0344 ac6/installed: ' + said.split('\n')[0])
             rows['ac6/installed'] = [('under the authority unit\'s properties the reader check reports the state used '
                                       'with cap=1, reads the undumpable process and its second thread, and finds a '
-                                      'whole block for process 1, which is root\'s and closed to the probe itself: '
-                                      'five PASS lines [%s %s]' % (ran.returncode, said[-500:]),
+                                      'whole block for process 1, which is root\'s and closed to the probe itself, '
+                                      'and reads the run label of the undumpable process and of process 1: '
+                                      'six PASS lines [%s %s]' % (ran.returncode, said[-500:]),
                                       ran.returncode == 0 and 'state used cap=1' in said and 'FAIL' not in said
-                                      and said.count('PASS: ') == 5
+                                      and said.count('PASS: ') == 6
                                       and 'PASS: process 1, root-owned and closed to the probe itself, has a whole '
-                                          'block with its start time' in said)]
+                                          'block with its start time' in said
+                                      and 'PASS: the run label of the undumpable process, whose environment is '
+                                          'closed to the probe itself, is read' in said)]
         elif present:
             print('  SELFTEST SKIP: VELDO-0344 ac6/installed: the process reader is installed at %s, but systemd-run is '
                   'not on the path of this run, so the row cannot start the check under the authority unit\'s '

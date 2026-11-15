@@ -174,7 +174,8 @@ THE PROCESS READER (design section 7.1, VELDO-0344). A process the probe may not
 user's, the owner's own that is not dumpable) is read through a separate program, the process reader:
 /usr/local/lib/veldo/veldo-procread, which holds the one file capability cap_sys_ptrace and prints, for
 every process and every task, the device and inode numbers of its working directory, its open files
-and its mapped files. The probe never executes it. It connects to the socket of the reader's own user
+and its mapped files, and the run label the task's environment carries (THE RUN LABEL, below). The
+probe never executes it. It connects to the socket of the reader's own user
 unit, /run/user/<uid>/veldo-procread.sock; both paths are fixed here and come from no environment,
 installation or project. The reader's answer is used only when every check holds, and reader_read says
 which state it is in:
@@ -220,6 +221,19 @@ task and fact, with the device and inode number the reader printed. The match is
 alone: a file held through an overlay shows another device. The item's own numbers are read by listing
 its folder and everything beneath it, following no link, and a folder that cannot be listed makes the
 path in use. A process with no block, a block with an unread fact or another start time stays unread.
+
+THE RUN LABEL. For every task it reads, the reader reads the task's environment and prints the value
+of one variable, the run label a wrapped run gives its command (RUN_LABEL_VARIABLE, the name
+control_space_docker.py and the CLI use), and nothing else of that environment: l - when the
+environment was read to its end and holds no such entry, l =HEX with the value in hexadecimal for each
+entry that is the variable, and x env when it could not be read. reader_table gives each block
+label: the values its tasks carry, as bytes, each once, in order; an empty list when the environment
+was read and carries none; and None when the label was not read. It is not read when a task of the
+block has an x env line, when no task of the block has an l line, when the block was closed with g, or
+when the process id opens two blocks. A label that was not read is never taken as no label: the
+caller that asks whether a process is a run's (the CLI's run wrapper, VELDO-0313) holds the run for
+it. An x env line leaves whole as it is: whole speaks for the files, which rule 4 reads, and label for
+the environment. Nothing here logs a label, and the probe uses it for nothing itself.
 
 THE COMMANDS (the owner's, docs/veldo-procread-setup.txt): `reader` runs the reader check, which prints
 the reader's state, reads one undumpable process it starts itself, whose second thread sits in another
@@ -321,7 +335,9 @@ CAPABILITY_EFFECTIVE = 0x000001  # VFS_CAP_FLAGS_EFFECTIVE
 SO_PASSPIDFD, SCM_PIDFD = 76, 4  # the socket option and the message type of the writer's pidfd
 HEADER = re.compile(rb'veldo-procread 1 cap=([01])')
 TABLE_LINE = re.compile(rb'p (\d+) (\d+)|t (\d+)|c (\d+:\d+) (\d+)|f (\d+) (\d+) (\d+:\d+|-) (\d+)'
-                        rb'|m (\d+:\d+) (\d+)|x (cwd|fd|stat|mnt|maps|task) (\d+)|(g)|end (\d+)')
+                        rb'|m (\d+:\d+) (\d+)|x (cwd|fd|stat|mnt|maps|task|env) (\d+)|(g)|end (\d+)'
+                        rb'|l (-|=(?:[0-9a-f]{2})*)')
+RUN_LABEL_VARIABLE = 'VELDO_SPACE_LABEL'  # the one variable the reader prints the value of
 END_LINE = re.compile(rb'(?:\A|\n)end [^\n]*\n')
 
 # kcmp, by its call number on the two machines the reader is built for; None elsewhere.
@@ -1176,10 +1192,12 @@ def _converse(seam, me):
 def reader_table(data, status=None, header=False):
     """Check 6: the reader's table from its bytes, as (blocks, None), or (None, the refused state and
     what was seen) when the output is not whole. Nothing of an output that is not whole is used.
-    blocks is {pid: {start, whole, facts}}: whole is False when the block holds an x line or a g line
-    or the process id opens two blocks, and facts are (how, tid, device, inode) with how cwd, fd or
-    maps. `status` is the exit status of a reader that was run directly, and `header` says the bytes
-    start with the header line, which must say cap=1."""
+    blocks is {pid: {start, whole, facts, label}}: whole is False when the block holds an x line
+    other than x env, or a g line, or the process id opens two blocks, and facts are (how, tid, device,
+    inode) with how cwd, fd or maps. label is the run label the block's tasks carry (THE RUN LABEL): a
+    list of bytes values, empty when the environment was read and holds none, and None when it was
+    not read. `status` is the exit status of a reader that was run directly, and `header` says the
+    bytes start with the header line, which must say cap=1."""
     if status not in (None, 0):
         return None, ('refused:failed', 'the reader ended with status %s' % status)
     rows = bytes(data).split(b'\n')
@@ -1202,9 +1220,10 @@ def reader_table(data, status=None, header=False):
         kind = row[:1]
         if kind == b'p':
             pid = int(found.group(1))
-            block, task = {'start': int(found.group(2)), 'whole': pid not in blocks, 'facts': []}, None
+            block, task = {'start': int(found.group(2)), 'whole': pid not in blocks, 'facts': [], 'label': None}, None
             if pid in blocks:
                 blocks[pid]['whole'] = False  # one id, two blocks: neither is that process for certain
+                blocks[pid]['label'] = False
             else:
                 blocks[pid] = block
             count += 1
@@ -1221,17 +1240,33 @@ def reader_table(data, status=None, header=False):
                                   else ('fd', task, found.group(8).decode(), int(found.group(9))))
         elif kind == b'm':
             block['facts'].append(('maps', None, found.group(10).decode(), int(found.group(11))))
+        elif kind == b'l':
+            if task is None:
+                return None, ('refused:output', 'line %d is in no task' % (number + 1))
+            value = found.group(16)
+            if block['label'] is None:
+                block['label'] = []
+            if block['label'] is not False and value != b'-' and bytes.fromhex(value[1:].decode()) not in block['label']:
+                block['label'].append(bytes.fromhex(value[1:].decode()))
+        elif kind == b'x' and found.group(12) == b'env':
+            if task is None:
+                return None, ('refused:output', 'line %d is in no task' % (number + 1))
+            block['label'] = False  # the environment of a task was not read: the label is not read
         elif kind == b'x':
             if found.group(12) in (b'cwd', b'fd') and task is None:
                 return None, ('refused:output', 'line %d is in no task' % (number + 1))
             block['whole'] = False
         else:  # g: the process ended while it was read, and its block is closed
             block['whole'] = False
+            block['label'] = False
             block = task = None
     if ended is None:
         return None, ('refused:output', 'no end line')
     if ended != count:
         return None, ('refused:output', 'the end line counts %d blocks of %d' % (ended, count))
+    for block in blocks.values():
+        if block['label'] is False:
+            block['label'] = None  # not read is never no label
     return blocks, None
 
 
@@ -1753,20 +1788,31 @@ def reader_check(out=None):
     """The reader check: prints the reader's state, starts one process that is not dumpable, in a
     folder, whose second thread sits in another, and reads it through the reader's socket as every
     probe does. 0 when the state is used, each thread was found in its folder and in no other, and
-    process 1, root's and closed to the probe's own reading, has a whole block in the reader's table.
+    process 1, root's and closed to the probe's own reading, has a whole block in the reader's table,
+    and the run label the undumpable process was started with is read, and process 1's is read too.
     The first four rows read a process of the owner's own uid. The fifth is the one that shows the
-    capability reading an entry of another uid: the kernel checks that on another branch."""
+    capability reading an entry of another uid: the kernel checks that on another branch. The sixth
+    shows the label read where the probe itself is refused the environment."""
     import tempfile
     out = out or sys.stdout
     with tempfile.TemporaryDirectory(prefix='veldo-procread-check-') as first, \
             tempfile.TemporaryDirectory(prefix='veldo-procread-check-') as second, \
             tempfile.TemporaryDirectory(prefix='veldo-procread-check-') as other:
+        mark = 'veldo-procread-check:%d' % os.getpid()
         started = subprocess.Popen([sys.executable, '-I', '-c', _CHECK_PROCESS, second], cwd=first,
-                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                   env=dict(os.environ, **{RUN_LABEL_VARIABLE: mark}))
         try:
             thread = int(started.stdout.readline().strip() or 0)
             asked = reader_read()
             seen = {where: in_use(where, reader=asked) for where in (first, second, other)}
+            try:
+                open(os.path.join(PROC, str(started.pid), 'environ'), 'rb').close()
+                refused = False
+            except PermissionError:
+                refused = True
+            except OSError:
+                refused = False
         finally:
             started.stdin.close()
             started.wait()
@@ -1784,6 +1830,7 @@ def reader_check(out=None):
         # Process 1: root's, and the probe itself is refused its working directory. Its block must be
         # whole (no x line, no g line, one block) and carry the start time the probe reads itself.
         who, block, own = _identity(os.path.join(PROC, '1')), (asked['blocks'] or {}).get(1), process(1)
+        marked = (asked['blocks'] or {}).get(started.pid) or {}
         try:
             os.stat(os.path.join(PROC, '1', 'cwd'))
             closed = False
@@ -1798,7 +1845,11 @@ def reader_check(out=None):
                  and not any(entry['pid'] == started.pid for entry in seen[other]['unread']['processes'])),
                 ('process 1, root-owned and closed to the probe itself, has a whole block with its start time',
                  who is not None and who['uid'] == 0 and closed and block is not None and block['whole']
-                 and own is not None and own['start'] == block['start']))
+                 and own is not None and own['start'] == block['start']),
+                ('the run label of the undumpable process, whose environment is closed to the probe itself, is '
+                 'read and is the one it was started with, and the label of process 1 is read',
+                 refused and marked.get('label') == [mark.encode()] and block is not None
+                 and isinstance(block.get('label'), list)))
         for label, passed in rows:
             print('%s: %s' % ('PASS' if passed else 'FAIL', label), file=out)
     return 0 if all(passed for _, passed in rows) else 1

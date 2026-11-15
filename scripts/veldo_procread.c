@@ -20,8 +20,9 @@
  *      read returns: the probe is the side that refuses a table sent too early;
  *   4. for every process of the table that is not a kernel thread reads stat (the start time and
  *      the flags), mountinfo (the device of each mount id), then for every task under its task
- *      folder the working directory by stat and every fdinfo entry, lists the task folder a
- *      second time, and reads maps. It prints the lines below and opens nothing outside /proc;
+ *      folder the working directory by stat, the run label in environ (THE RUN LABEL, below) and
+ *      every fdinfo entry, lists the task folder a second time, and reads maps. It prints the
+ *      lines below and opens nothing outside /proc;
  *   5. writes the end line, makes one blocking read on descriptor 1 and exits 0 when that read
  *      returns, which is when the probe has shut down its side: the writer of a short output is
  *      still alive when the probe looks.
@@ -35,18 +36,36 @@
  *   p PID START                     opens the block of one process; START is field 22 of stat
  *   t TID                           opens the facts of one task; the first is the first thread
  *   c MAJOR:MINOR INODE             the working directory of the task
+ *   l -                             the environment of the task was read to its end and no entry
+ *                                   of it is the run label variable
+ *   l =HEX                          one entry of the task's environment is the run label variable;
+ *                                   HEX is its value, two lower-case hexadecimal digits a byte, and
+ *                                   nothing for an empty value. One line for each such entry
  *   f FD MOUNT MAJOR:MINOR INODE    one open descriptor of the task; the device is a single
  *                                   hyphen when the process's mountinfo has no row for MOUNT
  *   m MAJOR:MINOR INODE             one mapped file of the process, after its last task; lines
  *                                   of maps with inode 0 are left out
- *   x FACT ERRNO                    a fact that could not be read: cwd or fd of the task it
+ *   x FACT ERRNO                    a fact that could not be read: cwd, env or fd of the task it
  *                                   follows; stat, mnt, maps or task of the process. x task 0 is
  *                                   a task the second listing showed and the reader had not read.
- *                                   Error 12 is also written when a table of this program is full
+ *                                   Error 12 is also written when a table of this program is full,
+ *                                   and x env 7 for a run label longer than 64 bytes
  *   g                               the process ended while it was read; closes its block
  *   end COUNT                       the last line; COUNT is the number of p lines
  * A c, f or m line equal to one the block already holds is not written again. A task that has
- * ended when it is read gets no line. Nothing is written to standard error.
+ * ended when it is read gets no line, and one that ends before its environment is opened gets no
+ * l line. Nothing is written to standard error.
+ *
+ * THE RUN LABEL. A wrapped run gives its command one variable, VELDO_SPACE_LABEL, whose value is
+ * the run (bin/veldo, SPACE_LABEL_VARIABLE; control_space_docker.py, LABEL_VARIABLE). Whether a
+ * process carries it decides whether a run is over, and for a process the probing user may not
+ * read, nothing but this program can say. So for every task it reads, it reads the task's environ
+ * entry and prints the value of that one variable and nothing else of it: an entry is compared
+ * with the name and its equals sign byte by byte, the bytes of every other entry are passed over
+ * and never copied, kept or printed, and the name of no other variable is in this source. The
+ * buffer the entry was read through is cleared before the next file is opened. A value is at most
+ * 64 bytes; a longer one is not printed, in part or whole, and the fact is unread (x env 7). The
+ * value is printed in hexadecimal, so no byte of another process reaches a line as it is.
  *
  * THE FILTER is a list of what is allowed, for the native architecture only (the x32 numbers
  * refused): openat with none of O_WRONLY, O_RDWR, O_CREAT and O_TRUNC, read, getdents64,
@@ -91,6 +110,8 @@
 #define KERNEL_THREAD 0x00200000UL  /* PF_KTHREAD, in the flags of stat */
 #define PTRACE_CAPABILITY 19        /* CAP_SYS_PTRACE */
 #define WRITING (O_WRONLY | O_RDWR | O_CREAT | O_TRUNC)
+
+#define LABEL_BYTES 64              /* the longest run label that is printed */
 
 #define SLOTS (1u << 20)            /* the lines one block is compared with */
 #define MOUNT_SLOTS (1u << 16)
@@ -579,6 +600,66 @@ static int read_fdinfo(int proc, uint64_t *mount, uint64_t *inode)
     return have_mount && have_inode ? 0 : ENODATA;
 }
 
+/* The one variable of another process's environment this program prints the value of. */
+static const char label_name[] = "VELDO_SPACE_LABEL=";
+
+/* environ of the task `path` names: the value of each entry that is the run label variable, and
+ * nothing else of it. 0 read to its end, else the error. */
+static int read_label(int proc)
+{
+    static const char digits[] = "0123456789abcdef";
+    unsigned char value[LABEL_BYTES];
+    int fd = open_under(proc, 0), error = 0, found = 0;
+    if (fd < 0)
+        return errno;
+    in_start(fd);
+    for (;;) {
+        size_t matched = 0, length = 0, index;
+        int byte = in_byte();
+        if (byte == -1)
+            break;
+        while (matched < sizeof label_name - 1 && byte == label_name[matched]) {
+            matched++;
+            byte = in_byte();
+        }
+        if (matched == sizeof label_name - 1) {
+            while (byte > 0) { /* to the entry's end: its zero byte, or the end of the file */
+                if (length == LABEL_BYTES) {
+                    error = E2BIG;
+                    break;
+                }
+                value[length++] = (unsigned char)byte;
+                byte = in_byte();
+            }
+            if (error)
+                break;
+            word("l =");
+            for (index = 0; index < length; index++) {
+                line[line_len++] = digits[value[index] >> 4];
+                line[line_len++] = digits[value[index] & 15];
+            }
+            finish();
+            found = 1;
+        } else {
+            while (byte > 0) /* another variable: passed over, nothing of it kept */
+                byte = in_byte();
+        }
+        if (byte == -1)
+            break;
+    }
+    if (!error && in.error > 0)
+        error = in.error;
+    syscall(SYS_close, fd);
+    memset(in.bytes, 0, sizeof in.bytes);
+    memset(value, 0, sizeof value);
+    in.at = in.length = 0;
+    if (!error && !found) {
+        word("l -");
+        finish();
+    }
+    return error;
+}
+
 struct task {
     int proc;
     uint64_t pid, tid;
@@ -654,7 +735,7 @@ static int task_descriptors(struct task *task)
     return error;
 }
 
-/* One task: its working directory and its descriptors. */
+/* One task: its working directory, its run label and its descriptors. */
 static void read_task(int proc, uint64_t pid, uint64_t tid)
 {
     struct stat found;
@@ -687,6 +768,10 @@ static void read_task(int proc, uint64_t pid, uint64_t tid)
             finish();
         }
     }
+    path_task(pid, tid, "/environ", -1);
+    error = read_label(proc);
+    if (error && !gone(error)) /* gone: the task ended before its environment was opened */
+        unread("env", error);
     error = task_descriptors(&task);
     if (gone(error))
         error = 0; /* ended while it was read: what it held is closed */

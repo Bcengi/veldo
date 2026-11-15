@@ -810,7 +810,8 @@ def _space_holders(run, supervisor, members, since=None, reader=None):
     """What the kernel shows of the run now: [{pid, started, how}], read in one pass over the
     process table. `how` is supervisor (the run's supervisor itself, which stays while anything of
     the run lives), descendant (a process that descends from it), group (a member of the run's
-    containment group), label (a process whose environment carries the run's space label) or unread
+    containment group), label (a process whose environment carries the run's space label, read here
+    or, for a process this account may not read, by the process reader) or unread
     (a process whose environment cannot be read and that may be the run's, below). `supervisor` is
     the process the descendants are counted from, {pid, started}; in the supervisor itself it is
     this process, which is then not listed. Nothing here signals a process.
@@ -824,11 +825,17 @@ def _space_holders(run, supervisor, members, since=None, reader=None):
     environment at all and is not a process in this sense (PF_KTHREAD, in the stat file every user
     may read). With no `since` nothing is taken out.
 
-    THE READER rules nothing out (fix round 3). The process reader's block for a process (VELDO-0344)
-    holds the files the process has, and no environment: it says that the reader saw the process,
-    never that the process is not the run's. So a block changes nothing here, whole or not, and an
-    unread process holds the run whatever the reader shows. `reader` is kept for the read of the
-    label, which is the reader's to add; until it does, it is not asked."""
+    THE READER'S LABEL. `reader`, when given, is the process reader's read (VELDO-0344). It is asked
+    only when a process is unread. The reader reads, for every task, the value of the run label
+    variable in the task's environment, and the probe gives it as the block's label: a list of the
+    values read, empty when the environment was read and carries none, and None when it was not
+    read. The label decides, and only the label: with the reader's state used, a block that is whole,
+    has the start time the kernel shows here and has a label that was read, the process is a holder
+    by its label when one of the values is this run, and no holder when none is (it carries no run,
+    or another one; rule 4 judges it by the files it holds). A block with no label read rules nothing
+    out, whole or not: the reader saw the process, not what it carries. A reader that is absent or
+    refused, a process with no block, a block that is not whole and one with another start time
+    change nothing either: the process holds."""
     label = (SPACE_LABEL_VARIABLE + "=" + str(run)).encode()
     me = os.getpid()
     table = {}
@@ -875,8 +882,23 @@ def _space_holders(run, supervisor, members, since=None, reader=None):
     # The one thing that takes an unread process out: it started before the run began, and it is no
     # descendant and no member of the group (those are in `found` already, under their own names).
     unread = [pid for pid in unread if pid not in found and (since is None or table[pid]["started"] >= since)]
+    blocks = None
+    if unread and reader is not None:
+        try:
+            said = reader()
+            if isinstance(said, dict) and said.get("state") == "used" and isinstance(said.get("blocks"), dict):
+                blocks = said["blocks"]
+        except Exception:  # noqa: BLE001 - a reader that could not be asked read nothing
+            blocks = None
+    wanted = str(run).encode()
     for pid in unread:
-        add(pid, "unread")
+        block, carried = (blocks or {}).get(pid), None
+        if isinstance(block, dict) and block.get("whole") is True and block.get("start") == table[pid]["started"]:
+            carried = block.get("label")
+        if not isinstance(carried, (list, tuple)):
+            add(pid, "unread")  # nobody read what it carries: it may be the run's
+        elif wanted in carried:
+            add(pid, "label")  # the reader read this run's label in its environment
     return [found[pid] for pid in sorted(found)]
 
 

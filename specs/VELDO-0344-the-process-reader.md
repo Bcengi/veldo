@@ -437,3 +437,50 @@ NoNewPrivileges=yes. Until the owner's host runs that row, all three stay assump
   record reviewed for the toolchain of the host the reader is installed on, and a digest that line 1
   prints and no reviewed record has is not installed. The new record awaits review. No sudo command was
   run, and the reader is not installed on this host.
+- 2026-11-14: THE READER READS THE RUN LABEL TOO (the lead's decision after the re-review of VELDO-0313,
+  whose finding 1 is that a block of this reader held files and no environment, so it could not say
+  whether a process is a run's). For every task it reads, the reader now opens the task's environ entry
+  and prints the value of one variable, VELDO_SPACE_LABEL, the name the run wrapper gives a run
+  (bin/veldo SPACE_LABEL_VARIABLE, control_space_docker.py LABEL_VARIABLE): l =HEX for each entry that
+  is the variable, the value in hexadecimal; l - when the environment was read to its end and holds
+  none; x env ERRNO when it could not be read, and x env 7 for a value longer than 64 bytes, which is
+  not printed in part or whole. Nothing else of an environment is printed, copied or kept: other
+  entries are passed over byte by byte, the source names no other variable, the read buffer is cleared
+  after each environment, and nothing is logged. Everything else of the reviewed design is as it was:
+  static, read only, the same seccomp filter with no call added (an environ entry is one more open for
+  reading beneath /proc), matching by inode number alone, the same sudo line.
+  - The probe (reader_table) gives each block label: the values its tasks carry, an empty list when
+    the environment was read and holds none, and None when it was not read (an x env line, no l line,
+    a g line, a process id that opens two blocks). Not read is never no label. An x env line leaves
+    whole as it is, so rule 4 reads the files of such a block exactly as before. The reader check has
+    a sixth row: the label of its undumpable process, whose environ entry the probe is refused, is
+    read and is the one the check started it with, and the label of process 1 is read. Row
+    ac6/installed, the setup text and owner-install.txt require six PASS lines.
+  - VELDO-0313's rule uses it (bin/veldo, _space_holders): of a block only a label that was read
+    decides. This run's label makes the process a holder by its label; a label that is not this run's
+    takes it out; a block with no label read takes nothing out.
+  - AC4's TEXT IS NOW NARROWER THAN THE READER, and the builder did not edit it: it says the reader
+    reads only stat, mountinfo, maps, cwd and fdinfo and prints numbers only. By this decision it also
+    reads environ of each task and prints the label's value in hexadecimal. The criterion's wording,
+    the Design section and design section 7.1 are the lead's and the owner's to amend. What an agent
+    of the owner's account can learn through the socket grows by one fact for each process: which run
+    it says it belongs to. The setup text says so.
+  - Rows. reader/label (the built reader on processes it may read: the label's value for each task,
+    l - for none, an empty value, 64 bytes read and 65 not printed; a secret the row plants, its
+    name, the label's name and two variables whose names only begin or end like the label's are
+    nowhere in the output, as they are or in hexadecimal; the one name in the source is the
+    adapter's and the CLI's). label/table (the probe's reading). ac4/format, ac4/entries and
+    ac4/unread-without-capability read the new line and the new entry. Five falsifiers, each seen red:
+    space344-label-every-entry-printed, space344-label-name-without-its-equals-sign,
+    space344-long-label-cut-short, space344-unread-environment-taken-as-no-label,
+    space344-no-label-line-taken-as-no-label.
+  - THE SOURCE CHANGED, SO ITS DIGEST DID, AND BOTH AWAIT REVIEW. scripts/veldo_procread.c has SHA-256
+    f5373c0a5b2ba29ba425a5305e97d16fa578a632bfb5afed69962a1abae39821 (before:
+    233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c). Built with line 1 of
+    proof/VELDO-0344/owner-install.txt on cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0 and glibc
+    2.39-0ubuntu8.12 on x86_64 it has the digest
+    f890b5a253447011bd3570700275579119ff89170e61ea8e3f8903717bf8b647. reader.sha256 records it first
+    and keeps the two earlier records, which are digests of the earlier source and of nothing else.
+    owner-install.txt carries the new C and H and says that the source it names is not the one that
+    was reviewed. No sudo command was run, the reader is not installed on this host, and row
+    ac6/installed, with its sixth line, has not run anywhere.

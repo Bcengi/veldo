@@ -57,18 +57,25 @@ What it does, in order:
    kernel grants a file capability only without them; the reader locks itself in after it has
    been executed. The authority unit is not changed and never holds the capability.
 6. Runs the reader check, which reads through the socket as every probe does. It prints the
-   reader's state and one PASS or FAIL line for each of its five rows. It must print "state used
-   cap=1" and five PASS lines, and it exits 0 only then: the state is used; it read an undumpable
+   reader's state and one PASS or FAIL line for each of its six rows. It must print "state used
+   cap=1" and six PASS lines, and it exits 0 only then: the state is used; it read an undumpable
    process it started itself, whose second thread sits in another folder (three rows, all of
-   your own uid); and process 1, which is root's and which the probe cannot read itself, has a
-   whole block in the reader's table, with the start time the probe reads. The fifth row is the
-   one that shows the capability reading a process of another uid.
+   your own uid); process 1, which is root's and which the probe cannot read itself, has a
+   whole block in the reader's table, with the start time the probe reads; and the run label of
+   that undumpable process, whose environment the probe is refused, is read and is the one the
+   check started it with, and the label of process 1 is read too. The fifth row is the one that
+   shows the capability reading a process of another uid. The sixth shows the label being read.
 
 What the reader is: a static program that reads entries of the process table and prints numbers,
-the device and inode numbers of each process's working directories, open files and mapped files.
-It takes no input, attaches to no process, signals none and writes nothing but that table. An
-agent running as you can connect to the socket and learn those numbers for every process on the
-host; it learns no path, no file name, no content and no memory.
+the device and inode numbers of each process's working directories, open files and mapped files,
+and one more thing: the run label. A wrapped run gives its command one environment variable,
+VELDO_SPACE_LABEL, whose value names the run. For each task the reader reads the environment and
+prints the value of that one variable, in hexadecimal, or that there is none. It prints no other
+variable, no name and nothing else of an environment, and it keeps no log. It takes no input,
+attaches to no process, signals none and writes nothing but that table. An agent running as you
+can connect to the socket and learn those numbers, and which run each process says it belongs
+to, for every process on the host; it learns no path, no file name, no content, no memory and
+no other variable of any environment.
 
 Without the reader, or with one that fails a check, nothing is removed that would have stayed:
 every process the probe cannot read is judged as before, and the probe's answer names the

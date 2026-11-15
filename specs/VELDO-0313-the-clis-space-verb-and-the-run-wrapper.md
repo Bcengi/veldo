@@ -361,3 +361,17 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     approves it there. The footprint names both files for that reason.
   - The suite. Suite 151 has 24 rows, all green in a process table of its own. Finding 313 has 31
     cases.
+- 2026-11-14: THE READER'S LABEL DECIDES (with VELDO-0344's change of the same day, which makes the
+  process reader read the run label of every task). In _space_holders the reader is asked again, only
+  when a process is unread, and of its block only the label is used: with the reader's state used, a
+  block that is whole, has the start time the kernel shows and has a label that was read, a process
+  whose label is this run's is a holder by its label (the reason is label_carried), and one whose
+  label is another run's or none is no holder, and rule 4 judges it by the files it holds. A block
+  with no label read, no block, a block that is not whole, one with another start time and a reader
+  that is absent or refused take nothing out: the process holds. Row fix3/unread-process-holds reads
+  each of those, then this run's label, then a label of another run beside a process with none, where
+  the run is over while both live. Falsifiers: space313-reader-block-taken-as-label-read is now one
+  line (a label that was not read taken as none); space313-reader-block-not-checked and
+  space313-reader-not-used-taken-as-used are back on the new lines; and
+  space313-readers-label-of-the-run-not-counted is new. Finding 313 has 34 cases. On a host with no
+  reader installed nothing changes: an unread process that started after the run holds it.

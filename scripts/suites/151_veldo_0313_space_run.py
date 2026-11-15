@@ -58,9 +58,11 @@ returns at once and sends nothing while that worker lives, naming it by the labe
 its exit). fix3/unread-process-holds (fix round 2, fail closed: a process whose environment the kernel
 will not show and that started after the run began may be the run's, whatever started it, so the run
 stays open, nothing is sent and the hold stays; one that was running before the run began cannot be
-the run's and does not hold it; a block of the process reader for such a process, whole or not, with
-the kernel's start time or another, rules nothing out, since a block holds files and no label; the
-run ends only when that process has ended). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
+the run's and does not hold it; of the process reader's block for such a process only the label
+decides, and only one that was read: a whole block with no label read, no block, a block that is not
+whole, one with another start time and a refused reader each leave the run open; a label that is this
+run's makes the process a holder by its label; and when the label of every unread process was read
+and none is this run's, the run is over while they live). fix3/rule-3-reads-the-kernel (a group that gains a process after the end has begun: rule 3
 asks the kernel again for each item, so the scratch root is deferred as in use and stays, and the hold
 is not released). fix3/the-house-group (on a host with the owner's user manager: the command runs in
 the house's own transient scope, run finished is not sent while a process it left is in that group,
@@ -940,11 +942,12 @@ def _v313_space_run_suite():
                 holds a whole block, with the start time the kernel shows, for every process of the
                 table but the ones in `but`; a process in `torn` gets a block that is not whole, and
                 one in `stale` a block with another start time. `state` is the state it says it is in.
-                No block holds a label."""
+                Every block has a label that was read and holds no run, but the ones `labels` names:
+                there a list is the values the reader read, and None a label it did not read."""
 
-                def __init__(self, but=(), torn=(), stale=(), state='used'):
+                def __init__(self, but=(), torn=(), stale=(), state='used', labels=None):
                     self.but, self.torn, self.stale, self.asked = set(but), set(torn), set(stale), 0
-                    self.state = state
+                    self.state, self.labels = state, dict(labels or {})
 
                 def __getattr__(self, name):
                     return getattr(P, name)
@@ -956,7 +959,8 @@ def _v313_space_run_suite():
                         seen = CLI._space_process(int(name)) if name.isdigit() else None
                         if seen is not None and seen['pid'] not in self.but:
                             blocks[seen['pid']] = {'start': seen['started'] + (1 if seen['pid'] in self.stale else 0),
-                                                   'whole': seen['pid'] not in self.torn, 'facts': []}
+                                                   'whole': seen['pid'] not in self.torn, 'facts': [],
+                                                   'label': self.labels.get(seen['pid'], [])}
                     return {'state': self.state, 'said': None, 'blocks': blocks, 'writer': None, 'digest': None}
 
             def unread_of(end):
@@ -999,31 +1003,52 @@ def _v313_space_run_suite():
                       and unread_of(end) == {child_of_the_suite}
                       and os.path.isdir(given['scratch'])
                       and (L.hold(given['run']) or {}).get('state') == 'admitted')
-                # A block of the process reader holds the files of a process and no environment: it
-                # rules nothing out, whole or not (fix round 3, the re-review's finding 1).
-                for name, reader in (('shows a whole block for it, with the kernel\'s start time', Reader()),
-                                     ('shows no block for it', Reader(but=[child_of_the_suite])),
-                                     ('shows a block for it that is not whole', Reader(torn=[child_of_the_suite])),
-                                     ('shows a block with another start time', Reader(stale=[child_of_the_suite])),
-                                     ('is refused, whatever its table holds', Reader(state='refused:digest'))):
+                # Only the label decides, and only a label that was read (fix round 3, the re-review's
+                # finding 1; the reader reads the label since VELDO-0344's change of 2026-11-14). A
+                # block whose label was not read rules nothing out, whole or not; and with a label
+                # that was read and holds no run, a block that is not this process's whole block
+                # rules nothing out either.
+                for name, reader in (
+                        ('shows a whole block for it, with the kernel\'s start time, and no label read',
+                         Reader(labels={child_of_the_suite: None})),
+                        ('shows no block for it', Reader(but=[child_of_the_suite])),
+                        ('shows a block for it that is not whole', Reader(torn=[child_of_the_suite])),
+                        ('shows a block with another start time', Reader(stale=[child_of_the_suite])),
+                        ('is refused, whatever its table holds', Reader(state='refused:digest'))):
                     wiring['probe'] = reader
                     end = CLI._space_finish(wiring, given)
                     check(row, 'a reader that %s has not read what it carries: the run stays open, its file is '
                                'there and the hold is held [%s %s]' % (name, end.get('reason'), end.get('holders')),
-                          end.get('sent') is False and end.get('reason') == 'label_unread'
+                          reader.asked >= 1 and end.get('sent') is False and end.get('reason') == 'label_unread'
                           and unread_of(end) == {child_of_the_suite} and written(since) == []
                           and CLI._space_process(child_of_the_suite) is not None
                           and text_of(Path(given['scratch']) / 'kept.bin') == 'it may still be written\n'
                           and (L.hold(given['run']) or {}).get('state') == 'admitted')
-                end_child()
-                end = finish(wiring, given)
-                check(row, 'the run ends only when that process has ended: then run finished is sent, the scratch '
-                           'root goes and the hold is released, and the process that was running before the run '
-                           'lives through it [%s %s]' % (end.get('reason'), end.get('holders')),
-                      end.get('sent') is True and CLI._space_process(child_of_the_suite) is None
+                wiring['probe'] = Reader(labels={child_of_the_suite: [b'another:run', given['run'].encode()]})
+                end = CLI._space_finish(wiring, given)
+                check(row, 'a reader that read this run\'s label in its environment: the process is the run\'s, '
+                           'named by the label; the run stays open and nothing is written [%s %s]'
+                      % (end.get('reason'), end.get('holders')),
+                      end.get('sent') is False and end.get('reason') == 'label_carried' and written(since) == []
+                      and [(one.get('pid'), one.get('how')) for one in end.get('holders') or ()]
+                      == [(child_of_the_suite, 'label')]
+                      and text_of(Path(given['scratch']) / 'kept.bin') == 'it may still be written\n'
+                      and (L.hold(given['run']) or {}).get('state') == 'admitted')
+                # One more unread process, started now: the reader reads it too, with no label.
+                bystander, end_bystander = hidden(orphan=True)
+                wiring['probe'] = Reader(labels={child_of_the_suite: [b'another:run']})
+                end = CLI._space_finish(wiring, given)
+                check(row, 'a reader that read the label of each, another run\'s in one and none in the other: '
+                           'neither is this run\'s, so the run is over while both live, and rule 4 judged them by '
+                           'their files [%s %s %s]' % (end.get('reason'), end.get('holders'), wiring['probe'].asked),
+                      end.get('sent') is True and wiring['probe'].asked >= 1
+                      and CLI._space_process(child_of_the_suite) is not None
+                      and CLI._space_process(bystander) is not None
                       and CLI._space_process(before_the_run) is not None
                       and not os.path.lexists(given['scratch'])
                       and (L.hold(given['run']) or {}).get('state') == 'released')
+                end_child()
+                end_bystander()
                 end_before()
         except Exception as error:
             stopped(row, error)

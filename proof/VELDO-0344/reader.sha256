@@ -1,16 +1,25 @@
-861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199  veldo-procread
+f890b5a253447011bd3570700275579119ff89170e61ea8e3f8903717bf8b647  veldo-procread
 cc: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
 libc: ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39
 machine: x86_64
-source: scripts/veldo_procread.c sha256 233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c
+source: scripts/veldo_procread.c sha256 f5373c0a5b2ba29ba425a5305e97d16fa578a632bfb5afed69962a1abae39821
 build: env -i PATH=/usr/bin:/bin /usr/bin/cc -std=c11 -O2 -Wall -Wextra -Werror -static -ffile-prefix-map="$d"=. -o "$d/veldo-procread" veldo_procread.c, in the temporary folder $d that holds the source; built twice in two folders, one digest
-recorded: 2026-11-14, with line 1 of proof/VELDO-0344/owner-install.txt run twice against commit 705d64311de90f1945d7d0c0a5b9b3e6d125e78e, after an unattended update of the C library on this host (libc6 and libc6-dev 2.39-0ubuntu8.9 to 2.39-0ubuntu8.12). The link is static, so the library's code is in the program and its digest follows the library. The source is the same, byte for byte.
+recorded: 2026-11-14, for the source that reads the run label too (for every task, the value of the one variable VELDO_SPACE_LABEL in the task's environ entry, and nothing else of it). This is another source than the one of the records below, so it has another digest on the same toolchain. Built twice from the source with the build line above, and then with line 1 of proof/VELDO-0344/owner-install.txt against the commit that file names as C. This record awaits review; the records below were for the source before it, and no digest below belongs to this source.
 
-The record before it, kept. Same source, same compiler, same line; the C library as it was until 2026-11-14:
+The record before it, kept. The source before the run label was read; the same compiler, C library and line:
+previous digest: 861d22a18e477344b637dae2d3443cb78a9233b3b0ee90620679f599fa47f199  veldo-procread
+previous cc: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+previous libc: ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39
+previous machine: x86_64
+previous source: scripts/veldo_procread.c sha256 233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c
+previous commit: 705d64311de90f1945d7d0c0a5b9b3e6d125e78e
+previous recorded: 2026-11-14, with line 1 of proof/VELDO-0344/owner-install.txt run twice against commit 705d64311de90f1945d7d0c0a5b9b3e6d125e78e, after an unattended update of the C library on this host (libc6 and libc6-dev 2.39-0ubuntu8.9 to 2.39-0ubuntu8.12). The link is static, so the library's code is in the program and its digest follows the library.
+
+The record before that, kept. That same earlier source, same compiler, same line; the C library as it was until 2026-11-14:
 earlier digest: bb9bd262a12793669e19a1cf3c77f2539ad48cb26093ba4377d5cf520d70d035  veldo-procread
 earlier cc: cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
 earlier libc: ldd (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39
 earlier machine: x86_64
 earlier source: scripts/veldo_procread.c sha256 233df2c7174357a0d1481b279f60e679f52135bfaf1e5c7edc940866fdfb865c
 
-A digest holds for the toolchain written beside it and for no other. On a host whose cc or C library is neither of the two above, line 1 prints a third digest, and that one is installed only after it is recorded here and reviewed.
+A digest holds for the source and the toolchain written beside it and for no other. On a host whose cc or C library is not the one of the first record above, line 1 prints another digest, and that one is installed only after it is recorded here and reviewed.

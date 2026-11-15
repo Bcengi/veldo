@@ -13355,6 +13355,10 @@ def cases():
     # registered nowhere, because a case whose row is missing is an error); the entry checks the
     # path and executes the path. AC7, in the setup text: no prefix map; the compiler from the
     # path; setcap before the comparison; the blob read with git show. AC8: the first thread only.
+    # The run label (2026-11-14). In the reader's source: every entry of an environment printed;
+    # the name compared without its equals sign, so a variable whose name only begins like the
+    # label's is printed; a label that is too long cut short and printed. In the probe: an
+    # environment that was not read taken as a label of none; a block with no l line taken so.
     space344 = '141_veldo_0344_process_reader.py'
 
     def reader344(name, module, old, new, rows, also=(), where=None):
@@ -13451,6 +13455,22 @@ def cases():
               "    syscall(SYS_read, 1, &byte, 1);\n",
               "    /* Stay until the probe has looked: it shuts down its side after its last look. */\n",
               ['ac5/waits-after-end'], where='scripts')
+    reader344('space344-label-every-entry-printed', source344,
+              "        if (matched == sizeof label_name - 1) {\n", "        if (matched >= 1) {\n",
+              ['reader/label'], where='scripts')
+    reader344('space344-label-name-without-its-equals-sign', source344,
+              'static const char label_name[] = "VELDO_SPACE_LABEL=";\n',
+              'static const char label_name[] = "VELDO_SPACE_LABEL";\n',
+              ['reader/label'], where='scripts')
+    reader344('space344-long-label-cut-short', source344,
+              "                    error = E2BIG;\n                    break;\n", "                    break;\n",
+              ['reader/label'], where='scripts')
+    reader344('space344-unread-environment-taken-as-no-label', probe344,
+              "            block['label'] = False  # the environment of a task was not read: the label is not read\n",
+              "            block['label'] = block['label'] or []\n", ['label/table'])
+    reader344('space344-no-label-line-taken-as-no-label', probe344,
+              "'whole': pid not in blocks, 'facts': [], 'label': None}, None\n",
+              "'whole': pid not in blocks, 'facts': [], 'label': []}, None\n", ['label/table'])
     setup344 = 'veldo-procread-setup.txt'
     reader344('space344-no-prefix-map', setup344,
               ' -static -ffile-prefix-map="$d"=. -o ', ' -static -o ', ['ac7/reproducible'], where='docs')
@@ -14986,7 +15006,8 @@ def cases():
            "                    add(pid, \"label\")\n", "                    pass\n",
            ['fix3/handed-outside-the-tree'])
     run313('space313-unread-process-not-counted',
-           "        add(pid, \"unread\")\n", "        pass\n",
+           "            add(pid, \"unread\")  # nobody read what it carries: it may be the run's\n",
+           "            pass\n",
            ['fix3/unread-process-holds'])
     # Fix round 2 (the lead's decision, fail closed). The bound of the first fix round put back: an
     # unread process that started after the run does not hold it when the process that started it
@@ -15002,21 +15023,25 @@ def cases():
     # Fix round 3 (the re-review). Finding 1: the code as it was, a whole block of the process
     # reader taken as a read of the label, which it does not hold. Finding 2: the supervisor that
     # stays keeps its caller's output. Finding 3: the supervisor leaves where it should stay.
+    # With the reader reading the label (VELDO-0344, 2026-11-14) the same defect is one line: a
+    # label that was not read taken as a label of none. Beside it: a block that is not whole, or is
+    # another process's, taken as that process's; a reader that is not used taken as used; and this
+    # run's label, read by the reader, not counted.
     run313('space313-reader-block-taken-as-label-read',
-           "    for pid in unread:\n        add(pid, \"unread\")\n",
-           "    blocks = None\n"
-           "    if unread and reader is not None:\n"
-           "        try:\n"
-           "            said = reader()\n"
-           "            if isinstance(said, dict) and said.get(\"state\") == \"used\" and isinstance(said.get(\"blocks\"), dict):\n"
-           "                blocks = said[\"blocks\"]\n"
-           "        except Exception:  # noqa: BLE001\n"
-           "            blocks = None\n"
-           "    for pid in unread:\n"
-           "        block = (blocks or {}).get(pid)\n"
-           "        if isinstance(block, dict) and block.get(\"whole\") is True and block.get(\"start\") == table[pid][\"started\"]:\n"
-           "            continue\n"
-           "        add(pid, \"unread\")\n",
+           "            carried = block.get(\"label\")\n",
+           "            carried = block.get(\"label\") or []\n",
+           ['fix3/unread-process-holds'])
+    run313('space313-reader-block-not-checked',
+           "        if isinstance(block, dict) and block.get(\"whole\") is True and block.get(\"start\") == table[pid][\"started\"]:\n",
+           "        if isinstance(block, dict):\n",
+           ['fix3/unread-process-holds'])
+    run313('space313-reader-not-used-taken-as-used',
+           "            if isinstance(said, dict) and said.get(\"state\") == \"used\" and isinstance(said.get(\"blocks\"), dict):\n",
+           "            if isinstance(said, dict) and isinstance(said.get(\"blocks\"), dict):\n",
+           ['fix3/unread-process-holds'])
+    run313('space313-readers-label-of-the-run-not-counted',
+           "            add(pid, \"label\")  # the reader read this run's label in its environment\n",
+           "            pass\n",
            ['fix3/unread-process-holds'])
     run313('space313-supervisor-keeps-the-callers-output',
            "    if seen[\"holders\"]:\n        _space_let_go()\n", "",
