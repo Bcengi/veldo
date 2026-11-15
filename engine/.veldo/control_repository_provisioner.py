@@ -192,12 +192,13 @@ def check_configured_remote(path, branch, remote):
         raise Refused('invalid_input:remote_not_configured', 'the repository is not configured with this remote')
 
 
-def remove_scaffold_ref(path, repository):
-    """Remove the ref the scaffold commit was recorded under, when there is one. Never raises."""
+def remove_scaffold_ref(path, repository, ledger=None, identity=None):
+    """Ask the ref remover; without an ended owner item the scaffold ref stays. Never raises."""
     if R.repository_id_problems(repository):
         return False
     try:
-        return git(path, 'update-ref', '-d', SCAFFOLD_REF + repository, check=False).returncode == 0
+        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,
+                                                       ledger, identity)['ok']
     except Exception:  # noqa: BLE001 - removing the record of a laid commit never decides an outcome
         return False
 

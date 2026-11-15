@@ -153,5 +153,23 @@ def _v304_suite():
     row('batch/unique-work', batch_work)
     row('batch/boundary', lambda: module_boundary('control_batch', ('Batch._swap',)))
 
+    def scaffold_work():
+        provisioner = load('provisioner', ROOT / '.veldo/control_repository_provisioner.py')
+        with tempfile.TemporaryDirectory(prefix='v304-scaffold-') as temporary:
+            main = Path(temporary)
+            git(main, 'init', '-q', '-b', 'main')
+            (main / 'unique').write_text('unique scaffold commit\n')
+            git(main, 'add', '.')
+            tip = git(main, 'commit-tree', git(main, 'write-tree'), '-m', 'unique')
+            repository = 'fixture'
+            ref = provisioner.SCAFFOLD_REF + repository
+            git(main, 'update-ref', ref, tip)
+            assert not provisioner.remove_scaffold_ref(str(main), repository)
+            assert git(main, 'rev-parse', ref) == tip
+            assert git(main, 'show', ref + ':unique') == 'unique scaffold commit'
+
+    row('scaffold/unique-work', scaffold_work)
+    row('scaffold/boundary', lambda: module_boundary('control_repository_provisioner', ('remove_scaffold_ref',)))
+
 
 _v304_suite()

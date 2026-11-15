@@ -33,5 +33,12 @@
   "row": "batch/boundary",
   "old": "                ledger = (self.space or {}).get('ledger')\n",
   "new": "                self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)\n                ledger = (self.space or {}).get('ledger')\n"
+ },
+ {
+  "name": "scaffold-direct-ref",
+  "path": ".veldo/control_repository_provisioner.py",
+  "row": "scaffold/boundary",
+  "old": "        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n",
+  "new": "        git(path, 'update-ref', '-d', SCAFFOLD_REF + repository, check=False)\n        return organ('control_space_remove').remove_ref(str(path), SCAFFOLD_REF + repository,\n"
  }
 ]
