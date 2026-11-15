@@ -1429,6 +1429,21 @@ def _space_finish(space, given, environ=None):
                 also=[path for path in (given.get("scratch"),) if path])
         except Exception as error:  # noqa: BLE001 - a census that could not run records nothing
             end["census"] = {"refusal": "census_failed", "said": str(error)[:300]}
+    # A command may add detached worktrees of its own. Census each before run finished, so its
+    # build output has an item and goes before the worktree in the registry's order.
+    end["worktrees"] = {}
+    for identity, record in sorted(ledger.items().items()):
+        owner = record.get("owner") or {}
+        path = (record.get("locator") or {}).get("path")
+        if (record.get("kind") != "worktree" or record.get("state") in SPACE_ENDED
+                or record.get("owner_keep") or (owner.get("run") or {}).get("id") != run
+                or path == given.get("worktree")):
+            continue
+        try:
+            end["worktrees"][identity] = _space_module("control_launch").space_census(
+                dict(space, ledger=runner), path, "run_finished", owner=owner)
+        except Exception as error:
+            end["worktrees"][identity] = {"refusal": "census_failed", "said": str(error)[:300]}
     # The Docker part of the census, before Signal: the run's labelled objects are items now.
     try:
         end["docker"] = _space_docker(space, runner, given)

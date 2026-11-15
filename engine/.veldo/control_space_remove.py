@@ -22,8 +22,8 @@ THE REMOVERS, by the table's action and the item's kind (REMOVERS):
                                             a cache, and on nothing else
 
 Any other pair has no remover and is refused. A branch is marked, never removed, and that is a ledger
-write. The discard remover (the one forced removal), the review scratch remover and the removal of
-evidence files a copy holds are not here: they save first, and they are VELDO-0318, 0336 and 0347.
+write. Review scratch is saved by the keep step, compared file by file and removed before the
+non-forced worktree remove (VELDO-0336). Discard and copied evidence removal are VELDO-0318 and 0347.
 
 NO REMOVER HERE PASSES A FORCE OPTION, AND NONE RUNS A PRUNE COMMAND. Each names the one thing it
 removes to the owning tool and lets the tool refuse. Every command a call ran, the probes' reads
@@ -379,18 +379,27 @@ def measure(path, device=None, open_up=False, own=None, dir_fd=None):
     return _walk(path, dir_fd, device, set(), open_up, own)
 
 
-def _delete(name, dir_fd, device):
+def _delete(name, dir_fd, device, before_file=None, relative=''):
     descriptor = os.open(name, os.O_RDONLY | DIRECTORY, dir_fd=dir_fd)
     try:
         if os.fstat(descriptor).st_dev != device:
             raise _Stop('another filesystem is mounted inside the folder, at %s' % name)
         with os.scandir(descriptor) as entries:
             listing = [(entry.name, entry.is_dir(follow_symlinks=False)) for entry in entries]
-        for inner, directory in listing:
+        for inner, directory in sorted(listing):
+            child = os.path.join(relative, inner)
             if directory:
-                _delete(inner, descriptor, device)
+                if before_file is None:
+                    _delete(inner, descriptor, device)
+                else:
+                    _delete(inner, descriptor, device, before_file, child)
             else:
+                deleted = None
+                if before_file is not None:
+                    deleted = before_file(child, descriptor, inner)
                 os.unlink(inner, dir_fd=descriptor)
+                if deleted is not None:
+                    deleted()
     finally:
         os.close(descriptor)
     os.rmdir(name, dir_fd=dir_fd)
@@ -472,7 +481,7 @@ def _put_back(parent, tail, base):
     return None
 
 
-def _folder(ctx, identity, record, path, own=False, look=None):
+def _folder(ctx, identity, record, path, own=False, look=None, before_file=None):
     """Rename, second probe, last look, delete. Returns the bytes measured just before the delete.
     `own` is measure's: whether the folder may be a repository of its own. `look(marked name)`, when
     given, is the last look at the folder under its marked name; its refusal puts the folder back."""
@@ -505,7 +514,10 @@ def _folder(ctx, identity, record, path, own=False, look=None):
                 if look is not None:
                     look(name)
                 size = measure(tail, found.st_dev, open_up=True, own=own, dir_fd=parent)
-                _delete(tail, parent, found.st_dev)
+                if before_file is None:
+                    _delete(tail, parent, found.st_dev)
+                else:
+                    _delete(tail, parent, found.st_dev, before_file)
                 return size
             refusal = _Refusal(IN_USE, 'the folder is in use under its marked name', found=use)
         except _Refusal as refused:
@@ -771,6 +783,11 @@ def _r_worktree(ctx, identity, record, answer):
     answer['method'] = 'keep_then_git_worktree_remove'
     path = _plain(record['locator']['path'])
     kept = _kept(ctx, identity, record)
+    owner = record.get('owner') or {}
+    review = (not record.get('branch') and not owner.get('ticket')
+              and (owner.get('run') or {}).get('station') == 'review')
+    if review:
+        _review_scratch(ctx, identity, record, kept, answer)
     repository = ctx['probe'].repository(path, ctx['run'])
     if repository is None:
         raise _Refusal(REFUSED, 'git reads no repository at the worktree')
@@ -801,6 +818,68 @@ def _r_worktree(ctx, identity, record, answer):
             stopped.more.update(left_at=name, not_put_back=stuck)
         raise
     _after(ctx, pools, answer)
+
+
+def _review_scratch(ctx, identity, record, kept, answer):
+    """Saved review scratch only, through the existing folder remover and its file delete.
+
+    The parent worktree passes rules 1, 2, 3, 4 and 6 afresh for each path. This conservative look
+    covers every contained path, including owner-kept children. Only the final link is unlinked;
+    every parent is opened without following links. A refused folder is put back by _folder.
+    """
+    path = _plain(record['locator']['path'])
+    removed = answer['review_scratch'] = []
+    check = ctx.get('review_check')
+    if check is None:
+        raise _Refusal(IN_USE, 'review scratch has no ledger rules reader')
+
+    def judged():
+        result = check()
+        if not isinstance(result, dict) or result.get('ok') is not True:
+            raise _Refusal(IN_USE, 'a review scratch rule refused', found=result)
+
+    def compare(relative, descriptor, name):
+        judged()
+        # Read by the descriptor used for unlink, so a replaced parent cannot redirect the read.
+        at = '/proc/self/fd/%d/%s' % (descriptor, name)
+        expected = (kept.get('snapshot') or {}).get('files', {}).get(relative)
+        if not expected or _digest(at) != {key: expected.get(key) for key in ('mode', 'sha256')}:
+            raise _Refusal(KEEP_FAILED, 'review scratch differs from its snapshot: ' + relative)
+        return lambda: removed.append(relative)
+
+    judged()
+    try:
+        _changed, work = _looked(ctx, record, path)
+        if work:
+            raise _Refusal(KEEP_FAILED, 'review worktree holds files outside review scratch', unsaved=work)
+        code, out = _git(ctx['commands'], '-C', path, 'ls-files', '--others', '--exclude-standard',
+                         '--directory', '-z')
+        if code != 0:
+            raise _Refusal(KEEP_FAILED, 'git could not list review scratch')
+        for relative in out.split('\0')[:-1]:
+            relative = relative.rstrip('/')
+            if os.path.isabs(relative) or any(part in ('', '.', '..') for part in relative.split('/')):
+                raise _Refusal(KEEP_FAILED, 'review scratch does not stay in the worktree')
+            target = os.path.join(path, relative)
+            judged()
+            parent = _parent(target)
+            try:
+                base = os.path.basename(target)
+                found = os.stat(base, dir_fd=parent, follow_symlinks=False)
+                if stat.S_ISDIR(found.st_mode):
+                    _folder(ctx, identity, record, target,
+                            before_file=lambda child, fd, leaf: compare(relative + '/' + child, fd, leaf))
+                    removed.append(relative + '/')
+                elif stat.S_ISREG(found.st_mode) or stat.S_ISLNK(found.st_mode):
+                    deleted = compare(relative, parent, base)
+                    os.unlink(base, dir_fd=parent)
+                    deleted()
+                else:
+                    raise _Refusal(KEEP_FAILED, 'review scratch is not a file or link: ' + relative)
+            finally:
+                os.close(parent)
+    except (OSError, ValueError, _Stop) as error:
+        raise _Refusal(KEEP_FAILED, 'review scratch could not be read: ' + _said(error))
 
 
 def _r_drop_caches(ctx, identity, record, answer):
@@ -970,7 +1049,8 @@ REMOVERS = {
 }
 
 
-def remove(ledger, probe, identity, record, action='remove', free=None, keep=None, run=None, proc=None):
+def remove(ledger, probe, identity, record, action='remove', free=None, keep=None, run=None, proc=None,
+           review_check=None):
     """Carry out one removal of the item `identity`, whose ledger record is `record`, by the remover
     of `action` and the item's kind, and return what it measured.
 
@@ -992,7 +1072,7 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
         return given(argv, cwd)
 
     ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc,
-           'commands': commands}
+           'commands': commands, 'review_check': review_check}
     answer = {'item': identity, 'action': action, 'kind': record.get('kind'), 'method': None, 'bytes': None,
               'bytes_source': None, 'pool': record.get('pool'), 'pool_free_before': None,
               'pool_free_after': None, 'freed': None, 'host': None, 'commands': commands}

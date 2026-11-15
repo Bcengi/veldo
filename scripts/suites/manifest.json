@@ -2050,6 +2050,15 @@
    },
    "regions": "The house's containment group of a wrapped run (VELDO-0313, fix round 3; control_containment's transient scope), in bin/veldo, read from the kernel with no ledger: the run's own supervisor starts the command in a scope of the owner's user manager named for the run by the house's own rule, in the slice of wrapped runs, and reports that group; a process the command left is listed by the kernel in the group, the wrapper's read of the run names every member as a holder and the supervisor says it is asleep on their exit; a group record that is not the run's own scope, and no record, are a group nobody read; once that process has ended the group is read empty.",
    "requires_note": "Only ROOT and expect. The CLI is loaded by path from bin/veldo with its ROOT set to this repository. It needs the owner's systemd user manager, so the gate runs it outside its confinement (scripts/gate_unconfined.json); with no manager every row stands down by name. No ledger, no store and no hold: the supervisor and the processes it starts are real, and the suite ends its own supervisor when the rows are done."
+  },
+  {
+   "name": "153_veldo_0336_run_worktree",
+   "file": "153_veldo_0336_run_worktree.py",
+   "requires": [
+    "153_veldo_0336_run_worktree"
+   ],
+   "regions": "VELDO-0336: detached worktree ownership from a wrapped run, branch ownership retained, saved review scratch with per-file comparison, process use and links. Loss rows cover failed saves, changed and added files, retry, owner Keep, kept children, tracked edits, personal ignores and protected paths.",
+   "requires_note": "Only ROOT and expect. Real hooks, signed packets, Ledger, git, keep step and removers in a temporary installed copy. Wrapper begin/end called in process, empty group and process census stand-ins. No Docker engine contacted."
   }
  ],
  "resource_capacities": {

@@ -624,6 +624,10 @@ def keep(ledger, identity, record, event=None, snapshot=False):
     event is used. Returns the answer (above). Nothing of the item is changed, and on a refusal
     nothing may be removed."""
     commands = []
+    owner = record.get('owner') or {}
+    review = (record.get('kind') == 'worktree' and not record.get('branch') and not owner.get('ticket')
+              and (owner.get('run') or {}).get('station') == 'review')
+    snapshot = snapshot or review
     try:
         kind = record.get('kind')
         if kind not in KEEP_KINDS:
