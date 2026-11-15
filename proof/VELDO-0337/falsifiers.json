@@ -1,0 +1,126 @@
+{
+ "spec": "VELDO-0337",
+ "baseline_rows": 11,
+ "baseline_failed": 0,
+ "executed": 8,
+ "rejected": 8,
+ "cases": [
+  {
+   "name": "space337-before-commit",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "ac1/after-commit",
+    "ac1/rejected-or-unstored"
+   ],
+   "failed": [
+    "VELDO-0337 ac1/after-commit: pass committed before the one signal",
+    "VELDO-0337 ac1/rejected-or-unstored: rejected verdict emits nothing",
+    "VELDO-0337 ac1/both-callers: one post-commit verdict from the common writer",
+    "VELDO-0337 ac2/owner-and-keep: owner Keep excluded; another review untouched",
+    "VELDO-0337 ac2/stale-version: changed item refuses the entire named send without fallback",
+    "VELDO-0337 ac3/killed-no-verdict: killed review sends run finished and no verdict"
+   ],
+   "original_digest": "f089838eb63c6cde95a5ce4ad7ce1182d026dffd8079242c838c4ff0c2514b51",
+   "mutant_digest": "32962f7bc9b92cc48453fbf96d1fba6a611e39da5766150ad426830c614a4b01"
+  },
+  {
+   "name": "space337-receiver-emits-verdict",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "ac1/both-callers",
+    "ac3/killed-no-verdict"
+   ],
+   "failed": [
+    "VELDO-0337 ac1/both-callers: receiver emits run finished only",
+    "VELDO-0337 ac3/killed-no-verdict: killed review sends run finished and no verdict",
+    "VELDO-0337 ac3/keep-before-removal: removed only after the log commit is kept in the main repository"
+   ],
+   "original_digest": "a54cb48791ad90d6ff18cc78cf48343110f686a1af015f0ea859cf5422a2443e",
+   "mutant_digest": "f2979803e6c1e40abcdbf560dc961d6cb24e1077697fc140f828951668a4d803"
+  },
+  {
+   "name": "space337-evidence-removed-with-caches",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "ac2/output-and-evidence"
+   ],
+   "failed": [
+    "VELDO-0337 ac2/output-and-evidence: build and scratch removed; evidence intact; declared cache dropped"
+   ],
+   "original_digest": "3afecb3afce55bb294d539c8d6bce2ed90bff899dc8a62a85b784b222ee3ec8c",
+   "mutant_digest": "2024788ea4bbebaf09aecf7d0c4f6ead8ea9456af46605e5a23fa1dbbb369d81"
+  },
+  {
+   "name": "space337-owner-keep-named",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "ac2/owner-and-keep"
+   ],
+   "failed": [
+    "VELDO-0337 ac2/owner-and-keep: owner Keep excluded; another review untouched"
+   ],
+   "original_digest": "f089838eb63c6cde95a5ce4ad7ce1182d026dffd8079242c838c4ff0c2514b51",
+   "mutant_digest": "9804f685f72db77a663c1f54508997135d6eae4a255b13855a773d998234ec82"
+  },
+  {
+   "name": "space337-other-run-named",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "ac2/owner-and-keep"
+   ],
+   "failed": [
+    "VELDO-0337 ac1/after-commit: exact item versions and recorded owners",
+    "VELDO-0337 ac2/owner-and-keep: owner Keep excluded; another review untouched"
+   ],
+   "original_digest": "f089838eb63c6cde95a5ce4ad7ce1182d026dffd8079242c838c4ff0c2514b51",
+   "mutant_digest": "7f6b92af6977851f37f599f73709646b192107901f0e09f020ce7a1f82a1785c"
+  },
+  {
+   "name": "space337-runtime-space-not-wired",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "paths/wiring-and-canon"
+   ],
+   "failed": [
+    "VELDO-0337 paths/wiring-and-canon: Runtime gives its floor the space wiring"
+   ],
+   "original_digest": "9f7fe321666aa8e820c0733b91254eff0af925aaa09c74f2f9149ca26cb45bd9",
+   "mutant_digest": "e3483eb46d2bcd9a429457e1744be8fa9f72100f076d3772764872b0fe812f98"
+  },
+  {
+   "name": "space337-keep-skipped",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "ac3/keep-before-removal"
+   ],
+   "failed": [
+    "VELDO-0337 ac3/keep-before-removal: removed only after the log commit is kept in the main repository"
+   ],
+   "original_digest": "3afecb3afce55bb294d539c8d6bce2ed90bff899dc8a62a85b784b222ee3ec8c",
+   "mutant_digest": "0347a5195dbf7f5f4e67da5120adc545afc0f8ebf263b018a514ac860e821318"
+  },
+  {
+   "name": "space337-owner-instead-of-items",
+   "applied": 1,
+   "rejected": true,
+   "targets": [
+    "ac1/after-commit",
+    "ac2/stale-version"
+   ],
+   "failed": [
+    "VELDO-0337 ac1/after-commit: exact item versions and recorded owners",
+    "VELDO-0337 ac2/stale-version: changed item refuses the entire named send without fallback"
+   ],
+   "original_digest": "f089838eb63c6cde95a5ce4ad7ce1182d026dffd8079242c838c4ff0c2514b51",
+   "mutant_digest": "80eb141c0d6eb733742f7b2477c8003fc1347b2c7e744c4233d2a69e65da0bae"
+  }
+ ],
+ "earlier_attempt": "First batch: 7 of 8 target sets red. The owner-subject mutant exposed a fixture KeyError before the stale-version row. Corrected the shape assertion, reran the baseline and that mutant alone; both target rows now red."
+}

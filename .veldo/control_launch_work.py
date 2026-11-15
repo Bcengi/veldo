@@ -143,7 +143,8 @@ class Runtime:
                             settlement_trust=trust.settlement_trust(c.get('workspace')) if trust else None)
         self.proofs = P.ProofService(L.S, self.conn, repo=self.root, **common)
         F = organ('dispatch')
-        self.floor = F.FloorAuthority(L.S, self.conn, repo=self.root, projections=c['work']['projections'], **common)
+        self.floor = F.FloorAuthority(L.S, self.conn, repo=self.root, projections=c['work']['projections'],
+                                      space=space, **common)
         self.dispatches = L.D.Dispatches(L.S, self.conn, **common)
         self.reservations = L.D.RES.Reservations(L.S, self.conn, authorize=L.D.RES.service_authority, **common)
         self.clones = CL.Clones(self.dispatches, space=space, **c['clones'])

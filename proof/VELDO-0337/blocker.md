@@ -1,5 +1,10 @@
 # VELDO-0337 build blocker
 
+Status on resume, 2026-11-15: resolved by the lead decision extending the
+footprint to the recording path and naming FloorAuthority.record_review as
+the post-commit emitter. The original blocker below is historical. The current
+implementation and targeted evidence are described in manifest.json.
+
 No production implementation was made. All three acceptance criteria and their
 falsifiers remain unproven. The specification remains ready pending a footprint
 and emitter decision from the owner.

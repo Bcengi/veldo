@@ -1,0 +1,5 @@
+Command: python3 scripts/selftest.py with the suite option naming 153_veldo_0337_verdict_recorded
+selftest (PARTIAL, 1 of 223 suites): 37 passed, 0 failed in 1.90s
+11 ticket rows, 26 shared preamble checks. Exit 2 is the partial-run convention.
+No full gate or independent review is claimed.
+Initial exploratory runs found a string-emitter fixture assumption and an incorrect keep-record key. Both were fixed before the final green run.
