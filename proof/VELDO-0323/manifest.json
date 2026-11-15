@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0323",
- "commit": "147fe207960082e718f068c8c344d8674b1ca48d",
- "tree": "3e59be3cdcf6123df77a3ee2847831490915e238",
- "producer": "Codex implementation agent (build); Claude fix agent (fix round after the review); neither is an independent reviewer",
- "produced_at": "2026-11-15T22:06:21.692247+00:00",
+ "commit": "b2f9f09c26ae575880a0067b52b5584a8bccee62",
+ "tree": "8131ee33ca950c6778b273dee87a2a0a86273d59",
+ "producer": "Codex implementation agent (build); Claude fix agent (two fix rounds after the review); neither is an independent reviewer",
+ "produced_at": "2026-11-15T22:26:59.706396+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -34,7 +34,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0323_hook_events.py",
-     "detail": "ac2/no-service-git counts every git process the service process starts during an event with a hundred additional recorded branches, at the point where a process is made, and finds none; the same counter then counts the fixture's own git command, so it is not blind. ac2/responsive holds the real child remover on a FIFO and serves another signed socket packet while the first event remains received. ac2/only-service-descriptors reads the held child's open descriptors: one the service names as its own is closed in the child and one that was only handed down stays open. The service poll set includes the child pipe, and each removal records its worker, source event, hook and ledger owners."
+     "detail": "ac2/no-service-git counts every git process the service process starts during an event with a hundred additional recorded branches, at the point where a process is made, and finds none; the same counter then counts the fixture's own git command, so it is not blind. ac2/responsive holds the real child remover on a FIFO and serves another signed socket packet while the first event remains received. ac2/only-service-descriptors reads the held child's open descriptors: one the service names as its own is closed in the child and one that was only handed down stays open. The service poll set includes the child pipe, and each removal records its worker, source event, hook and ledger owners. ac2/channel-and-api-closed (fix round 2): the service's channel and API each hold a store connection of their own; the service process holds both files open, and the held child, reading its own /proc/self/fd, holds neither, while the descriptor that was only handed down is still open in it."
     },
     {
      "type": "integration",
@@ -44,7 +44,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0323/falsifiers.json",
-     "detail": "space323-service-computes-containment and space323-service-git-by-another-path (the review's survivor: a git command per recorded branch in the service, not through the worker's function) both red ac2/no-service-git. space323-service-descriptors-kept reds ac2/only-service-descriptors."
+     "detail": "space323-service-computes-containment and space323-service-git-by-another-path (the review's survivor: a git command per recorded branch in the service, not through the worker's function) both red ac2/no-service-git. space323-service-descriptors-kept reds ac2/only-service-descriptors. space323-channel-descriptor-kept and space323-api-descriptor-kept (each leaves one of the two out of the close list) both red ac2/channel-and-api-closed."
     }
    ]
   },
@@ -76,7 +76,7 @@
     {
      "type": "unit",
      "ref": "scripts/suites/153_veldo_0323_hook_events.py",
-     "detail": "ac4/session-ended removes the exact ended session scratch. host-wide removes dead sessions from another project and no project. live-no-age leaves a live session with old files. unread-stays refuses malformed process facts and an unread process table. safety/session-work-kept plants a repository with its only commit at the scratch locator and observes it intact after session ended. ac4/ended-while-alive-held sends session ended for a session whose client (a real process) is alive: the scratch stays, the item is deferred as in_use by rule 3 with the event that refused it, and the consumed record names it as held, client_alive. ac4/re-judged-at-client-exit: with the clock stopped, the service poll set holds one process descriptor that stays quiet while the client lives; when the client ends, exactly one more session ended record (hook client-exit, after the first) is written and consumed, and the scratch is removed under that record. ac4/held-across-restart: a consumer that starts again holds the client of a scratch left deferred that way, and removes the scratch at its end."
+     "detail": "ac4/session-ended removes the exact ended session scratch. host-wide removes dead sessions from another project and no project. live-no-age leaves a live session with old files. unread-stays refuses malformed process facts and an unread process table. safety/session-work-kept plants a repository with its only commit at the scratch locator and observes it intact after session ended. ac4/ended-while-alive-held sends session ended for a session whose client (a real process) is alive: the scratch stays, the item is deferred as in_use by rule 3 with the event that refused it, and the consumed record names it as held, client_alive. ac4/re-judged-at-client-exit: with the clock stopped, the service poll set holds one process descriptor that stays quiet while the client lives; when the client ends, exactly one more session ended record (hook client-exit, after the first) is written and consumed, and the scratch is removed under that record. ac4/held-across-restart: a consumer that starts again holds the client of a scratch left deferred that way, and removes the scratch at its end. ac4/exited-before-collected (fix round 2): the client is ended and its parent, this suite, does not collect it; its stat reads state Z with the recorded start time, and with the clock stopped one client-exit record is written and consumed and the scratch is removed under it while the client is still uncollected. The same number with another start time is not exited, and a live client is not."
     },
     {
      "type": "integration",
@@ -86,7 +86,7 @@
     {
      "type": "falsifier",
      "ref": "proof/VELDO-0323/falsifiers.json",
-     "detail": "space323-no-project-sessions-skipped reds ac4/host-wide. space323-session-repository-deleted reds safety/session-work-kept: the scratch repository and its only commit are deleted. space323-live-session-end-dropped (a record whose client is alive selects nothing and says nothing) reds ac4/ended-while-alive-held. space323-client-exit-not-watched reds ac4/re-judged-at-client-exit."
+     "detail": "space323-no-project-sessions-skipped reds ac4/host-wide. space323-session-repository-deleted reds safety/session-work-kept: the scratch repository and its only commit are deleted. space323-live-session-end-dropped (a record whose client is alive selects nothing and says nothing) reds ac4/ended-while-alive-held. space323-client-exit-not-watched reds ac4/re-judged-at-client-exit. space323-uncollected-client-alive (a client that ended and is not yet collected is treated as alive) reds ac4/exited-before-collected."
     }
    ]
   }
@@ -95,22 +95,22 @@
   {
    "name": "unit",
    "status": "passed",
-   "command": "python3 scripts/selftest.py --suite 153_veldo_0323_hook_events: 38 ticket rows, 64 checks including the shared preamble, 0 failed (a partial run)."
+   "command": "python3 scripts/selftest.py --suite 153_veldo_0323_hook_events: 40 ticket rows, 66 checks including the shared preamble, 0 failed (a partial run)."
   },
   {
    "name": "integration",
    "status": "passed",
-   "command": "The same suite exercises the signed local socket, real worker pipe, real git, real removers and a real client process. Targeted regressions 132 (31 rows), 133 (30), 139 (18), 148 (31) and 149 (41) passed after the fix. The installed closure and the four CLI event-envelope refusals are also checked by suite 153."
+   "command": "The same suite exercises the signed local socket, real worker pipe, real git, real removers and real client processes, one of them ended and left uncollected. Targeted regressions 132 (31 rows), 133 (30), 139 (18), 148 (31) and 149 (41) passed after fix round 2. The installed closure and the four CLI event-envelope refusals are also checked by suite 153."
   },
   {
    "name": "falsifiers",
    "status": "passed",
-   "command": "python3 scripts/check_teeth_mutations.py --finding 323 --jobs 4: passed, registered=13 executed=13 reused=0 rejected=13, baseline and no-op controls green in the confined leg. python3 proof/VELDO-0323/run_falsifiers.py applies the same thirteen in-process; its result is falsifiers.json."
+   "command": "nice -n 10 python3 scripts/check_teeth_mutations.py --finding 323 --jobs 4: passed, registered=16 executed=16 reused=0 rejected=16, baseline and no-op controls green in the confined leg. python3 proof/VELDO-0323/run_falsifiers.py applies the same sixteen in-process; its result is falsifiers.json."
   },
   {
    "name": "fast checks",
    "status": "passed",
-   "command": "After the fix: bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; git diff with the check option. Each exit 0. The build's other fast checks were not run again."
+   "command": "After fix round 2: bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; git diff with the check option. Each exit 0. The build's other fast checks were not run again."
   },
   {
    "name": "gate",
@@ -126,9 +126,9 @@
   "The CLI event verb still supplies an incomplete verb/session envelope and is refused as invalid_input:emitter. Its creator wiring and session hooks are outside this ticket. released can be recorded but removes nothing here; VELDO-0335 supplies that behavior.",
   "The recovery row stops after the committed Signal by refusing the consumed write, not by delivering SIGKILL. Recovery marks the event consumed without signalling again; due or removing items remain for the existing reconcile path and its keep checks. A service replacement while a live worker holds the lock is exercised by a second consumer in the same process and on the same ledger object, not by a second service process.",
   "The heavy suite 151 was not run. Its four edited event-envelope expectations are exercised directly in suite 153. Suite 86_veldo_0127 and all captures were left untouched.",
-  "The teeth stage ran for finding 323 only, with four workers, on a host under heavy load from other runs. policy_check.py and the full gate were not run. No fix validation record is in this bundle: the review, its validation and the gate are the lead's.",
-  "Fix round, descriptors: the service names what a worker closes (its lock, its two listeners, the launch, provisioner and Docker pipes, its store connection). The channel and API objects of the service are not in that list; nothing here reads which descriptors they hold. serve was not started in any row: the row gives the service one descriptor of its own.",
-  "Fix round, session ended: the kernel reports a client ended before its parent has collected it. A worker that looks in that moment finds a process rule 4 cannot read and leaves the scratch deferred as in_use, visible on the console, until the next session started on the host. The rows collect the client before the record is consumed. This costs time, never work.",
+  "The teeth stage ran for finding 323 only, with four workers under nice 10, on a host under load from other runs. policy_check.py and the full gate were not run. No fix validation record is in this bundle: the review, its validation and the gate are the lead's.",
+  "Fix round 2, descriptors (lead decision): the store connections the service's channel and API hold are in the list a worker closes, with the lock, the two listeners, the launch, provisioner and Docker pipes and the service's own connection. In serve the API works on the channel's connection, so the two names are one connection there; the row gives each a connection of its own so that each has a falsifier. What the API opens within one call (a hint socket, its log) is closed within that call and is not in the list. serve was not started in any row.",
+  "Fix round 2, session ended (lead decision): a client that ended and is not yet collected by its parent has exited. The worker reads state Z and the recorded start time from the client's stat and requires that no task of it still runs; for a session ended event rule 4 then does not count that client as an unread process. Only the clients of the scratch the event selected are judged this way: any other uncollected process is still unread for rule 4, as before. No row plants a client whose first thread ended while another task of it runs (it is not exited by this reading, and stays deferred), nor a real reused process number (the row gives the same number with another start time to the function directly).",
   "Fix round, session ended: a scratch whose recorded process cannot be read is still not selected, and the record names it as held, process_unread; no row plants that case for a session ended record. A client that cannot be held by a process descriptor is written to the observation log as space_client_unwatched and is not watched; no row plants that either.",
   "The startup bootstrap (Service.space at service start, the real reconcile) is VELDO-0315 AC7 and is not built here."
  ],

@@ -53,3 +53,26 @@ git diff with the check option.
 Not run: ./scripts/verify.sh, policy_check.py, suite 151, suite 86_veldo_0127, the teeth stage for any
 other finding.
 python3 proof/VELDO-0323/run_falsifiers.py: 13 mutations applied in-process, 13 rejected, no exceptions, exit 0.
+
+Fix round 2, the lead's decisions on the two open points, 2026-11-15 (commit b2f9f09c)
+
+python3 scripts/selftest.py with the suite selector, each a partial run, under nice 10:
+153_veldo_0323_hook_events: 40 ticket rows passed; 66 checks including the shared preamble; 0 failed.
+132_veldo_0297_space_ledger: 31 ticket rows passed.
+133_veldo_0326_space_principals: 30 ticket rows passed.
+139_veldo_0301_space_signal: 18 ticket rows passed.
+148_veldo_0311_git_hooks: 31 ticket rows passed.
+149_veldo_0312_ticket_ended: 41 ticket rows passed.
+
+nice -n 10 python3 scripts/check_teeth_mutations.py --finding 323 --jobs 4:
+mutations: passed registered=16 executed=16 reused=0 rejected=16 workers=26 elapsed=114.585s
+New rows: ac4/exited-before-collected and ac2/channel-and-api-closed. New mutations:
+space323-uncollected-client-alive, space323-channel-descriptor-kept, space323-api-descriptor-kept.
+
+python3 proof/VELDO-0323/run_falsifiers.py: 16 mutations applied in-process, 16 rejected, no exceptions, exit 0.
+
+Fast checks, each exit 0: bash scripts/check_template_sync.sh; bash scripts/check_lint.sh;
+git diff with the check option.
+
+Not run: ./scripts/verify.sh, policy_check.py, suite 151, suite 86_veldo_0127, the teeth stage for any
+other finding.
