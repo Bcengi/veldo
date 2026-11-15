@@ -111,6 +111,17 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
 
 ## History
 
+- 2026-11-15: build dependency found at base 8ef46604. AC1 requires the repository form on
+  declared agent repository items, but Ledger.declare in engine/.veldo/control_space.py has no
+  form parameter and its item writer records no form. Design section 0.8 assigns that ledger
+  field to VELDO-0347, which is not built at this base; the ledger files are outside this
+  ticket's footprint. The build instruction excludes later tickets. Implementation is pending
+  the lead's decision to supply that dependency or authorize the minimal ledger field and
+  validation here. No runtime code was changed and no acceptance criterion was weakened.
+  Separately, VELDO-0315's service startup wiring and proof bundle are absent at this base,
+  despite its inclusion in the build handoff's completed list. Service.space still starts as
+  None. This observation needs reconciliation before claiming installed creator integration.
+
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
 - 2026-11-13: amended for the owner's rule that no work is ever lost (Telegram 41209), design section 0.
