@@ -29,6 +29,7 @@ def _v335_suite():
         'control_space_worker.py': ROOT / ".veldo" / "control_space_worker.py",
         'control_service.py': ROOT / ".veldo" / "control_service.py",
         'control_space_remove.py': ROOT / ".veldo" / "control_space_remove.py",
+        'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
     }
     CLI_PATH = ROOT / "bin" / "veldo"
     rows = {}
@@ -215,19 +216,22 @@ def _v335_suite():
                 git(repo, 'branch', name, tip)
             return agent, agent_path, inner, inner_path
 
-        def release(paths, force=False, wake=True):
+        def release_call(paths, force=False):
             args = ['--type', 'released']
             for path in paths:
                 args += ['--path', str(path)]
             if force:
                 args += ['--force']
+            return call(cli.space_event, args)
+
+        def release(paths, wake=True):
             before = service.watermark()
-            status, out, err = call(cli.space_event, args)
+            status, out, err = release_call(paths)
+            # The public call records one observation. Only the later journal wake may remove.
+            check('ac1/returns-before-removal', status == 0 and all(path.exists() for path in paths)
+                  and ledger.event_record(out['event'])['state'] == 'received')
             if status:
                 return status, out, err
-            # The public call records one observation. Only the later journal wake may remove.
-            check('ac1/returns-before-removal', all(path.exists() for path in paths)
-                  and ledger.event_record(out['event'])['state'] == 'received')
             if wake:
                 service.hint_after(before)
                 drain()
@@ -263,6 +267,11 @@ def _v335_suite():
         check('ac1/signed-observer', any(packet['command']['operation'] == SP.EVENT
               and packet['command']['principal'] == SP.OBSERVER for packet in packets))
 
+        recorded = ledger.event_record(out['event']) if out.get('event') else {}
+        check('cli/verb-emitter', recorded.get('emitter') == {'verb': 'event', 'host': ledger.host}, recorded)
+        status, _, err = release_call([agent_path, inner_path])
+        check('rv/twice', status == 1 and 'space_release_no_item:' in err, err)
+
         # A host observation must never stand in for the owner's Abandon.
         agent, agent_path, inner, inner_path = pair('abandon-refused')
         refusal = wired['ledger'].apply(dict(principal=SP.OBSERVER, operation=SP.SIGNAL,
@@ -273,10 +282,10 @@ def _v335_suite():
 
         # All names are checked in the transaction: a bad member refuses the whole event.
         fleet, fleet_path, _, _ = worktree('fleet')
-        status, _, err = release([inner_path, fleet_path])
+        status, _, err = release_call([inner_path, fleet_path])
         check('ac2/seam-refused', status == 1 and 'space_release_creator:' + fleet in err
               and ledger.item(fleet)['state'] == 'present' and ledger.item(inner)['state'] == 'present', err)
-        status, _, err = release([trees / 'unrecorded'])
+        status, _, err = release_call([trees / 'unrecorded'])
         check('ac2/no-item', status == 1 and 'space_release_no_item:' in err, err)
         for path in (str(inner_path / '..' / 'inner'), str(trees / 'linked')):
             if path.endswith('/linked'):
@@ -294,17 +303,67 @@ def _v335_suite():
         check('safety/signature-expiry', ledger.accept(packet, CM,
               packet['command']['issued_at'] + SP.PACKET_AGE + 1).get('reason') == 'space_packet_expired')
 
-        for forced in (False, True):
-            agent, agent_path, inner, inner_path = pair('unique-' + str(forced), unique=True)
-            unlanded = git(inner_path, 'rev-parse', 'HEAD')
-            for attempt in range(2):
-                status, out, err = release([agent_path, inner_path], force=forced)
-                held = ledger.item(inner)
-                check('ac3/unique-force' if forced else 'ac3/unique', status == 0
-                      and held['state'] == 'deferred' and held['deferral']['rule'] == 'unique_work'
-                      and agent_path.is_dir() and inner_path.is_dir()
-                      and git(inner_path, 'rev-parse', 'HEAD') == unlanded
-                      and (inner_path / 'only-commit').read_text() == 'unlanded work', (err, held))
+        agent, agent_path, inner, inner_path = pair('unique', unique=True)
+        unlanded = git(inner_path, 'rev-parse', 'HEAD')
+        for attempt in range(2):
+            status, out, err = release([agent_path, inner_path])
+            held = ledger.item(inner)
+            check('ac3/unique', status == 0
+                  and held['state'] == 'deferred' and held['deferral']['rule'] == 'unique_work'
+                  and agent_path.is_dir() and inner_path.is_dir()
+                  and git(inner_path, 'rev-parse', 'HEAD') == unlanded
+                  and (inner_path / 'only-commit').read_text() == 'unlanded work', (err, held))
+            before, sent = ledger.events(), len(packets)
+            status, out, err = release_call([agent_path, inner_path], force=True)
+            check('cli/force-refused', status == 1 and 'invalid_input:force' in err
+                  and ledger.events() == before and len(packets) == sent, (status, err))
+            check('ac3/unique-force', status == 1 and 'invalid_input:force' in err
+                  and ledger.item(inner)['state'] == 'deferred'
+                  and agent_path.is_dir() and inner_path.is_dir()
+                  and git(inner_path, 'rev-parse', 'HEAD') == unlanded
+                  and (inner_path / 'only-commit').read_text() == 'unlanded work', err)
+
+        # R1: the unreleased child holds its repository, including its unlanded commit.
+        agent, agent_path, inner, inner_path = pair('repository-only', unique=True)
+        unlanded = git(inner_path, 'rev-parse', 'HEAD')
+        status, _, err = release([agent_path])
+        held = ledger.item(agent)
+        check('rv/repository-held-by-worktree', status == 0 and held['state'] == 'deferred'
+              and inner in held.get('deferral', {}).get('held_by', [])
+              and ledger.item(inner)['state'] == 'present' and inner_path.is_dir()
+              and git(inner_path, 'rev-parse', 'HEAD') == unlanded
+              and (inner_path / 'only-commit').read_text() == 'unlanded work', held)
+
+        # R2: the repository has a private branch with no worktree on it.
+        agent, agent_path, inner, inner_path = pair('private-side')
+        git(agent_path, 'checkout', '-q', '-b', 'side')
+        (agent_path / 'side-work').write_text('private branch work')
+        git(agent_path, 'add', 'side-work')
+        git(agent_path, 'commit', '-q', '-m', 'private side')
+        side = git(agent_path, 'rev-parse', 'HEAD')
+        git(agent_path, 'checkout', '-q', 'main')
+        status, _, err = release([agent_path, inner_path])
+        held = ledger.item(agent)
+        check('rv/private-branch', status == 0 and held['state'] == 'deferred'
+              and held.get('deferral', {}).get('rule') == 'unique_work'
+              and 'refs/heads/side' in held.get('deferral', {}).get('found', {}).get('not_across', [])
+              and agent_path.is_dir() and not inner_path.exists()
+              and git(agent_path, 'rev-parse', 'side') == side
+              and git(agent_path, 'show', 'side:side-work') == 'private branch work', held)
+
+        # R3: an operation in progress takes precedence over the untracked draft.
+        agent, agent_path, inner, inner_path = pair('git-locked')
+        (inner_path / 'draft').write_text('draft during git operation')
+        lock = Path(git(inner_path, 'rev-parse', '--absolute-git-dir')) / 'index.lock'
+        lock.write_text('operation in progress')
+        status, _, err = release([agent_path, inner_path])
+        held = ledger.item(inner)
+        check('rv/git-lock-and-draft', status == 0 and held['state'] == 'deferred'
+              and held.get('deferral', {}).get('rule') == 'in_use'
+              and held.get('deferral', {}).get('refused_by') == 'process_use'
+              and agent_path.is_dir() and inner_path.is_dir()
+              and (inner_path / 'draft').read_text() == 'draft during git operation'
+              and lock.read_text() == 'operation in progress', held)
 
         agent, agent_path, inner, inner_path = pair('keep-failed')
         service.space_consumer.given['keep'] = lambda identity, item: {'ok': False, 'said': 'save refused'}
@@ -348,8 +407,15 @@ def _v335_suite():
         check('safety/protected-after-receipt', status == 0 and agent_path.is_dir()
               and (inner_path / 'draft').read_text() == 'protected work'
               and ledger.item(inner)['deferral']['rule'] == 'protected', ledger.item(inner))
-        status, _, err = release([inner_path])
+        status, _, err = release_call([inner_path])
         check('safety/protected-at-receipt', status == 1 and 'space_protected:' in err, err)
+
+        before = ledger.events()
+        answer = ledger.event('released', {'paths': [str(inner_path)]},
+                              {'verb': 'event', 'host': ledger.host})
+        check('safety/ledger-protected-at-receipt', not answer['ok']
+              and answer.get('reason') == 'space_protected:path:' + str(inner_path)
+              and ledger.events() == before and (inner_path / 'draft').read_text() == 'protected work', answer)
 
         # Do not re-resolve a received observation after a later declaration takes its path.
         agent, agent_path, inner, inner_path = pair('identity')

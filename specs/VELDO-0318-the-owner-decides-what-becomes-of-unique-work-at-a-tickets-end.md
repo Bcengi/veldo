@@ -126,7 +126,17 @@ Build order. It is in the closing sequence 0315, 0316, 0334, 0317, 0327, 0318, 0
 Footprint. The files are the ones the design's component table (section 3) gives for this ticket's
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
+## Required rows
+
+| Criterion | Row | Required result |
+| :- | :- | :- |
+| AC1 | Released agent worktree with an unlanded commit | The first released event raises exactly one decision request; a second released event raises none. The worktree and its commit remain intact. |
+
 ## History
+
+- 2026-11-15: lead decision, the decision request moves here from VELDO-0335. AC1 already names
+  released by its creator; the required row above proves exactly one request across two released
+  events for an agent worktree with an unlanded commit.
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.

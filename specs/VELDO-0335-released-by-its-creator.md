@@ -27,6 +27,7 @@ footprint:
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0335-released-by-its-creator.md"
+  - "specs/VELDO-0318-the-owner-decides-what-becomes-of-unique-work-at-a-tickets-end.md"
   - "specs/index.md"
   - "proof/VELDO-0335/**"
 behavior_bearing: true
@@ -37,7 +38,7 @@ observability:
   error_taxonomy: >
     A released event that names an item a Veldo seam declared, or a path with no item, is refused by name.
     An agent worktree whose branch the shared repository does not hold is space_deferred:unique_work and
-    raises one decision request.
+    is never deleted. Decision requests belong to VELDO-0318.
 acceptance_criteria:
   - id: AC1
     text: >
@@ -56,8 +57,7 @@ acceptance_criteria:
   - id: AC3
     text: >
       A released agent worktree whose branch the shared repository does not hold is deferred as unique
-      work, raises one decision request, and is not deleted, with or without a force flag on the script's
-      command
+      work and never deleted, with or without force
     falsified_by: >
       Let the script's force flag reach the remover; the row's unlanded commit is lost and the row fails
 required_evidence: [unit, integration]
@@ -92,6 +92,11 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-15: lead decision, the decision request moves to VELDO-0318
+- 2026-11-15: review fix records the CLI emitter as verb event and refuses --force by name
+  (invalid_input:force). Direct Ledger protection, repository-only releases, private branches and
+  a worktree git lock with an untracked draft have permanent rows and registered falsifiers.
 
 - 2026-11-15: build updates the two existing CLI event expectations: released now reaches the
   ledger's creator check and records valid creations. Other event envelopes are unchanged. The record

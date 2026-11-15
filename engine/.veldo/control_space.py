@@ -920,7 +920,8 @@ class Ledger:
         if kind not in EVENT_TYPES or not isinstance(subject, dict):
             raise _invalid('event', 'a hook event type and its subject')
         if (not isinstance(emitter, dict) or emitter.get('host') != self.host
-                or not _is_str(emitter.get('hook'))):
+                or not (_is_str(emitter.get('hook'))
+                        or (kind == 'released' and emitter.get('verb') == 'event'))):
             raise _invalid('emitter', 'the hook and this host')
         if kind == 'ref_changed':
             if set(subject) != {'repository', 'ref', 'old', 'new'}:
