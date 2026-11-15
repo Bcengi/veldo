@@ -36,6 +36,18 @@ this file and see only argument routing plus wiring.
                             a worktree added or a branch switched with plain git, a change of the
                             trunk or a landing ref; recorded through the authority as
                             space-observer, or left in the spool when it is not reachable, VELDO-0311)
+    veldo space run [--station S] [--label L] -- COMMAND ...
+                            -> the run wrapper (VELDO-0313): admission, the run declared with its
+                            station, scratch root, label and compose project name, the command in
+                            its own containment group, then the census, run finished and the
+                            release; it exits with the command's own status, or 75 when an act
+                            mode run must wait. With no central installation it says so and runs
+                            the command unchanged
+    veldo space record --kind K --path P [--ticket T] [--session S]
+    veldo space event --type T [--path P ...] [--session S] [--repository R --ref N --new C]
+                            -> what a host script made and what it gave up (VELDO-0313), signed
+                            as space-observer; an unknown kind or event type, a path outside
+                            every known root and a path on the protect list are refused by name
     veldo jira init          -> .veldo/tracker_jira_init.py (bootstrap a
                             company-managed Jira project into the live board -
                             detect + provision the lifecycle statuses/workflow
@@ -349,6 +361,657 @@ def _fleet_args(rest):
     return ap.parse_args(rest)
 
 
+# ---------------------------------------------------------------------------------------------
+# VELDO-0313: the run wrapper (veldo space run) and a host script's record and event verbs
+# (design 3, 6.3, 6.7 and 6.9). Nothing here deletes anything, and nothing here is a new way to
+# remove: what goes at a run's end is removed by Signal's removers, after the safety rules and the
+# keep step (control_space_signal, control_space_remove, control_space_keep).
+#
+# WHO ACTS. No verb acts as the authority or as the owner, and none falls back to either. The
+# wrapper writes as space-runner and the two verbs as space-observer, each through the Ledger's own
+# apply, which runs the Ledger's rule for that principal first (control_space.permit). So the wrapper
+# holds, declares, measures and signals only for the run the authority issued to it, it signals only
+# run finished and only with that run as the subject, and the Ledger never makes an item due that
+# the owner marked Keep. An owner action from either principal is refused by the Ledger by name.
+#
+# `space` is what the installation wires in when it has a space ledger: the mapping the receiver is
+# given (control_launch.space_signal), with ledger and, under their own names, what Signal is given
+# (probe, kinds, remover, free, keep, owner_live, landed, queued, run, proc, borrow_root). With none
+# every verb stands down and says why, and the wrapper runs its command unchanged: a wrapper never
+# refuses the command it rides on (design 6.1), except for the one answer admission gives a run of
+# a scope in act mode that must wait.
+#
+# RUN FINISHED IS SENT ONLY WHEN THE KERNEL SAYS THE RUN IS OVER. The command runs under a
+# supervisor process that is the child subreaper of everything the command starts: a process that
+# forks twice, leaves the session or outlives its parent becomes the supervisor's own child, and
+# the group is empty when the kernel answers that the supervisor has no child left. The wrapper
+# waits for that. A group nobody could read (no subreaper on this host, a supervisor that died) is
+# not known to be empty: the census, run finished and the release are then not made, every item
+# stays as it is and the hold stays held (design 0.6).
+# ---------------------------------------------------------------------------------------------
+SPACE_STATIONS = ("build", "review", "gate")
+SPACE_EVENT_TYPES = ("ref_changed", "session_started", "session_ended", "released")
+SPACE_WAIT = 75  # the exit of a run that must wait, the answer VELDO-0220 has for a held lock
+SPACE_RUN_SCRATCH = "run-scratch"  # under the first scratch root, as the receiver's
+SPACE_TEMPORARY = "TMPDIR"
+SPACE_EMITTER = "space-run"
+SPACE_NO_INSTALLATION = "no central installation"
+SPACE_NOT_REACHABLE = "the space ledger is not reachable from this process"
+SPACE_OFF = "space management is off in this installation"
+SPACE_SIGNAL_GIVEN = ("probe", "kinds", "remover", "free", "keep", "owner_live", "landed", "queued", "run",
+                      "proc", "borrow_root")
+SPACE_ENDED = ("removed", "gone")
+PR_SET_CHILD_SUBREAPER = 36
+
+
+def _space_names(rest, option):
+    """Whether the arguments name `option`, as `--kind K` or `--kind=K`."""
+    return any(word == option or word.startswith(option + "=") for word in rest)
+
+
+def _space_module(name):
+    return _mod("veldo_cli_" + name, ".veldo/%s.py" % name)
+
+
+def _space_wired(environ=None):
+    """(space, why): what this process is wired to, and when it is nothing, why. A repository with no
+    central installation has no ledger (design 6.1). With one, the ledger is the authority's: until
+    the authority service serves it to this process, the CLI reaches none and says so."""
+    try:
+        found = _space_module("installation").resolve(environ)["found"]
+    except Exception:  # noqa: BLE001 - an installation that cannot be read is not one
+        found = False
+    return None, (SPACE_NOT_REACHABLE if found else SPACE_NO_INSTALLATION)
+
+
+def _space_usable(space, why, environ):
+    """(space, why) for a verb: the wiring it was given, else what this process resolves; and nothing
+    for an installation whose switch is off (design 6.8: off stops every admission check)."""
+    if space is None:
+        space, why = _space_wired(environ) if why is None else (None, why)
+    if space is not None and space["ledger"].config.get("enabled") is not True:
+        return None, SPACE_OFF
+    return space, why
+
+
+class _SpaceAs:
+    """A Ledger whose writes are one host principal's: each goes through the Ledger's own apply, so
+    the Ledger's rule for that principal is run before the command. Every read is the Ledger's."""
+
+    def __init__(self, ledger, module, principal):
+        self._ledger, self._sp, self._principal = ledger, module, principal
+
+    def __getattr__(self, name):
+        return getattr(self._ledger, name)
+
+    def _apply(self, operation, **parameters):
+        import uuid
+        return self._ledger.apply({
+            "principal": self._principal, "operation": operation, "command_id": "space:" + uuid.uuid4().hex,
+            "parameters": {name: value for name, value in parameters.items() if value is not None}})
+
+    def declare(self, kind, locator, owner, creator, parent=None, start=None, branch=None, process=None,
+                pool=None, principal=None, command_id=None):
+        return self._apply(self._sp.DECLARE, kind=kind, locator=locator, owner=owner, creator=creator,
+                           parent=parent, start=start, branch=branch, process=process, pool=pool)
+
+    def confirm(self, item, principal=None, command_id=None):
+        return self._apply(self._sp.CONFIRM, item=item)
+
+    def measure(self, item, size, event, principal=None, command_id=None):
+        return self._apply(self._sp.MEASURE, item=item, bytes=size, event=event)
+
+    def outcome(self, item, outcome, facts=None, principal=None, command_id=None):
+        return self._apply(self._sp.OUTCOME, item=item, outcome=outcome, facts=facts)
+
+    def signal(self, event, subject, principal=None, command_id=None):
+        return self._apply(self._sp.SIGNAL, event=event, subject=subject)
+
+    def place_hold(self, identity, needs, source, principal=None, command_id=None, scope=None):
+        return self._apply(self._sp.HOLD, hold=identity, needs=needs, source=source)
+
+    def admit(self, identity, answer, reason=None, used=None, retry_asked=None, principal=None, command_id=None):
+        return self._apply(self._sp.ADMIT, hold=identity, answer=answer, reason=reason, used=used,
+                           retry_asked=retry_asked)
+
+    def release(self, identity, used=None, principal=None, command_id=None):
+        return self._apply(self._sp.RELEASE, hold=identity, used=used)
+
+    def gone(self, item, principal=None, command_id=None):
+        return self._ledger.gone(item, principal=self._principal)
+
+    def event(self, kind, subject, emitter):
+        return self._apply(self._sp.EVENT, type=kind, subject=subject, emitter=emitter)
+
+
+def _space_inside(path, root):
+    path, root = os.path.realpath(str(path)), os.path.realpath(str(root))
+    return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
+
+
+def _space_scope(ledger, sp, where):
+    """The scope a folder belongs to (design 6.7): the project or plain repository it is inside (its
+    repository or its worktree root), else no project."""
+    for project in ledger.projects:
+        if _space_inside(where, project["repository"]) or _space_inside(where, project["worktree_root"]):
+            return {"type": "project", "id": project["project"]}
+    for plain in ledger.config.get("plain_repositories") or ():
+        if _space_inside(where, plain["repository"]) or _space_inside(where, plain["worktree_root"]):
+            return {"type": "plain_repository", "id": sp.canonical_path(plain["repository"])}
+    return {"type": "no_project"}
+
+
+def _space_path_refusal(ledger, sp, path, kind="scratch"):
+    """The name the Ledger refuses a path by, read with the Ledger's own functions against its own
+    protect list and known roots, as written and where it leads; None for a path it would take.
+    The order is declare's: the protect list, the known roots, a link."""
+    try:
+        canonical = sp.canonical_locator(kind, {"path": path})
+    except sp.Refused as refusal:
+        return refusal.code
+    resolved = {"path": sp.resolved_path(canonical["path"])}
+    entry = (sp.protected_by(kind, canonical, ledger.protect)
+             or sp.protected_by(kind, resolved, ledger.protect, sp.resolved_path))
+    if entry is not None:
+        return "space_protected:" + entry
+    if not sp.inside_roots(kind, resolved, ledger.resolved_roots, ledger.engines):
+        return "space_outside_roots"
+    if resolved != canonical:
+        return "space_locator_link"
+    return None
+
+
+def _space_worktree(ledger, where):
+    """(identity, record) of the live worktree or agent repository item the folder is in, the
+    innermost one, or None."""
+    found = None
+    for identity, record in sorted(ledger.items().items()):
+        path = (record.get("locator") or {}).get("path")
+        if (record.get("kind") in ("worktree", "agent_repository") and record.get("state") not in SPACE_ENDED
+                and path and _space_inside(where, path)
+                and (found is None or len(path) > len(found[1]["locator"]["path"]))):
+            found = (identity, record)
+    return found
+
+
+def _space_needs(ledger, scope, station, places):
+    """({pool: bytes}, {pool: source}) of a run of `station`: for each filesystem pool one of `places`
+    is on, what the project's space file declares for the station, else the pool's default need from
+    the installation."""
+    devices = {ledger.device(os.path.realpath(str(place))) for place in places}
+    declared = {}
+    for project in ledger.projects:
+        if scope.get("type") == "project" and project.get("project") == scope.get("id"):
+            declared = ((project.get("needs") or {}).get(station) or {})
+    needs, source = {}, {}
+    for name, pool in sorted((ledger.config.get("pools") or {}).items()):
+        record = ledger.pool(name)
+        if not record or record.get("type") != "filesystem" or record.get("device") not in devices:
+            continue
+        if name in declared:
+            needs[name], source[name] = declared[name], "declared"
+        else:
+            needs[name], source[name] = pool["needs"][station], "default"
+    return needs, source
+
+
+def _space_numbers(reason):
+    return "pool %s: need %d, free %d, held by other runs %d, floor %d (bytes)" % (
+        reason.get("pool"), reason.get("need"), reason.get("free"), reason.get("held"), reason.get("floor"))
+
+
+def _space_begin(space, station, label, where):
+    """Before the command starts: the run the authority issues to space-runner, its hold and the
+    answer of admission, and, for a run that starts, its scratch root, declared before it is made,
+    and the environment that carries its temporary folder, its space label and its compose project
+    name. Raises when the run could not be issued; everything after that is noted and goes on."""
+    import hashlib
+    sp, ledger = _space_module("control_space"), space["ledger"]
+    runner = _SpaceAs(ledger, sp, sp.RUNNER)
+    scope = _space_scope(ledger, sp, where)
+    # The run's identity is the authority's to issue: no host principal signs issue.
+    issued = ledger.issue(sp.RUNNER, label, scope=scope)
+    if not issued.get("ok"):
+        raise RuntimeError("the run was not issued: %s" % (issued.get("reason"),))
+    run = issued["run"]
+    out = {"run": run, "scope": scope, "station": station, "runner": runner, "hold": None, "answer": None,
+           "reason": None, "worktree": None, "owner": None, "scratch": None, "items": {}, "environment": {},
+           "notes": []}
+    roots = list((ledger.config.get("scratch_roots") or {}).get("roots") or ())
+    try:
+        needs, source = _space_needs(ledger, scope, station, [where] + roots[:1])
+        if needs:
+            placed = runner.place_hold(run, needs, source)
+            if not placed.get("ok"):
+                raise RuntimeError("hold refused: %s" % (placed.get("reason"),))
+            out["hold"] = run
+            answer = _space_module("control_space_admission").admit(runner, run, space["free"])
+            if not answer.get("ok"):
+                raise RuntimeError("admit refused: %s" % (answer.get("reason"),))
+            out["answer"], out["reason"] = answer["answer"], answer["reason"]
+        else:
+            out["notes"].append("no pool of the installation holds this folder: admission was not asked")
+    except Exception as error:  # noqa: BLE001 - admission that could not be asked never stops the command
+        out["notes"].append("admission was not judged: %s" % (str(error)[:300],))
+    if out["answer"] == "waiting":
+        return out
+    try:
+        out["environment"].update(_space_module("control_space_docker").given(run)["environment"])
+    except Exception as error:  # noqa: BLE001
+        out["notes"].append("the run's label was not given: %s" % (str(error)[:300],))
+    held = _space_worktree(ledger, where)
+    if held is not None:
+        out["worktree"] = held[1]["locator"]["path"]
+    if scope["type"] == "no_project":
+        out["notes"].append("the folder is inside no project and no plain repository: no folder is recorded")
+        return out
+    owner = {"scope": dict(scope), "run": {"id": run, "station": station}}
+    if held is not None and (held[1].get("owner") or {}).get("scope") == scope and held[1]["owner"].get("ticket"):
+        owner["ticket"] = held[1]["owner"]["ticket"]
+    out["owner"] = owner
+    try:
+        if not roots:
+            raise RuntimeError("the installation names no scratch root")
+        path = os.path.join(sp.canonical_path(str(roots[0])), SPACE_RUN_SCRATCH,
+                            hashlib.sha256(run.encode()).hexdigest()[:32])
+        if os.path.lexists(path):
+            # never taken over: whatever is in it was not made by this run
+            raise RuntimeError("the scratch folder %s is there and no item records it" % path)
+        made = runner.declare("scratch", {"path": path}, owner, "wrapper")
+        if not made.get("ok"):
+            raise RuntimeError("declare refused: %s" % (made.get("reason"),))
+        out["items"][path] = made["item"]
+        try:
+            os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+            os.mkdir(path, 0o700)
+        except OSError as error:
+            if not os.path.lexists(path):
+                runner.gone(made["item"])  # the creation failed and nothing is there (design 6.2)
+            raise RuntimeError("the scratch folder could not be made: %s" % type(error).__name__)
+        confirmed = runner.confirm(made["item"])
+        if not confirmed.get("ok"):
+            raise RuntimeError("confirm refused: %s" % (confirmed.get("reason"),))
+        out["scratch"] = path
+        out["environment"][SPACE_TEMPORARY] = path
+    except Exception as error:  # noqa: BLE001 - a run with no recorded scratch keeps its own temporary folder
+        out["notes"].append("no scratch root was given: %s" % (str(error)[:300],))
+    return out
+
+
+def _space_code(raw):
+    code = os.waitstatus_to_exitcode(raw)
+    return 128 - code if code < 0 else code
+
+
+def _space_handlers(handlers):
+    """Install signal handlers, where this thread may; returns what to give back to _space_restore."""
+    import signal
+    before = {}
+    for number, handler in handlers.items():
+        try:
+            before[number] = signal.signal(number, handler)
+        except (ValueError, OSError):  # not the main thread: the signals stay as they are
+            pass
+    return before
+
+
+def _space_restore(before):
+    import signal
+    for number, handler in before.items():
+        try:
+            signal.signal(number, handler)
+        except (ValueError, OSError, TypeError):
+            pass
+
+
+def space_supervise(rest):
+    """veldo space supervise --report FD -- COMMAND ...: what the wrapper starts in place of the
+    command. It makes itself the child subreaper, starts the command with its own input, output,
+    environment and folder, and waits for it and then for every process the command left: each one
+    is its child by then, whatever it did. It writes one JSON line each to FD: group (whether the
+    kernel made it the subreaper), status when the command ends, and empty when the kernel says no
+    child is left. It exits with the command's status. It signals nothing but the command itself,
+    with the stop it was sent."""
+    import json
+    import signal
+    import subprocess
+    if len(rest) < 4 or rest[0] != "--report" or rest[2] != "--" or not rest[1].isdigit():
+        sys.stderr.write("veldo space supervise: the wrapper's own verb\n")
+        return 2
+    descriptor, command = int(rest[1]), rest[3:]
+
+    def tell(**what):
+        try:
+            os.write(descriptor, (json.dumps(what, sort_keys=True) + "\n").encode())
+        except OSError:
+            pass
+    try:
+        import ctypes
+        group = ctypes.CDLL(None, use_errno=True).prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0
+    except Exception:  # noqa: BLE001 - a host with no subreaper: the group cannot be read
+        group = False
+    tell(group=group)
+    started = {}
+
+    def forward(number, frame):
+        if started.get("pid"):
+            try:
+                os.kill(started["pid"], number)
+            except OSError:
+                pass
+    # A stop from the terminal reaches the command by itself; one sent to this process is passed on.
+    _space_handlers({signal.SIGINT: lambda number, frame: None, signal.SIGQUIT: lambda number, frame: None,
+                     signal.SIGTERM: forward, signal.SIGHUP: forward})
+    try:
+        child = subprocess.Popen(command, close_fds=True)
+    except OSError as error:
+        sys.stderr.write("veldo space run: %s: %s\n" % (command[0], error.strerror or error))
+        status = 127 if isinstance(error, FileNotFoundError) else 126
+        tell(status=status, failed=type(error).__name__)
+        if group:
+            tell(empty=True)
+        return status
+    started["pid"], status = child.pid, None
+    while True:
+        try:
+            pid, raw = os.waitpid(-1, 0)
+        except ChildProcessError:
+            break
+        if pid == child.pid:
+            status = child.returncode = _space_code(raw)
+            tell(status=status)
+    if group:
+        tell(empty=True)
+    return 1 if status is None else status
+
+
+def _space_supervised(command, environment, where):
+    """Run the command under its supervisor and wait for both. Returns (status, empty): the command's
+    own exit status, and True only when the supervisor said the kernel shows no process of the run
+    any more; None when nobody could say."""
+    import json
+    import signal
+    import subprocess
+    reading, writing = os.pipe()
+    child = None
+    forward = lambda number, frame: child is not None and child.poll() is None and child.send_signal(number)  # noqa: E731
+    before = _space_handlers({signal.SIGINT: lambda number, frame: None, signal.SIGTERM: forward,
+                              signal.SIGHUP: forward})
+    try:
+        try:
+            child = subprocess.Popen([sys.executable, os.path.abspath(__file__), "space", "supervise",
+                                      "--report", str(writing), "--"] + list(command),
+                                     env=environment, cwd=where, pass_fds=(writing,))
+        finally:
+            os.close(writing)
+        status, empty, group = None, None, False
+        with os.fdopen(reading, "rb") as lines:
+            for line in lines:
+                try:
+                    said = json.loads(line.decode())
+                except ValueError:
+                    continue
+                if not isinstance(said, dict):
+                    continue
+                group = said["group"] is True if "group" in said else group
+                status = said["status"] if isinstance(said.get("status"), int) else status
+                empty = True if said.get("empty") is True and group and status is not None else empty
+        code = child.wait()
+        if status is None:  # the supervisor ended with no word of the command: its own end is all there is
+            status, empty = (128 - code if code < 0 else code), None
+        return status, empty
+    finally:
+        _space_restore(before)
+
+
+def _space_plain(command, environ, where):
+    """The command, unchanged: its own arguments, environment, folder, input and output, and its own
+    exit status."""
+    import subprocess
+    try:
+        code = subprocess.call(list(command), env=environ, cwd=where)
+    except OSError as error:
+        sys.stderr.write("veldo space run: %s: %s\n" % (command[0], error.strerror or error))
+        return 127 if isinstance(error, FileNotFoundError) else 126
+    return 128 - code if code < 0 else code
+
+
+def _space_finish(space, given, empty):
+    """After the command and its group have ended, in this order (design 6.9 and 8.1): the census of
+    the run's worktree, run finished through Signal, the release of the hold. Each is written before
+    this returns. With a group that is not known to be empty none of them is made. Returns {sent,
+    reason, census, signal, items, hold}."""
+    sp, ledger, runner, run = _space_module("control_space"), space["ledger"], given["runner"], given["run"]
+    end = {"sent": False, "reason": None, "census": None, "signal": None, "items": {}, "hold": None}
+    if empty is not True:
+        # What is left of the run may still write: nothing of it is judged, and its hold stays held.
+        end["reason"] = "group_not_empty" if empty is False else "group_unread"
+        return end
+    if given.get("worktree"):
+        # The census before Signal: the build output the command left is declared now, so run
+        # finished can reach it; what is work gets no item and keeps its worktree.
+        try:
+            end["census"] = _space_module("control_launch").space_census(
+                dict(space, ledger=runner), given["worktree"], "run_finished", owner=given.get("owner"),
+                also=[path for path in (given.get("scratch"),) if path])
+        except Exception as error:  # noqa: BLE001 - a census that could not run records nothing
+            end["census"] = {"refusal": "census_failed", "said": str(error)[:300]}
+    try:
+        subject = {"run": run}
+        # The Ledger's own rule, asked before anything is sent: space-runner signals only run
+        # finished, and only for exactly the run the authority issued to it.
+        ledger.permit(sp.RUNNER, sp.SIGNAL, {"event": "run_finished", "subject": subject})
+        wired = {name: space[name] for name in SPACE_SIGNAL_GIVEN if name in space}
+        others = wired.get("owner_live")
+        # Rule 3 is answered for this run alone, because the kernel has just said its group is empty.
+        wired["owner_live"] = lambda owner: (
+            {"conclusive": True, "group_empty": True}
+            if ((owner or {}).get("run") or {}).get("id") == run else others(owner) if others else None)
+        answer = _space_module("control_space_signal").signal(
+            runner, "run_finished", subject, principal=sp.RUNNER, emitter=SPACE_EMITTER, **wired)
+        end["sent"] = answer.get("ok") is True
+        end["signal"] = {name: answer.get(name) for name in ("ok", "reason", "items", "carried", "left",
+                                                               "outcomes", "counts")}
+        if not end["sent"]:
+            end["reason"] = str(answer.get("reason"))
+    except Exception as error:  # noqa: BLE001 - what could not be signalled is not removed
+        end["reason"] = "%s: %s" % (type(error).__name__, str(error)[:300])
+    try:
+        end["items"] = {identity: record.get("state") for identity, record in sorted(ledger.items().items())
+                        if ((record.get("owner") or {}).get("run") or {}).get("id") == run}
+    except Exception:  # noqa: BLE001
+        pass
+    if given.get("hold"):
+        # The release is last: after Signal (design 6.7).
+        try:
+            done = runner.release(given["hold"])
+            end["hold"] = "released" if done.get("ok") else str(done.get("reason"))
+        except Exception as error:  # noqa: BLE001 - a hold that could not be released is named
+            end["hold"] = "%s: %s" % (type(error).__name__, str(error)[:300])
+    return end
+
+
+def space_run(rest, space=None, why=None, environ=None, cwd=None, stderr=None, report=None):
+    """veldo space run [--station build|review|gate] [--label L] -- COMMAND ...
+
+    Asks admission, declares the run, starts the command in its own containment group and, after
+    the command and the group have ended, makes the census, sends run finished and releases the
+    hold, all before it returns the command's own exit status. In act mode with too little space it
+    prints the numbers, does not start the command and returns 75; in report mode it prints the
+    numbers and starts it. With no ledger it says why and runs the command unchanged. `report`,
+    when given, is filled with what was done."""
+    stderr = stderr or sys.stderr
+    environ = dict(os.environ if environ is None else environ)
+    where = os.getcwd() if cwd is None else str(cwd)
+    report = {} if report is None else report
+    parser = argparse.ArgumentParser(prog="veldo space run")
+    parser.add_argument("--station", choices=SPACE_STATIONS, default="build")
+    parser.add_argument("--label")
+    parser.add_argument("command", nargs=argparse.REMAINDER)
+    args = parser.parse_args(list(rest))
+    command = args.command[1:] if args.command[:1] == ["--"] else args.command
+    if not command:
+        parser.error("a command to run, after --")
+    space, why = _space_usable(space, why, environ)
+    if space is None:
+        stderr.write("veldo space run: %s: the command runs unchanged\n" % why)
+        report.update(wrapped=False, why=why)
+        return _space_plain(command, environ, where)
+    try:
+        given = _space_begin(space, args.station, args.label, where)
+    except Exception as error:  # noqa: BLE001 - a wrapper never refuses the command it rides on
+        stderr.write("veldo space run: the run is not recorded (%s): the command runs unchanged\n"
+                     % (str(error)[:300],))
+        report.update(wrapped=False, why=str(error)[:300])
+        return _space_plain(command, environ, where)
+    report.update(wrapped=True, run=given["run"], scope=given["scope"], station=given["station"],
+                  hold=given["hold"], answer=given["answer"], reason=given["reason"], scratch=given["scratch"],
+                  worktree=given["worktree"], environment=dict(given["environment"]), notes=given["notes"])
+    for note in given["notes"]:
+        stderr.write("veldo space run: %s\n" % note)
+    if given["answer"] == "waiting":
+        # Act mode with too little space: the numbers, exit 75, and the command is not started.
+        # Nothing is queued: the hold is released, and the next start is a new hold (design 6.7).
+        stderr.write("veldo space run: NOT STARTED, waiting for space: %s\n" % _space_numbers(given["reason"]))
+        try:
+            done = given["runner"].release(given["hold"])
+            report["released"] = done.get("ok") is True
+        except Exception:  # noqa: BLE001
+            report["released"] = False
+        report.update(started=False, status=SPACE_WAIT)
+        return SPACE_WAIT
+    if given["answer"] == "advised":
+        stderr.write("veldo space run: would wait for space (report mode, the command starts): %s\n"
+                     % _space_numbers(given["reason"]))
+    status, empty = _space_supervised(command, dict(environ, **given["environment"]), where)
+    report.update(started=True, status=status, empty=empty)
+    end = _space_finish(space, given, empty)
+    report["end"] = end
+    if not end["sent"]:
+        stderr.write("veldo space run: run finished was not sent (%s): nothing of the run was judged\n"
+                     % end["reason"])
+    return status
+
+
+def _space_refused(verb, stderr, reason):
+    stderr.write("veldo space %s: refused %s\n" % (verb, reason))
+    return 1
+
+
+def space_record(rest, space=None, why=None, environ=None, stdout=None, stderr=None):
+    """veldo space record --kind K --path P [--ticket T] [--session S]: a host script reports a
+    thing it made. The item is declared and confirmed as space-observer, with the creator record and
+    the scope the path is inside as its owner. Refused by name, with nothing written: an unknown
+    kind (space_unknown_kind:<kind>), a path outside every known root (space_outside_roots), a path
+    on the protect list (space_protected:<entry>), and whatever else the Ledger refuses. Exit 0 with
+    the item on standard output, 1 for a refusal; with no ledger it says why and exits 0."""
+    import json
+    stdout, stderr = stdout or sys.stdout, stderr or sys.stderr
+    parser = argparse.ArgumentParser(prog="veldo space record")
+    parser.add_argument("--kind", required=True)
+    parser.add_argument("--path", required=True)
+    parser.add_argument("--ticket")
+    parser.add_argument("--session")
+    args = parser.parse_args(list(rest))
+    space, why = _space_usable(space, why, environ)
+    if space is None:
+        stderr.write("veldo space record: %s: nothing is recorded\n" % why)
+        return 0
+    sp, ledger = _space_module("control_space"), space["ledger"]
+    if args.kind not in sp.KINDS:
+        return _space_refused("record", stderr, "space_unknown_kind:" + args.kind)
+    if args.kind not in sp.DISK_KINDS:
+        return _space_refused("record", stderr, "space_record_kind:" + args.kind)
+    refusal = _space_path_refusal(ledger, sp, args.path, args.kind)
+    if refusal is not None:
+        return _space_refused("record", stderr, refusal)
+    owner = {"scope": _space_scope(ledger, sp, args.path)}
+    for part in ("ticket", "session"):
+        if getattr(args, part):
+            owner[part] = getattr(args, part)
+    observer = _SpaceAs(ledger, sp, sp.OBSERVER)
+    made = observer.declare(args.kind, {"path": sp.canonical_path(args.path)}, owner, "record")
+    if not made.get("ok"):
+        return _space_refused("record", stderr, str(made.get("reason")))
+    confirmed = observer.confirm(made["item"])
+    if not confirmed.get("ok"):
+        return _space_refused("record", stderr, str(confirmed.get("reason")))
+    stdout.write(json.dumps({"item": made["item"], "state": confirmed.get("state")}, sort_keys=True) + "\n")
+    return 0
+
+
+def space_event(rest, space=None, why=None, environ=None, stdout=None, stderr=None):
+    """veldo space event --type T [--path P ...] [--session S] [--repository R --ref N --new C]: a
+    host script reports what happened or what it gave up. The types are ref_changed, session_started,
+    session_ended and released. The event is handed to the Ledger's event command as space-observer:
+    it leaves one event record and returns, and removes nothing (design 6.9). Refused by name, with
+    nothing sent: an unknown type (space_unknown_event:<type>), and for every path it names a path
+    outside every known root (space_outside_roots) or on the protect list (space_protected:<entry>).
+    A Ledger that has no event command yet answers space_no_command:space_event: the event is then
+    not recorded, nothing becomes due, and the verb says so. Exit 0 with the Ledger's answer on
+    standard output, 1 for a refusal; with no ledger it says why and exits 0."""
+    import json
+    import socket
+    stdout, stderr = stdout or sys.stdout, stderr or sys.stderr
+    parser = argparse.ArgumentParser(prog="veldo space event")
+    parser.add_argument("--type", required=True, dest="kind")
+    parser.add_argument("--path", action="append", default=[])
+    parser.add_argument("--session")
+    parser.add_argument("--repository")
+    parser.add_argument("--ref")
+    parser.add_argument("--new")
+    args = parser.parse_args(list(rest))
+    space, why = _space_usable(space, why, environ)
+    if space is None:
+        stderr.write("veldo space event: %s: nothing is recorded\n" % why)
+        return 0
+    sp, ledger = _space_module("control_space"), space["ledger"]
+    if args.kind not in SPACE_EVENT_TYPES:
+        return _space_refused("event", stderr, "space_unknown_event:" + args.kind)
+    for path in args.path:
+        refusal = _space_path_refusal(ledger, sp, path)
+        if refusal is not None:
+            return _space_refused("event", stderr, refusal)
+    subject = {}
+    if args.kind == "ref_changed":
+        if not (args.repository and args.ref and args.new) or args.path or args.session:
+            return _space_refused("event", stderr, "invalid_input:ref_changed names a repository, a ref and "
+                                                   "the new commit")
+        try:
+            repository = sp.canonical_locator("branch", {"repository": args.repository, "ref": args.ref})
+        except sp.Refused as refusal:
+            return _space_refused("event", stderr, refusal.code)
+        resolved = dict(repository, repository=sp.resolved_path(repository["repository"]))
+        entry = (sp.protected_by("branch", repository, ledger.protect)
+                 or sp.protected_by("branch", resolved, ledger.protect, sp.resolved_path))
+        if entry is not None:
+            return _space_refused("event", stderr, "space_protected:" + entry)
+        if not sp.inside_roots("branch", resolved, ledger.resolved_roots, ledger.engines):
+            return _space_refused("event", stderr, "space_outside_roots")
+        subject = {"repository": repository["repository"], "ref": args.ref, "old": None, "new": args.new}
+    elif args.kind == "released":
+        if not args.path or args.session or args.repository or args.ref or args.new:
+            return _space_refused("event", stderr, "invalid_input:released names the paths given up")
+        subject = {"paths": [sp.canonical_path(path) for path in args.path]}
+    else:
+        if not args.session or args.repository or args.ref or args.new:
+            return _space_refused("event", stderr, "invalid_input:a session event names its session")
+        subject = {"session": args.session, "paths": [sp.canonical_path(path) for path in args.path]}
+    answer = _SpaceAs(ledger, sp, sp.OBSERVER).event(
+        args.kind, subject, {"verb": "event", "host": socket.gethostname() or "unknown"})
+    if not answer.get("ok"):
+        reason = str(answer.get("reason"))
+        if reason.startswith("space_no_command:"):
+            stderr.write("veldo space event: not recorded (%s): nothing becomes due and nothing is removed\n"
+                         % reason)
+            stdout.write(json.dumps({"recorded": False, "reason": reason, "type": args.kind}, sort_keys=True) + "\n")
+            return 0
+        return _space_refused("event", stderr, reason)
+    stdout.write(json.dumps({"recorded": True, "type": args.kind, "event": answer.get("event")},
+                            sort_keys=True) + "\n")
+    return 0
+
+
 def route(argv):
     """Dispatch one argv to the right module and return an exit code. All fail-loud
     paths land here: an unknown subcommand, bad arguments, an unknown account, a
@@ -390,7 +1053,21 @@ def route(argv):
         if cmd == "space":
             # record, event and replay are what the git hooks run (VELDO-0311): one entry for what git
             # just did, handed to the authority or left in the spool. They never fail the git command.
+            # VELDO-0313: the run wrapper, and the record and event verbs of a host script (the forms
+            # that name a kind or an event type; the forms the git hooks run name neither).
+            if rest and rest[0] == "run":
+                return space_run(rest[1:])
+            if rest and rest[0] == "supervise":
+                return space_supervise(rest[1:])
+            if rest and rest[0] == "record" and _space_names(rest, "--kind"):
+                return space_record(rest[1:])
+            if rest and rest[0] == "event" and _space_names(rest, "--type"):
+                return space_event(rest[1:])
             if rest and rest[0] in ("record", "event", "replay"):
+                # With no central installation each verb says so (VELDO-0313 AC4); what the hooks get
+                # back is unchanged: record and event exit 0 whatever happens.
+                if not _space_names(rest, "--installation") and _space_wired()[1] == SPACE_NO_INSTALLATION:
+                    sys.stderr.write("veldo space %s: %s\n" % (rest[0], SPACE_NO_INSTALLATION))
                 return _mod("veldo_cli_space_spool", ".veldo/control_space_spool.py").main(rest)
             # forward verbatim to the space ledger's own command surface (VELDO-0326): a hook or a helper
             # signs as its host principal with that principal's key, never the owner's.

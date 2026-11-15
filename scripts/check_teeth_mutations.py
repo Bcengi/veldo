@@ -14876,6 +14876,62 @@ def cases():
             "            reason = EVIDENCE_UNRECORDED_REASON\n",
             ['f2/unrecorded-before-running'])
 
+    # VELDO-0313: the CLI's space verb and the run wrapper, in bin/veldo (case field `dir`). The
+    # declared falsifier of each acceptance criterion. AC1: skip the census. AC2: start the command
+    # anyway in act mode. AC3: accept any path. AC4: refuse to run with no central installation. And
+    # the losses beside them: run finished sent when the command's own process exits, while a process
+    # it left still holds a file; sent for a group nobody could read; a signal written as the
+    # authority and not through the Ledger's rule for space-runner; the command's status lost; the
+    # hold of a run that must wait left behind; an unknown kind and an unknown event type let through.
+    space313 = '151_veldo_0313_space_run.py'
+
+    def run313(name, old, new, rows):
+        add(313, name, space313, 'veldo', old, new, rows)
+        result[-1]['dir'] = 'bin'
+
+    run313('space313-census-skipped',
+           "    if given.get(\"worktree\"):\n        # The census before Signal",
+           "    if False:\n        # The census before Signal",
+           ['ac1/build-output-has-item-and-goes'])
+    run313('space313-sent-when-the-command-exits',
+           "            status = child.returncode = _space_code(raw)\n            tell(status=status)\n",
+           "            status = child.returncode = _space_code(raw)\n            tell(status=status)\n            break\n",
+           ['ac1/surviving-child'])
+    run313('space313-unread-group-sent',
+           "    if empty is not True:\n        # What is left of the run may still write",
+           "    if False:\n        # What is left of the run may still write",
+           ['ac1/unread-group-sends-nothing'])
+    run313('space313-signal-not-through-the-runners-rule',
+           "        return self._apply(self._sp.SIGNAL, event=event, subject=subject)\n",
+           "        return self._ledger.signal(event, subject)\n",
+           ['ac1/only-the-runs-own-items'])
+    run313('space313-started-anyway-in-act',
+           "    if given[\"answer\"] == \"waiting\":\n        # Act mode with too little space",
+           "    if False:\n        # Act mode with too little space",
+           ['ac2/act-waits-75'])
+    run313('space313-waiting-hold-left-behind',
+           "            done = given[\"runner\"].release(given[\"hold\"])\n            report[\"released\"] = done.get(\"ok\") is True\n",
+           "            report[\"released\"] = False\n",
+           ['ac2/act-waits-75'])
+    run313('space313-status-lost',
+           "    return status\n\n\ndef _space_refused",
+           "    return 0\n\n\ndef _space_refused",
+           ['ac2/command-status'])
+    run313('space313-any-path-accepted',
+           "    try:\n        canonical = sp.canonical_locator(kind, {\"path\": path})\n    except sp.Refused as refusal:\n        return refusal.code\n",
+           "    return None\n",
+           ['ac3/record-refusals', 'ac3/event-types'])
+    run313('space313-any-kind-accepted',
+           "    if args.kind not in sp.KINDS:\n", "    if False:\n",
+           ['ac3/record-refusals'])
+    run313('space313-any-event-type-accepted',
+           "    if args.kind not in SPACE_EVENT_TYPES:\n", "    if False:\n",
+           ['ac3/event-types'])
+    run313('space313-refuses-with-no-installation',
+           "        report.update(wrapped=False, why=why)\n        return _space_plain(command, environ, where)\n",
+           "        report.update(wrapped=False, why=why)\n        return 1\n",
+           ['ac4/no-installation-runs-unchanged'])
+
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']

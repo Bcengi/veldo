@@ -92,3 +92,47 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-14: built, in engine/bin/veldo and its copy bin/veldo and nowhere else. Suite
+  scripts/suites/151_veldo_0313_space_run.py, 14 rows; eleven falsifiers registered under finding 313, the
+  four declared ones among them, each applied once and seen red on its row. What the build decided, and
+  what it leaves to other tickets:
+  - Nothing here deletes anything and there is no new way to remove. At a run's end the wrapper calls
+    Signal (control_space_signal) with run finished; what goes is removed by the removers after the seven
+    rules and the keep step, as for the receiver. The census is the receiver's own (control_launch
+    space_census): what is work gets no item and stays.
+  - No verb acts as the authority or as the owner, and none falls back to either. The wrapper writes as
+    space-runner and the record and event verbs as space-observer, each through the Ledger's own apply,
+    which runs the Ledger's rule for that principal before the command. The one command that is not the
+    runner's is the issue of the run, which is the authority's. So the wrapper signals only run finished,
+    with exactly its own run as the subject: the Ledger refuses it a signal for another run, a signal that
+    names items, worktree abandoned and the owner's Keep, and never makes an item due that the owner
+    marked Keep.
+  - Run finished is sent only when the kernel says the run is over. The command runs under a supervisor
+    process (the CLI's own verb supervise) that is the child subreaper of everything the command starts,
+    so a process that forks twice or leaves its session is still counted. The wrapper waits for the
+    command and for every such process. A group nobody could read (a host with no subreaper, a
+    supervisor that died) sends nothing: no census, no signal, no release, and the hold stays held.
+    Nothing here stops or kills a process of the run; a stop sent to the wrapper is passed on to the
+    command.
+  - The need of a wrapped run is what the project's space file declares for the station, else the pool's
+    default from the installation. The measured need and the freed mark are VELDO-0316 and 0334. A run
+    that must wait in act mode is not queued: its hold is released and it exits 75.
+  - A run inside no project and no plain repository gets its hold and its label and no folder: the
+    Ledger accepts no project as an owner only for a session's scratch.
+  - The Docker part of the census (design 6.3, step 3) is not called from the wrapper: the receiver's
+    census does not call it either, and a run's labelled objects are recorded by the adapter's own
+    snapshot and event stream (VELDO-0306). The build root is given by the receiver's seam only.
+  - WIRING, NOT BUILT HERE. The verbs take the mapping an installation wires in (the one the receiver is
+    given). Nothing serves the ledger to a CLI process yet: the authority's socket is VELDO-0323's. Until
+    then a CLI started from a shell on a host with an installation says the space ledger is not
+    reachable; the wrapper then runs its command unchanged, and record and event record nothing. The
+    suite makes the wiring itself.
+  - The event verb checks the type and every path it names and hands the event to the Ledger's event
+    command as space-observer. That command is VELDO-0323's (released: VELDO-0335). Until it is built the
+    Ledger answers space_no_command:space_event, the verb says the event is not recorded, and nothing
+    becomes due. The spool (control_space_spool) holds only the three entry types the git hooks write;
+    which ticket lets it hold a session event or a released event is open, and is a question for the
+    lead: the footprints of VELDO-0314, 0323 and 0335 do not name that module.
+  - The declared falsifier of AC3 says the row "gets an item". With the CLI's own check taken out the
+    Ledger still refuses the path, so no item is made; the row is red because the refusal no longer has
+    its name.
