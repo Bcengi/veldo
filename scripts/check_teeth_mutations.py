@@ -15150,6 +15150,8 @@ def cases():
     images328('space328-no-image-subscription',
               "          '--filter', 'type=volume', '--filter', 'type=image')\n",
               "          '--filter', 'type=volume')\n", ['ac2/pulled-kept'])
+    images328('space328-unread-image-names-pass',
+              "        if not readable:\n", "        if False:\n", ['safety/unread'])
     images328('space328-build-id-not-compared',
               "                or shown['Id'] != image_id):\n",
               "                or False):\n", ['ac1/provenance'])

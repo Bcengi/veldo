@@ -606,6 +606,19 @@ class Adapter:
             self._note('unread', engine=engine, kind='image', name=name, said=said)
             return None, 'unread'
         shown = records[0]
+        config = shown.get('Config')
+        labels = config.get('Labels') if isinstance(config, dict) else None
+        readable = (isinstance(config, dict) and 'Labels' in config
+                    and (labels is None or (isinstance(labels, dict)
+                         and all(isinstance(key, str) and isinstance(value, str)
+                                 for key, value in labels.items())))
+                    and all(field in shown and (shown[field] is None or
+                            (isinstance(shown[field], list) and all(_text(name) for name in shown[field])))
+                            for field in ('RepoTags', 'RepoDigests')))
+        if not readable:
+            self._note('unread', engine=engine, kind='image', name=name,
+                       said='the image names or labels could not be read')
+            return None, 'unread'
         if not _text(shown.get('Id')):
             return None, 'refused'
         entry, by = covered(engine, 'image', image_names(shown), labels_of('image', shown),

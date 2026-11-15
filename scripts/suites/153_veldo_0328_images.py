@@ -425,6 +425,17 @@ def _v328_images_suite():
         image['Id'] = ''
         check('safety/unread', 'missing identity records nothing',
               adapter.pulled('default', 'fixture/unread:1') == 'refused' and journal_size() == before[0])
+        for field, value in [('RepoTags', 'unread'), ('RepoDigests', [42]),
+                             ('Config', {'Labels': []}), ('Config', {})]:
+            image = E.add('default', ['fixture/malformed-' + str(E.next_id) + ':1'])
+            name = image['RepoTags'][0]
+            image[field] = value
+            size = journal_size()
+            check('safety/unread', 'malformed ' + field + ' is not an empty protect look',
+                  adapter.pulled('default', image['Id']) == 'unread'
+                  and adapter.built('default', name, 'build-a', image['Id']) == 'unread'
+                  and journal_size() == size)
+
         image = E.add('default', ['fixture/ledger-unread:1'])
         adapter.built('default', 'fixture/ledger-unread:1', 'build-a', image['Id'])
         item, record = at('default', 'fixture/ledger-unread:1')
