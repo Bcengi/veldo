@@ -93,3 +93,13 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.
+- 2026-11-15: build blocked at 8ef46604e80e6a69909556c82e4e9b17e2acde87 by the absent
+  VELDO-0323 dependency. Neither control_space_consumer.py nor control_space_worker.py exists in
+  engine/.veldo or .veldo. The Ledger defines the space_event name but has no event method or
+  COMMAND_PARAMETERS entry for it; its command dispatcher refuses space_no_command:space_event.
+  The CLI's event verb explicitly handles that refusal without recording an event. The existing
+  proof/VELDO-0313/manifest.json also records this dependency in assumptions 1 and 6. AC1 needs the
+  event record and asynchronous worker; AC2 needs the Ledger event command; AC3 needs the worker
+  to run Signal and report the deferral. Implementing that infrastructure here would build another
+  ticket, including its authority-service integration. No runtime change or acceptance evidence
+  is claimed. Resume after the completed VELDO-0323 dependency is available in this worktree.
