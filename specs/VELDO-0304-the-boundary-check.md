@@ -13,6 +13,14 @@ placement: [enforcement]
 protected_paths: ["scripts/verify.sh"]
 footprint:
   - "scripts/check_space_boundary.py"
+  - "engine/.veldo/control_clone.py"
+  - ".veldo/control_clone.py"
+  - "engine/.veldo/control_batch.py"
+  - ".veldo/control_batch.py"
+  - "engine/.veldo/control_repository_provisioner.py"
+  - ".veldo/control_repository_provisioner.py"
+  - "engine/.veldo/control_space_remove.py"
+  - ".veldo/control_space_remove.py"
   - "scripts/verify.sh"
   - "scripts/suites/*_veldo_0304_*.py"
   - "scripts/suites/manifest.json"
@@ -90,6 +98,24 @@ The check is called from scripts/verify.sh, a protected path (policy.yaml:83). T
 approval, bound to the commit and the proof, is required.
 
 ## History
+
+- 2026-11-15: lead decision, the three engine ref deletes go through a ref remover with the keep step; no exemption
+  The footprint now includes those three modules and the removers, each with its synced copy.
+  This resolves the scope decision recorded below; the ref remover is not implemented yet.
+- 2026-11-15: resumed audit found another AC2 prerequisite conflict. The direct no-ledger removals
+  remain in WorktreeProvisioner.remove (fleet.py), Runner.clear_runs and Receiver._remove_run
+  (control_launch.py), Runtime.close (control_launch_work.py), GitLandOps.discard (lander.py),
+  and Clones._standalone (control_clone.py), in canon and synced copies. Design 6.10 lists these
+  under Replaced and says none calls a delete itself. The VELDO-0303 History instead says the
+  boundary check must name the no-ledger branches; its review fixes guard them with the standalone
+  look and keep step but leave the direct primitives. Treating them as reviewed-list entries
+  would therefore require an additional decision about AC2 and 6.10, beyond the three ref deletes.
+  Four module pairs are outside the newly expanded footprint: fleet.py, control_launch.py,
+  control_launch_work.py and lander.py. The lead must resolve this conflict, preferably by moving
+  their removals through the existing removers under an explicit scope extension, while preserving
+  their keep checks and the owner's current ledger and signal requirements. No exemption was added,
+  no removal implementation was changed, and no new loss is claimed reproduced. This is a boundary
+  and scope conflict. Exact calls and source digests are in proof/VELDO-0304/resume-blocker.json.
 
 - 2026-11-15: build blocked after the four required VELDO-0333 dependency commits were applied.
   AC2 and design 6.2 refuse every ref delete outside the owner's kept drop command. The current

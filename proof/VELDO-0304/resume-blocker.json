@@ -1,0 +1,154 @@
+{
+ "criterion": "AC2",
+ "findings": [
+  {
+   "path": "engine/.veldo/fleet.py",
+   "line": 319,
+   "function": "WorktreeProvisioner.remove",
+   "primitive": "_git_worktree([\"remove\", path], cwd=self.repo_root)",
+   "sha256": "7337466a70e895997a7fa5a95e247664c2f58dd8849ae547a6a2986e2138b923",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": ".veldo/fleet.py",
+   "line": 319,
+   "function": "WorktreeProvisioner.remove",
+   "primitive": "_git_worktree([\"remove\", path], cwd=self.repo_root)",
+   "sha256": "7337466a70e895997a7fa5a95e247664c2f58dd8849ae547a6a2986e2138b923",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": "engine/.veldo/control_clone.py",
+   "line": 1050,
+   "function": "Clones._standalone",
+   "primitive": "shutil.rmtree(work, ignore_errors=True)",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a",
+   "outside_expanded_footprint": false
+  },
+  {
+   "path": "engine/.veldo/control_clone.py",
+   "line": 1052,
+   "function": "Clones._standalone",
+   "primitive": "shutil.rmtree(root / 'scratch', ignore_errors=True)",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a",
+   "outside_expanded_footprint": false
+  },
+  {
+   "path": "engine/.veldo/control_clone.py",
+   "line": 1056,
+   "function": "Clones._standalone",
+   "primitive": "shutil.rmtree(root, ignore_errors=True)",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a",
+   "outside_expanded_footprint": false
+  },
+  {
+   "path": ".veldo/control_clone.py",
+   "line": 1050,
+   "function": "Clones._standalone",
+   "primitive": "shutil.rmtree(work, ignore_errors=True)",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a",
+   "outside_expanded_footprint": false
+  },
+  {
+   "path": ".veldo/control_clone.py",
+   "line": 1052,
+   "function": "Clones._standalone",
+   "primitive": "shutil.rmtree(root / 'scratch', ignore_errors=True)",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a",
+   "outside_expanded_footprint": false
+  },
+  {
+   "path": ".veldo/control_clone.py",
+   "line": 1056,
+   "function": "Clones._standalone",
+   "primitive": "shutil.rmtree(root, ignore_errors=True)",
+   "sha256": "70d224619c6dbd02387b1d362d6df52f8b5417c092d43d05979808da7fd1ec5a",
+   "outside_expanded_footprint": false
+  },
+  {
+   "path": "engine/.veldo/control_launch.py",
+   "line": 1638,
+   "function": "Runner.clear_runs",
+   "primitive": "shutil.rmtree(place, ignore_errors=True)",
+   "sha256": "0cf49ba6cf49dc6aeffbced0b418cce14fcfa08252c677876e389a9a32822b6f",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": "engine/.veldo/control_launch.py",
+   "line": 2364,
+   "function": "Receiver._remove_run",
+   "primitive": "shutil.rmtree(run, ignore_errors=True)",
+   "sha256": "0cf49ba6cf49dc6aeffbced0b418cce14fcfa08252c677876e389a9a32822b6f",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": ".veldo/control_launch.py",
+   "line": 1638,
+   "function": "Runner.clear_runs",
+   "primitive": "shutil.rmtree(place, ignore_errors=True)",
+   "sha256": "0cf49ba6cf49dc6aeffbced0b418cce14fcfa08252c677876e389a9a32822b6f",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": ".veldo/control_launch.py",
+   "line": 2364,
+   "function": "Receiver._remove_run",
+   "primitive": "shutil.rmtree(run, ignore_errors=True)",
+   "sha256": "0cf49ba6cf49dc6aeffbced0b418cce14fcfa08252c677876e389a9a32822b6f",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": "engine/.veldo/control_launch_work.py",
+   "line": 237,
+   "function": "Runtime.close",
+   "primitive": "shutil.rmtree(directory, ignore_errors=True)",
+   "sha256": "cd6edc4fab20528beec16a35c951bc0d4cb7aae5baf226e74e1c6eed0b04fdff",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": ".veldo/control_launch_work.py",
+   "line": 237,
+   "function": "Runtime.close",
+   "primitive": "shutil.rmtree(directory, ignore_errors=True)",
+   "sha256": "cd6edc4fab20528beec16a35c951bc0d4cb7aae5baf226e74e1c6eed0b04fdff",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": "engine/.veldo/lander.py",
+   "line": 749,
+   "function": "GitLandOps.discard",
+   "primitive": "shutil.rmtree(c[\"workspace\"], ignore_errors=True)",
+   "sha256": "ca9d84193f81b39b414d871f3eb38417291dcc58dc054cf4cd99163edc46ba0a",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": "engine/.veldo/lander.py",
+   "line": 756,
+   "function": "GitLandOps.discard",
+   "primitive": "shutil.rmtree(c[\"observation_dir\"], ignore_errors=True)",
+   "sha256": "ca9d84193f81b39b414d871f3eb38417291dcc58dc054cf4cd99163edc46ba0a",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": ".veldo/lander.py",
+   "line": 749,
+   "function": "GitLandOps.discard",
+   "primitive": "shutil.rmtree(c[\"workspace\"], ignore_errors=True)",
+   "sha256": "ca9d84193f81b39b414d871f3eb38417291dcc58dc054cf4cd99163edc46ba0a",
+   "outside_expanded_footprint": true
+  },
+  {
+   "path": ".veldo/lander.py",
+   "line": 756,
+   "function": "GitLandOps.discard",
+   "primitive": "shutil.rmtree(c[\"observation_dir\"], ignore_errors=True)",
+   "sha256": "ca9d84193f81b39b414d871f3eb38417291dcc58dc054cf4cd99163edc46ba0a",
+   "outside_expanded_footprint": true
+  }
+ ],
+ "design": "6.10 Replaced: none of these calls a delete itself; AC2 permits only the removers and the reviewed list.",
+ "prior_ticket": "VELDO-0303 History explicitly retains guarded no-ledger branches and asks the boundary check to name them. Its review fixes preserve those primitives.",
+ "current_instruction": "No exemption; every removal path touched goes through the keep step and the removers, with the ledger, item-naming signal and owner.",
+ "resolution_needed": "Lead resolution of the no-ledger branch policy and scope for the four additional module pairs. Moving the primitives into the existing removers avoids adding exceptions.",
+ "not_claimed": "No new loss reproduced; these existing branches already call the standalone safety look. No AC or falsifier passed by this audit."
+}

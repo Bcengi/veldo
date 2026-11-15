@@ -1,10 +1,10 @@
 {
  "schema": "veldo.proof/v1",
  "spec_id": "VELDO-0304",
- "commit": "90d5c05b14d32fe246f539997badb6dec1e772d6",
- "tree": "fea1c66df3b6b5259ffbff82f9b2ca90f305a772",
- "producer": "Codex implementation agent; blocked before implementation",
- "produced_at": "2026-11-15T23:03:56.778640+00:00",
+ "commit": "490bcf08794a3767c39f62b45988cde93cb42574",
+ "tree": "0adb89d02cd4a7a780079d0dae83f715416ec35f",
+ "producer": "Codex implementation agent; resumed audit blocked before implementation",
+ "produced_at": "2026-11-15T23:09:08.847082+00:00",
  "criteria": [
   {
    "id": "AC1",
@@ -31,17 +31,17 @@
   {
    "name": "unit",
    "status": "not_run",
-   "reason": "Implementation blocked by existing AC2 violations outside the footprint."
+   "reason": "Ticket implementation blocked by the no-ledger direct-removal policy and footprint conflict recorded in resume-blocker.json. Prerequisite suites were rerun separately."
   },
   {
    "name": "integration",
    "status": "not_run",
-   "reason": "Implementation blocked by existing AC2 violations outside the footprint."
+   "reason": "Ticket implementation blocked by the no-ledger direct-removal policy and footprint conflict recorded in resume-blocker.json. Prerequisite suites were rerun separately."
   },
   {
    "name": "falsifiers",
    "status": "not_run",
-   "reason": "Implementation blocked by existing AC2 violations outside the footprint."
+   "reason": "Ticket implementation blocked by the no-ledger direct-removal policy and footprint conflict recorded in resume-blocker.json. Prerequisite suites were rerun separately."
   },
   {
    "name": "gate",
@@ -49,7 +49,7 @@
    "reason": "The lead runs ./scripts/verify.sh through the gate lock."
   }
  ],
- "blocker": "proof/VELDO-0304/blocker.json",
+ "blocker": "proof/VELDO-0304/resume-blocker.json",
  "dependency_commits": [
   "a8f1754e",
   "931ac7c9",
@@ -59,9 +59,18 @@
  "assumptions": [
   "No acceptance criterion is claimed passed. This records a blocked build, not verification.",
   "Full gate, heavy suites, teeth stages and policy checking are reserved for the lead.",
-  "No removal code, protected data or live captures changed. The protected gate_legs.py pair was taken exactly from the accepted prerequisite."
+  "No removal code, protected data or live captures changed. The protected gate_legs.py pair was taken exactly from the accepted prerequisite.",
+  "The lead decision is recorded verbatim in History and the authorized module pairs are in the footprint. The resumed blocker is the conflict over existing no-ledger direct removals, not the prior ref-delete scope question.",
+  "No exemption, remover, boundary check, suite or mutation case was added. AC1 through AC4 and all falsifiers remain pending. No new loss was reproduced."
  ],
  "rollback": "No boundary implementation exists. Revert this blocked-build record if superseded; prerequisite changes remain separate commits.",
- "dependency_results": "proof/VELDO-0304/dependency-tests.json",
- "fast_check_results": "proof/VELDO-0304/fast-checks.json"
+ "dependency_results": "proof/VELDO-0304/resume-dependency-tests.json",
+ "fast_check_results": "proof/VELDO-0304/resume-fast-checks.json",
+ "previous_blocker": {
+  "ref": "proof/VELDO-0304/blocker.json",
+  "status": "Scope decision supplied by the lead; implementation remains pending."
+ },
+ "artifacts": {
+  "resume-blocker.json": "sha256:deba78a63edd808baab9107532f6a12ec28eee3b364ac12b29e1867ae2401bac"
+ }
 }

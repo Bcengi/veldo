@@ -1,0 +1,30 @@
+[
+ {
+  "command": "python3 .veldo/validate.py all",
+  "exit_code": 0,
+  "summary": [
+   "Check passed."
+  ]
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit_code": 0,
+  "summary": [
+   "Check passed."
+  ]
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit_code": 0,
+  "summary": [
+   "Check passed."
+  ]
+ },
+ {
+  "command": "bash scripts/check_generated.sh",
+  "exit_code": 0,
+  "summary": [
+   "Check passed."
+  ]
+ }
+]
