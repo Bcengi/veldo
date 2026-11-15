@@ -845,8 +845,7 @@ class Clones(EP.EnvProvisioner):
                 self._write(manifest)
             except BaseException as error:
                 if self.space is None:
-                    # No ledger: the unique work probe and the keep step by themselves, then the delete; a
-                    # clone the look does not answer for stays, with its pins.
+                    # No ledger: preserve the failed clone and its pins.
                     self._standalone(root, work, pins, accepted.get('path'), accepted.get('unit'))
                 else:
                     # VELDO-0303: the declared items go as at teardown, through Signal. No worker has entered.
@@ -995,12 +994,11 @@ class Clones(EP.EnvProvisioner):
 
     def _teardown(self, handle):
         """Retire a clone: once every worker and consumer has ended, remove it and release its pins.
-        Idempotent; a clone still in use is refused clone_in_use and keeps its pins. With no ledger the
-        unique work probe and the keep step run by themselves first (_standalone), and a clone that holds
-        work they cannot keep is refused as space_deferred and stays, with its pins. With a space ledger
-        (VELDO-0303) the removal is Signal's: clone_in_use stays first and unchanged, a thing a safety
-        rule keeps is refused as space_deferred with the rule's name, and the pins are released only
-        after the work tree's removal outcome is written."""
+        Idempotent; a clone still in use is refused clone_in_use and keeps its pins. Without a ledger,
+        retirement refuses as space_deferred:not_in_ledger and preserves the clone and pins. With a
+        ledger, Signal names the items and applies the safety rules and keep step. Pin release then
+        requires a verified keep record and reachability from the main repository. A refused pin
+        release leaves the ref in place and records the reason."""
         manifest = self._manifest(handle.env_id)
         if manifest is None:
             return
@@ -1020,9 +1018,7 @@ class Clones(EP.EnvProvisioner):
                 raise Refused(refusal, str(root))
             self._event('retire', manifest, 'retired', clone_id=handle.env_id, users=users, released=released)
             return
-        # No ledger: the unique work probe and the keep step by themselves, before any delete. A build whose
-        # result was refused leaves its commits and files only here, so nothing goes that the look did not
-        # answer for: the commits are first read back from the bound repository's kept refs.
+        # No ledger: no item-naming ending event can authorize removal.
         try:
             main = self.store.bound_repository(self.conn, manifest['domain'], manifest['repository'])
         except Exception:  # noqa: BLE001 - a repository that cannot be named keeps the clone
