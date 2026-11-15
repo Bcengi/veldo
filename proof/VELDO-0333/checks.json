@@ -1,0 +1,42 @@
+[
+ {
+  "command": "python3 .veldo/validate.py all",
+  "exit_code": 0,
+  "summary": "All repository contracts checked; exit 0."
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit_code": 0,
+  "summary": "docs hygiene: pass"
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit_code": 0,
+  "summary": "template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+ },
+ {
+  "command": "bash scripts/check_generated.sh",
+  "exit_code": 0,
+  "summary": "generated: pass (specs/index.md)\ngenerated: pass (proof/WARP-0716/crossing-state.md)\ngenerated: pass (proof/WARP-0712/order-dependence.md)\ngenerated: pass (proof/WARP-0712/split-plan.md)\ngenerated: pass (scripts/suites/requires.json)\ngenerated: pass"
+ },
+ {
+  "command": "bash scripts/check_lint.sh",
+  "exit_code": 0,
+  "summary": "lint: pass (1203 python, 39 shell, 2.47s)"
+ },
+ {
+  "command": "python3 .veldo/validate.py ready specs/VELDO-0333-the-gates-leg-time-store-loses-its-removal-by-age.md",
+  "exit_code": 0,
+  "summary": "Ready contract passed."
+ },
+ {
+  "command": "python3 scripts/check_personal_setup.py",
+  "exit_code": 0,
+  "summary": "No installation found; built-in shapes only; 0 findings."
+ },
+ {
+  "command": "bash scripts/check_lint.sh",
+  "exit_code": 0,
+  "summary": "After staging the new suite: 1204 Python and 39 shell files passed."
+ }
+]
