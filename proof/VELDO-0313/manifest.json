@@ -1,0 +1,132 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0313",
+ "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+ "tree": "5a1ddc84a144f653b188bb25e17f7c5ea03539e8",
+ "producer": "Claude implementation agent (build); not an independent reviewer",
+ "produced_at": "2026-11-15T01:21:45.650297+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "Rows ac1/declared-started-ended (the run is issued by the authority to space-runner with the scope of its folder; the scratch root is an item owned by the run with its station, declared by the wrapper before the folder is made; the command is given the temporary folder, the space label, which is the run's identity, and the compose project name; the Ledger accepted, in order, the issue, the hold, the admission, the declare and the confirm, then the census, one signal, the outcomes and the release last, every one but the issue written as space-runner), ac1/build-output-has-item-and-goes (the build folder the command made has a build output item of the run, declared by the census, and is removed with the scratch root; the untracked notes, a folder only the repository's own exclude file ignores and the tracked file stay, and the worktree's item is present), ac1/surviving-child (a command that ends at once and leaves a process outside its session holding a file under the scratch root: the wrapper returns only after that process ended, which saw its file to its last moment), ac1/unread-group-sends-nothing (a group nobody could read and one known not empty: nothing written, the scratch root and its file there, the hold held), ac1/only-the-runs-own-items (an item of the run the owner marked Keep and another run's scratch root are untouched at their versions; the Ledger refuses space-runner a signal for another run, a signal that names items, worktree abandoned and the owner's Keep)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "The rows drive the CLI's own verbs, loaded by path from bin/veldo, at a real Ledger on a real store with the owner's real OpenSSH key, real git repositories and worktrees, and Signal, the kind registry, the probes, the removers, the keeper and the receiver's census from this repository's .veldo; the wrapped commands are real processes under the wrapper's own supervisor, and a removal really deletes. The disk and the ledger are read as each verb returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0313/falsifiers.json",
+     "detail": "space313-census-skipped is the declared falsifier: the build folder has no item and stays; ac1/build-output-has-item-and-goes is red. Beside it, each red on its row: space313-sent-when-the-command-exits (run finished at the command's own exit, while the process it left lives) reds ac1/surviving-child; space313-unread-group-sent reds ac1/unread-group-sends-nothing; space313-signal-not-through-the-runners-rule (the signal written as the authority) reds ac1/only-the-runs-own-items."
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "Rows ac2/command-status (0, 7, 143 for a command a signal ended, 127 for a command that is not there; each run ends with its hold released and its scratch root removed), ac2/act-waits-75 (act mode with too little space: 75, the pool, need, free bytes, held bytes and floor on standard error, the marker file not there, no folder made, no item, the hold released), ac2/report-starts (report mode with the same numbers: printed, the command starts and its status is returned; the hold was advised with the numbers and released; run finished marks the scratch root due and removes nothing)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "The rows drive the CLI's own verbs, loaded by path from bin/veldo, at a real Ledger on a real store with the owner's real OpenSSH key, real git repositories and worktrees, and Signal, the kind registry, the probes, the removers, the keeper and the receiver's census from this repository's .veldo; the wrapped commands are real processes under the wrapper's own supervisor, and a removal really deletes. The disk and the ledger are read as each verb returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0313/falsifiers.json",
+     "detail": "space313-started-anyway-in-act is the declared falsifier: the command starts in act mode and the row finds status 0 and the marker; ac2/act-waits-75 is red. Beside it: space313-waiting-hold-left-behind reds ac2/act-waits-75 (the hold is left waiting); space313-status-lost reds ac2/command-status."
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "Rows ac3/record-refusals (an unknown kind, a folder outside every known root, a path on the protect list, also beneath it and through a link, a path with a .. segment and a kind the observer may not record are each refused by name with exit 1, no item and no journal record), ac3/record-accepted (a worktree made with plain git is declared and confirmed as space-observer with the creator record and its project as owner; a second record is refused space_locator_taken), ac3/event-types (the types are exactly ref_changed, session_started, session_ended and released; landed, worktree_abandoned, run_finished, ticket_ended and the empty name are refused by name; a released, a session and a ref changed event that name a path outside every known root or on the protect list are refused by name; each of the four types is handed to the Ledger as space-observer and nothing is written)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "The rows drive the CLI's own verbs, loaded by path from bin/veldo, at a real Ledger on a real store with the owner's real OpenSSH key, real git repositories and worktrees, and Signal, the kind registry, the probes, the removers, the keeper and the receiver's census from this repository's .veldo; the wrapped commands are real processes under the wrapper's own supervisor, and a removal really deletes. The disk and the ledger are read as each verb returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0313/falsifiers.json",
+     "detail": "space313-any-path-accepted is the declared falsifier: ac3/record-refusals and ac3/event-types are red. The row does not get an item, because the Ledger behind the verb still refuses the path; it is red because the refusal lost its name, and for the event verb because the event was handed on (assumption 5). Beside it: space313-any-kind-accepted reds ac3/record-refusals; space313-any-event-type-accepted reds ac3/event-types."
+    }
+   ]
+  },
+  {
+   "id": "AC4",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "Rows ac4/no-installation-runs-unchanged (with no central installation the wrapper says so and the command starts with its own arguments, environment, folder and status, called in this process and as a real CLI process), ac4/each-verb-says-so (the host script's record and event, the hooks' record, event and replay, and sign each say there is no central installation; an installation whose ledger this process cannot reach, and one whose switch is off, run the command unchanged and say why)."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/151_veldo_0313_space_run.py",
+     "detail": "The rows drive the CLI's own verbs, loaded by path from bin/veldo, at a real Ledger on a real store with the owner's real OpenSSH key, real git repositories and worktrees, and Signal, the kind registry, the probes, the removers, the keeper and the receiver's census from this repository's .veldo; the wrapped commands are real processes under the wrapper's own supervisor, and a removal really deletes. The disk and the ledger are read as each verb returns. Stand-ins: assumptions 1 to 4."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0313/falsifiers.json",
+     "detail": "space313-refuses-with-no-installation is the declared falsifier: the wrapper returns 1 and the command never starts; ac4/no-installation-runs-unchanged is red."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "On the committed tree (commit b2c3f11973fb): python3 scripts/selftest.py with the suite option for 151_veldo_0313_space_run (14 rows, 40 passed with the shared preamble, 0 failed) (proof/VELDO-0313/suite-green.txt). A partial run, not the gate."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite: the real Ledger, store, OpenSSH signature of the owner, Signal, probes, removers, keeper and census, real git worktrees and real wrapped processes. Beside it on the same tree, 0 failed each: 148_veldo_0311_git_hooks (57 passed), 133_veldo_0326_space_principals (56 passed), 146_veldo_0308_run_finished (64 passed), 143_veldo_0305_space_census (52 passed)."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "Eleven registered cases of finding 313, each applied once on the committed tree by the registry's own materialize and worker: every no-op green, every mutant red on its target rows (proof/VELDO-0313/mutations.txt, falsifiers.json)."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; bash scripts/check_generated.sh; bash scripts/check_docs.sh; python3 .veldo/validate.py all; python3 scripts/check_git_boundary.py: each passed."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh was not run by the builder: the lead runs it through the gate lock, with the heavy suites and the teeth driver."
+  }
+ ],
+ "assumptions": [
+  "1. THE WIRING IS THE SUITE'S. The verbs take the mapping an installation wires in (the one the receiver is given). Nothing serves the ledger to a CLI process yet (the authority's socket is VELDO-0323's), so on a host with an installation the CLI says the space ledger is not reachable, the wrapper runs its command unchanged and record and event record nothing. NOT PROVEN HERE: one wrapped run from a shell against a running authority.",
+  "2. THE WORKTREE THE COMMAND RUNS IN IS DECLARED BY THE SUITE (VELDO-0302, 0311). The two checks of a switch to act (VELDO-0332, 0339) are stand-ins that allow, so that an act-mode row can exist; nothing in this ticket lets a scope reach act.",
+  "3. FREE SPACE IS A FUNCTION OF THE SUITE, the docker client a function with no container, and the process table a folder with no entry. What tells the wrapper the run is over is the kernel, through its supervisor (a real child subreaper); the row with a surviving process is a real process.",
+  "4. THE NEED is the project's declared one, else the pool default. The measured need, the one admission requested event and the freed mark are VELDO-0316 and 0334.",
+  "5. THE DECLARED FALSIFIER OF AC3 DOES NOT MAKE AN ITEM. With the CLI's check removed the Ledger still refuses the path, by another name. The row is red on the name, and no state exists in which a path outside the roots gets an item through this verb.",
+  "6. THE EVENT VERB RECORDS NOTHING YET. The Ledger's event command is VELDO-0323's (released: VELDO-0335); until then the answer is space_no_command:space_event, said by the verb, and nothing becomes due. The spool holds only the hooks' three entry types; which ticket lets it hold a session or a released event is an open question for the lead.",
+  "7. THE WRAPPER WAITS FOR EVERY PROCESS THE COMMAND LEFT, without a bound, and stops none of them. A command that leaves a daemon keeps the wrapper waiting; that is the meaning of run finished (design section 5), and nothing here kills a process to shorten it.",
+  "8. NOT RUN BY THE BUILDER: ./scripts/verify.sh, the heavy suites and the registered teeth driver. Suite 86_veldo_0127 is 52 of 54 on this branch before this ticket and was not touched."
+ ],
+ "rollback": "Revert the change. Commands started from a shell run unwrapped, with no admission and no removal at their end."
+}

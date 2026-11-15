@@ -1,0 +1,271 @@
+[
+ {
+  "falsifier": "space313-census-skipped",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": true,
+  "expected_red": [
+   "ac1/build-output-has-item-and-goes"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/declared-started-ended",
+   "ac1/build-output-has-item-and-goes"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac1/declared-started-ended",
+    "in the journal: the issue, then the hold, the admission, the scratch root declared and confirmed; after the command the census, then one signal, then the outcomes, and the release last [['space_issue', 'space_hold', 'space_admit', 'space_declare', 'space_confirm', 'space_signal', 'space_outcome', 'space_outcome', 'space_release']]"
+   ],
+   [
+    "VELDO-0313 ac1/build-output-has-item-and-goes",
+    "the build folder the command made has an item of the run, declared by the census inside the worktree's item [[]]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-sent-when-the-command-exits",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "expected_red": [
+   "ac1/surviving-child"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/surviving-child"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac1/surviving-child",
+    "the wrapper returns the command's own status, and only after the process the command left has ended [3 0.1s ]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-unread-group-sent",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "expected_red": [
+   "ac1/unread-group-sends-nothing"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/unread-group-sends-nothing"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac1/unread-group-sends-nothing",
+    "a group whose emptiness is None: run finished is not sent and the reason is group_unread; no census, no signal and no release are written [{'sent': True, 'reason': None, 'census': {'worktree': 'space:item:0aeeda567b6247e39b903c79fad1bbf2', 'event': 'run_finished', 'declared': ['space:item:99b01f3e513d467b94ba9420ef790182'], 'items': {'/tmp/veldo-0313-n9crb0p9/projects/orchard-worktrees/w-unread/bu"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-signal-not-through-the-runners-rule",
+  "module": "bin/veldo",
+  "criterion": "AC1",
+  "declared": false,
+  "expected_red": [
+   "ac1/only-the-runs-own-items"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/declared-started-ended",
+   "ac1/only-the-runs-own-items"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac1/declared-started-ended",
+    "the run was issued by the authority, and every other command of it was written as space-runner [[('space_admit', 'space-runner'), ('space_confirm', 'space-runner'), ('space_declare', 'space-runner'), ('space_hold', 'space-runner'), ('space_issue', 'authority'), ('space_measure', 'space-runner'), ('space_outcome', 'space-runner'), ('space_release', 'space-runner'), ('space_signal', 'authority')]]"
+   ],
+   [
+    "VELDO-0313 ac1/only-the-runs-own-items",
+    "the Ledger refuses space-runner a signal for a run nobody issued to it, a signal that names items, worktree abandoned and the owner's Keep, each by name, with nothing written [[None, None, None, 'space_not_permitted:space_disposition']]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-started-anyway-in-act",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": true,
+  "expected_red": [
+   "ac2/act-waits-75"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/act-waits-75"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac2/act-waits-75",
+    "act mode with too little space: the wrapper returns 75 [0]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-waiting-hold-left-behind",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": false,
+  "expected_red": [
+   "ac2/act-waits-75"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac2/act-waits-75"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac2/act-waits-75",
+    "no scratch root was made and the run has no item; its hold is released, never left admitted [{} waiting]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-status-lost",
+  "module": "bin/veldo",
+  "criterion": "AC2",
+  "declared": false,
+  "expected_red": [
+   "ac2/command-status"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac1/surviving-child",
+   "ac2/command-status",
+   "ac2/report-starts"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac1/surviving-child",
+    "the wrapper returns the command's own status, and only after the process the command left has ended [0 1.7s ]"
+   ],
+   [
+    "VELDO-0313 ac2/command-status",
+    "the wrapper returns the command's own status 7 for exit 7, and the run's hold is released and its scratch root removed [0 released ]"
+   ],
+   [
+    "VELDO-0313 ac2/report-starts",
+    "report mode with the same numbers: they are printed, and the command starts and its status is returned [0 veldo space run: would wait for space (report mode, the command starts): pool host: need 4194304000, free 25165823999, held by other runs 0, floor 20971520000 (bytes)]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-any-path-accepted",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": true,
+  "expected_red": [
+   "ac3/event-types",
+   "ac3/record-refusals"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals",
+   "ac3/event-types"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "a folder outside every known root is refused by name, exit 1, and gets no item [1 veldo space record: refused invalid_input:owner.scope]"
+   ],
+   [
+    "VELDO-0313 ac3/event-types",
+    "the event the type option released is refused as space_outside_roots, exit 1 [0 veldo space event: not recorded (space_no_command:space_event): nothing becomes due and nothing is removed]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-any-kind-accepted",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "expected_red": [
+   "ac3/record-refusals"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/record-refusals"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/record-refusals",
+    "the kind option bucket sewhere/made-by-a-script is refused as space_unknown_kind:bucket, exit 1, with no item [1 veldo space record: refused space_record_kind:bucket]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-any-event-type-accepted",
+  "module": "bin/veldo",
+  "criterion": "AC3",
+  "declared": false,
+  "expected_red": [
+   "ac3/event-types"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac3/event-types"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac3/event-types",
+    "the event type 'landed' is refused by name, exit 1 [1 veldo space event: refused invalid_input:a session event names its session]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ },
+ {
+  "falsifier": "space313-refuses-with-no-installation",
+  "module": "bin/veldo",
+  "criterion": "AC4",
+  "declared": true,
+  "expected_red": [
+   "ac4/no-installation-runs-unchanged"
+  ],
+  "noop_red_rows": [],
+  "red_rows": [
+   "ac4/no-installation-runs-unchanged",
+   "ac4/each-verb-says-so"
+  ],
+  "red_details": [
+   [
+    "VELDO-0313 ac4/no-installation-runs-unchanged",
+    "the command starts, with its own arguments, environment and folder, and the wrapper returns its status [1 {}]"
+   ]
+  ],
+  "red_as_expected": true,
+  "commit": "b2c3f11973fb6ee534a4294158eccf046314a905",
+  "applied": "once, on the committed tree, by the registry's own materialize and worker on a temporary copy of bin/veldo the suite loads: a no-op copy, then the mutant copy"
+ }
+]
