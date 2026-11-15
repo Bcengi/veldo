@@ -6,11 +6,12 @@
         "ac1/two-tags"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac1/two-tags",
-        "VELDO-0328 ac1/owner-keep"
+        "VELDO-0328 ac1/owner-keep",
+        "VELDO-0328 ac1/untagged-parent"
       ],
       "details": [
         [
@@ -20,10 +21,14 @@
         [
           "VELDO-0328 ac1/owner-keep",
           "Keep survives owner event, named event and replayed build"
+        ],
+        [
+          "VELDO-0328 ac1/untagged-parent",
+          "the tag goes by a remove that names it and prunes nothing, on default"
         ]
       ],
-      "source_sha256": "7ef51221c8675e7866f520b06760041f721748ac5308835de0e7097915b62021",
-      "mutant_sha256": "d4c18a276462c34ecdc7059f9eb47bf161191d0787fb5e2efc02d1ff0557228d"
+      "source_sha256": "1ea2f56a952db7af3feb859a8d561aa22a912f995ff22ef9c075799ea5640a43",
+      "mutant_sha256": "69e9dae14b3cfcb53d49253afd2b70af3b77cdb389065bef6d89db2f4473e180"
     },
     {
       "name": "space328-pull-owned-by-run",
@@ -31,7 +36,7 @@
         "ac2/pulled-kept"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac2/pulled-kept",
@@ -61,7 +66,7 @@
         "ac3/other-name"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac3/both-engines",
@@ -86,19 +91,24 @@
         "ac2/pull-after-build"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
-        "VELDO-0328 ac2/pull-after-build"
+        "VELDO-0328 ac2/pull-after-build",
+        "VELDO-0328 safety/unread"
       ],
       "details": [
         [
           "VELDO-0328 ac2/pull-after-build",
           "the durable pull report holds an older built tag on default"
+        ],
+        [
+          "VELDO-0328 safety/unread",
+          "an unread pull inventory refuses removal"
         ]
       ],
-      "source_sha256": "7ef51221c8675e7866f520b06760041f721748ac5308835de0e7097915b62021",
-      "mutant_sha256": "484ef805ee2fa668474967b27d9f9c274afd7c41702739b6197f6b59e68a12ed"
+      "source_sha256": "1ea2f56a952db7af3feb859a8d561aa22a912f995ff22ef9c075799ea5640a43",
+      "mutant_sha256": "bf0546d8f781bfda04f71389e2527cdf3876a5afe9f612a3e80b512e1529db38"
     },
     {
       "name": "space328-no-image-subscription",
@@ -106,7 +116,7 @@
         "ac2/pulled-kept"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac2/pulled-kept"
@@ -126,7 +136,7 @@
         "safety/unread"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 safety/unread"
@@ -146,7 +156,7 @@
         "ac1/provenance"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac1/provenance",
@@ -171,7 +181,7 @@
         "ac2/restart"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac2/restart"
@@ -191,7 +201,7 @@
         "ac2/restart"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac2/restart"
@@ -211,7 +221,7 @@
         "ac3/other-name"
       ],
       "caught": true,
-      "control_checks": 40,
+      "control_checks": 43,
       "control_failed": [],
       "mutant_failed": [
         "VELDO-0328 ac3/both-engines",
@@ -229,6 +239,91 @@
       ],
       "source_sha256": "d1195bccc51ccb3405121f30c295d1b7f09cdaf6fe9d64935173dac397852541",
       "mutant_sha256": "0515a9c51582310e4940501684a6831dfa5fa75d589e4753166eb60b4d9072a9"
+    },
+    {
+      "name": "space328-remove-prunes-parents",
+      "rows": [
+        "ac1/untagged-parent"
+      ],
+      "caught": true,
+      "control_checks": 43,
+      "control_failed": [],
+      "mutant_failed": [
+        "VELDO-0328 ac1/two-tags",
+        "VELDO-0328 ac1/untagged-parent"
+      ],
+      "details": [
+        [
+          "VELDO-0328 ac1/two-tags",
+          "own tag removed and other ticket content survives default landed"
+        ],
+        [
+          "VELDO-0328 ac1/untagged-parent",
+          "the untagged parent Veldo did not build survives on default"
+        ]
+      ],
+      "source_sha256": "1ea2f56a952db7af3feb859a8d561aa22a912f995ff22ef9c075799ea5640a43",
+      "mutant_sha256": "ba8316e0f41ffc68d787808adb0677d2bea2ade07d634b8ef2beb4bc129aeb5b"
+    },
+    {
+      "name": "space328-pull-inventory-fails-open",
+      "rows": [
+        "safety/unread"
+      ],
+      "caught": true,
+      "control_checks": 43,
+      "control_failed": [],
+      "mutant_failed": [
+        "VELDO-0328 safety/unread"
+      ],
+      "details": [
+        [
+          "VELDO-0328 safety/unread",
+          "an unread pull inventory refuses removal"
+        ]
+      ],
+      "source_sha256": "1ea2f56a952db7af3feb859a8d561aa22a912f995ff22ef9c075799ea5640a43",
+      "mutant_sha256": "d45f1cef61816f0bb4163437fb5f312ab05630ed534339c12d6355ba258fbcda"
+    },
+    {
+      "name": "space328-unknown-run-borrows-owner",
+      "rows": [
+        "ac1/unknown-run"
+      ],
+      "caught": true,
+      "control_checks": 43,
+      "control_failed": [],
+      "mutant_failed": [
+        "VELDO-0328 ac1/unknown-run"
+      ],
+      "details": [
+        [
+          "VELDO-0328 ac1/unknown-run",
+          "an unlabelled image built for an unknown run is refused on default"
+        ]
+      ],
+      "source_sha256": "d1195bccc51ccb3405121f30c295d1b7f09cdaf6fe9d64935173dac397852541",
+      "mutant_sha256": "418b516aa143b98269958be21cf3869051669d426bcdc8dd91b9f97a36114485"
+    },
+    {
+      "name": "space328-option-name-passes",
+      "rows": [
+        "safety/option-name"
+      ],
+      "caught": true,
+      "control_checks": 43,
+      "control_failed": [],
+      "mutant_failed": [
+        "VELDO-0328 safety/option-name"
+      ],
+      "details": [
+        [
+          "VELDO-0328 safety/option-name",
+          "a build named --force is refused on default"
+        ]
+      ],
+      "source_sha256": "d1195bccc51ccb3405121f30c295d1b7f09cdaf6fe9d64935173dac397852541",
+      "mutant_sha256": "35fdf9f299ae505f5401704fda05e5e4dd0d3b02a34626056377d6471fe9ec31"
     }
   ],
   "passed": true
