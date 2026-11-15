@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0314",
-  "commit": "e5ef991da023c3d37dd4cd5e1f8622bc22a65928",
-  "tree": "d9ac6ee8bdec79bc181732b692f8041961257b87",
-  "producer": "Codex implementation agent (build a93d176e); Claude fix-round agent (fix e5ef991d); neither is an independent reviewer",
-  "produced_at": "2026-11-15T21:53:09.924546+00:00",
+  "commit": "cf6974f7ffdc388817f6daf02c402b9bbe2f8848",
+  "tree": "bfd97c30ec6e7e1cdc2210354e4f41dda850aff5",
+  "producer": "Codex implementation agent (build a93d176e); Claude fix-round agents (fix e5ef991d, fix round 2 cf6974f7); none is an independent reviewer",
+  "produced_at": "2026-11-15T22:05:17.640202+00:00",
   "criteria": [
     {
       "id": "AC1",
@@ -23,7 +23,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0314/targeted-tests.json",
-          "detail": "Targeted tests passed on the fix-round tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
+          "detail": "Targeted tests passed on the fix-round-2 tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
         },
         {
           "type": "falsifier",
@@ -44,7 +44,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0314/targeted-tests.json",
-          "detail": "Targeted tests passed on the fix-round tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
+          "detail": "Targeted tests passed on the fix-round-2 tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
         },
         {
           "type": "falsifier",
@@ -65,7 +65,7 @@
         {
           "type": "integration",
           "ref": "proof/VELDO-0314/targeted-tests.json",
-          "detail": "Targeted tests passed on the fix-round tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
+          "detail": "Targeted tests passed on the fix-round-2 tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
         },
         {
           "type": "falsifier",
@@ -89,9 +89,14 @@
           "detail": "Fix round, no notification dropped without a record. fix2/invalid-refused: a session id that is no path component, no folder and a relative folder are each written whole under refused/ with why. fix3/no-state-root: with no VELDO_SPACE_STATE_ROOT the entry is spooled under XDG_STATE_HOME/veldo, else ~/.local/state/veldo. fix3/unsafe-folder: a spool folder its group can write is noted beside it, nothing is written into it and the entry is spooled under the fallback. fix3/no-spool-last-record and fix3/no-module-last-record: with both spool folders refused, or the module not loadable, one line with the notification, the client pid and why is left in space-session.unspooled.jsonl. fix4/deadline-in-read: a TimeoutError raised where an entry is read ends the replay, the entry stays whole and the next replay delivers it. fix5/cli-resolves, fix5/cli-wired-canonical and fix5/cli-session-path-said: the CLI resolves relative and linked paths and a linked working folder, spools the Ledger's form of a released path, and says a session's --path is not recorded. fix6/stale-partial-set-aside: a stale .partial leaves the spool with its bytes and why; a new one stays."
         },
         {
+          "type": "unit",
+          "ref": "scripts/suites/153_veldo_0314_session_hooks.py",
+          "detail": "Fix round 2 (the re-review's one finding, its probes F6 to F8): the CLI's own failure leaves a record on disk. Real `veldo space event` processes with no ledger. round2/cli-unwritable-root: a state root that cannot be written (mode 0500) stays empty and the entry is spooled under the XDG fallback; with the fallback's spool folder refused too, one line with the verb's arguments and why is left in space-session.unspooled.jsonl under the fallback, the refusal is noted beside that folder, and standard error names the file. round2/cli-invalid-refused: session id ../evil is written whole under refused/ with why space_event_invalid, and nothing is pending. round2/cli-unsafe-folder: a spool folder of mode 0777 is noted beside it, nothing is written into it and the entry is spooled under the fallback. Each exits 0."
+        },
+        {
           "type": "integration",
           "ref": "proof/VELDO-0314/targeted-tests.json",
-          "detail": "Targeted tests passed on the fix-round tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
+          "detail": "Targeted tests passed on the fix-round-2 tree. Real store, signed Ledger declarations, socket and client processes; event-command receiver is a stand-in, as detailed in assumptions. Full gate pending."
         },
         {
           "type": "falsifier",
@@ -102,6 +107,11 @@
           "type": "falsifier",
           "ref": "proof/VELDO-0314/falsifiers.json",
           "detail": "Thirteen fix-round cases, each rejected by the teeth driver in the confined leg and by falsify.py: space314-folder-not-resolved, space314-invalid-dropped, space314-unsafe-folder-silent, space314-unsafe-no-fallback, space314-no-last-record, space314-deadline-sets-aside, space314-partials-not-swept, space314-hook-no-fallback, space314-hook-no-last-record, space314-cli-raw-paths, space314-cli-unresolved, space314-cli-folder-unresolved, space314-cli-session-path-silent."
+        },
+        {
+          "type": "falsifier",
+          "ref": "proof/VELDO-0314/falsifiers.json",
+          "detail": "Four fix-round-2 cases, each rejected by the teeth driver in the confined leg and by falsify.py, one for each link of the CLI's chain: space314-cli-invalid-dropped (the refused/ entry), space314-cli-unsafe-folder-silent (the note beside a refused folder), space314-cli-no-fallback (the fallback root), space314-cli-no-last-record (the unspooled line)."
         }
       ]
     }
@@ -110,22 +120,22 @@
     {
       "name": "unit",
       "status": "passed",
-      "command": "python3 scripts/selftest.py --suite 153_veldo_0314_session_hooks: 25 rows, 51 checks including shared preamble, 0 failed; partial exit 2."
+      "command": "python3 scripts/selftest.py --suite 153_veldo_0314_session_hooks: 28 rows, 54 checks including shared preamble, 0 failed; partial exit 2."
     },
     {
       "name": "integration",
       "status": "passed",
-      "command": "The same suite uses real hook and CLI processes, socket, store and signatures. Regression suites 148_veldo_0311_git_hooks (31 rows, 57 checks, 0 failed) and 151_veldo_0313_space_run (28 rows, 54 checks, 0 failed, run once before the last two fixture edits of suite 153; it shares no file with them); partial exit 2."
+      "command": "The same suite uses real hook and CLI processes, socket, store and signatures. Regression suite 148_veldo_0311_git_hooks: 31 rows, 57 checks, 0 failed, three runs in a row; partial exit 2. The first run of it in this round, at a load average above 40 on a shared host, reported 55 passed and 2 failed in 79.56s against 15 to 21s for the three green runs; its failing rows were not captured and it did not recur. Suite 151_veldo_0313_space_run was not run in this round."
     },
     {
       "name": "teeth",
       "status": "passed",
-      "command": "python3 scripts/check_teeth_mutations.py --finding 314: passed, baseline valid in the confined leg, registered 17, executed 17, reused 0, rejected 17."
+      "command": "python3 scripts/check_teeth_mutations.py --finding 314: passed, baseline valid in the confined leg, registered 21, executed 21, reused 0, rejected 21."
     },
     {
       "name": "falsifiers",
       "status": "passed",
-      "command": "python3 proof/VELDO-0314/falsify.py: the 17 registered mutations applied by hand, 17 target rows red, no fixture exception."
+      "command": "python3 proof/VELDO-0314/falsify.py: the 21 registered mutations applied by hand, 21 target rows red, no fixture exception."
     },
     {
       "name": "fast checks",
@@ -148,10 +158,11 @@
     "The store journal signer is a fixture function; observer commands use a real OpenSSH key and the Ledger verifies them. Invalid signatures and expired packets are refused. No act checks are overridden and no real Docker engine is contacted.",
     "Released entries preserve the creator name for VELDO-0335, defaulting to record for the existing record verb. This ticket does not authorize or consume a release.",
     "The CLI retains its existing direct in-process event path when explicitly wired. On an absent event command or an exception it spools; remote replay uses fresh observer signatures and the existing deadline and retry handling.",
-    "This bundle follows a review of the build (verdict FIX, six findings) and its fix round. The fix-validation record (runner results and the assessor's verdict) is the lead's and is not in this bundle.",
+    "This bundle follows a review of the build (verdict FIX, six findings), its fix round, a re-review (verdict FIX, one finding) and fix round 2. The fix-validation record (runner results and the assessor's verdict) is the lead's and is not in this bundle.",
     "Review finding 5 proposed refusing --path on session types. It is said on standard error and not refused: suite 151 (VELDO-0313), outside this footprint, holds rows in which a session event with a path is accepted and one on the protect list is refused by name. The lead decides whether to refuse it in a ticket that owns that suite.",
-    "Known and left: when `veldo space event` itself cannot spool, it says so on standard error and exits 0, as in the build. The hook does not go through that verb.",
-    "fix4/deadline-in-read replaces the module's read for one call to raise TimeoutError: the 12 second timer cannot be made to fire inside the read on demand. The hook script's own timer was not measured firing there."
+    "fix4/deadline-in-read replaces the module's read for one call to raise TimeoutError: the 12 second timer cannot be made to fire inside the read on demand. The hook script's own timer was not measured firing there.",
+    "Fix round 2: `veldo space event` that cannot spool runs the hook's chain and still exits 0. Only when neither the state root nor the fallback can be written at all is nothing kept beyond the line on standard error. The verb has no deadline of its own. The re-review's deviation (a), a session's --path said and not refused, is accepted and unchanged.",
+    "One run of suite 148 in this round was red (2 of 57 checks) under heavy load on a shared host and green on three reruns. This round changed nothing suite 148 reads except bin/veldo's pending_event. The rows that failed are unknown: the lead's gate run is the answer."
   ],
   "rollback": "Revert the implementation commit. Session hooks then leave no notification; the existing spool records remain."
 }

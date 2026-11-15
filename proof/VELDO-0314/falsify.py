@@ -45,4 +45,4 @@ output = ROOT / 'proof/VELDO-0314/falsifiers.json'
 output.write_text(json.dumps({'scope': 'Every mutation registered for finding 314, applied by hand; the teeth '
                                        'driver run is recorded in targeted-tests.json. No full gate.',
                               'results': results}, indent=2) + '\n')
-assert len(results) == 17 and all(result['rejected'] for result in results)
+assert len(results) == 21 and all(result['rejected'] for result in results)

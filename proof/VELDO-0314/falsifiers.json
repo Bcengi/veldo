@@ -207,6 +207,57 @@
       },
       "rejected": true,
       "errors": []
+    },
+    {
+      "case": "space314-cli-invalid-dropped",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "round2/cli-invalid-refused": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-cli-unsafe-folder-silent",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "round2/cli-unsafe-folder": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-cli-no-fallback",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "round2/cli-unsafe-folder": [
+          false
+        ],
+        "round2/cli-unwritable-root": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
+    },
+    {
+      "case": "space314-cli-no-last-record",
+      "module": "veldo",
+      "applied": 1,
+      "target_rows": {
+        "round2/cli-unwritable-root": [
+          false
+        ]
+      },
+      "rejected": true,
+      "errors": []
     }
   ]
 }

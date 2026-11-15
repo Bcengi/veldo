@@ -3,8 +3,8 @@
     "command": "python3 scripts/selftest.py --suite 153_veldo_0314_session_hooks",
     "exit_code": 2,
     "summary": [
-      "153_veldo_0314_session_hooks 25 passed",
-      "selftest (PARTIAL, 1 of 223 suites): 51 passed, 0 failed in 8.42s"
+      "153_veldo_0314_session_hooks 28 passed",
+      "selftest (PARTIAL, 1 of 223 suites): 54 passed, 0 failed in 2.94s"
     ],
     "failures": [],
     "passed_targeted_checks": true
@@ -14,16 +14,19 @@
     "exit_code": 2,
     "summary": [
       "148_veldo_0311_git_hooks 31 passed",
-      "selftest (PARTIAL, 1 of 223 suites): 57 passed, 0 failed in 27.31s"
+      "selftest (PARTIAL, 1 of 223 suites): 57 passed, 0 failed in 15.01s, then 18.92s and 20.82s"
     ],
     "failures": [],
-    "passed_targeted_checks": true
+    "passed_targeted_checks": true,
+    "earlier_runs": [
+      "Fix round 2, first run, load average above 40: 29 rows passed, 55 passed, 2 failed in 79.56s. The failing rows were not captured. Three runs after it were green."
+    ]
   },
   {
     "command": "python3 scripts/check_teeth_mutations.py --finding 314",
     "exit_code": 0,
     "summary": [
-      "mutations: passed registered=17 executed=17 reused=0 rejected=17 workers=23 elapsed=94.339s",
+      "mutations: passed registered=21 executed=21 reused=0 rejected=21 workers=27 elapsed=34.435s",
       "status passed, invalid_results [], every worker in the confined leg"
     ],
     "failures": [],

@@ -4,23 +4,23 @@
     "sha256": "407d5371ccce4823312d8a3e1d7c824f7683b5009fc6746cc5fc5a9525762c9c"
   },
   "manifest.json": {
-    "bytes": 12958,
-    "sha256": "ddf81dede6b8a49ff559840bb25834052f6303993c7ac453272c64d7e476aec2"
+    "bytes": 15090,
+    "sha256": "d848d605ecd134a79ddeeed99dd00abee3762d64b2d8e505dd9413f382eb2f76"
   },
   "falsifiers.json": {
-    "bytes": 4510,
-    "sha256": "ec7a732fb14a6ef959c918a6a09e1a35fff9097ce4f06b21b51b23a24bb7d4d1"
+    "bytes": 5553,
+    "sha256": "c6c383d40a492aae9b8b3742f49305e247aa138ab1089d2331377f125b2f806b"
   },
   "targeted-tests.json": {
-    "bytes": 1311,
-    "sha256": "ce6b9557d488a46880b48011347c5ab3cae44235e4fba5b0e95fc878e39c0244"
+    "bytes": 1534,
+    "sha256": "d38541a84c3c11756bb341ad3e0be4c4f56c1327ae0b83233f9dd78fb7a53ab3"
   },
   "tests.txt": {
-    "bytes": 729,
-    "sha256": "cf8129f820b7759d24cc597e15e1bf37f88458f9ddbf21c0d4a4ebcfddf0ebb8"
+    "bytes": 859,
+    "sha256": "50c465dab4b7207235c6582e54d1a210fa18c292c4a353e297fdb9f325c9655d"
   },
   "falsify.py": {
     "bytes": 2901,
-    "sha256": "0146733d7037ed82f485656da7ae9942e0d80784392b5ba2844c6690c74513d5"
+    "sha256": "f75e04ee06b09d74471b04402d4c13ae0c9d7d7124a7650fd2a054bcc6ac5661"
   }
 }
