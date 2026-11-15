@@ -1,74 +1,108 @@
 {
-  "schema": "veldo.proof/v1",
-  "spec_id": "VELDO-0337",
-  "commit": "8ef46604e80e6a69909556c82e4e9b17e2acde87",
-  "producer": "Codex build agent; not an independent reviewer",
-  "produced_at": "2026-11-15T20:23:06.724923+00:00",
-  "status": "blocked",
-  "criteria": [
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0337",
+ "commit": "863cbe2875880faa1c17515aa1a6c0b000139e60",
+ "tree": "d2a1f9b29ce8ca5e18075ba32d32c3360c8b9ad6",
+ "spec_revision": "sha256:ae28402de33c9f2b3577f22cf6d6a3eff480083baedba234facd0bec040a5ace",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T20:35:39.858781+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
     {
-      "id": "AC1",
-      "status": "pending",
-      "evidence": []
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
+     "digest": "sha256:c538a97148e777e2e68b0f20297a12413419c9294b826a943b7907feeabe8fa5",
+     "detail": "ac1/after-commit: passing and failing verdicts are invisible on a second connection inside the transaction, with build and scratch still present. The one signal follows the durable record and names exact item versions and recorded owners. ac1/rejected-or-unstored: bad signature and failed store write emit nothing. ac1/both-callers: real Runtime.review and Dispatcher._review_floor converge on the common writer; the receiver sends run finished only."
     },
     {
-      "id": "AC2",
-      "status": "pending",
-      "evidence": []
+     "type": "integration",
+     "ref": "proof/VELDO-0337/targeted.txt",
+     "digest": "sha256:963a87a9623363d75c2e1cb8ac671e46833fed98acd4d0e6e1679d719ff3cc7f",
+     "detail": "Real floor transition, store transactions, signed review receipts and a second store connection; actual Signal and removers. The targeted suite has 11 ticket rows and 26 shared checks, all green. This is partial evidence, not a gate pass."
     },
     {
-      "id": "AC3",
-      "status": "pending",
-      "evidence": []
+     "type": "unit",
+     "ref": "proof/VELDO-0337/falsifiers.json",
+     "digest": "sha256:eda47703c289fd6959ac2679649fb5f9759fe5acf037bea8154aff44763a1efa",
+     "detail": "Before-commit and receiver-emitter falsifiers turn the timing and caller rows red. Owner-subject and missing Runtime wiring falsifiers also turn their target rows red."
     }
-  ],
-  "checks": [
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
     {
-      "name": "ordering reproduction",
-      "status": "passed",
-      "command": "python3 proof/VELDO-0337/receiver_order.py",
-      "detail": "Two diagnostic checks. Real Launch.wait and Runtime.review with explicit stand-ins; no acceptance criterion proven."
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
+     "digest": "sha256:c538a97148e777e2e68b0f20297a12413419c9294b826a943b7907feeabe8fa5",
+     "detail": "ac2/output-and-evidence: real build and scratch folders removed, evidence file byte-equal, only declared cache dropped. ac2/owner-and-keep: owner_keep item excluded at its version and another review untouched. ac2/stale-version: the ledger refuses the whole named send after an item changes, without fallback. ac2/report-and-owner-live: report writes due only; unread owner liveness defers removal. ac2/planted-work: a nested repository and its only commit remain in place."
     },
     {
-      "name": "unit",
-      "status": "not_run",
-      "command": "Acceptance tests blocked by the production footprint; no implementation."
-    },
-    {
-      "name": "integration",
-      "status": "not_run",
-      "command": "Real verdict-store and ledger integration not built or tested."
-    },
-    {
-      "name": "falsifiers",
-      "status": "not_run",
-      "command": "All three declared falsifiers remain unapplied; no implementation to mutate."
-    },
-    {
-      "name": "contracts",
-      "status": "passed",
-      "command": "python3 .veldo/validate.py all"
-    },
-    {
-      "name": "docs",
-      "status": "passed",
-      "command": "bash scripts/check_docs.sh"
-    },
-    {
-      "name": "template sync",
-      "status": "passed",
-      "command": "bash scripts/check_template_sync.sh"
-    },
-    {
-      "name": "gate",
-      "status": "not_run",
-      "command": "./scripts/verify.sh",
-      "detail": "Reserved for the lead through the gate lock."
+     "type": "unit",
+     "ref": "proof/VELDO-0337/falsifiers.json",
+     "digest": "sha256:eda47703c289fd6959ac2679649fb5f9759fe5acf037bea8154aff44763a1efa",
+     "detail": "Deleting the evidence root instead of only caches loses the planted evidence and turns ac2/output-and-evidence red. Naming owner_keep or another run turns ac2/owner-and-keep red. Replacing item versions with an owner subject turns ac2/stale-version red."
     }
-  ],
-  "assumptions": [
-    "This manifest records a blocked build on the named base commit, not delivered behavior. See blocker.md. No production file changed.",
-    "The owner has not authorized a footprint expansion."
-  ],
-  "rollback": "Revert the blocker documentation; there is no runtime change."
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0337_verdict_recorded.py",
+     "digest": "sha256:c538a97148e777e2e68b0f20297a12413419c9294b826a943b7907feeabe8fa5",
+     "detail": "ac3/killed-no-verdict: a real child is killed, the fixture dispatch records its exit, the production receiver sends run finished, and the real floor rejects the receipt. No verdict is stored or emitted, evidence and its cache stay. ac3/keep-before-removal: a review worktree commit named only by its log is on verified kept refs in the main repository before removal; failed keep leaves the worktree and commit in place."
+    },
+    {
+     "type": "unit",
+     "ref": "proof/VELDO-0337/falsifiers.json",
+     "digest": "sha256:eda47703c289fd6959ac2679649fb5f9759fe5acf037bea8154aff44763a1efa",
+     "detail": "Emitting verdict at receiver end turns the killed-review row red. Skipping the worktree keep step turns its planted-commit row red, with the worktree removed without kept refs."
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "Targeted suite 153_veldo_0337_verdict_recorded: 37 passed, 0 failed; partial exit 2. See targeted.txt."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "The same suite uses real store, ledger, rules, removers and keeper. Regression suites 139_veldo_0301_space_signal: 44 passed; 146_veldo_0308_run_finished: 64 passed; 82_veldo_0129_worker_wiring: 55 passed. All 0 failed, partial exit 2. See regressions.txt."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "python3 proof/VELDO-0337/run_falsifiers.py: eight registered cases applied individually in private copies. Seven target sets red on the first batch; one fixture shape assertion corrected and only that case rerun. Final eight target sets red, baseline eleven rows green. No teeth stage ran. See falsifiers.json."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; bash scripts/check_lint.sh; python3 scripts/check_git_boundary.py; bash scripts/check_generated.sh. All exit 0. See fast-checks.txt."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh remains for the lead through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "The lead decision resolves the historical blocker in commit 0982de16. It extends the footprint and replaces the receiver emitter with the one durable verdict writer; the three criteria and their declared falsifiers are unchanged.",
+  "Initial floor and dispatch records are fixture records. FloorAuthority constructor materialization is outside these rows; its record_review, _run, transaction validation and store commit are real. Worker execution output, dispatcher launch context and containment answers are stand-ins.",
+  "The ledger items are declared by the fixture. Space is explicitly injected; production installations without a space mapping emit no space event. The receiver is not changed by this ticket.",
+  "The process table and Docker client are isolated stand-ins. No real engine or protected data was accessed. The killed child and git repositories are real and owned by the fixture.",
+  "Two act prerequisites are fixture answers. Production act restrictions, rules, keeper and removers are unchanged. No worktree force option or new deletion path was added.",
+  "The receipt uses a real SSH signature with the fixture key. Journal signing is a deterministic stand-in. Owner Keep is written through the existing ledger owner check.",
+  "Criteria remain pending until the lead runs the canonical gate and independent review. The known 86_veldo_0127 capture failures were not rerun or edited. No full gate, heavy suite, policy checker or teeth stage was run."
+ ],
+ "rollback": "Revert the implementation and proof commits. Existing run finished behavior remains."
 }
