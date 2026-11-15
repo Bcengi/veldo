@@ -926,7 +926,10 @@ class Batch:
             try:
                 swap = self._git(self.repo_root, 'update-ref', ref, r['tip'], r['watermark'], ok=None)
             finally:
-                self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)
+                ledger = (self.space or {}).get('ledger')
+                identity = (r.get('space_items') or {}).get(str(self.clone))
+                r.setdefault('ref_outcomes', {})[staging] = _organ('control_space_remove').remove_ref(
+                    str(self.repo_root), staging, ledger, identity)
             found, read = self._read_trunk()
             operation = 'update-ref'
         if not read:

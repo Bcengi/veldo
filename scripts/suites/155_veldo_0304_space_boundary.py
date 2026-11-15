@@ -124,5 +124,34 @@ def _v304_suite():
     row('clone/unique-work', clone_work)
     row('clone/boundary', lambda: module_boundary('control_clone', ('Clones._release', 'Clones._standalone')))
 
+    def batch_work():
+        from types import SimpleNamespace
+        batch = load('batch', ROOT / '.veldo/control_batch.py')
+        with tempfile.TemporaryDirectory(prefix='v304-batch-') as temporary:
+            main = Path(temporary)
+            git(main, 'init', '-q', '-b', 'main')
+            (main / 'unique').write_text('unique staged commit\n')
+            git(main, 'add', '.')
+            tip = git(main, 'commit-tree', git(main, 'write-tree'), '-m', 'unique')
+            ref = 'refs/veldo/batch/fixture'
+            git(main, 'update-ref', ref, tip)
+            obj = object.__new__(batch.Batch)
+            obj.record = {'id': 'fixture', 'tip': tip, 'watermark': '0' * 40, 'clone': str(main)}
+            obj.destination, obj.trunk, obj.repo_root = 'local', 'main', str(main)
+            obj.space = None
+            # The trunk swap is refused. The production finally block releases the staging ref.
+            obj._git = lambda *args, **kwargs: SimpleNamespace(returncode=1, stderr='fixture refusal')
+            obj._read_trunk = lambda: ('0' * 40, True)
+            try:
+                obj._swap()
+            except batch.Refused:
+                pass
+            assert not obj.record['ref_outcomes'][ref]['ok']
+            assert git(main, 'rev-parse', ref) == tip
+            assert git(main, 'show', ref + ':unique') == 'unique staged commit'
+
+    row('batch/unique-work', batch_work)
+    row('batch/boundary', lambda: module_boundary('control_batch', ('Batch._swap',)))
+
 
 _v304_suite()

@@ -26,5 +26,12 @@
   "row": "clone/boundary",
   "old": "        return looked, []\n",
   "new": "        shutil.rmtree(work)\n        return looked, []\n"
+ },
+ {
+  "name": "batch-direct-ref",
+  "path": ".veldo/control_batch.py",
+  "row": "batch/boundary",
+  "old": "                ledger = (self.space or {}).get('ledger')\n",
+  "new": "                self._git(self.repo_root, 'update-ref', '-d', staging, ok=None)\n                ledger = (self.space or {}).get('ledger')\n"
  }
 ]

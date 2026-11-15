@@ -1,0 +1,13 @@
+{
+ "case": "batch-direct-ref",
+ "row": "batch/boundary",
+ "red": [
+  {
+   "row": "VELDO-0304 batch/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 154, in <lambda>\n    row('batch/boundary', lambda: module_boundary('control_batch', ('Batch._swap',)))\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 122, in module_boundary\n    assert not [error for error in errors if any(function + ':' in error for function in functions)], errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['engine/.veldo/control_batch.py:573: Batch._merge: create:temporary folder outside its reviewed boundary', 'engine/.veldo/control_batch.py:573: Batch._merge: remove:recursive folder outside its reviewed boundary', 'engine/.veldo/control_batch.py:929: Batch._swap: history:git ref delete outside its reviewed boundary']\n"
+  }
+ ],
+ "before": "0aa4ca48e911892465a4ff38d2fe3a2f922dae244250a702a294d3f9b3477473",
+ "after": "36369e0e51829d963d6a2b5db00962cf4a8d3b31d18e744b7a12c6dec3cf38b9"
+}
