@@ -273,3 +273,63 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     ref there. It is no longer there, so the landed step brings the candidate's objects into the
     project's repository as well as the other one (the path f1/project-repository-brought already
     covers); the row asserts both, and every other check of the suite is unchanged.
+- 2026-11-14: fix 2, after the review of 107bcecc (review-veldo-0303fix-0350fix.md, verdict FIX:
+  the check answered rebuildable for four workspace states that hold work) and the lead's four
+  decisions. Each fails closed: doubt keeps the candidate on a kept ref, as before the fix. No
+  acceptance criterion changed. lander.py and control_space_standalone.py, canon and copy.
+  - Decision 1 (the review's cases A and D). The exception is gone: a commit is the lander's only
+    when the candidate's record names it. A commit on the head with the parents of the record's
+    next step (a hand resolution committed in the workspace), or a commit where the projection
+    would be, is kept on a kept ref. So that this does not turn a land refused by the read right
+    after the lander's own commit into kept refs in the caller (suite 67's row
+    candidate/every-git-operation-checked faults every invocation), the lander notes each commit
+    its own command made in the record, under made, as that command returns and before anything
+    else is read; when the read that names it fails, it is read once more for the record alone and
+    the land is refused as the first read said.
+  - Decision 2 (case B). When a step stops, the lander records exactly what it left
+    (control_space_standalone.left, under left): the commit it was on, the commit being brought
+    in, git's status listing, the index entries of the listed paths and the blob id of each listed
+    file as it is in the work tree. At the discard a step in progress is the lander's only when a
+    second read answers exactly the same. A hand edit to another tracked file, a partial
+    resolution inside the conflicted file, a staged resolution, or a record that says nothing: the
+    workspace stays.
+  - Decision 3 (case C). No ref of the workspace says what is held. The trunk the candidate was
+    built on is the commit the record stored (its watermark), and it is a commit like any other:
+    held only by what is outside the workspace. Work under a moved trunk ref is kept.
+  - Decision 4 (the stale trunk). A commit no ref of the caller holds counts as held only by the
+    remote's trunk as the remote says it is now. The lander reads it at the discard with the
+    recorded identity (ls-remote, which writes nothing), only when some commit needs it. The
+    answer holds what it contains only when that commit is known in the workspace. A remote that
+    cannot be read, a rewound one, one that went on to a commit the workspace does not have, or no
+    remote: the candidate is kept on kept refs.
+  - What the lead should know. (a) Decisions 3 and 4 came out as one rule: what holds commits is
+    the caller's refs and the remote's own answer, and neither the workspace's ref nor the record's
+    watermark is trusted to hold anything. A record with no watermark (a sync that failed after its
+    fetch) is therefore still cleared when the remote holds what was fetched, which suite 67 needs.
+    (b) A remote whose trunk advanced to a commit the workspace does not have (another land won
+    the race) keeps the candidate on kept refs: nothing is fetched to prove containment. That is
+    the fail-closed reading, and it writes kept refs into the caller on such a refused land. (c)
+    The discard now makes two invocations of the lander's own (config, ls-remote) after the gate
+    when the caller does not hold the trunk. Suite 67's row candidate/every-git-operation-checked
+    faults the construction's invocations, those up to the gate, as it did, and asserts that the
+    two after it are exactly these.
+  - Suite 142 is 37 rows, 63 passed: fix2/unrecorded-commit-kept, fix2/step-in-progress-exact,
+    fix2/trunk-from-record and fix2/remote-holds-trunk, each with the review's case as a row that
+    keeps the work. The fixture's trunk now comes from a bare remote of its own and a conflicted
+    candidate is stopped by the lander's own step. One older check moved: the candidate whose last
+    step the record did not name was removed, and is now kept (decision 1). One older check was
+    made harder: the step of another commit now carries a matching record of what was left, and
+    still stays.
+  - Falsifiers under finding 303 are 43, each applied once and red on its row. Added:
+    space303-candidate-head-commit-by-its-parents, space303-candidate-noted-commit-not-the-landers,
+    space303-candidate-step-in-progress-only-untracked-looked-at,
+    space303-candidate-left-files-not-read, space303-lander-records-nothing-at-the-conflict,
+    space303-candidate-trunk-read-from-the-workspace, space303-candidate-fetched-trunk-held-unasked,
+    space303-candidate-workspace-trunk-held-unasked, space303-lander-gives-the-look-no-remote,
+    space303-lander-notes-no-commit-of-its-own (on suite 67). Re-anchored, unchanged in meaning:
+    space303-lander-removes-a-candidate-without-either-look,
+    space303-candidate-fetched-trunk-holds-nothing, space303-candidate-unaccounted-commit-goes,
+    space303-candidate-any-head-commit-is-the-landers, space303-candidate-untracked-file-goes,
+    space303-candidate-changed-file-goes.
+  - Not done here: the review's suggestion to assert in 128_veldo_0235 local/lands that the caller
+    holds the landed tip and passes a connectivity check after the discard.

@@ -295,21 +295,35 @@ def space_standalone(path, kind, main=None, event='run_finished', ticket=None, s
                 'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
 
 
-def space_rebuildable(path, main, record, trunk_ref, projected=()):
+def space_rebuildable(path, main, record, projected=(), remote=None):
     """VELDO-0303 fix: the look at a landing candidate workspace before it is removed with no kept ref
     written (control_space_standalone.candidate), {path, item, state, deferral, said, refs}. The state
     is SPACE_REBUILDABLE only when every commit the workspace holds is reachable from a ref of `main`
-    or from the trunk the lander fetched, or is one the candidate's record accounts for, and its work
-    tree holds nothing outside the lander's own unfinished step. Any other answer, and whatever raises,
-    leaves the workspace to space_standalone: the kept refs, or the workspace left where it is."""
+    or from the commit the remote's trunk names now, as `remote` reads it (never from a ref of the
+    workspace), or is one the candidate's record names, and its work tree holds nothing but exactly
+    what the record says the lander's own unfinished step left. Any other answer, and whatever
+    raises, leaves the workspace to space_standalone: the kept refs, or the workspace left where it
+    is."""
     try:
         if 'candidate' not in _SPACE:
             _SPACE['candidate'] = _load("veldo_space_standalone_ld", "control_space_standalone.py").candidate
-        return _SPACE['candidate'](str(path), None if main is None else str(main), record, trunk_ref,
-                                   projected=tuple(projected))
+        return _SPACE['candidate'](str(path), None if main is None else str(main), record,
+                                   projected=tuple(projected), remote=remote)
     except Exception as error:  # noqa: BLE001 - what could not be looked at is not removed this way
         return {'path': str(path), 'item': None, 'state': None, 'deferral': 'remove_refused',
                 'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
+
+
+def space_left(path):
+    """VELDO-0303 fix 2: what a step that stopped in a conflict left in the candidate workspace, as
+    control_space_standalone.left reads it (the commits, git's status, the index entries and the blob
+    id of each listed file). None when it could not be read: nothing is then taken for the lander's."""
+    try:
+        if 'left' not in _SPACE:
+            _SPACE['left'] = _load("veldo_space_standalone_ld", "control_space_standalone.py").left
+        return _SPACE['left'](str(path))
+    except Exception:  # noqa: BLE001 - what could not be read is recorded as nothing
+        return None
 
 
 class LandOps:
@@ -572,14 +586,37 @@ class GitLandOps(LandOps):
             stderr = result.stderr if isinstance(result.stderr, str) else (result.stderr or b"").decode("utf-8", "replace")
             raise CandidateRefused("unavailable_service:git/" + name, _first_line(stderr), operation=name)
         if before_commit is not None and result.returncode == 0:
-            commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
+            try:
+                commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
+            except CandidateRefused:
+                # VELDO-0303 fix 2: the command made a commit and the read that names it failed. The land is
+                # refused as that read says, and the commit is read once more for the record alone.
+                self._made(repo, before_commit)
+                raise
             if commit != before_commit:
+                self._made(repo, before_commit, commit)
                 actual = self._git(repo, 'show', '-s', '--format=%an%n%ae%n%cn%n%ce', commit).stdout.splitlines()
                 if actual != list(identity) * 2:
                     raise CandidateRefused('binding_mismatch:commit_identity', 'author or committer differs', operation=name)
                 operation = 'lander_merge' if args[0] == 'merge' or '--no-edit' in args else 'projection_commit'
                 self._event(operation, 'accepted', commit=commit)
         return result
+
+    def _made(self, repo, before, commit=None):
+        """VELDO-0303 fix 2: note in the candidate's record, under made, the commit the lander's own
+        command has just made in the workspace (`before` is the head it ran on), as that command
+        returns and before anything else is read. The discard takes a commit only the workspace has for
+        the lander's own only when the record names it; a commit that could not be read is not noted,
+        and the candidate is then kept."""
+        if self.candidate is None:
+            return
+        if commit is None:
+            try:
+                commit = self._git(repo, 'rev-parse', 'HEAD').stdout.strip()
+            except CandidateRefused:
+                return
+        if _hex(commit) and commit != before:
+            self.candidate.setdefault("made", []).append(commit)
 
     def _absolute(self, url):
         """A remote given as a relative local path is relative to the caller, never to the workspace."""
@@ -700,8 +737,11 @@ class GitLandOps(LandOps):
         # VELDO-0303 fix: but first the look that writes nothing. A candidate whose every commit is held
         # by the caller's refs or the fetched trunk, or is the lander's own merge or projection, is
         # removed with no kept ref; whatever that look does not clear takes the path above (fail closed).
+        # Fix 2: no ref of the workspace says what is held, and a commit no ref of the caller holds, the
+        # fetched trunk first of all, counts only while the remote's trunk, read now, contains it.
         if c and c.get("workspace") and os.path.isdir(c["workspace"]):
-            found = space_rebuildable(c["workspace"], self.repo_root, c, WATERMARK_REF, REGEN_PATHS)
+            found = space_rebuildable(c["workspace"], self.repo_root, c, REGEN_PATHS,
+                                      self._remote_trunk if c.get("remote") else None)
             if found["state"] != SPACE_REBUILDABLE:
                 found = space_standalone(c["workspace"], "agent_repository", main=self.repo_root)
             if found["state"] == SPACE_REBUILDABLE or found["state"] in SPACE_SAFE:
@@ -715,6 +755,25 @@ class GitLandOps(LandOps):
                 shutil.rmtree(c["observation_dir"], ignore_errors=True)
             else:
                 c.setdefault("space", {})[c["observation_dir"]] = dict(found, refusal=space_refusal(found))
+
+    def _remote_trunk(self):
+        """VELDO-0303 fix 2: the commit the remote's trunk names now, asked of the remote itself with the
+        recorded identity (ls-remote: nothing is written, here or there). None when the candidate
+        fetched no remote, when the remote could not be read, and when it names no such branch: the
+        trunk the candidate fetched is then held by nothing the lander can see."""
+        c = self.candidate or {}
+        try:
+            if not c.get("remote") or not c.get("workspace"):
+                return None
+            url = self._git(self.repo_root, "config", "--get", "remote." + c["remote"] + ".url").stdout.strip()
+            if not url:
+                return None
+            ref = "refs/heads/%s" % c.get("trunk")
+            listed = self._git(c["workspace"], "ls-remote", self._absolute(url), ref, remote_url=url, profile="identity")
+            tips = [line.split("\t")[0] for line in listed.stdout.splitlines() if line.split("\t")[1:] == [ref]]
+            return tips[0] if len(tips) == 1 and _hex(tips[0]) else None
+        except Exception:  # noqa: BLE001 - a remote that cannot be read holds nothing
+            return None
 
     # The stages.
 
@@ -829,6 +888,18 @@ class GitLandOps(LandOps):
             self.candidate["merges"].append({"role": role, "commit": commit,
                                              "merge": self._commit_of(workspace, "HEAD", "unavailable_service:git/merge")})
             return
+        try:
+            self._resolve(workspace, merge, commit, identity, role)
+        except CandidateRefused:
+            # VELDO-0303 fix 2: the step stops here, in progress. Exactly what it left is recorded now,
+            # the paths and their blob ids, so that the discard takes for the lander's own only a work
+            # tree that is still exactly this; any later edit in it is work and is kept.
+            self.candidate["left"] = space_left(workspace)
+            raise
+
+    def _resolve(self, workspace, merge, commit, identity, role):
+        """The conflicts of a merge that stopped: the union and the projected paths resolved and the
+        merge committed, or the refusal naming a real conflict."""
         conflicts = self._conflicted_paths(workspace)
         if not conflicts:
             raise CandidateRefused("unavailable_service:git/merge", _first_line(merge.stderr or merge.stdout),

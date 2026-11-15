@@ -99,6 +99,25 @@ workspace goes; a file git does not track beside the conflicted merge, a merge o
 the record's next step, a changed tracked file, an ignored file: each workspace stays, the file byte
 for byte, refused as space_deferred:unique_work; and the look answers no state with no repository named).
 
+FIX 2 ROWS (the review of 107bcecc: four workspace states holding work that the look answered
+rebuildable for; each is now kept). The fixture's trunk is fetched from a bare remote of its own, and a
+conflicted candidate is stopped by the lander's own step, which records what it left.
+fix2/unrecorded-commit-kept (a commit on the head with the parents of the record's next step, which the
+record does not name; the review's case A, a hand resolution of the evidence step committed in the
+workspace; its case D, a commit on the second step where the projection would be: each is read from a
+kept ref of the repository alone after the workspace went; control: the same commit noted under made is
+the lander's). fix2/step-in-progress-exact (the review's case B, a hand edit to a tracked file the
+stopped step does not touch; a partial resolution written into the conflicted file; a resolution staged
+and not committed; a record that says nothing of what was left: each workspace stays, byte for byte).
+fix2/trunk-from-record (the review's case C, a work commit on the head with the workspace's own trunk
+ref moved onto it, with a record that stores its trunk and with one that stores none: the work is on a
+kept ref before the workspace goes; control: an unfinished sync holding only the fetched trunk goes).
+fix2/remote-holds-trunk (the review's stale trunk: the remote rewound after the fetch, a remote that
+cannot be read, a record naming no remote: the trunk commit is read from a kept ref of the repository
+alone after the workspace went; controls: a remote that went on to the candidate, and a trunk a
+remote-tracking ref of the repository holds, for which no remote is read; the lander's own reader
+answers nothing where it cannot read the remote).
+
 paths/absent-only-when-not-found (a path no live item records is answered gone only when the kernel
 says nothing is there: a folder under a parent of mode 000 is not gone and is answered not_in_ledger,
 in each of the five modules; a clone whose work tree no item records keeps its pins),
@@ -168,6 +187,8 @@ def _v303_space_paths_suite():
             'loss/fleet-ignored-file', 'loss/fleet-nested-repository', 'loss/fleet-reset-commit',
             'loss/clone-refused-build', 'loss/run-directory-repository', 'loss/candidate-commits',
             'fix/candidate-rebuildable', 'fix/candidate-fail-closed',
+            'fix2/unrecorded-commit-kept', 'fix2/step-in-progress-exact', 'fix2/trunk-from-record',
+            'fix2/remote-holds-trunk',
             'f3/consumer-holds-clone', 'f5/clones-given-space',
             'paths/absent-only-when-not-found', 'paths/no-delete-with-a-ledger', 'paths/canon')
     rows = {name: [] for name in ROWS}
@@ -220,6 +241,7 @@ def _v303_space_paths_suite():
         for module in (FL, CL, LA, LW, LD):
             module._SPACE['standalone'] = SA.standalone
         LD._SPACE['candidate'] = SA.candidate  # the lander's look at a landing candidate, the same copy
+        LD._SPACE['left'] = SA.left  # and its read of what a stopped step left
         SIG = load('v303_control_space_signal', VELDO / 'control_space_signal.py')
         SP = load('v303_control_space', VELDO / 'control_space.py')
         S = load('v303_control_store', VELDO / 'control_store.py')
@@ -1412,12 +1434,25 @@ def _v303_space_paths_suite():
                 trunk = commit(place, shared if conflict else 'trunk-%s.txt' % name, 'the trunk\'s side\n',
                                'the trunk moved before ' + name)
                 git(place, 'update-ref', LD.WATERMARK_REF, trunk)
+                # The remote the trunk was fetched from: a bare repository whose trunk is that commit.
+                far = STATE / 'landing' / ('remote-%s.git' % name)
+                git(STATE / 'landing', 'init', '-q', '--bare', '--template=', str(far))
+                git(far, 'fetch', '-q', str(place), '%s:refs/heads/main' % LD.WATERMARK_REF)
                 record = {'id': 'candidate-' + name, 'workspace': str(place), 'state': 'synced', 'watermark': trunk,
+                          'trunk': 'main', 'remote': 'origin', 'remote_url': str(far),
                           'implementation': implementation, 'evidence': evidence, 'merges': [], 'projections': {}}
                 own = []
                 if conflict:
-                    merged = git(place, 'merge', '--no-ff', '--no-edit', '-m', 'Land implementation', implementation, ok=False)
-                    record.update(state='refused', refusal='conflict:' + shared, conflicted=merged != 0)
+                    # The lander's own step, which stops at the conflict and records what it left.
+                    O = lander(None, place, SCRATCH)
+                    O.candidate, O.identity_record = record, None
+                    try:
+                        O._merge(str(place), implementation, 'Land implementation',
+                                 ('Fixture', 'fixture@example.invalid'), 'implementation')
+                        refusal = None
+                    except LD.CandidateRefused as error:
+                        refusal = error.code
+                    record.update(state='refused', refusal=refusal, conflicted=refusal == 'conflict:' + shared)
                 else:
                     for role, incoming in (('implementation', implementation), ('evidence', evidence))[:made]:
                         git(place, 'merge', '-q', '--no-ff', '--no-edit', '-m', 'Land %s of %s' % (role, name), incoming)
@@ -1432,13 +1467,27 @@ def _v303_space_paths_suite():
                 (observed / 'gate.log').write_text('observed\n')
                 record['observation_dir'] = str(observed)
                 return {'place': place, 'observed': observed, 'record': record, 'trunk': trunk, 'own': own,
-                        'implementation': implementation, 'evidence': evidence}
+                        'implementation': implementation, 'evidence': evidence, 'remote': far, 'base': base,
+                        'shared': shared}
+
+            ASKED = []
+
+            def far_trunk(far):
+                """The stand-in for the lander's read of the remote through its identity transport: the
+                commit the remote's trunk names now, read with plain git, None when it cannot be read."""
+                ASKED.append(str(far))
+                try:
+                    said = git(REPOSITORY, 'ls-remote', str(far), 'refs/heads/main')
+                except RuntimeError:
+                    return None
+                return said.split('\t')[0] if said else None
 
             def discarded(made):
                 """The lander's discard, with no ledger, of the candidate `made`: what it left."""
                 before = git(REPOSITORY, 'for-each-ref', '--format=%(objectname) %(refname)')
                 O = lander(None, made['place'], made['observed'])
                 O.candidate, O.repo_root = made['record'], str(REPOSITORY)
+                O._remote_trunk = lambda: far_trunk(made['remote'])
                 O.discard()
                 told = (O.candidate.get('space') or {}).get(str(made['place'])) or {}
                 return {'there': os.path.lexists(made['place']), 'discarded': O.candidate.get('discarded'),
@@ -1470,12 +1519,172 @@ def _v303_space_paths_suite():
                   % (stopped_in, left),
                   stopped_in == (True, True, 'AA')
                   and left == {'there': False, 'discarded': True, 'refs_same': True, 'refusal': None})
+            check(row, 'what the lander\'s own step recorded when it stopped is what is there: the commit it was on, '
+                       'the commit it was bringing in, the one conflicted path as git lists it, its three index entries '
+                       'and the blob id of its file [%s]' % (made['record'].get('left'),),
+                  isinstance(made['record'].get('left'), dict)
+                  and made['record']['left'].get('head') == made['trunk']
+                  and made['record']['left'].get('step') == made['implementation']
+                  and made['record']['left'].get('status') == 'AA %s\0' % made['shared']
+                  and len(made['record']['left'].get('index') or ()) == 2
+                  and list(made['record']['left'].get('files') or ()) == [made['shared']])
+
+            # ---- Fix 2 (the review of 107bcecc): the four states the look answered rebuildable for. ----
+            row = 'fix2/unrecorded-commit-kept'
             made = landing('unrecorded-23', made=2)
             made['record']['merges'].pop()
+            unrecorded = made['own'][1]
             left = discarded(made)
-            check(row, 'a candidate whose evidence merge the lander made and had not recorded yet (the head, with the '
-                       'parents the record\'s next step has) is removed the same way [%s]' % (left,),
+            check(row, 'a commit on the head with exactly the parents the record\'s next step has, which the record '
+                       'does not name, is not taken for the lander\'s by its parents: it is on a kept ref of the '
+                       'repository before the workspace goes [%s %s]' % (left, kept_in(REPOSITORY, unrecorded)[:1]),
+                  left['there'] is False and left['discarded'] is True and left['refs_same'] is False
+                  and kept_file(unrecorded, 'proof-unrecorded-23.txt') == ['the proof'])
+            made = landing('hand-32', made=1)
+            git(made['place'], 'merge', '-q', '--no-ff', '--no-commit', made['evidence'])
+            (made['place'] / 'resolution.txt').write_text('the evidence step, resolved by hand\n')
+            git(made['place'], 'add', 'resolution.txt')
+            git(made['place'], 'commit', '-q', '-m', 'resolved by hand in the candidate')
+            hand = git(made['place'], 'rev-parse', 'HEAD')
+            shape = git(made['place'], 'rev-list', '--parents', '-n', '1', hand).split()[1:]
+            left = discarded(made)
+            check(row, 'the review\'s case A: the implementation step recorded, and on the head a commit a person made '
+                       'by hand with the parents of the evidence step [%s] and a file of their own: the file is read '
+                       'from a kept ref of the repository alone after the workspace went [%s]'
+                  % (shape == [made['own'][0], made['evidence']], left),
+                  shape == [made['own'][0], made['evidence']]
+                  and left['there'] is False and left['discarded'] is True and left['refs_same'] is False
+                  and kept_file(hand, 'resolution.txt') == ['the evidence step, resolved by hand'])
+            made = landing('beside-33', made=2)
+            beside = commit(made['place'], 'work.txt', 'work committed where the projection would be\n', 'by a generator')
+            left = discarded(made)
+            check(row, 'the review\'s case D: both steps recorded and no projection yet, and on the head a commit with '
+                       'one parent, the second step, adding a file outside the projected paths: the file is read from '
+                       'a kept ref of the repository alone after the workspace went [%s]' % (left,),
+                  'projected_from' not in made['record'] and len(made['record']['merges']) == 2
+                  and left['there'] is False and left['discarded'] is True and left['refs_same'] is False
+                  and kept_file(beside, 'work.txt') == ['work committed where the projection would be'])
+
+            made = landing('noted-47', made=2)
+            made['record']['made'] = [made['record']['merges'].pop()['merge']]
+            left = discarded(made)
+            check(row, 'control: the same commit as in the first case, once the record names it (noted under made as '
+                       'the lander\'s own command returned), is the lander\'s: the candidate goes with no ref '
+                       'written [%s]' % (left,),
                   left == {'there': False, 'discarded': True, 'refs_same': True, 'refusal': None})
+
+            row = 'fix2/step-in-progress-exact'
+            made = landing('edit-34', conflict=True)
+            other = [name for name in git(made['place'], 'ls-files').splitlines() if name != made['shared']][0]
+            before = (made['place'] / other).read_text()
+            (made['place'] / other).write_text(before + 'a hand edit to a file the step does not touch\n')
+            left = discarded(made)
+            check(row, 'the review\'s case B: a candidate stopped at the conflict, as its record says, with a hand edit '
+                       'to a tracked file the step does not touch [%s]: the workspace stays, the edit byte for byte, '
+                       'and the candidate names the refusal [%s]' % (other, left),
+                  made['record'].get('conflicted') is True
+                  and text_of(made['place'] / other) == before + 'a hand edit to a file the step does not touch\n'
+                  and left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'})
+            made = landing('partial-35', conflict=True)
+            (made['place'] / made['shared']).write_text('half of a resolution, written into the conflicted file\n')
+            left = discarded(made)
+            check(row, 'a partial resolution written into the conflicted file itself, which git lists exactly as '
+                       'before, stays: its blob id is not the one the lander recorded [%s]' % (left,),
+                  git(made['place'], 'status', '--porcelain')[:2] == 'AA'
+                  and text_of(made['place'] / made['shared']) == 'half of a resolution, written into the conflicted file\n'
+                  and left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'})
+            made = landing('staged-36', conflict=True)
+            (made['place'] / made['shared']).write_text('a whole resolution, staged and not committed\n')
+            git(made['place'], 'add', made['shared'])
+            left = discarded(made)
+            check(row, 'a resolution staged and not committed stays the same way [%s]' % (left,),
+                  text_of(made['place'] / made['shared']) == 'a whole resolution, staged and not committed\n'
+                  and left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'})
+            made = landing('norecord-37', conflict=True)
+            del made['record']['left']
+            left = discarded(made)
+            check(row, 'a step in progress whose record says nothing of what the lander left is not taken on trust: '
+                       'the workspace stays [%s]' % (left,),
+                  left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'})
+
+            row = 'fix2/trunk-from-record'
+            made = landing('moved-38')
+            moved = commit(made['place'], 'work.txt', 'work under a moved trunk ref\n', 'made in the workspace')
+            git(made['place'], 'update-ref', LD.WATERMARK_REF, moved)
+            left = discarded(made)
+            check(row, 'the review\'s case C: a built and recorded candidate, a work commit on its head, and the '
+                       'workspace\'s own trunk ref moved onto that commit: the trunk is the commit the record stored, '
+                       'so the work is on a kept ref of the repository, read there alone, before the workspace goes '
+                       '[%s]' % (left,),
+                  made['record']['watermark'] == made['trunk'] != moved
+                  and left['there'] is False and left['discarded'] is True and left['refs_same'] is False
+                  and kept_file(moved, 'work.txt') == ['work under a moved trunk ref'])
+            made = landing('nowhere-39')
+            del made['record']['watermark']
+            moved = commit(made['place'], 'work.txt', 'work under a trunk ref, the record naming no trunk\n', 'by hand')
+            git(made['place'], 'update-ref', LD.WATERMARK_REF, moved)
+            left = discarded(made)
+            check(row, 'the same with a record that stores no trunk commit (a sync that did not finish): the '
+                       'workspace\'s ref is still not what holds commits, and the work is on a kept ref before the '
+                       'workspace goes [%s]' % (left,),
+                  left['there'] is False and left['refs_same'] is False
+                  and kept_file(moved, 'work.txt') == ['work under a trunk ref, the record naming no trunk'])
+            made = landing('unsynced-46', made=0)
+            del made['record']['watermark']
+            left = discarded(made)
+            check(row, 'control: a workspace whose sync did not finish, holding only the trunk it fetched, which the '
+                       'remote still has: it goes with no ref written [%s]' % (left,),
+                  left == {'there': False, 'discarded': True, 'refs_same': True, 'refusal': None})
+
+            row = 'fix2/remote-holds-trunk'
+            made = landing('rewound-40')
+            git(made['remote'], 'update-ref', 'refs/heads/main', made['base'])
+            del ASKED[:]
+            left = discarded(made)
+            check(row, 'the review\'s stale trunk: the remote\'s trunk was rewound after the fetch, so the workspace '
+                       'holds the last copy of the trunk commit here: the remote was asked [%s], and the trunk\'s file '
+                       'is read from a kept ref of the repository alone after the workspace went [%s]'
+                  % (ASKED == [str(made['remote'])], left),
+                  ASKED == [str(made['remote'])]
+                  and left['there'] is False and left['discarded'] is True and left['refs_same'] is False
+                  and kept_file(made['trunk'], 'trunk-rewound-40.txt') == ['the trunk\'s side'])
+            made = landing('unread-41')
+            shutil.rmtree(made['remote'])
+            left = discarded(made)
+            check(row, 'a remote that cannot be read holds nothing: the trunk commit is kept the same way [%s]' % (left,),
+                  left['there'] is False and left['refs_same'] is False
+                  and kept_file(made['trunk'], 'trunk-unread-41.txt') == ['the trunk\'s side'])
+            made = landing('local-42')
+            made['record']['remote'] = None
+            del ASKED[:]
+            left = discarded(made)
+            check(row, 'a candidate whose record names no remote has nobody to ask: a trunk no ref of the repository '
+                       'holds is kept, and no remote is read [%s %s]' % (left, ASKED),
+                  ASKED == [] and left['there'] is False and left['refs_same'] is False
+                  and kept_file(made['trunk'], 'trunk-local-42.txt') == ['the trunk\'s side'])
+            made = landing('landed-43')
+            git(made['remote'], 'fetch', '-q', str(made['place']), 'HEAD:refs/heads/main')
+            left = discarded(made)
+            check(row, 'control: a remote whose trunk went on to the candidate itself, which contains the trunk it was '
+                       'built on, still holds that trunk: the candidate goes with no ref written [%s]' % (left,),
+                  left == {'there': False, 'discarded': True, 'refs_same': True, 'refusal': None})
+            made = landing('fetched-44')
+            git(REPOSITORY, 'fetch', '-q', str(made['remote']), 'refs/heads/main:refs/remotes/far-44/main')
+            shutil.rmtree(made['remote'])
+            del ASKED[:]
+            left = discarded(made)
+            check(row, 'control: a trunk a remote-tracking ref of the repository holds needs no remote: none is read, '
+                       'and the candidate goes with no ref written [%s %s]' % (left, ASKED),
+                  ASKED == [] and left == {'there': False, 'discarded': True, 'refs_same': True, 'refusal': None})
+            made = landing('reader-45')
+            O = lander(None, made['place'], made['observed'])
+            O.candidate, O.repo_root, O.identity_record = made['record'], str(REPOSITORY), None
+            check(row, 'the lander\'s own reader answers nothing where it cannot read the remote (the repository '
+                       'names no such remote), and the look then clears nothing [%s]' % (O._remote_trunk(),),
+                  O._remote_trunk() is None
+                  and LD.space_rebuildable(made['place'], REPOSITORY, made['record'], LD.REGEN_PATHS,
+                                           O._remote_trunk).get('deferral') == 'unique_work'
+                  and os.path.isdir(made['place']))
 
             row = 'fix/candidate-fail-closed'
             made = landing('extra-24')
@@ -1509,10 +1718,13 @@ def _v303_space_paths_suite():
                   and left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'})
             made = landing('other-28', made=0)
             git(made['place'], 'merge', '-q', '--no-ff', '--no-commit', made['evidence'])
+            made['record']['left'] = LD.space_left(made['place'])  # fix 2: even with what was left on the record
             left = discarded(made)
-            check(row, 'a merge in progress of a commit that is not the record\'s next step is not the lander\'s: the '
-                       'workspace stays [%s]' % (left,),
-                  left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'}
+            check(row, 'a merge in progress of a commit that is not the record\'s next step is not the lander\'s, also '
+                       'when the record says what was left and the work tree is exactly that [%s]: the workspace '
+                       'stays [%s]' % ((made['record']['left'] or {}).get('step') == made['evidence'], left),
+                  (made['record']['left'] or {}).get('step') == made['evidence']
+                  and left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'}
                   and (made['place'] / ('proof-other-28.txt')).is_file())
             made = landing('edited-29')
             (made['place'] / 'built-edited-29.txt').write_text('an edit nobody committed\n')
@@ -1529,8 +1741,10 @@ def _v303_space_paths_suite():
                   text_of(made['place'] / 'local.cfg') == 'a local file a personal rule hides\n'
                   and left == {'there': True, 'discarded': False, 'refs_same': True, 'refusal': 'space_deferred:unique_work'})
             made = landing('unnamed-31')
-            unnamed = LD.space_rebuildable(made['place'], None, made['record'], LD.WATERMARK_REF, LD.REGEN_PATHS)
-            named = LD.space_rebuildable(made['place'], REPOSITORY, made['record'], LD.WATERMARK_REF, LD.REGEN_PATHS)
+            unnamed = LD.space_rebuildable(made['place'], None, made['record'], LD.REGEN_PATHS,
+                                           lambda: far_trunk(made['remote']))
+            named = LD.space_rebuildable(made['place'], REPOSITORY, made['record'], LD.REGEN_PATHS,
+                                         lambda: far_trunk(made['remote']))
             check(row, 'the look itself writes nothing and answers no state when no repository is named, and '
                        'rebuildable with the three commits of the lander\'s when one is [%s %s]'
                   % (unnamed.get('deferral'), named.get('state')),

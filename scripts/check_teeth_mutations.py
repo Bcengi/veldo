@@ -13580,31 +13580,90 @@ def cases():
     path303('space303-lander-keeps-every-candidate', 'lander.py',
             "            if found[\"state\"] != SPACE_REBUILDABLE:\n", "            if True:\n",
             ['fix/candidate-rebuildable'])
+    # Re-anchored under fix 2, unchanged in meaning (the look's call names the remote's reader now).
     path303('space303-lander-removes-a-candidate-without-either-look', 'lander.py',
-            "            found = space_rebuildable(c[\"workspace\"], self.repo_root, c, WATERMARK_REF, REGEN_PATHS)\n",
+            "            found = space_rebuildable(c[\"workspace\"], self.repo_root, c, REGEN_PATHS,\n"
+            "                                      self._remote_trunk if c.get(\"remote\") else None)\n",
             "            found = {\"state\": SPACE_REBUILDABLE}\n",
             ['fix/candidate-fail-closed', 'loss/candidate-commits'])
+    # Re-anchored under fix 2, unchanged in meaning: the trunk, once the remote said it has it, holds nothing.
     path303('space303-candidate-fetched-trunk-holds-nothing', 'control_space_standalone.py',
-            "        if trunk:\n            holding.add(trunk)\n",
-            "        if False:\n            holding.add(trunk)\n",
+            "                holding.add(tip)\n", "                pass\n",
             ['fix/candidate-rebuildable'])
+    # Re-anchored under fix 2, unchanged in meaning: the refusal of a commit the record does not name.
     path303('space303-candidate-unaccounted-commit-goes', 'control_space_standalone.py',
-            "        if beyond and not (beyond == [tips['head']] and parents is not None and unheld[beyond[0]] == parents):\n",
-            "        if False:\n",
-            ['fix/candidate-fail-closed', 'loss/candidate-commits'])
+            "        if beyond:\n", "        if False:\n",
+            ['fix/candidate-fail-closed', 'loss/candidate-commits', 'fix2/unrecorded-commit-kept'])
+    # Fix 2, decision 1 (the review of 107bcecc, cases A and D): the exception back, a commit on the
+    # head taken for the lander's without the record naming it. By its place alone, and by the parents
+    # the record's next step has, as the first fix had it.
     path303('space303-candidate-any-head-commit-is-the-landers', 'control_space_standalone.py',
-            "        if beyond and not (beyond == [tips['head']] and parents is not None and unheld[beyond[0]] == parents):\n",
-            "        if beyond and not (beyond == [tips['head']] and parents is not None):\n",
-            ['fix/candidate-fail-closed'])
+            "        if beyond:\n", "        if beyond and beyond != [tips['head']]:\n",
+            ['fix/candidate-fail-closed', 'fix2/unrecorded-commit-kept'])
+    path303('space303-candidate-head-commit-by-its-parents', 'control_space_standalone.py',
+            "        if beyond:\n",
+            "        if beyond and not (beyond == [tips['head']] and unheld[beyond[0]] in (\n"
+            "                [([step.get('merge') for step in record.get('merges') or ()] or [record.get('watermark')])[-1]],\n"
+            "                [([step.get('merge') for step in record.get('merges') or ()] or [record.get('watermark')])[-1],\n"
+            "                 record.get(('implementation', 'evidence')[len(record.get('merges') or ()) % 2])])):\n",
+            ['fix2/unrecorded-commit-kept'])
+    # And a commit the lander noted as its own command returned (made) not read as the record's.
+    path303('space303-candidate-noted-commit-not-the-landers', 'control_space_standalone.py',
+            "        made |= set(commit for commit in (noted if isinstance(noted, list) else ()) if _commit(commit))\n",
+            "        pass\n",
+            ['fix2/unrecorded-commit-kept'])
+    # Fix 2, decision 2 (case B): a step in progress accepted whatever its work tree holds; accepted
+    # with only the untracked files looked at, as the first fix had it; and the lander recording
+    # nothing at the conflict, which must keep the candidate rather than clear it.
     path303('space303-candidate-untracked-file-goes', 'control_space_standalone.py',
-            "            if not merging or untracked:\n", "            if not merging:\n",
-            ['fix/candidate-fail-closed'])
+            "            if not merging or not isinstance(recorded, dict) or recorded != _left(path, read):\n",
+            "            if not merging:\n",
+            ['fix/candidate-fail-closed', 'fix2/step-in-progress-exact'])
+    path303('space303-candidate-step-in-progress-only-untracked-looked-at', 'control_space_standalone.py',
+            "            if not merging or not isinstance(recorded, dict) or recorded != _left(path, read):\n",
+            "            if not merging or untracked:\n",
+            ['fix2/step-in-progress-exact'])
+    path303('space303-candidate-left-files-not-read', 'control_space_standalone.py',
+            "            'files': {name: _blob(path, name, len(head)) for name in names}}\n",
+            "            'files': {name: None for name in names}}\n",
+            ['fix2/step-in-progress-exact'])
+    path303('space303-lander-records-nothing-at-the-conflict', 'lander.py',
+            "            self.candidate[\"left\"] = space_left(workspace)\n",
+            "            pass\n",
+            ['fix/candidate-rebuildable'])
+    # Fix 2, decision 3 (case C): what holds commits is the ref read from the workspace being judged,
+    # as the first fix had it, not the commit the record stored.
+    path303('space303-candidate-trunk-read-from-the-workspace', 'control_space_standalone.py',
+            "                holding.add(tip)\n",
+            "                holding.add(read(path, 'rev-parse', '--verify', 'refs/veldo/candidate/watermark^{commit}').strip())\n",
+            ['fix2/trunk-from-record'])
+    # Fix 2, decision 4 (the stale trunk): the fetched trunk counted as held with the remote not
+    # asked, as the first fix had it (the trunk the record stored, and the workspace's own ref); and
+    # with the lander giving the look no reader.
+    path303('space303-candidate-fetched-trunk-held-unasked', 'control_space_standalone.py',
+            "            tip = remote() if callable(remote) else None\n",
+            "            tip = record.get('watermark')\n",
+            ['fix2/remote-holds-trunk'])
+    path303('space303-candidate-workspace-trunk-held-unasked', 'control_space_standalone.py',
+            "            tip = remote() if callable(remote) else None\n",
+            "            tip = read(path, 'rev-parse', '--verify', 'refs/veldo/candidate/watermark^{commit}').strip()\n",
+            ['fix2/remote-holds-trunk', 'fix2/trunk-from-record'])
+    path303('space303-lander-gives-the-look-no-remote', 'lander.py',
+            "                                      self._remote_trunk if c.get(\"remote\") else None)\n",
+            "                                      None)\n",
+            ['fix/candidate-rebuildable'])
+    # The lander's side of decision 1, held by suite 67 (VELDO-0056: a refused land leaves the caller as
+    # it was): the lander notes no commit of its own as its command returns, so a land refused by the
+    # very next read leaves a commit the record does not name, and the candidate is kept on a kept ref.
+    add(303, 'space303-lander-notes-no-commit-of-its-own', '67_veldo_0056_candidates.py', 'lander.py',
+        "                self._made(repo, before_commit, commit)\n", "                pass\n",
+        ['candidate/every-git-operation-checked'])
     path303('space303-candidate-any-merge-is-the-landers', 'control_space_standalone.py',
             "                       and tips['operations'].get('MERGE_HEAD') == merged)\n",
             "                       and True)\n",
             ['fix/candidate-fail-closed'])
     path303('space303-candidate-changed-file-goes', 'control_space_standalone.py',
-            "            if outside or not projecting:\n", "            if False:\n",
+            "            if outside_projection or not projecting:\n", "            if False:\n",
             ['fix/candidate-fail-closed', 'loss/candidate-commits'])
     path303('space303-candidate-ignored-work-goes', 'control_space_standalone.py',
             "        if work:\n            raise _Stays('unique_work', 'the work tree holds ignored files that are in no commit: '\n",

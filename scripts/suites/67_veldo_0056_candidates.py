@@ -771,7 +771,11 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                       and failures['merge_conflict'][0]['detail'].get('conflicts') == ['README.md'])
                 # Every Git invocation of one real construction, each made to fail in its own land.
                 baseline = land('VELDO-9562', stop_at_gate=True)
-                calls = [subcommand(a) for a in baseline['calls']]
+                # VELDO-0303 fix 2: the construction's invocations are those up to the gate. After it the
+                # discard reads the remote's trunk once (config, ls-remote), which builds nothing: a
+                # failure of that read keeps the candidate, which is a row of suite 142.
+                calls = [subcommand(a) for a in baseline['calls_at_gate']]
+                after_gate = [subcommand(a) for a in baseline['calls'][len(calls):]]
                 faults = []
                 for index in range(len(calls)):
                     got = land('VELDO-9562', stop_at_gate=True, fault=index)
@@ -785,7 +789,7 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
                 check('candidate/every-git-operation-checked',
                       baseline['gate'] is True and baseline['stage'] == 'gate' and baseline['detail'].get('stopped') == 'fixture'
                       and {'fetch', 'merge', 'rev-parse', 'cat-file', 'commit'} <= set(calls) and len(calls) >= 20
-                      and len(faults) == len(calls)
+                      and len(faults) == len(calls) and after_gate == ['config', 'ls-remote']
                       and all(f['stage'] in ('sync_main', 'reconcile') and f['gate'] is False and f['refusal']
                               and f['failed'] == f['operation'] and f['moved'] == [] and f['leftover'] == []
                               and f['same_prefix'] for f in faults))

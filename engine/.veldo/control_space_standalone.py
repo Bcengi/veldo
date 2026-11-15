@@ -56,10 +56,29 @@ the lander may remove it with no kept ref written, and a refused land then leave
 repository as it was (VELDO-0056). It may do so only after this look, which writes nothing and fails
 closed: the answer is the state rebuildable only when every commit the workspace names, by its HEAD,
 a ref, a log or an operation, is reachable from a kept ref, a branch, a tag or a remote-tracking ref
-of the main repository or from the workspace's trunk ref, or is one the candidate's own record
-accounts for; and nothing in its work tree is outside the lander's own unfinished step. Any other
-answer and the lander asks `standalone` as before: the commits go to kept refs, and a workspace with
-work in no commit stays.
+of the main repository or from the remote's trunk as the remote says it is now, or is one the
+candidate's own record names; and nothing in its work tree is outside the lander's own unfinished
+step. Any other answer and the lander asks `standalone` as before: the commits go to kept refs, and a
+workspace with work in no commit stays.
+
+What that look does not take on trust (fix 2, the review of 107bcecc):
+
+  - a commit the record does not name is never the lander's, whatever its parents are: a hand
+    resolution committed in the workspace has the parents of the lander's own next step. The record
+    names a commit under its steps, its projection commit, its commit, or made, where the lander
+    notes each commit as its own command returns;
+  - no ref of the workspace says what is held, for whatever runs in the workspace can move its refs.
+    The trunk the candidate was built on is the commit the record stored (its watermark), and it is
+    a commit like any other: held only by what is outside the workspace;
+  - the trunk fetched from a remote holds commits only while the remote still has it: when a commit
+    here is held by no ref of the main repository, the remote is asked now through the reader the
+    lander gives (`remote`), and what its trunk names holds what it contains, if that commit is
+    known here. No reader, no answer, or a trunk that no longer contains the commit: the commit is
+    one only the workspace is known to have;
+  - a step in progress is the lander's only in exactly the state the lander recorded when it
+    stopped (`left`, read by `left` below at the conflict and again here): the commit it was on, the
+    commit being brought in, what git's status lists, the index entries of those paths and the blob
+    id of each of their files in the work tree. Any other edit, staged or not, is work.
 
 Standard library only. The probes, the keeper and the removers' readers are loaded as siblings.
 """
@@ -224,44 +243,107 @@ def _commit(value):
     return isinstance(value, str) and len(value) in (40, 64) and set(value) <= HEX
 
 
-def _next_step(record, trunk):
-    """What the lander's record says its next commit is made of, for the one commit it may have made
-    and not yet recorded: (the parents that commit has, the commit a merge in progress merges, whether
+def _next_step(record):
+    """What the lander's record says its next step is: (the commit a merge in progress merges, whether
     the projection is what is being made). The lander merges the implementation, then the evidence,
     then commits the projection, each onto the one before, from the trunk it fetched."""
     merges = record.get('merges')
     merges = merges if isinstance(merges, list) else []
     made = [step.get('merge') if isinstance(step, dict) else None for step in merges]
     if len(made) > 2 or not all(_commit(commit) for commit in made) or 'projected_from' in record:
-        return None, None, False  # the record names every commit the lander made
-    onto = made[-1] if made else trunk
-    if not _commit(onto):
-        return None, None, False
+        return None, False  # the record names every commit the lander made
     if len(made) == 2:
-        return [onto], None, True
+        return None, True
     merged = record.get(('implementation', 'evidence')[len(made)])
-    return ([onto, merged], merged, False) if _commit(merged) else (None, None, False)
+    return (merged, False) if _commit(merged) else (None, False)
 
 
-def candidate(path, main, record, trunk_ref, projected=()):
+def _status(path, read):
+    """What git's status lists in the work tree at `path`: (the listing as git wrote it, the paths git
+    does not track, the paths it tracks)."""
+    said = read(path, 'status', '--porcelain=v1', '-z', '--untracked-files=all')
+    entries = said.split('\0')[:-1]
+    untracked, tracked = [], []
+    while entries:
+        entry = entries.pop(0)
+        if 'R' in entry[:2] or 'C' in entry[:2]:
+            tracked.append(entries.pop(0))
+        (untracked if entry[:2] == '??' else tracked).append(entry[3:])
+    return said, untracked, tracked
+
+
+def _blob(path, name, width):
+    """The blob id git would give the file `name` of the work tree at `path` as it is on disk (a
+    symbolic link is its target, as git stores it), None when nothing is there, and the word directory
+    for a directory. `width` is the length of a commit id of the repository, which names its hash."""
+    place = os.path.join(path, name)
+    if not os.path.lexists(place):
+        return None
+    if os.path.islink(place):
+        data = os.fsencode(os.readlink(place))
+    elif os.path.isdir(place):
+        return 'directory'
+    else:
+        with open(place, 'rb') as handle:
+            data = handle.read()
+    return hashlib.new('sha256' if width == 64 else 'sha1', b'blob %d\0' % len(data) + data).hexdigest()
+
+
+def _left(path, read):
+    head = read(path, 'rev-parse', '--verify', 'HEAD^{commit}').strip()
+    step = read(path, 'rev-parse', '--verify', 'MERGE_HEAD^{commit}').strip()
+    said, untracked, tracked = _status(path, read)
+    names = sorted(set(untracked + tracked))
+    index = sorted(entry for entry in read(path, 'ls-files', '-s', '-z').split('\0')[:-1]
+                   if entry.partition('\t')[2] in names)
+    return {'head': head, 'step': step, 'status': said, 'index': index,
+            'files': {name: _blob(path, name, len(head)) for name in names}}
+
+
+def left(path):
+    """What a step that stopped in a conflict left in the work tree at `path`, read now and written
+    nowhere: {head, step, status, index, files}. head is the commit the step was made onto, step the
+    commit being brought in, status git's own listing of what differs from head, index the index
+    entries of the listed paths (mode, blob id, stage and path) and files the blob id of each listed
+    path as it is in the work tree (None for a path with nothing there). The lander records this at
+    the conflict, and `candidate` takes a step in progress for the lander's only while a second read
+    answers exactly the same. None when git could not read any of it, or no such step is in progress."""
+    path = os.path.normpath(str(path))
+    remove, commands = _sibling('control_space_remove'), []
+
+    def read(where, *argv):
+        code, out = remove._git(commands, '-C', where, *argv)
+        if code != 0:
+            raise _Stays('unique_work', 'git could not read %s: %s' % (where, str(out)[:200]))
+        return out
+
+    try:
+        return _left(path, read)
+    except Exception:  # noqa: BLE001 - what could not be read is recorded as nothing, and nothing is accepted
+        return None
+
+
+def candidate(path, main, record, projected=(), remote=None):
     """Look at the landing candidate workspace at `path` before the lander removes it with no kept ref
     written (THE LANDING CANDIDATE, above). `main` is the caller's repository, `record` the lander's
-    own record of the candidate (merges, implementation, evidence, commit, projection_commit,
-    projected_from), `trunk_ref` the ref of the workspace the lander wrote the fetched trunk on, and
-    `projected` the paths the lander's projection writes. Nothing is written, here or in `main`.
+    own record of the candidate (watermark, merges, implementation, evidence, commit,
+    projection_commit, projected_from, made, left), `projected` the paths the lander's projection writes,
+    and `remote` what reads the commit the remote's trunk names now, writing nothing (None where the
+    candidate was built on the caller's own trunk and no remote was fetched). Nothing is written,
+    here or in `main`.
 
     The answer is {path, item, state, deferral, said, refs}. state is REBUILDABLE, with own (the
-    commits only the workspace has, each one the record accounts for) when all of this holds, and None
+    commits only the workspace has, each one the record names) when all of this holds, and None
     with the deferral and the sentence otherwise:
 
       - it is a repository with a work tree, no linked worktree, no repository beneath it and no stash;
-      - every commit its HEAD, its refs, its logs and its operation heads reach is reachable from a
-        ref of `main` under HELD_REFS or from `trunk_ref`, or is a merge or the projection commit the
-        record names, or is the one commit the lander had made and not yet recorded: the HEAD, with
-        exactly the parents the record's next step has;
+      - every commit its HEAD, its refs, its logs and its operation heads reach, and the record's
+        watermark, is reachable from a ref of `main` under HELD_REFS or from the commit the remote's
+        trunk names now, or is a commit the record names as the lander's own;
       - its work tree holds no ignored file that is work, and what git's status lists is either
-        nothing, or the tracked paths of the merge the record's next step is, in progress, or the
-        projected paths while the projection is the next step. No other operation is in progress.
+        nothing, or exactly what the record says the lander left when the merge its next step is
+        stopped, or the projected paths while the projection is the next step. No other operation is
+        in progress.
 
     Whatever raises answers None with the deferral remove_refused."""
     path = os.path.normpath(str(path))
@@ -304,31 +386,47 @@ def candidate(path, main, record, trunk_ref, projected=()):
             raise _Stays('unique_work', 'git could not read the tips of the workspace')
         if tips['stash']:
             raise _Stays('unique_work', 'the workspace holds a stash entry, which the lander never makes')
-        trunk = read(path, 'rev-parse', '--verify', '--quiet', trunk_ref + '^{commit}', absent=True)
-        trunk = trunk.strip() if trunk else None
-        parents, merged, projecting = _next_step(record, trunk)
+        merged, projecting = _next_step(record)
 
-        # The commits: what the workspace names, less what the main repository and the trunk hold.
+        # The commits: what the workspace names, less what the main repository holds, and less what the
+        # remote's trunk holds, as the remote itself says now. No ref of the workspace says what is
+        # held: whatever runs in the workspace can move its refs. The trunk the record stored (its
+        # watermark) is a commit like any other here, held only by what is outside the workspace.
         named = set(line.partition(' ')[0] for line in tips['refs']) | set(tips['log']) | set(tips['operations'].values())
+        if _commit(record.get('watermark')):
+            named.add(record['watermark'])
         if tips['head']:
             named.add(tips['head'])
         holding = set(line.partition(' ')[0] for line in read(
             main, 'for-each-ref', '--format=%(objectname) %(refname)', *HELD_REFS).split('\n')[:-1])
-        if trunk:
-            holding.add(trunk)
-        unheld = {}
-        if named:
+
+        def outside():
+            found = {}
             listed = read(path, 'rev-list', '--parents', '--stdin',
                           feed=('\n'.join(sorted(named) + ['--not'] + sorted(holding)) + '\n').encode())
             for line in listed.split('\n')[:-1]:
                 commit, _, above = line.partition(' ')
-                unheld[commit] = above.split()
+                found[commit] = above.split()
+            return found
+
         made = set(step.get('merge') for step in record.get('merges') or () if isinstance(step, dict))
         made |= {record.get('commit'), record.get('projection_commit')}
+        noted = record.get('made')
+        made |= set(commit for commit in (noted if isinstance(noted, list) else ()) if _commit(commit))
+        unheld = outside()
+        if any(commit not in made for commit in unheld):
+            # No ref of the main repository holds these: the trunk fetched into the workspace alone, and
+            # what is beneath it. They count as held only by the remote's trunk as the remote says it is
+            # now, and only when that commit is known here, so that what it contains can be read. A
+            # remote that was not read, or whose trunk no longer contains them, holds nothing.
+            tip = remote() if callable(remote) else None
+            if _commit(tip) and read(path, 'rev-parse', '--verify', '--quiet', tip + '^{commit}', absent=True):
+                holding.add(tip)
+                unheld = outside()
         beyond = sorted(commit for commit in unheld if commit not in made)
-        if beyond and not (beyond == [tips['head']] and parents is not None and unheld[beyond[0]] == parents):
+        if beyond:
             raise _Stays('unique_work', 'the workspace holds a commit that nothing else holds and that the '
-                         'candidate\'s record does not account for: ' + ', '.join(beyond[:3]), commits=beyond[:NAMED])
+                         'candidate\'s record does not name: ' + ', '.join(beyond[:3]), commits=beyond[:NAMED])
 
         # The work tree: nothing, or the lander's own unfinished step.
         operations = sorted(set(name for name, marker in probe.OPERATIONS if os.path.lexists(os.path.join(folder, marker))))
@@ -339,26 +437,22 @@ def candidate(path, main, record, trunk_ref, projected=()):
         if work:
             raise _Stays('unique_work', 'the work tree holds ignored files that are in no commit: '
                          + ', '.join(work[:3]), ignored_work=work[:NAMED])
-        entries = read(path, 'status', '--porcelain=v1', '-z', '--untracked-files=all').split('\0')[:-1]
-        untracked, tracked = [], []
-        while entries:
-            entry = entries.pop(0)
-            if 'R' in entry[:2] or 'C' in entry[:2]:
-                tracked.append(entries.pop(0))
-            (untracked if entry[:2] == '??' else tracked).append(entry[3:])
+        _said, untracked, tracked = _status(path, read)
         if operations:
-            merging = (operations == ['merge'] and merged is not None and not beyond
+            merging = (operations == ['merge'] and merged is not None
                        and tips['operations'].get('MERGE_HEAD') == merged)
-            if not merging or untracked:
-                raise _Stays('unique_work', 'an operation the candidate\'s record does not account for is in '
-                             'progress, or it left files git does not track: %s' % ', '.join(operations + untracked[:3]),
-                             operation=operations, untracked=untracked[:NAMED])
+            recorded = record.get('left')
+            if not merging or not isinstance(recorded, dict) or recorded != _left(path, read):
+                raise _Stays('unique_work', 'an operation is in progress that the candidate\'s record does not account '
+                             'for, or its work tree is not as the lander left it: %s'
+                             % ', '.join(operations + (untracked + tracked)[:3]),
+                             operation=operations, untracked=untracked[:NAMED], tracked=tracked[:NAMED])
         elif changed or tracked or untracked:
-            outside = sorted(set(name for name in changed + tracked + untracked if name not in projected))
-            if outside or not projecting:
+            outside_projection = sorted(set(name for name in changed + tracked + untracked if name not in projected))
+            if outside_projection or not projecting:
                 raise _Stays('unique_work', 'the work tree holds files that are in no commit: '
-                             + ', '.join((outside or changed + tracked + untracked)[:3]),
-                             changed=(outside or changed + tracked + untracked)[:NAMED])
+                             + ', '.join((outside_projection or changed + tracked + untracked)[:3]),
+                             changed=(outside_projection or changed + tracked + untracked)[:NAMED])
         return dict(answer, state=REBUILDABLE, own=sorted(unheld))
     except _Stays as stays:
         return dict(answer, deferral=stays.deferral, said=stays.said, facts=stays.facts)
