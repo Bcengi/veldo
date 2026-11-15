@@ -1,0 +1,18 @@
+{
+ "module": "engine/.veldo/pack_conformance.py",
+ "functions": [
+  "_conform_one",
+  "gate_exit_for_state",
+  "real_push_exec_bit"
+ ],
+ "baseline_passed": true,
+ "outside_unique_work_kept": true,
+ "falsifier": {
+  "function": "gate_exit_for_state",
+  "old": "tempfile.TemporaryDirectory()",
+  "new": "tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-')"
+ },
+ "falsifier_red": [
+  "engine/.veldo/pack_conformance.py:177: gate_exit_for_state: remove:unscoped temporary outside its reviewed boundary"
+ ]
+}

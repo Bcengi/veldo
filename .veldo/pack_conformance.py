@@ -174,7 +174,7 @@ def gate_exit_for_state(repo_root, pack_id, proven):
     its push-gate exit code. The single driver both the conformance check and its teeth use."""
     pack = _pack_by_id(repo_root, pack_id)
     has_prepush = _has_prepush(repo_root, pack["pack_dir"])
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-') as td:
         _extract_pack(repo_root, pack["pack_dir"], td)
         env = _git_env(td)
         sha = _commit_all(td, env)
@@ -222,7 +222,7 @@ def _conform_one(repo_root, pack, modes):
                 findings.append("pack %s: committed %s not executable in the index (mode %r)"
                                 % (pid, rel, modes.get(rel)))
 
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-') as td:
         up = os.path.join(td, "u")
         pv = os.path.join(td, "p")
         _extract_pack(repo_root, pack_dir, up)
@@ -270,7 +270,7 @@ def real_push_exec_bit(repo_root, pack_id):
     pack = _pack_by_id(repo_root, pack_id)
     pack_dir = pack["pack_dir"]
     out = {"nonexec_landed": None, "exec_blocked": None}
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory(prefix='veldo-pack-conformance-') as td:
         def _attempt(tag, mode):
             work = os.path.join(td, "work-" + tag)
             bare = os.path.join(td, "bare-" + tag + ".git")
