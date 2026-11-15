@@ -107,8 +107,9 @@ declared trunk and landing refs, and the live worktree item at the path in that 
 found by repository and path, never by path alone: a live item of another repository at the path is
 answered as `other`, and the entry is refused. Paths are compared in the Ledger's own canonical form
 (control_space.canonical_path). A branch that matches a pattern is owned by the scope and the ticket the
-pattern names; any other branch, a detached worktree and a worktree of a plain repository by the scope
-alone. A worktree a run owns (the run's label in the hook's environment) is VELDO-0336's.
+pattern names; other branches and detached worktrees outside a run belong to the scope alone.
+A newly detached worktree with a run label belongs to that run. Its station is read from the wrapper
+scratch record in this scope, never from the hook. Unknown runs stay spooled without a guessed owner.
 
 HOW LONG A HOOK CAN WAIT. The hook's side gives the authority REACH_SECONDS for each answer, another
 call's replay LOCK_SECONDS, and its whole replay HOOK_SECONDS (no answer is waited for past that
@@ -243,8 +244,11 @@ def checked(entry):
         raise Malformed('not an entry of ' + SCHEMA)
     subject, emitter = entry.get('subject'), entry.get('emitter')
     fields = FIELDS[entry['type']]
-    if not isinstance(subject, dict) or set(subject) != set(fields):
+    optional = {'run_label'} if entry['type'] == 'worktree_added' else set()
+    if not isinstance(subject, dict) or not set(fields) <= set(subject) or set(subject) - set(fields) - optional:
         raise Malformed('the subject of %s holds %s' % (entry['type'], ', '.join(fields)))
+    if 'run_label' in subject and not _text(subject['run_label']):
+        raise Malformed('subject.run_label is a name')
     for field in fields:
         if field in ('pid', 'started'):
             if type(subject[field]) is not int or subject[field] <= 0:
@@ -316,7 +320,7 @@ def repository_of(common_dir):
     return os.path.dirname(common) if os.path.basename(common) == '.git' else common
 
 
-def checkout(previous, new, flag, worktree, git_dir, common_dir, branch, host, at=None):
+def checkout(previous, new, flag, worktree, git_dir, common_dir, branch, host, at=None, run_label=None):
     """The entry for one post-checkout call, or None when there is nothing to record. `worktree` is the
     working tree git ran the hook in, `git_dir` and `common_dir` its git directory and the repository's
     common directory, `branch` the short name of the branch HEAD is on (empty when detached)."""
@@ -327,8 +331,11 @@ def checkout(previous, new, flag, worktree, git_dir, common_dir, branch, host, a
     if any(os.path.lexists(os.path.join(git_dir, name)) for name in REBASING):
         return None  # a rebase in progress: the worktree's branch is the same when it ends
     kind = 'worktree_added' if _null(previous) else 'branch_switched'
-    return entry(kind, {'repository': repository_of(common_dir), 'path': os.path.normpath(worktree),
-                        'branch': branch or None, 'start': new}, 'post-checkout', host, at)
+    subject = {'repository': repository_of(common_dir), 'path': os.path.normpath(worktree),
+               'branch': branch or None, 'start': new}
+    if kind == 'worktree_added' and not branch and _text(run_label):
+        subject['run_label'] = run_label
+    return entry(kind, subject, 'post-checkout', host, at)
 
 
 def full_ref(name):
@@ -635,9 +642,15 @@ def ticket_of(branch, patterns):
     return None
 
 
-def owner_of(branch, about):
+def owner_of(branch, about, run_label=None):
     """The owner the branch pattern gives: the scope, and the ticket when the branch names one."""
     owner = {'scope': dict(about['scope'])}
+    if not branch and run_label:
+        run = (about.get('runs') or {}).get(run_label)
+        if not isinstance(run, dict):
+            raise _Waits('space_run_unknown:' + run_label)
+        owner['run'] = dict(run)
+        return owner
     ticket = ticket_of(branch, about.get('patterns'))
     if ticket:
         owner['ticket'] = ticket
@@ -832,7 +845,8 @@ def send(one, authority, sign, facts=None, until=None, clock=time.monotonic):
     there = item is not None
     if not there:
         answer = ask('declare', DECLARE, {'kind': 'worktree', 'locator': {'path': subject['path']},
-                                          'owner': owner_of(subject['branch'], about), 'creator': 'hook',
+                                          'owner': owner_of(subject['branch'], about,
+                                                            one['subject'].get('run_label')), 'creator': 'hook',
                                           'branch': subject['branch'], 'start': subject['start']})
         if answer['ok']:
             item, state = answer.get('item'), 'declared'
@@ -1127,7 +1141,22 @@ class Local:
                     item, state, creator = identity, record.get('state'), record.get('creator')
                 else:
                     other = identity
-        return {'scope': scope, 'patterns': patterns, 'trunk': self.trunk(repository, scope),
+        # The wrapper's scratch declaration records the station. Never take a station from a hook's
+        # environment. Retired records remain useful when an offline hook is replayed after the run.
+        runs, conflicts = {}, set()
+        for record in self.ledger.items().values():
+            owner = record.get('owner') or {}
+            run = owner.get('run') or {}
+            if (record.get('kind') != 'scratch' or record.get('creator') != 'wrapper'
+                    or owner.get('scope') != scope or not run.get('id')
+                    or self.ledger.issued_to(run['id']) != 'space-runner'):
+                continue
+            if run['id'] in runs and runs[run['id']] != run:
+                conflicts.add(run['id'])
+            runs[run['id']] = dict(run)
+        for identity in conflicts:
+            runs.pop(identity, None)
+        return {'scope': scope, 'patterns': patterns, 'runs': runs, 'trunk': self.trunk(repository, scope),
                 'landing_refs': landing_refs, 'item': item, 'state': state, 'creator': creator,
                 'other': other if item is None else None}
 
@@ -1284,7 +1313,7 @@ def main(argv=None, stdin=None, stdout=None, stderr=None):
         host = socket.gethostname() or 'unknown'
         if args.verb == 'record':
             one = checkout(args.previous, args.new, args.flag, args.worktree, args.git_dir, args.common_dir,
-                           args.branch, host)
+                           args.branch, host, run_label=os.environ.get('VELDO_SPACE_LABEL'))
             entries = [one] if one is not None else []
         elif args.verb == 'event':
             lines = stdin.read().splitlines()

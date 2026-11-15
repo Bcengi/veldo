@@ -16,6 +16,14 @@ footprint:
   - "engine/hooks/reference-transaction"
   - "engine/.veldo/control_space_kinds.py"
   - ".veldo/control_space_kinds.py"
+  - "engine/.veldo/control_space_spool.py"
+  - ".veldo/control_space_spool.py"
+  - "engine/.veldo/control_space_signal.py"
+  - ".veldo/control_space_signal.py"
+  - "engine/.veldo/control_space_remove.py"
+  - ".veldo/control_space_remove.py"
+  - "engine/.veldo/control_space_keep.py"
+  - ".veldo/control_space_keep.py"
   - "engine/bin/veldo"
   - "bin/veldo"
   - "scripts/suites/*_veldo_0336_*.py"
@@ -122,3 +130,5 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   the removal with the worktree deferred as keep_failed; the remover deletes path by path after one
   snapshot, and a file rewritten in between went unsaved. N2.4: AC3 gains two falsifiers, the scratch
   deleted without the snapshot, which nothing caught, and the delete without the comparison.
+
+- 2026-11-15: footprint names the hook transport, Signal, existing remover and keeper with their synced copies. The hook already inherits the run label; its transport resolves the station from the wrapper record. Signal supplies the scratch rules reader, the keeper saves review scratch, and the existing remover compares each file before deletion. No later ticket is implemented.

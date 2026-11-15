@@ -186,9 +186,9 @@ and by reconcile (VELDO-0315 AC6), which reads the carrier first.
 
 WHAT IS NOT HERE. The modules are given, not imported: the probes, the kind registry and the removers
 (with the keep step the removers are given, VELDO-0345). The owner's Confirm, which writes an item's
-confirmation, is VELDO-0320. The decision request an item with unique work raises is VELDO-0318, a
-review worktree's scratch is VELDO-0336, the evidence files a copy holds are VELDO-0347 (their action
-has no remover yet and is deferred as remove_refused), and the measuring of a measure cell and the
+confirmation, is VELDO-0320. The decision request an item with unique work raises is VELDO-0318. Review scratch uses the
+remover with a fresh rules reader (VELDO-0336). Evidence files a copy holds are VELDO-0347 (their
+action has no remover yet and is deferred as remove_refused), and the measuring of a measure cell and the
 mark of a contained branch are their own tickets: here each of those items is kept, with the action
 named. Reconcile, which finishes a removing item and an item left due by a process that died, is
 VELDO-0315.
@@ -377,8 +377,20 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
                 seen['said'] = {'ok': False, 'deferral': DEFERRAL['tool'],
                                 'said': 'the ledger did not record the removal: %s' % (began.get('reason'),)}
                 return seen['said']
+        review = {}
+        if entry.get('first') == REVIEW_SCRATCH:
+            def review_check():
+                current = ledger.item(identity)
+                if (not current or current.get('state') != 'removing' or current.get('owner_keep')
+                        or current.get('owner') != record.get('owner')
+                        or current.get('locator') != record.get('locator')):
+                    return {'ok': False, 'deferral': 'in_use', 'found': 'the recorded item changed'}
+                return rules(ledger, probe, identity, current, purpose=REVIEW_SCRATCH,
+                             owner_live=given['owner_live'], run=given['run'], proc=given['proc'],
+                             borrow_root=given['borrow_root'])
+            review['review_check'] = review_check
         seen['said'] = remover.remove(ledger, probe, identity, record, action=action, free=given['free'],
-                                      keep=given['keep'], run=given['run'], proc=given['proc'])
+                                      keep=given['keep'], run=given['run'], proc=given['proc'], **review)
         return seen['said']
 
     try:
@@ -390,10 +402,11 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
                   'found': {'raised': _raised(error)}}
     if judged['ok']:
         said = seen.get('said') or {}
+        scratch = {'review_scratch': said['review_scratch']} if 'review_scratch' in said else {}
         return write('removed' if action in REMOVALS else 'kept',
-                     {key: _plain(said.get(key)) for key in ('method', 'bytes', 'bytes_source', 'pool',
+                     dict({key: _plain(said.get(key)) for key in ('method', 'bytes', 'bytes_source', 'pool',
                                                              'pool_free_before', 'pool_free_after', 'freed',
-                                                             'host')})
+                                                             'host')}, **scratch))
     if seen.get('not_begun'):
         # The ledger admits one removing write for an item. When it refused this one because the item
         # is not due any more, another carrier holds the removal: nothing is written over its record.
@@ -410,6 +423,8 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
         remover.left(path, identity) if path and _missing(probe, record, given['run']) else None)
     refusal = {'rule': judged['deferral'], 'refused_by': judged['rule'], 'order': judged['order'],
                'retry': retry, 'found': _plain(found)}
+    if said.get('review_scratch') is not None:
+        refusal['review_scratch'] = said['review_scratch']
     if left_at and (judged['rule'] in ('tool', 'error') or found.get('missing') is True):
         return write('removing', dict(refusal, left_at=left_at), left_at=left_at, deferral=judged['deferral'],
                      rule=judged['rule'])

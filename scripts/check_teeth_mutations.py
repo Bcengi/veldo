@@ -13032,14 +13032,14 @@ def cases():
     keep345('space345-refs-after-the-remove', 'control_space_remove.py',
             "    path = _plain(record['locator']['path'])\n"
             "    kept = _kept(ctx, identity, record)\n"
-            "    repository = ctx['probe'].repository(path, ctx['run'])\n",
+            "    owner = record.get('owner') or {}\n",
             "    path = _plain(record['locator']['path'])\n"
             "    kept = {'tips': tips(path, 'worktree', ctx['commands'])}\n"
-            "    repository = ctx['probe'].repository(path, ctx['run'])\n",
+            "    owner = record.get('owner') or {}\n",
             ['ac1/kept-before-remove'],
-            also=(("        raise\n    _after(ctx, pools, answer)\n\n\ndef _r_drop_caches",
+            also=(("        raise\n    _after(ctx, pools, answer)\n\n\ndef _review_scratch",
                    "        raise\n    _kept(ctx, identity, record)\n    _after(ctx, pools, answer)\n\n\n"
-                   "def _r_drop_caches"),))
+                   "def _review_scratch"),))
     keep345('space345-agent-worktree-kept-in-agent-repository', 'control_space_keep.py',
             "        main = ledger.main_repository(identity)\n",
             "        main = ledger.main_repository(identity)\n"
@@ -15478,6 +15478,54 @@ def cases():
     for case in result:
         if case['module'] == 'control_space_probe.py' and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {'git_process.py', 'control_space_docker.py'})
+    # VELDO-0336: each defect has a planted-work row in the isolated run-worktree suite.
+    space336 = '153_veldo_0336_run_worktree.py'
+
+    def run336(name, module, old, new, rows, also=()):
+        add(336, name, space336, module, old, new, rows, also=also)
+
+    run336('space336-project-owns-detached', 'control_space_spool.py',
+           "    if not branch and run_label:\n", "    if False:\n",
+           ['ac1/detached-owned-and-ended'])
+    run336('space336-run-owns-branch', 'control_space_spool.py',
+           "    if not branch and run_label:\n", "    if run_label:\n",
+           ['ac2/branch-keeps-owner'], also=[
+               ("    if kind == 'worktree_added' and not branch and _text(run_label):\n",
+                "    if kind == 'worktree_added' and _text(run_label):\n"),
+               ("                                          'branch': subject['branch'], 'start': subject['start']})",
+                "                                          'branch': None, 'start': subject['start']})"),
+               ("    if there or subject['branch'] is not None:\n", "    if there:\n")])
+    run336('space336-scratch-is-unique-work', 'control_space_signal.py',
+           "if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record))",
+           "if True", ['ac3/scratch-saved-and-removed'])
+    run336('space336-scratch-not-saved', 'control_space_keep.py',
+           "            attempt, saved = _snapshot(ledger, identity, record, path, header, commands)\n",
+           "            attempt = None\n"
+           "            saved = {'files': {name: {key: row[key] for key in ('mode', 'sha256')}\n"
+           "                               for name, row in listing(ledger, record, path, commands)['files'].items()}}\n",
+           ['ac3/scratch-saved-and-removed'])
+    run336('space336-delete-without-comparison', 'control_space_remove.py',
+           "        if not expected or _digest(at) != {key: expected.get(key) for key in ('mode', 'sha256')}:\n",
+           "        if False:\n", ['ac3/changed-after-save', 'ac3/added-after-save', 'ac3/mode-after-save',
+                                     'ac3/folder-retry'])
+    run336('space336-link-target-deleted', 'control_space_remove.py',
+           "                    os.unlink(base, dir_fd=parent)\n",
+           "                    if stat.S_ISLNK(found.st_mode):\n"
+           "                        os.unlink(os.path.realpath(target))\n"
+           "                    os.unlink(base, dir_fd=parent)\n", ['ac4/link-target-stays'])
+    run336('space336-open-file-ignored', 'control_space_signal.py',
+           "         'process_use': _rule_process_use, 'unique_work': _rule_unique_work, 'children': _rule_children,",
+           "         'process_use': lambda *args: None, 'unique_work': _rule_unique_work, 'children': _rule_children,",
+           ['ac4/open-file-stays'])
+    run336('space336-build-census-skipped', 'veldo',
+           "    for identity, record in sorted(ledger.items().items()):\n        owner = record.get(\"owner\") or {}\n",
+           "    for identity, record in []:\n        owner = record.get(\"owner\") or {}\n",
+           ['ac1/detached-owned-and-ended'])
+    result[-1]['dir'] = 'bin'
+    run336('space336-paths-truncated', 'control_space_signal.py',
+           "scratch = {'review_scratch': said['review_scratch']} if 'review_scratch' in said else {}",
+           "scratch = {'review_scratch': _plain(said['review_scratch'])} if 'review_scratch' in said else {}",
+           ['ac3/scratch-saved-and-removed'])
 
     # Admit the two-slot new-project fixture first so its long controls and mutants
     # overlap other suites throughout the existing combined budget.

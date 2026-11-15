@@ -2122,6 +2122,15 @@
    ],
    "regions": "VELDO-0314 session start ownership, session end without removal, failure spooling, replay and safe session paths.",
    "requires_note": "Only ROOT and expect. Real ledger, store, observer signatures, socket, hook and CLI processes. Event receiver is a stand-in for VELDO-0323; no consumer or live engines. Every remover held by a fixture latch."
+  },
+  {
+   "name": "153_veldo_0336_run_worktree",
+   "file": "153_veldo_0336_run_worktree.py",
+   "requires": [
+    "153_veldo_0336_run_worktree"
+   ],
+   "regions": "VELDO-0336: detached worktree ownership from a wrapped run, branch ownership retained, saved review scratch with per-file comparison, process use and links. Loss rows cover failed saves, changed and added files, retry, owner Keep, kept children, tracked edits, personal ignores and protected paths.",
+   "requires_note": "Only ROOT and expect. Real hooks, signed packets, Ledger, git, keep step and removers in a temporary installed copy. Wrapper begin/end called in process, empty group and process census stand-ins. No Docker engine contacted."
   }
  ],
  "resource_capacities": {
