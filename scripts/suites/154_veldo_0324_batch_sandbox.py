@@ -358,19 +358,26 @@ def _v324_suite():
             (evidence / 'proof').write_text('reviewer evidence')
             identity, record = at(evidence)
             b.discard()
-            check(row, 'the actual gate observation declares verdict_recorded and survives batch end',
-                  record['kind'] == 'evidence' and record['ends_on']['events'] == ['verdict_recorded']
-                  and L.item(identity)['state'] == 'present'
+            events = record.get('ends_on', {}).get('events') or []
+            check(row, 'the actual gate observation is evidence and survives batch end',
+                  record['kind'] == 'evidence' and L.item(identity)['state'] == 'kept'
                   and (evidence / 'proof').read_text() == 'reviewer evidence')
+            check(row, 'its end list is the evidence kind default: the verdict, the ticket end and the project end',
+                  events == list(table['ends_on']['evidence'])
+                  and all(event in events for event in ('verdict_recorded', 'ticket_ended', 'project_ended')))
         drive('ac1/observation-end', observation_end)
 
-        def invalid_end(row):
-            for number, events in enumerate(([], ['unknown'], ['verdict_recorded', 'verdict_recorded'], 'verdict_recorded')):
-                path = scratch / ('invalid-end-' + str(number))
-                result = L.declare('evidence', {'path': str(path)}, owner, 'seam', ends_on=events)
-                check(row, 'invalid event selections refuse without a declared item',
-                      not result['ok'] and at(path)[0] is None and not path.exists())
-        drive('safety/invalid-end-events', invalid_end)
+        def no_end_option(row):
+            path = scratch / 'chosen-end'
+            try:
+                result = L.declare('evidence', {'path': str(path)}, owner, 'seam', ends_on=['verdict_recorded'])
+                refused = not result['ok']
+            except TypeError:
+                refused = True
+            check(row, 'declare takes no end list from its caller and makes no item for one',
+                  refused and at(path)[0] is None and not path.exists()
+                  and 'ends_on' not in SP.COMMAND_PARAMETERS[SP.DECLARE])
+        drive('safety/no-end-option', no_end_option)
 
         def bad_paths(row):
             b, path, observation = batch('bad-paths')

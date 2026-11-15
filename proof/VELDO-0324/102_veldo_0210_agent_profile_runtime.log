@@ -12,33 +12,33 @@ PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
   exit        never 0, even when nothing fails.
   done means  `bash scripts/verify.sh` green, and nothing else.
 ==============================================================================
-  /tmp/tmp5scz9lc_: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
-  /tmp/tmp5scz9lc_/nocrit.md: no acceptance criteria
-  /tmp/tmp5scz9lc_/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
-  /tmp/tmp5scz9lc_/status.md: bad status: donezo
-  /tmp/tmp5scz9lc_/proof.json: proof criterion AC9 not in the specification (invented)
-  /tmp/tmp5scz9lc_/proof2.json: spec criterion AC1 missing from proof
-  /tmp/tmp5scz9lc_/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
-  /tmp/tmp5scz9lc_/proof4.json: criterion AC1 passed without evidence
-  /tmp/tmp5scz9lc_/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
-  /tmp/tmp5scz9lc_/verdict.json: bad verdict: looks_fine
-  /tmp/tmpeffcqmxi/cycle.md: dependency cycle through WARP-9101
-  /tmp/tmpeffcqmxi/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
-  /tmp/tmpeffcqmxi/oref.md: feature F1: unknown outcome ref O7
-  /tmp/tmpeffcqmxi/fref.md: work W1: unknown feature ref F9
-  /tmp/tmpeffcqmxi/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
-  /tmp/tmpeffcqmxi/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
-  /tmp/tmpeffcqmxi/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
-  /tmp/tmpeffcqmxi/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
-  /tmp/tmpeffcqmxi/badblock.md: open decision D1: blocks unknown spec WARP-9999
-  /tmp/tmpeffcqmxi/dupspec.md: duplicate spec ids across work items
-  /tmp/tmpeffcqmxi/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
-  /tmp/tmpeffcqmxi/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  /tmp/tmp28ry8lbd: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp28ry8lbd/nocrit.md: no acceptance criteria
+  /tmp/tmp28ry8lbd/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp28ry8lbd/status.md: bad status: donezo
+  /tmp/tmp28ry8lbd/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp28ry8lbd/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp28ry8lbd/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp28ry8lbd/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp28ry8lbd/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmp28ry8lbd/verdict.json: bad verdict: looks_fine
+  /tmp/tmppbbza_yy/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmppbbza_yy/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmppbbza_yy/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmppbbza_yy/fref.md: work W1: unknown feature ref F9
+  /tmp/tmppbbza_yy/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmppbbza_yy/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmppbbza_yy/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmppbbza_yy/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmppbbza_yy/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmppbbza_yy/dupspec.md: duplicate spec ids across work items
+  /tmp/tmppbbza_yy/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmppbbza_yy/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
   x.md: declares plan PLAN-9002 but no such plan exists
   x.md: plan PLAN-9001 has no work item W9
   x.md: plan and work must be declared together
   VELDO-0210 rust/configuration checks: 12 passed, 0 failed
-  102_veldo_0210_agent_profile_runtime           237 passed   19.50s
-selftest (PARTIAL, 1 of 224 suites): 263 passed, 0 failed in 19.50s
+  102_veldo_0210_agent_profile_runtime           237 passed   20.35s
+selftest (PARTIAL, 1 of 224 suites): 263 passed, 0 failed in 20.35s
 PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
-agent sandbox: credential credential.json refreshed during the run, written back to /tmp/v210-profile-v4mztltp/leased-login/credential.json
+agent sandbox: credential credential.json refreshed during the run, written back to /tmp/v210-profile-c7x18yot/leased-login/credential.json

@@ -192,11 +192,11 @@
  },
  {
   "finding": 324,
-  "name": "space324-observation-default-end",
+  "name": "space324-observation-as-scratch",
   "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "control_batch.py",
-  "old": "with creation.item('evidence', directory, ends_on=['verdict_recorded']):",
-  "new": "with creation.item('evidence', directory):",
+  "old": "with creation.item('evidence', directory):",
+  "new": "with creation.item('scratch', directory):",
   "rows": [
    "ac1/observation-end"
   ],
@@ -204,23 +204,11 @@
  },
  {
   "finding": 324,
-  "name": "space324-creator-drops-end",
-  "suite": "154_veldo_0324_batch_sandbox.py",
-  "module": "control_clone.py",
-  "old": "**({'ends_on': ends_on} if ends_on is not None else {})",
-  "new": "**{}",
-  "rows": [
-   "ac1/observation-end"
-  ],
-  "dir": ".veldo"
- },
- {
-  "finding": 324,
-  "name": "space324-ledger-drops-end",
+  "name": "space324-ledger-drops-ticket-end",
   "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "control_space.py",
-  "old": "'events': list(ends_on)",
-  "new": "'events': list(self.lifecycle['ends_on'][kind])",
+  "old": "'events': list(self.lifecycle['ends_on'][kind])},",
+  "new": "'events': [e for e in self.lifecycle['ends_on'][kind] if kind != 'evidence' or e == 'verdict_recorded']},",
   "rows": [
    "ac1/observation-end"
   ],
@@ -228,13 +216,13 @@
  },
  {
   "finding": 324,
-  "name": "space324-ledger-invalid-end",
+  "name": "space324-declare-end-option",
   "suite": "154_veldo_0324_batch_sandbox.py",
   "module": "control_space.py",
-  "old": "        if 'ends_on' in params and (not isinstance(ends_on, list) or not ends_on",
-  "new": "        if False and (not isinstance(ends_on, list) or not ends_on",
+  "old": "                pool=None, principal=None, command_id=None, form=None):\n        \"\"\"Create an item in state declared",
+  "new": "                pool=None, principal=None, command_id=None, form=None, ends_on=None):\n        \"\"\"Create an item in state declared",
   "rows": [
-   "safety/invalid-end-events"
+   "safety/no-end-option"
   ],
   "dir": ".veldo"
  },

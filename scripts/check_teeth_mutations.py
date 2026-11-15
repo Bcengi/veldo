@@ -15245,16 +15245,18 @@ def cases():
         "                   and (record.get('owner', {}).get('run') or {}).get('id') == label]",
         "                   ]", ['safety/foreign-run-parent'])
     result[-1]['dir'] = 'scripts'
-    add(324, 'space324-observation-default-end', '154_veldo_0324_batch_sandbox.py', 'control_batch.py',
-        "with creation.item('evidence', directory, ends_on=['verdict_recorded']):",
-        "with creation.item('evidence', directory):", ['ac1/observation-end'])
-    add(324, 'space324-creator-drops-end', '154_veldo_0324_batch_sandbox.py', 'control_clone.py',
-        "**({'ends_on': ends_on} if ends_on is not None else {})", '**{}', ['ac1/observation-end'])
-    add(324, 'space324-ledger-drops-end', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
-        "'events': list(ends_on)", "'events': list(self.lifecycle['ends_on'][kind])", ['ac1/observation-end'])
-    add(324, 'space324-ledger-invalid-end', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
-        "        if 'ends_on' in params and (not isinstance(ends_on, list) or not ends_on",
-        "        if False and (not isinstance(ends_on, list) or not ends_on", ['safety/invalid-end-events'])
+    add(324, 'space324-observation-as-scratch', '154_veldo_0324_batch_sandbox.py', 'control_batch.py',
+        "with creation.item('evidence', directory):",
+        "with creation.item('scratch', directory):", ['ac1/observation-end'])
+    add(324, 'space324-ledger-drops-ticket-end', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
+        "'events': list(self.lifecycle['ends_on'][kind])},",
+        "'events': [e for e in self.lifecycle['ends_on'][kind] if kind != 'evidence' or e == 'verdict_recorded']},",
+        ['ac1/observation-end'])
+    add(324, 'space324-declare-end-option', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
+        "                pool=None, principal=None, command_id=None, form=None):\n"
+        "        \"\"\"Create an item in state declared",
+        "                pool=None, principal=None, command_id=None, form=None, ends_on=None):\n"
+        "        \"\"\"Create an item in state declared", ['safety/no-end-option'])
 
 
     add(324, 'space324-reassembly-drops-deferrals', '154_veldo_0324_batch_sandbox.py', 'control_batch.py',

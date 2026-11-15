@@ -1,5 +1,5 @@
 {
- "baseline_rows": 18,
+ "baseline_rows": 29,
  "baseline_passed": true,
  "mutations": [
   {
@@ -41,11 +41,16 @@
     {
      "row": "VELDO-0324 ac1/evidence",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 256, in evidence\n    (evidence_path / 'proof.txt').read_text() == 'only copy of the gate proof'\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-ceyk54ho/scratch/evidence/gate-evidence/proof.txt'"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 262, in evidence\n    (evidence_path / 'proof.txt').read_text() == 'only copy of the gate proof'\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-n2hhg011/scratch/evidence/gate-evidence/proof.txt'"
+    },
+    {
+     "row": "VELDO-0324 ac1/observation-end",
+     "passed": false,
+     "detail": "the actual gate observation is evidence and survives batch end"
     }
    ],
-   "before": "0bfdde46eaca9d7bcf97079569298cd6f85acaabd3ae5ac38f2dd676a896e009",
-   "after": "a7014d66bf0648e32ddd4f8fcd6f86d3429e4ce51eea1ee0d13983782ee51f6a"
+   "before": "dcacb20a88bd330101d6d88f3534b6da0a7813278e97cd269c6cf0b79e8755a0",
+   "after": "93e49d33be5f6e903037ae93e1a1493b004ab71e81bbd062706a7463661c678a"
   },
   {
    "name": "space324-launcher-direct-delete",
@@ -63,26 +68,26 @@
     {
      "row": "VELDO-0324 ac2/lock-and-login",
      "passed": false,
-     "detail": "the launcher lock defers its scratch as in_use; Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 343, in lock_and_login\n    at(path)[1]['deferral']['rule'] == 'in_use' and (path / 'marker').read_text() == 'held scratch')\n                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-hsfyy4zv/scratch/held-lock/veldo-agent-e69265fc4a90429bbea710de0d4902e3/marker'"
+     "detail": "the launcher lock defers its scratch as in_use; Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 457, in lock_and_login\n    at(path)[1]['deferral']['rule'] == 'in_use' and (path / 'marker').read_text() == 'held scratch')\n                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-mn3gith9/scratch/held-lock/veldo-agent-cbb5886fb5b24fbb82e692ef5f453454/marker'"
     },
     {
      "row": "VELDO-0324 ac2/failed-launch",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 362, in failed_launch\n    raised and (path / 'partial').read_text() == 'failed run scratch'\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-hsfyy4zv/scratch/failed-launch/veldo-agent-d818b50a28d34f75a5ab21e045abcdd0/partial'"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 476, in failed_launch\n    raised and (path / 'partial').read_text() == 'failed run scratch'\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-mn3gith9/scratch/failed-launch/veldo-agent-2ed098c7748543fdaa651218d36a2411/partial'"
     },
     {
      "row": "VELDO-0324 safety/sandbox-repository",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 372, in sandbox_work\n    nested.mkdir()\n  File \"/usr/lib/python3.12/pathlib.py\", line 1313, in mkdir\n    os.mkdir(self, mode)\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-hsfyy4zv/scratch/nested-work/veldo-agent-4ec3f9b684b542eb8ea1eb518167a567/repository'"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 486, in sandbox_work\n    nested.mkdir()\n  File \"/usr/lib/python3.12/pathlib.py\", line 1313, in mkdir\n    os.mkdir(self, mode)\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-mn3gith9/scratch/nested-work/veldo-agent-1898a9a3d2b14d2c90a799f8df874287/repository'"
     },
     {
      "row": "VELDO-0324 safety/owner-keep-sandbox",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 387, in kept_sandbox\n    (path / 'notes').write_text('owner kept scratch work')\n  File \"/usr/lib/python3.12/pathlib.py\", line 1049, in write_text\n    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-hsfyy4zv/scratch/kept-sandbox/veldo-agent-de84c869e4344b30889ea53bc46b6edf/notes'"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 501, in kept_sandbox\n    (path / 'notes').write_text('owner kept scratch work')\n  File \"/usr/lib/python3.12/pathlib.py\", line 1049, in write_text\n    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-mn3gith9/scratch/kept-sandbox/veldo-agent-954e418178fa4a39a2a0959413cd220e/notes'"
     }
    ],
-   "before": "22bdc217f903203067f3556682875214e0cef50fcc327cac797a369c809e0fe5",
-   "after": "412532211ffd5710774dee74486628338bd402f79e6a4547ba9e2584b49200fa"
+   "before": "976b408481ca44fe8cfdf841afbacd2370200f980747f3dd4f5c7ab4e210c3a8",
+   "after": "08d1ce57ab631fa78e82d47cac5d761e7095116e343a0fc77d39e13ce29fa626"
   },
   {
    "name": "space324-stale-pass-without-installation",
@@ -103,8 +108,8 @@
      "detail": "two fixture days old, lock free, still byte equal after another start"
     }
    ],
-   "before": "22bdc217f903203067f3556682875214e0cef50fcc327cac797a369c809e0fe5",
-   "after": "e11d468aa5bba141b7ff77a78554ebe99d17f327ff440fbeb5b023362b3ede27"
+   "before": "976b408481ca44fe8cfdf841afbacd2370200f980747f3dd4f5c7ab4e210c3a8",
+   "after": "f300da65b1901ccffd6751771f7be2edcb52da3f837e942c69484a42fcc3d02d"
   },
   {
    "name": "space324-requires-ledger-outside-run",
@@ -116,21 +121,21 @@
     {
      "row": "VELDO-0324 ac3/no-installation",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 408, in stale\n    SB.launch(base / 'unused', repo, ['fixture-command'])\n  File \"/tmp/v324-i3dq9pnt/installed/scripts/agent_sandbox.py\", line 2207, in launch\n    creation = scratch_creation(space, os.environ)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-i3dq9pnt/installed/scripts/agent_sandbox.py\", line 2176, in scratch_creation\n    raise RuntimeError('ledger required')\nRuntimeError: ledger required"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 522, in stale\n    SB.launch(base / 'unused', repo, ['fixture-command'])\n  File \"/tmp/v324-sssn7mks/installed/scripts/agent_sandbox.py\", line 2200, in launch\n    creation = scratch_creation(space, os.environ)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-sssn7mks/installed/scripts/agent_sandbox.py\", line 2169, in scratch_creation\n    raise RuntimeError('ledger required')\nRuntimeError: ledger required"
     },
     {
      "row": "VELDO-0324 ac3/installation",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 408, in stale\n    SB.launch(base / 'unused', repo, ['fixture-command'])\n  File \"/tmp/v324-i3dq9pnt/installed/scripts/agent_sandbox.py\", line 2207, in launch\n    creation = scratch_creation(space, os.environ)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-i3dq9pnt/installed/scripts/agent_sandbox.py\", line 2176, in scratch_creation\n    raise RuntimeError('ledger required')\nRuntimeError: ledger required"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 522, in stale\n    SB.launch(base / 'unused', repo, ['fixture-command'])\n  File \"/tmp/v324-sssn7mks/installed/scripts/agent_sandbox.py\", line 2200, in launch\n    creation = scratch_creation(space, os.environ)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-sssn7mks/installed/scripts/agent_sandbox.py\", line 2169, in scratch_creation\n    raise RuntimeError('ledger required')\nRuntimeError: ledger required"
     },
     {
      "row": "VELDO-0324 ac4/standalone",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 414, in standalone\n    code, root, parent_item, seen = launch('standalone', recorded=False, wiring=None, installation_present=False)\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 301, in launch\n    code = SB.launch(base / 'unused-config', repo, ['fixture-command'], space=wiring)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-i3dq9pnt/installed/scripts/agent_sandbox.py\", line 2207, in launch\n    creation = scratch_creation(space, os.environ)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-i3dq9pnt/installed/scripts/agent_sandbox.py\", line 2176, in scratch_creation\n    raise RuntimeError('ledger required')\nRuntimeError: ledger required"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 528, in standalone\n    code, root, parent_item, seen = launch('standalone', recorded=False, wiring=None, installation_present=False)\n                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 415, in launch\n    code = SB.launch(base / 'unused-config', repo, ['fixture-command'], space=wiring)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-sssn7mks/installed/scripts/agent_sandbox.py\", line 2200, in launch\n    creation = scratch_creation(space, os.environ)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v324-sssn7mks/installed/scripts/agent_sandbox.py\", line 2169, in scratch_creation\n    raise RuntimeError('ledger required')\nRuntimeError: ledger required"
     }
    ],
-   "before": "22bdc217f903203067f3556682875214e0cef50fcc327cac797a369c809e0fe5",
-   "after": "513b0ee3cd909845f66a22cf162eee5534b13431f47d09a47d1ee0949845d42b"
+   "before": "976b408481ca44fe8cfdf841afbacd2370200f980747f3dd4f5c7ab4e210c3a8",
+   "after": "1956c89c3ac484e5b12e97b1b3a768262f249a0c273439d110c11d9179b35ec1"
   },
   {
    "name": "space324-failed-keep-still-deletes",
@@ -179,31 +184,329 @@
     {
      "row": "VELDO-0324 ac2/recorded",
      "passed": false,
-     "detail": "declared before creation; parent and complete owner; no launcher delete; Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 325, in recorded\n    not root.exists() and L.item(identity)['state'] == 'removed' and L.item(parent_item)['state'] == 'removed')\n                          ~~~~~~~~~~~~~~~~^^^^^^^^^\nTypeError: 'NoneType' object is not subscriptable"
+     "detail": "declared before creation; parent and complete owner; no launcher delete; Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 439, in recorded\n    not root.exists() and L.item(identity)['state'] == 'removed' and L.item(parent_item)['state'] == 'removed')\n                          ~~~~~~~~~~~~~~~~^^^^^^^^^\nTypeError: 'NoneType' object is not subscriptable"
     },
     {
      "row": "VELDO-0324 ac2/lock-and-login",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 337, in lock_and_login\n    attempts[0]['state'] == 'deferred' and attempts[0]['deferral']['rule'] == 'in_use' and path.exists())\n    ~~~~~~~~~~~^^^^^^^^^\nKeyError: 'state'"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 451, in lock_and_login\n    attempts[0]['state'] == 'deferred' and attempts[0]['deferral']['rule'] == 'in_use' and path.exists())\n    ~~~~~~~~~~~^^^^^^^^^\nKeyError: 'state'"
     },
     {
      "row": "VELDO-0324 ac2/failed-launch",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 363, in failed_launch\n    and at(path)[1]['state'] == 'present' and not P.scratch(path, borrows)['lock_held'])\n        ~~~~~~~~~~~^^^^^^^^^\nKeyError: 'state'"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 477, in failed_launch\n    and at(path)[1]['state'] == 'present' and not P.scratch(path, borrows)['lock_held'])\n        ~~~~~~~~~~~^^^^^^^^^\nKeyError: 'state'"
     },
     {
      "row": "VELDO-0324 safety/sandbox-repository",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 381, in sandbox_work\n    and at(path)[1]['state'] == 'deferred' and root.exists())\n        ~~~~~~~~~~~^^^^^^^^^\nKeyError: 'state'"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 495, in sandbox_work\n    and at(path)[1]['state'] == 'deferred' and root.exists())\n        ~~~~~~~~~~~^^^^^^^^^\nKeyError: 'state'"
     },
     {
      "row": "VELDO-0324 safety/owner-keep-sandbox",
      "passed": false,
-     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 37, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 388, in kept_sandbox\n    before = owner_keep(path)\n             ^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 231, in owner_keep\n    assert L.signal('run_finished', CL.space_named(L, 'run_finished', [str(path)]))['ok']\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\nAssertionError"
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 502, in kept_sandbox\n    before = owner_keep(path)\n             ^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 237, in owner_keep\n    assert L.signal('run_finished', CL.space_named(L, 'run_finished', [str(path)]))['ok']\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\nAssertionError"
     }
    ],
-   "before": "22bdc217f903203067f3556682875214e0cef50fcc327cac797a369c809e0fe5",
-   "after": "2409629e0455339382f7728850868782e135f6a18fb6c3cc9c6a0510f33959ee"
+   "before": "976b408481ca44fe8cfdf841afbacd2370200f980747f3dd4f5c7ab4e210c3a8",
+   "after": "9d1adbb474353cab70d032af449e30849fbd1689de1044c69a4c4d65bf5f9111"
+  },
+  {
+   "name": "space324-discard-event-dropped",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-deferral"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-deferral",
+     "passed": false,
+     "detail": "the saved batch retains no-ledger deferrals and an emitted discard outcome"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-reassembly",
+     "passed": false,
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 300, in reassembly\n    previous = json.loads((b.records / (old_id + '.json')).read_text())\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1029, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/pathlib.py\", line 1015, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/tmp/v324-ageuls5l/state/batch-records/batch-reassembly.json'"
+    }
+   ],
+   "before": "dcacb20a88bd330101d6d88f3534b6da0a7813278e97cd269c6cf0b79e8755a0",
+   "after": "7ec8dc9fada5705e31df0ceb59b5ba98658cc8b57b7e56ac0d8bb12b05699a2f"
+  },
+  {
+   "name": "space324-discard-deferrals-dropped",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-deferral"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/open-file",
+     "passed": false,
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 207, in holder\n    and b.record['space_deferred'][str(path)] == 'space_deferred:in_use')\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^\nKeyError: '/tmp/v324-cyk0f6f1/scratch/holder/veldo-batch-415ca3d762b0445ba96b63715ea49d4a'"
+    },
+    {
+     "row": "VELDO-0324 safety/batch-no-ledger",
+     "passed": false,
+     "detail": "Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 40, in drive\n    operation(row)\n  File \"/home/dmitry/projects/veldo-worktrees/space-0324/scripts/suites/154_veldo_0324_batch_sandbox.py\", line 271, in no_ledger\n    path.is_dir() and observation.is_dir() and b.record['space_deferred'][str(path)] == 'space_deferred:not_in_ledger')\n                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^\nKeyError: '/tmp/v324-cyk0f6f1/scratch/no-ledger/veldo-batch-bb665cad0ede4b249224b9c091cee87c'"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-deferral",
+     "passed": false,
+     "detail": "the saved batch retains no-ledger deferrals and an emitted discard outcome"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-reassembly",
+     "passed": false,
+     "detail": "reassembly and a later discard retain earlier deferrals on both saved records"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-landed",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-stopped",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-refused",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-reland-failed",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-red",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-not-started",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 safety/batch-locators",
+     "passed": false,
+     "detail": "a link or parent segment signals no item and preserves planted work; a link or parent segment signals no item and preserves planted work"
+    }
+   ],
+   "before": "dcacb20a88bd330101d6d88f3534b6da0a7813278e97cd269c6cf0b79e8755a0",
+   "after": "023198aab0cb17490ebbc7cb83c7206d2e75cbd7b99923ca006d2435157c5074"
+  },
+  {
+   "name": "space324-request-deferrals-dropped",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-request-landed",
+    "ac1/saved-request-stopped",
+    "ac1/saved-request-refused",
+    "ac1/saved-request-reland-failed",
+    "ac1/saved-request-red",
+    "ac1/saved-request-not-started"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-request-landed",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-stopped",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-refused",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-reland-failed",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-red",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    },
+    {
+     "row": "VELDO-0324 ac1/saved-request-not-started",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    }
+   ],
+   "before": "5dcc6d3efa9eed0db05a9131a1703324adfd95e28be8c66b2f847424f1a96ab3",
+   "after": "378e68dddb0cd525eebfa9eab6a8b0882a277e6215ffbb020a1e749b302f06b7"
+  },
+  {
+   "name": "space324-request-before-discard-landed",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-request-landed"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-request-landed",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    }
+   ],
+   "before": "5dcc6d3efa9eed0db05a9131a1703324adfd95e28be8c66b2f847424f1a96ab3",
+   "after": "5d5c22505e856a4c9aff600cbf428cb7ded04788341d61a45d70bb609f6120dc"
+  },
+  {
+   "name": "space324-request-before-discard-stopped",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-request-stopped"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-request-stopped",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    }
+   ],
+   "before": "5dcc6d3efa9eed0db05a9131a1703324adfd95e28be8c66b2f847424f1a96ab3",
+   "after": "af73a859155c227d9040cd358425451e4b84d7c86487a11ef21f1fbe7aa26eee"
+  },
+  {
+   "name": "space324-request-before-discard-reland-failed",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-request-reland-failed"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-request-reland-failed",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    }
+   ],
+   "before": "5dcc6d3efa9eed0db05a9131a1703324adfd95e28be8c66b2f847424f1a96ab3",
+   "after": "1c3eaa4dedf8f34c39004ca9f7bf8dc168e526c07d137ea5104a030987d14564"
+  },
+  {
+   "name": "space324-request-before-discard-refused",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-request-refused"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-request-refused",
+     "passed": false,
+     "detail": "saved request includes the discard deferrals and outcomes with work intact"
+    }
+   ],
+   "before": "5dcc6d3efa9eed0db05a9131a1703324adfd95e28be8c66b2f847424f1a96ab3",
+   "after": "93f2248e4d97d08060eb99c84847bd7c4a4f403069a78cf7aad6462e80b0ec6e"
+  },
+  {
+   "name": "space324-foreign-run-parent",
+   "detected": true,
+   "target_rows": [
+    "safety/foreign-run-parent"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 safety/foreign-run-parent",
+     "passed": false,
+     "detail": "another run scratch root refuses before creation, declaration or command"
+    }
+   ],
+   "before": "976b408481ca44fe8cfdf841afbacd2370200f980747f3dd4f5c7ab4e210c3a8",
+   "after": "bb7967df852285a44c4a26b462c69d53bdd9ec986cf9d4a292a812602fa59f81"
+  },
+  {
+   "name": "space324-observation-as-scratch",
+   "detected": true,
+   "target_rows": [
+    "ac1/observation-end"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/observation-end",
+     "passed": false,
+     "detail": "the actual gate observation is evidence and survives batch end; its end list is the evidence kind default: the verdict, the ticket end and the project end"
+    }
+   ],
+   "before": "dcacb20a88bd330101d6d88f3534b6da0a7813278e97cd269c6cf0b79e8755a0",
+   "after": "696d1453605337ba8fbc548f04bfea172c940a2b6ff9db12391da2e05201ca2e"
+  },
+  {
+   "name": "space324-ledger-drops-ticket-end",
+   "detected": true,
+   "target_rows": [
+    "ac1/observation-end"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/evidence",
+     "passed": false,
+     "detail": "real observation classification is evidence and its proof stays"
+    },
+    {
+     "row": "VELDO-0324 ac1/observation-end",
+     "passed": false,
+     "detail": "the actual gate observation is evidence and survives batch end; its end list is the evidence kind default: the verdict, the ticket end and the project end"
+    }
+   ],
+   "before": "25b7ab7c90664ecf4effa2cf46f19b4fb2a4d9d63b48e17d6281a9e2d8fe000a",
+   "after": "ba9dd87989eb7ada9dfb656c30ffe210545cf3d2f21ab4a5b91ff2d98f376639"
+  },
+  {
+   "name": "space324-declare-end-option",
+   "detected": true,
+   "target_rows": [
+    "safety/no-end-option"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 safety/no-end-option",
+     "passed": false,
+     "detail": "declare takes no end list from its caller and makes no item for one"
+    }
+   ],
+   "before": "25b7ab7c90664ecf4effa2cf46f19b4fb2a4d9d63b48e17d6281a9e2d8fe000a",
+   "after": "82166c19ed032fb33be4c7c9242b8a2bc6834eaf30c56b4bd9e17220a2a19f45"
+  },
+  {
+   "name": "space324-reassembly-drops-deferrals",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-reassembly"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-reassembly",
+     "passed": false,
+     "detail": "reassembly and a later discard retain earlier deferrals on both saved records"
+    }
+   ],
+   "before": "dcacb20a88bd330101d6d88f3534b6da0a7813278e97cd269c6cf0b79e8755a0",
+   "after": "480def8952edf5eda98d50370d1ab10089c17c2494d0e2a7a24078b3b94d7dd6"
+  },
+  {
+   "name": "space324-discard-drops-prior-outcomes",
+   "detected": true,
+   "target_rows": [
+    "ac1/saved-reassembly"
+   ],
+   "red": [
+    {
+     "row": "VELDO-0324 ac1/saved-reassembly",
+     "passed": false,
+     "detail": "reassembly and a later discard retain earlier deferrals on both saved records"
+    }
+   ],
+   "before": "dcacb20a88bd330101d6d88f3534b6da0a7813278e97cd269c6cf0b79e8755a0",
+   "after": "7b1b27c5c42822e667b83f4ff115626a2606e16f97c3f0a72f57f692128727e3"
   }
  ]
 }
