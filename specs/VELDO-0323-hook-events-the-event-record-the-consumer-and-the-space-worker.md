@@ -20,7 +20,12 @@ footprint:
   - ".veldo/control_space_worker.py"
   - "engine/.veldo/control_service.py"
   - ".veldo/control_service.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - "scripts/suites/*_veldo_0323_*.py"
+  - "scripts/suites/133_veldo_0326_space_principals.py"
+  - "scripts/suites/148_veldo_0311_git_hooks.py"
+  - "scripts/suites/151_veldo_0313_space_run.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -101,6 +106,13 @@ Footprint. The files are the ones the design's component table (section 3) gives
 components, each engine file with its synced copy, and the ticket's suite, proof and spec.
 
 ## History
+
+- 2026-11-15: build footprint includes init_scaffold and its synced copy so the installed service
+  carries the consumer, worker and their existing spool and kind-registry dependencies. The event
+  record accepts released but this ticket removes nothing for it; VELDO-0335 supplies that behavior.
+  The three earlier suites' unbuilt-event expectations now name the installed command's validation
+  refusals, or explicitly simulate an older service. No acceptance criterion changes. The CLI's
+  incomplete session/verb envelope is still refused; wiring that creator is outside this ticket.
 
 - 2026-11-13: written from design revision 6 (commit 5d9d3ce0), after its sixth validation (verdict
   VALID). Status ready.

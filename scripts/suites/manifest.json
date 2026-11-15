@@ -2050,6 +2050,15 @@
    },
    "regions": "The house's containment group of a wrapped run (VELDO-0313, fix round 3; control_containment's transient scope), in bin/veldo, read from the kernel with no ledger: the run's own supervisor starts the command in a scope of the owner's user manager named for the run by the house's own rule, in the slice of wrapped runs, and reports that group; a process the command left is listed by the kernel in the group, the wrapper's read of the run names every member as a holder and the supervisor says it is asleep on their exit; a group record that is not the run's own scope, and no record, are a group nobody read; once that process has ended the group is read empty.",
    "requires_note": "Only ROOT and expect. The CLI is loaded by path from bin/veldo with its ROOT set to this repository. It needs the owner's systemd user manager, so the gate runs it outside its confinement (scripts/gate_unconfined.json); with no manager every row stands down by name. No ledger, no store and no hold: the supervisor and the processes it starts are real, and the suite ends its own supervisor when the rows are done."
+  },
+  {
+   "name": "153_veldo_0323_hook_events",
+   "file": "153_veldo_0323_hook_events.py",
+   "requires": [
+    "153_veldo_0323_hook_events"
+   ],
+   "regions": "VELDO-0323: journal-woken hook records, serial child workers, containment, signed socket packets, spool replay before reconcile, and host-wide session scratch. Planted commits and unsaved files exercise the keep step and owner Keep.",
+   "requires_note": "Only ROOT and expect. Real store, git, child processes and OpenSSH packet signatures. Fixture declarations, membership records, act eligibility, process table and free space. No real engines."
   }
  ],
  "resource_capacities": {

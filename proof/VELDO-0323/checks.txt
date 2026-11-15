@@ -1,0 +1,29 @@
+VELDO-0323 targeted build evidence, 2026-11-15
+
+python3 scripts/selftest.py with the suite selector for:
+153_veldo_0323_hook_events: 31 ticket rows passed; 57 checks including the shared preamble; 0 failed.
+132_veldo_0297_space_ledger: 31 ticket rows passed.
+133_veldo_0326_space_principals: 30 ticket rows passed.
+139_veldo_0301_space_signal: 18 ticket rows passed.
+148_veldo_0311_git_hooks: 31 ticket rows passed.
+149_veldo_0312_ticket_ended: 41 ticket rows passed.
+All are partial runs. Exit 2 is the runner's successful partial-run convention.
+The first principal regression found its obsolete unbuilt-event expectation; the updated row passed.
+The final suite also exercises the four CLI event envelopes from suite 151 without running its heavy wrapper tests.
+
+python3 proof/VELDO-0323/run_falsifiers.py: 6 targeted mutations applied, 6 rejected, no exceptions.
+The registry is read for definitions only. Neither the teeth stage nor its coordinator ran.
+falsifiers.json records the final source digests and the red target rows. An earlier exploratory
+campaign also rejected all six; the final campaign followed the process-table refusal check.
+
+Fast checks, each exit 0:
+python3 .veldo/validate.py all
+bash scripts/check_docs.sh
+bash scripts/check_template_sync.sh
+bash scripts/check_lint.sh
+bash scripts/check_generated.sh
+python3 scripts/check_git_boundary.py
+git diff with the check option: no whitespace errors.
+
+Not run: ./scripts/verify.sh, the heavy suites, suite 86_veldo_0127, the teeth stage, policy_check.py.
+The lead owns the full gate and landing. Captures were not changed.

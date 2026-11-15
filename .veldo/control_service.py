@@ -338,6 +338,7 @@ WU = _organ('control_workflow_unit', lazy=True)
 BS = _organ('control_batch_service', lazy=True)
 # VELDO-0312: Signal, the one entry point an event is sent through. The modules it is given come with the ledger.
 SPACE_SIGNAL = _organ('control_space_signal', lazy=True)
+SPACE_CONSUMER = _organ('control_space_consumer', lazy=True)
 CT = _organ('control_team', lazy=True)
 TR = _organ('control_team_routes', lazy=True)
 WORK = 'work.json'
@@ -1539,6 +1540,7 @@ class Service:
         # record is read when the ledger is wired in (the `space` property below) or on the first pass, never
         # here: an instance built with no store (one that only judges signatures) reads no journal.
         self._space, self.space_seen = None, None
+        self.space_consumer = None
         # The counts are the observation log's, so they cover every instance that served this
         # installation, not only this process.
         with contextlib.suppress(OSError):
@@ -1563,6 +1565,52 @@ class Service:
         if wired is not None and self.space_seen is None and self.conn is not None and not self.conn.in_transaction:
             self.space_seen = self.watermark()
         self._space = wired
+        self.space_consumer = None if wired is None else SPACE_CONSUMER.Consumer(
+            wired['ledger'], {key: value for key, value in wired.items() if key != 'ledger'},
+            landing=lambda: landing_names(self.loop) if self.loop is not None else self.config.get('space_landing'),
+            observe=lambda answer: self._log(dict(answer, kind='space', operation='space_worker')))
+
+    def space_start(self, replay=None, reconcile=None):
+        """Replay in a child, then consume received events before starting reconcile."""
+        consumer = self.space_consumer
+        if consumer is None:
+            return
+        if replay is None:
+            spool = SPACE_CONSUMER.WORKER.SPOOL
+            ledger = consumer.ledger
+            local = spool.Local(ledger, CM, landing=consumer.landing)
+            folder = spool.spool_folder(ledger.state_root)
+            # No signing or git in the service. The installation's observer signs in the child.
+            installation = self.config.get('installation')
+            if spool.pending(folder):
+                def replay():
+                    if not installation:
+                        raise ValueError('space spool needs the installation signing keys')
+                    spool.replay(folder, local, spool.signer(installation), seconds=None)
+                    if spool.pending(folder):
+                        raise ValueError('space spool still has undelivered records; reconcile waits')
+        consumer.start(replay, reconcile)
+
+    def space_pipes(self):
+        consumer = getattr(self, 'space_consumer', None)
+        return consumer.pipes() if consumer is not None else {}
+
+    def space_listen(self):
+        if self.space_consumer is None:
+            return None
+        spool = SPACE_CONSUMER.WORKER.SPOOL
+        return spool.listen(spool.spool_folder(self.space_consumer.ledger.state_root))
+
+    def space_packet(self, listener):
+        spool = SPACE_CONSUMER.WORKER.SPOOL
+        before = self.watermark()
+        authority = spool.Local(self.space_consumer.ledger, CM, landing=self.space_consumer.landing)
+        return spool.serve_one(listener, authority, after=lambda request, answer: self.hint_after(before))
+
+    def space_readable(self, descriptor):
+        before = self.space_consumer.head
+        self.space_consumer.readable(descriptor)
+        self.hint_after(before, consume=False)
 
     # -- signatures --------------------------------------------------------------------------
 
@@ -1840,13 +1888,16 @@ class Service:
         observation['accepted_versions'] = dict(result.pop('accepted_versions', None) or {})
         return result
 
-    def hint_after(self, before):
+    def hint_after(self, before, consume=True):
         """After a packet or pass that advanced the journal, the head record's hint to every subscribed
         API; a failure is logged by name and never ends the service. The same advance wakes the factory loop
         (VELDO-0154), whose pass runs once the packet is answered or the channel pass is done, and makes the
         new-project pass due (VELDO-0143)."""
         if self.watermark() > before:
             self.projects_due = True
+            consumer = getattr(self, 'space_consumer', None)
+            if consumer is not None and consume:
+                consumer.advance()
         if self.loop is not None and self.watermark() > before:
             self.loop.wake('journal')
         if self.api is None or self.watermark() <= before:
@@ -4049,6 +4100,8 @@ def serve(config_path):
             # on a hand-off waits in the backlog and is answered, so no record falls between the two.
             service.take_on()
             listener.settimeout(ACCEPT_SECONDS)
+            service.space_start()
+            space_listener = service.space_listen()
             notify('READY=1\nSTATUS=serving %s' % config['unit'])
             service.announce_api()
             next_pass = time.monotonic()
@@ -4063,13 +4116,16 @@ def serve(config_path):
                     # VELDO-0306: and the event pipe of every engine the Docker adapter is subscribed to.
                     dockers = service.docker_pipes()
                     pipes = {**pipes, **dockers}
+                    spaces = service.space_pipes()
+                    pipes = {**pipes, **spaces}
                     wait = ACCEPT_SECONDS
                     if service.loop is not None and service.loop.timer is not None:
                         wait = max(0.0, min(wait, service.loop.timer - time.time()))
                     # VELDO-0161: or until a faulted take-on may be judged again.
                     if service.adoption_due() is not None:
                         wait = max(0.0, min(wait, service.adoption_due() - time.monotonic()))
-                    ready = select.select([listener] + sorted(pipes), [], [], wait)[0]
+                    ready = select.select([listener] + ([space_listener] if space_listener is not None else [])
+                                          + sorted(pipes), [], [], wait)[0]
                     response = None
                     if listener in ready:
                         try:
@@ -4082,8 +4138,12 @@ def serve(config_path):
                             raise
                     if response is not None:
                         service.observe_response(response)
+                    if space_listener is not None and space_listener in ready:
+                        service.space_packet(space_listener)
                     for fd in ready:
-                        if fd in dockers:
+                        if fd in spaces:
+                            service.space_readable(fd)
+                        elif fd in dockers:
                             service.docker_readable(fd)
                         elif fd in provisioners:
                             service.provisioner_readable(fd)
@@ -4109,6 +4169,8 @@ def serve(config_path):
             finally:
                 notify('STOPPING=1')
                 listener.close()
+                if space_listener is not None:
+                    space_listener.close()
                 with contextlib.suppress(OSError):
                     if os.stat(config['socket']).st_ino == inode:
                         os.unlink(config['socket'])

@@ -360,6 +360,9 @@ def _v311_suite():
                 command = packet.get('command') if isinstance(packet, dict) else None
                 command = command if isinstance(command, dict) else {}
                 operation, parameters = command.get('operation'), command.get('parameters') or {}
+                if operation == SP.EVENT and not WITH_EVENTS[0]:
+                    # Compatibility fixture: a service from before the event command was installed.
+                    return {'ok': False, 'reason': 'space_no_command:' + SP.EVENT}
                 if operation == SP.EVENT and WITH_EVENTS[0]:
                     # The stand-in for the Ledger's event command: the observer's signature, then one record.
                     signed = (command.get('principal') == SP.OBSERVER and isinstance(packet.get('signature'), str)
@@ -726,7 +729,7 @@ def _v311_suite():
         count = len(EVENTS)
         code, new = commit_plain(REPO, 'trunk.txt', 'on the trunk again\n', 'a second commit on the trunk')
         waiting = spooled()
-        check(ROW, 'with the Ledger as it is, the commit returns 0 and the event is in the spool, one file [%s %d]'
+        check(ROW, 'with an older service, the commit returns 0 and the event is in the spool, one file [%s %d]'
               % (code, len(waiting)),
               code == 0 and len(waiting) == 1 and waiting[0]['type'] == 'ref_changed'
               and waiting[0]['subject']['new'] == new and waiting[0]['tries'] == 1 and len(EVENTS) == count)

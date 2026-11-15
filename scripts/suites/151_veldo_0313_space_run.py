@@ -1816,13 +1816,12 @@ def _v313_space_run_suite():
                           '--new', git(ORCHARD['repository'], 'rev-parse', 'HEAD')]):
                 status, out, said = verb(CLI.space_event, argv, space())
                 last = L.observations[-1] if L.observations else {}
-                check(row, 'the event %s is handed to the Ledger as space-observer; a Ledger with no event command '
-                           'yet answers by name, and the verb says nothing is recorded [%s %s %s]'
+                check(row, 'the event %s is handed to the Ledger as space-observer; the incomplete CLI emitter '
+                           'is refused by the installed event command [%s %s %s]'
                       % (argv[1], status, out.strip(), last.get('refusal')),
-                      status == 0 and json.loads(out or '{}') == {'recorded': False, 'type': argv[1],
-                                                                 'reason': 'space_no_command:space_event'}
+                      status == 1 and out == '' and last.get('refusal') == 'invalid_input:emitter'
                       and last.get('principal') == SP.OBSERVER and last.get('operation') == SP.EVENT
-                      and 'nothing is removed' in said)
+                      and 'refused invalid_input:emitter' in said)
             check(row, 'no event wrote to the journal and the recorded worktree is present and on disk [%s]'
                   % (written(since),),
                   written(since) == [] and item_at(made)[0][1]['state'] == 'present' and (made / 'tracked.txt').is_file())
