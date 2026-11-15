@@ -166,6 +166,27 @@ print(json.dumps(tilde(json.load(sys.stdin)), sort_keys=True, separators=(",", "
   fi
 fi
 
+# VELDO-0309: these steps belong to every gate, including one with no host file.
+mkdir -p "$VELDO_OUT" || { echo 'GATE: NOT STARTED (space output unavailable)'; exit 75; }
+VELDO_SPACE_ROOT=$(pwd -P)
+VELDO_SPACE_OUT=$(cd "$VELDO_OUT" && pwd -P)
+VELDO_SPACE_ID=$(python3 -I -S -c 'import uuid; print(uuid.uuid4().hex)') || exit 75
+VELDO_SPACE_LOG="$VELDO_SPACE_OUT/gate-space.$VELDO_SPACE_ID.log"
+VELDO_SPACE_RECORD="$VELDO_SPACE_LOG.json"
+veldo_space() {
+  python3 -I -S "$VELDO_AUTHORITY/scripts/gate_space.py" "$1" "$VELDO_SPACE_ROOT" \
+    "$VELDO_SPACE_RECORD" "$VELDO_SPACE_LOG" "$VELDO_SPACE_OUT/last_verify"
+}
+veldo_space need || exit 75
+# Keep both streams. Close and drain the writer before classifying, so the last
+# error cannot race the read. Output is evidence and stays beside the stamp.
+VELDO_SPACE_TEE=""
+if [ -f "$VELDO_SPACE_RECORD" ]; then
+  exec {VELDO_SPACE_STDOUT}>&1 {VELDO_SPACE_STDERR}>&2
+  exec > >(tee "$VELDO_SPACE_LOG") 2>&1
+  VELDO_SPACE_TEE=$!
+fi
+
 # ---- the validation catalog: declare EVERY item (see header) ---------------
 CHECK_format="na:no formatter adopted yet"
 CHECK_lint="required:bash scripts/check_lint.sh"
@@ -341,42 +362,6 @@ fi
 echo "== shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed)"
 if ! veldo_candidate python3 .veldo/shape_gate.py; then FAIL=1; fi
 
-# Review observability (built-in): DERIVE the verdict.recorded event of every committed
-# verdict artifact. It lives here, in the stage that always runs, because the thing it
-# replaces was an instruction asking whoever ran a review to append the event by hand -
-# and across every verdict in the corpus nobody ever did. It APPENDS AND REPORTS, and
-# does NOT touch FAIL: a stage that reddened the build over its own bookkeeping would
-# make the first run after it lands unlandable. Idempotent, so every run after the
-# backfill appends nothing.
-echo "== review events (built-in: derived from the verdict artifacts; appends and reports, never judges)"
-# THE STAND-DOWN NAMES ITS OWN CONDITION, inside the `||` fallback WARP-0722 requires. A bare
-# fallback could not tell a missing interpreter from a missing file from a crash inside the module,
-# and a reviewer proved it swallowed a real traceback and still printed green. The guard stays a
-# disjunction, so reconciliation still cannot redden the build (WARP-0722 AC1, deliberate: this is
-# bookkeeping and must never make a landing impossible). What changes is that the line a human
-# reads now distinguishes an ABSENCE from a DEFECT, which is the whole difference between standing
-# down honestly and hiding.
-# In candidate mode the reconciliation reads and appends the SINK's log, seeded once from the
-# candidate's committed log so that what it already covers is still known; the candidate's own
-# .veldo/events.jsonl is read and never written.
-set --
-if [ "$VELDO_OUT" != ".veldo" ]; then
-  if [ ! -e "$VELDO_OUT/events.jsonl" ]; then
-    if [ -f .veldo/events.jsonl ]; then cp .veldo/events.jsonl "$VELDO_OUT/events.jsonl"; else : > "$VELDO_OUT/events.jsonl"; fi
-  fi
-  set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"
-fi
-python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts "$@" || \
-  { if ! command -v python3 >/dev/null 2>&1; then \
-      echo "   review events: reconciliation unavailable (no python3 on PATH) - by design not a gate failure"; \
-    elif [ ! -f .veldo/events.py ]; then \
-      echo "   review events: reconciliation unavailable (.veldo/events.py not present) - by design not a gate failure"; \
-    else \
-      echo "   review events: PRESENT AND ERRORED - .veldo/events.py exists and reconcile-verdicts did not"; \
-      echo "   review events: complete. A defect in this repository rather than an absence. It does not"; \
-      echo "   review events: redden the build because WARP-0722 keeps this bookkeeping unable to make a"; \
-      echo "   review events: landing impossible; the traceback above is the finding."; \
-    fi; }
 
 fi # A refused graph reaches the normal red stamp without running more checks.
 
@@ -444,6 +429,56 @@ if [ -n "$VELDO_LEGS_EXPECTED" ]; then
   fi
 fi
 VELDO_HOST_FIELD="$VELDO_HOST_FIELD$VELDO_GRAPH_FIELD"
+# VELDO-0309: classify before any stamp or event is written.
+if [ -n "$VELDO_SPACE_TEE" ]; then
+  exec 1>&$VELDO_SPACE_STDOUT 2>&$VELDO_SPACE_STDERR
+  if ! wait "$VELDO_SPACE_TEE"; then
+    echo 'GATE: NOT JUDGED (gate output could not be captured)'
+    exit 75
+  fi
+fi
+if [ "$FAIL" -ne 0 ]; then veldo_space classify || exit 75; fi
+
+if [ "$VELDO_GRAPH_REFUSED" = 0 ]; then
+# Review observability (built-in): DERIVE the verdict.recorded event of every committed
+# verdict artifact. It lives here, in the stage that always runs, because the thing it
+# replaces was an instruction asking whoever ran a review to append the event by hand -
+# and across every verdict in the corpus nobody ever did. It APPENDS AND REPORTS, and
+# does NOT touch FAIL: a stage that reddened the build over its own bookkeeping would
+# make the first run after it lands unlandable. Idempotent, so every run after the
+# backfill appends nothing.
+echo "== review events (built-in: derived from the verdict artifacts; appends and reports, never judges)"
+# THE STAND-DOWN NAMES ITS OWN CONDITION, inside the `||` fallback WARP-0722 requires. A bare
+# fallback could not tell a missing interpreter from a missing file from a crash inside the module,
+# and a reviewer proved it swallowed a real traceback and still printed green. The guard stays a
+# disjunction, so reconciliation still cannot redden the build (WARP-0722 AC1, deliberate: this is
+# bookkeeping and must never make a landing impossible). What changes is that the line a human
+# reads now distinguishes an ABSENCE from a DEFECT, which is the whole difference between standing
+# down honestly and hiding.
+# In candidate mode the reconciliation reads and appends the SINK's log, seeded once from the
+# candidate's committed log so that what it already covers is still known; the candidate's own
+# .veldo/events.jsonl is read and never written.
+set --
+if [ "$VELDO_OUT" != ".veldo" ]; then
+  if [ ! -e "$VELDO_OUT/events.jsonl" ]; then
+    if [ -f .veldo/events.jsonl ]; then cp .veldo/events.jsonl "$VELDO_OUT/events.jsonl"; else : > "$VELDO_OUT/events.jsonl"; fi
+  fi
+  set -- --repo-root "$(pwd -P)" --log "$VELDO_OUT/events.jsonl"
+fi
+python3 -I -S "$VELDO_AUTHORITY/.veldo/events.py" reconcile-verdicts "$@" || \
+  { if ! command -v python3 >/dev/null 2>&1; then \
+      echo "   review events: reconciliation unavailable (no python3 on PATH) - by design not a gate failure"; \
+    elif [ ! -f .veldo/events.py ]; then \
+      echo "   review events: reconciliation unavailable (.veldo/events.py not present) - by design not a gate failure"; \
+    else \
+      echo "   review events: PRESENT AND ERRORED - .veldo/events.py exists and reconcile-verdicts did not"; \
+      echo "   review events: complete. A defect in this repository rather than an absence. It does not"; \
+      echo "   review events: redden the build because WARP-0722 keeps this bookkeeping unable to make a"; \
+      echo "   review events: landing impossible; the traceback above is the finding."; \
+    fi; }
+
+fi
+
 EVENT_LINE=$(printf '{"schema":"veldo.event/v1","type":"%s","commit":"%s","at":"%s","producer":"verify.sh","checks_run":%d,%s%s%s}' \
   "$EVENT" "$COMMIT" "$TS" "$RAN" "$REUSE_JSON" "$UNCONFINED_FIELD" "$VELDO_HOST_FIELD")
 veldo_write_stamp() {
@@ -452,7 +487,8 @@ veldo_write_stamp() {
     "$VELDO_HOST_FIELD" > "$1"
 }
 if [ "$VELDO_OUT" = ".veldo" ]; then
-  veldo_write_stamp .veldo/last_verify
+  _veldo_written=no
+  if veldo_write_stamp .veldo/last_verify; then _veldo_written=yes; else FAIL=1; fi
   printf '%s\n' "$EVENT_LINE" >> .veldo/events.jsonl
 else
   # The sink, written only through names that are not symlinks: the stamp is renamed into place (a
@@ -469,6 +505,11 @@ else
     echo "== gate output: NOT WRITTEN - the sink refused the stamp or the gate event; this run is not trusted success"
     FAIL=1
   fi
+fi
+
+# VELDO-0309: a missing stamp sends nothing. Cleanup completes synchronously.
+if [ "$_veldo_written" = yes ]; then
+  veldo_space verdict || echo 'space: verdict recorded; cleanup deferred'
 fi
 
 echo ""

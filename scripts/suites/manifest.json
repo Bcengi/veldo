@@ -2131,6 +2131,15 @@
    ],
    "regions": "VELDO-0336: detached worktree ownership from a wrapped run, branch ownership retained, saved review scratch with per-file comparison, process use and links. Loss rows cover failed saves, changed and added files, retry, owner Keep, kept children, tracked edits, personal ignores and protected paths.",
    "requires_note": "Only ROOT and expect. Real hooks, signed packets, Ledger, git, keep step and removers in a temporary installed copy. Wrapper begin/end called in process, empty group and process census stand-ins. No Docker engine contacted."
+  },
+  {
+   "name": "153_veldo_0309_gate_space",
+   "file": "153_veldo_0309_gate_space.py",
+   "requires": [
+    "153_veldo_0309_gate_space"
+   ],
+   "regions": "VELDO-0309: both gate scripts call admission before checks, classify disk-full failures before records, and finish the gated worktree after its stamp through census and the item-naming signal. No installation and off preserve gate verdicts. Planted work, Keep, locators and unread probes refuse cleanup.",
+   "requires_note": "Only ROOT and expect. Real SQLite ledger, OpenSSH owner key, git worktrees, census, Signal and removers. Tiny fixture catalogs and authority helpers; injected socket wiring, disk readings, empty process table and unbuilt act checks. No real engine."
   }
  ],
  "resource_capacities": {
