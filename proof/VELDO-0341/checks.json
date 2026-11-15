@@ -1,0 +1,35 @@
+[
+ {
+  "command": "python3 .veldo/validate.py all",
+  "exit": 0,
+  "output_lines": 230
+ },
+ {
+  "command": "bash scripts/check_lint.sh",
+  "exit": 0,
+  "summary": "lint: pass (1204 python, 39 shell, 2.34s)"
+ },
+ {
+  "command": "bash scripts/check_docs.sh",
+  "exit": 0,
+  "summary": "docs hygiene: pass"
+ },
+ {
+  "command": "bash scripts/check_template_sync.sh",
+  "exit": 0,
+  "summary": "template sync: pass (321 pair(s) compared, 6 declared per-repo, 367 engine-only)"
+ },
+ {
+  "command": "python3 scripts/check_git_boundary.py",
+  "exit": 0,
+  "summary": "Git subprocess boundary: pass"
+ },
+ {
+  "command": "registry anchor check for the two changed production modules",
+  "summary": "87 existing and new case anchors each occur exactly once"
+ },
+ {
+  "command": "staged diff whitespace and ASCII checks",
+  "summary": "11 changed files ASCII; no whitespace errors"
+ }
+]

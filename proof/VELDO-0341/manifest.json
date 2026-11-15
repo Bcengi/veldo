@@ -1,0 +1,114 @@
+{
+ "schema": "veldo.proof/v1",
+ "spec_id": "VELDO-0341",
+ "commit": "732948d23ef73fcba42c67fa908016f9a501f2f6",
+ "tree": "88d559aac0fc7a39aff061326408d85bf72cb1bf",
+ "producer": "Codex implementation agent; not an independent reviewer",
+ "produced_at": "2026-11-15T21:01:46.486827+00:00",
+ "criteria": [
+  {
+   "id": "AC1",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
+     "detail": "ac1/name-or-label-two-contexts, ac1/adapter-label: handmade volume by name without labels and renamed container by compose project on both contexts. The ledger refuses declare, adopt and report by the same entry."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
+     "detail": "Real ledger and store, real membership key and signed mode command, existing Signal, rules, removers and keeper. Two stand-in Docker contexts; an empty fixture process table. All executed removal events name item versions and principal owner. Existing public action handlers are not simulated or claimed."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0341/falsifiers.json",
+     "detail": "space341-name-only"
+    }
+   ]
+  },
+  {
+   "id": "AC2",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
+     "detail": "ac2/container-image-network, ac2/image-does-not-protect-container, ac2/immutable-image, ac2/unread-refuses: volume and path mounts protect containers and their images and networks, including stopped containers and a tag moved to another image. A named run-finished event removes the run container of a protected image and preserves that image. Unread lists and malformed inspect records refuse."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
+     "detail": "Real ledger and store, real membership key and signed mode command, existing Signal, rules, removers and keeper. Two stand-in Docker contexts; an empty fixture process table. All executed removal events name item versions and principal owner. Existing public action handlers are not simulated or claimed."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0341/falsifiers.json",
+     "detail": "space341-image-protects-container; space341-no-inherited-protection; space341-unread-list-free; space341-image-by-movable-tag"
+    }
+   ]
+  },
+  {
+   "id": "AC3",
+   "status": "pending",
+   "evidence": [
+    {
+     "type": "unit",
+     "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
+     "detail": "ac3/no-record, ac3/discovery-before-proposal, ac3/removal-purposes, ac3/released-keeps-work, ac3/withdraw-mount-report: protected discovery writes no item or report in either mode. The adapter unit seam records every attempted proposal. Removal and Discard purposes refuse at rule 2; named released events leave planted database and container bytes intact. Images have no released cell, so released is refused and ticket-ended exercises their removal rule. A report newly covered by a mount is withdrawn. Public read and owner-action integration remains unproven: those handlers are absent on this base."
+    },
+    {
+     "type": "integration",
+     "ref": "scripts/suites/153_veldo_0341_docker_protection.py",
+     "detail": "Real ledger and store, real membership key and signed mode command, existing Signal, rules, removers and keeper. Two stand-in Docker contexts; an empty fixture process table. All executed removal events name item versions and principal owner. Existing public action handlers are not simulated or claimed."
+    },
+    {
+     "type": "falsifier",
+     "ref": "proof/VELDO-0341/falsifiers.json",
+     "detail": "space341-protect-at-removal-only; space341-removal-no-relations; space341-mount-report-stays"
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "unit",
+   "status": "passed",
+   "command": "Targeted selftest selectors only: 153, 134, 136, 137, 138, 139, 140, 144 and 145. 475 checks passed, 0 failed; no aggregate gate claim. See suite-green.txt."
+  },
+  {
+   "name": "integration",
+   "status": "passed",
+   "command": "Suite 153: ledger-to-Signal-to-remover integration on stand-in engines. Public Confirm-group, Discard and read routes absent; their integration is not proven."
+  },
+  {
+   "name": "falsifiers",
+   "status": "passed",
+   "command": "Eight registered VELDO-0341 cases: individual materialize and worker calls, noop control then mutant, each final mutant executed once. 8 controls green, 8 target sets red, no exception counted as detection. No mutation stage or coordinator run. Final run followed fixture corrections during development."
+  },
+  {
+   "name": "fast checks",
+   "status": "passed",
+   "command": "python3 .veldo/validate.py all; bash scripts/check_docs.sh; bash scripts/check_template_sync.sh; python3 scripts/check_git_boundary.py; bash scripts/check_lint.sh. See checks.json."
+  },
+  {
+   "name": "gate",
+   "status": "not_run",
+   "command": "./scripts/verify.sh - reserved for the lead through the gate lock."
+  }
+ ],
+ "assumptions": [
+  "Public Space reads and the owner Confirm-group and Discard handlers are absent from base 8ef46604 despite the handoff list. AC3 is proven at discovery and removal-rule seams only. This is a remaining integration boundary, not a claim that those routes passed.",
+  "Docker engines are stand-ins. No real Docker engine, volume, container, image or protected host data was read or changed.",
+  "The fixture substitutes the two act prerequisite readers after verifying the production switch refuses VELDO-0332 and VELDO-0339. No production mode checks were changed.",
+  "Objects already recorded before protection is added keep their ledger history and defer at rule 2. Public-read suppression of such historical items cannot be proven without the absent readers.",
+  "Inherited protection reads all containers on the target context for each image or network, including stopped containers. This adds read-only engine calls and intentionally refuses when a relationship cannot be read.",
+  "Suite 86_veldo_0127 and its live captures were left alone. The full gate, heavy suites and mutation stages were not run."
+ ],
+ "rollback": "Revert the implementation commit; direct name, compose-label and mount protections remain as before.",
+ "artifacts": {
+  "checks.json": "34e70df0c9537b73d7976475881e31795a25694b4d5da12cd2ddf6deb82a1a62",
+  "falsifiers.json": "306c8f0bcb9b8be40ae649f281abe6df2349ad758cbfb00d09384f602d1caf3d",
+  "suite-green.txt": "ccbedb792d407ddcfe3a6c8c880a45e4f1598d5882b35350fadf70a3bd7adc41"
+ }
+}
