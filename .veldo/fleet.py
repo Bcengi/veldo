@@ -121,6 +121,11 @@ SPACE_SAFE = ('gone', 'clear', 'kept')  # the answers of the look with no ledger
 _SPACE = {}
 
 
+SC = _load('fleet_space_creator', '.veldo/control_clone.py')
+SpaceCreator = SC.SpaceCreator
+SpaceCreationError = SC.SpaceCreationError
+
+
 def space_signal(space, event, paths, emitter, ended=False, confirm=False, alone=False):
     """VELDO-0303: send `event` through Signal (control_space_signal.signal) for the things at `paths`
     and say what became of each: {path: {item, state, deferral}}. Nothing here deletes anything:
@@ -274,8 +279,10 @@ class WorktreeProvisioner:
     remove returns what became of the worktree, {path, item, state, deferral}, and `deferred` lists
     every worktree a remove left in place, with the reason."""
 
-    def __init__(self, repo_root=None, base_dir=None, space=None):
+    def __init__(self, repo_root=None, base_dir=None, space=None, owner=None, space_provisioned=None):
         self.space, self.deferred = space, []
+        self.owner, self.space_provisioned = owner, space_provisioned
+        self.space_items = {}
         self.repo_root = str(repo_root or ROOT)
         self.base_dir = base_dir or os.environ.get("VELDO_WORKTREE_DIR") or os.path.join(
             tempfile.gettempdir(), "veldo-worktrees",
@@ -284,10 +291,13 @@ class WorktreeProvisioner:
     def path_for(self, worker_id):
         return os.path.join(self.base_dir, str(worker_id))
 
-    def add(self, worker_id):
+    def add(self, worker_id, owner=None):
         path = self.path_for(worker_id)
-        os.makedirs(self.base_dir, exist_ok=True)
-        _git_worktree(["add", "--detach", path], cwd=self.repo_root)
+        creation = SpaceCreator(self.space, owner or self.owner)
+        with creation.item('worktree', path, provisioned=self.space_provisioned):
+            os.makedirs(self.base_dir, exist_ok=True)
+            _git_worktree(["add", "--detach", path], cwd=self.repo_root)
+        self.space_items.update(creation.items)
         return path
 
     def remove(self, path):

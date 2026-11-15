@@ -528,11 +528,12 @@ class GitLandOps(LandOps):
     def __init__(self, repo_root, build_ref, trunk="main", remote="origin", push=True, *,
                  policy=None, identity=None, workspace_root=None, observe=None, domain=None,
                  repository=None, installation=None, observations=None, landing=None, identity_conn=None,
-                 destination="land_and_push", space=None):
+                 destination="land_and_push", space=None, owner=None):
         self.repo_root = str(repo_root)
         # VELDO-0303: the installation's space ledger and what Signal is given (space_signal), or None where
         # there is none. With it the candidate workspace is removed through Signal, never by a delete here.
         self.space = space
+        self.space_owner = owner
         self.build_ref = build_ref
         self.trunk = trunk
         self.remote = remote
@@ -787,36 +788,41 @@ class GitLandOps(LandOps):
             self.candidate["destination"] = self.destination
         try:
             self._identity()
-            workspace = Path(tempfile.mkdtemp(prefix="veldo-candidate-", dir=self.workspace_root))
-            self.candidate["workspace"] = str(workspace)
-            common = self._git(self.repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
-            self.common_dir = common or None
-            objects = Path(common) / "objects"
-            if not common or not objects.is_dir():
-                raise CandidateRefused("unavailable_service:git/rev-parse", "the caller has no object store",
-                                       operation="rev-parse")
-            self._git(workspace, "init", "-q", "--template=")
-            info = workspace / ".git" / "objects" / "info"
-            info.mkdir(parents=True, exist_ok=True)
-            (info / "alternates").write_text(str(objects) + "\n")
-            if self.push:
-                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()
-                if not url:
-                    raise CandidateRefused("unavailable_service:git/remote", "the remote has no url", operation="remote")
-                self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),
-                          "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url)
-                self.candidate["remote_url"] = self._absolute(url)
-            else:
-                local = self._commit_of(self.repo_root, "refs/heads/" + self.trunk, "missing_evidence:trunk")
-                self._git(workspace, "update-ref", WATERMARK_REF, local)
-            watermark = self._commit_of(workspace, WATERMARK_REF, "missing_evidence:watermark")
-            self._git(workspace, "update-ref", POLICY_BASE_REF % self.trunk, watermark)
-            self._git(workspace, "symbolic-ref", POLICY_HEAD_REF, POLICY_BASE_REF % self.trunk)
-            self._git(workspace, "checkout", "-q", "--detach", watermark)
-            if self._commit_of(workspace, "HEAD", "unavailable_service:git/checkout") != watermark:
-                raise CandidateRefused("unavailable_service:git/checkout", "HEAD is not the watermark",
-                                       operation="checkout")
-            self.candidate.update(state="synced", watermark=watermark)
+            SC = _load('lander_space_creator', 'control_clone.py')
+            creation = SC.SpaceCreator(self.space, self.space_owner, CandidateRefused)
+            workspace = creation.temporary('veldo-candidate-', self.workspace_root)
+            with creation.item('agent_repository', workspace, main=self.repo_root, form='candidate_workspace'):
+                workspace.mkdir(mode=0o700)
+                self.candidate["workspace"] = str(workspace)
+                common = self._git(self.repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
+                self.common_dir = common or None
+                objects = Path(common) / "objects"
+                if not common or not objects.is_dir():
+                    raise CandidateRefused("unavailable_service:git/rev-parse", "the caller has no object store",
+                                           operation="rev-parse")
+                self._git(workspace, "init", "-q", "--template=")
+                info = workspace / ".git" / "objects" / "info"
+                info.mkdir(parents=True, exist_ok=True)
+                (info / "alternates").write_text(str(objects) + "\n")
+                if self.push:
+                    url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()
+                    if not url:
+                        raise CandidateRefused("unavailable_service:git/remote", "the remote has no url", operation="remote")
+                    self._git(workspace, "fetch", "-q", "--no-tags", "--no-write-fetch-head", self._absolute(url),
+                              "+refs/heads/%s:%s" % (self.trunk, WATERMARK_REF), profile="identity", remote_url=url)
+                    self.candidate["remote_url"] = self._absolute(url)
+                else:
+                    local = self._commit_of(self.repo_root, "refs/heads/" + self.trunk, "missing_evidence:trunk")
+                    self._git(workspace, "update-ref", WATERMARK_REF, local)
+                watermark = self._commit_of(workspace, WATERMARK_REF, "missing_evidence:watermark")
+                self._git(workspace, "update-ref", POLICY_BASE_REF % self.trunk, watermark)
+                self._git(workspace, "symbolic-ref", POLICY_HEAD_REF, POLICY_BASE_REF % self.trunk)
+                self._git(workspace, "checkout", "-q", "--detach", watermark)
+                if self._commit_of(workspace, "HEAD", "unavailable_service:git/checkout") != watermark:
+                    raise CandidateRefused("unavailable_service:git/checkout", "HEAD is not the watermark",
+                                           operation="checkout")
+                self.candidate.update(state="synced", watermark=watermark)
+            self.candidate['space_items'] = dict(creation.items)
         except CandidateRefused as error:
             return self._refuse("sync_main", error)
         except OSError as error:
@@ -1034,7 +1040,13 @@ class GitLandOps(LandOps):
             return self._refuse("gate", CandidateRefused("invalid_input:candidate", "no built candidate"))
         CV = verification_organ()
         try:
-            c["observation_dir"] = tempfile.mkdtemp(prefix="veldo-observation-", dir=self.observations)
+            SC = _load('lander_space_creator', 'control_clone.py')
+            creation = SC.SpaceCreator(self.space, self.space_owner, CandidateRefused)
+            directory = creation.temporary('veldo-observation-', self.observations)
+            with creation.item('evidence', directory):
+                directory.mkdir(mode=0o700)
+            c['space_items'].update(creation.items)
+            c['observation_dir'] = str(directory)
             installed = self._installed(c)
             # The refs are bound: the workspace is this land's own repository, sharing no refs with
             # anyone, so a ref that moves during the gate was moved by the candidate's code.

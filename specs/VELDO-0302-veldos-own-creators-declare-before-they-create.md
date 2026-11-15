@@ -12,6 +12,8 @@ depends_on: [VELDO-0301]
 placement: [engine, loop]
 protected_paths: ["engine/scripts/agent_sandbox.py", "scripts/agent_sandbox.py"]
 footprint:
+  - "engine/.veldo/control_space.py"
+  - ".veldo/control_space.py"
   - "engine/.veldo/control_clone.py"
   - ".veldo/control_clone.py"
   - "engine/.veldo/fleet.py"
@@ -27,6 +29,8 @@ footprint:
   - "engine/.veldo/control_launch_work.py"
   - ".veldo/control_launch_work.py"
   - "scripts/suites/*_veldo_0302_*.py"
+  - "scripts/suites/142_veldo_0303_space_paths.py"
+  - "specs/VELDO-0347-work-the-first-rules-did-not-see-ignored-files-repositories-in-any-folder-evidence.md"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -110,6 +114,12 @@ The sandbox (engine/scripts/agent_sandbox.py and its synced copy) is a protected
 35. The owner's recorded approval, bound to the commit and the proof, is required.
 
 ## History
+
+- 2026-11-15: the VELDO-0303 removal fixture still supplied predeclared items to creators.
+  Its footprint is included for fixture adaptation: manual fleet setup uses an unwired creator,
+  and the failed-clone row reads the items the creator now declares. Every removal assertion stays.
+
+- 2026-11-15: lead decision, the ledger's repository form field and its validation are built here; VELDO-0347 builds on it
 
 - 2026-11-15: build dependency found at base 8ef46604. AC1 requires the repository form on
   declared agent repository items, but Ledger.declare in engine/.veldo/control_space.py has no

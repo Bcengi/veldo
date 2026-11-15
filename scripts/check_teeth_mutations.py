@@ -3776,9 +3776,8 @@ def cases():
     candidate('candidate-projection-skipped', '            self._project(workspace, sid, identity)\n',
               '            pass  # defect: the projections are not derived\n', 'whole-candidate')
     candidate('candidate-watermark-from-caller-trunk',
-              '            if self.push:\n                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
-              '            if False:  # defect: the watermark is the caller\'s local trunk, never the published one\n'
-              '                url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
+              '                if self.push:\n                    url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
+              '                if False:  # defect: the watermark is the caller\'s local trunk, never the published one\n                    url = self._git(self.repo_root, "config", "--get", "remote." + self.remote + ".url").stdout.strip()',
               'whole-candidate')
     # AC2, declared: a merge failure is ignored and the land continues to the gate. The fixed code refuses a
     # real conflict AND verifies the candidate's ancestry, so the defect needs both guards gone.
@@ -13544,8 +13543,8 @@ def cases():
             "            # VELDO-0303: every user has ended, as the kernel says: run finished, through Signal.\n",
             ['ac2/open-file-stays'])
     path303('space303-clone-provision-direct-delete', 'control_clone.py',
-            "            if self.space is None:\n                # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n",
-            "            if True:\n                # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n",
+            '                if self.space is None:\n                    # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n',
+            '                if True:\n                    # No ledger: the unique work probe and the keep step by themselves, then the delete; a\n',
             ['ac2/failed-provision'])
     path303('space303-pins-released-whatever-the-outcome', 'control_clone.py',
             "        if tree['state'] in SPACE_ENDED:\n", "        if True:\n",
@@ -15125,6 +15124,47 @@ def cases():
     # overlap other suites throughout the existing combined budget.
     result[:] = ([case for case in result if case['suite'] == '110_veldo_0143_new_project.py']
                  + [case for case in result if case['suite'] != '110_veldo_0143_new_project.py'])
+    # VELDO-0302: creator order, repository forms, refusal and the provisioning callback.
+    add(302, 'space302-declare-after-creation', '153_veldo_0302_space_creators.py', 'control_clone.py',
+        "            identity = self.call('declare', kind, locator, self.owner, 'seam', parent=parent,\n                                 start=start, branch=branch, form=form)['item']\n            self.items[str(path)] = identity\n        try:\n            yield identity\n            if identity is not None:\n",
+        "        try:\n            yield identity\n            if self.space is not None:\n                identity = self.call('declare', kind, locator, self.owner, 'seam', parent=parent,\n                                     start=start, branch=branch, form=form)['item']\n                self.items[str(path)] = identity\n            if identity is not None:\n",
+        ['ac1/crash-fleet', 'ac1/crash-clone', 'ac1/crash-batch'])
+    add(302, 'space302-batch-is-scratch', '153_veldo_0302_space_creators.py', 'control_batch.py',
+        "with creation.item('agent_repository', clone, main=self.repo_root, form='batch_clone'):",
+        "with creation.item('scratch', clone):",
+        ['ac1/batch'])
+    add(302, 'space302-sandbox-worktree-only', '153_veldo_0302_space_creators.py', 'agent_sandbox.py',
+        "with creation.item('agent_repository', private, main=shared) as repository_item,",
+        "with creator_module.SpaceCreator(None, owner).item('agent_repository', private, main=shared) as repository_item,",
+        ['ac2/three-items'], also=[("            creation.item('branch', branch, main=private, parent=repository_item, start=commit, branch=branch):", "            creator_module.SpaceCreator(None, owner).item('branch', branch, main=private, parent=repository_item, start=commit, branch=branch):")])
+    result[-1]['dir'] = 'scripts'
+    add(302, 'space302-create-on-refused-declare', '153_veldo_0302_space_creators.py', 'control_clone.py',
+        '                raise ValueError(str(result))',
+        "                return {'item': None}",
+        ['ac3/fleet', 'ac3/run', 'ac3/batch'])
+    add(302, 'space302-no-provisioned-call', '153_veldo_0302_space_creators.py', 'control_clone.py',
+        "                    provisioned(self.owner['ticket'], str(path),\n                                dispatch=(self.owner.get('run') or {}).get('id'))",
+        '                    pass',
+        ['ac4/fleet', 'ac4/sandbox'])
+    add(302, 'space302-unknown-form-accepted', '153_veldo_0302_space_creators.py', 'control_space.py',
+        "        if form is not None and (kind != 'agent_repository' or form not in",
+        "        if False and (kind != 'agent_repository' or form not in",
+        ['ledger/forms'])
+    add(302, 'space302-partial-creation-gone', '153_veldo_0302_space_creators.py', 'control_clone.py',
+        "            if (identity is not None and kind != 'branch' and space_absent(path)\n",
+        "            if (identity is not None and kind != 'branch'\n",
+        ['safety/failed-creation'])
+
+    add(302, 'space302-receipts-after-spawn', '153_veldo_0302_space_creators.py', 'control_launch.py',
+        '            metering.started()\n            spawned.append(self._spawn(dispatch_id, acceptance, adapter))',
+        '            spawned.append(self._spawn(dispatch_id, acceptance, adapter))\n            metering.started()',
+        ['ac3/receipts-before-spawn'])
+
+    add(302, 'space302-failed-clone-without-save', '153_veldo_0302_space_creators.py', 'control_clone.py',
+        'self._through_space(root, work, pins, confirm=True)',
+        'shutil.rmtree(root)',
+        ['safety/failed-clone-work'])
+
     return result
 
 

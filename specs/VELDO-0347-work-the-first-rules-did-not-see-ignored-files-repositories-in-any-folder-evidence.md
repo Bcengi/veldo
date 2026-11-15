@@ -148,6 +148,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 ## History
 
+- 2026-11-15: lead decision, the repository form field and its validation are delivered by VELDO-0302.
+
 - 2026-11-13: written from design section 0, added that day for the owner's rule (Telegram 41209). The
   number follows VELDO-0344, the highest a spec file or a proof folder held on any ref or in any worktree;
   nothing on any ref named 0345 to 0349. Status ready.

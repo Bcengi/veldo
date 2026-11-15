@@ -393,7 +393,7 @@ RUNNER_EVENTS = ('run_finished', 'verdict_recorded')
 ABANDON_EVENT = 'worktree_abandoned'
 # The parameters each command a host principal may send is called with.
 COMMAND_PARAMETERS = {
-    DECLARE: ('kind', 'locator', 'owner', 'creator', 'parent', 'start', 'branch', 'process', 'pool'),
+    DECLARE: ('kind', 'locator', 'owner', 'creator', 'parent', 'start', 'branch', 'process', 'pool', 'form'),
     CONFIRM: ('item',), REBRANCH: ('item', 'branch', 'start'), MEASURE: ('item', 'bytes', 'event'),
     HOLD: ('hold', 'needs', 'source'), ADMIT: ('hold', 'answer', 'reason', 'used', 'retry_asked'),
     RELEASE: ('hold', 'used'), SIGNAL: ('event', 'subject'), OUTCOME: ('item', 'outcome', 'facts')}
@@ -1043,10 +1043,10 @@ class Ledger:
         return canonical, (self.device(path) if path else None), pool
 
     def declare(self, kind, locator, owner, creator, parent=None, start=None, branch=None, process=None,
-                pool=None, principal=None, command_id=None):
+                pool=None, principal=None, command_id=None, form=None):
         """Create an item in state declared, with pool and ends_on filled in. Returns its identity."""
         return self._create(DECLARE, kind, locator, owner, creator, parent, start, branch, process, pool, None,
-                            principal, command_id)
+                            principal, command_id, form)
 
     def adopt(self, kind, locator, owner, rule, parent=None, start=None, branch=None, process=None, pool=None,
               principal=None, command_id=None):
@@ -1057,7 +1057,7 @@ class Ledger:
                             principal, command_id)
 
     def _create(self, operation, kind, locator, owner, creator, parent, start, branch, process, pool, rule,
-                principal, command_id):
+                principal, command_id, form=None):
         about = {'item': None, 'kind': kind, 'owner': owner, 'locator': locator, 'state': None}
         try:
             canonical, device, pool = self._placed(kind, locator, pool)
@@ -1071,7 +1071,7 @@ class Ledger:
                 identity, versions = held[0], {held[0]: held[1]}
         parameters = {'item': identity, 'kind': kind, 'host': self.host, 'locator': canonical, 'owner': owner,
                       'creator': creator, 'parent': parent, 'start': start, 'branch': branch, 'process': process,
-                      'pool': pool, 'device': device, 'rule': rule}
+                      'pool': pool, 'device': device, 'rule': rule, 'form': form}
         result = self._send(operation, parameters, versions, principal, command_id,
                             dict(about, item=identity, locator=canonical))
         if result['ok']:
@@ -1826,6 +1826,10 @@ class Ledger:
 
     def _new_item(self, params, state, adopted):
         kind = params.get('kind')
+        form = params.get('form')
+        if form is not None and (kind != 'agent_repository' or form not in
+                                 ('worker_clone', 'batch_clone', 'candidate_workspace')):
+            raise _invalid('form', 'a known agent repository form')
         canonical = canonical_locator(kind, params.get('locator'))
         if canonical != params.get('locator'):
             raise _invalid('locator', 'the command carries the canonical locator')
@@ -1850,7 +1854,7 @@ class Ledger:
         return {'kind': kind, 'host': params['host'], 'pool': self._pool_for(kind, canonical, params.get('device'),
                                                                              params.get('pool')),
                 'locator': canonical, 'key': key, 'parent': parent, 'owner': owner, 'creator': params['creator'],
-                'adopted': adopted, 'branch': params.get('branch'), 'start': params.get('start'),
+                'adopted': adopted, 'branch': params.get('branch'), 'start': params.get('start'), 'form': form,
                 'process': process, 'state': state,
                 'ends_on': {'version': self.lifecycle['version'], 'events': list(self.lifecycle['ends_on'][kind])},
                 'size': None, 'confirmed': None, 'deferral': None, 'removal': None, 'report': None}

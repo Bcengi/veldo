@@ -387,12 +387,18 @@ class Runtime:
         if not isinstance(proof, dict) or proof.get('spec_revision') != spec['revision']:
             raise Refused('missing_evidence:build_proof')
         # Verification uses a fresh checkout of the collected commit, never the worker's config or hooks.
-        directory = tempfile.mkdtemp(prefix='candidate-', dir=self.config['work']['candidates'])
-        self.candidates.append(directory)
-        _git_process.run(['git', 'clone', '-q', OPT + 'no-checkout', OPT + 'no-hardlinks', str(self.root), directory],
-               check=True, capture_output=True, timeout=60)
-        _git_process.run(['git', '-C', directory, 'checkout', '-q', OPT + 'detach', result['commit']],
-               check=True, capture_output=True, timeout=30)
+        SC = organ('control_clone')
+        contract = (self.dispatches.record(reference['dispatch']) or {}).get('contract') or {}
+        creation = SC.SpaceCreator(self.space, SC.space_owner(contract), Refused)
+        directory = str(creation.temporary('candidate-', self.config['work']['candidates']))
+        with creation.item('agent_repository', directory, main=self.root, start=result['commit'],
+                           form='candidate_workspace'):
+            self.candidates.append(directory)
+            _git_process.run(['git', 'clone', '-q', OPT + 'no-checkout', OPT + 'no-hardlinks', str(self.root), directory],
+                   check=True, capture_output=True, timeout=60)
+            _git_process.run(['git', '-C', directory, 'checkout', '-q', OPT + 'detach', result['commit']],
+                   check=True, capture_output=True, timeout=30)
+        self.candidate_items = dict(getattr(self, 'candidate_items', {}), **creation.items)
         return dict(result, ok=True, producer=role['identity'], dispatch=reference['dispatch'], artifact=reference['artifact'], workspace=directory)
 
     def accept_build(self, spec, build):

@@ -85,6 +85,7 @@ provisioning or retirement and recovery from concurrent garbage collection are R
 the Mac's worker profile is VELDO-0124. Standard library only (ctypes for Landlock).
 """
 import ctypes
+from contextlib import contextmanager
 import hashlib
 import importlib.util
 import json
@@ -546,6 +547,87 @@ def space_standalone(path, kind, main=None, event='run_finished', ticket=None, s
                 'said': '%s: %s' % (type(error).__name__, str(error)[:300]), 'refs': {}}
 
 
+class SpaceCreationError(RuntimeError):
+    code = 'unavailable_service:space_ledger'
+
+    def __init__(self, detail):
+        super().__init__(self.code + ': ' + detail)
+
+
+def space_owner(contract):
+    """The accepted dispatch supplies the owner; never infer it from a folder name."""
+    reservation = contract.get('reservation') or {}
+    context = (contract.get('input') or {}).get('context') or {}
+    return {'scope': {'type': 'project', 'id': reservation.get('project')},
+            'ticket': contract.get('unit'),
+            'run': {'id': contract.get('dispatch_id'), 'station': contract.get('station')},
+            'lane': context.get('lane') or reservation.get('lane') or contract.get('lane')}
+
+
+class SpaceCreator:
+    """VELDO-0302: supplied ledger, declare before creation, confirm after success.
+
+    None means no central installation. An empty or broken mapping is not None and
+    refuses creation. A failed partial creation stays recorded for recovery; only
+    an absent thing is marked gone. This seam never removes anything.
+    """
+
+    def __init__(self, space, owner, refusal=None):
+        self.space, self.owner, self.refusal = space, owner, refusal
+        self.items = {}
+
+    def call(self, operation, *args, **kwargs):
+        try:
+            result = getattr(self.space['ledger'], operation)(*args, **kwargs)
+            if not isinstance(result, dict) or result.get('ok') is not True:
+                raise ValueError(str(result))
+            return result
+        except Exception as error:
+            if self.refusal is not None:
+                raise self.refusal('unavailable_service:space_ledger', str(error)) from error
+            raise SpaceCreationError(str(error)) from error
+
+    @contextmanager
+    def item(self, kind, path, *, main=None, parent=None, start=None, branch=None, form=None,
+             provisioned=None):
+        locator = ({'repository': str(main), 'ref': branch} if kind == 'branch'
+                   else {'path': str(path)})
+        identity = None
+        if self.space is not None:
+            if kind == 'agent_repository':
+                try:
+                    known = self.space['ledger']._main_of({'owner': self.owner})
+                    if (known is None or os.path.realpath(known) != known
+                            or Path(main) not in (Path(known), Path(known) / '.git')):
+                        raise ValueError('the owner scope must name the creator main repository')
+                except Exception as error:
+                    if self.refusal is not None:
+                        raise self.refusal('unavailable_service:space_ledger', str(error)) from error
+                    raise SpaceCreationError(str(error)) from error
+            if kind == 'worktree' and (self.owner or {}).get('ticket') and not callable(provisioned):
+                raise SpaceCreationError('a ticket worktree requires space_provisioned')
+            identity = self.call('declare', kind, locator, self.owner, 'seam', parent=parent,
+                                 start=start, branch=branch, form=form)['item']
+            self.items[str(path)] = identity
+        try:
+            yield identity
+            if identity is not None:
+                if kind == 'worktree' and (self.owner or {}).get('ticket'):
+                    provisioned(self.owner['ticket'], str(path),
+                                dispatch=(self.owner.get('run') or {}).get('id'))
+                self.call('confirm', identity)
+        except BaseException:
+            # A branch is not a filesystem path. Its repository may have been partly made.
+            if (identity is not None and kind != 'branch' and space_absent(path)
+                    and (self.space['ledger'].item(identity) or {}).get('state') == 'declared'):
+                self.call('gone', identity)
+            raise
+
+    def temporary(self, prefix, root=None):
+        """Choose a fresh name without creating it. The caller declares before mkdir."""
+        return Path(root or tempfile.gettempdir()) / (prefix + uuid.uuid4().hex)
+
+
 class Clones(EP.EnvProvisioner):
     """Worker clones of one domain over the runner's control_dispatch.Dispatches (its store connection,
     bindings and dispatch records). `clones` and `caches` are the roots clones and repository caches live
@@ -706,49 +788,54 @@ class Clones(EP.EnvProvisioner):
         accepted = self._accepted_or_observed('provision', contract)
         clone_id = 'clone-' + uuid.uuid4().hex
         root = self.clones / clone_id
-        root.mkdir(mode=0o700)  # exclusive: no path is ever provisioned twice
         work, pins = root / 'work', []
-        try:
-            protected, cost = self._protection()
-            commit = accepted['commit']
-            pins.append(self._pin(self._cache(accepted['domain'], accepted['repository']), accepted['repository'],
-                                  accepted['path'], commit, clone_id))
-            for attachment in accepted['attachments']:
-                pins.append(self._pin(self._cache(attachment['domain'], attachment['repository']),
-                                      attachment['repository'], attachment['path'], attachment['commit'], clone_id))
-            _git('init', '-q', '--template=', work)
-            for section in ('user', 'author', 'committer'):
-                for field, value in zip(('name', 'email'), GI.author(accepted['identity'])):
-                    _git('-C', work, 'config', '--local', section + '.' + field, value)
-            info = work / '.git' / 'objects' / 'info'
-            info.mkdir(parents=True, exist_ok=True)
-            (info / 'alternates').write_text(''.join('%s\n' % (Path(p['cache']) / 'objects') for p in pins))
-            for attachment in accepted['attachments']:
-                _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], attachment['commit'])
-            _git('-C', work, 'checkout', '-q', '--detach', commit)
-            self._verify(work, accepted)
-            scratch = _scratch(root, accepted['dispatch_id'])
-            scratch.mkdir(parents=True)
-            manifest = {'schema': SCHEMA, 'clone_id': clone_id, 'root': str(root), 'work': str(work),
-                        'domain': accepted['domain'], 'repository': accepted['repository'], 'unit': accepted['unit'],
-                        'commit': accepted['commit'], 'tree': accepted['tree'],
-                        'identity': accepted['identity']['id'],
-                        'attachments': [{f: a[f] for f in ATTACHMENT_FIELDS} for a in accepted['attachments']],
-                        'pins': pins, 'protected': protected, 'ancestors': cost, 'created_at': self.clock(),
-                        'users': [{'dispatch_id': accepted['dispatch_id'], 'role': 'worker', 'scratch': str(scratch),
-                                   'group': None}]}
-            self._write(manifest)
-        except BaseException as error:
-            if self.space is None:
-                # No ledger: the unique work probe and the keep step by themselves, then the delete; a
-                # clone the look does not answer for stays, with its pins.
-                self._standalone(root, work, pins, accepted.get('path'), accepted.get('unit'))
-            else:
-                # VELDO-0303: the declared items go as at teardown, through Signal. No worker has entered.
-                self._through_space(root, work, pins, confirm=True)
-            if isinstance(error, (Refused, OSError, subprocess.SubprocessError)):
-                self._event('provision', accepted, 'refused', refusal=getattr(error, 'code', 'unavailable_service:provisioning'))
-            raise
+        scratch = _scratch(root, accepted['dispatch_id'])
+        creation = SpaceCreator(self.space, space_owner(contract), Refused)
+        with creation.item('scratch', root) as root_item, \
+                creation.item('agent_repository', work, main=accepted['path'], parent=root_item,
+                              start=accepted['commit'], form='worker_clone'), \
+                creation.item('scratch', scratch, parent=root_item):
+            root.mkdir(mode=0o700)  # exclusive: no path is ever provisioned twice
+            try:
+                protected, cost = self._protection()
+                commit = accepted['commit']
+                pins.append(self._pin(self._cache(accepted['domain'], accepted['repository']), accepted['repository'],
+                                      accepted['path'], commit, clone_id))
+                for attachment in accepted['attachments']:
+                    pins.append(self._pin(self._cache(attachment['domain'], attachment['repository']),
+                                          attachment['repository'], attachment['path'], attachment['commit'], clone_id))
+                _git('init', '-q', '--template=', work)
+                for section in ('user', 'author', 'committer'):
+                    for field, value in zip(('name', 'email'), GI.author(accepted['identity'])):
+                        _git('-C', work, 'config', '--local', section + '.' + field, value)
+                info = work / '.git' / 'objects' / 'info'
+                info.mkdir(parents=True, exist_ok=True)
+                (info / 'alternates').write_text(''.join('%s\n' % (Path(p['cache']) / 'objects') for p in pins))
+                for attachment in accepted['attachments']:
+                    _git('-C', work, 'update-ref', ATTACHMENT_PREFIX + attachment['name'], attachment['commit'])
+                _git('-C', work, 'checkout', '-q', '--detach', commit)
+                self._verify(work, accepted)
+                scratch.mkdir(parents=True)
+                manifest = {'schema': SCHEMA, 'clone_id': clone_id, 'root': str(root), 'work': str(work),
+                            'domain': accepted['domain'], 'repository': accepted['repository'], 'unit': accepted['unit'],
+                            'commit': accepted['commit'], 'tree': accepted['tree'],
+                            'identity': accepted['identity']['id'], 'space_items': dict(creation.items),
+                            'attachments': [{f: a[f] for f in ATTACHMENT_FIELDS} for a in accepted['attachments']],
+                            'pins': pins, 'protected': protected, 'ancestors': cost, 'created_at': self.clock(),
+                            'users': [{'dispatch_id': accepted['dispatch_id'], 'role': 'worker', 'scratch': str(scratch),
+                                       'group': None}]}
+                self._write(manifest)
+            except BaseException as error:
+                if self.space is None:
+                    # No ledger: the unique work probe and the keep step by themselves, then the delete; a
+                    # clone the look does not answer for stays, with its pins.
+                    self._standalone(root, work, pins, accepted.get('path'), accepted.get('unit'))
+                else:
+                    # VELDO-0303: the declared items go as at teardown, through Signal. No worker has entered.
+                    self._through_space(root, work, pins, confirm=True)
+                if isinstance(error, (Refused, OSError, subprocess.SubprocessError)):
+                    self._event('provision', accepted, 'refused', refusal=getattr(error, 'code', 'unavailable_service:provisioning'))
+                raise
         self._event('provision', accepted, 'accepted', clone_id=clone_id, ancestors=cost)
         return EP.EnvHandle(clone_id, 'clone', {'root': str(root), 'work': str(work)})
 
@@ -787,9 +874,13 @@ class Clones(EP.EnvProvisioner):
             self._event('attach', accepted, 'refused', refusal=error.code, clone_id=clone_id)
             raise
         scratch = _scratch(manifest['root'], accepted['dispatch_id'])
-        scratch.mkdir(parents=True, exist_ok=True)
-        manifest['users'].append({'dispatch_id': accepted['dispatch_id'], 'role': 'consumer', 'scratch': str(scratch),
-                                  'group': None})
+        creation = SpaceCreator(self.space, space_owner(contract), Refused)
+        with creation.item('scratch', scratch):
+            scratch.mkdir(parents=True, exist_ok=True)
+            manifest['users'].append({'dispatch_id': accepted['dispatch_id'], 'role': 'consumer', 'scratch': str(scratch),
+                                      'group': None})
+            self._write(manifest)
+        manifest.setdefault('space_items', {}).update(creation.items)
         self._write(manifest)
         self._event('attach', accepted, 'accepted', clone_id=clone_id)
         return EP.EnvHandle(clone_id, 'clone', {'root': manifest['root'], 'work': manifest['work']})

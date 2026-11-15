@@ -532,7 +532,8 @@ def _v303_space_paths_suite():
                 if declare:
                     item = declared('worktree', {'path': str(path)}, owner or {'scope': A, 'lane': 'fleet/' + worker},
                                     confirm=False, start=git(REPOSITORY, 'rev-parse', 'main'))
-                provisioner.add(worker)
+                # This removal fixture seeds its own items. Creation is covered by suite 153.
+                FL.WorktreeProvisioner(repo_root=provisioner.repo_root, base_dir=provisioner.base_dir).add(worker)
                 if declare:
                     L.confirm(item)
                 return item, path, git(path, 'rev-parse', 'HEAD')
@@ -904,10 +905,7 @@ def _v303_space_paths_suite():
             FAILED = 'failed0000000000000000000000007'
             root, work = CLONES / ('clone-' + FAILED), CLONES / ('clone-' + FAILED) / 'work'
             owner = {'scope': A, 'ticket': 'VELDO-9207', 'run': {'id': 'dispatch/failed-07', 'station': 'build'}}
-            items = {'root': declared('scratch', {'path': str(root)}, owner, confirm=False)}
-            items['work'] = declared('agent_repository', {'path': str(work)}, owner, confirm=False, parent=items['root'])
-            items['scratch'] = declared('scratch', {'path': str(root / 'scratch')}, owner, confirm=False,
-                                        parent=items['root'])
+            items = {}  # VELDO-0302: _create now declares its own group before writing.
             head = git(REPOSITORY, 'rev-parse', 'main')
             accepted = {'dispatch_id': 'dispatch/failed-07', 'unit': 'VELDO-9207', 'domain': 'dom-303',
                         'repository': ORCHARD['project'], 'path': str(REPOSITORY), 'commit': head,
@@ -917,6 +915,14 @@ def _v303_space_paths_suite():
             made_work = []
 
             def verify_fails(work_tree, _accepted):
+                for identity, record in L.items().items():
+                    path = record['locator'].get('path')
+                    if path == str(root):
+                        items['root'] = identity
+                    elif path == str(work):
+                        items['work'] = identity
+                    elif path == str(CL._scratch(root, 'dispatch/failed-07')):
+                        items['scratch'] = identity
                 made_work.append((work_tree / 'tracked.txt').is_file())
                 raise CL.Refused('stale_input:source_tree', 'the fixture fails the provisioning after the checkout')
 
@@ -934,7 +940,8 @@ def _v303_space_paths_suite():
             raised = None
             try:
                 with with_ledger(row):
-                    C._create({'dispatch_id': 'dispatch/failed-07'})
+                    C._create({'dispatch_id': 'dispatch/failed-07', 'unit': owner['ticket'],
+                               'station': 'build', 'reservation': {'project': ORCHARD['project']}})
             except CL.Refused as error:
                 raised = error.code
             finally:

@@ -226,6 +226,7 @@ def _organ(name):
     return module
 
 
+SC = _organ('control_clone')
 D = _organ('control_dispatch')
 S = D.S
 C = _organ('control_containment')
@@ -2548,6 +2549,12 @@ class Receiver:
         self.emit({'event': 'accepted', 'acceptance': acceptance, 'runner': self.runner})
         try:
             worker = self._invoke(contract, acceptance, adapter)
+        except SC.SpaceCreationError as error:
+            self._not_executed()
+            self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
+            self._space_end(dispatch_id, contract)
+            self.emit({'event': 'refused', 'refusal': error.code})
+            return
         except Unfunded as error:
             # Checked and refused before anything was spawned: nothing ran, nothing was reserved.
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
@@ -2867,12 +2874,15 @@ class Receiver:
         holds its generated configuration, `runtime` is the engine's empty XDG_RUNTIME_DIR. Under the
         config's `runs`, else the factory state root's runs, else beside the store."""
         runs = runs_root(self.config)
-        os.makedirs(runs, mode=0o700, exist_ok=True)
         run = run_directory(runs, dispatch_id)
-        os.mkdir(run, 0o700)
-        self.run, self.run_dispatch = run, dispatch_id
-        for name in (RUN_CONFIG, RUN_RUNTIME):
-            os.mkdir(os.path.join(run, name), 0o700)
+        creation = SC.SpaceCreator(getattr(self, 'space', None), SC.space_owner(getattr(self, 'contract', {})))
+        with creation.item('scratch', run):
+            os.makedirs(runs, mode=0o700, exist_ok=True)
+            os.mkdir(run, 0o700)
+            self.run, self.run_dispatch = run, dispatch_id
+            for name in (RUN_CONFIG, RUN_RUNTIME):
+                os.mkdir(os.path.join(run, name), 0o700)
+        self.space_items = creation.items
         return {'root': run, 'config': os.path.join(run, RUN_CONFIG), 'runtime': os.path.join(run, RUN_RUNTIME)}
 
     def _baseline(self, dispatch_id, argv, environment, reported):
@@ -2976,8 +2986,8 @@ class Receiver:
         def launch(invocation, configuration):
             # Reserved: from here a spawn that fails is attested not executed, one that starts is metered.
             self.metering = metering
-            spawned.append(self._spawn(dispatch_id, acceptance, adapter))
             metering.started()
+            spawned.append(self._spawn(dispatch_id, acceptance, adapter))
         metering = Metering(self, contract, reservations, accounts, launch)
         try:
             metering.guard.invoke('call/' + dispatch_id, dispatch_id, metering.invocation, metering.boundary,
@@ -3645,17 +3655,21 @@ class Metering:
         return False
 
     def started(self):
-        """The engine exists: open its receipt file and start its clock."""
+        """Before spawning the engine, declare and open its receipts and start its clock."""
         self.start = time.monotonic()
         directory = Path(self.receiver.config.get('receipts') or Path(self.receiver.config['store']).parent / 'receipts')
-        directory.mkdir(mode=0o700, parents=True, exist_ok=True)
         path = directory / (hashlib.sha256(self.invocation.encode()).hexdigest() + '.jsonl')
-        self.file = os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb')
-        header = {'schema': RECEIPTS_SCHEMA, 'dispatch_id': self.dispatch_id, 'invocation': self.invocation,
-                  'account': self.account, 'project': self.contract['reservation']['project'],
-                  'unit': self.contract['unit'], 'provider': self.engine.PROVIDER, 'boundary': self.boundary}
-        self.file.write((json.dumps(header, sort_keys=True) + '\n').encode())
-        self.file.flush()
+        creation = SC.SpaceCreator(getattr(self.receiver, 'space', None), SC.space_owner(self.contract))
+        with creation.item('evidence', path):
+            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+            self.file = os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb')
+            header = {'schema': RECEIPTS_SCHEMA, 'dispatch_id': self.dispatch_id, 'invocation': self.invocation,
+                      'account': self.account, 'project': self.contract['reservation']['project'],
+                      'unit': self.contract['unit'], 'provider': self.engine.PROVIDER, 'boundary': self.boundary}
+            self.file.write((json.dumps(header, sort_keys=True) + '\n').encode())
+            self.file.flush()
+
+        self.space_items = creation.items
 
     def feed(self, chunk):
         """Whether the worker must stop, after the observations in `chunk`."""
@@ -3726,17 +3740,25 @@ class Metering:
                         first_turn_context=self.first_turn_context)
         data = (json.dumps(document, sort_keys=True) + '\n').encode()
         directory = Path(self.receiver.config.get('artifacts') or Path(self.receiver.config['store']).parent / 'artifacts')
+        refusal = None
         try:
-            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
             path = directory / (hashlib.sha256(self.invocation.encode()).hexdigest() + '.json')
-            with os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as handle:
-                handle.write(data)
-        except OSError as error:
-            self.errors.append('artifact:' + type(error).__name__)
+            creation = SC.SpaceCreator(getattr(self.receiver, 'space', None), SC.space_owner(self.contract))
+            with creation.item('evidence', path):
+                directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+                with os.fdopen(os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'wb') as handle:
+                    handle.write(data)
+            self.space_items = dict(getattr(self, 'space_items', {}), **creation.items)
+        except (OSError, SC.SpaceCreationError) as error:
+            refusal = getattr(error, 'code', None)
+            self.errors.append('artifact:' + (refusal or type(error).__name__))
             path = None
         verdict = document['verdict'] if path is not None else 'artifact_unkept'
-        return {'path': str(path) if path else None, 'digest': 'sha256:' + hashlib.sha256(data).hexdigest(),
-                'verdict': verdict, 'complete': verdict == 'complete' and document['complete'] is True}
+        report = {'path': str(path) if path else None, 'digest': 'sha256:' + hashlib.sha256(data).hexdigest(),
+                  'verdict': verdict, 'complete': verdict == 'complete' and document['complete'] is True}
+        if refusal:
+            report['refusal'] = refusal
+        return report
 
     def settle(self, termination, cause):
         """The one final report. `termination` None: the engine never started (not executed)."""

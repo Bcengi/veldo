@@ -776,7 +776,7 @@ def git_run(argv):
     return result.stdout.strip()
 
 
-def prepare(shared, private, worktree, agent, name, start):
+def prepare(shared, private, worktree, agent, name, start, *, space=None, owner=None, space_provisioned=None):
     """Create the agent's own bare repository (objects private, the shared store its read-only
     alternate) and a linked worktree on refs/heads/agent/<agent>/<name> at the shared `start`."""
     shared, private, worktree = Path(shared).resolve(strict=True), Path(private).absolute(), Path(worktree).absolute()
@@ -786,10 +786,22 @@ def prepare(shared, private, worktree, agent, name, start):
     if beneath(private.resolve(), shared) or beneath(shared, private.resolve()):
         raise ValueError('agent repository must be outside the shared repository')
     commit = git_run(['--git-dir=' + str(shared), 'rev-parse', '--verify', '--end-of-options', start + '^{commit}'])
-    git_run(['init', '-q', '--bare', str(private)])
-    (private / 'objects/info/alternates').write_text(str(shared / 'objects') + '\n')
-    git_run(['--git-dir=' + str(private), 'worktree', 'add', '-q', '-b', 'agent/%s/%s' % (agent, name),
-             str(worktree), commit])
+    authority = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location('sandbox_space_creator', authority / '.veldo/control_clone.py')
+    creator_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(creator_module)
+    creation = creator_module.SpaceCreator(space, owner)
+    branch = 'refs/heads/agent/%s/%s' % (agent, name)
+    with creation.item('agent_repository', private, main=shared) as repository_item, \
+            creation.item('worktree', worktree, parent=repository_item, start=commit, branch=branch,
+                          provisioned=space_provisioned), \
+            creation.item('branch', branch, main=private, parent=repository_item, start=commit, branch=branch):
+        git_run(['init', '-q', '--bare', str(private)])
+        (private / 'objects/info/alternates').write_text(str(shared / 'objects') + '\n')
+        git_run(['--git-dir=' + str(private), 'worktree', 'add', '-q', '-b', 'agent/%s/%s' % (agent, name),
+                 str(worktree), commit])
+    if space is not None:
+        (private / 'veldo-space.json').write_text(json.dumps(creation.items, sort_keys=True) + '\n')
     return commit
 
 

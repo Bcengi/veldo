@@ -424,7 +424,7 @@ class Batch:
     def __init__(self, repo_root, *, project, identity, authority, trunk='main', remote='origin',
                  destination=LAND_AND_PUSH, hook=None, push_identity=None, installation=None, workspace_root=None,
                  records=None, observe=None, tell=None, fix_round=None, requirements=None,
-                 clock=time.time, gate_timeout=None, follows=None):
+                 clock=time.time, gate_timeout=None, follows=None, space=None, owner=None):
         if not isinstance(authority, Authority):
             raise Refused('missing_authority:batch', 'a batch reads and writes its authority through the store')
         if destination not in (LAND_AND_PUSH, LAND_LOCALLY):
@@ -448,6 +448,7 @@ class Batch:
         # that is not the current subject is a stale grant, refused by name.
         self.asked_subjects = []
         self.clock, self.gate_timeout, self.follows = clock, gate_timeout, follows
+        self.space, self.space_owner = space, owner
         self.gate_runs = 0
         self.record = None
         self.events = []
@@ -527,12 +528,16 @@ class Batch:
         objects = Path(common) / 'objects'
         if not objects.is_dir():
             raise Refused('unavailable_service:git/objects', 'the project repository has no object store')
-        clone = Path(tempfile.mkdtemp(prefix='veldo-batch-', dir=self.workspace_root))
-        self.record['clone'] = str(clone)
-        self._git(clone, 'init', '-q', '--template=')
-        info = clone / '.git' / 'objects' / 'info'
-        info.mkdir(parents=True, exist_ok=True)
-        (info / 'alternates').write_text(str(objects) + '\n')
+        creation = _organ('control_clone').SpaceCreator(self.space, self.space_owner, Refused)
+        clone = creation.temporary('veldo-batch-', self.workspace_root)
+        with creation.item('agent_repository', clone, main=self.repo_root, form='batch_clone'):
+            clone.mkdir(mode=0o700)
+            self.record['clone'] = str(clone)
+            self._git(clone, 'init', '-q', '--template=')
+            info = clone / '.git' / 'objects' / 'info'
+            info.mkdir(parents=True, exist_ok=True)
+            (info / 'alternates').write_text(str(objects) + '\n')
+        self.record.setdefault('space_items', {}).update(creation.items)
         return clone
 
     def _left_out(self, entry, code, **fields):
@@ -718,7 +723,11 @@ class Batch:
         if r is None or r.get('state') != 'assembled':
             return {'ok': False, 'refusal': 'invalid_input:batch', 'state': (r or {}).get('state')}
         CV = _organ('control_verification')
-        directory = Path(tempfile.mkdtemp(prefix='veldo-batch-observation-', dir=self.workspace_root))
+        creation = _organ('control_clone').SpaceCreator(self.space, self.space_owner, Refused)
+        directory = creation.temporary('veldo-batch-observation-', self.workspace_root)
+        with creation.item('evidence', directory):
+            directory.mkdir(mode=0o700)
+        r.setdefault('space_items', {}).update(creation.items)
         r['observation_dir'] = str(directory)
         started = self.clock()
         try:
