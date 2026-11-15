@@ -913,6 +913,22 @@ def _recorded(locator, shown):
     return None
 
 
+def _pulled_image(ledger, locator):
+    """A pull can follow a build. Its durable kept report holds the image on this engine.
+
+    Read the ledger at removal, including after adapter or service restart. An unread ledger raises
+    into the remover's refusal; a built tag never takes the only copy of a subsequently pulled image.
+    """
+    for record in ledger.items().values():
+        where = record.get('locator') or {}
+        found = (record.get('report') or {}).get('found') or {}
+        if (record.get('kind') == 'image_tag' and where.get('engine') == locator.get('engine')
+                and where.get('id') == locator.get('id') and found.get('why') == 'pulled_image'
+                and found.get('disposition') == 'kept'):
+            return True
+    return False
+
+
 def _docker(method, needs, show, size, steps):
     def remover(ctx, identity, record, answer):
         answer['method'] = method
@@ -926,6 +942,8 @@ def _docker(method, needs, show, size, steps):
         other = _recorded(locator, shown)
         if other is not None:
             raise _Refusal(REFUSED, other + ': it is not removed')
+        if record.get('kind') == 'image_tag' and _pulled_image(ctx['ledger'], locator):
+            raise _Refusal(REFUSED, 'the image was pulled and is kept on this engine')
         measured = size(shown)
         if measured is not None:
             answer['bytes'], answer['bytes_source'] = measured, 'measured'

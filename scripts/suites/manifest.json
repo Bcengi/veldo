@@ -2086,6 +2086,15 @@
    ],
    "regions": "VELDO-0304 boundary and no-loss rows, real temporary repositories.",
    "requires_note": "Only ROOT and expect. No host engines or real data."
+  },
+  {
+   "name": "153_veldo_0328_images",
+   "file": "153_veldo_0328_images.py",
+   "requires": [
+    "153_veldo_0328_images"
+   ],
+   "regions": "VELDO-0328 built image tags, ownerless kept pulls and protect-first recording on each engine context; real ledger and Signal, with tag-only removers, identity refusal, engine refusal and owner Keep.",
+   "requires_note": "Only ROOT and expect. Real store, ledger and signatures in a temporary fixture; strict in-memory engines with planted image content. No real engine access. Act prerequisites and empty process table are fixture stand-ins."
   }
  ],
  "resource_capacities": {
