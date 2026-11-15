@@ -96,5 +96,12 @@
   "row": "memory/boundary",
   "old": "        # Keep the incomplete copy. SQLite backup replaces its contents on the next attempt.\n",
   "new": "        target.unlink()\n"
+ },
+ {
+  "name": "spool-time-delete",
+  "path": ".veldo/control_space_spool.py",
+  "row": "spool/boundary",
+  "old": "                    retain_delivered(folder, name)  # durable input stays outside the pending queue\n",
+  "new": "                    os.unlink(os.path.join(folder, name))\n"
  }
 ]

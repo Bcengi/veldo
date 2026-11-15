@@ -297,5 +297,21 @@ def _v304_suite():
     row('memory/unique-work', memory_work)
     row('memory/boundary', lambda: module_boundary('control_memory_check', ('backup',)))
 
+    def spool_work():
+        spool = load('spool', ROOT / '.veldo/control_space_spool.py')
+        with tempfile.TemporaryDirectory(prefix='v304-spool-') as temporary:
+            folder = Path(temporary)
+            name = 'fixture.json'
+            kept = []
+            for value in (b'first unique event\n', b'second unique event\n'):
+                (folder / name).write_bytes(value)
+                saved = spool.retain_delivered(str(folder), name)
+                kept.append((Path(saved), value))
+            assert all(path.read_bytes() == value for path, value in kept)
+            assert kept[0][0] != kept[1][0] and not (folder / name).exists()
+
+    row('spool/unique-work', spool_work)
+    row('spool/boundary', lambda: module_boundary('control_space_spool', ('replay',)))
+
 
 _v304_suite()

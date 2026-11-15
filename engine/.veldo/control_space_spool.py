@@ -763,12 +763,24 @@ def replay(folder, authority, sign, wait=LOCK_SECONDS, seconds=REPLAY_SECONDS, c
                 else:
                     if result['outcome'] == 'nothing':
                         observe(folder, {'outcome': 'nothing', 'reason': result['reason'], 'entry': one})
-                    os.unlink(os.path.join(folder, name))  # delivered, or noted: nothing was to be written
+                    retain_delivered(folder, name)  # durable input stays outside the pending queue
                 done.append({'name': name, 'type': one['type'], 'outcome': result['outcome'],
                              'reason': result['reason']})
     finally:
         fcntl.flock(lock, fcntl.LOCK_UN)
         os.close(lock)
+
+
+def retain_delivered(folder, name):
+    """Keep the delivered bytes in a fresh directory; never replace an earlier delivery."""
+    if os.path.basename(name) != name or name in ('.', '..'):
+        raise Unsafe('not a spool entry name')
+    delivered = _folder(os.path.join(_folder(folder), 'delivered'))
+    # mkdir is exclusive; even a repeated entry name cannot overwrite kept bytes.
+    destination = os.path.join(delivered, uuid.uuid4().hex)
+    os.mkdir(destination, 0o700)
+    os.rename(os.path.join(folder, name), os.path.join(destination, name))
+    return os.path.join(destination, name)
 
 
 def _set_aside_raw(folder, name, why):
