@@ -410,7 +410,10 @@ def candidate(path, main, record, projected=(), remote=None):
             return found
 
         made = set(step.get('merge') for step in record.get('merges') or () if isinstance(step, dict))
-        made |= {record.get('commit'), record.get('projection_commit')}
+        # VELDO-0303 fix 3: the record's `commit` is the candidate's head, whoever made it. A generator
+        # of the build's own tree that commits its output puts its commit there, and that commit is not
+        # the lander's. What the lander made is a step's commit or its projection commit, named as such.
+        made.add(record.get('projection_commit'))
         noted = record.get('made')
         made |= set(commit for commit in (noted if isinstance(noted, list) else ()) if _commit(commit))
         unheld = outside()

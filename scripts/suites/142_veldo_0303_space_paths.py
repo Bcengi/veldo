@@ -118,6 +118,15 @@ alone after the workspace went; controls: a remote that went on to the candidate
 remote-tracking ref of the repository holds, for which no remote is read; the lander's own reader
 answers nothing where it cannot read the remote).
 
+FIX 3 ROW (the review of 48546688: the record's `commit` is the candidate's head, not a commit the
+lander made). The projection is run by the lander's own projection step on a generator the fixture
+puts at scripts/update_index.py in the candidate's tree.
+fix3/generator-commit-kept (the review's case E: the generator commits its own output and a file of
+work, so the lander commits nothing and the record's `commit` is the generator's commit; the land is
+refused and the generator's commit is read from a kept ref of the repository alone after the workspace
+went; the same under the lander's own projection commit; control: a generator that commits nothing,
+whose output the lander commits, goes with no ref written).
+
 paths/absent-only-when-not-found (a path no live item records is answered gone only when the kernel
 says nothing is there: a folder under a parent of mode 000 is not gone and is answered not_in_ledger,
 in each of the five modules; a clone whose work tree no item records keeps its pins),
@@ -188,7 +197,7 @@ def _v303_space_paths_suite():
             'loss/clone-refused-build', 'loss/run-directory-repository', 'loss/candidate-commits',
             'fix/candidate-rebuildable', 'fix/candidate-fail-closed',
             'fix2/unrecorded-commit-kept', 'fix2/step-in-progress-exact', 'fix2/trunk-from-record',
-            'fix2/remote-holds-trunk',
+            'fix2/remote-holds-trunk', 'fix3/generator-commit-kept',
             'f3/consumer-holds-clone', 'f5/clones-given-space',
             'paths/absent-only-when-not-found', 'paths/no-delete-with-a-ledger', 'paths/canon')
     rows = {name: [] for name in ROWS}
@@ -1409,12 +1418,13 @@ def _v303_space_paths_suite():
 
             # ---- The fix after the review of 66b943b2: a candidate that holds no only copy goes with no
             # kept ref written; anything the lander's record does not account for is kept as before. ----
-            def landing(name, made=3, conflict=False):
+            def landing(name, made=3, conflict=False, generator=None):
                 """A candidate workspace built as the lander builds one, and the lander's record of it. The
                 trunk it was synced to is a commit the repository does not have (the remote moved); the
                 build's implementation and evidence are on a branch of the repository. `made` is how many
                 of the lander's own commits exist: the implementation merge, the evidence merge, the
-                projection commit. With `conflict` the implementation merge stops conflicted."""
+                projection commit. With `conflict` the implementation merge stops conflicted. With
+                `generator` the build's implementation carries that text as its projection generator."""
                 place = STATE / 'landing' / ('veldo-candidate-' + name)
                 place.mkdir(parents=True)
                 git(place, 'init', '-q', '--template=')
@@ -1424,6 +1434,10 @@ def _v303_space_paths_suite():
                 base = git(REPOSITORY, 'rev-parse', 'main')
                 git(place, 'checkout', '-q', '--detach', base)
                 shared = 'shared-%s.txt' % name
+                if generator is not None:
+                    (place / LD.PROJECTIONS[0][1]).parent.mkdir(exist_ok=True)
+                    (place / LD.PROJECTIONS[0][1]).write_text(generator)
+                    git(place, 'add', LD.PROJECTIONS[0][1])
                 implementation = commit(place, shared if conflict else 'built-%s.txt' % name, 'the build\'s side\n',
                                         'implementation of ' + name)
                 evidence = commit(place, 'proof-%s.txt' % name, 'the proof\n', 'evidence of ' + name)
@@ -1685,6 +1699,67 @@ def _v303_space_paths_suite():
                   and LD.space_rebuildable(made['place'], REPOSITORY, made['record'], LD.REGEN_PATHS,
                                            O._remote_trunk).get('deferral') == 'unique_work'
                   and os.path.isdir(made['place']))
+
+            # ---- Fix 3 (the review of 48546688): the record's `commit` is the head, whoever made it. ----
+            row = 'fix3/generator-commit-kept'
+            WRITES = ("import os, subprocess\n"
+                      "def git(*argv):\n"
+                      "    subprocess.run(['git', '-c', 'user.name=Generator', '-c', 'user.email=generator@example.invalid',\n"
+                      "                    '-c', 'commit.gpgsign=false'] + list(argv), check=True)\n"
+                      "os.makedirs('specs', exist_ok=True)\n"
+                      "open('specs/index.md', 'w').write('the index, generated\\n')\n")
+            COMMITS = ("open('generated.txt', 'w').write('work the generator made and committed\\n')\n"
+                       "git('add', 'specs/index.md', 'generated.txt')\n"
+                       "git('commit', '-q', '-m', 'committed by the generator')\n")
+
+            def projected(name, generator):
+                """A candidate with both steps recorded, then the lander's own projection step run on the
+                generator `generator`, which the build's implementation carries; then the record
+                finished as reconcile finishes it (commit is the head) and the land refused."""
+                made = landing(name, made=2, generator=generator)
+                O = lander(None, made['place'], SCRATCH)
+                O.candidate, O.identity_record, O.repo_root = made['record'], None, str(REPOSITORY)
+                O.domain = O.repository = O.common_dir = None
+                O.identity_counts, O.counts, O.observe = {}, {'accepted': 0, 'refused': 0}, lambda event: None
+                O._project(str(made['place']), 'VELDO-0000', ('Fixture', 'fixture@example.invalid'))
+                made['head'] = git(made['place'], 'rev-parse', 'HEAD')
+                made['record'].update(state='refused', refusal='gate_failed', commit=made['head'])
+                return made
+
+            made = projected('generator-48', WRITES + COMMITS)
+            record, generated = made['record'], made['head']
+            left = discarded(made)
+            check(row, 'the review\'s case E: the generator of the build\'s own tree commits its output and a file of '
+                       'work, so the lander commits nothing and the record\'s commit is the generator\'s commit, '
+                       'named nowhere as the lander\'s [%s]: the land is refused, and the generator\'s file is read '
+                       'from a kept ref of the repository alone after the workspace went [%s %s]'
+                  % (record.get('projection_commit'), left, kept_in(REPOSITORY, generated)[:1]),
+                  record.get('projection_commit') is None and record.get('projected_from') == generated
+                  and record.get('commit') == generated != made['own'][1]
+                  and generated not in (record.get('made') or ())
+                  and left['there'] is False and left['discarded'] is True and left['refs_same'] is False
+                  and kept_file(generated, 'generated.txt') == ['work the generator made and committed'])
+            made = projected('under-49', WRITES + COMMITS
+                             + "open('specs/index.md', 'a').write('and a line the generator left uncommitted\\n')\n")
+            record = made['record']
+            generated = record.get('projected_from')
+            left = discarded(made)
+            check(row, 'the same with the lander\'s own projection commit on top (the generator left its output '
+                       'changed once more): the commit under it is the generator\'s and is kept the same way [%s]'
+                  % (left,),
+                  record.get('projection_commit') == made['head'] != generated
+                  and generated != made['own'][1]
+                  and left['there'] is False and left['discarded'] is True and left['refs_same'] is False
+                  and kept_file(generated, 'generated.txt') == ['work the generator made and committed'])
+            made = projected('plain-50', WRITES)
+            record = made['record']
+            left = discarded(made)
+            check(row, 'control: a generator that commits nothing, whose output the lander commits itself: the '
+                       'record\'s commit is the lander\'s projection commit on the second step, and the candidate '
+                       'goes with no ref written [%s]' % (left,),
+                  record.get('projection_commit') == record.get('commit') == made['head']
+                  and record.get('projected_from') == made['own'][1]
+                  and left == {'there': False, 'discarded': True, 'refs_same': True, 'refusal': None})
 
             row = 'fix/candidate-fail-closed'
             made = landing('extra-24')

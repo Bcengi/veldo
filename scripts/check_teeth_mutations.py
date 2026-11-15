@@ -13612,6 +13612,12 @@ def cases():
             "        made |= set(commit for commit in (noted if isinstance(noted, list) else ()) if _commit(commit))\n",
             "        pass\n",
             ['fix2/unrecorded-commit-kept'])
+    # Fix 3 (the review of 48546688, case E): the record's `commit`, the candidate's head, counted as a
+    # commit the lander made, so a commit the build's own generator made goes with no kept ref.
+    path303('space303-candidate-record-commit-is-the-landers', 'control_space_standalone.py',
+            "        made.add(record.get('projection_commit'))\n",
+            "        made |= {record.get('commit'), record.get('projection_commit')}\n",
+            ['fix3/generator-commit-kept'])
     # Fix 2, decision 2 (case B): a step in progress accepted whatever its work tree holds; accepted
     # with only the untracked files looked at, as the first fix had it; and the lander recording
     # nothing at the conflict, which must keep the candidate rather than clear it.

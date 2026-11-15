@@ -333,3 +333,22 @@ components, each engine file with its synced copy, and the ticket's suite, proof
     space303-candidate-changed-file-goes.
   - Not done here: the review's suggestion to assert in 128_veldo_0235 local/lands that the caller
     holds the landed tip and passes a connectivity check after the discard.
+- 2026-11-14: fix 3, after the review of 48546688 (review-veldo-0303fix2.md, verdict FIX, one
+  finding). The look counted the record's `commit` as a commit the lander made. That field is the
+  candidate's head, whoever made it: a projection generator of the build's own tree
+  (scripts/update_index.py) that commits its own output leaves nothing staged, so the lander
+  commits nothing and the head is the generator's commit. On a refused land that commit went with
+  no kept ref. Now only a step's commit, the projection commit and what is noted under made are
+  the lander's; a commit the lander did make is always one of those, so nothing it made is kept
+  that was not before. No acceptance criterion changed. control_space_standalone.py, canon and
+  copy, one line.
+  - Suite 142 is 38 rows, 64 passed: fix3/generator-commit-kept runs the lander's own projection
+    step on a generator that commits its output and a file of work; the land is refused and the
+    file is read from a kept ref of the repository alone after the workspace went; the same under
+    the lander's projection commit; control: a generator that commits nothing goes with no ref
+    written.
+  - Falsifiers under finding 303 are 44. Added: space303-candidate-record-commit-is-the-landers
+    (the record's `commit` back in the set), red on that row.
+  - Not done here, outside this fix: the review's optional refusal in reconcile of a candidate
+    whose head is neither the last step's commit nor the lander's projection commit, and its
+    notes N1 and N3.
