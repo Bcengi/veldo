@@ -14749,6 +14749,20 @@ def cases():
     cli314('space314-cli-session-path-silent',
            '        if args.kind in spool.SESSION_TYPES and args.path:\n', '        if False:\n',
            ['fix5/cli-session-path-said'])
+    # Fix round 2 (the re-review): the CLI's own failure goes through the hook's chain, so each cause
+    # leaves a record on disk. Each case removes one link: the refused/ entry of what is no entry; the
+    # note beside a refused spool folder; the fallback root; the last line when no root takes it.
+    cli314('space314-cli-invalid-dropped', '                spool.refuse(root, seen, invalid)\n', '',
+           ['round2/cli-invalid-refused'])
+    cli314('space314-cli-unsafe-folder-silent',
+           '                spool.note_refused_folder(root, str(error))\n                last = error\n',
+           '                last = error\n', ['round2/cli-unsafe-folder'])
+    cli314('space314-cli-no-fallback',
+           '        roots = [state_root] + ([fallback] if fallback != state_root else [])\n',
+           '        roots = [state_root]\n', ['round2/cli-unsafe-folder', 'round2/cli-unwritable-root'])
+    cli314('space314-cli-no-last-record',
+           '            kept = "one line is left in " + spool.unspooled(roots, dict(seen, reason=reason))\n',
+           '            kept = "one line is left in no file"\n', ['round2/cli-unwritable-root'])
 
     space312 = '149_veldo_0312_ticket_ended.py'
 

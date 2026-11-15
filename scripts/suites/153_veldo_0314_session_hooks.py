@@ -459,6 +459,71 @@ def _v314_suite():
               and entries[-1]['subject'] == one('session_started', 'cli-linked', temp / 'outside')['subject'])
         check('fix5/cli-session-path-said', 'with no ledger the verb says the path is not recorded',
               'a session event records no path' in done.stderr.decode())
+        # Fix round 2: the CLI's own failure leaves a record on disk, by the hook's chain. A line on
+        # standard error is no record. Three causes, each with no ledger: a state root that cannot be
+        # written, a session that is no entry, and a spool folder that is refused.
+        def event(*argv, **environ):
+            return subprocess.run([sys.executable, str(temp / 'bin/veldo'), 'space', 'event'] + list(argv),
+                                  env=without('VELDO_SPACE_STATE_ROOT', **environ), capture_output=True, timeout=15)
+
+        def released(root):
+            where = spool.spool_folder(str(root))
+            return [spool.read(where, name)['subject'] for name in spool.pending(where)]
+
+        session = ['--type', 'session_started', '--working-folder', str(temp / 'outside'),
+                   '--pid', str(pid), '--started', str(started)]
+        closed = temp / 'cli-closed-state'
+        closed.mkdir(mode=0o700)
+        closed.chmod(0o500)
+        try:
+            done = event('--type', 'released', '--path', str(planted), '--state-root', str(closed),
+                         XDG_STATE_HOME=str(temp / 'xdg-cli-closed'))
+            check('round2/cli-unwritable-root', 'the entry is spooled under the fallback: '
+                  + str((done.returncode, done.stderr.decode(), released(temp / 'xdg-cli-closed/veldo'))),
+                  done.returncode == 0 and os.listdir(closed) == []
+                  and released(temp / 'xdg-cli-closed/veldo') == [{'paths': [str(planted)], 'creator': 'record'}])
+            # The fallback's spool folder is made here when no entry made it, so the check that follows runs.
+            (temp / 'xdg-cli-closed/veldo' / spool.SPOOL).mkdir(parents=True, mode=0o700, exist_ok=True)
+            (temp / 'xdg-cli-closed/veldo' / spool.SPOOL).chmod(0o777)
+            done = event('--type', 'released', '--path', str(planted) + '-second', '--state-root', str(closed),
+                         XDG_STATE_HOME=str(temp / 'xdg-cli-closed'))
+            left = lines(temp / 'xdg-cli-closed/veldo')
+            check('round2/cli-unwritable-root', 'no root takes the entry: one line with what the verb was given: '
+                  + str((done.returncode, done.stderr.decode(), left)),
+                  done.returncode == 0 and os.listdir(closed) == [] and len(left) == 1
+                  and left[0]['type'] == 'released' and str(planted) + '-second' in left[0]['argv']
+                  and 'writable by group or others' in left[0]['reason']
+                  and (temp / 'xdg-cli-closed/veldo' / spool.FOLDER_REFUSED).exists()
+                  and 'could not spool' in done.stderr.decode()
+                  and str(temp / 'xdg-cli-closed/veldo' / spool.UNSPOOLED) in done.stderr.decode())
+        finally:
+            closed.chmod(0o700)
+            (temp / 'xdg-cli-closed/veldo' / spool.SPOOL).chmod(0o700)
+        evil = temp / 'cli-state-evil'
+        done = event('--session', '../evil', '--state-root', str(evil), *session)
+        kept = spool.refused(spool.spool_folder(str(evil)))
+        kept = [json.loads((Path(spool.spool_folder(str(evil))) / spool.REFUSED / name).read_text()) for name in kept]
+        check('round2/cli-invalid-refused', 'a session that is no entry is under refused/ with why: '
+              + str((done.returncode, done.stderr.decode(), kept)),
+              done.returncode == 0 and len(kept) == 1 and kept[0]['notification']['type'] == 'session_started'
+              and '../evil' in kept[0]['notification']['argv']
+              and kept[0]['refused']['reason'].startswith('space_event_invalid:')
+              and not spool.pending(spool.spool_folder(str(evil))) and 'could not spool' in done.stderr.decode())
+        open_state = temp / 'cli-open-state'
+        (open_state / spool.SPOOL).mkdir(parents=True, mode=0o700)
+        (open_state / spool.SPOOL).chmod(0o777)
+        done = event('--session', 'cli-unsafe', '--state-root', str(open_state),
+                     XDG_STATE_HOME=str(temp / 'xdg-cli-open'), *session)
+        noted = open_state / spool.FOLDER_REFUSED
+        check('round2/cli-unsafe-folder', 'the refused folder is noted beside it and nothing is written into it: '
+              + str((done.returncode, done.stderr.decode(), noted.exists(), os.listdir(open_state / spool.SPOOL))),
+              done.returncode == 0 and noted.exists()
+              and 'writable by group or others' in json.loads(noted.read_text())['refused']
+              and os.listdir(open_state / spool.SPOOL) == [])
+        check('round2/cli-unsafe-folder', 'the entry is spooled under the fallback: '
+              + str(spooled(temp / 'xdg-cli-open/veldo')),
+              spooled(temp / 'xdg-cli-open/veldo') == ['cli-unsafe'] and not lines(open_state))
+        (open_state / spool.SPOOL).chmod(0o700)
         # With a ledger (this fixture's, handed to the verb in this process): the entry holds the paths
         # the Ledger's own checks gave. The real Ledger has no event command, so the entry is spooled.
         loader = importlib.machinery.SourceFileLoader('v314_veldo_cli', str(temp / 'bin/veldo'))
