@@ -12,5 +12,19 @@
   "row": "ref/keep-before-delete",
   "old": "        keeper = _sibling('control_space_keep')\n",
   "new": "        _git(commands, '-C', repository, 'update-ref', '-d', ref)\n        return dict(answer, ok=True)\n        keeper = _sibling('control_space_keep')\n"
+ },
+ {
+  "name": "clone-direct-ref",
+  "path": ".veldo/control_clone.py",
+  "row": "clone/boundary",
+  "old": "        ledger = (self.space or {}).get('ledger')\n",
+  "new": "        _git('-C', cache, 'update-ref', '-d', ref)\n        ledger = (self.space or {}).get('ledger')\n"
+ },
+ {
+  "name": "clone-direct-tree",
+  "path": ".veldo/control_clone.py",
+  "row": "clone/boundary",
+  "old": "        return looked, []\n",
+  "new": "        shutil.rmtree(work)\n        return looked, []\n"
  }
 ]

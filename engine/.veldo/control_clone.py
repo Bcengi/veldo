@@ -747,12 +747,14 @@ class Clones(EP.EnvProvisioner):
             raise Refused('stale_input:commit_unavailable', 'the pinned object is not the named commit')
         return {'cache': str(cache), 'ref': ref, 'commit': commit}
 
-    @staticmethod
-    def _release(cache, ref):
-        """Delete one pin ref if it is still there."""
-        old = _git('-C', cache, 'for-each-ref', '--format=%(objectname)', ref, check=False).stdout.strip()
-        if old:
-            _git('-C', cache, 'update-ref', '-d', ref, old)
+    def _release(self, cache, ref, identity=None):
+        """Release only through the remover after the owning item's keep and outcome."""
+        ledger = (self.space or {}).get('ledger')
+        answer = _organ('control_space_remove').remove_ref(str(cache), ref, ledger, identity)
+        if not hasattr(self, 'ref_outcomes'):
+            self.ref_outcomes = {}
+        self.ref_outcomes[ref] = answer
+        return answer
 
     def _bound(self, domain, repository, code):
         path = self.store.bound_repository(self.conn, domain, repository)
@@ -1037,23 +1039,10 @@ class Clones(EP.EnvProvisioner):
                     kept=looked[0].get('refs') or {})
 
     def _standalone(self, root, work, pins, main, ticket):
-        """VELDO-0303, with no ledger: look at the clone's work tree as a private repository of `main` (its
-        commits go to kept refs there) and at its root as a folder, and only when both are answered for
-        delete the work tree, release the pins and delete the rest. Returns (the two answers, the refs
-        released). A clone the look does not answer for is left whole, with its pins."""
-        root = Path(root)
-        looked = [space_standalone(work, 'agent_repository', main=main, ticket=ticket),
-                  space_standalone(root, 'folder', skip=[work])]
-        released = []
-        if all(entry['state'] in SPACE_SAFE for entry in looked):
-            shutil.rmtree(work, ignore_errors=True)
-            if space_absent(work):
-                shutil.rmtree(root / 'scratch', ignore_errors=True)
-                for pin in pins:
-                    self._release(Path(pin['cache']), pin['ref'])
-                    released.append(pin['ref'])
-                shutil.rmtree(root, ignore_errors=True)
-        return looked, released
+        """Without a ledger there is no item-naming event: keep the whole clone and its pins."""
+        looked = [{'path': str(path), 'item': None, 'state': None, 'deferral': 'not_in_ledger',
+                   'said': 'removal requires a recorded owner and item'} for path in (work, root)]
+        return looked, []
 
     def _through_space(self, root, work, pins, confirm=False):
         """VELDO-0303: send run finished through Signal for the clone's items (its work tree, its scratch
@@ -1069,8 +1058,9 @@ class Clones(EP.EnvProvisioner):
         released = []
         if tree['state'] in SPACE_ENDED:
             for pin in pins:
-                self._release(Path(pin['cache']), pin['ref'])
-                released.append(pin['ref'])
+                answer = self._release(Path(pin['cache']), pin['ref'], tree.get('item'))
+                if answer['ok']:
+                    released.append(pin['ref'])
         return whole, released
 
     def retire(self, handle):

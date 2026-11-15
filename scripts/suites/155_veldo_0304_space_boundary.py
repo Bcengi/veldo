@@ -93,5 +93,36 @@ def _v304_suite():
 
     row('ref/keep-before-delete', ref_keep)
 
+    def clone_work():
+        clones = load('clones', ROOT / '.veldo/control_clone.py')
+        with tempfile.TemporaryDirectory(prefix='v304-clone-') as temporary:
+            root = Path(temporary)
+            work = root / 'work'
+            work.mkdir()
+            git(work, 'init', '-q', '-b', 'main')
+            (work / 'unique').write_text('unique clone commit\n')
+            git(work, 'add', '.')
+            tip = git(work, 'commit-tree', git(work, 'write-tree'), '-m', 'unique')
+            ref = 'refs/veldo/pins/fixture/repository'
+            git(work, 'update-ref', ref, tip)
+            obj = object.__new__(clones.Clones)
+            obj.space = None
+            answer = obj._release(work, ref)
+            assert not answer['ok'] and git(work, 'rev-parse', ref) == tip, answer
+            (work / 'draft').write_bytes(b'only copy of clone draft\n')
+            looked, released = obj._standalone(root, work, [{'cache': str(work), 'ref': ref}], work, None)
+            assert not released and all(entry['deferral'] == 'not_in_ledger' for entry in looked)
+            assert (work / 'draft').read_bytes() == b'only copy of clone draft\n'
+            assert git(work, 'show', ref + ':unique') == 'unique clone commit'
+
+    def module_boundary(module, functions):
+        for prefix in ('.veldo/', 'engine/.veldo/'):
+            path = prefix + module + '.py'
+            errors = boundary.problems((ROOT / path).read_text(), path)
+            assert not [error for error in errors if any(function + ':' in error for function in functions)], errors
+
+    row('clone/unique-work', clone_work)
+    row('clone/boundary', lambda: module_boundary('control_clone', ('Clones._release', 'Clones._standalone')))
+
 
 _v304_suite()

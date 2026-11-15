@@ -1,0 +1,18 @@
+{
+ "case": "clone-direct-ref",
+ "row": "clone/boundary",
+ "red": [
+  {
+   "row": "VELDO-0304 clone/unique-work",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 111, in clone_work\n    assert not answer['ok'] and git(work, 'rev-parse', ref) == tip, answer\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 28, in git\n    return git_process.run(['git', '-C', str(where), *args], capture_output=True,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-owv6h2zp/.veldo/git_process.py\", line 159, in run\n    return _invoke(subprocess.run, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/v304-mutation-owv6h2zp/.veldo/git_process.py\", line 155, in _invoke\n    return invoke(args, **_options(args, kwargs, private_home))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/subprocess.py\", line 571, in run\n    raise CalledProcessError(retcode, process.args,\nsubprocess.CalledProcessError: Command '['git', '-C', '/tmp/v304-clone-a6mi6c4h/work', 'rev-parse', 'refs/veldo/pins/fixture/repository']' returned non-zero exit status 128.\n"
+  },
+  {
+   "row": "VELDO-0304 clone/boundary",
+   "passed": false,
+   "detail": " Traceback (most recent call last):\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 22, in row\n    operation()\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 125, in <lambda>\n    row('clone/boundary', lambda: module_boundary('control_clone', ('Clones._release', 'Clones._standalone')))\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/dmitry/projects/veldo-worktrees/space-0304/scripts/suites/155_veldo_0304_space_boundary.py\", line 122, in module_boundary\n    assert not [error for error in errors if any(function + ':' in error for function in functions)], errors\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['engine/.veldo/control_clone.py:752: Clones._release: history:git ref delete outside its reviewed boundary']\n"
+  }
+ ],
+ "before": "56a9a9387a23dbe783f601036fc357d2aa5c89071dc98f91ec525fd531220474",
+ "after": "9493070ec6d54ed0422c8b22566e7c54b07c037ecf9bec6d81344fea4e87708f"
+}
