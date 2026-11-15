@@ -1,11 +1,12 @@
-# VELDO-0313, fix round, 2026-11-14. Each suite on its own with python3 scripts/selftest.py and the suite option, on the committed tree of 957d138c23eb. Partial runs, not the gate.
+# VELDO-0313, fix round 2, 2026-11-14, on the committed tree of 22e8f5a0acdd. Partial runs, not the gate.
+# Suite 151 in a process table of its own (python3 -I -S scripts/gate_candidate.py with the root, then python3 scripts/selftest.py with the suite option; the gate's confinement):
 151_veldo_0313_space_run: 49 passed, 0 failed (23 rows)
+# Suite 151 unconfined on this host, which other sessions share and which has no process reader, one run: 34 passed, 15 failed (8 of 23 rows green). Fail closed: a run's end is held by other sessions' processes that started after it and that this account cannot read; a row that follows an end is red after the suite's 120 second limit and names them, and rows after it meet a hold that was not released. Row fix3/the-house-group is among the red ones: it was not seen green in this round.
+# Each of these on its own with python3 scripts/selftest.py and the suite option, unconfined:
 133_veldo_0326_space_principals: 56 passed, 0 failed
 143_veldo_0305_space_census: 52 passed, 0 failed
 146_veldo_0308_run_finished: 64 passed, 0 failed
 148_veldo_0311_git_hooks: 57 passed, 0 failed
-# On the tree of 007f32008362, same content of bin/veldo but for the wait on an unread holder: 06_capabilities_manifest_honesty_veldo (1414 passed with its closure), 09_action_whitelist_warp_1205 (2487 passed with its closure), 21_veldo_0004_promise_corpus (85 passed), 01_warp_0101_reviewer_notes (637 passed), 53_veldo_0123_mutations (40 passed); 0 failed each.
-# Suite 151 was also run 8 times in a row on the final code on this host, which other sessions share: 23 rows green each time. Row fix3/the-house-group ran for real here (a transient scope under the owner's user manager); inside the gate's confinement it stands down by name.
 # Fast checks, 0 failed each: bash scripts/check_template_sync.sh (321 pairs), bash scripts/check_lint.sh, bash scripts/check_generated.sh, bash scripts/check_docs.sh, python3 .veldo/validate.py all, python3 scripts/check_git_boundary.py.
-# Teeth: python3 scripts/check_teeth_mutations.py with finding 313: registered 26, executed 26, rejected 26.
-# Not run by the builder: ./scripts/verify.sh and the heavy suites. Suite 86_veldo_0127 is 52 of 54 on this branch by a known recapture and was not touched.
+# Teeth: python3 scripts/check_teeth_mutations.py with finding 313: registered 30, executed 30, rejected 30.
+# Not run by the builder: ./scripts/verify.sh and the heavy suites.
