@@ -15160,6 +15160,13 @@ def cases():
            "         'process_use': _rule_process_use, 'unique_work': _rule_unique_work, 'children': _rule_children,",
            "         'process_use': lambda *args: None, 'unique_work': _rule_unique_work, 'children': _rule_children,",
            ['ac4/open-file-stays'])
+    run336('space336-per-path-rules-skipped', 'control_space_remove.py',
+           "    def compare(relative, descriptor, name):\n        judged()\n",
+           "    def compare(relative, descriptor, name):\n", ['ac4/opened-during-removal'])
+    run336('space336-parent-follows-link', 'control_space_remove.py',
+           "                inner = os.open(part, os.O_PATH | DIRECTORY, dir_fd=descriptor)\n",
+           "                inner = os.open(part, os.O_PATH | os.O_DIRECTORY, dir_fd=descriptor)\n",
+           ['paths/parent-link-refused'])
     run336('space336-build-census-skipped', 'veldo',
            "    for identity, record in sorted(ledger.items().items()):\n        owner = record.get(\"owner\") or {}\n",
            "    for identity, record in []:\n        owner = record.get(\"owner\") or {}\n",

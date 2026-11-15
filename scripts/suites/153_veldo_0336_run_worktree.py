@@ -3,7 +3,8 @@
 Real hooks, signed spool packets, Ledger, keep step, rules and removers; real git and disk.
 The wrapper begin/end are called in process. The run's empty containment group and host
 process census are stand-ins; a live descriptor row exposes its real process to the probe.
-No Docker engine is contacted. Temporary repositories stay within this suite's build output.
+No Docker engine is contacted. Temporary repositories are in a folder of the system's temporary
+folder, made and removed by this suite; nothing is written under the repository.
 """
 
 def _v336_suite():
@@ -59,7 +60,7 @@ def _v336_suite():
             raise RuntimeError('git %s: %s' % (' '.join(argv[:3]), done.stderr.decode()[-300:]))
         return done.returncode if not ok else done.stdout.decode().strip()
 
-    temp = Path(os.path.realpath(tempfile.mkdtemp(dir=str(ROOT / "proof/VELDO-0336"), prefix='v336-')))
+    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='v336-')))
     connections, listeners = [], []
     try:
         # the installed copy the hooks start, with this ticket's production files laid over it
@@ -428,6 +429,76 @@ def _v336_suite():
                 (PROC / str(child.pid)).unlink()
                 child.stdout.close()
         one('ac4/open-file-stays', in_use)
+
+        def opened_midway(row):
+            # A process opens folder/b after the item was judged, the snapshot taken and folder/a
+            # deleted: only the rules read again before each file can see it.
+            given, path, identity = begin('opened-midway')
+            (path / 'folder').mkdir()
+            (path / 'folder' / 'a').write_bytes(b'first file')
+            (path / 'folder' / 'b').write_bytes(b'opened in the middle')
+            holders = []
+            real_digest = RM._digest
+
+            def digest(at):
+                answer = real_digest(at)
+                if not holders and os.path.basename(at) == 'a':
+                    there = os.path.join(os.readlink(os.path.dirname(at)), 'b')
+                    if there.startswith(str(path) + '/'):
+                        child = subprocess.Popen([sys.executable, '-c',
+                            'import sys; f=open(sys.argv[1]); print("ready",flush=True); sys.stdin.read()', there],
+                            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                        holders.append(child)
+                        child.stdout.readline()
+                        (PROC / str(child.pid)).symlink_to('/proc/%d' % child.pid)
+                return answer
+            RM._digest = digest
+            try:
+                finish(given)
+                check(row, 'a holder was started in the middle of the removal', len(holders) == 1)
+                check(row, 'the removal stops as in_use at the original locator',
+                      status(identity) == ('deferred', 'in_use') and path.is_dir())
+                check(row, 'the file opened in the middle is kept in place',
+                      (path / 'folder' / 'b').is_file()
+                      and (path / 'folder' / 'b').read_bytes() == b'opened in the middle')
+                check(row, 'the file deleted before it is in the snapshot',
+                      not (path / 'folder' / 'a').exists() and saved(identity, 'folder/a') == [b'first file'])
+            finally:
+                RM._digest = real_digest
+                for child in holders:
+                    child.stdin.close()
+                    child.wait(timeout=10)
+                    (PROC / str(child.pid)).unlink()
+                    child.stdout.close()
+            finish(given)
+            check(row, 'with the holder gone the retry removes the worktree',
+                  status(identity)[0] == 'removed' and not path.exists()
+                  and b'opened in the middle' in saved(identity, 'folder/b'))
+        one('ac4/opened-during-removal', opened_midway)
+
+        def linked_parent(row):
+            real = temp / 'parent-real'
+            (real / 'inner').mkdir(parents=True)
+            (real / 'inner' / 'leaf').write_bytes(b'behind a link')
+            (temp / 'parent-link').symlink_to(real)
+            (real / 'inner-link').symlink_to(real / 'inner')
+            descriptor = RM._parent(str(real / 'inner' / 'leaf'))
+            try:
+                check(row, 'a plain parent is opened',
+                      os.path.samestat(os.fstat(descriptor), os.stat(real / 'inner')))
+            finally:
+                os.close(descriptor)
+            for name, via in (('first', temp / 'parent-link' / 'inner' / 'leaf'),
+                              ('last', real / 'inner-link' / 'leaf')):
+                try:
+                    os.close(RM._parent(str(via)))
+                except RM._Refusal as refused:
+                    check(row, 'a link as the %s folder is refused' % name, refused.deferral == RM.REFUSED)
+                else:
+                    check(row, 'a link as the %s folder is refused' % name, False)
+            check(row, 'the file behind the links is untouched',
+                  (real / 'inner' / 'leaf').read_bytes() == b'behind a link')
+        one('paths/parent-link-refused', linked_parent)
 
         def kept(row, child=False):
             given, path, identity = begin('kept-child' if child else 'kept')
