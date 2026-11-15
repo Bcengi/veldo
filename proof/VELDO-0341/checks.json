@@ -2,12 +2,12 @@
  {
   "command": "python3 .veldo/validate.py all",
   "exit": 0,
-  "output_lines": 230
+  "output_lines": 231
  },
  {
   "command": "bash scripts/check_lint.sh",
   "exit": 0,
-  "summary": "lint: pass (1204 python, 39 shell, 2.34s)"
+  "summary": "lint: pass (1204 python, 39 shell, 2.35s)"
  },
  {
   "command": "bash scripts/check_docs.sh",
@@ -26,10 +26,10 @@
  },
  {
   "command": "registry anchor check for the two changed production modules",
-  "summary": "87 existing and new case anchors each occur exactly once"
+  "summary": "98 existing and new case anchors each occur exactly once (fix round)"
  },
  {
   "command": "staged diff whitespace and ASCII checks",
-  "summary": "11 changed files ASCII; no whitespace errors"
+  "summary": "6 changed files ASCII; no whitespace errors (fix round)"
  }
 ]

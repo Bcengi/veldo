@@ -1,5 +1,40 @@
 [
  {
+  "name": "space341-image-protects-container",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac2/image-does-not-protect-container"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/image-does-not-protect-container": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac2/image-does-not-protect-container",
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix2/one-read-per-pass"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac2/image-does-not-protect-container",
+    "the run owns its container on default"
+   ],
+   [
+    "VELDO-0341 fix1/compose-order",
+    "the event asked for the container, its network and its image, and listed nothing: default [[('default', 'container', 'inspect'), ('default', 'image', 'inspect'), ('default', 'image', 'inspect'), ('default', 'network', 'inspect')]]"
+   ],
+   [
+    "VELDO-0341 fix2/one-read-per-pass",
+    "a snapshot judges every network by the containers it read: one list and one inspect of the containers: default [10 containers, 9 networks, 4 volumes, 24 calls: [(('container', 'inspect'), 1), (('container', 'ls'), 1), (('image', 'inspect'), 18), (('network', 'inspect'), 1), (('network', 'ls'), 1), ("
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "e066b883496e697094031d692f3475be35bc681c9dce764dafba0d32c693bbfe",
+  "rejected": true
+ },
+ {
   "name": "space341-name-only",
   "module": "control_space_docker.py",
   "targets": [
@@ -15,7 +50,12 @@
    "VELDO-0341 ac1/name-or-label-two-contexts",
    "VELDO-0341 ac3/no-record",
    "VELDO-0341 ac2/container-image-network",
-   "VELDO-0341 ac1/adapter-label"
+   "VELDO-0341 ac1/adapter-label",
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix1/snapshot-image",
+   "VELDO-0341 fix1/connect-event",
+   "VELDO-0341 fix1/disconnect-event",
+   "VELDO-0341 fix2/one-read-per-pass"
   ],
   "detail": [
    [
@@ -33,120 +73,30 @@
    [
     "VELDO-0341 ac1/adapter-label",
     "label alone stops discovery on default"
-   ]
-  ],
-  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
-  "mutant_sha256": "a85a75b1c2588fd85af1a9774648802937195d22deeacda86fe89d1bfba237b6",
-  "rejected": true
- },
- {
-  "name": "space341-image-protects-container",
-  "module": "control_space_docker.py",
-  "targets": [
-   "ac2/image-does-not-protect-container"
-  ],
-  "control_failed": [],
-  "mutant_targets": {
-   "ac2/image-does-not-protect-container": [
-    false
-   ]
-  },
-  "mutant_failed": [
-   "VELDO-0341 ac2/image-does-not-protect-container"
-  ],
-  "detail": [
-   [
-    "VELDO-0341 ac2/image-does-not-protect-container",
-    "the run owns its container on default"
-   ]
-  ],
-  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
-  "mutant_sha256": "d5783ad68d3296d135a19ea3a9ba537b16f0c0195acc0efcf730af7915574208",
-  "rejected": true
- },
- {
-  "name": "space341-protect-at-removal-only",
-  "module": "control_space_docker.py",
-  "targets": [
-   "ac3/discovery-before-proposal"
-  ],
-  "control_failed": [],
-  "mutant_targets": {
-   "ac3/discovery-before-proposal": [
-    false
-   ]
-  },
-  "mutant_failed": [
-   "VELDO-0341 ac1/name-or-label-two-contexts",
-   "VELDO-0341 ac3/no-record",
-   "VELDO-0341 ac2/container-image-network",
-   "VELDO-0341 ac1/adapter-label",
-   "VELDO-0341 ac3/discovery-before-proposal"
-  ],
-  "detail": [
-   [
-    "VELDO-0341 ac1/name-or-label-two-contexts",
-    "volume default"
    ],
    [
-    "VELDO-0341 ac3/no-record",
-    "protected listing default atlas_pg_handmade"
+    "VELDO-0341 fix1/compose-order",
+    "right after the container event the network has no report to Adopt: desktop-linux by label [protected, ['space:item:b44bc398476d463ab4611370e7d4e188'], {}]"
    ],
    [
-    "VELDO-0341 ac2/container-image-network",
-    "protected listing default renamed-database"
+    "VELDO-0341 fix1/snapshot-image",
+    "a snapshot lists the image of each protected container, with no image read: default"
    ],
    [
-    "VELDO-0341 ac1/adapter-label",
-    "label alone stops discovery on default"
+    "VELDO-0341 fix1/connect-event",
+    "reported when made, protected by the connect event: default [reported, matched, {}]"
    ],
    [
-    "VELDO-0341 ac3/discovery-before-proposal",
-    "protected volume never reaches report or adopt on default: [('report', {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9342'})]"
+    "VELDO-0341 fix1/disconnect-event",
+    "after the disconnect event it is a report again and no longer listed: default [matched]"
+   ],
+   [
+    "VELDO-0341 fix2/one-read-per-pass",
+    "and the pass still lists what a protected container was made from: default"
    ]
   ],
-  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
-  "mutant_sha256": "1996349d019c92b6d113db33e0f1fb12cf621d1b107a480cb241b3d0545c9be5",
-  "rejected": true
- },
- {
-  "name": "space341-no-inherited-protection",
-  "module": "control_space_docker.py",
-  "targets": [
-   "ac2/container-image-network"
-  ],
-  "control_failed": [],
-  "mutant_targets": {
-   "ac2/container-image-network": [
-    false
-   ]
-  },
-  "mutant_failed": [
-   "VELDO-0341 ac3/no-record",
-   "VELDO-0341 ac2/container-image-network",
-   "VELDO-0341 ac2/unread-refuses",
-   "VELDO-0341 ac2/immutable-image"
-  ],
-  "detail": [
-   [
-    "VELDO-0341 ac3/no-record",
-    "no record, proposal, pending item or adopt target: default renamed-network"
-   ],
-   [
-    "VELDO-0341 ac2/container-image-network",
-    "protected listing default renamed-network"
-   ],
-   [
-    "VELDO-0341 ac2/unread-refuses",
-    "network unread list"
-   ],
-   [
-    "VELDO-0341 ac2/immutable-image",
-    "image identity survives a tag move; a stopped container counts"
-   ]
-  ],
-  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
-  "mutant_sha256": "3d1678bb212641ed507039e572c94c0b333a74edcec0552b76732464224200b7",
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "a3a76c708bf4938e2a233f1eee335822f0de50e740644f60f35e949ed0a77936",
   "rejected": true
  },
  {
@@ -184,31 +134,6 @@
   "rejected": true
  },
  {
-  "name": "space341-unread-list-free",
-  "module": "control_space_docker.py",
-  "targets": [
-   "ac2/unread-refuses"
-  ],
-  "control_failed": [],
-  "mutant_targets": {
-   "ac2/unread-refuses": [
-    false
-   ]
-  },
-  "mutant_failed": [
-   "VELDO-0341 ac2/unread-refuses"
-  ],
-  "detail": [
-   [
-    "VELDO-0341 ac2/unread-refuses",
-    "network unread list"
-   ]
-  ],
-  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
-  "mutant_sha256": "aa0271dce32ab0d8803485072b59d253302f86cb01358a540140796f48edf82e",
-  "rejected": true
- },
- {
   "name": "space341-mount-report-stays",
   "module": "control_space_docker.py",
   "targets": [
@@ -229,8 +154,158 @@
     "old report is gone and protected listing holds the entry"
    ]
   ],
-  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
-  "mutant_sha256": "94adb3dcaf7b0a5113daf947e744ab6f17c3661523d0ab4cd73949f11ebd0371",
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "2451553b3d87b02061ab303c6f423de65ab8cd0885f9ab660cf0b97d5a80fcbd",
+  "rejected": true
+ },
+ {
+  "name": "space341-protect-at-removal-only",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac3/discovery-before-proposal"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac3/discovery-before-proposal": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac1/name-or-label-two-contexts",
+   "VELDO-0341 ac3/no-record",
+   "VELDO-0341 ac2/container-image-network",
+   "VELDO-0341 ac1/adapter-label",
+   "VELDO-0341 ac3/discovery-before-proposal",
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix1/snapshot-image"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac1/name-or-label-two-contexts",
+    "volume default"
+   ],
+   [
+    "VELDO-0341 ac3/no-record",
+    "protected listing default atlas_pg_handmade"
+   ],
+   [
+    "VELDO-0341 ac2/container-image-network",
+    "protected listing default renamed-database"
+   ],
+   [
+    "VELDO-0341 ac1/adapter-label",
+    "label alone stops discovery on default"
+   ],
+   [
+    "VELDO-0341 ac3/discovery-before-proposal",
+    "protected volume never reaches report or adopt on default: [('report', {'scope': {'id': 'meadow', 'type': 'project'}, 'ticket': 'VELDO-9342'})]"
+   ],
+   [
+    "VELDO-0341 fix1/compose-order",
+    "right after the container event the network has no report to Adopt: desktop-linux by label [protected, ['space:item:eb91b59a8c9c429fb6704eaad067bf5c'], {}]"
+   ],
+   [
+    "VELDO-0341 fix1/snapshot-image",
+    "a snapshot lists the image of each protected container, with no image read: default"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "13dede6074ffe24b57103bf663d8895c7003ee88fd278f014620e83f6d4ac6f0",
+  "rejected": true
+ },
+ {
+  "name": "space341-no-inherited-protection",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac2/container-image-network"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/container-image-network": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac3/no-record",
+   "VELDO-0341 ac2/container-image-network",
+   "VELDO-0341 ac2/unread-refuses",
+   "VELDO-0341 ac2/immutable-image",
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix1/snapshot-image",
+   "VELDO-0341 fix1/connect-event",
+   "VELDO-0341 fix1/disconnect-event",
+   "VELDO-0341 fix2/one-read-per-pass",
+   "VELDO-0341 fix2/unreadable-refuses"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac3/no-record",
+    "no record, proposal, pending item or adopt target: default renamed-network"
+   ],
+   [
+    "VELDO-0341 ac2/container-image-network",
+    "protected listing default renamed-network"
+   ],
+   [
+    "VELDO-0341 ac2/unread-refuses",
+    "network unread list"
+   ],
+   [
+    "VELDO-0341 ac2/immutable-image",
+    "image identity survives a tag move; a stopped container counts"
+   ],
+   [
+    "VELDO-0341 fix1/compose-order",
+    "right after the container event the network has no report to Adopt: default by mount [protected, ['space:item:3e46144d50884f9f8324cac4525d9cdd'], {}]"
+   ],
+   [
+    "VELDO-0341 fix1/snapshot-image",
+    "a snapshot lists the image of each protected container, with no image read: default"
+   ],
+   [
+    "VELDO-0341 fix1/connect-event",
+    "reported when made, protected by the connect event: default [reported, matched, {}]"
+   ],
+   [
+    "VELDO-0341 fix1/disconnect-event",
+    "after the disconnect event it is a report again and no longer listed: default [matched]"
+   ],
+   [
+    "VELDO-0341 fix2/one-read-per-pass",
+    "and the pass still lists what a protected container was made from: default"
+   ],
+   [
+    "VELDO-0341 fix2/unreadable-refuses",
+    "no image is listed through a container, each is refused, and one covered by its own name is still listed: default [['minio/minio']; refused 0 of 14]"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "dd08692342f7517f44c3c08e2b8b51717a8465f63e033557c412ef9621a59c55",
+  "rejected": true
+ },
+ {
+  "name": "space341-unread-list-free",
+  "module": "control_space_docker.py",
+  "targets": [
+   "ac2/unread-refuses"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/unread-refuses": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac2/unread-refuses"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac2/unread-refuses",
+    "network unread list"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "32525330aa7606a3ccd0a9d0c1067fc99b7a93ba56d3a3b7600cb9e500933a52",
   "rejected": true
  },
  {
@@ -251,7 +326,10 @@
   },
   "mutant_failed": [
    "VELDO-0341 ac2/container-image-network",
-   "VELDO-0341 ac2/immutable-image"
+   "VELDO-0341 ac2/immutable-image",
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix1/snapshot-image",
+   "VELDO-0341 fix2/one-read-per-pass"
   ],
   "detail": [
    [
@@ -261,10 +339,230 @@
    [
     "VELDO-0341 ac2/immutable-image",
     "image identity survives a tag move; a stopped container counts"
+   ],
+   [
+    "VELDO-0341 fix1/compose-order",
+    "and its image is listed as protected, by the same event: default [{}]"
+   ],
+   [
+    "VELDO-0341 fix1/snapshot-image",
+    "a snapshot lists the image of each protected container, with no image read: default"
+   ],
+   [
+    "VELDO-0341 fix2/one-read-per-pass",
+    "and the pass still lists what a protected container was made from: default"
    ]
   ],
-  "source_sha256": "b989de6043f2aca89f004d0f73d7ff1b1a4ad5c000249ee35c86ecc2a84f19f9",
-  "mutant_sha256": "21547d710a5bbf281e1e71b372cd442cff083b97b1363e735ffae10741d9d8aa",
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "a9a350e0f18738c70f88374c3d12f9bf32a1fc89c32383ab1af2d303208ff35b",
+  "rejected": true
+ },
+ {
+  "name": "space341-mounting-container-no-recheck",
+  "module": "control_space_docker.py",
+  "targets": [
+   "fix1/compose-order"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "fix1/compose-order": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix1/snapshot-image"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 fix1/compose-order",
+    "right after the container event the network has no report to Adopt: default by mount [protected, ['space:item:c7f5fb70123540358b061689158d9c91'], {}]"
+   ],
+   [
+    "VELDO-0341 fix1/snapshot-image",
+    "a snapshot lists the image of each protected container, with no image read: default"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "bdb4e718f723771a213b31037d531112d0029411c8a8115c97f85dc5c0c87521",
+  "rejected": true
+ },
+ {
+  "name": "space341-connect-event-ignored",
+  "module": "control_space_docker.py",
+  "targets": [
+   "fix1/connect-event"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "fix1/connect-event": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 fix1/connect-event",
+   "VELDO-0341 fix1/disconnect-event"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 fix1/connect-event",
+    "reported when made, protected by the connect event: default [reported, ignored, {}]"
+   ],
+   [
+    "VELDO-0341 fix1/disconnect-event",
+    "after the disconnect event it is a report again and no longer listed: default [matched]"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "957eecf05da4498b14f78e50c0ef7b19c14bbc6e6621225678057aec14c555ed",
+  "rejected": true
+ },
+ {
+  "name": "space341-covered-container-no-recheck",
+  "module": "control_space_docker.py",
+  "targets": [
+   "fix1/compose-order",
+   "fix1/snapshot-image"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "fix1/compose-order": [
+    false
+   ],
+   "fix1/snapshot-image": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix1/snapshot-image"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 fix1/compose-order",
+    "right after the container event the network has no report to Adopt: desktop-linux by label [protected, ['space:item:a282633e815247269492ae0d9f39e56e'], {}]"
+   ],
+   [
+    "VELDO-0341 fix1/snapshot-image",
+    "a snapshot lists the image of each protected container, with no image read: default"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "d4ad0651acca513539a405e6b89fd3206510046d57447689f00fbfd9539cdac1",
+  "rejected": true
+ },
+ {
+  "name": "space341-disconnect-event-ignored",
+  "module": "control_space_docker.py",
+  "targets": [
+   "fix1/disconnect-event"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "fix1/disconnect-event": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 fix1/disconnect-event"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 fix1/disconnect-event",
+    "after the disconnect event it is a report again and no longer listed: default [ignored]"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "64e51e7f86e5230de90111c9a01c4e6b500863e493c6e9aaacce5ed646cf323c",
+  "rejected": true
+ },
+ {
+  "name": "space341-snapshot-reads-containers-for-each-network",
+  "module": "control_space_docker.py",
+  "targets": [
+   "fix2/one-read-per-pass"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "fix2/one-read-per-pass": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 fix2/one-read-per-pass"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 fix2/one-read-per-pass",
+    "a snapshot judges every network by the containers it read: one list and one inspect of the containers: default [9 containers, 9 networks, 4 volumes, 74 calls: [(('container', 'inspect'), 55), (('container', 'ls'), 7), (('image', 'inspect'), 8), (('network', 'inspect'), 1), (('network', 'ls'), 1), (("
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "9002d76abe5f4a0e0239feac0404630e9cdfa7dddd827bc1d1ba0e82ec351e88",
+  "rejected": true
+ },
+ {
+  "name": "space341-unreadable-container-free",
+  "module": "control_space_docker.py",
+  "targets": [
+   "fix2/unreadable-refuses",
+   "ac2/unread-refuses"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "ac2/unread-refuses": [
+    false
+   ],
+   "fix2/unreadable-refuses": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 ac2/unread-refuses",
+   "VELDO-0341 fix2/unreadable-refuses"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 ac2/unread-refuses",
+    "network malformed container"
+   ],
+   [
+    "VELDO-0341 fix2/unreadable-refuses",
+    "no image is listed through a container, each is refused, and one covered by its own name is still listed: default [['custom/database', 'mounts-data', 'mounts-path', 'minio/minio', 'late-image', 'sha256:000000000000000000000000000000000000000000000000000000000000102f', 'stack/server']; refused 0 of 1"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "44b39ed32d204f122a88ad9e0b106b5b2371acb47d6985adb1cb31c2d2b68b5b",
+  "rejected": true
+ },
+ {
+  "name": "space341-containers-read-for-each-image",
+  "module": "control_space_docker.py",
+  "targets": [
+   "fix2/one-read-per-pass"
+  ],
+  "control_failed": [],
+  "mutant_targets": {
+   "fix2/one-read-per-pass": [
+    false
+   ]
+  },
+  "mutant_failed": [
+   "VELDO-0341 fix1/compose-order",
+   "VELDO-0341 fix2/one-read-per-pass"
+  ],
+  "detail": [
+   [
+    "VELDO-0341 fix1/compose-order",
+    "the event asked for the container, its network and its image, and listed nothing: default [[('default', 'container', 'inspect'), ('default', 'image', 'inspect'), ('default', 'container', 'ls'), ('default', 'container', 'inspect'), ('default', 'container', 'inspect'), ('default', 'container', 'inspec"
+   ],
+   [
+    "VELDO-0341 fix2/one-read-per-pass",
+    "an image pass lists the containers once and inspects each once: default [14 images, 9 containers, 132 calls: [(('container', 'inspect'), 117), (('container', 'ls'), 13), (('image', 'inspect'), 1), (('image', 'ls'), 1)]]"
+   ]
+  ],
+  "source_sha256": "9f2a8a32253aa90aae827d17a55dbad486cee2824fa4e51dfe0f28f53635dd75",
+  "mutant_sha256": "d4acf384937828509ef0d5ca9cbe21a81435f02b3797bddf48fe251c54a0bd21",
   "rejected": true
  }
 ]
